@@ -1,349 +1,440 @@
-# Project Architecture & Codex Guidelines
+# Architecture Rules
 
-This document is the general architecture source of truth for this Flutter
-project. Read it before generating or modifying code that changes feature
-boundaries, state ownership, providers, UI composition, or shared abstractions.
+AI agents write the code in this Flutter project. This file is the source of
+truth for how that code is structured.
 
-This file defines rules and patterns. It must not become a catalog of concrete
-features. Feature-specific responsibilities, public entry points, provider
-lists, and dependency notes belong in that feature's `README.md`.
+## How to Use This File
 
-## Core Pattern
+- **Writing code:** read this file, then `lib/features/<feature>/README.md`
+  for the feature you touch, then the code.
+- **Before a push to `master`:** run the [Pre-Push Review](#pre-push-review).
+- **Rules beat existing code.** Some existing code breaks these rules (see
+  [Legacy: Do Not Copy](#legacy-do-not-copy)). An existing file never proves
+  that a pattern is allowed.
+- **MUST / NEVER** are hard rules. **Prefer** is a default that you may break
+  for a clear reason. State the reason in your summary.
+- **Enforced by** names the check that fails. Rules without it are checked
+  only in review.
+- **Blocked by a rule?** Stop and describe the conflict. NEVER work around a
+  rule with an ignore comment, an allowlist entry, or a hidden exception.
+- This file holds generic rules. Feature details belong in the feature README,
+  product behavior in `features.md`, test commands in `docs/testing.md`.
 
-The project uses feature-first architecture with pragmatic Clean Architecture
-layers and Riverpod-managed MVVM.
+## Stack
 
-### Mandatory MVVM Design
+Exact versions are in `pubspec.yaml`. These points differ from older Flutter
+code that you may know:
 
-New features and new UI flows are designed according to MVVM:
+- **Dart 3.13 constructors:** write `const new({super.key})`, not
+  `const MyWidget({super.key})`. *Enforced by:
+  `unnecessary_type_name_in_constructor`.*
+- **Riverpod 3** with code generation. Functional providers take a plain
+  `Ref ref`. There are no generated `FooRef` types.
+- **Material:** import `package:material_ui/material_ui.dart`. NEVER import
+  `package:flutter/material.dart`.
+- **go_router** with hand-written routes. `go_router_builder` is not used.
+- **Backend:** Firebase (Auth, Firestore, Storage, App Check, Firebase AI).
+- **Lints:** `very_good_analysis`, `riverpod_lint`.
+- **Tests:** `flutter_test`, `mocktail`, `fake_cloud_firestore`.
+- **Localization:** ARB files, English and German.
 
-- **View:** Flutter pages and widgets render state and forward user
-  interactions. They contain no business rules, no direct data persistence, and
-  no raw data mapping.
-- **ViewModel:** Riverpod controllers hold UI state, coordinate user actions,
-  and expose a testable state to the view. In code, we use the name
-  `Controller`, not `ViewModel`.
-- **Model:** Domain models and pure business rules represent domain data and
-  calculations independently of Flutter, serialization formats, and Riverpod.
+NEVER add a package without asking the user. NEVER add an alternative to the
+stack (for example `flutter_hooks`, `get_it`, `bloc`, `go_router_builder`).
 
-Dependencies strictly flow from View to Controller, and from Controller to
-Logic, Domain, and Data layers. New views must not call repositories, services,
-or persistence directly.
+## Where New Code Goes
 
-### Riverpod Code Generation & Tooling
+Paths are relative to `lib/features/<feature>/` unless they start with `lib/`.
 
-- State management and dependency injection use Riverpod code generation
-  exclusively (`riverpod_annotation`).
-- Always use the `@riverpod` annotation for providers and controllers.
-- Do not use legacy manual providers such as `StateProvider`,
-  `StateNotifierProvider`, or `ChangeNotifierProvider`.
-- Every annotated provider/controller file must include the generated part file
-  (`part 'filename.g.dart';`).
-- Prefer direct, explicit imports of concrete files. Do not add hand-written
-  barrel export files or barrel classes.
-- Generated `part` files such as `*.g.dart` and `*.freezed.dart` are allowed.
-  Hand-written `part` files are prohibited.
-- `riverpod_lint` must be enabled in `analysis_options.yaml`.
-- Do not use `// ignore:` or `// ignore_for_file:` comments to suppress linter
-  rules or compiler diagnostics. Resolve the underlying root cause in code or
-  architecture cleanly instead.
+| You add                                         | Location                                                  |
+| ----------------------------------------------- | --------------------------------------------------------- |
+| Entity, value object, pure calculation          | `domain/`                                                 |
+| Typed exceptions of the feature                 | `domain/<feature>_exceptions.dart`                        |
+| Contract that the feature needs from outside    | `domain/`, as `abstract interface class`                  |
+| Repository and its provider                     | `data/<subject>_repository.dart`                          |
+| Firestore document mapping                      | `data/<entity>_document_codec.dart`                       |
+| Workflow across repositories or features        | `application/`                                            |
+| Adapter that implements a contract              | `application/`                                            |
+| Page                                            | `presentation/<name>_page.dart`                           |
+| Controller                                      | `presentation/controllers/<name>_controller.dart`         |
+| Widget                                          | `presentation/widgets/`                                   |
+| Widget with private sub-widgets                 | `presentation/widgets/<name>/<name>.dart`                 |
+| UI model without state                          | `presentation/models/`                                    |
+| Exception-to-message mapping                    | `presentation/<feature>_error_message_mapper.dart`        |
+| Feature-independent widget, token, or utility   | `lib/core/<area>/`                                        |
+| Route                                           | `lib/core/router/`, path in `lib/core/constants/app_routes.dart` |
+| User-facing string                              | `lib/l10n/app_en.arb` and `lib/l10n/app_de.arb`            |
+| Test                                            | Same path under `test/`                                   |
 
-## Feature Layout
+Add a layer folder only when the feature has code for it.
 
-Feature code lives under `lib/features/<feature>/`.
+## 1. Layers
 
-    lib/features/<feature>/
-    ├── README.md       # Feature-specific ownership, contracts, and usage notes
-    ├── data/           # Repositories, DTOs, API/client implementations, data sources
-    ├── domain/         # Pure entities, value objects, pure helpers, interface contracts
-    ├── application/    # (Optional) Services/workflows coordinating multiple inputs
-    └── presentation/   # Pages, widgets, controllers, and UI presentation models
+The project uses feature-first structure, Clean Architecture layers, and MVVM
+with Riverpod.
 
-Not every feature needs every folder. Add folders only when the feature has
-code that naturally belongs there.
+- **View** (pages, widgets) renders state and forwards input. It MUST NOT
+  contain business rules, persistence, or mapping.
+- **Controller** (`Notifier`, `AsyncNotifier`) holds UI state and coordinates
+  actions. It is the ViewModel of MVVM.
+- **Domain** holds pure Dart types and business rules.
+- **Data** talks to Firebase, HTTP, and local storage, and maps their formats.
+- **Application** (optional) coordinates several repositories or features.
 
-### Pragmatic Application Layer (No Pass-Through Services)
+Dependencies point one way: view, then controller, then application, then
+domain and data. Data depends on domain. Domain depends on nothing.
 
-- The `application/` layer is **optional**. Use it only when coordinating
-  multiple repositories or orchestrating non-trivial business flows.
-- **No 1:1 Pass-Through Use-Cases:** Do not create dummy service classes that
-  simply forward calls to a single repository method. Controllers are allowed
-  to depend directly on repositories for simple operations.
+- A view MUST NOT call a repository, a service, or Firebase.
+- A controller may call a repository directly. NEVER create an application
+  service that only forwards to one repository method.
+- Domain MUST NOT import Flutter, Riverpod, Firebase, or `json_annotation`.
+  `@freezed` is allowed. `fromJson`, `toJson`, and Firestore field names are
+  not.
+- Domain and application code MUST NOT call `DateTime.now()`. Pure functions
+  take `now` or `today` as a parameter. Providers and controllers read the
+  time from `clockProvider` in `lib/core/`. If it does not exist, create it:
 
-### Domain Purity & DTOs
+  ```dart
+  @Riverpod(keepAlive: true)
+  DateTime Function() clock(Ref ref) => DateTime.now;
+  ```
 
-- **Domain Models are Pure Dart:** Domain entities and value objects must never
-  depend on serialization libraries, SQLite schemas, or API-specific key names.
-- **No Serialization in Domain:** Methods like `fromJson` and `toJson` belong
-  strictly in Data Transfer Objects (DTOs) in `data/`.
-- **Data Layer Owns Mapping:** Conversion between domain entities and external
-  formats (`toDomain()`, `fromDto()`) must live inside the `data/` layer.
-- **Immutability:** Domain entities and UI state classes should be immutable
-  (prefer `@freezed` or standard immutable class definitions with `copyWith`).
+- Domain types and UI state MUST be immutable: `@freezed`, or `final` fields
+  with `copyWith`. Collections in state MUST NOT be mutated after creation.
+- Prefer `sealed class` and `switch` pattern matching for closed sets of
+  results, states, and exceptions.
 
-## Feature README
+## 2. Data Layer
 
-Feature-specific architecture belongs in `lib/features/<feature>/README.md`.
-Use the README for:
+- **SDK access:** repositories get SDK instances (`FirebaseFirestore`,
+  `FirebaseAuth`, `FirebaseStorage`, `http.Client`) from providers in
+  `lib/core/provider/`. NEVER call `.instance` in a feature.
+- **Method names:** `watchX()` returns a `Stream`. `loadX()` returns a
+  `Future`. Writes are `saveX()`, `addX()`, `updateX()`, `deleteX()`.
+- **Mapping:** Firestore maps are converted in `data/` with top-level
+  `decodeX(...)` and `encodeX(...)` functions in a `*_document_codec.dart`
+  file. Create a DTO class only when the external shape differs a lot from the
+  domain type.
+- **Interfaces:** create an `abstract interface class` for a repository only
+  when another feature consumes it, or when there are two production
+  implementations. Tests do not need an interface: a fake can `implement` the
+  concrete class and replace it through a provider override.
+- **Interface names:** name the interface by role (`CalorieLogRepository`) and
+  the implementation by technology (`FirestoreCalorieLogRepository`). NEVER
+  use an `I` prefix, `Impl` suffix, or `Contract` suffix.
+- **Errors:** a repository MUST catch transport exceptions
+  (`FirebaseException`, HTTP errors) and rethrow typed feature exceptions. See
+  [Errors](#4-errors).
 
-- What the feature owns
-- What the feature explicitly does not own
-- Public widgets/pages other features may use
-- Important providers and where they live
-- Accepted cross-feature dependencies
-- Tests that cover the feature
-- Migration notes for legacy structure
+## 3. Riverpod
 
-Keep this root architecture file generic. If a rule only applies to one feature,
-document it in that feature's README.
+### Declaration and Naming
 
-## Core
+- MUST declare providers and controllers with `@riverpod` or `@Riverpod(...)`.
+  NEVER use `StateProvider`, `StateNotifierProvider`, `ChangeNotifierProvider`,
+  or `package:flutter_riverpod/legacy.dart`. *Enforced by: `riverpod_lint`.*
+- Annotated files include `part '<file>.g.dart';`. Hand-written `part` files
+  and barrel files are forbidden. Import concrete files.
+- A class that holds UI state is `<Subject>Controller` in
+  `<subject>_controller.dart`. NEVER use `ViewModel` in a name.
 
-`lib/core` is for feature-independent primitives only:
+### Location
 
-- App-wide constants and layout tokens
-- App theme, theme extensions, and typography tokens
-- Generic reusable widgets (buttons, input fields, loading spinners)
-- Routing configuration and infrastructure
-- Small domain helpers with no feature dependency
+- Put a provider in the file of the thing it provides. NEVER create a
+  `providers/` or `provider/` folder in a feature.
+- App-wide infrastructure providers live in `lib/core/`, for example Firebase
+  SDK providers in `lib/core/provider/`.
+- `domain/` contains no providers.
 
-Do not move feature-specific models into `core` just to avoid thinking about
-ownership. If a shared concept depends on a feature's domain models, keep it in
-the feature that naturally owns that data.
+### Lifecycle
 
-## Widget & File Structure
+- UI controllers and page state: `@riverpod` (auto-dispose).
+- Repositories, SDK clients, and sync engines: `@Riverpod(keepAlive: true)`.
+- To cache an expensive auto-dispose result, call `ref.keepAlive()` and close
+  the link with a timer in `ref.onCancel`. NEVER switch to `keepAlive: true`
+  only to hide a disposal bug.
+- Family parameters MUST have value equality: primitives, records, enums, or
+  `@freezed` types.
 
-- **CRITICAL: Split Large Files**: AI and contributors must always split large
-  files, providers, controllers, services, and models. If a file exceeds
-  250–300 lines or starts handling multiple responsibilities, split it into
-  smaller, highly focused files immediately.
-- **Prefer small files over large page/service files**: High complexity and
-  large files are strictly prohibited.
-- For larger widgets, use component folders under
-  `lib/features/<feature>/presentation/widgets/<widget_name>/`.
-- Put the main widget in `<widget_name>/<widget_name>.dart`.
-- Put small helpers and sub-widgets used only by that widget in the same folder.
-- Callers import the concrete main widget file directly.
-- **Method & Function Size**:
-  - Keep business logic, data mapping, and controller methods small and focused
-    (target < 40 lines). Split complex logic out into private helpers or
-    domain services.
-  - For declarative Flutter `build()` methods, prioritize semantic clarity:
-    extract sub-trees into dedicated `StatelessWidget` classes whenever a
-    sub-tree represents a self-contained visual component, has distinct state
-    dependencies, or impairs the readability of the parent build method. Avoid
-    arbitrary micro-splitting that hurts readability without structural benefit.
+### Reading Providers
 
-## Controller Naming & State Management
+- **In a provider's `build`:** depend on another provider with `ref.watch`.
+  For async values use `await ref.watch(otherProvider.future)`.
+- **In a widget's `build`:** `ref.watch` to render. Use
+  `ref.watch(provider.select((s) => s.field))` when the widget needs only part
+  of the state.
+- **Side effects** (snackbar, dialog, navigation): `ref.listen` in `build`.
+  NEVER run side effects in the `build` body.
+- **In callbacks and controller methods:** `ref.read`. NEVER `ref.read` in
+  `build`.
+- NEVER call `ref.read(p.future)` or `container.read(p.future)`. An
+  auto-dispose provider without a listener disposes during loading and throws
+  `StateError: The provider X was disposed during loading state`. Read the
+  repository, take the data from the caller, or hold a `container.listen`
+  subscription for the whole operation. *Enforced by:
+  `test/architecture/autodispose_future_read_test.dart`.*
 
-The architecture pattern is MVVM, but naming is strictly controller-based.
+### Rendering AsyncValue
 
-- Classes that hold UI state with Riverpod `Notifier` or `AsyncNotifier` are
-  named `<Feature>Controller`.
-- Controller files end with `_controller.dart`.
-- Do not use `ViewModel` in class names or file names.
-- Pure presentation models that do not own state may be named as models,
-  metrics, or state objects, but not `ViewModel`.
+Render with `asyncValue.when(data: ..., loading: ..., error: ...)`. It keeps
+showing the previous data during a refresh. A hand-written `switch` easily
+shows a spinner instead.
 
-### Lifecycle: KeepAlive vs. AutoDispose
+### Async Actions
 
-- **UI Controllers & Page State:** Default to `@riverpod` (`autoDispose`). They
-  must be cleaned up when navigating away from the screen.
-- **Repositories, Core Services & Sync Engines:** Must explicitly use
-  `@Riverpod(keepAlive: true)` to maintain persistent caches, client sessions,
-  and long-running database connections.
-- **No Unlistened `ref.read` / `container.read` on AutoDispose `.future`:**
-  Never call `ref.read(provider.future)` or `container.read(provider.future)`
-  on auto-disposed providers without an active subscription (`ref.listen` /
-  `container.listen`). Reading `.future` on an unobserved auto-disposed provider
-  causes Riverpod to dispose the provider during its asynchronous loading
-  phase, throwing `StateError (Bad state: The provider X was disposed during
-  loading state, yet no value could be emitted.)`. In mutations and services,
-  read data directly from the repository or pass required entities from the
-  caller. If an unmounted controller must wait for an auto-disposed provider,
-  keep a subscription via `container.listen` across the async operation.
+After every `await` in a provider or controller, check `ref.mounted` before
+you use `ref` or `state`. Riverpod 3 keeps the previous value when you set
+`AsyncLoading`. NEVER call `copyWithPrevious` (it is `@internal`).
 
-### Reactive UI: `watch` vs. `listen`
+```dart
+Future<bool> save(Entry entry) async {
+  state = const AsyncLoading();
+  final result = await AsyncValue.guard(
+    () => ref.read(entryRepositoryProvider).saveEntry(entry),
+  );
+  if (!ref.mounted) return false;
+  state = result;
+  return !result.hasError;
+}
+```
 
-- **`ref.watch` is for UI building:** Use `ref.watch` inside widget `build()`
-  methods to observe state and trigger re-renders. Never execute imperative side
-  effects (such as showing a `SnackBar`, opening a dialog, or triggering route
-  navigation) inside a `ref.watch` callback or the build body.
-- **`ref.listen` is for side effects:** One-off actions triggered by state
-  changes must use `ref.listen` inside `build()` or lifecycle hooks to ensure
-  they fire exactly once per transition.
+A controller for a one-off action uses `AsyncNotifier<void>`.
 
-### UI State vs. Local Ephemeral State
+### Local State
 
-Do not mirror transient widget state into Riverpod controllers.
+Keep `TextEditingController`, `FocusNode`, `ScrollController`,
+`AnimationController`, and hover or animation flags in a `StatefulWidget`.
+Send values to a controller only on submit, on a debounced search, or when
+business state changes.
 
-- **Local Widget State:** Keep `TextEditingController`, `FocusNode`,
-  `ScrollController`, `TabController`, and ephemeral animation/hover states
-  inside `StatefulWidget` or Flutter hooks.
-- **Controller State:** Push values to the controller only when submitting a
-  form, triggering debounced remote operations, or updating business state.
+## 4. Errors
 
-### Error Handling & Asynchronous Mutations
+- Declare feature exceptions as a
+  `sealed class <Feature>Exception implements Exception` with subclasses in
+  `domain/<feature>_exceptions.dart`.
+- A controller captures errors with `AsyncValue.guard`.
+- A view turns an error into text only through the feature's
+  `<Feature>ErrorMessageMapper`. The mapper returns an `AppLocalizations`
+  string and has a generic fallback.
+- NEVER show `error.toString()` or a raw SDK message to the user.
+- NEVER catch an exception without rethrowing, logging, or showing it.
 
-- **Domain Exceptions:** Repositories must catch client/transport exceptions
-  (e.g., HTTP, database) and map them to explicit, domain-specific typed
-  exceptions (e.g., `UserNotFoundException`, `NetworkConnectionException`)
-  before re-throwing. This allows `AsyncValue.guard` to cleanly capture them.
-- **Preserve Previous State During Async Loading:** When triggering actions on
-  existing UI state, preserve the current data instead of replacing it with a
-  blank loading state:
+## 5. Files and Widgets
 
-      Future<void> updateProfile(UserProfile data) async {
-        state = const AsyncLoading<UserProfile>().copyWithPrevious(state);
-        state = await AsyncValue.guard(
-          () => ref.read(userRepositoryProvider).update(data),
-        );
-      }
+- A Dart file in `lib/` MUST NOT exceed 300 lines. Split by responsibility
+  before you reach the limit. *Enforced by:
+  `test/architecture/file_size_test.dart`.*
+- One public class per file. Private helpers used only by that class may stay.
+- Prefer methods under 40 lines.
+- Extract a sub-tree into a `StatelessWidget` when it is a visual component,
+  has its own state dependencies, or makes the parent hard to read. Prefer a
+  widget class over a `_buildX()` method.
+- Use `const` constructors and `const` widget instances. *Enforced by:
+  `prefer_const_constructors`.*
+- Build lists of unknown or long length with `ListView.builder` or slivers.
+  Give stateful or reorderable list items a `ValueKey` with a stable ID.
+- Sort, filter, and group data in a controller or provider, never in `build`.
+- Use `MediaQuery.sizeOf(context)` and the other `*Of` methods, never
+  `MediaQuery.of(context).size`.
+- After an `await` in a widget, check `context.mounted` before you use
+  `context`. *Enforced by: `use_build_context_synchronously`.*
+- Before you create a widget or helper, search `lib/core/widgets/`,
+  `lib/core/utils/`, and the feature. Duplicated blocks of 8 or more lines
+  fail jscpd (`.jscpd.json`).
 
-- **Separation of Queries and Actions:** For dedicated form submissions or
-  one-off actions that do not hold persistent screen data, use an
-  `AsyncNotifier<void>` or manage an action-specific `AsyncValue<void>` state.
-- After async gaps in providers or notifiers, check `ref.mounted` before using
-  `ref` or mutating state.
+## 6. Feature Boundaries
 
-## Navigation & Routing
+A feature owns its data access, domain, application services, providers, and
+presentation.
 
-Routing configuration and route paths live in `lib/core/routing/`.
+- Other features use only the **public edge** that the feature README lists: a
+  page, a complete section widget, a domain type, or a contract.
+- NEVER import another feature's `presentation/controllers/` or internal
+  providers. NEVER assemble another feature's internal widgets.
+- If widgets always need the same providers, the owning feature exposes one
+  section widget that reads them.
+- **Cross-feature workflows:** the feature where the user action starts owns
+  the workflow in its `application/`. It declares a narrow contract in its
+  `domain/` for what it needs. An adapter in its `application/` implements the
+  contract with the other feature's public repository or service.
+- **Reusable hubs, pickers, modals, editors** MUST NOT call caller
+  controllers or persistence. They return the result by popping their route,
+  or call a contract that the caller implements.
+- A concept that two features need belongs to the feature that owns the data.
+  Use `lib/core` only if the concept has no feature dependency.
 
-- **Type-Safe Routes Preferred:** Use `go_router` with code generation
-  (`go_router_builder`) whenever possible to guarantee compile-time safety for
-  routes and arguments.
-- **Views Trigger Navigation:** Navigation is a presentation responsibility.
-  Widgets and pages execute route transitions via `context.go()` or
-  generated route extensions. Controllers coordinate logic and state, but must
-  never accept a `BuildContext` or trigger navigation directly.
-- **Primitive Route Parameters Only:** Routes must accept only primitive types
-  (e.g., `id: String`, `index: int`) via path or query parameters.
-  - **Never pass domain objects or DTOs as navigation arguments.**
-  - Passing IDs ensures deep linking compatibility, supports web reloads, and
-    prevents displaying stale data when models are updated elsewhere. The
-    destination page reads the ID and queries its own provider.
+### Dependency Direction
 
-## Feature Boundaries
+- Features may depend on `lib/core`. `lib/core` MUST NOT depend on features.
+  **Exception:** `lib/core/router/`, `lib/app.dart`, and `lib/main.dart` are
+  composition roots and may import feature pages.
+- A feature-to-feature dependency MUST target the public edge and be listed in
+  the README of the depending feature.
+- NEVER create a dependency cycle. Break it with a contract in the consuming
+  feature, or move the concept to the feature that owns the data.
 
-- A feature owns its own data access, domain concepts, application services,
-  providers, and presentation components.
-- Other features should consume only the owning feature's intentional public
-  edge, such as a page, section widget, domain type, or interface contract.
-- Do not assemble another feature's internal widgets or providers from outside
-  that feature.
-- If a group of widgets always needs the same providers, wrap that group in a
-  feature-owned section widget and let that section collect the providers.
-- If two features need the same concept, place it in the feature that naturally
-  owns the underlying data. Use `core` only when the concept is truly
-  feature-independent.
-- **Decoupled Feature Contracts (`abstract interface class`)**: When building
-  self-contained or modular features (such as scanner engines, product search
-  hubs, or third-party integrations), features must define external
-  dependencies as lightweight `abstract interface class` contracts in their
-  domain layer. The consuming feature or application layer provides concrete
-  implementations via Riverpod providers. This eliminates tight cross-feature
-  coupling and enables fast, isolated unit testing with fakes.
-- **Zero Cross-Feature Controller/Presentation Imports**: A feature must never
-  import another feature's `presentation/controllers/`, `presentation/flows/`,
-  or internal state notifiers. Controllers belong strictly to the feature that
-  hosts them and must never be wired or called across feature boundaries.
-- **Caller Owns Side Effects (Hubs, Pickers, Modals)**: Reusable search hubs,
-  pickers, modals, or editors must never import or execute caller controllers,
-  mutation flows, or persistence logic. The hub is a presentation and editing
-  surface: it either returns the edited result directly to the caller via
-  navigation (`Navigator.pop(context, result)`), or delegates completion
-  effects through domain `abstract interface class` contracts implemented by the
-  caller. Dependencies must always point from caller to callee, never backwards.
+## 7. Core
 
-## Dependency Direction
+`lib/core` holds feature-independent code only: `config/`, `constants/`
+(layout tokens, route paths), `data/` (generic storage helpers), `domain/`,
+`l10n/`, `router/`, `theme/`, `widgets/`, `utils/`, and infrastructure in
+`debug/`, `device/`, `preferences/`, `provider/`.
 
-General dependency rules:
+NEVER move a feature type into `lib/core` to avoid an ownership decision.
 
-- Features may depend on `core`.
-- `core` must not depend on features.
-- Feature-to-feature dependencies must be explicit and small.
-- Prefer depending on another feature's public edge, not its internals.
-- Never depend on another feature's presentation controllers or mutation flows.
-- Avoid dependency cycles. When a new dependency would create a cycle, extract
-  the shared concept to the data-owning feature or to `core` if it is genuinely
-  feature-independent.
-- A page may compose another feature's finished UI surface, but should not wire
-  that feature's internal sub-widgets and providers itself.
+## 8. Navigation
 
-Concrete accepted dependencies belong in each feature's README, not here.
+- Paths are constants in `AppRoutes`. A path with parameters is built only
+  with its `AppRoutes.*Path(...)` method. NEVER write a path string literal
+  elsewhere.
+- Views navigate. A controller MUST NOT take a `BuildContext` or navigate. It
+  returns a result, and the view decides:
 
-## Provider Ownership
+  ```dart
+  final saved = await ref.read(entryEditorControllerProvider.notifier).save(entry);
+  if (!saved || !context.mounted) return;
+  context.pop(true);
+  ```
 
-- Providers are colocated with the implementation they provide. Do not create a
-  global `providers/` folder for feature providers.
-- Repository providers live in the feature's `data/` layer, ideally in the same
-  file as the repository or in a directly adjacent `*_provider.dart` file.
-- Controller providers live in the feature's `presentation/` layer, next to the
-  controller. With Riverpod code generation, the generated provider stays with
-  the annotated controller file.
-- Application/use-case providers live in the feature's `application/` layer,
-  next to the service/use case they provide.
-- App-wide infrastructure providers that do not belong to one feature live in
-  `core`, next to the infrastructure they provide.
-- Domain should stay as provider-free as practical. Prefer pure domain models,
-  value objects, and helpers there.
-- A feature-level `provider/` folder is legacy/transition structure. Do not add
-  new provider files there unless working inside existing code where moving the
-  provider would create unrelated churn.
+- **Persisted entity:** pass its ID in the path or query. The destination
+  loads the entity from its provider.
+- **Transient input without an ID** (unsaved draft, scan result, hub
+  arguments): pass one typed args object in `extra`. Read it only with
+  `requireRouteExtra` from `lib/core/router/route_page_helpers.dart`. NEVER
+  cast `state.extra` directly.
+- NEVER pass a persisted entity or a DTO in `extra`.
+- **Closing:** close a go_router page with `context.pop(result)`. Close a
+  dialog or bottom sheet with `Navigator.of(context).pop(result)`.
 
-## Testing
+## 9. UI: Theme, Text, Accessibility
 
-Tests live with the code owner:
+- Colors come from `Theme.of(context).colorScheme`. Semantic colors outside
+  `ColorScheme` come from a `ThemeExtension` in `lib/core/theme/`.
+  NEVER use `Colors.*` or `Color(0x...)` in a feature. `Colors.transparent` is
+  allowed.
+- Text styles come from `Theme.of(context).textTheme`, adjusted with
+  `copyWith`. NEVER create `TextStyle(...)`.
+- Spacing, insets, radii, durations, opacities, font sizes, and sizes use the
+  tokens in `lib/core/constants/app_layout_constants.dart`. Add a token instead
+  of a magic number.
+- Every screen MUST work in light mode, dark mode, and with large text scaling.
+  NEVER give a text container a fixed height.
+- Tap targets are at least 48 by 48 logical pixels. An icon-only button MUST
+  have a `tooltip` or a `Semantics` label.
 
-- Feature tests belong in `test/features/<feature>/`.
-- Shared core helpers and widgets belong in `test/core/`.
-- When moving ownership of a class, move its tests with it and update imports
-  instead of keeping compatibility re-exports.
-- **Riverpod Unit Testing:** Unit-test controllers and notifiers using a
-  `ProviderContainer` with explicit dependency `overrides`, rather than
-  instantiating controller classes manually.
-- Verify state transitions by asserting emitted `AsyncValue` sequence states.
-- **Testing AutoDispose & Stream Provider Lifecycles:** In UI flow tests,
-  fake/mock at the repository layer using real or asynchronous `Stream`
-  instances rather than overriding high-level presentation or application
-  providers with static synchronous values. Overriding with synchronous values
-  masks auto-dispose timing errors that only manifest when bottom sheets or
-  dialogs unmount.
-- Never change correct working code only to satisfy outdated tests. Update tests
-  to match intended behavior instead.
+## 10. Localization
 
-## Theme, Styling & Localization Guidelines
+- NEVER write a user-facing string literal in a widget. This includes labels,
+  errors, hints, tooltips, and semantics labels.
+- Access strings with `AppLocalizations.of(context)!`.
+- Add every key to `app_en.arb` and `app_de.arb` in the same change.
+- Use ARB placeholders and plurals. NEVER concatenate messages.
 
-All styling, colors, typography, and UI strings must be centralized to
-support scalability, light/dark modes, and internationalization.
+## 11. Testing
 
-### Design Tokens & Theme
+Commands and patterns: `docs/testing.md`.
 
-- **Strictly No Hardcoded Colors or TextStyles in Widgets**: 
-  - Never use inline color definitions (e.g., `Color(0xFF...)`, `Colors.blue`)
-    or inline `TextStyle()` configurations inside feature widgets.
-  - Colors must always be resolved via `Theme.of(context).colorScheme.<token>`
-    (e.g., `primary`, `surface`, `onSurface`).
-  - Text typography must always use `Theme.of(context).textTheme.<style>` (e.g.,
-    `bodyMedium`, `titleLarge`).
-- **Design Tokens**: Spacing, paddings, and border radii must use shared
-  constants or layout tokens defined in `lib/core/theme/` (e.g.,
-  `AppSpacing.md`).
-- **Domain-Specific Theme Extensions**: When features require custom semantic
-  colors not covered by `ColorScheme` (e.g., status indicators, macro-nutrient
-  badges), define a custom `ThemeExtension` inside `lib/core/theme/extensions/`.
-- **Theme State Management**: The active theme mode (light, dark, system) is
-  managed by a dedicated Riverpod controller in
-  `lib/core/theme/logic/theme_controller.dart`. UI widgets only observe the
-  mode via `Theme.of(context)`.
+- Tests mirror the code path: `test/features/<feature>/`, `test/core/`. Shared
+  fakes live in `test/helpers/` and `test/support/`.
+- Every new domain rule, controller action, and codec has a unit test.
+- Test controllers through a `ProviderContainer` with `overrides`. NEVER
+  construct a controller by hand. Assert the sequence of `AsyncValue` states.
+- Override `clockProvider` or pass a fixed `now`. NEVER depend on the real
+  time.
+- In UI flow tests, fake the repository layer with real asynchronous
+  `Stream`s. NEVER override presentation or application providers with
+  synchronous values: that hides auto-dispose bugs that appear when sheets and
+  dialogs close.
+- Test Firestore repositories and codecs with `fake_cloud_firestore`. Prefer
+  fakes over `mocktail`.
+- When you move a class, move its tests. NEVER keep a re-export.
+- If behavior changed on purpose, update the test. NEVER bend correct code to
+  pass an outdated test.
 
-### Localization (l10n / i18n)
+## 12. Hygiene
 
-- **Strictly No Hardcoded Strings in UI**:
-  - Never write user-facing raw string literals in presentation widgets.
-  - All labels, error messages, placeholders, and tooltips must be resolved
-    via generated localization (e.g., `AppLocalizations.of(context).key` or
-    `context.l10n.key`).
-  - Dynamic messages must use localized strings with interpolation arguments
-    rather than Dart string concatenation.
+- NEVER add `// ignore:` or `// ignore_for_file:`. Fix the cause, or propose a
+  change to `analysis_options.yaml` if a lint is wrong for the whole project.
+- NEVER edit generated files (`*.g.dart`, `*.freezed.dart`,
+  `lib/l10n/app_localizations*.dart`). Change the source and regenerate.
+- NEVER leave commented-out code, `print`, or unused code.
+- NEVER add an abstraction, parameter, or option that the current task does
+  not use.
+
+## 13. Feature README
+
+Each feature has `lib/features/<feature>/README.md` with: **Owns**, **Does Not
+Own**, **Public Edge**, **Providers**, **Dependencies**, **Tests**, **Legacy**.
+
+Update it in the same change when the public edge, providers, or dependencies
+change. If the feature has no README, create one.
+
+## Legacy: Do Not Copy
+
+These patterns exist in the codebase. They break the rules and are not
+precedent:
+
+- Files over 300 lines in the allowlist of
+  `test/architecture/file_size_test.dart`.
+- Feature-level `provider/` folders.
+- Imports of another feature's `presentation/controllers/`.
+- `fromJson` and `toJson` in `domain/`.
+- `DateTime.now()` in `domain/`, `application/`, and controllers.
+- `FirebaseFirestore.instance` and other `.instance` calls in features.
+- Interfaces named with a `Contract` suffix.
+- Direct casts of `state.extra`.
+- Hardcoded `Colors.*`, `Color(0x...)`, `TextStyle(...)`, and strings in
+  widgets.
+- `// ignore` and `// ignore_for_file` comments.
+- `lib/features/shared/` and the flat `lib/features/home/` folder.
+- Features without a README.
+
+Rules for legacy code:
+
+- New code follows the rules, also inside a legacy file.
+- NEVER add a file to the size allowlist. When you split an allowlisted file,
+  remove its entry.
+- NEVER add code to `lib/features/shared/` or a legacy `provider/` folder.
+- Fix legacy code in files that your change touches. Leave untouched files for
+  a dedicated refactoring task.
+
+## Pre-Push Review
+
+Run this review before you push to `master`.
+
+1. List changed files: `git diff --name-only origin/master...HEAD`.
+2. Run the tests of the affected features. They MUST pass before you refactor.
+3. Check every changed file in `lib/` and `test/` against the checklist below.
+   Fix what fails.
+4. A refactor MUST NOT change behavior. Commit it separately from behavior
+   changes, with the `refactor:` type.
+5. Run the gates.
+
+### Checklist
+
+- **Placement:** each file matches [Where New Code Goes](#where-new-code-goes).
+- **Size:** each file is under 300 lines with one responsibility. The size
+  allowlist did not grow.
+- **Layers:** no view calls a repository. Domain has no Flutter, Firebase,
+  JSON, or `DateTime.now()`.
+- **Data:** SDKs come from providers. Methods follow `watchX` and `loadX`.
+  Transport exceptions become typed exceptions. Mapping is in a codec.
+- **Riverpod:** `@riverpod` only. Correct lifecycle. `ref.mounted` after every
+  `await`. No `read(p.future)`. No side effects in `build`.
+- **Boundaries:** no foreign controllers. Cross-feature access goes through a
+  public edge or a contract. The README is up to date.
+- **Navigation:** paths from `AppRoutes`. IDs for persisted entities.
+  `requireRouteExtra` for `extra`. `context.mounted` after `await`.
+- **UI:** theme colors and text styles, layout tokens, `const`, tooltips on
+  icon buttons, no hardcoded strings, keys in both ARB files.
+- **Tests:** new behavior has tests. No real time. Repository-level fakes.
+- **Hygiene:** no ignore comments, no edits to generated files, no new
+  packages, no dead or commented-out code.
+
+### Gates
+
+1. `dart run build_runner build` if annotated files changed.
+2. `flutter gen-l10n` if ARB files changed.
+3. `flutter analyze` reports no new issues.
+4. `flutter test test/architecture` passes.
+5. Tests of the affected features pass.
+6. `npx jscpd lib` reports no new duplicates.
