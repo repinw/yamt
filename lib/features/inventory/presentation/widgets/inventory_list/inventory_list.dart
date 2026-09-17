@@ -371,13 +371,11 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       if (context == null || !mounted) {
         return;
       }
-      unawaited(
-        Scrollable.ensureVisible(
-          context,
-          alignment: 0.05,
-          duration: const Duration(milliseconds: 240),
-          curve: Curves.easeOutCubic,
-        ),
+      Scrollable.ensureVisible(
+        context,
+        alignment: 0.05,
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
       );
     });
   }

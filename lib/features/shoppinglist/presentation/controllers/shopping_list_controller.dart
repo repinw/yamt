@@ -190,7 +190,7 @@ class ShoppingListController extends _$ShoppingListController {
       if (!ref.mounted) return false;
       final next = change(items);
       if (next == null) return true;
-      return _save(items, next);
+      return await _save(items, next);
     },
     fallbackValue: false,
     onError: _logError,

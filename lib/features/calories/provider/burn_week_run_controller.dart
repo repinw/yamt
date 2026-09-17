@@ -163,7 +163,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     int? runWeekNumber,
   }) async {
     final current = await future;
-    return _save(
+    return await _save(
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: runWeekNumber ?? burnWeekLearningRunWeekNumber,
@@ -179,7 +179,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     int runWeekNumber = burnWeekLearningRunWeekNumber,
   }) async {
     final current = await future;
-    return _save(
+    return await _save(
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: runWeekNumber,

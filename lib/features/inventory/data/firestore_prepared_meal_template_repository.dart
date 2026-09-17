@@ -39,7 +39,7 @@ class FirestorePreparedMealTemplateRepository
     if (userId == null) {
       return const <PreparedMeal>[];
     }
-    return _readAllForUser(userId);
+    return await _readAllForUser(userId);
   }
 
   @override

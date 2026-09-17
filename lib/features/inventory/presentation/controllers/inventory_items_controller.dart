@@ -266,7 +266,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     _currentDataOwnerUserId = ref.watch(
       effectiveHouseholdDataOwnerUserIdProvider,
     );
-    return _restartRealtimeSubscription();
+    return await _restartRealtimeSubscription();
   }
 
   /// Refresh.
@@ -318,7 +318,7 @@ class InventoryItemsController extends _$InventoryItemsController {
         _onRealtimeError(error, stackTrace);
       },
     );
-    return initialItems.future;
+    return await initialItems.future;
   }
 
   Future<void> _disposeRealtimeSubscription() async {
@@ -861,7 +861,10 @@ class InventoryItemsController extends _$InventoryItemsController {
         currentItem: currentItem,
         editedItem: item,
       );
-      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+      return await _saveItems(
+        previousItems: currentItems,
+        nextItems: nextItems,
+      );
     });
   }
 
@@ -1045,7 +1048,10 @@ class InventoryItemsController extends _$InventoryItemsController {
       if (nextItems == null) {
         return true;
       }
-      return _saveItems(previousItems: currentItems, nextItems: nextItems);
+      return await _saveItems(
+        previousItems: currentItems,
+        nextItems: nextItems,
+      );
     });
   }
 
@@ -1195,7 +1201,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       return currentData;
     }
 
-    return _currentPersistedItems();
+    return await _currentPersistedItems();
   }
 
   void _publishVisibleItems() {

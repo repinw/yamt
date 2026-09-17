@@ -385,13 +385,11 @@ class _CookingFlowInventoryCheckCardState
       if (nextContext == null) {
         return;
       }
-      unawaited(
-        Scrollable.ensureVisible(
-          nextContext,
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.easeOutCubic,
-          alignment: 0.18,
-        ),
+      Scrollable.ensureVisible(
+        nextContext,
+        duration: const Duration(milliseconds: 280),
+        curve: Curves.easeOutCubic,
+        alignment: 0.18,
       );
     });
   }

@@ -82,7 +82,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     _currentDataOwnerUserId = ref.watch(
       effectiveHouseholdDataOwnerUserIdProvider,
     );
-    return _restartSubscription();
+    return await _restartSubscription();
   }
 
   /// Refresh.
@@ -317,7 +317,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     if (currentData != null) {
       return currentData;
     }
-    return future;
+    return await future;
   }
 
   Future<List<PreparedMeal>> _restartSubscription() async {
@@ -357,7 +357,7 @@ class PreparedMealsController extends _$PreparedMealsController {
       },
     );
 
-    return initialMeals.future;
+    return await initialMeals.future;
   }
 
   Future<void> _disposeSubscription() async {
@@ -482,7 +482,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
     final beforeItems = await _readInventoryForActivity(inventoryRepository);
     if (beforeItems == null) {
-      return operation(inventoryRepository);
+      return await operation(inventoryRepository);
     }
     final trackingRepository = _ActivityTrackingInventoryItemRepository(
       delegate: inventoryRepository,
@@ -505,7 +505,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
     final beforeItems = await _readInventoryForActivity(inventoryRepository);
     if (beforeItems == null) {
-      return operation(inventoryRepository);
+      return await operation(inventoryRepository);
     }
     final trackingRepository = _ActivityTrackingInventoryItemRepository(
       delegate: inventoryRepository,
@@ -600,10 +600,8 @@ class PreparedMealsController extends _$PreparedMealsController {
 
 class _ActivityTrackingInventoryItemRepository
     implements InventoryItemRepository {
-  new({
-    required this._delegate,
-    required List<InventoryItem> initialItems,
-  }) : _latestItems = List<InventoryItem>.from(initialItems);
+  new({required this._delegate, required List<InventoryItem> initialItems})
+    : _latestItems = List<InventoryItem>.from(initialItems);
 
   final InventoryItemRepository _delegate;
   List<InventoryItem> _latestItems;

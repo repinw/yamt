@@ -14,10 +14,7 @@ import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 /// [GlobalFoodItemMatcher] and [OffProductSearchRepository].
 class YamtReceiptProductResolver implements ReceiptProductResolver {
   /// Creates a [YamtReceiptProductResolver].
-  const new({
-    required this._matcher,
-    required this._searchRepository,
-  });
+  const new({required this._matcher, required this._searchRepository});
 
   final GlobalFoodItemMatcher _matcher;
   final OffProductSearchRepository _searchRepository;

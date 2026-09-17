@@ -232,7 +232,7 @@ Future<List<HealthWeightSample>> _loadHealthWeights({
   if (healthStatus.accessState != HealthDataAccessState.ready) {
     return const <HealthWeightSample>[];
   }
-  return healthWeightService.loadWeightSamples(
+  return await healthWeightService.loadWeightSamples(
     startInclusive: startDate,
     endExclusive: endDateExclusive,
   );

@@ -147,7 +147,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<bool> saveEntry(CalorieEntry entry) async {
-    return saveEntryForCurrentUser(entry);
+    return await saveEntryForCurrentUser(entry);
   }
 
   @override

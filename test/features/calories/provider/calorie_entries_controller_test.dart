@@ -110,7 +110,7 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<bool> saveEntry(CalorieEntry entry) async {
-    return saveEntryForCurrentUser(entry);
+    return await saveEntryForCurrentUser(entry);
   }
 
   @override
@@ -255,7 +255,7 @@ class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
 
   @override
   Future<bool> setDailyGoal(double dailyKcalGoal) async {
-    return saveSettings(
+    return await saveSettings(
       CalorieGoalSettings.single(
         dailyKcalGoal: dailyKcalGoal,
         calculatorProfile: null,
@@ -266,7 +266,7 @@ class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
 
   @override
   Future<bool> clearDailyGoal() async {
-    return saveSettings(
+    return await saveSettings(
       const CalorieGoalSettings.empty().applyGoalChange(
         changedAt: DateTime(2026, 2, 25, 10),
         dailyKcalGoal: null,

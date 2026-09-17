@@ -206,7 +206,7 @@ class PreparedMealCreationWorkflows {
     required List<InventoryItem> currentItems,
     required PreparedMealBuildResult creationResult,
   }) async {
-    return _persistCreatedMeals(
+    return await _persistCreatedMeals(
       inventoryRepository: inventoryRepository,
       currentMeals: currentMeals,
       currentItems: currentItems,

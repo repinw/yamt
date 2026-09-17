@@ -74,7 +74,7 @@ Future<bool> eatInventoryPageItem({
     return false;
   }
 
-  return InventoryItemEatFlow.stageAndComplete(
+  return await InventoryItemEatFlow.stageAndComplete(
     context: context,
     container: ref.container,
     item: selectedItem,

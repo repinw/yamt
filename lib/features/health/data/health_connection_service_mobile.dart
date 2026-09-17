@@ -308,7 +308,7 @@ class MobileHealthConnectionService implements HealthConnectionService {
   Future<String> _loadPackageName() async {
     final packageNameLoader = _packageNameLoader;
     if (packageNameLoader != null) {
-      return packageNameLoader();
+      return await packageNameLoader();
     }
     return (await PackageInfo.fromPlatform()).packageName;
   }

@@ -77,7 +77,7 @@ class PreparedMealConsumptionWorkflows {
       updatedAt: _context.buildNow(),
       keepDepletedMeal: true,
     );
-    return calorieLogBridge.consumePreparedMeal(
+    return await calorieLogBridge.consumePreparedMeal(
       currentMeals: currentMeals,
       nextMeals: nextMeals,
       meal: meal,

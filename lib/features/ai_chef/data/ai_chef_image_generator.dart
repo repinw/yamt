@@ -121,7 +121,7 @@ class AiChefImageGenerator {
   Future<Uint8List?> _generateImageBytes(String imagePrompt) async {
     final imageBytesClient = _imageBytesClient;
     if (imageBytesClient != null) {
-      return imageBytesClient(imagePrompt).timeout(_imageTimeout);
+      return await imageBytesClient(imagePrompt).timeout(_imageTimeout);
     }
 
     final model = FirebaseAI.agentPlatform(location: _location).generativeModel(

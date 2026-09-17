@@ -595,7 +595,7 @@ DateTime _earliestDiaryDay(DateTime day, DateTime? otherDay) {
 /// Calorie entry by id.
 @riverpod
 Future<CalorieEntry?> calorieEntryById(Ref ref, String entryId) async {
-  return ref.read(calorieLogRepositoryProvider).getById(entryId);
+  return await ref.read(calorieLogRepositoryProvider).getById(entryId);
 }
 
 /// Calorie day view data.

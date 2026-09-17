@@ -76,7 +76,7 @@ class CalorieEntryEditorController extends _$CalorieEntryEditorController {
   /// Checks if entry source can be restored to inventory.
   Future<bool> canRestoreSource(CalorieEntry entry) async {
     final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
-    return deleteFlow.canRestoreSource(entry);
+    return await deleteFlow.canRestoreSource(entry);
   }
 
   /// Deletes or returns entry to inventory.

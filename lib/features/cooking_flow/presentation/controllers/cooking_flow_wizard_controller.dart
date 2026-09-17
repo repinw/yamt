@@ -399,7 +399,7 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
 
   /// Saves current session.
   Future<bool> saveSession(CookingFlowWizardSessionInput input) async {
-    return ref
+    return await ref
         .read(cookingFlowWizardSessionServiceProvider)
         .saveSession(state: state, input: input);
   }

@@ -1,5 +1,4 @@
 // Exporter interface keeps provider overrides simple across platforms.
-// ignore_for_file: one_member_abstracts
 
 import 'dart:convert';
 

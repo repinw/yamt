@@ -73,13 +73,13 @@ class _FailingCalorieLogRepository extends FakeCalorieLogRepository {
     if (_saveAttemptCount == failOnSaveAttempt) {
       return false;
     }
-    return super.saveEntryForCurrentUser(entry);
+    return await super.saveEntryForCurrentUser(entry);
   }
 
   @override
   Future<bool> deleteEntry(String entryId) async {
     deletedIds.add(entryId);
-    return super.deleteEntry(entryId);
+    return await super.deleteEntry(entryId);
   }
 }
 
@@ -101,6 +101,6 @@ class _AfterSaveCallbackCalorieLogRepository extends FakeCalorieLogRepository {
   @override
   Future<bool> deleteEntry(String entryId) async {
     deletedIds.add(entryId);
-    return super.deleteEntry(entryId);
+    return await super.deleteEntry(entryId);
   }
 }

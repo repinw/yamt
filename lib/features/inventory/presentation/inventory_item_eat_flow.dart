@@ -162,7 +162,7 @@ class InventoryItemEatFlow {
         error: error,
         stackTrace: stackTrace,
       );
-      return _discardAndFail(
+      return await _discardAndFail(
         context: context.mounted ? context : null,
         container: container,
         pendingConsumptionId: pendingConsumptionId,

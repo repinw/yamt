@@ -30,7 +30,7 @@ class DiaryHealthMobileHealthReader {
   }) {
     return _readQueue.run(() async {
       await _ensureConfigured();
-      return _loadDayDataFromHealth(
+      return await _loadDayDataFromHealth(
         dayStart: dayStart,
         dayEnd: dayEnd,
         normalizedUserHeightCm: normalizedUserHeightCm,

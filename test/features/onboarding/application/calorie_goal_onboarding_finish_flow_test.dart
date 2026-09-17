@@ -532,7 +532,7 @@ void main() {
       await _primeHarness(container);
       final flow = CalorieGoalOnboardingFinishFlow(
         readSettings: () async {
-          return settingsRepository.readSettings();
+          return await settingsRepository.readSettings();
         },
         goalController: container.read(calorieGoalControllerProvider.notifier),
         burnWeekController: container.read(

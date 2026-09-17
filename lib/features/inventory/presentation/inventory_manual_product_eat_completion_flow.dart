@@ -139,7 +139,7 @@ Future<bool> _completeEatFlow({
     return false;
   }
 
-  return completeInventoryManualAddEatFlow(
+  return await completeInventoryManualAddEatFlow(
     context: context,
     item: itemForConsumption,
     request: request,

@@ -28,10 +28,7 @@ FirebaseProductAiSearchRepository productAiSearchRepository(Ref ref) {
 /// Firebase-backed product AI search repository.
 class FirebaseProductAiSearchRepository {
   /// Creates an instance.
-  new({
-    this._model,
-    this._generateContent,
-  });
+  new({this._model, this._generateContent});
 
   final TemplateGenerativeModel? _model;
   final Future<String?> Function({
@@ -91,7 +88,7 @@ class FirebaseProductAiSearchRepository {
   Future<String?> _requestContent(String prompt) async {
     final generateContent = _generateContent;
     if (generateContent != null) {
-      return generateContent(
+      return await generateContent(
         templateId: _productAiSearchTemplateId,
         inputs: <String, Object?>{'prompt': prompt},
       );

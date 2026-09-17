@@ -98,7 +98,7 @@ class CalorieGoalOnboardingFinishFlow {
     if (!goalSaved || !_isMounted()) {
       return false;
     }
-    return _applyBurnWeekStart(
+    return await _applyBurnWeekStart(
       goalStartDate: request.goalStartDate,
       now: referenceNow,
       dailyGoalKcal: request.dailyGoalKcal,

@@ -124,7 +124,7 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
     if (dailyKcalGoal <= 0) {
       return false;
     }
-    return saveSettings(
+    return await saveSettings(
       CalorieGoalSettings.single(
         dailyKcalGoal: dailyKcalGoal,
         calculatorProfile: null,

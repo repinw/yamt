@@ -20,7 +20,7 @@ class _HookedFakeFirebaseFirestore extends FakeFirebaseFirestore {
   }) async {
     runTransactionCalls += 1;
     await onBeforeRunTransaction?.call();
-    return super.runTransaction(
+    return await super.runTransaction(
       transactionHandler,
       timeout: timeout,
       maxAttempts: maxAttempts,

@@ -18,10 +18,7 @@ const String _votesCollection = 'global_food_item_serving_votes';
 class FirestoreGlobalFoodServingSuggestionRepository
     implements GlobalFoodServingSuggestionRepository {
   /// The firestore global food serving suggestion repository.
-  const new({
-    required this._firestore,
-    required this._currentUserId,
-  });
+  const new({required this._firestore, required this._currentUserId});
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;

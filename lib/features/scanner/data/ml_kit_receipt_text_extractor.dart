@@ -61,7 +61,7 @@ class MlKitReceiptTextExtractor implements ReceiptTextExtractor {
 
   Future<String> _processSingleFile(String filePath) async {
     if (_fileProcessor != null) {
-      return _fileProcessor(filePath);
+      return await _fileProcessor(filePath);
     }
 
     final inputImage = InputImage.fromFilePath(filePath);

@@ -48,7 +48,7 @@ class OffProductCandidateSource {
       brand: effectiveBrand,
       weight: effectiveWeight,
     );
-    return repository.search(
+    return await repository.search(
       query: query,
       store: store,
       brand: isNettoSearch || isGeneralCollectionSearch ? effectiveBrand : null,

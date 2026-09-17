@@ -24,7 +24,7 @@ class FakeShoppingListRepository implements ShoppingListRepository {
   @override
   Future<List<ShoppingListItem>> readAll() async {
     if (onReadAll != null) {
-      return onReadAll!();
+      return await onReadAll!();
     }
     return _copyItems();
   }

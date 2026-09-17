@@ -31,7 +31,7 @@ class _FakeVoiceSearchService implements VoiceSearchService {
 
     final pendingStart = startCompleter;
     if (pendingStart != null) {
-      return pendingStart.future;
+      return await pendingStart.future;
     }
 
     _isListening = true;

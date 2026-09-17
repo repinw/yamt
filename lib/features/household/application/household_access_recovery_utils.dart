@@ -95,5 +95,5 @@ Future<List<T>> performControllerHouseholdAccessRecovery<T>({
   } else {
     onSkippedHouseholdAccessRecovery?.call();
   }
-  return restartHouseholdScopedSubscription();
+  return await restartHouseholdScopedSubscription();
 }

@@ -9,20 +9,20 @@ import 'package:analyzer/error/error.dart';
 class AvoidUnlistenedReadFutureRule extends AnalysisRule {
   /// Creates the avoid unlistened read future rule.
   new()
-      : super(
-          name: 'avoid_unlistened_read_future',
-          description:
-              'Enforces that .future is not read via ref.read or '
-              'container.read without active subscription.',
-        );
+    : super(
+        name: 'avoid_unlistened_read_future',
+        description:
+            'Enforces that .future is not read via ref.read or '
+            'container.read without active subscription.',
+      );
 
   /// Diagnostic code for avoid unlistened read future violations.
   static const lint = LintCode(
     'avoid_unlistened_read_future',
     'Avoid calling {0}.read({1}.future). '
-    'Reading .future on an unlistened auto-disposed provider causes it to be '
-    'disposed during loading, throwing StateError. '
-    'Query the repository directly or keep a subscription.',
+        'Reading .future on an unlistened auto-disposed provider causes it to be '
+        'disposed during loading, throwing StateError. '
+        'Query the repository directly or keep a subscription.',
   );
 
   @override

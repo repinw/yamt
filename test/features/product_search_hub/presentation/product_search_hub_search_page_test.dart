@@ -173,7 +173,7 @@ void main() {
             ({required query, required limit, store, brand, weight}) async {
               queries.add(query);
               if (query == 'Milk') {
-                return firstLookup.future;
+                return await firstLookup.future;
               }
               return ProductSearchHubSearchLookupResult.success(
                 const <OffProductSearchResult>[

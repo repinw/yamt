@@ -73,7 +73,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       limit: limit,
     );
     _debugLogRequest(action: 'search', uri: uri);
-    return _fetchResults(uri: uri, action: 'search');
+    return await _fetchResults(uri: uri, action: 'search');
   }
 
   @override
@@ -106,7 +106,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
 
     final uri = _buildBarcodeUri(barcode: normalizedBarcode);
     _debugLogRequest(action: 'barcode lookup', uri: uri);
-    return _fetchResults(uri: uri, action: 'barcode lookup');
+    return await _fetchResults(uri: uri, action: 'barcode lookup');
   }
 
   Uri _buildSearchUri({

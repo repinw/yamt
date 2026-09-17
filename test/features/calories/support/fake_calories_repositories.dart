@@ -86,7 +86,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
     final normalizedDay = _normalize(day);
     final customReader = onReadEntriesForDay;
     if (customReader != null) {
-      return customReader(normalizedDay);
+      return await customReader(normalizedDay);
     }
     return _entriesForDay(normalizedDay);
   }
@@ -100,7 +100,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
     final end = _normalize(endExclusive);
     final customReader = onReadEntriesInRange;
     if (customReader != null) {
-      return customReader(start, end);
+      return await customReader(start, end);
     }
     final entries =
         _entries
@@ -125,7 +125,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<bool> saveEntry(CalorieEntry entry) async {
-    return saveEntryForCurrentUser(entry);
+    return await saveEntryForCurrentUser(entry);
   }
 
   @override

@@ -28,16 +28,16 @@ class ArchitectureLintsPlugin extends Plugin {
 class MaxFileLinesRule extends AnalysisRule {
   /// Creates the max file lines rule.
   new()
-      : super(
-          name: 'max_file_lines',
-          description: 'Enforces that files do not exceed 300 lines.',
-        );
+    : super(
+        name: 'max_file_lines',
+        description: 'Enforces that files do not exceed 300 lines.',
+      );
 
   /// Diagnostic code for max file lines violations.
   static const lint = LintCode(
     'max_file_lines',
     'File exceeds the limit of {0} lines ({1} lines). '
-    'Split it per architecture.md.',
+        'Split it per architecture.md.',
   );
 
   @override

@@ -676,7 +676,7 @@ class _DelayedBuildInventoryItemsController
       _addCalledBeforeBuild = true;
       return false;
     }
-    return super.addItem(item);
+    return await super.addItem(item);
   }
 }
 

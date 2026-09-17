@@ -47,7 +47,7 @@ class _FakeAccountController extends AccountController {
 
   @override
   Future<bool> linkGuestWithGoogle() async {
-    return onLinkGuestWithGoogle?.call() ?? true;
+    return await onLinkGuestWithGoogle?.call() ?? true;
   }
 
   @override
@@ -59,7 +59,7 @@ class _FakeAccountController extends AccountController {
     if (callback == null) {
       return true;
     }
-    return callback(email: email, password: password);
+    return await callback(email: email, password: password);
   }
 
   @override

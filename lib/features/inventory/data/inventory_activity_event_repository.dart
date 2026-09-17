@@ -29,10 +29,7 @@ abstract interface class InventoryActivityEventRepository {
 class FirestoreInventoryActivityEventRepository
     implements InventoryActivityEventRepository {
   /// Creates repository.
-  const new({
-    required this._firestore,
-    required this._currentUserId,
-  });
+  const new({required this._firestore, required this._currentUserId});
 
   final FirebaseFirestore _firestore;
   final String? _currentUserId;

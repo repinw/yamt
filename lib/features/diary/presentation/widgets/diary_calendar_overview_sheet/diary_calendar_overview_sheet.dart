@@ -157,12 +157,10 @@ class _DiaryCalendarOverviewState extends State<DiaryCalendarOverview> {
   }
 
   void _goToPage(int delta) {
-    unawaited(
-      _pageController.animateToPage(
-        (_pageIndex + delta).clamp(0, _monthCount - 1),
-        duration: _monthPageDuration,
-        curve: Curves.easeOutCubic,
-      ),
+    _pageController.animateToPage(
+      (_pageIndex + delta).clamp(0, _monthCount - 1),
+      duration: _monthPageDuration,
+      curve: Curves.easeOutCubic,
     );
   }
 }

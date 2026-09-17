@@ -83,7 +83,7 @@ class DiaryProductSearchHubCompletionHandler
       }
     }
 
-    return _eatCoordinator.deleteItem(
+    return await _eatCoordinator.deleteItem(
       container: _container,
       itemId: selection.item.id,
     );

@@ -153,7 +153,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     if (!_canConsumePreparedMeal(meal, consumedPortions)) {
       return false;
     }
-    return _savePreparedMealConsumption(
+    return await _savePreparedMealConsumption(
       currentMeals: currentMeals,
       mealIndex: mealIndex,
       consumedPortions: consumedPortions,

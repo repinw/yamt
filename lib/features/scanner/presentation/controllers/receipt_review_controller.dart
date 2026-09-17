@@ -139,13 +139,13 @@ class ReceiptReviewController extends _$ReceiptReviewController {
   /// Searches catalog for candidate products matching [query].
   Future<List<ProductCandidate>> searchProducts(String query) async {
     final resolver = ref.read(receiptProductResolverProvider);
-    return resolver.searchByName(query);
+    return await resolver.searchByName(query);
   }
 
   /// Resolves candidate products matching [barcode] without auto-confirming.
   Future<List<ProductCandidate>> searchByBarcode(String barcode) async {
     final resolver = ref.read(receiptProductResolverProvider);
-    return resolver.resolveCandidatesByBarcode(barcode);
+    return await resolver.resolveCandidatesByBarcode(barcode);
   }
 
   /// Saves the entire receipt with all confirmed items to inventory.

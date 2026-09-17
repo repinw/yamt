@@ -28,7 +28,7 @@ resolveCookingFlowSummaryIngredientSource({
   String? adjustment,
 }) async {
   final localeCode = Localizations.localeOf(context).languageCode;
-  return switch (source) {
+  return await switch (source) {
     CookingFlowSummaryIngredientAddSource.inventory =>
       _pickSummaryInventoryIngredient(
         context: context,
@@ -151,7 +151,7 @@ Future<List<InventoryItem>> _loadInventoryItems(
   if (currentItems != null) {
     return currentItems;
   }
-  return container.read(inventoryItemRepositoryProvider).readAll();
+  return await container.read(inventoryItemRepositoryProvider).readAll();
 }
 
 InventoryItem? _newSummaryInventoryItem({

@@ -44,7 +44,7 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
     if (userId == null) {
       return const <KitchenUtensil>[];
     }
-    return _readAllForUser(userId);
+    return await _readAllForUser(userId);
   }
 
   @override
@@ -88,7 +88,7 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
       utensilId: utensilId,
       imageId: imageId,
     );
-    return _imageStore.uploadBytes(path: path, bytes: bytes);
+    return await _imageStore.uploadBytes(path: path, bytes: bytes);
   }
 
   @override

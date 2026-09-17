@@ -16,31 +16,31 @@ class HealthConnectionController extends _$HealthConnectionController {
 
   @override
   FutureOr<HealthConnectionStatus> build() async {
-    return _loadStatusFallback(previousStatus: null);
+    return await _loadStatusFallback(previousStatus: null);
   }
 
   /// Connect.
   Future<HealthConnectionStatus> connect() async {
-    return _runStatusAction(() async {
+    return await _runStatusAction(() async {
       final service = ref.read(healthConnectionServiceProvider);
       final currentStatus = await service.loadStatus();
       if (currentStatus.needsHistoryOnly) {
-        return service.requestHistoryAuthorization();
+        return await service.requestHistoryAuthorization();
       }
-      return service.requestAuthorization();
+      return await service.requestAuthorization();
     });
   }
 
   /// Request authorization.
   Future<HealthConnectionStatus> requestAuthorization() async {
-    return _runStatusAction(
+    return await _runStatusAction(
       () => ref.read(healthConnectionServiceProvider).requestAuthorization(),
     );
   }
 
   /// Request history authorization.
   Future<HealthConnectionStatus> requestHistoryAuthorization() async {
-    return _runStatusAction(
+    return await _runStatusAction(
       () => ref
           .read(healthConnectionServiceProvider)
           .requestHistoryAuthorization(),
@@ -49,28 +49,28 @@ class HealthConnectionController extends _$HealthConnectionController {
 
   /// Install health connect.
   Future<HealthConnectionStatus> installHealthConnect() async {
-    return _runStatusAction(() async {
+    return await _runStatusAction(() async {
       final service = ref.read(healthConnectionServiceProvider);
       await service.installHealthConnect();
-      return service.loadStatus();
+      return await service.loadStatus();
     });
   }
 
   /// Open Health Connect permission settings.
   Future<HealthConnectionStatus> openHealthPermissionSettings() async {
-    return _runStatusAction(() async {
+    return await _runStatusAction(() async {
       final service = ref.read(healthConnectionServiceProvider);
       await service.openHealthPermissionSettings();
-      return service.loadStatus();
+      return await service.loadStatus();
     });
   }
 
   /// Open Android app permission settings.
   Future<HealthConnectionStatus> openAppPermissionSettings() async {
-    return _runStatusAction(() async {
+    return await _runStatusAction(() async {
       final service = ref.read(healthConnectionServiceProvider);
       await service.openAppPermissionSettings();
-      return service.loadStatus();
+      return await service.loadStatus();
     });
   }
 
@@ -129,7 +129,7 @@ class HealthConnectionController extends _$HealthConnectionController {
   ) async {
     final runningStatusAction = _runningStatusAction;
     if (runningStatusAction != null) {
-      return runningStatusAction;
+      return await runningStatusAction;
     }
 
     late final Future<HealthConnectionStatus> nextStatusAction;
@@ -139,7 +139,7 @@ class HealthConnectionController extends _$HealthConnectionController {
       }
     });
     _runningStatusAction = nextStatusAction;
-    return nextStatusAction;
+    return await nextStatusAction;
   }
 
   Future<HealthConnectionStatus> _performStatusAction(

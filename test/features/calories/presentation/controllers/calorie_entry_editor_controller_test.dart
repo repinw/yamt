@@ -10,9 +10,7 @@ import 'package:yamt/features/calories/presentation/controllers/'
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 
 class _FakeCalorieEntriesController extends CalorieEntriesController {
-  new({
-    this._onSaveEntry,
-  });
+  new({this._onSaveEntry});
 
   final Future<bool> Function(
     CalorieEntry entry,
@@ -32,10 +30,10 @@ class _FakeCalorieEntriesController extends CalorieEntriesController {
     Future<bool> Function(CalorieEntry)? persistEntry,
   }) async {
     if (_onSaveEntry != null) {
-      return _onSaveEntry(entry, persistEntry);
+      return await _onSaveEntry(entry, persistEntry);
     }
     if (persistEntry != null) {
-      return persistEntry(entry);
+      return await persistEntry(entry);
     }
     return true;
   }
@@ -76,7 +74,7 @@ void main() {
         onSaveEntry: (entry, persist) async {
           savedEntry = entry;
           if (persist != null) {
-            return persist(entry);
+            return await persist(entry);
           }
           return true;
         },

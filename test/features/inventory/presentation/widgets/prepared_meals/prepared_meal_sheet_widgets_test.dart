@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -51,24 +50,22 @@ void main() {
           builder: (context) {
             return TextButton(
               onPressed: () {
-                unawaited(
-                  showModalBottomSheet<void>(
-                    context: context,
-                    builder: (context) {
-                      return PreparedMealSheetContainer(
-                        formKey: GlobalKey<FormState>(),
-                        children: [
-                          const Text('Sheet body'),
-                          PreparedMealSheetActions(
-                            primaryLabel: 'Save',
-                            onPrimaryPressed: () {
-                              primaryTapCount += 1;
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                showModalBottomSheet<void>(
+                  context: context,
+                  builder: (context) {
+                    return PreparedMealSheetContainer(
+                      formKey: GlobalKey<FormState>(),
+                      children: [
+                        const Text('Sheet body'),
+                        PreparedMealSheetActions(
+                          primaryLabel: 'Save',
+                          onPrimaryPressed: () {
+                            primaryTapCount += 1;
+                          },
+                        ),
+                      ],
+                    );
+                  },
                 );
               },
               child: const Text('Open'),

@@ -91,6 +91,6 @@ class DiaryWeightActions {
     if (sample == null || !sample.isFromThisApp) {
       return false;
     }
-    return _deleteHealthWeightSample(sample);
+    return await _deleteHealthWeightSample(sample);
   }
 }

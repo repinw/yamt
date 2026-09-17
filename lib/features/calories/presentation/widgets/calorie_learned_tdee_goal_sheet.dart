@@ -369,7 +369,7 @@ class _CalorieLearnedTdeeGoalSheetState
     if (!mounted) {
       return null;
     }
-    return showCalorieGoalStartFoodTrackingDialog(
+    return await showCalorieGoalStartFoodTrackingDialog(
       context,
       entryCount: entries.length,
     );

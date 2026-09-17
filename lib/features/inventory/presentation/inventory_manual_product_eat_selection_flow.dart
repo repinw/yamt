@@ -56,7 +56,7 @@ abstract final class InventoryManualProductEatSelectionFlow {
       );
       return null;
     }
-    return const InventoryQuickEatSheetPicker().pickItemResult(
+    return await const InventoryQuickEatSheetPicker().pickItemResult(
       context: context,
       item: item,
       maxAmount: maxAmount,

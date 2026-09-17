@@ -68,7 +68,7 @@ class ReceiptScanFlowCoordinator {
     final path = await _cameraPicker();
     if (path == null || path.isEmpty || !context.mounted) return false;
 
-    return processFilePaths(context, [path]);
+    return await processFilePaths(context, [path]);
   }
 
   /// Starts the file picker flow for PDF documents or images.
@@ -78,7 +78,7 @@ class ReceiptScanFlowCoordinator {
     final paths = await _filesPicker();
     if (paths.isEmpty || !context.mounted) return false;
 
-    return processFilePaths(context, paths);
+    return await processFilePaths(context, paths);
   }
 
   /// Processes pre-selected file paths (e.g. from shared intent or picker).
@@ -163,11 +163,14 @@ class ReceiptScanFlowCoordinator {
       final pdfPath = validPaths.firstWhere(
         (p) => p.toLowerCase().endsWith('.pdf'),
       );
-      return _parser.parsePdf(pdfFilePath: pdfPath);
+      return await _parser.parsePdf(pdfFilePath: pdfPath);
     }
 
     final rawText = await _extractor.extractText(validPaths);
-    return _parser.parseRawText(rawText: rawText, sourceFilePaths: validPaths);
+    return await _parser.parseRawText(
+      rawText: rawText,
+      sourceFilePaths: validPaths,
+    );
   }
 
   Future<ScannedReceipt> _preResolveProducts(ScannedReceipt receipt) async {

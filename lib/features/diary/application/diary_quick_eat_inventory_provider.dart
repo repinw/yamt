@@ -82,7 +82,7 @@ class _DiaryQuickEatInventoryActions implements DiaryQuickEatInventoryActions {
     required String itemId,
     required int amount,
   }) async {
-    return _actions.stageInventoryItemConsumption(
+    return await _actions.stageInventoryItemConsumption(
       itemId: itemId,
       amount: amount,
     );

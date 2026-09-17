@@ -48,9 +48,9 @@ class _HealthConnectionActions implements HealthConnectionActions {
     return _run(() async {
       final currentStatus = await _service.loadStatus();
       if (currentStatus.needsHistoryOnly) {
-        return _service.requestHistoryAuthorization();
+        return await _service.requestHistoryAuthorization();
       }
-      return _service.requestAuthorization();
+      return await _service.requestAuthorization();
     });
   }
 
@@ -58,7 +58,7 @@ class _HealthConnectionActions implements HealthConnectionActions {
   Future<HealthConnectionStatus> installHealthConnect() {
     return _run(() async {
       await _service.installHealthConnect();
-      return _service.loadStatus();
+      return await _service.loadStatus();
     });
   }
 
@@ -66,7 +66,7 @@ class _HealthConnectionActions implements HealthConnectionActions {
   Future<HealthConnectionStatus> openHealthPermissionSettings() {
     return _run(() async {
       await _service.openHealthPermissionSettings();
-      return _service.loadStatus();
+      return await _service.loadStatus();
     });
   }
 
@@ -74,7 +74,7 @@ class _HealthConnectionActions implements HealthConnectionActions {
   Future<HealthConnectionStatus> openAppPermissionSettings() {
     return _run(() async {
       await _service.openAppPermissionSettings();
-      return _service.loadStatus();
+      return await _service.loadStatus();
     });
   }
 

@@ -46,7 +46,7 @@ class PreparedMealEditingWorkflows {
       if (totalPortions == currentMeal.totalPortions &&
           items != null &&
           _hasSameComponentInputs(currentMeal.components, items)) {
-        return _updatePreparedMealMetadata(
+        return await _updatePreparedMealMetadata(
           currentMeals: currentMeals,
           mealIndex: mealIndex,
           name: trimmedName,
@@ -54,7 +54,7 @@ class PreparedMealEditingWorkflows {
           imageAssetId: imageAssetId,
         );
       }
-      return _updatePreparedMealContent(
+      return await _updatePreparedMealContent(
         currentMeals: currentMeals,
         mealIndex: mealIndex,
         name: trimmedName,
@@ -66,7 +66,7 @@ class PreparedMealEditingWorkflows {
       );
     }
 
-    return _updatePreparedMealMetadata(
+    return await _updatePreparedMealMetadata(
       currentMeals: currentMeals,
       mealIndex: mealIndex,
       name: trimmedName,
@@ -353,7 +353,7 @@ class PreparedMealEditingWorkflows {
       pendingRecipeIngredients: nextPendingIngredients,
       updatedAt: _context.buildNow(),
     );
-    return _context.saveMeals(
+    return await _context.saveMeals(
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     );

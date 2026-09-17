@@ -187,7 +187,7 @@ Future<CalorieWeekConsumptionSnapshot> calorieWeekConsumptionSnapshot(
   Ref ref,
 ) async {
   final visibleWindowEnd = ref.watch(calorieVisibleWindowControllerProvider);
-  return ref.watch(
+  return await ref.watch(
     calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
   );
 }
@@ -268,7 +268,7 @@ Future<Map<String, List<CalorieEntry>>> _readVisibleEntriesByDaySafely({
 @riverpod
 Future<CalorieWeekOverview> calorieWeekOverview(Ref ref) async {
   final visibleWindowEnd = ref.watch(calorieVisibleWindowControllerProvider);
-  return ref.watch(
+  return await ref.watch(
     calorieWeekOverviewForWindowProvider(visibleWindowEnd).future,
   );
 }

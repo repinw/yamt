@@ -193,7 +193,7 @@ Future<String?> _stageInventoryItemConsumption({
   if (!context.mounted) {
     return null;
   }
-  return container
+  return await container
       .read(diaryQuickEatInventoryActionsProvider)
       .stageInventoryItemConsumption(itemId: item.id, amount: amount);
 }

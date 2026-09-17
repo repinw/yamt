@@ -27,7 +27,7 @@ class ManualHealthWeightEntriesController
     extends _$ManualHealthWeightEntriesController {
   @override
   FutureOr<List<ManualHealthWeightEntry>> build() async {
-    return ref.read(manualHealthWeightRepositoryProvider).readEntries();
+    return await ref.read(manualHealthWeightRepositoryProvider).readEntries();
   }
 
   /// Save entry.
@@ -46,7 +46,7 @@ class ManualHealthWeightEntriesController
     final connectionStatus = await connectionStatusFuture;
 
     if (connectionStatus.accessState == HealthDataAccessState.ready) {
-      return _saveToHealth(
+      return await _saveToHealth(
         repository: repository,
         healthWeightService: healthWeightService,
         previousEntries: previousEntries,
@@ -56,7 +56,7 @@ class ManualHealthWeightEntriesController
       );
     }
 
-    return _saveToRepository(
+    return await _saveToRepository(
       repository: repository,
       previousEntries: previousEntries,
       entry: ManualHealthWeightEntry(day: normalizedDay, weightKg: weightKg),
@@ -154,7 +154,7 @@ class ManualHealthWeightEntriesController
         error: error,
         stackTrace: stackTrace,
       );
-      return _saveToRepository(
+      return await _saveToRepository(
         repository: repository,
         previousEntries: previousEntries,
         entry: ManualHealthWeightEntry(day: normalizedDay, weightKg: weightKg),

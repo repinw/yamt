@@ -119,7 +119,7 @@ class CalorieEntryDeleteFlow {
       if (mealId == null || mealId.isEmpty) {
         return false;
       }
-      return _sourcePreparedMealExists(mealId);
+      return await _sourcePreparedMealExists(mealId);
     }
 
     if (entry.canRestoreToInventory) {
@@ -127,7 +127,7 @@ class CalorieEntryDeleteFlow {
       if (itemId == null || itemId.isEmpty) {
         return false;
       }
-      return _sourceInventoryItemExists(itemId);
+      return await _sourceInventoryItemExists(itemId);
     }
 
     return false;
@@ -164,7 +164,7 @@ class CalorieEntryDeleteFlow {
     }
 
     if (entry.canReturnPreparedMealToInventory) {
-      return _returnPreparedMealToInventory(entry);
+      return await _returnPreparedMealToInventory(entry);
     }
 
     final sourceItemId = entry.sourceInventoryItemId?.trim();

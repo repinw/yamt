@@ -526,7 +526,7 @@ void main() {
           if (day == failingDay) {
             throw StateError('day read failed');
           }
-          return _readLogEntriesForDay(logRepository, day);
+          return await _readLogEntriesForDay(logRepository, day);
         };
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
@@ -1084,7 +1084,7 @@ void main() {
       }
       ..onReadEntriesForDay = (day) async {
         dayReadCount += 1;
-        return _readLogEntriesForDay(logRepository, day);
+        return await _readLogEntriesForDay(logRepository, day);
       };
 
     final settingsRepository = _DelayedCalorieSettingsRepository();

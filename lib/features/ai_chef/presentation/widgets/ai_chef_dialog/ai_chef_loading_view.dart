@@ -27,7 +27,7 @@ class _AiChefLoadingViewState extends State<AiChefLoadingView>
       vsync: this,
       duration: const Duration(seconds: 3),
     );
-    unawaited(_rotationController.repeat());
+    _rotationController.repeat();
 
     _quoteTimer = Timer.periodic(const Duration(milliseconds: 1000), (timer) {
       if (!mounted) {

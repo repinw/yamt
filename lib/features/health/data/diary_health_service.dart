@@ -1,5 +1,4 @@
 // Health service stays class-based for provider overrides and test fakes.
-// ignore_for_file: one_member_abstracts
 
 import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';

@@ -42,7 +42,7 @@ class FirestoreInventoryItemRepository
     if (userId == null) {
       return const <InventoryItem>[];
     }
-    return _readAllForUser(userId);
+    return await _readAllForUser(userId);
   }
 
   @override
@@ -53,7 +53,7 @@ class FirestoreInventoryItemRepository
     if (userId == null || limit <= 0) {
       return const <InventoryItem>[];
     }
-    return _readRecentManualForUser(userId: userId, limit: limit);
+    return await _readRecentManualForUser(userId: userId, limit: limit);
   }
 
   @override

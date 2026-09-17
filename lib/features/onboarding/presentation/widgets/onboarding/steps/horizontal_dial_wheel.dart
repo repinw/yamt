@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
@@ -83,12 +82,10 @@ class _HorizontalDialWheelState extends State<HorizontalDialWheel> {
     final index = (value - widget.minValue) ~/ widget.step;
     final target = index * widget.itemWidth;
     if (animate) {
-      unawaited(
-        _scrollController.animateTo(
-          target,
-          duration: const Duration(milliseconds: 200),
-          curve: Curves.easeOutCubic,
-        ),
+      _scrollController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
       );
     } else {
       _scrollController.jumpTo(target);
@@ -115,12 +112,10 @@ class _HorizontalDialWheelState extends State<HorizontalDialWheel> {
       if ((_scrollController.offset - target).abs() > 0.5) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && _scrollController.hasClients) {
-            unawaited(
-              _scrollController.animateTo(
-                target,
-                duration: const Duration(milliseconds: 150),
-                curve: Curves.easeOutCubic,
-              ),
+            _scrollController.animateTo(
+              target,
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeOutCubic,
             );
           }
         });

@@ -97,9 +97,7 @@ final class ReceiptItemEditorApplyFailure extends ReceiptItemEditorApplyResult {
 /// Defines receipt item editor updater.
 class ReceiptItemEditorUpdater {
   /// The receipt item editor updater.
-  const new({
-    this._inputParser = const ReceiptItemInputParser(),
-  });
+  const new({this._inputParser = const ReceiptItemInputParser()});
 
   final ReceiptItemInputParser _inputParser;
 

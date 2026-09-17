@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -61,7 +60,7 @@ class _NutritionLabelScanIndicatorState
         ..value = 0.5;
       return;
     }
-    unawaited(_scanController.repeat(reverse: true));
+    _scanController.repeat(reverse: true);
   }
 
   @override

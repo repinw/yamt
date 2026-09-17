@@ -58,7 +58,7 @@ class _FakeHealthConnectionService implements HealthConnectionService {
     disconnectCallCount += 1;
     final handler = onDisconnect;
     if (handler != null) {
-      return handler();
+      return await handler();
     }
     return disconnectResult;
   }
@@ -95,7 +95,7 @@ class _FakeHealthConnectionService implements HealthConnectionService {
     loadStatusCallCount += 1;
     final handler = onLoadStatus;
     if (handler != null) {
-      return handler();
+      return await handler();
     }
     return status;
   }
@@ -105,7 +105,7 @@ class _FakeHealthConnectionService implements HealthConnectionService {
     requestAuthorizationCallCount += 1;
     final handler = onRequestAuthorization;
     if (handler != null) {
-      return handler();
+      return await handler();
     }
     return status;
   }
@@ -115,7 +115,7 @@ class _FakeHealthConnectionService implements HealthConnectionService {
     requestHistoryAuthorizationCallCount += 1;
     final handler = onRequestHistoryAuthorization;
     if (handler != null) {
-      return handler();
+      return await handler();
     }
     return status;
   }

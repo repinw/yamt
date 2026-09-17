@@ -77,7 +77,7 @@ class DiaryHealthMobileActivityTrendLoader {
 
     final pendingDays = _inFlightByKey[cacheKey];
     if (pendingDays != null) {
-      return pendingDays;
+      return await pendingDays;
     }
 
     final future = _loadAndCacheRangeDays(
@@ -87,7 +87,7 @@ class DiaryHealthMobileActivityTrendLoader {
       cachedRange: cachedRange,
     ).whenComplete(() => _removeInFlight(cacheKey));
     _inFlightByKey[cacheKey] = future;
-    return future;
+    return await future;
   }
 
   /// Loads aggregate trend days from Health and updates cache.
@@ -105,7 +105,7 @@ class DiaryHealthMobileActivityTrendLoader {
     final refreshCacheKey = '$cacheKey:refresh';
     final pendingDays = _inFlightByKey[refreshCacheKey];
     if (pendingDays != null) {
-      return pendingDays;
+      return await pendingDays;
     }
 
     final future = _loadAndCacheRangeDays(
@@ -116,7 +116,7 @@ class DiaryHealthMobileActivityTrendLoader {
       overwriteEmptyDays: true,
     ).whenComplete(() => _removeInFlight(refreshCacheKey));
     _inFlightByKey[refreshCacheKey] = future;
-    return future;
+    return await future;
   }
 
   /// Reads one cached aggregate trend day from memory or persistence.
@@ -157,7 +157,7 @@ class DiaryHealthMobileActivityTrendLoader {
     if (cachedRange != null &&
         cachedRange.hasCachedDays &&
         cachedRange.missingRanges.isNotEmpty) {
-      return _loadAndCacheMissingDays(
+      return await _loadAndCacheMissingDays(
         cacheKey: cacheKey,
         startInclusive: startInclusive,
         endExclusive: endExclusive,

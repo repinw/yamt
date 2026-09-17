@@ -12,13 +12,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// entering the barcode manually via keyboard.
 Future<String?> openReceiptBarcodeScanner(BuildContext context) async {
   if (!isMobileBarcodeScanSupported()) {
-    return ReceiptBarcodeInputDialog.show(context);
+    return await ReceiptBarcodeInputDialog.show(context);
   }
 
   final l10n = AppLocalizations.of(context);
   final title = l10n?.inventoryManualAddScanBarcodeAction ?? 'Barcode scannen';
 
-  return showModalBottomSheet<String>(
+  return await showModalBottomSheet<String>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,

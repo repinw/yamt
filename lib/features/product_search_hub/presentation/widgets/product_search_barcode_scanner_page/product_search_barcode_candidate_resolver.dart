@@ -133,7 +133,7 @@ Future<bool> handleInventoryBarcodeCandidates({
     return true;
   }
   if (selection.kind == InventoryBarcodeCandidateSelectionKind.manual) {
-    return _handleCreateManualProduct(
+    return await _handleCreateManualProduct(
       context: context,
       scannedBarcode: scannedBarcode,
       onCreateManualProduct: onCreateManualProduct,

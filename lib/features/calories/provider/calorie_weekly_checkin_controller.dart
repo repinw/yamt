@@ -39,7 +39,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         currentPending.dismissedAt == pendingWeeklyCheckIn.dismissedAt) {
       return true;
     }
-    return ref
+    return await ref
         .read(calorieGoalControllerProvider.notifier)
         .setPendingWeeklyCheckIn(pendingWeeklyCheckIn);
   }
@@ -143,7 +143,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       return true;
     }
 
-    return ref
+    return await ref
         .read(calorieGoalControllerProvider.notifier)
         .saveWeeklyCheckInGoal(
           completedAt: cacheWeeklyCheckIn.dueDate,

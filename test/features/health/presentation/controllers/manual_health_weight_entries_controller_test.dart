@@ -134,7 +134,7 @@ class _FakeManualHealthWeightRepository
   Future<List<ManualHealthWeightEntry>> readEntries() async {
     final pendingRead = readEntriesCompleter;
     if (pendingRead != null) {
-      return pendingRead.future;
+      return await pendingRead.future;
     }
     return List<ManualHealthWeightEntry>.unmodifiable(entries);
   }

@@ -1,5 +1,4 @@
 // Image picker is reached through provider wiring and widget tests.
-// ignore_for_file: unreachable_from_main
 
 import 'dart:developer' show log;
 import 'dart:isolate';
@@ -88,10 +87,7 @@ PreparedMealImagePicker preparedMealImagePicker(Ref ref) {
 }
 
 class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
-  new({
-    required this._imagePicker,
-    required this._filePicker,
-  });
+  new({required this._imagePicker, required this._filePicker});
 
   final ImagePicker _imagePicker;
   final PreparedMealImageFilePicker _filePicker;
@@ -161,7 +157,7 @@ class _DevicePreparedMealImagePicker implements PreparedMealImagePicker {
   }
 
   Future<Uint8List> _prepareBytes(Uint8List bytes) async {
-    return optimizePreparedMealImageBytes(bytes);
+    return await optimizePreparedMealImageBytes(bytes);
   }
 }
 

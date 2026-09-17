@@ -291,20 +291,16 @@ class _DiaryIntroDialogState extends State<DiaryIntroDialog> {
   }
 
   void _previousPage() {
-    unawaited(
-      _pageController.previousPage(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-      ),
+    _pageController.previousPage(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
     );
   }
 
   void _nextPage() {
-    unawaited(
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOutCubic,
-      ),
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 220),
+      curve: Curves.easeOutCubic,
     );
   }
 

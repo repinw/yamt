@@ -63,7 +63,7 @@ class DiaryHealthMobileDayLoader {
 
     final pendingData = _inFlightByKey[cacheKey];
     if (pendingData != null) {
-      return pendingData;
+      return await pendingData;
     }
 
     final future = _loadAndCacheDayData(
@@ -73,7 +73,7 @@ class DiaryHealthMobileDayLoader {
       normalizedUserHeightCm: normalizedUserHeightCm,
     ).whenComplete(() => _removeInFlight(cacheKey));
     _inFlightByKey[cacheKey] = future;
-    return future;
+    return await future;
   }
 
   /// Loads derived day data from Health and updates cache.
@@ -93,7 +93,7 @@ class DiaryHealthMobileDayLoader {
     final refreshCacheKey = '$cacheKey:refresh';
     final pendingData = _inFlightByKey[refreshCacheKey];
     if (pendingData != null) {
-      return pendingData;
+      return await pendingData;
     }
 
     final future = _loadAndCacheDayData(
@@ -106,7 +106,7 @@ class DiaryHealthMobileDayLoader {
       cacheEmptyData: true,
     ).whenComplete(() => _removeInFlight(refreshCacheKey));
     _inFlightByKey[refreshCacheKey] = future;
-    return future;
+    return await future;
   }
 
   Future<DiaryHealthDayData> _loadAndCacheDayData({

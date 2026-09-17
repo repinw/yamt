@@ -65,7 +65,7 @@ class AppPreferencesManualHealthWeightRepository
         if (!isSameLocalDay(existingEntry.day, entry.day)) existingEntry,
       entry,
     ]..sort((left, right) => left.day.compareTo(right.day));
-    return _writeEntries(nextEntries);
+    return await _writeEntries(nextEntries);
   }
 
   @override
@@ -75,7 +75,7 @@ class AppPreferencesManualHealthWeightRepository
     final nextEntries = existingEntries
         .where((entry) => !isSameLocalDay(entry.day, normalizedDay))
         .toList(growable: false);
-    return _writeEntries(nextEntries);
+    return await _writeEntries(nextEntries);
   }
 
   Future<bool> _writeEntries(List<ManualHealthWeightEntry> entries) {

@@ -138,7 +138,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       if (queueIfInFlight) {
         _refreshQueued = true;
       }
-      return inFlight;
+      return await inFlight;
     }
 
     do {

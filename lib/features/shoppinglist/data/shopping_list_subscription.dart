@@ -40,7 +40,7 @@ class ShoppingListSubscription {
       },
     );
     _cancelSubscription = subscription.cancel;
-    return initial.future;
+    return await initial.future;
   }
 
   /// Releases realtime resources.

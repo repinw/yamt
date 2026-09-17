@@ -73,7 +73,7 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
     return null;
   }
 
-  return switch (selection.kind) {
+  return await switch (selection.kind) {
     ReceiptCandidatePickerSelectionKind.candidate =>
       buildInventoryItemCandidateSwapRequestFromCandidate(
         draft: draft,

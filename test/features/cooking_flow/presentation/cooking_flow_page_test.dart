@@ -50,7 +50,7 @@ class _FakeCookingFlowSessionLocalStore
   Future<bool> save(CookingFlowSession session) async {
     saveCallCount += 1;
     if (onSave != null) {
-      return onSave!(session);
+      return await onSave!(session);
     }
     if (!saveSucceeds) {
       return false;

@@ -75,7 +75,7 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
                 KitchenUtensilSaveFailureReason.saveFailed,
               );
             }
-            return service.addUtensil(
+            return await service.addUtensil(
               previousUtensils: previousUtensils,
               canWrite: () => ref.mounted,
               writeUtensils: _writeUtensils,
@@ -119,7 +119,7 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
                 KitchenUtensilSaveFailureReason.saveFailed,
               );
             }
-            return service.updateUtensil(
+            return await service.updateUtensil(
               previousUtensils: previousUtensils,
               canWrite: () => ref.mounted,
               writeUtensils: _writeUtensils,
@@ -157,7 +157,7 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
             if (!ref.mounted) {
               return false;
             }
-            return service.deleteUtensil(
+            return await service.deleteUtensil(
               previousUtensils: previousUtensils,
               canWrite: () => ref.mounted,
               writeUtensils: _writeUtensils,
@@ -215,7 +215,7 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
       },
     );
 
-    return initialUtensils.future;
+    return await initialUtensils.future;
   }
 
   Future<void> _disposeSubscription() async {

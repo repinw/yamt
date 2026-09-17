@@ -149,7 +149,7 @@ class _CountingHealthConnectionService extends FakeHealthConnectionService {
   @override
   Future<HealthConnectionStatus> loadStatus() async {
     loadStatusCallCount += 1;
-    return super.loadStatus();
+    return await super.loadStatus();
   }
 }
 

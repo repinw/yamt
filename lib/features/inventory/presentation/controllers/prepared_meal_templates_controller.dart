@@ -224,7 +224,7 @@ class PreparedMealTemplatesController
               );
             }
 
-            return _saveImportedRecipeTemplate(
+            return await _saveImportedRecipeTemplate(
               currentTemplates: currentTemplates,
               importedRecipe: importedRecipe,
               name: name,
@@ -257,7 +257,7 @@ class PreparedMealTemplatesController
         .run<PreparedMealTemplateSaveResult>(
           operation: () async {
             final currentTemplates = await _currentTemplates();
-            return _saveImportedRecipeTemplate(
+            return await _saveImportedRecipeTemplate(
               currentTemplates: currentTemplates,
               importedRecipe: importedRecipe,
               name: name,
@@ -412,7 +412,7 @@ class PreparedMealTemplatesController
       if (nextTemplates.length == currentTemplates.length) {
         return false;
       }
-      return _saveTemplates(
+      return await _saveTemplates(
         previousTemplates: currentTemplates,
         nextTemplates: nextTemplates,
       );
@@ -460,7 +460,7 @@ class PreparedMealTemplatesController
         ignoredRecipeIngredients: nextIgnoredIngredients,
         updatedAt: DateTime.now(),
       );
-      return _saveTemplates(
+      return await _saveTemplates(
         previousTemplates: currentTemplates,
         nextTemplates: nextTemplates,
       );
@@ -524,7 +524,7 @@ class PreparedMealTemplatesController
         recipeIngredientAmountConversions: nextConversions,
         updatedAt: DateTime.now(),
       );
-      return _saveTemplates(
+      return await _saveTemplates(
         previousTemplates: currentTemplates,
         nextTemplates: nextTemplates,
       );
@@ -570,7 +570,7 @@ class PreparedMealTemplatesController
       },
     );
 
-    return initialTemplates.future;
+    return await initialTemplates.future;
   }
 
   Future<void> _disposeSubscription() async {
@@ -707,7 +707,7 @@ class PreparedMealTemplatesController
           if (!hasChanges) {
             return true;
           }
-          return _saveTemplates(
+          return await _saveTemplates(
             previousTemplates: currentTemplates,
             nextTemplates: nextTemplates,
           );

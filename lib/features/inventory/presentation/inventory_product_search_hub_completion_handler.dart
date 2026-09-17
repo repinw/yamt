@@ -67,7 +67,7 @@ class InventoryProductSearchHubCompletionHandler
   Future<bool> removeSavedSelection(
     ProductSearchHubSavedSelection selection,
   ) async {
-    return _container
+    return await _container
         .read(inventoryItemsControllerProvider.notifier)
         .deleteItem(selection.item.id);
   }

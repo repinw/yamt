@@ -47,6 +47,8 @@ void main() {
     );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
+    // Returns the pending sheet result without awaiting the sheet close.
+    // ignore: async_return_with_no_await
     return result;
   }
 

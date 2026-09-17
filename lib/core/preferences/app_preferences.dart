@@ -125,7 +125,7 @@ class SharedPreferencesStore implements AppPreferences {
   Future<bool> remove(String key) async {
     final preferences = await _instance();
     if (preferences != null) {
-      return preferences.remove(key);
+      return await preferences.remove(key);
     }
     return false;
   }

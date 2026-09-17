@@ -1,7 +1,6 @@
 // Extracted internal widget bucket for manual product search form state sync.
 // ignore_for_file: public_member_api_docs
 
-import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -227,13 +226,11 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
       if (context == null || !context.mounted) {
         return;
       }
-      unawaited(
-        Scrollable.ensureVisible(
-          context,
-          duration: const Duration(milliseconds: 180),
-          curve: Curves.easeOutCubic,
-          alignment: 0.24,
-        ),
+      Scrollable.ensureVisible(
+        context,
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOutCubic,
+        alignment: 0.24,
       );
     });
   }

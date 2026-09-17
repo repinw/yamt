@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
@@ -55,7 +54,7 @@ class _ShimmerSkeletonState extends State<_ShimmerSkeleton>
       vsync: this,
       duration: const Duration(milliseconds: 1300),
     );
-    unawaited(_controller.repeat());
+    _controller.repeat();
   }
 
   @override

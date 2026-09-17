@@ -28,14 +28,14 @@ Future<void> showDiaryWeightDialog({
     initialWeightKg: initialWeightKg,
     showClearAction: canClearWeight,
     onSaveWeight: (weightKg) async {
-      return weightActions.saveManualWeight(
+      return await weightActions.saveManualWeight(
         selectedDay: selectedDay,
         day: day,
         weightKg: weightKg,
       );
     },
     onClearWeight: () async {
-      return weightActions.deleteWeight(
+      return await weightActions.deleteWeight(
         selectedDay: selectedDay,
         day: day,
         hasManualWeight: hasManualWeight,
