@@ -1,7 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/widgets/home_shell_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_top_sliver_chrome.dart';
+import 'package:yamt/core/widgets/home_top_bar.dart';
 
 void main() {
   group('HomeShellTopSliverChrome', () {

@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_top_sliver_chrome.dart';
+import 'package:yamt/core/widgets/home_top_bar.dart';
 
 /// Shared top chrome rendered inside a home tab scroll view.
 class HomeShellTabTopChrome extends StatelessWidget {

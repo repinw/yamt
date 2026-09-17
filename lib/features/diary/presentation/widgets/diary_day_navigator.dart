@@ -6,7 +6,7 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/core/widgets/home_shell_chrome.dart';
+import 'package:yamt/core/widgets/home_top_bar_actions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const double _swipeVelocityThreshold = 300;
