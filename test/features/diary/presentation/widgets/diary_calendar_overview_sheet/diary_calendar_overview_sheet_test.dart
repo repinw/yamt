@@ -18,7 +18,7 @@ void main() {
     planStartDay: DateTime(2026, 3, 10),
   );
 
-  Future<Future<DateTime?>> openSheet(
+  Future<({Future<DateTime?> selection})> openSheet(
     WidgetTester tester, {
     DateTime? selectedDay,
   }) async {
@@ -47,15 +47,13 @@ void main() {
     );
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    // Returns the pending sheet result without awaiting the sheet close.
-    // ignore: async_return_with_no_await
-    return result;
+    return (selection: result);
   }
 
   testWidgets('opens on the selected month and returns a tapped day', (
     tester,
   ) async {
-    final result = await openSheet(tester);
+    final result = (await openSheet(tester)).selection;
 
     expect(find.text('April 2026'), findsOneWidget);
 
@@ -90,7 +88,7 @@ void main() {
   });
 
   testWidgets('days outside the range are not selectable', (tester) async {
-    final result = await openSheet(tester);
+    final result = (await openSheet(tester)).selection;
 
     await tester.tap(find.byKey(DiaryCalendarOverviewKeys.previousMonth));
     await tester.pumpAndSettle();

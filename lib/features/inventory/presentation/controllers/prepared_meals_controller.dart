@@ -480,10 +480,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     operation,
   ) async {
     final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
-    final beforeItems = await _readInventoryForActivity(inventoryRepository);
-    if (beforeItems == null) {
-      return await operation(inventoryRepository);
-    }
+    final beforeItems = await inventoryRepository.readAll();
     final trackingRepository = _ActivityTrackingInventoryItemRepository(
       delegate: inventoryRepository,
       initialItems: beforeItems,
@@ -503,10 +500,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     operation,
   ) async {
     final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
-    final beforeItems = await _readInventoryForActivity(inventoryRepository);
-    if (beforeItems == null) {
-      return await operation(inventoryRepository);
-    }
+    final beforeItems = await inventoryRepository.readAll();
     final trackingRepository = _ActivityTrackingInventoryItemRepository(
       delegate: inventoryRepository,
       initialItems: beforeItems,
@@ -519,25 +513,6 @@ class PreparedMealsController extends _$PreparedMealsController {
       );
     }
     return saved;
-  }
-
-  Future<List<InventoryItem>?> _readInventoryForActivity(
-    InventoryItemRepository inventoryRepository,
-  ) async {
-    try {
-      // Read failures currently propagate and fail the operation; tests rely
-      // on that. Awaiting here would make them non-fatal.
-      // ignore: unawaited_return_in_try_block
-      return inventoryRepository.readAll();
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to read inventory for prepared meal activity tracking.',
-        name: _preparedMealsControllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return null;
-    }
   }
 
   Future<void> _recordPreparedMealInventoryDiff({
