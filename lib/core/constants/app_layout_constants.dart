@@ -222,6 +222,9 @@ abstract final class AppSizes {
   /// Minimum size of a tap target.
   static const double minTapTarget = 48;
 
+  /// Height of a full-width primary action button.
+  static const double primaryActionHeight = 56;
+
   /// Diameter for circular home top bar icon buttons.
   static const double homeTopBarIconButton = 36;
 
