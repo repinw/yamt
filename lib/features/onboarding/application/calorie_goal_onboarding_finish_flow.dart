@@ -1,30 +1,17 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/onboarding/application/calorie_goal_onboarding_catch_up_placeholder_writer.dart';
-import 'package:yamt/features/onboarding/domain/calorie_goal_onboarding_start.dart';
 
 part 'calorie_goal_onboarding_finish_flow.g.dart';
 
 /// Onboarding-owned flow for saving the initial calorie goal.
 @riverpod
 CalorieGoalOnboardingFinishFlow calorieGoalOnboardingFinishFlow(Ref ref) {
-  final goalController = ref.watch(calorieGoalControllerProvider.notifier);
   return CalorieGoalOnboardingFinishFlow(
-    readSettings: () =>
-        ref.read(calorieSettingsRepositoryProvider).readSettings(),
-    goalController: goalController,
+    goalController: ref.watch(calorieGoalControllerProvider.notifier),
     burnWeekController: ref.read(burnWeekRunControllerProvider.notifier),
-    catchUpPlaceholderWriter: CalorieGoalOnboardingCatchUpPlaceholderWriter(
-      logRepository: ref.read(calorieLogRepositoryProvider),
-      isMounted: () => ref.mounted,
-    ),
     isMounted: () => ref.mounted,
   );
 }
@@ -32,127 +19,46 @@ CalorieGoalOnboardingFinishFlow calorieGoalOnboardingFinishFlow(Ref ref) {
 /// Inputs needed to finish calorie-goal onboarding.
 class CalorieGoalOnboardingFinishRequest {
   /// Creates finish request.
-  const new({
-    required this.profile,
-    required this.dailyGoalKcal,
-    required this.goalStartDate,
-    required this.countGoalStartDayForLearning,
-    required this.catchUpEstimate,
-    required this.placeholderName,
-    this.now,
-  });
+  const new({required this.profile, required this.today});
 
   /// Calculator profile used to persist the goal.
   final CalorieCalculatorProfile profile;
 
-  /// Daily calorie target to use for same-day catch-up placement.
-  final double dailyGoalKcal;
-
-  /// Date on which the goal should begin.
-  final DateTime goalStartDate;
-
-  /// Whether the goal-start day counts for learning.
-  final bool? countGoalStartDayForLearning;
-
-  /// Optional same-day catch-up estimate.
-  final CalorieGoalOnboardingCatchUpEstimate? catchUpEstimate;
-
-  /// Localized name for catch-up placeholder diary entries.
-  final String placeholderName;
-
-  /// Optional clock override for deterministic tests.
-  final DateTime? now;
+  /// Current day. The goal always starts on this day.
+  final DateTime today;
 }
 
 /// Saves calorie onboarding and places the user into Burn Week.
 class CalorieGoalOnboardingFinishFlow {
   /// Creates flow.
   const new({
-    required this._readSettings,
     required this._goalController,
     required this._burnWeekController,
-    required this._catchUpPlaceholderWriter,
     required this._isMounted,
   });
 
-  final Future<CalorieGoalSettings> Function() _readSettings;
   final CalorieGoalController _goalController;
   final BurnWeekRunController _burnWeekController;
-  final CalorieGoalOnboardingCatchUpPlaceholderWriter _catchUpPlaceholderWriter;
   final bool Function() _isMounted;
 
-  /// Save calculated goal and bootstrap Burn Week for onboarding.
+  /// Saves the calculated goal and bootstraps Burn Week from today.
+  ///
+  /// The start day itself is excluded from learning, because onboarding
+  /// usually happens in the middle of a day that was not tracked.
   Future<bool> saveGoal(CalorieGoalOnboardingFinishRequest request) async {
-    final referenceNow = request.now ?? DateTime.now();
-    final existingSettings = await _readSettings();
-    if (!_isMounted()) {
-      return false;
-    }
-    const runWeekNumber = burnWeekLearningRunWeekNumber;
+    final goalStartDate = normalizeDiaryDay(request.today);
     final goalSaved = await _goalController.saveCalculatedGoal(
       request.profile,
-      goalStartDate: request.goalStartDate,
-      allowFutureGoalStart: true,
-      countGoalStartDayForLearning: request.countGoalStartDayForLearning,
+      goalStartDate: goalStartDate,
+      countGoalStartDayForLearning: false,
     );
     if (!goalSaved || !_isMounted()) {
       return false;
     }
-    return await _applyBurnWeekStart(
-      goalStartDate: request.goalStartDate,
-      now: referenceNow,
-      dailyGoalKcal: request.dailyGoalKcal,
-      runWeekNumber: runWeekNumber,
-      scheduleFutureStart: existingSettings.hasLearnedTdee,
-      catchUpEstimate: request.catchUpEstimate,
-      placeholderName: request.placeholderName,
-    );
-  }
-
-  Future<bool> _applyBurnWeekStart({
-    required DateTime goalStartDate,
-    required DateTime now,
-    required double dailyGoalKcal,
-    required int runWeekNumber,
-    required bool scheduleFutureStart,
-    required CalorieGoalOnboardingCatchUpEstimate? catchUpEstimate,
-    required String placeholderName,
-  }) async {
-    final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
-    final normalizedToday = normalizeDiaryDay(now);
-    if (normalizedGoalStartDate.isAfter(normalizedToday)) {
-      if (scheduleFutureStart) {
-        await _burnWeekController.restartRunFrom(
-          weekStartDate: normalizedGoalStartDate,
-          runWeekNumber: runWeekNumber,
-        );
-        return true;
-      }
-      await _burnWeekController.resetRun();
-      return true;
-    }
-    if (catchUpEstimate == null) {
-      await _burnWeekController.restartRunFrom(
-        weekStartDate: normalizedGoalStartDate,
-        runWeekNumber: runWeekNumber,
-      );
-      return true;
-    }
-
-    final placeholdersSaved = await _catchUpPlaceholderWriter.writePlaceholders(
-      now: now,
-      dailyGoalKcal: dailyGoalKcal,
-      estimate: catchUpEstimate,
-      placeholderName: placeholderName,
-    );
-    if (!placeholdersSaved) {
-      return false;
-    }
 
     await _burnWeekController.bootstrapRunFrom(
-      weekStartDate: normalizedGoalStartDate,
+      weekStartDate: goalStartDate,
       heartCreditKcal: 0,
-      runWeekNumber: runWeekNumber,
     );
     return true;
   }

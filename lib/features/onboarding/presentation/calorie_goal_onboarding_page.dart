@@ -2,7 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/onboarding/calorie_onboarding_wizard.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/intro/'
+    'calorie_intro_flow.dart';
 
 /// Defines calorie goal onboarding page.
 class CalorieGoalOnboardingPage extends ConsumerWidget {
@@ -16,7 +17,7 @@ class CalorieGoalOnboardingPage extends ConsumerWidget {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
-    return CalorieOnboardingWizard(
+    return CalorieIntroFlow(
       initialSettings:
           settingsState.asData?.value ?? const CalorieGoalSettings.empty(),
     );

@@ -766,16 +766,6 @@
   "caloriesCalculatorGoalStartLabel": "Goal start",
   "caloriesCalculatorGoalStartHint": "Your calorie target history begins from this day.",
   "caloriesCalculatorGoalStartChangeAction": "Change",
-  "caloriesCalculatorOnboardingStartTitle": "When should your goal start?",
-  "caloriesCalculatorOnboardingStartLaterAction": "Start later",
-  "caloriesCalculatorOnboardingStartLaterHint": "Today stays consequence-free. Burn Week starts automatically from this day.",
-  "caloriesCalculatorOnboardingChooseFutureDateAction": "Choose day",
-  "caloriesCalculatorOnboardingTodayTrackingLabel": "How will you track today?",
-  "caloriesCalculatorOnboardingCatchUpLowAction": "Little",
-  "caloriesCalculatorOnboardingCatchUpNormalAction": "Normal",
-  "caloriesCalculatorOnboardingCatchUpHighAction": "A lot",
-  "caloriesCalculatorOnboardingCatchUpHint": "We place you safely into today's buffer zone.",
-  "caloriesOnboardingPlaceholderName": "Estimated meal",
   "caloriesCalculatorMinimumGoalWarning": "For weight loss, the daily target cannot go below {minimumKcal} kcal. The result was capped at this minimum.",
   "@caloriesCalculatorMinimumGoalWarning": {
     "placeholders": {
@@ -1489,23 +1479,10 @@
   "authErrorGoogleIdTokenMissing": "Google sign-in did not return a valid token.",
   "commonUndoAction": "Undo",
   "commonNotImplementedYet": "Not implemented yet",
-  "onboardingWelcomeTitle": "Glad you are here!",
-  "onboardingWelcomeText": "Forget complicated calorie counting. We make it as easy as possible. To support you optimally, we just need a little bit of information about you.",
-  "onboardingWelcomeAction": "Let's start",
-  "onboardingWelcomeAlreadyHaveAccount": "Already registered?",
-  "onboardingWelcomeLoginAction": "Log in here",
-  "onboardingAgeYearsUnit": "years",
-  "onboardingHeightCmUnit": "cm",
   "onboardingNextAction": "Next",
-  "onboardingNextActionStep5": "Sounds great, next!",
   "onboardingFinishAction": "Let's go",
-  "onboardingPersonalInfoTitle": "Tell us something about yourself.",
-  "onboardingPersonalInfoSubtitle": "This data helps us calculate your basal metabolic rate – because every body burns energy differently!",
-  "onboardingActivityLevelTitle": "How active are you?",
-  "onboardingActivityLevelSubtitle": "Your normal daily level (training comes later).",
   "onboardingGoalWeightTitle": "Your Goal",
   "onboardingGoalWeightSubtitle": "Let's set your goal weight.",
-  "onboardingGoalWeightStartLabel": "Start weight (kg)",
   "onboardingGoalWeightTargetLabel": "Goal weight (kg)",
   "onboardingGoalWeightLoseFeedback": "You want to lose weight. A healthy goal!",
   "onboardingGoalWeightGainFeedback": "You want to gain weight. Building muscle is great!",
@@ -1513,26 +1490,9 @@
   "onboardingPaceTitle": "Your Pace",
   "onboardingPaceSubtitle": "How fast do you want to reach your goal?",
   "onboardingPaceMaintainMessage": "Since you want to maintain your weight, we will simply calculate your maintenance calories. You don't need to set a pace.",
-  "onboardingPaceWarningTitle": "Ambitious Pace",
   "onboardingPaceWarningLoseMessage": "Losing more than 0.5 kg per week is quite high. Make sure you still get enough nutrients!",
   "onboardingPaceWarningGainMessage": "Gaining more than 0.5 kg per week is quite high. A more moderate pace helps build muscle without adding too much fat.",
-  "onboardingPacePerWeek": "{pace} kg / week",
-  "@onboardingPacePerWeek": {
-    "placeholders": {
-      "pace": {
-        "type": "String"
-      }
-    }
-  },
-  "onboardingTrainingDaysTitle": "Workouts & Sports",
-  "onboardingTrainingDaysSubtitle": "We adapt your daily calorie target to your routine.",
-  "onboardingTrainingDaysQuestion": "Do you work out on set days?",
-  "onboardingTrainingDaysNoFixedPlan": "No set days / No regular workouts",
-  "onboardingTrainingDaysNoFixedPlanSubtitle": "Same calorie target every day",
-  "onboardingTrainingDaysFixedPlan": "Yes, on fixed weekdays",
-  "onboardingTrainingDaysFixedPlanSubtitle": "Select your typical workout days",
   "onboardingTrainingDaysExtraKcalLabel": "Eat more on workout days (+200 kcal)",
-  "onboardingTrainingDaysExtraKcalSubtitle": "Budget-neutral: More calories on workout days, fewer on rest days",
   "onboardingTrainingDaysTrainingResult": "🏋️ Training ({days} days)",
   "@onboardingTrainingDaysTrainingResult": {
     "placeholders": {
@@ -1549,26 +1509,169 @@
       }
     }
   },
-  "onboardingInfoTitle": "Your Plan is Ready! 🎉",
-  "onboardingInfoSubtitle": "A few things you should know.",
-  "onboardingInfoPoint1Title": "Scan Receipts",
-  "onboardingInfoPoint1Body": "No more tedious typing.",
-  "onboardingInfoPoint2Title": "AI Recognition",
-  "onboardingInfoPoint2Body": "Just tell us what you ate.",
-  "onboardingInfoPoint3Title": "Barcode Scanner",
-  "onboardingInfoPoint3Body": "One scan, all nutrition facts.",
-  "onboardingInfoBoxTitle": "The Learning Week",
-  "onboardingInfoBoxBody": "Your first mission: Try not to force any changes in the next 7 days. Eat as usual and just track. Our smart algorithm learns your metabolism and creates your custom calorie goal!",
-  "onboardingStartDateTitle": "When to start?",
-  "onboardingStartDateSubtitle": "When do you want to start tracking?",
-  "onboardingStartDateNowLabel": "Today",
-  "onboardingStartDateNowDesc": "I will track everything today (or already did).",
-  "onboardingStartDateNowQuestion": "How should we handle today?",
-  "onboardingStartDateNowExact": "I will track the whole day exactly",
-  "onboardingStartDateNowEstimate": "I will estimate what I ate so far",
-  "onboardingStartDateLaterDesc": "Today is almost over, I prefer to start fresh tomorrow.",
   "onboardingReadyTitle": "All set!",
-  "onboardingReadySubtitle": "Your profile is ready. Let's get started!",
+  "introWelcomeTitle": "Welcome to YAMT",
+  "introWelcomeBody": "Track what you eat, learn what your body really burns, and keep your kitchen in order.",
+  "introStartAction": "Get started",
+  "introLoginAction": "I already have an account",
+  "introCalorieModelTitle": "It all starts with what you put in.",
+  "introCalorieModelBody": "Every bite and every sip is pure chemical energy for your body. Calories are not a number on a scale and not an enemy to fight — they are the fuel that keeps your cells alive.",
+  "introInputQualityTitle": "Your body is a furnace that never sleeps.",
+  "introInputQualityBody": "Around the clock you burn energy: for your heartbeat, your brain, your breathing and steady warmth. On top comes every small motion of the day — stairs, fidgeting, shivering, walking.",
+  "introFollowTargetTitle": "In the end, plain physics decides.",
+  "introFollowTargetBody": "After the first seven days we compare that starting value with how your weight actually moved, and correct it. Then again week after week.",
+  "introGoalDirectionBody": "To lose weight we subtract calories from your burn, to gain weight we add some. To maintain, your target simply matches it.",
+  "introGoalDirectionTitle": "Your goal bends the number.",
+  "introTrendTitle": "One weigh-in says nothing. The week says everything.",
+  "introTrendBody": "Water, salt and a late dinner move the scale by a kilo overnight. That is noise, not fat.",
+  "introExtrasTitle": "And the rest of your kitchen comes along.",
+  "introExtrasBody": "Save recipes and plan with a shopping list, scan barcodes to see what is in stock, take food off a receipt, or describe it and let the AI fill in the details.",
+  "introIdentityTitle": "First we need a rough picture of you.",
+  "introIdentitySubtitle": "Before the app learns your real numbers, we need a scientific starting point for your basal metabolism.",
+  "introBirthDateLabel": "Birthday",
+  "introBirthDateEmpty": "Please pick your birthday.",
+  "introCalorieModelHighlight": "what you put in",
+  "introCalorieModelNote": "This half of the equation is tangible: what you eat can be weighed, seen and logged almost to the gram.",
+  "introInputQualityHighlight": "never sleeps",
+  "introInputQualityNote": "The catch: that burn never holds still. It shifts with your sleep, your hormones and your stress. No fixed table can know that.",
+  "introFollowTargetHighlight": "plain physics",
+  "introFollowTargetNote": "So the first week is a measurement, not a verdict. Do not read too much into it.",
+  "introGoalDirectionHighlight": "bends the number",
+  "introGoalDirectionNote": "You pick the pace. We do the arithmetic every single day.",
+  "introTrendHighlight": "The week says everything",
+  "introTrendNote": "We read the trend across the whole week, so a bad morning never rewrites your plan.",
+  "introExtrasHighlight": "the rest of your kitchen",
+  "introExtrasNote": "Logging stops being homework when the food is already in the app.",
+  "introSummarySubtitle": "This is your estimated starting point for day one. After seven days of tracking YAMT compares your logged food with your weight and corrects the number — and again every week after that.",
+  "introBodyTitle": "What are your current numbers?",
+  "introBodySubtitle": "Body weight and height decide how many cells have to be supplied with oxygen and glucose at rest.",
+  "introWeightKgUnit": "kg",
+  "introSportTitle": "Do you train on fixed days?",
+  "introSportSubtitle": "Tap your training days. With none selected every day gets the same target.",
+  "introWeekDepotTitle": "Calories per day across the week",
+  "introActivityFactor": "Factor {factor}",
+  "@introActivityFactor": {
+    "placeholders": {
+      "factor": {
+        "type": "String"
+      }
+    }
+  },
+  "introIdentityPrivacyNote": "Your details are used for the energy calculation only.",
+  "introBodyTrendNote": "Day-to-day swings do not matter. We read your weekly weight trend, not single highs and lows.",
+  "introSummaryDepotLabel": "Week depot",
+  "introSummaryDepotHint": "Training days borrow from rest days. The weekly sum stays the same.",
+  "introCategoryHowItWorks": "How YAMT calculates",
+  "introCategoryYourProfile": "Your profile",
+  "introCategoryYourStart": "Your start",
+  "introChapterEnergyBalance": "Energy balance",
+  "introChapterStartValue": "The starting value",
+  "introChapterCorrection": "The correction",
+  "introChapterGoalDirection": "Your goal",
+  "introChapterTrend": "The trend",
+  "introChapterKitchen": "Your kitchen",
+  "introChapterProfile": "About you",
+  "introChapterBody": "Body measurements",
+  "introChapterTargetWeight": "Target weight",
+  "introChapterActivity": "Everyday activity",
+  "introChapterTraining": "Training",
+  "introChapterPace": "Pace",
+  "introChapterResult": "Your starting value",
+  "introChapterKicker": "Chapter {number} · {name}",
+  "@introChapterKicker": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "introNextChapterAction": "Next: {name}",
+  "@introNextChapterAction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "introChapterCounter": "{current} / {total}",
+  "@introChapterCounter": {
+    "placeholders": {
+      "current": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "introTargetWeightHint": "Pick your target weight.",
+  "introBirthDayLabel": "Day",
+  "introBirthMonthLabel": "Month",
+  "introBirthYearLabel": "Year",
+  "introHeightCmUnit": "cm",
+  "introCurrentWeightLabel": "Current weight",
+  "introPaceLabel": "Pace",
+  "introPacePerWeekUnit": "kg / week",
+  "introActivityTitle": "How active are you outside of sport?",
+  "introActivitySubtitle": "Walking, standing and your job make up the lion's share.",
+  "introActivitySittingTitle": "Mostly sitting",
+  "introActivitySittingBody": "Desk, car, sofa",
+  "introActivityLightTitle": "Sitting, but on the move",
+  "introActivityLightBody": "Desk job, walk or cycle daily",
+  "introActivityOnFeetTitle": "On your feet all day",
+  "introActivityOnFeetBody": "Retail, care, kitchen",
+  "introActivityHardLabourTitle": "Physically hard work",
+  "introActivityHardLabourBody": "Construction, trades, warehouse",
+  "introSummaryExpenditureLabel": "Your calculated expenditure",
+  "introSummaryExpenditureHint": "What your body burns on a normal day.",
+  "introSummaryTargetLabel": "Your daily target",
+  "introSummaryTargetMaintainHint": "Matches your expenditure, so your weight stays where it is.",
+  "introSummaryKcalValue": "{kcal} kcal",
+  "@introSummaryKcalValue": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "introSummaryTargetDeficitHint": "{kcal} kcal below your expenditure, so you lose weight.",
+  "@introSummaryTargetDeficitHint": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "introSummaryTargetSurplusHint": "{kcal} kcal above your expenditure, so you gain weight.",
+  "@introSummaryTargetSurplusHint": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "introBirthDateValue": "{date} ({age} years)",
+  "@introBirthDateValue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "age": {
+        "type": "String"
+      }
+    }
+  },
+  "introTargetDateEstimate": "At this pace you reach your goal around {date}.",
+  "@introTargetDateEstimate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "cookflowPrepflowTitle": "Prepflow",
   "cookflowTemplateNotFound": "Recipe not found.",
   "cookflowLoadFailed": "Cookflow could not be loaded.",

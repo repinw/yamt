@@ -3094,66 +3094,6 @@ abstract class AppLocalizations {
   /// **'Change'**
   String get caloriesCalculatorGoalStartChangeAction;
 
-  /// No description provided for @caloriesCalculatorOnboardingStartTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'When should your goal start?'**
-  String get caloriesCalculatorOnboardingStartTitle;
-
-  /// No description provided for @caloriesCalculatorOnboardingStartLaterAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Start later'**
-  String get caloriesCalculatorOnboardingStartLaterAction;
-
-  /// No description provided for @caloriesCalculatorOnboardingStartLaterHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Today stays consequence-free. Burn Week starts automatically from this day.'**
-  String get caloriesCalculatorOnboardingStartLaterHint;
-
-  /// No description provided for @caloriesCalculatorOnboardingChooseFutureDateAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose day'**
-  String get caloriesCalculatorOnboardingChooseFutureDateAction;
-
-  /// No description provided for @caloriesCalculatorOnboardingTodayTrackingLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'How will you track today?'**
-  String get caloriesCalculatorOnboardingTodayTrackingLabel;
-
-  /// No description provided for @caloriesCalculatorOnboardingCatchUpLowAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Little'**
-  String get caloriesCalculatorOnboardingCatchUpLowAction;
-
-  /// No description provided for @caloriesCalculatorOnboardingCatchUpNormalAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Normal'**
-  String get caloriesCalculatorOnboardingCatchUpNormalAction;
-
-  /// No description provided for @caloriesCalculatorOnboardingCatchUpHighAction.
-  ///
-  /// In en, this message translates to:
-  /// **'A lot'**
-  String get caloriesCalculatorOnboardingCatchUpHighAction;
-
-  /// No description provided for @caloriesCalculatorOnboardingCatchUpHint.
-  ///
-  /// In en, this message translates to:
-  /// **'We place you safely into today\'s buffer zone.'**
-  String get caloriesCalculatorOnboardingCatchUpHint;
-
-  /// No description provided for @caloriesOnboardingPlaceholderName.
-  ///
-  /// In en, this message translates to:
-  /// **'Estimated meal'**
-  String get caloriesOnboardingPlaceholderName;
-
   /// No description provided for @caloriesCalculatorMinimumGoalWarning.
   ///
   /// In en, this message translates to:
@@ -5734,89 +5674,17 @@ abstract class AppLocalizations {
   /// **'Not implemented yet'**
   String get commonNotImplementedYet;
 
-  /// No description provided for @onboardingWelcomeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Glad you are here!'**
-  String get onboardingWelcomeTitle;
-
-  /// No description provided for @onboardingWelcomeText.
-  ///
-  /// In en, this message translates to:
-  /// **'Forget complicated calorie counting. We make it as easy as possible. To support you optimally, we just need a little bit of information about you.'**
-  String get onboardingWelcomeText;
-
-  /// No description provided for @onboardingWelcomeAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Let\'s start'**
-  String get onboardingWelcomeAction;
-
-  /// No description provided for @onboardingWelcomeAlreadyHaveAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Already registered?'**
-  String get onboardingWelcomeAlreadyHaveAccount;
-
-  /// No description provided for @onboardingWelcomeLoginAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Log in here'**
-  String get onboardingWelcomeLoginAction;
-
-  /// No description provided for @onboardingAgeYearsUnit.
-  ///
-  /// In en, this message translates to:
-  /// **'years'**
-  String get onboardingAgeYearsUnit;
-
-  /// No description provided for @onboardingHeightCmUnit.
-  ///
-  /// In en, this message translates to:
-  /// **'cm'**
-  String get onboardingHeightCmUnit;
-
   /// No description provided for @onboardingNextAction.
   ///
   /// In en, this message translates to:
   /// **'Next'**
   String get onboardingNextAction;
 
-  /// No description provided for @onboardingNextActionStep5.
-  ///
-  /// In en, this message translates to:
-  /// **'Sounds great, next!'**
-  String get onboardingNextActionStep5;
-
   /// No description provided for @onboardingFinishAction.
   ///
   /// In en, this message translates to:
   /// **'Let\'s go'**
   String get onboardingFinishAction;
-
-  /// No description provided for @onboardingPersonalInfoTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Tell us something about yourself.'**
-  String get onboardingPersonalInfoTitle;
-
-  /// No description provided for @onboardingPersonalInfoSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'This data helps us calculate your basal metabolic rate – because every body burns energy differently!'**
-  String get onboardingPersonalInfoSubtitle;
-
-  /// No description provided for @onboardingActivityLevelTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'How active are you?'**
-  String get onboardingActivityLevelTitle;
-
-  /// No description provided for @onboardingActivityLevelSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your normal daily level (training comes later).'**
-  String get onboardingActivityLevelSubtitle;
 
   /// No description provided for @onboardingGoalWeightTitle.
   ///
@@ -5829,12 +5697,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Let\'s set your goal weight.'**
   String get onboardingGoalWeightSubtitle;
-
-  /// No description provided for @onboardingGoalWeightStartLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Start weight (kg)'**
-  String get onboardingGoalWeightStartLabel;
 
   /// No description provided for @onboardingGoalWeightTargetLabel.
   ///
@@ -5878,12 +5740,6 @@ abstract class AppLocalizations {
   /// **'Since you want to maintain your weight, we will simply calculate your maintenance calories. You don\'t need to set a pace.'**
   String get onboardingPaceMaintainMessage;
 
-  /// No description provided for @onboardingPaceWarningTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Ambitious Pace'**
-  String get onboardingPaceWarningTitle;
-
   /// No description provided for @onboardingPaceWarningLoseMessage.
   ///
   /// In en, this message translates to:
@@ -5896,65 +5752,11 @@ abstract class AppLocalizations {
   /// **'Gaining more than 0.5 kg per week is quite high. A more moderate pace helps build muscle without adding too much fat.'**
   String get onboardingPaceWarningGainMessage;
 
-  /// No description provided for @onboardingPacePerWeek.
-  ///
-  /// In en, this message translates to:
-  /// **'{pace} kg / week'**
-  String onboardingPacePerWeek(String pace);
-
-  /// No description provided for @onboardingTrainingDaysTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Workouts & Sports'**
-  String get onboardingTrainingDaysTitle;
-
-  /// No description provided for @onboardingTrainingDaysSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'We adapt your daily calorie target to your routine.'**
-  String get onboardingTrainingDaysSubtitle;
-
-  /// No description provided for @onboardingTrainingDaysQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'Do you work out on set days?'**
-  String get onboardingTrainingDaysQuestion;
-
-  /// No description provided for @onboardingTrainingDaysNoFixedPlan.
-  ///
-  /// In en, this message translates to:
-  /// **'No set days / No regular workouts'**
-  String get onboardingTrainingDaysNoFixedPlan;
-
-  /// No description provided for @onboardingTrainingDaysNoFixedPlanSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Same calorie target every day'**
-  String get onboardingTrainingDaysNoFixedPlanSubtitle;
-
-  /// No description provided for @onboardingTrainingDaysFixedPlan.
-  ///
-  /// In en, this message translates to:
-  /// **'Yes, on fixed weekdays'**
-  String get onboardingTrainingDaysFixedPlan;
-
-  /// No description provided for @onboardingTrainingDaysFixedPlanSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Select your typical workout days'**
-  String get onboardingTrainingDaysFixedPlanSubtitle;
-
   /// No description provided for @onboardingTrainingDaysExtraKcalLabel.
   ///
   /// In en, this message translates to:
   /// **'Eat more on workout days (+200 kcal)'**
   String get onboardingTrainingDaysExtraKcalLabel;
-
-  /// No description provided for @onboardingTrainingDaysExtraKcalSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Budget-neutral: More calories on workout days, fewer on rest days'**
-  String get onboardingTrainingDaysExtraKcalSubtitle;
 
   /// No description provided for @onboardingTrainingDaysTrainingResult.
   ///
@@ -5968,125 +5770,551 @@ abstract class AppLocalizations {
   /// **'🛋️ Rest day ({days} days)'**
   String onboardingTrainingDaysRestResult(int days);
 
-  /// No description provided for @onboardingInfoTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your Plan is Ready! 🎉'**
-  String get onboardingInfoTitle;
-
-  /// No description provided for @onboardingInfoSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'A few things you should know.'**
-  String get onboardingInfoSubtitle;
-
-  /// No description provided for @onboardingInfoPoint1Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan Receipts'**
-  String get onboardingInfoPoint1Title;
-
-  /// No description provided for @onboardingInfoPoint1Body.
-  ///
-  /// In en, this message translates to:
-  /// **'No more tedious typing.'**
-  String get onboardingInfoPoint1Body;
-
-  /// No description provided for @onboardingInfoPoint2Title.
-  ///
-  /// In en, this message translates to:
-  /// **'AI Recognition'**
-  String get onboardingInfoPoint2Title;
-
-  /// No description provided for @onboardingInfoPoint2Body.
-  ///
-  /// In en, this message translates to:
-  /// **'Just tell us what you ate.'**
-  String get onboardingInfoPoint2Body;
-
-  /// No description provided for @onboardingInfoPoint3Title.
-  ///
-  /// In en, this message translates to:
-  /// **'Barcode Scanner'**
-  String get onboardingInfoPoint3Title;
-
-  /// No description provided for @onboardingInfoPoint3Body.
-  ///
-  /// In en, this message translates to:
-  /// **'One scan, all nutrition facts.'**
-  String get onboardingInfoPoint3Body;
-
-  /// No description provided for @onboardingInfoBoxTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'The Learning Week'**
-  String get onboardingInfoBoxTitle;
-
-  /// No description provided for @onboardingInfoBoxBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Your first mission: Try not to force any changes in the next 7 days. Eat as usual and just track. Our smart algorithm learns your metabolism and creates your custom calorie goal!'**
-  String get onboardingInfoBoxBody;
-
-  /// No description provided for @onboardingStartDateTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'When to start?'**
-  String get onboardingStartDateTitle;
-
-  /// No description provided for @onboardingStartDateSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'When do you want to start tracking?'**
-  String get onboardingStartDateSubtitle;
-
-  /// No description provided for @onboardingStartDateNowLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Today'**
-  String get onboardingStartDateNowLabel;
-
-  /// No description provided for @onboardingStartDateNowDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'I will track everything today (or already did).'**
-  String get onboardingStartDateNowDesc;
-
-  /// No description provided for @onboardingStartDateNowQuestion.
-  ///
-  /// In en, this message translates to:
-  /// **'How should we handle today?'**
-  String get onboardingStartDateNowQuestion;
-
-  /// No description provided for @onboardingStartDateNowExact.
-  ///
-  /// In en, this message translates to:
-  /// **'I will track the whole day exactly'**
-  String get onboardingStartDateNowExact;
-
-  /// No description provided for @onboardingStartDateNowEstimate.
-  ///
-  /// In en, this message translates to:
-  /// **'I will estimate what I ate so far'**
-  String get onboardingStartDateNowEstimate;
-
-  /// No description provided for @onboardingStartDateLaterDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Today is almost over, I prefer to start fresh tomorrow.'**
-  String get onboardingStartDateLaterDesc;
-
   /// No description provided for @onboardingReadyTitle.
   ///
   /// In en, this message translates to:
   /// **'All set!'**
   String get onboardingReadyTitle;
 
-  /// No description provided for @onboardingReadySubtitle.
+  /// No description provided for @introWelcomeTitle.
   ///
   /// In en, this message translates to:
-  /// **'Your profile is ready. Let\'s get started!'**
-  String get onboardingReadySubtitle;
+  /// **'Welcome to YAMT'**
+  String get introWelcomeTitle;
+
+  /// No description provided for @introWelcomeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Track what you eat, learn what your body really burns, and keep your kitchen in order.'**
+  String get introWelcomeBody;
+
+  /// No description provided for @introStartAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Get started'**
+  String get introStartAction;
+
+  /// No description provided for @introLoginAction.
+  ///
+  /// In en, this message translates to:
+  /// **'I already have an account'**
+  String get introLoginAction;
+
+  /// No description provided for @introCalorieModelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'It all starts with what you put in.'**
+  String get introCalorieModelTitle;
+
+  /// No description provided for @introCalorieModelBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Every bite and every sip is pure chemical energy for your body. Calories are not a number on a scale and not an enemy to fight — they are the fuel that keeps your cells alive.'**
+  String get introCalorieModelBody;
+
+  /// No description provided for @introInputQualityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your body is a furnace that never sleeps.'**
+  String get introInputQualityTitle;
+
+  /// No description provided for @introInputQualityBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Around the clock you burn energy: for your heartbeat, your brain, your breathing and steady warmth. On top comes every small motion of the day — stairs, fidgeting, shivering, walking.'**
+  String get introInputQualityBody;
+
+  /// No description provided for @introFollowTargetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'In the end, plain physics decides.'**
+  String get introFollowTargetTitle;
+
+  /// No description provided for @introFollowTargetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'After the first seven days we compare that starting value with how your weight actually moved, and correct it. Then again week after week.'**
+  String get introFollowTargetBody;
+
+  /// No description provided for @introGoalDirectionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'To lose weight we subtract calories from your burn, to gain weight we add some. To maintain, your target simply matches it.'**
+  String get introGoalDirectionBody;
+
+  /// No description provided for @introGoalDirectionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal bends the number.'**
+  String get introGoalDirectionTitle;
+
+  /// No description provided for @introTrendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One weigh-in says nothing. The week says everything.'**
+  String get introTrendTitle;
+
+  /// No description provided for @introTrendBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Water, salt and a late dinner move the scale by a kilo overnight. That is noise, not fat.'**
+  String get introTrendBody;
+
+  /// No description provided for @introExtrasTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'And the rest of your kitchen comes along.'**
+  String get introExtrasTitle;
+
+  /// No description provided for @introExtrasBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Save recipes and plan with a shopping list, scan barcodes to see what is in stock, take food off a receipt, or describe it and let the AI fill in the details.'**
+  String get introExtrasBody;
+
+  /// No description provided for @introIdentityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'First we need a rough picture of you.'**
+  String get introIdentityTitle;
+
+  /// No description provided for @introIdentitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Before the app learns your real numbers, we need a scientific starting point for your basal metabolism.'**
+  String get introIdentitySubtitle;
+
+  /// No description provided for @introBirthDateLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday'**
+  String get introBirthDateLabel;
+
+  /// No description provided for @introBirthDateEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Please pick your birthday.'**
+  String get introBirthDateEmpty;
+
+  /// No description provided for @introCalorieModelHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'what you put in'**
+  String get introCalorieModelHighlight;
+
+  /// No description provided for @introCalorieModelNote.
+  ///
+  /// In en, this message translates to:
+  /// **'This half of the equation is tangible: what you eat can be weighed, seen and logged almost to the gram.'**
+  String get introCalorieModelNote;
+
+  /// No description provided for @introInputQualityHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'never sleeps'**
+  String get introInputQualityHighlight;
+
+  /// No description provided for @introInputQualityNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The catch: that burn never holds still. It shifts with your sleep, your hormones and your stress. No fixed table can know that.'**
+  String get introInputQualityNote;
+
+  /// No description provided for @introFollowTargetHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'plain physics'**
+  String get introFollowTargetHighlight;
+
+  /// No description provided for @introFollowTargetNote.
+  ///
+  /// In en, this message translates to:
+  /// **'So the first week is a measurement, not a verdict. Do not read too much into it.'**
+  String get introFollowTargetNote;
+
+  /// No description provided for @introGoalDirectionHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'bends the number'**
+  String get introGoalDirectionHighlight;
+
+  /// No description provided for @introGoalDirectionNote.
+  ///
+  /// In en, this message translates to:
+  /// **'You pick the pace. We do the arithmetic every single day.'**
+  String get introGoalDirectionNote;
+
+  /// No description provided for @introTrendHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'The week says everything'**
+  String get introTrendHighlight;
+
+  /// No description provided for @introTrendNote.
+  ///
+  /// In en, this message translates to:
+  /// **'We read the trend across the whole week, so a bad morning never rewrites your plan.'**
+  String get introTrendNote;
+
+  /// No description provided for @introExtrasHighlight.
+  ///
+  /// In en, this message translates to:
+  /// **'the rest of your kitchen'**
+  String get introExtrasHighlight;
+
+  /// No description provided for @introExtrasNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Logging stops being homework when the food is already in the app.'**
+  String get introExtrasNote;
+
+  /// No description provided for @introSummarySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This is your estimated starting point for day one. After seven days of tracking YAMT compares your logged food with your weight and corrects the number — and again every week after that.'**
+  String get introSummarySubtitle;
+
+  /// No description provided for @introBodyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What are your current numbers?'**
+  String get introBodyTitle;
+
+  /// No description provided for @introBodySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Body weight and height decide how many cells have to be supplied with oxygen and glucose at rest.'**
+  String get introBodySubtitle;
+
+  /// No description provided for @introWeightKgUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get introWeightKgUnit;
+
+  /// No description provided for @introSportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you train on fixed days?'**
+  String get introSportTitle;
+
+  /// No description provided for @introSportSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap your training days. With none selected every day gets the same target.'**
+  String get introSportSubtitle;
+
+  /// No description provided for @introWeekDepotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories per day across the week'**
+  String get introWeekDepotTitle;
+
+  /// No description provided for @introActivityFactor.
+  ///
+  /// In en, this message translates to:
+  /// **'Factor {factor}'**
+  String introActivityFactor(String factor);
+
+  /// No description provided for @introIdentityPrivacyNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Your details are used for the energy calculation only.'**
+  String get introIdentityPrivacyNote;
+
+  /// No description provided for @introBodyTrendNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Day-to-day swings do not matter. We read your weekly weight trend, not single highs and lows.'**
+  String get introBodyTrendNote;
+
+  /// No description provided for @introSummaryDepotLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Week depot'**
+  String get introSummaryDepotLabel;
+
+  /// No description provided for @introSummaryDepotHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Training days borrow from rest days. The weekly sum stays the same.'**
+  String get introSummaryDepotHint;
+
+  /// No description provided for @introCategoryHowItWorks.
+  ///
+  /// In en, this message translates to:
+  /// **'How YAMT calculates'**
+  String get introCategoryHowItWorks;
+
+  /// No description provided for @introCategoryYourProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile'**
+  String get introCategoryYourProfile;
+
+  /// No description provided for @introCategoryYourStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Your start'**
+  String get introCategoryYourStart;
+
+  /// No description provided for @introChapterEnergyBalance.
+  ///
+  /// In en, this message translates to:
+  /// **'Energy balance'**
+  String get introChapterEnergyBalance;
+
+  /// No description provided for @introChapterStartValue.
+  ///
+  /// In en, this message translates to:
+  /// **'The starting value'**
+  String get introChapterStartValue;
+
+  /// No description provided for @introChapterCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'The correction'**
+  String get introChapterCorrection;
+
+  /// No description provided for @introChapterGoalDirection.
+  ///
+  /// In en, this message translates to:
+  /// **'Your goal'**
+  String get introChapterGoalDirection;
+
+  /// No description provided for @introChapterTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'The trend'**
+  String get introChapterTrend;
+
+  /// No description provided for @introChapterKitchen.
+  ///
+  /// In en, this message translates to:
+  /// **'Your kitchen'**
+  String get introChapterKitchen;
+
+  /// No description provided for @introChapterProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'About you'**
+  String get introChapterProfile;
+
+  /// No description provided for @introChapterBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Body measurements'**
+  String get introChapterBody;
+
+  /// No description provided for @introChapterTargetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Target weight'**
+  String get introChapterTargetWeight;
+
+  /// No description provided for @introChapterActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Everyday activity'**
+  String get introChapterActivity;
+
+  /// No description provided for @introChapterTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get introChapterTraining;
+
+  /// No description provided for @introChapterPace.
+  ///
+  /// In en, this message translates to:
+  /// **'Pace'**
+  String get introChapterPace;
+
+  /// No description provided for @introChapterResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Your starting value'**
+  String get introChapterResult;
+
+  /// No description provided for @introChapterKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Chapter {number} · {name}'**
+  String introChapterKicker(int number, String name);
+
+  /// No description provided for @introNextChapterAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Next: {name}'**
+  String introNextChapterAction(String name);
+
+  /// No description provided for @introChapterCounter.
+  ///
+  /// In en, this message translates to:
+  /// **'{current} / {total}'**
+  String introChapterCounter(String current, String total);
+
+  /// No description provided for @introTargetWeightHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick your target weight.'**
+  String get introTargetWeightHint;
+
+  /// No description provided for @introBirthDayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get introBirthDayLabel;
+
+  /// No description provided for @introBirthMonthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get introBirthMonthLabel;
+
+  /// No description provided for @introBirthYearLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get introBirthYearLabel;
+
+  /// No description provided for @introHeightCmUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'cm'**
+  String get introHeightCmUnit;
+
+  /// No description provided for @introCurrentWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current weight'**
+  String get introCurrentWeightLabel;
+
+  /// No description provided for @introPaceLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Pace'**
+  String get introPaceLabel;
+
+  /// No description provided for @introPacePerWeekUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'kg / week'**
+  String get introPacePerWeekUnit;
+
+  /// No description provided for @introActivityTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How active are you outside of sport?'**
+  String get introActivityTitle;
+
+  /// No description provided for @introActivitySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Walking, standing and your job make up the lion\'s share.'**
+  String get introActivitySubtitle;
+
+  /// No description provided for @introActivitySittingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Mostly sitting'**
+  String get introActivitySittingTitle;
+
+  /// No description provided for @introActivitySittingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Desk, car, sofa'**
+  String get introActivitySittingBody;
+
+  /// No description provided for @introActivityLightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sitting, but on the move'**
+  String get introActivityLightTitle;
+
+  /// No description provided for @introActivityLightBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Desk job, walk or cycle daily'**
+  String get introActivityLightBody;
+
+  /// No description provided for @introActivityOnFeetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On your feet all day'**
+  String get introActivityOnFeetTitle;
+
+  /// No description provided for @introActivityOnFeetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Retail, care, kitchen'**
+  String get introActivityOnFeetBody;
+
+  /// No description provided for @introActivityHardLabourTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Physically hard work'**
+  String get introActivityHardLabourTitle;
+
+  /// No description provided for @introActivityHardLabourBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Construction, trades, warehouse'**
+  String get introActivityHardLabourBody;
+
+  /// No description provided for @introSummaryExpenditureLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your calculated expenditure'**
+  String get introSummaryExpenditureLabel;
+
+  /// No description provided for @introSummaryExpenditureHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What your body burns on a normal day.'**
+  String get introSummaryExpenditureHint;
+
+  /// No description provided for @introSummaryTargetLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Your daily target'**
+  String get introSummaryTargetLabel;
+
+  /// No description provided for @introSummaryTargetMaintainHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches your expenditure, so your weight stays where it is.'**
+  String get introSummaryTargetMaintainHint;
+
+  /// No description provided for @introSummaryKcalValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal'**
+  String introSummaryKcalValue(int kcal);
+
+  /// No description provided for @introSummaryTargetDeficitHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal below your expenditure, so you lose weight.'**
+  String introSummaryTargetDeficitHint(int kcal);
+
+  /// No description provided for @introSummaryTargetSurplusHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal above your expenditure, so you gain weight.'**
+  String introSummaryTargetSurplusHint(int kcal);
+
+  /// No description provided for @introBirthDateValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} ({age} years)'**
+  String introBirthDateValue(String date, String age);
+
+  /// No description provided for @introTargetDateEstimate.
+  ///
+  /// In en, this message translates to:
+  /// **'At this pace you reach your goal around {date}.'**
+  String introTargetDateEstimate(String date);
 
   /// No description provided for @cookflowPrepflowTitle.
   ///

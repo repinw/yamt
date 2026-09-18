@@ -66,11 +66,63 @@ Future<void> _pumpRouterTransition(WidgetTester tester) async {
 }
 
 Future<void> _tapCalorieOnboardingNext(WidgetTester tester) async {
-  final next = find.text('Next');
-  final soundsGreat = find.text('Sounds great, next!');
-  final button = next.evaluate().isNotEmpty ? next : soundsGreat;
-  await tester.ensureVisible(button);
-  await tester.tap(button);
+  final next = find.byKey(CalorieGoalOnboardingKeys.introNextAction);
+  await tester.ensureVisible(next);
+  await tester.tap(next);
+  await tester.pumpAndSettle();
+}
+
+Future<void> _completeCalorieOnboarding(WidgetTester tester) async {
+  _disableAnimations(tester);
+  await tester.tap(find.byKey(CalorieGoalOnboardingKeys.introStartAction));
+  await tester.pumpAndSettle();
+  for (var storyPage = 0; storyPage < 6; storyPage++) {
+    await _tapCalorieOnboardingNext(tester);
+  }
+
+  await tester.tap(find.text('Female'));
+  await tester.pumpAndSettle();
+  await _spinCalorieOnboardingWheel(
+    tester,
+    CalorieGoalOnboardingKeys.introBirthDayWheel,
+  );
+  await _tapCalorieOnboardingNext(tester);
+
+  await _spinCalorieOnboardingWheel(
+    tester,
+    CalorieGoalOnboardingKeys.introHeightWheel,
+  );
+  await _spinCalorieOnboardingWheel(
+    tester,
+    CalorieGoalOnboardingKeys.introWeightWheel,
+  );
+  await _tapCalorieOnboardingNext(tester);
+
+  await _spinCalorieOnboardingWheel(
+    tester,
+    CalorieGoalOnboardingKeys.introTargetWeightWheel,
+  );
+  await _tapCalorieOnboardingNext(tester);
+
+  await tester.tap(find.text('Sitting, but on the move'));
+  await tester.pumpAndSettle();
+  await _tapCalorieOnboardingNext(tester);
+
+  await _tapCalorieOnboardingNext(tester);
+  await _tapCalorieOnboardingNext(tester);
+
+  final finish = find.byKey(CalorieGoalOnboardingKeys.introFinishAction);
+  await tester.ensureVisible(finish);
+  await tester.tap(finish);
+}
+
+Future<void> _spinCalorieOnboardingWheel(
+  WidgetTester tester,
+  Key wheelKey,
+) async {
+  final wheel = find.byKey(wheelKey);
+  await tester.ensureVisible(wheel);
+  await tester.drag(wheel, const Offset(0, -60));
   await tester.pumpAndSettle();
 }
 
@@ -180,6 +232,14 @@ const _inventoryBackedCreateArgs = CalorieEntryCreateArgs(
     consumedUnit: ConsumedUnit.grams,
   ),
 );
+
+void _disableAnimations(WidgetTester tester) {
+  tester.binding.platformDispatcher.accessibilityFeaturesTestValue =
+      const FakeAccessibilityFeatures(disableAnimations: true);
+  addTearDown(
+    tester.binding.platformDispatcher.clearAccessibilityFeaturesTestValue,
+  );
+}
 
 void main() {
   testWidgets('shows splash while auth state is loading', (tester) async {
@@ -306,7 +366,7 @@ void main() {
         container.read(appRouterProvider).state.uri.path,
         AppRoutes.calorieGoalSetup,
       );
-      expect(find.text('Glad you are here!'), findsOneWidget);
+      expect(find.text('Welcome to YAMT'), findsOneWidget);
     },
   );
 
@@ -417,7 +477,7 @@ void main() {
         container.read(appRouterProvider).state.uri.path,
         AppRoutes.calorieGoalSetup,
       );
-      expect(find.text('Glad you are here!'), findsOneWidget);
+      expect(find.text('Welcome to YAMT'), findsOneWidget);
     },
   );
 
@@ -438,38 +498,7 @@ void main() {
       AppRoutes.calorieGoalSetup,
     );
 
-    await tester.tap(find.text("Let's start"));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Female'));
-    final firstPlus = find.byTooltip('Plus').first;
-    await tester.ensureVisible(firstPlus);
-    await tester.tap(firstPlus);
-    final secondPlus = find.byTooltip('Plus').at(1);
-    await tester.ensureVisible(secondPlus);
-    await tester.tap(secondPlus);
-    await _tapCalorieOnboardingNext(tester);
-
-    await _tapCalorieOnboardingNext(tester);
-
-    await tester.enterText(find.byType(TextFormField).at(0), '70');
-    await tester.enterText(find.byType(TextFormField).at(1), '70');
-    await _tapCalorieOnboardingNext(tester);
-
-    await _tapCalorieOnboardingNext(tester);
-    await _tapCalorieOnboardingNext(tester);
-
-    final startLaterOption = find.byKey(
-      CalorieGoalOnboardingKeys.goalStartLaterOption,
-    );
-    await tester.ensureVisible(startLaterOption);
-    await tester.tap(startLaterOption);
-    await tester.pumpAndSettle();
-
-    await _tapCalorieOnboardingNext(tester);
-
-    await tester.ensureVisible(find.text("Let's go"));
-    await tester.tap(find.text("Let's go"));
+    await _completeCalorieOnboarding(tester);
     await tester.pump();
     await _pumpRouterTransition(tester);
     await _pumpRouterTransition(tester);
@@ -1027,7 +1056,7 @@ void main() {
       AppRoutes.calorieGoalSetup,
     );
 
-    await tester.tap(find.textContaining('Log in here'));
+    await tester.tap(find.byKey(CalorieGoalOnboardingKeys.introLoginAction));
     await _pumpRouterTransition(tester);
 
     expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
@@ -1080,7 +1109,7 @@ void main() {
       container.read(appRouterProvider).state.uri.path,
       AppRoutes.calorieGoalSetup,
     );
-    expect(find.text('Glad you are here!'), findsOneWidget);
+    expect(find.text('Welcome to YAMT'), findsOneWidget);
   });
 
   testWidgets('guest sign-in on welcome page routes to onboarding', (
@@ -1112,7 +1141,7 @@ void main() {
       container.read(appRouterProvider).state.uri.path,
       AppRoutes.calorieGoalSetup,
     );
-    expect(find.text('Glad you are here!'), findsOneWidget);
+    expect(find.text('Welcome to YAMT'), findsOneWidget);
   });
 }
 

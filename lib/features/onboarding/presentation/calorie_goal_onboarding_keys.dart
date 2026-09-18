@@ -2,47 +2,46 @@ import 'package:flutter/widgets.dart';
 
 /// Defines stable keys for calorie-goal onboarding widgets.
 abstract final class CalorieGoalOnboardingKeys {
-  /// The goal start card.
-  static const goalStartCard = Key('calorie_calculator_goal_start_card');
+  /// The action that starts the setup from the welcome page.
+  static const introStartAction = Key('calorie_intro_start_action');
 
-  /// The goal start value.
-  static const goalStartValue = Key('calorie_calculator_goal_start_value');
+  /// The action that opens the authentication page.
+  static const introLoginAction = Key('calorie_intro_login_action');
 
-  /// The goal start change button.
-  static const goalStartChangeButton = Key(
-    'calorie_calculator_goal_start_change_button',
+  /// The birthday day wheel.
+  static const introBirthDayWheel = Key('calorie_intro_birth_day_wheel');
+
+  /// The birthday month wheel.
+  static const introBirthMonthWheel = Key('calorie_intro_birth_month_wheel');
+
+  /// The birthday year wheel.
+  static const introBirthYearWheel = Key('calorie_intro_birth_year_wheel');
+
+  /// The height wheel.
+  static const introHeightWheel = Key('calorie_intro_height_wheel');
+
+  /// The current-weight wheel.
+  static const introWeightWheel = Key('calorie_intro_weight_wheel');
+
+  /// The target-weight wheel.
+  static const introTargetWeightWheel = Key(
+    'calorie_intro_target_weight_wheel',
   );
 
-  /// The onboarding start-now option.
-  static const goalStartNowOption = Key(
-    'calorie_calculator_goal_start_now_option',
+  /// The weight-change pace wheel.
+  static const introPaceWheel = Key('calorie_intro_pace_wheel');
+
+  /// The estimated day the target weight is reached.
+  static const introTargetDateEstimate = Key(
+    'calorie_intro_target_date_estimate',
   );
 
-  /// The onboarding start-later option.
-  static const goalStartLaterOption = Key(
-    'calorie_calculator_goal_start_later_option',
-  );
+  /// The action that saves the goal and leaves onboarding.
+  static const introFinishAction = Key('calorie_intro_finish_action');
 
-  /// The onboarding exact today tracking option.
-  static const todayTrackingExactOption = Key(
-    'calorie_calculator_today_tracking_exact_option',
-  );
+  /// The shared next action of the intro controls.
+  static const introNextAction = Key('calorie_intro_next_action');
 
-  /// The onboarding estimated today tracking option.
-  static const todayTrackingEstimateOption = Key(
-    'calorie_calculator_today_tracking_estimate_option',
-  );
-
-  /// The onboarding catch-up low option.
-  static const catchUpLowOption = Key('calorie_calculator_catch_up_low_option');
-
-  /// The onboarding catch-up normal option.
-  static const catchUpNormalOption = Key(
-    'calorie_calculator_catch_up_normal_option',
-  );
-
-  /// The onboarding catch-up high option.
-  static const catchUpHighOption = Key(
-    'calorie_calculator_catch_up_high_option',
-  );
+  /// The shared back action of the intro controls.
+  static const introBackAction = Key('calorie_intro_back_action');
 }

@@ -7,9 +7,17 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_page.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/onboarding/'
-    'calorie_onboarding_wizard.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/intro/'
+    'calorie_intro_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+void _disableAnimations(WidgetTester tester) {
+  tester.binding.platformDispatcher.accessibilityFeaturesTestValue =
+      const FakeAccessibilityFeatures(disableAnimations: true);
+  addTearDown(
+    tester.binding.platformDispatcher.clearAccessibilityFeaturesTestValue,
+  );
+}
 
 void main() {
   group('CalorieGoalOnboardingPage', () {
@@ -22,10 +30,10 @@ void main() {
       await _pumpPage(tester, repository);
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(find.byType(CalorieOnboardingWizard), findsNothing);
+      expect(find.byType(CalorieIntroFlow), findsNothing);
     });
 
-    testWidgets('renders wizard after settings load', (tester) async {
+    testWidgets('renders intro flow after settings load', (tester) async {
       final repository = _StaticCalorieSettingsRepository(
         CalorieGoalSettings.single(
           dailyKcalGoal: 2100,
@@ -37,8 +45,8 @@ void main() {
       await _pumpPage(tester, repository);
       await tester.pump();
 
-      expect(find.byType(CalorieOnboardingWizard), findsOneWidget);
-      expect(find.text('Glad you are here!'), findsOneWidget);
+      expect(find.byType(CalorieIntroFlow), findsOneWidget);
+      expect(find.text('Welcome to YAMT'), findsOneWidget);
     });
   });
 }
@@ -47,6 +55,7 @@ Future<void> _pumpPage(
   WidgetTester tester,
   CalorieSettingsRepository repository,
 ) {
+  _disableAnimations(tester);
   return tester.pumpWidget(
     ProviderScope(
       overrides: [

@@ -1,39 +1,80 @@
 # Onboarding Feature
 
 `lib/features/onboarding` owns the calorie-goal onboarding experience. It is the
-first-run setup flow that collects the data needed for the calorie calculator,
-saves the initial goal, starts or resets Burn Week, optionally creates same-day
-catch-up placeholder entries, and records that the current user has completed
-the flow.
+first-run flow that explains how the app derives a calorie target, collects the
+data the calorie calculator needs, saves the initial goal, bootstraps Burn Week,
+and records that the current user has completed the flow.
 
 The feature lives outside `lib/features/calories`, but it is tightly integrated
 with the calorie engine. `lib/features/calories` still owns the reusable calorie
 models, calculator form controller, goal controller, log repository, and Burn
-Week state. Onboarding owns the one-time guided setup and the special logic
-needed to enter an already-running day cleanly. Shared calorie-goal UI widgets
-live in `lib/features/calories`.
+Week state. Onboarding owns the one-time guided setup. Shared calorie-goal UI
+widgets live in `lib/features/calories`.
 
-## What It Does
+## Owns
 
-- Shows a full-screen wizard for calorie goal setup.
-- Collects sex, age, height, current weight, target weight, activity level,
-  goal mode, and weekly pace through the calorie calculator form controller.
-- Skips the pace step when the user wants to maintain weight.
-- Lets the user decide whether the goal starts today or on a future date.
-- For same-day starts, asks whether today's intake will be tracked exactly or
-  estimated.
-- For estimated same-day starts, lets the user choose a low, normal, or high
-  catch-up estimate.
-- Saves the calculated calorie goal through the calorie goal controller.
-- Starts, resets, or bootstraps Burn Week based on the selected start date and
-  whether learned TDEE already exists.
-- Creates onboarding placeholder calorie entries when the user starts today and
-  wants to estimate already-consumed calories.
+- Shows one full-screen `IntroductionScreen` with fourteen pages: a welcome page,
+  six explaining pages, six input pages, and a summary page.
+- Offers **Get started** and **I already have an account** on the welcome page.
+  The login action pushes `/welcome?from=onboarding` so an existing user can sign
+  in without leaving onboarding.
+- Explains the model in one idea per page: calories in against calories out, that
+  the first number is an estimate from the entered details, that it is corrected
+  every week against the real weight, that the goal then subtracts or adds
+  calories, that the progress view shows the real trend, and what the rest of the
+  kitchen features do.
+- Collects gender and birthday, height and current weight, target weight, daily
+  activity level, training schedule, and weekly pace through the calorie
+  calculator form controller.
+- Uses vertical scroll wheels instead of keyboards: day, month, and year for the
+  birthday, and one wheel each for height, weight, target weight, and pace.
+  Weight moves in steps of 0.1 kg, pace in steps of 0.05 kg per week.
+- Asks about everyday movement only, in four steps from mostly sitting to
+  physically hard work. Training days are a page of their own.
+- Derives the goal mode from target weight against current weight, and skips the
+  pace page when the user wants to maintain weight.
+- Estimates the day the target weight is reached and shows it on the pace page.
+- Warns about an ambitious pace and about a goal clamped to the minimum.
+- Ends on a summary with two numbers: the calculated daily expenditure and the
+  daily intake target, with the difference between them explained.
+- Saves the calculated calorie goal through the calorie goal controller, always
+  starting today.
+- Bootstraps Burn Week from today.
 - Marks calorie onboarding as completed in user-scoped app preferences.
 - Automatically treats users with an existing saved calorie goal as completed,
   then backfills the completion marker.
 - Drives router gating so authenticated users with completed profile setup are
   sent to calorie onboarding until this feature is complete.
+
+## Does Not Own
+
+- The calorie calculator itself, the goal controller, Burn Week state, or the
+  calorie log. Those stay in `lib/features/calories`.
+- Authentication and the guest account. Onboarding only links to `/welcome`.
+- Any calorie goal change after the first one. Later edits happen in the calorie
+  settings and the weekly check-in.
+
+## Public Edge
+
+- `presentation/calorie_goal_onboarding_page.dart`, mounted by
+  `lib/core/router` at `AppRoutes.calorieGoalSetup`.
+- `provider/calorie_goal_onboarding_completed_provider.dart` with
+  `calorieGoalOnboardingCompletedProvider`,
+  `markCalorieGoalOnboardingCompleted`, and
+  `markCalorieGoalOnboardingCompletedFromContainer`, used by the router gate.
+- `domain/calorie_goal_onboarding_preferences.dart` for the completion marker
+  key, used by test helpers and the router tests.
+
+Everything under `presentation/widgets/` and `presentation/controllers/` is
+internal. No other feature assembles the intro pages.
+
+## Providers
+
+- `calorieGoalOnboardingCompletedProvider` (`keepAlive`): whether the current
+  user finished onboarding.
+- `calorieGoalOnboardingFinishFlowProvider`: the finish workflow.
+- `calorieIntroControllerProvider` (auto-dispose): page index, validation-error
+  visibility, saving state, and route-exit flag.
 
 ## Folder Structure
 
@@ -41,11 +82,8 @@ live in `lib/features/calories`.
 
 Coordinates the cross-feature finish action:
 
-- `calorie_goal_onboarding_finish_flow.dart`: Saves the calculated goal, applies
-  the selected goal start date, and coordinates Burn Week
-  start/reset/bootstrap.
-- `calorie_goal_onboarding_catch_up_placeholder_writer.dart`: Writes placeholder
-  entries for estimated same-day starts.
+- `calorie_goal_onboarding_finish_flow.dart`: Saves the calculated goal with
+  today as the start date and bootstraps Burn Week.
 
 `domain/`
 
@@ -53,12 +91,12 @@ Contains pure onboarding-specific logic:
 
 - `calorie_goal_onboarding_preferences.dart`: Defines the per-user completion
   preference key and marker value.
-- `calorie_goal_onboarding_start.dart`: Defines same-day catch-up estimate
-  options and today's tracking modes.
-- `onboarding_catch_up_calculator.dart`: Estimates how many calories should
-  already have been consumed based on time of day, daily goal, and low/normal/high
-  user selection. It also distributes catch-up calories across meals and assigns
-  natural meal midpoint times for placeholder entries.
+- `goal_target_date_estimator.dart`: Estimates the day the target weight is
+  reached from the current weight, the target weight, and the weekly pace.
+- `intro_activity_option.dart`: The four everyday-activity levels onboarding
+  offers and the calculator level each maps to. The calculator's extreme level
+  is not offered here; it stays reachable from the calorie settings, and an
+  existing extreme profile shows the closest offered level.
 
 `provider/`
 
@@ -75,39 +113,47 @@ Connects router state, auth state, preferences, and existing calorie settings:
 
 `presentation/`
 
-Contains the page, wizard, and step widgets:
+Contains the page, the intro flow, and its pages:
 
 - `calorie_goal_onboarding_page.dart`: Loads existing calorie settings and
-  starts the wizard with either those settings or empty defaults.
-- `widgets/onboarding/calorie_onboarding_wizard.dart`: Owns step state,
-  validation, PageView navigation, saving state, and route exit protection.
-- `widgets/onboarding/calorie_onboarding_wizard_controller.dart`: Tracks wizard
-  page index, validation-error visibility, saving state, and route-exit flags.
-- `widgets/onboarding/calorie_onboarding_start_date_controller.dart`: Tracks
-  start-now/future-date choices and resolves save parameters for the selected
-  start-date mode.
-- `widgets/onboarding/calorie_onboarding_step_pages.dart`: Builds the
-  non-scrollable onboarding `PageView` and wires each step widget.
-- `widgets/onboarding/calorie_onboarding_wizard_chrome.dart`: Renders the
-  progress, back, and next controls shown around the middle wizard steps.
-- `widgets/onboarding/calorie_onboarding_finish_handler.dart`: Builds the finish
-  request, shows localized save failures, marks onboarding complete, and exits
-  the setup route.
-- `steps/step_0_welcome.dart`: Intro screen.
-- `steps/step_1_personal_info.dart`: Sex, age, and height.
-- `steps/step_2_activity.dart`: Activity level.
-- `steps/step_3_goal_weight.dart`: Current and target weight.
-- `steps/step_4_pace.dart`: Weekly goal pace plus warnings for aggressive
-  gain/loss rates.
-- `steps/step_training_days.dart`: Training day schedule and calorie cycling
-  offset (modularized with `step_training_days_cycling_preview.dart` and
-  `step_training_days_weekday_selector.dart`).
-- `steps/step_5_info.dart`: Explains the learning week and tracking tools.
-- `steps/step_6_start_date.dart`: Start today/future date, exact/estimated
-  today tracking, and catch-up estimate choices.
-- `steps/step_7_ready.dart`: Final calculated-goal summary and finish action.
-- Shared step widgets provide labeled inputs, selectable cards, and common
-  scrollable step layout.
+  starts the intro with either those settings or empty defaults.
+- `calorie_goal_onboarding_keys.dart`: Stable widget keys used by tests.
+- `controllers/calorie_intro_controller.dart`: Moves between pages, applies the
+  per-page "can continue" rules and the maintain-mode pace skip, and tracks
+  saving and route-exit flags.
+- `models/`: UI models without widgets. `calorie_intro_page.dart` (page order,
+  chapter numbers), `calorie_intro_state.dart` (controller state),
+  `intro_chapter_accent.dart` (accent per chapter and its counterpart),
+  `intro_input_page_args.dart` (what every input page shares), and
+  `intro_weight_range.dart` (bounds and step of the weight wheels).
+- `widgets/intro/calorie_intro_flow.dart`: Hosts `IntroductionScreen` over the
+  animated backdrop, owns navigation, the rising haptics, route exit
+  protection, and the control bar with back, next, and finish.
+- `widgets/intro/calorie_intro_pages.dart`: Builds the raw page list in the
+  order of `CalorieIntroPage` and wraps every page in its chapter theme.
+- `widgets/intro/intro_chapter_labels.dart`: Localized chapter name, kicker,
+  counter, section, and next-action label per page.
+- `widgets/intro/calorie_intro_finish_handler.dart`: Saves the goal, shows
+  localized save failures, marks onboarding complete, and exits the setup route.
+- `widgets/intro/pages/`: One widget per page. `intro_story_page.dart` is the
+  shared layout of the six explaining pages.
+- `widgets/intro/fields/`: Building blocks shared by the pages.
+  - Chapter look: `intro_backdrop.dart` (breathing blobs, `intro_stream_lines.dart`,
+    vignette; stops under reduced motion), `intro_chapter_chrome.dart` (counter,
+    section, progress segments), `intro_chapter_header.dart` (kicker, headline
+    with highlighted words, lead), `intro_chapter_theme.dart` (tints the theme's
+    accent roles with the chapter accent).
+  - Page shells: `intro_scroll_body.dart` (centred, scrolls when needed),
+    `intro_page_content.dart` (header on top of it), and
+    `intro_fill_page_content.dart` (header on top, footer above the controls,
+    pickers fill the rest; `intro_picker_stack.dart` splits that height).
+  - Pickers: `intro_wheel.dart` with `intro_wheel_selection_band.dart`,
+    `intro_vertical_wheel_field.dart`, `intro_birth_date_card.dart`,
+    `intro_weekday_selector.dart`, all inside `intro_field_card.dart`.
+  - Choices and results: `intro_choice_card.dart` on `intro_selectable_card.dart`,
+    `intro_gender_card.dart`, `intro_week_depot_chart.dart`,
+    `intro_summary_result_card.dart`.
+  - Notes: `intro_page_note.dart` and `intro_warning_note.dart`.
 
 `*.g.dart`
 
@@ -137,78 +183,63 @@ Generated Riverpod files. They should not be edited manually.
    returns completed.
 5. If there is no marker and no goal, router sends the user to onboarding.
 
-### Wizard Navigation
+### Intro Navigation
 
 1. `CalorieGoalOnboardingPage` loads `CalorieGoalSettings`.
-2. `CalorieOnboardingWizard` creates a calculator form provider from the saved
+2. `CalorieIntroFlow` creates a calculator form provider from the saved
    calculator profile, using empty onboarding defaults where needed.
-3. Steps are shown through a non-scrollable `PageView`; only the wizard buttons
-   move forward/backward.
-4. Personal info and goal weight steps block progress until required form fields
-   are valid.
-5. Maintain-weight users skip the pace step.
-6. Start-date progress is blocked until the user chooses today/future date and,
-   for today, exact or estimated tracking.
+3. `IntroductionScreen` runs with `freeze: true`, so swiping is disabled and only
+   the intro controls move between pages.
+4. The shared next control asks `CalorieIntroController.next` for the target
+   page. When the current page is incomplete the controller returns `null` and
+   turns on validation errors instead of moving.
+5. The identity page needs gender and a birthday, the body page needs height and
+   weight, and the target page needs a target weight. Every picker shows a
+   plausible starting value but reports nothing until the user moves it, so an
+   untouched page still fails validation.
+6. Maintain-weight users skip the pace page in both directions.
 
 ### Saving The Goal
 
-1. The ready step calls the wizard finish callback.
-2. `CalorieOnboardingFinishHandler` reads the calculated profile and final
-   daily kcal goal.
+1. The summary page calls the finish callback.
+2. `CalorieIntroFinishHandler` reads the calculated profile from the form state.
 3. `CalorieGoalOnboardingFinishFlow.saveGoal` receives a
-   `CalorieGoalOnboardingFinishRequest`.
-4. The goal controller first saves the calculated goal with the selected start
-   date and optional `countGoalStartDayForLearning` flag.
-5. After the goal is saved, onboarding applies Burn Week setup and optional
-   catch-up placeholder entries.
+   `CalorieGoalOnboardingFinishRequest` with the profile and today.
+4. The goal controller saves the calculated goal starting today, with
+   `countGoalStartDayForLearning` set to `false`, because onboarding usually
+   happens in the middle of an untracked day.
+5. Burn Week is bootstrapped from today.
 6. On success, onboarding writes the completion marker.
-7. The wizard allows route exit and returns to the previous route or diary home.
+7. The flow allows route exit and returns to the previous route or diary home.
 8. On failure, saving state is reset and a localized failure snackbar is shown.
 
-### Starting Today With Exact Tracking
+### Birthday And Age
 
-1. The user chooses "start today".
-2. The user chooses exact tracking.
-3. The goal start date is today.
-4. `countGoalStartDayForLearning` is saved as `true`.
-5. No catch-up placeholder entries are created.
-6. Burn Week starts from today.
+1. The identity page offers day, month, and year wheels between 16 and 100 years
+   back. Any wheel move emits one complete date; the day is clamped to the days
+   of the selected month and the whole date to the age bounds.
+2. `CalorieGoalCalculatorFormController.updateBirthDate` stores the birth date
+   and derives `ageYearsText` from `clockProvider`.
+3. `CalorieCalculatorProfile.birthDate` is persisted with the goal, and
+   `ageAt(now)` derives the current age, falling back to the stored `ageYears`
+   for profiles saved before birthdays existed.
 
-### Starting Today With Estimated Tracking
-
-1. The user chooses "start today".
-2. The user chooses estimated tracking and selects low, normal, or high.
-3. The finish flow reads calorie entries already logged today.
-4. `calculateOnboardingCatchUpKcal` estimates how many kcal should exist by the
-   current time of day.
-5. Already logged kcal are subtracted from the desired catch-up total.
-6. If at least 100 kcal remain, the placeholder writer creates entries across
-   breakfast, lunch, snack, and dinner according to the current time.
-7. The goal start day is excluded from learning by saving
-   `countGoalStartDayForLearning` as `false`.
-8. Burn Week is bootstrapped from today.
-
-### Starting Later
-
-1. The user chooses a future date.
-2. Date picking is constrained from tomorrow to ten years ahead.
-3. If the user already has learned TDEE, Burn Week is restarted from the future
-   date.
-4. Otherwise Burn Week is reset until the goal starts.
-5. The calculated goal is saved with `allowFutureGoalStart: true`.
-
-## Integrations
+## Accepted Dependencies
 
 - `core/router`: Redirects users into or out of onboarding based on completion
   state.
 - `features/auth`: Supplies the current user ID for completion markers.
 - `core/preferences`: Stores the user-scoped onboarding completion marker.
-- `features/calories`: Provides shared goal picker, result, warning, and
-  goal-start card widgets.
-- `lib/features/calories`: Provides the calculator form controller, goal
-  settings, goal controller, calorie log repository, calorie entries, diary day
-  helpers, and Burn Week controllers.
-- `l10n`: Supplies all user-facing copy in the wizard.
+- `features/calories`: Only through its public edge. Domain types
+  (`CalorieCalculatorProfile`, `CalorieGoalSettings`,
+  `CalorieGoalCalculationResult`, `CalorieActivityLevelOption`, the age
+  calculator, diary day helpers) and the legacy `provider/` controllers the
+  calories README lists for onboarding (calculator form controller, goal
+  controller, Burn Week run controller). No calories widgets: the intro draws
+  its own result and warning cards.
+- `core/theme`: `IntroAccentColors` for the chapter accents.
+- `core/widgets`: `AppHapticFeedback` for the rising haptics.
+- `l10n`: Supplies all user-facing copy in the intro.
 
 ## Persistence Model
 
@@ -216,25 +247,37 @@ Generated Riverpod files. They should not be edited manually.
   `calorie_goal_onboarding_completed:{userId}` in app preferences, value `1`.
 - Calculated goal:
   saved through `CalorieGoalController` into calorie goal settings.
-- Placeholder entries:
-  saved as calorie entries through `CalorieLogRepository`, marked as onboarding
-  placeholders.
 - Burn Week:
-  started, reset, restarted, or bootstrapped through `BurnWeekRunController`.
+  bootstrapped through `BurnWeekRunController`.
 
 ## Tests
 
 `test/features/onboarding` mirrors the feature structure:
 
-- `application/` tests finish-flow behavior, Burn Week setup, goal saving,
-  future starts, exact same-day starts, estimated catch-up starts, and
-  placeholder entry creation.
-- `domain/` tests preference keys and catch-up calculation/distribution logic.
-- `provider/` tests completion detection, existing-goal backfill, missing-goal
-  behavior, and marker writing.
-- `presentation/widgets/` tests the full wizard save flows plus individual step
-  rendering, validation, selection, warnings, and finish states.
+- `application/` tests the finish flow: goal saved for today, counting start
+  day, Burn Week bootstrap, and the failed-save path.
+- `domain/` tests preference keys and the target-date estimator.
+- `presentation/controllers/` tests page navigation, per-page gating, the
+  maintain-mode pace skip, and the saving flags.
+- `presentation/models/` tests chapter numbering and page order;
+  `presentation/widgets/intro/intro_chapter_labels_test.dart` tests the
+  counter, kicker, section, and next-action labels.
+- `domain/intro_activity_option_test.dart` tests the four levels and the
+  nearest-level fallback.
+- `presentation/widgets/intro/` drives the whole intro: the happy path to a
+  saved goal, blocked pages, the estimated target date, the login action, and
+  the save-failure snackbar. `intro_birth_date_card_test.dart` covers the
+  birthday dials, including the day and age-bound clamping.
+- `presentation/` tests that the page shows a spinner until settings load.
+
+`integration_test/calories/calorie_onboarding_visible_flow_test.dart` runs the
+same walk on a device, including keyboard avoidance.
 
 Router tests in `test/core/router/app_router_test.dart` cover the route-level
 onboarding redirects and the transition from setup to diary home after
 completion.
+
+## Legacy
+
+- `provider/` is a feature-level provider folder. `architecture.md` forbids new
+  ones. New providers go into `application/` or next to the thing they provide.

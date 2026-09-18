@@ -25,10 +25,19 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## Onboarding
 
-- First-run calorie-goal wizard.
-- Personal info, activity level, goal weight, goal pace, and start-date steps.
-- Goal mode support for losing, maintaining, or gaining weight.
-- Start-today and start-later handling, including catch-up placeholder logic.
+- First-run intro with a welcome page offering start or login.
+- Explaining pages for calories in against calories out, the first estimate, the
+  weekly correction, how the goal shifts the target, how the trend is shown, and
+  what the kitchen features do.
+- Input pages for gender and birthday, height and weight, target weight, daily
+  activity level, training schedule, and goal pace, all through scroll wheels
+  instead of keyboards.
+- Everyday activity in four steps, from mostly sitting to physically hard work.
+- Goal mode derived from target weight, with the pace page skipped for maintain.
+- Estimated day the target weight is reached, plus ambitious-pace and
+  minimum-goal warnings.
+- Summary with the calculated daily expenditure and the resulting intake target.
+- Goal always starts today, with Burn Week bootstrapped from today.
 - Completion gate before the main app opens.
 
 ## Diary

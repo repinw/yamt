@@ -144,7 +144,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_edit_sheet.dart',
   'lib/features/kitchen_utensils/application/kitchen_utensil_mutation_service.dart',
   'lib/features/meal_templates/presentation/widgets/meal_template_recipe_template_sheet.dart',
-  'lib/features/onboarding/presentation/widgets/onboarding/steps/horizontal_dial_wheel.dart',
   'lib/features/product_nutrition/data/nutrition_label_ocr_repository.dart',
   'lib/features/product_search_hub/data/product_ai_search_repository.dart',
   'lib/features/product_search_hub/presentation/controllers/manual_product_search_controller.dart',

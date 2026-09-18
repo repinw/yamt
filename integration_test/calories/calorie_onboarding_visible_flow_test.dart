@@ -20,7 +20,6 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
@@ -221,125 +220,44 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
-  testWidgets('calorie onboarding start-later flow runs visibly on Android', (
+  testWidgets('calorie intro runs visibly and saves the goal for today', (
     tester,
   ) async {
     final harness = await _pumpOnboardingApp(tester);
 
-    await _completeOnboardingToStartDateStep(
-      tester,
-      validatePersonalInfo: true,
-    );
-    await _chooseStartLater(tester);
-    await _finishOnboarding(tester);
+    await _completeIntro(tester);
+    await _finishIntro(tester);
 
     _expectHomeDiary(harness);
-    await _expectStartLaterSaved(harness);
+    await _expectGoalStartedToday(harness);
     _expectOnboardingCompleted(harness);
   });
 
-  testWidgets('calorie onboarding start-now exact flow saves today', (
-    tester,
-  ) async {
-    final harness = await _pumpOnboardingApp(tester);
-
-    await _completeOnboardingToStartDateStep(tester);
-    await _chooseStartNowExact(tester);
-    await _finishOnboarding(tester);
-
-    _expectHomeDiary(harness);
-    await _expectStartTodaySaved(harness);
-    expect(harness.logRepository.entries, isEmpty);
-    _expectOnboardingCompleted(harness);
-  });
-
-  testWidgets('calorie onboarding start-now estimate flow saves catch-up', (
-    tester,
-  ) async {
-    final harness = await _pumpOnboardingApp(tester);
-
-    await _completeOnboardingToStartDateStep(tester);
-    await _chooseStartNowEstimateHigh(tester);
-    await _finishOnboarding(tester);
-
-    _expectHomeDiary(harness);
-    await _expectStartTodaySaved(harness);
-    for (final entry in harness.logRepository.entries) {
-      expect(entry.name, 'Estimated meal');
-      expect(entry.totalKcal, greaterThan(0));
-    }
-    _expectOnboardingCompleted(harness);
-  });
-
-  testWidgets('calorie onboarding future date picker opens and saves', (
-    tester,
-  ) async {
-    final harness = await _pumpOnboardingApp(tester);
-
-    await _completeOnboardingToStartDateStep(tester);
-    await _selectStartLater(tester);
-    await _tapVisible(
-      tester,
-      find.byKey(CalorieGoalOnboardingKeys.goalStartChangeButton),
-    );
-
-    expect(find.byType(DatePickerDialog), findsOneWidget);
-    await _tapVisible(tester, find.text('OK').last);
-    await _tapOnboardingNext(tester);
-    await _finishOnboarding(tester);
-
-    _expectHomeDiary(harness);
-    await _expectStartLaterSaved(harness);
-    _expectOnboardingCompleted(harness);
-  });
-
-  testWidgets('calorie onboarding start-date step blocks missing choices', (
+  testWidgets('calorie intro blocks the identity page without a birthday', (
     tester,
   ) async {
     await _pumpOnboardingApp(tester);
-    await _completeOnboardingToStartDateStep(tester);
+    await _openIdentityPage(tester);
 
-    await _tapOnboardingNext(tester);
-    expect(find.text('When should your goal start?'), findsOneWidget);
-    expect(find.text('All set!'), findsNothing);
+    await _tapIntroNext(tester);
 
-    await _tapVisible(
-      tester,
-      find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption),
-    );
-    await _tapOnboardingNext(tester);
-
-    expect(find.text('How will you track today?'), findsOneWidget);
-    expect(find.text('All set!'), findsNothing);
+    expect(find.text('Please pick your birthday.'), findsOneWidget);
+    expect(find.text('What are your current numbers?'), findsNothing);
   });
 
-  testWidgets('calorie onboarding keeps inputs visible above keyboard', (
+  testWidgets('calorie intro reaches the goal page from the body page', (
     tester,
   ) async {
     await _pumpOnboardingApp(tester);
-    addTearDown(tester.view.resetViewInsets);
 
-    await _tapVisible(tester, find.text("Let's start"));
-    await _tapVisible(tester, find.text('Female'));
+    await _openIdentityPage(tester);
+    await _completeIdentity(tester);
 
-    await _focusFieldWithKeyboard(tester, find.byType(TextFormField).at(1));
-    _expectAboveKeyboard(tester, find.byType(TextFormField).at(1));
-    await tester.enterText(find.byType(TextFormField).at(0), '30');
-    await tester.enterText(find.byType(TextFormField).at(1), '170');
-    await _dismissKeyboard(tester);
-    await _tapOnboardingNext(tester);
+    await _spinWheel(tester, CalorieGoalOnboardingKeys.introHeightWheel);
+    await _spinWheel(tester, CalorieGoalOnboardingKeys.introWeightWheel);
+    await _tapIntroNext(tester);
 
-    await _tapActivityOption(tester, 'Lightly active');
-    await _tapOnboardingNext(tester);
-
-    await _focusFieldWithKeyboard(tester, find.byType(TextFormField).at(1));
-    _expectAboveKeyboard(tester, find.byType(TextFormField).at(1));
-    await tester.enterText(find.byType(TextFormField).at(0), '70');
-    await tester.enterText(find.byType(TextFormField).at(1), '70');
-    await _dismissKeyboard(tester);
-    await _tapOnboardingNext(tester);
-
-    expect(find.textContaining('Your Plan is Ready'), findsOneWidget);
+    expect(find.text('Your Goal'), findsOneWidget);
   });
 }
 
@@ -357,7 +275,7 @@ Future<_CalorieOnboardingIntegrationHarness> _pumpOnboardingApp(
   await _pumpRouterTransition(tester);
 
   expect(_currentRoute(harness), AppRoutes.calorieGoalSetup);
-  expect(find.text('Glad you are here!'), findsOneWidget);
+  expect(find.text('Welcome to YAMT'), findsOneWidget);
   return harness;
 }
 
@@ -422,83 +340,58 @@ String _currentRoute(_CalorieOnboardingIntegrationHarness harness) {
   return harness.container.read(appRouterProvider).state.uri.path;
 }
 
-Future<void> _completeOnboardingToStartDateStep(
-  WidgetTester tester, {
-  bool validatePersonalInfo = false,
-}) async {
-  await _tapVisible(tester, find.text("Let's start"));
-  if (validatePersonalInfo) {
-    await _tapOnboardingNext(tester);
-    expect(find.text('Please enter your age.'), findsOneWidget);
-    expect(find.text('Please enter your height.'), findsOneWidget);
-  }
-
-  await _tapVisible(tester, find.text('Female'));
-  await tester.enterText(find.byType(TextFormField).at(0), '30');
-  await tester.enterText(find.byType(TextFormField).at(1), '170');
-  await _dismissKeyboard(tester);
-  await _tapOnboardingNext(tester);
-
-  await _tapActivityOption(tester, 'Lightly active');
-  await _tapOnboardingNext(tester);
-
-  await tester.enterText(find.byType(TextFormField).at(0), '70');
-  await tester.enterText(find.byType(TextFormField).at(1), '70');
-  await _dismissKeyboard(tester);
-  await _tapOnboardingNext(tester);
-
-  expect(find.textContaining('Your Plan is Ready'), findsOneWidget);
-  await _tapOnboardingNext(tester);
-  expect(find.text('When to start?'), findsOneWidget);
-}
-
-Future<void> _chooseStartLater(WidgetTester tester) async {
-  await _selectStartLater(tester);
-  await _tapOnboardingNext(tester);
-}
-
-Future<void> _selectStartLater(WidgetTester tester) async {
+Future<void> _openIdentityPage(WidgetTester tester) async {
   await _tapVisible(
     tester,
-    find.byKey(CalorieGoalOnboardingKeys.goalStartLaterOption),
+    find.byKey(CalorieGoalOnboardingKeys.introStartAction),
   );
+  for (var storyPage = 0; storyPage < 6; storyPage++) {
+    await _tapIntroNext(tester);
+  }
   expect(
-    find.byKey(CalorieGoalOnboardingKeys.goalStartChangeButton),
+    find.text('Erstmal brauchen wir ein ungefähres Bild von dir.'),
     findsOneWidget,
   );
 }
 
-Future<void> _chooseStartNowExact(WidgetTester tester) async {
-  await _tapVisible(
-    tester,
-    find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption),
-  );
-  await _tapVisible(
-    tester,
-    find.byKey(CalorieGoalOnboardingKeys.todayTrackingExactOption),
-  );
-  await _tapOnboardingNext(tester);
+Future<void> _completeIdentity(WidgetTester tester) async {
+  await _tapVisible(tester, find.text('Female'));
+  await _spinWheel(tester, CalorieGoalOnboardingKeys.introBirthDayWheel);
+  await _tapIntroNext(tester);
 }
 
-Future<void> _chooseStartNowEstimateHigh(WidgetTester tester) async {
-  await _tapVisible(
-    tester,
-    find.byKey(CalorieGoalOnboardingKeys.goalStartNowOption),
-  );
-  await _tapVisible(
-    tester,
-    find.byKey(CalorieGoalOnboardingKeys.todayTrackingEstimateOption),
-  );
-  await _tapVisible(
-    tester,
-    find.byKey(CalorieGoalOnboardingKeys.catchUpHighOption),
-  );
-  await _tapOnboardingNext(tester);
+Future<void> _spinWheel(WidgetTester tester, Key wheelKey) async {
+  final wheel = find.byKey(wheelKey);
+  await tester.ensureVisible(wheel);
+  await _pumpVisibleStep(tester);
+  await tester.drag(wheel, const Offset(0, -60));
+  await _pumpVisibleStep(tester);
 }
 
-Future<void> _finishOnboarding(WidgetTester tester) async {
+Future<void> _completeIntro(WidgetTester tester) async {
+  await _openIdentityPage(tester);
+  await _completeIdentity(tester);
+
+  await _spinWheel(tester, CalorieGoalOnboardingKeys.introHeightWheel);
+  await _spinWheel(tester, CalorieGoalOnboardingKeys.introWeightWheel);
+  await _tapIntroNext(tester);
+
+  await _spinWheel(tester, CalorieGoalOnboardingKeys.introTargetWeightWheel);
+  await _tapIntroNext(tester);
+
+  await _tapVisible(tester, find.text('Sitting, but on the move'));
+  await _tapIntroNext(tester);
+
+  await _tapIntroNext(tester);
+  await _tapIntroNext(tester);
+}
+
+Future<void> _finishIntro(WidgetTester tester) async {
   expect(find.text('All set!'), findsOneWidget);
-  await _tapVisible(tester, find.text("Let's go"));
+  await _tapVisible(
+    tester,
+    find.byKey(CalorieGoalOnboardingKeys.introFinishAction),
+  );
   await _pumpRouterTransition(tester);
   await _pumpRouterTransition(tester);
 }
@@ -508,30 +401,18 @@ void _expectHomeDiary(_CalorieOnboardingIntegrationHarness harness) {
   expect(find.byKey(const ValueKey<String>('diary-page')), findsOneWidget);
 }
 
-Future<void> _expectStartLaterSaved(
-  _CalorieOnboardingIntegrationHarness harness,
-) async {
-  final settings = await harness.settingsRepository.readSettings();
-  final tomorrow = normalizeDiaryDay(
-    DateTime.now().add(const Duration(days: 1)),
-  );
-  expect(settings.nextGoalStartAfterDay(DateTime.now()), tomorrow);
-  expect(harness.runStateRepository.state.currentWeekStartDayKey, isNull);
-  expect(harness.logRepository.entries, isEmpty);
-}
-
-Future<void> _expectStartTodaySaved(
+Future<void> _expectGoalStartedToday(
   _CalorieOnboardingIntegrationHarness harness,
 ) async {
   final today = normalizeDiaryDay(DateTime.now());
   final settings = await harness.settingsRepository.readSettings();
   final goalEntry = settings.goalHistory.single;
   expect(goalEntry.effectiveDate, today);
-  expect(goalEntry.effectiveCountingStartDate, today);
   expect(
     harness.runStateRepository.state.currentWeekStartDayKey,
     diaryDayKey(today),
   );
+  expect(harness.logRepository.entries, isEmpty);
 }
 
 void _expectOnboardingCompleted(_CalorieOnboardingIntegrationHarness harness) {
@@ -559,38 +440,9 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await _pumpVisibleStep(tester);
 }
 
-Future<void> _tapOnboardingNext(WidgetTester tester) async {
-  final next = find.text('Next');
-  final soundsGreat = find.text('Sounds great, next!');
-  final button = next.evaluate().isNotEmpty ? next : soundsGreat;
-  await _tapVisible(tester, button);
-}
-
-Future<void> _tapActivityOption(WidgetTester tester, String text) async {
-  await _tapVisible(tester, find.text(text));
-}
-
-Future<void> _focusFieldWithKeyboard(WidgetTester tester, Finder field) async {
-  await tester.ensureVisible(field);
-  await _pumpVisibleStep(tester);
-  await tester.tap(field);
-  tester.view.viewInsets = FakeViewPadding(
-    bottom: 360 * tester.view.devicePixelRatio,
+Future<void> _tapIntroNext(WidgetTester tester) async {
+  await _tapVisible(
+    tester,
+    find.byKey(CalorieGoalOnboardingKeys.introNextAction),
   );
-  await _pumpVisibleStep(tester);
-}
-
-void _expectAboveKeyboard(WidgetTester tester, Finder finder) {
-  final fieldBottom = tester.getBottomLeft(finder).dy;
-  final viewHeight =
-      tester.view.physicalSize.height / tester.view.devicePixelRatio;
-  final keyboardHeight =
-      tester.view.viewInsets.bottom / tester.view.devicePixelRatio;
-  expect(fieldBottom, lessThanOrEqualTo(viewHeight - keyboardHeight));
-}
-
-Future<void> _dismissKeyboard(WidgetTester tester) async {
-  FocusManager.instance.primaryFocus?.unfocus();
-  tester.view.resetViewInsets();
-  await _pumpVisibleStep(tester);
 }

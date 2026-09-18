@@ -1703,40 +1703,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCalculatorGoalStartChangeAction => 'Change';
 
   @override
-  String get caloriesCalculatorOnboardingStartTitle =>
-      'When should your goal start?';
-
-  @override
-  String get caloriesCalculatorOnboardingStartLaterAction => 'Start later';
-
-  @override
-  String get caloriesCalculatorOnboardingStartLaterHint =>
-      'Today stays consequence-free. Burn Week starts automatically from this day.';
-
-  @override
-  String get caloriesCalculatorOnboardingChooseFutureDateAction => 'Choose day';
-
-  @override
-  String get caloriesCalculatorOnboardingTodayTrackingLabel =>
-      'How will you track today?';
-
-  @override
-  String get caloriesCalculatorOnboardingCatchUpLowAction => 'Little';
-
-  @override
-  String get caloriesCalculatorOnboardingCatchUpNormalAction => 'Normal';
-
-  @override
-  String get caloriesCalculatorOnboardingCatchUpHighAction => 'A lot';
-
-  @override
-  String get caloriesCalculatorOnboardingCatchUpHint =>
-      'We place you safely into today\'s buffer zone.';
-
-  @override
-  String get caloriesOnboardingPlaceholderName => 'Estimated meal';
-
-  @override
   String caloriesCalculatorMinimumGoalWarning(int minimumKcal) {
     return 'For weight loss, the daily target cannot go below $minimumKcal kcal. The result was capped at this minimum.';
   }
@@ -3221,58 +3187,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get commonNotImplementedYet => 'Not implemented yet';
 
   @override
-  String get onboardingWelcomeTitle => 'Glad you are here!';
-
-  @override
-  String get onboardingWelcomeText =>
-      'Forget complicated calorie counting. We make it as easy as possible. To support you optimally, we just need a little bit of information about you.';
-
-  @override
-  String get onboardingWelcomeAction => 'Let\'s start';
-
-  @override
-  String get onboardingWelcomeAlreadyHaveAccount => 'Already registered?';
-
-  @override
-  String get onboardingWelcomeLoginAction => 'Log in here';
-
-  @override
-  String get onboardingAgeYearsUnit => 'years';
-
-  @override
-  String get onboardingHeightCmUnit => 'cm';
-
-  @override
   String get onboardingNextAction => 'Next';
 
   @override
-  String get onboardingNextActionStep5 => 'Sounds great, next!';
-
-  @override
   String get onboardingFinishAction => 'Let\'s go';
-
-  @override
-  String get onboardingPersonalInfoTitle => 'Tell us something about yourself.';
-
-  @override
-  String get onboardingPersonalInfoSubtitle =>
-      'This data helps us calculate your basal metabolic rate – because every body burns energy differently!';
-
-  @override
-  String get onboardingActivityLevelTitle => 'How active are you?';
-
-  @override
-  String get onboardingActivityLevelSubtitle =>
-      'Your normal daily level (training comes later).';
 
   @override
   String get onboardingGoalWeightTitle => 'Your Goal';
 
   @override
   String get onboardingGoalWeightSubtitle => 'Let\'s set your goal weight.';
-
-  @override
-  String get onboardingGoalWeightStartLabel => 'Start weight (kg)';
 
   @override
   String get onboardingGoalWeightTargetLabel => 'Goal weight (kg)';
@@ -3301,9 +3225,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Since you want to maintain your weight, we will simply calculate your maintenance calories. You don\'t need to set a pace.';
 
   @override
-  String get onboardingPaceWarningTitle => 'Ambitious Pace';
-
-  @override
   String get onboardingPaceWarningLoseMessage =>
       'Losing more than 0.5 kg per week is quite high. Make sure you still get enough nutrients!';
 
@@ -3312,42 +3233,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Gaining more than 0.5 kg per week is quite high. A more moderate pace helps build muscle without adding too much fat.';
 
   @override
-  String onboardingPacePerWeek(String pace) {
-    return '$pace kg / week';
-  }
-
-  @override
-  String get onboardingTrainingDaysTitle => 'Workouts & Sports';
-
-  @override
-  String get onboardingTrainingDaysSubtitle =>
-      'We adapt your daily calorie target to your routine.';
-
-  @override
-  String get onboardingTrainingDaysQuestion => 'Do you work out on set days?';
-
-  @override
-  String get onboardingTrainingDaysNoFixedPlan =>
-      'No set days / No regular workouts';
-
-  @override
-  String get onboardingTrainingDaysNoFixedPlanSubtitle =>
-      'Same calorie target every day';
-
-  @override
-  String get onboardingTrainingDaysFixedPlan => 'Yes, on fixed weekdays';
-
-  @override
-  String get onboardingTrainingDaysFixedPlanSubtitle =>
-      'Select your typical workout days';
-
-  @override
   String get onboardingTrainingDaysExtraKcalLabel =>
       'Eat more on workout days (+200 kcal)';
-
-  @override
-  String get onboardingTrainingDaysExtraKcalSubtitle =>
-      'Budget-neutral: More calories on workout days, fewer on rest days';
 
   @override
   String onboardingTrainingDaysTrainingResult(int days) {
@@ -3360,71 +3247,320 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get onboardingInfoTitle => 'Your Plan is Ready! 🎉';
-
-  @override
-  String get onboardingInfoSubtitle => 'A few things you should know.';
-
-  @override
-  String get onboardingInfoPoint1Title => 'Scan Receipts';
-
-  @override
-  String get onboardingInfoPoint1Body => 'No more tedious typing.';
-
-  @override
-  String get onboardingInfoPoint2Title => 'AI Recognition';
-
-  @override
-  String get onboardingInfoPoint2Body => 'Just tell us what you ate.';
-
-  @override
-  String get onboardingInfoPoint3Title => 'Barcode Scanner';
-
-  @override
-  String get onboardingInfoPoint3Body => 'One scan, all nutrition facts.';
-
-  @override
-  String get onboardingInfoBoxTitle => 'The Learning Week';
-
-  @override
-  String get onboardingInfoBoxBody =>
-      'Your first mission: Try not to force any changes in the next 7 days. Eat as usual and just track. Our smart algorithm learns your metabolism and creates your custom calorie goal!';
-
-  @override
-  String get onboardingStartDateTitle => 'When to start?';
-
-  @override
-  String get onboardingStartDateSubtitle =>
-      'When do you want to start tracking?';
-
-  @override
-  String get onboardingStartDateNowLabel => 'Today';
-
-  @override
-  String get onboardingStartDateNowDesc =>
-      'I will track everything today (or already did).';
-
-  @override
-  String get onboardingStartDateNowQuestion => 'How should we handle today?';
-
-  @override
-  String get onboardingStartDateNowExact =>
-      'I will track the whole day exactly';
-
-  @override
-  String get onboardingStartDateNowEstimate =>
-      'I will estimate what I ate so far';
-
-  @override
-  String get onboardingStartDateLaterDesc =>
-      'Today is almost over, I prefer to start fresh tomorrow.';
-
-  @override
   String get onboardingReadyTitle => 'All set!';
 
   @override
-  String get onboardingReadySubtitle =>
-      'Your profile is ready. Let\'s get started!';
+  String get introWelcomeTitle => 'Welcome to YAMT';
+
+  @override
+  String get introWelcomeBody =>
+      'Track what you eat, learn what your body really burns, and keep your kitchen in order.';
+
+  @override
+  String get introStartAction => 'Get started';
+
+  @override
+  String get introLoginAction => 'I already have an account';
+
+  @override
+  String get introCalorieModelTitle => 'It all starts with what you put in.';
+
+  @override
+  String get introCalorieModelBody =>
+      'Every bite and every sip is pure chemical energy for your body. Calories are not a number on a scale and not an enemy to fight — they are the fuel that keeps your cells alive.';
+
+  @override
+  String get introInputQualityTitle =>
+      'Your body is a furnace that never sleeps.';
+
+  @override
+  String get introInputQualityBody =>
+      'Around the clock you burn energy: for your heartbeat, your brain, your breathing and steady warmth. On top comes every small motion of the day — stairs, fidgeting, shivering, walking.';
+
+  @override
+  String get introFollowTargetTitle => 'In the end, plain physics decides.';
+
+  @override
+  String get introFollowTargetBody =>
+      'After the first seven days we compare that starting value with how your weight actually moved, and correct it. Then again week after week.';
+
+  @override
+  String get introGoalDirectionBody =>
+      'To lose weight we subtract calories from your burn, to gain weight we add some. To maintain, your target simply matches it.';
+
+  @override
+  String get introGoalDirectionTitle => 'Your goal bends the number.';
+
+  @override
+  String get introTrendTitle =>
+      'One weigh-in says nothing. The week says everything.';
+
+  @override
+  String get introTrendBody =>
+      'Water, salt and a late dinner move the scale by a kilo overnight. That is noise, not fat.';
+
+  @override
+  String get introExtrasTitle => 'And the rest of your kitchen comes along.';
+
+  @override
+  String get introExtrasBody =>
+      'Save recipes and plan with a shopping list, scan barcodes to see what is in stock, take food off a receipt, or describe it and let the AI fill in the details.';
+
+  @override
+  String get introIdentityTitle => 'First we need a rough picture of you.';
+
+  @override
+  String get introIdentitySubtitle =>
+      'Before the app learns your real numbers, we need a scientific starting point for your basal metabolism.';
+
+  @override
+  String get introBirthDateLabel => 'Birthday';
+
+  @override
+  String get introBirthDateEmpty => 'Please pick your birthday.';
+
+  @override
+  String get introCalorieModelHighlight => 'what you put in';
+
+  @override
+  String get introCalorieModelNote =>
+      'This half of the equation is tangible: what you eat can be weighed, seen and logged almost to the gram.';
+
+  @override
+  String get introInputQualityHighlight => 'never sleeps';
+
+  @override
+  String get introInputQualityNote =>
+      'The catch: that burn never holds still. It shifts with your sleep, your hormones and your stress. No fixed table can know that.';
+
+  @override
+  String get introFollowTargetHighlight => 'plain physics';
+
+  @override
+  String get introFollowTargetNote =>
+      'So the first week is a measurement, not a verdict. Do not read too much into it.';
+
+  @override
+  String get introGoalDirectionHighlight => 'bends the number';
+
+  @override
+  String get introGoalDirectionNote =>
+      'You pick the pace. We do the arithmetic every single day.';
+
+  @override
+  String get introTrendHighlight => 'The week says everything';
+
+  @override
+  String get introTrendNote =>
+      'We read the trend across the whole week, so a bad morning never rewrites your plan.';
+
+  @override
+  String get introExtrasHighlight => 'the rest of your kitchen';
+
+  @override
+  String get introExtrasNote =>
+      'Logging stops being homework when the food is already in the app.';
+
+  @override
+  String get introSummarySubtitle =>
+      'This is your estimated starting point for day one. After seven days of tracking YAMT compares your logged food with your weight and corrects the number — and again every week after that.';
+
+  @override
+  String get introBodyTitle => 'What are your current numbers?';
+
+  @override
+  String get introBodySubtitle =>
+      'Body weight and height decide how many cells have to be supplied with oxygen and glucose at rest.';
+
+  @override
+  String get introWeightKgUnit => 'kg';
+
+  @override
+  String get introSportTitle => 'Do you train on fixed days?';
+
+  @override
+  String get introSportSubtitle =>
+      'Tap your training days. With none selected every day gets the same target.';
+
+  @override
+  String get introWeekDepotTitle => 'Calories per day across the week';
+
+  @override
+  String introActivityFactor(String factor) {
+    return 'Factor $factor';
+  }
+
+  @override
+  String get introIdentityPrivacyNote =>
+      'Your details are used for the energy calculation only.';
+
+  @override
+  String get introBodyTrendNote =>
+      'Day-to-day swings do not matter. We read your weekly weight trend, not single highs and lows.';
+
+  @override
+  String get introSummaryDepotLabel => 'Week depot';
+
+  @override
+  String get introSummaryDepotHint =>
+      'Training days borrow from rest days. The weekly sum stays the same.';
+
+  @override
+  String get introCategoryHowItWorks => 'How YAMT calculates';
+
+  @override
+  String get introCategoryYourProfile => 'Your profile';
+
+  @override
+  String get introCategoryYourStart => 'Your start';
+
+  @override
+  String get introChapterEnergyBalance => 'Energy balance';
+
+  @override
+  String get introChapterStartValue => 'The starting value';
+
+  @override
+  String get introChapterCorrection => 'The correction';
+
+  @override
+  String get introChapterGoalDirection => 'Your goal';
+
+  @override
+  String get introChapterTrend => 'The trend';
+
+  @override
+  String get introChapterKitchen => 'Your kitchen';
+
+  @override
+  String get introChapterProfile => 'About you';
+
+  @override
+  String get introChapterBody => 'Body measurements';
+
+  @override
+  String get introChapterTargetWeight => 'Target weight';
+
+  @override
+  String get introChapterActivity => 'Everyday activity';
+
+  @override
+  String get introChapterTraining => 'Training';
+
+  @override
+  String get introChapterPace => 'Pace';
+
+  @override
+  String get introChapterResult => 'Your starting value';
+
+  @override
+  String introChapterKicker(int number, String name) {
+    return 'Chapter $number · $name';
+  }
+
+  @override
+  String introNextChapterAction(String name) {
+    return 'Next: $name';
+  }
+
+  @override
+  String introChapterCounter(String current, String total) {
+    return '$current / $total';
+  }
+
+  @override
+  String get introTargetWeightHint => 'Pick your target weight.';
+
+  @override
+  String get introBirthDayLabel => 'Day';
+
+  @override
+  String get introBirthMonthLabel => 'Month';
+
+  @override
+  String get introBirthYearLabel => 'Year';
+
+  @override
+  String get introHeightCmUnit => 'cm';
+
+  @override
+  String get introCurrentWeightLabel => 'Current weight';
+
+  @override
+  String get introPaceLabel => 'Pace';
+
+  @override
+  String get introPacePerWeekUnit => 'kg / week';
+
+  @override
+  String get introActivityTitle => 'How active are you outside of sport?';
+
+  @override
+  String get introActivitySubtitle =>
+      'Walking, standing and your job make up the lion\'s share.';
+
+  @override
+  String get introActivitySittingTitle => 'Mostly sitting';
+
+  @override
+  String get introActivitySittingBody => 'Desk, car, sofa';
+
+  @override
+  String get introActivityLightTitle => 'Sitting, but on the move';
+
+  @override
+  String get introActivityLightBody => 'Desk job, walk or cycle daily';
+
+  @override
+  String get introActivityOnFeetTitle => 'On your feet all day';
+
+  @override
+  String get introActivityOnFeetBody => 'Retail, care, kitchen';
+
+  @override
+  String get introActivityHardLabourTitle => 'Physically hard work';
+
+  @override
+  String get introActivityHardLabourBody => 'Construction, trades, warehouse';
+
+  @override
+  String get introSummaryExpenditureLabel => 'Your calculated expenditure';
+
+  @override
+  String get introSummaryExpenditureHint =>
+      'What your body burns on a normal day.';
+
+  @override
+  String get introSummaryTargetLabel => 'Your daily target';
+
+  @override
+  String get introSummaryTargetMaintainHint =>
+      'Matches your expenditure, so your weight stays where it is.';
+
+  @override
+  String introSummaryKcalValue(int kcal) {
+    return '$kcal kcal';
+  }
+
+  @override
+  String introSummaryTargetDeficitHint(int kcal) {
+    return '$kcal kcal below your expenditure, so you lose weight.';
+  }
+
+  @override
+  String introSummaryTargetSurplusHint(int kcal) {
+    return '$kcal kcal above your expenditure, so you gain weight.';
+  }
+
+  @override
+  String introBirthDateValue(String date, String age) {
+    return '$date ($age years)';
+  }
+
+  @override
+  String introTargetDateEstimate(String date) {
+    return 'At this pace you reach your goal around $date.';
+  }
 
   @override
   String get cookflowPrepflowTitle => 'Prepflow';
