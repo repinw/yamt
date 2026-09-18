@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/features/calories/domain/calorie_age_calculator.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 
 part 'calorie_calculator_profile.g.dart';
@@ -48,6 +49,7 @@ class CalorieCalculatorProfile {
     required this.activityLevel,
     required this.goalMode,
     required this.goalSpeedKgPerWeek,
+    this.birthDate,
     this.targetWeightKg,
     this.trainingWeekdays = const <int>[
       DateTime.monday,
@@ -71,6 +73,7 @@ class CalorieCalculatorProfile {
       activityLevel = 1.2,
       goalMode = CalorieGoalMode.maintain,
       goalSpeedKgPerWeek = 0,
+      birthDate = null,
       targetWeightKg = null,
       trainingWeekdays = const <int>[],
       trainingDayKcalOffset = 0.0;
@@ -90,8 +93,12 @@ class CalorieCalculatorProfile {
   @FlexibleDoubleConverter()
   final double heightCm;
 
-  /// The age years.
+  /// The age years, kept as fallback for profiles saved without a birth date.
   final int ageYears;
+
+  /// Optional birth date used to derive the current age.
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? birthDate;
 
   /// The activity level.
   @FlexibleDoubleConverter()
@@ -121,6 +128,12 @@ class CalorieCalculatorProfile {
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieCalculatorProfileToJson(this);
 
+  /// Returns the age in full years at [now], derived from [birthDate] when set.
+  int ageAt(DateTime now) {
+    final birth = birthDate;
+    return birth == null ? ageYears : ageInYearsAt(birth, now);
+  }
+
   /// Copy with.
   CalorieCalculatorProfile copyWith({
     CalorieCalculatorSex? sex,
@@ -130,6 +143,7 @@ class CalorieCalculatorProfile {
     double? activityLevel,
     CalorieGoalMode? goalMode,
     double? goalSpeedKgPerWeek,
+    DateTime? birthDate,
     double? targetWeightKg,
     List<int>? trainingWeekdays,
     double? trainingDayKcalOffset,
@@ -142,6 +156,7 @@ class CalorieCalculatorProfile {
       activityLevel: activityLevel ?? this.activityLevel,
       goalMode: goalMode ?? this.goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek ?? this.goalSpeedKgPerWeek,
+      birthDate: birthDate ?? this.birthDate,
       targetWeightKg: targetWeightKg ?? this.targetWeightKg,
       trainingWeekdays: trainingWeekdays ?? this.trainingWeekdays,
       trainingDayKcalOffset:

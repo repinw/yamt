@@ -35,6 +35,11 @@ state, and calorie-owned side effects from health or weight changes.
   edge for existing Diary, Activity, Settings, Home, Onboarding, and Inventory
   integrations.
 - Domain models under `domain/` used by Diary, Activity, and Settings.
+  `CalorieCalculatorProfile` carries an optional `birthDate` and derives the
+  current age with `ageAt(now)`, falling back to the stored `ageYears` for
+  profiles saved before birthdays existed.
+  `CalorieGoalCalculatorFormController.updateBirthDate` stores it and keeps
+  `ageYearsText` in sync with `clockProvider`.
 - Complete presentation surfaces such as calorie entry editors, goal dialogs,
   calculator sheets, and diary health card parts.
 - `presentation/pages/tdee_analytics_page.dart` for visual TDEE expenditure,

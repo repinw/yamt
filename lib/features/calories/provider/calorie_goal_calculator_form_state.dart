@@ -34,6 +34,7 @@ class CalorieGoalCalculatorFormState {
     this.trainingWeekdays = const <int>[],
     this.trainingDayKcalOffset = 0.0,
     this.sex,
+    this.birthDate,
   });
 
   /// Creates a [CalorieGoalCalculatorFormState] for initial.
@@ -64,6 +65,7 @@ class CalorieGoalCalculatorFormState {
       lastNonMaintainGoalSpeedText: preservedGoalSpeedText,
       trainingWeekdays: profile.trainingWeekdays,
       trainingDayKcalOffset: profile.trainingDayKcalOffset,
+      birthDate: shouldUseEmptyFields ? null : profile.birthDate,
     );
   }
 
@@ -79,6 +81,7 @@ class CalorieGoalCalculatorFormState {
     List<int> trainingWeekdays = const <int>[],
     double trainingDayKcalOffset = 0.0,
     CalorieCalculatorSex? sex,
+    DateTime? birthDate,
     bool isSaving = false,
   }) {
     final weightError = _validateWeight(weightKgText);
@@ -102,6 +105,7 @@ class CalorieGoalCalculatorFormState {
             weightKg: _parsePositiveDouble(weightKgText)!,
             heightCm: _parsePositiveDouble(heightCmText)!,
             ageYears: _parsePositiveInt(ageYearsText)!,
+            birthDate: birthDate,
             activityLevel: activityLevelOption.palValue,
             goalMode: goalMode,
             goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
@@ -114,6 +118,7 @@ class CalorieGoalCalculatorFormState {
 
     return CalorieGoalCalculatorFormState(
       sex: sex,
+      birthDate: birthDate,
       weightKgText: weightKgText,
       targetWeightKgText: targetWeightKgText,
       heightCmText: heightCmText,
@@ -142,6 +147,9 @@ class CalorieGoalCalculatorFormState {
 
   /// The sex error.
   final CalorieCalculatorFieldError? sexError;
+
+  /// The birth date, when the user picked one.
+  final DateTime? birthDate;
 
   /// The weight kg text.
   final String weightKgText;
@@ -222,6 +230,7 @@ class CalorieGoalCalculatorFormState {
       weightKg: weightKg,
       heightCm: heightCm,
       ageYears: ageYears,
+      birthDate: birthDate,
       activityLevel: activityLevelOption.palValue,
       goalMode: goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek,
@@ -234,6 +243,7 @@ class CalorieGoalCalculatorFormState {
   /// Copy with.
   CalorieGoalCalculatorFormState copyWith({
     CalorieCalculatorSex? sex,
+    DateTime? birthDate,
     String? weightKgText,
     String? targetWeightKgText,
     String? heightCmText,
@@ -248,6 +258,7 @@ class CalorieGoalCalculatorFormState {
   }) {
     return CalorieGoalCalculatorFormState._create(
       sex: sex ?? this.sex,
+      birthDate: birthDate ?? this.birthDate,
       weightKgText: weightKgText ?? this.weightKgText,
       targetWeightKgText: targetWeightKgText ?? this.targetWeightKgText,
       heightCmText: heightCmText ?? this.heightCmText,

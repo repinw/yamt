@@ -32,6 +32,9 @@ CalorieCalculatorProfile _$CalorieCalculatorProfileFromJson(
   goalSpeedKgPerWeek: const FlexibleDoubleConverter().fromJson(
     json['goal_speed_kg_per_week'],
   ),
+  birthDate: const NullableFlexibleDateTimeConverter().fromJson(
+    json['birth_date'],
+  ),
   targetWeightKg: const NullableFlexibleDoubleConverter().fromJson(
     json['target_weight_kg'],
   ),
@@ -54,6 +57,9 @@ Map<String, dynamic> _$CalorieCalculatorProfileToJson(
   'weight_kg': const FlexibleDoubleConverter().toJson(instance.weightKg),
   'height_cm': const FlexibleDoubleConverter().toJson(instance.heightCm),
   'age_years': instance.ageYears,
+  'birth_date': const NullableFlexibleDateTimeConverter().toJson(
+    instance.birthDate,
+  ),
   'activity_level': const FlexibleDoubleConverter().toJson(
     instance.activityLevel,
   ),

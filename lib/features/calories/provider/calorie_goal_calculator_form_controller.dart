@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
+import 'package:yamt/features/calories/domain/calorie_age_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_state.dart';
@@ -73,6 +75,12 @@ class CalorieGoalCalculatorFormController
   /// Update age years.
   void updateAgeYears(String value) {
     state = state.copyWith(ageYearsText: value);
+  }
+
+  /// Update birth date and derive the matching age in years.
+  void updateBirthDate(DateTime birthDate) {
+    final age = ageInYearsAt(birthDate, ref.read(clockProvider)());
+    state = state.copyWith(birthDate: birthDate, ageYearsText: age.toString());
   }
 
   /// Update activity level.
