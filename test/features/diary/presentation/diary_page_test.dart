@@ -21,11 +21,9 @@ import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart'
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
@@ -47,7 +45,6 @@ import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.da
         diaryCalorieGoalSettingsProvider,
         diaryWeeklyCheckInActionsProvider,
         diaryWeeklyCheckInDataProvider;
-import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -57,7 +54,6 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_weekly_balance_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_day_type_toggle.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
@@ -831,371 +827,6 @@ void main() {
     expect(find.text('Goal: 1,200 kcal'), findsOneWidget);
   });
 
-  testWidgets('shows first diary intro with calculator data once', (
-    tester,
-  ) async {
-    final preferences = MemoryAppPreferences();
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      locale: const Locale('de'),
-      appPreferences: preferences,
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 1200,
-          calculatorProfile: const CalorieCalculatorProfile(
-            sex: CalorieCalculatorSex.female,
-            weightKg: 59,
-            heightCm: 162,
-            ageYears: 24,
-            activityLevel: 1.2,
-            goalMode: CalorieGoalMode.lose,
-            goalSpeedKgPerWeek: 0.5,
-          ),
-          effectiveDate: selectedDay,
-        ),
-      ),
-    );
-
-    expect(find.byKey(DiaryIntroDialogKeys.dialog), findsOneWidget);
-    expect(find.text('Dein Startwert'), findsOneWidget);
-    expect(find.textContaining('1.586 kcal'), findsOneWidget);
-
-    await tester.tap(find.byKey(DiaryIntroDialogKeys.nextButton));
-    await _pumpFrames(tester);
-
-    expect(find.text('Dein Ziel'), findsOneWidget);
-
-    for (var index = 0; index < 4; index += 1) {
-      await tester.tap(find.byKey(DiaryIntroDialogKeys.nextButton));
-      await _pumpFrames(tester);
-    }
-
-    expect(find.text('Aktivitäten'), findsOneWidget);
-    expect(find.textContaining('Kaum aktiv'), findsOneWidget);
-    expect(find.textContaining('264 kcal'), findsOneWidget);
-    await tester.tap(find.byKey(DiaryIntroDialogKeys.doneButton));
-    await _pumpFrames(tester);
-
-    expect(find.byKey(DiaryIntroDialogKeys.dialog), findsNothing);
-    expect(DiaryIntroPreferences.isSeen(preferences), isTrue);
-  });
-
-  testWidgets('first diary intro can start Health connection', (tester) async {
-    final healthService = FakeHealthConnectionService(
-      const HealthConnectionStatus(
-        platform: HealthPlatform.ios,
-        healthConnectAvailability: HealthConnectAvailability.notApplicable,
-        permissionState: HealthPermissionState.notGranted,
-        historyAccess: HealthHistoryAccess.notApplicable,
-      ),
-    );
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      locale: const Locale('de'),
-      healthConnectionService: healthService,
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 1200,
-          calculatorProfile: const CalorieCalculatorProfile(
-            sex: CalorieCalculatorSex.female,
-            weightKg: 59,
-            heightCm: 162,
-            ageYears: 24,
-            activityLevel: 1.2,
-            goalMode: CalorieGoalMode.lose,
-            goalSpeedKgPerWeek: 0.5,
-          ),
-          effectiveDate: selectedDay,
-        ),
-      ),
-    );
-
-    for (var index = 0; index < 5; index += 1) {
-      await tester.tap(find.byKey(DiaryIntroDialogKeys.nextButton));
-      await _pumpFrames(tester);
-    }
-
-    expect(find.byKey(DiaryIntroDialogKeys.healthActionButton), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byKey(DiaryIntroDialogKeys.healthActionButton),
-        matching: find.text('Verbinden'),
-      ),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.byKey(DiaryIntroDialogKeys.healthActionButton));
-    await _pumpFrames(tester);
-
-    expect(healthService.requestAuthorizationCallCount, 1);
-  });
-
-  testWidgets('first diary intro can install Health Connect', (tester) async {
-    final healthService = FakeHealthConnectionService(
-      const HealthConnectionStatus(
-        platform: HealthPlatform.android,
-        healthConnectAvailability: HealthConnectAvailability.notInstalled,
-        permissionState: HealthPermissionState.notGranted,
-        historyAccess: HealthHistoryAccess.notApplicable,
-      ),
-    );
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      locale: const Locale('de'),
-      healthConnectionService: healthService,
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 1200,
-          calculatorProfile: const CalorieCalculatorProfile.defaults(),
-          effectiveDate: selectedDay,
-        ),
-      ),
-      overrides: [burnWeekLiveSyncProvider.overrideWith((ref) => null)],
-    );
-    await _advanceIntroToActivityPage(tester);
-
-    await tester.tap(find.byKey(DiaryIntroDialogKeys.healthActionButton));
-    await _pumpFrames(tester);
-
-    expect(healthService.installHealthConnectCallCount, 1);
-  });
-
-  testWidgets('first diary intro can open Health permission settings', (
-    tester,
-  ) async {
-    final healthService = FakeHealthConnectionService(
-      const HealthConnectionStatus(
-        platform: HealthPlatform.android,
-        healthConnectAvailability: HealthConnectAvailability.available,
-        permissionState: HealthPermissionState.notGranted,
-        historyAccess: HealthHistoryAccess.notGranted,
-        errorMessage: healthActivityRecognitionPermissionErrorMessage,
-      ),
-    );
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      locale: const Locale('de'),
-      healthConnectionService: healthService,
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 1200,
-          calculatorProfile: const CalorieCalculatorProfile.defaults(),
-          effectiveDate: selectedDay,
-        ),
-      ),
-    );
-    await _advanceIntroToActivityPage(tester);
-
-    await tester.tap(find.byKey(DiaryIntroDialogKeys.healthActionButton));
-    await _pumpFrames(tester);
-
-    expect(healthService.openAppPermissionSettingsCallCount, 1);
-  });
-
-  testWidgets('first diary intro opens Health Connect settings for errors', (
-    tester,
-  ) async {
-    final healthService = FakeHealthConnectionService(
-      const HealthConnectionStatus(
-        platform: HealthPlatform.android,
-        healthConnectAvailability: HealthConnectAvailability.available,
-        permissionState: HealthPermissionState.notGranted,
-        historyAccess: HealthHistoryAccess.notGranted,
-        errorMessage: 'Health Connect permission failed.',
-      ),
-    );
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      locale: const Locale('de'),
-      healthConnectionService: healthService,
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 1200,
-          calculatorProfile: const CalorieCalculatorProfile.defaults(),
-          effectiveDate: selectedDay,
-        ),
-      ),
-    );
-    await _advanceIntroToActivityPage(tester);
-
-    await tester.tap(find.byKey(DiaryIntroDialogKeys.healthActionButton));
-    await _pumpFrames(tester);
-
-    expect(healthService.openHealthPermissionSettingsCallCount, 1);
-  });
-
-  testWidgets('does not show first diary intro after completion', (
-    tester,
-  ) async {
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      appPreferences: MemoryAppPreferences(
-        initialStrings: DiaryIntroPreferences.initialSeenStrings(),
-      ),
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2200,
-          calculatorProfile: const CalorieCalculatorProfile.defaults(),
-          effectiveDate: selectedDay,
-        ),
-      ),
-    );
-
-    expect(find.byKey(DiaryIntroDialogKeys.dialog), findsNothing);
-  });
-
-  testWidgets('does not show first diary intro after TDEE was learned', (
-    tester,
-  ) async {
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      appPreferences: MemoryAppPreferences(),
-      burnWeekRunState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: '2026-04-27',
-      ),
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: _learnedTdeeGoalSettings(selectedDay),
-      ),
-    );
-
-    expect(find.byKey(DiaryIntroDialogKeys.dialog), findsNothing);
-    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsNothing);
-  });
-
-  testWidgets('shows intro banner card during first diary week', (
-    tester,
-  ) async {
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      appPreferences: MemoryAppPreferences(
-        initialStrings: DiaryIntroPreferences.initialSeenStrings(),
-      ),
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 1200,
-          calculatorProfile: const CalorieCalculatorProfile.defaults(),
-          effectiveDate: selectedDay,
-        ),
-      ),
-      overrides: [burnWeekLiveSyncProvider.overrideWith((ref) => null)],
-    );
-
-    await tester.scrollUntilVisible(
-      find.byKey(DiaryIntroDialogKeys.bannerCard),
-      240,
-      scrollable: find.byType(Scrollable).first,
-    );
-
-    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsOneWidget);
-
-    await _tapDiaryCardAction(
-      tester,
-      find.byKey(DiaryIntroDialogKeys.bannerActionButton),
-    );
-    await _pumpFrames(tester);
-
-    expect(find.byKey(DiaryIntroDialogKeys.dialog), findsOneWidget);
-    expect(find.text('Your starting point'), findsOneWidget);
-  });
-
-  testWidgets('dismisses intro banner card when close icon is tapped', (
-    tester,
-  ) async {
-    final preferences = MemoryAppPreferences(
-      initialStrings: DiaryIntroPreferences.initialSeenStrings(),
-    );
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      appPreferences: preferences,
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 1200,
-          calculatorProfile: const CalorieCalculatorProfile.defaults(),
-          effectiveDate: selectedDay,
-        ),
-      ),
-      overrides: [burnWeekLiveSyncProvider.overrideWith((ref) => null)],
-    );
-
-    await tester.scrollUntilVisible(
-      find.byKey(DiaryIntroDialogKeys.bannerCard),
-      240,
-      scrollable: find.byType(Scrollable).first,
-    );
-
-    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsOneWidget);
-
-    await _tapDiaryCardAction(
-      tester,
-      find.byKey(DiaryIntroDialogKeys.bannerDismissButton),
-    );
-    await _pumpFrames(tester);
-
-    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsNothing);
-    expect(DiaryIntroPreferences.isBannerDismissed(preferences), isTrue);
-  });
-
-  testWidgets('hides intro banner card after first diary week', (tester) async {
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      appPreferences: MemoryAppPreferences(
-        initialStrings: DiaryIntroPreferences.initialSeenStrings(),
-      ),
-      burnWeekRunState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: '2026-04-27',
-        lastActiveDayKey: '2026-04-30',
-        runWeekNumber: 2,
-      ),
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 1200,
-          calculatorProfile: const CalorieCalculatorProfile.defaults(),
-          effectiveDate: selectedDay,
-        ),
-      ),
-    );
-
-    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsNothing);
-  });
-
-  testWidgets('hides intro banner card when previously dismissed', (
-    tester,
-  ) async {
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      appPreferences: MemoryAppPreferences(
-        initialStrings: DiaryIntroPreferences.initialSeenStrings(
-          bannerDismissed: true,
-        ),
-      ),
-      settingsRepository: FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 1200,
-          calculatorProfile: const CalorieCalculatorProfile.defaults(),
-          effectiveDate: selectedDay,
-        ),
-      ),
-    );
-
-    expect(find.byKey(DiaryIntroDialogKeys.bannerCard), findsNothing);
-  });
-
   testWidgets('refreshes calendar today when the app resumes', (tester) async {
     var now = selectedDay;
     final container = await _pumpDiaryPage(
@@ -1468,13 +1099,6 @@ Future<void> _pumpFrames(WidgetTester tester, {int count = 8}) async {
   }
 }
 
-Future<void> _advanceIntroToActivityPage(WidgetTester tester) async {
-  for (var index = 0; index < 5; index += 1) {
-    await tester.tap(find.byKey(DiaryIntroDialogKeys.nextButton));
-    await _pumpFrames(tester);
-  }
-}
-
 DiaryWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
   return const DiaryWeeklyCheckInData(
     pendingWeeklyCheckIn: null,
@@ -1551,28 +1175,6 @@ CalorieWeeklyCheckInWindowDay _weeklyCheckInWindowDay(DateTime day) {
     isPauseDay: false,
     activeKcal: 0,
     weightKg: null,
-  );
-}
-
-CalorieGoalSettings _learnedTdeeGoalSettings(DateTime effectiveDate) {
-  const profile = CalorieCalculatorProfile.defaults();
-  return CalorieGoalSettings.single(
-    dailyKcalGoal: 1800,
-    calculatorProfile: profile,
-    effectiveDate: effectiveDate.subtract(const Duration(days: 8)),
-    source: CalorieGoalSource.calculator,
-  ).applyGoalChange(
-    changedAt: effectiveDate.subtract(const Duration(days: 1)),
-    dailyKcalGoal: 1800,
-    calculatorProfile: profile,
-    source: CalorieGoalSource.weeklyCheckIn,
-    weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
-      windowStartDate: effectiveDate.subtract(const Duration(days: 8)),
-      windowEndDate: effectiveDate.subtract(const Duration(days: 2)),
-      trendWeightChangePerDay: -0.05,
-      calculatedTdeeKcal: 2100,
-      lowConfidence: false,
-    ),
   );
 }
 

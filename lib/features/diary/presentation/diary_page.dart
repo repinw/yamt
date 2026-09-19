@@ -1,19 +1,11 @@
-import 'dart:async';
-
 import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/diary/application/diary_intro_trigger_provider.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
-import 'package:yamt/features/diary/domain/diary_intro_data.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
-import 'package:yamt/features/diary/presentation/controllers/diary_intro_banner_dismissal_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
-import 'package:yamt/features/diary/presentation/diary_page_intro_coordinator.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -43,9 +35,7 @@ class DiaryPage extends ConsumerStatefulWidget {
 
 class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
-  ProviderSubscription<DiaryIntroTrigger?>? _diaryIntroSubscription;
   ProviderSubscription<void>? _providerWarmupSubscription;
-  bool _didQueueDiaryIntro = false;
   bool _didStartDeferredSubscriptions = false;
   final _macroStripAnchors = DiaryMacroStripAnchors();
   final ValueNotifier<DiaryMacroStripStage> _macroStripStage = ValueNotifier(
@@ -60,7 +50,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
   @override
   void dispose() {
-    _diaryIntroSubscription?.close();
     _providerWarmupSubscription?.close();
     _macroStripStage.dispose();
     WidgetsBinding.instance.removeObserver(this);
@@ -88,19 +77,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     if (dashboardState.data != null) {
       _queueDeferredDiarySubscriptions();
     }
-    final goalSettings = dashboardState.data == null
-        ? null
-        : ref.watch(diaryCalorieGoalSettingsProvider).value;
-    final runState = dashboardState.data?.runState;
-    final isIntroBannerDismissed = ref.watch(
-      diaryIntroBannerDismissalControllerProvider,
-    );
-    final showIntroBanner =
-        !isIntroBannerDismissed &&
-        runState?.runWeekNumber == burnWeekLearningRunWeekNumber &&
-        goalSettings != null &&
-        !goalSettings.hasLearnedTdee &&
-        DiaryIntroData.canBuildFrom(goalSettings);
 
     return ColoredBox(
       color: colors.surface,
@@ -152,29 +128,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
                 DiaryPageHeader(
                   selectedDay: calendarState.selectedDay,
                   dashboardData: dashboardState.data,
-                  showIntroBanner: showIntroBanner,
-                  onOpenIntro: () {
-                    final introData = DiaryIntroData.fromSettings(
-                      goalSettings!,
-                    );
-                    final healthStatus = ref
-                        .read(healthConnectionStatusProvider)
-                        .value;
-                    unawaited(
-                      runDiaryIntroFlow(
-                        context: context,
-                        ref: ref,
-                        introData: introData,
-                        healthStatus: healthStatus,
-                      ),
-                    );
-                  },
-                  onDismissIntro: () {
-                    final notifier = ref.read(
-                      diaryIntroBannerDismissalControllerProvider.notifier,
-                    );
-                    unawaited(notifier.dismiss());
-                  },
                 ),
                 _NarrowContent(
                   child: DiaryMealsSection(
@@ -198,17 +151,8 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       if (!mounted) {
         return;
       }
-      _startDeferredDiarySubscriptions();
+      _startProviderWarmup();
     });
-  }
-
-  void _startDeferredDiarySubscriptions() {
-    _diaryIntroSubscription ??= ref.listenManual<DiaryIntroTrigger?>(
-      diaryIntroTriggerProvider,
-      _handleDiaryIntroTrigger,
-      fireImmediately: true,
-    );
-    _startProviderWarmup();
   }
 
   void _startProviderWarmup() {
@@ -220,30 +164,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   }
 
   void _keepDiaryProviderWarm<T>(T? previous, T next) {}
-
-  void _handleDiaryIntroTrigger(
-    DiaryIntroTrigger? previous,
-    DiaryIntroTrigger? next,
-  ) {
-    if (_didQueueDiaryIntro || next == null) {
-      return;
-    }
-    _didQueueDiaryIntro = true;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      unawaited(
-        runDiaryIntroFlow(
-          context: context,
-          ref: ref,
-          introData: next.introData,
-          healthStatus: next.healthStatus,
-        ),
-      );
-    });
-  }
 }
 
 /// Centers page content at the narrow content width.

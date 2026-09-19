@@ -100,7 +100,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/cooking_flow/presentation/cooking_flow_summary_page.dart',
   'lib/features/cooking_flow/presentation/cooking_flow_tare_utensil_picker.dart',
   'lib/features/diary/presentation/diary_inventory_food_picker.dart',
-  'lib/features/diary/presentation/widgets/diary_intro_dialog.dart',
   'lib/features/diary/presentation/widgets/diary_weekly_checkin_section/diary_weekly_checkin_section.dart',
   'lib/features/health/data/diary_health_mobile_activity_trend_loader.dart',
   'lib/features/health/data/diary_health_mobile_day_loader.dart',

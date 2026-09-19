@@ -2537,83 +2537,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get diaryIntroBackAction => 'Zurück';
-
-  @override
-  String get diaryIntroNextAction => 'Weiter';
-
-  @override
-  String get diaryIntroDoneAction => 'Loslegen';
-
-  @override
-  String get diaryIntroBannerTitle => 'Neu bei YAMT?';
-
-  @override
-  String get diaryIntroBannerBody =>
-      'Erfahre, wie dein Ziel berechnet wird und wie sich dein Stoffwechsel mit der Zeit anpasst.';
-
-  @override
-  String get diaryIntroBannerAction => 'Intro ansehen';
-
-  @override
-  String get diaryIntroBannerDismiss => 'Intro-Hinweis ausblenden';
-
-  @override
-  String get diaryIntroStartTitle => 'Dein Startwert';
-
-  @override
-  String diaryIntroStartBody(String maintenanceKcal) {
-    return 'Aus deinen Angaben schätzen wir deinen Erhaltungsbedarf auf ca. $maintenanceKcal kcal pro Tag. Damit sollte dein Gewicht ungefähr gleich bleiben.';
-  }
-
-  @override
-  String get diaryIntroActivityTitle => 'Aktivitäten';
-
-  @override
-  String diaryIntroActivityBody(String activityProfile, String activityKcal) {
-    return 'Du kannst YAMT mit Health verbinden, um deine tägliche Aktivität zu tracken. Durch dein Aktivitätsprofil \"$activityProfile\" nimmt YAMT an, dass du täglich ca. $activityKcal kcal durch Aktivität verbrennst. Aktivität darüber erhöht dein Tagesziel, wird aber nur zu 50 % gutgeschrieben, weil aufgezeichnete Kalorien Schätzwerte sind. Keine Sorge, falls du keine Möglichkeit hast, Aktivitätskalorien zu tracken: Das System funktioniert auch ohne sie.';
-  }
-
-  @override
-  String get diaryIntroGoalTitle => 'Dein Ziel';
-
-  @override
-  String diaryIntroGoalLoseBody(String speedKg, String adjustmentKcal) {
-    return 'Dein Ziel ist Abnehmen. Für $speedKg kg pro Woche ziehen wir ca. $adjustmentKcal kcal pro Tag ab.';
-  }
-
-  @override
-  String diaryIntroGoalGainBody(String speedKg, String adjustmentKcal) {
-    return 'Dein Ziel ist Zunehmen. Für $speedKg kg pro Woche rechnen wir ca. $adjustmentKcal kcal pro Tag dazu.';
-  }
-
-  @override
-  String get diaryIntroGoalMaintainBody =>
-      'Dein Ziel ist Gewicht halten. Deshalb bleibt dein Tagesziel nah an deinem Erhaltungsbedarf.';
-
-  @override
-  String get diaryIntroTargetTitle => 'Dein Tagesziel';
-
-  @override
-  String diaryIntroTargetBody(String targetKcal) {
-    return 'Dein Startziel liegt bei ca. $targetKcal kcal pro Tag. Das ist eine erste Schätzung und wird mit deinen Daten besser.';
-  }
-
-  @override
-  String get diaryIntroWeekOneTitle => 'Woche 1: Routine aufbauen';
-
-  @override
-  String get diaryIntroWeekOneBody =>
-      'Iss normal, aber trage Essen, Getränke und Gewicht möglichst vollständig ein. Genaues Tracking hilft YAMT, deinen echten Bedarf zu lernen.';
-
-  @override
-  String get diaryIntroBetterDataTitle => 'Besser mit Daten';
-
-  @override
-  String get diaryIntroBetterDataBody =>
-      'Nach 7 Tagen ist die Schätzung besser als der Startwert. Nach 14 konsequenten Tagen sieht YAMT deinen Stoffwechsel deutlich klarer.';
-
-  @override
   String get diaryActivityTitle => 'Aktivität';
 
   @override
@@ -2683,21 +2606,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryHealthConnectBody => 'Schritte und Aktivität verbinden.';
 
   @override
-  String get diaryHealthSettingsAction => 'Einstellungen';
-
-  @override
-  String get diaryHealthInstallAction => 'Installieren';
-
-  @override
-  String get diaryHealthAllowAction => 'Erlauben';
-
-  @override
-  String get diaryHealthUnavailableAction => 'Nicht verfügbar';
-
-  @override
-  String get diaryHealthConnectAction => 'Verbinden';
-
-  @override
   String get diaryStepsTitle => 'Schritte';
 
   @override
@@ -2754,13 +2662,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsHealthGoalsSectionTitle => 'Health & Ziele';
-
-  @override
-  String get settingsCalorieGoalIntroTitle => 'Intro zum Kalorienziel';
-
-  @override
-  String get settingsCalorieGoalIntroSubtitle =>
-      'Startwert, Lernphase und Aktivitäten ansehen';
 
   @override
   String get settingsMacroGoalsTitle => 'Makronährstoff-Ziele';

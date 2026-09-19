@@ -4408,132 +4408,6 @@ abstract class AppLocalizations {
   /// **'+{bonus} kcal extra sport bonus credited to daily goal!'**
   String diaryWorkoutsBonusEarned(String bonus);
 
-  /// No description provided for @diaryIntroBackAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Back'**
-  String get diaryIntroBackAction;
-
-  /// No description provided for @diaryIntroNextAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Next'**
-  String get diaryIntroNextAction;
-
-  /// No description provided for @diaryIntroDoneAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Start tracking'**
-  String get diaryIntroDoneAction;
-
-  /// No description provided for @diaryIntroBannerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'New to YAMT?'**
-  String get diaryIntroBannerTitle;
-
-  /// No description provided for @diaryIntroBannerBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Learn how your calorie target is calculated and how your metabolism adapts over time.'**
-  String get diaryIntroBannerBody;
-
-  /// No description provided for @diaryIntroBannerAction.
-  ///
-  /// In en, this message translates to:
-  /// **'View intro'**
-  String get diaryIntroBannerAction;
-
-  /// No description provided for @diaryIntroBannerDismiss.
-  ///
-  /// In en, this message translates to:
-  /// **'Dismiss intro banner'**
-  String get diaryIntroBannerDismiss;
-
-  /// No description provided for @diaryIntroStartTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your starting point'**
-  String get diaryIntroStartTitle;
-
-  /// No description provided for @diaryIntroStartBody.
-  ///
-  /// In en, this message translates to:
-  /// **'From your profile, we estimate your maintenance at about {maintenanceKcal} kcal per day. That should keep your weight roughly stable.'**
-  String diaryIntroStartBody(String maintenanceKcal);
-
-  /// No description provided for @diaryIntroActivityTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Activity'**
-  String get diaryIntroActivityTitle;
-
-  /// No description provided for @diaryIntroActivityBody.
-  ///
-  /// In en, this message translates to:
-  /// **'You can connect Health so YAMT can track daily activity. With your activity profile \"{activityProfile}\", YAMT expects about {activityKcal} kcal from activity per day. Extra activity above that can raise today\'s target, but only 50% is credited because recorded calories are estimates. No worries if you cannot track activity calories: the system also works without them.'**
-  String diaryIntroActivityBody(String activityProfile, String activityKcal);
-
-  /// No description provided for @diaryIntroGoalTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your goal'**
-  String get diaryIntroGoalTitle;
-
-  /// No description provided for @diaryIntroGoalLoseBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Your goal is losing weight. For {speedKg} kg per week, we subtract about {adjustmentKcal} kcal per day.'**
-  String diaryIntroGoalLoseBody(String speedKg, String adjustmentKcal);
-
-  /// No description provided for @diaryIntroGoalGainBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Your goal is gaining weight. For {speedKg} kg per week, we add about {adjustmentKcal} kcal per day.'**
-  String diaryIntroGoalGainBody(String speedKg, String adjustmentKcal);
-
-  /// No description provided for @diaryIntroGoalMaintainBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Your goal is maintaining weight, so your daily target stays close to your maintenance estimate.'**
-  String get diaryIntroGoalMaintainBody;
-
-  /// No description provided for @diaryIntroTargetTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your first daily target'**
-  String get diaryIntroTargetTitle;
-
-  /// No description provided for @diaryIntroTargetBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Your start target is about {targetKcal} kcal per day. It is a first estimate and gets better with your data.'**
-  String diaryIntroTargetBody(String targetKcal);
-
-  /// No description provided for @diaryIntroWeekOneTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Week 1: build routine'**
-  String get diaryIntroWeekOneTitle;
-
-  /// No description provided for @diaryIntroWeekOneBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat normally, but track food, drinks, and weight as completely as you can. Accurate tracking helps YAMT learn your real needs.'**
-  String get diaryIntroWeekOneBody;
-
-  /// No description provided for @diaryIntroBetterDataTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Better with data'**
-  String get diaryIntroBetterDataTitle;
-
-  /// No description provided for @diaryIntroBetterDataBody.
-  ///
-  /// In en, this message translates to:
-  /// **'After 7 days, the estimate is better than the start value. After 14 consistent days, YAMT sees your metabolism more clearly.'**
-  String get diaryIntroBetterDataBody;
-
   /// No description provided for @diaryActivityTitle.
   ///
   /// In en, this message translates to:
@@ -4660,36 +4534,6 @@ abstract class AppLocalizations {
   /// **'Connect steps and activity.'**
   String get diaryHealthConnectBody;
 
-  /// No description provided for @diaryHealthSettingsAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Settings'**
-  String get diaryHealthSettingsAction;
-
-  /// No description provided for @diaryHealthInstallAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Install'**
-  String get diaryHealthInstallAction;
-
-  /// No description provided for @diaryHealthAllowAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Allow'**
-  String get diaryHealthAllowAction;
-
-  /// No description provided for @diaryHealthUnavailableAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Unavailable'**
-  String get diaryHealthUnavailableAction;
-
-  /// No description provided for @diaryHealthConnectAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect'**
-  String get diaryHealthConnectAction;
-
   /// No description provided for @diaryStepsTitle.
   ///
   /// In en, this message translates to:
@@ -4791,18 +4635,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Health & Goals'**
   String get settingsHealthGoalsSectionTitle;
-
-  /// No description provided for @settingsCalorieGoalIntroTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Calorie goal intro'**
-  String get settingsCalorieGoalIntroTitle;
-
-  /// No description provided for @settingsCalorieGoalIntroSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Review starting target, learning phase, and activity'**
-  String get settingsCalorieGoalIntroSubtitle;
 
   /// No description provided for @settingsMacroGoalsTitle.
   ///

@@ -13,9 +13,7 @@ import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_intro_dialog.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
@@ -175,15 +173,6 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
 }
 
 Finder _settingsTile(Key key) => find.byKey(key);
-
-Future<void> _scrollToTile(WidgetTester tester, Key key) async {
-  await tester.scrollUntilVisible(
-    _settingsTile(key),
-    200,
-    scrollable: find.byType(Scrollable).first,
-  );
-  await tester.pumpAndSettle();
-}
 
 Future<void> _scrollToText(
   WidgetTester tester,
@@ -865,32 +854,6 @@ void main() {
 
     await _scrollToText(tester, 'About');
     expect(find.text('1.1.0+2'), findsOneWidget);
-  });
-
-  testWidgets('Calorie goal intro tile opens intro dialog when tapped', (
-    tester,
-  ) async {
-    await _pumpSettingsPage(
-      tester,
-      appVersionOverride: (ref) async => '1.1.0+2',
-      calorieSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2000,
-        calculatorProfile: const CalorieCalculatorProfile.defaults(),
-        effectiveDate: DateTime(2026, 4, 27),
-      ),
-    );
-
-    await _scrollToTile(tester, SettingsPageKeys.calorieGoalIntroTile);
-    expect(
-      _settingsTile(SettingsPageKeys.calorieGoalIntroTile),
-      findsOneWidget,
-    );
-
-    await tester.tap(_settingsTile(SettingsPageKeys.calorieGoalIntroTile));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(DiaryIntroDialogKeys.dialog), findsOneWidget);
-    expect(find.text('Your starting point'), findsOneWidget);
   });
 
   testWidgets('About tile shows loading indicator while version loads', (

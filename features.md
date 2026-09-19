@@ -49,7 +49,6 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Nutrition bars and macro summaries.
 - Burn Week balance cards with daily and weekly progress.
 - Weekly check-in prompts and success/hint cards.
-- Intro flow explaining goal, activity, and learning week behavior.
 
 ## Calories And Burn Week
 

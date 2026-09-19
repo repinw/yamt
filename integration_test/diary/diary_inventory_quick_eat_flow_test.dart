@@ -23,7 +23,6 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart';
-import 'package:yamt/features/diary/domain/diary_intro_preferences.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
@@ -134,11 +133,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
 
   final container = ProviderContainer(
     overrides: [
-      appPreferencesProvider.overrideWithValue(
-        MemoryAppPreferences(
-          initialStrings: DiaryIntroPreferences.initialSeenStrings(),
-        ),
-      ),
+      appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
       firebaseAuthProvider.overrideWithValue(auth),
       userProfileProvider.overrideWith((ref) => profileController.stream),
