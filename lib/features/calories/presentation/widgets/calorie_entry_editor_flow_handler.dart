@@ -178,36 +178,6 @@ abstract final class CalorieEntryEditorFlowHandler {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  /// Prompts user before closing if details has unsaved changes.
-  static Future<void> requestCloseExistingEntry(
-    BuildContext context, {
-    required CalorieEntry entry,
-    required bool hasPendingChanges,
-    required bool isSaving,
-    required VoidCallback onDismissConfirmed,
-  }) async {
-    if (isSaving) {
-      return;
-    }
-    if (!hasPendingChanges) {
-      maybePopRootNavigator(context, isEditing: true);
-      return;
-    }
-
-    final shouldDiscard = await showCalorieEntryDiscardChangesDialog(context);
-    if (shouldDiscard != true || !context.mounted) {
-      return;
-    }
-
-    onDismissConfirmed();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!context.mounted) {
-        return;
-      }
-      maybePopRootNavigator(context, isEditing: true);
-    });
-  }
-
   /// Validates, builds and saves a new or edited entry.
   static Future<void> saveNewEntry(
     BuildContext context, {
@@ -217,7 +187,6 @@ abstract final class CalorieEntryEditorFlowHandler {
     required CalorieProductProfile? prefilledProfile,
     required CalorieInventoryCreateContext? inventoryContext,
     required CalorieScannedSourceRef? scannedSourceRef,
-    required CalorieEntry? initialEntry,
     required VoidCallback onCommitted,
   }) async {
     final formState = draft.formKey.currentState;
@@ -240,10 +209,10 @@ abstract final class CalorieEntryEditorFlowHandler {
       userId: userId,
       parsedDraft: parsedDraft,
       imageUrl: prefilledProfile?.imageUrl,
+      nutrientDetails: prefilledProfile?.nutrientDetails,
       sourceInventoryItemId: inventoryContext?.inventoryItemId,
       sourceInventoryAmountToRestore:
           inventoryContext?.inventoryAmountToRestore,
-      initialEntry: initialEntry,
     );
 
     final saved = await controller.saveEntry(
@@ -251,7 +220,6 @@ abstract final class CalorieEntryEditorFlowHandler {
       inventoryContext: inventoryContext,
       scannedSourceRef: scannedSourceRef,
       pendingConsumptionId: inventoryContext?.pendingConsumptionId,
-      isEditing: initialEntry != null,
     );
     if (!context.mounted) {
       return;
@@ -259,48 +227,7 @@ abstract final class CalorieEntryEditorFlowHandler {
 
     if (saved) {
       onCommitted();
-      maybePopRootNavigator(
-        context,
-        isEditing: initialEntry != null,
-        result: true,
-      );
-      return;
-    }
-
-    final l10n = AppLocalizations.of(context)!;
-    showFailureSnackBar(ScaffoldMessenger.of(context), l10n.caloriesSaveFailed);
-  }
-
-  /// Updates and saves an existing entry.
-  static Future<void> saveExistingEntry(
-    BuildContext context, {
-    required CalorieEntryEditorDraft draft,
-    required CalorieEntry entry,
-    required CalorieEntryEditorController controller,
-  }) async {
-    if (draft.mealType == entry.mealType && draft.loggedAt == entry.loggedAt) {
-      return;
-    }
-
-    final updatedAt = DateTime.now();
-    final updatedEntry = entry
-        .copyWith(
-          mealType: draft.mealType,
-          loggedAt: draft.loggedAt,
-          updatedAt: updatedAt,
-        )
-        .recalculateTotals(updatedAt: updatedAt);
-
-    final saved = await controller.saveEntry(
-      entry: updatedEntry,
-      isEditing: true,
-    );
-    if (!context.mounted) {
-      return;
-    }
-
-    if (saved) {
-      maybePopRootNavigator(context, isEditing: true, result: true);
+      maybePopRootNavigator(context, isEditing: false, result: true);
       return;
     }
 

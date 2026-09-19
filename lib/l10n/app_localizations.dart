@@ -3652,35 +3652,113 @@ abstract class AppLocalizations {
   /// **'Add calorie entry'**
   String get caloriesAddEntryTitle;
 
-  /// No description provided for @caloriesEditEntryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit calorie entry'**
-  String get caloriesEditEntryTitle;
-
   /// No description provided for @caloriesEntryDetailsTitle.
   ///
   /// In en, this message translates to:
   /// **'Calorie entry details'**
   String get caloriesEntryDetailsTitle;
 
-  /// No description provided for @caloriesDiscardChangesDialogTitle.
+  /// No description provided for @caloriesEntryUpdatedMessage.
   ///
   /// In en, this message translates to:
-  /// **'Discard unsaved changes?'**
-  String get caloriesDiscardChangesDialogTitle;
+  /// **'Entry updated'**
+  String get caloriesEntryUpdatedMessage;
 
-  /// No description provided for @caloriesDiscardChangesDialogMessage.
+  /// No description provided for @caloriesNutritionTableNutrient.
   ///
   /// In en, this message translates to:
-  /// **'Your changes to this diary entry have not been saved yet.'**
-  String get caloriesDiscardChangesDialogMessage;
+  /// **'Nutrient'**
+  String get caloriesNutritionTableNutrient;
 
-  /// No description provided for @caloriesDiscardChangesConfirmAction.
+  /// No description provided for @caloriesNutritionTableEnergy.
   ///
   /// In en, this message translates to:
-  /// **'Discard changes'**
-  String get caloriesDiscardChangesConfirmAction;
+  /// **'Energy'**
+  String get caloriesNutritionTableEnergy;
+
+  /// No description provided for @caloriesUnitKilojoule.
+  ///
+  /// In en, this message translates to:
+  /// **'kJ'**
+  String get caloriesUnitKilojoule;
+
+  /// No description provided for @caloriesNutritionTableSaturatedFat.
+  ///
+  /// In en, this message translates to:
+  /// **'of which saturates'**
+  String get caloriesNutritionTableSaturatedFat;
+
+  /// No description provided for @caloriesNutritionTablePolyunsaturatedFat.
+  ///
+  /// In en, this message translates to:
+  /// **'of which polyunsaturates'**
+  String get caloriesNutritionTablePolyunsaturatedFat;
+
+  /// No description provided for @caloriesNutritionTableSugar.
+  ///
+  /// In en, this message translates to:
+  /// **'of which sugars'**
+  String get caloriesNutritionTableSugar;
+
+  /// No description provided for @caloriesNutritionTableFiber.
+  ///
+  /// In en, this message translates to:
+  /// **'Fibre'**
+  String get caloriesNutritionTableFiber;
+
+  /// No description provided for @caloriesNutritionTableSalt.
+  ///
+  /// In en, this message translates to:
+  /// **'Salt'**
+  String get caloriesNutritionTableSalt;
+
+  /// No description provided for @caloriesEntryDeletedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry removed'**
+  String get caloriesEntryDeletedMessage;
+
+  /// No description provided for @caloriesEatAgainDoneMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged again'**
+  String get caloriesEatAgainDoneMessage;
+
+  /// No description provided for @caloriesEatAgainAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Log again'**
+  String get caloriesEatAgainAction;
+
+  /// No description provided for @caloriesEntryGoalShare.
+  ///
+  /// In en, this message translates to:
+  /// **'{percent}% of your daily goal'**
+  String caloriesEntryGoalShare(int percent);
+
+  /// No description provided for @caloriesEntryPer100Label.
+  ///
+  /// In en, this message translates to:
+  /// **'Per 100 {unit}'**
+  String caloriesEntryPer100Label(String unit);
+
+  /// No description provided for @caloriesEntryAmountDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change amount'**
+  String get caloriesEntryAmountDialogTitle;
+
+  /// No description provided for @caloriesEntryAmountLockedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'This entry came from your inventory. Remove it and log it again to change the amount.'**
+  String get caloriesEntryAmountLockedMessage;
+
+  /// No description provided for @caloriesEditAmountTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Change amount'**
+  String get caloriesEditAmountTooltip;
 
   /// No description provided for @caloriesEntryNotFound.
   ///

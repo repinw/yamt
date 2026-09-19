@@ -15,25 +15,61 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('uses wrap metadata layout above compact breakpoint', (
-    tester,
-  ) async {
+  testWidgets('shows the first brand only', (tester) async {
+    final entry = _regularEntry(brand: 'Aldi, Allfein Feinkost');
+
+    await tester.pumpWidget(_wrapOverview(entry: entry, width: 360));
+
+    expect(find.text('Aldi'), findsOneWidget);
+  });
+
+  testWidgets('amount is tappable only with a callback', (tester) async {
+    var pickCount = 0;
+    final entry = _regularEntry();
+
+    await tester.pumpWidget(
+      _wrapOverview(
+        entry: entry,
+        width: 360,
+        onPickAmount: () => pickCount += 1,
+      ),
+    );
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.amountValue));
+    expect(pickCount, 1);
+    expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+
+    await tester.pumpWidget(_wrapOverview(entry: entry, width: 360));
+    expect(find.byIcon(Icons.edit_outlined), findsNothing);
+  });
+
+  testWidgets('shows only the day in the day control', (tester) async {
     final entry = _regularEntry();
 
     await tester.pumpWidget(_wrapOverview(entry: entry, width: 360));
 
-    expect(find.byType(Wrap), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(CalorieEntryDetailKeys.loggedDayButton),
+        matching: find.textContaining('8:00'),
+      ),
+      findsNothing,
+    );
   });
 
-  testWidgets('uses column metadata layout below compact breakpoint', (
+  testWidgets('renders a hero image when the entry has an image', (
     tester,
   ) async {
-    final entry = _regularEntry();
+    final entry = _regularEntry(imageUrl: 'https://example.com/skyr.png');
 
-    await tester.pumpWidget(_wrapOverview(entry: entry, width: 300));
+    await tester.pumpWidget(_wrapOverview(entry: entry, width: 360));
 
-    expect(find.byType(Wrap), findsNothing);
-    expect(find.byKey(CalorieEntryDetailKeys.amountValue), findsOneWidget);
+    expect(find.byType(Hero), findsOneWidget);
+  });
+
+  testWidgets('renders no hero without an image', (tester) async {
+    await tester.pumpWidget(_wrapOverview(entry: _regularEntry(), width: 360));
+
+    expect(find.byType(Hero), findsNothing);
   });
 
   testWidgets('renders local image bytes from provider', (tester) async {
@@ -111,6 +147,7 @@ Widget _wrapOverview({
   required CalorieEntry entry,
   required double width,
   List<Override> overrides = const <Override>[],
+  VoidCallback? onPickAmount,
 }) {
   return ProviderScope(
     overrides: overrides,
@@ -125,10 +162,9 @@ Widget _wrapOverview({
             child: CalorieEntryOverviewCard(
               entry: entry,
               isSaving: false,
-              selectedMealType: entry.mealType,
-              selectedLoggedAt: entry.loggedAt,
               onPickLoggedAt: () {},
               onMealTypeChanged: (_) {},
+              onPickAmount: onPickAmount,
             ),
           ),
         ),
@@ -137,12 +173,18 @@ Widget _wrapOverview({
   );
 }
 
-CalorieEntry _regularEntry({String? imageAssetId}) {
+CalorieEntry _regularEntry({
+  String? imageAssetId,
+  String? imageUrl,
+  String? brand,
+}) {
   final loggedAt = DateTime(2026, 2, 25, 8);
   return CalorieEntry.create(
     id: 'entry-1',
     userId: 'user-1',
     name: 'Skyr',
+    brand: brand,
+    imageUrl: imageUrl,
     mealType: MealType.breakfast,
     consumedAmount: 200,
     consumedUnit: ConsumedUnit.grams,

@@ -85,6 +85,9 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
           )
           .toList() ??
       [],
+  nutrientDetails: const NullableCalorieNutrientDetailsConverter().fromJson(
+    json['nutrient_details'],
+  ),
 );
 
 Map<String, dynamic> _$CalorieEntryToJson(
@@ -104,6 +107,9 @@ Map<String, dynamic> _$CalorieEntryToJson(
   'bundle_components': instance.bundleComponents
       .map((e) => e.toJson())
       .toList(),
+  'nutrient_details': const NullableCalorieNutrientDetailsConverter().toJson(
+    instance.nutrientDetails,
+  ),
   'meal_type': _$MealTypeEnumMap[instance.mealType]!,
   'consumed_amount': const FlexibleDoubleConverter().toJson(
     instance.consumedAmount,

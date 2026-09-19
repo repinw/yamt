@@ -73,8 +73,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/calories/debug/calorie_debug_weekly_checkin_rows.dart',
   'lib/features/calories/domain/calorie_entry.dart',
   'lib/features/calories/domain/calorie_weekly_checkin.dart',
-  'lib/features/calories/presentation/widgets/calorie_entry_editor_content.dart',
-  'lib/features/calories/presentation/widgets/calorie_entry_editor_flow_handler.dart',
   'lib/features/calories/presentation/widgets/calorie_entry_editor_form_scaffold.dart',
   'lib/features/calories/presentation/widgets/calorie_goal_calculator_flow.dart',
   'lib/features/calories/presentation/widgets/calorie_learned_tdee_goal_sheet.dart',

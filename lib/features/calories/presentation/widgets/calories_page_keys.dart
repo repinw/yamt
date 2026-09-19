@@ -97,6 +97,20 @@ abstract final class CalorieEntryDetailKeys {
   /// The brand value.
   static const brandValue = Key('calorie_entry_detail_brand_value');
 
+  /// The amount field in the change-amount dialog.
+  static const amountField = Key('calorie_entry_detail_amount_field');
+
+  /// The save button in the change-amount dialog.
+  static const amountSaveButton = Key(
+    'calorie_entry_detail_amount_save_button',
+  );
+
+  /// The goal share and per-100 summary below the nutrition strip.
+  static const nutritionContext = Key('calorie_entry_detail_nutrition_context');
+
+  /// The log again button.
+  static const eatAgainButton = Key('calorie_entry_detail_eat_again_button');
+
   /// The return to inventory button.
   static const returnToInventoryButton = Key(
     'calorie_entry_detail_return_to_inventory_button',

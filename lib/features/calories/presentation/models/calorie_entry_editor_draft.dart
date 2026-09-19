@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_prefill.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -70,27 +71,6 @@ class CalorieEntryEditorDraft {
     per100FatController.dispose();
   }
 
-  /// Loads draft fields from existing entry.
-  bool initializeFromEntry(CalorieEntry? entry) {
-    final nextEntryId = entry?.id ?? '__new_entry__';
-    if (_initializedEntryId == nextEntryId) {
-      return false;
-    }
-
-    nameController.text = entry?.name ?? '';
-    brandController.text = entry?.brand ?? '';
-    amountController.text = _formatDouble(entry?.consumedAmount ?? 100);
-    per100KcalController.text = _formatDouble(entry?.per100Kcal ?? 0);
-    per100ProteinController.text = _formatDouble(entry?.per100Protein ?? 0);
-    per100CarbsController.text = _formatDouble(entry?.per100Carbs ?? 0);
-    per100FatController.text = _formatDouble(entry?.per100Fat ?? 0);
-    mealType = entry?.mealType ?? MealType.defaultForDateTime(DateTime.now());
-    consumedUnit = entry?.consumedUnit ?? ConsumedUnit.grams;
-    loggedAt = entry?.loggedAt ?? DateTime.now();
-    _initializedEntryId = nextEntryId;
-    return true;
-  }
-
   /// Loads draft fields from create prefill.
   bool initializeForCreate(CalorieEntryCreatePrefill createPrefill) {
     if (_initializedEntryId == createPrefill.initializationKey) {
@@ -131,11 +111,6 @@ class CalorieEntryEditorDraft {
       time.hour,
       time.minute,
     );
-  }
-
-  /// Whether details draft changed compared with existing entry.
-  bool hasPendingChangesForEntry(CalorieEntry entry) {
-    return mealType != entry.mealType || loggedAt != entry.loggedAt;
   }
 
   /// Validates positive number input.
@@ -189,7 +164,7 @@ class CalorieEntryEditorDraft {
     );
   }
 
-  /// Builds a new or updated CalorieEntry from parsed draft.
+  /// Builds a new CalorieEntry from parsed draft.
   CalorieEntry buildEntry({
     required String id,
     required String userId,
@@ -197,46 +172,29 @@ class CalorieEntryEditorDraft {
     String? imageUrl,
     String? sourceInventoryItemId,
     int? sourceInventoryAmountToRestore,
-    CalorieEntry? initialEntry,
+    CalorieNutrientDetails? nutrientDetails,
   }) {
     final now = DateTime.now();
-    if (initialEntry == null) {
-      return CalorieEntry.create(
-        id: id,
-        userId: userId,
-        name: parsedDraft.name,
-        brand: parsedDraft.brand,
-        imageUrl: imageUrl,
-        mealType: parsedDraft.mealType,
-        consumedAmount: parsedDraft.amount,
-        consumedUnit: parsedDraft.consumedUnit,
-        per100Kcal: parsedDraft.per100Kcal,
-        per100Protein: parsedDraft.per100Protein,
-        per100Carbs: parsedDraft.per100Carbs,
-        per100Fat: parsedDraft.per100Fat,
-        sourceInventoryItemId: sourceInventoryItemId,
-        sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
-        loggedAt: parsedDraft.loggedAt,
-        createdAt: now,
-        updatedAt: now,
-      );
-    }
-
-    return initialEntry
-        .copyWith(
-          name: parsedDraft.name,
-          brand: parsedDraft.brand,
-          mealType: parsedDraft.mealType,
-          consumedAmount: parsedDraft.amount,
-          consumedUnit: parsedDraft.consumedUnit,
-          per100Kcal: parsedDraft.per100Kcal,
-          per100Protein: parsedDraft.per100Protein,
-          per100Carbs: parsedDraft.per100Carbs,
-          per100Fat: parsedDraft.per100Fat,
-          loggedAt: parsedDraft.loggedAt,
-          updatedAt: now,
-        )
-        .recalculateTotals(updatedAt: now);
+    return CalorieEntry.create(
+      id: id,
+      userId: userId,
+      name: parsedDraft.name,
+      brand: parsedDraft.brand,
+      imageUrl: imageUrl,
+      mealType: parsedDraft.mealType,
+      consumedAmount: parsedDraft.amount,
+      consumedUnit: parsedDraft.consumedUnit,
+      per100Kcal: parsedDraft.per100Kcal,
+      per100Protein: parsedDraft.per100Protein,
+      per100Carbs: parsedDraft.per100Carbs,
+      per100Fat: parsedDraft.per100Fat,
+      sourceInventoryItemId: sourceInventoryItemId,
+      sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
+      nutrientDetails: nutrientDetails,
+      loggedAt: parsedDraft.loggedAt,
+      createdAt: now,
+      updatedAt: now,
+    );
   }
 
   double? _parseDouble(String? rawValue) {

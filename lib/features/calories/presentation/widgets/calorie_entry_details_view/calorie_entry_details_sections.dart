@@ -1,37 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_ingredient_row.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Nutrition summary shown in the calorie entry details sheet.
-class CalorieEntryNutritionSummaryCard extends StatelessWidget {
-  /// Creates a nutrition summary card.
-  const new({required this.entry, super.key});
-
-  /// Entry whose nutrition totals are displayed.
-  final CalorieEntry entry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return NutritionProfileCard(
-      key: CalorieEntryDetailKeys.nutritionStrip,
-      kcal: entry.totalKcal,
-      kcalUnitLabel: l10n.caloriesUnitKcal,
-      carbs: entry.totalCarbs,
-      protein: entry.totalProtein,
-      fat: entry.totalFat,
-      carbsLabel: l10n.inventoryNutritionCarbsShortLabel,
-      proteinLabel: l10n.caloriesProteinLabel,
-      fatLabel: l10n.caloriesFatLabel,
-      accentColor: Theme.of(context).colorScheme.primary,
-    );
-  }
-}
 
 /// Ingredient table shown for bundle calorie entries.
 class CalorieEntryIngredientsSection extends StatelessWidget {

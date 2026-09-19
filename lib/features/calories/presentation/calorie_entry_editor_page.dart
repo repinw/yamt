@@ -7,6 +7,8 @@ import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_entry_details_content.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_editor_content.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -75,9 +77,13 @@ class _CalorieEntryEditorPageState
       );
     }
 
+    final entryId = widget.entryId;
+    if (entryId != null) {
+      return CalorieEntryDetailsContent(entryId: entryId);
+    }
+
     return CalorieEntryEditorContent(
       user: user,
-      entryId: widget.entryId,
       prefilledProfile: widget.prefilledProfile,
       scannedSourceRef: widget.scannedSourceRef,
       inventoryContext: widget.inventoryContext,

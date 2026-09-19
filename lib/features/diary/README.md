@@ -25,7 +25,8 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
 - `presentation/widgets/diary_meals_section.dart` owns the quick-eat buttons
   and the meals logged on the selected day. Identical foods in one meal are
   merged into one row (`domain/diary_meal_entry_group.dart`) that expands to
-  its single entries.
+  its single entries. Rows that open one entry tag their image with
+  `HeroTags.loggedEntryImage`, so it flies into the Calories details sheet.
 - `presentation/widgets/diary_macro_strip/` owns the compact kcal and macro
   strip pinned under the top bar. `diary_macro_strip_trigger.dart` reveals it
   in stages as the daily card's kcal bar and macro bars scroll away; the page

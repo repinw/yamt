@@ -1,19 +1,16 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sheet_constants.dart';
 
-/// Header for the calorie entry details sheet chrome.
+/// Drag handle and close button at the top of the details sheet.
 class CalorieEntryDetailsSheetHeader extends StatelessWidget {
   /// Creates a details sheet header.
   const new({
-    required this.title,
     required this.closeTooltip,
     required this.isSaving,
     required this.onClose,
     super.key,
   });
-
-  /// Header title.
-  final String title;
 
   /// Tooltip shown on the close button.
   final String closeTooltip;
@@ -31,42 +28,29 @@ class CalorieEntryDetailsSheetHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.xl,
-        AppSpacing.sm,
-        AppSpacing.sm,
+        AppSpacing.xxs,
         AppSpacing.xs,
+        AppSpacing.xxs,
       ),
-      child: Column(
+      child: Stack(
+        alignment: Alignment.center,
         children: [
           Container(
-            width: 74,
-            height: 6,
+            width: AppSheetTokens.dragHandleWidth,
+            height: AppSheetTokens.dragHandleHeight,
             decoration: BoxDecoration(
-              color: colors.outlineVariant.withValues(alpha: 0.85),
-              borderRadius: BorderRadius.circular(999),
+              color: colors.outlineVariant,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
             ),
           ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w800, letterSpacing: 0),
-                ),
-              ),
-              IconButton.filledTonal(
-                onPressed: isSaving ? null : onClose,
-                tooltip: closeTooltip,
-                visualDensity: VisualDensity.compact,
-                style: IconButton.styleFrom(
-                  backgroundColor: colors.surfaceContainerHighest.withValues(
-                    alpha: 0.92,
-                  ),
-                ),
-                icon: const Icon(Icons.close_rounded),
-              ),
-            ],
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+              onPressed: isSaving ? null : onClose,
+              tooltip: closeTooltip,
+              color: colors.onSurfaceVariant,
+              icon: const Icon(Icons.close_rounded),
+            ),
           ),
         ],
       ),

@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/domain/'
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
+import 'package:yamt/features/inventory/application/inventory_calorie_nutrient_details.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -43,6 +44,7 @@ class InventoryCalorieBridgeFlow {
       source: CalorieProductSource.userOverride,
       offProductId: _resolveOffProductId(item.globalFoodItemId),
       imageUrl: item.imageUrl,
+      nutrientDetails: calorieNutrientDetailsFrom(nutrition),
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
     );
@@ -145,6 +147,7 @@ class InventoryCalorieBridgeFlow {
       per100Fat: profile.per100Fat,
       sourceInventoryItemId: inventoryContext.inventoryItemId,
       sourceInventoryAmountToRestore: inventoryContext.inventoryAmountToRestore,
+      nutrientDetails: profile.nutrientDetails,
       loggedAt: loggedAt,
       createdAt: now,
       updatedAt: now,

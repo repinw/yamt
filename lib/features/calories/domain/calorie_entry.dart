@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 
 part 'calorie_entry.g.dart';
@@ -133,6 +134,7 @@ class CalorieEntry {
     this.bundleConsumedPortions,
     this.bundleTotalPortions,
     this.bundleComponents = const <CalorieEntryBundleComponent>[],
+    this.nutrientDetails,
   });
 
   /// Creates a [CalorieEntry] for create.
@@ -155,6 +157,7 @@ class CalorieEntry {
     String? imageAssetId,
     String? sourceInventoryItemId,
     int? sourceInventoryAmountToRestore,
+    CalorieNutrientDetails? nutrientDetails,
   }) {
     final now = DateTime.now();
     final factor = consumedAmount / 100;
@@ -182,6 +185,7 @@ class CalorieEntry {
       imageAssetId: imageAssetId,
       sourceInventoryItemId: sourceInventoryItemId,
       sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
+      nutrientDetails: nutrientDetails,
     );
   }
 
@@ -322,6 +326,10 @@ class CalorieEntry {
   /// The bundle components.
   @JsonKey(defaultValue: <CalorieEntryBundleComponent>[])
   final List<CalorieEntryBundleComponent> bundleComponents;
+
+  /// Nutrients per 100 beyond the macros, when the food source had them.
+  @NullableCalorieNutrientDetailsConverter()
+  final CalorieNutrientDetails? nutrientDetails;
 
   /// The meal type.
   @JsonKey(defaultValue: MealType.snack, unknownEnumValue: MealType.snack)
@@ -491,6 +499,7 @@ class CalorieEntry {
       loggedAt: loggedAt ?? this.loggedAt,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      nutrientDetails: nutrientDetails,
     );
   }
 

@@ -16,18 +16,13 @@ String calorieEntryLoggedDayLabel(
   return material.formatShortDate(loggedAt);
 }
 
-/// Formats the logged day and time label for calorie entry details.
-String calorieEntryLoggedAtMetaLabel(
-  BuildContext context,
-  AppLocalizations l10n,
-  MaterialLocalizations material,
-  DateTime loggedAt,
-) {
-  final timeLabel = material.formatTimeOfDay(
-    TimeOfDay.fromDateTime(loggedAt),
-    alwaysUse24HourFormat: MediaQuery.alwaysUse24HourFormatOf(context),
-  );
-  return '${calorieEntryLoggedDayLabel(l10n, material, loggedAt)}, $timeLabel';
+/// First brand of the entry, or `null` when it has none.
+///
+/// Product databases often list the retailer, the maker, and the label in one
+/// comma-separated field. The details header shows only the first one.
+String? calorieEntryPrimaryBrand(CalorieEntry entry) {
+  final brand = entry.brand?.split(',').first.trim();
+  return brand == null || brand.isEmpty ? null : brand;
 }
 
 /// Formats the consumed amount label for the calorie entry details header.

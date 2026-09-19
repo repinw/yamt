@@ -61,7 +61,7 @@ class DiaryMealEntryTile extends StatelessWidget {
                     child: MealThumb(entry: entry),
                   )
                 else
-                  MealThumb(entry: entry),
+                  MealThumb(entry: entry, heroEnabled: true),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Column(

@@ -42,6 +42,20 @@ state, and calorie-owned side effects from health or weight changes.
   `ageYearsText` in sync with `clockProvider`.
 - Complete presentation surfaces such as calorie entry editors, goal dialogs,
   calculator sheets, and diary health card parts.
+- The entry details sheet (`AppRoutes.homeCaloriesEntryDetailsPath`,
+  `presentation/widgets/calorie_entry_details_content.dart`). It opens on a
+  `HeroSheetPage`; the entry image uses `HeroTags.loggedEntryImage(entryId)`,
+  so a caller that shows the same image can fly it into the sheet. Meal, day,
+  and amount changes save at once with an undo
+  (`calorie_entry_details_actions.dart`). The nutrition table follows the food
+  label layout and shows `CalorieEntry.nutrientDetails` when the entry has
+  them.
+- `domain/calorie_nutrient_details.dart` holds label nutrients beyond the
+  macros (saturated and polyunsaturated fat, sugar, fiber, salt).
+  `CalorieProductProfile` and `CalorieEntry` carry them; integrating features
+  fill them when they log food.
+- `domain/calorie_entry_edits.dart` holds the pure rules for changing the
+  amount and logging an entry again.
 - `presentation/pages/tdee_analytics_page.dart` for visual TDEE expenditure,
   flux range corridor, and goal anticipation analysis (routed via
   `AppRoutes.homeCaloriesAnalytics`).
@@ -57,6 +71,9 @@ the legacy `provider/` surface or exposing action wrappers to sibling features.
 
 - New use-case providers live in `application/`.
 - Repository providers live with repository implementations in `data/`.
+  `CalorieLogRepositoryContract.cachedById` returns the last entry the
+  repository read or wrote without a backend call; `calorieEntryById` uses it
+  so the details sheet renders on its first frame.
 - The feature-level `provider/` folder is legacy structure and currently holds
   calorie controllers and derived state. Do not add new provider files there
   unless working inside existing legacy code where moving would create

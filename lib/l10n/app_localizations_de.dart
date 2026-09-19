@@ -2090,21 +2090,65 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesAddEntryTitle => 'Kalorien-Eintrag hinzufügen';
 
   @override
-  String get caloriesEditEntryTitle => 'Kalorien-Eintrag bearbeiten';
-
-  @override
   String get caloriesEntryDetailsTitle => 'Kalorien-Eintragsdetails';
 
   @override
-  String get caloriesDiscardChangesDialogTitle =>
-      'Ungespeicherte Änderungen verwerfen?';
+  String get caloriesEntryUpdatedMessage => 'Eintrag aktualisiert';
 
   @override
-  String get caloriesDiscardChangesDialogMessage =>
-      'Deine Änderungen an diesem Tagebucheintrag wurden noch nicht gespeichert.';
+  String get caloriesNutritionTableNutrient => 'Nährwert';
 
   @override
-  String get caloriesDiscardChangesConfirmAction => 'Änderungen verwerfen';
+  String get caloriesNutritionTableEnergy => 'Brennwert';
+
+  @override
+  String get caloriesUnitKilojoule => 'kJ';
+
+  @override
+  String get caloriesNutritionTableSaturatedFat =>
+      'davon gesättigte Fettsäuren';
+
+  @override
+  String get caloriesNutritionTablePolyunsaturatedFat =>
+      'davon mehrfach ungesättigte Fettsäuren';
+
+  @override
+  String get caloriesNutritionTableSugar => 'davon Zucker';
+
+  @override
+  String get caloriesNutritionTableFiber => 'Ballaststoffe';
+
+  @override
+  String get caloriesNutritionTableSalt => 'Salz';
+
+  @override
+  String get caloriesEntryDeletedMessage => 'Eintrag entfernt';
+
+  @override
+  String get caloriesEatAgainDoneMessage => 'Nochmal eingetragen';
+
+  @override
+  String get caloriesEatAgainAction => 'Nochmal essen';
+
+  @override
+  String caloriesEntryGoalShare(int percent) {
+    return '$percent % deines Tagesziels';
+  }
+
+  @override
+  String caloriesEntryPer100Label(String unit) {
+    return 'Je 100 $unit';
+  }
+
+  @override
+  String get caloriesEntryAmountDialogTitle => 'Menge ändern';
+
+  @override
+  String get caloriesEntryAmountLockedMessage =>
+      'Dieser Eintrag stammt aus deinem Vorrat. Entferne ihn und trage ihn neu ein, um die Menge zu ändern.';
+
+  @override
+  String get caloriesEditAmountTooltip => 'Menge ändern';
 
   @override
   String get caloriesEntryNotFound => 'Eintrag wurde nicht gefunden.';

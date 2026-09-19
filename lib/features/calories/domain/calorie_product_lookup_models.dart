@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 
 part 'calorie_product_lookup_models.g.dart';
@@ -29,7 +30,7 @@ enum CalorieProductSource {
 }
 
 /// Defines calorie product profile.
-@JsonSerializable(fieldRename: FieldRename.snake)
+@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieProductProfile {
   /// The calorie product profile.
   const new({
@@ -45,6 +46,7 @@ class CalorieProductProfile {
     this.brand,
     this.offProductId,
     this.imageUrl,
+    this.nutrientDetails,
   });
 
   /// Creates a [CalorieProductProfile] for from json.
@@ -72,6 +74,7 @@ class CalorieProductProfile {
       source: source,
       offProductId: offProductId,
       imageUrl: imageUrl,
+      nutrientDetails: entry.nutrientDetails,
       createdAt: now,
       updatedAt: now,
     );
@@ -110,6 +113,10 @@ class CalorieProductProfile {
 
   /// The image url.
   final String? imageUrl;
+
+  /// Nutrients per 100 beyond the macros, when the source had them.
+  @NullableCalorieNutrientDetailsConverter()
+  final CalorieNutrientDetails? nutrientDetails;
 
   /// The created at.
   @FlexibleDateTimeConverter()
@@ -150,6 +157,7 @@ class CalorieProductProfile {
       imageUrl: imageUrl ?? this.imageUrl,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      nutrientDetails: nutrientDetails,
     );
   }
 }

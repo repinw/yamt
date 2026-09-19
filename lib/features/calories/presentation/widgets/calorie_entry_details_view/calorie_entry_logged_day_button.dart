@@ -52,7 +52,7 @@ class CalorieEntryLoggedDayButton extends StatelessWidget {
                   calorieEntryLoggedDayLabel(l10n, material, loggedAt),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     color: foregroundColor,
                     fontWeight: FontWeight.w800,
                     height: 1,

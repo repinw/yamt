@@ -2,31 +2,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Show discard-changes confirmation dialog for calorie editor.
-Future<bool?> showCalorieEntryDiscardChangesDialog(BuildContext context) {
-  final l10n = AppLocalizations.of(context)!;
-
-  return showDialog<bool>(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        title: Text(l10n.caloriesDiscardChangesDialogTitle),
-        content: Text(l10n.caloriesDiscardChangesDialogMessage),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: Text(l10n.inventoryReceiptReviewCancelAction),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(l10n.caloriesDiscardChangesConfirmAction),
-          ),
-        ],
-      );
-    },
-  );
-}
-
 /// Show remove / restore-to-inventory confirmation dialog for calorie entry.
 Future<bool?> showCalorieEntryReturnToInventoryDialog(
   BuildContext context, {

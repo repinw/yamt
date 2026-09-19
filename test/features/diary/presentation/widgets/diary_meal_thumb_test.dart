@@ -51,4 +51,40 @@ void main() {
 
     expect(find.text('H'), findsOneWidget);
   });
+
+  testWidgets('MealThumb flies as a hero only with an image and when enabled', (
+    tester,
+  ) async {
+    Widget thumb(DiaryMealEntry entry, {required bool heroEnabled}) {
+      return ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: MealThumb(entry: entry, heroEnabled: heroEnabled),
+            ),
+          ),
+        ),
+      );
+    }
+
+    const withImage = DiaryMealEntry(
+      id: 'food_2',
+      mealType: MealType.breakfast,
+      name: 'Skyr',
+      imageUrl: 'https://example.com/skyr.png',
+      totalKcal: 100,
+      totalProtein: 10,
+      totalCarbs: 4,
+      totalFat: 0,
+    );
+
+    await tester.pumpWidget(thumb(withImage, heroEnabled: true));
+    expect(find.byType(Hero), findsOneWidget);
+
+    await tester.pumpWidget(thumb(withImage, heroEnabled: false));
+    expect(find.byType(Hero), findsNothing);
+
+    await tester.pumpWidget(thumb(entry, heroEnabled: true));
+    expect(find.byType(Hero), findsNothing);
+  });
 }

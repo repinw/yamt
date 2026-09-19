@@ -2,14 +2,24 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sheet_constants.dart';
+import 'package:yamt/core/constants/hero_tags.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 
-/// Thumbnail image shown in the calorie entry overview.
+/// Image shown next to the entry name in the details sheet.
+///
+/// With [heroEnabled] it is the landing spot of the image that flies in from
+/// the diary row.
 class CalorieEntryThumbnail extends StatelessWidget {
   /// Creates a calorie entry thumbnail.
-  const new({required this.entry, required this.storedImageBytes, super.key});
+  const new({
+    required this.entry,
+    required this.storedImageBytes,
+    this.heroEnabled = false,
+    super.key,
+  });
 
   /// Entry whose image is displayed.
   final CalorieEntry entry;
@@ -17,17 +27,22 @@ class CalorieEntryThumbnail extends StatelessWidget {
   /// Locally stored image bytes when available.
   final Uint8List? storedImageBytes;
 
-  static const _imageSize = 76.0;
+  /// Whether the image takes part in the hero flight from the diary.
+  final bool heroEnabled;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
+    final thumbnail = ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.lg + AppSpacing.xs),
       child: SizedBox.square(
-        dimension: _imageSize,
+        dimension: AppSheetTokens.heroImageSize,
         child: _EntryImage(entry: entry, storedImageBytes: storedImageBytes),
       ),
     );
+    if (!heroEnabled) {
+      return thumbnail;
+    }
+    return Hero(tag: HeroTags.loggedEntryImage(entry.id), child: thumbnail);
   }
 }
 
@@ -62,10 +77,8 @@ class _EntryImage extends StatelessWidget {
       );
     }
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [colors.surface, colors.surface]),
-      ),
+    return ColoredBox(
+      color: colors.surface,
       child: _EntryImageFallback(initial: initial),
     );
   }

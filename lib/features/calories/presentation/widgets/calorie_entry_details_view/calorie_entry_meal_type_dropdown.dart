@@ -43,7 +43,7 @@ class CalorieEntryMealTypeDropdown extends StatelessWidget {
           color: colors.onSurfaceVariant,
           size: 20,
         ),
-        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
           color: isEnabled
               ? colors.onSurface
               : colors.onSurface.withValues(alpha: 0.45),

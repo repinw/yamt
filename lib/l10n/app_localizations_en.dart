@@ -2041,20 +2041,64 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesAddEntryTitle => 'Add calorie entry';
 
   @override
-  String get caloriesEditEntryTitle => 'Edit calorie entry';
-
-  @override
   String get caloriesEntryDetailsTitle => 'Calorie entry details';
 
   @override
-  String get caloriesDiscardChangesDialogTitle => 'Discard unsaved changes?';
+  String get caloriesEntryUpdatedMessage => 'Entry updated';
 
   @override
-  String get caloriesDiscardChangesDialogMessage =>
-      'Your changes to this diary entry have not been saved yet.';
+  String get caloriesNutritionTableNutrient => 'Nutrient';
 
   @override
-  String get caloriesDiscardChangesConfirmAction => 'Discard changes';
+  String get caloriesNutritionTableEnergy => 'Energy';
+
+  @override
+  String get caloriesUnitKilojoule => 'kJ';
+
+  @override
+  String get caloriesNutritionTableSaturatedFat => 'of which saturates';
+
+  @override
+  String get caloriesNutritionTablePolyunsaturatedFat =>
+      'of which polyunsaturates';
+
+  @override
+  String get caloriesNutritionTableSugar => 'of which sugars';
+
+  @override
+  String get caloriesNutritionTableFiber => 'Fibre';
+
+  @override
+  String get caloriesNutritionTableSalt => 'Salt';
+
+  @override
+  String get caloriesEntryDeletedMessage => 'Entry removed';
+
+  @override
+  String get caloriesEatAgainDoneMessage => 'Logged again';
+
+  @override
+  String get caloriesEatAgainAction => 'Log again';
+
+  @override
+  String caloriesEntryGoalShare(int percent) {
+    return '$percent% of your daily goal';
+  }
+
+  @override
+  String caloriesEntryPer100Label(String unit) {
+    return 'Per 100 $unit';
+  }
+
+  @override
+  String get caloriesEntryAmountDialogTitle => 'Change amount';
+
+  @override
+  String get caloriesEntryAmountLockedMessage =>
+      'This entry came from your inventory. Remove it and log it again to change the amount.';
+
+  @override
+  String get caloriesEditAmountTooltip => 'Change amount';
 
   @override
   String get caloriesEntryNotFound => 'Entry not found.';

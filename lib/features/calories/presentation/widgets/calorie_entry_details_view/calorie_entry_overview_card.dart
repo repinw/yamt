@@ -4,6 +4,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_control_row.dart';
@@ -17,15 +18,17 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Header card for the calorie entry details sheet.
+///
+/// The image next to the name is the landing spot of the hero image from the
+/// diary row. Entries without an image show their initial and do not fly.
 class CalorieEntryOverviewCard extends ConsumerWidget {
   /// Creates the calorie entry overview card.
   const new({
     required this.entry,
     required this.isSaving,
-    required this.selectedMealType,
-    required this.selectedLoggedAt,
     required this.onPickLoggedAt,
     required this.onMealTypeChanged,
+    required this.onPickAmount,
     super.key,
   });
 
@@ -35,29 +38,27 @@ class CalorieEntryOverviewCard extends ConsumerWidget {
   /// Whether a mutation is in flight.
   final bool isSaving;
 
-  /// Currently selected meal type.
-  final MealType selectedMealType;
-
-  /// Currently selected logged day/time.
-  final DateTime selectedLoggedAt;
-
-  /// Called when changing the logged day.
+  /// Called when changing the logged day and time.
   final VoidCallback onPickLoggedAt;
 
   /// Called when changing the meal type.
   final ValueChanged<MealType> onMealTypeChanged;
 
+  /// Called when tapping the amount, or `null` when it is not editable.
+  final VoidCallback? onPickAmount;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
-    final material = MaterialLocalizations.of(context);
-    final eyebrow = _entryEyebrow(l10n, entry);
-    final brand = entry.brand?.trim();
     final imageRef = maybeLocalImageAssetRef(entry.imageAssetId);
-    final storedImageBytes = imageRef == null
+    final storedImage = imageRef == null
         ? null
-        : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
+        : ref.watch(localImageBytesProvider(imageRef));
+    final storedImageBytes = storedImage?.asData?.value;
+    final imageUrl = entry.imageUrl?.trim();
+    final hasImage =
+        storedImageBytes != null ||
+        (storedImage?.isLoading ?? false) ||
+        (imageUrl != null && imageUrl.isNotEmpty);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,80 +69,13 @@ class CalorieEntryOverviewCard extends ConsumerWidget {
             CalorieEntryThumbnail(
               entry: entry,
               storedImageBytes: storedImageBytes,
+              heroEnabled: hasImage,
             ),
             const SizedBox(width: AppSpacing.lg),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.only(top: AppSpacing.xxs),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    if (eyebrow != null) ...[
-                      Text(
-                        eyebrow,
-                        key: brand != null && brand.isNotEmpty
-                            ? CalorieEntryDetailKeys.brandValue
-                            : null,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              color: colors.primary,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.1,
-                            ),
-                      ),
-                      const SizedBox(height: AppSpacing.xs),
-                    ],
-                    Text(
-                      entry.name,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            height: 1.05,
-                            letterSpacing: 0,
-                          ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    LayoutBuilder(
-                      builder: (context, constraints) {
-                        final amountMeta = CalorieEntryMetaItem(
-                          icon: Icons.scale_outlined,
-                          label: calorieEntryConsumedAmountLabel(l10n, entry),
-                          valueKey: CalorieEntryDetailKeys.amountValue,
-                        );
-                        final timeMeta = CalorieEntryMetaItem(
-                          icon: Icons.schedule_rounded,
-                          label: calorieEntryLoggedAtMetaLabel(
-                            context,
-                            l10n,
-                            material,
-                            selectedLoggedAt,
-                          ),
-                        );
-
-                        if (constraints.maxWidth < 220) {
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              amountMeta,
-                              const SizedBox(height: AppSpacing.xs),
-                              timeMeta,
-                            ],
-                          );
-                        }
-
-                        return Wrap(
-                          spacing: AppSpacing.md,
-                          runSpacing: AppSpacing.xs,
-                          children: [amountMeta, timeMeta],
-                        );
-                      },
-                    ),
-                  ],
-                ),
+              child: _EntryTitle(
+                entry: entry,
+                onPickAmount: isSaving ? null : onPickAmount,
               ),
             ),
           ],
@@ -149,8 +83,8 @@ class CalorieEntryOverviewCard extends ConsumerWidget {
         const SizedBox(height: AppSpacing.xxl),
         CalorieEntryControlRow(
           isSaving: isSaving,
-          selectedMealType: selectedMealType,
-          selectedLoggedAt: selectedLoggedAt,
+          selectedMealType: entry.mealType,
+          selectedLoggedAt: entry.loggedAt,
           onPickLoggedAt: onPickLoggedAt,
           onMealTypeChanged: onMealTypeChanged,
         ),
@@ -159,13 +93,105 @@ class CalorieEntryOverviewCard extends ConsumerWidget {
   }
 }
 
-String? _entryEyebrow(AppLocalizations l10n, CalorieEntry entry) {
-  final brand = entry.brand?.trim();
-  if (brand != null && brand.isNotEmpty) {
-    return brand;
+class _EntryTitle extends StatelessWidget {
+  const new({required this.entry, required this.onPickAmount});
+
+  final CalorieEntry entry;
+  final VoidCallback? onPickAmount;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    final brand = calorieEntryPrimaryBrand(entry);
+    final eyebrow =
+        brand ?? (entry.isBundle ? l10n.preparedMealSectionTitle : null);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (eyebrow != null) ...[
+          Text(
+            eyebrow,
+            key: brand != null ? CalorieEntryDetailKeys.brandValue : null,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: colors.primary,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.1,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xs),
+        ],
+        Text(
+          entry.name,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w800,
+            height: 1.05,
+            letterSpacing: 0,
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        _AmountButton(
+          label: calorieEntryConsumedAmountLabel(l10n, entry),
+          tooltip: l10n.caloriesEditAmountTooltip,
+          onPressed: onPickAmount,
+        ),
+      ],
+    );
   }
-  if (entry.isBundle) {
-    return l10n.preparedMealSectionTitle;
+}
+
+/// Consumed amount; tappable with an edit icon when it can change.
+class _AmountButton extends StatelessWidget {
+  const new({
+    required this.label,
+    required this.tooltip,
+    required this.onPressed,
+  });
+
+  final String label;
+  final String tooltip;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final meta = CalorieEntryMetaItem(
+      icon: Icons.scale_outlined,
+      label: label,
+      valueKey: CalorieEntryDetailKeys.amountValue,
+    );
+    final onPressed = this.onPressed;
+    if (onPressed == null) {
+      return meta;
+    }
+
+    return Tooltip(
+      message: tooltip,
+      child: AppInkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(child: meta),
+              const SizedBox(width: AppSpacing.xs),
+              Icon(
+                Icons.edit_outlined,
+                size: AppSizes.compactMetricIcon,
+                color: colors.primary,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
-  return null;
 }

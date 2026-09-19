@@ -7,57 +7,71 @@ import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.d
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('disables save button while saving', (tester) async {
-    await tester.pumpWidget(
-      _wrapFooter(isSaving: true, hasPendingChanges: true),
-    );
+  testWidgets('has no save button', (tester) async {
+    await tester.pumpWidget(_wrapFooter(isSaving: false));
 
-    final saveButton = tester.widget<FilledButton>(
-      find.byKey(CalorieEntryEditorKeys.saveButton),
-    );
-
-    expect(saveButton.onPressed, isNull);
+    expect(find.byKey(CalorieEntryEditorKeys.saveButton), findsNothing);
   });
 
-  testWidgets('disables save button without pending changes', (tester) async {
+  testWidgets('fires eat again and remove callbacks', (tester) async {
+    var eatAgainCount = 0;
+    var removeCount = 0;
     await tester.pumpWidget(
-      _wrapFooter(isSaving: false, hasPendingChanges: false),
+      _wrapFooter(
+        isSaving: false,
+        onEatAgain: () => eatAgainCount += 1,
+        onReturnToInventory: () => removeCount += 1,
+      ),
     );
 
-    final saveButton = tester.widget<FilledButton>(
-      find.byKey(CalorieEntryEditorKeys.saveButton),
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.eatAgainButton));
+    await tester.tap(
+      find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
     );
 
-    expect(saveButton.onPressed, isNull);
+    expect(eatAgainCount, 1);
+    expect(removeCount, 1);
   });
 
-  testWidgets('hides return button when return is unavailable', (tester) async {
-    await tester.pumpWidget(
-      _wrapFooter(canReturn: false, isSaving: false, hasPendingChanges: true),
+  testWidgets('disables actions while saving', (tester) async {
+    await tester.pumpWidget(_wrapFooter(isSaving: true));
+
+    final eatAgain = tester.widget<ButtonStyleButton>(
+      find.descendant(
+        of: find.byKey(CalorieEntryDetailKeys.eatAgainButton),
+        matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+        matchRoot: true,
+      ),
     );
+    expect(eatAgain.onPressed, isNull);
+  });
+
+  testWidgets('keeps remove when eat again is unavailable', (tester) async {
+    await tester.pumpWidget(_wrapFooter(canEatAgain: false, isSaving: false));
 
     expect(
       find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
-      findsNothing,
+      findsOneWidget,
     );
+    expect(find.byKey(CalorieEntryDetailKeys.eatAgainButton), findsNothing);
   });
 }
 
 Widget _wrapFooter({
   required bool isSaving,
-  required bool hasPendingChanges,
-  bool canReturn = true,
+  bool canEatAgain = true,
+  VoidCallback? onEatAgain,
+  VoidCallback? onReturnToInventory,
 }) {
   return MaterialApp(
     localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     home: Scaffold(
       body: CalorieEntryDetailsSheetFooter(
-        canReturn: canReturn,
+        canEatAgain: canEatAgain,
         isSaving: isSaving,
-        hasPendingChanges: hasPendingChanges,
-        onSave: () {},
-        onReturnToInventory: () {},
+        onEatAgain: onEatAgain ?? () {},
+        onReturnToInventory: onReturnToInventory ?? () {},
       ),
     ),
   );

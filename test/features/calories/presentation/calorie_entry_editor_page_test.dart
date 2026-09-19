@@ -522,7 +522,9 @@ void main() {
     expect(find.text('Inventory Home'), findsOneWidget);
   });
 
-  testWidgets('details flow loads and updates the meal window', (tester) async {
+  testWidgets('details flow saves a meal change at once and can undo it', (
+    tester,
+  ) async {
     final existing = _entry('entry-1');
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
@@ -541,29 +543,60 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Skyr'), findsOneWidget);
-    expect(find.byKey(CalorieEntryDetailKeys.ingredientsTable), findsNothing);
-    await tester.scrollUntilVisible(
-      find.byKey(CalorieEntryDetailKeys.mealSelector),
-      200,
-    );
-    await tester.pumpAndSettle();
+    expect(find.byKey(CalorieEntryEditorKeys.saveButton), findsNothing);
 
     await tester.tap(find.byKey(CalorieEntryDetailKeys.mealSelector));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Snack').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    expect(logRepository.entries.single.mealType, MealType.snack);
+    expect(find.text('Entry updated'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
 
-    final updated = logRepository.entries.single;
-    expect(updated.id, 'entry-1');
-    expect(updated.name, 'Skyr');
-    expect(updated.mealType, MealType.snack);
+    expect(logRepository.entries.single.mealType, MealType.breakfast);
   });
 
-  testWidgets('details flow updates the logged diary day', (tester) async {
-    final existing = _entry('entry-day');
+  testWidgets(
+    'details flow moves the entry to another day and keeps the time',
+    (tester) async {
+      final existing = _entry('entry-day');
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[existing],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository();
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      await tester.pumpWidget(
+        _buildHarness(
+          logRepository: logRepository,
+          settingsRepository: settingsRepository,
+          initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('entry-day'),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(CalorieEntryDetailKeys.loggedDayButton));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('27').last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('OK'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TimePickerDialog), findsNothing);
+      final updated = logRepository.entries.single;
+      expect(updated.id, 'entry-day');
+      expect(updated.loggedAt, DateTime(2026, 2, 27, 8));
+    },
+  );
+
+  testWidgets('details flow changes the amount and rescales totals', (
+    tester,
+  ) async {
+    final existing = _entry('entry-amount');
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
     );
@@ -575,40 +608,62 @@ void main() {
       _buildHarness(
         logRepository: logRepository,
         settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('entry-day'),
+        initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('entry-amount'),
       ),
     );
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.byKey(CalorieEntryDetailKeys.loggedDayButton),
-      200,
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.amountValue));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieEntryDetailKeys.amountField),
+      '150',
     );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(CalorieEntryDetailKeys.loggedDayButton));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('27').last);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('OK'));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.amountSaveButton));
     await tester.pumpAndSettle();
 
     final updated = logRepository.entries.single;
-    expect(updated.id, 'entry-day');
-    expect(updated.loggedAt.year, 2026);
-    expect(updated.loggedAt.month, 2);
-    expect(updated.loggedAt.day, 27);
-    expect(updated.loggedAt.hour, existing.loggedAt.hour);
-    expect(updated.loggedAt.minute, existing.loggedAt.minute);
+    expect(updated.consumedAmount, 150);
+    expect(updated.totalKcal, 150);
+    expect(find.text('150 g'), findsWidgets);
   });
 
-  testWidgets('details flow confirms before discarding unsaved changes', (
+  testWidgets('details flow blocks amount changes for inventory entries', (
     tester,
   ) async {
-    final existing = _entry('entry-discard');
+    final existing = _entry(
+      'entry-stock',
+      sourceInventoryItemId: 'inventory-1',
+      sourceInventoryAmountToRestore: 2,
+    );
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[existing],
+    );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('entry-stock'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.amountValue));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CalorieEntryDetailKeys.amountField), findsNothing);
+    expect(find.textContaining('came from your inventory'), findsOneWidget);
+    expect(logRepository.entries.single.consumedAmount, 200);
+  });
+
+  testWidgets('details flow removes a plain entry and can undo it', (
+    tester,
+  ) async {
+    final existing = _entry('entry-plain');
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
     );
@@ -622,46 +677,54 @@ void main() {
         settingsRepository: settingsRepository,
         initialLocation: AppRoutes.root,
         autoOpenLocationFromRoot: AppRoutes.homeCaloriesEntryDetailsPath(
-          'entry-discard',
+          'entry-plain',
         ),
       ),
     );
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.byKey(CalorieEntryDetailKeys.mealSelector),
-      200,
+    await tester.tap(
+      find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(CalorieEntryDetailKeys.mealSelector));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Snack').last);
+    expect(logRepository.entries, isEmpty);
+    expect(find.text('Entry removed'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
 
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
+    expect(logRepository.entries.single.id, 'entry-plain');
+  });
 
-    expect(find.text('Discard unsaved changes?'), findsOneWidget);
-    expect(
-      find.text('Your changes to this diary entry have not been saved yet.'),
-      findsOneWidget,
+  testWidgets('details flow logs the same food again', (tester) async {
+    final existing = _entry('entry-again');
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: <CalorieEntry>[existing],
     );
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
 
-    await tester.tap(find.text('Cancel'));
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('entry-again'),
+      ),
+    );
     await tester.pumpAndSettle();
 
-    expect(find.text('Calorie entry details'), findsOneWidget);
-    expect(find.text('Skyr'), findsOneWidget);
-
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Discard changes'));
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.eatAgainButton));
     await tester.pumpAndSettle();
 
-    expect(find.text('Calorie entry details'), findsNothing);
-    expect(find.text('Discard unsaved changes?'), findsNothing);
-    expect(logRepository.entries.single.mealType, MealType.breakfast);
+    expect(logRepository.entries, hasLength(2));
+    final repeated = logRepository.entries.firstWhere(
+      (entry) => entry.id != 'entry-again',
+    );
+    expect(repeated.name, 'Skyr');
+    expect(repeated.consumedAmount, 200);
+    expect(find.text('Logged again'), findsOneWidget);
   });
 
   testWidgets('prepared meal details view shows ingredient table', (
@@ -688,7 +751,7 @@ void main() {
 
     expect(find.byKey(CalorieEntryDetailKeys.brandValue), findsOneWidget);
     expect(find.text('Kitchen Club'), findsOneWidget);
-    expect(find.text('0,5/4 Portionen'), findsOneWidget);
+    expect(find.text('0,5/4 Portionen'), findsWidgets);
 
     await tester.scrollUntilVisible(
       find.byKey(CalorieEntryDetailKeys.ingredientsTable),
@@ -759,29 +822,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.scrollUntilVisible(
-      find.byKey(CalorieEntryDetailKeys.mealSelector),
-      200,
-    );
-    await tester.pumpAndSettle();
-
     await tester.tap(find.byKey(CalorieEntryDetailKeys.mealSelector));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Snack').last);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
-    await tester.pumpAndSettle();
-
     expect(find.text('Could not save entry.'), findsOneWidget);
-    expect(
-      tester
-          .widget<ButtonStyleButton>(
-            find.byKey(CalorieEntryEditorKeys.saveButton),
-          )
-          .onPressed,
-      isNotNull,
-    );
+    expect(find.text('Breakfast'), findsOneWidget);
     expect(logRepository.entries.single.mealType, MealType.breakfast);
   });
 
@@ -829,7 +876,7 @@ void main() {
       );
       expect(
         tester
-            .widget<ButtonStyleButton>(
+            .widget<IconButton>(
               find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
             )
             .onPressed,
@@ -881,7 +928,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text('Remove entry'), findsNWidgets(2));
+      expect(find.text('Remove entry'), findsOneWidget);
       expect(
         find.text('Would you like to return this food to the inventory?'),
         findsOneWidget,
@@ -1045,7 +1092,7 @@ void main() {
       );
       expect(
         tester
-            .widget<ButtonStyleButton>(
+            .widget<IconButton>(
               find.byKey(CalorieEntryDetailKeys.returnToInventoryButton),
             )
             .onPressed,

@@ -12,7 +12,6 @@ class CalorieEntryEditorCreateScaffold extends StatelessWidget {
   /// Creates form scaffold wrapper.
   const new({
     required this.draft,
-    required this.isEditing,
     required this.isSaving,
     required this.onPopDiscardPending,
     required this.onSave,
@@ -25,9 +24,6 @@ class CalorieEntryEditorCreateScaffold extends StatelessWidget {
 
   /// The active draft.
   final CalorieEntryEditorDraft draft;
-
-  /// Whether editing existing or creating new.
-  final bool isEditing;
 
   /// Whether currently saving.
   final bool isSaving;
@@ -62,7 +58,6 @@ class CalorieEntryEditorCreateScaffold extends StatelessWidget {
       },
       child: CalorieEntryEditorFormScaffold(
         formKey: draft.formKey,
-        isEditing: isEditing,
         isSaving: isSaving,
         nameController: draft.nameController,
         brandController: draft.brandController,

@@ -3,105 +3,70 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Fixed footer for calorie entry details actions.
+/// Footer actions of the calorie entry details sheet.
+///
+/// Changes save on their own, so the footer holds only the remove action and
+/// the shortcut to log the same food again.
 class CalorieEntryDetailsSheetFooter extends StatelessWidget {
   /// Creates a details sheet footer.
   const new({
-    required this.canReturn,
+    required this.canEatAgain,
     required this.isSaving,
-    required this.hasPendingChanges,
-    required this.onSave,
     required this.onReturnToInventory,
+    required this.onEatAgain,
     super.key,
   });
 
-  /// Whether the entry can be returned to inventory.
-  final bool canReturn;
+  /// Whether the entry can be logged again.
+  final bool canEatAgain;
 
   /// Whether a mutation is in progress.
   final bool isSaving;
 
-  /// Whether meal/date edits are pending.
-  final bool hasPendingChanges;
-
-  /// Called when saving pending changes.
-  final VoidCallback onSave;
-
-  /// Called when returning the entry to inventory.
+  /// Called when removing the entry.
   final VoidCallback onReturnToInventory;
+
+  /// Called when logging the same food again.
+  final VoidCallback onEatAgain;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        border: Border(top: BorderSide(color: colors.outlineVariant)),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppSpacing.xl,
-            AppSpacing.sm,
-            AppSpacing.xl,
-            AppSpacing.md,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (canReturn) ...[
-                TextButton.icon(
-                  key: CalorieEntryDetailKeys.returnToInventoryButton,
-                  onPressed: isSaving ? null : onReturnToInventory,
-                  icon: const Icon(Icons.delete_outline_rounded, size: 16),
-                  style: TextButton.styleFrom(
-                    visualDensity: VisualDensity.compact,
-                    foregroundColor: colors.onSurfaceVariant,
-                  ),
-                  label: Text(l10n.caloriesRemoveEntryAction),
-                ),
-                const SizedBox(height: AppSpacing.sm),
-              ],
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton.icon(
-                  key: CalorieEntryEditorKeys.saveButton,
-                  onPressed: isSaving || !hasPendingChanges ? null : onSave,
-                  icon: const Icon(Icons.check_circle_rounded, size: 18),
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.xs,
+          0,
+          AppSpacing.xl,
+          AppSpacing.xs,
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              key: CalorieEntryDetailKeys.returnToInventoryButton,
+              onPressed: isSaving ? null : onReturnToInventory,
+              tooltip: l10n.caloriesRemoveEntryAction,
+              color: colors.onSurfaceVariant,
+              icon: const Icon(Icons.delete_outline_rounded),
+            ),
+            if (canEatAgain) const SizedBox(width: AppSpacing.xs),
+            if (canEatAgain)
+              Expanded(
+                child: FilledButton.tonalIcon(
+                  key: CalorieEntryDetailKeys.eatAgainButton,
+                  onPressed: isSaving ? null : onEatAgain,
                   style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                    backgroundColor: Color.alphaBlend(
-                      colors.primary.withValues(alpha: 0.14),
-                      colors.surfaceContainerLowest,
-                    ),
-                    disabledBackgroundColor: colors.surfaceContainerLow,
-                    foregroundColor: colors.primary,
-                    disabledForegroundColor: colors.onSurfaceVariant.withValues(
-                      alpha: 0.45,
-                    ),
-                    side: BorderSide(
-                      color: colors.outlineVariant.withValues(alpha: 0.9),
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.md,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppRadius.xl),
-                    ),
-                    elevation: 0,
+                    minimumSize: const Size.fromHeight(AppSizes.minTapTarget),
                   ),
-                  label: Text(
-                    l10n.caloriesSaveEntryAction,
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800),
-                  ),
+                  icon: const Icon(Icons.replay_rounded),
+                  label: Text(l10n.caloriesEatAgainAction),
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );

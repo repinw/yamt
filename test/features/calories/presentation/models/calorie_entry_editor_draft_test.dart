@@ -82,39 +82,6 @@ void main() {
     expect(draft.tryParse(), isNull);
   });
 
-  test('initializeFromEntry populates draft and ignores same entry twice', () {
-    final draft = CalorieEntryEditorDraft();
-    addTearDown(draft.dispose);
-    final entry = CalorieEntry.create(
-      id: 'entry-1',
-      userId: 'user-1',
-      name: 'Skyr',
-      brand: 'Arla',
-      mealType: MealType.snack,
-      consumedAmount: 200,
-      consumedUnit: ConsumedUnit.grams,
-      per100Kcal: 100,
-      per100Protein: 10,
-      per100Carbs: 5,
-      per100Fat: 1,
-      loggedAt: DateTime(2026, 4, 18, 12),
-      createdAt: DateTime(2026, 4, 18, 12),
-      updatedAt: DateTime(2026, 4, 18, 12),
-    );
-
-    expect(draft.initializeFromEntry(entry), isTrue);
-    expect(draft.nameController.text, 'Skyr');
-    expect(draft.brandController.text, 'Arla');
-    expect(draft.amountController.text, '200');
-    expect(draft.per100KcalController.text, '100');
-    expect(draft.mealType, MealType.snack);
-    expect(draft.loggedAt, DateTime(2026, 4, 18, 12));
-
-    draft.nameController.text = 'Changed';
-    expect(draft.initializeFromEntry(entry), isFalse);
-    expect(draft.nameController.text, 'Changed');
-  });
-
   test(
     'initializeForCreate populates draft and ignores same prefill twice',
     () {
