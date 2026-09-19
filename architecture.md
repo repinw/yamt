@@ -359,6 +359,14 @@ Commands and patterns: `docs/testing.md`.
 - NEVER leave commented-out code, `print`, or unused code.
 - NEVER add an abstraction, parameter, or option that the current task does
   not use.
+- NEVER write backward-compatibility code. The app has no users yet, so no
+  stored data or format needs to survive a change. This covers migrations,
+  backfills, tolerant parsers (for example a string accepted as a number),
+  fallbacks for fields that older documents lack, and special cases for data
+  created before a change. Add new fields cleanly. If old local test data
+  breaks, say so instead of coding around it.
+- If you find existing backward-compatibility code, NEVER remove it on your
+  own. Name it to the user with file and line, and let the user decide.
 
 ## 13. Feature README
 
@@ -428,7 +436,8 @@ Run this review before you push to `master`.
   icon buttons, no hardcoded strings, keys in both ARB files.
 - **Tests:** new behavior has tests. No real time. Repository-level fakes.
 - **Hygiene:** no ignore comments, no edits to generated files, no new
-  packages, no dead or commented-out code.
+  packages, no dead or commented-out code, no new backward-compatibility
+  code. Existing compatibility code in changed files is reported to the user.
 
 ### Gates
 
