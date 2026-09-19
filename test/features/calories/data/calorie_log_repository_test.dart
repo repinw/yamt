@@ -228,4 +228,27 @@ void main() {
     expect(entries, isEmpty);
     expect(firstEntryDate, isNull);
   });
+
+  test('cachedById returns entries the repository saved or watched', () async {
+    final firestore = FakeFirebaseFirestore();
+    final writer = FirestoreCalorieLogRepository(
+      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      firestore: firestore,
+    );
+    final reader = FirestoreCalorieLogRepository(
+      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      firestore: firestore,
+    );
+    final entry = _entry('entry-1', loggedAt: DateTime(2026, 2, 25, 9));
+
+    await writer.saveEntry(entry);
+    expect(writer.cachedById('entry-1')?.id, 'entry-1');
+    expect(reader.cachedById('entry-1'), isNull);
+
+    await reader.watchEntriesForDay(DateTime(2026, 2, 25)).first;
+    expect(reader.cachedById('entry-1')?.name, 'Yogurt');
+
+    await writer.deleteEntry('entry-1');
+    expect(writer.cachedById('entry-1'), isNull);
+  });
 }

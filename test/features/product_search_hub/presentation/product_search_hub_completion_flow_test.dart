@@ -742,6 +742,9 @@ class _RecordingCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   @override
+  CalorieEntry? cachedById(String entryId) => null;
+
+  @override
   Future<CalorieEntry?> getById(String entryId) async {
     return null;
   }

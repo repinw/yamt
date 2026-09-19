@@ -154,6 +154,9 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   @override
+  CalorieEntry? cachedById(String entryId) => null;
+
+  @override
   Future<CalorieEntry?> getById(String entryId) async {
     final index = _entries.indexWhere((entry) => entry.id == entryId);
     if (index < 0) {
@@ -338,7 +341,38 @@ Future<void> _waitForCondition({
   }
 }
 
+class _CachingCalorieLogRepository extends _FakeCalorieLogRepository {
+  new(this._cached) : super(initialEntries: [_cached]);
+
+  final CalorieEntry _cached;
+
+  @override
+  CalorieEntry? cachedById(String entryId) =>
+      entryId == _cached.id ? _cached : null;
+}
+
 void main() {
+  test('calorieEntryById is ready at once for a cached entry', () async {
+    final cached = _entry(
+      'cached',
+      loggedAt: DateTime(2026, 9, 5, 8),
+      mealType: MealType.breakfast,
+    );
+    final repository = _CachingCalorieLogRepository(cached);
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [calorieLogRepositoryProvider.overrideWithValue(repository)],
+    );
+    addTearDown(container.dispose);
+
+    final cachedState = container.read(calorieEntryByIdProvider('cached'));
+    final missingState = container.read(calorieEntryByIdProvider('other'));
+
+    expect(cachedState, isA<AsyncData<CalorieEntry?>>());
+    expect(cachedState.value?.id, 'cached');
+    expect(missingState.isLoading, isTrue);
+  });
+
   test(
     'emits only successful local commits, with explicit creation intent',
     () async {

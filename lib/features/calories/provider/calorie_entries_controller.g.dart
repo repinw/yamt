@@ -63,11 +63,19 @@ abstract class _$CalorieEntriesController
 }
 
 /// Calorie entry by id.
+///
+/// Returns the repository's cached copy synchronously when there is one, so
+/// the details sheet renders on its first frame and the hero image has a
+/// place to land. Otherwise it loads the entry.
 
 @ProviderFor(calorieEntryById)
 final calorieEntryByIdProvider = CalorieEntryByIdFamily._();
 
 /// Calorie entry by id.
+///
+/// Returns the repository's cached copy synchronously when there is one, so
+/// the details sheet renders on its first frame and the hero image has a
+/// place to land. Otherwise it loads the entry.
 
 final class CalorieEntryByIdProvider
     extends
@@ -78,6 +86,10 @@ final class CalorieEntryByIdProvider
         >
     with $FutureModifier<CalorieEntry?>, $FutureProvider<CalorieEntry?> {
   /// Calorie entry by id.
+  ///
+  /// Returns the repository's cached copy synchronously when there is one, so
+  /// the details sheet renders on its first frame and the hero image has a
+  /// place to land. Otherwise it loads the entry.
   CalorieEntryByIdProvider._({
     required CalorieEntryByIdFamily super.from,
     required String super.argument,
@@ -122,9 +134,13 @@ final class CalorieEntryByIdProvider
   }
 }
 
-String _$calorieEntryByIdHash() => r'8a97364b59a39400011c3ef15a2056f2019f19a5';
+String _$calorieEntryByIdHash() => r'54f0f8326b3952d4cefc67e0ae4e3dd51e85c53c';
 
 /// Calorie entry by id.
+///
+/// Returns the repository's cached copy synchronously when there is one, so
+/// the details sheet renders on its first frame and the hero image has a
+/// place to land. Otherwise it loads the entry.
 
 final class CalorieEntryByIdFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<CalorieEntry?>, String> {
@@ -138,6 +154,10 @@ final class CalorieEntryByIdFamily extends $Family
       );
 
   /// Calorie entry by id.
+  ///
+  /// Returns the repository's cached copy synchronously when there is one, so
+  /// the details sheet renders on its first frame and the hero image has a
+  /// place to land. Otherwise it loads the entry.
 
   CalorieEntryByIdProvider call(String entryId) =>
       CalorieEntryByIdProvider._(argument: entryId, from: this);

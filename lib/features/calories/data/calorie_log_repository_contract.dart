@@ -28,4 +28,8 @@ abstract interface class CalorieLogRepositoryContract {
 
   /// Get by id.
   Future<CalorieEntry?> getById(String entryId);
+
+  /// Last known copy of an entry that this repository read or wrote, or
+  /// `null`. Never reaches the backend, so screens can open without waiting.
+  CalorieEntry? cachedById(String entryId);
 }

@@ -166,6 +166,9 @@ class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   @override
+  CalorieEntry? cachedById(String entryId) => null;
+
+  @override
   Future<CalorieEntry?> getById(String entryId) async {
     final index = _entries.indexWhere((entry) => entry.id == entryId);
     if (index < 0) {
