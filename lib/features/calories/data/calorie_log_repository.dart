@@ -4,6 +4,7 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
@@ -313,7 +314,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
 CalorieLogRepositoryContract calorieLogRepository(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
   final currentUserId = authState.asData?.value?.uid;
-  final firestore = _resolveFirestore();
+  final firestore = ref.watch(firebaseFirestoreProvider);
   if (firestore == null) {
     return const UnavailableCalorieLogRepository();
   }
@@ -330,18 +331,4 @@ class _CurrentCalorieLogUserSession implements CalorieLogUserSession {
 
   @override
   String? get currentUserId => _currentUserId;
-}
-
-FirebaseFirestore? _resolveFirestore() {
-  try {
-    return FirebaseFirestore.instance;
-  } on Object catch (error, stackTrace) {
-    log(
-      'Falling back to unavailable calorie log repository.',
-      name: _repositoryLogName,
-      error: error,
-      stackTrace: stackTrace,
-    );
-    return null;
-  }
 }

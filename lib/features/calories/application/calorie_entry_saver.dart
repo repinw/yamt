@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -34,6 +35,7 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
   final overviewRevision = ref.read(calorieOverviewRevisionProvider.notifier);
   final cacheRepository = ref.read(calorieProductCacheRepositoryProvider);
   final postPersistHook = ref.read(calorieEntryPostPersistHookProvider);
+  final clock = ref.read(clockProvider);
 
   return (
     entry, {
@@ -81,7 +83,7 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
             source: scannedSourceRef.source,
             offProductId: scannedSourceRef.offProductId,
             imageUrl: entry.imageUrl,
-            now: DateTime.now(),
+            now: clock(),
           ),
           reason: 'user_edit_after_scan',
         ),

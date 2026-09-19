@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
@@ -23,6 +24,7 @@ InventoryQuickEatApplication inventoryQuickEatApplication(Ref ref) {
     preparedMealRepository: ref.watch(preparedMealRepositoryProvider),
     calorieLogBridge: ref.watch(preparedMealCalorieLogBridgeProvider),
     pendingConsumptions: ref.watch(inventoryPendingConsumptionStoreProvider),
+    now: ref.watch(clockProvider),
   );
 }
 
@@ -63,11 +65,13 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     required this._preparedMealRepository,
     required this._calorieLogBridge,
     required this._pendingConsumptions,
+    required this._now,
   });
 
   final PreparedMealRepository _preparedMealRepository;
   final PreparedMealCalorieLogBridge _calorieLogBridge;
   final InventoryPendingConsumptionStore _pendingConsumptions;
+  final DateTime Function() _now;
   final _mutationQueue = SerializedMutationQueue();
   int _nextPendingConsumptionNumber = 0;
 
@@ -135,7 +139,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
       currentMeals: currentMeals,
       mealIndex: 0,
       removedPortions: consumedPortions,
-      updatedAt: DateTime.now(),
+      updatedAt: _now(),
       keepDepletedMeal: true,
     );
     return await _calorieLogBridge.consumePreparedMeal(

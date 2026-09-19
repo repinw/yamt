@@ -58,4 +58,4 @@ final class CalorieEntrySaverProvider
   }
 }
 
-String _$calorieEntrySaverHash() => r'9b9545329738d60ab14816b61da7c536ad43bc11';
+String _$calorieEntrySaverHash() => r'652e1315a4cbcf78ba9a144e17b6d0b1604e159e';

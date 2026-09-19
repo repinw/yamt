@@ -103,6 +103,7 @@ InventoryQuickEatApplication _application({
   return InventoryQuickEatApplication(
     preparedMealRepository: repository,
     pendingConsumptions: pendingStore,
+    now: () => DateTime(2026, 9, 19, 12),
     calorieLogBridge: PreparedMealCalorieLogBridge(
       saveEntry: saveEntry,
       saveEntryAtomically: atomic ? saveEntry : null,

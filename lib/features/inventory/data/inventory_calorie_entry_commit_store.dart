@@ -3,7 +3,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
@@ -17,6 +17,8 @@ import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 
+part 'inventory_calorie_entry_commit_store.g.dart';
+
 const _commitStoreLogName = 'InventoryCalorieEntryCommitStore';
 const _usersCollection = 'users';
 const _calorieEntriesCollection = 'calorie_entries';
@@ -24,28 +26,24 @@ const _inventoryItemsCollection = 'inventory_items';
 const _inventoryActivityEventsCollection = 'inventory_activity_events';
 
 /// The inventory calorie entry commit store provider.
-final inventoryCalorieEntryCommitStoreProvider =
-    Provider<InventoryCalorieEntryCommitStore>((ref) {
-      final currentUserId = ref
-          .watch(authStateChangesProvider)
-          .asData
-          ?.value
-          ?.uid;
-      final inventoryOwnerUserId = ref.watch(
-        effectiveHouseholdDataOwnerUserIdProvider,
-      );
-      final firestore = ref.watch(firebaseFirestoreProvider);
-      if (firestore == null) {
-        return const _UnavailableInventoryCalorieEntryCommitStore();
-      }
+@Riverpod(keepAlive: true)
+InventoryCalorieEntryCommitStore inventoryCalorieEntryCommitStore(Ref ref) {
+  final currentUserId = ref.watch(authStateChangesProvider).asData?.value?.uid;
+  final inventoryOwnerUserId = ref.watch(
+    effectiveHouseholdDataOwnerUserIdProvider,
+  );
+  final firestore = ref.watch(firebaseFirestoreProvider);
+  if (firestore == null) {
+    return const _UnavailableInventoryCalorieEntryCommitStore();
+  }
 
-      return FirestoreInventoryCalorieEntryCommitStore(
-        firestore: firestore,
-        currentUserId: currentUserId,
-        inventoryOwnerUserId: inventoryOwnerUserId,
-        actor: ref.watch(inventoryActivityActorProvider),
-      );
-    });
+  return FirestoreInventoryCalorieEntryCommitStore(
+    firestore: firestore,
+    currentUserId: currentUserId,
+    inventoryOwnerUserId: inventoryOwnerUserId,
+    actor: ref.watch(inventoryActivityActorProvider),
+  );
+}
 
 /// Defines inventory calorie entry commit store.
 abstract interface class InventoryCalorieEntryCommitStore {

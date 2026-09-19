@@ -4,6 +4,7 @@ import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -106,8 +107,6 @@ class CalorieDayViewData {
 /// Defines calorie entries controller.
 @riverpod
 class CalorieEntriesController extends _$CalorieEntriesController {
-  // Subscription is cancelled by _disposeSubscription.
-  // ignore: cancel_subscriptions
   StreamSubscription<List<CalorieEntry>>? _entriesSubscription;
   Future<void> _mutationQueue = Future<void>.value();
 
@@ -409,11 +408,8 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   }
 
   void _disposeSubscription() {
-    final currentSubscription = _entriesSubscription;
+    unawaited(_entriesSubscription?.cancel());
     _entriesSubscription = null;
-    if (currentSubscription != null) {
-      unawaited(currentSubscription.cancel());
-    }
   }
 
   void _onEntryMutation(CalorieEntryMutation mutation) {
@@ -568,7 +564,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     required CalorieScannedSourceRef scannedSourceRef,
   }) async {
     final cacheRepository = ref.read(calorieProductCacheRepositoryProvider);
-    final now = DateTime.now();
+    final now = ref.read(clockProvider)();
     final profile = CalorieProductProfile.fromEntry(
       entry: entry,
       barcode: scannedSourceRef.barcode,
