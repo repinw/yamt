@@ -2,6 +2,8 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
+import 'package:yamt/core/data/firestore_batch_write.dart';
+import 'package:yamt/core/data/firestore_offline_writes.dart';
 
 const String _storeLogName = 'FirestoreInventoryItemStore';
 const String _usersCollection = 'users';
@@ -125,10 +127,25 @@ class FirestoreInventoryItemStore
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      await _atomicReplaceService.upsertAll(
+      final operations = _atomicReplaceService.buildUpsertOperations(
         collection: _collection(userId),
         documentsById: documentsById,
       );
+      for (final chunk in FirestoreBatchChunker.chunk(
+        operations: operations,
+        maxChunkSize: defaultMaxFirestoreBatchOperations,
+      )) {
+        final batch = _firestore.batch();
+        for (final operation in chunk) {
+          operation.apply(batch);
+        }
+        commitBatchInBackground(
+          batch,
+          failureMessage:
+              'Server rejected inventory item upsert for user $userId.',
+          logName: _storeLogName,
+        );
+      }
       return true;
     } on Object catch (error, stackTrace) {
       log(

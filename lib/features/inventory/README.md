@@ -36,7 +36,10 @@ Other features may consume these public Inventory entry points:
   used by integrating features. Callers pass the `InventoryItem` or
   `PreparedMeal` they show, so no server read delays the save. The calorie
   entry commit stores read the stock local-first and queue a batch, so eating
-  also works offline.
+  also works offline. Item upserts and activity events also queue their
+  batches without waiting for the server. The Diary "eat food" flow sizes a
+  new item to the eaten amount before its only write and saves the shared
+  catalog product and barcode selection in the background.
 - `application/inventory_quick_eat_picker.dart` for quick-eat picker contract
   used by integrating features.
 - `presentation/inventory_quick_eat_sheet_picker.dart` for inventory-owned

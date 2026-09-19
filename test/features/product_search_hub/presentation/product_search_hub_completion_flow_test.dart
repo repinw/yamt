@@ -313,6 +313,44 @@ void main() {
     expect(inventoryController.stagedConsumptions, hasLength(1));
   });
 
+  testWidgets('diary mode saves the item already sized to the eaten amount', (
+    tester,
+  ) async {
+    final inventoryController = _SuccessfulInventoryItemsController();
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        firebaseAuth: firebaseAuth,
+        commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+        onRun: (context, container, l10n) async {
+          await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.diary(),
+            sourceKey: '4006381333931',
+            result: _manualResult(
+              item: _manualItemWithNutrition(),
+              eatSelection: EatSelection(
+                inventoryAmount: 200,
+                loggedAt: DateTime.utc(2026, 4, 13, 12),
+                mealType: MealType.lunch,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+
+    expect(inventoryController.addedItems.single.currentAmount, 200);
+    expect(inventoryController.updatedItems, isEmpty);
+    expect(inventoryController.stagedConsumptions.single.amount, 200);
+  });
+
   testWidgets('diary mode add-more eat returns overlay selection', (
     tester,
   ) async {
@@ -621,6 +659,7 @@ Widget _buildCompletionHarness({
 
 class _RecordingInventoryItemsController extends InventoryItemsController {
   final addedItems = <InventoryItem>[];
+  final updatedItems = <InventoryItem>[];
   final deletedItemIds = <String>[];
 
   @override
@@ -631,6 +670,12 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
   @override
   Future<bool> addItem(InventoryItem item) async {
     addedItems.add(item);
+    return true;
+  }
+
+  @override
+  Future<bool> updateItem(InventoryItem item) async {
+    updatedItems.add(item);
     return true;
   }
 

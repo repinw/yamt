@@ -26,6 +26,7 @@ void main() {
     ]);
 
     expect(saved, isTrue);
+    await pumpEventQueue();
     await expectLater(
       repository.watchRecent(limit: 10),
       emits(
@@ -55,6 +56,7 @@ void main() {
     final saved = await repository.appendAll(events);
 
     expect(saved, isTrue);
+    await pumpEventQueue();
     final watchedEvents = await repository.watchRecent(limit: 501).first;
     expect(watchedEvents, hasLength(501));
     expect(watchedEvents.first.id, 'event-500');

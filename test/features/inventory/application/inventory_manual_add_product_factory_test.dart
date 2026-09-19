@@ -68,7 +68,6 @@ void main() {
     final savedItem = buildInventoryManualAddSavedItem(
       id: 'inventory-1',
       globalProduct: globalItem,
-      globalSaved: true,
       now: DateTime.parse('2026-04-13T10:00:00Z'),
       storeName: 'Added manually',
       inventoryWeight: '300 ml',

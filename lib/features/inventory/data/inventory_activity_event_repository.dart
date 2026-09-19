@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
+import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
@@ -72,7 +73,12 @@ class FirestoreInventoryActivityEventRepository
           final event = events[index];
           batch.set(collection.doc(event.id), event.toJson());
         }
-        await batch.commit();
+        commitBatchInBackground(
+          batch,
+          failureMessage:
+              'Server rejected inventory activity events for user $userId.',
+          logName: _activityLogName,
+        );
       }
       return true;
     } on Object catch (error, stackTrace) {

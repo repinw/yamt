@@ -9,6 +9,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
@@ -78,12 +79,15 @@ class InventoryManualProductSaveOutcome {
 }
 
 /// Saves edited manual product result using inventory persistence rules.
-
+///
+/// [adjustItem] changes the built item before its only write, for example to
+/// size it to the eaten amount.
 Future<InventoryManualProductSaveOutcome> saveManualProductResultToInventory({
   required BuildContext context,
   required ProviderContainer container,
   required AppLocalizations l10n,
   required InventoryReceiptManualProductResult result,
+  InventoryItem Function(InventoryItem item)? adjustItem,
 }) async {
   try {
     return await _saveManualProductResultToInventory(
@@ -91,6 +95,7 @@ Future<InventoryManualProductSaveOutcome> saveManualProductResultToInventory({
       container: container,
       l10n: l10n,
       result: result,
+      adjustItem: adjustItem,
     );
   } on Object catch (error, stackTrace) {
     log(
@@ -108,6 +113,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultToInventory({
   required ProviderContainer container,
   required AppLocalizations l10n,
   required InventoryReceiptManualProductResult result,
+  required InventoryItem Function(InventoryItem item)? adjustItem,
 }) async {
   final promptResult = result.skipMissingBarcodePrompt
       ? _ManualBarcodePromptResult(
@@ -140,6 +146,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultToInventory({
       promptResult: promptResult,
       now: now,
       inventoryItemsController: inventoryItemsController,
+      adjustItem: adjustItem,
     );
   } finally {
     inventorySubscription.close();
@@ -174,6 +181,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
   required _ManualBarcodePromptResult promptResult,
   required DateTime now,
   required InventoryItemsController inventoryItemsController,
+  required InventoryItem Function(InventoryItem item)? adjustItem,
 }) async {
   final globalProduct = buildInventoryManualAddGlobalFoodItem(
     item: promptResult.item,
@@ -184,35 +192,73 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     packageWeight: result.globalPackageWeight,
     manualGlobalFoodItemId: _inventoryManualProductSaveGlobalFoodItemId.v4(),
   );
-  final globalSaved =
-      !result.requiresGlobalPersistence ||
-      await container.read(globalFoodItemRepositoryProvider).appendAll([
-        globalProduct,
-      ]);
-  final savedItem = buildInventoryManualAddSavedItem(
+  final builtItem = buildInventoryManualAddSavedItem(
     id: _inventoryManualProductSaveItemId.v4(),
     globalProduct: globalProduct,
-    globalSaved: globalSaved,
     now: now,
     storeName: l10n.inventoryManualAddStoreName,
     inventoryWeight: resolveInventoryManualAddInventoryWeight(
       promptResult.item.weight,
     ),
   );
+  final savedItem = adjustItem?.call(builtItem) ?? builtItem;
   final inventorySaved = await inventoryItemsController.addItem(savedItem);
   if (!inventorySaved) {
     return const InventoryManualProductSaveOutcome.failed();
   }
-  if (globalSaved && promptResult.barcode != null) {
-    await container
-        .read(globalBarcodeCandidateRepositoryProvider)
-        .recordSelection(
-          barcode: promptResult.barcode!,
-          globalFoodItem: globalProduct,
-          selectedAt: now,
-        );
-  }
+  unawaited(
+    _persistGlobalProduct(
+      container: container,
+      globalProduct: globalProduct,
+      requiresGlobalPersistence: result.requiresGlobalPersistence,
+      barcode: promptResult.barcode,
+      selectedAt: now,
+    ),
+  );
   return InventoryManualProductSaveOutcome.saved(savedItem);
+}
+
+/// Writes the shared catalog product and its barcode selection.
+///
+/// It runs in the background because both are catalog extras: the user's
+/// inventory item and diary entry do not wait for the server.
+Future<void> _persistGlobalProduct({
+  required ProviderContainer container,
+  required GlobalFoodItem globalProduct,
+  required bool requiresGlobalPersistence,
+  required String? barcode,
+  required DateTime selectedAt,
+}) async {
+  try {
+    if (requiresGlobalPersistence) {
+      final saved = await container
+          .read(globalFoodItemRepositoryProvider)
+          .appendAll([globalProduct]);
+      if (!saved) {
+        log(
+          'Failed to save global product ${globalProduct.id}.',
+          name: _inventoryManualProductSaveLogName,
+        );
+        return;
+      }
+    }
+    if (barcode != null) {
+      await container
+          .read(globalBarcodeCandidateRepositoryProvider)
+          .recordSelection(
+            barcode: barcode,
+            globalFoodItem: globalProduct,
+            selectedAt: selectedAt,
+          );
+    }
+  } on Object catch (error, stackTrace) {
+    log(
+      'Failed to persist global product ${globalProduct.id}.',
+      name: _inventoryManualProductSaveLogName,
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
 }
 
 Future<_ManualBarcodePromptResult?> _resolveMissingBarcode(

@@ -5,8 +5,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
-    'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/domain/'
     'inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
@@ -89,6 +87,10 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
       container: container,
       l10n: l10n,
       result: result,
+      adjustItem: (item) => resizeInventoryManualAddItemToConsumedAmount(
+        item: item,
+        inventoryAmount: eatResult.request.inventoryAmount,
+      ),
     );
     final savedItem = saveOutcome.item;
     if (saveOutcome.status != InventoryManualProductSaveStatus.saved ||
@@ -100,7 +102,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
     }
 
     String? savedCalorieEntryId;
-    final completedEatFlow = await _completeEatFlow(
+    final completedEatFlow = await completeInventoryManualAddEatFlow(
       context: context,
       item: savedItem,
       request: eatResult.request,
@@ -118,60 +120,6 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
   } finally {
     inventorySubscription.close();
   }
-}
-
-Future<bool> _completeEatFlow({
-  required BuildContext context,
-  required InventoryItem item,
-  required InventoryItemEatRequest request,
-  required void Function(String calorieEntryId) onDirectCalorieEntrySaved,
-}) async {
-  final resizedItem = resizeInventoryManualAddItemToConsumedAmount(
-    item: item,
-    inventoryAmount: request.inventoryAmount,
-  );
-  final itemForConsumption = await _updateSavedItemIfNeeded(
-    context: context,
-    originalItem: item,
-    resizedItem: resizedItem,
-  );
-  if (!context.mounted || itemForConsumption == null) {
-    return false;
-  }
-
-  return await completeInventoryManualAddEatFlow(
-    context: context,
-    item: itemForConsumption,
-    request: request,
-    onDirectCalorieEntrySaved: onDirectCalorieEntrySaved,
-  );
-}
-
-Future<InventoryItem?> _updateSavedItemIfNeeded({
-  required BuildContext context,
-  required InventoryItem originalItem,
-  required InventoryItem resizedItem,
-}) async {
-  if (resizedItem == originalItem) {
-    return originalItem;
-  }
-
-  final controller = ProviderScope.containerOf(
-    context,
-    listen: false,
-  ).read(inventoryItemsControllerProvider.notifier);
-  final saved = await controller.updateItem(resizedItem);
-  if (!context.mounted) {
-    return null;
-  }
-  if (saved) {
-    return resizedItem;
-  }
-  showInventoryManualAddSnackBar(
-    context: context,
-    message: AppLocalizations.of(context)!.inventoryItemActionFailed,
-  );
-  return null;
 }
 
 Future<void> _deleteSavedItem(

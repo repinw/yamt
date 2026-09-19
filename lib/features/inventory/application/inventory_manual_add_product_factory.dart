@@ -77,14 +77,13 @@ GlobalFoodItem buildInventoryManualAddGlobalFoodItem({
 InventoryItem buildInventoryManualAddSavedItem({
   required String id,
   required GlobalFoodItem globalProduct,
-  required bool globalSaved,
   required DateTime now,
   required String storeName,
   required String? inventoryWeight,
 }) {
   return InventoryItem.create(
     id: id,
-    globalFoodItemId: globalSaved ? globalProduct.id : null,
+    globalFoodItemId: globalProduct.id,
     name: globalProduct.name,
     entryDate: now,
     storeName: storeName,
