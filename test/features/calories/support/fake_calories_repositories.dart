@@ -33,6 +33,9 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   Object? watchError;
   bool saveShouldFail = false;
+
+  /// When set, saves wait for this future before they complete.
+  Future<void>? saveGate;
   bool deleteShouldFail = false;
   Duration initialEmissionDelay = Duration.zero;
   Future<List<CalorieEntry>> Function(DateTime day)? onReadEntriesForDay;
@@ -130,6 +133,7 @@ class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
 
   @override
   Future<bool> saveEntryForCurrentUser(CalorieEntry entry) async {
+    await saveGate;
     if (saveShouldFail) {
       return false;
     }

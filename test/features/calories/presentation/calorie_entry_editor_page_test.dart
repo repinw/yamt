@@ -522,6 +522,76 @@ void main() {
     expect(find.text('Inventory Home'), findsOneWidget);
   });
 
+  testWidgets('create flow closes before the save completes', (tester) async {
+    final saveGate = Completer<void>();
+    final logRepository = FakeCalorieLogRepository()
+      ..saveGate = saveGate.future;
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryCreate,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.nameField),
+      'Greek Yogurt',
+    );
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.per100KcalField),
+      '95',
+    );
+    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Inventory Home'), findsOneWidget);
+    expect(logRepository.entries, isEmpty);
+
+    saveGate.complete();
+    await tester.pumpAndSettle();
+
+    expect(logRepository.entries.single.name, 'Greek Yogurt');
+  });
+
+  testWidgets('create flow reports a failed save after closing', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository()..saveShouldFail = true;
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(logRepository.dispose);
+    addTearDown(settingsRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        logRepository: logRepository,
+        settingsRepository: settingsRepository,
+        initialLocation: AppRoutes.homeCaloriesEntryCreate,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.nameField),
+      'Greek Yogurt',
+    );
+    await tester.enterText(
+      find.byKey(CalorieEntryEditorKeys.per100KcalField),
+      '95',
+    );
+    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Inventory Home'), findsOneWidget);
+    expect(find.text('Could not save entry.'), findsOneWidget);
+    expect(logRepository.entries, isEmpty);
+  });
+
   testWidgets('details flow saves a meal change at once and can undo it', (
     tester,
   ) async {

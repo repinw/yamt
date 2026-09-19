@@ -178,7 +178,12 @@ abstract final class CalorieEntryEditorFlowHandler {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  /// Validates, builds and saves a new or edited entry.
+  /// Validates and builds a new entry, closes the editor, and saves it.
+  ///
+  /// The editor closes before the save completes: the entry appears in the
+  /// diary at once through the optimistic state. If the save fails, the entry
+  /// is removed again, a pending inventory consumption is discarded, and a
+  /// snackbar reports the failure.
   static Future<void> saveNewEntry(
     BuildContext context, {
     required CalorieEntryEditorDraft draft,
@@ -215,23 +220,24 @@ abstract final class CalorieEntryEditorFlowHandler {
           inventoryContext?.inventoryAmountToRestore,
     );
 
-    final saved = await controller.saveEntry(
+    final messenger = ScaffoldMessenger.of(context);
+    final failureMessage = AppLocalizations.of(context)!.caloriesSaveFailed;
+    final pendingConsumptionId = inventoryContext?.pendingConsumptionId;
+    final save = controller.saveEntry(
       entry: entry,
       inventoryContext: inventoryContext,
       scannedSourceRef: scannedSourceRef,
-      pendingConsumptionId: inventoryContext?.pendingConsumptionId,
+      pendingConsumptionId: pendingConsumptionId,
     );
-    if (!context.mounted) {
+    onCommitted();
+    maybePopRootNavigator(context, isEditing: false, result: true);
+
+    if (await save) {
       return;
     }
-
-    if (saved) {
-      onCommitted();
-      maybePopRootNavigator(context, isEditing: false, result: true);
-      return;
+    if (pendingConsumptionId != null) {
+      await controller.discardPendingInventory(pendingConsumptionId);
     }
-
-    final l10n = AppLocalizations.of(context)!;
-    showFailureSnackBar(ScaffoldMessenger.of(context), l10n.caloriesSaveFailed);
+    showFailureSnackBar(messenger, failureMessage);
   }
 }
