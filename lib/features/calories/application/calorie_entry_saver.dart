@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -62,58 +63,53 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
       ),
     );
 
-    try {
-      await ref
+    // Follow-up writes run in the background so the caller returns at once.
+    _runInBackground(
+      'Failed to clear skipped intake day.',
+      () => ref
           .read(calorieGoalControllerProvider.notifier)
-          .clearSkippedIntakeDay(entry.loggedAt);
-    } on Object catch (e, st) {
-      log(
-        'Failed to clear skipped intake day.',
-        name: _entrySaverLogName,
-        error: e,
-        stackTrace: st,
+          .clearSkippedIntakeDay(entry.loggedAt),
+    );
+
+    if (scannedSourceRef != null) {
+      _runInBackground(
+        'Failed to save user override.',
+        () => cacheRepository.saveUserOverride(
+          profile: CalorieProductProfile.fromEntry(
+            entry: entry,
+            barcode: scannedSourceRef.barcode,
+            source: scannedSourceRef.source,
+            offProductId: scannedSourceRef.offProductId,
+            imageUrl: entry.imageUrl,
+            now: DateTime.now(),
+          ),
+          reason: 'user_edit_after_scan',
+        ),
       );
     }
 
-    if (scannedSourceRef != null) {
-      try {
-        final profile = CalorieProductProfile.fromEntry(
-          entry: entry,
-          barcode: scannedSourceRef.barcode,
-          source: scannedSourceRef.source,
-          offProductId: scannedSourceRef.offProductId,
-          imageUrl: entry.imageUrl,
-          now: DateTime.now(),
-        );
-        await cacheRepository.saveUserOverride(
-          profile: profile,
-          reason: 'user_edit_after_scan',
-        );
-      } on Object catch (e, st) {
-        log(
-          'Failed to save user override.',
-          name: _entrySaverLogName,
-          error: e,
-          stackTrace: st,
-        );
-      }
-    }
-
-    try {
-      await postPersistHook(
+    _runInBackground(
+      'Post-persist hook failed.',
+      () => postPersistHook(
         entry: entry,
         inventoryContext: inventoryContext,
         scannedSourceRef: scannedSourceRef,
-      );
-    } on Object catch (e, st) {
-      log(
-        'Post-persist hook failed.',
-        name: _entrySaverLogName,
-        error: e,
-        stackTrace: st,
-      );
-    }
+      ),
+    );
 
     return true;
   };
+}
+
+void _runInBackground(String failureMessage, Future<void> Function() action) {
+  unawaited(
+    Future<void>.sync(action).catchError((Object error, StackTrace stackTrace) {
+      log(
+        failureMessage,
+        name: _entrySaverLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }),
+  );
 }

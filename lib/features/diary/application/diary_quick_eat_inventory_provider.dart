@@ -55,7 +55,7 @@ DiaryQuickEatInventoryActions diaryQuickEatInventoryActions(Ref ref) {
 abstract interface class DiaryQuickEatInventoryActions {
   /// Stages inventory consumption and returns the pending consumption id.
   Future<String?> stageInventoryItemConsumption({
-    required String itemId,
+    required InventoryItem item,
     required int amount,
   });
 
@@ -64,7 +64,7 @@ abstract interface class DiaryQuickEatInventoryActions {
 
   /// Consumes one prepared meal from the diary.
   Future<bool> consumePreparedMeal({
-    required String mealId,
+    required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
@@ -79,11 +79,11 @@ class _DiaryQuickEatInventoryActions implements DiaryQuickEatInventoryActions {
 
   @override
   Future<String?> stageInventoryItemConsumption({
-    required String itemId,
+    required InventoryItem item,
     required int amount,
   }) async {
     return await _actions.stageInventoryItemConsumption(
-      itemId: itemId,
+      item: item,
       amount: amount,
     );
   }
@@ -97,13 +97,13 @@ class _DiaryQuickEatInventoryActions implements DiaryQuickEatInventoryActions {
 
   @override
   Future<bool> consumePreparedMeal({
-    required String mealId,
+    required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
   }) {
     return _actions.consumePreparedMeal(
-      mealId: mealId,
+      meal: meal,
       consumedPortions: consumedPortions,
       mealType: mealType,
       loggedDay: loggedDay,

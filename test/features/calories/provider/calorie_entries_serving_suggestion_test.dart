@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -133,6 +135,7 @@ void main() {
       final saved = await container
           .read(calorieEntriesControllerProvider.notifier)
           .saveEntry(_entry(), inventoryContext: _inventoryContext);
+      await pumpEventQueue();
 
       expect(saved, isTrue);
       expect(servingRepository.calls, hasLength(1));
@@ -143,6 +146,32 @@ void main() {
       expect(servingRepository.calls.single.label, isNull);
     },
   );
+
+  test('saveEntry returns before post-persist work finishes', () async {
+    final logRepository = FakeCalorieLogRepository();
+    final hookDone = Completer<void>();
+    final container = ProviderContainer(
+      overrides: [
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        calorieEntryPostPersistHookProvider.overrideWith(
+          (ref) =>
+              ({required entry, inventoryContext, scannedSourceRef}) =>
+                  hookDone.future,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    addTearDown(logRepository.dispose);
+
+    await container.read(calorieEntriesControllerProvider.future);
+    final saved = await container
+        .read(calorieEntriesControllerProvider.notifier)
+        .saveEntry(_entry(), inventoryContext: _inventoryContext);
+
+    expect(saved, isTrue);
+    expect(hookDone.isCompleted, isFalse);
+    hookDone.complete();
+  });
 
   test('inventory post-persist hook learns base portion with label', () async {
     final servingRepository = _FakeGlobalFoodServingSuggestionRepository();

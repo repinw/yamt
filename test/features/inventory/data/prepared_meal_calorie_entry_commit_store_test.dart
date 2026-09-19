@@ -87,6 +87,7 @@ void main() {
       final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
 
       expect(saved, isTrue);
+      await pumpEventQueue();
 
       final savedEntry = await _entryCollection(firestore: firestore)
           .doc('entry-1')
@@ -128,6 +129,7 @@ void main() {
       );
 
       expect(saved, isTrue);
+      await pumpEventQueue();
 
       final savedEntry = await _entryCollection(firestore: firestore)
           .doc('entry-1')
@@ -166,6 +168,7 @@ void main() {
       final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
 
       expect(saved, isTrue);
+      await pumpEventQueue();
 
       final savedMeal = await _preparedMealCollection(firestore: firestore)
           .doc('meal-1')
@@ -279,6 +282,7 @@ void main() {
     );
 
     expect(saved, isTrue);
+    await pumpEventQueue();
 
     final savedEntry = await _entryCollection(
       firestore: firestore,

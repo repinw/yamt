@@ -599,14 +599,14 @@ class _TestDiaryQuickEatInventoryActions
 
   @override
   Future<String?> stageInventoryItemConsumption({
-    required String itemId,
+    required InventoryItem item,
     required int amount,
   }) async {
     _stageCallCount += 1;
     if (failStage) {
       return null;
     }
-    return 'pending-$itemId';
+    return 'pending-${item.id}';
   }
 
   @override
@@ -618,7 +618,7 @@ class _TestDiaryQuickEatInventoryActions
 
   @override
   Future<bool> consumePreparedMeal({
-    required String mealId,
+    required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,

@@ -74,6 +74,11 @@ the legacy `provider/` surface or exposing action wrappers to sibling features.
   `CalorieLogRepositoryContract.cachedById` returns the last entry the
   repository read or wrote without a backend call; `calorieEntryById` uses it
   so the details sheet renders on its first frame.
+- Saving an entry is optimistic. The repository and the inventory commit
+  stores write through the Firestore local cache and do not wait for the
+  server, so a save works offline and Firestore sends it later. Follow-up
+  writes (skipped-day reset, product override, serving suggestion) run in
+  the background.
 - The feature-level `provider/` folder is legacy structure and currently holds
   calorie controllers and derived state. Do not add new provider files there
   unless working inside existing legacy code where moving would create

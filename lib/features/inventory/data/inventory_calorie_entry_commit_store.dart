@@ -5,6 +5,7 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
@@ -123,83 +124,93 @@ class FirestoreInventoryCalorieEntryCommitStore
       name: _commitStoreLogName,
     );
 
+    // A batch instead of a transaction: Firestore queues batches while
+    // offline, but transactions fail. The stock is computed from the local
+    // copy, so two offline consumptions of the same item may overwrite each
+    // other.
     try {
-      return await _firestore.runTransaction((transaction) async {
-        final inventoryRef = _inventoryCollection(inventoryUserId)
-            .doc(pendingConsumption.itemId);
-        final inventorySnapshot = await transaction.get(inventoryRef);
-        if (!inventorySnapshot.exists) {
-          log(
-            'Inventory item ${pendingConsumption.itemId} no longer exists '
-            'while committing calorie entry ${entry.id}.',
-            name: _commitStoreLogName,
-          );
-          return null;
-        }
-
-        final rawItem = Map<String, dynamic>.from(
-          inventorySnapshot.data() ?? const <String, dynamic>{},
-        )..['id'] = inventorySnapshot.id;
-
-        final currentItem = InventoryItem.fromJson(rawItem);
-        final committedItem = _buildCommittedItem(
-          item: currentItem,
-          amount: pendingConsumption.amount,
-          consumedAt: entry.loggedAt,
-        );
-        if (committedItem == null) {
-          log(
-            'Inventory commit rejected for calorie entry ${entry.id} '
-            '(itemId=${currentItem.id}, '
-            'quantity=${currentItem.quantity}, '
-            'currentAmount=${currentItem.currentAmount}, '
-            'requestedAmount=${pendingConsumption.amount}, '
-            'usesAmountProgress=${currentItem.usesAmountProgress}).',
-            name: _commitStoreLogName,
-          );
-          return null;
-        }
-
-        final normalizedEntry = entry.copyWith(
-          userId: entryUserId,
-          imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
-          updatedAt: DateTime.now(),
-        );
-
-        transaction
-          ..set(
-            _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
-            normalizedEntry.toJson(),
-          )
-          ..update(inventoryRef, _buildInventoryUpdate(committedItem));
-        final activityEvent = _buildActivityEvent(
-          actor: _actor,
-          beforeItem: currentItem,
-          afterItem: committedItem,
-          amount: pendingConsumption.amount,
-          happenedAt: normalizedEntry.loggedAt,
-        );
-        if (activityEvent != null) {
-          transaction.set(
-            _activityEventsCollectionRef(inventoryUserId).doc(activityEvent.id),
-            activityEvent.toJson(),
-          );
-        }
-
+      final inventoryRef = _inventoryCollection(
+        inventoryUserId,
+      ).doc(pendingConsumption.itemId);
+      final inventorySnapshot = await readDocumentLocalFirst(inventoryRef);
+      if (!inventorySnapshot.exists) {
         log(
-          'Transaction prepared for calorie entry ${entry.id} '
-          '(itemId=${committedItem.id}, '
-          'nextQuantity=${committedItem.quantity}, '
-          'nextCurrentAmount=${committedItem.currentAmount}).',
+          'Inventory item ${pendingConsumption.itemId} no longer exists '
+          'while committing calorie entry ${entry.id}.',
           name: _commitStoreLogName,
         );
+        return null;
+      }
 
-        return InventoryCalorieEntryCommitResult(
-          itemId: committedItem.id,
-          quantity: committedItem.quantity,
-          currentAmount: committedItem.currentAmount,
+      final rawItem = Map<String, dynamic>.from(
+        inventorySnapshot.data() ?? const <String, dynamic>{},
+      )..['id'] = inventorySnapshot.id;
+
+      final currentItem = InventoryItem.fromJson(rawItem);
+      final committedItem = _buildCommittedItem(
+        item: currentItem,
+        amount: pendingConsumption.amount,
+        consumedAt: entry.loggedAt,
+      );
+      if (committedItem == null) {
+        log(
+          'Inventory commit rejected for calorie entry ${entry.id} '
+          '(itemId=${currentItem.id}, '
+          'quantity=${currentItem.quantity}, '
+          'currentAmount=${currentItem.currentAmount}, '
+          'requestedAmount=${pendingConsumption.amount}, '
+          'usesAmountProgress=${currentItem.usesAmountProgress}).',
+          name: _commitStoreLogName,
         );
-      });
+        return null;
+      }
+
+      final normalizedEntry = entry.copyWith(
+        userId: entryUserId,
+        imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
+        updatedAt: DateTime.now(),
+      );
+
+      final batch = _firestore.batch()
+        ..set(
+          _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
+          normalizedEntry.toJson(),
+        )
+        ..update(inventoryRef, _buildInventoryUpdate(committedItem));
+      final activityEvent = _buildActivityEvent(
+        actor: _actor,
+        beforeItem: currentItem,
+        afterItem: committedItem,
+        amount: pendingConsumption.amount,
+        happenedAt: normalizedEntry.loggedAt,
+      );
+      if (activityEvent != null) {
+        batch.set(
+          _activityEventsCollectionRef(inventoryUserId).doc(activityEvent.id),
+          activityEvent.toJson(),
+        );
+      }
+      commitBatchInBackground(
+        batch,
+        failureMessage:
+            'Server rejected calorie entry ${entry.id} with inventory item '
+            '${pendingConsumption.itemId}.',
+        logName: _commitStoreLogName,
+      );
+
+      log(
+        'Batch queued for calorie entry ${entry.id} '
+        '(itemId=${committedItem.id}, '
+        'nextQuantity=${committedItem.quantity}, '
+        'nextCurrentAmount=${committedItem.currentAmount}).',
+        name: _commitStoreLogName,
+      );
+
+      return InventoryCalorieEntryCommitResult(
+        itemId: committedItem.id,
+        quantity: committedItem.quantity,
+        currentAmount: committedItem.currentAmount,
+      );
     } on Object catch (error, stackTrace) {
       log(
         'Failed to commit calorie entry ${entry.id} with inventory item '

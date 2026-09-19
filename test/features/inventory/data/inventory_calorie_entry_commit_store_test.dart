@@ -113,6 +113,7 @@ void main() {
       expect(result?.itemId, 'inventory-1');
       expect(result?.quantity, 1);
       expect(result?.currentAmount, 500);
+      await pumpEventQueue();
 
       final savedEntrySnapshot = await _entryCollection(firestore: firestore)
           .doc('entry-1')
@@ -215,6 +216,7 @@ void main() {
           amount: 250,
         ),
       );
+      await pumpEventQueue();
 
       final savedItemSnapshot = await _inventoryCollection(firestore: firestore)
           .doc('inventory-1')
@@ -254,6 +256,7 @@ void main() {
     );
 
     expect(result, isNotNull);
+    await pumpEventQueue();
 
     final savedEntry = await _entryCollection(
       firestore: firestore,

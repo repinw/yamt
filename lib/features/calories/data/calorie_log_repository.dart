@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -173,9 +174,22 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         userId: userId,
         updatedAt: DateTime.now(),
       );
-      await _collection(userId)
-          .doc(normalizedEntry.id)
-          .set(normalizedEntry.toJson());
+      // Firestore applies the write to its local cache at once and queues it
+      // for the server, also across lost connections and app restarts. The
+      // returned future waits for the server, so it is not awaited.
+      unawaited(
+        _collection(userId)
+            .doc(normalizedEntry.id)
+            .set(normalizedEntry.toJson())
+            .catchError((Object error, StackTrace stackTrace) {
+              log(
+                'Server rejected calorie entry ${entry.id} for user $userId',
+                name: _repositoryLogName,
+                error: error,
+                stackTrace: stackTrace,
+              );
+            }),
+      );
       _cache[normalizedEntry.id] = normalizedEntry;
       return true;
     } on Object catch (error, stackTrace) {

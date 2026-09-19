@@ -65,6 +65,8 @@ void main() {
           ),
         );
 
+    await pumpEventQueue();
+
     expect(saved, isTrue);
     expect(cacheRepository.overrides.containsKey('4006381333931'), isTrue);
     expect(
@@ -107,6 +109,8 @@ void main() {
             offProductId: 'off-123',
           ),
         );
+
+    await pumpEventQueue();
 
     expect(saved, isTrue);
     expect(
@@ -184,6 +188,11 @@ void main() {
       container
           .read(calorieDayControllerProvider.notifier)
           .setDay(DateTime(2026, 2, 25));
+      final subscription = container.listen(
+        calorieEntriesControllerProvider,
+        (_, _) {},
+      );
+      addTearDown(subscription.close);
       await container.read(calorieEntriesControllerProvider.future);
 
       final saved = await container
@@ -196,6 +205,7 @@ void main() {
               offProductId: 'off-123',
             ),
           );
+      await pumpEventQueue();
 
       final stateEntries = container
           .read(calorieEntriesControllerProvider)

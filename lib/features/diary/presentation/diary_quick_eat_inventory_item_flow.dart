@@ -195,7 +195,7 @@ Future<String?> _stageInventoryItemConsumption({
   }
   return await container
       .read(diaryQuickEatInventoryActionsProvider)
-      .stageInventoryItemConsumption(itemId: item.id, amount: amount);
+      .stageInventoryItemConsumption(item: item, amount: amount);
 }
 
 Future<void> _discardInventoryItemConsumption(

@@ -9,7 +9,6 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -21,7 +20,6 @@ part 'inventory_quick_eat_application.g.dart';
 @riverpod
 InventoryQuickEatApplication inventoryQuickEatApplication(Ref ref) {
   return InventoryQuickEatApplication(
-    inventoryRepository: ref.watch(inventoryItemRepositoryProvider),
     preparedMealRepository: ref.watch(preparedMealRepositoryProvider),
     calorieLogBridge: ref.watch(preparedMealCalorieLogBridgeProvider),
     pendingConsumptions: ref.watch(inventoryPendingConsumptionStoreProvider),
@@ -35,10 +33,14 @@ InventoryQuickEatActions inventoryQuickEatActions(Ref ref) {
 }
 
 /// Inventory mutations needed by quick-eat callers.
+///
+/// Callers pass the item or meal they show from the live inventory stream,
+/// so no server read delays the save. The commit stores check the stock
+/// again when they write.
 abstract interface class InventoryQuickEatActions {
   /// Stages inventory consumption and returns its pending id.
   Future<String?> stageInventoryItemConsumption({
-    required String itemId,
+    required InventoryItem item,
     required int amount,
   });
 
@@ -47,7 +49,7 @@ abstract interface class InventoryQuickEatActions {
 
   /// Consumes one prepared meal.
   Future<bool> consumePreparedMeal({
-    required String mealId,
+    required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
@@ -58,13 +60,11 @@ abstract interface class InventoryQuickEatActions {
 final class InventoryQuickEatApplication implements InventoryQuickEatActions {
   /// Creates the quick-eat application service.
   new({
-    required this._inventoryRepository,
     required this._preparedMealRepository,
     required this._calorieLogBridge,
     required this._pendingConsumptions,
   });
 
-  final InventoryItemRepository _inventoryRepository;
   final PreparedMealRepository _preparedMealRepository;
   final PreparedMealCalorieLogBridge _calorieLogBridge;
   final InventoryPendingConsumptionStore _pendingConsumptions;
@@ -73,32 +73,17 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
 
   @override
   Future<String?> stageInventoryItemConsumption({
-    required String itemId,
-    required int amount,
-  }) {
-    return _mutationQueue.run<String?>(
-      operation: () =>
-          _stageInventoryItemConsumption(itemId: itemId, amount: amount),
-      fallbackValue: null,
-      onError: _logMutationError,
-    );
-  }
-
-  Future<String?> _stageInventoryItemConsumption({
-    required String itemId,
+    required InventoryItem item,
     required int amount,
   }) async {
     if (amount < 1) {
       return null;
     }
-    final item = (await _inventoryRepository.readAll())
-        .where((candidate) => candidate.id == itemId)
-        .firstOrNull;
     final availableAmount = _availableAmount(item);
     if (availableAmount < 1) {
       return null;
     }
-    return _stagePendingConsumption(itemId, amount, availableAmount);
+    return _stagePendingConsumption(item.id, amount, availableAmount);
   }
 
   String _stagePendingConsumption(String itemId, int amount, int available) {
@@ -118,14 +103,14 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
 
   @override
   Future<bool> consumePreparedMeal({
-    required String mealId,
+    required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
   }) {
     return _mutationQueue.run<bool>(
       operation: () => _consumePreparedMeal(
-        mealId: mealId,
+        meal: meal,
         consumedPortions: consumedPortions,
         mealType: mealType,
         loggedDay: loggedDay,
@@ -136,48 +121,24 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
   }
 
   Future<bool> _consumePreparedMeal({
-    required String mealId,
+    required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
   }) async {
-    if (consumedPortions <= 0) {
+    if (consumedPortions <= 0 ||
+        !_canConsumePreparedMeal(meal, consumedPortions)) {
       return false;
     }
-    final currentMeals = await _preparedMealRepository.readAll();
-    final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
-    if (mealIndex < 0) {
-      return false;
-    }
-    final meal = currentMeals[mealIndex];
-    if (!_canConsumePreparedMeal(meal, consumedPortions)) {
-      return false;
-    }
-    return await _savePreparedMealConsumption(
-      currentMeals: currentMeals,
-      mealIndex: mealIndex,
-      consumedPortions: consumedPortions,
-      mealType: mealType,
-      loggedDay: loggedDay,
-    );
-  }
-
-  Future<bool> _savePreparedMealConsumption({
-    required List<PreparedMeal> currentMeals,
-    required int mealIndex,
-    required num consumedPortions,
-    required MealType mealType,
-    required DateTime loggedDay,
-  }) {
-    final meal = currentMeals[mealIndex];
+    final currentMeals = <PreparedMeal>[meal];
     final nextMeals = applyPreparedMealPortionReduction(
       currentMeals: currentMeals,
-      mealIndex: mealIndex,
+      mealIndex: 0,
       removedPortions: consumedPortions,
       updatedAt: DateTime.now(),
       keepDepletedMeal: true,
     );
-    return _calorieLogBridge.consumePreparedMeal(
+    return await _calorieLogBridge.consumePreparedMeal(
       currentMeals: currentMeals,
       nextMeals: nextMeals,
       meal: meal,
@@ -185,9 +146,18 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
       mealType: mealType,
       loggedDay: loggedDay,
       publishMeals: (_) {},
-      saveMeals: (previousMeals, updatedMeals) {
-        return _preparedMealRepository.saveAll(updatedMeals);
-      },
+      saveMeals: (_, updatedMeals) => _replaceMeal(updatedMeals.single),
+    );
+  }
+
+  /// Writes one meal into the stored list. Only the bridge fallback without
+  /// an atomic commit store uses it.
+  Future<bool> _replaceMeal(PreparedMeal meal) async {
+    final storedMeals = await _preparedMealRepository.readAll();
+    return await _preparedMealRepository.saveAll(
+      storedMeals
+          .map((stored) => stored.id == meal.id ? meal : stored)
+          .toList(growable: false),
     );
   }
 

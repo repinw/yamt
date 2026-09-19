@@ -4,6 +4,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
@@ -85,68 +86,77 @@ class FirestorePreparedMealCalorieEntryCommitStore
       return false;
     }
 
+    // A batch instead of a transaction: Firestore queues batches while
+    // offline, but transactions fail. The portions are computed from the
+    // local copy, so two offline consumptions of the same meal may overwrite
+    // each other.
     try {
-      return await _firestore.runTransaction((transaction) async {
-        final mealRef = _preparedMealCollection(preparedMealOwnerUserId)
-            .doc(preparedMealId);
-        final mealSnapshot = await transaction.get(mealRef);
-        if (!mealSnapshot.exists) {
-          log(
-            'Prepared meal $preparedMealId missing while committing '
-            'calorie entry ${entry.id}.',
-            name: _commitStoreLogName,
-          );
-          return false;
-        }
-
-        final rawMeal = Map<String, dynamic>.from(
-          mealSnapshot.data() ?? const <String, dynamic>{},
-        )..['id'] = mealSnapshot.id;
-        final currentMeal = PreparedMeal.fromJson(rawMeal);
-        if (currentMeal.hasPendingRecipeIngredients) {
-          log(
-            'Prepared meal $preparedMealId still has pending ingredients.',
-            name: _commitStoreLogName,
-          );
-          return false;
-        }
-        if (currentMeal.remainingPortions < consumedPortions) {
-          log(
-            'Prepared meal $preparedMealId has only '
-            '${currentMeal.remainingPortions} remaining portions, '
-            'requested $consumedPortions.',
-            name: _commitStoreLogName,
-          );
-          return false;
-        }
-
-        final normalizedEntry = entry.copyWith(
-          userId: entryUserId,
-          imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
+      final mealRef = _preparedMealCollection(
+        preparedMealOwnerUserId,
+      ).doc(preparedMealId);
+      final mealSnapshot = await readDocumentLocalFirst(mealRef);
+      if (!mealSnapshot.exists) {
+        log(
+          'Prepared meal $preparedMealId missing while committing '
+          'calorie entry ${entry.id}.',
+          name: _commitStoreLogName,
         );
-        final committedAt = normalizedEntry.updatedAt;
-        final nextRemainingPortions =
-            currentMeal.remainingPortions - consumedPortions;
-        final nextMeal = currentMeal.copyWith(
-          remainingPortions: nextRemainingPortions,
+        return false;
+      }
+
+      final rawMeal = Map<String, dynamic>.from(
+        mealSnapshot.data() ?? const <String, dynamic>{},
+      )..['id'] = mealSnapshot.id;
+      final currentMeal = PreparedMeal.fromJson(rawMeal);
+      if (currentMeal.hasPendingRecipeIngredients) {
+        log(
+          'Prepared meal $preparedMealId still has pending ingredients.',
+          name: _commitStoreLogName,
         );
+        return false;
+      }
+      if (currentMeal.remainingPortions < consumedPortions) {
+        log(
+          'Prepared meal $preparedMealId has only '
+          '${currentMeal.remainingPortions} remaining portions, '
+          'requested $consumedPortions.',
+          name: _commitStoreLogName,
+        );
+        return false;
+      }
 
-        final mealUpdates = <String, dynamic>{
-          'remaining_portions': nextRemainingPortions,
-          'updated_at': committedAt.toIso8601String(),
-        };
-        if (nextMeal.remainingNetWeight != null) {
-          mealUpdates['remaining_net_weight'] = nextMeal.remainingNetWeight;
-        }
+      final normalizedEntry = entry.copyWith(
+        userId: entryUserId,
+        imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
+      );
+      final committedAt = normalizedEntry.updatedAt;
+      final nextRemainingPortions =
+          currentMeal.remainingPortions - consumedPortions;
+      final nextMeal = currentMeal.copyWith(
+        remainingPortions: nextRemainingPortions,
+      );
 
-        transaction
-          ..set(
-            _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
-            normalizedEntry.toJson(),
-          )
-          ..update(mealRef, mealUpdates);
-        return true;
-      });
+      final mealUpdates = <String, dynamic>{
+        'remaining_portions': nextRemainingPortions,
+        'updated_at': committedAt.toIso8601String(),
+      };
+      if (nextMeal.remainingNetWeight != null) {
+        mealUpdates['remaining_net_weight'] = nextMeal.remainingNetWeight;
+      }
+
+      final batch = _firestore.batch()
+        ..set(
+          _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
+          normalizedEntry.toJson(),
+        )
+        ..update(mealRef, mealUpdates);
+      commitBatchInBackground(
+        batch,
+        failureMessage:
+            'Server rejected prepared meal calorie entry ${entry.id}.',
+        logName: _commitStoreLogName,
+      );
+      return true;
     } on Object catch (error, stackTrace) {
       log(
         'Failed to commit prepared meal calorie entry ${entry.id}.',

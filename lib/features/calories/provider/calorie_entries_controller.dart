@@ -143,7 +143,6 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     CalorieScannedSourceRef? scannedSourceRef,
     Future<bool> Function(CalorieEntry entry)? persistEntry,
   }) {
-    final keepAliveLink = ref.keepAlive();
     final selectedDay = ref.read(calorieDayControllerProvider);
     final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
     log(
@@ -222,12 +221,11 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           ),
         ]);
       },
-    ).whenComplete(keepAliveLink.close);
+    );
   }
 
   /// Delete entry.
   Future<bool> deleteEntry(String entryId) {
-    final keepAliveLink = ref.keepAlive();
     return _runOptimisticMutation(
       buildNextEntries: (previousEntries) {
         return previousEntries
@@ -251,9 +249,14 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           previousEntries: previousEntries,
         );
       },
-    ).whenComplete(keepAliveLink.close);
+    );
   }
 
+  /// Applies [buildNextEntries] to the state at once and persists it.
+  ///
+  /// Returns as soon as [persist] reports success. [onPersisted] runs in the
+  /// background, so follow-up writes never block the caller. The provider
+  /// stays alive until the background work is done.
   Future<bool> _runOptimisticMutation({
     required List<CalorieEntry> Function(List<CalorieEntry> previousEntries)
     buildNextEntries,
@@ -265,7 +268,9 @@ class CalorieEntriesController extends _$CalorieEntriesController {
     )?
     onPersisted,
   }) {
-    return _runSerializedMutation(() async {
+    final keepAliveLink = ref.keepAlive();
+    var backgroundWork = Future<void>.value();
+    final result = _runSerializedMutation(() async {
       final previousEntries = await _currentEntries();
       final nextEntries = buildNextEntries(previousEntries);
 
@@ -299,13 +304,19 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       }
 
       if (onPersisted != null) {
-        await _runAfterPersistCallback(
+        backgroundWork = _runAfterPersistCallback(
           () => onPersisted(previousEntries, nextEntries),
         );
       }
 
       return true;
     });
+    unawaited(
+      result
+          .then((_) => backgroundWork)
+          .whenComplete(keepAliveLink.close),
+    );
+    return result;
   }
 
   Future<void> _runAfterPersistCallback(

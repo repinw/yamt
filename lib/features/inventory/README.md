@@ -33,7 +33,10 @@ Other features may consume these public Inventory entry points:
 - `application/inventory_quick_eat_data_providers.dart` for repository-backed
   quick-eat inventory data used by integrating features.
 - `application/inventory_quick_eat_application.dart` for quick-eat mutations
-  used by integrating features.
+  used by integrating features. Callers pass the `InventoryItem` or
+  `PreparedMeal` they show, so no server read delays the save. The calorie
+  entry commit stores read the stock local-first and queue a batch, so eating
+  also works offline.
 - `application/inventory_quick_eat_picker.dart` for quick-eat picker contract
   used by integrating features.
 - `presentation/inventory_quick_eat_sheet_picker.dart` for inventory-owned

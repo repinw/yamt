@@ -79,7 +79,7 @@ Future<void> _runPreparedMealMutation({
   final saved = await container
       .read(diaryQuickEatInventoryActionsProvider)
       .consumePreparedMeal(
-        mealId: meal.id,
+        meal: meal,
         consumedPortions: request.portions,
         mealType: request.mealType,
         loggedDay: request.loggedDay,
