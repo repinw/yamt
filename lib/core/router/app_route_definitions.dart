@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/router/hero_sheet_page.dart';
 import 'package:yamt/core/router/home_shell_routes.dart';
 import 'package:yamt/core/router/route_page_helpers.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -103,7 +104,7 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     ),
     GoRoute(
       path: AppRoutes.homeCaloriesEntryDetails,
-      pageBuilder: (context, state) => ModalBottomSheetPage<void>(
+      pageBuilder: (context, state) => HeroSheetPage<void>(
         key: state.pageKey,
         child: CalorieEntryEditorPage(entryId: state.pathParameters['entryId']),
       ),

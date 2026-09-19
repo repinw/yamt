@@ -1,8 +1,10 @@
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
+import 'package:yamt/core/theme/metric_accent_colors.dart';
 
-/// Shared nutrition summary card.
+/// Shared nutrition summary card: kcal, then protein, carbs, and fat in
+/// their metric accent colors, formatted for the current locale.
 class NutritionProfileCard extends StatelessWidget {
   /// Creates nutrition profile card.
   const new({
@@ -103,14 +105,19 @@ class NutritionProfileCard extends StatelessWidget {
 
   Widget _buildCard(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final macroColors = MetricAccentColors.of(context);
     final resolvedAccent = accentColor ?? colors.primary;
+    final numberFormat = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
+    )..maximumFractionDigits = 1;
+    final kcalFormat = NumberFormat.decimalPattern(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
 
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: Color.alphaBlend(
-          colors.surfaceContainerLowest.withValues(alpha: 0.96),
-          colors.surface,
-        ),
+        color: colors.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -128,7 +135,7 @@ class NutritionProfileCard extends StatelessWidget {
                   TextSpan(
                     children: [
                       TextSpan(
-                        text: kcal.round().toString(),
+                        text: kcalFormat.format(kcal.round()),
                         style: Theme.of(context).textTheme.headlineMedium
                             ?.copyWith(
                               color: resolvedAccent,
@@ -152,16 +159,18 @@ class NutritionProfileCard extends StatelessWidget {
             Expanded(
               flex: 3,
               child: _NutritionMetricCell(
-                label: carbsLabel.toUpperCase(),
-                value: _buildMetricText(carbs),
+                label: proteinLabel.toUpperCase(),
+                value: _formatGrams(numberFormat, protein),
+                valueColor: macroColors.protein,
               ),
             ),
             _NutritionDivider(colors: colors),
             Expanded(
               flex: 3,
               child: _NutritionMetricCell(
-                label: proteinLabel.toUpperCase(),
-                value: _buildMetricText(protein),
+                label: carbsLabel.toUpperCase(),
+                value: _formatGrams(numberFormat, carbs),
+                valueColor: macroColors.carbs,
               ),
             ),
             _NutritionDivider(colors: colors),
@@ -169,7 +178,8 @@ class NutritionProfileCard extends StatelessWidget {
               flex: 3,
               child: _NutritionMetricCell(
                 label: fatLabel.toUpperCase(),
-                value: _buildMetricText(fat),
+                value: _formatGrams(numberFormat, fat),
+                valueColor: macroColors.fat,
               ),
             ),
           ],
@@ -178,11 +188,11 @@ class NutritionProfileCard extends StatelessWidget {
     );
   }
 
-  String _buildMetricText(double? value) {
+  String _formatGrams(NumberFormat format, double? value) {
     if (value == null) {
       return '-';
     }
-    return '${value.toNutritionMetricValue()}g';
+    return '${format.format(value)}g';
   }
 }
 
@@ -205,10 +215,15 @@ class _NutritionDivider extends StatelessWidget {
 }
 
 class _NutritionMetricCell extends StatelessWidget {
-  const new({required this.label, required this.value});
+  const new({
+    required this.label,
+    required this.value,
+    required this.valueColor,
+  });
 
   final String label;
   final String value;
+  final Color valueColor;
 
   @override
   Widget build(BuildContext context) {
@@ -234,10 +249,8 @@ class _NutritionMetricCell extends StatelessWidget {
             Text(
               value,
               maxLines: 1,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: colors.onSurface,
-                fontWeight: FontWeight.w800,
-              ),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(color: valueColor, fontWeight: FontWeight.w800),
             ),
           ],
         ),

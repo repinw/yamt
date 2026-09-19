@@ -1,25 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// Page that presents its child in a modal bottom sheet.
-class ModalBottomSheetPage<T> extends Page<T> {
-  /// Creates a modal bottom sheet page.
-  const new({required this.child, super.key});
-
-  /// Child widget displayed in the bottom sheet.
-  final Widget child;
-
-  @override
-  Route<T> createRoute(BuildContext context) {
-    return ModalBottomSheetRoute<T>(
-      settings: this,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => child,
-    );
-  }
-}
-
 /// Loading indicator page rendered on startup while auth resolves.
 class AuthLoadingPage extends StatelessWidget {
   /// Creates an auth loading page.
