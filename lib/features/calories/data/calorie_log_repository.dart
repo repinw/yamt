@@ -289,10 +289,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
 
   CalorieEntry _decodeDocument(DocumentSnapshot<Map<String, dynamic>> doc) {
     final rawData = doc.data() ?? const <String, dynamic>{};
-    final entry = CalorieEntry.fromJson(normalizeFirestoreJson(rawData));
-    return entry.copyWith(
-      imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
-    );
+    return CalorieEntry.fromJson(normalizeFirestoreJson(rawData));
   }
 
   ({DateTime startInclusive, DateTime endExclusive}) _dayBoundsLocal(
