@@ -265,7 +265,7 @@ class _TextVoiceSearchSuffixActions extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.all(AppSpacing.md),
             child: SizedBox.square(
-              dimension: AppSizes.compactSearchProgress,
+              dimension: AppSizes.smallProgressIndicator,
               child: CircularProgressIndicator(
                 strokeWidth: AppSizes.progressStrokeWidth,
               ),

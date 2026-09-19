@@ -153,7 +153,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/recipes/application/template_ingredient_parser.dart',
   'lib/features/settings/presentation/controllers/account_controller.dart',
   'lib/features/settings/presentation/pages/account_page.dart',
-  'lib/features/settings/presentation/pages/settings_page.dart',
   'lib/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart',
   'lib/features/shared/widgets/auth_form_components.dart',
 };

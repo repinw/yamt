@@ -36,7 +36,7 @@ class DiaryPage extends ConsumerStatefulWidget {
 class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
   ProviderSubscription<void>? _providerWarmupSubscription;
-  bool _didStartDeferredSubscriptions = false;
+  bool _didQueueProviderWarmup = false;
   final _macroStripAnchors = DiaryMacroStripAnchors();
   final ValueNotifier<DiaryMacroStripStage> _macroStripStage = ValueNotifier(
     DiaryMacroStripStage.hidden,
@@ -75,7 +75,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
       diaryDayDashboardControllerProvider(calendarState.selectedDay),
     );
     if (dashboardState.data != null) {
-      _queueDeferredDiarySubscriptions();
+      _queueProviderWarmup();
     }
 
     return ColoredBox(
@@ -142,11 +142,11 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     );
   }
 
-  void _queueDeferredDiarySubscriptions() {
-    if (_didStartDeferredSubscriptions) {
+  void _queueProviderWarmup() {
+    if (_didQueueProviderWarmup) {
       return;
     }
-    _didStartDeferredSubscriptions = true;
+    _didQueueProviderWarmup = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) {
         return;

@@ -16,6 +16,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_language_tile/settings_language_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_profile_card/settings_profile_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
@@ -69,7 +70,7 @@ class SettingsPage extends ConsumerWidget {
                         ),
                         SettingsSection(
                           title: l10n.settingsAppearanceSectionTitle,
-                          children: const [_LanguageTile()],
+                          children: const [SettingsLanguageTile()],
                         ),
                         SettingsSection(
                           title: l10n.settingsAppSectionTitle,
@@ -237,10 +238,11 @@ class _AboutTile extends ConsumerWidget {
         ),
         AsyncLoading() => const KeyedSubtree(
           key: SettingsPageKeys.aboutTrailing,
-          child: SizedBox(
-            width: 16,
-            height: 16,
-            child: CircularProgressIndicator(strokeWidth: 2),
+          child: SizedBox.square(
+            dimension: AppSizes.smallProgressIndicator,
+            child: CircularProgressIndicator(
+              strokeWidth: AppSizes.progressStrokeWidth,
+            ),
           ),
         ),
         AsyncError() => null,
@@ -265,38 +267,6 @@ class _HouseholdTile extends StatelessWidget {
       onTap: () => context.push(AppRoutes.homeSettingsHousehold),
     );
   }
-}
-
-class _LanguageTile extends StatelessWidget {
-  const new();
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final languageCode = Localizations.localeOf(context).languageCode;
-    final languageLabels = <String, String>{
-      for (final locale in AppLocalizations.supportedLocales)
-        locale.languageCode: _localizedLanguageLabel(l10n, locale),
-    };
-    final language = languageLabels[languageCode] ?? languageCode;
-
-    return SettingsTile(
-      key: SettingsPageKeys.languageTile,
-      icon: Icons.language_rounded,
-      title: l10n.settingsLanguageTitle,
-      subtitle: language,
-      onTap: () =>
-          _showNotImplementedSnackBar(context, l10n.commonNotImplementedYet),
-    );
-  }
-}
-
-String _localizedLanguageLabel(AppLocalizations l10n, Locale locale) {
-  return switch (locale.languageCode) {
-    'de' => l10n.settingsLanguageGerman,
-    'en' => l10n.settingsLanguageEnglish,
-    _ => locale.languageCode,
-  };
 }
 
 void _showNotImplementedSnackBar(BuildContext context, String message) {

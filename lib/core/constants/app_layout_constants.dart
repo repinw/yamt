@@ -261,8 +261,8 @@ abstract final class AppSizes {
   /// Icon size for compact search settings button.
   static const double compactSearchSettingsIcon = 21;
 
-  /// Progress spinner size inside compact search.
-  static const double compactSearchProgress = 16;
+  /// Size of small progress spinners, such as in search fields and tiles.
+  static const double smallProgressIndicator = 16;
 
   /// Icon size for segmented controls.
   static const double segmentedControlIcon = 16;
