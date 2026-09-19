@@ -12,7 +12,7 @@ const _compactHeight = 44.0;
 /// Barcode drawn with musical bar-line symbols.
 const _barcodeGlyph = '𝄃𝄂𝄀𝄁𝄃𝄂𝄂𝄃';
 
-/// Emoji and icon buttons that open the diary quick-eat sources.
+/// Icon buttons that open the diary quick-eat sources.
 ///
 /// Large with labels while the day is empty, compact glyph-only once food is
 /// logged.
@@ -38,10 +38,14 @@ class DiaryQuickEatBar extends StatelessWidget {
       ),
       (
         DiaryQuickEatSource.manualSearch,
-        const Text('🔍'),
+        const Icon(Icons.search_rounded),
         l10n.diaryQuickEatSourceManualSearch,
       ),
-      (DiaryQuickEatSource.ai, const Text('✨'), l10n.diaryQuickEatSourceAi),
+      (
+        DiaryQuickEatSource.ai,
+        const Icon(Icons.auto_awesome_rounded),
+        l10n.diaryQuickEatSourceAi,
+      ),
       (
         DiaryQuickEatSource.barcode,
         const Text(_barcodeGlyph),

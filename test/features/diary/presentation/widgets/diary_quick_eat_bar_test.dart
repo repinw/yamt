@@ -26,7 +26,7 @@ void main() {
     return selected;
   }
 
-  testWidgets('expanded bar shows emoji with labels', (tester) async {
+  testWidgets('expanded bar shows icons with labels', (tester) async {
     await pumpBar(tester, expanded: true);
 
     for (final label in ['Vorrat', 'Suche', 'KI', 'Barcode']) {
@@ -46,11 +46,11 @@ void main() {
     );
   });
 
-  testWidgets('compact bar shows emoji only', (tester) async {
+  testWidgets('compact bar shows icons only', (tester) async {
     await pumpBar(tester, expanded: false);
 
     expect(find.text('Vorrat'), findsNothing);
-    expect(find.text('🔍'), findsOneWidget);
+    expect(find.byIcon(Icons.search_rounded), findsOneWidget);
     expect(
       tester
           .getSize(
