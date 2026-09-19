@@ -538,7 +538,13 @@ void main() {
 
     expect(find.byType(DiaryDayNavigator), findsOneWidget);
     expect(find.text('Today'), findsOneWidget);
-    expect(find.text('Diary'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(HomeShellTabTopChrome),
+        matching: find.text('Diary'),
+      ),
+      findsNothing,
+    );
   });
 
   testWidgets('diary calendar sheet Today action returns to the current day', (
@@ -592,7 +598,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(find.text(scenario.value), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(HomeShellTabTopChrome),
+          matching: find.text(scenario.value),
+        ),
+        findsOneWidget,
+      );
       expect(find.byIcon(Icons.assignment_outlined), findsNothing);
       expect(find.byIcon(Icons.shopping_cart_rounded), findsNothing);
       expect(find.byIcon(Icons.bug_report_rounded), findsNothing);
@@ -700,7 +712,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Cookbook'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(HomeShellTabTopChrome),
+        matching: find.text('Cookbook'),
+      ),
+      findsOneWidget,
+    );
     expect(find.byTooltip('Import recipe'), findsOneWidget);
     expect(find.byIcon(Icons.upload_file_rounded), findsOneWidget);
   });
@@ -1363,7 +1381,7 @@ void main() {
 
     expect(find.byType(InventoryActionFab), findsOneWidget);
 
-    await tester.tap(find.text('DIARY'));
+    await tester.tap(find.text('Diary'));
     await tester.pump();
 
     expect(find.byType(InventoryActionFab), findsNothing);
@@ -1662,21 +1680,26 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('DIARY'), findsOneWidget);
-    expect(find.text('INVENTORY'), findsOneWidget);
-    expect(find.text('COOKBOOK'), findsOneWidget);
-    expect(find.text('PROGRESS'), findsOneWidget);
+    Finder navLabel(String label) => find.descendant(
+      of: find.byType(HomeBottomNavBar),
+      matching: find.text(label),
+    );
+
+    expect(navLabel('Diary'), findsOneWidget);
+    expect(navLabel('Inventory'), findsOneWidget);
+    expect(navLabel('Cookbook'), findsOneWidget);
+    expect(navLabel('Progress'), findsOneWidget);
     expect(
-      tester.getCenter(find.text('DIARY')).dx,
-      lessThan(tester.getCenter(find.text('INVENTORY')).dx),
+      tester.getCenter(navLabel('Diary')).dx,
+      lessThan(tester.getCenter(navLabel('Inventory')).dx),
     );
     expect(
-      tester.getCenter(find.text('INVENTORY')).dx,
-      lessThan(tester.getCenter(find.text('COOKBOOK')).dx),
+      tester.getCenter(navLabel('Inventory')).dx,
+      lessThan(tester.getCenter(navLabel('Cookbook')).dx),
     );
     expect(
-      tester.getCenter(find.text('COOKBOOK')).dx,
-      lessThan(tester.getCenter(find.text('PROGRESS')).dx),
+      tester.getCenter(navLabel('Cookbook')).dx,
+      lessThan(tester.getCenter(navLabel('Progress')).dx),
     );
     expect(find.text('SETTINGS'), findsNothing);
     expect(tester.takeException(), isNull);

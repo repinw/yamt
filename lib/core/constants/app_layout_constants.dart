@@ -98,6 +98,9 @@ abstract final class AppDurations {
 
   /// Duration for one nutrition-label scan sweep.
   static const Duration scanSweep = Duration(milliseconds: 1200);
+
+  /// Duration of the home bottom navigation indicator animation.
+  static const Duration homeBottomNavIndicator = Duration(milliseconds: 180);
 }
 
 /// Shared opacity values.
@@ -140,6 +143,12 @@ abstract final class AppOpacities {
 
   /// Modal barrier opacity for lightweight bottom sheets.
   static const double modalBarrier = 0.38;
+
+  /// Home bottom navigation border opacity.
+  static const double homeBottomNavBorder = 0.5;
+
+  /// Home bottom navigation unselected item opacity.
+  static const double homeBottomNavUnselected = 0.7;
 }
 
 /// Shared font-size scale for app typography.
@@ -207,8 +216,17 @@ abstract final class AppSizes {
   /// Standard one-physical-line divider height.
   static const double dividerThickness = 1;
 
-  /// Base clearance reserved for the floating home shell bottom chrome.
-  static const double homeShellBottomBarClearance = 96;
+  /// Base clearance reserved for the home shell bottom chrome.
+  static const double homeShellBottomBarClearance = 56;
+
+  /// Icon size in the home bottom navigation.
+  static const double homeBottomNavIcon = 20;
+
+  /// Width of the selected-item indicator in the home bottom navigation.
+  static const double homeBottomNavIndicatorWidth = 16;
+
+  /// Height of the selected-item indicator in the home bottom navigation.
+  static const double homeBottomNavIndicatorHeight = 2;
 
   /// Max width for settings-style content columns.
   static const double narrowContentMaxWidth = 560;
