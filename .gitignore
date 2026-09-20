@@ -100,3 +100,5 @@ IDEAS.md
 test/**/failures/
 .env
 .env.example
+# Widget Preview related
+.widget_preview/
