@@ -53,6 +53,9 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## Calories And Burn Week
 
 - Manual calorie entry create, edit, details, and delete flows.
+- Amount changes on a logged entry, with undo. An entry logged from the
+  inventory moves the stock with it when the item is measured in grams or
+  milliliters.
 - Barcode-based calorie entry lookup.
 - Nutrition label scan handoff when barcode products are missing nutrition.
 - Calorie goal setup, manual goal edits, and goal-start shifting.

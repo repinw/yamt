@@ -114,7 +114,8 @@ Inventory currently has explicit dependencies on:
 - `calories` for meal type, calorie entry handoff, and prepared meal calorie
   logging. `application/inventory_calorie_nutrient_details.dart` maps an
   item's label nutrients into the calories `CalorieNutrientDetails` so logged
-  entries keep them.
+  entries keep them. Inventory implements the calorie-owned ports
+  `CalorieEntryDeleteFlow` and `CalorieInventoryStockAdjuster`.
 - `shoppinglist` for add-to-shopping-list actions from inventory rows.
 - `recipes` for template ingredient parsing.
 

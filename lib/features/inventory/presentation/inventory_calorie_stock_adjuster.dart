@@ -41,26 +41,17 @@ CalorieInventoryStockAdjuster inventoryCalorieStockAdjuster(Ref ref) {
         'Inventory source of the changed entry is gone (itemId=$itemId).',
         name: _stockAdjusterLogName,
       );
-      return CalorieInventoryStockAdjustment(
-        status: CalorieInventoryStockAdjustmentStatus.sourceMissing,
-        reservedAmount: reservedAmount,
-      );
+      return CalorieInventoryStockAdjustment.sourceMissing(reservedAmount);
     }
 
     if (!inventoryItemUsesFixedCalorieUnit(item)) {
-      return CalorieInventoryStockAdjustment(
-        status: CalorieInventoryStockAdjustmentStatus.stockUnchanged,
-        reservedAmount: reservedAmount,
-      );
+      return CalorieInventoryStockAdjustment.stockUnchanged(reservedAmount);
     }
 
     final targetAmount = consumedAmount.round();
     final delta = targetAmount - reservedAmount;
     if (delta == 0) {
-      return CalorieInventoryStockAdjustment(
-        status: CalorieInventoryStockAdjustmentStatus.applied,
-        reservedAmount: reservedAmount,
-      );
+      return CalorieInventoryStockAdjustment.applied(reservedAmount);
     }
     if (delta > 0) {
       return await _consumeMore(
@@ -100,14 +91,12 @@ Future<CalorieInventoryStockAdjustment> _consumeMore({
       '(itemId=$itemId, requested=$additionalAmount, removed=$removedAmount).',
       name: _stockAdjusterLogName,
     );
-    return CalorieInventoryStockAdjustment(
-      status: CalorieInventoryStockAdjustmentStatus.stockExhausted,
-      reservedAmount: reservedAmount + removedAmount,
+    return CalorieInventoryStockAdjustment.stockExhausted(
+      reservedAmount + removedAmount,
     );
   }
-  return CalorieInventoryStockAdjustment(
-    status: CalorieInventoryStockAdjustmentStatus.applied,
-    reservedAmount: reservedAmount + removedAmount,
+  return CalorieInventoryStockAdjustment.applied(
+    reservedAmount + removedAmount,
   );
 }
 
@@ -126,13 +115,7 @@ Future<CalorieInventoryStockAdjustment> _returnDifference({
         controller.restoreConsumedItem(itemId, reservedAmount - targetAmount),
   );
   if (!restored) {
-    return CalorieInventoryStockAdjustment(
-      status: CalorieInventoryStockAdjustmentStatus.stockUnchanged,
-      reservedAmount: reservedAmount,
-    );
+    return CalorieInventoryStockAdjustment.stockUnchanged(reservedAmount);
   }
-  return CalorieInventoryStockAdjustment(
-    status: CalorieInventoryStockAdjustmentStatus.applied,
-    reservedAmount: targetAmount,
-  );
+  return CalorieInventoryStockAdjustment.applied(targetAmount);
 }

@@ -18,6 +18,34 @@ class CalorieInventoryStockAdjustment {
   /// Creates the adjustment result.
   const new({required this.status, required this.reservedAmount});
 
+  /// Creates a result for a stock that now matches the new amount.
+  const new applied(int reservedAmount)
+    : this(
+        status: CalorieInventoryStockAdjustmentStatus.applied,
+        reservedAmount: reservedAmount,
+      );
+
+  /// Creates a result for a stock that ran out during the increase.
+  const new stockExhausted(int reservedAmount)
+    : this(
+        status: CalorieInventoryStockAdjustmentStatus.stockExhausted,
+        reservedAmount: reservedAmount,
+      );
+
+  /// Creates a result for a source item that is gone.
+  const new sourceMissing(int reservedAmount)
+    : this(
+        status: CalorieInventoryStockAdjustmentStatus.sourceMissing,
+        reservedAmount: reservedAmount,
+      );
+
+  /// Creates a result for a stock that stayed as it was.
+  const new stockUnchanged(int reservedAmount)
+    : this(
+        status: CalorieInventoryStockAdjustmentStatus.stockUnchanged,
+        reservedAmount: reservedAmount,
+      );
+
   /// How far the stock followed the new amount.
   final CalorieInventoryStockAdjustmentStatus status;
 

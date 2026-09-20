@@ -78,15 +78,40 @@ class CalorieEntryAmountEditFlow {
         !entry.canRestoreToInventory ||
         itemId == null ||
         reservedAmount == null) {
-      final rescaled = rescaleCalorieEntry(entry, amount: amount, now: now);
-      final saved = await _saveEntry(rescaled);
-      return CalorieEntryAmountChangeResult(
-        saved: saved,
-        entry: saved ? rescaled : entry,
-        status: CalorieInventoryStockAdjustmentStatus.stockUnchanged,
-      );
+      return await _changeEntryOnly(entry: entry, amount: amount, now: now);
     }
+    return await _changeWithStock(
+      entry: entry,
+      amount: amount,
+      now: now,
+      adjustStock: adjustStock,
+      itemId: itemId,
+      reservedAmount: reservedAmount,
+    );
+  }
 
+  Future<CalorieEntryAmountChangeResult> _changeEntryOnly({
+    required CalorieEntry entry,
+    required double amount,
+    required DateTime now,
+  }) async {
+    final rescaled = rescaleCalorieEntry(entry, amount: amount, now: now);
+    final saved = await _saveEntry(rescaled);
+    return CalorieEntryAmountChangeResult(
+      saved: saved,
+      entry: saved ? rescaled : entry,
+      status: CalorieInventoryStockAdjustmentStatus.stockUnchanged,
+    );
+  }
+
+  Future<CalorieEntryAmountChangeResult> _changeWithStock({
+    required CalorieEntry entry,
+    required double amount,
+    required DateTime now,
+    required CalorieInventoryStockAdjuster adjustStock,
+    required String itemId,
+    required int reservedAmount,
+  }) async {
     final adjustment = await adjustStock(
       itemId: itemId,
       reservedAmount: reservedAmount,
