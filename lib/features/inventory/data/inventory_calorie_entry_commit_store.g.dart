@@ -31,7 +31,7 @@ final class InventoryCalorieEntryCommitStoreProvider
         argument: null,
         retry: null,
         name: r'inventoryCalorieEntryCommitStoreProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -62,4 +62,4 @@ final class InventoryCalorieEntryCommitStoreProvider
 }
 
 String _$inventoryCalorieEntryCommitStoreHash() =>
-    r'9d6024bcec1a4aec8a32b1872c67bc302c2c1a36';
+    r'd8ecc99cd8297c7189e35e2f87815700c61c3316';

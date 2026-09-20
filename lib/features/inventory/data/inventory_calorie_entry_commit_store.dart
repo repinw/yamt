@@ -1,32 +1,29 @@
 // Commit store stays class-based for provider overrides and test fakes.
 
-import 'dart:developer' show log;
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
-import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/'
+    'firestore_inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_calorie_entry_commit_result.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_calorie_entry_commit_store_contract.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+
+export 'firestore_inventory_calorie_entry_commit_store.dart';
+export 'inventory_calorie_entry_commit_mutation_builder.dart';
+export 'inventory_calorie_entry_commit_result.dart';
+export 'inventory_calorie_entry_commit_store_contract.dart';
 
 part 'inventory_calorie_entry_commit_store.g.dart';
 
-const _commitStoreLogName = 'InventoryCalorieEntryCommitStore';
-const _usersCollection = 'users';
-const _calorieEntriesCollection = 'calorie_entries';
-const _inventoryItemsCollection = 'inventory_items';
-const _inventoryActivityEventsCollection = 'inventory_activity_events';
-
 /// The inventory calorie entry commit store provider.
-@Riverpod(keepAlive: true)
+@riverpod
 InventoryCalorieEntryCommitStore inventoryCalorieEntryCommitStore(Ref ref) {
   final currentUserId = ref.watch(authStateChangesProvider).asData?.value?.uid;
   final inventoryOwnerUserId = ref.watch(
@@ -45,236 +42,6 @@ InventoryCalorieEntryCommitStore inventoryCalorieEntryCommitStore(Ref ref) {
   );
 }
 
-/// Defines inventory calorie entry commit store.
-abstract interface class InventoryCalorieEntryCommitStore {
-  /// Commit entry and inventory.
-  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
-    required CalorieEntry entry,
-    required PendingInventoryConsumption pendingConsumption,
-  });
-}
-
-/// Defines inventory calorie entry commit result.
-class InventoryCalorieEntryCommitResult {
-  /// The inventory calorie entry commit result.
-  const new({
-    required this.itemId,
-    required this.quantity,
-    required this.currentAmount,
-  });
-
-  /// The item id.
-  final String itemId;
-
-  /// The quantity.
-  final int quantity;
-
-  /// The current amount.
-  final int currentAmount;
-}
-
-/// Defines firestore inventory calorie entry commit store.
-class FirestoreInventoryCalorieEntryCommitStore
-    implements InventoryCalorieEntryCommitStore {
-  /// The firestore inventory calorie entry commit store.
-  const new({
-    required this._firestore,
-    required this._currentUserId,
-    required this._inventoryOwnerUserId,
-    required this._actor,
-  });
-
-  final FirebaseFirestore _firestore;
-  final String? _currentUserId;
-  final String? _inventoryOwnerUserId;
-  final InventoryActivityActor? _actor;
-
-  @override
-  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
-    required CalorieEntry entry,
-    required PendingInventoryConsumption pendingConsumption,
-  }) async {
-    final entryUserId = _resolveEntryUserId(entry.userId);
-    final inventoryUserId = _resolveInventoryUserId();
-    if (entryUserId == null || inventoryUserId == null) {
-      log(
-        'Cannot commit calorie entry ${entry.id}: no user id resolved '
-        '(entryUserId=${entry.userId}, '
-        'currentUserId=$_currentUserId, '
-        'inventoryOwnerUserId=$_inventoryOwnerUserId).',
-        name: _commitStoreLogName,
-      );
-      return null;
-    }
-    if (pendingConsumption.amount < 1) {
-      log(
-        'Cannot commit calorie entry ${entry.id}: invalid pending amount '
-        '${pendingConsumption.amount} for item ${pendingConsumption.itemId}.',
-        name: _commitStoreLogName,
-      );
-      return null;
-    }
-
-    log(
-      'Committing calorie entry ${entry.id} with inventory item '
-      '${pendingConsumption.itemId} for inventory owner $inventoryUserId '
-      '(amount=${pendingConsumption.amount}).',
-      name: _commitStoreLogName,
-    );
-
-    // A batch instead of a transaction: Firestore queues batches while
-    // offline, but transactions fail. The stock is computed from the local
-    // copy, so two offline consumptions of the same item may overwrite each
-    // other.
-    try {
-      final inventoryRef = _inventoryCollection(
-        inventoryUserId,
-      ).doc(pendingConsumption.itemId);
-      final inventorySnapshot = await readDocumentLocalFirst(inventoryRef);
-      if (!inventorySnapshot.exists) {
-        log(
-          'Inventory item ${pendingConsumption.itemId} no longer exists '
-          'while committing calorie entry ${entry.id}.',
-          name: _commitStoreLogName,
-        );
-        return null;
-      }
-
-      final rawItem = Map<String, dynamic>.from(
-        inventorySnapshot.data() ?? const <String, dynamic>{},
-      )..['id'] = inventorySnapshot.id;
-
-      final currentItem = InventoryItem.fromJson(rawItem);
-      final committedItem = _buildCommittedItem(
-        item: currentItem,
-        amount: pendingConsumption.amount,
-        consumedAt: entry.loggedAt,
-      );
-      if (committedItem == null) {
-        log(
-          'Inventory commit rejected for calorie entry ${entry.id} '
-          '(itemId=${currentItem.id}, '
-          'quantity=${currentItem.quantity}, '
-          'currentAmount=${currentItem.currentAmount}, '
-          'requestedAmount=${pendingConsumption.amount}, '
-          'usesAmountProgress=${currentItem.usesAmountProgress}).',
-          name: _commitStoreLogName,
-        );
-        return null;
-      }
-
-      final normalizedEntry = entry.copyWith(
-        userId: entryUserId,
-        imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
-        updatedAt: DateTime.now(),
-      );
-
-      final batch = _firestore.batch()
-        ..set(
-          _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
-          normalizedEntry.toJson(),
-        )
-        ..update(inventoryRef, _buildInventoryUpdate(committedItem));
-      final activityEvent = _buildActivityEvent(
-        actor: _actor,
-        beforeItem: currentItem,
-        afterItem: committedItem,
-        amount: pendingConsumption.amount,
-        happenedAt: normalizedEntry.loggedAt,
-      );
-      if (activityEvent != null) {
-        batch.set(
-          _activityEventsCollectionRef(inventoryUserId).doc(activityEvent.id),
-          activityEvent.toJson(),
-        );
-      }
-      commitBatchInBackground(
-        batch,
-        failureMessage:
-            'Server rejected calorie entry ${entry.id} with inventory item '
-            '${pendingConsumption.itemId}.',
-        logName: _commitStoreLogName,
-      );
-
-      log(
-        'Batch queued for calorie entry ${entry.id} '
-        '(itemId=${committedItem.id}, '
-        'nextQuantity=${committedItem.quantity}, '
-        'nextCurrentAmount=${committedItem.currentAmount}).',
-        name: _commitStoreLogName,
-      );
-
-      return InventoryCalorieEntryCommitResult(
-        itemId: committedItem.id,
-        quantity: committedItem.quantity,
-        currentAmount: committedItem.currentAmount,
-      );
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to commit calorie entry ${entry.id} with inventory item '
-        '${pendingConsumption.itemId}.',
-        name: _commitStoreLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return null;
-    }
-  }
-
-  String? _resolveEntryUserId(String entryUserId) {
-    final currentUserId = _currentUserId?.trim();
-    if (currentUserId != null && currentUserId.isNotEmpty) {
-      return currentUserId;
-    }
-
-    final normalizedEntryUserId = entryUserId.trim();
-    if (normalizedEntryUserId.isNotEmpty) {
-      return normalizedEntryUserId;
-    }
-    return null;
-  }
-
-  String? _resolveInventoryUserId() {
-    final inventoryOwnerUserId = _inventoryOwnerUserId?.trim();
-    if (inventoryOwnerUserId != null && inventoryOwnerUserId.isNotEmpty) {
-      return inventoryOwnerUserId;
-    }
-
-    final currentUserId = _currentUserId?.trim();
-    if (currentUserId != null && currentUserId.isNotEmpty) {
-      return currentUserId;
-    }
-    return null;
-  }
-
-  CollectionReference<Map<String, dynamic>> _inventoryCollection(
-    String userId,
-  ) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_inventoryItemsCollection);
-  }
-
-  CollectionReference<Map<String, dynamic>> _calorieEntriesCollectionRef(
-    String userId,
-  ) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_calorieEntriesCollection);
-  }
-
-  CollectionReference<Map<String, dynamic>> _activityEventsCollectionRef(
-    String userId,
-  ) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_inventoryActivityEventsCollection);
-  }
-}
-
 class _UnavailableInventoryCalorieEntryCommitStore
     implements InventoryCalorieEntryCommitStore {
   const new();
@@ -286,98 +53,4 @@ class _UnavailableInventoryCalorieEntryCommitStore
   }) async {
     return null;
   }
-}
-
-InventoryItem? _buildCommittedItem({
-  required InventoryItem item,
-  required int amount,
-  required DateTime consumedAt,
-}) {
-  if (amount < 1) {
-    return null;
-  }
-
-  final nextLastConsumedAt = item.latestConsumedAtOr(consumedAt);
-
-  if (item.usesAmountProgress) {
-    if (item.currentAmount < amount) {
-      return null;
-    }
-
-    final nextCurrentAmount = item.currentAmount - amount;
-    return item.copyWith(
-      currentAmount: nextCurrentAmount,
-      quantity: _quantityForCurrentAmount(
-        item: item,
-        currentAmount: nextCurrentAmount,
-      ),
-      lastConsumedAt: nextLastConsumedAt,
-    );
-  }
-
-  if (item.quantity < amount) {
-    return null;
-  }
-  return item.copyWith(
-    quantity: item.quantity - amount,
-    lastConsumedAt: nextLastConsumedAt,
-  );
-}
-
-int _quantityForCurrentAmount({
-  required InventoryItem item,
-  required int currentAmount,
-}) {
-  final initialAmount = item.initialAmount;
-  final initialQuantity = item.initialQuantity;
-  if (initialAmount < 1 || initialQuantity < 1) {
-    return item.quantity;
-  }
-
-  final ratio = currentAmount / initialAmount;
-  final projectedQuantity = (initialQuantity * ratio).ceil();
-  if (projectedQuantity < 0) {
-    return 0;
-  }
-  if (projectedQuantity > initialQuantity) {
-    return initialQuantity;
-  }
-  return projectedQuantity;
-}
-
-Map<String, dynamic> _buildInventoryUpdate(InventoryItem item) {
-  return <String, dynamic>{
-    'quantity': item.quantity,
-    'current_amount': item.currentAmount,
-    'last_consumed_at': item.lastConsumedAt?.toIso8601String(),
-  };
-}
-
-InventoryActivityEvent? _buildActivityEvent({
-  required InventoryActivityActor? actor,
-  required InventoryItem beforeItem,
-  required InventoryItem afterItem,
-  required int amount,
-  required DateTime happenedAt,
-}) {
-  if (actor == null) {
-    return null;
-  }
-
-  return InventoryActivityEvent.fromStockChange(
-    id: _newActivityEventId(),
-    type: InventoryActivityEventType.itemConsumed,
-    actor: actor,
-    item: beforeItem,
-    amount: amount,
-    beforeQuantity: beforeItem.quantity,
-    afterQuantity: afterItem.quantity,
-    beforeCurrentAmount: beforeItem.currentAmount,
-    afterCurrentAmount: afterItem.currentAmount,
-    happenedAt: happenedAt,
-  );
-}
-
-String _newActivityEventId() {
-  return const Uuid().v4();
 }
