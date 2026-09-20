@@ -9,10 +9,13 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
+import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -51,7 +54,7 @@ void main() {
         preferences: preferences,
         logRepository: logRepository,
         selectedDay: selectedDay,
-        weekOverview: diaryWeekOverviewForTest(
+        weekOverviewBuilder: () => diaryWeekOverviewForTest(
           selectedDay: selectedDay,
           dayTotals: const <double>[0, 0, 0, 0, 0, 0, 240],
           goalKcal: 2400,
@@ -98,7 +101,7 @@ void main() {
       preferences: preferences,
       logRepository: logRepository,
       selectedDay: selectedDay,
-      weekOverviewError: StateError('week failed'),
+      weekOverviewBuilder: () => throw StateError('week failed'),
     );
     addTearDown(container.dispose);
 
@@ -294,6 +297,61 @@ void main() {
     );
   });
 
+  test('reloads the day budget when rest day becomes training day', () async {
+    final preferences = MemoryAppPreferences();
+    final logRepository = FakeCalorieLogRepository();
+    addTearDown(logRepository.dispose);
+
+    final restDaySettings = CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 5),
+    ).copyWith(
+      trainingWeekdays: const <int>[],
+      trainingDayKcalOffset: 300,
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: restDaySettings,
+    );
+
+    final container = _dashboardContainer(
+      preferences: preferences,
+      logRepository: logRepository,
+      selectedDay: selectedDay,
+      settingsRepository: settingsRepository,
+    );
+    addTearDown(container.dispose);
+
+    final provider = diaryDayDashboardControllerProvider(selectedDay);
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+
+    final restDay = await _waitForDashboardRefresh(container, selectedDay);
+    expect(restDay.data?.weekOverview.days.last.goalKcal, 2000);
+    final restDayCarbs = restDay.data?.nutritionBars.goals.carbs;
+    expect(restDayCarbs, isNotNull);
+
+    await container
+        .read(calorieGoalControllerProvider.notifier)
+        .toggleTrainingDay(selectedDay);
+    final trainingDay = await _waitForDashboardGoalKcal(
+      container,
+      selectedDay,
+      2300,
+    );
+
+    expect(trainingDay.data?.weekOverview.days.last.goalKcal, 2300);
+    // The macro row is what stayed stale on screen, so it is asserted too.
+    expect(
+      trainingDay.data?.nutritionBars.goals.carbs,
+      greaterThan(restDayCarbs!),
+    );
+  });
+
   test(
     'concurrent refreshAfterMutation calls share in-flight refresh',
     () async {
@@ -352,9 +410,8 @@ ProviderContainer _dashboardContainer({
   required AppPreferences preferences,
   required FakeCalorieLogRepository logRepository,
   required DateTime selectedDay,
-  CalorieWeekOverview? weekOverview,
   FutureOr<CalorieWeekOverview> Function()? weekOverviewBuilder,
-  Error? weekOverviewError,
+  FakeCalorieSettingsRepository? settingsRepository,
   List<ProviderObserver> observers = const <ProviderObserver>[],
 }) {
   final auth = _MockFirebaseAuth();
@@ -366,6 +423,9 @@ ProviderContainer _dashboardContainer({
     observers: observers,
     overrides: [
       appPreferencesProvider.overrideWithValue(preferences),
+      calorieSettingsRepositoryProvider.overrideWithValue(
+        settingsRepository ?? FakeCalorieSettingsRepository(),
+      ),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
       firebaseAuthProvider.overrideWithValue(auth),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
@@ -373,18 +433,12 @@ ProviderContainer _dashboardContainer({
         () => _FakeBurnWeekRunController(const BurnWeekRunState.initial()),
       ),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
-      calorieWeekOverviewForWindowProvider(selectedDay).overrideWith((ref) {
-        final error = weekOverviewError;
-        if (error != null) {
-          throw error;
-        }
-        final builder = weekOverviewBuilder;
-        if (builder != null) {
-          return builder();
-        }
-        return weekOverview ??
-            diaryWeekOverviewForTest(selectedDay: selectedDay);
-      }),
+      // Without a builder the real week overview pipeline runs, which is what
+      // day type changes have to flow through.
+      if (weekOverviewBuilder != null)
+        calorieWeekOverviewForWindowProvider(
+          selectedDay,
+        ).overrideWith((ref) => weekOverviewBuilder()),
     ],
   );
 }
@@ -445,6 +499,40 @@ Future<DiaryDayDashboardState> _waitForDashboardRefresh(
   final completer = Completer<DiaryDayDashboardState>();
   final subscription = container.listen(provider, (previous, next) {
     if (!next.isRefreshing && !completer.isCompleted) {
+      completer.complete(next);
+    }
+  });
+  try {
+    return await completer.future.timeout(
+      const Duration(seconds: 2),
+      onTimeout: () => container.read(provider),
+    );
+  } finally {
+    subscription.close();
+  }
+}
+
+/// Waits until the dashboard of [selectedDay] reports [goalKcal].
+///
+/// Waiting on a value instead of a delay keeps the goal change deterministic:
+/// the reload runs through several providers before it reaches the dashboard.
+Future<DiaryDayDashboardState> _waitForDashboardGoalKcal(
+  ProviderContainer container,
+  DateTime selectedDay,
+  double goalKcal,
+) async {
+  final provider = diaryDayDashboardControllerProvider(selectedDay);
+  bool hasGoalKcal(DiaryDayDashboardState state) =>
+      state.data?.weekOverview.days.last.goalKcal == goalKcal;
+
+  final current = container.read(provider);
+  if (hasGoalKcal(current)) {
+    return current;
+  }
+
+  final completer = Completer<DiaryDayDashboardState>();
+  final subscription = container.listen(provider, (previous, next) {
+    if (hasGoalKcal(next) && !completer.isCompleted) {
       completer.complete(next);
     }
   });

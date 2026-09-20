@@ -15,7 +15,9 @@ import 'package:yamt/features/diary/application/'
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/application/diary_macro_targets_resolver.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
+import 'package:yamt/features/diary/domain/diary_day_goal_signature.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_state.dart';
 
 export 'diary_day_dashboard_state.dart';
@@ -53,12 +55,37 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
             day: normalizedDay,
           );
 
+    // A rebuild drops the subscription that keeps the live data provider
+    // alive, so a refresh started before it can never settle. Forget that
+    // refresh here, otherwise it blocks every later one.
+    _refreshInFlight = null;
+    _mutationRefreshInFlight = null;
+
     ref.listen<int>(calorieOverviewRevisionProvider, (previous, next) {
       if (previous == null || previous == next) {
         return;
       }
       unawaited(refreshAfterMutation());
     });
+
+    // Day type and goal edits change the budget without touching calorie logs,
+    // so the overview revision above never fires for them.
+    ref.listen<AsyncValue<CalorieGoalSettings>>(
+      diaryCalorieGoalSettingsProvider,
+      (previous, next) {
+        final previousSignature = diaryDayGoalSignature(
+          previous?.value,
+          normalizedDay,
+        );
+        final nextSignature = diaryDayGoalSignature(next.value, normalizedDay);
+        if (previousSignature == null ||
+            nextSignature == null ||
+            previousSignature == nextSignature) {
+          return;
+        }
+        unawaited(_refreshSelectedDay(forceRefresh: true));
+      },
+    );
 
     unawaited(
       Future<void>.microtask(
@@ -173,10 +200,15 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     state = state.copyWith(isRefreshing: true, error: null);
     _invalidateDashboardInputs(normalizedDay);
 
+    // Hold a subscription while awaiting. Without a listener the freshly
+    // invalidated live data provider is disposed mid-load and its future
+    // never completes.
+    final liveDataSubscription = ref.listen(
+      diaryDayDashboardLiveDataProvider(normalizedDay).future,
+      (_, _) {},
+    );
     try {
-      final liveData = await ref.read(
-        diaryDayDashboardLiveDataProvider(normalizedDay).future,
-      );
+      final liveData = await liveDataSubscription.read();
       if (!_isCurrentRefresh(generation)) {
         return;
       }
@@ -233,6 +265,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         return;
       }
       state = state.copyWith(isRefreshing: false, error: error);
+    } finally {
+      liveDataSubscription.close();
     }
   }
 

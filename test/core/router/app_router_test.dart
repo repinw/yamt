@@ -10,6 +10,7 @@ import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
+import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/features/auth/application/'
     'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -63,6 +64,27 @@ class _MockUserMetadata extends Mock implements UserMetadata;
 Future<void> _pumpRouterTransition(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(_routerTransitionDuration);
+}
+
+/// Finds [icon] in the home navigation bar.
+///
+/// Page content can use the same icons, so the finder stays scoped to the bar.
+Finder _homeNavIcon(IconData icon) {
+  return find
+      .descendant(
+        of: find.byType(HomeBottomNavBar),
+        matching: find.byIcon(icon),
+      )
+      .hitTestable();
+}
+
+/// Finds [icon] in the app bar of the current page.
+///
+/// Page content can use the same icons, so the finder stays scoped to the bar.
+Finder _appBarIcon(IconData icon) {
+  return find
+      .descendant(of: find.byType(AppBar), matching: find.byIcon(icon))
+      .hitTestable();
 }
 
 Future<void> _tapCalorieOnboardingNext(WidgetTester tester) async {
@@ -676,7 +698,7 @@ void main() {
     expect(find.text('Today'), findsOneWidget);
     expect(find.text('STATISTICS'), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.inventory_2_rounded).hitTestable());
+    await tester.tap(_homeNavIcon(Icons.inventory_2_rounded));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
     expect(router.state.uri.path, AppRoutes.homeInventory);
@@ -688,9 +710,9 @@ void main() {
       find.descendant(of: find.byType(AppBar), matching: find.text('Shopping')),
       findsOneWidget,
     );
-    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+    expect(_appBarIcon(Icons.arrow_back_rounded), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.arrow_back_rounded).hitTestable());
+    await tester.tap(_appBarIcon(Icons.arrow_back_rounded));
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeInventory);
 
@@ -699,12 +721,12 @@ void main() {
     expect(router.state.uri.path, AppRoutes.homeCalories);
     expect(find.text('Today'), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.insights_rounded).hitTestable());
+    await tester.tap(_homeNavIcon(Icons.insights_rounded));
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeProgress);
     expect(find.byIcon(Icons.menu_rounded).hitTestable(), findsNothing);
 
-    await tester.tap(find.byIcon(Icons.menu_book_rounded).hitTestable());
+    await tester.tap(_homeNavIcon(Icons.menu_book_rounded));
     await _pumpRouterTransition(tester);
     await tester.tap(find.byIcon(Icons.menu_rounded).hitTestable());
     await _pumpRouterTransition(tester);
