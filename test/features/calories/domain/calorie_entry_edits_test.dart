@@ -56,11 +56,11 @@ void main() {
     );
   }
 
-  test('amount is editable only for plain entries', () {
+  test('amount is editable for every entry except bundles', () {
     expect(canEditCalorieEntryAmount(entry()), isTrue);
     expect(
       canEditCalorieEntryAmount(entry(sourceInventoryItemId: 'inventory-1')),
-      isFalse,
+      isTrue,
     );
     expect(canEditCalorieEntryAmount(bundle()), isFalse);
   });

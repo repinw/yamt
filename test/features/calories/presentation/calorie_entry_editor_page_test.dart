@@ -12,6 +12,8 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_entry_amount_edit_flow.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_inventory_entry_save_handler.dart';
@@ -20,6 +22,8 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_inventory_stock_adjustment.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
@@ -698,13 +702,13 @@ void main() {
     expect(find.text('150 g'), findsWidgets);
   });
 
-  testWidgets('details flow blocks amount changes for inventory entries', (
+  testWidgets('details flow moves the stock with an inventory entry amount', (
     tester,
   ) async {
     final existing = _entry(
       'entry-stock',
       sourceInventoryItemId: 'inventory-1',
-      sourceInventoryAmountToRestore: 2,
+      sourceInventoryAmountToRestore: 200,
     );
     final logRepository = FakeCalorieLogRepository(
       initialEntries: <CalorieEntry>[existing],
@@ -712,22 +716,53 @@ void main() {
     final settingsRepository = FakeCalorieSettingsRepository();
     addTearDown(logRepository.dispose);
     addTearDown(settingsRepository.dispose);
+    final adjustedAmounts = <double>[];
 
     await tester.pumpWidget(
       _buildHarness(
         logRepository: logRepository,
         settingsRepository: settingsRepository,
         initialLocation: AppRoutes.homeCaloriesEntryDetailsPath('entry-stock'),
+        additionalOverrides: <Override>[
+          calorieInventoryStockAdjusterProvider.overrideWith((ref) {
+            return ({
+              required itemId,
+              required reservedAmount,
+              required consumedAmount,
+            }) async {
+              adjustedAmounts.add(consumedAmount);
+              return CalorieInventoryStockAdjustment(
+                status: CalorieInventoryStockAdjustmentStatus.applied,
+                reservedAmount: consumedAmount.round(),
+              );
+            };
+          }),
+        ],
       ),
     );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(CalorieEntryDetailKeys.amountValue));
     await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieEntryDetailKeys.amountField),
+      '300',
+    );
+    await tester.tap(find.byKey(CalorieEntryDetailKeys.amountSaveButton));
+    await tester.pumpAndSettle();
 
-    expect(find.byKey(CalorieEntryDetailKeys.amountField), findsNothing);
-    expect(find.textContaining('came from your inventory'), findsOneWidget);
-    expect(logRepository.entries.single.consumedAmount, 200);
+    final updated = logRepository.entries.single;
+    expect(updated.consumedAmount, 300);
+    expect(updated.sourceInventoryAmountToRestore, 300);
+    expect(adjustedAmounts, <double>[300]);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    final undone = logRepository.entries.single;
+    expect(undone.consumedAmount, 200);
+    expect(undone.sourceInventoryAmountToRestore, 200);
+    expect(adjustedAmounts, <double>[300, 200]);
   });
 
   testWidgets('details flow removes a plain entry and can undo it', (

@@ -9,8 +9,9 @@ import 'package:yamt/features/calories/provider/calorie_overview_revision_provid
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'inventory_controller_access.dart';
 
 part 'inventory_calorie_entry_delete_flow.g.dart';
 
@@ -35,7 +36,7 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
       return deleted;
     },
     restoreConsumedItem: (itemId, amount) {
-      return _withInventoryController(
+      return withInventoryController(
         ref: ref,
         operationName: 'restore consumed inventory item',
         fallbackValue: false,
@@ -45,7 +46,7 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
       );
     },
     rollbackRestoredItem: (itemId, amount, {consumedAt}) {
-      return _withInventoryController(
+      return withInventoryController(
         ref: ref,
         operationName: 'rollback restored inventory item',
         fallbackValue: false,
@@ -103,39 +104,6 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
   );
 }
 
-Future<T> _withInventoryController<T>({
-  required Ref ref,
-  required String operationName,
-  required T fallbackValue,
-  required Future<T> Function(InventoryItemsController controller) operation,
-}) async {
-  final subscription = ref.listen(
-    inventoryItemsControllerProvider,
-    (_, _) {},
-    fireImmediately: true,
-  );
-  try {
-    if (!ref.mounted) {
-      return fallbackValue;
-    }
-    await _waitForRefProvider(ref, inventoryItemsControllerProvider);
-    if (!ref.mounted) {
-      return fallbackValue;
-    }
-    return await operation(ref.read(inventoryItemsControllerProvider.notifier));
-  } on Object catch (error, stackTrace) {
-    log(
-      'Failed to $operationName.',
-      name: _inventoryDeleteFlowLogName,
-      error: error,
-      stackTrace: stackTrace,
-    );
-    return fallbackValue;
-  } finally {
-    subscription.close();
-  }
-}
-
 Future<T> _withPreparedMealsController<T>({
   required Ref ref,
   required String operationName,
@@ -151,7 +119,7 @@ Future<T> _withPreparedMealsController<T>({
     if (!ref.mounted) {
       return fallbackValue;
     }
-    await _waitForRefProvider(ref, preparedMealsControllerProvider);
+    await waitForLoadedProvider(ref, preparedMealsControllerProvider);
     if (!ref.mounted) {
       return fallbackValue;
     }
@@ -169,27 +137,6 @@ Future<T> _withPreparedMealsController<T>({
   }
 }
 
-Future<void> _waitForRefProvider<T>(
-  Ref ref,
-  ProviderListenable<AsyncValue<T>> provider,
-) async {
-  final current = ref.read(provider);
-  if (current is! AsyncLoading) {
-    return;
-  }
-  final completer = Completer<void>();
-  final sub = ref.listen<AsyncValue<T>>(provider, (_, next) {
-    if (next is! AsyncLoading && !completer.isCompleted) {
-      completer.complete();
-    }
-  });
-  try {
-    await completer.future;
-  } finally {
-    sub.close();
-  }
-}
-
 Future<bool> _sourceInventoryItemExists({
   required String itemId,
   required InventoryItemRepository repository,
@@ -199,8 +146,11 @@ Future<bool> _sourceInventoryItemExists({
     return false;
   }
   try {
-    final loadedItems = await repository.readAll();
-    return loadedItems.any((item) => item.id == normalizedItemId);
+    final item = await findInventoryItem(
+      repository: repository,
+      itemId: normalizedItemId,
+    );
+    return item != null;
   } on Object catch (error, stackTrace) {
     log(
       'Failed to check inventory restore source. Trying restore anyway '

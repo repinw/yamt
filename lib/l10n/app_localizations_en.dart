@@ -2094,8 +2094,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesEntryAmountDialogTitle => 'Change amount';
 
   @override
-  String get caloriesEntryAmountLockedMessage =>
-      'This entry came from your inventory. Remove it and log it again to change the amount.';
+  String get caloriesEntryAmountStockExhaustedMessage =>
+      'Amount changed. Your inventory ran out, so it is empty now.';
+
+  @override
+  String get caloriesEntryAmountSourceMissingMessage =>
+      'Amount changed. The product is no longer in your inventory.';
 
   @override
   String get caloriesEditAmountTooltip => 'Change amount';

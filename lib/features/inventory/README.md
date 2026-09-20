@@ -72,6 +72,12 @@ already documented as a reusable presentation surface.
 - Controller providers live in `presentation/controllers/`.
 - Controller-wired calorie save/delete/bridge adapters live in `presentation/`
   because they coordinate presentation controllers with inventory persistence.
+  `presentation/inventory_calorie_stock_adjuster.dart` implements the calories
+  `CalorieInventoryStockAdjuster` port: when a logged amount changes, items
+  measured in grams or milliliters consume or return the difference, while
+  items counted in pieces keep their stock. They share
+  `presentation/inventory_controller_access.dart`, which runs an operation on
+  the loaded `InventoryItemsController`.
 - `provider/` is legacy and should stay empty; do not add new files there.
 
 ## Inventory Activity

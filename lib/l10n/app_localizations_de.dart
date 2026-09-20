@@ -2144,8 +2144,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesEntryAmountDialogTitle => 'Menge ändern';
 
   @override
-  String get caloriesEntryAmountLockedMessage =>
-      'Dieser Eintrag stammt aus deinem Vorrat. Entferne ihn und trage ihn neu ein, um die Menge zu ändern.';
+  String get caloriesEntryAmountStockExhaustedMessage =>
+      'Menge geändert. Dein Vorrat hat nicht gereicht und ist jetzt leer.';
+
+  @override
+  String get caloriesEntryAmountSourceMissingMessage =>
+      'Menge geändert. Das Produkt ist nicht mehr in deinem Vorrat.';
 
   @override
   String get caloriesEditAmountTooltip => 'Menge ändern';

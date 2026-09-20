@@ -55,7 +55,14 @@ state, and calorie-owned side effects from health or weight changes.
   `CalorieProductProfile` and `CalorieEntry` carry them; integrating features
   fill them when they log food.
 - `domain/calorie_entry_edits.dart` holds the pure rules for changing the
-  amount and logging an entry again.
+  amount and logging an entry again. Every entry except a bundle can change
+  its amount.
+- `application/calorie_entry_amount_edit_flow.dart` changes the amount of a
+  stored entry. An entry logged from the inventory moves the stock with it
+  through the `CalorieInventoryStockAdjuster` port, which inventory implements;
+  without inventory only the entry changes. The entry keeps what it still
+  takes from the stock in `sourceInventoryAmountToRestore`, so a later delete
+  returns the right amount. A failed save puts the stock back.
 - `presentation/pages/tdee_analytics_page.dart` for visual TDEE expenditure,
   flux range corridor, and goal anticipation analysis (routed via
   `AppRoutes.homeCaloriesAnalytics`).
@@ -88,6 +95,7 @@ the legacy `provider/` surface or exposing action wrappers to sibling features.
 Main application providers:
 
 - `application/calorie_weight_state_refresh.dart`
+- `application/calorie_entry_amount_edit_flow.dart`
 - `application/calorie_entry_delete_flow.dart`
 - `application/calorie_inventory_entry_save_handler.dart`
 - `application/tdee_analytics_provider.dart`

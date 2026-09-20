@@ -3748,11 +3748,17 @@ abstract class AppLocalizations {
   /// **'Change amount'**
   String get caloriesEntryAmountDialogTitle;
 
-  /// No description provided for @caloriesEntryAmountLockedMessage.
+  /// No description provided for @caloriesEntryAmountStockExhaustedMessage.
   ///
   /// In en, this message translates to:
-  /// **'This entry came from your inventory. Remove it and log it again to change the amount.'**
-  String get caloriesEntryAmountLockedMessage;
+  /// **'Amount changed. Your inventory ran out, so it is empty now.'**
+  String get caloriesEntryAmountStockExhaustedMessage;
+
+  /// No description provided for @caloriesEntryAmountSourceMissingMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount changed. The product is no longer in your inventory.'**
+  String get caloriesEntryAmountSourceMissingMessage;
 
   /// No description provided for @caloriesEditAmountTooltip.
   ///

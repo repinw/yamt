@@ -2,6 +2,9 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_entry_amount_edit_flow.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_inventory_entry_save_handler.dart';
@@ -66,6 +69,28 @@ class CalorieEntryEditorController extends _$CalorieEntryEditorController {
         name: _controllerLogName,
       );
       return saved;
+    } finally {
+      if (ref.mounted) {
+        state = false;
+      }
+    }
+  }
+
+  /// Changes the consumed amount of a stored entry.
+  ///
+  /// An entry logged from the inventory moves its stock with the new amount.
+  Future<CalorieEntryAmountChangeResult> changeAmount({
+    required CalorieEntry entry,
+    required double amount,
+  }) async {
+    state = true;
+    try {
+      final flow = ref.read(calorieEntryAmountEditFlowProvider);
+      return await flow.changeAmount(
+        entry: entry,
+        amount: amount,
+        now: ref.read(clockProvider)(),
+      );
     } finally {
       if (ref.mounted) {
         state = false;

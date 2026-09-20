@@ -77,9 +77,9 @@ class _CalorieEntryDetailsContentState
                   _update(entry, entry.copyWith(mealType: mealType)),
                 ),
                 onPickLoggedAt: () => unawaited(_pickLoggedDay(entry)),
-                onPickAmount: entry.isBundle
-                    ? null
-                    : () => unawaited(_pickAmount(entry)),
+                onPickAmount: canEditCalorieEntryAmount(entry)
+                    ? () => unawaited(_pickAmount(entry))
+                    : null,
                 onEatAgain: () => unawaited(
                   CalorieEntryDetailsActions.eatAgain(
                     context,
@@ -127,19 +127,30 @@ class _CalorieEntryDetailsContentState
     );
   }
 
-  Future<void> _update(CalorieEntry previous, CalorieEntry updated) async {
+  Future<void> _update(CalorieEntry previous, CalorieEntry updated) {
     final next = updated.copyWith(updatedAt: ref.read(clockProvider)());
-    setState(() => _pending = next);
+    return _runChange(
+      optimistic: next,
+      save: (onUndone) => CalorieEntryDetailsActions.saveChange(
+        context,
+        controller: _controller,
+        previous: previous,
+        updated: next,
+        onUndone: onUndone,
+      ),
+    );
+  }
+
+  /// Shows [optimistic] while [save] runs and reloads the stored entry after.
+  Future<void> _runChange({
+    required CalorieEntry optimistic,
+    required Future<bool> Function(VoidCallback onUndone) save,
+  }) async {
+    setState(() => _pending = optimistic);
     final provider = calorieEntryByIdProvider(widget.entryId);
     final container = ProviderScope.containerOf(context, listen: false);
 
-    final saved = await CalorieEntryDetailsActions.saveChange(
-      context,
-      controller: _controller,
-      previous: previous,
-      updated: next,
-      onUndone: () => container.invalidate(provider),
-    );
+    final saved = await save(() => container.invalidate(provider));
     if (!mounted) {
       return;
     }
@@ -172,21 +183,21 @@ class _CalorieEntryDetailsContentState
   }
 
   Future<void> _pickAmount(CalorieEntry entry) async {
-    if (!canEditCalorieEntryAmount(entry)) {
-      final l10n = AppLocalizations.of(context)!;
-      ScaffoldMessenger.of(context)
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.caloriesEntryAmountLockedMessage)),
-        );
-      return;
-    }
     final amount = await showCalorieEntryAmountDialog(context, entry: entry);
     if (amount == null || !mounted) {
       return;
     }
     final now = ref.read(clockProvider)();
-    await _update(entry, rescaleCalorieEntry(entry, amount: amount, now: now));
+    await _runChange(
+      optimistic: rescaleCalorieEntry(entry, amount: amount, now: now),
+      save: (onUndone) => CalorieEntryDetailsActions.changeAmount(
+        context,
+        controller: _controller,
+        entry: entry,
+        amount: amount,
+        onUndone: onUndone,
+      ),
+    );
   }
 }
 

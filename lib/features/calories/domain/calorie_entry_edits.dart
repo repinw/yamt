@@ -3,12 +3,10 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 
 /// Whether the consumed amount of [entry] can change after logging.
 ///
-/// Bundles count portions of a prepared meal, and entries that can go back
-/// to the inventory already took a fixed amount from it. Changing either
-/// would leave the stock out of sync.
-bool canEditCalorieEntryAmount(CalorieEntry entry) {
-  return !entry.isBundle && !entry.canRestoreToInventory;
-}
+/// Bundles count portions of a prepared meal, so their amount follows the
+/// portions instead of a weight. Entries logged from the inventory can
+/// change: the stock follows the new amount.
+bool canEditCalorieEntryAmount(CalorieEntry entry) => !entry.isBundle;
 
 /// [entry] with a new consumed [amount] and totals scaled to it.
 CalorieEntry rescaleCalorieEntry(

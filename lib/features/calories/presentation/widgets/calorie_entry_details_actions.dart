@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_inventory_stock_adjustment.dart';
 import 'package:yamt/features/calories/presentation/controllers/'
     'calorie_entry_editor_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -41,6 +43,41 @@ abstract final class CalorieEntryDetailsActions {
       },
     );
     return saved;
+  }
+
+  /// Changes the consumed amount of [entry] to [amount]. Returns whether it
+  /// saved.
+  ///
+  /// The snackbar reports how far the inventory stock could follow, and the
+  /// undo puts both the entry and the stock back.
+  static Future<bool> changeAmount(
+    BuildContext context, {
+    required CalorieEntryEditorController controller,
+    required CalorieEntry entry,
+    required double amount,
+    required VoidCallback onUndone,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await controller.changeAmount(entry: entry, amount: amount);
+    if (!context.mounted) {
+      return result.saved;
+    }
+    _showResult(
+      messenger,
+      l10n,
+      succeeded: result.saved,
+      successMessage: _amountChangeMessage(l10n, result.status),
+      failureMessage: l10n.caloriesSaveFailed,
+      onUndo: () async {
+        await controller.changeAmount(
+          entry: result.entry,
+          amount: entry.consumedAmount,
+        );
+        onUndone();
+      },
+    );
+    return result.saved;
   }
 
   /// Logs [repeated] as a new entry and closes the sheet.
@@ -115,6 +152,21 @@ abstract final class CalorieEntryDetailsActions {
       failureMessage: l10n.caloriesDeleteFailed,
       onUndo: () => controller.saveEntry(entry: entry),
     );
+  }
+
+  static String _amountChangeMessage(
+    AppLocalizations l10n,
+    CalorieInventoryStockAdjustmentStatus status,
+  ) {
+    return switch (status) {
+      CalorieInventoryStockAdjustmentStatus.stockExhausted =>
+        l10n.caloriesEntryAmountStockExhaustedMessage,
+      CalorieInventoryStockAdjustmentStatus.sourceMissing =>
+        l10n.caloriesEntryAmountSourceMissingMessage,
+      CalorieInventoryStockAdjustmentStatus.applied ||
+      CalorieInventoryStockAdjustmentStatus.stockUnchanged =>
+        l10n.caloriesEntryUpdatedMessage,
+    };
   }
 
   static void _showResult(
