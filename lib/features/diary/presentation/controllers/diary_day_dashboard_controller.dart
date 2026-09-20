@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -181,20 +182,21 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       }
       final selectedDayEntries = liveData.selectedDayEntries;
       final goalKcal = liveData.selectedDayOverview.goalKcal;
-      final today = normalizeDiaryDay(DateTime.now());
+      final today = normalizeDiaryDay(ref.read(clockProvider)());
       final isPastDay = normalizedDay.isBefore(today);
       final carryoverKcal = isPastDay
           ? 0.0
           : liveData.weekOverview.carryoverBeforeTodayKcal;
       final macroTargets = resolveDiaryMacroTargets(
         ref,
+        day: normalizedDay,
         goalKcal: goalKcal,
         carryoverKcal: carryoverKcal,
       );
 
       final data = DiaryDayDashboardData(
         selectedDay: normalizedDay,
-        refreshedAt: DateTime.now(),
+        refreshedAt: ref.read(clockProvider)(),
         weekOverview: liveData.weekOverview,
         selectedDayEntries: selectedDayEntries,
         runState: liveData.runState,
