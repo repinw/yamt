@@ -22,7 +22,7 @@ void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
   Widget app(Widget child, {bool showDetails = false}) {
-    return ProviderScope(
+    final container = ProviderContainer(
       overrides: [
         clockProvider.overrideWithValue(() => DateTime(2026, 4, 27, 12)),
         appPreferencesProvider.overrideWithValue(
@@ -44,6 +44,11 @@ void main() {
           ),
         ),
       ],
+    );
+    addTearDown(container.dispose);
+
+    return UncontrolledProviderScope(
+      container: container,
       child: MaterialApp(
         locale: const Locale('en'),
         localizationsDelegates: appLocalizationsDelegates,

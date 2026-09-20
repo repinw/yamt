@@ -140,10 +140,15 @@ Widget _wrapDetailsView({
   );
   addTearDown(settingsRepository.dispose);
 
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
     ],
+  );
+  addTearDown(container.dispose);
+
+  return UncontrolledProviderScope(
+    container: container,
     child: MaterialApp(
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
