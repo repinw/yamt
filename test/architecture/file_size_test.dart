@@ -62,7 +62,6 @@ bool _isSubjectToLineCountCheck(File file) {
 /// never regress (ratchet principle).
 const _legacyLargeFilesAllowlist = <String>{
   'lib/features/activity/presentation/widgets/activity_weight_section/diary_compact_activity_weight_surface.dart',
-  'lib/features/calories/application/burn_week_live_overview_logic.dart',
   'lib/features/calories/application/burn_week_live_sync_provider.dart',
   'lib/features/calories/application/calorie_entry_delete_flow.dart',
   'lib/features/calories/application/daily_learned_tdee_resolver.dart',

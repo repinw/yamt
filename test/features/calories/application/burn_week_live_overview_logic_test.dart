@@ -6,36 +6,6 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 
 void main() {
-  test('live week start ignores a stored future anchor', () {
-    final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(
-      currentDay: DateTime(2026, 4, 21, 12),
-      balanceStartDate: DateTime(2026, 4, 21),
-      storedWeekStartDayKey: '2026-4-22',
-    );
-
-    expect(currentWeekStartDate, DateTime(2026, 4, 21));
-  });
-
-  test('live week start ignores a stored anchor before the active cycle', () {
-    final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(
-      currentDay: DateTime(2026, 4, 21, 12),
-      balanceStartDate: DateTime(2026, 4, 21),
-      storedWeekStartDayKey: '2026-4-14',
-    );
-
-    expect(currentWeekStartDate, DateTime(2026, 4, 21));
-  });
-
-  test('live week start ignores an expired stored anchor', () {
-    final currentWeekStartDate = resolveBurnWeekLiveWeekStartDate(
-      currentDay: DateTime(2026, 4, 15, 12),
-      balanceStartDate: DateTime(2026, 4, 8),
-      storedWeekStartDayKey: '2026-4-8',
-    );
-
-    expect(currentWeekStartDate, DateTime(2026, 4, 15));
-  });
-
   test('run week one ignores previous overflow completely', () {
     final previousOverflowKcal = resolveBurnWeekPreviousOverflowKcal(
       cycleCarryoverBeforeTodayKcal: 250,

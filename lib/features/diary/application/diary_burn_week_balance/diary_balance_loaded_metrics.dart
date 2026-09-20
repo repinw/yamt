@@ -1,4 +1,4 @@
-import 'package:yamt/features/calories/application/burn_week_live_overview_logic.dart';
+import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
