@@ -74,4 +74,4 @@ final class InventoryCalorieStockAdjusterProvider
 }
 
 String _$inventoryCalorieStockAdjusterHash() =>
-    r'0a738827d331decd289a2f7c0ff255091014f1ba';
+    r'2a4aa58f4a983911fa88e70d4ce3f3fe872223aa';

@@ -8,56 +8,6 @@ part of 'burn_week_live_sync_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-
-@ProviderFor(_burnWeekMutationCoordinator)
-final _burnWeekMutationCoordinatorProvider =
-    _BurnWeekMutationCoordinatorProvider._();
-
-final class _BurnWeekMutationCoordinatorProvider
-    extends
-        $FunctionalProvider<
-          _BurnWeekMutationCoordinator,
-          _BurnWeekMutationCoordinator,
-          _BurnWeekMutationCoordinator
-        >
-    with $Provider<_BurnWeekMutationCoordinator> {
-  _BurnWeekMutationCoordinatorProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'_burnWeekMutationCoordinatorProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$_burnWeekMutationCoordinatorHash();
-
-  @$internal
-  @override
-  $ProviderElement<_BurnWeekMutationCoordinator> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  _BurnWeekMutationCoordinator create(Ref ref) {
-    return _burnWeekMutationCoordinator(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(_BurnWeekMutationCoordinator value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<_BurnWeekMutationCoordinator>(value),
-    );
-  }
-}
-
-String _$_burnWeekMutationCoordinatorHash() =>
-    r'ab77920137c34357ac9187902ba9d65e56065219';
-
 /// How often Burn Week live sync should re-check the current day.
 
 @ProviderFor(burnWeekLiveSyncTickerPeriod)
@@ -150,4 +100,4 @@ final class BurnWeekLiveSyncProvider
   }
 }
 
-String _$burnWeekLiveSyncHash() => r'18c58df5f34fac477b03e045a0db7890177bade2';
+String _$burnWeekLiveSyncHash() => r'0273685e6367847b2ab0b20a0b882dc9db2888b1';

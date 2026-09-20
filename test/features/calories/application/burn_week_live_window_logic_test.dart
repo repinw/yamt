@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/application/'
     'burn_week_live_window_logic.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 
@@ -136,6 +137,98 @@ void main() {
       );
 
       expect(hasMissed, isTrue);
+    });
+
+    test('isInitialBurnWeekRunState detects initial state', () {
+      expect(
+        isInitialBurnWeekRunState(const BurnWeekRunState.initial()),
+        isTrue,
+      );
+      expect(
+        isInitialBurnWeekRunState(
+          const BurnWeekRunState(
+            currentWeekStartDayKey: '2026-04-20',
+            lastActiveDayKey: '2026-04-20',
+            runWeekNumber: 1,
+            starCount: 0,
+            heartCount: 3,
+            heartCreditKcal: 0,
+            starBrokeThisWeek: false,
+            missedTrackingThisWeek: false,
+          ),
+        ),
+        isFalse,
+      );
+    });
+
+    test('isFreshBurnWeekRunState verifies fresh learning run metrics', () {
+      expect(
+        isFreshBurnWeekRunState(const BurnWeekRunState.initial()),
+        isTrue,
+      );
+      expect(
+        isFreshBurnWeekRunState(
+          const BurnWeekRunState.initial().copyWith(starCount: 1),
+        ),
+        isFalse,
+      );
+      expect(
+        isFreshBurnWeekRunState(
+          const BurnWeekRunState.initial().copyWith(starBrokeThisWeek: true),
+        ),
+        isFalse,
+      );
+    });
+
+    test('isScheduledFutureFreshBurnWeekRun checks future scheduled start', () {
+      expect(
+        isScheduledFutureFreshBurnWeekRun(
+          runState: const BurnWeekRunState.initial(),
+          storedWeekStartDate: DateTime(2026, 5, 10),
+          expectedWeekStartDate: DateTime(2026, 5, 10),
+        ),
+        isTrue,
+      );
+      expect(
+        isScheduledFutureFreshBurnWeekRun(
+          runState: const BurnWeekRunState.initial(),
+          storedWeekStartDate: DateTime(2026, 5, 10),
+          expectedWeekStartDate: DateTime(2026, 5, 11),
+        ),
+        isFalse,
+      );
+      expect(
+        isScheduledFutureFreshBurnWeekRun(
+          runState: const BurnWeekRunState.initial(),
+          storedWeekStartDate: null,
+          expectedWeekStartDate: DateTime(2026, 5, 10),
+        ),
+        isFalse,
+      );
+    });
+
+    test('resolveBurnWeekClosedWeekStartDates builds 7-day increments', () {
+      final closedWeeks = resolveBurnWeekClosedWeekStartDates(
+        runState: const BurnWeekRunState(
+          currentWeekStartDayKey: '2026-04-06',
+          lastActiveDayKey: '2026-04-06',
+          runWeekNumber: 2,
+          starCount: 1,
+          heartCount: 3,
+          heartCreditKcal: 0,
+          starBrokeThisWeek: false,
+          missedTrackingThisWeek: false,
+        ),
+        storedWeekStartDate: DateTime(2026, 4, 6),
+        balanceStartDate: DateTime(2026, 4, 6),
+        today: DateTime(2026, 4, 20),
+        syncWeekStartDate: DateTime(2026, 4, 20),
+      );
+
+      expect(closedWeeks, <DateTime>[
+        DateTime(2026, 4, 6),
+        DateTime(2026, 4, 13),
+      ]);
     });
   });
 }

@@ -143,3 +143,102 @@ bool resolveBurnWeekLiveMissedTrackingForStoredWeek({
     return day.entryCount == 0;
   });
 }
+
+/// Whether run state is in its initial unstarted state.
+bool isInitialBurnWeekRunState(BurnWeekRunState state) {
+  return state.currentWeekStartDayKey == null &&
+      state.lastActiveDayKey == null &&
+      state.runWeekNumber == burnWeekLearningRunWeekNumber &&
+      state.starCount == 0 &&
+      state.heartCount == burnWeekInitialHeartCount &&
+      state.heartCreditKcal == 0 &&
+      !state.starBrokeThisWeek &&
+      !state.missedTrackingThisWeek;
+}
+
+/// Whether run state matches a fresh, unbroken learning run.
+bool isFreshBurnWeekRunState(BurnWeekRunState state) {
+  return state.runWeekNumber == burnWeekLearningRunWeekNumber &&
+      state.starCount == 0 &&
+      state.heartCount == burnWeekInitialHeartCount &&
+      state.heartCreditKcal == 0 &&
+      !state.starBrokeThisWeek;
+}
+
+/// Whether run state is already scheduled for an upcoming future goal start.
+bool isScheduledFutureFreshBurnWeekRun({
+  required BurnWeekRunState runState,
+  required DateTime? storedWeekStartDate,
+  required DateTime expectedWeekStartDate,
+}) {
+  return storedWeekStartDate != null &&
+      isSameDiaryDay(storedWeekStartDate, expectedWeekStartDate) &&
+      runState.runWeekNumber == burnWeekLearningRunWeekNumber &&
+      runState.starCount == 0 &&
+      runState.heartCount == burnWeekInitialHeartCount &&
+      runState.heartCreditKcal == 0 &&
+      !runState.starBrokeThisWeek &&
+      !runState.missedTrackingThisWeek;
+}
+
+/// Whether fresh initial run state skipped backfilled weeks and needs repair.
+bool shouldRepairBackfilledInitialBurnWeekRun({
+  required BurnWeekRunState runState,
+  required DateTime? storedWeekStartDate,
+  required DateTime balanceStartDate,
+  required DateTime today,
+  required DateTime syncWeekStartDate,
+}) {
+  if (storedWeekStartDate == null || !isFreshBurnWeekRunState(runState)) {
+    return false;
+  }
+
+  final normalizedBalanceStartDate = normalizeDiaryDay(balanceStartDate);
+  final normalizedStoredWeekStartDate = normalizeDiaryDay(storedWeekStartDate);
+  final normalizedSyncWeekStartDate = normalizeDiaryDay(syncWeekStartDate);
+  if (!normalizedBalanceStartDate.isBefore(normalizedStoredWeekStartDate) ||
+      !isSameDiaryDay(
+        normalizedStoredWeekStartDate,
+        normalizedSyncWeekStartDate,
+      )) {
+    return false;
+  }
+
+  final cycleWeekStartDate = resolveBurnWeekLiveSyncWeekStartDate(
+    currentDay: today,
+    currentWeekStartDate: resolveBurnWeekLiveWeekStartDate(
+      currentDay: today,
+      balanceStartDate: normalizedBalanceStartDate,
+      storedWeekStartDayKey: null,
+    ),
+  );
+  return isSameDiaryDay(cycleWeekStartDate, normalizedStoredWeekStartDate);
+}
+
+/// Resolves start dates of all closed weeks needing catch-up before sync week.
+List<DateTime> resolveBurnWeekClosedWeekStartDates({
+  required BurnWeekRunState runState,
+  required DateTime? storedWeekStartDate,
+  required DateTime balanceStartDate,
+  required DateTime today,
+  required DateTime syncWeekStartDate,
+}) {
+  final closedWeekStartDates = <DateTime>[];
+  var closedWeekStartDate =
+      shouldRepairBackfilledInitialBurnWeekRun(
+        runState: runState,
+        storedWeekStartDate: storedWeekStartDate,
+        balanceStartDate: balanceStartDate,
+        today: today,
+        syncWeekStartDate: syncWeekStartDate,
+      )
+      ? balanceStartDate
+      : storedWeekStartDate ?? balanceStartDate;
+  while (closedWeekStartDate.isBefore(syncWeekStartDate)) {
+    closedWeekStartDates.add(closedWeekStartDate);
+    closedWeekStartDate = closedWeekStartDate.add(
+      const Duration(days: burnWeekDaysPerWeek),
+    );
+  }
+  return closedWeekStartDates;
+}
