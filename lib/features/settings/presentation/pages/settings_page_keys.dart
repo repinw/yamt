@@ -26,6 +26,9 @@ abstract final class SettingsPageKeys {
     'settings-calorie-goal-calculator-tile',
   );
 
+  /// Goal archive row.
+  static const goalArchiveTile = ValueKey<String>('settings-goal-archive-tile');
+
   /// Macro goals distribution row.
   static const macroGoalsTile = ValueKey<String>('settings-macro-goals-tile');
 

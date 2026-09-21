@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
@@ -65,9 +66,10 @@ class CalorieGoalController extends _$CalorieGoalController {
     required DateTime goalStartDate,
     bool allowFutureGoalStart = false,
     bool? countGoalStartDayForLearning,
+    bool archiveCurrentGoal = false,
   }) async {
     final calculation = CalorieGoalCalculator.calculate(profile);
-    final previousSettings = await _currentSettings();
+    var previousSettings = await _currentSettings();
     final normalizedToday = normalizeDiaryDay(DateTime.now());
     final currentGoalEntry =
         previousSettings.activeGoalEntryForDay(DateTime.now()) ??
@@ -103,8 +105,14 @@ class CalorieGoalController extends _$CalorieGoalController {
         expectedActivityChanged ||
         !_sameCalculatorProfile(currentGoalEntry?.calculatorProfile, profile) ||
         currentGoalEntry?.source != CalorieGoalSource.calculator;
-    if (!goalChanged) {
+    if (!goalChanged && !archiveCurrentGoal) {
       return true;
+    }
+    if (archiveCurrentGoal) {
+      previousSettings = previousSettings.markActiveGoalEnded(
+        changedAt,
+        weightKg: profile.weightKg,
+      );
     }
     final nextSettings = previousSettings.applyGoalChange(
       changedAt: changedAt,
@@ -114,6 +122,7 @@ class CalorieGoalController extends _$CalorieGoalController {
       countingStartDate: normalizedGoalStartDate,
       source: CalorieGoalSource.calculator,
       replaceFutureHistory: true,
+      preserveSameDayGoalEntries: archiveCurrentGoal,
     );
     final saved = await _persistSettings(nextSettings);
     if (!saved || !ref.mounted) {
@@ -185,6 +194,47 @@ class CalorieGoalController extends _$CalorieGoalController {
         calculatorProfile: null,
       ),
     );
+  }
+
+  /// Persists target completion and reports whether it was newly reached.
+  Future<bool> markGoalReachedIfNeeded({
+    required DateTime day,
+    required double weightKg,
+  }) async {
+    final previous = await _currentSettings();
+    final active = previous.cycleAnchorEntryForDay(day);
+    final profile = active?.calculatorProfile;
+    final target = profile?.targetWeightKg;
+    if (active == null ||
+        profile == null ||
+        target == null ||
+        profile.goalMode == CalorieGoalMode.maintain) {
+      return false;
+    }
+    if (active.reachedAt != null) {
+      return active.reachedPromptHandledAt == null;
+    }
+    final reached = switch (profile.goalMode) {
+      CalorieGoalMode.lose => weightKg <= target,
+      CalorieGoalMode.gain => weightKg >= target,
+      CalorieGoalMode.maintain => false,
+    };
+    if (!reached) {
+      return false;
+    }
+    return await _persistSettings(
+      previous.markActiveGoalReached(day, weightKg: weightKg),
+    );
+  }
+
+  /// Records that the user explicitly answered the reached-goal prompt.
+  Future<bool> markGoalReachedPromptHandled() async {
+    final previous = await _currentSettings();
+    final next = previous.markGoalReachedPromptHandled(DateTime.now());
+    if (identical(previous, next)) {
+      return true;
+    }
+    return await _persistSettings(next);
   }
 
   /// Set pending weekly check in.
@@ -269,16 +319,24 @@ class CalorieGoalController extends _$CalorieGoalController {
   Future<bool> saveLearnedTdeeGoal({
     required CalorieGoalMode goalMode,
     required double goalSpeedKgPerWeek,
+    required double? targetWeightKg,
     required DateTime goalStartDate,
+    double? startWeightKg,
+    DateTime? maintainUntil,
     bool? countGoalStartDayForLearning,
+    bool archiveCurrentGoal = false,
     List<int>? trainingWeekdays,
     double? trainingDayKcalOffset,
   }) async {
     final result = await saveLearnedTdeeGoalWithResult(
       goalMode: goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+      targetWeightKg: targetWeightKg,
+      maintainUntil: maintainUntil,
       goalStartDate: goalStartDate,
+      startWeightKg: startWeightKg,
       countGoalStartDayForLearning: countGoalStartDayForLearning,
+      archiveCurrentGoal: archiveCurrentGoal,
       trainingWeekdays: trainingWeekdays,
       trainingDayKcalOffset: trainingDayKcalOffset,
     );
@@ -289,24 +347,39 @@ class CalorieGoalController extends _$CalorieGoalController {
   Future<LearnedTdeeGoalSaveResult> saveLearnedTdeeGoalWithResult({
     required CalorieGoalMode goalMode,
     required double goalSpeedKgPerWeek,
+    required double? targetWeightKg,
     required DateTime goalStartDate,
+    double? startWeightKg,
+    DateTime? maintainUntil,
     bool? countGoalStartDayForLearning,
+    bool archiveCurrentGoal = false,
     List<int>? trainingWeekdays,
     double? trainingDayKcalOffset,
   }) async {
-    final previousSettings = await _currentSettings();
+    var previousSettings = await _currentSettings();
     final learnedTdeeKcal = previousSettings.latestLearnedTdeeKcal;
     if (learnedTdeeKcal == null) {
+      return (saved: false, goalChanged: false);
+    }
+    if (goalMode != CalorieGoalMode.maintain &&
+        (targetWeightKg == null || targetWeightKg <= 0)) {
       return (saved: false, goalChanged: false);
     }
     final currentProfile =
         previousSettings.calculatorProfile ??
         const CalorieCalculatorProfile.defaults();
     final nextProfile = currentProfile.copyWith(
+      weightKg: startWeightKg,
       goalMode: goalMode,
       goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
           ? 0
           : goalSpeedKgPerWeek,
+      targetWeightKg: goalMode == CalorieGoalMode.maintain
+          ? null
+          : targetWeightKg,
+      maintainUntil: goalMode == CalorieGoalMode.maintain
+          ? maintainUntil
+          : null,
       trainingWeekdays: trainingWeekdays,
       trainingDayKcalOffset: trainingDayKcalOffset,
     );
@@ -346,8 +419,14 @@ class CalorieGoalController extends _$CalorieGoalController {
           nextProfile,
         ) ||
         currentGoalEntry?.source != CalorieGoalSource.calculator;
-    if (!goalChanged) {
+    if (!goalChanged && !archiveCurrentGoal) {
       return (saved: true, goalChanged: false);
+    }
+    if (archiveCurrentGoal) {
+      previousSettings = previousSettings.markActiveGoalEnded(
+        changedAt,
+        weightKg: startWeightKg,
+      );
     }
     final nextSettings = previousSettings.applyGoalChange(
       changedAt: changedAt,
@@ -356,6 +435,7 @@ class CalorieGoalController extends _$CalorieGoalController {
       countingStartDate: normalizedGoalStartDate,
       source: CalorieGoalSource.calculator,
       replaceFutureHistory: true,
+      preserveSameDayGoalEntries: archiveCurrentGoal,
     );
     final saved = await _persistSettings(nextSettings);
     return (saved: saved, goalChanged: saved);
@@ -578,6 +658,8 @@ bool _sameCalculatorProfile(
       left.activityLevel == right.activityLevel &&
       left.goalMode == right.goalMode &&
       left.goalSpeedKgPerWeek == right.goalSpeedKgPerWeek &&
+      left.targetWeightKg == right.targetWeightKg &&
+      left.maintainUntil == right.maintainUntil &&
       left.trainingDayKcalOffset == right.trainingDayKcalOffset &&
       listEquals(left.trainingWeekdays, right.trainingWeekdays);
 }

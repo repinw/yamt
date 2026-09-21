@@ -156,8 +156,11 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     return null;
   }
 
+  final learningAnchorEntry =
+      settings.learningAnchorEntryForDay(normalizedDay) ?? anchorEntry;
   final windows = DailyLearnedTdeeResolver.weeklyLearnedWindowsForDay(
     anchorEntry: anchorEntry,
+    learningAnchorEntry: learningAnchorEntry,
     day: learningReferenceDay,
   );
   if (windows.isEmpty) {
@@ -166,7 +169,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
 
   final firstLearningStartDate =
       DailyLearnedTdeeResolver.learningStartDateForWindow(
-        anchorEntry: anchorEntry,
+        anchorEntry: learningAnchorEntry,
         windowEndDate: windows.first.windowEndDate,
       );
   final lastWindow = windows.last;

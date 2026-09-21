@@ -43,11 +43,8 @@ void main() {
         final targets = container
             .listen(
               Provider(
-                (ref) => resolveDiaryMacroTargets(
-                  ref,
-                  day: _day,
-                  goalKcal: 2400,
-                ),
+                (ref) =>
+                    resolveDiaryMacroTargets(ref, day: _day, goalKcal: 2400),
               ),
               (_, _) {},
             )
@@ -97,11 +94,10 @@ void main() {
 
         final targets = container
             .listen(
-              Provider((ref) => resolveDiaryMacroTargets(
-              ref,
-              day: _day,
-              goalKcal: 1800,
-            )),
+              Provider(
+                (ref) =>
+                    resolveDiaryMacroTargets(ref, day: _day, goalKcal: 1800),
+              ),
               (_, _) {},
             )
             .read();
@@ -148,11 +144,9 @@ void main() {
 
       final targets = container
           .listen(
-            Provider((ref) => resolveDiaryMacroTargets(
-              ref,
-              day: _day,
-              goalKcal: 2000,
-            )),
+            Provider(
+              (ref) => resolveDiaryMacroTargets(ref, day: _day, goalKcal: 2000),
+            ),
             (_, _) {},
           )
           .read();
@@ -174,11 +168,9 @@ void main() {
 
       final targets = container
           .listen(
-            Provider((ref) => resolveDiaryMacroTargets(
-              ref,
-              day: _day,
-              goalKcal: 2200,
-            )),
+            Provider(
+              (ref) => resolveDiaryMacroTargets(ref, day: _day, goalKcal: 2200),
+            ),
             (_, _) {},
           )
           .read();

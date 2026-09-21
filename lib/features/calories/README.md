@@ -65,7 +65,20 @@ state, and calorie-owned side effects from health or weight changes.
   returns the right amount. A failed save puts the stock back.
 - `presentation/pages/tdee_analytics_page.dart` for visual TDEE expenditure,
   flux range corridor, and goal anticipation analysis (routed via
-  `AppRoutes.homeCaloriesAnalytics`).
+  `AppRoutes.homeCaloriesAnalytics`). It can preselect goal cycles through the
+  `AppRoutes.homeCaloriesAnalyticsCyclesParam` query parameter, built with
+  `AppRoutes.homeCaloriesAnalyticsPath`.
+- `presentation/pages/calorie_goal_archive_page.dart` lists the current and
+  archived goals (`AppRoutes.homeSettingsGoalArchive`) and opens analytics for
+  one or more selected goal cycles.
+- `presentation/calorie_goal_reach_coordinator.dart` is the complete
+  presentation edge for checking a recorded weight, showing the one-time
+  reached-goal prompt, and optionally opening the new-goal sheet.
+- `presentation/widgets/calorie_new_goal_flow.dart` opens the calculator sheet
+  that ends the active goal and starts a new one. It loads the goal settings
+  itself.
+- `domain/calorie_goal_settings_lifecycle.dart` marks the active goal as
+  reached, prompt handled, or ended without removing its history entry.
 - `debug/calorie_debug_menu_section.dart`, a debug-only list of dump actions
   that the Home side menu shows only in debug builds.
 
@@ -99,6 +112,8 @@ Main application providers:
 - `application/calorie_entry_delete_flow.dart`
 - `application/calorie_inventory_entry_save_handler.dart`
 - `application/tdee_analytics_provider.dart`
+- `application/calorie_goal_archive_provider.dart` resolves the archive cycles
+  so the archive page does no aggregation.
 - `application/daily_nutrition_target_resolver_service.dart`
 
 ## TDEE Learning

@@ -38,10 +38,7 @@ class BurnWeekLiveMutationCoordinator {
     });
   }
 
-  Future<void> _runMutation(
-    String key,
-    Future<void> Function() action,
-  ) async {
+  Future<void> _runMutation(String key, Future<void> Function() action) async {
     try {
       await action();
     } finally {

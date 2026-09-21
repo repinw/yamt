@@ -32,6 +32,41 @@ void main() {
       expect(state.profile, isNull);
     });
 
+    test('lose and gain require a target weight, maintain does not', () {
+      final base = CalorieGoalCalculatorFormState.initial(null);
+
+      final lose = base.copyWith(
+        goalMode: CalorieGoalMode.lose,
+        goalSpeedKgPerWeekText: '0.5',
+        targetWeightKgText: '',
+      );
+      expect(lose.targetWeightError, CalorieCalculatorFieldError.empty);
+      expect(lose.profile, isNull);
+
+      final withTarget = lose.copyWith(targetWeightKgText: '70');
+      expect(withTarget.targetWeightError, isNull);
+      expect(withTarget.profile?.targetWeightKg, 70);
+
+      final maintain = base.copyWith(
+        goalMode: CalorieGoalMode.maintain,
+        targetWeightKgText: '',
+      );
+      expect(maintain.targetWeightError, isNull);
+      expect(maintain.profile?.targetWeightKg, isNull);
+    });
+
+    test('initial state restores the saved target weight', () {
+      final state = CalorieGoalCalculatorFormState.initial(
+        const CalorieCalculatorProfile.defaults().copyWith(
+          goalMode: CalorieGoalMode.lose,
+          goalSpeedKgPerWeek: 0.5,
+          targetWeightKg: 72.5,
+        ),
+      );
+
+      expect(state.targetWeightKgText, '72.5');
+    });
+
     test('sets invalid errors for malformed numeric fields', () {
       final state = CalorieGoalCalculatorFormState.initial(null).copyWith(
         weightKgText: 'abc',

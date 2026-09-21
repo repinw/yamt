@@ -1,12 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 import 'package:yamt/features/calories/presentation/pages/tdee_analytics_page.dart';
+import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_weight_chart.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
   group('TdeeAnalyticsPage', () {
@@ -21,7 +24,7 @@ void main() {
     );
 
     final fakeState = TdeeAnalyticsState(
-      selectedCycle: cycle,
+      selectedCycles: [cycle],
       availableCycles: [cycle],
       timeRange: TdeeAnalyticsTimeRange.days28,
       points: [
@@ -69,7 +72,11 @@ void main() {
               (ref, query) => Future.value(fakeState),
             ),
           ],
-          child: const MaterialApp(home: TdeeAnalyticsPage()),
+          child: const MaterialApp(
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: TdeeAnalyticsPage(),
+          ),
         ),
       );
 
@@ -82,6 +89,24 @@ void main() {
       expect(find.text('28 T'), findsOneWidget);
       expect(find.text('Insights & Veränderungen'), findsOneWidget);
       expect(find.textContaining('75.0 kg'), findsWidgets);
+
+      await tester.tap(find.text('Alles'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TdeeWeightChart>(find.byType(TdeeWeightChart))
+            .extendToProjectedGoal,
+        isTrue,
+      );
+
+      await tester.tap(find.text('7 T'));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .widget<TdeeWeightChart>(find.byType(TdeeWeightChart))
+            .extendToProjectedGoal,
+        isFalse,
+      );
     });
   });
 }

@@ -17,6 +17,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
     CalorieGoalSource source = CalorieGoalSource.manual,
     CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
     bool replaceFutureHistory = false,
+    bool preserveSameDayGoalEntries = false,
   }) {
     final effectiveDate = normalizeDiaryDay(changedAt);
     final normalizedCountingStartDate = resolveNormalizedCountingStartDate(
@@ -33,6 +34,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
       source: source,
       weeklyCheckInSnapshot: weeklyCheckInSnapshot,
       replaceFutureHistory: replaceFutureHistory,
+      preserveSameDayGoalEntries: preserveSameDayGoalEntries,
     );
     return CalorieGoalSettings(
       dailyKcalGoal: dailyKcalGoal,
@@ -62,6 +64,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
     required CalorieGoalSource source,
     required CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
     required bool replaceFutureHistory,
+    required bool preserveSameDayGoalEntries,
   }) {
     final filtered = <CalorieGoalHistoryEntry>[
       for (final entry in sortedGoalHistory)
@@ -71,6 +74,7 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
           source: source,
           weeklyCheckInSnapshot: weeklyCheckInSnapshot,
           replaceFutureHistory: replaceFutureHistory,
+          preserveSameDayGoalEntries: preserveSameDayGoalEntries,
         ))
           entry,
       CalorieGoalHistoryEntry(
@@ -175,8 +179,12 @@ bool _shouldKeepGoalHistoryEntry({
   required CalorieGoalSource source,
   required CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
   required bool replaceFutureHistory,
+  required bool preserveSameDayGoalEntries,
 }) {
   if (isSameDiaryDay(entry.effectiveDate, effectiveDate)) {
+    if (preserveSameDayGoalEntries && entry.hasGoal && !entry.isWeeklyCheckIn) {
+      return true;
+    }
     if (entry.isWeeklyCheckIn != (source == CalorieGoalSource.weeklyCheckIn)) {
       return true;
     }
@@ -218,14 +226,7 @@ CalorieGoalHistoryEntry _dirtyGoalHistoryEntrySnapshot({
     return entry;
   }
   didInvalidate();
-  return CalorieGoalHistoryEntry(
-    dailyKcalGoal: entry.dailyKcalGoal,
-    calculatorProfile: entry.calculatorProfile,
-    expectedActivityKcal: entry.expectedActivityKcal,
-    effectiveDate: entry.effectiveDate,
-    changedAt: entry.changedAt,
-    countingStartDate: entry.countingStartDate,
-    source: entry.source,
+  return entry.copyWith(
     weeklyCheckInSnapshot: snapshot.copyWith(
       inputHash: null,
       invalidatedAt: invalidatedAt,

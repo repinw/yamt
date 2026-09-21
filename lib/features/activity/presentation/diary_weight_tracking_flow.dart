@@ -3,6 +3,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/'
     'diary_weight_dialog.dart';
+import 'package:yamt/features/calories/presentation/'
+    'calorie_goal_reach_coordinator.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
 part 'diary_weight_tracking_flow.g.dart';
@@ -12,15 +14,24 @@ part 'diary_weight_tracking_flow.g.dart';
 DiaryWeightTrackingFlow diaryWeightTrackingFlow(Ref ref) {
   return DiaryWeightTrackingFlow(
     weightActions: ref.watch(diaryWeightActionsProvider),
+    onWeightRecorded: ref
+        .watch(calorieGoalReachCoordinatorProvider)
+        .handleRecordedWeight,
   );
 }
 
 /// Activity-owned flow for adding or editing diary weights.
 class DiaryWeightTrackingFlow {
   /// Creates the diary weight tracking flow.
-  const new({required this._weightActions});
+  const new({required this._weightActions, required this._onWeightRecorded});
 
   final DiaryWeightActions _weightActions;
+  final Future<void> Function({
+    required BuildContext context,
+    required DateTime day,
+    required double weightKg,
+  })
+  _onWeightRecorded;
 
   /// Opens the weight dialog for [day].
   Future<void> showDialogForDay({
@@ -41,6 +52,18 @@ class DiaryWeightTrackingFlow {
       hasManualWeight: hasManualWeight,
       canClearWeight: canClearWeight,
       healthSample: healthSample,
+      onWeightSaved: ({required day, required weightKg}) =>
+          handleRecordedWeight(context: context, day: day, weightKg: weightKg),
     );
+  }
+
+  /// Detects a newly reached goal for manual or synchronized weight data and
+  /// offers to continue the run or start a new goal.
+  Future<void> handleRecordedWeight({
+    required BuildContext context,
+    required DateTime day,
+    required double weightKg,
+  }) {
+    return _onWeightRecorded(context: context, day: day, weightKg: weightKg);
   }
 }

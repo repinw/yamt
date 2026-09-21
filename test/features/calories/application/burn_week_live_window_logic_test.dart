@@ -162,10 +162,7 @@ void main() {
     });
 
     test('isFreshBurnWeekRunState verifies fresh learning run metrics', () {
-      expect(
-        isFreshBurnWeekRunState(const BurnWeekRunState.initial()),
-        isTrue,
-      );
+      expect(isFreshBurnWeekRunState(const BurnWeekRunState.initial()), isTrue);
       expect(
         isFreshBurnWeekRunState(
           const BurnWeekRunState.initial().copyWith(starCount: 1),

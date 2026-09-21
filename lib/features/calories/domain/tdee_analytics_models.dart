@@ -141,7 +141,7 @@ class TdeeAnalyticsSummary {
 class TdeeAnalyticsState {
   /// Creates the analytics state.
   const new({
-    required this.selectedCycle,
+    required this.selectedCycles,
     required this.availableCycles,
     required this.timeRange,
     required this.points,
@@ -150,8 +150,8 @@ class TdeeAnalyticsState {
     this.showAnticipation = true,
   });
 
-  /// Currently selected cycle.
-  final TdeeAnalyticsGoalCycle selectedCycle;
+  /// Individually selected cycles forming the continuous date filter.
+  final List<TdeeAnalyticsGoalCycle> selectedCycles;
 
   /// All available cycles for picker.
   final List<TdeeAnalyticsGoalCycle> availableCycles;

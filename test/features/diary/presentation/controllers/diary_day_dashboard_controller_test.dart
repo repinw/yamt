@@ -306,10 +306,7 @@ void main() {
       dailyKcalGoal: 2000,
       calculatorProfile: null,
       effectiveDate: DateTime(2026, 5),
-    ).copyWith(
-      trainingWeekdays: const <int>[],
-      trainingDayKcalOffset: 300,
-    );
+    ).copyWith(trainingWeekdays: const <int>[], trainingDayKcalOffset: 300);
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings: restDaySettings,
     );
@@ -436,9 +433,8 @@ ProviderContainer _dashboardContainer({
       // Without a builder the real week overview pipeline runs, which is what
       // day type changes have to flow through.
       if (weekOverviewBuilder != null)
-        calorieWeekOverviewForWindowProvider(
-          selectedDay,
-        ).overrideWith((ref) => weekOverviewBuilder()),
+        calorieWeekOverviewForWindowProvider(selectedDay)
+            .overrideWith((ref) => weekOverviewBuilder()),
     ],
   );
 }

@@ -6,29 +6,37 @@ import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 class TdeeGoalSelector extends StatelessWidget {
   /// Creates the goal cycle selector.
   const new({
-    required this.selectedCycle,
+    required this.selectedCycleIds,
     required this.availableCycles,
-    required this.onSelectCycle,
+    required this.onToggleCycle,
     super.key,
   });
 
-  /// The currently active cycle.
-  final TdeeAnalyticsGoalCycle selectedCycle;
+  /// IDs of the selected cycles; `all` means every cycle.
+  final Set<String> selectedCycleIds;
 
   /// All available cycles to pick from.
   final List<TdeeAnalyticsGoalCycle> availableCycles;
 
-  /// Selection callback.
-  final ValueChanged<String> onSelectCycle;
+  /// Called with the id of a cycle that the user taps.
+  final ValueChanged<String> onToggleCycle;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final selectedCycles = availableCycles
+        .where((cycle) => selectedCycleIds.contains(cycle.id))
+        .toList(growable: false);
+    final selectedCycle = selectedCycles.length == 1
+        ? selectedCycles.single
+        : availableCycles.firstWhere(
+            (cycle) => cycle.isAllGoals,
+            orElse: () => availableCycles.first,
+          );
 
     return PopupMenuButton<String>(
-      initialValue: selectedCycle.id,
-      onSelected: onSelectCycle,
+      onSelected: onToggleCycle,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
@@ -43,7 +51,7 @@ class TdeeGoalSelector extends StatelessWidget {
                       ? Icons.public_rounded
                       : Icons.track_changes_rounded,
                   size: 20,
-                  color: cycle.id == selectedCycle.id
+                  color: selectedCycleIds.contains(cycle.id)
                       ? colorScheme.primary
                       : colorScheme.onSurfaceVariant,
                 ),
@@ -52,13 +60,13 @@ class TdeeGoalSelector extends StatelessWidget {
                   child: Text(
                     cycle.title,
                     style: TextStyle(
-                      fontWeight: cycle.id == selectedCycle.id
+                      fontWeight: selectedCycleIds.contains(cycle.id)
                           ? FontWeight.bold
                           : FontWeight.normal,
                     ),
                   ),
                 ),
-                if (cycle.id == selectedCycle.id)
+                if (selectedCycleIds.contains(cycle.id))
                   Icon(
                     Icons.check_rounded,
                     size: 18,

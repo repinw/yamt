@@ -427,6 +427,10 @@ void main() {
     await tester.pumpAndSettle();
     await _tapNext(tester);
     await tester.enterText(
+      find.byKey(CalorieGoalCalculatorSheetKeys.targetWeightField),
+      '45',
+    );
+    await tester.enterText(
       find.byKey(CalorieGoalCalculatorSheetKeys.goalSpeedField),
       '0.75',
     );

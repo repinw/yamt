@@ -180,17 +180,19 @@ void _queueRunSync(
       'sync:${diaryDayKey(normalizeDiaryDay(weekStartDate))}'
       ':${missedTrackingThisWeek ? '1' : '0'}:$closedWeeksKey';
 
-  ref.read(burnWeekLiveMutationCoordinatorProvider).queueMutation(
-    key: mutationKey,
-    action: () {
-      return controller.syncForWeek(
-        currentDay: currentDay,
-        weekStartDate: weekStartDate,
-        missedTrackingThisWeek: missedTrackingThisWeek,
-        missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
+  ref
+      .read(burnWeekLiveMutationCoordinatorProvider)
+      .queueMutation(
+        key: mutationKey,
+        action: () {
+          return controller.syncForWeek(
+            currentDay: currentDay,
+            weekStartDate: weekStartDate,
+            missedTrackingThisWeek: missedTrackingThisWeek,
+            missedTrackingForClosedWeeks: missedTrackingForClosedWeeks,
+          );
+        },
       );
-    },
-  );
 }
 
 void _queueRunRestart(
@@ -205,21 +207,22 @@ void _queueRunRestart(
     if (runWeekNumber != null) runWeekNumber.toString(),
   ].join(':');
 
-  ref.read(burnWeekLiveMutationCoordinatorProvider).queueMutation(
-    key: mutationKey,
-    action: () {
-      return controller.restartRunFrom(
-        weekStartDate: weekStartDate,
-        runWeekNumber: runWeekNumber,
+  ref
+      .read(burnWeekLiveMutationCoordinatorProvider)
+      .queueMutation(
+        key: mutationKey,
+        action: () {
+          return controller.restartRunFrom(
+            weekStartDate: weekStartDate,
+            runWeekNumber: runWeekNumber,
+          );
+        },
       );
-    },
-  );
 }
 
 void _queueRunReset(Ref ref) {
   final controller = ref.read(burnWeekRunControllerProvider.notifier);
-  ref.read(burnWeekLiveMutationCoordinatorProvider).queueMutation(
-    key: 'reset',
-    action: controller.resetRun,
-  );
+  ref
+      .read(burnWeekLiveMutationCoordinatorProvider)
+      .queueMutation(key: 'reset', action: controller.resetRun);
 }

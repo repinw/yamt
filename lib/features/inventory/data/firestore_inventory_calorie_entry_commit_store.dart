@@ -85,9 +85,8 @@ class FirestoreInventoryCalorieEntryCommitStore
     // copy, so two offline consumptions of the same item may overwrite each
     // other.
     try {
-      final inventoryRef = _inventoryCollection(
-        inventoryUserId,
-      ).doc(pendingConsumption.itemId);
+      final inventoryRef = _inventoryCollection(inventoryUserId)
+          .doc(pendingConsumption.itemId);
       final inventorySnapshot = await readDocumentLocalFirst(inventoryRef);
       if (!inventorySnapshot.exists) {
         log(

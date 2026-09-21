@@ -46,7 +46,9 @@ Current providers:
 - `core` for routes, theme controllers, app version, shared layout, and common
   widgets.
 - `features/auth` for account data, auth actions, and auth error mapping.
-- `features/calories` for calorie goal settings surfaces.
+- `features/calories` for calorie goal settings surfaces, including the
+  complete goal archive page that the goal archive row opens through app
+  routing (`AppRoutes.homeSettingsGoalArchive`).
 - `features/health` for Health connection status, actions, and domain result
   models.
 - `core/widgets` for shared layout helpers.

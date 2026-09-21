@@ -53,6 +53,21 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
     return anchorEntry;
   }
 
+  /// Earliest goal anchor that may contribute to the rolling TDEE learning
+  /// window. Goal changes do not discard otherwise valid intake/weight days.
+  CalorieGoalHistoryEntry? learningAnchorEntryForDay(DateTime day) {
+    final normalizedDay = normalizeDiaryDay(day);
+    for (final entry in sortedGoalHistory) {
+      if (entry.effectiveDate.isAfter(normalizedDay)) {
+        break;
+      }
+      if (entry.hasGoal && !entry.isWeeklyCheckIn) {
+        return entry;
+      }
+    }
+    return null;
+  }
+
   /// Goal entry for day.
   CalorieGoalHistoryEntry? goalEntryForDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);

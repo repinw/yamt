@@ -18,9 +18,13 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_results.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_maintain_until_tile.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_food_tracking_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_target_weight_selector.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
@@ -32,6 +36,8 @@ Future<void> showCalorieLearnedTdeeGoalSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,
   bool useRootNavigator = true,
+  bool startsNewGoal = false,
+  double? currentWeightKg,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -39,7 +45,11 @@ Future<void> showCalorieLearnedTdeeGoalSheet(
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
     builder: (context) {
-      return CalorieLearnedTdeeGoalSheet(initialSettings: initialSettings);
+      return CalorieLearnedTdeeGoalSheet(
+        initialSettings: initialSettings,
+        startsNewGoal: startsNewGoal,
+        currentWeightKg: currentWeightKg,
+      );
     },
   );
 }
@@ -47,10 +57,21 @@ Future<void> showCalorieLearnedTdeeGoalSheet(
 /// Defines calorie learned tdee goal sheet.
 class CalorieLearnedTdeeGoalSheet extends ConsumerStatefulWidget {
   /// The calorie learned tdee goal sheet.
-  const new({required this.initialSettings, super.key});
+  const new({
+    required this.initialSettings,
+    this.startsNewGoal = false,
+    this.currentWeightKg,
+    super.key,
+  });
 
   /// The initial settings.
   final CalorieGoalSettings initialSettings;
+
+  /// Whether saving creates a new archived goal cycle.
+  final bool startsNewGoal;
+
+  /// Latest measured weight used as the next goal's starting point.
+  final double? currentWeightKg;
 
   @override
   ConsumerState<CalorieLearnedTdeeGoalSheet> createState() =>
@@ -60,7 +81,10 @@ class CalorieLearnedTdeeGoalSheet extends ConsumerStatefulWidget {
 class _CalorieLearnedTdeeGoalSheetState
     extends ConsumerState<CalorieLearnedTdeeGoalSheet> {
   late final TextEditingController _goalSpeedController;
+  late final TextEditingController _targetWeightController;
   late DateTime _goalStartDate;
+  late double _currentWeightKg;
+  DateTime? _maintainUntil;
   late CalorieGoalMode _goalMode;
   late String _lastNonMaintainGoalSpeedText;
   var _didUserPickGoalStart = false;
@@ -81,6 +105,21 @@ class _CalorieLearnedTdeeGoalSheetState
     return double.tryParse(normalizedValue) ?? 0;
   }
 
+  double? get _targetWeightKg {
+    if (_goalMode == CalorieGoalMode.maintain) {
+      return null;
+    }
+    final normalizedValue = _targetWeightController.text.trim().replaceAll(
+      ',',
+      '.',
+    );
+    final value = double.tryParse(normalizedValue);
+    if (value == null || value < 1 || value > 700) {
+      return null;
+    }
+    return value;
+  }
+
   double get _resolvedGoalKcal {
     return CalorieWeeklyCheckInCalculator.calculateGoalFromLearnedTdee(
       learnedTdeeKcal: _learnedTdeeKcal,
@@ -97,7 +136,7 @@ class _CalorieLearnedTdeeGoalSheetState
     if (_goalMode == CalorieGoalMode.maintain) {
       return true;
     }
-    return _goalSpeedKgPerWeek > 0;
+    return _goalSpeedKgPerWeek > 0 && _targetWeightKg != null;
   }
 
   @override
@@ -106,7 +145,10 @@ class _CalorieLearnedTdeeGoalSheetState
     final profile =
         widget.initialSettings.calculatorProfile ??
         const CalorieCalculatorProfile.defaults();
-    _goalMode = profile.goalMode;
+    _currentWeightKg = widget.currentWeightKg ?? profile.weightKg;
+    _goalMode = widget.startsNewGoal
+        ? CalorieGoalMode.maintain
+        : profile.goalMode;
     _lastNonMaintainGoalSpeedText = profile.goalSpeedKgPerWeek > 0
         ? profile.goalSpeedKgPerWeek.toString()
         : '0.5';
@@ -115,17 +157,26 @@ class _CalorieLearnedTdeeGoalSheetState
           ? '0'
           : _lastNonMaintainGoalSpeedText,
     );
+    _targetWeightController = TextEditingController(
+      text: widget.startsNewGoal
+          ? _formatWeight(_currentWeightKg)
+          : profile.targetWeightKg?.toString() ?? '',
+    );
+    _maintainUntil = profile.maintainUntil;
     final initialGoalEntry =
         widget.initialSettings.activeGoalEntryForDay(DateTime.now()) ??
         widget.initialSettings.latestGoalEntry;
     _goalStartDate = CalorieGoalStartPicker.normalizeDate(
-      initialGoalEntry?.effectiveCountingStartDate ?? DateTime.now(),
+      widget.startsNewGoal
+          ? DateTime.now()
+          : initialGoalEntry?.effectiveCountingStartDate ?? DateTime.now(),
     );
   }
 
   @override
   void dispose() {
     _goalSpeedController.dispose();
+    _targetWeightController.dispose();
     super.dispose();
   }
 
@@ -168,17 +219,38 @@ class _CalorieLearnedTdeeGoalSheetState
                         '${l10n.caloriesUnitKcal}',
                   ),
                   const SizedBox(height: AppSpacing.lg),
-                  Text(
-                    l10n.caloriesCalculatorGoalModeLabel,
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  CalorieGoalCalculatorGoalModeSegmentedControl(
-                    selectedGoalMode: _goalMode,
-                    onSelected: _updateGoalMode,
-                  ),
-                  if (_goalMode != CalorieGoalMode.maintain) ...<Widget>[
+                  if (widget.startsNewGoal)
+                    CalorieTargetWeightSelector(
+                      currentWeightKg: _currentWeightKg,
+                      targetWeightKg: _targetWeightKg ?? _currentWeightKg,
+                      goalMode: _goalMode,
+                      onChanged: _updateTargetFromSlider,
+                    )
+                  else ...<Widget>[
+                    Text(
+                      l10n.caloriesCalculatorGoalModeLabel,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    CalorieGoalCalculatorGoalModeSegmentedControl(
+                      selectedGoalMode: _goalMode,
+                      onSelected: _updateGoalMode,
+                    ),
+                  ],
+                  if (!widget.startsNewGoal &&
+                      _goalMode != CalorieGoalMode.maintain) ...<Widget>[
                     const SizedBox(height: AppSpacing.lg),
+                    CalorieGoalCalculatorNumberField(
+                      fieldKey:
+                          CalorieGoalCalculatorSheetKeys.targetWeightField,
+                      controller: _targetWeightController,
+                      label: l10n.caloriesCalculatorTargetWeightLabel,
+                      errorText: _targetWeightErrorText(l10n),
+                      onChanged: _updateTargetWeight,
+                    ),
+                  ],
+                  if (_goalMode != CalorieGoalMode.maintain) ...<Widget>[
+                    const SizedBox(height: AppSpacing.md),
                     CalorieGoalCalculatorNumberField(
                       fieldKey: CalorieGoalCalculatorSheetKeys.goalSpeedField,
                       controller: _goalSpeedController,
@@ -200,18 +272,27 @@ class _CalorieLearnedTdeeGoalSheetState
                     onChangeRequested: _pickGoalStart,
                     enabled: !_isSaving,
                   ),
+                  if (_goalMode == CalorieGoalMode.maintain) ...<Widget>[
+                    const SizedBox(height: AppSpacing.md),
+                    CalorieGoalMaintainUntilTile(
+                      maintainUntil: _maintainUntil,
+                      onChoose: _pickMaintainUntil,
+                      onClear: () => setState(() => _maintainUntil = null),
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.lg),
                   Wrap(
                     spacing: AppSpacing.sm,
                     runSpacing: AppSpacing.sm,
                     children: <Widget>[
-                      TextButton(
-                        key: CalorieLearnedTdeeSheetKeys.fullResetButton,
-                        onPressed: _isSaving ? null : _openFullReset,
-                        child: Text(
-                          l10n.caloriesLearnedTdeeUseProfileResetAction,
+                      if (!widget.startsNewGoal)
+                        TextButton(
+                          key: CalorieLearnedTdeeSheetKeys.fullResetButton,
+                          onPressed: _isSaving ? null : _openFullReset,
+                          child: Text(
+                            l10n.caloriesLearnedTdeeUseProfileResetAction,
+                          ),
                         ),
-                      ),
                       FilledButton(
                         key: CalorieLearnedTdeeSheetKeys.saveButton,
                         onPressed: _canSave ? _save : null,
@@ -252,11 +333,55 @@ class _CalorieLearnedTdeeGoalSheetState
     setState(_useTodayAsGoalStartForNewTarget);
   }
 
+  void _updateTargetWeight(String _) {
+    setState(_useTodayAsGoalStartForNewTarget);
+  }
+
+  void _updateTargetFromSlider(double value, CalorieGoalMode nextMode) {
+    final rounded = (value * 10).roundToDouble() / 10;
+    setState(() {
+      _targetWeightController.text = _formatWeight(rounded);
+      _goalMode = nextMode;
+      if (nextMode == CalorieGoalMode.maintain) {
+        _goalSpeedController.text = '0';
+      } else if (_goalSpeedController.text == '0') {
+        _goalSpeedController.text = _lastNonMaintainGoalSpeedText;
+      }
+      _useTodayAsGoalStartForNewTarget();
+    });
+  }
+
+  String _formatWeight(double value) {
+    return value.toStringAsFixed(value == value.roundToDouble() ? 0 : 1);
+  }
+
+  String? _targetWeightErrorText(AppLocalizations l10n) {
+    if (_targetWeightController.text.trim().isEmpty) {
+      return l10n.caloriesCalculatorWeightEmpty;
+    }
+    if (_targetWeightKg == null) {
+      return l10n.caloriesCalculatorWeightInvalid;
+    }
+    return null;
+  }
+
   void _useTodayAsGoalStartForNewTarget() {
     if (_didUserPickGoalStart) {
       return;
     }
     _goalStartDate = CalorieGoalStartPicker.normalizeDate(DateTime.now());
+  }
+
+  Future<void> _pickMaintainUntil() async {
+    final pickedDate = await pickCalorieMaintainUntil(
+      context,
+      goalStartDate: _goalStartDate,
+      current: _maintainUntil,
+    );
+    if (pickedDate == null || !mounted) {
+      return;
+    }
+    setState(() => _maintainUntil = pickedDate);
   }
 
   Future<void> _save() async {
@@ -289,8 +414,12 @@ class _CalorieLearnedTdeeGoalSheetState
       saveResult = await controller.saveLearnedTdeeGoalWithResult(
         goalMode: _goalMode,
         goalSpeedKgPerWeek: _goalSpeedKgPerWeek,
+        targetWeightKg: _targetWeightKg,
+        maintainUntil: _maintainUntil,
         goalStartDate: _goalStartDate,
+        startWeightKg: _currentWeightKg,
         countGoalStartDayForLearning: countGoalStartDayForLearning,
+        archiveCurrentGoal: widget.startsNewGoal,
       );
     } finally {
       goalSubscription.close();

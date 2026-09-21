@@ -54,7 +54,9 @@ class CalorieGoalCalculatorFormState {
     return CalorieGoalCalculatorFormState._create(
       sex: shouldUseEmptyFields ? null : profile.sex,
       weightKgText: shouldUseEmptyFields ? '' : _formatDouble(profile.weightKg),
-      targetWeightKgText: '',
+      targetWeightKgText: shouldUseEmptyFields || profile.targetWeightKg == null
+          ? ''
+          : _formatDouble(profile.targetWeightKg!),
       heightCmText: shouldUseEmptyFields ? '' : _formatDouble(profile.heightCm),
       ageYearsText: shouldUseEmptyFields ? '' : profile.ageYears.toString(),
       activityLevelOption: CalorieActivityLevelOption.fromActivityLevel(
@@ -85,7 +87,7 @@ class CalorieGoalCalculatorFormState {
     bool isSaving = false,
   }) {
     final weightError = _validateWeight(weightKgText);
-    final targetWeightError = targetWeightKgText.isEmpty
+    final targetWeightError = goalMode == CalorieGoalMode.maintain
         ? null
         : _validateWeight(targetWeightKgText);
     final heightError = _validateHeight(heightCmText);
@@ -99,6 +101,7 @@ class CalorieGoalCalculatorFormState {
             weightError == null &&
             heightError == null &&
             ageError == null &&
+            targetWeightError == null &&
             goalSpeedError == null
         ? CalorieCalculatorProfile(
             sex: sex!,
@@ -111,6 +114,9 @@ class CalorieGoalCalculatorFormState {
             goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
                 ? 0
                 : _parsePositiveDouble(goalSpeedKgPerWeekText)!,
+            targetWeightKg: goalMode == CalorieGoalMode.maintain
+                ? null
+                : _parsePositiveDouble(targetWeightKgText),
             trainingWeekdays: trainingWeekdays,
             trainingDayKcalOffset: trainingDayKcalOffset,
           )
@@ -216,12 +222,16 @@ class CalorieGoalCalculatorFormState {
     final goalSpeedKgPerWeek = isMaintainMode
         ? 0.0
         : _parsePositiveDouble(goalSpeedKgPerWeekText);
+    final targetWeightKg = isMaintainMode
+        ? null
+        : _parsePositiveDouble(targetWeightKgText);
 
     if (sex == null ||
         weightKg == null ||
         heightCm == null ||
         ageYears == null ||
-        goalSpeedKgPerWeek == null) {
+        goalSpeedKgPerWeek == null ||
+        (!isMaintainMode && targetWeightKg == null)) {
       return null;
     }
 
@@ -234,7 +244,7 @@ class CalorieGoalCalculatorFormState {
       activityLevel: activityLevelOption.palValue,
       goalMode: goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek,
-      targetWeightKg: _parsePositiveDouble(targetWeightKgText),
+      targetWeightKg: targetWeightKg,
       trainingWeekdays: trainingWeekdays,
       trainingDayKcalOffset: trainingDayKcalOffset,
     );

@@ -82,16 +82,19 @@ void main() {
 
     test('clears pending state if mutation action fails', () async {
       final errors = <Object>[];
-      runZonedGuarded(() {
-        coordinator.queueMutation(
-          key: 'failing',
-          action: () async {
-            throw Exception('network error');
-          },
-        );
-      }, (error, stack) {
-        errors.add(error);
-      });
+      runZonedGuarded(
+        () {
+          coordinator.queueMutation(
+            key: 'failing',
+            action: () async {
+              throw Exception('network error');
+            },
+          );
+        },
+        (error, stack) {
+          errors.add(error);
+        },
+      );
 
       await Future<void>.delayed(Duration.zero);
       expect(coordinator.hasPendingMutation('failing'), isFalse);

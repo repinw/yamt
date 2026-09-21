@@ -102,6 +102,40 @@ void main() {
     expect(find.text('Measured base TDEE'), findsNothing);
     expect(find.text('Credited activity avg'), findsNothing);
   });
+
+  testWidgets('reached goal only offers a new goal and cannot be dismissed', (
+    tester,
+  ) async {
+    final results = <DiaryWeeklyCheckInDialogAction?>[];
+
+    await tester.pumpWidget(
+      _App(
+        checkInData: _checkInData(),
+        onResult: results.add,
+        goalReached: true,
+      ),
+    );
+
+    await _openDialog(tester);
+
+    expect(
+      find.byKey(DiaryWeeklyCheckInDialogKeys.newGoalButton),
+      findsOneWidget,
+    );
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.laterButton), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.applyButton), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.rejectButton), findsNothing);
+
+    await tester.tapAt(const Offset(5, 5));
+    await tester.pumpAndSettle();
+    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(results, isEmpty);
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.newGoalButton));
+    await tester.pumpAndSettle();
+
+    expect(results, [DiaryWeeklyCheckInDialogAction.newGoal]);
+  });
 }
 
 Future<void> _openDialog(WidgetTester tester) async {
@@ -112,10 +146,15 @@ Future<void> _openDialog(WidgetTester tester) async {
 const _openDialogButtonKey = ValueKey<String>('open-dialog');
 
 class _App extends StatelessWidget {
-  const new({required this.checkInData, required this.onResult});
+  const new({
+    required this.checkInData,
+    required this.onResult,
+    this.goalReached = false,
+  });
 
   final DiaryWeeklyCheckInData checkInData;
   final ValueChanged<DiaryWeeklyCheckInDialogAction?> onResult;
+  final bool goalReached;
 
   @override
   Widget build(BuildContext context) {
@@ -132,6 +171,7 @@ class _App extends StatelessWidget {
                 final result = await showDiaryWeeklyCheckInDialog(
                   context,
                   checkInData: checkInData,
+                  goalReached: goalReached,
                 );
                 onResult(result);
               },

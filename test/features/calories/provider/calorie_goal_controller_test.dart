@@ -1546,6 +1546,7 @@ void main() {
         .saveLearnedTdeeGoal(
           goalMode: CalorieGoalMode.lose,
           goalSpeedKgPerWeek: 0.5,
+          targetWeightKg: 75,
           goalStartDate: DateTime(2026, 4, 20, 8),
         );
 
@@ -1614,6 +1615,7 @@ void main() {
         .saveLearnedTdeeGoal(
           goalMode: CalorieGoalMode.lose,
           goalSpeedKgPerWeek: 0.5,
+          targetWeightKg: 75,
           goalStartDate: today.add(const Duration(days: 1)),
         );
 
@@ -1677,6 +1679,7 @@ void main() {
           .saveLearnedTdeeGoal(
             goalMode: CalorieGoalMode.lose,
             goalSpeedKgPerWeek: 0.5,
+            targetWeightKg: 75,
             goalStartDate: today,
           );
 
@@ -1717,6 +1720,7 @@ void main() {
       activityLevel: 1.7,
       goalMode: CalorieGoalMode.lose,
       goalSpeedKgPerWeek: 0.5,
+      targetWeightKg: 75,
     );
     final repository = FakeCalorieSettingsRepository(
       initialSettings: CalorieGoalSettings.single(
@@ -1749,6 +1753,7 @@ void main() {
         .saveLearnedTdeeGoal(
           goalMode: CalorieGoalMode.lose,
           goalSpeedKgPerWeek: 0.5,
+          targetWeightKg: 75,
           goalStartDate: today,
         );
 
@@ -1757,5 +1762,122 @@ void main() {
     expect(settings.goalHistory, hasLength(1));
     expect(settings.pendingWeeklyCheckIn?.windowKey, pending.windowKey);
     expect(settings.pendingWeeklyCheckIn?.dismissedAt, dismissedAt);
+  });
+
+  test('goal reached prompt remains due until user answers it', () async {
+    final day = normalizeDiaryDay(DateTime.now());
+    final profile = const CalorieCalculatorProfile.defaults().copyWith(
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+      targetWeightKg: 75,
+    );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: profile,
+        effectiveDate: day.subtract(const Duration(days: 3)),
+      ),
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final controller = container.read(calorieGoalControllerProvider.notifier);
+    expect(
+      await controller.markGoalReachedIfNeeded(day: day, weightKg: 75),
+      isTrue,
+    );
+    expect(
+      await controller.markGoalReachedIfNeeded(day: day, weightKg: 74.5),
+      isTrue,
+    );
+    expect(await controller.markGoalReachedPromptHandled(), isTrue);
+    expect(
+      await controller.markGoalReachedIfNeeded(day: day, weightKg: 74.5),
+      isFalse,
+    );
+    final entry = (await repository.readSettings()).goalHistory.single;
+    expect(entry.reachedAt, day);
+    expect(entry.reachedWeightKg, 75);
+    expect(entry.reachedPromptHandledAt, isNotNull);
+  });
+
+  test('weight above a lose target does not mark the goal reached', () async {
+    final day = normalizeDiaryDay(DateTime.now());
+    final profile = const CalorieCalculatorProfile.defaults().copyWith(
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+      targetWeightKg: 75,
+    );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: profile,
+        effectiveDate: day.subtract(const Duration(days: 3)),
+      ),
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final reached = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .markGoalReachedIfNeeded(day: day, weightKg: 75.5);
+
+    expect(reached, isFalse);
+    expect(
+      (await repository.readSettings()).goalHistory.single.reachedAt,
+      isNull,
+    );
+  });
+
+  test('saveCalculatedGoal archives the current goal on request', () async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final oldProfile = const CalorieCalculatorProfile.defaults().copyWith(
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+      targetWeightKg: 75,
+    );
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: oldProfile,
+        effectiveDate: today.subtract(const Duration(days: 20)),
+      ),
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    await container.read(calorieGoalControllerProvider.future);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .saveCalculatedGoal(
+          const CalorieCalculatorProfile.defaults().copyWith(weightKg: 76),
+          goalStartDate: today,
+          archiveCurrentGoal: true,
+        );
+
+    expect(saved, isTrue);
+    final history = (await repository.readSettings()).sortedGoalHistory;
+    expect(history, hasLength(2));
+    expect(history.first.endedAt, today);
+    expect(history.first.endedWeightKg, 76);
+    expect(history.last.endedAt, isNull);
+    expect(history.last.calculatorProfile?.goalMode, CalorieGoalMode.maintain);
   });
 }

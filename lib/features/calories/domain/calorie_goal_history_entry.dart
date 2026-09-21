@@ -20,6 +20,11 @@ class CalorieGoalHistoryEntry {
     this.countingStartDate,
     this.source = CalorieGoalSource.manual,
     this.weeklyCheckInSnapshot,
+    this.reachedAt,
+    this.reachedWeightKg,
+    this.reachedPromptHandledAt,
+    this.endedAt,
+    this.endedWeightKg,
   });
 
   /// Creates a [CalorieGoalHistoryEntry] from json.
@@ -59,6 +64,26 @@ class CalorieGoalHistoryEntry {
   /// The weekly check in snapshot.
   final CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot;
 
+  /// First date on which the configured target weight was reached.
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? reachedAt;
+
+  /// Scale weight recorded when the target was first reached.
+  @NullableFlexibleDoubleConverter()
+  final double? reachedWeightKg;
+
+  /// Date on which the user answered the goal-reached prompt.
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? reachedPromptHandledAt;
+
+  /// Date on which this goal was explicitly replaced by a new goal.
+  @NullableFlexibleDateTimeConverter()
+  final DateTime? endedAt;
+
+  /// Scale weight recorded when this goal was replaced.
+  @NullableFlexibleDoubleConverter()
+  final double? endedWeightKg;
+
   /// Whether goal is set.
   bool get hasGoal => dailyKcalGoal != null;
 
@@ -90,6 +115,36 @@ class CalorieGoalHistoryEntry {
 
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieGoalHistoryEntryToJson(this);
+
+  /// Returns a copy with the given snapshot and goal-lifecycle fields set.
+  ///
+  /// Only non-null arguments replace the current value.
+  CalorieGoalHistoryEntry copyWith({
+    CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
+    DateTime? reachedAt,
+    double? reachedWeightKg,
+    DateTime? reachedPromptHandledAt,
+    DateTime? endedAt,
+    double? endedWeightKg,
+  }) {
+    return CalorieGoalHistoryEntry(
+      dailyKcalGoal: dailyKcalGoal,
+      calculatorProfile: calculatorProfile,
+      expectedActivityKcal: expectedActivityKcal,
+      effectiveDate: effectiveDate,
+      changedAt: changedAt,
+      countingStartDate: countingStartDate,
+      source: source,
+      weeklyCheckInSnapshot:
+          weeklyCheckInSnapshot ?? this.weeklyCheckInSnapshot,
+      reachedAt: reachedAt ?? this.reachedAt,
+      reachedWeightKg: reachedWeightKg ?? this.reachedWeightKg,
+      reachedPromptHandledAt:
+          reachedPromptHandledAt ?? this.reachedPromptHandledAt,
+      endedAt: endedAt ?? this.endedAt,
+      endedWeightKg: endedWeightKg ?? this.endedWeightKg,
+    );
+  }
 }
 
 /// Normalizes counting start date against effective date.

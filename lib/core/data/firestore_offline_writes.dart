@@ -30,12 +30,7 @@ void commitBatchInBackground(
 }) {
   unawaited(
     batch.commit().catchError((Object error, StackTrace stackTrace) {
-      log(
-        failureMessage,
-        name: logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
+      log(failureMessage, name: logName, error: error, stackTrace: stackTrace);
     }),
   );
 }

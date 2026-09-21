@@ -65,6 +65,7 @@ class SettingsPage extends ConsumerWidget {
                             SettingsHealthConnectTile(),
                             _CalorieGoalStartTile(),
                             _CalorieGoalCalculatorTile(),
+                            _GoalArchiveTile(),
                             _MacroGoalsTile(),
                           ],
                         ),
@@ -197,6 +198,23 @@ class _CalorieGoalCalculatorTile extends ConsumerWidget {
                 initialSettings: settings,
               ),
             ),
+    );
+  }
+}
+
+class _GoalArchiveTile extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return SettingsTile(
+      key: SettingsPageKeys.goalArchiveTile,
+      icon: Icons.archive_outlined,
+      title: l10n.settingsGoalArchiveTitle,
+      subtitle: l10n.settingsGoalArchiveSubtitle,
+      onTap: () => unawaited(context.push(AppRoutes.homeSettingsGoalArchive)),
     );
   }
 }

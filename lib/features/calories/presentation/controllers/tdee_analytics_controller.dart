@@ -7,13 +7,13 @@ part 'tdee_analytics_controller.g.dart';
 class TdeeAnalyticsUiState {
   /// Creates UI state for TDEE analytics.
   const new({
-    required this.selectedCycleId,
     required this.timeRange,
+    this.selectedCycleIds = const <String>{'all'},
     this.showAnticipation = true,
   });
 
-  /// ID of the currently selected goal cycle or 'all'.
-  final String selectedCycleId;
+  /// IDs of selected goal cycles; `all` means every cycle.
+  final Set<String> selectedCycleIds;
 
   /// Selected time filter window.
   final TdeeAnalyticsTimeRange timeRange;
@@ -23,12 +23,12 @@ class TdeeAnalyticsUiState {
 
   /// Copy with.
   TdeeAnalyticsUiState copyWith({
-    String? selectedCycleId,
+    Set<String>? selectedCycleIds,
     TdeeAnalyticsTimeRange? timeRange,
     bool? showAnticipation,
   }) {
     return TdeeAnalyticsUiState(
-      selectedCycleId: selectedCycleId ?? this.selectedCycleId,
+      selectedCycleIds: selectedCycleIds ?? this.selectedCycleIds,
       timeRange: timeRange ?? this.timeRange,
       showAnticipation: showAnticipation ?? this.showAnticipation,
     );
@@ -40,15 +40,32 @@ class TdeeAnalyticsUiState {
 class TdeeAnalyticsController extends _$TdeeAnalyticsController {
   @override
   TdeeAnalyticsUiState build() {
-    return const TdeeAnalyticsUiState(
-      selectedCycleId: 'all',
-      timeRange: TdeeAnalyticsTimeRange.days28,
+    return const TdeeAnalyticsUiState(timeRange: TdeeAnalyticsTimeRange.days28);
+  }
+
+  /// Replaces the selected goal cycles. An empty set selects every cycle.
+  void selectCycles(Set<String> cycleIds, {bool showFullRange = false}) {
+    state = state.copyWith(
+      selectedCycleIds: cycleIds.isEmpty ? const <String>{'all'} : cycleIds,
+      timeRange: showFullRange ? TdeeAnalyticsTimeRange.all : state.timeRange,
     );
   }
 
-  /// Sets the selected goal cycle.
-  void selectCycle(String cycleId) {
-    state = state.copyWith(selectedCycleId: cycleId);
+  /// Adds or removes one goal cycle from the selection.
+  ///
+  /// Picking `all`, or picking a cycle while `all` is selected, replaces the
+  /// selection.
+  void toggleCycle(String cycleId) {
+    final current = state.selectedCycleIds;
+    if (cycleId == 'all' || current.contains('all')) {
+      selectCycles(<String>{cycleId});
+      return;
+    }
+    final next = <String>{...current};
+    if (!next.add(cycleId)) {
+      next.remove(cycleId);
+    }
+    selectCycles(next);
   }
 
   /// Sets the selected time range.

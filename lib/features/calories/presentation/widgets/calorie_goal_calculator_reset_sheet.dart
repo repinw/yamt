@@ -8,6 +8,7 @@ Future<void> showCalorieGoalCalculatorResetSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,
   bool useRootNavigator = true,
+  bool startsNewGoal = false,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -15,7 +16,10 @@ Future<void> showCalorieGoalCalculatorResetSheet(
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
     builder: (context) {
-      return CalorieGoalCalculatorFlow(initialSettings: initialSettings);
+      return CalorieGoalCalculatorFlow(
+        initialSettings: initialSettings,
+        startsNewGoal: startsNewGoal,
+      );
     },
   );
 }

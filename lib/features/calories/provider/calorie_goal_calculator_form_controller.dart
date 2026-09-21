@@ -132,14 +132,21 @@ class CalorieGoalCalculatorFormController
   /// Save.
   Future<bool> save({
     required DateTime goalStartDate,
+    DateTime? maintainUntil,
     bool allowFutureGoalStart = false,
     bool? countGoalStartDayForLearning,
+    bool archiveCurrentGoal = false,
   }) async {
-    final profile = state.profile;
+    final rawProfile = state.profile;
     final calculation = state.calculation;
-    if (profile == null || calculation == null) {
+    if (rawProfile == null || calculation == null) {
       return false;
     }
+    final profile = rawProfile.copyWith(
+      maintainUntil: rawProfile.goalMode == CalorieGoalMode.maintain
+          ? maintainUntil
+          : null,
+    );
 
     state = state.copyWith(isSaving: true);
     // Keeps the auto-dispose goal controller alive until the save completes.
@@ -156,6 +163,7 @@ class CalorieGoalCalculatorFormController
             goalStartDate: goalStartDate,
             allowFutureGoalStart: allowFutureGoalStart,
             countGoalStartDayForLearning: countGoalStartDayForLearning,
+            archiveCurrentGoal: archiveCurrentGoal,
           );
     } finally {
       goalSubscription.close();

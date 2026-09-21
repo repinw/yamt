@@ -14,6 +14,7 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/presentation/pages/calorie_goal_archive_page.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
@@ -828,6 +829,62 @@ void main() {
 
     expect(find.byType(HouseholdPage), findsOneWidget);
     expect(find.text('Invite members'), findsOneWidget);
+  });
+
+  testWidgets('Goal archive tile opens the goal archive', (tester) async {
+    final user = _MockUser();
+    final settingsRepository = FakeCalorieSettingsRepository();
+    addTearDown(settingsRepository.dispose);
+    when(() => user.isAnonymous).thenReturn(false);
+    when(() => user.displayName).thenReturn('Jane Doe');
+    when(() => user.email).thenReturn('jane@example.com');
+    when(() => user.uid).thenReturn('uid-123');
+
+    final router = GoRouter(
+      initialLocation: AppRoutes.homeSettings,
+      routes: [
+        GoRoute(
+          path: AppRoutes.homeSettings,
+          builder: (context, state) => const Scaffold(body: SettingsPage()),
+        ),
+        GoRoute(
+          path: AppRoutes.homeSettingsGoalArchive,
+          builder: (context, state) => const CalorieGoalArchivePage(),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appVersionProvider.overrideWith((ref) async => '1.1.0+2'),
+          authStateChangesProvider.overrideWith(
+            (ref) => Stream<User?>.value(user),
+          ),
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          healthConnectionServiceProvider.overrideWith(
+            (ref) => _FakeHealthConnectionService(
+              disconnectResult: HealthDisconnectResult.disconnected,
+            ),
+          ),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Goal archive');
+    await tester.tap(_settingsTile(SettingsPageKeys.goalArchiveTile));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CalorieGoalArchivePage), findsOneWidget);
   });
 
   testWidgets('non-implemented tiles show snackbar', (tester) async {

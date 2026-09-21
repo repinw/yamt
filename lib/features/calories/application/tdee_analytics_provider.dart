@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
@@ -26,10 +27,10 @@ part 'tdee_analytics_provider.g.dart';
 @immutable
 class TdeeAnalyticsQuery {
   /// Creates an analytics query.
-  const new({required this.cycleId, required this.timeRange});
+  const new({required this.cycleIds, required this.timeRange});
 
-  /// Selected cycle ID or 'all'.
-  final String cycleId;
+  /// Selected cycle IDs. `all` expands to every individual cycle.
+  final Set<String> cycleIds;
 
   /// Selected time filter.
   final TdeeAnalyticsTimeRange timeRange;
@@ -38,12 +39,12 @@ class TdeeAnalyticsQuery {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is TdeeAnalyticsQuery &&
-        other.cycleId == cycleId &&
+        setEquals(other.cycleIds, cycleIds) &&
         other.timeRange == timeRange;
   }
 
   @override
-  int get hashCode => Object.hash(cycleId, timeRange);
+  int get hashCode => Object.hash(Object.hashAllUnordered(cycleIds), timeRange);
 }
 
 /// Provides fully resolved TDEE analytics state for charts and insights.
@@ -72,14 +73,21 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
     }
 
     final availableCycles = TdeeCycleResolver.resolveGoalCycles(settings);
-    final selectedCycle = availableCycles.firstWhere(
-      (c) => c.id == query.cycleId,
-      orElse: () => availableCycles.first,
-    );
+    final individualCycles = availableCycles
+        .where((cycle) => !cycle.isAllGoals)
+        .toList(growable: false);
+    final selectedCycles = query.cycleIds.contains('all')
+        ? individualCycles
+        : individualCycles
+              .where((cycle) => query.cycleIds.contains(cycle.id))
+              .toList(growable: false);
+    final effectiveSelectedCycles = selectedCycles.isEmpty
+        ? <TdeeAnalyticsGoalCycle>[individualCycles.first]
+        : selectedCycles;
 
     final now = DateTime.now();
-    final window = TdeeAnalyticsService.resolveDateWindow(
-      cycle: selectedCycle,
+    final window = TdeeAnalyticsService.resolveDateWindowForCycles(
+      cycles: effectiveSelectedCycles,
       timeRange: query.timeRange,
       today: now,
     );
@@ -138,14 +146,19 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
     );
 
     final summary = TdeeAnalyticsService.buildSummary(points);
-    final anticipation = TdeeAnalyticsService.buildAnticipation(
-      cycle: selectedCycle,
-      points: points,
-      today: now,
-    );
+    final activeSelected = effectiveSelectedCycles
+        .where((cycle) => cycle.isActive)
+        .firstOrNull;
+    final anticipation = activeSelected == null
+        ? null
+        : TdeeAnalyticsService.buildAnticipation(
+            cycle: activeSelected,
+            points: points,
+            today: now,
+          );
 
     return TdeeAnalyticsState(
-      selectedCycle: selectedCycle,
+      selectedCycles: effectiveSelectedCycles,
       availableCycles: availableCycles,
       timeRange: query.timeRange,
       points: points,

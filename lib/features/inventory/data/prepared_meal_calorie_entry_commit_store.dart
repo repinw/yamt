@@ -91,9 +91,8 @@ class FirestorePreparedMealCalorieEntryCommitStore
     // local copy, so two offline consumptions of the same meal may overwrite
     // each other.
     try {
-      final mealRef = _preparedMealCollection(
-        preparedMealOwnerUserId,
-      ).doc(preparedMealId);
+      final mealRef = _preparedMealCollection(preparedMealOwnerUserId)
+          .doc(preparedMealId);
       final mealSnapshot = await readDocumentLocalFirst(mealRef);
       if (!mealSnapshot.exists) {
         log(

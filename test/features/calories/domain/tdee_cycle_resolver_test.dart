@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
 
 void main() {
@@ -48,6 +49,44 @@ void main() {
       expect(cycles[2].goalMode, CalorieGoalMode.lose);
       expect(cycles[2].isActive, isFalse);
       expect(cycles[2].endDate, DateTime(2025, 1, 31));
+    });
+
+    test('derives estimates and preserves an explicit same-day end', () {
+      final profile = const CalorieCalculatorProfile.defaults().copyWith(
+        weightKg: 80,
+        targetWeightKg: 78,
+        goalMode: CalorieGoalMode.lose,
+        goalSpeedKgPerWeek: 0.5,
+      );
+      final settings = CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: profile,
+        effectiveDate: DateTime(2026, 6),
+      ).markActiveGoalEnded(DateTime(2026, 6, 4), weightKg: 78.4);
+
+      final cycle = TdeeCycleResolver.resolveGoalCycles(settings)
+          .firstWhere((cycle) => !cycle.isAllGoals);
+
+      expect(cycle.estimatedEndDate, DateTime(2026, 6, 29));
+      expect(cycle.endDate, DateTime(2026, 6, 4));
+      expect(cycle.startWeightKg, 80);
+      expect(cycle.endWeightKg, 78.4);
+    });
+
+    test('uses optional maintain end date', () {
+      final profile = const CalorieCalculatorProfile.defaults().copyWith(
+        maintainUntil: DateTime(2026, 12, 31),
+      );
+      final settings = CalorieGoalSettings.single(
+        dailyKcalGoal: 2400,
+        calculatorProfile: profile,
+        effectiveDate: DateTime(2026, 6),
+      );
+
+      final cycle = TdeeCycleResolver.resolveGoalCycles(settings)
+          .firstWhere((cycle) => !cycle.isAllGoals);
+
+      expect(cycle.estimatedEndDate, DateTime(2026, 12, 31));
     });
   });
 }

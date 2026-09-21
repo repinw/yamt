@@ -18,6 +18,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_results.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_maintain_until_tile.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_food_tracking_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
@@ -43,10 +45,17 @@ enum _CalculatorStep {
 /// Defines calorie goal calculator flow.
 class CalorieGoalCalculatorFlow extends ConsumerStatefulWidget {
   /// The calorie goal calculator flow.
-  const new({required this.initialSettings, super.key});
+  const new({
+    required this.initialSettings,
+    this.startsNewGoal = false,
+    super.key,
+  });
 
   /// The initial settings.
   final CalorieGoalSettings initialSettings;
+
+  /// Whether saving should explicitly archive the currently active goal.
+  final bool startsNewGoal;
 
   @override
   ConsumerState<CalorieGoalCalculatorFlow> createState() =>
@@ -59,7 +68,9 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _heightController;
   late final TextEditingController _ageController;
   late final TextEditingController _goalSpeedController;
+  late final TextEditingController _targetWeightController;
   late DateTime _goalStartDate;
+  DateTime? _maintainUntil;
   _CalculatorStep _currentStep = _CalculatorStep.sex;
 
   @override
@@ -96,11 +107,17 @@ class _CalorieGoalCalculatorFlowState
     _goalSpeedController = TextEditingController(
       text: initialState.goalSpeedKgPerWeekText,
     );
+    _targetWeightController = TextEditingController(
+      text: initialState.targetWeightKgText,
+    );
+    _maintainUntil = widget.initialSettings.calculatorProfile?.maintainUntil;
     final initialGoalEntry =
         widget.initialSettings.activeGoalEntryForDay(DateTime.now()) ??
         widget.initialSettings.latestGoalEntry;
     _goalStartDate = CalorieGoalStartPicker.normalizeDate(
-      initialGoalEntry?.effectiveCountingStartDate ?? DateTime.now(),
+      widget.startsNewGoal
+          ? DateTime.now()
+          : initialGoalEntry?.effectiveCountingStartDate ?? DateTime.now(),
     );
   }
 
@@ -110,6 +127,7 @@ class _CalorieGoalCalculatorFlowState
     _heightController.dispose();
     _ageController.dispose();
     _goalSpeedController.dispose();
+    _targetWeightController.dispose();
     super.dispose();
   }
 
@@ -136,8 +154,10 @@ class _CalorieGoalCalculatorFlowState
     }
     final saved = await formNotifier.save(
       goalStartDate: _goalStartDate,
+      maintainUntil: _maintainUntil,
       allowFutureGoalStart: allowsFutureGoalStart,
       countGoalStartDayForLearning: countGoalStartDayForLearning,
+      archiveCurrentGoal: widget.startsNewGoal,
     );
     if (!mounted) {
       return;
@@ -187,6 +207,22 @@ class _CalorieGoalCalculatorFlowState
     setState(() {
       _goalStartDate = pickedDate;
     });
+  }
+
+  Future<void> _pickMaintainUntil() async {
+    final pickedDate = await pickCalorieMaintainUntil(
+      context,
+      goalStartDate: _goalStartDate,
+      current: _maintainUntil,
+    );
+    if (pickedDate == null || !mounted) {
+      return;
+    }
+    setState(() => _maintainUntil = pickedDate);
+  }
+
+  void _clearMaintainUntil() {
+    setState(() => _maintainUntil = null);
   }
 
   bool get _startsToday {
@@ -422,14 +458,31 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
           },
         );
       case _CalculatorStep.goalSpeed:
-        return CalorieGoalCalculatorNumberField(
-          fieldKey: CalorieGoalCalculatorSheetKeys.goalSpeedField,
-          controller: _goalSpeedController,
-          label: l10n.caloriesCalculatorGoalSpeedLabel,
-          hintText: l10n.caloriesCalculatorGoalSpeedHint,
-          errorText: _goalSpeedErrorText(l10n, state.goalSpeedError),
-          autofocus: true,
-          onChanged: ref.read(formProvider.notifier).updateGoalSpeedKgPerWeek,
+        return Column(
+          children: [
+            if (state.goalMode != CalorieGoalMode.maintain) ...[
+              CalorieGoalCalculatorNumberField(
+                fieldKey: CalorieGoalCalculatorSheetKeys.targetWeightField,
+                controller: _targetWeightController,
+                label: l10n.caloriesCalculatorTargetWeightLabel,
+                errorText: _weightErrorText(l10n, state.targetWeightError),
+                autofocus: true,
+                onChanged: ref.read(formProvider.notifier).updateTargetWeightKg,
+              ),
+              const SizedBox(height: AppSpacing.md),
+            ],
+            CalorieGoalCalculatorNumberField(
+              fieldKey: CalorieGoalCalculatorSheetKeys.goalSpeedField,
+              controller: _goalSpeedController,
+              label: l10n.caloriesCalculatorGoalSpeedLabel,
+              hintText: l10n.caloriesCalculatorGoalSpeedHint,
+              errorText: _goalSpeedErrorText(l10n, state.goalSpeedError),
+              autofocus: state.goalMode == CalorieGoalMode.maintain,
+              onChanged: ref
+                  .read(formProvider.notifier)
+                  .updateGoalSpeedKgPerWeek,
+            ),
+          ],
         );
       case _CalculatorStep.results:
         return Column(
@@ -462,6 +515,14 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
               enabled: !state.isSaving,
               onChangeRequested: _pickGoalStart,
             ),
+            if (state.goalMode == CalorieGoalMode.maintain) ...[
+              const SizedBox(height: AppSpacing.md),
+              CalorieGoalMaintainUntilTile(
+                maintainUntil: _maintainUntil,
+                onChoose: _pickMaintainUntil,
+                onClear: _clearMaintainUntil,
+              ),
+            ],
           ],
         );
     }
@@ -478,7 +539,8 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
       _CalculatorStep.age => state.ageError == null,
       _CalculatorStep.activityLevel => true,
       _CalculatorStep.goalMode => true,
-      _CalculatorStep.goalSpeed => state.goalSpeedError == null,
+      _CalculatorStep.goalSpeed =>
+        state.goalSpeedError == null && state.targetWeightError == null,
       _CalculatorStep.results => false,
     };
   }

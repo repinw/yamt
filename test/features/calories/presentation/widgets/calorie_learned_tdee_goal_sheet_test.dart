@@ -46,6 +46,8 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 Widget _buildHarness({
   required CalorieGoalSettings initialSettings,
   List<Override> overrides = const <Override>[],
+  bool startsNewGoal = false,
+  double? currentWeightKg,
 }) {
   return ProviderScope(
     overrides: overrides,
@@ -62,6 +64,8 @@ Widget _buildHarness({
                   showCalorieLearnedTdeeGoalSheet(
                     context,
                     initialSettings: initialSettings,
+                    startsNewGoal: startsNewGoal,
+                    currentWeightKg: currentWeightKg,
                   ),
                 );
               },
@@ -90,6 +94,7 @@ CalorieGoalSettings _learnedTdeeSettings({
       activityLevel: 1.7,
       goalMode: goalMode,
       goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+      targetWeightKg: goalMode == CalorieGoalMode.maintain ? null : 60,
     ),
     effectiveDate: resolvedGoalStartDate,
     countingStartDate: resolvedGoalStartDate,
@@ -104,10 +109,17 @@ CalorieGoalSettings _learnedTdeeSettings({
   );
 }
 
+void _useTallView(WidgetTester tester) {
+  tester.view.physicalSize = const Size(800, 1400);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+}
+
 void main() {
   testWidgets('switching goal modes preserves the previous pace', (
     tester,
   ) async {
+    _useTallView(tester);
     await tester.pumpWidget(
       _buildHarness(
         initialSettings: _learnedTdeeSettings(
@@ -149,6 +161,7 @@ void main() {
   testWidgets('learned TDEE sheet opens on root navigator by default', (
     tester,
   ) async {
+    _useTallView(tester);
     final rootObserver = RecordingNavigatorObserver();
     final nestedObserver = RecordingNavigatorObserver();
 
@@ -192,6 +205,7 @@ void main() {
   });
 
   testWidgets('full reset opens the complete calculator flow', (tester) async {
+    _useTallView(tester);
     await tester.pumpWidget(
       _buildHarness(initialSettings: _learnedTdeeSettings()),
     );
@@ -212,6 +226,7 @@ void main() {
   testWidgets('keeps existing goal start date when editing learned TDEE goal', (
     tester,
   ) async {
+    _useTallView(tester);
     final goalStartDate = DateTime(2026, 4, 10, 16, 30);
     final countingStartDate = DateTime(2026, 4, 12);
     final initialSettings = CalorieGoalSettings.single(
@@ -254,6 +269,7 @@ void main() {
   testWidgets('saving unchanged learned goal does not restart Burn Week', (
     tester,
   ) async {
+    _useTallView(tester);
     final today = normalizeDiaryDay(DateTime.now());
     final goalStartDate = today.subtract(const Duration(days: 2));
     final learnedSnapshot = CalorieGoalWeeklyCheckInSnapshot(
@@ -332,6 +348,7 @@ void main() {
   testWidgets('saving changed learned goal restarts Burn Week at week one', (
     tester,
   ) async {
+    _useTallView(tester);
     final today = normalizeDiaryDay(DateTime.now());
     final goalStartDate = today.subtract(const Duration(days: 6));
     final initialSettings = _learnedTdeeSettings(goalStartDate: goalStartDate);
@@ -374,6 +391,11 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Lose'));
     await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(CalorieGoalCalculatorSheetKeys.targetWeightField),
+      '60',
+    );
+    await tester.pumpAndSettle();
 
     final goalStartValue = tester.widget<Text>(
       find.byKey(CalorieGoalCalculatorSheetKeys.goalStartValue),
@@ -403,6 +425,7 @@ void main() {
   testWidgets('shows failure snackbar when learned TDEE save fails', (
     tester,
   ) async {
+    _useTallView(tester);
     final initialSettings = _learnedTdeeSettings(
       goalMode: CalorieGoalMode.lose,
       goalSpeedKgPerWeek: 0.5,
@@ -442,5 +465,98 @@ void main() {
       find.text('Could not save the learned TDEE target.'),
       findsOneWidget,
     );
+  });
+  testWidgets('lose needs a target weight before it can be saved', (
+    tester,
+  ) async {
+    _useTallView(tester);
+    await tester.pumpWidget(
+      _buildHarness(initialSettings: _learnedTdeeSettings()),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lose'));
+    await tester.pumpAndSettle();
+
+    FilledButton saveButton() => tester.widget<FilledButton>(
+      find.byKey(CalorieLearnedTdeeSheetKeys.saveButton),
+    );
+    expect(saveButton().onPressed, isNull);
+
+    await tester.enterText(
+      find.byKey(CalorieGoalCalculatorSheetKeys.targetWeightField),
+      '60',
+    );
+    await tester.pumpAndSettle();
+
+    expect(saveButton().onPressed, isNotNull);
+  });
+
+  testWidgets('new goal sheet archives the current goal on save', (
+    tester,
+  ) async {
+    _useTallView(tester);
+    final today = normalizeDiaryDay(DateTime.now());
+    final initialSettings = _learnedTdeeSettings(
+      goalStartDate: today.subtract(const Duration(days: 20)),
+    );
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: initialSettings,
+    );
+    final logRepository = FakeCalorieLogRepository();
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        initialSettings: initialSettings,
+        startsNewGoal: true,
+        currentWeightKg: 64,
+        overrides: <Override>[
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          burnWeekRunStateRepositoryProvider.overrideWithValue(
+            _FakeBurnWeekRunStateRepository(
+              BurnWeekRunState(
+                currentWeekStartDayKey: diaryDayKey(today),
+                lastActiveDayKey: diaryDayKey(today),
+                runWeekNumber: 1,
+                starCount: 0,
+                heartCount: 0,
+                heartCreditKcal: 0,
+                starBrokeThisWeek: false,
+                missedTrackingThisWeek: false,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Current weight: 64 kg'), findsOneWidget);
+    expect(
+      find.byKey(CalorieLearnedTdeeSheetKeys.fullResetButton),
+      findsNothing,
+    );
+    expect(find.text('Goal mode'), findsNothing);
+
+    await tester.tap(find.byKey(CalorieLearnedTdeeSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
+    await tester.pumpAndSettle();
+
+    final history = (await settingsRepository.readSettings()).sortedGoalHistory;
+    expect(history, hasLength(2));
+    expect(history.first.endedAt, today);
+    expect(history.first.endedWeightKg, 64);
+    expect(history.last.endedAt, isNull);
+    expect(history.last.calculatorProfile?.weightKg, 64);
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
   });
 }

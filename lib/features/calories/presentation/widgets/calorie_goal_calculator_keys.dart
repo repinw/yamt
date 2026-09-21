@@ -22,6 +22,11 @@ abstract final class CalorieGoalCalculatorSheetKeys {
   /// The goal mode segment.
   static const goalModeSegment = Key('calorie_calculator_goal_mode_segment');
 
+  /// The target weight field.
+  static const targetWeightField = Key(
+    'calorie_calculator_target_weight_field',
+  );
+
   /// The goal speed field.
   static const goalSpeedField = Key('calorie_calculator_goal_speed_field');
 

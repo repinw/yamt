@@ -311,9 +311,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
       return true;
     });
     unawaited(
-      result
-          .then((_) => backgroundWork)
-          .whenComplete(keepAliveLink.close),
+      result.then((_) => backgroundWork).whenComplete(keepAliveLink.close),
     );
     return result;
   }

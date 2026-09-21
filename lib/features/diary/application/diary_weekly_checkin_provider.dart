@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart'
     as goal_settings;
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart'
     as goal_settings;
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart'
     as checkin_domain;
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart'
@@ -55,6 +56,24 @@ typedef DiaryWeeklyCheckInData = checkin_models.CalorieWeeklyCheckInData;
 @riverpod
 Future<CalorieGoalSettings> diaryCalorieGoalSettings(Ref ref) {
   return ref.watch(goal_controller.calorieGoalControllerProvider.future);
+}
+
+/// Whether the active calorie goal had already been reached on [day].
+bool diaryActiveCalorieGoalWasReached(
+  CalorieGoalSettings settings,
+  DateTime day,
+) {
+  return settings.cycleAnchorEntryForDay(day)?.reachedAt != null;
+}
+
+/// Most recent recorded weight inside a weekly check-in window.
+double? latestDiaryCheckInWeightKg(DiaryWeeklyCheckInData data) {
+  for (final day in data.days.reversed) {
+    if (day.weightKg != null) {
+      return day.weightKg;
+    }
+  }
+  return null;
 }
 
 /// Weekly check-in data consumed by diary UI.

@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_new_goal_flow.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
@@ -81,6 +82,8 @@ class _DiaryWeeklyCheckInSectionState
     final checkInData = _visibleCheckInData;
     final dismissedPending = _dismissedPending(rawCheckInData);
     final weightTrackingFlow = ref.watch(diaryWeightTrackingFlowProvider);
+    // Keeps the goal settings loaded for the reached-goal check.
+    ref.watch(diaryCalorieGoalSettingsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -179,9 +182,13 @@ class _DiaryWeeklyCheckInSectionState
     final resolvedPending = pending!;
 
     try {
+      final goalSettings = ref.read(diaryCalorieGoalSettingsProvider).value;
       final action = await showDiaryWeeklyCheckInDialog(
         context,
         checkInData: checkInData,
+        goalReached:
+            goalSettings != null &&
+            diaryActiveCalorieGoalWasReached(goalSettings, DateTime.now()),
       );
       if (!mounted) {
         return;
@@ -215,6 +222,11 @@ class _DiaryWeeklyCheckInSectionState
             ref.read(diaryWeightTrackingFlowProvider),
           );
         }
+      case DiaryWeeklyCheckInDialogAction.newGoal:
+        await showCalorieNewGoalSheet(
+          context,
+          currentWeightKg: latestDiaryCheckInWeightKg(checkInData),
+        );
       case DiaryWeeklyCheckInDialogAction.later:
       case null:
         await _syncLearnedTdeeCache(actions, checkInData);

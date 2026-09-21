@@ -1,4 +1,5 @@
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
@@ -24,6 +25,7 @@ abstract final class TdeeCycleResolver {
         goalMode: settings.calculatorProfile?.goalMode,
         startWeightKg: settings.calculatorProfile?.weightKg,
         targetWeightKg: settings.calculatorProfile?.targetWeightKg,
+        endWeightKg: settings.calculatorProfile?.targetWeightKg,
         goalSpeedKgPerWeek: settings.calculatorProfile?.goalSpeedKgPerWeek,
         initialGoalKcal: settings.dailyKcalGoal,
       );
@@ -40,9 +42,11 @@ abstract final class TdeeCycleResolver {
       final isLatest = i == anchorEntries.length - 1;
       final nextEntry = isLatest ? null : anchorEntries[i + 1];
       final startDate = entry.effectiveCountingStartDate;
-      final endDate = nextEntry != null
-          ? previousDiaryDay(nextEntry.effectiveCountingStartDate)
-          : null;
+      final endDate =
+          entry.endedAt ??
+          (nextEntry != null
+              ? previousDiaryDay(nextEntry.effectiveCountingStartDate)
+              : null);
 
       final title = _formatCycleTitle(
         mode: entry.calculatorProfile?.goalMode,
@@ -52,7 +56,7 @@ abstract final class TdeeCycleResolver {
 
       cycles.add(
         TdeeAnalyticsGoalCycle(
-          id: 'cycle_${startDate.millisecondsSinceEpoch}',
+          id: 'cycle_${entry.effectiveChangedAt.microsecondsSinceEpoch}_$i',
           title: title,
           startDate: startDate,
           endDate: endDate,
@@ -61,12 +65,42 @@ abstract final class TdeeCycleResolver {
           targetWeightKg: entry.calculatorProfile?.targetWeightKg,
           goalSpeedKgPerWeek: entry.calculatorProfile?.goalSpeedKgPerWeek,
           initialGoalKcal: entry.dailyKcalGoal,
+          estimatedEndDate: _estimatedEndDate(entry),
+          reachedDate: entry.reachedAt,
+          endWeightKg:
+              entry.endedWeightKg ??
+              entry.reachedWeightKg ??
+              entry.calculatorProfile?.targetWeightKg ??
+              (entry.calculatorProfile?.goalMode == CalorieGoalMode.maintain
+                  ? entry.calculatorProfile?.weightKg
+                  : null),
         ),
       );
     }
 
     final allGoalsCycle = _buildAllGoalsCycle(cycles);
     return [allGoalsCycle, ...cycles.reversed];
+  }
+
+  static DateTime? _estimatedEndDate(CalorieGoalHistoryEntry entry) {
+    final profile = entry.calculatorProfile;
+    if (profile == null) {
+      return null;
+    }
+    if (profile.goalMode == CalorieGoalMode.maintain) {
+      return profile.maintainUntil;
+    }
+    final target = profile.targetWeightKg;
+    final speed = profile.goalSpeedKgPerWeek.abs();
+    if (target == null || speed <= 0) {
+      return null;
+    }
+    final weeks = (target - profile.weightKg).abs() / speed;
+    return normalizeDiaryDay(
+      entry.effectiveCountingStartDate.add(
+        Duration(days: (weeks * DateTime.daysPerWeek).ceil()),
+      ),
+    );
   }
 
   static String _formatCycleTitle({

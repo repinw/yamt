@@ -3,6 +3,7 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 
@@ -312,4 +313,106 @@ void main() {
     expect(settings.isTrainingDay(tuesday), isFalse);
     expect(settings.goalKcalForDay(tuesday), 1850);
   });
+
+  test('goal completion and ending keep the original history entry', () {
+    final profile = const CalorieCalculatorProfile.defaults().copyWith(
+      goalMode: CalorieGoalMode.lose,
+      targetWeightKg: 75,
+    );
+    final initial = CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: profile,
+      effectiveDate: DateTime(2026, 6),
+    );
+
+    final completed = initial
+        .markActiveGoalReached(DateTime(2026, 6, 4, 12), weightKg: 75)
+        .markGoalReachedPromptHandled(DateTime(2026, 6, 4, 12, 30))
+        .markActiveGoalEnded(DateTime(2026, 6, 4, 13), weightKg: 74.8);
+
+    expect(completed.goalHistory.single.reachedAt, DateTime(2026, 6, 4));
+    expect(completed.goalHistory.single.endedAt, DateTime(2026, 6, 4));
+    expect(completed.goalHistory.single.reachedWeightKg, 75);
+    expect(completed.goalHistory.single.endedWeightKg, 74.8);
+    expect(completed.goalHistory.single.reachedPromptHandledAt, isNotNull);
+
+    final decoded = CalorieGoalSettings.fromJson(completed.toJson());
+    expect(decoded.goalHistory.single.reachedAt, DateTime(2026, 6, 4));
+    expect(decoded.goalHistory.single.endedAt, DateTime(2026, 6, 4));
+    expect(decoded.goalHistory.single.reachedWeightKg, 75);
+    expect(decoded.goalHistory.single.endedWeightKg, 74.8);
+    expect(decoded.goalHistory.single.reachedPromptHandledAt, isNotNull);
+  });
+
+  test('marking a reached goal twice leaves the settings untouched', () {
+    final initial = CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: const CalorieCalculatorProfile.defaults(),
+      effectiveDate: DateTime(2026, 6),
+    );
+    final reached = initial.markActiveGoalReached(
+      DateTime(2026, 6, 4),
+      weightKg: 75,
+    );
+
+    expect(
+      identical(
+        reached.markActiveGoalReached(DateTime(2026, 6, 5), weightKg: 74),
+        reached,
+      ),
+      isTrue,
+    );
+    expect(
+      reached.markGoalReachedPromptHandled(DateTime(2026, 6, 5)),
+      isNot(reached),
+    );
+  });
+
+  test('learning anchor survives a later goal-cycle change', () {
+    final first = const CalorieGoalSettings.empty().applyGoalChange(
+      changedAt: DateTime(2026, 6),
+      dailyKcalGoal: 2000,
+      calculatorProfile: const CalorieCalculatorProfile.defaults(),
+    );
+    final changed = first.applyGoalChange(
+      changedAt: DateTime(2026, 6, 4),
+      dailyKcalGoal: 2400,
+      calculatorProfile: const CalorieCalculatorProfile.defaults(),
+    );
+
+    expect(
+      changed.learningAnchorEntryForDay(DateTime(2026, 6, 10))?.effectiveDate,
+      DateTime(2026, 6),
+    );
+    expect(
+      changed.cycleAnchorEntryForDay(DateTime(2026, 6, 10))?.effectiveDate,
+      DateTime(2026, 6, 4),
+    );
+  });
+
+  test(
+    'preserveSameDayGoalEntries keeps the archived goal of the same day',
+    () {
+      final first = CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: const CalorieCalculatorProfile.defaults(),
+        effectiveDate: DateTime(2026, 6),
+      );
+
+      final replaced = first.applyGoalChange(
+        changedAt: DateTime(2026, 6, 1, 12),
+        dailyKcalGoal: 2400,
+        calculatorProfile: const CalorieCalculatorProfile.defaults(),
+      );
+      final archived = first.applyGoalChange(
+        changedAt: DateTime(2026, 6, 1, 12),
+        dailyKcalGoal: 2400,
+        calculatorProfile: const CalorieCalculatorProfile.defaults(),
+        preserveSameDayGoalEntries: true,
+      );
+
+      expect(replaced.goalHistory, hasLength(1));
+      expect(archived.goalHistory, hasLength(2));
+    },
+  );
 }

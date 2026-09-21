@@ -75,7 +75,10 @@ Main application adapters and mappers:
 - `features/activity` for the complete activity and weight diary section, and
   the Activity-owned weight tracking flow.
 - `features/calories` for calorie log data, goal settings, Burn Week state, and
-  weekly check-in behavior through Diary application adapters.
+  weekly check-in behavior through Diary application adapters. The weekly
+  check-in dialog opens the public new-goal sheet
+  (`presentation/widgets/calorie_new_goal_flow.dart`) when the active goal was
+  reached.
 - `features/health` for connection status and connection actions through
   `health_connection_actions.dart`.
 - `features/inventory` for repository-backed quick-eat data and the public
