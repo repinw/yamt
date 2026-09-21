@@ -37,3 +37,11 @@ bool isSameDiaryDay(DateTime left, DateTime right) {
 String diaryDayKey(DateTime day) {
   return localDayKey(day);
 }
+
+/// Returns the local diary day window (start inclusive, end exclusive).
+({DateTime startInclusive, DateTime endExclusive}) diaryDayBounds(
+  DateTime day,
+) {
+  final start = normalizeDiaryDay(day);
+  return (startInclusive: start, endExclusive: nextDiaryDay(start));
+}

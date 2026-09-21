@@ -3,11 +3,12 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/data/calorie_entry_cache.dart';
+import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
-import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
+import 'package:yamt/features/calories/data/calorie_log_user_session.dart';
 import 'package:yamt/features/calories/data/unavailable_calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -18,30 +19,23 @@ const _repositoryLogName = 'FirestoreCalorieLogRepository';
 const _usersCollection = 'users';
 const _calorieEntriesCollection = 'calorie_entries';
 
-/// Defines calorie log user session.
-abstract interface class CalorieLogUserSession {
-  /// The current user id.
-  String? get currentUserId;
-}
-
 /// Defines firestore calorie log repository.
 class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   /// Creates an instance.
-  new({required this._session, required this._firestore});
+  new({
+    required this.session,
+    required this.firestore,
+  });
 
-  final CalorieLogUserSession _session;
-  final FirebaseFirestore _firestore;
-  final _cache = <String, CalorieEntry>{};
+  /// The user session providing current auth user ID.
+  final CalorieLogUserSession session;
+
+  /// The Firestore instance.
+  final FirebaseFirestore firestore;
+  final _cache = CalorieEntryCache();
 
   @override
-  CalorieEntry? cachedById(String entryId) => _cache[entryId];
-
-  List<CalorieEntry> _remember(List<CalorieEntry> entries) {
-    for (final entry in entries) {
-      _cache[entry.id] = entry;
-    }
-    return entries;
-  }
+  CalorieEntry? cachedById(String entryId) => _cache.get(entryId);
 
   @override
   Stream<List<CalorieEntry>> watchEntriesForDay(DateTime day) {
@@ -50,7 +44,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
       return Stream<List<CalorieEntry>>.value(const <CalorieEntry>[]);
     }
 
-    final bounds = _dayBoundsLocal(day);
+    final bounds = diaryDayBounds(day);
     final query = _collection(userId)
         .where('logged_at', isGreaterThanOrEqualTo: bounds.startInclusive)
         .where('logged_at', isLessThan: bounds.endExclusive)
@@ -59,7 +53,9 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     return Stream<List<CalorieEntry>>.multi((controller) {
       final subscription = query.snapshots().listen(
         (snapshot) {
-          controller.add(_remember(_decodeSnapshot(snapshot)));
+          controller.add(
+            _cache.rememberAll(decodeCalorieEntrySnapshot(snapshot)),
+          );
         },
         onError: (Object error, StackTrace stackTrace) {
           log(
@@ -77,29 +73,12 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   @override
-  Future<List<CalorieEntry>> readEntriesForDay(DateTime day) async {
-    final userId = _currentUserId();
-    if (userId == null) {
-      return const <CalorieEntry>[];
-    }
-
-    try {
-      final bounds = _dayBoundsLocal(day);
-      final snapshot = await _collection(userId)
-          .where('logged_at', isGreaterThanOrEqualTo: bounds.startInclusive)
-          .where('logged_at', isLessThan: bounds.endExclusive)
-          .orderBy('logged_at')
-          .get();
-      return _remember(_decodeSnapshot(snapshot));
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to read calories for user $userId',
-        name: _repositoryLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return const <CalorieEntry>[];
-    }
+  Future<List<CalorieEntry>> readEntriesForDay(DateTime day) {
+    final bounds = diaryDayBounds(day);
+    return readEntriesInRange(
+      startInclusive: bounds.startInclusive,
+      endExclusive: bounds.endExclusive,
+    );
   }
 
   @override
@@ -118,7 +97,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
           .where('logged_at', isLessThan: endExclusive)
           .orderBy('logged_at')
           .get();
-      return _remember(_decodeSnapshot(snapshot));
+      return _cache.rememberAll(decodeCalorieEntrySnapshot(snapshot));
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read calorie range for user $userId',
@@ -145,7 +124,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
       if (snapshot.docs.isEmpty) {
         return null;
       }
-      return _decodeDocument(snapshot.docs.first).loggedAt;
+      return decodeCalorieEntryDocument(snapshot.docs.first).loggedAt;
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read first calorie entry date for user $userId',
@@ -158,9 +137,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   @override
-  Future<bool> saveEntry(CalorieEntry entry) async {
-    return await saveEntryForCurrentUser(entry);
-  }
+  Future<bool> saveEntry(CalorieEntry entry) => saveEntryForCurrentUser(entry);
 
   @override
   Future<bool> saveEntryForCurrentUser(CalorieEntry entry) async {
@@ -170,8 +147,8 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     }
 
     try {
-      final normalizedEntry = entry.copyWith(
-        imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
+      final normalizedEntry = prepareCalorieEntryForSave(
+        entry,
         userId: userId,
         updatedAt: DateTime.now(),
       );
@@ -191,7 +168,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
               );
             }),
       );
-      _cache[normalizedEntry.id] = normalizedEntry;
+      _cache.put(normalizedEntry);
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -239,8 +216,8 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
         _cache.remove(entryId);
         return null;
       }
-      final entry = _decodeDocument(snapshot);
-      _cache[entry.id] = entry;
+      final entry = decodeCalorieEntryDocument(snapshot);
+      _cache.put(entry);
       return entry;
     } on Object catch (error, stackTrace) {
       log(
@@ -254,50 +231,15 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   }
 
   String? _currentUserId() {
-    final userId = _session.currentUserId;
-    if (userId != null && userId.isNotEmpty) {
-      return userId;
-    }
-    return null;
+    final userId = session.currentUserId?.trim();
+    return (userId != null && userId.isNotEmpty) ? userId : null;
   }
 
   CollectionReference<Map<String, dynamic>> _collection(String userId) {
-    return _firestore
+    return firestore
         .collection(_usersCollection)
         .doc(userId)
         .collection(_calorieEntriesCollection);
-  }
-
-  List<CalorieEntry> _decodeSnapshot(
-    QuerySnapshot<Map<String, dynamic>> snapshot,
-  ) {
-    final entries = <CalorieEntry>[];
-    for (final document in snapshot.docs) {
-      try {
-        entries.add(_decodeDocument(document));
-      } on Object catch (error, stackTrace) {
-        log(
-          'Skipping malformed calorie entry ${document.id}',
-          name: _repositoryLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-      }
-    }
-    return entries;
-  }
-
-  CalorieEntry _decodeDocument(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final rawData = doc.data() ?? const <String, dynamic>{};
-    return CalorieEntry.fromJson(normalizeFirestoreJson(rawData));
-  }
-
-  ({DateTime startInclusive, DateTime endExclusive}) _dayBoundsLocal(
-    DateTime day,
-  ) {
-    final start = normalizeDiaryDay(day);
-    final end = nextDiaryDay(start);
-    return (startInclusive: start, endExclusive: end);
   }
 }
 
@@ -311,16 +253,7 @@ CalorieLogRepositoryContract calorieLogRepository(Ref ref) {
     return const UnavailableCalorieLogRepository();
   }
   return FirestoreCalorieLogRepository(
-    session: _CurrentCalorieLogUserSession(currentUserId: currentUserId),
+    session: CurrentCalorieLogUserSession(currentUserId: currentUserId),
     firestore: firestore,
   );
-}
-
-class _CurrentCalorieLogUserSession implements CalorieLogUserSession {
-  const new({required this._currentUserId});
-
-  final String? _currentUserId;
-
-  @override
-  String? get currentUserId => _currentUserId;
 }
