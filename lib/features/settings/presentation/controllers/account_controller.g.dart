@@ -8,59 +8,6 @@ part of 'account_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Secondary auth client.
-
-@ProviderFor(secondaryAuthClient)
-final secondaryAuthClientProvider = SecondaryAuthClientProvider._();
-
-/// Secondary auth client.
-
-final class SecondaryAuthClientProvider
-    extends
-        $FunctionalProvider<
-          SecondaryAuthClient,
-          SecondaryAuthClient,
-          SecondaryAuthClient
-        >
-    with $Provider<SecondaryAuthClient> {
-  /// Secondary auth client.
-  SecondaryAuthClientProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'secondaryAuthClientProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$secondaryAuthClientHash();
-
-  @$internal
-  @override
-  $ProviderElement<SecondaryAuthClient> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  SecondaryAuthClient create(Ref ref) {
-    return secondaryAuthClient(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(SecondaryAuthClient value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<SecondaryAuthClient>(value),
-    );
-  }
-}
-
-String _$secondaryAuthClientHash() =>
-    r'8ecfce9b38fd112781068553f10e45f381588e66';
-
 /// Defines account controller.
 
 @ProviderFor(AccountController)
@@ -89,7 +36,7 @@ final class AccountControllerProvider
   AccountController create() => AccountController();
 }
 
-String _$accountControllerHash() => r'a529ca582933d641eba1a22ea4ca249a6f529628';
+String _$accountControllerHash() => r'f05ee59b813d594c6c69180005f4ea7e3d845053';
 
 /// Defines account controller.
 

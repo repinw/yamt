@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
+import 'package:yamt/features/settings/data/secondary_auth_client.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
@@ -38,19 +39,7 @@ void main() {
     registerFallbackValue(_MockAuthCredential());
   });
 
-  test('secondaryAuthClientProvider returns default implementation', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-
-    final client = container.read(secondaryAuthClientProvider);
-    expect(client, isA<SecondaryAuthClient>());
-  });
-
   test('generated provider hash methods are callable', () {
-    expect(
-      secondaryAuthClientProvider.debugGetCreateSourceHash(),
-      isA<String>(),
-    );
     expect(accountControllerProvider.debugGetCreateSourceHash(), isA<String>());
   });
 

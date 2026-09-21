@@ -33,10 +33,11 @@ wiring Settings provider internals directly.
 
 ## Providers
 
-- Providers use Riverpod code generation and live under `presentation/controllers/`.
+- Providers use Riverpod code generation.
 
 Current providers:
 
+- `data/secondary_auth_client.dart`
 - `presentation/controllers/account_controller.dart`
 - `presentation/controllers/account_page_flow_service.dart`
 

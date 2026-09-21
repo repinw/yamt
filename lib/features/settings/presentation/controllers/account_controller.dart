@@ -3,57 +3,13 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
-import 'package:yamt/firebase_options.dart';
+import 'package:yamt/features/settings/data/secondary_auth_client.dart';
 
 part 'account_controller.g.dart';
-
-/// Secondary auth client.
-@riverpod
-SecondaryAuthClient secondaryAuthClient(Ref ref) {
-  return const _FirebaseSecondaryAuthClient();
-}
-
-/// Defines secondary auth client.
-abstract interface class SecondaryAuthClient {
-  /// Create app.
-  Future<FirebaseApp> createApp(String appName);
-
-  /// Auth for app.
-  FirebaseAuth authForApp(FirebaseApp app);
-
-  /// Dispose app.
-  Future<void> disposeApp(FirebaseApp app);
-}
-
-// coverage:ignore-start
-class _FirebaseSecondaryAuthClient implements SecondaryAuthClient {
-  const new();
-
-  @override
-  Future<FirebaseApp> createApp(String appName) {
-    return Firebase.initializeApp(
-      name: appName,
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  }
-
-  @override
-  FirebaseAuth authForApp(FirebaseApp app) {
-    return FirebaseAuth.instanceFor(app: app);
-  }
-
-  @override
-  Future<void> disposeApp(FirebaseApp app) async {
-    try {
-      await authForApp(app).signOut();
-      await app.delete();
-    } on Object catch (_) {}
-  }
-}
-// coverage:ignore-end
 
 /// Defines account controller.
 @riverpod
@@ -200,25 +156,16 @@ class AccountController extends _$AccountController {
       final auth = ref.read(firebaseAuthProvider);
       final guestUser = _requireAnonymousCurrentUser(auth);
 
-      final appName = 'link-recovery-${DateTime.now().microsecondsSinceEpoch}';
+      final clock = ref.read(clockProvider);
+      final appName = 'link-recovery-${clock().microsecondsSinceEpoch}';
       secondaryApp = await secondaryAuthClient!.createApp(appName);
 
-      final secondaryAuth = secondaryAuthClient.authForApp(secondaryApp);
-      final existingAccount = await secondaryAuth.signInWithCredential(
-        credential,
+      await _replaceConflictingAccountWithGuest(
+        secondaryClient: secondaryAuthClient,
+        secondaryApp: secondaryApp,
+        guestUser: guestUser,
+        credential: credential,
       );
-      final existingUser = existingAccount.user;
-      if (existingUser == null) {
-        throw FirebaseAuthException(
-          code: 'link-not-completed',
-          message: 'Account linking was not completed. Please try again.',
-        );
-      }
-
-      // Remove the existing account so the credential can be linked to the
-      // current guest account.
-      await existingUser.delete();
-      await guestUser.linkWithCredential(credential);
 
       if (!ref.mounted) return;
       state = const AsyncData(null);
@@ -233,6 +180,30 @@ class AccountController extends _$AccountController {
       }
       keepAliveLink.close();
     }
+  }
+
+  Future<void> _replaceConflictingAccountWithGuest({
+    required SecondaryAuthClient secondaryClient,
+    required FirebaseApp secondaryApp,
+    required User guestUser,
+    required AuthCredential credential,
+  }) async {
+    final secondaryAuth = secondaryClient.authForApp(secondaryApp);
+    final existingAccount = await secondaryAuth.signInWithCredential(
+      credential,
+    );
+    final existingUser = existingAccount.user;
+    if (existingUser == null) {
+      throw FirebaseAuthException(
+        code: 'link-not-completed',
+        message: 'Account linking was not completed. Please try again.',
+      );
+    }
+
+    // Remove the existing account so the credential can be linked to the
+    // current guest account.
+    await existingUser.delete();
+    await guestUser.linkWithCredential(credential);
   }
 
   /// Delete guest and sign in with google credential.
