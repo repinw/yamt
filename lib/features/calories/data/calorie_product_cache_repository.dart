@@ -2,10 +2,16 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/firestore_json_normalizer.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/'
+    'calorie_product_cache_document_codec.dart';
+import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
+import 'package:yamt/features/calories/data/'
+    'calorie_product_cache_user_session.dart';
+import 'package:yamt/features/calories/data/'
+    'unavailable_calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 
 part 'calorie_product_cache_repository.g.dart';
@@ -15,13 +21,6 @@ const _usersCollection = 'users';
 const _globalCatalogCollection = 'calorie_product_catalog';
 const _userOverridesCollection = 'calorie_product_overrides';
 const _offProductsCollection = 'off_products';
-const _offCacheStatusFound = 'found';
-
-/// Defines calorie product cache user session.
-abstract interface class CalorieProductCacheUserSession {
-  /// The current user id.
-  String? get currentUserId;
-}
 
 /// Defines firestore calorie product cache repository.
 class FirestoreCalorieProductCacheRepository
@@ -44,7 +43,7 @@ class FirestoreCalorieProductCacheRepository
       if (!snapshot.exists) {
         return null;
       }
-      return _decodeDocument(snapshot, fallbackBarcode: barcode);
+      return decodeCalorieProductDocument(snapshot, fallbackBarcode: barcode);
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read calorie override for $barcode.',
@@ -61,14 +60,17 @@ class FirestoreCalorieProductCacheRepository
     try {
       final snapshot = await _globalDoc(barcode).get();
       if (snapshot.exists) {
-        return _decodeDocument(snapshot, fallbackBarcode: barcode);
+        return decodeCalorieProductDocument(snapshot, fallbackBarcode: barcode);
       }
 
       final offSnapshot = await _offProductsDoc(barcode).get();
       if (!offSnapshot.exists) {
         return null;
       }
-      return _decodeOffCacheDocument(offSnapshot, fallbackBarcode: barcode);
+      return decodeOffCacheProductDocument(
+        offSnapshot,
+        fallbackBarcode: barcode,
+      );
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read global calorie product for $barcode.',
@@ -83,8 +85,11 @@ class FirestoreCalorieProductCacheRepository
   @override
   Future<bool> saveGlobalProduct(CalorieProductProfile profile) async {
     try {
-      final normalized = profile.copyWith(updatedAt: DateTime.now());
-      await _globalDoc(normalized.barcode).set(normalized.toJson());
+      final payload = prepareGlobalProductPayload(
+        profile,
+        updatedAt: DateTime.now(),
+      );
+      await _globalDoc(profile.barcode).set(payload);
       return true;
     } on FirebaseException catch (error) {
       if (error.code == 'permission-denied') {
@@ -123,16 +128,12 @@ class FirestoreCalorieProductCacheRepository
     }
 
     try {
-      final now = DateTime.now();
-      final payload = profile
-          .copyWith(
-            source: CalorieProductSource.userOverride,
-            updatedAt: now,
-            createdAt: now,
-          )
-          .toJson();
-      payload['user_id'] = userId;
-      payload['reason'] = reason;
+      final payload = prepareUserOverridePayload(
+        profile: profile,
+        userId: userId,
+        reason: reason,
+        now: DateTime.now(),
+      );
       await _userOverrideDoc(userId, profile.barcode).set(payload);
       return true;
     } on Object catch (error, stackTrace) {
@@ -172,73 +173,6 @@ class FirestoreCalorieProductCacheRepository
   DocumentReference<Map<String, dynamic>> _offProductsDoc(String barcode) {
     return _firestore.collection(_offProductsCollection).doc(barcode);
   }
-
-  CalorieProductProfile? _decodeDocument(
-    DocumentSnapshot<Map<String, dynamic>> snapshot, {
-    required String fallbackBarcode,
-  }) {
-    final raw = snapshot.data();
-    if (raw == null) {
-      return null;
-    }
-
-    final normalized = normalizeFirestoreJson(raw);
-    final barcode = normalized['barcode'];
-    if (barcode is! String || barcode.isEmpty) {
-      normalized['barcode'] = fallbackBarcode;
-    }
-
-    try {
-      return CalorieProductProfile.fromJson(normalized);
-    } on Object catch (error, stackTrace) {
-      log(
-        'Malformed calorie product cache document ${snapshot.id}.',
-        name: _cacheLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return null;
-    }
-  }
-
-  CalorieProductProfile? _decodeOffCacheDocument(
-    DocumentSnapshot<Map<String, dynamic>> snapshot, {
-    required String fallbackBarcode,
-  }) {
-    final raw = snapshot.data();
-    if (raw == null) {
-      return null;
-    }
-
-    final status = raw['status'];
-    if (status is! String || status != _offCacheStatusFound) {
-      return null;
-    }
-
-    final product = raw['product'];
-    if (product is! Map<String, dynamic>) {
-      return null;
-    }
-
-    final normalized = normalizeFirestoreJson(product);
-
-    final barcode = normalized['barcode'];
-    if (barcode is! String || barcode.isEmpty) {
-      normalized['barcode'] = fallbackBarcode;
-    }
-
-    try {
-      return CalorieProductProfile.fromJson(normalized);
-    } on Object catch (error, stackTrace) {
-      log(
-        'Malformed OFF product cache document ${snapshot.id}.',
-        name: _cacheLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return null;
-    }
-  }
 }
 
 /// Calorie product cache repository.
@@ -246,66 +180,14 @@ class FirestoreCalorieProductCacheRepository
 CalorieProductCacheRepositoryContract calorieProductCacheRepository(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
   final currentUserId = authState.asData?.value?.uid;
-  final firestore = _resolveFirestore();
+  final firestore = ref.watch(firebaseFirestoreProvider);
   if (firestore == null) {
-    return const _UnavailableCalorieProductCacheRepository();
+    return const UnavailableCalorieProductCacheRepository();
   }
   return FirestoreCalorieProductCacheRepository(
-    session: _CurrentCalorieProductCacheUserSession(
+    session: CurrentCalorieProductCacheUserSession(
       currentUserId: currentUserId,
     ),
     firestore: firestore,
   );
-}
-
-class _CurrentCalorieProductCacheUserSession
-    implements CalorieProductCacheUserSession {
-  const new({required this._currentUserId});
-
-  final String? _currentUserId;
-
-  @override
-  String? get currentUserId => _currentUserId;
-}
-
-FirebaseFirestore? _resolveFirestore() {
-  try {
-    return FirebaseFirestore.instance;
-  } on Object catch (error, stackTrace) {
-    log(
-      'Falling back to unavailable calorie product cache repository.',
-      name: _cacheLogName,
-      error: error,
-      stackTrace: stackTrace,
-    );
-    return null;
-  }
-}
-
-class _UnavailableCalorieProductCacheRepository
-    implements CalorieProductCacheRepositoryContract {
-  const new();
-
-  @override
-  Future<CalorieProductProfile?> readUserOverride(String barcode) async {
-    return null;
-  }
-
-  @override
-  Future<CalorieProductProfile?> readGlobalProduct(String barcode) async {
-    return null;
-  }
-
-  @override
-  Future<bool> saveGlobalProduct(CalorieProductProfile profile) async {
-    return false;
-  }
-
-  @override
-  Future<bool> saveUserOverride({
-    required CalorieProductProfile profile,
-    required String reason,
-  }) async {
-    return false;
-  }
 }

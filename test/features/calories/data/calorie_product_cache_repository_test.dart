@@ -1,6 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
+import 'package:yamt/features/calories/data/calorie_product_cache_user_session.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 
 class _FakeSession implements CalorieProductCacheUserSession {
