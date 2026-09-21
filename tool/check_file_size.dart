@@ -61,7 +61,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/core/widgets/home_shell_chrome.dart',
   'lib/core/widgets/text_voice_search_bar.dart',
   'lib/features/activity/presentation/widgets/activity_weight_section/diary_compact_activity_weight_surface.dart',
-  'lib/features/calories/application/calorie_entry_delete_flow.dart',
   'lib/features/calories/application/daily_learned_tdee_resolver.dart',
   'lib/features/calories/data/calorie_log_repository.dart',
   'lib/features/calories/data/calorie_product_cache_repository.dart',

@@ -59,4 +59,4 @@ final class CalorieEntryDeleteFlowProvider
 }
 
 String _$calorieEntryDeleteFlowHash() =>
-    r'6fea9f3399f345e5cb4f52578881cbe03e72c8e6';
+    r'3c715af79e5fb273b2702f079407d162e26bc422';

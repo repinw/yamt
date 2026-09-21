@@ -1,57 +1,20 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_entry_inventory_restore_coordinator.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_weekly_checkin_snapshot_invalidator.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
 
 part 'calorie_entry_delete_flow.g.dart';
 
 const _deleteFlowLogName = 'CalorieEntryDeleteFlow';
-
-/// Defines calorie entry delete failure reason.
-enum CalorieEntryDeleteFailureReason {
-  /// Delete failed.
-  deleteFailed,
-
-  /// Restore failed.
-  restoreFailed,
-
-  /// Restore source was already removed from inventory.
-  sourceMissing,
-}
-
-/// Defines calorie entry delete result.
-class CalorieEntryDeleteResult {
-  const new _({
-    required this.isSuccess,
-    required this.restoredToInventory,
-    this.failureReason,
-  });
-
-  /// Creates a [CalorieEntryDeleteResult] for success.
-  const new success({required bool restoredToInventory})
-    : this._(isSuccess: true, restoredToInventory: restoredToInventory);
-
-  /// Creates a [CalorieEntryDeleteResult] for failure.
-  const new failure(CalorieEntryDeleteFailureReason reason)
-    : this._(
-        isSuccess: false,
-        restoredToInventory: false,
-        failureReason: reason,
-      );
-
-  /// Whether success.
-  final bool isSuccess;
-
-  /// The restored to inventory.
-  final bool restoredToInventory;
-
-  /// The failure reason.
-  final CalorieEntryDeleteFailureReason? failureReason;
-}
 
 /// The calorie entry delete flow provider.
 @riverpod
@@ -78,6 +41,7 @@ CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
         invalidateCalorieWeeklyCheckInSnapshotsFromDay(
           day: day,
           settingsRepository: calorieSettingsRepository,
+          now: ref.read(clockProvider)(),
         ),
     sourcePreparedMealExists: _sourcePreparedMealUnavailable,
   );
@@ -86,51 +50,48 @@ CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
 /// Defines calorie entry delete flow.
 class CalorieEntryDeleteFlow {
   /// The calorie entry delete flow.
-  const new({
-    required this._deleteEntryById,
-    required this._restoreConsumedItem,
-    required this._rollbackRestoredItem,
-    required this._sourceInventoryItemExists,
-    required this._restorePreparedMealPortions,
-    required this._rollbackRestoredPreparedMeal,
-    required this._sourcePreparedMealExists,
-    this._invalidateSnapshotsFromDay = _noopInvalidateSnapshotsFromDay,
-  });
+  new({
+    required this.deleteEntryById,
+    required Future<bool> Function(String itemId, int amount)
+    restoreConsumedItem,
+    required Future<bool> Function(
+      String itemId,
+      int amount, {
+      DateTime? consumedAt,
+    })
+    rollbackRestoredItem,
+    required Future<bool> Function(String itemId) sourceInventoryItemExists,
+    required Future<bool> Function({
+      required String mealId,
+      required num portions,
+    })
+    restorePreparedMealPortions,
+    required Future<bool> Function({
+      required String mealId,
+      required num discardedPortions,
+    })
+    rollbackRestoredPreparedMeal,
+    required Future<bool> Function(String mealId) sourcePreparedMealExists,
+    this.invalidateSnapshotsFromDay = _noopInvalidateSnapshotsFromDay,
+  }) : _inventoryRestorer = CalorieEntryInventoryRestoreCoordinator(
+         restoreConsumedItem: restoreConsumedItem,
+         rollbackRestoredItem: rollbackRestoredItem,
+         sourceInventoryItemExists: sourceInventoryItemExists,
+         restorePreparedMealPortions: restorePreparedMealPortions,
+         rollbackRestoredPreparedMeal: rollbackRestoredPreparedMeal,
+         sourcePreparedMealExists: sourcePreparedMealExists,
+       );
 
-  final Future<bool> Function(String entryId) _deleteEntryById;
-  final Future<bool> Function(String itemId, int amount) _restoreConsumedItem;
-  final Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})
-  _rollbackRestoredItem;
-  final Future<bool> Function(String itemId) _sourceInventoryItemExists;
-  final Future<bool> Function({required String mealId, required num portions})
-  _restorePreparedMealPortions;
-  final Future<bool> Function({
-    required String mealId,
-    required num discardedPortions,
-  })
-  _rollbackRestoredPreparedMeal;
-  final Future<bool> Function(DateTime day) _invalidateSnapshotsFromDay;
-  final Future<bool> Function(String mealId) _sourcePreparedMealExists;
+  /// Callback used to delete a calorie diary entry by its ID.
+  final Future<bool> Function(String entryId) deleteEntryById;
+
+  /// Callback used to invalidate weekly check-in snapshots from the given date.
+  final Future<bool> Function(DateTime day) invalidateSnapshotsFromDay;
+  final CalorieEntryInventoryRestoreCoordinator _inventoryRestorer;
 
   /// Whether the entry's inventory restore source still exists.
-  Future<bool> canRestoreSource(CalorieEntry entry) async {
-    if (entry.canReturnPreparedMealToInventory) {
-      final mealId = entry.bundleSourcePreparedMealId?.trim();
-      if (mealId == null || mealId.isEmpty) {
-        return false;
-      }
-      return await _sourcePreparedMealExists(mealId);
-    }
-
-    if (entry.canRestoreToInventory) {
-      final itemId = entry.sourceInventoryItemId?.trim();
-      if (itemId == null || itemId.isEmpty) {
-        return false;
-      }
-      return await _sourceInventoryItemExists(itemId);
-    }
-
-    return false;
+  Future<bool> canRestoreSource(CalorieEntry entry) {
+    return _inventoryRestorer.canRestoreSource(entry);
   }
 
   /// Delete entry.
@@ -163,162 +124,16 @@ class CalorieEntryDeleteFlow {
             );
     }
 
-    if (entry.canReturnPreparedMealToInventory) {
-      return await _returnPreparedMealToInventory(entry);
-    }
-
-    final sourceItemId = entry.sourceInventoryItemId?.trim();
-    final amountToRestore = entry.sourceInventoryAmountToRestore;
-    if (sourceItemId == null ||
-        sourceItemId.isEmpty ||
-        amountToRestore == null ||
-        amountToRestore < 1) {
-      return const CalorieEntryDeleteResult.failure(
-        CalorieEntryDeleteFailureReason.restoreFailed,
-      );
-    }
-
-    final sourceExists = await _sourceInventoryItemExists(sourceItemId);
-    if (!sourceExists) {
-      log(
-        'deleteEntry(): inventory restore source missing '
-        '(entryId=${entry.id}, itemId=$sourceItemId).',
-        name: _deleteFlowLogName,
-      );
-      return const CalorieEntryDeleteResult.failure(
-        CalorieEntryDeleteFailureReason.sourceMissing,
-      );
-    }
-
-    final restored = await _restoreConsumedItem(sourceItemId, amountToRestore);
-    if (!restored) {
-      return const CalorieEntryDeleteResult.failure(
-        CalorieEntryDeleteFailureReason.restoreFailed,
-      );
-    }
-
-    final deleted = await _deleteDiaryEntry(entry);
-    if (deleted) {
-      return const CalorieEntryDeleteResult.success(restoredToInventory: true);
-    }
-
-    final rolledBack = await _rollbackRestoredItem(
-      sourceItemId,
-      amountToRestore,
-      consumedAt: entry.loggedAt,
-    );
-    if (!rolledBack) {
-      log(
-        'Failed to rollback restored inventory amount '
-        'after diary delete failure entryId=${entry.id} '
-        'itemId=$sourceItemId amount=$amountToRestore.',
-        name: _deleteFlowLogName,
-      );
-    }
-    return const CalorieEntryDeleteResult.failure(
-      CalorieEntryDeleteFailureReason.deleteFailed,
-    );
-  }
-
-  Future<CalorieEntryDeleteResult> _returnPreparedMealToInventory(
-    CalorieEntry entry,
-  ) async {
-    final sourceMealId = entry.bundleSourcePreparedMealId?.trim();
-    final portionsToRestore = entry.bundleConsumedPortions;
-    if (sourceMealId == null ||
-        sourceMealId.isEmpty ||
-        portionsToRestore == null ||
-        portionsToRestore <= 0) {
-      log(
-        '_returnPreparedMealToInventory(): missing prepared meal restore '
-        'data (entryId=${entry.id}, mealId=$sourceMealId, '
-        'portions=$portionsToRestore).',
-        name: _deleteFlowLogName,
-      );
-      return const CalorieEntryDeleteResult.failure(
-        CalorieEntryDeleteFailureReason.restoreFailed,
-      );
-    }
-
-    final sourceExists = await _sourcePreparedMealExists(sourceMealId);
-    if (!sourceExists) {
-      log(
-        '_returnPreparedMealToInventory(): prepared meal source missing '
-        '(entryId=${entry.id}, mealId=$sourceMealId).',
-        name: _deleteFlowLogName,
-      );
-      return const CalorieEntryDeleteResult.failure(
-        CalorieEntryDeleteFailureReason.sourceMissing,
-      );
-    }
-
-    log(
-      '_returnPreparedMealToInventory(): restoring prepared meal '
-      '(entryId=${entry.id}, mealId=$sourceMealId, '
-      'portions=$portionsToRestore, '
-      'loggedAt=${entry.loggedAt.toIso8601String()}, '
-      'createdAt=${entry.createdAt.toIso8601String()}).',
-      name: _deleteFlowLogName,
-    );
-    final restored = await _restorePreparedMealPortions(
-      mealId: sourceMealId,
-      portions: portionsToRestore,
-    );
-    if (!restored) {
-      log(
-        '_returnPreparedMealToInventory(): restore failed '
-        '(entryId=${entry.id}, mealId=$sourceMealId, '
-        'portions=$portionsToRestore).',
-        name: _deleteFlowLogName,
-      );
-      return const CalorieEntryDeleteResult.failure(
-        CalorieEntryDeleteFailureReason.restoreFailed,
-      );
-    }
-
-    final deleted = await _deleteDiaryEntry(entry);
-    if (deleted) {
-      log(
-        '_returnPreparedMealToInventory(): restore and diary delete '
-        'succeeded (entryId=${entry.id}, mealId=$sourceMealId).',
-        name: _deleteFlowLogName,
-      );
-      return const CalorieEntryDeleteResult.success(restoredToInventory: true);
-    }
-
-    log(
-      '_returnPreparedMealToInventory(): diary delete failed after restore '
-      '(entryId=${entry.id}, mealId=$sourceMealId, '
-      'portions=$portionsToRestore).',
-      name: _deleteFlowLogName,
-    );
-    final rolledBack = await _rollbackRestoredPreparedMeal(
-      mealId: sourceMealId,
-      discardedPortions: portionsToRestore,
-    );
-    if (!rolledBack) {
-      log(
-        'Failed to rollback restored prepared meal portions '
-        'after diary delete failure entryId=${entry.id} '
-        'mealId=$sourceMealId portions=$portionsToRestore.',
-        name: _deleteFlowLogName,
-      );
-    } else {
-      log(
-        '_returnPreparedMealToInventory(): rollback after diary delete '
-        'failure succeeded (entryId=${entry.id}, mealId=$sourceMealId).',
-        name: _deleteFlowLogName,
-      );
-    }
-    return const CalorieEntryDeleteResult.failure(
-      CalorieEntryDeleteFailureReason.deleteFailed,
+    return await _inventoryRestorer.restoreAndCompensate(
+      entry: entry,
+      onDiaryDelete: () => _deleteDiaryEntry(entry),
     );
   }
 
   Future<bool> _deleteDiaryEntry(CalorieEntry entry) async {
-    final deleted = await _deleteEntryById(entry.id);
+    final deleted = await deleteEntryById(entry.id);
     if (deleted) {
-      await _invalidateSnapshotsFromDay(entry.loggedAt);
+      await invalidateSnapshotsFromDay(entry.loggedAt);
     }
     return deleted;
   }
@@ -360,30 +175,4 @@ Future<bool> _rollbackPreparedMealUnavailable({
 
 Future<bool> _sourcePreparedMealUnavailable(String mealId) async {
   return false;
-}
-
-/// Invalidates weekly check-in snapshots from the provided diary day.
-Future<bool> invalidateCalorieWeeklyCheckInSnapshotsFromDay({
-  required DateTime day,
-  required CalorieSettingsRepository settingsRepository,
-}) async {
-  try {
-    final previous = await settingsRepository.readSettings();
-    final nextSettings = previous.invalidateWeeklyCheckInSnapshotsFromDay(
-      day: day,
-      invalidatedAt: DateTime.now(),
-    );
-    if (identical(previous, nextSettings)) {
-      return true;
-    }
-    return await settingsRepository.saveSettings(nextSettings);
-  } on Object catch (error, stackTrace) {
-    log(
-      'Failed to invalidate weekly check-in snapshots.',
-      name: _deleteFlowLogName,
-      error: error,
-      stackTrace: stackTrace,
-    );
-    return false;
-  }
 }

@@ -2,7 +2,10 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/application/'
+    'calorie_weekly_checkin_snapshot_invalidator.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
@@ -93,6 +96,7 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
       return invalidateCalorieWeeklyCheckInSnapshotsFromDay(
         day: day,
         settingsRepository: calorieSettingsRepository,
+        now: ref.read(clockProvider)(),
       );
     },
     sourcePreparedMealExists: (mealId) {

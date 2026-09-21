@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dar
 import 'package:yamt/features/calories/application/'
     'calorie_inventory_entry_save_handler.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';

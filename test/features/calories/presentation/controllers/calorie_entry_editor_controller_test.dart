@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dar
 import 'package:yamt/features/calories/application/'
     'calorie_inventory_entry_save_handler.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/presentation/controllers/'
     'calorie_entry_editor_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
@@ -59,6 +60,14 @@ class _FakeCalorieEntryDeleteFlow implements CalorieEntryDeleteFlow {
             CalorieEntryDeleteFailureReason.deleteFailed,
           );
   }
+
+  @override
+  Future<bool> Function(String entryId) get deleteEntryById =>
+      throw UnimplementedError();
+
+  @override
+  Future<bool> Function(DateTime day) get invalidateSnapshotsFromDay =>
+      throw UnimplementedError();
 }
 
 void main() {
