@@ -138,7 +138,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/product_search_hub/presentation/widgets/manual_product_search_form/manual_product_search_form.dart',
   'lib/features/product_search_hub/presentation/widgets/manual_product_search_form/manual_product_search_shell.dart',
   'lib/features/product_search_hub/presentation/widgets/manual_product_search_form_details.dart',
-  'lib/features/product_search_hub/presentation/widgets/product_ai_search_page/product_ai_search_page.dart',
   'lib/features/recipes/application/template_ingredient_parser.dart',
   'lib/features/settings/presentation/pages/account_page.dart',
   'lib/features/shared/widgets/auth_form_components.dart',

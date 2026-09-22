@@ -16,6 +16,8 @@ import 'package:yamt/features/product_search_hub/domain/'
     'product_ai_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'manual_product_ai_search_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'

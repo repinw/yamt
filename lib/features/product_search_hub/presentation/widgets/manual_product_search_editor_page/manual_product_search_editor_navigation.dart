@@ -6,6 +6,8 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'manual_product_ai_search_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_page/'
     'manual_product_search_editor_support.dart';
@@ -15,8 +17,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_route_args.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_ai_search_page/product_ai_search_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the nested product editor for [product].

@@ -2,18 +2,15 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'product_ai_nutrition_selection.dart';
-import 'package:yamt/features/product_search_hub/application/'
-    'product_ai_search_result_builder.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'product_ai_search_service.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -27,31 +24,12 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'product_ai_search_page/product_ai_prompt_bar.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_ai_search_page/product_ai_search_body.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'product_ai_search_page/product_ai_search_support.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Result returned from the AI food creation page.
-class ManualProductAiSearchResult {
-  /// Creates a result.
-  const new({
-    required this.item,
-    required this.action,
-    required this.globalPackageWeight,
-    this.eatSelection,
-  });
-
-  /// Built inventory item.
-  final InventoryItem item;
-
-  /// Requested follow-up action.
-  final InventoryReceiptManualProductAction action;
-
-  /// Package weight to persist globally.
-  final String globalPackageWeight;
-
-  /// Generic eat selection for callers that continue into an eat flow.
-  final EatSelection? eatSelection;
-}
 
 /// Read-only AI food creation page with limited user adjustments.
 class ManualProductAiSearchPage extends ConsumerStatefulWidget {
@@ -112,7 +90,8 @@ class _ManualProductAiSearchPageState
     }
     _promptController = TextEditingController(text: widget.initialPrompt);
     _weightController = TextEditingController();
-    _selectedLoggedAt = quickEatConfig.preselectedLoggedAt ?? DateTime.now();
+    _selectedLoggedAt =
+        quickEatConfig.preselectedLoggedAt ?? ref.read(clockProvider)();
     _selectedMealType =
         quickEatConfig.preselectedMealType ??
         MealType.defaultForDateTime(_selectedLoggedAt);
@@ -133,7 +112,11 @@ class _ManualProductAiSearchPageState
     final weightErrorText = _hasWeightError
         ? l10n.inventoryManualAddAiSearchWeightRequired
         : null;
-    final isLoggedAtToday = _isLoggedAtToday();
+    final now = ref.read(clockProvider)();
+    final isLoggedAtToday = isProductAiLoggedAtToday(
+      selectedLoggedAt: _selectedLoggedAt,
+      now: now,
+    );
     final loggedAtLabel = isLoggedAtToday
         ? null
         : MaterialLocalizations.of(context).formatMediumDate(_selectedLoggedAt);
@@ -143,43 +126,13 @@ class _ManualProductAiSearchPageState
       body: ManualProductSearchShell(
         title: l10n.inventoryManualAddAiSearchTitle,
         onClose: _closePage,
-        searchBar: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextVoiceSearchBar(
-              controller: _promptController,
-              label: l10n.inventoryManualAddAiSearchPromptLabel,
-              hintText: l10n.inventoryManualAddAiSearchPromptHint,
-              fieldKey: const Key('manual_product_ai_prompt_field'),
-              voiceButtonKey: const Key(
-                'manual_product_ai_voice_search_button',
-              ),
-              clearButtonKey: const Key(
-                'manual_product_ai_prompt_clear_button',
-              ),
-              autofocus: widget.initialPrompt.trim().isEmpty,
-              enabled: !_isLoading,
-              voiceSearchService: _voiceSearchService,
-              voiceSearchController: _voiceSearchController,
-              prefixIcon: const Icon(Icons.auto_awesome_outlined),
-            ),
-            const SizedBox(height: AppSpacing.md),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton.icon(
-                key: const Key('manual_product_ai_generate_button'),
-                onPressed: _isLoading ? null : () => unawaited(_generate()),
-                icon: _isLoading
-                    ? const SizedBox(
-                        width: 18,
-                        height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Icon(Icons.auto_awesome_rounded),
-                label: Text(l10n.inventoryManualAddAiSearchGenerateAction),
-              ),
-            ),
-          ],
+        searchBar: ProductAiPromptBar(
+          promptController: _promptController,
+          voiceSearchController: _voiceSearchController,
+          voiceSearchService: _voiceSearchService,
+          isLoading: _isLoading,
+          autofocus: widget.initialPrompt.trim().isEmpty,
+          onGenerate: () => unawaited(_generate()),
         ),
         body: ManualProductAiSearchBody(
           draft: _draft,
@@ -216,18 +169,12 @@ class _ManualProductAiSearchPageState
     );
   }
 
-  ProductAiNutritionSelection? get _resolvedSelection {
-    final draft = _draft;
-    final weightGrams = _weightGrams;
-    if (draft == null || weightGrams == null) {
-      return null;
-    }
-    return buildProductAiNutritionSelection(
-      draft: draft,
-      weightGrams: weightGrams,
-      selectedPer100Kcal: _selectedPer100Kcal ?? baseProductAiPer100Kcal(draft),
-    );
-  }
+  ProductAiNutritionSelection? get _resolvedSelection =>
+      resolveProductAiNutritionSelection(
+        draft: _draft,
+        weightGrams: _weightGrams,
+        selectedPer100Kcal: _selectedPer100Kcal,
+      );
 
   Future<void> _generate() async {
     await _voiceSearchController.stopVoiceSearchIfNeeded();
@@ -263,7 +210,7 @@ class _ManualProductAiSearchPageState
       return;
     }
 
-    final basePer100Kcal = baseProductAiPer100Kcal(draft);
+    final basePer100Kcal = resolveProductAiBasePer100Kcal(draft);
     setState(() {
       _isLoading = false;
       _draft = draft;
@@ -278,14 +225,12 @@ class _ManualProductAiSearchPageState
   }
 
   void _handleWeightChanged(String value) {
-    final parsedValue = parseManualProductDouble(value);
+    final parsedValue = parseProductAiWeightInput(value);
     setState(() {
-      if (parsedValue == null || parsedValue <= 0) {
-        _hasWeightError = true;
-        return;
+      _hasWeightError = parsedValue == null;
+      if (parsedValue != null) {
+        _weightGrams = parsedValue;
       }
-      _hasWeightError = false;
-      _weightGrams = parsedValue;
     });
   }
 
@@ -295,51 +240,28 @@ class _ManualProductAiSearchPageState
       return;
     }
 
-    final result = ManualProductAiSearchResult(
-      item: buildProductAiResultItem(
-        baseItem: widget.item,
-        selection: selection,
-      ),
+    final result = buildManualProductAiSearchResult(
+      baseItem: widget.item,
+      selection: selection,
       action: _selectedAction,
-      globalPackageWeight: selection.weightLabel,
-      eatSelection: buildProductAiEatSelection(
-        eatNow: _selectedAction == InventoryReceiptManualProductAction.eatNow,
-        selection: selection,
-        loggedAt: _selectedLoggedAt,
-        mealType: _selectedMealType,
-      ),
+      loggedAt: _selectedLoggedAt,
+      mealType: _selectedMealType,
     );
     _closePage(result);
   }
 
-  bool _isLoggedAtToday() {
-    final today = DateUtils.dateOnly(DateTime.now());
-    final selectedDay = DateUtils.dateOnly(_selectedLoggedAt);
-    return selectedDay == today;
-  }
-
   Future<void> _pickLoggedAt() async {
-    final initialDate = DateUtils.dateOnly(_selectedLoggedAt);
-    final lastDate = DateUtils.dateOnly(DateTime.now());
-    final pickedDate = await showDatePicker(
+    final pickedDate = await pickProductAiLoggedDate(
       context: context,
-      initialDate: initialDate.isAfter(lastDate) ? lastDate : initialDate,
-      firstDate: DateTime(2000),
-      lastDate: lastDate,
+      selectedLoggedAt: _selectedLoggedAt,
+      now: ref.read(clockProvider)(),
     );
     if (!mounted || pickedDate == null) {
       return;
     }
 
-    final now = DateTime.now();
     setState(() {
-      _selectedLoggedAt = DateTime(
-        pickedDate.year,
-        pickedDate.month,
-        pickedDate.day,
-        now.hour,
-        now.minute,
-      );
+      _selectedLoggedAt = pickedDate;
     });
   }
 
