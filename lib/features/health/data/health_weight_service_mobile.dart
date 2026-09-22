@@ -23,9 +23,9 @@ class MobileHealthWeightService implements HealthWeightService {
     DateTime Function()? now,
     Duration cacheTtl = const Duration(minutes: 5),
     HealthWeightSampleCache? cache,
-  })  : _health = health ?? Health(),
-        _now = now ?? DateTime.now,
-        _cache = cache ?? HealthWeightSampleCache(ttl: cacheTtl);
+  }) : _health = health ?? Health(),
+       _now = now ?? DateTime.now,
+       _cache = cache ?? HealthWeightSampleCache(ttl: cacheTtl);
 
   final Health _health;
   final DateTime Function() _now;
@@ -202,10 +202,10 @@ class MobileHealthWeightService implements HealthWeightService {
     final sourceName = point.sourceName.trim();
     final sourcePackageName =
         point.sourcePlatform == HealthPlatformType.appleHealth
-            ? sourceId
-            : sourceName.isNotEmpty
-                ? sourceName
-                : sourceId;
+        ? sourceId
+        : sourceName.isNotEmpty
+        ? sourceName
+        : sourceId;
     final packageName = _packageName?.trim();
     return HealthWeightSample(
       recordedAt: point.dateFrom.toLocal(),

@@ -73,10 +73,8 @@ class CookingFlowInventoryCheckCoordinator {
       suggestedItem: suggestedItem,
       onAssignPressed: () => selectInventoryItem(index),
       onEditPressed: () => editIngredient(index),
-      onShoppingPressed: () => selectAction(
-        index,
-        CookingFlowInventoryRowAction.shoppingCart,
-      ),
+      onShoppingPressed: () =>
+          selectAction(index, CookingFlowInventoryRowAction.shoppingCart),
       onIgnorePressed: () =>
           selectAction(index, CookingFlowInventoryRowAction.ignored),
       onBuyRemainingPressed: () => setConflictResolution(
@@ -249,7 +247,7 @@ class CookingFlowInventoryCheckCoordinator {
     required WidgetRef ref,
     required List<InventoryItem> inventoryItems,
     required ValueChanged<CookingFlowIntroSelectionState>
-        onSelectionStateChanged,
+    onSelectionStateChanged,
   }) {
     final selectionState = ref
         .read(cookingFlowIntroInventoryControllerProvider.notifier)

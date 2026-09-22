@@ -88,10 +88,7 @@ ManualProductAiSearchResult buildManualProductAiSearchResult({
   required MealType mealType,
 }) {
   return ManualProductAiSearchResult(
-    item: buildProductAiResultItem(
-      baseItem: baseItem,
-      selection: selection,
-    ),
+    item: buildProductAiResultItem(baseItem: baseItem, selection: selection),
     action: action,
     globalPackageWeight: selection.weightLabel,
     eatSelection: buildProductAiEatSelection(

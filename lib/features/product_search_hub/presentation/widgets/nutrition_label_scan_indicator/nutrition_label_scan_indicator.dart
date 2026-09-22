@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:flutter/widget_previews.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 
 /// Shows a captured nutrition label with an animated scanning line.
 class NutritionLabelScanIndicator extends StatefulWidget {

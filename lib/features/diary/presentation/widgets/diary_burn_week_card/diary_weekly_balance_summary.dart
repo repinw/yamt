@@ -9,7 +9,7 @@ import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dar
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_weekly_balance_card.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_segmented_skeleton_bar.dart';
 
 /// Compact weekly Burn Week summary for fused diary metric cards.
 class DiaryWeeklyBalanceSummary extends ConsumerStatefulWidget {

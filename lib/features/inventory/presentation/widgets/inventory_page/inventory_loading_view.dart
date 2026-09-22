@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_home_shell_top_chrome.dart';
 
 /// Loading view for inventory page.

@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 
 /// Text-only auth action button with loading state.

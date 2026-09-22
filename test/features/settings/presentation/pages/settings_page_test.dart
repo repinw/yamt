@@ -263,9 +263,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _scrollToText(tester, 'Detailed home screen widget');
-    await tester.tap(
-      _settingsTile(SettingsPageKeys.homeWidgetVerboseModeTile),
-    );
+    await tester.tap(_settingsTile(SettingsPageKeys.homeWidgetVerboseModeTile));
     await tester.pumpAndSettle();
 
     expect(
