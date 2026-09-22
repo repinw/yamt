@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// Maximum allowed line count for Dart files under lib/.
-/// Aligned with architecture.md limit of 250-300 lines.
+/// Maximum allowed line count for Dart files under lib/, as set in
+/// architecture.md.
 const maxFileLineLimit = 300;
 
 void main() {
@@ -38,8 +38,8 @@ void main() {
         )
         ..writeln(violations.join('\n'))
         ..writeln(
-          '\nPer architecture.md, split files exceeding 250-300 lines '
-          'into smaller, focused modules.',
+          '\nPer architecture.md, split files over $maxFileLineLimit lines '
+          'by responsibility. NEVER add them to the allowlist.',
         );
 
       expect(violations, isEmpty, reason: failureMessage.toString());
