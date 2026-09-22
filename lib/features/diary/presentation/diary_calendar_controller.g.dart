@@ -111,7 +111,7 @@ final class DiaryCalendarBoundsProvider
 }
 
 String _$diaryCalendarBoundsHash() =>
-    r'803b512a0b06bbc2518fd943cd262b7fbb461955';
+    r'd48cb9488420b55ced5ba0cb68ed5ec2778ec7e9';
 
 /// Stores the diary calendar selection shared by the shell app bar and page.
 

@@ -14,6 +14,7 @@ void main() {
     Future<void> pumpBar(
       WidgetTester tester, {
       required double progress,
+      double overflow = 0,
     }) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -23,6 +24,7 @@ void main() {
                 width: 200,
                 child: DiarySegmentedProgressBar(
                   progress: progress,
+                  overflow: overflow,
                   color: Colors.blue,
                   trackColor: Colors.grey,
                   isDark: false,
@@ -102,6 +104,41 @@ void main() {
 
       final factors = getWidthFactors(tester);
       expect(factors, [0.0, 0.0, 0.0, 0.0]);
+    });
+
+    Finder stripes() => find.descendant(
+      of: find.byType(DiarySegmentedProgressBar),
+      matching: find.byType(CustomPaint),
+    );
+
+    testWidgets('draws no stripes without overflow', (tester) async {
+      await pumpBar(tester, progress: 1);
+
+      expect(stripes(), findsNothing);
+    });
+
+    testWidgets('stripes only the last segment at 0.25 overflow', (
+      tester,
+    ) async {
+      await pumpBar(tester, progress: 1, overflow: 0.25);
+
+      expect(stripes(), findsOneWidget);
+      // Four solid fills, then the striped overlay of the last segment.
+      expect(getWidthFactors(tester), [1.0, 1.0, 1.0, 1.0, 1.0]);
+      // The stripes fill the full bar height, so they are visible.
+      expect(tester.getSize(stripes()).height, 6);
+    });
+
+    testWidgets('stripes part of a segment for a partial overflow', (
+      tester,
+    ) async {
+      await pumpBar(tester, progress: 1, overflow: 0.375);
+
+      expect(stripes(), findsNWidgets(2));
+      final factors = getWidthFactors(tester);
+      // Segment 3 (0.5 to 0.75) is striped from 0.625 on.
+      expect(factors[3], closeTo(0.5, 0.001));
+      expect(factors.last, 1.0);
     });
 
     testWidgets('renders custom segment count (7 segments)', (tester) async {

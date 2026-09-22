@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_macro_row.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
 void main() {
   group('DiaryNutritionMacroRow', () {
@@ -77,6 +78,27 @@ void main() {
         find.textContaining('85 / 70g', findRichText: true),
         findsOneWidget,
       );
+    });
+
+    double barOverflow(WidgetTester tester) => tester
+        .widget<DiarySegmentedProgressBar>(
+          find.byType(DiarySegmentedProgressBar),
+        )
+        .overflow;
+
+    testWidgets('stripes the overage share of the bar', (tester) async {
+      await pumpRow(tester, label: 'Fat', current: 85, target: 70);
+
+      expect(barOverflow(tester), closeTo(15 / 85, 0.0001));
+    });
+
+    testWidgets('stripes protein beyond its target like the other macros', (
+      tester,
+    ) async {
+      await pumpRow(tester, label: 'Protein', current: 120, target: 100);
+
+      expect(find.text('+20g'), findsOneWidget);
+      expect(barOverflow(tester), closeTo(20 / 120, 0.0001));
     });
 
     testWidgets('handles zero target safely without division by zero', (

@@ -54,6 +54,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_weekly_balance_summary.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_day_type_toggle.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_day_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
@@ -825,6 +826,40 @@ void main() {
     expect(find.text('Practice day'), findsOneWidget);
     expect(find.textContaining('Burn Week starts on'), findsOneWidget);
     expect(find.text('Goal: 1,200 kcal'), findsOneWidget);
+  });
+
+  testWidgets('swiping the page selects the neighbouring day', (tester) async {
+    final container = await _pumpDiaryPage(tester, selectedDay: selectedDay);
+    DateTime currentDay() =>
+        container.read(diaryCalendarControllerProvider).selectedDay;
+
+    await tester.fling(find.byType(PageView), const Offset(-300, 0), 1000);
+    // The page spring needs a while to come to rest.
+    await _pumpFrames(tester, count: 20);
+    expect(currentDay(), DateTime(2026, 4, 28));
+    expect(
+      tester.widget<DiaryDayView>(find.byType(DiaryDayView)).day,
+      DateTime(2026, 4, 28),
+    );
+
+    await tester.fling(find.byType(PageView), const Offset(300, 0), 1000);
+    await _pumpFrames(tester, count: 20);
+    expect(currentDay(), selectedDay);
+  });
+
+  testWidgets('selecting another day slides the pages to it', (tester) async {
+    final container = await _pumpDiaryPage(tester, selectedDay: selectedDay);
+
+    container.read(diaryCalendarControllerProvider.notifier).selectNextDay();
+    await _pumpFrames(tester);
+
+    final bounds = container.read(diaryCalendarBoundsProvider);
+    final pageView = tester.widget<PageView>(find.byType(PageView));
+    expect(pageView.controller!.page, bounds.indexOf(DateTime(2026, 4, 28)));
+    expect(
+      tester.widget<DiaryDayView>(find.byType(DiaryDayView)).day,
+      DateTime(2026, 4, 28),
+    );
   });
 
   testWidgets('refreshes calendar today when the app resumes', (tester) async {

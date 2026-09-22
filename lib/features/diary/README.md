@@ -29,8 +29,8 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   `HeroTags.loggedEntryImage`, so it flies into the Calories details sheet.
 - `presentation/widgets/diary_macro_strip/` owns the compact kcal and macro
   strip pinned under the top bar. `diary_macro_strip_trigger.dart` reveals it
-  in stages as the daily card's kcal bar and macro bars scroll away; the page
-  places the trigger sliver directly above the daily card.
+  in stages as the daily card's kcal bar and macro bars scroll away; each day
+  view places the trigger sliver directly above its daily card.
 - `presentation/widgets/diary_weekly_progress_section.dart` is the weekly
   budget, activity, and weight card. The Progress tab shows it; the diary page
   does not.

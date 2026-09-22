@@ -101,6 +101,9 @@ abstract final class AppDurations {
 
   /// Duration of the home bottom navigation indicator animation.
   static const Duration homeBottomNavIndicator = Duration(milliseconds: 180);
+
+  /// Slide to the neighbouring diary day after an arrow tap.
+  static const Duration diaryDayPageSlide = Duration(milliseconds: 300);
 }
 
 /// Shared opacity values.

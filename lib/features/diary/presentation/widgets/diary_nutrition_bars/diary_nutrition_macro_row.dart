@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_animated_macro_bar.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_scaled_value_text.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
 const double _valueWidth = 42;
 const double _totalWidth = 68;
@@ -20,6 +20,8 @@ const double diaryMacroLabelWidth = 44;
 
 /// Single macronutrient progress row with remaining value, label,
 /// segmented bar, and optionally the consumed/target ratio.
+///
+/// Eating beyond the target stripes the end of the bar.
 class DiaryNutritionMacroRow extends StatelessWidget {
   /// Creates a nutrition macro row.
   const new({
@@ -58,7 +60,6 @@ class DiaryNutritionMacroRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final isDark = colors.brightness == Brightness.dark;
-    final progress = target <= 0 ? 0.0 : (current / target).clamp(0.0, 1.0);
     final remaining = target - current;
     final isOverTarget = remaining < -0.5;
     final roundedRemaining = remaining.round();
@@ -68,7 +69,12 @@ class DiaryNutritionMacroRow extends StatelessWidget {
     final trackColor = colors.surface;
     final textTheme = Theme.of(context).textTheme;
     // Without the totals column the remaining grams get more room and size.
-    final valueStyle = showTotal ? textTheme.titleMedium : textTheme.titleLarge;
+    final valueStyle =
+        (showTotal ? textTheme.titleMedium : textTheme.titleLarge)?.copyWith(
+          color: color,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -0.4,
+        );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
@@ -81,11 +87,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
               isOverTarget
                   ? '+${numberFormat.format(-roundedRemaining)}$unit'
                   : '$remainingFormatted$unit',
-              style: valueStyle?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.4,
-              ),
+              style: valueStyle,
             ),
           ),
           const SizedBox(width: diaryMacroValueLabelGap),
@@ -105,8 +107,10 @@ class DiaryNutritionMacroRow extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           // Column 3: 4-segment animated bar
           Expanded(
-            child: DiarySegmentedProgressBar(
-              progress: progress,
+            child: DiaryAnimatedMacroBar(
+              handoffTag: (#diaryMacroBar, label),
+              current: current,
+              target: target,
               color: color,
               trackColor: trackColor,
               isDark: isDark,

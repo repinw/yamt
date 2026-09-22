@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/features/diary/domain/diary_macro_overage.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_amount_text.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -65,6 +66,7 @@ class DiaryMacroStripMacroItem extends StatelessWidget {
         const SizedBox(height: AppSpacing.xxs),
         DiarySegmentedProgressBar(
           progress: target <= 0 ? 0 : current / target,
+          overflow: diaryMacroOverageShare(current: current, target: target),
           color: color,
           trackColor: colors.surfaceContainerHighest,
           isDark: colors.brightness == Brightness.dark,

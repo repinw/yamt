@@ -43,10 +43,12 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## Diary
 
 - Daily diary page for meals, calorie balance, activity, and weight.
-- Date selection and calendar strip navigation.
+- Date selection and calendar strip navigation. Swiping the diary slides to
+  the previous or next day.
 - Meal sections for breakfast, lunch, dinner, and snacks.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
-- Nutrition bars and macro summaries.
+- Nutrition bars and macro summaries. A macro above its target shows `+X g`
+  and stripes the overage share at the end of its bar.
 - Burn Week balance cards with daily and weekly progress.
 - Weekly check-in prompts and success/hint cards.
 

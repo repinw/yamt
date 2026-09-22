@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/utils/date_utils.dart';
@@ -16,7 +17,9 @@ DateTime Function() diaryCalendarNow(Ref ref) {
 @riverpod
 DiaryCalendarBounds diaryCalendarBounds(Ref ref) {
   return DiaryCalendarBounds.resolve(
-    today: ref.watch(diaryCalendarControllerProvider).today,
+    today: ref.watch(
+      diaryCalendarControllerProvider.select((state) => state.today),
+    ),
     planStartDay: ref.watch(diaryPlanStartDayProvider),
   );
 }

@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/router/app_route_observer.dart';
+import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/core/widgets/home_nav_entry.dart';
 import 'package:yamt/core/widgets/home_nav_item.dart';
@@ -33,9 +35,13 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   late final HomeShellChromeVisibilityController _chromeVisibilityController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  RouteObserver<ModalRoute<void>>? _routeObserver;
+
+  /// Whether a sheet, dialog, or page covers the shell.
+  var _isCovered = false;
 
   @override
   void initState() {
@@ -44,7 +50,25 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (_routeObserver == null && route != null) {
+      final observer = ref.read(appRouteObserverProvider)
+        ..subscribe(this, route);
+      _routeObserver = observer;
+    }
+  }
+
+  @override
+  void didPushNext() => setState(() => _isCovered = true);
+
+  @override
+  void didPopNext() => setState(() => _isCovered = false);
+
+  @override
   void dispose() {
+    _routeObserver?.unsubscribe(this);
     _chromeVisibilityController.dispose();
     super.dispose();
   }
@@ -137,7 +161,10 @@ class _HomePageState extends ConsumerState<HomePage> {
             openMenu: _openMenu,
             child: Stack(
               children: [
-                widget.navigationShell,
+                ContentVisibility(
+                  isVisible: !_isCovered,
+                  child: widget.navigationShell,
+                ),
                 Positioned(
                   left: 0,
                   right: 0,

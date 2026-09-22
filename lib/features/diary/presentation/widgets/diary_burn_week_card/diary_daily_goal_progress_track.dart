@@ -1,9 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/visible_value_animation_builder.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 
 const Duration _progressAnimationDuration = Duration(milliseconds: 1000);
 const Curve _progressAnimationCurve = Curves.easeOut;
+
+/// Tags the segments' animated values, so the next day's bar continues from
+/// this one.
+const Object _handoffTag = #dailyGoalProgressTrack;
 
 /// Animated daily kcal progress track.
 class DiaryDailyGoalProgressTrack extends StatelessWidget {
@@ -108,10 +113,11 @@ class _ActivityPreviewSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
+    return VisibleValueAnimationBuilder(
       duration: _progressAnimationDuration,
       curve: _progressAnimationCurve,
-      tween: Tween<double>(begin: 0, end: activitySegmentRatio),
+      value: activitySegmentRatio,
+      handoffTag: (_handoffTag, #activityPreview),
       builder: (context, value, child) {
         if (value <= 0) {
           return const SizedBox.shrink();
@@ -146,10 +152,11 @@ class _EatenProgressSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
+    return VisibleValueAnimationBuilder(
       duration: _progressAnimationDuration,
       curve: _progressAnimationCurve,
-      tween: Tween<double>(begin: 0, end: eatenRatio),
+      value: eatenRatio,
+      handoffTag: (_handoffTag, #eaten),
       builder: (context, value, child) {
         return Positioned(
           left: 0,
@@ -185,10 +192,11 @@ class _ActivityFilledSegment extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
+    return VisibleValueAnimationBuilder(
       duration: _progressAnimationDuration,
       curve: _progressAnimationCurve,
-      tween: Tween<double>(begin: 0, end: activityFillRatio),
+      value: activityFillRatio,
+      handoffTag: (_handoffTag, #activityFill),
       builder: (context, value, child) {
         return Positioned(
           left: width * activitySegmentStartRatio,
@@ -219,10 +227,11 @@ class _ActivityDivider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TweenAnimationBuilder<double>(
+    return VisibleValueAnimationBuilder(
       duration: _progressAnimationDuration,
       curve: _progressAnimationCurve,
-      tween: Tween<double>(begin: 0, end: activitySegmentRatio),
+      value: activitySegmentRatio,
+      handoffTag: (_handoffTag, #activityDivider),
       builder: (context, value, child) {
         if (value <= 0) {
           return const SizedBox.shrink();

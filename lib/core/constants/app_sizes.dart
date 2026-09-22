@@ -42,6 +42,12 @@ abstract final class AppSizes {
   /// Height of the thin progress bars in the diary macro strip.
   static const double stripProgressBarHeight = 4;
 
+  /// Stroke width of the diagonal stripes that mark a macro's overage.
+  static const double overflowStripeWidth = 1.5;
+
+  /// Horizontal distance between the overage stripes.
+  static const double overflowStripeSpacing = 4;
+
   /// Border width that separates a count badge from the image below it.
   static const double badgeBorderWidth = 2;
 

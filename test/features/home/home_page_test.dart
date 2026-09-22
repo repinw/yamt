@@ -9,6 +9,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/router/app_route_observer.dart';
+import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/core/widgets/home_shell_bottom_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
@@ -288,10 +290,10 @@ Widget _defaultBranchBody(HomeTabType tab) {
 }
 
 Widget _diaryTopChromeBranchBody() {
-  return const CustomScrollView(
-    slivers: [
+  return const Column(
+    children: [
       DiaryHomeShellTopChrome(),
-      SliverFillRemaining(hasScrollBody: false, child: SizedBox()),
+      Expanded(child: SizedBox()),
     ],
   );
 }
@@ -381,8 +383,10 @@ Widget _buildHarness({
       : normalizeDiaryDay(selectedDiaryDay);
   final firebaseAuth = _MockFirebaseAuth();
   when(() => firebaseAuth.currentUser).thenReturn(null);
+  final routeObserver = RouteObserver<ModalRoute<void>>();
   final router = GoRouter(
     initialLocation: initialLocation,
+    observers: [routeObserver],
     routes: <RouteBase>[
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
@@ -449,6 +453,7 @@ Widget _buildHarness({
 
   final container = ProviderContainer(
     overrides: [
+      appRouteObserverProvider.overrideWithValue(routeObserver),
       authStateChangesProvider.overrideWith(
         (ref) => const Stream<User?>.empty(),
       ),
@@ -521,6 +526,38 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(HomeContextFab), findsNothing);
+  });
+
+  testWidgets('a page over the shell marks the tab content as covered', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: _diaryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    final diaryChrome = find.byType(
+      DiaryHomeShellTopChrome,
+      skipOffstage: false,
+    );
+    bool isContentVisible() =>
+        ContentVisibility.of(tester.element(diaryChrome));
+
+    expect(isContentVisible(), isTrue);
+
+    unawaited(
+      GoRouter.of(tester.element(diaryChrome)).push(AppRoutes.homeSettings),
+    );
+    await tester.pumpAndSettle();
+    expect(isContentVisible(), isFalse);
+
+    GoRouter.of(tester.element(find.text('Settings route'))).pop();
+    await tester.pumpAndSettle();
+    expect(isContentVisible(), isTrue);
   });
 
   testWidgets('diary tab shows only the day navigator in the shell bar', (

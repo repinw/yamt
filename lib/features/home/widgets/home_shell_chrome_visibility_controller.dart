@@ -14,9 +14,11 @@ class HomeShellChromeVisibilityController extends ValueNotifier<double> {
   double get visibility => value;
 
   /// Handles scroll notifications to update chrome visibility.
+  ///
+  /// Only the outermost vertical scrollable counts. Horizontal pagers around
+  /// it, such as the diary's day pages, are ignored.
   bool handleScrollNotification(ScrollNotification notification) {
-    if (notification.depth != 0 ||
-        notification.metrics.axis != Axis.vertical ||
+    if (!_isOutermostVerticalScroll(notification) ||
         notification.metrics.maxScrollExtent <=
             notification.metrics.minScrollExtent) {
       return false;
@@ -38,6 +40,27 @@ class HomeShellChromeVisibilityController extends ValueNotifier<double> {
     }
 
     return false;
+  }
+
+  bool _isOutermostVerticalScroll(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) {
+      return false;
+    }
+    if (notification.depth == 0) {
+      return true;
+    }
+    // The first match is the scrollable that sent the notification.
+    final scrollable = notification.context
+        ?.findAncestorStateOfType<ScrollableState>();
+    var ancestor = scrollable?.context
+        .findAncestorStateOfType<ScrollableState>();
+    while (ancestor != null) {
+      if (axisDirectionToAxis(ancestor.axisDirection) == Axis.vertical) {
+        return false;
+      }
+      ancestor = ancestor.context.findAncestorStateOfType<ScrollableState>();
+    }
+    return scrollable != null;
   }
 
   /// Forces shell chrome to be fully revealed.

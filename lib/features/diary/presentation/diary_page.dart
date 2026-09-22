@@ -1,21 +1,11 @@
-import 'package:flutter/rendering.dart' show ScrollCacheExtent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
-import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_balance_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_day_pager.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_overlay.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_stage.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_trigger.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_page_header.dart';
 import 'package:yamt/features/health/application/'
     'health_connection_actions.dart';
 
@@ -27,7 +17,7 @@ class DiaryPage extends ConsumerStatefulWidget {
   /// Key used by the shell and later design tests.
   static const pageKey = ValueKey<String>('diary-page');
 
-  /// Whether to render the shared home shell app bar as a sliver.
+  /// Whether to render the home shell's day navigator and macro strip.
   final bool includeHomeShellChrome;
 
   @override
@@ -38,9 +28,10 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
   ProviderSubscription<void>? _providerWarmupSubscription;
   bool _didQueueProviderWarmup = false;
-  final _macroStripAnchors = DiaryMacroStripAnchors();
-  final ValueNotifier<DiaryMacroStripStage> _macroStripStage = ValueNotifier(
-    DiaryMacroStripStage.hidden,
+
+  /// Kept so a rebuild of this page does not rebuild every day page.
+  late final Widget _dayPager = DiaryDayPager(
+    showMacroStrip: widget.includeHomeShellChrome,
   );
 
   @override
@@ -52,7 +43,6 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   @override
   void dispose() {
     _providerWarmupSubscription?.close();
-    _macroStripStage.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -68,76 +58,25 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
 
   @override
   Widget build(BuildContext context) {
-    final horizontalPagePadding = responsivePageHorizontalPadding(context);
-    final bottomPagePadding = homeShellPageBottomPadding(context);
     final colors = Theme.of(context).colorScheme;
-    final calendarState = ref.watch(diaryCalendarControllerProvider);
-    final dashboardState = ref.watch(
-      diaryDayDashboardControllerProvider(calendarState.selectedDay),
+    final selectedDay = ref.watch(
+      diaryCalendarControllerProvider.select((state) => state.selectedDay),
     );
-    if (dashboardState.data != null) {
+    final hasDashboardData = ref.watch(
+      diaryDayDashboardControllerProvider(selectedDay)
+          .select((state) => state.data != null),
+    );
+    if (hasDashboardData) {
       _queueProviderWarmup();
     }
 
     return ColoredBox(
+      key: DiaryPage.pageKey,
       color: colors.surface,
-      child: CustomScrollView(
-        key: DiaryPage.pageKey,
-        scrollCacheExtent: const ScrollCacheExtent.pixels(0),
-        slivers: [
-          if (widget.includeHomeShellChrome)
-            DiaryHomeShellTopChrome(
-              overlay: DiaryMacroStripOverlay(
-                selectedDay: calendarState.selectedDay,
-                stage: _macroStripStage,
-                kcalRowKey: _macroStripAnchors.stripKcalRow,
-              ),
-            ),
-          const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
-          if (widget.includeHomeShellChrome)
-            DiaryMacroStripTrigger(
-              anchors: _macroStripAnchors,
-              stage: _macroStripStage,
-            ),
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPagePadding,
-              0,
-              horizontalPagePadding,
-              AppSpacing.xs,
-            ),
-            sliver: SliverToBoxAdapter(
-              child: _NarrowContent(
-                child: DiaryBalanceCard(
-                  key: _macroStripAnchors.card,
-                  kcalBarKey: _macroStripAnchors.kcalBar,
-                  macroBarsKey: _macroStripAnchors.macroBars,
-                  selectedDay: calendarState.selectedDay,
-                ),
-              ),
-            ),
-          ),
-          SliverPadding(
-            padding: EdgeInsets.fromLTRB(
-              horizontalPagePadding,
-              0,
-              horizontalPagePadding,
-              bottomPagePadding,
-            ),
-            sliver: SliverList.list(
-              children: [
-                DiaryPageHeader(
-                  selectedDay: calendarState.selectedDay,
-                  dashboardData: dashboardState.data,
-                ),
-                _NarrowContent(
-                  child: DiaryMealsSection(
-                    selectedDay: calendarState.selectedDay,
-                  ),
-                ),
-              ],
-            ),
-          ),
+      child: Column(
+        children: [
+          if (widget.includeHomeShellChrome) const DiaryHomeShellTopChrome(),
+          Expanded(child: _dayPager),
         ],
       ),
     );
@@ -165,24 +104,4 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   }
 
   void _keepDiaryProviderWarm<T>(T? previous, T next) {}
-}
-
-/// Centers page content at the narrow content width.
-class _NarrowContent extends StatelessWidget {
-  const new({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(
-          maxWidth: AppSizes.narrowContentMaxWidth,
-        ),
-        // Fills the width up to the maximum instead of shrinking to fit.
-        child: SizedBox(width: double.infinity, child: child),
-      ),
-    );
-  }
 }

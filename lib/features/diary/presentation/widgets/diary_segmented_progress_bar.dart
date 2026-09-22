@@ -1,5 +1,8 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 
 /// Animated multi-segment progress bar with rounded pill capsules.
 class DiarySegmentedProgressBar extends StatelessWidget {
@@ -9,6 +12,7 @@ class DiarySegmentedProgressBar extends StatelessWidget {
     required this.color,
     required this.trackColor,
     required this.isDark,
+    this.overflow = 0.0,
     this.segmentCount = 4,
     this.height = 6.0,
     this.spacing = 3.0,
@@ -17,6 +21,10 @@ class DiarySegmentedProgressBar extends StatelessWidget {
 
   /// Fill progress clamped between 0.0 and 1.0.
   final double progress;
+
+  /// Share of the bar, from its right end, that is striped to mark an
+  /// overage. Between 0.0 and 1.0.
+  final double overflow;
 
   /// Active fill color.
   final Color color;
@@ -49,6 +57,10 @@ class DiarySegmentedProgressBar extends StatelessWidget {
               0.0,
               1.0,
             );
+        final stripedFill =
+            ((segmentEnd - math.max(segmentStart, 1 - overflow)) /
+                    (segmentEnd - segmentStart))
+                .clamp(0.0, 1.0);
 
         return Expanded(
           child: Padding(
@@ -59,25 +71,51 @@ class DiarySegmentedProgressBar extends StatelessWidget {
                 color: trackColor,
                 borderRadius: BorderRadius.circular(AppRadius.pill),
               ),
-              alignment: Alignment.centerLeft,
-              child: FractionallySizedBox(
-                widthFactor: segmentFill,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(AppRadius.pill),
-                    boxShadow: segmentFill > 0
-                        ? [
-                            BoxShadow(
-                              color: color.withValues(
-                                alpha: isDark ? 0.35 : 0.42,
-                              ),
-                              blurRadius: 3,
-                            ),
-                          ]
-                        : null,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: FractionallySizedBox(
+                      widthFactor: segmentFill,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                          boxShadow: segmentFill > 0
+                              ? [
+                                  BoxShadow(
+                                    color: color.withValues(
+                                      alpha: isDark ? 0.35 : 0.42,
+                                    ),
+                                    blurRadius: 3,
+                                  ),
+                                ]
+                              : null,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  if (stripedFill > 0)
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: FractionallySizedBox(
+                        widthFactor: stripedFill,
+                        // A childless CustomPaint would otherwise shrink to
+                        // zero height.
+                        heightFactor: 1,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(AppRadius.pill),
+                          child: CustomPaint(
+                            painter: _OverflowStripePainter(
+                              color: color,
+                              background: trackColor,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -85,4 +123,35 @@ class DiarySegmentedProgressBar extends StatelessWidget {
       }),
     );
   }
+}
+
+/// Paints diagonal [color] stripes on [background].
+class _OverflowStripePainter extends CustomPainter {
+  const new({required this.color, required this.background});
+
+  final Color color;
+  final Color background;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = background);
+    final stripe = Paint()
+      ..color = color
+      ..strokeWidth = AppSizes.overflowStripeWidth;
+    for (
+      var x = -size.height;
+      x < size.width;
+      x += AppSizes.overflowStripeSpacing
+    ) {
+      canvas.drawLine(
+        Offset(x, size.height),
+        Offset(x + size.height, 0),
+        stripe,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_OverflowStripePainter oldDelegate) =>
+      oldDelegate.color != color || oldDelegate.background != background;
 }
