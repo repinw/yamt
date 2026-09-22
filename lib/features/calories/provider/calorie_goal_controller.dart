@@ -1,32 +1,18 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_goal_mutation_actions.dart';
+import 'package:yamt/features/calories/application/calorie_goal_save_actions.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
-import 'package:yamt/features/health/data/health_weight_service_provider.dart';
-import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
-import 'package:yamt/features/health/presentation/controllers/'
-    'manual_health_weight_entries_controller.dart';
 
 part 'calorie_goal_controller.g.dart';
-
-const _goalControllerLogName = 'CalorieGoalController';
 
 /// Result for saving a learned TDEE goal.
 typedef LearnedTdeeGoalSaveResult = ({bool saved, bool goalChanged});
@@ -34,31 +20,42 @@ typedef LearnedTdeeGoalSaveResult = ({bool saved, bool goalChanged});
 /// Defines calorie goal controller.
 @riverpod
 class CalorieGoalController extends _$CalorieGoalController {
-  StreamSubscription<CalorieGoalSettings>? _settingsSubscription; // ignore: cancel_subscriptions, because: Riverpod disposes it via ref.onDispose(_disposeSubscription).
-
   @override
   FutureOr<CalorieGoalSettings> build() {
-    ref
-      ..watch(calorieSettingsRepositoryProvider)
-      ..onDispose(_disposeSubscription);
-    return _restartSubscription();
+    final repository = ref.watch(calorieSettingsRepositoryProvider);
+    final initial = Completer<CalorieGoalSettings>();
+    final subscription = repository.watchSettings().listen(
+      (settings) {
+        if (!initial.isCompleted) {
+          initial.complete(settings);
+          return;
+        }
+        if (ref.mounted) {
+          state = AsyncData(settings);
+        }
+      },
+      onError: (Object error, StackTrace stackTrace) {
+        if (!initial.isCompleted) {
+          initial.completeError(error, stackTrace);
+          return;
+        }
+        if (ref.mounted) {
+          state = AsyncError(error, stackTrace);
+        }
+      },
+    );
+    ref.onDispose(() {
+      unawaited(subscription.cancel());
+    });
+    return initial.future;
   }
 
   /// Set goal.
-  Future<bool> setGoal(double dailyKcalGoal) async {
-    if (dailyKcalGoal <= 0) {
-      return false;
-    }
-
-    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
-    final now = DateTime.now();
-    final nextSettings = previous.applyGoalChange(
-      changedAt: now,
-      dailyKcalGoal: dailyKcalGoal,
-      calculatorProfile: null,
-    );
-    return await _persistSettings(nextSettings);
-  }
+  Future<bool> setGoal(double dailyKcalGoal) => setManualCalorieGoal(
+        controller: this,
+        dailyKcalGoal: dailyKcalGoal,
+        now: ref.read(clockProvider)(),
+      );
 
   /// Save calculated goal.
   Future<bool> saveCalculatedGoal(
@@ -67,253 +64,100 @@ class CalorieGoalController extends _$CalorieGoalController {
     bool allowFutureGoalStart = false,
     bool? countGoalStartDayForLearning,
     bool archiveCurrentGoal = false,
-  }) async {
-    final calculation = CalorieGoalCalculator.calculate(profile);
-    var previousSettings = await _currentSettings();
-    final normalizedToday = normalizeDiaryDay(DateTime.now());
-    final currentGoalEntry =
-        previousSettings.activeGoalEntryForDay(DateTime.now()) ??
-        previousSettings.latestGoalEntry;
-    final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
-    if (!allowFutureGoalStart &&
-        normalizedGoalStartDate.isAfter(normalizedToday)) {
-      return false;
-    }
-    final normalizedEffectiveDate =
-        normalizedGoalStartDate.isAfter(normalizedToday)
-        ? normalizedToday
-        : normalizedGoalStartDate;
-    final changedAt = _goalChangeTimestamp(
-      normalizedEffectiveDate: normalizedEffectiveDate,
-      normalizedToday: normalizedToday,
-      countGoalStartDayForLearning: countGoalStartDayForLearning,
-    );
-    final expectedActivityChanged =
-        currentGoalEntry?.expectedActivityKcal != null &&
-        currentGoalEntry?.expectedActivityKcal !=
-            calculation.expectedActivityKcal;
-    final goalChanged =
-        currentGoalEntry?.effectiveDate != normalizedEffectiveDate ||
-        currentGoalEntry?.effectiveCountingStartDate !=
-            normalizedGoalStartDate ||
-        currentGoalEntry?.dailyKcalGoal != calculation.finalGoalKcal ||
-        _goalStartDayTrackingChanged(
-          currentGoalEntry: currentGoalEntry,
-          normalizedGoalStartDate: normalizedGoalStartDate,
-          countGoalStartDayForLearning: countGoalStartDayForLearning,
-        ) ||
-        expectedActivityChanged ||
-        !_sameCalculatorProfile(currentGoalEntry?.calculatorProfile, profile) ||
-        currentGoalEntry?.source != CalorieGoalSource.calculator;
-    if (!goalChanged && !archiveCurrentGoal) {
-      return true;
-    }
-    if (archiveCurrentGoal) {
-      previousSettings = previousSettings.markActiveGoalEnded(
-        changedAt,
-        weightKg: profile.weightKg,
+  }) =>
+      saveCalculatedCalorieGoal(
+        controller: this,
+        ref: ref,
+        profile: profile,
+        goalStartDate: goalStartDate,
+        now: ref.read(clockProvider)(),
+        allowFutureGoalStart: allowFutureGoalStart,
+        countGoalStartDayForLearning: countGoalStartDayForLearning,
+        archiveCurrentGoal: archiveCurrentGoal,
       );
-    }
-    final nextSettings = previousSettings.applyGoalChange(
-      changedAt: changedAt,
-      dailyKcalGoal: calculation.finalGoalKcal,
-      calculatorProfile: profile,
-      expectedActivityKcal: calculation.expectedActivityKcal,
-      countingStartDate: normalizedGoalStartDate,
-      source: CalorieGoalSource.calculator,
-      replaceFutureHistory: true,
-      preserveSameDayGoalEntries: archiveCurrentGoal,
-    );
-    final saved = await _persistSettings(nextSettings);
-    if (!saved || !ref.mounted) {
-      return saved;
-    }
-    await _seedCalculatorWeightIfMissing(
-      day: normalizedGoalStartDate,
-      weightKg: profile.weightKg,
-    );
-    return true;
-  }
 
   /// Shift goal start.
-  Future<bool> shiftGoalStart({required DateTime goalStartDate}) {
-    final previousSettings =
-        state.asData?.value ?? const CalorieGoalSettings.empty();
-    if (!previousSettings.hasGoal) {
-      return Future<bool>.value(false);
-    }
-
-    final currentGoalEntry =
-        previousSettings.activeGoalEntryForDay(DateTime.now()) ??
-        previousSettings.latestGoalEntry;
-    final currentDailyKcalGoal =
-        currentGoalEntry?.dailyKcalGoal ?? previousSettings.dailyKcalGoal;
-    final currentCalculatorProfile =
-        currentGoalEntry?.calculatorProfile ??
-        previousSettings.calculatorProfile;
-    final currentExpectedActivityKcal =
-        currentGoalEntry?.expectedActivityKcal ??
-        previousSettings.expectedActivityKcal;
-    final currentSource = currentGoalEntry?.source ?? CalorieGoalSource.manual;
-    final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
-    final normalizedToday = normalizeDiaryDay(DateTime.now());
-    final normalizedEffectiveDate =
-        normalizedGoalStartDate.isAfter(normalizedToday)
-        ? normalizedToday
-        : normalizedGoalStartDate;
-    final changedAt = _goalChangeTimestamp(
-      normalizedEffectiveDate: normalizedEffectiveDate,
-      normalizedToday: normalizedToday,
-    );
-    final goalStartChanged =
-        currentGoalEntry?.effectiveDate != normalizedEffectiveDate ||
-        currentGoalEntry?.effectiveCountingStartDate != normalizedGoalStartDate;
-    if (!goalStartChanged) {
-      return Future<bool>.value(true);
-    }
-    final nextSettings = previousSettings.applyGoalChange(
-      changedAt: changedAt,
-      dailyKcalGoal: currentDailyKcalGoal,
-      calculatorProfile: currentCalculatorProfile,
-      expectedActivityKcal: currentExpectedActivityKcal,
-      countingStartDate: normalizedGoalStartDate,
-      source: currentSource,
-      replaceFutureHistory: true,
-    );
-    return _persistSettings(nextSettings);
-  }
+  Future<bool> shiftGoalStart({required DateTime goalStartDate}) =>
+      shiftCalorieGoalStart(
+        controller: this,
+        goalStartDate: goalStartDate,
+        now: ref.read(clockProvider)(),
+      );
 
   /// Clear goal.
-  Future<bool> clearGoal() async {
-    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
-    final now = DateTime.now();
-    return await _persistSettings(
-      previous.applyGoalChange(
-        changedAt: now,
-        dailyKcalGoal: null,
-        calculatorProfile: null,
-      ),
-    );
-  }
+  Future<bool> clearGoal() => clearCalorieGoal(
+        controller: this,
+        now: ref.read(clockProvider)(),
+      );
 
   /// Persists target completion and reports whether it was newly reached.
   Future<bool> markGoalReachedIfNeeded({
     required DateTime day,
     required double weightKg,
-  }) async {
-    final previous = await _currentSettings();
-    final active = previous.cycleAnchorEntryForDay(day);
-    final profile = active?.calculatorProfile;
-    final target = profile?.targetWeightKg;
-    if (active == null ||
-        profile == null ||
-        target == null ||
-        profile.goalMode == CalorieGoalMode.maintain) {
-      return false;
-    }
-    if (active.reachedAt != null) {
-      return active.reachedPromptHandledAt == null;
-    }
-    final reached = switch (profile.goalMode) {
-      CalorieGoalMode.lose => weightKg <= target,
-      CalorieGoalMode.gain => weightKg >= target,
-      CalorieGoalMode.maintain => false,
-    };
-    if (!reached) {
-      return false;
-    }
-    return await _persistSettings(
-      previous.markActiveGoalReached(day, weightKg: weightKg),
-    );
-  }
+  }) =>
+      markCalorieGoalReachedIfNeeded(
+        controller: this,
+        day: day,
+        weightKg: weightKg,
+      );
 
   /// Records that the user explicitly answered the reached-goal prompt.
-  Future<bool> markGoalReachedPromptHandled() async {
-    final previous = await _currentSettings();
-    final next = previous.markGoalReachedPromptHandled(DateTime.now());
-    if (identical(previous, next)) {
-      return true;
-    }
-    return await _persistSettings(next);
-  }
+  Future<bool> markGoalReachedPromptHandled() =>
+      markCalorieGoalReachedPromptHandled(
+        controller: this,
+        now: ref.read(clockProvider)(),
+      );
 
   /// Set pending weekly check in.
   Future<bool> setPendingWeeklyCheckIn(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
-  ) async {
-    final previous = await _currentSettings();
-    return await _persistSettings(
-      previous.copyWithPendingWeeklyCheckIn(pendingWeeklyCheckIn),
-    );
-  }
+  ) =>
+      setPendingGoalWeeklyCheckIn(
+        controller: this,
+        pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+      );
 
   /// Dismiss pending weekly check in.
-  Future<bool> dismissPendingWeeklyCheckIn({DateTime? dismissedAt}) async {
-    final previous = await _currentSettings();
-    if (previous.pendingWeeklyCheckIn == null) {
-      return await Future<bool>.value(true);
-    }
-    return await _persistSettings(
-      previous.dismissPendingWeeklyCheckIn(dismissedAt ?? DateTime.now()),
-    );
-  }
+  Future<bool> dismissPendingWeeklyCheckIn({DateTime? dismissedAt}) =>
+      dismissPendingGoalWeeklyCheckIn(
+        controller: this,
+        now: ref.read(clockProvider)(),
+        dismissedAt: dismissedAt,
+      );
 
   /// Clear pending weekly check in.
-  Future<bool> clearPendingWeeklyCheckIn() async {
-    final previous = await _currentSettings();
-    if (previous.pendingWeeklyCheckIn == null) {
-      return await Future<bool>.value(true);
-    }
-    return await _persistSettings(previous.copyWithPendingWeeklyCheckIn(null));
-  }
+  Future<bool> clearPendingWeeklyCheckIn() =>
+      clearPendingGoalWeeklyCheckIn(controller: this);
 
   /// Set skipped intake day.
   Future<bool> setSkippedIntakeDay({
     required DateTime day,
     required bool isSkipped,
-  }) async {
-    if (isSkipped) {
-      final entries = await ref
-          .read(calorieLogRepositoryProvider)
-          .readEntriesForDay(day);
-      if (entries.isNotEmpty) {
-        return false;
-      }
-    }
-    final previous = await _currentSettings();
-    if (previous.isSkippedIntakeDay(day) == isSkipped) {
-      return true;
-    }
-    final nextSettings = previous
-        .setSkippedIntakeDay(day: day, isSkipped: isSkipped)
-        .invalidateWeeklyCheckInSnapshotsFromDay(
-          day: day,
-          invalidatedAt: DateTime.now(),
-        );
-    return await _persistSettings(nextSettings);
-  }
+  }) =>
+      setCalorieSkippedIntakeDay(
+        controller: this,
+        logRepository: ref.read(calorieLogRepositoryProvider),
+        day: day,
+        isSkipped: isSkipped,
+        now: ref.read(clockProvider)(),
+      );
 
   /// Clear skipped intake day.
-  Future<bool> clearSkippedIntakeDay(DateTime day) async {
-    final previous = await _currentSettings();
-    if (!previous.isSkippedIntakeDay(day)) {
-      return await Future<bool>.value(true);
-    }
-    return await setSkippedIntakeDay(day: day, isSkipped: false);
-  }
+  Future<bool> clearSkippedIntakeDay(DateTime day) =>
+      clearCalorieSkippedIntakeDay(
+        controller: this,
+        logRepository: ref.read(calorieLogRepositoryProvider),
+        day: day,
+        now: ref.read(clockProvider)(),
+      );
 
   /// Mark weekly check-in snapshots dirty from a changed diary day.
-  Future<bool> invalidateWeeklyCheckInSnapshotsFromDay(DateTime day) async {
-    final previous = await _currentSettings();
-    final nextSettings = previous.invalidateWeeklyCheckInSnapshotsFromDay(
-      day: day,
-      invalidatedAt: DateTime.now(),
-    );
-    if (identical(previous, nextSettings)) {
-      return true;
-    }
-    return await _persistSettings(nextSettings);
-  }
+  Future<bool> invalidateWeeklyCheckInSnapshotsFromDay(DateTime day) =>
+      invalidateGoalWeeklyCheckInSnapshots(
+        controller: this,
+        day: day,
+        now: ref.read(clockProvider)(),
+      );
 
   /// Save learned tdee goal.
   Future<bool> saveLearnedTdeeGoal({
@@ -327,21 +171,20 @@ class CalorieGoalController extends _$CalorieGoalController {
     bool archiveCurrentGoal = false,
     List<int>? trainingWeekdays,
     double? trainingDayKcalOffset,
-  }) async {
-    final result = await saveLearnedTdeeGoalWithResult(
-      goalMode: goalMode,
-      goalSpeedKgPerWeek: goalSpeedKgPerWeek,
-      targetWeightKg: targetWeightKg,
-      maintainUntil: maintainUntil,
-      goalStartDate: goalStartDate,
-      startWeightKg: startWeightKg,
-      countGoalStartDayForLearning: countGoalStartDayForLearning,
-      archiveCurrentGoal: archiveCurrentGoal,
-      trainingWeekdays: trainingWeekdays,
-      trainingDayKcalOffset: trainingDayKcalOffset,
-    );
-    return result.saved;
-  }
+  }) async =>
+      (await saveLearnedTdeeGoalWithResult(
+        goalMode: goalMode,
+        goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+        targetWeightKg: targetWeightKg,
+        goalStartDate: goalStartDate,
+        startWeightKg: startWeightKg,
+        maintainUntil: maintainUntil,
+        countGoalStartDayForLearning: countGoalStartDayForLearning,
+        archiveCurrentGoal: archiveCurrentGoal,
+        trainingWeekdays: trainingWeekdays,
+        trainingDayKcalOffset: trainingDayKcalOffset,
+      ))
+          .saved;
 
   /// Save learned tdee goal and report whether goal data changed.
   Future<LearnedTdeeGoalSaveResult> saveLearnedTdeeGoalWithResult({
@@ -355,207 +198,59 @@ class CalorieGoalController extends _$CalorieGoalController {
     bool archiveCurrentGoal = false,
     List<int>? trainingWeekdays,
     double? trainingDayKcalOffset,
-  }) async {
-    var previousSettings = await _currentSettings();
-    final learnedTdeeKcal = previousSettings.latestLearnedTdeeKcal;
-    if (learnedTdeeKcal == null) {
-      return (saved: false, goalChanged: false);
-    }
-    if (goalMode != CalorieGoalMode.maintain &&
-        (targetWeightKg == null || targetWeightKg <= 0)) {
-      return (saved: false, goalChanged: false);
-    }
-    final currentProfile =
-        previousSettings.calculatorProfile ??
-        const CalorieCalculatorProfile.defaults();
-    final nextProfile = currentProfile.copyWith(
-      weightKg: startWeightKg,
-      goalMode: goalMode,
-      goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
-          ? 0
-          : goalSpeedKgPerWeek,
-      targetWeightKg: goalMode == CalorieGoalMode.maintain
-          ? null
-          : targetWeightKg,
-      maintainUntil: goalMode == CalorieGoalMode.maintain
-          ? maintainUntil
-          : null,
-      trainingWeekdays: trainingWeekdays,
-      trainingDayKcalOffset: trainingDayKcalOffset,
-    );
-    final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
-    final normalizedToday = normalizeDiaryDay(DateTime.now());
-    final normalizedEffectiveDate =
-        normalizedGoalStartDate.isAfter(normalizedToday)
-        ? normalizedToday
-        : normalizedGoalStartDate;
-    final changedAt = _goalChangeTimestamp(
-      normalizedEffectiveDate: normalizedEffectiveDate,
-      normalizedToday: normalizedToday,
-      countGoalStartDayForLearning: countGoalStartDayForLearning,
-    );
-    final currentGoalEntry =
-        previousSettings.activeGoalEntryForDay(DateTime.now()) ??
-        previousSettings.latestGoalEntry;
-    final nextDailyKcalGoal =
-        CalorieWeeklyCheckInCalculator.calculateGoalFromLearnedTdee(
-          learnedTdeeKcal: learnedTdeeKcal,
-          goalSpeedKgPerWeek: goalSpeedKgPerWeek,
-          isLosing: goalMode == CalorieGoalMode.lose,
-          isGaining: goalMode == CalorieGoalMode.gain,
-        );
-    final goalChanged =
-        currentGoalEntry?.effectiveDate != normalizedEffectiveDate ||
-        currentGoalEntry?.effectiveCountingStartDate !=
-            normalizedGoalStartDate ||
-        currentGoalEntry?.dailyKcalGoal != nextDailyKcalGoal ||
-        _goalStartDayTrackingChanged(
-          currentGoalEntry: currentGoalEntry,
-          normalizedGoalStartDate: normalizedGoalStartDate,
-          countGoalStartDayForLearning: countGoalStartDayForLearning,
-        ) ||
-        !_sameCalculatorProfile(
-          currentGoalEntry?.calculatorProfile,
-          nextProfile,
-        ) ||
-        currentGoalEntry?.source != CalorieGoalSource.calculator;
-    if (!goalChanged && !archiveCurrentGoal) {
-      return (saved: true, goalChanged: false);
-    }
-    if (archiveCurrentGoal) {
-      previousSettings = previousSettings.markActiveGoalEnded(
-        changedAt,
-        weightKg: startWeightKg,
+  }) =>
+      saveLearnedTdeeCalorieGoal(
+        controller: this,
+        goalMode: goalMode,
+        goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+        targetWeightKg: targetWeightKg,
+        goalStartDate: goalStartDate,
+        now: ref.read(clockProvider)(),
+        startWeightKg: startWeightKg,
+        maintainUntil: maintainUntil,
+        countGoalStartDayForLearning: countGoalStartDayForLearning,
+        archiveCurrentGoal: archiveCurrentGoal,
+        trainingWeekdays: trainingWeekdays,
+        trainingDayKcalOffset: trainingDayKcalOffset,
       );
-    }
-    final nextSettings = previousSettings.applyGoalChange(
-      changedAt: changedAt,
-      dailyKcalGoal: nextDailyKcalGoal,
-      calculatorProfile: nextProfile,
-      countingStartDate: normalizedGoalStartDate,
-      source: CalorieGoalSource.calculator,
-      replaceFutureHistory: true,
-      preserveSameDayGoalEntries: archiveCurrentGoal,
-    );
-    final saved = await _persistSettings(nextSettings);
-    return (saved: saved, goalChanged: saved);
-  }
 
   /// Save weekly check in goal.
   Future<bool> saveWeeklyCheckInGoal({
     required DateTime completedAt,
     required double dailyKcalGoal,
     required CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshot,
-  }) async {
-    final previousSettings = await _currentSettings();
-    final snapshotSettings = previousSettings.applyGoalChange(
-      changedAt: completedAt,
-      dailyKcalGoal: dailyKcalGoal,
-      calculatorProfile: null,
-      source: CalorieGoalSource.weeklyCheckIn,
-      weeklyCheckInSnapshot: weeklyCheckInSnapshot,
-    );
-    final nextSettings = CalorieGoalSettings(
-      dailyKcalGoal: previousSettings.dailyKcalGoal,
-      calculatorProfile: previousSettings.calculatorProfile,
-      calorieMathVersion: snapshotSettings.calorieMathVersion,
-      expectedActivityKcal: previousSettings.expectedActivityKcal,
-      activityTrackingStartDate: snapshotSettings.activityTrackingStartDate,
-      updatedAt: snapshotSettings.updatedAt,
-      goalHistory: snapshotSettings.goalHistory,
-      pendingWeeklyCheckIn: previousSettings.pendingWeeklyCheckIn,
-      skippedIntakeDayKeys: snapshotSettings.skippedIntakeDayKeys,
-      trainingWeekdays: previousSettings.trainingWeekdays,
-      trainingDayKcalOffset: previousSettings.trainingDayKcalOffset,
-      trainingDayOverrides: previousSettings.trainingDayOverrides,
-      pauseDayKeys: previousSettings.pauseDayKeys,
-    );
-    return await _persistSettings(nextSettings);
-  }
+  }) =>
+      saveWeeklyCheckInCalorieGoal(
+        controller: this,
+        completedAt: completedAt,
+        dailyKcalGoal: dailyKcalGoal,
+        weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+      );
 
   /// Toggle training day for a specific date.
-  Future<bool> toggleTrainingDay(DateTime day) async {
-    final previous = await _currentSettings();
-    final nextSettings = previous.toggleTrainingDay(day);
-    return await _persistSettings(nextSettings);
-  }
+  Future<bool> toggleTrainingDay(DateTime day) =>
+      toggleCalorieTrainingDay(controller: this, day: day);
 
   /// Update weekly training days and kcal offset.
   Future<bool> updateTrainingSchedule({
     required List<int> trainingWeekdays,
     required double trainingDayKcalOffset,
-  }) async {
-    final previous = await _currentSettings();
-    final nextProfile = previous.calculatorProfile?.copyWith(
-      trainingWeekdays: trainingWeekdays,
-      trainingDayKcalOffset: trainingDayKcalOffset,
-    );
-    final nextSettings = previous.copyWith(
-      trainingWeekdays: trainingWeekdays,
-      trainingDayKcalOffset: trainingDayKcalOffset,
-      calculatorProfile: nextProfile,
-    );
-    return await _persistSettings(nextSettings);
-  }
+  }) =>
+      updateCalorieTrainingSchedule(
+        controller: this,
+        trainingWeekdays: trainingWeekdays,
+        trainingDayKcalOffset: trainingDayKcalOffset,
+      );
 
   /// Set pause day for a specific date.
   Future<bool> setPauseDay({
     required DateTime day,
     required bool isPause,
-  }) async {
-    final previous = await _currentSettings();
-    final nextSettings = previous.setPauseDay(day: day, isPause: isPause);
-    return await _persistSettings(nextSettings);
-  }
+  }) =>
+      setCaloriePauseDay(controller: this, day: day, isPause: isPause);
 
-  Future<CalorieGoalSettings> _restartSubscription() {
-    final initial = Completer<CalorieGoalSettings>();
-    final repository = ref.read(calorieSettingsRepositoryProvider);
-    _disposeSubscription();
-
-    _settingsSubscription = repository.watchSettings().listen(
-      (settings) {
-        if (!initial.isCompleted) {
-          initial.complete(settings);
-          return;
-        }
-        _onRealtimeSettings(settings);
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        if (!initial.isCompleted) {
-          initial.completeError(error, stackTrace);
-          return;
-        }
-        _onRealtimeError(error, stackTrace);
-      },
-    );
-
-    return initial.future;
-  }
-
-  void _disposeSubscription() {
-    final currentSubscription = _settingsSubscription;
-    _settingsSubscription = null;
-    if (currentSubscription != null) {
-      unawaited(currentSubscription.cancel());
-    }
-  }
-
-  void _onRealtimeSettings(CalorieGoalSettings settings) {
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncData(settings);
-  }
-
-  void _onRealtimeError(Object error, StackTrace stackTrace) {
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncError(error, stackTrace);
-  }
-
-  Future<bool> _persistSettings(CalorieGoalSettings nextSettings) async {
+  /// Persists settings to storage and updates state.
+  Future<bool> persistSettings(CalorieGoalSettings nextSettings) async {
     final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
     if (ref.mounted) {
       state = AsyncData(nextSettings);
@@ -571,7 +266,7 @@ class CalorieGoalController extends _$CalorieGoalController {
     } on Object catch (error, stackTrace) {
       log(
         'Failed to persist calorie goal settings.',
-        name: _goalControllerLogName,
+        name: 'CalorieGoalController',
         error: error,
         stackTrace: stackTrace,
       );
@@ -582,128 +277,8 @@ class CalorieGoalController extends _$CalorieGoalController {
     }
   }
 
-  Future<CalorieGoalSettings> _currentSettings() async {
-    final currentSettings = state.asData?.value;
-    if (currentSettings != null) {
-      return currentSettings;
-    }
-    return await ref.read(calorieSettingsRepositoryProvider).readSettings();
-  }
-
-  Future<void> _seedCalculatorWeightIfMissing({
-    required DateTime day,
-    required double weightKg,
-  }) async {
-    final normalizedDay = normalizeDiaryDay(day);
-    final manualEntries = await ref.read(
-      manualHealthWeightEntriesControllerProvider.future,
-    );
-    if (!ref.mounted) {
-      return;
-    }
-    final hasManualWeight = manualEntries.any(
-      (entry) => isSameDiaryDay(entry.day, normalizedDay),
-    );
-    if (hasManualWeight) {
-      return;
-    }
-
-    final connectionStatus = await ref.read(
-      healthConnectionControllerProvider.future,
-    );
-    if (!ref.mounted) {
-      return;
-    }
-    if (connectionStatus.accessState == HealthDataAccessState.ready) {
-      final healthSamples = await ref
-          .read(healthWeightServiceProvider)
-          .loadWeightSamples(
-            startInclusive: normalizedDay,
-            endExclusive: nextDiaryDay(normalizedDay),
-          );
-      if (!ref.mounted) {
-        return;
-      }
-      final hasHealthWeight = healthSamples.any(
-        (sample) => isSameDiaryDay(sample.recordedAt, normalizedDay),
-      );
-      if (hasHealthWeight) {
-        return;
-      }
-    }
-
-    final saved = await ref
-        .read(manualHealthWeightEntriesControllerProvider.notifier)
-        .saveEntry(day: normalizedDay, weightKg: weightKg);
-    if (saved && ref.mounted) {
-      await invalidateWeeklyCheckInSnapshotsFromDay(normalizedDay);
-    }
-  }
-}
-
-bool _sameCalculatorProfile(
-  CalorieCalculatorProfile? left,
-  CalorieCalculatorProfile? right,
-) {
-  if (identical(left, right)) {
-    return true;
-  }
-  if (left == null || right == null) {
-    return left == right;
-  }
-  return left.sex == right.sex &&
-      left.weightKg == right.weightKg &&
-      left.heightCm == right.heightCm &&
-      left.ageYears == right.ageYears &&
-      left.activityLevel == right.activityLevel &&
-      left.goalMode == right.goalMode &&
-      left.goalSpeedKgPerWeek == right.goalSpeedKgPerWeek &&
-      left.targetWeightKg == right.targetWeightKg &&
-      left.maintainUntil == right.maintainUntil &&
-      left.trainingDayKcalOffset == right.trainingDayKcalOffset &&
-      listEquals(left.trainingWeekdays, right.trainingWeekdays);
-}
-
-DateTime _goalChangeTimestamp({
-  required DateTime normalizedEffectiveDate,
-  required DateTime normalizedToday,
-  bool? countGoalStartDayForLearning,
-}) {
-  if (isSameDiaryDay(normalizedEffectiveDate, normalizedToday)) {
-    if (countGoalStartDayForLearning == true) {
-      return normalizedEffectiveDate;
-    }
-    return DateTime.now();
-  }
-  return normalizedEffectiveDate;
-}
-
-bool _goalStartDayTrackingChanged({
-  required CalorieGoalHistoryEntry? currentGoalEntry,
-  required DateTime normalizedGoalStartDate,
-  required bool? countGoalStartDayForLearning,
-}) {
-  if (countGoalStartDayForLearning == null || currentGoalEntry == null) {
-    return false;
-  }
-  if (!isSameDiaryDay(
-    currentGoalEntry.effectiveCountingStartDate,
-    normalizedGoalStartDate,
-  )) {
-    return false;
-  }
-  return _goalEntryCountsStartDay(currentGoalEntry) !=
-      countGoalStartDayForLearning;
-}
-
-bool _goalEntryCountsStartDay(CalorieGoalHistoryEntry entry) {
-  if (!isSameDiaryDay(entry.effectiveDate, entry.effectiveCountingStartDate)) {
-    return true;
-  }
-  final changedAt = entry.effectiveChangedAt;
-  return changedAt.hour == 0 &&
-      changedAt.minute == 0 &&
-      changedAt.second == 0 &&
-      changedAt.millisecond == 0 &&
-      changedAt.microsecond == 0;
+  /// Reads current settings from state or repository.
+  Future<CalorieGoalSettings> currentSettings() async =>
+      state.asData?.value ??
+      await ref.read(calorieSettingsRepositoryProvider).readSettings();
 }

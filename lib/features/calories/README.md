@@ -79,6 +79,14 @@ state, and calorie-owned side effects from health or weight changes.
   itself.
 - `domain/calorie_goal_settings_lifecycle.dart` marks the active goal as
   reached, prompt handled, or ended without removing its history entry.
+- `domain/calorie_goal_calculated_transitions.dart` and
+  `domain/calorie_goal_learned_transitions.dart` provide pure transition logic
+  for calculated and learned TDEE goals.
+- `application/calorie_goal_save_actions.dart` and
+  `application/calorie_goal_mutation_actions.dart` coordinate goal saves,
+  manual targets, check-in updates, and schedule changes.
+- `application/calorie_goal_seed_weight_flow.dart` resolves seed weight directly
+  from health repositories without unlistened provider future reads.
 - `debug/calorie_debug_menu_section.dart`, a debug-only list of dump actions
   that the Home side menu shows only in debug builds.
 

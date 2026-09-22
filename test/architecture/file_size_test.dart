@@ -74,7 +74,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/calories/provider/burn_week_run_controller.dart',
   'lib/features/calories/provider/calorie_entries_controller.dart',
   'lib/features/calories/provider/calorie_goal_calculator_form_state.dart',
-  'lib/features/calories/provider/calorie_goal_controller.dart',
   'lib/features/calories/provider/calorie_week_overview_provider.dart',
   'lib/features/calories/provider/calorie_weekly_checkin_controller.dart',
   'lib/features/calories/provider/calorie_weekly_checkin_data_builder.dart',
