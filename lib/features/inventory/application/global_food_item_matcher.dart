@@ -194,7 +194,6 @@ class GlobalFoodItemMatcher {
         .toList(growable: false);
   }
 
-
   Future<List<GlobalFoodMatchCandidate>> _findLocalMatches({
     required LocalMatchInput localInput,
     required GlobalFoodMatcherQuery query,

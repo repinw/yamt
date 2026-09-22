@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 

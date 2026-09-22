@@ -41,9 +41,7 @@ void main() {
       expect(cache.get('entry-1'), entry);
     });
 
-    test(
-      'stores multiple entries and returns same list with rememberAll',
-      () {
+    test('stores multiple entries and returns same list with rememberAll', () {
       final entry1 = _createEntry('entry-1');
       final entry2 = _createEntry('entry-2');
       final list = [entry1, entry2];

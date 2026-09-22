@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/application/calorie_week_consumption_snapshot_provider.dart';
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -18,8 +20,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_week_overview_provider.dart';
+import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';

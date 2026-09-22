@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 

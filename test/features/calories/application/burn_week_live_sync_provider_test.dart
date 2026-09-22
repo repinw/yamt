@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
+import 'package:yamt/features/calories/application/calorie_week_consumption_snapshot_provider.dart';
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';

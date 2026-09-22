@@ -95,10 +95,7 @@ GlobalFoodReceiptAlias _receiptAlias({
     receiptName: receiptName,
     globalFoodItem: item,
     now: DateTime.parse('2026-03-01T11:00:00Z'),
-  )!.copyWith(
-    id: id,
-    selectionCount: selectionCount,
-  );
+  )!.copyWith(id: id, selectionCount: selectionCount);
 }
 
 void main() {
@@ -135,43 +132,44 @@ void main() {
   test(
     'searches repository with normalized names and scores aliases',
     () async {
-    final milkProduct = _globalItem(
-      id: 'milk-1',
-      name: 'Whole Milk',
-      storeName: 'Aldi',
-      brand: 'Milsani',
-    );
-    final aliasRepo = _FakeGlobalFoodReceiptAliasRepository(
-      fallbackResults: <GlobalFoodReceiptAlias>[
-        _receiptAlias(
-          id: 'alias-1',
-          receiptName: 'MLK 3.5%',
-          item: milkProduct,
-          selectionCount: 4,
-        ),
-      ],
-    );
-    final matcher = GlobalFoodReceiptAliasMatcher(repository: aliasRepo);
-    final item = _inventoryItem(
-      id: 'item-1',
-      name: 'Milch 3,5%',
-      ocrName: 'MLK 3.5%',
-      storeName: 'ALDI SUED',
-      brand: 'Milsani',
-    );
-    final localInput = const GlobalFoodLocalCandidateMatcher()
-        .buildLocalMatchInput(item);
+      final milkProduct = _globalItem(
+        id: 'milk-1',
+        name: 'Whole Milk',
+        storeName: 'Aldi',
+        brand: 'Milsani',
+      );
+      final aliasRepo = _FakeGlobalFoodReceiptAliasRepository(
+        fallbackResults: <GlobalFoodReceiptAlias>[
+          _receiptAlias(
+            id: 'alias-1',
+            receiptName: 'MLK 3.5%',
+            item: milkProduct,
+            selectionCount: 4,
+          ),
+        ],
+      );
+      final matcher = GlobalFoodReceiptAliasMatcher(repository: aliasRepo);
+      final item = _inventoryItem(
+        id: 'item-1',
+        name: 'Milch 3,5%',
+        ocrName: 'MLK 3.5%',
+        storeName: 'ALDI SUED',
+        brand: 'Milsani',
+      );
+      final localInput = const GlobalFoodLocalCandidateMatcher()
+          .buildLocalMatchInput(item);
 
-    final matches = await matcher.findMatches(
-      item: item,
-      localInput: localInput,
-    );
+      final matches = await matcher.findMatches(
+        item: item,
+        localInput: localInput,
+      );
 
-    expect(aliasRepo.calls, hasLength(1));
-    expect(aliasRepo.calls.single.normalizedStoreName, 'aldi');
-    expect(aliasRepo.calls.single.normalizedReceiptName, 'mlk 3 5');
-    expect(matches, hasLength(1));
-    expect(matches.single.item.id, 'milk-1');
-    expect(matches.single.reason, GlobalFoodMatchReason.receiptAliasExact);
-  });
+      expect(aliasRepo.calls, hasLength(1));
+      expect(aliasRepo.calls.single.normalizedStoreName, 'aldi');
+      expect(aliasRepo.calls.single.normalizedReceiptName, 'mlk 3 5');
+      expect(matches, hasLength(1));
+      expect(matches.single.item.id, 'milk-1');
+      expect(matches.single.reason, GlobalFoodMatchReason.receiptAliasExact);
+    },
+  );
 }

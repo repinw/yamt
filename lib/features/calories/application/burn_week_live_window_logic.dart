@@ -1,9 +1,9 @@
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 
 /// Day compare helper for Burn Week date math.
 bool isBeforeBurnWeekDay(DateTime left, DateTime right) {

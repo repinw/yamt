@@ -22,10 +22,7 @@ const _calorieEntriesCollection = 'calorie_entries';
 /// Defines firestore calorie log repository.
 class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   /// Creates an instance.
-  new({
-    required this.session,
-    required this.firestore,
-  });
+  new({required this.session, required this.firestore});
 
   /// The user session providing current auth user ID.
   final CalorieLogUserSession session;

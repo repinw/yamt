@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_action_results.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_actions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

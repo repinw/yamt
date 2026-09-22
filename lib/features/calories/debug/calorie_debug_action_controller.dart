@@ -3,13 +3,11 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_action_formatting.dart';
+import 'package:yamt/features/calories/debug/calorie_debug_action_results.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
@@ -20,76 +18,6 @@ import 'package:yamt/features/health/presentation/controllers/'
     'health_connection_controller.dart';
 
 part 'calorie_debug_action_controller.g.dart';
-
-/// Result from exporting calorie debug dump.
-sealed class CalorieDebugDumpPrintResult {
-  const new();
-}
-
-/// Successful calorie debug dump export.
-class CalorieDebugDumpPrintSuccess extends CalorieDebugDumpPrintResult {
-  /// Creates success result.
-  const new({required this.rowCount, this.filePath});
-
-  /// Number of rows exported.
-  final int rowCount;
-
-  /// Saved path, when the platform exposes one.
-  final String? filePath;
-}
-
-/// User canceled calorie debug dump export.
-class CalorieDebugDumpPrintCanceled extends CalorieDebugDumpPrintResult {
-  /// Creates canceled result.
-  const new();
-}
-
-/// Failed calorie debug dump export.
-class CalorieDebugDumpPrintFailure extends CalorieDebugDumpPrintResult {
-  /// Creates failure result.
-  const new();
-}
-
-/// Result from printing calorie settings debug dump.
-sealed class CalorieSettingsDebugDumpPrintResult {
-  const new();
-}
-
-/// Successful calorie settings debug dump print.
-class CalorieSettingsDebugDumpPrintSuccess
-    extends CalorieSettingsDebugDumpPrintResult {
-  /// Creates success result.
-  const new({required this.entryCount});
-
-  /// Number of goal-history entries printed.
-  final int entryCount;
-}
-
-/// Failed calorie settings debug dump print.
-class CalorieSettingsDebugDumpPrintFailure
-    extends CalorieSettingsDebugDumpPrintResult {
-  /// Creates failure result.
-  const new();
-}
-
-/// Result from printing calorie weekly check-in debug dump.
-sealed class CalorieWeeklyCheckInDebugDumpPrintResult {
-  const new();
-}
-
-/// Successful calorie weekly check-in debug dump print.
-class CalorieWeeklyCheckInDebugDumpPrintSuccess
-    extends CalorieWeeklyCheckInDebugDumpPrintResult {
-  /// Creates success result.
-  const new();
-}
-
-/// Failed calorie weekly check-in debug dump print.
-class CalorieWeeklyCheckInDebugDumpPrintFailure
-    extends CalorieWeeklyCheckInDebugDumpPrintResult {
-  /// Creates failure result.
-  const new();
-}
 
 /// Handles calorie debug actions that need providers.
 @riverpod
@@ -127,8 +55,8 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
       );
       final exportResult = await fileExporter.saveText(
         dialogTitle: saveDialogTitle,
-        fileName: _calorieDebugDumpFileName(now),
-        text: _calorieDebugDumpText(result: result, generatedAt: now),
+        fileName: calorieDebugDumpFileName(now),
+        text: calorieDebugDumpText(result: result, generatedAt: now),
       );
       return switch (exportResult) {
         CalorieDebugFileExportSaved(:final path) =>
@@ -155,8 +83,8 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
     try {
       final settings = await ref.watch(calorieGoalControllerProvider.future);
       final encoded = const JsonEncoder.withIndent('  ')
-          .convert(_jsonDebugValue(settings.toJson()));
-      _logCalorieSettingsDebugDump(
+          .convert(jsonDebugValue(settings.toJson()));
+      logCalorieSettingsDebugDump(
         'users/<uid>/calorie_settings/default\n$encoded',
       );
       return CalorieSettingsDebugDumpPrintSuccess(
@@ -182,8 +110,8 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
     try {
       final checkInData = await checkInDataFuture;
       final encoded = const JsonEncoder.withIndent('  ')
-          .convert(_weeklyCheckInDataDebugJson(checkInData));
-      _logDebugDump(
+          .convert(weeklyCheckInDataDebugJson(checkInData));
+      logDebugDump(
         name: 'CalorieWeeklyCheckInDebugDump',
         dump: 'calorieWeeklyCheckInData\n$encoded',
       );
@@ -197,144 +125,5 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
       );
       return const CalorieWeeklyCheckInDebugDumpPrintFailure();
     }
-  }
-}
-
-String _calorieDebugDumpText({
-  required CalorieDebugDumpResult result,
-  required DateTime generatedAt,
-}) {
-  final rangeLabel =
-      '${_formatDebugDumpDate(result.startInclusive)}'
-      '..${_formatDebugDumpDate(previousDiaryDay(result.endExclusive))}';
-  return [
-    'YAMT diary debug dump',
-    'Generated: ${generatedAt.toLocal().toIso8601String()}',
-    'Range: $rangeLabel',
-    'Rows: ${result.rowCount}',
-    '',
-    result.table,
-  ].join('\n');
-}
-
-String _calorieDebugDumpFileName(DateTime now) {
-  final local = now.toLocal();
-  return 'yamt_diary_debug_${_formatDebugDumpStamp(local)}.txt';
-}
-
-String _formatDebugDumpStamp(DateTime dateTime) {
-  return '${dateTime.year.toString().padLeft(4, '0')}'
-      '${dateTime.month.toString().padLeft(2, '0')}'
-      '${dateTime.day.toString().padLeft(2, '0')}_'
-      '${dateTime.hour.toString().padLeft(2, '0')}'
-      '${dateTime.minute.toString().padLeft(2, '0')}'
-      '${dateTime.second.toString().padLeft(2, '0')}';
-}
-
-String _formatDebugDumpDate(DateTime dateTime) {
-  final local = dateTime.toLocal();
-  return '${local.year.toString().padLeft(4, '0')}-'
-      '${local.month.toString().padLeft(2, '0')}-'
-      '${local.day.toString().padLeft(2, '0')}';
-}
-
-Object? _jsonDebugValue(Object? value) {
-  return switch (value) {
-    DateTime() => value.toIso8601String(),
-    Map<Object?, Object?>() => value.map(
-      (key, value) => MapEntry(key.toString(), _jsonDebugValue(value)),
-    ),
-    Iterable<Object?>() => value.map(_jsonDebugValue).toList(growable: false),
-    _ => value,
-  };
-}
-
-Map<String, Object?> _weeklyCheckInDataDebugJson(
-  CalorieWeeklyCheckInData checkInData,
-) {
-  return <String, Object?>{
-    'today': diaryDayKey(DateTime.now()),
-    'has_pending': checkInData.hasPending,
-    'should_auto_open': checkInData.shouldAutoOpen,
-    'show_diary_hint': checkInData.showDiaryHint,
-    'is_ready': checkInData.isReady,
-    'is_blocked': checkInData.isBlocked,
-    'blocked_reason': checkInData.blockedReason?.name,
-    'missing_intake_days': checkInData.missingIntakeDays
-        .map(diaryDayKey)
-        .toList(growable: false),
-    'missing_weight_days': checkInData.missingWeightDays
-        .map(diaryDayKey)
-        .toList(growable: false),
-    'freshness': checkInData.freshness.name,
-    'latest_learned_tdee_at': checkInData.latestLearnedTdeeAt
-        ?.toIso8601String(),
-    'low_confidence': checkInData.lowConfidence,
-    'input_hash': checkInData.inputHash,
-    'pending_weekly_check_in': _pendingWeeklyCheckInDebugJson(
-      checkInData.pendingWeeklyCheckIn,
-    ),
-    'cache_weekly_check_in': _pendingWeeklyCheckInDebugJson(
-      checkInData.cacheWeeklyCheckIn,
-    ),
-    'calculation': _calculationDebugJson(checkInData.calculation),
-    'days': checkInData.days.map(_windowDayDebugJson).toList(growable: false),
-  };
-}
-
-Map<String, Object?>? _pendingWeeklyCheckInDebugJson(
-  PendingCalorieGoalWeeklyCheckIn? pending,
-) {
-  if (pending == null) {
-    return null;
-  }
-  return <String, Object?>{
-    'window_start_date': diaryDayKey(pending.windowStartDate),
-    'window_end_date': diaryDayKey(pending.windowEndDate),
-    'due_date': diaryDayKey(pending.dueDate),
-    'dismissed_at': pending.dismissedAt?.toIso8601String(),
-    'window_key': pending.windowKey,
-  };
-}
-
-Map<String, Object?>? _calculationDebugJson(
-  CalorieWeeklyCheckInCalculation? calculation,
-) {
-  if (calculation == null) {
-    return null;
-  }
-  return <String, Object?>{
-    'trend_weight_change_per_day': calculation.trendWeightChangePerDay,
-    'average_intake_kcal': calculation.averageIntakeKcal,
-    'measured_tdee_kcal': calculation.measuredTdeeKcal,
-    'calculated_tdee_kcal': calculation.calculatedTdeeKcal,
-    'new_base_goal_kcal': calculation.newGoalKcal,
-    'new_target_kcal': calculation.newGoalKcal,
-  };
-}
-
-Map<String, Object?> _windowDayDebugJson(CalorieWeeklyCheckInWindowDay day) {
-  return <String, Object?>{
-    'day': diaryDayKey(day.day),
-    'has_entries': day.hasEntries,
-    'logged_intake_kcal': day.loggedIntakeKcal,
-    'resolved_intake_kcal': day.resolvedIntakeKcal,
-    'is_skipped_intake_day': day.isSkippedIntakeDay,
-    'is_pause_day': day.isPauseDay,
-    'weight_kg': day.weightKg,
-  };
-}
-
-void _logCalorieSettingsDebugDump(String dump) {
-  _logDebugDump(name: 'CalorieSettingsDebugDump', dump: dump);
-}
-
-void _logDebugDump({required String name, required String dump}) {
-  const chunkLength = 800;
-  for (var offset = 0; offset < dump.length; offset += chunkLength) {
-    final end = offset + chunkLength > dump.length
-        ? dump.length
-        : offset + chunkLength;
-    developer.log(dump.substring(offset, end), name: name);
   }
 }

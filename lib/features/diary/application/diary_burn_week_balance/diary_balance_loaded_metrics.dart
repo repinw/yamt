@@ -1,7 +1,7 @@
 import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_weekly_balance_metrics.dart';

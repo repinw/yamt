@@ -2,11 +2,11 @@ import 'dart:math' as math;
 
 import 'package:yamt/features/calories/application/burn_week_live_overview_logic.dart';
 import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/'
     'diary_daily_balance_metrics.dart';
 

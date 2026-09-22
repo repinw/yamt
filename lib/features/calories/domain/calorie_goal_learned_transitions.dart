@@ -46,12 +46,15 @@ extension CalorieGoalLearnedTransitions on CalorieGoalSettings {
     final nextProfile = currentProfile.copyWith(
       weightKg: startWeightKg,
       goalMode: goalMode,
-      goalSpeedKgPerWeek:
-          goalMode == CalorieGoalMode.maintain ? 0 : goalSpeedKgPerWeek,
-      targetWeightKg:
-          goalMode == CalorieGoalMode.maintain ? null : targetWeightKg,
-      maintainUntil:
-          goalMode == CalorieGoalMode.maintain ? maintainUntil : null,
+      goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
+          ? 0
+          : goalSpeedKgPerWeek,
+      targetWeightKg: goalMode == CalorieGoalMode.maintain
+          ? null
+          : targetWeightKg,
+      maintainUntil: goalMode == CalorieGoalMode.maintain
+          ? maintainUntil
+          : null,
       trainingWeekdays: trainingWeekdays,
       trainingDayKcalOffset: trainingDayKcalOffset,
     );
@@ -59,23 +62,22 @@ extension CalorieGoalLearnedTransitions on CalorieGoalSettings {
     final normalizedToday = normalizeDiaryDay(now);
     final normalizedEffectiveDate =
         normalizedGoalStartDate.isAfter(normalizedToday)
-            ? normalizedToday
-            : normalizedGoalStartDate;
+        ? normalizedToday
+        : normalizedGoalStartDate;
     final changedAt = goalChangeTimestamp(
       normalizedEffectiveDate: normalizedEffectiveDate,
       normalizedToday: normalizedToday,
       now: now,
       countGoalStartDayForLearning: countGoalStartDayForLearning,
     );
-    final currentGoalEntry =
-        activeGoalEntryForDay(now) ?? latestGoalEntry;
+    final currentGoalEntry = activeGoalEntryForDay(now) ?? latestGoalEntry;
     final nextDailyKcalGoal =
         CalorieWeeklyCheckInCalculator.calculateGoalFromLearnedTdee(
-      learnedTdeeKcal: learnedTdeeKcal,
-      goalSpeedKgPerWeek: goalSpeedKgPerWeek,
-      isLosing: goalMode == CalorieGoalMode.lose,
-      isGaining: goalMode == CalorieGoalMode.gain,
-    );
+          learnedTdeeKcal: learnedTdeeKcal,
+          goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+          isLosing: goalMode == CalorieGoalMode.lose,
+          isGaining: goalMode == CalorieGoalMode.gain,
+        );
     final goalChanged =
         currentGoalEntry?.effectiveDate != normalizedEffectiveDate ||
         currentGoalEntry?.effectiveCountingStartDate !=
@@ -114,11 +116,7 @@ extension CalorieGoalLearnedTransitions on CalorieGoalSettings {
       preserveSameDayGoalEntries: archiveCurrentGoal,
     );
 
-    return (
-      isValid: true,
-      goalChanged: true,
-      nextSettings: nextSettings,
-    );
+    return (isValid: true, goalChanged: true, nextSettings: nextSettings);
   }
 
   /// Evaluates applying a weekly check-in goal snapshot.

@@ -7,11 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Tile allowing the user to toggle the sport active multiplier setting.
 class SettingsMacroGoalsActivityTile extends StatelessWidget {
   /// Creates the macro goals activity tile.
-  const new({
-    required this.isSportActive,
-    required this.onChanged,
-    super.key,
-  });
+  const new({required this.isSportActive, required this.onChanged, super.key});
 
   /// Whether sport activity is currently enabled.
   final bool isSportActive;
@@ -41,9 +37,7 @@ class SettingsMacroGoalsActivityTile extends StatelessWidget {
         ),
         subtitle: Text(
           l10n.settingsMacroGoalsSportActiveSubtitle,
-          style: textTheme.bodySmall?.copyWith(
-            color: colors.onSurfaceVariant,
-          ),
+          style: textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
         ),
       ),
     );

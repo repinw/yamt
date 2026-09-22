@@ -7,11 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// recommendations.
 class SettingsMacroGoalsActionButtons extends StatelessWidget {
   /// Creates the macro goals action buttons.
-  const new({
-    required this.onSave,
-    required this.onReset,
-    super.key,
-  });
+  const new({required this.onSave, required this.onReset, super.key});
 
   /// Callback when save button is pressed.
   final VoidCallback onSave;

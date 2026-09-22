@@ -123,6 +123,11 @@ Main application providers:
 - `application/calorie_goal_archive_provider.dart` resolves the archive cycles
   so the archive page does no aggregation.
 - `application/daily_nutrition_target_resolver_service.dart`
+- `application/calorie_week_consumption_snapshot_provider.dart` provides
+  lightweight consumption totals for Burn Week synchronization without loading
+  the full rolling week overview.
+- `application/calorie_week_overview_models.dart` defines the serializable
+  models for daily and weekly calorie progress.
 
 ## TDEE Learning
 

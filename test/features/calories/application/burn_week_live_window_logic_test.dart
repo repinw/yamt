@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/application/'
     'burn_week_live_window_logic.dart';
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 
 void main() {
   group('burn_week_live_window_logic', () {

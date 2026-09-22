@@ -86,15 +86,16 @@ void main() {
         );
         final updatedAt = DateTime.utc(2026, 3, 21, 10);
 
-      final prepared = prepareCalorieEntryForSave(
-        entry,
-        userId: 'user-42',
-        updatedAt: updatedAt,
-      );
+        final prepared = prepareCalorieEntryForSave(
+          entry,
+          userId: 'user-42',
+          updatedAt: updatedAt,
+        );
 
-      expect(prepared.userId, 'user-42');
-      expect(prepared.updatedAt, updatedAt);
-      expect(prepared.imageUrl, 'https://example.com/pic.jpg');
-    });
+        expect(prepared.userId, 'user-42');
+        expect(prepared.updatedAt, updatedAt);
+        expect(prepared.imageUrl, 'https://example.com/pic.jpg');
+      },
+    );
   });
 }

@@ -7,7 +7,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
-
 /// Sets a manual daily calorie goal.
 Future<bool> setManualCalorieGoal({
   required CalorieGoalController controller,
@@ -145,10 +144,7 @@ Future<bool> setCalorieSkippedIntakeDay({
   }
   final nextSettings = previous
       .setSkippedIntakeDay(day: day, isSkipped: isSkipped)
-      .invalidateWeeklyCheckInSnapshotsFromDay(
-        day: day,
-        invalidatedAt: now,
-      );
+      .invalidateWeeklyCheckInSnapshotsFromDay(day: day, invalidatedAt: now);
   return await controller.persistSettings(nextSettings);
 }
 

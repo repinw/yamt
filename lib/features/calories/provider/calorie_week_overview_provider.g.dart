@@ -3,228 +3,11 @@
 part of 'calorie_week_overview_provider.dart';
 
 // **************************************************************************
-// JsonSerializableGenerator
-// **************************************************************************
-
-CalorieWeekDayOverview _$CalorieWeekDayOverviewFromJson(
-  Map<String, dynamic> json,
-) => CalorieWeekDayOverview(
-  date: DateTime.parse(json['date'] as String),
-  totalKcal: (json['total_kcal'] as num).toDouble(),
-  goalKcal: (json['goal_kcal'] as num).toDouble(),
-  entryCount: (json['entry_count'] as num).toInt(),
-  baseGoalKcal: (json['base_goal_kcal'] as num?)?.toDouble(),
-  activityBonusKcal: (json['activity_bonus_kcal'] as num?)?.toDouble() ?? 0,
-  todayActiveKcal: (json['today_active_kcal'] as num?)?.toInt() ?? 0,
-  expectedActivityKcal:
-      (json['expected_activity_kcal'] as num?)?.toDouble() ?? 0,
-  isActivityTrackingActive:
-      json['is_activity_tracking_active'] as bool? ?? false,
-  isPauseDay: json['is_pause_day'] as bool? ?? false,
-);
-
-Map<String, dynamic> _$CalorieWeekDayOverviewToJson(
-  CalorieWeekDayOverview instance,
-) => <String, dynamic>{
-  'date': instance.date.toIso8601String(),
-  'total_kcal': instance.totalKcal,
-  'goal_kcal': instance.goalKcal,
-  'base_goal_kcal': instance.baseGoalKcal,
-  'activity_bonus_kcal': instance.activityBonusKcal,
-  'today_active_kcal': instance.todayActiveKcal,
-  'expected_activity_kcal': instance.expectedActivityKcal,
-  'is_activity_tracking_active': instance.isActivityTrackingActive,
-  'entry_count': instance.entryCount,
-  'is_pause_day': instance.isPauseDay,
-};
-
-CalorieWeekOverview _$CalorieWeekOverviewFromJson(
-  Map<String, dynamic> json,
-) => CalorieWeekOverview(
-  days: (json['days'] as List<dynamic>)
-      .map((e) => CalorieWeekDayOverview.fromJson(e as Map<String, dynamic>))
-      .toList(),
-  totalConsumedKcal: (json['total_consumed_kcal'] as num).toDouble(),
-  totalGoalKcal: (json['total_goal_kcal'] as num).toDouble(),
-  remainingKcal: (json['remaining_kcal'] as num).toDouble(),
-  balanceStartDate: DateTime.parse(json['balance_start_date'] as String),
-  carryoverBeforeTodayKcal: (json['carryover_before_today_kcal'] as num)
-      .toDouble(),
-  todayFlexibleGoalKcal: (json['today_flexible_goal_kcal'] as num).toDouble(),
-  goalStartsInFuture: json['goal_starts_in_future'] as bool,
-  nextGoalStartDate: json['next_goal_start_date'] == null
-      ? null
-      : DateTime.parse(json['next_goal_start_date'] as String),
-  futureGoalKcal: (json['future_goal_kcal'] as num?)?.toDouble(),
-);
-
-Map<String, dynamic> _$CalorieWeekOverviewToJson(
-  CalorieWeekOverview instance,
-) => <String, dynamic>{
-  'days': instance.days.map((e) => e.toJson()).toList(),
-  'total_consumed_kcal': instance.totalConsumedKcal,
-  'total_goal_kcal': instance.totalGoalKcal,
-  'remaining_kcal': instance.remainingKcal,
-  'balance_start_date': instance.balanceStartDate.toIso8601String(),
-  'carryover_before_today_kcal': instance.carryoverBeforeTodayKcal,
-  'today_flexible_goal_kcal': instance.todayFlexibleGoalKcal,
-  'goal_starts_in_future': instance.goalStartsInFuture,
-  'next_goal_start_date': instance.nextGoalStartDate?.toIso8601String(),
-  'future_goal_kcal': instance.futureGoalKcal,
-};
-
-// **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Calorie week consumption snapshot.
-
-@ProviderFor(calorieWeekConsumptionSnapshot)
-final calorieWeekConsumptionSnapshotProvider =
-    CalorieWeekConsumptionSnapshotProvider._();
-
-/// Calorie week consumption snapshot.
-
-final class CalorieWeekConsumptionSnapshotProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<CalorieWeekConsumptionSnapshot>,
-          CalorieWeekConsumptionSnapshot,
-          FutureOr<CalorieWeekConsumptionSnapshot>
-        >
-    with
-        $FutureModifier<CalorieWeekConsumptionSnapshot>,
-        $FutureProvider<CalorieWeekConsumptionSnapshot> {
-  /// Calorie week consumption snapshot.
-  CalorieWeekConsumptionSnapshotProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'calorieWeekConsumptionSnapshotProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$calorieWeekConsumptionSnapshotHash();
-
-  @$internal
-  @override
-  $FutureProviderElement<CalorieWeekConsumptionSnapshot> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<CalorieWeekConsumptionSnapshot> create(Ref ref) {
-    return calorieWeekConsumptionSnapshot(ref);
-  }
-}
-
-String _$calorieWeekConsumptionSnapshotHash() =>
-    r'6ba6dba802963acc759a066f0ff4c016c118d2a9';
-
-/// Calorie week consumption snapshot for window.
-
-@ProviderFor(calorieWeekConsumptionSnapshotForWindow)
-final calorieWeekConsumptionSnapshotForWindowProvider =
-    CalorieWeekConsumptionSnapshotForWindowFamily._();
-
-/// Calorie week consumption snapshot for window.
-
-final class CalorieWeekConsumptionSnapshotForWindowProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<CalorieWeekConsumptionSnapshot>,
-          CalorieWeekConsumptionSnapshot,
-          FutureOr<CalorieWeekConsumptionSnapshot>
-        >
-    with
-        $FutureModifier<CalorieWeekConsumptionSnapshot>,
-        $FutureProvider<CalorieWeekConsumptionSnapshot> {
-  /// Calorie week consumption snapshot for window.
-  CalorieWeekConsumptionSnapshotForWindowProvider._({
-    required CalorieWeekConsumptionSnapshotForWindowFamily super.from,
-    required DateTime super.argument,
-  }) : super(
-         retry: null,
-         name: r'calorieWeekConsumptionSnapshotForWindowProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
-
-  @override
-  String debugGetCreateSourceHash() =>
-      _$calorieWeekConsumptionSnapshotForWindowHash();
-
-  @override
-  String toString() {
-    return r'calorieWeekConsumptionSnapshotForWindowProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $FutureProviderElement<CalorieWeekConsumptionSnapshot> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<CalorieWeekConsumptionSnapshot> create(Ref ref) {
-    final argument = this.argument as DateTime;
-    return calorieWeekConsumptionSnapshotForWindow(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is CalorieWeekConsumptionSnapshotForWindowProvider &&
-        other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
-}
-
-String _$calorieWeekConsumptionSnapshotForWindowHash() =>
-    r'196a369450e8d9fa60d5ca3b47ba906645fb7a1f';
-
-/// Calorie week consumption snapshot for window.
-
-final class CalorieWeekConsumptionSnapshotForWindowFamily extends $Family
-    with
-        $FunctionalFamilyOverride<
-          FutureOr<CalorieWeekConsumptionSnapshot>,
-          DateTime
-        > {
-  CalorieWeekConsumptionSnapshotForWindowFamily._()
-    : super(
-        retry: null,
-        name: r'calorieWeekConsumptionSnapshotForWindowProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  /// Calorie week consumption snapshot for window.
-
-  CalorieWeekConsumptionSnapshotForWindowProvider call(
-    DateTime visibleWindowEnd,
-  ) => CalorieWeekConsumptionSnapshotForWindowProvider._(
-    argument: visibleWindowEnd,
-    from: this,
-  );
-
-  @override
-  String toString() => r'calorieWeekConsumptionSnapshotForWindowProvider';
-}
-
 /// Calorie week overview.
 
 @ProviderFor(calorieWeekOverview)
@@ -337,7 +120,7 @@ final class CalorieWeekOverviewForWindowProvider
 }
 
 String _$calorieWeekOverviewForWindowHash() =>
-    r'55190b493b23656a3addc9e52af0c2de551da201';
+    r'e3e86e9bc8e6bda8add4b909def354c6ac96e302';
 
 /// Calorie week overview for window.
 
@@ -429,7 +212,7 @@ final class CalorieWeekDayOverviewForDateProvider
 }
 
 String _$calorieWeekDayOverviewForDateHash() =>
-    r'a1725da8025940ff947197425127183b14244820';
+    r'97adda9295b1546409d3e96ece23c7df40388740';
 
 /// Calorie week day overview for date.
 

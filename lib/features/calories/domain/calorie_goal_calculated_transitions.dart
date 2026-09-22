@@ -52,8 +52,8 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
     }
     final normalizedEffectiveDate =
         normalizedGoalStartDate.isAfter(normalizedToday)
-            ? normalizedToday
-            : normalizedGoalStartDate;
+        ? normalizedToday
+        : normalizedGoalStartDate;
     final changedAt = goalChangeTimestamp(
       normalizedEffectiveDate: normalizedEffectiveDate,
       normalizedToday: normalizedToday,
@@ -122,8 +122,7 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
       return (isValid: false, goalStartChanged: false, nextSettings: null);
     }
 
-    final currentGoalEntry =
-        activeGoalEntryForDay(now) ?? latestGoalEntry;
+    final currentGoalEntry = activeGoalEntryForDay(now) ?? latestGoalEntry;
     final currentDailyKcalGoal =
         currentGoalEntry?.dailyKcalGoal ?? dailyKcalGoal;
     final currentCalculatorProfile =
@@ -135,8 +134,8 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
     final normalizedToday = normalizeDiaryDay(now);
     final normalizedEffectiveDate =
         normalizedGoalStartDate.isAfter(normalizedToday)
-            ? normalizedToday
-            : normalizedGoalStartDate;
+        ? normalizedToday
+        : normalizedGoalStartDate;
     final changedAt = goalChangeTimestamp(
       normalizedEffectiveDate: normalizedEffectiveDate,
       normalizedToday: normalizedToday,
@@ -160,10 +159,6 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
       replaceFutureHistory: true,
     );
 
-    return (
-      isValid: true,
-      goalStartChanged: true,
-      nextSettings: nextSettings,
-    );
+    return (isValid: true, goalStartChanged: true, nextSettings: nextSettings);
   }
 }
