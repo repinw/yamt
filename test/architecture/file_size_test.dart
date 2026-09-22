@@ -145,6 +145,5 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/product_search_hub/presentation/widgets/product_ai_search_page/product_ai_search_page.dart',
   'lib/features/recipes/application/template_ingredient_parser.dart',
   'lib/features/settings/presentation/pages/account_page.dart',
-  'lib/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart',
   'lib/features/shared/widgets/auth_form_components.dart',
 };

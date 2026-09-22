@@ -2,41 +2,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
-import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/macro_goal_settings_controller.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_action_buttons.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_activity_tile.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_carbs_notice.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_multiplier_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_preview_card.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_preview_data.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Stable keys for Macro Goals Sheet widget tests.
-abstract final class SettingsMacroGoalsSheetKeys {
-  /// Sport active switch key.
-  static const sportActiveSwitch = ValueKey<String>(
-    'settings-macro-goals-sport-switch',
-  );
-
-  /// Protein slider key.
-  static const proteinSlider = ValueKey<String>(
-    'settings-macro-goals-protein-slider',
-  );
-
-  /// Fat slider key.
-  static const fatSlider = ValueKey<String>('settings-macro-goals-fat-slider');
-
-  /// Reset to recommendations button key.
-  static const resetButton = ValueKey<String>(
-    'settings-macro-goals-reset-button',
-  );
-
-  /// Save button key.
-  static const saveButton = ValueKey<String>(
-    'settings-macro-goals-save-button',
-  );
-}
 
 /// Opens the macro goals distribution settings bottom sheet.
 Future<void> showSettingsMacroGoalsSheet(
@@ -164,44 +141,12 @@ class _SettingsMacroGoalsSheetState
     final weightKg = _resolveWeightKg(isMale);
     final goalKcal = _resolveGoalKcal();
 
-    final rawProteinGrams = (weightKg * _proteinMultiplier).round();
-    final rawFatGrams = (weightKg * _fatMultiplier).round();
-    final rawProteinKcal = rawProteinGrams * 4;
-    final rawFatKcal = rawFatGrams * 9;
-    final isBudgetExceeded = (rawProteinKcal + rawFatKcal) > goalKcal;
-
-    final int proteinGrams;
-    final int fatGrams;
-    final int carbsGrams;
-    if (isBudgetExceeded) {
-      proteinGrams = rawProteinGrams;
-      fatGrams = rawFatGrams;
-      carbsGrams = 0;
-    } else {
-      final targets = MacroBudgetCalculator.calculate(
-        goalKcal: goalKcal,
-        weightKg: weightKg,
-        proteinGramsPerKg: _proteinMultiplier,
-        fatGramsPerKg: _fatMultiplier,
-      );
-      proteinGrams = targets.protein.round();
-      fatGrams = targets.fat.round();
-      carbsGrams = targets.carbs.round();
-    }
-    final proteinKcal = proteinGrams * 4;
-    final fatKcal = fatGrams * 9;
-    final carbsKcal = carbsGrams * 4;
-    final totalEffectiveKcal = proteinKcal + fatKcal + carbsKcal;
-
-    final proteinPct = totalEffectiveKcal > 0
-        ? (proteinKcal / totalEffectiveKcal * 100).round()
-        : 0;
-    final fatPct = totalEffectiveKcal > 0
-        ? (fatKcal / totalEffectiveKcal * 100).round()
-        : 0;
-    final carbsPct = totalEffectiveKcal > 0
-        ? (carbsKcal / totalEffectiveKcal * 100).round()
-        : 0;
+    final previewData = SettingsMacroGoalsPreviewData.compute(
+      goalKcal: goalKcal,
+      weightKg: weightKg,
+      proteinMultiplier: _proteinMultiplier,
+      fatMultiplier: _fatMultiplier,
+    );
 
     return SingleChildScrollView(
       padding: EdgeInsets.only(
@@ -225,36 +170,17 @@ class _SettingsMacroGoalsSheetState
                 ?.copyWith(color: colors.onSurfaceVariant),
           ),
           const SizedBox(height: AppSpacing.lg),
-
-          // Activity Switch
-          Container(
-            decoration: BoxDecoration(
-              color: colors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-            ),
-            child: AppSwitchListTile.adaptive(
-              key: SettingsMacroGoalsSheetKeys.sportActiveSwitch,
-              value: _isSportActive,
-              onChanged: _onToggleSport,
-              title: Text(
-                l10n.settingsMacroGoalsSportActiveLabel,
-                style: const TextStyle(fontWeight: FontWeight.w800),
-              ),
-              subtitle: Text(
-                l10n.settingsMacroGoalsSportActiveSubtitle,
-                style: TextStyle(color: colors.onSurfaceVariant, fontSize: 12),
-              ),
-            ),
+          SettingsMacroGoalsActivityTile(
+            isSportActive: _isSportActive,
+            onChanged: _onToggleSport,
           ),
           const SizedBox(height: AppSpacing.lg),
-
-          // Protein Slider
           SettingsMacroGoalsMultiplierCard(
             sliderKey: SettingsMacroGoalsSheetKeys.proteinSlider,
             label: l10n.settingsMacroGoalsProteinLabel,
             accentColor: accents.protein,
             multiplier: _proteinMultiplier,
-            grams: proteinGrams,
+            grams: previewData.proteinGrams,
             min: 0.8,
             max: 3,
             divisions: 22,
@@ -267,14 +193,12 @@ class _SettingsMacroGoalsSheetState
                 l10n.settingsMacroGoalsGramPerKg(val.toStringAsFixed(1)),
           ),
           const SizedBox(height: AppSpacing.md),
-
-          // Fat Slider
           SettingsMacroGoalsMultiplierCard(
             sliderKey: SettingsMacroGoalsSheetKeys.fatSlider,
             label: l10n.settingsMacroGoalsFatLabel,
             accentColor: accents.fat,
             multiplier: _fatMultiplier,
-            grams: fatGrams,
+            grams: previewData.fatGrams,
             min: 0.5,
             max: 2,
             divisions: 15,
@@ -287,64 +211,23 @@ class _SettingsMacroGoalsSheetState
                 l10n.settingsMacroGoalsGramPerKg(val.toStringAsFixed(1)),
           ),
           const SizedBox(height: AppSpacing.md),
-
-          // Carbs notice
-          Container(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            decoration: BoxDecoration(
-              color: accents.carbs.withValues(
-                alpha: colors.brightness == Brightness.dark ? 0.14 : 0.08,
-              ),
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(color: accents.carbs.withValues(alpha: 0.25)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.auto_awesome, size: 18, color: accents.carbs),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Text(
-                    l10n.settingsMacroGoalsCarbsAutoLabel,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: colors.onSurface,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          const SettingsMacroGoalsCarbsNotice(),
           const SizedBox(height: AppSpacing.lg),
-
-          // Live Preview Card
           SettingsMacroGoalsPreviewCard(
             goalKcal: goalKcal,
             weightKg: weightKg,
-            proteinGrams: proteinGrams,
-            fatGrams: fatGrams,
-            carbsGrams: carbsGrams,
-            proteinPct: proteinPct,
-            fatPct: fatPct,
-            carbsPct: carbsPct,
-            isBudgetExceeded: isBudgetExceeded,
+            proteinGrams: previewData.proteinGrams,
+            fatGrams: previewData.fatGrams,
+            carbsGrams: previewData.carbsGrams,
+            proteinPct: previewData.proteinPct,
+            fatPct: previewData.fatPct,
+            carbsPct: previewData.carbsPct,
+            isBudgetExceeded: previewData.isBudgetExceeded,
           ),
           const SizedBox(height: AppSpacing.xl),
-
-          // Actions: Save & Reset
-          FilledButton(
-            key: SettingsMacroGoalsSheetKeys.saveButton,
-            onPressed: _onSave,
-            child: Text(l10n.settingsMacroGoalsSaveButton),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Center(
-            child: TextButton.icon(
-              key: SettingsMacroGoalsSheetKeys.resetButton,
-              onPressed: _onResetToDefaults,
-              icon: const Icon(Icons.restore_rounded, size: 18),
-              label: Text(l10n.settingsMacroGoalsResetButton),
-            ),
+          SettingsMacroGoalsActionButtons(
+            onSave: _onSave,
+            onReset: _onResetToDefaults,
           ),
         ],
       ),
