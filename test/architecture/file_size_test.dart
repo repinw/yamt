@@ -82,7 +82,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/cooking_flow/presentation/controllers/cooking_flow_wizard_controller.dart',
   'lib/features/cooking_flow/presentation/cooking_flow_finalize_page.dart',
   'lib/features/cooking_flow/presentation/cooking_flow_intro_page_assignment.dart',
-  'lib/features/cooking_flow/presentation/cooking_flow_intro_page_inventory.dart',
   'lib/features/cooking_flow/presentation/cooking_flow_intro_page_widgets.dart',
   'lib/features/cooking_flow/presentation/cooking_flow_inventory_conflict_panels.dart',
   'lib/features/cooking_flow/presentation/cooking_flow_on_the_fly_adjustment_card.dart',

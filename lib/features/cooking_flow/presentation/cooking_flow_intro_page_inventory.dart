@@ -1,29 +1,23 @@
-// Internal split widgets are public only so sibling files can import them.
-// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
-
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_intro_inventory_models.dart';
-import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_inventory_conflict_resolver.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_intro_inventory_controller.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_intro_page_assignment.dart';
+    'cooking_flow_intro_inventory_coordinator.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_intro_page_widgets.dart';
+    'cooking_flow_intro_inventory_header.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Card containing inventory checks and conflict resolution during cook flow
+/// intro.
 class CookingFlowInventoryCheckCard extends ConsumerStatefulWidget {
+  /// Creates an inventory check card.
   const new({
     required this.template,
     required this.targetPortions,
@@ -35,17 +29,37 @@ class CookingFlowInventoryCheckCard extends ConsumerStatefulWidget {
     required this.onRestartPressed,
     required this.onShoppingLabelsResolved,
     required this.onSelectionStateChanged,
+    super.key,
   });
 
+  /// Prepared meal template being prepared.
   final PreparedMeal template;
+
+  /// Target portions configured by user.
   final int targetPortions;
+
+  /// Available inventory items to match against ingredients.
   final List<InventoryItem> inventoryItems;
+
+  /// Active locale code for number/unit formatting.
   final String localeCode;
+
+  /// Restored or initial selection draft.
   final CookingFlowIntroDraft? initialDraft;
+
+  /// Baseline inventory IDs before shopping list generation.
   final List<String> shoppingBaselineInventoryItemIds;
+
+  /// Signal indicating the parent requested a reset.
   final int resetSignal;
+
+  /// Callback when user confirms resetting the intro selection.
   final Future<void> Function() onRestartPressed;
+
+  /// Callback when ingredient assignments resolve shopping items.
   final Future<void> Function(List<String> labels) onShoppingLabelsResolved;
+
+  /// Callback when selection state or draft is updated.
   final ValueChanged<CookingFlowIntroSelectionState> onSelectionStateChanged;
 
   @override
@@ -94,28 +108,23 @@ class _CookingFlowInventoryCheckCardState
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
+    final coordinator = CookingFlowInventoryCheckCoordinator(
+      context: context,
+      ref: ref,
+      inventoryItems: widget.inventoryItems,
+      localeCode: widget.localeCode,
+      shoppingBaselineInventoryItemIds: widget.shoppingBaselineInventoryItemIds,
+      rowKeys: _rowKeys,
+      onShoppingLabelsResolved: widget.onShoppingLabelsResolved,
+      onSelectionStateChanged: widget.onSelectionStateChanged,
+    );
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        Row(
-          children: <Widget>[
-            Icon(Icons.shopping_cart_outlined, color: colors.onSurfaceVariant),
-            const SizedBox(width: AppSpacing.sm),
-            Text(
-              l10n.cookflowInventoryCheckTitle,
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const Spacer(),
-            if (inventoryState.hasAnySelections)
-              TextButton.icon(
-                onPressed: () {
-                  unawaited(widget.onRestartPressed());
-                },
-                icon: const Icon(Icons.restart_alt_rounded),
-                label: Text(l10n.cookflowResetButton),
-              ),
-          ],
+        CookingFlowInventoryCheckHeader(
+          hasSelections: inventoryState.hasAnySelections,
+          onRestartPressed: widget.onRestartPressed,
         ),
         const SizedBox(height: AppSpacing.md),
         if (inventoryState.rows.isEmpty)
@@ -129,46 +138,11 @@ class _CookingFlowInventoryCheckCardState
           index < inventoryState.rows.length;
           index++
         ) ...<Widget>[
-          () {
-            final suggestedItem = _suggestedInventoryItemForIndex(index);
-            return CookingFlowInventoryCheckRow(
-              key: _rowKeys[index],
-              row: inventoryState.rows[index],
-              selectedAction: inventoryState.selectedActions[index],
-              selectedSelections:
-                  inventoryState.selectedInventorySelections[index],
-              inventoryItems: widget.inventoryItems,
-              localeCode: widget.localeCode,
-              conflict: _conflictForIndex(index),
-              conflictResolution: inventoryState.conflictResolutions[index],
-              suggestedItem: suggestedItem,
-              onAssignPressed: () => _selectInventoryItem(index),
-              onEditPressed: () => _editIngredient(index),
-              onShoppingPressed: () => _selectAction(
-                index,
-                CookingFlowInventoryRowAction.shoppingCart,
-              ),
-              onIgnorePressed: () =>
-                  _selectAction(index, CookingFlowInventoryRowAction.ignored),
-              onBuyRemainingPressed: () => _setConflictResolution(
-                index,
-                CookingFlowInventoryConflictResolution.buyRemaining,
-              ),
-              onAdjustTemplatePressed: () => _setConflictResolution(
-                index,
-                CookingFlowInventoryConflictResolution.adjustTemplate,
-              ),
-              onConvertUnitPressed: (amountPerPiece) =>
-                  _convertUnitConflict(index, amountPerPiece),
-              onWeighLaterPressed: () => _weighUnitConflictLater(index),
-              onApplySuggestedItem: suggestedItem == null
-                  ? null
-                  : () => _applySuggestedInventoryItem(
-                      index: index,
-                      itemId: suggestedItem.id,
-                    ),
-            );
-          }(),
+          coordinator.buildRow(
+            index: index,
+            key: _rowKeys[index],
+            inventoryState: inventoryState,
+          ),
           if (index != inventoryState.rows.length - 1)
             const SizedBox(height: AppSpacing.md),
         ],
@@ -210,7 +184,11 @@ class _CookingFlowInventoryCheckCardState
     _syncRowKeys(
       ref.read(cookingFlowIntroInventoryControllerProvider).rows.length,
     );
-    _notifySelectionState();
+    CookingFlowInventoryCheckCoordinator.notifySelectionStateWith(
+      ref: ref,
+      inventoryItems: widget.inventoryItems,
+      onSelectionStateChanged: widget.onSelectionStateChanged,
+    );
   }
 
   void _syncRowKeys(int rowCount) {
@@ -225,172 +203,5 @@ class _CookingFlowInventoryCheckCardState
       ..._rowKeys,
       for (var index = _rowKeys.length; index < rowCount; index++) GlobalKey(),
     ];
-  }
-
-  void _selectAction(int index, CookingFlowInventoryRowAction action) {
-    ref
-        .read(cookingFlowIntroInventoryControllerProvider.notifier)
-        .selectAction(index, action);
-    _notifySelectionState();
-    _scrollToNextRow(index);
-  }
-
-  Future<void> _selectInventoryItem(int index) async {
-    final state = ref.read(cookingFlowIntroInventoryControllerProvider);
-    final row = state.rows[index];
-    final initialSelections = state.selectedInventorySelections[index];
-    final selections = await showCookingFlowInventoryAssignmentSheet(
-      context: context,
-      ingredient: row.name,
-      inventoryItems: widget.inventoryItems,
-      localeCode: widget.localeCode,
-      initialSelections: initialSelections,
-    );
-    if (!mounted || selections == null) {
-      return;
-    }
-
-    final container = ProviderScope.containerOf(context, listen: false);
-    final notifier = container.read(
-      cookingFlowIntroInventoryControllerProvider.notifier,
-    );
-    final resolvedShoppingLabels = notifier.shoppingLabelsResolvedByAssignment(
-      index: index,
-      nextSelections: selections,
-      inventoryItems: widget.inventoryItems,
-    );
-    notifier.setInventorySelections(index: index, selections: selections);
-    _notifySelectionState();
-    if (resolvedShoppingLabels.isNotEmpty) {
-      unawaited(widget.onShoppingLabelsResolved(resolvedShoppingLabels));
-    }
-    if (selections.isNotEmpty) {
-      _scrollToNextRow(index);
-    }
-  }
-
-  InventoryItem? _suggestedInventoryItemForIndex(int index) {
-    return ref
-        .read(cookingFlowIntroInventoryControllerProvider.notifier)
-        .suggestedInventoryItem(
-          index: index,
-          baselineInventoryItemIds: widget.shoppingBaselineInventoryItemIds,
-          inventoryItems: widget.inventoryItems,
-        );
-  }
-
-  void _applySuggestedInventoryItem({
-    required int index,
-    required String itemId,
-  }) {
-    final state = ref.read(cookingFlowIntroInventoryControllerProvider);
-    final action = state.selectedActions[index];
-    final nextSelections = switch (action) {
-      CookingFlowInventoryRowAction.assigned =>
-        <CookingFlowInventoryAssignmentSelection>[
-          ...state.selectedInventorySelections[index],
-          CookingFlowInventoryAssignmentSelection(itemId: itemId),
-        ],
-      _ => <CookingFlowInventoryAssignmentSelection>[
-        CookingFlowInventoryAssignmentSelection(itemId: itemId),
-      ],
-    };
-    final notifier = ref.read(
-      cookingFlowIntroInventoryControllerProvider.notifier,
-    );
-    final resolvedShoppingLabels = notifier.shoppingLabelsResolvedByAssignment(
-      index: index,
-      nextSelections: nextSelections,
-      inventoryItems: widget.inventoryItems,
-    );
-    notifier.applySuggestedInventoryItem(index: index, itemId: itemId);
-    _notifySelectionState();
-    if (resolvedShoppingLabels.isNotEmpty) {
-      unawaited(widget.onShoppingLabelsResolved(resolvedShoppingLabels));
-    }
-    _scrollToNextRow(index);
-  }
-
-  Future<void> _editIngredient(int index) async {
-    final state = ref.read(cookingFlowIntroInventoryControllerProvider);
-    final editedRow = await showCookingFlowIngredientEditSheet(
-      context: context,
-      row: state.rows[index],
-    );
-    if (!mounted || editedRow == null) {
-      return;
-    }
-    final container = ProviderScope.containerOf(context, listen: false);
-    container
-        .read(cookingFlowIntroInventoryControllerProvider.notifier)
-        .editRow(index: index, row: editedRow);
-    _notifySelectionState();
-  }
-
-  void _convertUnitConflict(int index, double amountPerPiece) {
-    ref
-        .read(cookingFlowIntroInventoryControllerProvider.notifier)
-        .convertUnitConflict(
-          index: index,
-          amountPerPiece: amountPerPiece,
-          inventoryItems: widget.inventoryItems,
-        );
-    _notifySelectionState();
-  }
-
-  void _weighUnitConflictLater(int index) {
-    ref
-        .read(cookingFlowIntroInventoryControllerProvider.notifier)
-        .weighUnitConflictLater(
-          index: index,
-          inventoryItems: widget.inventoryItems,
-        );
-    _notifySelectionState();
-  }
-
-  void _notifySelectionState() {
-    final selectionState = ref
-        .read(cookingFlowIntroInventoryControllerProvider.notifier)
-        .selectionState(widget.inventoryItems);
-    widget.onSelectionStateChanged(selectionState);
-  }
-
-  CookingFlowInventoryCheckConflict? _conflictForIndex(int index) {
-    return ref
-        .read(cookingFlowIntroInventoryControllerProvider.notifier)
-        .conflictForIndex(index, widget.inventoryItems);
-  }
-
-  void _setConflictResolution(
-    int index,
-    CookingFlowInventoryConflictResolution resolution,
-  ) {
-    ref
-        .read(cookingFlowIntroInventoryControllerProvider.notifier)
-        .setConflictResolution(index: index, resolution: resolution);
-    _notifySelectionState();
-  }
-
-  void _scrollToNextRow(int index) {
-    final nextIndex = index + 1;
-    if (nextIndex >= _rowKeys.length) {
-      return;
-    }
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      final nextContext = _rowKeys[nextIndex].currentContext;
-      if (nextContext == null) {
-        return;
-      }
-      Scrollable.ensureVisible(
-        nextContext,
-        duration: const Duration(milliseconds: 280),
-        curve: Curves.easeOutCubic,
-        alignment: 0.18,
-      );
-    });
   }
 }
