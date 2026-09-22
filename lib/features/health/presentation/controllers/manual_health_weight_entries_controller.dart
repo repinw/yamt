@@ -3,13 +3,13 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 
 part 'manual_health_weight_entries_controller.g.dart';
 
@@ -37,13 +37,11 @@ class ManualHealthWeightEntriesController
   }) async {
     final repository = ref.read(manualHealthWeightRepositoryProvider);
     final healthWeightService = ref.read(healthWeightServiceProvider);
-    final connectionStatusFuture = ref.read(
-      healthConnectionControllerProvider.future,
-    );
+    final healthConnectionService = ref.read(healthConnectionServiceProvider);
     final now = ref.read(manualHealthWeightNowProvider)();
     final previousEntries = await _loadCurrentEntries(repository);
     final normalizedDay = normalizeLocalDay(day);
-    final connectionStatus = await connectionStatusFuture;
+    final connectionStatus = await healthConnectionService.loadStatus();
 
     if (connectionStatus.accessState == HealthDataAccessState.ready) {
       return await _saveToHealth(

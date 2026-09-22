@@ -2,13 +2,12 @@ import 'dart:developer' show log;
 
 import 'package:health/health.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:yamt/features/health/data/health_weight_sample_cache.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
 const _logName = 'HealthWeightService';
 const _weightTypes = <HealthDataType>[HealthDataType.WEIGHT];
-const _weightCacheTtl = Duration(minutes: 5);
-const _recentPastWeightQueryWindow = Duration(days: 30);
 const _appWeightClientRecordPrefix = 'yamt-weight';
 
 /// Create health weight service.
@@ -22,16 +21,17 @@ class MobileHealthWeightService implements HealthWeightService {
   new({
     Health? health,
     DateTime Function()? now,
-    this._cacheTtl = _weightCacheTtl,
-  }) : _health = health ?? Health(),
-       _now = now ?? DateTime.now;
+    Duration cacheTtl = const Duration(minutes: 5),
+    HealthWeightSampleCache? cache,
+  })  : _health = health ?? Health(),
+        _now = now ?? DateTime.now,
+        _cache = cache ?? HealthWeightSampleCache(ttl: cacheTtl);
 
   final Health _health;
   final DateTime Function() _now;
-  final Duration _cacheTtl;
+  final HealthWeightSampleCache _cache;
   bool _isConfigured = false;
   String? _packageName;
-  _WeightSampleCacheEntry? _cache;
 
   @override
   Future<List<HealthWeightSample>> loadWeightSamples({
@@ -40,10 +40,15 @@ class MobileHealthWeightService implements HealthWeightService {
   }) async {
     await _ensureConfigured();
 
-    final queryEndExclusive = _queryEndExclusive(endExclusive);
-    final cachedSamples = _cachedSamples(
+    final now = _now();
+    final queryEndExclusive = _cache.queryEndExclusive(
+      requestedEndExclusive: endExclusive,
+      now: now,
+    );
+    final cachedSamples = _cache.get(
       startInclusive: startInclusive,
       endExclusive: endExclusive,
+      now: now,
     );
     if (cachedSamples != null) {
       log(
@@ -69,16 +74,14 @@ class MobileHealthWeightService implements HealthWeightService {
             .whereType<HealthWeightSample>()
             .toList(growable: false)
           ..sort((left, right) => left.recordedAt.compareTo(right.recordedAt));
-    _cache = _WeightSampleCacheEntry(
+    _cache.put(
       startInclusive: startInclusive,
-      endExclusive: _cacheEndExclusive(
-        requestedEndExclusive: endExclusive,
-        queryEndExclusive: queryEndExclusive,
-      ),
-      loadedAt: _now(),
-      samples: List<HealthWeightSample>.unmodifiable(querySamples),
+      requestedEndExclusive: endExclusive,
+      queryEndExclusive: queryEndExclusive,
+      loadedAt: now,
+      samples: querySamples,
     );
-    final samples = _filterSamples(
+    final samples = HealthWeightSampleCache.filterSamples(
       querySamples,
       startInclusive: startInclusive,
       endExclusive: endExclusive,
@@ -138,7 +141,7 @@ class MobileHealthWeightService implements HealthWeightService {
       name: _logName,
     );
     if (saved) {
-      _cache = null;
+      _cache.clear();
     }
 
     return saved;
@@ -167,7 +170,7 @@ class MobileHealthWeightService implements HealthWeightService {
       type: HealthDataType.WEIGHT,
     );
     if (deleted) {
-      _cache = null;
+      _cache.clear();
     }
     log(
       'Deleted app-owned weight sample. '
@@ -186,63 +189,6 @@ class MobileHealthWeightService implements HealthWeightService {
     _isConfigured = true;
   }
 
-  DateTime _queryEndExclusive(DateTime requestedEndExclusive) {
-    final now = _now();
-    if (requestedEndExclusive.isAfter(now)) {
-      return now;
-    }
-    if (now.difference(requestedEndExclusive) > _recentPastWeightQueryWindow) {
-      return requestedEndExclusive;
-    }
-    return now;
-  }
-
-  DateTime _cacheEndExclusive({
-    required DateTime requestedEndExclusive,
-    required DateTime queryEndExclusive,
-  }) {
-    if (requestedEndExclusive.isAfter(queryEndExclusive)) {
-      return requestedEndExclusive;
-    }
-    return queryEndExclusive;
-  }
-
-  List<HealthWeightSample>? _cachedSamples({
-    required DateTime startInclusive,
-    required DateTime endExclusive,
-  }) {
-    final cache = _cache;
-    if (cache == null || _now().difference(cache.loadedAt) > _cacheTtl) {
-      _cache = null;
-      return null;
-    }
-    final cacheContainsRequest =
-        !startInclusive.isBefore(cache.startInclusive) &&
-        !endExclusive.isAfter(cache.endExclusive);
-    if (!cacheContainsRequest) {
-      return null;
-    }
-    return _filterSamples(
-      cache.samples,
-      startInclusive: startInclusive,
-      endExclusive: endExclusive,
-    );
-  }
-
-  List<HealthWeightSample> _filterSamples(
-    List<HealthWeightSample> samples, {
-    required DateTime startInclusive,
-    required DateTime endExclusive,
-  }) {
-    return List<HealthWeightSample>.unmodifiable(
-      samples.where(
-        (sample) =>
-            !sample.recordedAt.isBefore(startInclusive) &&
-            sample.recordedAt.isBefore(endExclusive),
-      ),
-    );
-  }
-
   HealthWeightSample? _buildSample(HealthDataPoint point) {
     final value = point.value;
     final numericValue = switch (value) {
@@ -256,10 +202,10 @@ class MobileHealthWeightService implements HealthWeightService {
     final sourceName = point.sourceName.trim();
     final sourcePackageName =
         point.sourcePlatform == HealthPlatformType.appleHealth
-        ? sourceId
-        : sourceName.isNotEmpty
-        ? sourceName
-        : sourceId;
+            ? sourceId
+            : sourceName.isNotEmpty
+                ? sourceName
+                : sourceId;
     final packageName = _packageName?.trim();
     return HealthWeightSample(
       recordedAt: point.dateFrom.toLocal(),
@@ -283,18 +229,4 @@ String _weightClientRecordId(DateTime recordedAt) {
 
 double _weightClientRecordVersion() {
   return DateTime.now().millisecondsSinceEpoch.toDouble();
-}
-
-class _WeightSampleCacheEntry {
-  const new({
-    required this.startInclusive,
-    required this.endExclusive,
-    required this.loadedAt,
-    required this.samples,
-  });
-
-  final DateTime startInclusive;
-  final DateTime endExclusive;
-  final DateTime loadedAt;
-  final List<HealthWeightSample> samples;
 }

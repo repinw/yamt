@@ -96,7 +96,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/health/data/diary_health_mobile_day_loader.dart',
   'lib/features/health/data/diary_health_mobile_health_reader.dart',
   'lib/features/health/data/health_connection_service_mobile.dart',
-  'lib/features/health/data/health_weight_service_mobile.dart',
   'lib/features/inventory/application/ingredient_inventory_matcher.dart',
   'lib/features/inventory/application/prepared_meal_creation_workflows.dart',
   'lib/features/inventory/application/prepared_meal_editing_support.dart',
