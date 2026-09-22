@@ -1420,6 +1420,8 @@
   "householdActionFailed": "Household action failed. Please try again.",
   "settingsAboutTitle": "About",
   "settingsAboutSubtitle": "App version and information",
+  "settingsHomeWidgetVerboseModeTitle": "Detailed home screen widget",
+  "settingsHomeWidgetVerboseModeSubtitle": "Show meals and macros, not just kcal left",
   "commonOr": "Or",
   "login": "Login",
   "register": "Register",

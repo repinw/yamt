@@ -3,6 +3,10 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("kotlin-android")
+    // Required so the @Composable functions in the home-screen widget
+    // (android/app/src/main/kotlin/de/yamt/app/homewidget/) compile with an
+    // ABI matching androidx.glance's own Compose-compiled classes.
+    id("org.jetbrains.kotlin.plugin.compose")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
     id("com.google.gms.google-services")

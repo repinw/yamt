@@ -39,9 +39,20 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   The daily card is quiet by default (kcal and grams left only) and shows all
   numbers after a tap. Over the target it shows the overage with an
   "Over goal" label in the error color.
+- `presentation/diary_home_widget_summary_provider.dart`
+  (`diaryHomeWidgetSummaryProvider`) with its value type
+  `application/diary_home_widget_summary.dart` (`DiaryHomeWidgetSummary`) is
+  a narrow, flat summary of today's dashboard built for
+  `features/home_widget`. The provider sits in `presentation/` because it
+  derives from the dashboard controller's state. It carries eaten
+  and target kcal from the same daily metrics as the balance card, plus the
+  macro bars. It hides the calorie-log and Burn Week internals
+  `DiaryDayDashboardData` carries; `home_widget` reads only this provider,
+  never the dashboard controller directly.
 
 Other features should compose the page or complete widgets instead of wiring
-Diary application providers directly.
+Diary application providers directly. `diaryHomeWidgetSummaryProvider` above
+is the one accepted exception, for `features/home_widget`.
 
 ## Providers
 
@@ -59,6 +70,8 @@ Main application adapters and mappers:
 - `application/diary_weekly_checkin_provider.dart`
 - `application/diary_provider_warmup.dart`
 - `application/diary_quick_eat_inventory_provider.dart`
+- `presentation/diary_home_widget_summary_provider.dart` (public, read by
+  `features/home_widget`)
 - `application/diary_plan_start_day_provider.dart` (earliest selectable diary day)
 - `application/diary_day_type_provider.dart` (training/rest/pause status and
   updates through the calorie goal controller)

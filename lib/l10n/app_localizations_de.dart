@@ -3155,6 +3155,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsAboutSubtitle => 'App-Version und Informationen';
 
   @override
+  String get settingsHomeWidgetVerboseModeTitle =>
+      'Ausführliches Homescreen-Widget';
+
+  @override
+  String get settingsHomeWidgetVerboseModeSubtitle =>
+      'Mahlzeiten und Makros zeigen, nicht nur verbleibende kcal';
+
+  @override
   String get commonOr => 'Oder';
 
   @override

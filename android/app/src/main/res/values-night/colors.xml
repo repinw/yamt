@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="home_widget_surface">#141218</color>
+    <color name="home_widget_surface_container_low">#1D1B20</color>
+    <color name="home_widget_outline_variant">#49454F</color>
+    <color name="home_widget_on_surface">#E6E0E9</color>
+    <color name="home_widget_on_surface_variant">#CAC4D0</color>
+    <color name="home_widget_primary">#D0BCFF</color>
+    <color name="home_widget_error">#F2B8B5</color>
+    <color name="home_widget_protein">#E96888</color>
+    <color name="home_widget_carbs">#608BF1</color>
+    <color name="home_widget_fat">#F6BE65</color>
+</resources>

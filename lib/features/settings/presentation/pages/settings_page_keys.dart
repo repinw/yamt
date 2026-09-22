@@ -46,6 +46,11 @@ abstract final class SettingsPageKeys {
   /// About row.
   static const aboutTile = ValueKey<String>('settings-about-tile');
 
+  /// Home-screen widget verbose-mode row.
+  static const homeWidgetVerboseModeTile = ValueKey<String>(
+    'settings-home-widget-verbose-mode-tile',
+  );
+
   /// About trailing area for version/loading/error assertions.
   static const aboutTrailing = ValueKey<String>('settings-about-trailing');
 }

@@ -51,6 +51,9 @@ Current providers:
   routing (`AppRoutes.homeSettingsGoalArchive`).
 - `features/health` for Health connection status, actions, and domain result
   models.
+- `features/home_widget` for the home-screen widget's silent/verbose choice,
+  rendered in the App section through its public
+  `HomeWidgetVerboseModeBuilder`.
 - `core/widgets` for shared layout helpers.
 - `features/shared` for shared credential form widgets.
 

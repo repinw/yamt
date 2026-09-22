@@ -1404,6 +1404,8 @@
   "householdActionFailed": "Haushaltsaktion fehlgeschlagen. Bitte versuche es erneut.",
   "settingsAboutTitle": "Über die App",
   "settingsAboutSubtitle": "App-Version und Informationen",
+  "settingsHomeWidgetVerboseModeTitle": "Ausführliches Homescreen-Widget",
+  "settingsHomeWidgetVerboseModeSubtitle": "Mahlzeiten und Makros zeigen, nicht nur verbleibende kcal",
   "commonOr": "Oder",
   "login": "Login",
   "register": "Registrieren",

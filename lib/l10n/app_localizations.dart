@@ -5512,6 +5512,18 @@ abstract class AppLocalizations {
   /// **'App version and information'**
   String get settingsAboutSubtitle;
 
+  /// No description provided for @settingsHomeWidgetVerboseModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Detailed home screen widget'**
+  String get settingsHomeWidgetVerboseModeTitle;
+
+  /// No description provided for @settingsHomeWidgetVerboseModeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Show meals and macros, not just kcal left'**
+  String get settingsHomeWidgetVerboseModeSubtitle;
+
   /// No description provided for @commonOr.
   ///
   /// In en, this message translates to:

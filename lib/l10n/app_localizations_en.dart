@@ -3095,6 +3095,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAboutSubtitle => 'App version and information';
 
   @override
+  String get settingsHomeWidgetVerboseModeTitle =>
+      'Detailed home screen widget';
+
+  @override
+  String get settingsHomeWidgetVerboseModeSubtitle =>
+      'Show meals and macros, not just kcal left';
+
+  @override
   String get commonOr => 'Or';
 
   @override

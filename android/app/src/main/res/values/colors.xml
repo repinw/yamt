@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Home-screen widget colors (light). Material 3 baseline tokens (the app uses
+  the default M3 scheme, see lib/core/theme/app_theme.dart) and the macro
+  accents MetricAccentColors.fromColorScheme derives from its primary
+  (lib/core/theme/metric_accent_colors.dart). Dark: values-night/colors.xml.
+-->
+<resources>
+    <color name="home_widget_surface">#FEF7FF</color>
+    <color name="home_widget_surface_container_low">#F7F2FA</color>
+    <color name="home_widget_outline_variant">#CAC4D0</color>
+    <color name="home_widget_on_surface">#1D1B20</color>
+    <color name="home_widget_on_surface_variant">#49454F</color>
+    <color name="home_widget_primary">#6750A4</color>
+    <color name="home_widget_error">#B3261E</color>
+    <color name="home_widget_protein">#DD2251</color>
+    <color name="home_widget_carbs">#1B57E4</color>
+    <color name="home_widget_fat">#E99716</color>
+</resources>

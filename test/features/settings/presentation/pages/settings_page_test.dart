@@ -227,11 +227,58 @@ void main() {
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('Manage reminders and alerts'), findsOneWidget);
 
+    await _scrollToText(tester, 'Detailed home screen widget');
+    expect(find.byIcon(Icons.widgets_outlined), findsOneWidget);
+    expect(find.text('Detailed home screen widget'), findsOneWidget);
+    expect(
+      find.text('Show meals and macros, not just kcal left'),
+      findsOneWidget,
+    );
+    expect(
+      tester
+          .widget<Switch>(
+            find.descendant(
+              of: _settingsTile(SettingsPageKeys.homeWidgetVerboseModeTile),
+              matching: find.byType(Switch),
+            ),
+          )
+          .value,
+      isFalse,
+    );
+
     await _scrollToText(tester, 'About');
     expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
     expect(find.text('About'), findsOneWidget);
     expect(find.text('App version and information'), findsOneWidget);
     expect(find.text('1.1.0+2'), findsOneWidget);
+  });
+
+  testWidgets('home widget verbose-mode tile toggles and saves the choice', (
+    tester,
+  ) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+    );
+    await tester.pumpAndSettle();
+
+    await _scrollToText(tester, 'Detailed home screen widget');
+    await tester.tap(
+      _settingsTile(SettingsPageKeys.homeWidgetVerboseModeTile),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<Switch>(
+            find.descendant(
+              of: _settingsTile(SettingsPageKeys.homeWidgetVerboseModeTile),
+              matching: find.byType(Switch),
+            ),
+          )
+          .value,
+      isTrue,
+    );
   });
 
   testWidgets('profile card renders display name and email', (tester) async {

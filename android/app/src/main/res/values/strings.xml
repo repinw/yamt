@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Static text for the home-screen widget's native Glance layout
+  (android/app/src/main/kotlin/de/yamt/app/homewidget/). A widget can't call
+  AppLocalizations, so these mirror the app's ARB strings of the same
+  meaning (diaryBalanceLeftTodayLabel, caloriesProteinLabel, ...).
+-->
+<resources>
+    <string name="home_widget_no_data">Open YAMT to load today\'s summary</string>
+    <string name="home_widget_left_today">Left today</string>
+    <string name="home_widget_over_goal">Over goal</string>
+    <string name="home_widget_unit_kcal">kcal</string>
+    <string name="home_widget_unit_gram">g</string>
+    <string name="home_widget_protein">Protein</string>
+    <string name="home_widget_carbs">Carbs</string>
+    <string name="home_widget_fat">Fat</string>
+    <string name="home_widget_action_search">Search</string>
+    <string name="home_widget_action_ai">AI</string>
+    <string name="home_widget_action_barcode">Barcode</string>
+</resources>
