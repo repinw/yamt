@@ -12,7 +12,7 @@ workflows:
       events:
         - push
       branch_patterns:
-        - pattern: master2
+        - pattern: master
     scripts:
       - name: Get packages
         script: flutter pub get
