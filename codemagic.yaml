@@ -1,6 +1,7 @@
 workflows:
   # Compiles the iOS app and its HomeDiaryWidget extension without signing.
   # Catches Swift and Xcode project errors; produces no installable build.
+  # No trigger: start it by hand in Codemagic.
   ios-unsigned-build:
     name: iOS unsigned build
     instance_type: mac_mini_m2
@@ -8,11 +9,6 @@ workflows:
     environment:
       flutter: 3.47.4
       xcode: latest
-    triggering:
-      events:
-        - push
-      branch_patterns:
-        - pattern: master
     scripts:
       - name: Get packages
         script: flutter pub get
