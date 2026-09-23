@@ -17,6 +17,7 @@ import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
+import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 import 'package:yamt/features/health/presentation/controllers/'
     'health_connection_controller.dart';
 import 'package:yamt/features/health/presentation/controllers/'
@@ -99,11 +100,10 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
       windows: DailyLearnedTdeeResolver.uniqueWindows(contexts),
     );
     final entriesByDay = entries.groupByDiaryDayKey();
-    final manualWeightByDay = DailyLearnedTdeeResolver.manualWeightByDay(
-      manualEntries,
+    final weightSeries = WeightTrendCalculator.fromSources(
+      manualEntries: manualEntries,
+      healthSamples: healthWeights,
     );
-    final representativeWeightByDay =
-        DailyLearnedTdeeResolver.representativeWeightByDay(healthWeights);
     for (final context in contexts) {
       result[diaryDayKey(
         context.day,
@@ -111,8 +111,7 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
         context: context,
         settings: settings,
         entriesByDay: entriesByDay,
-        manualWeightByDay: manualWeightByDay,
-        representativeWeightByDay: representativeWeightByDay,
+        dailyWeightByDay: weightSeries.rawByDay,
         activeKcalByDay: activeKcalByDay,
       );
     }
@@ -199,11 +198,10 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     windows: windows,
   );
   final entriesByDay = entries.groupByDiaryDayKey();
-  final manualWeightByDay = DailyLearnedTdeeResolver.manualWeightByDay(
-    manualEntries,
+  final weightSeries = WeightTrendCalculator.fromSources(
+    manualEntries: manualEntries,
+    healthSamples: healthWeights,
   );
-  final representativeWeightByDay =
-      DailyLearnedTdeeResolver.representativeWeightByDay(healthWeights);
   final context = DailyLearnedTdeeDayContext(
     day: normalizedDay,
     storedGoalKcal: storedGoalKcal,
@@ -220,8 +218,7 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     context: context,
     settings: settings,
     entriesByDay: entriesByDay,
-    manualWeightByDay: manualWeightByDay,
-    representativeWeightByDay: representativeWeightByDay,
+    dailyWeightByDay: weightSeries.rawByDay,
     activeKcalByDay: activeKcalByDay,
   );
 }

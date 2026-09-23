@@ -69,8 +69,7 @@ void main() {
       pendingWeeklyCheckIn: pending,
       dates: dates,
       calorieEntriesByDay: entriesByDay,
-      manualWeightByDay: {diaryDayKey(addDiaryDays(firstStart, 7)): 79},
-      representativeWeightByDay: const <String, double>{},
+      dailyWeightByDay: {diaryDayKey(addDiaryDays(firstStart, 7)): 79},
       activeKcalByDay: const <String, int>{},
     );
 
@@ -101,8 +100,7 @@ void main() {
       pendingWeeklyCheckIn: pending,
       dates: dates,
       calorieEntriesByDay: const <String, List<CalorieEntry>>{},
-      manualWeightByDay: {diaryDayKey(addDiaryDays(firstStart, 7)): 79},
-      representativeWeightByDay: const <String, double>{},
+      dailyWeightByDay: {diaryDayKey(addDiaryDays(firstStart, 7)): 79},
       activeKcalByDay: const <String, int>{},
     );
 

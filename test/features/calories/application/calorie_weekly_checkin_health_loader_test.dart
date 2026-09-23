@@ -28,6 +28,7 @@ void main() {
       final dates = _dates(start: start, secondDay: secondDay);
       final diaryHealthService = FakeDiaryHealthService(const {});
       final healthWeightService = FakeHealthWeightService([
+        HealthWeightSample(recordedAt: addDiaryDays(start, -1), weightKg: 85),
         HealthWeightSample(
           recordedAt: start.add(const Duration(hours: 8)),
           weightKg: 80,
@@ -52,7 +53,11 @@ void main() {
       expect(data.activeKcalByDay[diaryDayKey(start)], 0);
       expect(data.activeKcalByDay[diaryDayKey(secondDay)], 0);
       expect(data.todayActiveKcal, 0);
-      expect(data.representativeWeightByDay[diaryDayKey(start)], 81);
+      // Samples before the learning start are not loaded.
+      expect(data.healthWeightSamples.map((sample) => sample.weightKg), [
+        80,
+        82,
+      ]);
     },
   );
 
@@ -77,7 +82,7 @@ void main() {
       diaryDayKey(secondDay): 0,
     });
     expect(data.todayActiveKcal, 0);
-    expect(data.representativeWeightByDay, isEmpty);
+    expect(data.healthWeightSamples, isEmpty);
   });
 
   test('throws before service reads when provider is disposed', () async {

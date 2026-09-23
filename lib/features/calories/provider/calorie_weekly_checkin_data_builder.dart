@@ -36,6 +36,7 @@ import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 import 'package:yamt/features/health/presentation/controllers/'
     'manual_health_weight_entries_controller.dart';
@@ -179,12 +180,14 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     today: today,
     isMounted: () => ref.mounted,
   );
-  final manualWeightByDayMap = manualWeightByDay(manualEntries);
+  final weightSeries = WeightTrendCalculator.fromSources(
+    manualEntries: manualEntries,
+    healthSamples: healthData.healthWeightSamples,
+  );
   final weightData = mergeWeeklyCheckInWeights(
     dates: dates,
     anchorEntry: dates.anchorEntry,
-    manualWeightByDay: manualWeightByDayMap,
-    representativeWeightByDay: healthData.representativeWeightByDay,
+    dailyWeightByDay: weightSeries.rawByDay,
   );
   final windowIntakeData = resolveWeeklyWindowIntakeData(
     days: dates.windowDays,
@@ -240,8 +243,7 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
     dates: dates,
     calorieEntriesByDay: calorieEntriesByDay,
-    manualWeightByDay: manualWeightByDayMap,
-    representativeWeightByDay: healthData.representativeWeightByDay,
+    dailyWeightByDay: weightSeries.rawByDay,
     activeKcalByDay: healthData.activeKcalByDay,
   );
   final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(

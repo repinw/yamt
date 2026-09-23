@@ -24,8 +24,7 @@ CalorieWeeklyLearningSeed resolveCascadedPreviousLearningSeedForWindow({
   required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   required CalorieWeeklyCheckInWindowDates dates,
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
-  required Map<String, double> manualWeightByDay,
-  required Map<String, double> representativeWeightByDay,
+  required Map<String, double> dailyWeightByDay,
   required Map<String, int> activeKcalByDay,
 }) {
   final anchorEntry = dates.anchorEntry;
@@ -87,8 +86,7 @@ CalorieWeeklyLearningSeed resolveCascadedPreviousLearningSeedForWindow({
     final weightData = mergeWeeklyCheckInWeights(
       dates: previousDates,
       anchorEntry: previousDates.anchorEntry,
-      manualWeightByDay: manualWeightByDay,
-      representativeWeightByDay: representativeWeightByDay,
+      dailyWeightByDay: dailyWeightByDay,
     );
     if (weightData.weightPoints.length < 2) {
       return seed;

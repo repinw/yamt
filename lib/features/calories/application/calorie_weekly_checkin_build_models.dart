@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
+import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
 class CalorieWeeklyCheckInDayData {
   const new({
@@ -75,13 +76,13 @@ class CalorieWeeklyCheckInHealthData {
   const new({
     required this.activeKcalByDay,
     required this.todayActiveKcal,
-    required this.representativeWeightByDay,
+    required this.healthWeightSamples,
     required this.usesHealthActivity,
   });
 
   final Map<String, int> activeKcalByDay;
   final int todayActiveKcal;
-  final Map<String, double> representativeWeightByDay;
+  final List<HealthWeightSample> healthWeightSamples;
   final bool usesHealthActivity;
 }
 

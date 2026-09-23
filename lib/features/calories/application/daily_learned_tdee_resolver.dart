@@ -13,8 +13,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/domain/health_weight_sample.dart';
-import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
 /// Context for a single day's learned TDEE resolution.
 class DailyLearnedTdeeDayContext {
@@ -141,8 +139,7 @@ abstract final class DailyLearnedTdeeResolver {
     required DailyLearnedTdeeDayContext context,
     required CalorieGoalSettings settings,
     required Map<String, List<CalorieEntry>> entriesByDay,
-    required Map<String, double> manualWeightByDay,
-    required Map<String, double> representativeWeightByDay,
+    required Map<String, double> dailyWeightByDay,
     required Map<String, int> activeKcalByDay,
   }) {
     final savedGoal = savedLearnedGoalForDay(
@@ -196,8 +193,7 @@ abstract final class DailyLearnedTdeeResolver {
         settings: settings,
         anchorEntry: context.anchorEntry,
         window: window,
-        manualWeightByDay: manualWeightByDay,
-        representativeWeightByDay: representativeWeightByDay,
+        dailyWeightByDay: dailyWeightByDay,
       );
       if (weightPoints.length < 2) {
         return latest;
@@ -438,8 +434,7 @@ abstract final class DailyLearnedTdeeResolver {
     required CalorieGoalSettings settings,
     required CalorieGoalHistoryEntry anchorEntry,
     required WeeklyLearnedWindow window,
-    required Map<String, double> manualWeightByDay,
-    required Map<String, double> representativeWeightByDay,
+    required Map<String, double> dailyWeightByDay,
   }) {
     final weightPointsByDay = <String, CalorieWeeklyCheckInWeightPoint>{};
     for (
@@ -451,9 +446,7 @@ abstract final class DailyLearnedTdeeResolver {
         pointsByDay: weightPointsByDay,
         displayDay: day,
         dayIndex: window.dayIndexFor(day),
-        weightKg:
-            manualWeightByDay[diaryDayKey(day)] ??
-            representativeWeightByDay[diaryDayKey(day)],
+        weightKg: dailyWeightByDay[diaryDayKey(day)],
       );
     }
 
@@ -476,8 +469,7 @@ abstract final class DailyLearnedTdeeResolver {
         weightKg:
             (anchorWeightKey == null
                 ? null
-                : manualWeightByDay[anchorWeightKey] ??
-                      representativeWeightByDay[anchorWeightKey]) ??
+                : dailyWeightByDay[anchorWeightKey]) ??
             anchorEntry.calculatorProfile?.weightKg ??
             settings.calculatorProfile?.weightKg,
       );
@@ -490,8 +482,7 @@ abstract final class DailyLearnedTdeeResolver {
         displayDay: window.windowStartDate,
         dayIndex: window.dayIndexFor(window.windowStartDate),
         sourceDay: previousBoundaryDay,
-        manualWeightByDay: manualWeightByDay,
-        representativeWeightByDay: representativeWeightByDay,
+        dailyWeightByDay: dailyWeightByDay,
       );
     }
     _putBoundaryWeightPoint(
@@ -499,8 +490,7 @@ abstract final class DailyLearnedTdeeResolver {
       displayDay: window.windowEndDate,
       dayIndex: window.dayIndexFor(window.nextBoundaryDay),
       sourceDay: window.nextBoundaryDay,
-      manualWeightByDay: manualWeightByDay,
-      representativeWeightByDay: representativeWeightByDay,
+      dailyWeightByDay: dailyWeightByDay,
       decoupleWeightPointKey: true,
     );
 
@@ -514,17 +504,14 @@ abstract final class DailyLearnedTdeeResolver {
     required DateTime displayDay,
     required int dayIndex,
     required DateTime sourceDay,
-    required Map<String, double> manualWeightByDay,
-    required Map<String, double> representativeWeightByDay,
+    required Map<String, double> dailyWeightByDay,
     bool decoupleWeightPointKey = false,
   }) {
     _putWeightPoint(
       pointsByDay: pointsByDay,
       displayDay: displayDay,
       dayIndex: dayIndex,
-      weightKg:
-          manualWeightByDay[diaryDayKey(sourceDay)] ??
-          representativeWeightByDay[diaryDayKey(sourceDay)],
+      weightKg: dailyWeightByDay[diaryDayKey(sourceDay)],
       weightPointKey: decoupleWeightPointKey ? diaryDayKey(sourceDay) : null,
     );
   }
@@ -598,29 +585,5 @@ abstract final class DailyLearnedTdeeResolver {
             ?.goalSpeedKgPerWeek ??
         settings.calculatorProfile?.goalSpeedKgPerWeek ??
         0.0;
-  }
-
-  /// Formats manual weights.
-  static Map<String, double> manualWeightByDay(
-    List<ManualHealthWeightEntry> manualEntries,
-  ) {
-    return <String, double>{
-      for (final entry in manualEntries) diaryDayKey(entry.day): entry.weightKg,
-    };
-  }
-
-  /// Formats representative weights with median filtering.
-  static Map<String, double> representativeWeightByDay(
-    List<HealthWeightSample> samples,
-  ) {
-    final samplesByDay = <String, List<double>>{};
-    for (final sample in samples) {
-      final key = diaryDayKey(sample.recordedAt);
-      samplesByDay.putIfAbsent(key, () => <double>[]).add(sample.weightKg);
-    }
-    return {
-      for (final entry in samplesByDay.entries)
-        entry.key: CalorieDomainMath.median(entry.value),
-    };
   }
 }

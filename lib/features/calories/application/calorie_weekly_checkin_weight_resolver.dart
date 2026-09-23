@@ -4,14 +4,15 @@ import 'package:yamt/features/calories/application/calorie_weekly_checkin_models
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
-/// Merges manual, health, and goal-anchor weights for a check-in.
+/// Merges daily weights and the goal-anchor weight for a check-in.
+///
+/// [dailyWeightByDay] holds one measured weight per day, with manual entries
+/// already preferred over Health samples.
 CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
   required CalorieWeeklyCheckInWindowDates dates,
   required CalorieGoalHistoryEntry? anchorEntry,
-  required Map<String, double> manualWeightByDay,
-  required Map<String, double> representativeWeightByDay,
+  required Map<String, double> dailyWeightByDay,
 }) {
   final weightByDay = <String, double>{};
   final weightPointByDay = <String, CalorieWeeklyCheckInWeightPoint>{};
@@ -20,14 +21,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
       weightByDay: weightByDay,
       weightPointByDay: weightPointByDay,
       displayDay: day,
-      weightKg: manualWeightByDay[diaryDayKey(day)],
-      dayIndex: dates.dayIndexFor(day),
-    );
-    _putWeightIfAbsent(
-      weightByDay: weightByDay,
-      weightPointByDay: weightPointByDay,
-      displayDay: day,
-      weightKg: representativeWeightByDay[diaryDayKey(day)],
+      weightKg: dailyWeightByDay[diaryDayKey(day)],
       dayIndex: dates.dayIndexFor(day),
     );
   }
@@ -40,8 +34,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
       displayDay: dates.pendingWeeklyCheckIn.windowStartDate,
       dayIndex: dates.dayIndexFor(dates.pendingWeeklyCheckIn.windowStartDate),
       dayKey: diaryDayKey(anchorWeightSourceDay),
-      manualWeightByDay: manualWeightByDay,
-      representativeWeightByDay: representativeWeightByDay,
+      dailyWeightByDay: dailyWeightByDay,
     );
   }
 
@@ -52,8 +45,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
       displayDay: dates.learningStartDate,
       dayIndex: 0,
       dayKey: diaryDayKey(dates.learningPreviousBoundaryDay),
-      manualWeightByDay: manualWeightByDay,
-      representativeWeightByDay: representativeWeightByDay,
+      dailyWeightByDay: dailyWeightByDay,
     );
   }
 
@@ -75,8 +67,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
       displayDay: dates.pendingWeeklyCheckIn.windowStartDate,
       dayIndex: dates.dayIndexFor(dates.pendingWeeklyCheckIn.windowStartDate),
       dayKey: diaryDayKey(previousBoundaryDay),
-      manualWeightByDay: manualWeightByDay,
-      representativeWeightByDay: representativeWeightByDay,
+      dailyWeightByDay: dailyWeightByDay,
     );
   }
 
@@ -86,8 +77,7 @@ CalorieWeeklyCheckInWeightData mergeWeeklyCheckInWeights({
     displayDay: dates.pendingWeeklyCheckIn.windowEndDate,
     dayIndex: dates.dayIndexFor(dates.nextBoundaryDay),
     dayKey: diaryDayKey(dates.nextBoundaryDay),
-    manualWeightByDay: manualWeightByDay,
-    representativeWeightByDay: representativeWeightByDay,
+    dailyWeightByDay: dailyWeightByDay,
     decoupleWeightPointKey: true,
   );
 
@@ -146,38 +136,20 @@ CalorieWeeklyCheckInDayData? validateWeeklyCheckInWeightData({
   return null;
 }
 
-/// Groups manual weights by normalized day key.
-Map<String, double> manualWeightByDay(
-  List<ManualHealthWeightEntry> manualEntries,
-) {
-  return <String, double>{
-    for (final entry in manualEntries) diaryDayKey(entry.day): entry.weightKg,
-  };
-}
-
 void _putBoundaryWeightIfAbsent({
   required Map<String, double> weightByDay,
   required Map<String, CalorieWeeklyCheckInWeightPoint> weightPointByDay,
   required DateTime displayDay,
   required int dayIndex,
   required String dayKey,
-  required Map<String, double> manualWeightByDay,
-  required Map<String, double> representativeWeightByDay,
+  required Map<String, double> dailyWeightByDay,
   bool decoupleWeightPointKey = false,
 }) {
   _putWeightIfAbsent(
     weightByDay: weightByDay,
     weightPointByDay: weightPointByDay,
     displayDay: displayDay,
-    weightKg: manualWeightByDay[dayKey],
-    dayIndex: dayIndex,
-    weightPointKey: decoupleWeightPointKey ? dayKey : null,
-  );
-  _putWeightIfAbsent(
-    weightByDay: weightByDay,
-    weightPointByDay: weightPointByDay,
-    displayDay: displayDay,
-    weightKg: representativeWeightByDay[dayKey],
+    weightKg: dailyWeightByDay[dayKey],
     dayIndex: dayIndex,
     weightPointKey: decoupleWeightPointKey ? dayKey : null,
   );

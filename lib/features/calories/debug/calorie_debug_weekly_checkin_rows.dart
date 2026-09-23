@@ -13,7 +13,6 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/calories/debug/calorie_debug_dump_formatting.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart'
     show CalorieGoalMode;
-import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
@@ -27,6 +26,7 @@ import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 
 Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
   required CalorieGoalSettings settings,
@@ -53,13 +53,16 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
     );
   }
   final entriesByDay = _calorieEntriesByDay(calorieEntries);
-  final manualWeightsByDay = manualWeightByDay(manualWeightEntries);
-  final healthData = await _loadDebugWeeklyHealthData(
+  final healthWeightSamples = await _loadDebugWeeklyHealthWeights(
     settings: settings,
     datesByWindow: datesByWindow.values,
     windows: windows,
     healthStatus: healthStatus,
     healthWeightService: healthWeightService,
+  );
+  final weightSeries = WeightTrendCalculator.fromSources(
+    manualEntries: manualWeightEntries,
+    healthSamples: healthWeightSamples,
   );
 
   var previousGoalKcal = settings.baseGoalKcalForDay(
@@ -78,8 +81,7 @@ Future<CalorieDebugWeeklyRowsResult> buildCalorieDebugWeeklyCheckInRows({
       window: window,
       dates: datesByWindow[window]!,
       entriesByDay: entriesByDay,
-      manualWeightByDay: manualWeightsByDay,
-      healthData: healthData,
+      dailyWeightByDay: weightSeries.rawByDay,
       previousGoalKcal: previousGoalKcal,
       previousLearnedTdeeKcal: previousLearnedTdeeKcal,
     );
@@ -156,16 +158,14 @@ _DebugWeeklyRowResult _weeklyCheckInRow({
   required PendingCalorieGoalWeeklyCheckIn window,
   required CalorieWeeklyCheckInWindowDates dates,
   required Map<String, List<CalorieEntry>> entriesByDay,
-  required Map<String, double> manualWeightByDay,
-  required _DebugWeeklyHealthData healthData,
+  required Map<String, double> dailyWeightByDay,
   required double previousGoalKcal,
   required double previousLearnedTdeeKcal,
 }) {
   final weightData = mergeWeeklyCheckInWeights(
     dates: dates,
     anchorEntry: dates.anchorEntry,
-    manualWeightByDay: manualWeightByDay,
-    representativeWeightByDay: healthData.representativeWeightByDay,
+    dailyWeightByDay: dailyWeightByDay,
   );
   final windowIntake = resolveWeeklyWindowIntakeData(
     days: dates.windowDays,
@@ -559,7 +559,7 @@ CalorieDebugDumpRow _weeklyRow({
   );
 }
 
-Future<_DebugWeeklyHealthData> _loadDebugWeeklyHealthData({
+Future<List<HealthWeightSample>> _loadDebugWeeklyHealthWeights({
   required CalorieGoalSettings settings,
   required Iterable<CalorieWeeklyCheckInWindowDates> datesByWindow,
   required List<PendingCalorieGoalWeeklyCheckIn> windows,
@@ -567,9 +567,7 @@ Future<_DebugWeeklyHealthData> _loadDebugWeeklyHealthData({
   required HealthWeightService healthWeightService,
 }) async {
   if (healthStatus.accessState != HealthDataAccessState.ready) {
-    return const _DebugWeeklyHealthData(
-      representativeWeightByDay: <String, double>{},
-    );
+    return const <HealthWeightSample>[];
   }
 
   final dates = datesByWindow.toList(growable: false);
@@ -579,12 +577,9 @@ Future<_DebugWeeklyHealthData> _loadDebugWeeklyHealthData({
   final weightEndDay = _latestDay([
     for (final date in dates) date.nextBoundaryDay,
   ]);
-  final healthWeightSamples = await healthWeightService.loadWeightSamples(
+  return await healthWeightService.loadWeightSamples(
     startInclusive: _earliestDate(weightStartCandidates),
     endExclusive: nextDiaryDay(weightEndDay),
-  );
-  return _DebugWeeklyHealthData(
-    representativeWeightByDay: _representativeWeightByDay(healthWeightSamples),
   );
 }
 
@@ -673,20 +668,6 @@ Map<String, List<CalorieEntry>> _calorieEntriesByDay(
   return entriesByDay;
 }
 
-Map<String, double> _representativeWeightByDay(
-  List<HealthWeightSample> samples,
-) {
-  final samplesByDay = <String, List<double>>{};
-  for (final sample in samples) {
-    final key = diaryDayKey(sample.recordedAt);
-    samplesByDay.putIfAbsent(key, () => <double>[]).add(sample.weightKg);
-  }
-  return {
-    for (final entry in samplesByDay.entries)
-      entry.key: CalorieDomainMath.median(entry.value),
-  };
-}
-
 double _windowEatenTotalKcal(List<CalorieWeeklyCheckInWindowDay> days) {
   return days.fold<double>(
     0,
@@ -763,12 +744,6 @@ String formatCalorieDebugDayKeys(List<DateTime> days) {
 
 DateTime _earliestDate(List<DateTime> dates) {
   return dates.reduce((left, right) => left.isBefore(right) ? left : right);
-}
-
-class _DebugWeeklyHealthData {
-  const new({required this.representativeWeightByDay});
-
-  final Map<String, double> representativeWeightByDay;
 }
 
 class _DebugWeeklyRowResult {

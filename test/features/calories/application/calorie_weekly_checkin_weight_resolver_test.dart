@@ -10,22 +10,20 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
-import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
 void main() {
-  test('prefers manual weights over health weights for the same day', () {
+  test('reads window weights from daily weights', () {
     final start = DateTime(2026, 4, 2);
     final dates = _dates(start);
 
     final data = mergeWeeklyCheckInWeights(
       dates: dates,
       anchorEntry: null,
-      manualWeightByDay: {diaryDayKey(start): 81},
-      representativeWeightByDay: {diaryDayKey(start): 79},
+      dailyWeightByDay: {diaryDayKey(start): 80.4},
     );
 
-    expect(data.weightByDay[diaryDayKey(start)], 81);
-    expect(data.weightPoints.single.weightKg, 81);
+    expect(data.weightByDay[diaryDayKey(start)], 80.4);
+    expect(data.weightPoints.single.weightKg, 80.4);
   });
 
   test('uses anchor profile weight for first window start fallback', () {
@@ -36,8 +34,7 @@ void main() {
     final data = mergeWeeklyCheckInWeights(
       dates: dates,
       anchorEntry: anchorEntry,
-      manualWeightByDay: {diaryDayKey(dates.nextBoundaryDay): 79},
-      representativeWeightByDay: const <String, double>{},
+      dailyWeightByDay: {diaryDayKey(dates.nextBoundaryDay): 79},
     );
 
     expect(data.weightByDay[diaryDayKey(start)], 80);
@@ -97,16 +94,6 @@ void main() {
     );
   });
 
-  test('groups manual weights by normalized day', () {
-    final day = DateTime(2026, 4, 2, 18);
-
-    final weights = manualWeightByDay([
-      ManualHealthWeightEntry(day: day, weightKg: 82),
-    ]);
-
-    expect(weights, {diaryDayKey(DateTime(2026, 4, 2)): 82});
-  });
-
   test('allows Sunday and Monday weights to co-exist in weightPoints '
       'without key collision', () {
     final start = DateTime(2026, 4, 2);
@@ -135,8 +122,7 @@ void main() {
     final data = mergeWeeklyCheckInWeights(
       dates: dates,
       anchorEntry: null,
-      manualWeightByDay: {diaryDayKey(sunday): 80.0, diaryDayKey(monday): 79.5},
-      representativeWeightByDay: const <String, double>{},
+      dailyWeightByDay: {diaryDayKey(sunday): 80.0, diaryDayKey(monday): 79.5},
     );
 
     expect(data.weightByDay[diaryDayKey(sunday)], 80.0);

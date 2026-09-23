@@ -3,7 +3,6 @@
 
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
-import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/diary_health_service.dart';
@@ -26,7 +25,6 @@ Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
     for (final day in dates.learningDays) diaryDayKey(day): 0,
   };
   const todayActiveKcal = 0;
-  var representativeWeightByDay = const <String, double>{};
 
   final status = await healthStatusFuture;
   _throwIfUnmounted(isMounted);
@@ -34,7 +32,7 @@ Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
     return CalorieWeeklyCheckInHealthData(
       activeKcalByDay: activeKcalByDay,
       todayActiveKcal: todayActiveKcal,
-      representativeWeightByDay: representativeWeightByDay,
+      healthWeightSamples: const <HealthWeightSample>[],
       usesHealthActivity: false,
     );
   }
@@ -47,28 +45,13 @@ Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
     endExclusive: nextDiaryDay(dates.nextBoundaryDay),
   );
   _throwIfUnmounted(isMounted);
-  representativeWeightByDay = _representativeWeightByDay(healthWeightSamples);
 
   return CalorieWeeklyCheckInHealthData(
     activeKcalByDay: activeKcalByDay,
     todayActiveKcal: todayActiveKcal,
-    representativeWeightByDay: representativeWeightByDay,
+    healthWeightSamples: healthWeightSamples,
     usesHealthActivity: false,
   );
-}
-
-Map<String, double> _representativeWeightByDay(
-  List<HealthWeightSample> samples,
-) {
-  final samplesByDay = <String, List<double>>{};
-  for (final sample in samples) {
-    final key = diaryDayKey(sample.recordedAt);
-    samplesByDay.putIfAbsent(key, () => <double>[]).add(sample.weightKg);
-  }
-  return {
-    for (final entry in samplesByDay.entries)
-      entry.key: CalorieDomainMath.median(entry.value),
-  };
 }
 
 DateTime _earliestDay(List<DateTime> days) {
