@@ -1,0 +1,4 @@
+// Flutter build name and number only. Not Flutter/Debug.xcconfig or
+// Flutter/Release.xcconfig: those pull in the Pods-Runner settings, which
+// would link Flutter and every plugin framework into the widget extension.
+#include "../Flutter/Generated.xcconfig"
