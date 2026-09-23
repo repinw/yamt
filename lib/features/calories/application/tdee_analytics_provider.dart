@@ -161,6 +161,7 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
         : TdeeAnalyticsService.buildAnticipation(
             cycle: activeSelected,
             weights: weights,
+            windowStart: window.start,
             windowEnd: window.end,
           );
 

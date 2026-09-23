@@ -34,20 +34,25 @@ class DailyWeightSeries {
 
   /// Trend slope in kg per day over the [windowDays] days up to [endDay].
   ///
-  /// [endDay] defaults to the last weigh-in. Returns `null` when fewer than
-  /// two trend values lie in that range.
+  /// [endDay] defaults to the last weigh-in. Days before [notBefore] are left
+  /// out, so the slope matches a chart that starts on that day. Returns `null`
+  /// when fewer than two trend values lie in that range.
   double? slopeKgPerDay({
     DateTime? endDay,
+    DateTime? notBefore,
     int windowDays = WeightTrendCalculator.slopeWindowDays,
   }) {
     final end = endDay ?? lastDay;
     if (end == null) {
       return null;
     }
+    final start = notBefore == null ? null : normalizeLocalDay(notBefore);
     final points = <({double x, double y})>[
       for (var offset = windowDays - 1; offset >= 0; offset--)
-        if (trendFor(addLocalDays(end, -offset)) case final weight?)
-          (x: -offset.toDouble(), y: weight),
+        if (addLocalDays(end, -offset) case final day
+            when start == null || !day.isBefore(start))
+          if (trendFor(day) case final weight?)
+            (x: -offset.toDouble(), y: weight),
     ];
     if (points.length < 2) {
       return null;

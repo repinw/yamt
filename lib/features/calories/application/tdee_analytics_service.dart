@@ -127,7 +127,8 @@ abstract final class TdeeAnalyticsService {
 
   /// Computes summary metrics across the points.
   ///
-  /// Weight numbers use the trend weight, not single weigh-ins.
+  /// Weight numbers use the trend weight, not single weigh-ins. The weekly
+  /// rate uses only trend days inside the window, so it matches the chart.
   static TdeeAnalyticsSummary buildSummary({
     required List<TdeeAnalyticsPoint> points,
     required DailyWeightSeries weights,
@@ -169,12 +170,16 @@ abstract final class TdeeAnalyticsService {
         .toList(growable: false);
     final currentWeight = trendPoints.lastOrNull?.trendWeightKg;
     final firstWeight = trendPoints.firstOrNull?.trendWeightKg;
-    final weightChange = (currentWeight != null && firstWeight != null)
-        ? currentWeight - firstWeight
+    // A change needs at least two days of trend weight.
+    final weightChange = trendPoints.length >= 2
+        ? currentWeight! - firstWeight!
         : null;
     final slope = trendPoints.isEmpty
         ? null
-        : weights.slopeKgPerDay(endDay: trendPoints.last.day);
+        : weights.slopeKgPerDay(
+            endDay: trendPoints.last.day,
+            notBefore: points.first.day,
+          );
 
     return TdeeAnalyticsSummary(
       averageTdeeKcal: avgTdee,
@@ -193,6 +198,7 @@ abstract final class TdeeAnalyticsService {
   static TdeeAnticipationProjection? buildAnticipation({
     required TdeeAnalyticsGoalCycle cycle,
     required DailyWeightSeries weights,
+    required DateTime windowStart,
     required DateTime windowEnd,
   }) {
     final lastDay = weights.lastDay;
@@ -202,7 +208,10 @@ abstract final class TdeeAnalyticsService {
 
     final endDay = lastDay.isAfter(windowEnd) ? windowEnd : lastDay;
     final currentWeight = weights.trendFor(endDay);
-    final recentTrendPerDay = weights.slopeKgPerDay(endDay: endDay);
+    final recentTrendPerDay = weights.slopeKgPerDay(
+      endDay: endDay,
+      notBefore: windowStart,
+    );
     if (currentWeight == null || recentTrendPerDay == null) {
       return null;
     }

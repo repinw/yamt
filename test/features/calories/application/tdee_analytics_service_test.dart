@@ -103,6 +103,53 @@ void main() {
       expect(summary.weeklyRateKg, lessThan(0));
     });
 
+    test('buildSummary has no weight change for a single weigh-in', () {
+      final weights = WeightTrendCalculator.fromDailyWeights({
+        DateTime(2025, 3): 80,
+      });
+      final summary = TdeeAnalyticsService.buildSummary(
+        points: [
+          TdeeAnalyticsPoint(
+            day: DateTime(2025, 3),
+            scaleWeightKg: 80,
+            trendWeightKg: 80,
+          ),
+        ],
+        weights: weights,
+      );
+
+      expect(summary.currentWeightKg, 80);
+      expect(summary.weightChangeKg, isNull);
+      expect(summary.weeklyRateKg, isNull);
+    });
+
+    test('weekly rate ignores trend days before the window', () {
+      // Rising before the window, falling inside it.
+      final weights = WeightTrendCalculator.fromDailyWeights({
+        for (var day = 0; day < 30; day++)
+          addDiaryDays(DateTime(2025, 2), day): 78 + 0.1 * day,
+        for (var day = 1; day <= 5; day++)
+          addDiaryDays(DateTime(2025, 3, 3), day): 80.9 - 0.3 * day,
+      });
+      final points = [
+        for (var day = 0; day <= 5; day++)
+          TdeeAnalyticsPoint(
+            day: addDiaryDays(DateTime(2025, 3, 3), day),
+            trendWeightKg: weights.trendFor(
+              addDiaryDays(DateTime(2025, 3, 3), day),
+            ),
+          ),
+      ];
+
+      final summary = TdeeAnalyticsService.buildSummary(
+        points: points,
+        weights: weights,
+      );
+
+      expect(summary.weightChangeKg, lessThan(0));
+      expect(summary.weeklyRateKg, lessThan(0));
+    });
+
     test('buildPoints keeps scale weight and adds trend weight', () {
       final weights = WeightTrendCalculator.fromDailyWeights({
         DateTime(2025, 3): 80,
@@ -147,6 +194,7 @@ void main() {
       final projection = TdeeAnalyticsService.buildAnticipation(
         cycle: cycle,
         weights: weights,
+        windowStart: start,
         windowEnd: addDiaryDays(start, 40),
       );
 

@@ -118,7 +118,6 @@ class TdeeWeightChart extends StatelessWidget {
                 maxY: maxY,
                 minX: 0,
                 maxX: math.max(1, maxX),
-                clipData: const FlClipData.all(),
                 gridData: TdeeWeightChartBuilder.buildGridData(colorScheme),
                 titlesData: TdeeWeightChartBuilder.buildTitlesData(
                   colorScheme,
