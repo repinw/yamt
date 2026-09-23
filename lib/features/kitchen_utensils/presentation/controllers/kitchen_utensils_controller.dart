@@ -20,6 +20,10 @@ import 'package:yamt/features/kitchen_utensils/domain/'
 
 part 'kitchen_utensils_controller.g.dart';
 
+const _saveFailed = KitchenUtensilSaveResult.failure(
+  KitchenUtensilSaveFailureReason.saveFailed,
+);
+
 const _kitchenUtensilsControllerLogName = 'KitchenUtensilsController';
 
 /// Kitchen utensils controller.
@@ -63,40 +67,18 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
     String name = '',
     Uint8List? imageBytes,
   }) {
-    final keepAliveLink = ref.keepAlive();
-    return _mutationQueue
-        .run<KitchenUtensilSaveResult>(
-          operation: () async {
-            final repository = ref.read(kitchenUtensilRepositoryProvider);
-            final service = ref.read(kitchenUtensilMutationServiceProvider);
-            final previousUtensils = await _currentUtensils(repository);
-            if (!ref.mounted) {
-              return const KitchenUtensilSaveResult.failure(
-                KitchenUtensilSaveFailureReason.saveFailed,
-              );
-            }
-            return await service.addUtensil(
-              previousUtensils: previousUtensils,
-              canWrite: () => ref.mounted,
-              writeUtensils: _writeUtensils,
-              name: name,
-              imageBytes: imageBytes,
-              weightGrams: weightGrams,
-            );
-          },
-          fallbackValue: const KitchenUtensilSaveResult.failure(
-            KitchenUtensilSaveFailureReason.saveFailed,
-          ),
-          onError: (error, stackTrace) {
-            log(
-              'Unexpected kitchen utensil add error.',
-              name: _kitchenUtensilsControllerLogName,
-              error: error,
-              stackTrace: stackTrace,
-            );
-          },
-        )
-        .whenComplete(keepAliveLink.close);
+    return _runMutation(
+      name: 'add',
+      fallbackValue: _saveFailed,
+      operation: (service, previousUtensils) => service.addUtensil(
+        previousUtensils: previousUtensils,
+        canWrite: () => ref.mounted,
+        writeUtensils: _writeUtensils,
+        name: name,
+        imageBytes: imageBytes,
+        weightGrams: weightGrams,
+      ),
+    );
   }
 
   /// Updates a utensil.
@@ -107,67 +89,61 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
     String name = '',
     Uint8List? imageBytes,
   }) {
-    final keepAliveLink = ref.keepAlive();
-    return _mutationQueue
-        .run<KitchenUtensilSaveResult>(
-          operation: () async {
-            final repository = ref.read(kitchenUtensilRepositoryProvider);
-            final service = ref.read(kitchenUtensilMutationServiceProvider);
-            final previousUtensils = await _currentUtensils(repository);
-            if (!ref.mounted) {
-              return const KitchenUtensilSaveResult.failure(
-                KitchenUtensilSaveFailureReason.saveFailed,
-              );
-            }
-            return await service.updateUtensil(
-              previousUtensils: previousUtensils,
-              canWrite: () => ref.mounted,
-              writeUtensils: _writeUtensils,
-              utensilId: utensilId,
-              name: name,
-              imageBytes: imageBytes,
-              imageChanged: imageChanged,
-              weightGrams: weightGrams,
-            );
-          },
-          fallbackValue: const KitchenUtensilSaveResult.failure(
-            KitchenUtensilSaveFailureReason.saveFailed,
-          ),
-          onError: (error, stackTrace) {
-            log(
-              'Unexpected kitchen utensil update error.',
-              name: _kitchenUtensilsControllerLogName,
-              error: error,
-              stackTrace: stackTrace,
-            );
-          },
-        )
-        .whenComplete(keepAliveLink.close);
+    return _runMutation(
+      name: 'update',
+      fallbackValue: _saveFailed,
+      operation: (service, previousUtensils) => service.updateUtensil(
+        previousUtensils: previousUtensils,
+        canWrite: () => ref.mounted,
+        writeUtensils: _writeUtensils,
+        utensilId: utensilId,
+        name: name,
+        imageBytes: imageBytes,
+        imageChanged: imageChanged,
+        weightGrams: weightGrams,
+      ),
+    );
   }
 
   /// Deletes a utensil.
   Future<bool> deleteUtensil(String utensilId) {
+    return _runMutation(
+      name: 'delete',
+      fallbackValue: false,
+      operation: (service, previousUtensils) => service.deleteUtensil(
+        previousUtensils: previousUtensils,
+        canWrite: () => ref.mounted,
+        writeUtensils: _writeUtensils,
+        utensilId: utensilId,
+      ),
+    );
+  }
+
+  Future<T> _runMutation<T>({
+    required String name,
+    required T fallbackValue,
+    required Future<T> Function(
+      KitchenUtensilMutationService service,
+      List<KitchenUtensil> previousUtensils,
+    )
+    operation,
+  }) {
     final keepAliveLink = ref.keepAlive();
     return _mutationQueue
-        .run<bool>(
+        .run<T>(
           operation: () async {
             final repository = ref.read(kitchenUtensilRepositoryProvider);
             final service = ref.read(kitchenUtensilMutationServiceProvider);
             final previousUtensils = await _currentUtensils(repository);
             if (!ref.mounted) {
-              return false;
+              return fallbackValue;
             }
-            return await service.deleteUtensil(
-              previousUtensils: previousUtensils,
-              canWrite: () => ref.mounted,
-              writeUtensils: _writeUtensils,
-              utensilId: utensilId,
-            );
+            return await operation(service, previousUtensils);
           },
-          fallbackValue: false,
+          fallbackValue: fallbackValue,
           onError: (error, stackTrace) {
             log(
-              'Unexpected kitchen utensil delete error.',
+              'Unexpected kitchen utensil $name error.',
               name: _kitchenUtensilsControllerLogName,
               error: error,
               stackTrace: stackTrace,
