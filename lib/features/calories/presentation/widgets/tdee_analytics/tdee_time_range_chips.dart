@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Horizontal pill selector for TDEE analytics time ranges.
 class TdeeTimeRangeChips extends StatelessWidget {
@@ -61,6 +62,14 @@ class _RangePill extends StatelessWidget {
   final ThemeData theme;
   final VoidCallback onTap;
 
+  String _label(AppLocalizations l10n) {
+    return switch (range) {
+      TdeeAnalyticsTimeRange.month => l10n.tdeeRangeMonth,
+      TdeeAnalyticsTimeRange.all => l10n.tdeeRangeAll,
+      _ => l10n.tdeeRangeDays(range.dayCount!),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     final backgroundColor = isSelected
@@ -81,7 +90,7 @@ class _RangePill extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Text(
-          range.label,
+          _label(AppLocalizations.of(context)!),
           style: theme.textTheme.labelMedium?.copyWith(
             color: foregroundColor,
             fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,

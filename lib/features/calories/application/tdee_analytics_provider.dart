@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/daily_learned_tdee_models.dart';
-import 'package:yamt/features/calories/application/daily_learned_tdee_resolver.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
@@ -17,7 +17,7 @@ import 'package:yamt/features/calories/provider/daily_learned_tdee_provider.dart
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
-import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 import 'package:yamt/features/health/presentation/controllers/manual_health_weight_entries_controller.dart';
 
@@ -85,7 +85,7 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
         ? <TdeeAnalyticsGoalCycle>[individualCycles.first]
         : selectedCycles;
 
-    final now = DateTime.now();
+    final now = ref.watch(clockProvider)();
     final window = TdeeAnalyticsService.resolveDateWindowForCycles(
       cycles: effectiveSelectedCycles,
       timeRange: query.timeRange,
@@ -120,10 +120,14 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
       throw StateError('TdeeAnalytics provider was disposed.');
     }
 
+    // Load earlier weights too, so the trend weight is settled at the start.
     final healthSamples =
         healthStatus.accessState == HealthDataAccessState.ready
         ? await healthWeightService.loadWeightSamples(
-            startInclusive: window.start,
+            startInclusive: addDiaryDays(
+              window.start,
+              -WeightTrendCalculator.warmUpDays,
+            ),
             endExclusive: nextDiaryDay(window.end),
           )
         : const <HealthWeightSample>[];
@@ -131,9 +135,9 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
       throw StateError('TdeeAnalytics provider was disposed.');
     }
 
-    final weightsByDay = _mergeWeights(
-      healthSamples: healthSamples,
+    final weights = WeightTrendCalculator.fromSources(
       manualEntries: manualEntries,
+      healthSamples: healthSamples,
     );
 
     final points = TdeeAnalyticsService.buildPoints(
@@ -142,10 +146,13 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
       settings: settings,
       learnedTdeeByDay: learnedTdeeMap,
       entriesByDay: entries.groupByDiaryDayKey(),
-      weightsByDay: weightsByDay,
+      weights: weights,
     );
 
-    final summary = TdeeAnalyticsService.buildSummary(points);
+    final summary = TdeeAnalyticsService.buildSummary(
+      points: points,
+      weights: weights,
+    );
     final activeSelected = effectiveSelectedCycles
         .where((cycle) => cycle.isActive)
         .firstOrNull;
@@ -153,8 +160,8 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
         ? null
         : TdeeAnalyticsService.buildAnticipation(
             cycle: activeSelected,
-            points: points,
-            today: now,
+            weights: weights,
+            windowEnd: window.end,
           );
 
     return TdeeAnalyticsState(
@@ -168,20 +175,4 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
   } finally {
     keepAliveLink.close();
   }
-}
-
-Map<String, double> _mergeWeights({
-  required List<HealthWeightSample> healthSamples,
-  required List<ManualHealthWeightEntry> manualEntries,
-}) {
-  final result = <String, double>{};
-  final representative = DailyLearnedTdeeResolver.representativeWeightByDay(
-    healthSamples,
-  );
-  result.addAll(representative);
-
-  final manual = DailyLearnedTdeeResolver.manualWeightByDay(manualEntries);
-  result.addAll(manual);
-
-  return result;
 }

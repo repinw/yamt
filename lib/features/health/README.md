@@ -8,6 +8,9 @@ activity data, health weight samples, and manual fallback weight entries.
 - Health platform services and repositories under `data/`.
 - Health connection, activity, workout, energy, and weight domain models under
   `domain/`.
+- The trend weight: one daily weight from manual entries and Health samples,
+  interpolated between weigh-ins and smoothed, so water swings do not show as
+  weight changes.
 - Health connection and manual weight controllers under
   `presentation/controllers/`.
 

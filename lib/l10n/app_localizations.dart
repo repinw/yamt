@@ -62,8 +62,7 @@ import 'app_localizations_en.dart';
 /// be consistent with the languages listed in the AppLocalizations.supportedLocales
 /// property.
 abstract class AppLocalizations {
-  AppLocalizations(String locale)
-    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+  AppLocalizations(String locale) : localeName = intl.Intl.canonicalizedLocale(locale.toString());
 
   final String localeName;
 
@@ -71,8 +70,7 @@ abstract class AppLocalizations {
     return Localizations.of<AppLocalizations>(context, AppLocalizations);
   }
 
-  static const LocalizationsDelegate<AppLocalizations> delegate =
-      _AppLocalizationsDelegate();
+  static const LocalizationsDelegate<AppLocalizations> delegate = _AppLocalizationsDelegate();
 
   /// A list of this localizations delegate along with the default localizations
   /// delegates.
@@ -84,18 +82,17 @@ abstract class AppLocalizations {
   /// Additional delegates can be added by appending to this list in
   /// MaterialApp. This list does not have to be used at all if a custom list
   /// of delegates is preferred or required.
-  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
-      <LocalizationsDelegate<dynamic>>[
-        delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-      ];
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates = <LocalizationsDelegate<dynamic>>[
+    delegate,
+    GlobalMaterialLocalizations.delegate,
+    GlobalCupertinoLocalizations.delegate,
+    GlobalWidgetsLocalizations.delegate,
+  ];
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
     Locale('de'),
-    Locale('en'),
+    Locale('en')
   ];
 
   /// No description provided for @homeInventory.
@@ -1014,21 +1011,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{actor} ate {amount} of {item}.'**
-  String inventoryActivityItemConsumed(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemConsumed(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemDiscarded.
   ///
   /// In en, this message translates to:
   /// **'{actor} discarded {amount} of {item}.'**
-  String inventoryActivityItemDiscarded(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemDiscarded(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemDeleted.
   ///
@@ -1040,31 +1029,19 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{actor} restored {amount} of {item}.'**
-  String inventoryActivityItemRestored(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemRestored(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemUsedInPreparedMeal.
   ///
   /// In en, this message translates to:
   /// **'{actor} used {amount} of {item} for a prepared meal.'**
-  String inventoryActivityItemUsedInPreparedMeal(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemUsedInPreparedMeal(String actor, String item, String amount);
 
   /// No description provided for @inventoryActivityItemReturnedFromPreparedMeal.
   ///
   /// In en, this message translates to:
   /// **'{actor} returned {amount} of {item} from a prepared meal.'**
-  String inventoryActivityItemReturnedFromPreparedMeal(
-    String actor,
-    String item,
-    String amount,
-  );
+  String inventoryActivityItemReturnedFromPreparedMeal(String actor, String item, String amount);
 
   /// No description provided for @inventorySearchLabel.
   ///
@@ -3172,6 +3149,150 @@ abstract class AppLocalizations {
   /// **'Estimate'**
   String get tdeeChartEstimateMarker;
 
+  /// No description provided for @tdeeAnalyticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE & expenditure'**
+  String get tdeeAnalyticsTitle;
+
+  /// No description provided for @tdeeAnalyticsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the analysis.'**
+  String get tdeeAnalyticsLoadFailed;
+
+  /// No description provided for @tdeeAnalyticsNotEnoughData.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough data for this period.'**
+  String get tdeeAnalyticsNotEnoughData;
+
+  /// No description provided for @tdeeDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String tdeeDateRange(String start, String end);
+
+  /// No description provided for @tdeeHeaderAverage.
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get tdeeHeaderAverage;
+
+  /// No description provided for @tdeeChangeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get tdeeChangeLabel;
+
+  /// No description provided for @tdeeLegendFlux.
+  ///
+  /// In en, this message translates to:
+  /// **'Flux range'**
+  String get tdeeLegendFlux;
+
+  /// No description provided for @tdeeLegendTdee.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenditure (TDEE)'**
+  String get tdeeLegendTdee;
+
+  /// No description provided for @tdeeRangeDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} d'**
+  String tdeeRangeDays(int count);
+
+  /// No description provided for @tdeeRangeMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'1 mo'**
+  String get tdeeRangeMonth;
+
+  /// No description provided for @tdeeRangeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get tdeeRangeAll;
+
+  /// No description provided for @tdeeInsightsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Insights & changes'**
+  String get tdeeInsightsTitle;
+
+  /// No description provided for @tdeeInsightsDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String tdeeInsightsDays(int count);
+
+  /// No description provided for @tdeeGoalAchieved.
+  ///
+  /// In en, this message translates to:
+  /// **'🎉 Target weight of {target} already reached!'**
+  String tdeeGoalAchieved(String target);
+
+  /// No description provided for @tdeeGoalMovingAway.
+  ///
+  /// In en, this message translates to:
+  /// **'⚠️ The current trend is moving away from your goal ({target}).'**
+  String tdeeGoalMovingAway(String target);
+
+  /// No description provided for @tdeeGoalProjection.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {target}: expected {date}'**
+  String tdeeGoalProjection(String target, String date);
+
+  /// No description provided for @tdeeGoalRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'In about {days} days at the current trend ({speed} kg/week)'**
+  String tdeeGoalRemaining(int days, String speed);
+
+  /// No description provided for @tdeeShowProjection.
+  ///
+  /// In en, this message translates to:
+  /// **'Show forecast in chart'**
+  String get tdeeShowProjection;
+
+  /// No description provided for @tdeeWeightChartTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight trend & goal'**
+  String get tdeeWeightChartTitle;
+
+  /// No description provided for @tdeeWeightTargetLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {weight} kg'**
+  String tdeeWeightTargetLine(String weight);
+
+  /// No description provided for @tdeeWeightTrendValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend {weight} kg'**
+  String tdeeWeightTrendValue(String weight);
+
+  /// No description provided for @tdeeWeightScaleValue.
+  ///
+  /// In en, this message translates to:
+  /// **'Scale {weight} kg'**
+  String tdeeWeightScaleValue(String weight);
+
+  /// No description provided for @tdeeWeightStatTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend weight'**
+  String get tdeeWeightStatTrend;
+
+  /// No description provided for @tdeeWeightStatRate.
+  ///
+  /// In en, this message translates to:
+  /// **'Per week'**
+  String get tdeeWeightStatRate;
+
   /// No description provided for @caloriesCalculatorTargetWeightLabel.
   ///
   /// In en, this message translates to:
@@ -4556,21 +4677,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{total} spread across {days} remaining days = {daily} / day'**
-  String diaryBudgetDetailsDistributionFormula(
-    String total,
-    int days,
-    String daily,
-  );
+  String diaryBudgetDetailsDistributionFormula(String total, int days, String daily);
 
   /// No description provided for @diaryBudgetDetailsMacroAdjustment.
   ///
   /// In en, this message translates to:
   /// **'Macro impact: Protein {protein} · Carbs {carbs} · Fat {fat}'**
-  String diaryBudgetDetailsMacroAdjustment(
-    String protein,
-    String carbs,
-    String fat,
-  );
+  String diaryBudgetDetailsMacroAdjustment(String protein, String carbs, String fat);
 
   /// No description provided for @diaryBudgetDetailsSafetyCapActive.
   ///
@@ -4588,11 +4701,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'{current} / {target} kcal baseline activity • {remaining} kcal to bonus'**
-  String diaryWorkoutsBaselineProgress(
-    String current,
-    String target,
-    String remaining,
-  );
+  String diaryWorkoutsBaselineProgress(String current, String target, String remaining);
 
   /// No description provided for @diaryWorkoutsBonusEarned.
   ///
@@ -6632,19 +6741,13 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Not enough in inventory: Only {availableAmount} available. {missingAmount} missing.'**
-  String cookflowInventoryConflictMessage(
-    Object availableAmount,
-    Object missingAmount,
-  );
+  String cookflowInventoryConflictMessage(Object availableAmount, Object missingAmount);
 
   /// No description provided for @cookflowInventoryUsagePreview.
   ///
   /// In en, this message translates to:
   /// **'Subtract {usedAmount} · left {remainingAmount}'**
-  String cookflowInventoryUsagePreview(
-    Object usedAmount,
-    Object remainingAmount,
-  );
+  String cookflowInventoryUsagePreview(Object usedAmount, Object remainingAmount);
 
   /// No description provided for @cookflowBuyRemainingButton.
   ///
@@ -6662,10 +6765,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'Unit conflict: recipe uses \"{recipeUnit}\". Inventory has \"{inventoryUnit}\".'**
-  String cookflowInventoryUnitConflictMessage(
-    Object recipeUnit,
-    Object inventoryUnit,
-  );
+  String cookflowInventoryUnitConflictMessage(Object recipeUnit, Object inventoryUnit);
 
   /// No description provided for @cookflowInventoryUnitConversionPrefix.
   ///
@@ -7580,8 +7680,7 @@ abstract class AppLocalizations {
   String get receiptReviewNutritionProtein;
 }
 
-class _AppLocalizationsDelegate
-    extends LocalizationsDelegate<AppLocalizations> {
+class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
   const _AppLocalizationsDelegate();
 
   @override
@@ -7590,26 +7689,25 @@ class _AppLocalizationsDelegate
   }
 
   @override
-  bool isSupported(Locale locale) =>
-      <String>['de', 'en'].contains(locale.languageCode);
+  bool isSupported(Locale locale) => <String>['de', 'en'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
-    case 'de':
-      return AppLocalizationsDe();
-    case 'en':
-      return AppLocalizationsEn();
+    case 'de': return AppLocalizationsDe();
+    case 'en': return AppLocalizationsEn();
   }
 
   throw FlutterError(
     'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
     'an issue with the localizations generation tool. Please file an issue '
     'on GitHub with a reproducible sample app and the gen-l10n configuration '
-    'that was used.',
+    'that was used.'
   );
 }

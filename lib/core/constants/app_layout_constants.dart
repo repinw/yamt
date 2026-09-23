@@ -152,6 +152,9 @@ abstract final class AppOpacities {
 
   /// Home bottom navigation unselected item opacity.
   static const double homeBottomNavUnselected = 0.7;
+
+  /// Measured weigh-in dots behind the trend line in the weight chart.
+  static const double weightChartScaleDot = 0.35;
 }
 
 /// Shared font-size scale for app typography.

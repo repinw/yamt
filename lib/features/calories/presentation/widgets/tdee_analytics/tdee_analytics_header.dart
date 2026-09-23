@@ -1,6 +1,8 @@
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Top header for TDEE analytics displaying average, difference,
 /// and date range.
@@ -26,6 +28,10 @@ class TdeeAnalyticsHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final dateFormat = DateFormat.yMd(
+      Localizations.localeOf(context).toLanguageTag(),
+    );
     final diff = summary.tdeeDifferenceKcal;
     final diffSign = diff >= 0 ? '+' : '';
     final diffColor = diff >= 0 ? colorScheme.primary : colorScheme.error;
@@ -38,7 +44,7 @@ class TdeeAnalyticsHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildLegendRow(colorScheme, theme),
+          _buildLegendRow(colorScheme, theme, l10n),
           const SizedBox(height: AppSpacing.md),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -47,7 +53,7 @@ class TdeeAnalyticsHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Durchschnitt',
+                    l10n.tdeeHeaderAverage,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -65,7 +71,7 @@ class TdeeAnalyticsHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'kcal',
+                        l10n.caloriesUnitKcal,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -74,7 +80,10 @@ class TdeeAnalyticsHeader extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    _formatDateRange(startDate, endDate),
+                    l10n.tdeeDateRange(
+                      dateFormat.format(startDate),
+                      dateFormat.format(endDate),
+                    ),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: colorScheme.outline,
                     ),
@@ -86,7 +95,7 @@ class TdeeAnalyticsHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Text(
-                    'Veränderung',
+                    l10n.tdeeChangeLabel,
                     style: theme.textTheme.labelMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -105,7 +114,7 @@ class TdeeAnalyticsHeader extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        'kcal',
+                        l10n.caloriesUnitKcal,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -121,7 +130,11 @@ class TdeeAnalyticsHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildLegendRow(ColorScheme colorScheme, ThemeData theme) {
+  Widget _buildLegendRow(
+    ColorScheme colorScheme,
+    ThemeData theme,
+    AppLocalizations l10n,
+  ) {
     return Row(
       children: [
         Container(
@@ -134,7 +147,7 @@ class TdeeAnalyticsHeader extends StatelessWidget {
         ),
         const SizedBox(width: 6),
         Text(
-          'Flux-Bereich',
+          l10n.tdeeLegendFlux,
           style: theme.textTheme.labelSmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
@@ -143,18 +156,12 @@ class TdeeAnalyticsHeader extends StatelessWidget {
         Container(width: 12, height: 3, color: colorScheme.primary),
         const SizedBox(width: 6),
         Text(
-          'Verbrauch (TDEE)',
+          l10n.tdeeLegendTdee,
           style: theme.textTheme.labelSmall?.copyWith(
             color: colorScheme.onSurfaceVariant,
           ),
         ),
       ],
     );
-  }
-
-  String _formatDateRange(DateTime start, DateTime end) {
-    final startStr = '${start.day}.${start.month}.${start.year}';
-    final endStr = '${end.day}.${end.month}.${end.year}';
-    return '$startStr – $endStr';
   }
 }

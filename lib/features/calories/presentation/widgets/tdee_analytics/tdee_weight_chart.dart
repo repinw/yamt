@@ -1,19 +1,23 @@
 import 'dart:math' as math;
 
 import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_weight_chart_builder.dart';
+import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_weight_chart_tooltip.dart';
+import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_weight_stats_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Interactive chart displaying scale weights, trendline,
-/// and goal anticipation.
+/// Interactive chart with the smoothed trend weight as a line, the measured
+/// scale weights as faint dots, and the goal projection.
 class TdeeWeightChart extends StatelessWidget {
   /// Creates the weight analytics chart.
   const new({
     required this.points,
+    this.summary,
     this.goalCycles = const <TdeeAnalyticsGoalCycle>[],
     this.anticipation,
     this.showAnticipation = true,
@@ -23,6 +27,9 @@ class TdeeWeightChart extends StatelessWidget {
 
   /// Historical daily points.
   final List<TdeeAnalyticsPoint> points;
+
+  /// Summary with the trend weight numbers shown above the chart.
+  final TdeeAnalyticsSummary? summary;
 
   /// Goal cycles whose completion dates should be marked.
   final List<TdeeAnalyticsGoalCycle> goalCycles;
@@ -38,13 +45,17 @@ class TdeeWeightChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final validWeights = points.where((p) => p.scaleWeightKg != null).toList();
-    if (validWeights.isEmpty) {
+    final hasWeight = points.any(
+      (p) => p.scaleWeightKg != null || p.trendWeightKg != null,
+    );
+    if (!hasWeight) {
       return const SizedBox.shrink();
     }
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toLanguageTag();
     final projection =
         (extendToProjectedGoal &&
             showAnticipation &&
@@ -55,7 +66,7 @@ class TdeeWeightChart extends StatelessWidget {
         : null;
 
     final (minY, maxY) = TdeeWeightChartBuilder.calculateYBounds(
-      validWeights,
+      points,
       projection,
     );
     final firstDay = points.first.day;
@@ -75,7 +86,7 @@ class TdeeWeightChart extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.xs),
               Text(
-                'Gewicht & Ziel-Antizipation',
+                l10n.tdeeWeightChartTitle,
                 style: theme.textTheme.titleSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
@@ -83,6 +94,16 @@ class TdeeWeightChart extends StatelessWidget {
             ],
           ),
         ),
+        if (summary case final summary?)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.sm,
+              AppSpacing.xl,
+              0,
+            ),
+            child: TdeeWeightStatsRow(summary: summary),
+          ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
           height: 180,
@@ -104,22 +125,32 @@ class TdeeWeightChart extends StatelessWidget {
                   theme,
                   firstDay: firstDay,
                   maxX: maxX,
-                  locale: Localizations.localeOf(context).toLanguageTag(),
+                  locale: locale,
                 ),
                 borderData: FlBorderData(show: false),
-                lineTouchData: TdeeWeightChartBuilder.buildTouchData(
+                lineTouchData: TdeeWeightChartTooltip.build(
                   colorScheme,
                   theme,
+                  firstDay: firstDay,
+                  locale: locale,
+                  l10n: l10n,
                 ),
                 extraLinesData: TdeeWeightChartBuilder.buildExtraLines(
                   projection,
                   goalCycles,
                   firstDay,
                   colorScheme,
-                  AppLocalizations.of(context)!,
+                  l10n,
+                  NumberFormat('0.0', locale),
                 ),
+                // Order must match TdeeWeightChartBuilder.trendBarIndex and
+                // scaleBarIndex.
                 lineBarsData: [
-                  TdeeWeightChartBuilder.buildHistoricalWeightBar(
+                  TdeeWeightChartBuilder.buildTrendWeightBar(
+                    points,
+                    colorScheme,
+                  ),
+                  TdeeWeightChartBuilder.buildScaleWeightDots(
                     points,
                     colorScheme,
                   ),
@@ -150,7 +181,7 @@ class TdeeWeightChart extends StatelessWidget {
         in projection?.projectionPoints ?? const <TdeeProjectionPoint>[]) {
       maxX = math.max(
         maxX,
-        projectedPoint.day.difference(firstDay).inDays.toDouble(),
+        TdeeWeightChartBuilder.dayIndex(firstDay, projectedPoint.day),
       );
     }
     if (extendToProjectedGoal) {
@@ -159,7 +190,7 @@ class TdeeWeightChart extends StatelessWidget {
         if (markerDate != null) {
           maxX = math.max(
             maxX,
-            markerDate.difference(firstDay).inDays.toDouble(),
+            TdeeWeightChartBuilder.dayIndex(firstDay, markerDate),
           );
         }
       }

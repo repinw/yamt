@@ -465,7 +465,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/application/burn_week_live_sync_provider.dart': 2,
     'lib/features/calories/application/calorie_weekly_checkin_snapshot_invalidator.dart':
         1,
-    'lib/features/calories/application/tdee_analytics_provider.dart': 1,
     'lib/features/calories/domain/calorie_entry.dart': 5,
     'lib/features/calories/domain/calorie_goal_settings_queries.dart': 1,
     'lib/features/calories/domain/tdee_cycle_resolver.dart': 1,

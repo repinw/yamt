@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Interactive line chart displaying learned TDEE trend curve.
 class TdeeFluxChart extends StatelessWidget {
@@ -177,10 +178,10 @@ class TdeeFluxChart extends StatelessWidget {
   }
 
   Widget _buildEmptyState(BuildContext context) {
-    return const SizedBox(
+    return SizedBox(
       height: 200,
       child: Center(
-        child: Text('Nicht genügend Daten für diesen Zeitraum vorhanden.'),
+        child: Text(AppLocalizations.of(context)!.tdeeAnalyticsNotEnoughData),
       ),
     );
   }

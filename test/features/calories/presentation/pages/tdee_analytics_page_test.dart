@@ -33,12 +33,14 @@ void main() {
           learnedBaseTdeeKcal: 2400,
           totalTdeeKcal: 2600,
           scaleWeightKg: 80,
+          trendWeightKg: 80,
         ),
         TdeeAnalyticsPoint(
           day: DateTime(2025, 3, 2),
           learnedBaseTdeeKcal: 2420,
           totalTdeeKcal: 2650,
           scaleWeightKg: 79.8,
+          trendWeightKg: 79.98,
         ),
       ],
       summary: const TdeeAnalyticsSummary(
@@ -47,6 +49,9 @@ void main() {
         threeDayDeltaKcal: 20,
         sevenDayDeltaKcal: 20,
         fourteenDayDeltaKcal: 20,
+        currentWeightKg: 79.98,
+        weightChangeKg: -0.02,
+        weeklyRateKg: -0.14,
       ),
       anticipation: TdeeAnticipationProjection(
         currentWeightKg: 79.8,
@@ -73,6 +78,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
+            locale: Locale('de'),
             localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: TdeeAnalyticsPage(),
@@ -88,7 +94,12 @@ void main() {
       expect(find.text('7 T'), findsOneWidget);
       expect(find.text('28 T'), findsOneWidget);
       expect(find.text('Insights & Veränderungen'), findsOneWidget);
-      expect(find.textContaining('75.0 kg'), findsWidgets);
+      expect(find.textContaining('75,0 kg'), findsWidgets);
+      expect(find.text('Gewichtstrend & Ziel'), findsOneWidget);
+      expect(find.text('Trendgewicht'), findsOneWidget);
+      expect(find.text('80,0 kg'), findsOneWidget);
+      expect(find.text('-0,0 kg'), findsOneWidget);
+      expect(find.text('-0,14 kg'), findsOneWidget);
 
       await tester.tap(find.text('Alles'));
       await tester.pumpAndSettle();

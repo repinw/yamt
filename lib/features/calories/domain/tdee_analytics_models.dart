@@ -33,10 +33,10 @@ class TdeeAnalyticsPoint {
   /// Actual logged intake.
   final double? intakeKcal;
 
-  /// Measured scale weight.
+  /// Measured scale weight, when the user weighed in on this day.
   final double? scaleWeightKg;
 
-  /// Smoothed trend weight.
+  /// Estimated real weight: interpolated and smoothed scale weights.
   final double? trendWeightKg;
 
   /// Whether data was held/interpolated due to missing logs.
@@ -110,6 +110,7 @@ class TdeeAnalyticsSummary {
     this.averageIntakeKcal,
     this.currentWeightKg,
     this.weightChangeKg,
+    this.weeklyRateKg,
   });
 
   /// Average TDEE across the selected period.
@@ -130,11 +131,14 @@ class TdeeAnalyticsSummary {
   /// Average logged intake over the period.
   final double? averageIntakeKcal;
 
-  /// Latest weight in the period.
+  /// Latest trend weight in the period.
   final double? currentWeightKg;
 
-  /// Total weight change from start to end of period.
+  /// Trend weight change from start to end of period.
   final double? weightChangeKg;
+
+  /// Recent trend weight change in kg per week (negative = losing).
+  final double? weeklyRateKg;
 }
 
 /// State object combining all analytics data for the view.

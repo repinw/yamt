@@ -1,6 +1,8 @@
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Card showing expenditure changes and goal anticipation insights.
 class TdeeInsightsCard extends StatelessWidget {
@@ -29,6 +31,8 @@ class TdeeInsightsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context)!;
+    final locale = Localizations.localeOf(context).toLanguageTag();
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
@@ -46,35 +50,41 @@ class TdeeInsightsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Insights & Veränderungen',
+              l10n.tdeeInsightsTitle,
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: AppSpacing.lg),
             _buildDeltaRow(
-              label: '3 Tage',
+              label: l10n.tdeeInsightsDays(3),
               delta: summary.threeDayDeltaKcal,
               theme: theme,
               colorScheme: colorScheme,
+              valueFormat: NumberFormat('+0.0;-0.0', locale),
+              unit: l10n.caloriesUnitKcal,
             ),
             const Divider(height: AppSpacing.lg),
             _buildDeltaRow(
-              label: '7 Tage',
+              label: l10n.tdeeInsightsDays(7),
               delta: summary.sevenDayDeltaKcal,
               theme: theme,
               colorScheme: colorScheme,
+              valueFormat: NumberFormat('+0.0;-0.0', locale),
+              unit: l10n.caloriesUnitKcal,
             ),
             const Divider(height: AppSpacing.lg),
             _buildDeltaRow(
-              label: '14 Tage',
+              label: l10n.tdeeInsightsDays(14),
               delta: summary.fourteenDayDeltaKcal,
               theme: theme,
               colorScheme: colorScheme,
+              valueFormat: NumberFormat('+0.0;-0.0', locale),
+              unit: l10n.caloriesUnitKcal,
             ),
             if (anticipation != null) ...[
               const SizedBox(height: AppSpacing.lg),
-              _buildAnticipationSection(theme, colorScheme),
+              _buildAnticipationSection(theme, colorScheme, l10n, locale),
             ],
           ],
         ),
@@ -87,11 +97,12 @@ class TdeeInsightsCard extends StatelessWidget {
     required double? delta,
     required ThemeData theme,
     required ColorScheme colorScheme,
+    required NumberFormat valueFormat,
+    required String unit,
   }) {
     final hasData = delta != null;
     final isPositive = (delta ?? 0) >= 0;
-    final sign = isPositive ? '+' : '';
-    final valStr = hasData ? '$sign${delta.toStringAsFixed(1)} kcal' : '–';
+    final valStr = hasData ? '${valueFormat.format(delta)} $unit' : '–';
     final color = !hasData
         ? colorScheme.outline
         : (isPositive ? colorScheme.primary : colorScheme.error);
@@ -128,14 +139,21 @@ class TdeeInsightsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAnticipationSection(ThemeData theme, ColorScheme colorScheme) {
+  Widget _buildAnticipationSection(
+    ThemeData theme,
+    ColorScheme colorScheme,
+    AppLocalizations l10n,
+    String locale,
+  ) {
     final proj = anticipation!;
-    final targetStr = '${proj.targetWeightKg.toStringAsFixed(1)} kg';
+    final targetStr =
+        '${NumberFormat('0.0', locale).format(proj.targetWeightKg)} '
+        '${l10n.caloriesUnitKg}';
 
     Widget content;
     if (proj.isAchieved) {
       content = Text(
-        '🎉 Zielgewicht von $targetStr bereits erreicht!',
+        l10n.tdeeGoalAchieved(targetStr),
         style: theme.textTheme.bodyMedium?.copyWith(
           color: colorScheme.primary,
           fontWeight: FontWeight.bold,
@@ -143,14 +161,16 @@ class TdeeInsightsCard extends StatelessWidget {
       );
     } else if (proj.isMovingAway) {
       content = Text(
-        '⚠️ Aktueller Trend weicht vom Ziel ($targetStr) ab.',
+        l10n.tdeeGoalMovingAway(targetStr),
         style: theme.textTheme.bodyMedium?.copyWith(color: colorScheme.error),
       );
     } else {
-      final date = proj.projectedDate!;
-      final dateStr = '${date.day}.${date.month}.${date.year}';
+      final dateStr = DateFormat.yMd(locale).format(proj.projectedDate!);
       final days = proj.daysRemaining ?? 0;
-      final speedStr = proj.trendSpeedKgPerWeek.abs().toStringAsFixed(2);
+      final speedStr = NumberFormat(
+        '0.00',
+        locale,
+      ).format(proj.trendSpeedKgPerWeek.abs());
 
       content = Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,7 +181,7 @@ class TdeeInsightsCard extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Ziel $targetStr: voraussichtlich $dateStr',
+                  l10n.tdeeGoalProjection(targetStr, dateStr),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: colorScheme.onSurface,
@@ -172,7 +192,7 @@ class TdeeInsightsCard extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'In ca. $days Tagen bei aktuellem Trend ($speedStr kg/Woche)',
+            l10n.tdeeGoalRemaining(days, speedStr),
             style: theme.textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
             ),
@@ -196,7 +216,7 @@ class TdeeInsightsCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Prognose im Graph anzeigen',
+                  l10n.tdeeShowProjection,
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),

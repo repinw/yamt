@@ -110,4 +110,10 @@ abstract final class AppSizes {
 
   /// Skeleton value height for compact metric cards.
   static const double compactMetricSkeletonValueHeight = 18;
+
+  /// Line width of the trend weight in the weight chart.
+  static const double weightChartTrendLineWidth = 3;
+
+  /// Dot radius of a measured weigh-in in the weight chart.
+  static const double weightChartScaleDotRadius = 2.5;
 }

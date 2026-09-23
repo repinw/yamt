@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_
 import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_insights_card.dart';
 import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_time_range_chips.dart';
 import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_weight_chart.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Full-screen analytics page for TDEE expenditure, flux range,
 /// and weight trend.
@@ -53,7 +54,7 @@ class _TdeeAnalyticsPageState extends ConsumerState<TdeeAnalyticsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('TDEE & Verbrauch'),
+        title: Text(AppLocalizations.of(context)!.tdeeAnalyticsTitle),
         actions: [
           analyticsAsync.whenOrNull(
                 data: (data) => Padding(
@@ -72,10 +73,10 @@ class _TdeeAnalyticsPageState extends ConsumerState<TdeeAnalyticsPage> {
         data: (data) => _buildContent(context, data, uiState, controller),
         loading: () =>
             const Center(child: CircularProgressIndicator.adaptive()),
-        error: (err, _) => Center(
+        error: (_, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
-            child: Text('Fehler beim Laden der Analyse: $err'),
+            child: Text(AppLocalizations.of(context)!.tdeeAnalyticsLoadFailed),
           ),
         ),
       ),
@@ -112,6 +113,7 @@ class _TdeeAnalyticsPageState extends ConsumerState<TdeeAnalyticsPage> {
           const SizedBox(height: AppSpacing.xxl),
           TdeeWeightChart(
             points: points,
+            summary: data.summary,
             goalCycles: data.selectedCycles,
             anticipation: data.anticipation,
             showAnticipation: uiState.showAnticipation,

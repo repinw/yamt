@@ -3,6 +3,9 @@ import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -11,85 +14,97 @@ import 'package:yamt/l10n/app_localizations.dart';
 class TdeeWeightChartBuilder {
   const new _();
 
+  /// Position of the trend line in `lineBarsData`.
+  static const int trendBarIndex = 0;
+
+  /// Position of the scale weight dots in `lineBarsData`.
+  static const int scaleBarIndex = 1;
+
   /// Calculates Y-axis minimum and maximum bounds.
   static (double, double) calculateYBounds(
-    List<TdeeAnalyticsPoint> valid,
+    List<TdeeAnalyticsPoint> points,
     TdeeAnticipationProjection? proj,
   ) {
-    var minVal = double.infinity;
-    var maxVal = double.negativeInfinity;
-
-    for (final p in valid) {
-      final w = p.scaleWeightKg!;
-      if (w < minVal) minVal = w;
-      if (w > maxVal) maxVal = w;
-    }
-
-    if (proj != null) {
-      if (proj.targetWeightKg < minVal) minVal = proj.targetWeightKg;
-      if (proj.targetWeightKg > maxVal) maxVal = proj.targetWeightKg;
-    }
-
+    final values = <double>[
+      for (final p in points) ...[?p.scaleWeightKg, ?p.trendWeightKg],
+      ?proj?.targetWeightKg,
+    ];
+    final minVal = values.reduce(math.min);
+    final maxVal = values.reduce(math.max);
     final roundedMin = (minVal - 1.0).floorToDouble();
     final roundedMax = (maxVal + 1.0).ceilToDouble();
     return (roundedMin, math.max(roundedMin + 2, roundedMax));
   }
 
-  /// Builds the historical scale weight line.
-  static LineChartBarData buildHistoricalWeightBar(
+  /// Builds the smooth trend weight line.
+  static LineChartBarData buildTrendWeightBar(
     List<TdeeAnalyticsPoint> points,
     ColorScheme colorScheme,
   ) {
-    final spots = <FlSpot>[];
-    for (var i = 0; i < points.length; i++) {
-      final weight = points[i].scaleWeightKg;
-      if (weight != null) {
-        spots.add(FlSpot(i.toDouble(), weight));
-      }
-    }
     return LineChartBarData(
-      spots: spots,
+      spots: [
+        for (final (index, point) in points.indexed)
+          if (point.trendWeightKg case final weight?)
+            FlSpot(index.toDouble(), weight),
+      ],
       isCurved: true,
-      curveSmoothness: 0.15,
+      curveSmoothness: 0.2,
+      preventCurveOverShooting: true,
       color: colorScheme.secondary,
-      barWidth: 2.5,
+      barWidth: AppSizes.weightChartTrendLineWidth,
+      dotData: const FlDotData(show: false),
+    );
+  }
+
+  /// Builds faint dots for the measured scale weights, without a line.
+  static LineChartBarData buildScaleWeightDots(
+    List<TdeeAnalyticsPoint> points,
+    ColorScheme colorScheme,
+  ) {
+    final dotColor = colorScheme.secondary.withValues(
+      alpha: AppOpacities.weightChartScaleDot,
+    );
+    return LineChartBarData(
+      spots: [
+        for (final (index, point) in points.indexed)
+          if (point.scaleWeightKg case final weight?)
+            FlSpot(index.toDouble(), weight),
+      ],
+      color: Colors.transparent,
+      barWidth: 0,
       dotData: FlDotData(
-        show: spots.length <= 14,
         getDotPainter: (spot, xPercentage, bar, index) => FlDotCirclePainter(
-          radius: 3,
-          color: colorScheme.secondary,
-          strokeWidth: 1,
-          strokeColor: colorScheme.surface,
+          radius: AppSizes.weightChartScaleDotRadius,
+          color: dotColor,
         ),
       ),
     );
   }
 
-  /// Builds the dashed projection anticipation line.
+  /// Builds the dashed projection line, starting at the last trend weight.
   static LineChartBarData buildProjectionBar(
     List<TdeeAnalyticsPoint> points,
     TdeeAnticipationProjection proj,
     DateTime firstDay,
     ColorScheme colorScheme,
   ) {
-    final spots = <FlSpot>[];
-    final lastWeightPoint = points.lastWhere(
-      (point) => point.scaleWeightKg != null,
-      orElse: () => points.last,
-    );
-    final startIndex = lastWeightPoint.day.difference(firstDay).inDays;
-    final lastWeight = lastWeightPoint.scaleWeightKg ?? proj.currentWeightKg;
-    spots.add(FlSpot(startIndex.toDouble(), lastWeight));
-
-    for (final p in proj.projectionPoints) {
-      final x = p.day.difference(firstDay).inDays.toDouble();
-      if (x > startIndex) {
-        spots.add(FlSpot(x, p.weightKg));
-      }
-    }
-
+    final startIndex = points.lastIndexWhere((p) => p.trendWeightKg != null);
+    final start = startIndex < 0
+        ? FlSpot(
+            dayIndex(
+              firstDay,
+              proj.projectionPoints.firstOrNull?.day ?? firstDay,
+            ),
+            proj.currentWeightKg,
+          )
+        : FlSpot(startIndex.toDouble(), points[startIndex].trendWeightKg!);
     return LineChartBarData(
-      spots: spots,
+      spots: [
+        start,
+        for (final p in proj.projectionPoints)
+          if (dayIndex(firstDay, p.day) > start.x)
+            FlSpot(dayIndex(firstDay, p.day), p.weightKg),
+      ],
       isCurved: true,
       curveSmoothness: 0.1,
       color: colorScheme.tertiary,
@@ -105,6 +120,7 @@ class TdeeWeightChartBuilder {
     DateTime firstDay,
     ColorScheme colorScheme,
     AppLocalizations l10n,
+    NumberFormat weightFormat,
   ) {
     return ExtraLinesData(
       horizontalLines: proj == null
@@ -125,7 +141,7 @@ class TdeeWeightChartBuilder {
                     fontWeight: FontWeight.bold,
                   ),
                   labelResolver: (line) =>
-                      'Ziel ${line.y.toStringAsFixed(1)} kg',
+                      l10n.tdeeWeightTargetLine(weightFormat.format(line.y)),
                 ),
               ),
             ],
@@ -152,7 +168,7 @@ class TdeeWeightChartBuilder {
     final isConfirmed = cycle.endDate != null || cycle.reachedDate != null;
     final color = isConfirmed ? colorScheme.primary : colorScheme.tertiary;
     return VerticalLine(
-      x: markerDate.difference(firstDay).inDays.toDouble(),
+      x: dayIndex(firstDay, markerDate),
       color: color,
       strokeWidth: 1.5,
       dashArray: isConfirmed ? null : const [5, 4],
@@ -227,7 +243,7 @@ class TdeeWeightChartBuilder {
             return Padding(
               padding: const EdgeInsets.only(top: 6),
               child: Text(
-                dateFormat.format(firstDay.add(Duration(days: dayOffset))),
+                dateFormat.format(addDiaryDays(firstDay, dayOffset)),
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: colorScheme.outline,
                   fontSize: 10,
@@ -240,24 +256,9 @@ class TdeeWeightChartBuilder {
     );
   }
 
-  /// Builds touch tooltips.
-  static LineTouchData buildTouchData(
-    ColorScheme colorScheme,
-    ThemeData theme,
-  ) {
-    return LineTouchData(
-      touchTooltipData: LineTouchTooltipData(
-        getTooltipItems: (touchedSpots) => touchedSpots.map((spot) {
-          final val = spot.y.toStringAsFixed(1);
-          return LineTooltipItem(
-            '$val kg',
-            theme.textTheme.labelMedium!.copyWith(
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.bold,
-            ),
-          );
-        }).toList(),
-      ),
-    );
+  /// Whole days from [firstDay] to [day], safe across daylight saving changes.
+  static double dayIndex(DateTime firstDay, DateTime day) {
+    return (day.difference(firstDay).inHours / Duration.hoursPerDay)
+        .roundToDouble();
   }
 }
