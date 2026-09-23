@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_action_button.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -215,8 +216,7 @@ class _CookingFlowOnTheFlyAdjustmentCardState
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+        .showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 }
 

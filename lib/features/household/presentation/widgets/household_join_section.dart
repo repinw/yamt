@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_membership_controller.dart';
@@ -120,15 +121,14 @@ class _HouseholdJoinSectionState extends ConsumerState<HouseholdJoinSection> {
         return;
       }
       _codeController.clear();
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.householdJoinSuccess)),
-      );
+      messenger.showAppSnackBar(l10n.householdJoinSuccess);
     } on Object catch (error) {
       if (!mounted) {
         return;
       }
-      messenger.showSnackBar(
-        SnackBar(content: Text(householdErrorMessage(l10n, error))),
+      messenger.showAppSnackBar(
+        householdErrorMessage(l10n, error),
+        tone: AppSnackBarTone.error,
       );
     }
   }

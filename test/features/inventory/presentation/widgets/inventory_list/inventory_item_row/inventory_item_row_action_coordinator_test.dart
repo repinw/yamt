@@ -18,9 +18,28 @@ void main() {
         'setWorking:true',
         'action',
         'setWorking:false',
-        'snack:done',
+        'snack:done:success',
       ]),
     );
+  });
+
+  test('runAction passes undo only to the success snack bar', () async {
+    final harness = _CoordinatorHarness();
+    final coordinator = harness.buildCoordinator();
+    var undone = false;
+
+    await coordinator.runAction(
+      () async => true,
+      successMessage: 'done',
+      undo: () async => undone = true,
+    );
+    await harness.lastUndo!();
+
+    expect(undone, isTrue);
+
+    await coordinator.runAction(() async => false, undo: () async => true);
+
+    expect(harness.lastUndo, isNull);
   });
 
   test('runAction shows provided failure message when action fails', () async {
@@ -38,7 +57,7 @@ void main() {
         'setWorking:true',
         'action',
         'setWorking:false',
-        'snack:failed',
+        'snack:failed:error',
       ]),
     );
   });
@@ -105,7 +124,7 @@ void main() {
           'setWorking:true',
           'action',
           'setWorking:false',
-          'snack:fallback-failure',
+          'snack:fallback-failure:error',
         ]),
       );
     },
@@ -119,6 +138,7 @@ class _CoordinatorHarness {
   bool working = false;
   bool mounted = true;
   String? lastSnackBarMessage;
+  Future<bool> Function()? lastUndo;
 
   InventoryItemRowActionCoordinator buildCoordinator() {
     return InventoryItemRowActionCoordinator(
@@ -128,9 +148,10 @@ class _CoordinatorHarness {
         working = isWorking;
       },
       isMounted: () => mounted,
-      showSnackBar: (message) {
-        events.add('snack:$message');
+      showSnackBar: (message, tone, undo) {
+        events.add('snack:$message:${tone.name}');
         lastSnackBarMessage = message;
+        lastUndo = undo;
       },
       defaultFailureMessage: 'fallback-failure',
     );

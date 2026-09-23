@@ -6,13 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/data/auth_service.dart'
     show authStateChangesProvider;
 import 'package:yamt/features/auth/presentation/auth_error_message_mapper.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_page_flow_service.dart';
 import 'package:yamt/features/settings/presentation/widgets/account_guest_card/account_guest_card.dart';
-import 'package:yamt/features/settings/presentation/widgets/account_status_snackbar/account_status_snackbar.dart';
 import 'package:yamt/features/settings/presentation/widgets/account_user_info_card/account_user_info_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/credential_conflict_dialog/credential_conflict_dialog.dart';
 import 'package:yamt/features/settings/presentation/widgets/link_email_password_dialog/link_email_password_dialog.dart';
@@ -66,10 +66,8 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       if (!mounted) {
         return;
       }
-      showAccountStatusSnackBar(
-        context,
-        message: l10n.accountPageDeleteSuccess,
-      );
+      ScaffoldMessenger.of(context)
+          .showAppSnackBar(l10n.accountPageDeleteSuccess);
     } on Object catch (error) {
       if (!mounted) {
         return;
@@ -84,19 +82,14 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   }
 
   void _showRecentLoginRequiredSnackBar(AppLocalizations l10n) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(l10n.authErrorRequiresRecentLogin),
-          action: SnackBarAction(
-            label: l10n.accountPageSignOut,
-            onPressed: () {
-              unawaited(_signOut(l10n));
-            },
-          ),
-        ),
-      );
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      l10n.authErrorRequiresRecentLogin,
+      tone: AppSnackBarTone.error,
+      action: (
+        label: l10n.accountPageSignOut,
+        onPressed: () => unawaited(_signOut(l10n)),
+      ),
+    );
   }
 
   Future<void> _linkGuestWithGoogle(AppLocalizations l10n) async {
@@ -106,10 +99,8 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           .linkGuestWithGoogle();
       if (!mounted) return;
       if (linked) {
-        showAccountStatusSnackBar(
-          context,
-          message: l10n.accountPageLinkSuccess,
-        );
+        ScaffoldMessenger.of(context)
+            .showAppSnackBar(l10n.accountPageLinkSuccess);
       }
     } on Object catch (error, stackTrace) {
       if (!mounted) return;
@@ -135,7 +126,8 @@ class _AccountPageState extends ConsumerState<AccountPage> {
       return;
     }
     if (dialogResult == true) {
-      showAccountStatusSnackBar(context, message: l10n.accountPageLinkSuccess);
+      ScaffoldMessenger.of(context)
+          .showAppSnackBar(l10n.accountPageLinkSuccess);
     }
   }
 
@@ -212,7 +204,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           .read(accountPageFlowServiceProvider)
           .resolveCredentialConflict(choice: choice, credential: credential);
       if (!mounted) return;
-      showAccountStatusSnackBar(context, message: successMessage);
+      ScaffoldMessenger.of(context).showAppSnackBar(successMessage);
     } on Object catch (error, stackTrace) {
       if (!mounted) return;
       _logAuthError(error: error, stackTrace: stackTrace);
@@ -273,7 +265,8 @@ class _AccountPageState extends ConsumerState<AccountPage> {
     final message = ref
         .read(authErrorMessageMapperProvider)
         .messageFor(l10n: l10n, error: error);
-    showAccountStatusSnackBar(context, message: message, isError: true);
+    ScaffoldMessenger.of(context)
+        .showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 
   Widget _buildContent({

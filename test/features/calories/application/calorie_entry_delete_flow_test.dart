@@ -478,6 +478,46 @@ void main() {
     },
   );
 
+  test('takeBackRestored consumes the returned stock again', () async {
+    final entry = _entry(
+      id: 'entry-1',
+      sourceInventoryItemId: 'inventory-1',
+      sourceInventoryAmountToRestore: 250,
+    );
+    final harness = _buildDeleteFlowHarness(entries: <CalorieEntry>[entry]);
+    await harness.load();
+    final amountBefore = harness.inventoryCurrentAmount;
+    await harness.deleteSingleEntry(restoreToInventory: true);
+
+    final takenBack = await harness.container
+        .read(inventoryCalorieEntryDeleteFlowProvider)
+        .takeBackRestored(entry);
+
+    expect(takenBack, isTrue);
+    expect(harness.inventoryCurrentAmount, amountBefore);
+  });
+
+  test('takeBackRestored removes returned meal portions again', () async {
+    final entry = _bundleEntry(
+      id: 'entry-1',
+      sourceMealId: 'meal-1',
+      consumedPortions: 1,
+    );
+    final harness = _buildDeleteFlowHarness(
+      entries: <CalorieEntry>[entry],
+      preparedMeals: <PreparedMeal>[_meal(id: 'meal-1', remainingPortions: 1)],
+    );
+    await harness.load(includePreparedMeals: true);
+    await harness.deleteSingleEntry(restoreToInventory: true);
+
+    final takenBack = await harness.container
+        .read(inventoryCalorieEntryDeleteFlowProvider)
+        .takeBackRestored(entry);
+
+    expect(takenBack, isTrue);
+    expect(harness.preparedMealRemainingPortions, 1);
+  });
+
   test('delete flow returns prepared meal bundle to inventory', () async {
     final harness = _buildDeleteFlowHarness(
       entries: <CalorieEntry>[

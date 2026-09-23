@@ -19,6 +19,7 @@ import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_shopping_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 
 part 'cooking_flow_wizard_controller.g.dart';
 
@@ -27,6 +28,8 @@ const _textListEquality = ListEquality<String>();
 /// Controls cookflow wizard state and session persistence.
 @riverpod
 class CookingFlowWizardController extends _$CookingFlowWizardController {
+  ShoppingListRevert? _introShoppingRevert;
+
   @override
   CookingFlowWizardState build() {
     return const CookingFlowWizardState.initial();
@@ -110,7 +113,7 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
         .toList(growable: false);
     state = state.copyWith(introShoppingRedirectInProgress: true);
 
-    final result = await ref
+    final (:result, :revert) = await ref
         .read(cookingFlowShoppingControllerProvider.notifier)
         .addLabels(labels);
     if (!ref.mounted ||
@@ -122,12 +125,31 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
       return result;
     }
 
+    _introShoppingRevert = revert;
     state = state.copyWith(
       introShoppingHandled: true,
       introShoppingRedirectInProgress: false,
       introShoppingBaselineInventoryItemIds: baselineInventoryItemIds,
     );
     return CookingFlowShoppingListActionResult.success;
+  }
+
+  /// Removes the entries that [addIntroShoppingItems] added and offers the
+  /// intro shopping step again.
+  Future<bool> undoIntroShoppingItems() async {
+    final revert = _introShoppingRevert;
+    if (revert == null) {
+      return false;
+    }
+    final reverted = await ref
+        .read(cookingFlowShoppingControllerProvider.notifier)
+        .revertAdd(revert);
+    if (!ref.mounted || !reverted) {
+      return false;
+    }
+    _introShoppingRevert = null;
+    state = state.copyWith(introShoppingHandled: false);
+    return true;
   }
 
   /// Resolves matching shopping-list labels.

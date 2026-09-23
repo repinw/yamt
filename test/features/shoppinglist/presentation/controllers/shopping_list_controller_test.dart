@@ -171,12 +171,41 @@ void main() {
     final added = await controller.addItemsByNames(<String>['Mehl', 'Milch']);
 
     final items = container.read(shoppingListControllerProvider).asData?.value;
-    expect(added, isTrue);
+    expect(added, isNotNull);
     expect(items?.map((item) => item.name), <String>['Mehl', 'Milch']);
     expect(repository.savedItems.map((item) => item.name), <String>[
       'Mehl',
       'Milch',
     ]);
+  });
+
+  test('revert removes new entries and restores merged ones', () async {
+    final repository = FakeShoppingListRepository();
+    final container = await _createContainer(repository);
+    final controller = container.read(shoppingListControllerProvider.notifier);
+    await controller.addItem(name: 'Mehl');
+
+    final revert = await controller.addItemsByNames(<String>['Mehl', 'Milch']);
+    expect(
+      container
+          .read(shoppingListControllerProvider)
+          .asData
+          ?.value
+          .map((item) => (item.name, item.quantity)),
+      [('Mehl', 2), ('Milch', 1)],
+    );
+
+    final reverted = await controller.revert(revert!);
+
+    expect(reverted, isTrue);
+    expect(
+      container
+          .read(shoppingListControllerProvider)
+          .asData
+          ?.value
+          .map((item) => (item.name, item.quantity)),
+      [('Mehl', 1)],
+    );
   });
 
   test('addItem keeps separate rows for different brands', () async {

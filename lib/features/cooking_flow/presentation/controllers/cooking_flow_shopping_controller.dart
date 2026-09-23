@@ -6,9 +6,16 @@ import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
 part 'cooking_flow_shopping_controller.g.dart';
+
+/// Outcome of [CookingFlowShoppingController.addLabels].
+typedef CookingFlowShoppingListAddResult = ({
+  CookingFlowShoppingListActionResult result,
+  ShoppingListRevert? revert,
+});
 
 /// Coordinates cookflow shopping-list side effects.
 @riverpod
@@ -16,8 +23,8 @@ class CookingFlowShoppingController extends _$CookingFlowShoppingController {
   @override
   void build() {}
 
-  /// Adds labels to shopping list.
-  Future<CookingFlowShoppingListActionResult> addLabels(
+  /// Adds labels to shopping list. On success, the returned revert undoes it.
+  Future<CookingFlowShoppingListAddResult> addLabels(
     List<String> labels,
   ) async {
     final keepAlive = ref.keepAlive();
@@ -34,7 +41,7 @@ class CookingFlowShoppingController extends _$CookingFlowShoppingController {
     }
   }
 
-  Future<CookingFlowShoppingListActionResult> _addLabels(
+  Future<CookingFlowShoppingListAddResult> _addLabels(
     List<String> labels,
   ) async {
     final controller = ref.read(shoppingListControllerProvider.notifier);
@@ -43,7 +50,10 @@ class CookingFlowShoppingController extends _$CookingFlowShoppingController {
         .where((label) => label.isNotEmpty)
         .toSet();
     if (!ref.mounted) {
-      return CookingFlowShoppingListActionResult.disposed;
+      return (
+        result: CookingFlowShoppingListActionResult.disposed,
+        revert: null,
+      );
     }
 
     final labelsToAdd = <String>[];
@@ -56,14 +66,37 @@ class CookingFlowShoppingController extends _$CookingFlowShoppingController {
       knownLabels.add(normalizedLabel);
     }
     if (labelsToAdd.isEmpty) {
-      return CookingFlowShoppingListActionResult.success;
+      return (
+        result: CookingFlowShoppingListActionResult.success,
+        revert: const <String, ShoppingListItem?>{},
+      );
     }
 
-    final added = await controller.addItemsByNames(labelsToAdd);
-    if (!added) {
-      return CookingFlowShoppingListActionResult.failed;
+    final revert = await controller.addItemsByNames(labelsToAdd);
+    return (
+      result: revert == null
+          ? CookingFlowShoppingListActionResult.failed
+          : CookingFlowShoppingListActionResult.success,
+      revert: revert,
+    );
+  }
+
+  /// Undoes an add recorded by [addLabels].
+  Future<bool> revertAdd(ShoppingListRevert revert) async {
+    final keepAlive = ref.keepAlive();
+    final subscription = ref.listen(
+      shoppingListControllerProvider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    try {
+      return await ref
+          .read(shoppingListControllerProvider.notifier)
+          .revert(revert);
+    } finally {
+      subscription.close();
+      keepAlive.close();
     }
-    return CookingFlowShoppingListActionResult.success;
   }
 
   /// Resolves matching shopping-list labels.

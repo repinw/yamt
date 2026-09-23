@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
 import 'package:yamt/features/inventory/application/'
@@ -780,11 +781,10 @@ class _InventoryItemEatSheetState
       );
     } on Object {
       if (mounted) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(l10n.inventoryItemActionFailed)),
-          );
+        ScaffoldMessenger.of(context).showAppSnackBar(
+          l10n.inventoryItemActionFailed,
+          tone: AppSnackBarTone.error,
+        );
       }
       return;
     }

@@ -2,10 +2,9 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-const _deleteUndoSnackBarDuration = Duration(seconds: 5);
 
 /// Handles item deletion with undo SnackBar feedback.
 class InventoryItemDeleteFlow {
@@ -24,43 +23,10 @@ class InventoryItemDeleteFlow {
       return deleted;
     }
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          duration: _deleteUndoSnackBarDuration,
-          persist: false,
-          content: Text(l10n.inventoryItemDeletedMessage),
-          action: SnackBarAction(
-            label: l10n.commonUndoAction,
-            onPressed: () {
-              unawaited(undoDelete(context: context, ref: ref));
-            },
-          ),
-        ),
-      );
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      l10n.inventoryItemDeletedMessage,
+      onUndo: controller.undoLastDeletedItem,
+    );
     return true;
-  }
-
-  /// Restores the last deleted item.
-  static Future<void> undoDelete({
-    required BuildContext context,
-    required WidgetRef ref,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final restored = await ref
-        .read(inventoryItemsControllerProvider.notifier)
-        .undoLastDeletedItem();
-    if (!context.mounted) {
-      return;
-    }
-    if (restored) {
-      messenger.hideCurrentSnackBar();
-      return;
-    }
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.inventoryItemActionFailed)));
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 
 const _coordinatorLogName = 'InventoryItemRowActionCoordinator';
 
@@ -25,17 +26,26 @@ class InventoryItemRowActionCoordinator {
   /// Whether mounted.
   final bool Function() isMounted;
 
-  /// The show snack bar.
-  final void Function(String message) showSnackBar;
+  /// Shows the action result.
+  ///
+  /// A non-null undo adds the undo action to the snack bar.
+  final void Function(
+    String message,
+    AppSnackBarTone tone,
+    Future<bool> Function()? undo,
+  )
+  showSnackBar;
 
   /// The default failure message.
   final String defaultFailureMessage;
 
-  /// Creates an instance.
+  /// Runs [action] and shows its result. [undo] reverts a successful action
+  /// from the success snack bar.
   Future<void> runAction(
     Future<bool> Function() action, {
     String? successMessage,
     String? failureMessage,
+    Future<bool> Function()? undo,
   }) async {
     if (isWorking() || !isMounted()) {
       return;
@@ -66,11 +76,15 @@ class InventoryItemRowActionCoordinator {
 
     if (success) {
       if (successMessage != null) {
-        showSnackBar(successMessage);
+        showSnackBar(successMessage, AppSnackBarTone.success, undo);
       }
       return;
     }
 
-    showSnackBar(failureMessage ?? defaultFailureMessage);
+    showSnackBar(
+      failureMessage ?? defaultFailureMessage,
+      AppSnackBarTone.error,
+      null,
+    );
   }
 }

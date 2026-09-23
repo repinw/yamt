@@ -63,6 +63,33 @@ class CalorieEntryInventoryRestoreCoordinator {
     return false;
   }
 
+  /// Takes the stock or portions that deleting [entry] returned out of the
+  /// inventory again. Undoes [restoreAndCompensate] after the entry is back.
+  Future<bool> takeBackRestored(CalorieEntry entry) async {
+    if (entry.canReturnPreparedMealToInventory) {
+      final mealId = entry.bundleSourcePreparedMealId?.trim();
+      final portions = entry.bundleConsumedPortions;
+      if (mealId == null || mealId.isEmpty || portions == null) {
+        return false;
+      }
+      return await rollbackRestoredPreparedMeal(
+        mealId: mealId,
+        discardedPortions: portions,
+      );
+    }
+
+    final itemId = entry.sourceInventoryItemId?.trim();
+    final amount = entry.sourceInventoryAmountToRestore;
+    if (itemId == null || itemId.isEmpty || amount == null) {
+      return false;
+    }
+    return await rollbackRestoredItem(
+      itemId,
+      amount,
+      consumedAt: entry.loggedAt,
+    );
+  }
+
   /// Restores inventory and executes [onDiaryDelete], rolling back on failure.
   Future<CalorieEntryDeleteResult> restoreAndCompensate({
     required CalorieEntry entry,

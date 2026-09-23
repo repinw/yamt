@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/presentation/controllers/'
     'health_connection_controller.dart';
@@ -89,7 +90,10 @@ class SettingsHealthConnectTile extends ConsumerWidget {
       return;
     }
     if (_shouldShowConnectFailure(status)) {
-      _showSnackBar(context, l10n.settingsHealthConnectFailed);
+      ScaffoldMessenger.of(context).showAppSnackBar(
+        l10n.settingsHealthConnectFailed,
+        tone: AppSnackBarTone.error,
+      );
     }
   }
 
@@ -138,7 +142,8 @@ class SettingsHealthConnectTile extends ConsumerWidget {
         .read(healthConnectionControllerProvider)
         .asData
         ?.value;
-    _showSnackBar(context, _disconnectMessage(l10n, result, nextStatus));
+    final (message, tone) = _disconnectMessage(l10n, result, nextStatus);
+    ScaffoldMessenger.of(context).showAppSnackBar(message, tone: tone);
   }
 
   bool _shouldShowConnectFailure(HealthConnectionStatus status) {
@@ -149,29 +154,28 @@ class SettingsHealthConnectTile extends ConsumerWidget {
         status.accessState == HealthDataAccessState.unsupported;
   }
 
-  String _disconnectMessage(
+  (String, AppSnackBarTone) _disconnectMessage(
     AppLocalizations l10n,
     HealthDisconnectResult result,
     HealthConnectionStatus? status,
   ) {
     return switch (result) {
-      HealthDisconnectResult.disconnected => switch (status?.platform) {
-        HealthPlatform.ios => l10n.settingsAppleHealthDisconnectSuccess,
-        _ => l10n.settingsHealthDisconnectSuccess,
-      },
-      HealthDisconnectResult.openedSettings =>
+      HealthDisconnectResult.disconnected => (
+        switch (status?.platform) {
+          HealthPlatform.ios => l10n.settingsAppleHealthDisconnectSuccess,
+          _ => l10n.settingsHealthDisconnectSuccess,
+        },
+        AppSnackBarTone.success,
+      ),
+      HealthDisconnectResult.openedSettings => (
         l10n.settingsHealthDisconnectOpenedSettings,
+        AppSnackBarTone.info,
+      ),
       HealthDisconnectResult.unsupported =>
         status?.errorMessage != null
-            ? l10n.settingsHealthDisconnectFailed
-            : l10n.healthUnsupportedHint,
+            ? (l10n.settingsHealthDisconnectFailed, AppSnackBarTone.error)
+            : (l10n.healthUnsupportedHint, AppSnackBarTone.info),
     };
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _tileTitle(AppLocalizations l10n, HealthConnectionStatus? status) {

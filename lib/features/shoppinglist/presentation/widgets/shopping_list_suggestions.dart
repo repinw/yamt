@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_suggestions.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_suggestion.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
@@ -35,12 +36,9 @@ class _ShoppingListSuggestionsState
     if (!mounted) return;
     setState(() => _pending.remove(key));
     if (!saved) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context)!.shoppingListAddFailedError,
-          ),
-        ),
+      ScaffoldMessenger.of(context).showAppSnackBar(
+        AppLocalizations.of(context)!.shoppingListAddFailedError,
+        tone: AppSnackBarTone.error,
       );
     }
   }

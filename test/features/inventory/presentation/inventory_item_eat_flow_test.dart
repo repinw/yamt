@@ -579,7 +579,23 @@ void main() {
               openedArgs = state.extra as CalorieEntryCreateArgs?;
               return Scaffold(
                 body: ElevatedButton(
-                  onPressed: () => context.pop(true),
+                  onPressed: () => context.pop(
+                    CalorieEntry.create(
+                      id: 'entry-1',
+                      userId: 'user-1',
+                      name: 'Milk',
+                      mealType: MealType.lunch,
+                      consumedAmount: 120,
+                      consumedUnit: ConsumedUnit.milliliters,
+                      per100Kcal: 60,
+                      per100Protein: 3.2,
+                      per100Carbs: 4.8,
+                      per100Fat: 1.5,
+                      loggedAt: loggedAt,
+                      createdAt: loggedAt,
+                      updatedAt: loggedAt,
+                    ),
+                  ),
                   child: const Text('save'),
                 ),
               );
@@ -601,6 +617,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Ins Tagebuch eingetragen'), findsOneWidget);
+      expect(find.text('Rückgängig'), findsOneWidget);
     },
   );
 }

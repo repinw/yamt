@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
@@ -150,13 +151,23 @@ class _MealTemplateImportReviewPageState
     });
 
     final l10n = AppLocalizations.of(context)!;
-    if (result.isSuccess) {
-      _showSnackBar(l10n.preparedMealTemplateSavedMessage);
+    final templateId = result.templateId;
+    if (result.isSuccess && templateId != null) {
+      final container = ProviderScope.containerOf(context, listen: false);
+      _showSnackBar(
+        l10n.preparedMealTemplateSavedMessage,
+        onUndo: () => container
+            .read(preparedMealTemplatesControllerProvider.notifier)
+            .deleteTemplate(templateId),
+      );
       context.pop();
       return;
     }
 
-    _showSnackBar(_saveFailureMessage(l10n, result));
+    _showSnackBar(
+      _saveFailureMessage(l10n, result),
+      tone: AppSnackBarTone.error,
+    );
   }
 
   String _saveFailureMessage(
@@ -172,9 +183,12 @@ class _MealTemplateImportReviewPageState
     };
   }
 
-  void _showSnackBar(String message) {
+  void _showSnackBar(
+    String message, {
+    AppSnackBarTone tone = AppSnackBarTone.success,
+    Future<bool> Function()? onUndo,
+  }) {
     ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+        .showAppSnackBar(message, tone: tone, onUndo: onUndo);
   }
 }

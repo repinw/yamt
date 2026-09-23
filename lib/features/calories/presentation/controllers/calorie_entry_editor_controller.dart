@@ -124,6 +124,24 @@ class CalorieEntryEditorController extends _$CalorieEntryEditorController {
     }
   }
 
+  /// Undoes [deleteEntry]: saves [entry] again and, when the delete returned
+  /// its stock, takes that stock out of the inventory again.
+  Future<bool> undoDelete(
+    CalorieEntry entry, {
+    required bool restoredToInventory,
+  }) async {
+    final saved = await saveEntry(entry: entry);
+    if (!saved || !restoredToInventory) {
+      return saved;
+    }
+    final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
+    if (await deleteFlow.takeBackRestored(entry)) {
+      return true;
+    }
+    await deleteFlow.deleteEntry(entry: entry, restoreToInventory: false);
+    return false;
+  }
+
   /// Discards uncommitted pending inventory consumption.
   Future<void> discardPendingInventory(String pendingConsumptionId) async {
     final discarder = ref.read(

@@ -7,6 +7,7 @@ import 'dart:typed_data';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -699,8 +700,7 @@ void _showInvalidPortionsSnackBar({
   required String message,
 }) {
   ScaffoldMessenger.of(scaffoldContext)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+      .showAppSnackBar(message, tone: AppSnackBarTone.error);
 }
 
 String _formatPortions(num portions, AppLocalizations l10n) {

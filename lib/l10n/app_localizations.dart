@@ -4019,6 +4019,12 @@ abstract class AppLocalizations {
   /// **'Entry removed'**
   String get caloriesEntryDeletedMessage;
 
+  /// No description provided for @caloriesEntryReturnedToInventoryMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Returned to inventory'**
+  String get caloriesEntryReturnedToInventoryMessage;
+
   /// No description provided for @caloriesEatAgainDoneMessage.
   ///
   /// In en, this message translates to:
@@ -5830,6 +5836,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Undo'**
   String get commonUndoAction;
+
+  /// No description provided for @commonUndoFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not undo.'**
+  String get commonUndoFailed;
 
   /// No description provided for @commonNotImplementedYet.
   ///

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -445,11 +446,10 @@ class _CalorieLearnedTdeeGoalSheetState
       _isSaving = false;
     });
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(l10n.caloriesLearnedTdeeSaveFailed)),
-      );
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      l10n.caloriesLearnedTdeeSaveFailed,
+      tone: AppSnackBarTone.error,
+    );
   }
 
   Future<void> _openFullReset() async {

@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_action_results.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -8,15 +9,21 @@ void showCalorieDebugDumpResultSnackBar({
   required CalorieDebugDumpPrintResult result,
 }) {
   final l10n = AppLocalizations.of(context)!;
-  final message = switch (result) {
-    CalorieDebugDumpPrintSuccess(:final rowCount) =>
+  final (message, tone) = switch (result) {
+    CalorieDebugDumpPrintSuccess(:final rowCount) => (
       l10n.caloriesDebugDumpPrinted(rowCount),
-    CalorieDebugDumpPrintCanceled() => l10n.caloriesDebugDumpCanceled,
-    CalorieDebugDumpPrintFailure() => l10n.caloriesDebugDumpFailed,
+      AppSnackBarTone.success,
+    ),
+    CalorieDebugDumpPrintCanceled() => (
+      l10n.caloriesDebugDumpCanceled,
+      AppSnackBarTone.info,
+    ),
+    CalorieDebugDumpPrintFailure() => (
+      l10n.caloriesDebugDumpFailed,
+      AppSnackBarTone.error,
+    ),
   };
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  ScaffoldMessenger.of(context).showAppSnackBar(message, tone: tone);
 }
 
 /// Shows the calorie settings debug dump result.
@@ -25,15 +32,17 @@ void showCalorieSettingsDebugDumpResultSnackBar({
   required CalorieSettingsDebugDumpPrintResult result,
 }) {
   final l10n = AppLocalizations.of(context)!;
-  final message = switch (result) {
-    CalorieSettingsDebugDumpPrintSuccess(:final entryCount) =>
+  final (message, tone) = switch (result) {
+    CalorieSettingsDebugDumpPrintSuccess(:final entryCount) => (
       l10n.caloriesSettingsDebugDumpPrinted(entryCount),
-    CalorieSettingsDebugDumpPrintFailure() =>
+      AppSnackBarTone.success,
+    ),
+    CalorieSettingsDebugDumpPrintFailure() => (
       l10n.caloriesSettingsDebugDumpFailed,
+      AppSnackBarTone.error,
+    ),
   };
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  ScaffoldMessenger.of(context).showAppSnackBar(message, tone: tone);
 }
 
 /// Shows the calorie weekly check-in debug dump result.
@@ -42,13 +51,15 @@ void showCalorieWeeklyCheckInDebugDumpResultSnackBar({
   required CalorieWeeklyCheckInDebugDumpPrintResult result,
 }) {
   final l10n = AppLocalizations.of(context)!;
-  final message = switch (result) {
-    CalorieWeeklyCheckInDebugDumpPrintSuccess() =>
+  final (message, tone) = switch (result) {
+    CalorieWeeklyCheckInDebugDumpPrintSuccess() => (
       l10n.caloriesWeeklyCheckInDebugDumpPrinted,
-    CalorieWeeklyCheckInDebugDumpPrintFailure() =>
+      AppSnackBarTone.success,
+    ),
+    CalorieWeeklyCheckInDebugDumpPrintFailure() => (
       l10n.caloriesWeeklyCheckInDebugDumpFailed,
+      AppSnackBarTone.error,
+    ),
   };
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  ScaffoldMessenger.of(context).showAppSnackBar(message, tone: tone);
 }

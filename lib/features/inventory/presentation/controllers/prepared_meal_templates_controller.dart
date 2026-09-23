@@ -419,6 +419,22 @@ class PreparedMealTemplatesController
     }).whenComplete(keepAliveLink.close);
   }
 
+  /// Saves [template] back as it was before an update or delete.
+  Future<bool> restoreTemplate(PreparedMeal template) {
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(() async {
+      final currentTemplates = await _currentTemplates();
+      return await _saveTemplates(
+        previousTemplates: currentTemplates,
+        nextTemplates: [
+          for (final current in currentTemplates)
+            if (current.id != template.id) current,
+          template,
+        ],
+      );
+    }).whenComplete(keepAliveLink.close);
+  }
+
   /// Set recipe ingredient ignored.
   Future<bool> setRecipeIngredientIgnored({
     required String templateId,

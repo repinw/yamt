@@ -43,7 +43,15 @@ class _FakeCalorieEntriesController extends CalorieEntriesController {
 class _FakeCalorieEntryDeleteFlow implements CalorieEntryDeleteFlow {
   bool canRestore = true;
   bool deleteSuccess = true;
+  bool takeBackSuccess = true;
   CalorieEntry? deletedEntry;
+  CalorieEntry? takenBackEntry;
+
+  @override
+  Future<bool> takeBackRestored(CalorieEntry entry) async {
+    takenBackEntry = entry;
+    return takeBackSuccess;
+  }
 
   @override
   Future<bool> canRestoreSource(CalorieEntry entry) async => canRestore;
@@ -237,6 +245,52 @@ void main() {
       expect(deleteFlow.deletedEntry?.id, 'entry-4');
     });
 
+    test('undoDelete saves the entry and takes the stock back', () async {
+      final entry = _undoEntry();
+      final controller = container.read(
+        calorieEntryEditorControllerProvider.notifier,
+      );
+
+      final undone = await controller.undoDelete(
+        entry,
+        restoredToInventory: true,
+      );
+
+      expect(undone, isTrue);
+      expect(savedEntry?.id, 'entry-5');
+      expect(deleteFlow.takenBackEntry?.id, 'entry-5');
+      expect(deleteFlow.deletedEntry, isNull);
+    });
+
+    test('undoDelete removes the entry again when the stock stays', () async {
+      deleteFlow.takeBackSuccess = false;
+      final controller = container.read(
+        calorieEntryEditorControllerProvider.notifier,
+      );
+
+      final undone = await controller.undoDelete(
+        _undoEntry(),
+        restoredToInventory: true,
+      );
+
+      expect(undone, isFalse);
+      expect(deleteFlow.deletedEntry?.id, 'entry-5');
+    });
+
+    test('undoDelete without a restore only saves the entry', () async {
+      final controller = container.read(
+        calorieEntryEditorControllerProvider.notifier,
+      );
+
+      final undone = await controller.undoDelete(
+        _undoEntry(),
+        restoredToInventory: false,
+      );
+
+      expect(undone, isTrue);
+      expect(deleteFlow.takenBackEntry, isNull);
+    });
+
     test('discardPendingInventory invokes discarder', () async {
       var discardedId = '';
       final customContainer = ProviderContainer(
@@ -258,4 +312,25 @@ void main() {
       expect(discardedId, 'pending-456');
     });
   });
+}
+
+CalorieEntry _undoEntry() {
+  final loggedAt = DateTime(2026, 9, 23, 12);
+  return CalorieEntry.create(
+    id: 'entry-5',
+    userId: 'user-1',
+    name: 'Milk',
+    mealType: MealType.lunch,
+    consumedAmount: 200,
+    consumedUnit: ConsumedUnit.milliliters,
+    per100Kcal: 60,
+    per100Protein: 3.2,
+    per100Carbs: 4.8,
+    per100Fat: 1.5,
+    sourceInventoryItemId: 'milk',
+    sourceInventoryAmountToRestore: 200,
+    loggedAt: loggedAt,
+    createdAt: loggedAt,
+    updatedAt: loggedAt,
+  );
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_stock_adjustment.dart';
@@ -33,13 +34,18 @@ abstract final class CalorieEntryDetailsActions {
     }
     _showResult(
       messenger,
-      l10n,
       succeeded: saved,
       successMessage: l10n.caloriesEntryUpdatedMessage,
       failureMessage: l10n.caloriesSaveFailed,
       onUndo: () async {
-        await controller.saveEntry(entry: previous, isEditing: true);
-        onUndone();
+        final restored = await controller.saveEntry(
+          entry: previous,
+          isEditing: true,
+        );
+        if (restored) {
+          onUndone();
+        }
+        return restored;
       },
     );
     return saved;
@@ -65,16 +71,18 @@ abstract final class CalorieEntryDetailsActions {
     }
     _showResult(
       messenger,
-      l10n,
       succeeded: result.saved,
       successMessage: _amountChangeMessage(l10n, result.status),
       failureMessage: l10n.caloriesSaveFailed,
       onUndo: () async {
-        await controller.changeAmount(
+        final undo = await controller.changeAmount(
           entry: result.entry,
           amount: entry.consumedAmount,
         );
-        onUndone();
+        if (undo.saved) {
+          onUndone();
+        }
+        return undo.saved;
       },
     );
     return result.saved;
@@ -100,17 +108,21 @@ abstract final class CalorieEntryDetailsActions {
     }
     _showResult(
       messenger,
-      l10n,
       succeeded: saved,
       successMessage: l10n.caloriesEatAgainDoneMessage,
       failureMessage: l10n.caloriesSaveFailed,
-      onUndo: () =>
-          controller.deleteEntry(entry: repeated, restoreToInventory: false),
+      onUndo: () async {
+        final result = await controller.deleteEntry(
+          entry: repeated,
+          restoreToInventory: false,
+        );
+        return result.isSuccess;
+      },
     );
   }
 
-  /// Removes [entry] and closes the sheet. Entries with stock to return go
-  /// through the return-to-inventory dialogs instead of an undo.
+  /// Removes [entry] and closes the sheet. Entries with stock to return ask
+  /// first whether the stock goes back to the inventory.
   static Future<void> remove(
     BuildContext context, {
     required CalorieEntryEditorController controller,
@@ -146,7 +158,6 @@ abstract final class CalorieEntryDetailsActions {
     }
     _showResult(
       messenger,
-      l10n,
       succeeded: result.isSuccess,
       successMessage: l10n.caloriesEntryDeletedMessage,
       failureMessage: l10n.caloriesDeleteFailed,
@@ -170,25 +181,16 @@ abstract final class CalorieEntryDetailsActions {
   }
 
   static void _showResult(
-    ScaffoldMessengerState messenger,
-    AppLocalizations l10n, {
+    ScaffoldMessengerState messenger, {
     required bool succeeded,
     required String successMessage,
     required String failureMessage,
-    required Future<void> Function() onUndo,
+    required Future<bool> Function() onUndo,
   }) {
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(succeeded ? successMessage : failureMessage),
-          action: succeeded
-              ? SnackBarAction(
-                  label: l10n.commonUndoAction,
-                  onPressed: () => unawaited(onUndo()),
-                )
-              : null,
-        ),
-      );
+    if (!succeeded) {
+      messenger.showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
+      return;
+    }
+    messenger.showAppSnackBar(successMessage, onUndo: onUndo);
   }
 }

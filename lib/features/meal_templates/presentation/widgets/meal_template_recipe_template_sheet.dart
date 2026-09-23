@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -125,14 +126,8 @@ class _PreparedMealRecipeTemplateSheetState
               _recipeUrlErrorText = null;
             });
 
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  l10n.preparedMealTemplateClipboardPasteSuccess(host),
-                ),
-                behavior: SnackBarBehavior.floating,
-                duration: const Duration(seconds: 2),
-              ),
+            ScaffoldMessenger.of(context).showAppSnackBar(
+              l10n.preparedMealTemplateClipboardPasteSuccess(host),
             );
           }
           return;

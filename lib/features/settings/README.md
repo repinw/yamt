@@ -7,7 +7,7 @@ settings.
 ## Owns
 
 - Settings and account pages under `presentation/pages/`.
-- Settings tiles, account cards, account dialogs, and snackbar helpers under
+- Settings tiles, account cards, and account dialogs under
   `presentation/widgets/<widget_name>/`.
 - Account page flow and account controller state under `presentation/controllers/`.
 

@@ -18,7 +18,7 @@ void main() {
         .read(cookingFlowShoppingControllerProvider.notifier)
         .addLabels(<String>['Mehl', 'Milch']);
 
-    expect(result, CookingFlowShoppingListActionResult.success);
+    expect(result.result, CookingFlowShoppingListActionResult.success);
     expect(repository.savedItems.map((item) => item.name), <String>[
       'Mehl',
       'Milch',
@@ -37,8 +37,8 @@ void main() {
     final firstResult = await controller.addLabels(<String>['Mehl', 'Milch']);
     final retryResult = await controller.addLabels(<String>['Mehl', 'Milch']);
 
-    expect(firstResult, CookingFlowShoppingListActionResult.failed);
-    expect(retryResult, CookingFlowShoppingListActionResult.success);
+    expect(firstResult.result, CookingFlowShoppingListActionResult.failed);
+    expect(retryResult.result, CookingFlowShoppingListActionResult.success);
     expect(repository.savedItems.map((item) => item.name), <String>[
       'Mehl',
       'Milch',

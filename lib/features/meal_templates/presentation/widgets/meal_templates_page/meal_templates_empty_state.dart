@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
@@ -136,8 +137,7 @@ class MealTemplatesEmptyState extends ConsumerWidget {
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+        .showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 }
 

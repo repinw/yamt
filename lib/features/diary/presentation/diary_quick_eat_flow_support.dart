@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
@@ -40,18 +41,6 @@ void showDiaryQuickEatSnackBar(BuildContext context, String message) {
   if (!context.mounted) {
     return;
   }
-  showDiaryQuickEatSnackBarWithMessenger(
-    ScaffoldMessenger.of(context),
-    message,
-  );
-}
-
-/// Shows a SnackBar using an existing Scaffold messenger.
-void showDiaryQuickEatSnackBarWithMessenger(
-  ScaffoldMessengerState messenger,
-  String message,
-) {
-  messenger
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+  ScaffoldMessenger.of(context)
+      .showAppSnackBar(message, tone: AppSnackBarTone.error);
 }

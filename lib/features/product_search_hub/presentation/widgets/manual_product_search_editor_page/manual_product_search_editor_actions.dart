@@ -1,6 +1,7 @@
 import 'dart:async' show unawaited;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -134,19 +135,19 @@ Future<void> startManualProductDraftWithVoiceCleanup({
   controller.startManualProductDraft();
 }
 
-/// Shows a standard snackbar on the nearest ScaffoldMessenger.
+/// Shows an editor message on the nearest ScaffoldMessenger.
 void showEditorSnackBar(
   BuildContext context,
   String message, {
-  SnackBarAction? action,
+  required AppSnackBarTone tone,
+  AppSnackBarAction? action,
 }) {
   ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message), action: action));
+      .showAppSnackBar(message, tone: tone, action: action);
 }
 
 /// Builds the optional initial info action (e.g. nutrition label OCR scan).
-SnackBarAction? buildEditorInitialInfoAction({
+AppSnackBarAction? buildEditorInitialInfoAction({
   required BuildContext context,
   required bool canScanNutritionLabel,
   required VoidCallback onScanNutritionLabel,
@@ -154,7 +155,7 @@ SnackBarAction? buildEditorInitialInfoAction({
   if (!canScanNutritionLabel) {
     return null;
   }
-  return SnackBarAction(
+  return (
     label: AppLocalizations.of(context)!.caloriesBarcodeNotFoundOcrAction,
     onPressed: onScanNutritionLabel,
   );
@@ -174,16 +175,20 @@ void closeEditorPage<T extends Object?>({
 void scheduleEditorInitialInfoMessage({
   required String? message,
   required bool Function() isMounted,
-  required void Function(String message, {SnackBarAction? action})
-  onShowSnackBar,
-  SnackBarAction? Function()? actionBuilder,
+  required BuildContext context,
+  AppSnackBarAction? Function()? actionBuilder,
 }) {
   if (message == null) {
     return;
   }
   WidgetsBinding.instance.addPostFrameCallback((_) {
     if (isMounted()) {
-      onShowSnackBar(message, action: actionBuilder?.call());
+      showEditorSnackBar(
+        context,
+        message,
+        tone: AppSnackBarTone.info,
+        action: actionBuilder?.call(),
+      );
     }
   });
 }

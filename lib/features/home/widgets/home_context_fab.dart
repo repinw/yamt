@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Floating action button for shell-level home actions.
@@ -42,7 +43,6 @@ class HomeContextFab extends StatelessWidget {
 
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+        .showAppSnackBar(message, tone: AppSnackBarTone.info);
   }
 }

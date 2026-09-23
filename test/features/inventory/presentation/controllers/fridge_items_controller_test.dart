@@ -13,6 +13,7 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
 class _FakeFridgeItemRepository implements InventoryItemRepository {
@@ -118,7 +119,7 @@ class _RecordingShoppingListController extends ShoppingListController {
   }
 
   @override
-  Future<bool> addItem({
+  Future<ShoppingListRevert?> addItemWithRevert({
     required String name,
     String? brand,
     int quantity = 1,
@@ -130,7 +131,7 @@ class _RecordingShoppingListController extends ShoppingListController {
       quantity: quantity,
       estimatedUnitPrice: estimatedUnitPrice,
     );
-    return true;
+    return const <String, ShoppingListItem?>{};
   }
 }
 
@@ -579,7 +580,7 @@ void main() {
             ),
           );
 
-      expect(result, isTrue);
+      expect(result, isNotNull);
       expect(shoppingListController._addItemInput, isNotNull);
       expect(shoppingListController._addItemInput!.name, 'Milk');
       expect(shoppingListController._addItemInput!.brand, 'Acme');

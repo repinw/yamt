@@ -109,6 +109,9 @@ class KitchenUtensilMutationService {
   }
 
   /// Updates a kitchen utensil.
+  ///
+  /// A replaced image stays in storage so an undo can restore it. The caller
+  /// deletes it with [deleteImage] once the undo is no longer offered.
   Future<KitchenUtensilSaveResult> updateUtensil({
     required List<KitchenUtensil> previousUtensils,
     required KitchenUtensilMountedReader canWrite,
@@ -196,19 +199,56 @@ class KitchenUtensilMutationService {
       );
     }
 
-    final oldImageStoragePath = currentUtensil.imageStoragePath;
-    final shouldDeleteOldImage =
-        imageChanged &&
-        oldImageStoragePath != null &&
-        oldImageStoragePath != nextImageStoragePath;
-    if (shouldDeleteOldImage) {
-      unawaited(_repository.deleteImage(oldImageStoragePath));
-    }
     return KitchenUtensilSaveResult.success(trimmedUtensilId);
   }
 
-  /// Deletes a kitchen utensil.
-  Future<bool> deleteUtensil({
+  /// Saves [utensil] back into the list, replacing its current version.
+  ///
+  /// Returns the image path of the replaced version when it differs, so the
+  /// caller can delete that image.
+  Future<({bool restored, String? replacedImagePath})> restoreUtensil({
+    required List<KitchenUtensil> previousUtensils,
+    required KitchenUtensilMountedReader canWrite,
+    required KitchenUtensilListWriter writeUtensils,
+    required KitchenUtensil utensil,
+  }) async {
+    final currentIndex = previousUtensils.indexWhere(
+      (current) => current.id == utensil.id,
+    );
+    final nextUtensils = List<KitchenUtensil>.from(previousUtensils);
+    String? replacedImagePath;
+    if (currentIndex < 0) {
+      nextUtensils.add(utensil);
+    } else {
+      final currentImagePath = previousUtensils[currentIndex].imageStoragePath;
+      if (currentImagePath != utensil.imageStoragePath) {
+        replacedImagePath = currentImagePath;
+      }
+      nextUtensils[currentIndex] = utensil;
+    }
+    final restored = await _saveUtensilMutation(
+      previousUtensils: previousUtensils,
+      nextUtensils: nextUtensils,
+      utensil: utensil,
+      canWrite: canWrite,
+      writeUtensils: writeUtensils,
+    );
+    return (
+      restored: restored,
+      replacedImagePath: restored ? replacedImagePath : null,
+    );
+  }
+
+  /// Deletes a stored utensil image.
+  Future<bool> deleteImage(String imageStoragePath) {
+    return _repository.deleteImage(imageStoragePath);
+  }
+
+  /// Deletes a kitchen utensil and returns it, or null on failure.
+  ///
+  /// The image stays in storage so an undo can restore the utensil. The
+  /// caller deletes it with [deleteImage] once the undo is no longer offered.
+  Future<KitchenUtensil?> deleteUtensil({
     required List<KitchenUtensil> previousUtensils,
     required KitchenUtensilMountedReader canWrite,
     required KitchenUtensilListWriter writeUtensils,
@@ -216,14 +256,14 @@ class KitchenUtensilMutationService {
   }) async {
     final trimmedUtensilId = utensilId.trim();
     if (trimmedUtensilId.isEmpty) {
-      return false;
+      return null;
     }
 
     final utensilIndex = previousUtensils.indexWhere(
       (utensil) => utensil.id == trimmedUtensilId,
     );
     if (utensilIndex < 0) {
-      return false;
+      return null;
     }
 
     final utensil = previousUtensils[utensilIndex];
@@ -239,14 +279,9 @@ class KitchenUtensilMutationService {
       if (canWrite()) {
         writeUtensils(sortKitchenUtensils(previousUtensils));
       }
-      return false;
+      return null;
     }
-
-    final imageStoragePath = utensil.imageStoragePath;
-    if (imageStoragePath != null) {
-      unawaited(_repository.deleteImage(imageStoragePath));
-    }
-    return true;
+    return utensil;
   }
 
   Future<String?> _uploadNewImage({

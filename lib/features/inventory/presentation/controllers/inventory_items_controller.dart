@@ -30,6 +30,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
 part 'inventory_items_controller.g.dart';
@@ -839,7 +840,7 @@ class InventoryItemsController extends _$InventoryItemsController {
   }
 
   /// Buy again item.
-  Future<bool> buyAgainItem(InventoryItem item) {
+  Future<ShoppingListRevert?> buyAgainItem(InventoryItem item) {
     return addSourceItemToShoppingList(
       item: (
         name: item.name,
@@ -847,8 +848,15 @@ class InventoryItemsController extends _$InventoryItemsController {
         initialQuantity: item.initialQuantity,
         unitPrice: item.unitPrice,
       ),
-      addItem: ref.read(shoppingListControllerProvider.notifier).addItem,
+      addItem: ref
+          .read(shoppingListControllerProvider.notifier)
+          .addItemWithRevert,
     );
+  }
+
+  /// Undoes [buyAgainItem].
+  Future<bool> undoBuyAgainItem(ShoppingListRevert revert) {
+    return ref.read(shoppingListControllerProvider.notifier).revert(revert);
   }
 
   /// Update item.

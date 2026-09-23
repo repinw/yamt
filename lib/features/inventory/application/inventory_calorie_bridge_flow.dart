@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
@@ -115,8 +116,8 @@ class InventoryCalorieBridgeFlow {
     return null;
   }
 
-  /// Save direct entry.
-  static Future<bool> saveDirectEntry({
+  /// Saves the entry without the editor and returns it, or null on failure.
+  static Future<CalorieEntry?> saveDirectEntry({
     required ProviderContainer container,
     required CalorieProductProfile profile,
     required CalorieInventoryCreateContext inventoryContext,
@@ -128,7 +129,7 @@ class InventoryCalorieBridgeFlow {
   }) async {
     final user = container.read(firebaseAuthProvider).currentUser;
     if (user == null) {
-      return false;
+      return null;
     }
 
     final now = DateTime.now();
@@ -168,9 +169,21 @@ class InventoryCalorieBridgeFlow {
             );
       },
     );
-    if (saved) {
-      onDirectCalorieEntrySaved?.call(entry.id);
+    if (!saved) {
+      return null;
     }
-    return saved;
+    onDirectCalorieEntrySaved?.call(entry.id);
+    return entry;
+  }
+
+  /// Undoes an eat: deletes [entry] and returns its amount to the inventory.
+  static Future<bool> undoEat({
+    required ProviderContainer container,
+    required CalorieEntry entry,
+  }) async {
+    final result = await container
+        .read(calorieEntryDeleteFlowProvider)
+        .deleteEntry(entry: entry, restoreToInventory: true);
+    return result.isSuccess;
   }
 }

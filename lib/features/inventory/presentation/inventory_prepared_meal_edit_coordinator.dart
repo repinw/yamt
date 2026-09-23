@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -133,6 +134,11 @@ class InventoryPreparedMealEditCoordinator {
     required String mealId,
     required PreparedMealEditSheetResult result,
   }) async {
+    final previous = ref
+        .read(preparedMealsControllerProvider)
+        .asData
+        ?.value
+        .firstWhereOrNull((meal) => meal.id == mealId);
     final imageAssetId = await _saveImageBytesIfChanged(ref, result);
     final saved = await ref
         .read(preparedMealsControllerProvider.notifier)
@@ -148,9 +154,27 @@ class InventoryPreparedMealEditCoordinator {
       return saved;
     }
 
-    _showSnackBar(
-      context,
+    final container = ProviderScope.containerOf(context, listen: false);
+    ScaffoldMessenger.of(context).showAppSnackBar(
       AppLocalizations.of(context)!.preparedMealUpdatedMessage,
+      onUndo: previous == null
+          ? null
+          : () => container
+                .read(preparedMealsControllerProvider.notifier)
+                .updatePreparedMealDetails(
+                  mealId: previous.id,
+                  name: previous.name,
+                  imageChanged: result.imageChanged,
+                  imageAssetId: previous.imageAssetId,
+                  totalPortions: previous.totalPortions,
+                  items: [
+                    for (final component in previous.components)
+                      PreparedMealItemInput(
+                        itemId: component.inventoryItemId,
+                        usedAmount: component.usedAmount,
+                      ),
+                  ],
+                ),
     );
     return true;
   }
@@ -177,24 +201,23 @@ class InventoryPreparedMealEditCoordinator {
     required WidgetRef ref,
     required PreparedMeal meal,
   }) async {
-    final result = await ref
-        .read(preparedMealTemplatesControllerProvider.notifier)
-        .saveTemplateFromMeal(meal);
-    if (!result.isSuccess || !context.mounted) {
+    final templatesController = ref.read(
+      preparedMealTemplatesControllerProvider.notifier,
+    );
+    final result = await templatesController.saveTemplateFromMeal(meal);
+    final templateId = result.templateId;
+    if (!result.isSuccess || templateId == null || !context.mounted) {
       return result.isSuccess;
     }
 
-    _showSnackBar(
-      context,
+    final container = ProviderScope.containerOf(context, listen: false);
+    ScaffoldMessenger.of(context).showAppSnackBar(
       AppLocalizations.of(context)!.preparedMealTemplateSavedMessage,
+      onUndo: () => container
+          .read(preparedMealTemplatesControllerProvider.notifier)
+          .deleteTemplate(templateId),
     );
     return true;
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 
   PreparedMealEditSheetResult _addSelectedItemsToEditResult({

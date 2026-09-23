@@ -11,7 +11,6 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/provider/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_controller_access.dart';
@@ -84,10 +83,9 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
             operationName: 'rollback restored prepared meal',
             fallbackValue: false,
             operation: (controller) {
-              return controller.throwAwayPreparedMeal(
+              return controller.takePreparedMealPortions(
                 mealId: mealId,
-                discardedPortions: discardedPortions,
-                reason: InventoryDiscardReason.other,
+                portions: discardedPortions,
               );
             },
           );

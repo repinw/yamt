@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/presentation/controllers/auth_form_controller.dart';
 import 'package:yamt/features/shared/widgets/auth_form_components.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -41,9 +42,9 @@ class _LoginFormState extends ConsumerState<LoginForm> {
 
   void _showForgotPasswordNotice() {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l10n.commonNotImplementedYet)));
+    ScaffoldMessenger.of(
+      context,
+    ).showAppSnackBar(l10n.commonNotImplementedYet, tone: AppSnackBarTone.info);
   }
 
   @override

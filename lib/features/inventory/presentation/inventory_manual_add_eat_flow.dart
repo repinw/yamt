@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
@@ -117,6 +118,5 @@ void showInventoryManualAddSnackBar({
   required String message,
 }) {
   ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(SnackBar(content: Text(message)));
+      .showAppSnackBar(message, tone: AppSnackBarTone.error);
 }

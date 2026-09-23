@@ -81,7 +81,8 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
     );
   }
 
-  /// Updates a utensil.
+  /// Updates a utensil. A replaced image stays in storage for an undo; delete
+  /// it with [discardImage] afterwards.
   Future<KitchenUtensilSaveResult> updateUtensil({
     required String utensilId,
     required bool imageChanged,
@@ -105,11 +106,12 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
     );
   }
 
-  /// Deletes a utensil.
-  Future<bool> deleteUtensil(String utensilId) {
-    return _runMutation(
+  /// Deletes a utensil and returns it, or null on failure. Its image stays in
+  /// storage for an undo; delete it with [discardImage] afterwards.
+  Future<KitchenUtensil?> deleteUtensil(String utensilId) {
+    return _runMutation<KitchenUtensil?>(
       name: 'delete',
-      fallbackValue: false,
+      fallbackValue: null,
       operation: (service, previousUtensils) => service.deleteUtensil(
         previousUtensils: previousUtensils,
         canWrite: () => ref.mounted,
@@ -117,6 +119,34 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
         utensilId: utensilId,
       ),
     );
+  }
+
+  /// Saves [utensil] back as it was before an update or delete, and deletes
+  /// the image of the version it replaces.
+  Future<bool> restoreUtensil(KitchenUtensil utensil) {
+    return _runMutation(
+      name: 'restore',
+      fallbackValue: false,
+      operation: (service, previousUtensils) async {
+        final (:restored, :replacedImagePath) = await service.restoreUtensil(
+          previousUtensils: previousUtensils,
+          canWrite: () => ref.mounted,
+          writeUtensils: _writeUtensils,
+          utensil: utensil,
+        );
+        if (replacedImagePath != null) {
+          unawaited(service.deleteImage(replacedImagePath));
+        }
+        return restored;
+      },
+    );
+  }
+
+  /// Deletes an image that an update or delete left in storage.
+  Future<bool> discardImage(String imageStoragePath) {
+    return ref
+        .read(kitchenUtensilMutationServiceProvider)
+        .deleteImage(imageStoragePath);
   }
 
   Future<T> _runMutation<T>({

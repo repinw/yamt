@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_selection_controller.dart';
@@ -64,11 +65,19 @@ Future<void> runPreparedMealCreationFlow({
   }
 
   final l10n = AppLocalizations.of(context)!;
-  ScaffoldMessenger.of(context)
-    ..hideCurrentSnackBar()
-    ..showSnackBar(
-      SnackBar(content: Text(_creationFeedbackMessage(l10n, creationResult))),
-    );
+  final mealId = creationResult.preparedMealId;
+  final container = ProviderScope.containerOf(context, listen: false);
+  ScaffoldMessenger.of(context).showAppSnackBar(
+    _creationFeedbackMessage(l10n, creationResult),
+    tone: creationResult.isSuccess
+        ? AppSnackBarTone.success
+        : AppSnackBarTone.error,
+    onUndo: !creationResult.isSuccess || mealId == null
+        ? null
+        : () => container
+              .read(preparedMealsControllerProvider.notifier)
+              .unbundlePreparedMeal(mealId),
+  );
 
   if (!creationResult.isSuccess) {
     return;

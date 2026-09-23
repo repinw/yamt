@@ -127,7 +127,7 @@ void main() {
   });
 
   test(
-    'updateUtensil replaces image and deletes old image after save',
+    'updateUtensil replaces image and keeps the old image for an undo',
     () async {
       final repository = _FakeKitchenUtensilRepository();
       final service = _service(repository: repository, ids: ['image-new']);
@@ -154,11 +154,29 @@ void main() {
         repository.savedUtensils.single.imageStoragePath,
         'users/owner-1/kitchen_utensils/pot-1/images/image-new.jpg',
       );
-      expect(repository.deletedImagePaths, [
-        'users/owner-1/kitchen_utensils/pot-1/old.jpg',
-      ]);
+      expect(repository.deletedImagePaths, isEmpty);
     },
   );
+
+  test('restoreUtensil puts the previous version back', () async {
+    final repository = _FakeKitchenUtensilRepository();
+    final service = _service(repository: repository, ids: const []);
+    final previous = _utensil(imageStoragePath: 'old.jpg');
+    final current = previous.copyWith(imageStoragePath: 'new.jpg');
+    List<KitchenUtensil>? written;
+
+    final result = await service.restoreUtensil(
+      previousUtensils: [current],
+      canWrite: () => true,
+      writeUtensils: (utensils) => written = utensils,
+      utensil: previous,
+    );
+
+    expect(result.restored, isTrue);
+    expect(result.replacedImagePath, 'new.jpg');
+    expect(repository.savedUtensils.single.imageStoragePath, 'old.jpg');
+    expect(written?.single.imageStoragePath, 'old.jpg');
+  });
 
   test('deleteUtensil rolls back optimistic state when delete fails', () async {
     final repository = _FakeKitchenUtensilRepository()..deleteSucceeds = false;
@@ -173,7 +191,7 @@ void main() {
       utensilId: 'pot-1',
     );
 
-    expect(deleted, isFalse);
+    expect(deleted, isNull);
     expect(writtenLists.first, isEmpty);
     expect(writtenLists.last, previous);
   });

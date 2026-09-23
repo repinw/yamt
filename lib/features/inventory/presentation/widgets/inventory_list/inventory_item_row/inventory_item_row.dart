@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -39,6 +40,7 @@ import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_item_row_view_data.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_nutrition_strip.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory item row.
@@ -103,8 +105,6 @@ class InventoryItemRow extends ConsumerStatefulWidget {
 }
 
 class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
-  static const _removeUndoSnackBarDuration = Duration(seconds: 5);
-
   var _isExpanded = false;
   var _isWorking = false;
   var _isEditSheetOpen = false;
@@ -245,11 +245,16 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
 
   void _onAddToShoppingListPressed() {
     final controller = ref.read(inventoryItemsControllerProvider.notifier);
+    ShoppingListRevert? revert;
     unawaited(
       _actionCoordinator.runAction(
-        () => controller.buyAgainItem(widget.item),
+        () async {
+          revert = await controller.buyAgainItem(widget.item);
+          return revert != null;
+        },
         successMessage: widget.l10n.inventoryItemBuyAgainSucceeded,
         failureMessage: widget.l10n.inventoryItemActionFailed,
+        undo: () => controller.undoBuyAgainItem(revert!),
       ),
     );
   }
@@ -326,10 +331,12 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       }
 
       final controller = ref.read(inventoryItemsControllerProvider.notifier);
+      final previousItem = widget.item;
       await _actionCoordinator.runAction(
         () => controller.updateItem(editedItem),
         successMessage: widget.l10n.inventoryItemUpdatedMessage,
         failureMessage: widget.l10n.inventoryItemActionFailed,
+        undo: () => controller.updateItem(previousItem),
       );
     } finally {
       _isEditSheetOpen = false;
@@ -524,49 +531,23 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     await WidgetsBinding.instance.endOfFrame;
   }
 
-  void _showActionSnackBar(String message) {
+  void _showActionSnackBar(
+    String message, [
+    AppSnackBarTone tone = AppSnackBarTone.error,
+    Future<bool> Function()? undo,
+  ]) {
     if (!mounted) {
       return;
     }
     ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+        .showAppSnackBar(message, tone: tone, onUndo: undo);
   }
 
   void _showUndoSnackBar({
     required String message,
     required Future<bool> Function() onUndo,
   }) {
-    if (!mounted) {
-      return;
-    }
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          duration: _removeUndoSnackBarDuration,
-          persist: false,
-          content: Text(message),
-          action: SnackBarAction(
-            label: widget.l10n.commonUndoAction,
-            onPressed: () {
-              unawaited(_runUndoAction(onUndo));
-            },
-          ),
-        ),
-      );
-  }
-
-  Future<void> _runUndoAction(Future<bool> Function() onUndo) async {
-    final restored = await onUndo();
-    if (!mounted) {
-      return;
-    }
-    if (restored) {
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      return;
-    }
-    _showActionSnackBar(widget.l10n.inventoryItemActionFailed);
+    _showActionSnackBar(message, AppSnackBarTone.success, onUndo);
   }
 
   _ItemAmountInputConfig? _buildInputConfig(InventoryItem item) {

@@ -11,7 +11,7 @@ typedef ShoppingListItemMatchKey = ({
 });
 
 /// Defines shopping list add item typedef.
-typedef ShoppingListAddItem = Future<bool> Function({
+typedef ShoppingListAddItem<T> = Future<T> Function({
   required String name,
   String? brand,
   int quantity,
@@ -42,9 +42,9 @@ bool sourceItemInActiveShoppingList(Ref ref, ShoppingListSourceItem item) =>
     );
 
 /// Add source item to shopping list.
-Future<bool> addSourceItemToShoppingList({
+Future<T> addSourceItemToShoppingList<T>({
   required ShoppingListSourceItem item,
-  required ShoppingListAddItem addItem,
+  required ShoppingListAddItem<T> addItem,
 }) {
   final quantity = _normalizeInventoryQuantityForShopping(item.initialQuantity);
   return addItem(

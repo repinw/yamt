@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/domain/'
@@ -74,6 +75,8 @@ abstract final class CalorieEntryEditorFlowHandler {
     required bool restoreToInventory,
     required VoidCallback onDeleted,
   }) async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final result = await controller.deleteEntry(
       entry: entry,
       restoreToInventory: restoreToInventory,
@@ -84,6 +87,15 @@ abstract final class CalorieEntryEditorFlowHandler {
 
     if (result.isSuccess) {
       onDeleted();
+      messenger.showAppSnackBar(
+        result.restoredToInventory
+            ? l10n.caloriesEntryReturnedToInventoryMessage
+            : l10n.caloriesEntryDeletedMessage,
+        onUndo: () => controller.undoDelete(
+          entry,
+          restoredToInventory: result.restoredToInventory,
+        ),
+      );
       return;
     }
 
@@ -141,7 +153,7 @@ abstract final class CalorieEntryEditorFlowHandler {
       CalorieEntryDeleteFailureReason.deleteFailed ||
       null => l10n.caloriesDeleteFailed,
     };
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    messenger.showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 
   /// Handles popping with root fallback.
@@ -173,9 +185,7 @@ abstract final class CalorieEntryEditorFlowHandler {
     ScaffoldMessengerState messenger,
     String message,
   ) {
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    messenger.showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 
   /// Validates and builds a new entry, closes the editor, and saves it.
@@ -230,7 +240,7 @@ abstract final class CalorieEntryEditorFlowHandler {
       pendingConsumptionId: pendingConsumptionId,
     );
     onCommitted();
-    maybePopRootNavigator(context, isEditing: false, result: true);
+    maybePopRootNavigator(context, isEditing: false, result: entry);
 
     if (await save) {
       return;

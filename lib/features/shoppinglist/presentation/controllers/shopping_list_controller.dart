@@ -8,6 +8,7 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_subscription.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_addition.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_schedule.dart';
 
 part 'shopping_list_controller.g.dart';
@@ -50,6 +51,23 @@ class ShoppingListController extends _$ShoppingListController {
     String? brand,
     int quantity = 1,
     double estimatedUnitPrice = 0,
+  }) async {
+    final revert = await addItemWithRevert(
+      name: name,
+      brand: brand,
+      quantity: quantity,
+      estimatedUnitPrice: estimatedUnitPrice,
+    );
+    return revert != null;
+  }
+
+  /// Adds or merges a product and returns the change for [revert], or null
+  /// when the input is invalid or the save fails.
+  Future<ShoppingListRevert?> addItemWithRevert({
+    required String name,
+    String? brand,
+    int quantity = 1,
+    double estimatedUnitPrice = 0,
   }) {
     final input = _addition.parseAddItemInput(
       name: name,
@@ -57,12 +75,13 @@ class ShoppingListController extends _$ShoppingListController {
       quantity: quantity,
       estimatedUnitPrice: estimatedUnitPrice,
     );
-    if (input == null) return Future.value(false);
-    return _mutate((items) => _add(items, input));
+    if (input == null) return Future.value();
+    return _mutateWithRevert((items) => _add(items, input));
   }
 
-  /// Adds several names in one persisted mutation.
-  Future<bool> addItemsByNames(Iterable<String> names) {
+  /// Adds several names in one persisted mutation and returns the change for
+  /// [revert], or null when no name is valid or the save fails.
+  Future<ShoppingListRevert?> addItemsByNames(Iterable<String> names) {
     final inputs = names
         .map(
           (name) => _addition.parseAddItemInput(
@@ -73,9 +92,15 @@ class ShoppingListController extends _$ShoppingListController {
         )
         .whereType<ShoppingListAddInput>()
         .toList();
-    if (inputs.isEmpty) return Future.value(false);
-    return _mutate((items) => inputs.fold<List<ShoppingListItem>>(items, _add));
+    if (inputs.isEmpty) return Future.value();
+    return _mutateWithRevert(
+      (items) => inputs.fold<List<ShoppingListItem>>(items, _add),
+    );
   }
+
+  /// Undoes a change recorded by [addItemWithRevert] or [addItemsByNames].
+  Future<bool> revert(ShoppingListRevert revert) =>
+      _mutate((items) => applyShoppingListRevert(items, revert));
 
   List<ShoppingListItem> _add(
     List<ShoppingListItem> items,
@@ -184,15 +209,20 @@ class ShoppingListController extends _$ShoppingListController {
 
   Future<bool> _mutate(
     List<ShoppingListItem>? Function(List<ShoppingListItem>) change,
-  ) => _queue.run<bool>(
+  ) async => await _mutateWithRevert(change) != null;
+
+  Future<ShoppingListRevert?> _mutateWithRevert(
+    List<ShoppingListItem>? Function(List<ShoppingListItem>) change,
+  ) => _queue.run<ShoppingListRevert?>(
     operation: () async {
       final items = state.asData?.value ?? await future;
-      if (!ref.mounted) return false;
+      if (!ref.mounted) return null;
       final next = change(items);
-      if (next == null) return true;
-      return await _save(items, next);
+      if (next == null) return const {};
+      if (!await _save(items, next)) return null;
+      return shoppingListRevertOf(items, next);
     },
-    fallbackValue: false,
+    fallbackValue: null,
     onError: _logError,
   );
 

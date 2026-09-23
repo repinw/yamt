@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -46,11 +47,10 @@ class InventoryProductSearchHubCompletionHandler
     if (outcome.status != InventoryManualProductSaveStatus.saved ||
         outcome.item == null) {
       if (outcome.status == InventoryManualProductSaveStatus.failed) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(l10n.inventoryManualAddSaveFailed)),
-          );
+        ScaffoldMessenger.of(context).showAppSnackBar(
+          l10n.inventoryManualAddSaveFailed,
+          tone: AppSnackBarTone.error,
+        );
       }
       return const ProductSearchHubCompletionResult.none();
     }

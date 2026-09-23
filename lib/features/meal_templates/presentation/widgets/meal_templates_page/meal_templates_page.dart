@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
@@ -79,7 +80,9 @@ class MealTemplatesPage extends ConsumerWidget {
           onDelete: (templateId) => _deleteTemplate(
             context: context,
             templatesController: templatesController,
-            templateId: templateId,
+            template: templates.firstWhere(
+              (template) => template.id == templateId,
+            ),
           ),
         );
       },
@@ -145,9 +148,9 @@ class MealTemplatesPage extends ConsumerWidget {
   Future<bool> _deleteTemplate({
     required BuildContext context,
     required PreparedMealTemplatesController templatesController,
-    required String templateId,
+    required PreparedMeal template,
   }) async {
-    final deleted = await templatesController.deleteTemplate(templateId);
+    final deleted = await templatesController.deleteTemplate(template.id);
     if (!context.mounted) {
       return deleted;
     }
@@ -155,9 +158,9 @@ class MealTemplatesPage extends ConsumerWidget {
       return false;
     }
 
-    _showSnackBar(
-      context,
+    ScaffoldMessenger.of(context).showAppSnackBar(
       AppLocalizations.of(context)!.preparedMealTemplateDeletedMessage,
+      onUndo: () => templatesController.restoreTemplate(template),
     );
     return true;
   }
@@ -194,11 +197,17 @@ class MealTemplatesPage extends ConsumerWidget {
     }
 
     if (result.isSuccess) {
-      _showSnackBar(context, l10n.preparedMealTemplateUpdatedMessage);
+      ScaffoldMessenger.of(context).showAppSnackBar(
+        l10n.preparedMealTemplateUpdatedMessage,
+        onUndo: () => templatesController.restoreTemplate(template),
+      );
       return true;
     }
 
-    _showSnackBar(context, _templateFailureMessage(l10n, result));
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      _templateFailureMessage(l10n, result),
+      tone: AppSnackBarTone.error,
+    );
     return false;
   }
 
@@ -214,11 +223,5 @@ class MealTemplatesPage extends ConsumerWidget {
       PreparedMealTemplateSaveFailureReason.saveFailed ||
       null => l10n.preparedMealTemplateCreateFailedMessage,
     };
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }

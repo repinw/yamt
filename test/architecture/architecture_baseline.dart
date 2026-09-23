@@ -553,8 +553,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/product_search_hub/presentation/widgets/product_search_barcode_scanner_page/product_search_barcode_scanner_resolving_indicator.dart':
         1,
-    'lib/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart':
-        1,
     'lib/features/scanner/presentation/widgets/product_nutrition_summary.dart':
         4,
     'lib/features/scanner/presentation/widgets/receipt_item_candidates_list.dart':

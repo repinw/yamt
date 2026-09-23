@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/diary/application/'
@@ -84,9 +87,9 @@ Future<void> _completeInventoryItemEatFlow({
       stackTrace: stackTrace,
     );
     if (context.mounted) {
-      showDiaryQuickEatSnackBarWithMessenger(
-        messenger,
+      messenger.showAppSnackBar(
         l10n.inventoryItemActionFailed,
+        tone: AppSnackBarTone.error,
       );
     }
   }
@@ -114,7 +117,7 @@ Future<void> _runInventoryItemEatMutation({
     return;
   }
   if (pendingConsumptionId == null) {
-    showDiaryQuickEatSnackBarWithMessenger(messenger, failureMessage);
+    messenger.showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
     return;
   }
 
@@ -124,7 +127,7 @@ Future<void> _runInventoryItemEatMutation({
   if (profile == null) {
     await _discardInventoryItemConsumption(container, pendingConsumptionId);
     if (context.mounted) {
-      showDiaryQuickEatSnackBarWithMessenger(messenger, failureMessage);
+      messenger.showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
     }
     return;
   }
@@ -139,9 +142,9 @@ Future<void> _runInventoryItemEatMutation({
     profile: profile,
   );
 
-  final bool saved;
+  final CalorieEntry? savedEntry;
   if (canDirectlySaveInventoryItemEatRequest(item, request)) {
-    saved = await InventoryCalorieBridgeFlow.saveDirectEntry(
+    savedEntry = await InventoryCalorieBridgeFlow.saveDirectEntry(
       container: container,
       profile: profile,
       inventoryContext: inventoryContext,
@@ -154,7 +157,7 @@ Future<void> _runInventoryItemEatMutation({
       await _discardInventoryItemConsumption(container, pendingConsumptionId);
       return;
     }
-    final result = await context.push<bool>(
+    savedEntry = await context.push<CalorieEntry>(
       AppRoutes.homeCaloriesEntryCreate,
       extra: CalorieEntryCreateArgs(
         prefilledProfile: profile,
@@ -164,24 +167,37 @@ Future<void> _runInventoryItemEatMutation({
         preselectedLoggedAt: request.loggedAt,
       ),
     );
-    saved = result == true;
   }
 
-  if (!saved) {
+  if (savedEntry == null) {
     await _discardInventoryItemConsumption(container, pendingConsumptionId);
     if (context.mounted) {
-      showDiaryQuickEatSnackBarWithMessenger(messenger, failureMessage);
+      messenger.showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
     }
     return;
   }
 
   if (context.mounted) {
-    showDiaryQuickEatSnackBarWithMessenger(
-      messenger,
+    messenger.showAppSnackBar(
       l10n.inventoryManualAddEatSucceeded,
+      onUndo: () => _undoInventoryItemEat(container, savedEntry!),
     );
   }
   refreshDiaryAfterQuickEat(container, request.loggedAt);
+}
+
+Future<bool> _undoInventoryItemEat(
+  ProviderContainer container,
+  CalorieEntry entry,
+) async {
+  final undone = await InventoryCalorieBridgeFlow.undoEat(
+    container: container,
+    entry: entry,
+  );
+  if (undone) {
+    refreshDiaryAfterQuickEat(container, entry.loggedAt);
+  }
+  return undone;
 }
 
 Future<String?> _stageInventoryItemConsumption({

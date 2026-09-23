@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -112,7 +113,7 @@ class _InventoryReceiptManualProductEditorPageState
     scheduleEditorInitialInfoMessage(
       message: widget.initialInfoMessage,
       isMounted: () => mounted,
-      onShowSnackBar: _showSnackBar,
+      context: context,
       actionBuilder: () => buildEditorInitialInfoAction(
         context: context,
         canScanNutritionLabel: ref.read(_provider).canScanNutritionLabel,
@@ -284,8 +285,8 @@ class _InventoryReceiptManualProductEditorPageState
         controller: _controller,
       );
 
-  void _showSnackBar(String message, {SnackBarAction? action}) =>
-      showEditorSnackBar(context, message, action: action);
+  void _showSnackBar(String message) =>
+      showEditorSnackBar(context, message, tone: AppSnackBarTone.error);
 
   void _closePage<T extends Object?>([T? result]) => closeEditorPage(
     context: context,

@@ -30,6 +30,9 @@ abstract final class AppSizes {
   /// Icon size in the home bottom navigation.
   static const double homeBottomNavIcon = 20;
 
+  /// Icon size in snack bars.
+  static const double snackBarIcon = 20;
+
   /// Width of the selected-item indicator in the home bottom navigation.
   static const double homeBottomNavIndicatorWidth = 16;
 

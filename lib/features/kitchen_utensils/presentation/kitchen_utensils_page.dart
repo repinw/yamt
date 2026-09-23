@@ -6,14 +6,11 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
-import 'package:yamt/features/kitchen_utensils/domain/'
-    'kitchen_utensil_save_result.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
     'kitchen_utensils_controller.dart';
+import 'package:yamt/features/kitchen_utensils/presentation/kitchen_utensil_edit_flow.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_card.dart';
-import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
-    'kitchen_utensil_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Kitchen utensils page.
@@ -37,7 +34,8 @@ class KitchenUtensilsPage extends ConsumerWidget {
         actions: [
           IconButton(
             tooltip: l10n.kitchenUtensilAddAction,
-            onPressed: () => unawaited(_addUtensil(context: context, ref: ref)),
+            onPressed: () =>
+                unawaited(KitchenUtensilEditFlow.add(context, ref)),
             icon: const Icon(Icons.add_rounded),
           ),
         ],
@@ -70,12 +68,9 @@ class KitchenUtensilsPage extends ConsumerWidget {
               return KitchenUtensilCard(
                 utensil: utensil,
                 onEditPressed: (utensil) =>
-                    _editUtensil(context: context, ref: ref, utensil: utensil),
-                onDeletePressed: (utensilId) => _deleteUtensil(
-                  context: context,
-                  ref: ref,
-                  utensilId: utensilId,
-                ),
+                    KitchenUtensilEditFlow.edit(context, ref, utensil),
+                onDeletePressed: (_) =>
+                    KitchenUtensilEditFlow.delete(context, ref, utensil),
               );
             },
           );
@@ -147,120 +142,5 @@ class KitchenUtensilsPage extends ConsumerWidget {
       error: nextError.error,
       stackTrace: nextError.stackTrace,
     );
-  }
-
-  Future<bool> _addUtensil({
-    required BuildContext context,
-    required WidgetRef ref,
-  }) async {
-    final controller = ref.read(kitchenUtensilsControllerProvider.notifier);
-    final draft = await showKitchenUtensilSheet(context: context);
-    if (!context.mounted || draft == null) {
-      return false;
-    }
-
-    final result = await controller.addUtensil(
-      name: draft.name,
-      imageBytes: draft.imageBytes,
-      weightGrams: draft.weightGrams,
-    );
-    if (!context.mounted) {
-      return result.isSuccess;
-    }
-
-    if (result.isSuccess) {
-      _showSnackBar(
-        context,
-        AppLocalizations.of(context)!.kitchenUtensilSavedMessage,
-      );
-      return true;
-    }
-
-    _showSnackBar(
-      context,
-      _saveFailureMessage(AppLocalizations.of(context)!, result),
-    );
-    return false;
-  }
-
-  Future<bool> _editUtensil({
-    required BuildContext context,
-    required WidgetRef ref,
-    required KitchenUtensil utensil,
-  }) async {
-    final controller = ref.read(kitchenUtensilsControllerProvider.notifier);
-    final draft = await showKitchenUtensilSheet(
-      context: context,
-      initialUtensil: utensil,
-    );
-    if (!context.mounted || draft == null) {
-      return false;
-    }
-
-    final result = await controller.updateUtensil(
-      utensilId: utensil.id,
-      name: draft.name,
-      imageBytes: draft.imageBytes,
-      imageChanged: draft.imageChanged,
-      weightGrams: draft.weightGrams,
-    );
-    if (!context.mounted) {
-      return result.isSuccess;
-    }
-
-    if (result.isSuccess) {
-      _showSnackBar(
-        context,
-        AppLocalizations.of(context)!.kitchenUtensilUpdatedMessage,
-      );
-      return true;
-    }
-
-    _showSnackBar(
-      context,
-      _saveFailureMessage(AppLocalizations.of(context)!, result),
-    );
-    return false;
-  }
-
-  Future<bool> _deleteUtensil({
-    required BuildContext context,
-    required WidgetRef ref,
-    required String utensilId,
-  }) async {
-    final deleted = await ref
-        .read(kitchenUtensilsControllerProvider.notifier)
-        .deleteUtensil(utensilId);
-    if (!context.mounted) {
-      return deleted;
-    }
-    final l10n = AppLocalizations.of(context)!;
-    if (!deleted) {
-      _showSnackBar(context, l10n.kitchenUtensilDeleteFailed);
-      return false;
-    }
-
-    _showSnackBar(context, l10n.kitchenUtensilDeletedMessage);
-    return true;
-  }
-
-  String _saveFailureMessage(
-    AppLocalizations l10n,
-    KitchenUtensilSaveResult result,
-  ) {
-    return switch (result.failureReason) {
-      KitchenUtensilSaveFailureReason.invalidInput =>
-        l10n.kitchenUtensilIdentityRequired,
-      KitchenUtensilSaveFailureReason.imageUploadFailed =>
-        l10n.kitchenUtensilImageUploadFailed,
-      KitchenUtensilSaveFailureReason.saveFailed ||
-      null => l10n.kitchenUtensilSaveFailed,
-    };
-  }
-
-  void _showSnackBar(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
   }
 }

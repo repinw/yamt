@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_support.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -254,7 +255,6 @@ class _InventoryBarcodeScannerViewState
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+        .showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 }

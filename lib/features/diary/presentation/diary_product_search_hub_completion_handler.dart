@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/application/calorie_entry_deleter.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_manual_product_eat_flow_contract.dart';
@@ -52,11 +53,10 @@ class DiaryProductSearchHubCompletionHandler
     if (outcome.status != InventoryManualProductEatStatus.saved ||
         outcome.item == null) {
       if (outcome.status == InventoryManualProductEatStatus.failed) {
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(
-            SnackBar(content: Text(l10n.inventoryManualAddSaveFailed)),
-          );
+        ScaffoldMessenger.of(context).showAppSnackBar(
+          l10n.inventoryManualAddSaveFailed,
+          tone: AppSnackBarTone.error,
+        );
       }
       return const ProductSearchHubCompletionResult.none();
     }

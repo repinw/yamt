@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_new_goal_flow.dart';
@@ -249,8 +250,9 @@ class _DiaryWeeklyCheckInSectionState
     }
     _showAgain(pending);
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.caloriesWeeklyCheckInApplyFailed)),
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      l10n.caloriesWeeklyCheckInApplyFailed,
+      tone: AppSnackBarTone.error,
     );
   }
 
@@ -270,8 +272,9 @@ class _DiaryWeeklyCheckInSectionState
     }
     _showAgain(pending);
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.caloriesWeeklyCheckInRejectFailed)),
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      l10n.caloriesWeeklyCheckInRejectFailed,
+      tone: AppSnackBarTone.error,
     );
   }
 
@@ -324,8 +327,9 @@ class _DiaryWeeklyCheckInSectionState
       _reopenWindowKey = null;
     });
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(l10n.caloriesWeeklyCheckInShowAgainFailed)),
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      l10n.caloriesWeeklyCheckInShowAgainFailed,
+      tone: AppSnackBarTone.error,
     );
   }
 

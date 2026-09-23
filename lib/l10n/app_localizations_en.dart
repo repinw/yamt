@@ -2097,6 +2097,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesEntryDeletedMessage => 'Entry removed';
 
   @override
+  String get caloriesEntryReturnedToInventoryMessage => 'Returned to inventory';
+
+  @override
   String get caloriesEatAgainDoneMessage => 'Logged again';
 
   @override
@@ -3057,6 +3060,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get commonUndoAction => 'Undo';
+
+  @override
+  String get commonUndoFailed => 'Could not undo.';
 
   @override
   String get commonNotImplementedYet => 'Not implemented yet';

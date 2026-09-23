@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/onboarding/application/'
@@ -79,10 +80,9 @@ class CalorieIntroFinishHandler {
     ScaffoldMessengerState messenger,
     AppLocalizations l10n,
   ) {
-    messenger
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(l10n.caloriesCalculatorSaveFailed)),
-      );
+    messenger.showAppSnackBar(
+      l10n.caloriesCalculatorSaveFailed,
+      tone: AppSnackBarTone.error,
+    );
   }
 }

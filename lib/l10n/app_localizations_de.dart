@@ -2097,6 +2097,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesEntryDeletedMessage => 'Eintrag entfernt';
 
   @override
+  String get caloriesEntryReturnedToInventoryMessage => 'Zurück im Vorrat';
+
+  @override
   String get caloriesEatAgainDoneMessage => 'Nochmal eingetragen';
 
   @override
@@ -3056,7 +3059,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get authErrorGoogleIdTokenMissing => 'Google-Anmeldung hat kein gültiges Token geliefert.';
 
   @override
-  String get commonUndoAction => 'Rückgängig machen';
+  String get commonUndoAction => 'Rückgängig';
+
+  @override
+  String get commonUndoFailed => 'Rückgängig fehlgeschlagen.';
 
   @override
   String get commonNotImplementedYet => 'Noch nicht implementiert';

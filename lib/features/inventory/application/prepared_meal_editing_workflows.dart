@@ -370,6 +370,18 @@ class PreparedMealEditingWorkflows {
     return await _moveRemainingPortions(mealId: mealId, portions: portions);
   }
 
+  /// Takes [portions] out of a meal again without logging them as eaten or
+  /// thrown away. Undoes [restorePreparedMealPortions].
+  Future<bool> takePreparedMealPortions({
+    required String mealId,
+    required num portions,
+  }) async {
+    if (!_hasPositivePortions(mealId, portions)) {
+      return false;
+    }
+    return await _moveRemainingPortions(mealId: mealId, portions: -portions);
+  }
+
   bool _hasPositivePortions(String mealId, num portions) {
     if (portions > 0) {
       return true;

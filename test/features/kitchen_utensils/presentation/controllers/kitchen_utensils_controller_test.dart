@@ -236,7 +236,7 @@ void main() {
     expect(result.failureReason, KitchenUtensilSaveFailureReason.invalidInput);
   });
 
-  test('deleteUtensil removes metadata and schedules image cleanup', () async {
+  test('deleteUtensil removes metadata and keeps the image for undo', () async {
     final repository = _FakeKitchenUtensilRepository(
       initialUtensils: [_utensil(imageStoragePath: 'users/owner-1/pot.jpg')],
     );
@@ -250,8 +250,18 @@ void main() {
         .read(kitchenUtensilsControllerProvider.notifier)
         .deleteUtensil('pot-1');
 
-    expect(deleted, isTrue);
+    expect(deleted?.id, 'pot-1');
     expect(container.read(kitchenUtensilsControllerProvider).value, isEmpty);
-    expect(repository.deletedImagePaths, ['users/owner-1/pot.jpg']);
+    expect(repository.deletedImagePaths, isEmpty);
+
+    final restored = await container
+        .read(kitchenUtensilsControllerProvider.notifier)
+        .restoreUtensil(deleted!);
+
+    expect(restored, isTrue);
+    expect(
+      container.read(kitchenUtensilsControllerProvider).value?.single.id,
+      'pot-1',
+    );
   });
 }

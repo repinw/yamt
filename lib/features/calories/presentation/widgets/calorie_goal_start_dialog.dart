@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
@@ -88,7 +89,8 @@ Future<void> showCalorieGoalStartDialog({
     return;
   }
 
-  messenger.showSnackBar(
-    SnackBar(content: Text(l10n.caloriesGoalStartSaveFailed)),
+  messenger.showAppSnackBar(
+    l10n.caloriesGoalStartSaveFailed,
+    tone: AppSnackBarTone.error,
   );
 }

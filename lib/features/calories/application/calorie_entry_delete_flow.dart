@@ -130,6 +130,12 @@ class CalorieEntryDeleteFlow {
     );
   }
 
+  /// Takes the stock that deleting [entry] with a restore returned out of the
+  /// inventory again.
+  Future<bool> takeBackRestored(CalorieEntry entry) {
+    return _inventoryRestorer.takeBackRestored(entry);
+  }
+
   Future<bool> _deleteDiaryEntry(CalorieEntry entry) async {
     final deleted = await deleteEntryById(entry.id);
     if (deleted) {

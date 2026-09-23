@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_invite_code_controller.dart';
 import 'package:yamt/features/household/presentation/household_error_message.dart';
@@ -62,8 +63,9 @@ class HouseholdInviteSection extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(householdErrorMessage(l10n, error))),
+      ScaffoldMessenger.of(context).showAppSnackBar(
+        householdErrorMessage(l10n, error),
+        tone: AppSnackBarTone.error,
       );
     }
   }
@@ -115,9 +117,8 @@ class _GeneratedCodeView extends ConsumerWidget {
                   if (!context.mounted) {
                     return;
                   }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.householdInviteCodeCopied)),
-                  );
+                  ScaffoldMessenger.of(context)
+                      .showAppSnackBar(l10n.householdInviteCodeCopied);
                 },
                 icon: const Icon(Icons.copy_outlined),
                 label: Text(l10n.householdInviteCopyCode),
@@ -138,10 +139,9 @@ class _GeneratedCodeView extends ConsumerWidget {
                         if (!context.mounted) {
                           return;
                         }
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(householdErrorMessage(l10n, error)),
-                          ),
+                        ScaffoldMessenger.of(context).showAppSnackBar(
+                          householdErrorMessage(l10n, error),
+                          tone: AppSnackBarTone.error,
                         );
                       }
                     },

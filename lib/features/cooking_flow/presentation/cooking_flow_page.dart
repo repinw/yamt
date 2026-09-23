@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_logic.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -271,10 +272,16 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
       return;
     }
     if (result == CookingFlowShoppingListActionResult.failed) {
-      _showSnackBar(_l10n.cookflowShoppingListAddFailed);
+      _showSnackBar(
+        _l10n.cookflowShoppingListAddFailed,
+        tone: AppSnackBarTone.error,
+      );
       return;
     }
-    _showSnackBar(_l10n.cookflowShoppingListAddSucceeded);
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      _l10n.cookflowShoppingListAddSucceeded,
+      onUndo: _undoIntroShoppingItems,
+    );
     _persistSessionSilently();
     await context.push(AppRoutes.homeShopping);
   }
@@ -304,13 +311,16 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
         ? null
         : findCookingFlowTemplate(templates, widget.templateId);
     if (template == null) {
-      _showSnackBar(_l10n.cookflowTemplateNotFound);
+      _showSnackBar(
+        _l10n.cookflowTemplateNotFound,
+        tone: AppSnackBarTone.error,
+      );
       return;
     }
 
     final validationMessage = _finalizeWeightValidationMessage;
     if (validationMessage != null) {
-      _showSnackBar(validationMessage);
+      _showSnackBar(validationMessage, tone: AppSnackBarTone.error);
       return;
     }
 
@@ -330,6 +340,7 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
           failure: result.failure,
           invalidInputMessage: _finalizeWeightValidationMessage,
         ),
+        tone: AppSnackBarTone.error,
       );
       return;
     }
@@ -412,10 +423,19 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
     );
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+  Future<bool> _undoIntroShoppingItems() async {
+    final undone = await _wizardController.undoIntroShoppingItems();
+    if (undone && mounted) {
+      _persistSessionSilently();
+    }
+    return undone;
+  }
+
+  void _showSnackBar(
+    String message, {
+    AppSnackBarTone tone = AppSnackBarTone.success,
+  }) {
+    ScaffoldMessenger.of(context).showAppSnackBar(message, tone: tone);
   }
 
   void _openCookingStep() {
@@ -718,9 +738,10 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
       return true;
     }
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(_l10n.cookflowSessionSaveFailed)));
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      _l10n.cookflowSessionSaveFailed,
+      tone: AppSnackBarTone.error,
+    );
     return false;
   }
 

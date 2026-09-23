@@ -119,7 +119,7 @@ class _SaveDirectEntryButton extends ConsumerWidget {
           loggedAt: loggedAt,
           mealType: mealType,
         );
-        onCompleted(saved);
+        onCompleted(saved != null);
       },
       child: const Text('save'),
     );

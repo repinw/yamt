@@ -142,64 +142,52 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       HomeTabType.diary || HomeTabType.cookbook || HomeTabType.progress => null,
     };
 
-    final theme = Theme.of(context);
-    final homeTheme = theme.copyWith(
-      snackBarTheme: theme.snackBarTheme.copyWith(
-        behavior: SnackBarBehavior.fixed,
-      ),
-    );
-
-    return Theme(
-      data: homeTheme,
-      child: Scaffold(
-        key: _scaffoldKey,
-        extendBody: true,
-        drawer: const HomeMenuDrawer(),
-        body: NotificationListener<ScrollNotification>(
-          onNotification: _chromeVisibilityController.handleScrollNotification,
-          child: HomeShellMenuScope(
-            openMenu: _openMenu,
-            child: Stack(
-              children: [
-                ContentVisibility(
-                  isVisible: !_isCovered,
-                  child: widget.navigationShell,
+    return Scaffold(
+      key: _scaffoldKey,
+      extendBody: true,
+      drawer: const HomeMenuDrawer(),
+      body: NotificationListener<ScrollNotification>(
+        onNotification: _chromeVisibilityController.handleScrollNotification,
+        child: HomeShellMenuScope(
+          openMenu: _openMenu,
+          child: Stack(
+            children: [
+              ContentVisibility(
+                isVisible: !_isCovered,
+                child: widget.navigationShell,
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: ValueListenableBuilder<double>(
+                  valueListenable: _chromeVisibilityController,
+                  child: HomeBottomNavBar(entries: _navEntries(context, l10n)),
+                  builder: (context, visibility, bottomNavBar) {
+                    return HomeShellBottomChrome(
+                      visibility: visibility,
+                      child: bottomNavBar!,
+                    );
+                  },
                 ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: ValueListenableBuilder<double>(
-                    valueListenable: _chromeVisibilityController,
-                    child: HomeBottomNavBar(
-                      entries: _navEntries(context, l10n),
-                    ),
-                    builder: (context, visibility, bottomNavBar) {
-                      return HomeShellBottomChrome(
-                        visibility: visibility,
-                        child: bottomNavBar!,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-        floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
-        floatingActionButton: floatingActionButton == null
-            ? const SizedBox.shrink()
-            : ValueListenableBuilder<double>(
-                valueListenable: _chromeVisibilityController,
-                child: floatingActionButton,
-                builder: (context, visibility, fab) {
-                  return HomeShellFloatingActionButtonChrome(
-                    visibility: visibility,
-                    child: fab!,
-                  );
-                },
-              ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
+      // The chrome wraps an empty slot too: floating snack bars sit above the
+      // floating action button slot, so they clear the bottom navigation.
+      floatingActionButton: ValueListenableBuilder<double>(
+        valueListenable: _chromeVisibilityController,
+        child: floatingActionButton ?? const SizedBox.shrink(),
+        builder: (context, visibility, fab) {
+          return HomeShellFloatingActionButtonChrome(
+            visibility: visibility,
+            child: fab!,
+          );
+        },
       ),
     );
   }

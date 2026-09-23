@@ -9,6 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -291,7 +292,6 @@ mixin PreparedMealCardActions<T extends ConsumerStatefulWidget>
       return;
     }
     ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(failureMessage)));
+        .showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
   }
 }

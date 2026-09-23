@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/'
     'household_members_provider.dart';
@@ -161,14 +162,14 @@ class HouseholdSharingCard extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.householdLeaveSuccess)));
+      ScaffoldMessenger.of(context).showAppSnackBar(l10n.householdLeaveSuccess);
     } on Object catch (error) {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(householdErrorMessage(l10n, error))),
+      ScaffoldMessenger.of(context).showAppSnackBar(
+        householdErrorMessage(l10n, error),
+        tone: AppSnackBarTone.error,
       );
     }
   }

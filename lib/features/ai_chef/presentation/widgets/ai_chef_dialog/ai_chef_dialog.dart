@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/ai_chef/application/'
     'ai_chef_inventory_input_builder.dart';
 import 'package:yamt/features/ai_chef/presentation/controllers/'
@@ -190,9 +191,16 @@ class _AiChefDialogState extends ConsumerState<AiChefDialog> {
         return;
       }
 
-      if (result.isSuccess) {
+      final templateId = result.templateId;
+      if (result.isSuccess && templateId != null) {
         shouldResetSaving = false;
-        _showSnackBar(l10n.aiChefSaveSuccess);
+        final container = ProviderScope.containerOf(context, listen: false);
+        ScaffoldMessenger.of(context).showAppSnackBar(
+          l10n.aiChefSaveSuccess,
+          onUndo: () => container
+              .read(preparedMealTemplatesControllerProvider.notifier)
+              .deleteTemplate(templateId),
+        );
         context.pop();
         return;
       }
@@ -217,11 +225,9 @@ class _AiChefDialogState extends ConsumerState<AiChefDialog> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-      );
+    ScaffoldMessenger.of(
+      context,
+    ).showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 }
 

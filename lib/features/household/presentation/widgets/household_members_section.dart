@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_membership_controller.dart';
@@ -151,15 +152,15 @@ class _MemberRow extends ConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.householdRemoveMemberSuccess)),
-      );
+      ScaffoldMessenger.of(context)
+          .showAppSnackBar(l10n.householdRemoveMemberSuccess);
     } on Object catch (error) {
       if (!context.mounted) {
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(householdErrorMessage(l10n, error))),
+      ScaffoldMessenger.of(context).showAppSnackBar(
+        householdErrorMessage(l10n, error),
+        tone: AppSnackBarTone.error,
       );
     }
   }

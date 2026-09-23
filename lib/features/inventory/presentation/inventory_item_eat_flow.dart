@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/application/'
@@ -84,7 +86,6 @@ class InventoryItemEatFlow {
   }) async {
     final l10n = AppLocalizations.of(context)!;
     try {
-      final successMessage = l10n.inventoryManualAddEatSucceeded;
       final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
         itemBeforeMutation,
       );
@@ -108,7 +109,7 @@ class InventoryItemEatFlow {
       );
 
       if (canDirectlySaveInventoryItemEatRequest(itemBeforeMutation, request)) {
-        final saved = await InventoryCalorieBridgeFlow.saveDirectEntry(
+        final savedEntry = await InventoryCalorieBridgeFlow.saveDirectEntry(
           container: container,
           profile: profile,
           inventoryContext: inventoryContext,
@@ -118,9 +119,13 @@ class InventoryItemEatFlow {
           pendingConsumption: pendingConsumption,
           onDirectCalorieEntrySaved: onDirectCalorieEntrySaved,
         );
-        if (saved) {
+        if (savedEntry != null) {
           if (context.mounted) {
-            _showSnackBar(context: context, message: successMessage);
+            _showEatenSnackBar(
+              context: context,
+              container: container,
+              entry: savedEntry,
+            );
           }
           return true;
         }
@@ -141,7 +146,7 @@ class InventoryItemEatFlow {
         );
       }
 
-      final saved = await context.push<bool>(
+      final savedEntry = await context.push<CalorieEntry>(
         AppRoutes.homeCaloriesEntryCreate,
         extra: CalorieEntryCreateArgs(
           prefilledProfile: profile,
@@ -151,10 +156,14 @@ class InventoryItemEatFlow {
           preselectedLoggedAt: request.loggedAt,
         ),
       );
-      if (saved == true && context.mounted) {
-        _showSnackBar(context: context, message: successMessage);
+      if (savedEntry != null && context.mounted) {
+        _showEatenSnackBar(
+          context: context,
+          container: container,
+          entry: savedEntry,
+        );
       }
-      return saved == true;
+      return savedEntry != null;
     } on Object catch (error, stackTrace) {
       developer.log(
         'Eat flow failed unexpectedly.',
@@ -182,7 +191,8 @@ class InventoryItemEatFlow {
       pendingConsumptionId: pendingConsumptionId,
     );
     if (context != null && context.mounted && message != null) {
-      _showSnackBar(context: context, message: message);
+      ScaffoldMessenger.of(context)
+          .showAppSnackBar(message, tone: AppSnackBarTone.error);
     }
     return false;
   }
@@ -196,12 +206,17 @@ class InventoryItemEatFlow {
         .discardPendingConsumption(pendingConsumptionId);
   }
 
-  static void _showSnackBar({
+  static void _showEatenSnackBar({
     required BuildContext context,
-    required String message,
+    required ProviderContainer container,
+    required CalorieEntry entry,
   }) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      AppLocalizations.of(context)!.inventoryManualAddEatSucceeded,
+      onUndo: () => InventoryCalorieBridgeFlow.undoEat(
+        container: container,
+        entry: entry,
+      ),
+    );
   }
 }

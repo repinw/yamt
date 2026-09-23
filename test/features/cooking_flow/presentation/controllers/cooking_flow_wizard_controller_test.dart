@@ -201,6 +201,40 @@ void main() {
     expect(state.introShoppingBaselineInventoryItemIds, <String>['flour']);
   });
 
+  test('undo removes the intro shopping items and reopens the step', () async {
+    final shoppingRepository = FakeShoppingListRepository();
+    final container = _container(shoppingRepository: shoppingRepository);
+    addTearDown(shoppingRepository.dispose);
+    final subscription = container.listen(
+      cookingFlowWizardControllerProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    final controller =
+        container.read(cookingFlowWizardControllerProvider.notifier)
+          ..updateIntroSelectionState(
+            const CookingFlowIntroSelectionState(
+              allItemsSelected: false,
+              hasShoppingSelections: true,
+              hasUnresolvedConflicts: false,
+              shoppingListLabels: <String>['Mehl'],
+              draft: CookingFlowIntroDraft(),
+            ),
+          );
+    await controller.addIntroShoppingItems(
+      inventoryItems: const <InventoryItem>[],
+    );
+
+    final undone = await controller.undoIntroShoppingItems();
+
+    expect(undone, isTrue);
+    expect(shoppingRepository.savedItems, isEmpty);
+    expect(
+      container.read(cookingFlowWizardControllerProvider).introShoppingHandled,
+      isFalse,
+    );
+  });
+
   test('keeps shopping add alive while initial list is loading', () async {
     final initialItems = Completer<List<ShoppingListItem>>();
     final shoppingRepository = FakeShoppingListRepository(

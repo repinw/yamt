@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_product_resolver.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_structured_parser.dart';
@@ -142,14 +143,10 @@ class ReceiptScanFlowCoordinator {
         dialogOpen = false;
       }
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n?.receiptReviewProcessingFailed(error.toString()) ??
-                  'Belegverarbeitung fehlgeschlagen: $error',
-            ),
-            backgroundColor: Colors.red.shade700,
-          ),
+        ScaffoldMessenger.of(context).showAppSnackBar(
+          l10n?.receiptReviewProcessingFailed(error.toString()) ??
+              'Belegverarbeitung fehlgeschlagen: $error',
+          tone: AppSnackBarTone.error,
         );
       }
       return false;

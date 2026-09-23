@@ -294,6 +294,12 @@ void main() {
 
     expect(find.text('Pot'), findsNothing);
     expect(find.text('No kitchen utensils saved yet.'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Pot'), findsOneWidget);
+    expect(find.text('430 g'), findsOneWidget);
   });
 
   testWidgets('validates name or photo and weight', (tester) async {

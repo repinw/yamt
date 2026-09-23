@@ -13,6 +13,8 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'remaining_progress_bar.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
+import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _InventoryItemRowHost extends StatelessWidget {
@@ -94,9 +96,9 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
   List<InventoryItem> build() => const <InventoryItem>[];
 
   @override
-  Future<bool> buyAgainItem(InventoryItem item) async {
+  Future<ShoppingListRevert?> buyAgainItem(InventoryItem item) async {
     _onBuyAgainItem(item);
-    return true;
+    return const <String, ShoppingListItem?>{};
   }
 }
 

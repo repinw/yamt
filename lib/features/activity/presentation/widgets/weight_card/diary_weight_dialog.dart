@@ -1,5 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/weight_entry_dialog.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
@@ -92,8 +93,9 @@ Future<void> _showDiaryWeightEntryDialog({
       }
       final saved = await onSaveWeight(weightKg);
       if (context.mounted && !saved) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.diaryWeightSaveFailed)),
+        messenger.showAppSnackBar(
+          l10n.diaryWeightSaveFailed,
+          tone: AppSnackBarTone.error,
         );
       } else if (saved && context.mounted) {
         await onWeightSaved?.call(weightKg);
@@ -101,8 +103,9 @@ Future<void> _showDiaryWeightEntryDialog({
     case WeightEntryDialogAction.clear:
       final cleared = await onClearWeight();
       if (context.mounted && !cleared) {
-        messenger.showSnackBar(
-          SnackBar(content: Text(l10n.diaryWeightClearFailed)),
+        messenger.showAppSnackBar(
+          l10n.diaryWeightClearFailed,
+          tone: AppSnackBarTone.error,
         );
       }
   }
