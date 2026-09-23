@@ -20,4 +20,18 @@ abstract final class CalorieDomainMath {
     }
     return (sorted[middleIndex - 1] + sorted[middleIndex]) / 2;
   }
+
+  /// Returns the Theil-Sen slope: the median of all pairwise slopes.
+  ///
+  /// One outlier changes only a few pairwise slopes, so it barely moves the
+  /// result. Returns zero when no two points have different x values.
+  static double theilSenSlope(List<({double x, double y})> points) {
+    final slopes = <double>[
+      for (var i = 0; i < points.length; i++)
+        for (var j = i + 1; j < points.length; j++)
+          if (points[j].x != points[i].x)
+            (points[j].y - points[i].y) / (points[j].x - points[i].x),
+    ];
+    return median(slopes);
+  }
 }

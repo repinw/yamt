@@ -20,8 +20,9 @@ const learnedTdeeStaleAfterDays = 14;
 
 /// The learned tdee urgent stale after days.
 const learnedTdeeUrgentStaleAfterDays = 28;
-const _emaHistoryWeight = 0.7;
-const _emaNewDataWeight = 0.3;
+// Share of a new measurement in the learned TDEE for a full 28-day window.
+// Shorter windows are noisier and get a proportionally smaller share.
+const _maxNewDataWeight = 0.5;
 const _kcalPerKilogram = 7700.0;
 const _maxWeeklyGoalAdjustmentKcal = 200.0;
 const _weeklyCheckInLogName = 'CalorieWeeklyCheckInCalculator';
@@ -320,8 +321,12 @@ abstract final class CalorieWeeklyCheckInCalculator {
     required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
     List<int> rawActivityKcalByDay = const <int>[],
   }) {
-    final smoothedWeightPoints = _smoothWeightPoints(weightPoints);
-    final trendWeightChangePerDay = _calculateSlope(smoothedWeightPoints);
+    // Raw weigh-ins with a robust slope: pre-smoothing the weights delays
+    // the learned TDEE without making it calmer.
+    final trendWeightChangePerDay = CalorieDomainMath.theilSenSlope([
+      for (final point in weightPoints)
+        (x: point.dayIndex.toDouble(), y: point.weightKg),
+    ]);
     final averageIntakeKcal = CalorieDomainMath.average(intakeKcalByDay);
     final measuredTdeeKcal =
         averageIntakeKcal - (trendWeightChangePerDay * _kcalPerKilogram);
@@ -334,16 +339,24 @@ abstract final class CalorieWeeklyCheckInCalculator {
   }
 
   /// Smooth measured TDEE into the learned TDEE estimate.
+  ///
+  /// [learningDayCount] is the length of the measured window. A short window
+  /// at the start of a goal moves the learned TDEE less than a full one.
   static double smoothLearnedTdee({
     required double previousLearnedTdeeKcal,
     required double measuredTdeeKcal,
+    required int learningDayCount,
     double? measuredBaseTdeeKcal,
   }) {
     final effectiveMeasured = measuredTdeeKcal > 0
         ? measuredTdeeKcal
         : (measuredBaseTdeeKcal ?? 0.0);
-    return (previousLearnedTdeeKcal * _emaHistoryWeight) +
-        (effectiveMeasured * _emaNewDataWeight);
+    final newDataWeight =
+        _maxNewDataWeight *
+        learningDayCount.clamp(1, dailyLearnedTdeeMaximumLookbackDays) /
+        dailyLearnedTdeeMaximumLookbackDays;
+    return (previousLearnedTdeeKcal * (1 - newDataWeight)) +
+        (effectiveMeasured * newDataWeight);
   }
 
   /// Calculate learned TDEE and target goal from measured data.
@@ -365,6 +378,7 @@ abstract final class CalorieWeeklyCheckInCalculator {
     final calculatedTdeeKcal = smoothLearnedTdee(
       previousLearnedTdeeKcal: previousLearnedTdeeKcal,
       measuredTdeeKcal: measured.measuredTdeeKcal,
+      learningDayCount: intakeKcalByDay.length,
     );
     final rawGoalKcal = calculateGoalFromLearnedTdee(
       learnedTdeeKcal: calculatedTdeeKcal,
@@ -394,53 +408,5 @@ abstract final class CalorieWeeklyCheckInCalculator {
     final minGoalKcal = previousGoalKcal - maxGoalAdjustmentKcal;
     final maxGoalKcal = previousGoalKcal + maxGoalAdjustmentKcal;
     return newGoalKcal.clamp(minGoalKcal, maxGoalKcal);
-  }
-
-  static List<CalorieWeeklyCheckInWeightPoint> _smoothWeightPoints(
-    List<CalorieWeeklyCheckInWeightPoint> points,
-  ) {
-    if (points.length <= 2) {
-      return points;
-    }
-
-    return <CalorieWeeklyCheckInWeightPoint>[
-      points.first,
-      for (var index = 1; index < points.length - 1; index += 1)
-        CalorieWeeklyCheckInWeightPoint(
-          dayIndex: points[index].dayIndex,
-          // Use local median so one noisy weigh-in has less leverage.
-          weightKg: _medianOfThree(
-            points[index - 1].weightKg,
-            points[index].weightKg,
-            points[index + 1].weightKg,
-          ),
-        ),
-      points.last,
-    ];
-  }
-
-  static double _calculateSlope(List<CalorieWeeklyCheckInWeightPoint> points) {
-    final count = points.length;
-    final sumX = points.fold<double>(0, (sum, point) => sum + point.dayIndex);
-    final sumY = points.fold<double>(0, (sum, point) => sum + point.weightKg);
-    final sumXY = points.fold<double>(
-      0,
-      (sum, point) => sum + (point.dayIndex * point.weightKg),
-    );
-    final sumX2 = points.fold<double>(
-      0,
-      (sum, point) => sum + (point.dayIndex * point.dayIndex),
-    );
-    final numerator = (count * sumXY) - (sumX * sumY);
-    final denominator = (count * sumX2) - (sumX * sumX);
-    if (denominator == 0) {
-      return 0;
-    }
-    return numerator / denominator;
-  }
-
-  static double _medianOfThree(double first, double second, double third) {
-    final values = <double>[first, second, third]..sort();
-    return values[1];
   }
 }

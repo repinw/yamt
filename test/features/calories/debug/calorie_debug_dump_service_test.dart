@@ -197,11 +197,11 @@ void main() {
     expect(result.table, contains('week_3_summary'));
     expect(
       result.table,
-      contains('| 2026-04-15 |  | week | week_2_start | 2000.60 |'),
+      contains('| 2026-04-15 |  | week | week_2_start | 2000.25 |'),
     );
     expect(
       result.table,
-      contains('| 2026-04-22 |  | week | week_3_start | 2001.02 |'),
+      contains('| 2026-04-22 |  | week | week_3_start | 2000.69 |'),
     );
     expect(result.table, contains('tdee_source=learned_tdee'));
     expect(
@@ -217,7 +217,7 @@ void main() {
     expect(result.table, contains('learning_window=2026-4-8..2026-4-14'));
     expect(result.table, contains('learning_window=2026-4-8..2026-4-21'));
     expect(result.table, contains('previous_goal=2000'));
-    expect(result.table, contains('previous_goal=2000.60'));
+    expect(result.table, contains('previous_goal=2000.25'));
     expect(result.table, contains('planned_total=14000'));
     expect(result.table, contains('eaten_total=14014'));
     expect(result.table, contains('weight_change=0'));
@@ -235,8 +235,8 @@ void main() {
       result.table,
       isNot(contains('activity_subtracted_from_total_tdee')),
     );
-    expect(result.table, contains('learned_tdee=2000.60'));
-    expect(result.table, contains('new_target=2000.60'));
+    expect(result.table, contains('learned_tdee=2000.25'));
+    expect(result.table, contains('new_target=2000.25'));
   });
 
   test('buildCalorieDebugDump handles non-ready health gracefully', () async {

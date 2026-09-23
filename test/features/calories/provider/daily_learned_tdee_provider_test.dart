@@ -311,7 +311,7 @@ void main() {
       final availableResult = result[diaryDayKey(availableDay)];
       expect(result.length, 2);
       expect(availableResult, isNotNull);
-      expect(availableResult!.newGoalKcal, closeTo(2475.99, 0.01));
+      expect(availableResult!.newGoalKcal, closeTo(2479.49, 0.01));
       expect(result[diaryDayKey(missingDay)], isNull);
     },
   );
@@ -344,8 +344,9 @@ void main() {
     expect(result!.measured.averageIntakeKcal, closeTo(2500, 0.01));
     expect(result.measured.trendWeightChangePerDay, closeTo(0, 0.00001));
     expect(result.measured.measuredTrueTdeeKcal, closeTo(2500, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2475.99, 0.01));
-    expect(result.newGoalKcal, closeTo(2475.99, 0.01));
+    // Windows of 7, 14, 21, and 28 days enter with 0.125, 0.25, 0.375, 0.5.
+    expect(result.calculatedTrueTdeeKcal, closeTo(2479.49, 0.01));
+    expect(result.newGoalKcal, closeTo(2479.49, 0.01));
   });
 
   test('uses aggregate activity kcal for credited activity average', () async {
@@ -477,7 +478,7 @@ void main() {
       expect(result, isNotNull);
       expect(result!.measured.trendWeightChangePerDay, closeTo(0, 0.00001));
       expect(result.measured.measuredTrueTdeeKcal, closeTo(2500, 0.01));
-      expect(result.newGoalKcal, closeTo(2430, 0.01));
+      expect(result.newGoalKcal, closeTo(2412.5, 0.01));
     },
   );
 
@@ -628,8 +629,8 @@ void main() {
 
     expect(result, isNotNull);
     expect(result!.measured.averageIntakeKcal, closeTo(3000, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2580, 0.01));
-    expect(result.newGoalKcal, closeTo(2580, 0.01));
+    expect(result.calculatedTrueTdeeKcal, closeTo(2475, 0.01));
+    expect(result.newGoalKcal, closeTo(2475, 0.01));
   });
 
   test('uses trusted saved check-in base goal for the next week', () async {
@@ -894,7 +895,7 @@ void main() {
     );
 
     expect(result, isNotNull);
-    expect(result!.calculatedTrueTdeeKcal, closeTo(3792.52, 0.01));
+    expect(result!.calculatedTrueTdeeKcal, closeTo(4065.66, 0.01));
     expect(result.newGoalKcal, closeTo(2900.0, 0.01));
   });
 
@@ -940,6 +941,48 @@ void main() {
     expect(result.measured.measuredTrueTdeeKcal, closeTo(5066.67, 0.01));
   });
 
+  test(
+    'one weigh-in spike on the boundary day barely moves learned TDEE',
+    () async {
+      final goalStart = DateTime(2026, 4, 8, 18);
+      final firstCountedDay = DateTime(2026, 4, 9);
+      final today = DateTime(2026, 4, 15);
+      final settings = const CalorieGoalSettings.empty().applyGoalChange(
+        changedAt: goalStart,
+        dailyKcalGoal: 2400,
+        calculatorProfile: null,
+      );
+
+      Future<double> measuredTdee({required double boundarySpikeKg}) async {
+        final harness = _DailyLearnedHarness(
+          settings: settings,
+          entries: _dailyEntries(
+            startDay: firstCountedDay,
+            count: weeklyCheckInWindowLengthDays - 1,
+            kcalForIndex: (_) => 2500,
+          ),
+          healthWeights: <HealthWeightSample>[
+            for (var day = 0; day <= 7; day++)
+              HealthWeightSample(
+                recordedAt: DateTime(2026, 4, 8 + day, 7),
+                weightKg: 80 - 0.1 * day + (day == 7 ? boundarySpikeKg : 0),
+              ),
+          ],
+        );
+        addTearDown(harness.dispose);
+        final result = await _readDailyLearned(harness.container, today: today);
+        return result!.measured.measuredTrueTdeeKcal;
+      }
+
+      final steady = await measuredTdee(boundarySpikeKg: 0);
+      final spiked = await measuredTdee(boundarySpikeKg: 2);
+
+      // Theil-Sen ignores the outlier; a least-squares slope moved this by
+      // about 1300 kcal.
+      expect((steady - spiked).abs(), lessThan(200));
+    },
+  );
+
   test('interpolates skipped intake days from average of logged days in '
       'the window', () async {
     final startDay = DateTime(2026, 4);
@@ -976,8 +1019,8 @@ void main() {
 
     expect(result, isNotNull);
     expect(result!.measured.averageIntakeKcal, closeTo(2416.67, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2405.0, 0.01));
-    expect(result.newGoalKcal, closeTo(2405.0, 0.01));
+    expect(result.calculatedTrueTdeeKcal, closeTo(2402.08, 0.01));
+    expect(result.newGoalKcal, closeTo(2402.08, 0.01));
   });
 
   test(

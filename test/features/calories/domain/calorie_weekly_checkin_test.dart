@@ -23,13 +23,15 @@ void main() {
       ],
     );
 
-    expect(result.trendWeightChangePerDay, closeTo(-0.08036, 0.00001));
+    // Theil-Sen ignores the 81.70 kg outlier on day 3.
+    expect(result.trendWeightChangePerDay, closeTo(-0.1, 0.00001));
     expect(result.averageIntakeKcal, closeTo(2347.14, 0.01));
-    expect(result.measuredTotalTdeeKcal, closeTo(2965.89, 0.01));
-    expect(result.measuredBaseTdeeKcal, closeTo(2965.89, 0.01));
-    expect(result.calculatedBaseTdeeKcal, closeTo(2588.67, 0.01));
-    expect(result.newBaseGoalKcal, closeTo(2588.67, 0.01));
-    expect(result.dynamicGoalTodayKcal, closeTo(2588.67, 0.01));
+    expect(result.measuredTotalTdeeKcal, closeTo(3117.14, 0.01));
+    expect(result.measuredBaseTdeeKcal, closeTo(3117.14, 0.01));
+    // A 7-day window enters with 0.5 × 7 / 28 = 0.125.
+    expect(result.calculatedBaseTdeeKcal, closeTo(2513.27, 0.01));
+    expect(result.newBaseGoalKcal, closeTo(2513.27, 0.01));
+    expect(result.dynamicGoalTodayKcal, closeTo(2513.27, 0.01));
   });
 
   test('caps weekly goal movement to keep one check-in stable', () {
@@ -52,7 +54,7 @@ void main() {
     );
 
     expect(result.measuredTrueTdeeKcal, closeTo(5850, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(3295, 0.01));
+    expect(result.calculatedTrueTdeeKcal, closeTo(2656.25, 0.01));
     expect(result.newGoalKcal, 2400);
   });
 
@@ -75,9 +77,10 @@ void main() {
     expect(result.averageIntakeKcal, 2000);
     expect(result.measuredTrueTdeeKcal, closeTo(2770, 0.01));
     expect(result.measuredBaseTdeeKcal, closeTo(2770, 0.01));
-    expect(result.calculatedBaseTdeeKcal, closeTo(2371, 0.01));
-    expect(result.newBaseGoalKcal, closeTo(2371, 0.01));
-    expect(result.dynamicGoalTodayKcal, closeTo(2371, 0.01));
+    // A 6-day window enters with 0.5 × 6 / 28.
+    expect(result.calculatedBaseTdeeKcal, closeTo(2261.07, 0.01));
+    expect(result.newBaseGoalKcal, closeTo(2261.07, 0.01));
+    expect(result.dynamicGoalTodayKcal, closeTo(2261.07, 0.01));
   });
 
   test('rest day uses learned Base-TDEE without activity credit', () {

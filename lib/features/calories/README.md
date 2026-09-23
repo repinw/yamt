@@ -169,8 +169,12 @@ The measured learning signal is calculated strictly from intake and weight trend
 
 ```text
 measuredTdee = averageIntake - weightTrendKgPerDay * 7700
-newLearnedTdee = oldLearnedTdee * 0.70 + measuredTdee * 0.30
+newDataWeight = 0.5 * learningDays / 28
+newLearnedTdee = oldLearnedTdee * (1 - newDataWeight) + measuredTdee * newDataWeight
 ```
+
+A short window at the start of a goal is noisy, so it moves the learned TDEE
+less than a full 28-day window.
 
 ### Pause Days & Missing Days
 
@@ -181,14 +185,18 @@ newLearnedTdee = oldLearnedTdee * 0.70 + measuredTdee * 0.30
   - Check-in triggers every 7 days from the anchor start date.
   - >= 3 missing days blocks learning due to insufficient data.
 
-Weight handling uses median filtering plus a trendline:
+Weight handling in the weekly runs uses raw daily weights and a robust slope:
 
 ```text
 health samples per day -> median
 manual weight overrides health median
-weight points -> local median-of-three smoothing
-linear regression slope -> kg/day trend
+weight points -> Theil-Sen slope (median of pairwise slopes) -> kg/day trend
 ```
+
+The runs never use the smoothed trend weight from Health. A simulation showed
+that pre-smoothed weights delay the learned TDEE by one to two weeks without
+making it calmer. The TDEE analytics page shows the smoothed trend weight as
+its weight line, weight numbers, and goal projection.
 
 ## Accepted Dependencies
 

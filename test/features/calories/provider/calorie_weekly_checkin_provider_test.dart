@@ -933,7 +933,7 @@ void main() {
       expect(checkInData.days.last.weightKg, 81.4);
       expect(
         checkInData.calculation?.trendWeightChangePerDay,
-        closeTo(-0.085063, 0.00001),
+        closeTo(-0.085714, 0.00001),
       );
       expect(checkInData.calculation?.averageIntakeKcal, closeTo(2080, 0.01));
 
@@ -1142,11 +1142,12 @@ void main() {
       DateTime(2026, 4, 15),
     );
     expect(checkInData.isReady, isTrue);
+    // Replay: 2400 → 2475 (7-day window, 0.125) → 2606.25 (14 days, 0.25).
     expect(
       checkInData.calculation?.calculatedTrueTdeeKcal,
-      closeTo(2706, 0.01),
+      closeTo(2606.25, 0.01),
     );
-    expect(checkInData.calculation?.newGoalKcal, closeTo(2706, 0.01));
+    expect(checkInData.calculation?.newGoalKcal, closeTo(2606.25, 0.01));
   });
 
   test('previous snapshot does not limit next check-in source data', () async {
