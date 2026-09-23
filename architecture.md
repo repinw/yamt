@@ -460,6 +460,11 @@ Much existing code breaks these rules. It is not precedent.
 - In a file that you touch, fix legacy code only when the fix is small (about
   20 lines) and belongs to the responsibility of your change. Name larger
   findings in your summary for a refactoring task.
+- **Claude only:** also write every legacy finding that you do not fix into
+  the backlog in your memory directory: one `<topic>-backlog.md` memory per
+  finding, with file and line, plus its line in `MEMORY.md`. Update an
+  existing backlog memory instead of adding a duplicate. Other agents skip
+  this step.
 
 ### Planned Moves
 
