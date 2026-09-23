@@ -1,0 +1,14 @@
+/* Static text for the iOS home-screen widget. Same keys and values as the
+   Android widget's android/app/src/main/res/values/strings.xml. */
+"home_widget_description" = "Today's calories and macros left, plus quick food logging.";
+"home_widget_no_data" = "Open YAMT to load today's summary";
+"home_widget_left_today" = "Left today";
+"home_widget_over_goal" = "Over goal";
+"home_widget_unit_kcal" = "kcal";
+"home_widget_unit_gram" = "g";
+"home_widget_protein" = "Protein";
+"home_widget_carbs" = "Carbs";
+"home_widget_fat" = "Fat";
+"home_widget_action_search" = "Search";
+"home_widget_action_ai" = "AI";
+"home_widget_action_barcode" = "Barcode";

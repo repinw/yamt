@@ -1,8 +1,10 @@
 # Home Widget Feature
 
-Home Widget owns the Android home-screen launcher widget. It mirrors the
-Diary daily balance card (kcal and macros left) and offers the compact
+Home Widget owns the Android and iOS home-screen widgets. They mirror the
+Diary daily balance card (kcal and macros left) and offer the compact
 quick-eat shortcuts (search, AI, barcode). Tapping the card opens the app.
+On iOS the medium size shows the card only; the large size adds the
+quick-eat bar.
 
 ## Owns
 
@@ -25,9 +27,12 @@ quick-eat shortcuts (search, AI, barcode). Tapping the card opens the app.
   `diaryHomeWidgetSummaryProvider`.
 - The product search hub, barcode scanner, or AI food estimate flows —
   navigates to them, does not implement them.
-- Native widget rendering (Kotlin Glance under
-  `android/app/src/main/kotlin/de/yamt/app/homewidget/`) — no Dart code
-  renders the widget itself.
+- Native widget rendering — Kotlin Glance under
+  `android/app/src/main/kotlin/de/yamt/app/homewidget/`, a SwiftUI WidgetKit
+  extension (target `HomeDiaryWidget`) under `ios/HomeDiaryWidget/`. No Dart
+  code renders the widget itself. On iOS the app and the extension share the
+  snapshot through the App Group `group.de.yamt.app`; widget taps reach
+  Flutter through the `homewidget` URL scheme in `ios/Runner/Info.plist`.
 - Navigation on widget tap — `lib/app.dart` (the composition root) listens to
   `homeWidgetClickActionProvider` and calls `context.push`.
 - The Settings row — Settings renders it through the public edge below.
@@ -73,7 +78,3 @@ and `homeWidgetClickActionProvider` directly.
 
 - `test/features/home_widget/application/`
 - `test/features/home_widget/presentation/`
-
-## Legacy
-
-- Android only. An iOS WidgetKit extension is a planned follow-up.

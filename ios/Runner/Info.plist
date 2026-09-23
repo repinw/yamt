@@ -20,6 +20,16 @@
 				<string>com.googleusercontent.apps.1081825170446-983f1du3ein766kbqdvcb23pboubdbi7</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>de.yamt.app.homewidget</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>homewidget</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>

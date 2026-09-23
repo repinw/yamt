@@ -23,6 +23,19 @@ void main() {
     );
   });
 
+  test('parses the iOS uris, which carry the plugin homeWidget item', () {
+    expect(
+      parseHomeWidgetActionUri(
+        Uri.parse('homewidget://quick-add?intent=barcode&homeWidget'),
+      ),
+      ProductSearchHubInitialIntent.barcode,
+    );
+    expect(
+      parseHomeWidgetActionUri(Uri.parse('homewidget://open?homeWidget')),
+      isNull,
+    );
+  });
+
   test('returns null for the card tap, which only opens the app', () {
     expect(parseHomeWidgetActionUri(Uri.parse('homewidget://open')), isNull);
   });

@@ -15,6 +15,19 @@ const homeWidgetSnapshotDataKey = 'diary_home_widget_snapshot';
 const homeWidgetAndroidProviderName =
     'de.yamt.app.homewidget.HomeDiaryWidgetReceiver';
 
+/// iOS widget kind `updateWidget` reloads.
+///
+/// Must match `widgetKind` in `ios/HomeDiaryWidget/HomeDiaryWidget.swift`.
+const homeWidgetIOSName = 'HomeDiaryWidget';
+
+/// App Group the iOS app shares the snapshot with its widget extension
+/// through. Ignored on Android.
+///
+/// Must match `homeWidgetAppGroupId` in
+/// `ios/HomeDiaryWidget/HomeDiarySnapshot.swift` and both iOS targets'
+/// entitlements.
+const homeWidgetIOSAppGroupId = 'group.de.yamt.app';
+
 /// Talks to the native home-screen widget through the `home_widget` plugin:
 /// stores the snapshot, asks for a redraw, and reports widget taps.
 class HomeWidgetPluginBridge {
@@ -29,9 +42,11 @@ class HomeWidgetPluginBridge {
       await plugin.HomeWidget.saveWidgetData<String>(
         homeWidgetSnapshotDataKey,
         snapshotJson,
+        appGroupId: homeWidgetIOSAppGroupId,
       );
       await plugin.HomeWidget.updateWidget(
         qualifiedAndroidName: homeWidgetAndroidProviderName,
+        iOSName: homeWidgetIOSName,
       );
     } on PlatformException catch (error) {
       throw HomeWidgetSyncFailedException(error);

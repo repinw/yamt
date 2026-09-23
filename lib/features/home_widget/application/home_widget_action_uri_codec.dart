@@ -1,9 +1,10 @@
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 
-// The native widget builds these URIs (android/.../homewidget/QuickEatBar.kt):
-// homewidget://quick-add?intent=<value>. Any other URI (the card tap sends
-// homewidget://open) only opens the app.
+// The native widgets build these URIs (android/.../homewidget/QuickEatBar.kt,
+// ios/HomeDiaryWidget/QuickEatBar.swift): homewidget://quick-add?intent=<value>
+// (iOS adds a `homeWidget` query item the plugin needs). Any other URI (the
+// card tap sends homewidget://open) only opens the app.
 const _homeWidgetActionScheme = 'homewidget';
 const _homeWidgetActionHost = 'quick-add';
 const _homeWidgetActionIntentParam = 'intent';
