@@ -2521,36 +2521,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryHealthLabel => 'Health';
-
-  @override
-  String get diaryHealthInstallTitle => 'Install Health';
-
-  @override
-  String get diaryHealthHistoryTitle => 'Allow history';
-
-  @override
-  String get diaryHealthUnsupportedTitle => 'Health unavailable';
-
-  @override
-  String get diaryHealthConnectTitle => 'Connect Health';
-
-  @override
-  String get diaryHealthPermissionDenied => 'Permission was not granted.';
-
-  @override
-  String get diaryHealthInstallBody => 'For steps and activity.';
-
-  @override
-  String get diaryHealthHistoryBody => 'Allow older days.';
-
-  @override
-  String get diaryHealthUnsupportedBody => 'Not available on this device.';
-
-  @override
-  String get diaryHealthConnectBody => 'Connect steps and activity.';
-
-  @override
   String get diaryStepsTitle => 'Steps';
 
   @override
@@ -2692,16 +2662,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsHealthConnectTitle => 'Connect health';
 
   @override
-  String get settingsHealthConnectSubtitle => 'Allow YAMT to read steps, workouts, and burned calories from Health Connect.';
+  String get settingsHealthConnectSubtitle => 'Allow YAMT to read and save your weight in Health Connect.';
 
   @override
   String get settingsAppleHealthTitle => 'Apple Health';
 
   @override
-  String get settingsAppleHealthConnectSubtitle => 'Allow YAMT to read steps, workouts, and burned calories from Apple Health.';
+  String get settingsAppleHealthConnectSubtitle => 'Allow YAMT to read and save your weight in Apple Health.';
 
   @override
-  String get settingsHealthHistorySubtitle => 'Allow older Health Connect history so past diary days can load activity data.';
+  String get settingsHealthHistorySubtitle => 'Allow older Health Connect history so earlier weigh-ins can load.';
 
   @override
   String get settingsHealthInstallSubtitle => 'Install Health Connect before you can connect health data here.';

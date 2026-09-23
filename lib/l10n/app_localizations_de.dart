@@ -2521,36 +2521,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get diaryHealthLabel => 'Health';
-
-  @override
-  String get diaryHealthInstallTitle => 'Health installieren';
-
-  @override
-  String get diaryHealthHistoryTitle => 'Verlauf erlauben';
-
-  @override
-  String get diaryHealthUnsupportedTitle => 'Health nicht verfügbar';
-
-  @override
-  String get diaryHealthConnectTitle => 'Health verbinden';
-
-  @override
-  String get diaryHealthPermissionDenied => 'Berechtigung wurde nicht erteilt.';
-
-  @override
-  String get diaryHealthInstallBody => 'Für Schritte und Aktivität.';
-
-  @override
-  String get diaryHealthHistoryBody => 'Für ältere Tage erlauben.';
-
-  @override
-  String get diaryHealthUnsupportedBody => 'Auf diesem Gerät nicht verfügbar.';
-
-  @override
-  String get diaryHealthConnectBody => 'Schritte und Aktivität verbinden.';
-
-  @override
   String get diaryStepsTitle => 'Schritte';
 
   @override
@@ -2692,16 +2662,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsHealthConnectTitle => 'Health verbinden';
 
   @override
-  String get settingsHealthConnectSubtitle => 'Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Health Connect zu lesen.';
+  String get settingsHealthConnectSubtitle => 'Erlaube YAMT, dein Gewicht in Health Connect zu lesen und zu speichern.';
 
   @override
   String get settingsAppleHealthTitle => 'Apple Health';
 
   @override
-  String get settingsAppleHealthConnectSubtitle => 'Erlaube YAMT, Schritte, Workouts und verbrannte Kalorien aus Apple Health zu lesen.';
+  String get settingsAppleHealthConnectSubtitle => 'Erlaube YAMT, dein Gewicht in Apple Health zu lesen und zu speichern.';
 
   @override
-  String get settingsHealthHistorySubtitle => 'Erlaube ältere Health-Connect-Historie, damit vergangene Tagebuch-Tage Aktivitätsdaten laden können.';
+  String get settingsHealthHistorySubtitle => 'Erlaube ältere Health-Connect-Historie, damit frühere Wiegungen laden.';
 
   @override
   String get settingsHealthInstallSubtitle => 'Installiere Health Connect, bevor du hier Gesundheitsdaten verbinden kannst.';

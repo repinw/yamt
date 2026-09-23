@@ -365,10 +365,7 @@ void main() {
 
     await _scrollToText(tester, 'Health Connect');
     expect(
-      find.text(
-        'Allow YAMT to read steps, workouts, and burned calories from '
-        'Health Connect.',
-      ),
+      find.text('Allow YAMT to read and save your weight in Health Connect.'),
       findsOneWidget,
     );
 
@@ -455,8 +452,7 @@ void main() {
     await _scrollToText(tester, 'Health Connect');
     expect(
       find.text(
-        'Allow older Health Connect history so past diary days can load '
-        'activity data.',
+        'Allow older Health Connect history so earlier weigh-ins can load.',
       ),
       findsOneWidget,
     );

@@ -4775,66 +4775,6 @@ abstract class AppLocalizations {
   /// **'x {count}'**
   String diaryCounterLabel(int count);
 
-  /// No description provided for @diaryHealthLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Health'**
-  String get diaryHealthLabel;
-
-  /// No description provided for @diaryHealthInstallTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Install Health'**
-  String get diaryHealthInstallTitle;
-
-  /// No description provided for @diaryHealthHistoryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Allow history'**
-  String get diaryHealthHistoryTitle;
-
-  /// No description provided for @diaryHealthUnsupportedTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Health unavailable'**
-  String get diaryHealthUnsupportedTitle;
-
-  /// No description provided for @diaryHealthConnectTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect Health'**
-  String get diaryHealthConnectTitle;
-
-  /// No description provided for @diaryHealthPermissionDenied.
-  ///
-  /// In en, this message translates to:
-  /// **'Permission was not granted.'**
-  String get diaryHealthPermissionDenied;
-
-  /// No description provided for @diaryHealthInstallBody.
-  ///
-  /// In en, this message translates to:
-  /// **'For steps and activity.'**
-  String get diaryHealthInstallBody;
-
-  /// No description provided for @diaryHealthHistoryBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Allow older days.'**
-  String get diaryHealthHistoryBody;
-
-  /// No description provided for @diaryHealthUnsupportedBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Not available on this device.'**
-  String get diaryHealthUnsupportedBody;
-
-  /// No description provided for @diaryHealthConnectBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect steps and activity.'**
-  String get diaryHealthConnectBody;
-
   /// No description provided for @diaryStepsTitle.
   ///
   /// In en, this message translates to:
@@ -5108,7 +5048,7 @@ abstract class AppLocalizations {
   /// No description provided for @settingsHealthConnectSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Allow YAMT to read steps, workouts, and burned calories from Health Connect.'**
+  /// **'Allow YAMT to read and save your weight in Health Connect.'**
   String get settingsHealthConnectSubtitle;
 
   /// No description provided for @settingsAppleHealthTitle.
@@ -5120,13 +5060,13 @@ abstract class AppLocalizations {
   /// No description provided for @settingsAppleHealthConnectSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Allow YAMT to read steps, workouts, and burned calories from Apple Health.'**
+  /// **'Allow YAMT to read and save your weight in Apple Health.'**
   String get settingsAppleHealthConnectSubtitle;
 
   /// No description provided for @settingsHealthHistorySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Allow older Health Connect history so past diary days can load activity data.'**
+  /// **'Allow older Health Connect history so earlier weigh-ins can load.'**
   String get settingsHealthHistorySubtitle;
 
   /// No description provided for @settingsHealthInstallSubtitle.
