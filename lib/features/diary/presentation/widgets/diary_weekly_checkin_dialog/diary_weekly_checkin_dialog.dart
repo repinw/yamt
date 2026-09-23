@@ -58,7 +58,7 @@ class _DiaryWeeklyCheckInDialog extends StatelessWidget {
       title: Text(l10n.caloriesWeeklyCheckInDialogTitle),
       content: DiaryWeeklyCheckInDialogContent(checkInData: checkInData),
       actions: <Widget>[
-        if (!goalReached && _shouldShowTrackMissingWeight(checkInData))
+        if (!goalReached && diaryCheckInCanTrackMissingWeight(checkInData))
           DiaryWeeklyCheckInTrackMissingWeightAction(
             onPressed: () {
               Navigator.of(context)
@@ -95,17 +95,5 @@ class _DiaryWeeklyCheckInDialog extends StatelessWidget {
         ],
       ],
     );
-  }
-
-  bool _shouldShowTrackMissingWeight(DiaryWeeklyCheckInData checkInData) {
-    if (checkInData.missingWeightDays.isEmpty) {
-      return false;
-    }
-
-    return switch (checkInData.blockedReason) {
-      CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight ||
-      CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight => true,
-      _ => false,
-    };
   }
 }

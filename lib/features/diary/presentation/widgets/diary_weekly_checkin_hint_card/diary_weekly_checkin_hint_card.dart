@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_weekly_checkin_hint_card/diary_weekly_checkin_hint_card_body.dart';
+    'diary_weekly_checkin_hint_card/diary_weekly_checkin_hint_text.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines diary weekly check-in hint card.
 class DiaryWeeklyCheckInHintCard extends StatelessWidget {
@@ -40,14 +45,127 @@ class DiaryWeeklyCheckInHintCard extends StatelessWidget {
     if (!checkInData.showDiaryHint) {
       return const SizedBox.shrink();
     }
+    final colors = Theme.of(context).colorScheme;
+    final pending = checkInData.pendingWeeklyCheckIn;
+    final skipDayData = _resolveSkippableDay(pending);
 
-    return DiaryWeeklyCheckInHintCardBody(
-      checkInData: checkInData,
-      selectedDay: selectedDay,
-      selectedDayHasEntries: selectedDayHasEntries,
-      onContinue: onContinue,
-      onTrackMissingWeight: onTrackMissingWeight,
-      onToggleSelectedDaySkipped: onToggleSelectedDaySkipped,
+    return DecoratedBox(
+      key: DiaryWeeklyCheckInCardKeys.hintCard,
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: colors.outlineVariant),
+      ),
+      child: Padding(
+        padding: AppInsets.card,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            DiaryWeeklyCheckInHintTitle(checkInData: checkInData),
+            const SizedBox(height: AppSpacing.xs),
+            DiaryWeeklyCheckInHintBody(checkInData: checkInData),
+            const SizedBox(height: AppSpacing.md),
+            Wrap(
+              spacing: AppSpacing.sm,
+              runSpacing: AppSpacing.sm,
+              children: <Widget>[
+                if (pending != null) _ContinueButton(onPressed: onContinue),
+                if (diaryCheckInCanTrackMissingWeight(checkInData))
+                  _TrackMissingWeightButton(onPressed: onTrackMissingWeight),
+                if (skipDayData != null)
+                  _SkipDayButton(
+                    selectedDayData: skipDayData,
+                    onToggleSelectedDaySkipped: onToggleSelectedDaySkipped,
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  CalorieWeeklyCheckInWindowDay? _resolveSkippableDay(
+    PendingCalorieGoalWeeklyCheckIn? pending,
+  ) {
+    if (pending == null ||
+        selectedDay.isBefore(pending.windowStartDate) ||
+        selectedDay.isAfter(pending.windowEndDate)) {
+      return null;
+    }
+    final selectedDayData = checkInData.days
+        .where((day) => DateUtils.isSameDay(day.day, selectedDay))
+        .firstOrNull;
+    if (selectedDayData == null ||
+        (selectedDayHasEntries && !selectedDayData.isSkippedIntakeDay)) {
+      return null;
+    }
+    return selectedDayData;
+  }
+}
+
+class _ContinueButton extends StatelessWidget {
+  const new({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return FilledButton(
+      key: DiaryWeeklyCheckInCardKeys.continueButton,
+      onPressed: onPressed,
+      child: Text(l10n.caloriesWeeklyCheckInHintContinueAction),
+    );
+  }
+}
+
+class _TrackMissingWeightButton extends StatelessWidget {
+  const new({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return OutlinedButton(
+      key: DiaryWeeklyCheckInCardKeys.trackMissingWeightButton,
+      onPressed: onPressed,
+      child: Text(l10n.caloriesWeeklyCheckInTrackMissingWeightAction),
+    );
+  }
+}
+
+class _SkipDayButton extends StatelessWidget {
+  const new({
+    required this.selectedDayData,
+    required this.onToggleSelectedDaySkipped,
+  });
+
+  final CalorieWeeklyCheckInWindowDay selectedDayData;
+  final Future<void> Function({required bool isSkipped})
+  onToggleSelectedDaySkipped;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return OutlinedButton(
+      key: DiaryWeeklyCheckInCardKeys.skipDayButton,
+      onPressed: () {
+        unawaited(
+          onToggleSelectedDaySkipped(
+            isSkipped: !selectedDayData.isSkippedIntakeDay,
+          ),
+        );
+      },
+      child: Text(
+        selectedDayData.isSkippedIntakeDay
+            ? l10n.caloriesWeeklyCheckInUnskipDayAction
+            : l10n.caloriesWeeklyCheckInSkipDayAction,
+      ),
     );
   }
 }

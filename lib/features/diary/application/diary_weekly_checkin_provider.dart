@@ -76,6 +76,19 @@ double? latestDiaryCheckInWeightKg(DiaryWeeklyCheckInData data) {
   return null;
 }
 
+/// Whether the check-in waits for a weight that the user can still track.
+bool diaryCheckInCanTrackMissingWeight(DiaryWeeklyCheckInData data) {
+  if (data.missingWeightDays.isEmpty) {
+    return false;
+  }
+
+  return switch (data.blockedReason) {
+    CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight ||
+    CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight => true,
+    _ => false,
+  };
+}
+
 /// Weekly check-in data consumed by diary UI.
 @riverpod
 Future<DiaryWeeklyCheckInData> diaryWeeklyCheckInData(Ref ref) {
