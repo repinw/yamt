@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_color_roles.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_animated_macro_bar.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_scaled_value_text.dart';
 
@@ -66,7 +67,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
     final remainingFormatted = numberFormat.format(
       math.max(0, roundedRemaining),
     );
-    final trackColor = colors.surface;
+    final trackColor = colors.progressTrack;
     final textTheme = Theme.of(context).textTheme;
     // Without the totals column the remaining grams get more room and size.
     final valueStyle =

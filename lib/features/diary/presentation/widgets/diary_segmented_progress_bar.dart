@@ -82,12 +82,12 @@ class DiarySegmentedProgressBar extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: color,
                           borderRadius: BorderRadius.circular(AppRadius.pill),
-                          boxShadow: segmentFill > 0
+                          // The glow reads as a blur on light backgrounds,
+                          // so only dark mode gets it.
+                          boxShadow: isDark && segmentFill > 0
                               ? [
                                   BoxShadow(
-                                    color: color.withValues(
-                                      alpha: isDark ? 0.35 : 0.42,
-                                    ),
+                                    color: color.withValues(alpha: 0.35),
                                     blurRadius: 3,
                                   ),
                                 ]

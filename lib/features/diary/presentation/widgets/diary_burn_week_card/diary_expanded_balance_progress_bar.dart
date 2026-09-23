@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/theme/app_color_roles.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart';
@@ -40,7 +41,7 @@ class DiaryExpandedBalanceProgressBar extends StatelessWidget {
     final activity = accents.activityFor(colors.brightness);
     final targetLabel = AppLocalizations.of(context)!
         .diaryBalanceTargetMarkerLabel;
-    final trackColor = colors.surface;
+    final trackColor = colors.progressTrack;
     final dividerColor = diaryBalanceProgressDividerColor(colors);
 
     return SizedBox(

@@ -9,13 +9,9 @@ class DiaryBalanceLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark
-        ? const Color(0xFF1F2937)
-        : const Color(0xFFDDE6E0);
-    final highlightColor = isDark
-        ? const Color(0xFF374151)
-        : const Color(0xFFF8FAFC);
+    final colors = Theme.of(context).colorScheme;
+    final baseColor = colors.surfaceContainerHigh;
+    final highlightColor = colors.surfaceBright;
 
     return DiaryBalanceShell(
       child: _ShimmerSkeleton(

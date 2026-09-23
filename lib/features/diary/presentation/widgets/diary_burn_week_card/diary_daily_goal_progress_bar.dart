@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_color_roles.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_goal_progress_track.dart';
@@ -77,7 +78,7 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
       numberFormat,
       unit,
     );
-    final trackColor = colors.surface;
+    final trackColor = colors.progressTrack;
     final activityColor = accents.activityFor(colors.brightness);
     final activityTextColor = accents.activityTextFor(colors.brightness);
     final primary = accents.today;

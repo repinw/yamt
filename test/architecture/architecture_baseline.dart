@@ -500,8 +500,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/data/global_food_receipt_alias_repository.dart': 1,
   },
   'theme-values': {
-    'lib/features/activity/presentation/widgets/weight_card/diary_weight_missing_prompt_card.dart':
-        1,
     'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_action_buttons_row.dart':
         1,
     'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_loading_view.dart':
@@ -532,7 +530,7 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/cooking_flow/presentation/cooking_flow_summary_page.dart': 2,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_loading.dart':
-        5,
+        1,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
         1,
     'lib/features/home/widgets/home_context_fab.dart': 1,

@@ -33,13 +33,17 @@ class DiaryWeightMissingPromptCard extends StatelessWidget {
         color: backgroundColor,
         borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: borderColor),
-        boxShadow: [
-          BoxShadow(
-            color: accentColors.activity.withValues(alpha: isDark ? 0.1 : 0.15),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
+        // The glow reads as a blur on light backgrounds, so only dark mode
+        // gets it.
+        boxShadow: isDark
+            ? [
+                BoxShadow(
+                  color: titleColor.withValues(alpha: 0.1),
+                  blurRadius: 18,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : null,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppRadius.lg),
@@ -51,7 +55,7 @@ class DiaryWeightMissingPromptCard extends StatelessWidget {
               child: Icon(
                 Icons.trending_down_rounded,
                 size: 82,
-                color: Colors.white.withValues(alpha: isDark ? 0.04 : 0.35),
+                color: titleColor.withValues(alpha: isDark ? 0.06 : 0.1),
               ),
             ),
             Positioned(
@@ -107,7 +111,7 @@ class DiaryWeightMissingPromptCard extends StatelessWidget {
                         onPressed: onDismiss,
                         style: TextButton.styleFrom(
                           foregroundColor: textColor,
-                          backgroundColor: accentColors.activity.withValues(
+                          backgroundColor: titleColor.withValues(
                             alpha: isDark ? 0.18 : 0.12,
                           ),
                           minimumSize: const Size(44, 30),
