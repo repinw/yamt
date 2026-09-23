@@ -364,23 +364,36 @@ class PreparedMealEditingWorkflows {
     required String mealId,
     required num portions,
   }) async {
-    if (portions <= 0) {
-      _context.logMessage(
-        'restorePreparedMealPortions(): invalid portions=$portions '
-        '(mealId=$mealId)',
-      );
+    if (!_hasPositivePortions(mealId, portions)) {
       return false;
     }
+    return await _moveRemainingPortions(mealId: mealId, portions: portions);
+  }
 
+  bool _hasPositivePortions(String mealId, num portions) {
+    if (portions > 0) {
+      return true;
+    }
     _context.logMessage(
-      'restorePreparedMealPortions(): starting '
+      'Invalid prepared meal portions=$portions (mealId=$mealId)',
+    );
+    return false;
+  }
+
+  /// Adds [portions] to the remaining portions; a negative value takes them.
+  Future<bool> _moveRemainingPortions({
+    required String mealId,
+    required num portions,
+  }) async {
+    _context.logMessage(
+      '_moveRemainingPortions(): starting '
       '(mealId=$mealId, portions=$portions)',
     );
     final currentMeals = await _context.loadMeals();
     final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
     if (mealIndex < 0) {
       _context.logMessage(
-        'restorePreparedMealPortions(): meal not found '
+        '_moveRemainingPortions(): meal not found '
         '(mealId=$mealId, portions=$portions, '
         'knownMeals=${currentMeals.length})',
       );
@@ -389,9 +402,10 @@ class PreparedMealEditingWorkflows {
 
     final meal = currentMeals[mealIndex];
     final nextRemainingPortions = meal.remainingPortions + portions;
-    if (nextRemainingPortions > meal.totalPortions) {
+    if (nextRemainingPortions < 0 ||
+        nextRemainingPortions > meal.totalPortions) {
       _context.logMessage(
-        'restorePreparedMealPortions(): restore exceeds total portions '
+        '_moveRemainingPortions(): portions out of range '
         '(mealId=$mealId, nextRemaining=$nextRemainingPortions, '
         'totalPortions=${meal.totalPortions})',
       );
@@ -409,14 +423,14 @@ class PreparedMealEditingWorkflows {
     );
     if (!saved) {
       _context.logMessage(
-        'restorePreparedMealPortions(): failed to save restored portions '
+        '_moveRemainingPortions(): failed to save portions '
         '(mealId=$mealId)',
       );
       return false;
     }
 
     _context.logMessage(
-      'restorePreparedMealPortions(): succeeded '
+      '_moveRemainingPortions(): succeeded '
       '(mealId=$mealId, remainingPortions=${meal.remainingPortions}, '
       'nextRemainingPortions=$nextRemainingPortions)',
     );
