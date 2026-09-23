@@ -74,6 +74,48 @@ void main() {
     expect(harness.currentLocation, '/');
   });
 
+  testWidgets('starts the first week on a day picked in the calendar', (
+    tester,
+  ) async {
+    final harness = await _pumpIntro(tester);
+
+    await _completeIntro(tester);
+    await _tapOtherStartDay(tester);
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+    await tester.tap(find.text('20'));
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sun, Sep 20'), findsOneWidget);
+    expect(find.text('Start on Sep 20'), findsOneWidget);
+    await _tapFinish(tester);
+
+    final settings = await harness.settingsRepository.readSettings();
+    expect(
+      settings.goalHistory.single.effectiveCountingStartDate,
+      DateTime(2026, 9, 20),
+    );
+    expect(harness.runStateRepository.state.currentWeekStartDayKey, isNull);
+  });
+
+  testWidgets('offers only today up to two weeks ahead in the calendar', (
+    tester,
+  ) async {
+    await _pumpIntro(tester);
+
+    await _completeIntro(tester);
+    await _tapOtherStartDay(tester);
+    // Yesterday and the day after the two-week limit cannot be picked.
+    await tester.tap(find.text('16'));
+    await tester.tap(find.byTooltip('Next month'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('2'));
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Start today'), findsOneWidget);
+  });
+
   testWidgets('proposes tomorrow when onboarding ends in the evening', (
     tester,
   ) async {
@@ -342,6 +384,15 @@ Future<void> _completeIntro(
   await _tapNext(tester);
 
   await _tapNext(tester);
+}
+
+Future<void> _tapOtherStartDay(WidgetTester tester) async {
+  final otherDay = find.byKey(
+    CalorieGoalOnboardingKeys.introStartOtherDayChoice,
+  );
+  await tester.ensureVisible(otherDay);
+  await tester.tap(otherDay);
+  await tester.pumpAndSettle();
 }
 
 Future<void> _tapNext(WidgetTester tester) async {
