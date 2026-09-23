@@ -75,7 +75,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 - Activity and weight section used by the diary.
 - Steps, workouts, burned calories, and manual/imported weight data.
-- Weight prompt when useful data is missing.
+- Weight prompt when today has no weight, on the Progress tab and on today's
+  diary page. Dismissing it hides it on both for that day.
 - Health connection actions from diary-owned surfaces.
 - Activity aggregation for calorie and diary calculations.
 

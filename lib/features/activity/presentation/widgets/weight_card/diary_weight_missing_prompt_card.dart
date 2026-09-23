@@ -101,24 +101,8 @@ class DiaryWeightMissingPromptCard extends StatelessWidget {
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Expanded(
-                        child: TextButton(
-                          onPressed: onTrack,
-                          style: TextButton.styleFrom(
-                            foregroundColor: titleColor,
-                            padding: EdgeInsets.zero,
-                            alignment: Alignment.centerLeft,
-                            textStyle: Theme.of(context).textTheme.labelSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                  letterSpacing: 0.8,
-                                ),
-                          ),
-                          child: Text(l10n.diaryWeightTrackNowAction),
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.xs),
                       TextButton(
                         onPressed: onDismiss,
                         style: TextButton.styleFrom(
@@ -137,6 +121,24 @@ class DiaryWeightMissingPromptCard extends StatelessWidget {
                           ),
                         ),
                         child: Text(l10n.diaryOkAction),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Flexible(
+                        child: TextButton(
+                          onPressed: onTrack,
+                          style: TextButton.styleFrom(
+                            foregroundColor: titleColor,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.sm,
+                            ),
+                            textStyle: Theme.of(context).textTheme.labelSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.8,
+                                ),
+                          ),
+                          child: Text(l10n.diaryWeightTrackNowAction),
+                        ),
                       ),
                     ],
                   ),

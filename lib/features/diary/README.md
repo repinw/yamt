@@ -33,7 +33,8 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   view places the trigger sliver directly above its daily card.
 - `presentation/widgets/diary_weekly_progress_section.dart` is the weekly
   budget, activity, and weight card. The Progress tab shows it; the diary page
-  does not.
+  does not. The diary page shows only the Activity missing-weight prompt, below
+  the weekly check-in, and only on today.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the
   diary-facing daily and weekly calorie balance UI.
   The daily card is quiet by default (kcal and grams left only) and shows all
@@ -85,8 +86,8 @@ Main application adapters and mappers:
 ## Accepted Dependencies
 
 - `core` for diary day normalization, routes, theme tokens, and shared widgets.
-- `features/activity` for the complete activity and weight diary section, and
-  the Activity-owned weight tracking flow.
+- `features/activity` for the complete activity and weight diary section, the
+  missing-weight prompt, and the Activity-owned weight tracking flow.
 - `features/calories` for calorie log data, goal settings, Burn Week state, and
   weekly check-in behavior through Diary application adapters. The weekly
   check-in dialog opens the public new-goal sheet

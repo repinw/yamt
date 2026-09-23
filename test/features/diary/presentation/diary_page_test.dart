@@ -12,7 +12,9 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
+import 'package:yamt/features/activity/presentation/widgets/diary_weight_missing_prompt_section.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
+import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_missing_prompt_card.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
@@ -106,14 +108,19 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 }
 
 class _TestDiaryCalendarController extends DiaryCalendarController {
-  new(this.day);
+  new(this.day, {this.today});
 
   final DateTime day;
+
+  final DateTime? today;
 
   @override
   DiaryCalendarState build() {
     final normalizedDay = normalizeDiaryDay(day);
-    return DiaryCalendarState(today: normalizedDay, selectedDay: normalizedDay);
+    return DiaryCalendarState(
+      today: normalizeDiaryDay(today ?? day),
+      selectedDay: normalizedDay,
+    );
   }
 }
 
@@ -765,6 +772,48 @@ void main() {
     },
   );
 
+  testWidgets('shows the missing-weight prompt on today without weight', (
+    tester,
+  ) async {
+    await _pumpDiaryPage(tester, selectedDay: selectedDay);
+
+    expect(find.byType(DiaryWeightMissingPromptSection), findsOneWidget);
+    expect(find.byType(DiaryWeightMissingPromptCard), findsOneWidget);
+  });
+
+  testWidgets('hides the missing-weight prompt while the check-in asks for '
+      'weight', (tester) async {
+    final missingWeightDay = DateTime(2026, 4, 21);
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      preloadedWeeklyCheckIn: _weeklyCheckInCheckInData(
+        windowStartDate: missingWeightDay,
+        shouldAutoOpen: false,
+        blockedReason:
+            CalorieWeeklyCheckInBlockedReason.missingWindowStartWeight,
+        missingWeightDays: [missingWeightDay],
+      ),
+    );
+
+    expect(
+      find.byKey(DiaryWeeklyCheckInCardKeys.trackMissingWeightButton),
+      findsOneWidget,
+    );
+    expect(find.byType(DiaryWeightMissingPromptSection), findsNothing);
+  });
+
+  testWidgets('hides the missing-weight prompt on past days', (tester) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      today: selectedDay.add(const Duration(days: 1)),
+    );
+
+    expect(find.byType(DiaryWeightMissingPromptSection), findsNothing);
+  });
+
   testWidgets('shows weekly check-in success card for todays learned target', (
     tester,
   ) async {
@@ -918,6 +967,7 @@ void main() {
 Future<ProviderContainer> _pumpDiaryPage(
   WidgetTester tester, {
   required DateTime selectedDay,
+  DateTime? today,
   Locale locale = const Locale('en'),
   DiaryWeeklyCheckInData? initialWeeklyCheckIn,
   DiaryWeeklyCheckInData? preloadedWeeklyCheckIn,
@@ -994,7 +1044,7 @@ Future<ProviderContainer> _pumpDiaryPage(
         ),
       ),
       diaryCalendarControllerProvider.overrideWith(
-        () => _TestDiaryCalendarController(selectedDay),
+        () => _TestDiaryCalendarController(selectedDay, today: today),
       ),
       healthConnectionServiceProvider.overrideWithValue(
         healthConnectionService ??

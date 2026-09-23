@@ -21,6 +21,9 @@ Activity providers themselves.
 
 - `presentation/widgets/activity_weight_section/diary_activity_weight_section.dart`
   is the diary section for weight and the weekly balance summary.
+- `presentation/widgets/diary_weight_missing_prompt_section.dart` is the
+  missing-weight prompt on its own, for surfaces that do not show the full
+  weight section.
 - `presentation/diary_weight_tracking_flow.dart` opens the Activity-owned
   diary weight entry flow for callers that already know which day needs weight.
 - Dedicated cards under `presentation/widgets/` may be used by Activity tests
