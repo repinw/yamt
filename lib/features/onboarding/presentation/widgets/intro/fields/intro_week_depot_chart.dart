@@ -2,6 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_intro_layout_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/onboarding/domain/training_week_goals.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Any Monday, used to render localized weekday initials.
@@ -36,15 +37,15 @@ class IntroWeekDepotChart extends StatelessWidget {
 
   int get _restDays => DateTime.daysPerWeek - _trainingDays;
 
-  /// Cycling only shifts calories when there are both kinds of days.
-  double get _effectiveOffset =>
-      _trainingDays == 0 || _restDays == 0 ? 0 : offsetKcal;
+  TrainingWeekGoals get _goals => resolveTrainingWeekGoals(
+    baseGoalKcal: baseGoalKcal,
+    trainingDays: _trainingDays,
+    offsetKcal: offsetKcal,
+  );
 
-  double get _trainingGoal => baseGoalKcal + _effectiveOffset;
+  double get _trainingGoal => _goals.trainingDayKcal;
 
-  double get _restGoal => _restDays == 0
-      ? baseGoalKcal
-      : baseGoalKcal - (_trainingDays * _effectiveOffset) / _restDays;
+  double get _restGoal => _goals.restDayKcal;
 
   @override
   Widget build(BuildContext context) {

@@ -380,7 +380,7 @@ void main() {
     expect(find.textContaining('Fresh run starts on'), findsOneWidget);
   });
 
-  testWidgets('shows practice day card before a future goal start', (
+  testWidgets('shows a practice badge before a future goal start', (
     tester,
   ) async {
     final today = normalizeDiaryDay(DateTime.now());
@@ -400,13 +400,12 @@ void main() {
     );
 
     expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
-    expect(find.text('Practice day'), findsOneWidget);
-    expect(find.textContaining('Burn Week starts on'), findsOneWidget);
-    expect(find.text('Goal: 1,200 kcal'), findsOneWidget);
-    expect(find.text('LEFT TODAY'), findsNothing);
+    expect(find.textContaining('Practice day · counts from'), findsOneWidget);
+    // The real daily card measures the day against the goal that starts later.
+    expect(find.text('Base 1,200 kcal'), findsOneWidget);
   });
 
-  testWidgets('shows practice day card for past day before goal start', (
+  testWidgets('shows the practice badge for a past day before goal start', (
     tester,
   ) async {
     final selectedDay = normalizeDiaryDay(
@@ -428,9 +427,7 @@ void main() {
     );
 
     expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
-    expect(find.text('Practice day'), findsOneWidget);
-    expect(find.textContaining('Burn Week starts on'), findsOneWidget);
-    expect(find.text('LEFT TODAY'), findsNothing);
+    expect(find.textContaining('Practice day · counts from'), findsOneWidget);
   });
 
   testWidgets('keeps Burn Week live sync subscribed on non-live days', (

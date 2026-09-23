@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/'
@@ -34,11 +35,15 @@ CalorieGoalCalculatorFormState _formState({
 
 int _pageIndex(CalorieIntroPage page) => CalorieIntroPage.values.indexOf(page);
 
+final _now = DateTime(2026, 9, 23, 18);
+
 void main() {
   late ProviderContainer container;
 
   setUp(() {
-    container = ProviderContainer();
+    container = ProviderContainer(
+      overrides: [clockProvider.overrideWithValue(() => _now)],
+    );
     addTearDown(container.dispose);
   });
 
@@ -97,13 +102,23 @@ void main() {
       targetWeight: '80',
       goalMode: CalorieGoalMode.maintain,
     );
-    for (var page = 0; page < _pageIndex(CalorieIntroPage.sport); page++) {
+    for (var page = 0; page < _pageIndex(CalorieIntroPage.target); page++) {
       controller().next(maintain);
     }
-    expect(state().currentPage, CalorieIntroPage.sport);
+    expect(state().currentPage, CalorieIntroPage.target);
 
-    expect(controller().next(maintain), _pageIndex(CalorieIntroPage.summary));
-    expect(controller().back(maintain), _pageIndex(CalorieIntroPage.sport));
+    expect(controller().next(maintain), _pageIndex(CalorieIntroPage.activity));
+    expect(controller().back(maintain), _pageIndex(CalorieIntroPage.target));
+  });
+
+  test('proposes tomorrow as start day in the evening', () {
+    expect(state().startDate, DateTime(2026, 9, 24));
+  });
+
+  test('selects another start day as a whole day', () {
+    controller().selectStartDate(DateTime(2026, 9, 26, 15, 30));
+
+    expect(state().startDate, DateTime(2026, 9, 26));
   });
 
   test('tracks saving and route exit flags', () {

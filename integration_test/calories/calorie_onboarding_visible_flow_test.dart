@@ -352,7 +352,7 @@ Future<void> _openIdentityPage(WidgetTester tester) async {
     await _tapIntroNext(tester);
   }
   expect(
-    find.text('Erstmal brauchen wir ein ungefähres Bild von dir.'),
+    find.text('First we need a rough picture of you.'),
     findsOneWidget,
   );
 }
@@ -381,16 +381,20 @@ Future<void> _completeIntro(WidgetTester tester) async {
 
   await _spinWheel(tester, CalorieGoalOnboardingKeys.introTargetWeightWheel);
   await _tapIntroNext(tester);
-
-  await _tapVisible(tester, find.text('Sitting, but on the move'));
   await _tapIntroNext(tester);
 
+  await _tapVisible(tester, find.text('Lightly active'));
   await _tapIntroNext(tester);
+
   await _tapIntroNext(tester);
 }
 
 Future<void> _finishIntro(WidgetTester tester) async {
   expect(find.text('All set!'), findsOneWidget);
+  await _tapVisible(
+    tester,
+    find.byKey(CalorieGoalOnboardingKeys.introStartTodayChoice),
+  );
   await _tapVisible(
     tester,
     find.byKey(CalorieGoalOnboardingKeys.introFinishAction),

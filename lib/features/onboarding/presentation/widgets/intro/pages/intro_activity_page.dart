@@ -9,7 +9,7 @@ import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_page_content.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Intro page that asks how much the user moves on a normal day.
+/// Intro page that asks how active a typical week is, training included.
 class IntroActivityPage extends StatelessWidget {
   /// Creates the activity level intro page.
   const new({required this.args, super.key});
@@ -38,9 +38,6 @@ class IntroActivityPage extends StatelessWidget {
               icon: _icon(option),
               title: _title(l10n, option),
               subtitle: _description(l10n, option),
-              trailingLabel: l10n.introActivityFactor(
-                option.calorieOption.palValue.toStringAsFixed(2),
-              ),
               isSelected: selected == option,
               onTap: () =>
                   args.notifier.updateActivityLevel(option.calorieOption),
@@ -54,7 +51,7 @@ class IntroActivityPage extends StatelessWidget {
     return switch (option) {
       IntroActivityOption.sitting => Icons.chair_outlined,
       IntroActivityOption.light => Icons.directions_walk,
-      IntroActivityOption.onFeet => Icons.local_shipping_outlined,
+      IntroActivityOption.onFeet => Icons.directions_run,
       IntroActivityOption.hardLabour => Icons.construction_outlined,
     };
   }

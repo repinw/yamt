@@ -33,11 +33,7 @@ class CalorieGoalSettings {
     required this.calorieMathVersion,
     this.expectedActivityKcal,
     this.activityTrackingStartDate,
-    this.trainingWeekdays = const <int>[
-      DateTime.monday,
-      DateTime.wednesday,
-      DateTime.friday,
-    ],
+    this.trainingWeekdays = const <int>[],
     this.trainingDayKcalOffset = 0.0,
     this.trainingDayOverrides = const <String, bool>{},
     this.pauseDayKeys = const <String>[],
@@ -59,11 +55,7 @@ class CalorieGoalSettings {
       goalHistory = const <CalorieGoalHistoryEntry>[],
       pendingWeeklyCheckIn = null,
       skippedIntakeDayKeys = const <String>[],
-      trainingWeekdays = const <int>[
-        DateTime.monday,
-        DateTime.wednesday,
-        DateTime.friday,
-      ],
+      trainingWeekdays = const <int>[],
       trainingDayKcalOffset = 0.0,
       trainingDayOverrides = const <String, bool>{},
       pauseDayKeys = const <String>[];
@@ -91,7 +83,7 @@ class CalorieGoalSettings {
     final resolvedWeekdays =
         trainingWeekdays ??
         calculatorProfile?.trainingWeekdays ??
-        const <int>[DateTime.monday, DateTime.wednesday, DateTime.friday];
+        const <int>[];
     final resolvedOffset =
         trainingDayKcalOffset ??
         calculatorProfile?.trainingDayKcalOffset ??

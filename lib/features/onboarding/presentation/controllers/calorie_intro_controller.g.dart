@@ -45,7 +45,7 @@ final class CalorieIntroControllerProvider
 }
 
 String _$calorieIntroControllerHash() =>
-    r'40fc97a362156c71558cc8425f77dba47f1af22f';
+    r'cdcee93964219c1b22b8efd97199315cf41d7135';
 
 /// State controller for the calorie onboarding intro.
 

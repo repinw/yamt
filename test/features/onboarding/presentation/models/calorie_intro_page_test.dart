@@ -15,7 +15,9 @@ void main() {
 
   test('every page but the last knows its successor', () {
     expect(CalorieIntroPage.welcome.next, CalorieIntroPage.calorieModel);
-    expect(CalorieIntroPage.pace.next, CalorieIntroPage.summary);
+    expect(CalorieIntroPage.followTarget.next, CalorieIntroPage.trend);
+    expect(CalorieIntroPage.target.next, CalorieIntroPage.pace);
+    expect(CalorieIntroPage.sport.next, CalorieIntroPage.summary);
     expect(CalorieIntroPage.summary.next, isNull);
   });
 }

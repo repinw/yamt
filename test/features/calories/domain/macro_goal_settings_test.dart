@@ -4,82 +4,39 @@ import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 void main() {
   group('MacroCalculationDefaults', () {
-    test('male active defaults: 2.0 P, 1.0 F', () {
+    test('protein is 1.6 g/kg with sport and 1.2 g/kg without', () {
       expect(
-        MacroCalculationDefaults.defaultProteinMultiplier(
-          isMale: true,
-          isSportActive: true,
-        ),
-        2.0,
+        MacroCalculationDefaults.defaultProteinMultiplier(isSportActive: true),
+        1.6,
       );
       expect(
-        MacroCalculationDefaults.defaultFatMultiplier(
-          isMale: true,
-          isSportActive: true,
-        ),
-        1.0,
-      );
-    });
-
-    test('female active defaults: 1.8 P, 1.2 F', () {
-      expect(
-        MacroCalculationDefaults.defaultProteinMultiplier(
-          isMale: false,
-          isSportActive: true,
-        ),
-        1.8,
-      );
-      expect(
-        MacroCalculationDefaults.defaultFatMultiplier(
-          isMale: false,
-          isSportActive: true,
-        ),
+        MacroCalculationDefaults.defaultProteinMultiplier(isSportActive: false),
         1.2,
       );
     });
 
-    test('male inactive defaults: 1.2 P, 0.9 F', () {
-      expect(
-        MacroCalculationDefaults.defaultProteinMultiplier(
-          isMale: true,
-          isSportActive: false,
-        ),
-        1.2,
-      );
-      expect(
-        MacroCalculationDefaults.defaultFatMultiplier(
-          isMale: true,
-          isSportActive: false,
-        ),
-        0.9,
-      );
-    });
-
-    test('female inactive defaults: 1.2 P, 1.0 F', () {
-      expect(
-        MacroCalculationDefaults.defaultProteinMultiplier(
-          isMale: false,
-          isSportActive: false,
-        ),
-        1.2,
-      );
-      expect(
-        MacroCalculationDefaults.defaultFatMultiplier(
-          isMale: false,
-          isSportActive: false,
-        ),
-        1.0,
-      );
+    test('fat is 0.8 g/kg for men and 0.9 g/kg for women', () {
+      expect(MacroCalculationDefaults.defaultFatMultiplier(isMale: true), 0.8);
+      expect(MacroCalculationDefaults.defaultFatMultiplier(isMale: false), 0.9);
     });
   });
 
   group('MacroGoalSettings', () {
+    test('follows the training days until the user sets sport', () {
+      const auto = MacroGoalSettings();
+      expect(auto.resolveSportActive(hasTrainingDays: true), isTrue);
+      expect(auto.resolveSportActive(hasTrainingDays: false), isFalse);
+
+      const explicit = MacroGoalSettings(isSportActive: false);
+      expect(explicit.resolveSportActive(hasTrainingDays: true), isFalse);
+    });
+
     test('effective multipliers fall back to defaults when not overridden', () {
       const settings = MacroGoalSettings();
-      expect(settings.effectiveProteinMultiplier(isMale: true), 2.0);
-      expect(settings.effectiveFatMultiplier(isMale: true), 1.0);
-      expect(settings.effectiveProteinMultiplier(isMale: false), 1.8);
-      expect(settings.effectiveFatMultiplier(isMale: false), 1.2);
+      expect(settings.effectiveProteinMultiplier(hasTrainingDays: true), 1.6);
+      expect(settings.effectiveProteinMultiplier(hasTrainingDays: false), 1.2);
+      expect(settings.effectiveFatMultiplier(isMale: true), 0.8);
+      expect(settings.effectiveFatMultiplier(isMale: false), 0.9);
     });
 
     test('effective multipliers respect custom overrides', () {
@@ -87,10 +44,9 @@ void main() {
         customProteinMultiplier: 2.3,
         customFatMultiplier: 0.8,
       );
-      expect(settings.effectiveProteinMultiplier(isMale: true), 2.3);
-      expect(settings.effectiveFatMultiplier(isMale: true), 0.8);
+      expect(settings.effectiveProteinMultiplier(hasTrainingDays: false), 2.3);
       // Custom overrides apply regardless of sex or activity
-      expect(settings.effectiveProteinMultiplier(isMale: false), 2.3);
+      expect(settings.effectiveFatMultiplier(isMale: true), 0.8);
       expect(settings.effectiveFatMultiplier(isMale: false), 0.8);
     });
 
@@ -102,7 +58,10 @@ void main() {
       final clearedProtein = settings.copyWith(clearCustomProtein: true);
       expect(clearedProtein.customProteinMultiplier, isNull);
       expect(clearedProtein.customFatMultiplier, 1.5);
-      expect(clearedProtein.effectiveProteinMultiplier(isMale: true), 2.0);
+      expect(
+        clearedProtein.effectiveProteinMultiplier(hasTrainingDays: true),
+        1.6,
+      );
 
       final clearedBoth = settings.copyWith(
         clearCustomProtein: true,
@@ -110,7 +69,7 @@ void main() {
       );
       expect(clearedBoth.customProteinMultiplier, isNull);
       expect(clearedBoth.customFatMultiplier, isNull);
-      expect(clearedBoth.effectiveFatMultiplier(isMale: true), 1.0);
+      expect(clearedBoth.effectiveFatMultiplier(isMale: true), 0.8);
     });
 
     test('serialization round-trip preserves all properties', () {

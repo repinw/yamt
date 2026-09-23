@@ -4,10 +4,12 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
+import 'package:yamt/features/calories/domain/macro_reference_weight.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/macro_goal_settings_controller.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_action_buttons.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_activity_tile.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_adjusted_weight_notice.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_carbs_notice.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_multiplier_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_preview_card.dart';
@@ -51,9 +53,20 @@ class _SettingsMacroGoalsSheetState
     super.initState();
     final settings = ref.read(macroGoalSettingsControllerProvider);
     final isMale = _resolveIsMale();
-    _isSportActive = settings.isSportActive;
-    _proteinMultiplier = settings.effectiveProteinMultiplier(isMale: isMale);
+    final hasTrainingDays = _resolveHasTrainingDays();
+    _isSportActive = settings.resolveSportActive(
+      hasTrainingDays: hasTrainingDays,
+    );
+    _proteinMultiplier = settings.effectiveProteinMultiplier(
+      hasTrainingDays: hasTrainingDays,
+    );
     _fatMultiplier = settings.effectiveFatMultiplier(isMale: isMale);
+  }
+
+  bool _resolveHasTrainingDays() {
+    final goalSettings = ref.read(calorieGoalControllerProvider).value;
+    return goalSettings?.calculatorProfile?.trainingWeekdays.isNotEmpty ??
+        false;
   }
 
   bool _resolveIsMale() {
@@ -64,8 +77,14 @@ class _SettingsMacroGoalsSheetState
 
   double _resolveWeightKg(bool isMale) {
     final goalSettings = ref.read(calorieGoalControllerProvider).value;
-    final weight = goalSettings?.calculatorProfile?.weightKg;
-    return weight ?? (isMale ? 80.0 : 65.0);
+    final profile = goalSettings?.calculatorProfile;
+    if (profile == null) {
+      return isMale ? 80.0 : 65.0;
+    }
+    return macroReferenceWeightKg(
+      weightKg: profile.weightKg,
+      heightCm: profile.heightCm,
+    );
   }
 
   double _resolveGoalKcal() {
@@ -79,12 +98,10 @@ class _SettingsMacroGoalsSheetState
       _isSportActive = value;
       final isMale = _resolveIsMale();
       _proteinMultiplier = MacroCalculationDefaults.defaultProteinMultiplier(
-        isMale: isMale,
         isSportActive: value,
       );
       _fatMultiplier = MacroCalculationDefaults.defaultFatMultiplier(
         isMale: isMale,
-        isSportActive: value,
       );
     });
   }
@@ -93,12 +110,10 @@ class _SettingsMacroGoalsSheetState
     final isMale = _resolveIsMale();
     setState(() {
       _proteinMultiplier = MacroCalculationDefaults.defaultProteinMultiplier(
-        isMale: isMale,
         isSportActive: _isSportActive,
       );
       _fatMultiplier = MacroCalculationDefaults.defaultFatMultiplier(
         isMale: isMale,
-        isSportActive: _isSportActive,
       );
     });
   }
@@ -106,12 +121,10 @@ class _SettingsMacroGoalsSheetState
   Future<void> _onSave() async {
     final isMale = _resolveIsMale();
     final defaultProtein = MacroCalculationDefaults.defaultProteinMultiplier(
-      isMale: isMale,
       isSportActive: _isSportActive,
     );
     final defaultFat = MacroCalculationDefaults.defaultFatMultiplier(
       isMale: isMale,
-      isSportActive: _isSportActive,
     );
 
     final isCustomProtein = (_proteinMultiplier - defaultProtein).abs() > 0.01;
@@ -139,6 +152,17 @@ class _SettingsMacroGoalsSheetState
     final accents = MetricAccentColors.of(context);
     final isMale = _resolveIsMale();
     final weightKg = _resolveWeightKg(isMale);
+    final profile = ref.watch(
+      calorieGoalControllerProvider.select(
+        (state) => state.value?.calculatorProfile,
+      ),
+    );
+    final adjustedWeightKg = profile == null
+        ? null
+        : macroAdjustedWeightKg(
+            weightKg: profile.weightKg,
+            heightCm: profile.heightCm,
+          );
     final goalKcal = _resolveGoalKcal();
 
     final previewData = SettingsMacroGoalsPreviewData.compute(
@@ -212,6 +236,12 @@ class _SettingsMacroGoalsSheetState
           ),
           const SizedBox(height: AppSpacing.md),
           const SettingsMacroGoalsCarbsNotice(),
+          if (adjustedWeightKg != null) ...[
+            const SizedBox(height: AppSpacing.md),
+            SettingsMacroGoalsAdjustedWeightNotice(
+              adjustedWeightKg: adjustedWeightKg,
+            ),
+          ],
           const SizedBox(height: AppSpacing.lg),
           SettingsMacroGoalsPreviewCard(
             goalKcal: goalKcal,

@@ -82,8 +82,8 @@ class IntroBodyPage extends StatelessWidget {
         ],
       ),
       footer: IntroPageNote(
-        icon: Icons.insights_outlined,
-        message: l10n.introBodyTrendNote,
+        icon: Icons.wb_sunny_outlined,
+        message: l10n.introBodyWeighInNote,
       ),
     );
   }

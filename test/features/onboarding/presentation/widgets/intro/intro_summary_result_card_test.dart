@@ -25,8 +25,10 @@ CalorieCalculatorProfile _profile({
 
 Future<void> _pumpCard(
   WidgetTester tester,
-  CalorieGoalCalculationResult calculation,
-) {
+  CalorieGoalCalculationResult calculation, {
+  List<int> trainingWeekdays = const [],
+  double trainingDayKcalOffset = 0,
+}) {
   return tester.pumpWidget(
     MaterialApp(
       locale: const Locale('en'),
@@ -35,7 +37,8 @@ Future<void> _pumpCard(
       home: Scaffold(
         body: IntroSummaryResultCard(
           calculation: calculation,
-          trainingDaysCount: 0,
+          trainingWeekdays: trainingWeekdays,
+          trainingDayKcalOffset: trainingDayKcalOffset,
         ),
       ),
     ),
@@ -102,5 +105,22 @@ void main() {
       find.text('${calculation.finalGoalKcal.round()} kcal'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('shows the targets of training and rest days', (tester) async {
+    final calculation = CalorieGoalCalculator.calculate(
+      _profile(goalMode: CalorieGoalMode.maintain, goalSpeedKgPerWeek: 0),
+    );
+
+    await _pumpCard(
+      tester,
+      calculation,
+      trainingWeekdays: const [1, 3, 5],
+      trainingDayKcalOffset: 200,
+    );
+
+    final base = calculation.finalGoalKcal;
+    expect(find.text('${(base + 200).round()} kcal'), findsOneWidget);
+    expect(find.text('${(base - 150).round()} kcal'), findsOneWidget);
   });
 }

@@ -12,7 +12,6 @@ import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_loading.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_practice_day_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_scheduled_restart_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_balance_card.dart';
@@ -59,27 +58,29 @@ class DiaryBalanceCard extends ConsumerWidget {
         );
       }
 
-      final practiceDay = data.practiceDay;
-      if (practiceDay != null) {
-        return DiaryBalancePracticeDayCard(
-          startDate: practiceDay.startDate,
-          futureGoalKcal: practiceDay.futureGoalKcal,
-        );
-      }
-
       final numberFormat = NumberFormat.decimalPattern(
         Localizations.localeOf(context).toLanguageTag(),
       );
       final l10n = AppLocalizations.of(context)!;
-      final dailyData = DiaryDailyBalanceData.from(
-        selectedDay: data.loadedMetrics!.selectedDay,
-        metrics: data.loadedMetrics!.daily,
-        isPauseDay: data.loadedMetrics!.state.isPauseDay,
-        numberFormat: numberFormat,
-        l10n: l10n,
-        now: now,
-        budgetDetails: data.loadedMetrics!.budgetDetails,
-      );
+      final practiceDay = data.practiceDay;
+      final dailyData = practiceDay != null
+          ? DiaryDailyBalanceData.from(
+              selectedDay: day,
+              metrics: practiceDay.daily,
+              isPauseDay: false,
+              numberFormat: numberFormat,
+              l10n: l10n,
+              now: now,
+            )
+          : DiaryDailyBalanceData.from(
+              selectedDay: data.loadedMetrics!.selectedDay,
+              metrics: data.loadedMetrics!.daily,
+              isPauseDay: data.loadedMetrics!.state.isPauseDay,
+              numberFormat: numberFormat,
+              l10n: l10n,
+              now: now,
+              budgetDetails: data.loadedMetrics!.budgetDetails,
+            );
 
       return DiaryDailyBalanceCard(
         data: dailyData,
@@ -89,6 +90,7 @@ class DiaryBalanceCard extends ConsumerWidget {
         ),
         kcalBarKey: kcalBarKey,
         macroBarsKey: macroBarsKey,
+        practiceStartDate: practiceDay?.startDate,
       );
     }
 

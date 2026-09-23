@@ -847,7 +847,7 @@ void main() {
     );
   });
 
-  testWidgets('shows practice day message before tomorrow goal start', (
+  testWidgets('shows a practice day before tomorrow goal start', (
     tester,
   ) async {
     final today = normalizeDiaryDay(DateTime.now());
@@ -872,9 +872,8 @@ void main() {
     );
 
     expect(find.byKey(DiaryBalanceCardKeys.practiceDay), findsOneWidget);
-    expect(find.text('Practice day'), findsOneWidget);
-    expect(find.textContaining('Burn Week starts on'), findsOneWidget);
-    expect(find.text('Goal: 1,200 kcal'), findsOneWidget);
+    expect(find.textContaining('Practice day · counts from'), findsOneWidget);
+    expect(find.byKey(DiaryBalanceCardKeys.dailyProgressTrack), findsOneWidget);
   });
 
   testWidgets('swiping the page selects the neighbouring day', (tester) async {

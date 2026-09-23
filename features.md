@@ -27,17 +27,26 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 - First-run intro with a welcome page offering start or login.
 - Explaining pages for calories in against calories out, the first estimate, the
-  weekly correction, how the goal shifts the target, how the trend is shown, and
-  what the kitchen features do.
-- Input pages for gender and birthday, height and weight, target weight, daily
-  activity level, training schedule, and goal pace, all through scroll wheels
-  instead of keyboards.
-- Everyday activity in four steps, from mostly sitting to physically hard work.
-- Goal mode derived from target weight, with the pace page skipped for maintain.
+  weekly correction, why the correction reads the weekly trend, how the goal
+  shifts the target, and what the kitchen features do.
+- Input pages for gender and birthday, height and weight, target weight, goal
+  pace, weekly activity level, and training days, with scroll wheels instead of
+  keyboards.
+- Weekly activity in four steps that count everyday movement and training
+  together, like the activity levels in the calorie settings. Training days only
+  spread the weekly budget: they get more, rest days less.
+- Goal mode derived from target weight. Leaving the target wheel untouched keeps
+  the current weight, and the pace page is skipped for maintain.
 - Estimated day the target weight is reached, plus ambitious-pace and
   minimum-goal warnings.
-- Summary with the calculated daily expenditure and the resulting intake target.
-- Goal always starts today, with Burn Week bootstrapped from today.
+- Summary with the calculated daily expenditure, the resulting intake target, and
+  the targets of training and rest days.
+- Start day choice on the summary: today, tomorrow, or another day up to two
+  weeks ahead. Before noon today is proposed, from noon on tomorrow. The start
+  day counts fully for learning. Days before a later start are practice days in
+  the diary: the normal daily card with kcal and macros runs against the goal
+  that starts later, marked with a "Practice day · counts from …" badge. Nothing
+  counts yet, and Burn Week starts on the start day.
 - Completion gate before the main app opens.
 
 ## Diary
@@ -69,6 +78,13 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Burn Week budget model with daily goal, activity credit, carryover, skipped
   days, remaining calories, and details sheet.
 - Macro tracking for protein, carbs, fat, and extended nutrient fields.
+- Protein and fat targets in g/kg: 1.6 g protein with training days, 1.2 g
+  without; 0.8 g fat for men, 0.9 g for women. The training days decide until
+  the user sets sport in the macro settings. Above a BMI of 25 only 40 percent
+  of the extra weight counts (adjusted body weight), so heavy users get
+  realistic targets. Those users see the adjusted weight and a medical
+  disclaimer on the onboarding summary and in the macro settings. No training
+  days are preset.
 - Inventory-backed delete/restore behavior for entries created from stock.
 
 ## Activity And Weight

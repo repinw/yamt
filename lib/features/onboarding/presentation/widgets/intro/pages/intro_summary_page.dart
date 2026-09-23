@@ -1,21 +1,21 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_chapter_header.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
+    'intro_page_note.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_scroll_body.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
+    'intro_start_day_selector.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_summary_result_card.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_warning_note.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Minimum daily goal the calculator clamps to.
-const _minimumDailyGoalKcal = 1200;
-
-/// Final intro page that shows the calculated goal.
+/// Final intro page that shows the calculated goal and asks for the start day.
 ///
 /// The finish action lives in the intro control bar, next to the back action.
 class IntroSummaryPage extends StatelessWidget {
@@ -24,7 +24,12 @@ class IntroSummaryPage extends StatelessWidget {
     required this.kicker,
     required this.accent,
     required this.calculation,
-    required this.trainingDaysCount,
+    required this.trainingWeekdays,
+    required this.trainingDayKcalOffset,
+    required this.today,
+    required this.startDate,
+    required this.onStartDateChanged,
+    this.adjustedMacroWeightKg,
     super.key,
   });
 
@@ -37,8 +42,23 @@ class IntroSummaryPage extends StatelessWidget {
   /// Calculation preview shown before saving.
   final CalorieGoalCalculationResult? calculation;
 
-  /// Number of weekdays that carry a workout.
-  final int trainingDaysCount;
+  /// Weekdays that carry a workout, 1 = Monday.
+  final List<int> trainingWeekdays;
+
+  /// Extra calories granted on a training day.
+  final double trainingDayKcalOffset;
+
+  /// Current day.
+  final DateTime today;
+
+  /// Selected start day of the first tracked week.
+  final DateTime startDate;
+
+  /// Called when the user picks another start day.
+  final ValueChanged<DateTime> onStartDateChanged;
+
+  /// Adjusted body weight for protein and fat, set only above a BMI of 25.
+  final double? adjustedMacroWeightKg;
 
   @override
   Widget build(BuildContext context) {
@@ -48,12 +68,6 @@ class IntroSummaryPage extends StatelessWidget {
     return IntroScrollBody(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(
-          Icons.check_circle_outline,
-          size: AppSizes.welcomeIcon,
-          color: accent,
-        ),
-        const SizedBox(height: AppSpacing.xxl),
         IntroChapterHeader(
           kicker: kicker,
           title: l10n.onboardingReadyTitle,
@@ -65,17 +79,31 @@ class IntroSummaryPage extends StatelessWidget {
           const SizedBox(height: AppSpacing.xl),
           IntroSummaryResultCard(
             calculation: result,
-            trainingDaysCount: trainingDaysCount,
+            trainingWeekdays: trainingWeekdays,
+            trainingDayKcalOffset: trainingDayKcalOffset,
           ),
           if (result.wasClampedToMinimum) ...[
             const SizedBox(height: AppSpacing.md),
             IntroWarningNote(
               message: l10n.caloriesCalculatorMinimumGoalWarning(
-                _minimumDailyGoalKcal,
+                minimumCalorieGoalKcal.round(),
               ),
             ),
           ],
         ],
+        if (adjustedMacroWeightKg case final weightKg?) ...[
+          const SizedBox(height: AppSpacing.md),
+          IntroPageNote(
+            icon: Icons.info_outline_rounded,
+            message: l10n.macroAdjustedWeightNote(weightKg.round().toString()),
+          ),
+        ],
+        const SizedBox(height: AppSpacing.xl),
+        IntroStartDaySelector(
+          today: today,
+          startDate: startDate,
+          onChanged: onStartDateChanged,
+        ),
       ],
     );
   }

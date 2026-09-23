@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
@@ -37,6 +38,7 @@ void main() {
     final harness = await _pumpIntro(tester);
 
     await _completeIntro(tester);
+    expect(find.text('Start today'), findsOneWidget);
     await _tapFinish(tester);
 
     final settings = await harness.settingsRepository.readSettings();
@@ -49,6 +51,37 @@ void main() {
       diaryDayKey(normalizeDiaryDay(_today)),
     );
     expect(harness.currentLocation, '/');
+  });
+
+  testWidgets('starts the first week on a later day', (tester) async {
+    final harness = await _pumpIntro(tester);
+
+    await _completeIntro(tester);
+    final tomorrowChoice = find.byKey(
+      CalorieGoalOnboardingKeys.introStartTomorrowChoice,
+    );
+    await tester.ensureVisible(tomorrowChoice);
+    await tester.tap(tomorrowChoice);
+    await tester.pumpAndSettle();
+    expect(find.text('Start tomorrow'), findsOneWidget);
+    await _tapFinish(tester);
+
+    final settings = await harness.settingsRepository.readSettings();
+    final tomorrow = nextDiaryDay(normalizeDiaryDay(_today));
+    expect(settings.goalHistory.single.effectiveCountingStartDate, tomorrow);
+    expect(settings.nextGoalStartAfterDay(_today), tomorrow);
+    expect(harness.runStateRepository.state.currentWeekStartDayKey, isNull);
+    expect(harness.currentLocation, '/');
+  });
+
+  testWidgets('proposes tomorrow when onboarding ends in the evening', (
+    tester,
+  ) async {
+    await _pumpIntro(tester, now: DateTime(2026, 9, 17, 18));
+
+    await _completeIntro(tester);
+
+    expect(find.text('Start tomorrow'), findsOneWidget);
   });
 
   testWidgets('shows a failure message when the goal cannot be saved', (
@@ -79,7 +112,7 @@ void main() {
     expect(find.text('What are your current numbers?'), findsNothing);
   });
 
-  testWidgets('blocks the target page while the target weight is empty', (
+  testWidgets('keeps the current weight when the target wheel stays put', (
     tester,
   ) async {
     await _pumpIntro(tester);
@@ -89,8 +122,8 @@ void main() {
 
     await _tapNext(tester);
 
-    expect(find.text('Please enter your weight.'), findsOneWidget);
-    expect(find.text('How much do you move on a normal day?'), findsNothing);
+    expect(find.text('Please enter your weight.'), findsNothing);
+    expect(find.text('How active is your typical week?'), findsOneWidget);
   });
 
   testWidgets('keeps the goal feedback box in place before a target is set', (
@@ -101,11 +134,12 @@ void main() {
     await _completeIdentity(tester);
     await _completeBody(tester);
 
-    expect(find.text('Pick your target weight.'), findsOneWidget);
+    const hint = 'Turn the wheel, or leave it to maintain your weight.';
+    expect(find.text(hint), findsOneWidget);
 
     await _spinWheel(tester, CalorieGoalOnboardingKeys.introTargetWeightWheel);
 
-    expect(find.text('Pick your target weight.'), findsNothing);
+    expect(find.text(hint), findsNothing);
     expect(find.textContaining('You want to'), findsOneWidget);
   });
 
@@ -129,8 +163,8 @@ void main() {
     );
     expect(
       find.text(
-        'Day-to-day swings do not matter. We read your weekly weight trend, '
-        'not single highs and lows.',
+        'Weigh yourself in the morning after getting up. '
+        'That keeps your values comparable.',
       ),
       findsOneWidget,
     );
@@ -147,8 +181,9 @@ void main() {
     await _completeBody(tester);
     await _spinWheel(tester, CalorieGoalOnboardingKeys.introTargetWeightWheel);
     await _tapNext(tester);
+    await _tapNext(tester);
 
-    _expectPageDoesNotScroll(tester, find.text('Sitting, but on the move'));
+    _expectPageDoesNotScroll(tester, find.text('Lightly active'));
 
     await _tapNext(tester);
     await tester.tap(find.text('Mo'));
@@ -156,7 +191,7 @@ void main() {
     await tester.tap(find.text('We'));
     await tester.pumpAndSettle();
 
-    _expectPageDoesNotScroll(tester, find.text('Do you train on fixed days?'));
+    _expectPageDoesNotScroll(tester, find.text('On which days do you train?'));
   });
 
   testWidgets('shows the estimated target date on the pace page', (
@@ -195,7 +230,7 @@ class _IntroHarness {
   String get currentLocation => router.state.uri.path;
 }
 
-Future<_IntroHarness> _pumpIntro(WidgetTester tester) async {
+Future<_IntroHarness> _pumpIntro(WidgetTester tester, {DateTime? now}) async {
   _disableAnimations(tester);
   final settingsRepository = FakeCalorieSettingsRepository();
   final logRepository = FakeCalorieLogRepository();
@@ -229,7 +264,7 @@ Future<_IntroHarness> _pumpIntro(WidgetTester tester) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        clockProvider.overrideWithValue(() => _today),
+        clockProvider.overrideWithValue(() => now ?? _today),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         burnWeekRunStateRepositoryProvider.overrideWithValue(
@@ -297,15 +332,15 @@ Future<void> _completeIntro(
 
   await _spinWheel(tester, CalorieGoalOnboardingKeys.introTargetWeightWheel);
   await _tapNext(tester);
-
-  await tester.tap(find.text('Sitting, but on the move'));
-  await tester.pumpAndSettle();
-  await _tapNext(tester);
-
-  await _tapNext(tester);
   if (stopOnPacePage) {
     return;
   }
+  await _tapNext(tester);
+
+  await tester.tap(find.text('Lightly active'));
+  await tester.pumpAndSettle();
+  await _tapNext(tester);
+
   await _tapNext(tester);
 }
 

@@ -1984,11 +1984,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get burnWeekPracticeDayTitle => 'Übungstag';
-
-  @override
-  String burnWeekPracticeDayMessage(Object date) {
-    return 'Heute zählt noch nicht. Du kannst Tracking testen, und Burn Week startet am $date.';
+  String burnWeekPracticeDayBadge(Object date) {
+    return 'Übungstag · zählt ab $date';
   }
 
   @override
@@ -2600,6 +2597,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsMacroGoalsCarbsAutoLabel => 'Kohlenhydrate füllen die restlichen Kalorien auf';
 
   @override
+  String macroAdjustedWeightNote(String weight) {
+    return 'Für Eiweiß und Fett rechnen wir mit einem angepassten Körpergewicht von $weight kg, weil Fettgewebe kaum Eiweiß braucht. Das sind Richtwerte, keine medizinische Beratung. Bei starkem Übergewicht oder Vorerkrankungen wie Diabetes oder Nierenproblemen sprich deine Ernährung mit deiner Ärztin oder deinem Arzt ab.';
+  }
+
+  @override
   String get settingsMacroGoalsPreviewTitle => 'Vorschau Tagesziel';
 
   @override
@@ -3063,25 +3065,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get onboardingNextAction => 'Weiter';
 
   @override
-  String get onboardingFinishAction => 'Starten';
-
-  @override
-  String get onboardingGoalWeightTitle => 'Dein Ziel';
-
-  @override
   String get onboardingGoalWeightSubtitle => 'Lass uns dein Zielgewicht festlegen.';
 
   @override
   String get onboardingGoalWeightTargetLabel => 'Wunschgewicht (kg)';
 
   @override
-  String get onboardingGoalWeightLoseFeedback => 'Du möchtest abnehmen. Ein gesundes Ziel!';
+  String get onboardingGoalWeightLoseFeedback => 'Du möchtest abnehmen.';
 
   @override
-  String get onboardingGoalWeightGainFeedback => 'Du möchtest zunehmen. Muskelaufbau ist super!';
+  String get onboardingGoalWeightGainFeedback => 'Du möchtest zunehmen.';
 
   @override
-  String get onboardingGoalWeightMaintainFeedback => 'Du möchtest dein Gewicht halten. Perfekt!';
+  String get onboardingGoalWeightMaintainFeedback => 'Du möchtest dein Gewicht halten.';
 
   @override
   String get onboardingPaceTitle => 'Dein Tempo';
@@ -3130,7 +3126,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get introCalorieModelTitle => 'Alles beginnt mit dem, was du hineingibst.';
 
   @override
-  String get introCalorieModelBody => 'Jeder Bissen und jeder Schluck ist pure chemische Energie für deinen Körper. Kalorien sind keine Zahl auf einer Waage und kein Feind, den man bekämpfen muss – sie sind der Treibstoff, der deine Zellen am Leben hält.';
+  String get introCalorieModelBody => 'Dein Gewicht folgt einer einfachen Gleichung: Energie, die du isst, gegen Energie, die dein Körper verbrennt. Isst du mehr, als du verbrennst, nimmst du zu. Isst du weniger, nimmst du ab.';
 
   @override
   String get introInputQualityTitle => 'Dein Körper ist ein Ofen, der niemals schläft.';
@@ -3139,7 +3135,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get introInputQualityBody => 'Rund um die Uhr verbrennst du Energie: für deinen Herzschlag, dein Gehirn, die Atmung und konstante Wärme. Dazu kommt jede kleine Geste im Alltag – Treppensteigen, Zappeln, Frieren, Gehen.';
 
   @override
-  String get introFollowTargetTitle => 'Am Ende regiert die reine Physik.';
+  String get introFollowTargetTitle => 'Deine Waage korrigiert die Schätzung.';
 
   @override
   String get introFollowTargetBody => 'Nach den ersten sieben Tagen vergleichen wir diesen Startwert damit, wie sich dein Gewicht wirklich entwickelt hat, und korrigieren ihn. Danach Woche für Woche.';
@@ -3178,16 +3174,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get introCalorieModelHighlight => 'was du hineingibst';
 
   @override
-  String get introCalorieModelNote => 'Diese Hälfte der Gleichung ist greifbar: Was du isst, lässt sich wiegen, sehen und fast auf das Gramm genau erfassen.';
+  String get introCalorieModelNote => 'Die Essens-Hälfte der Gleichung ist greifbar: Was du isst, lässt sich wiegen, sehen und fast auf das Gramm genau erfassen.';
 
   @override
   String get introInputQualityHighlight => 'der niemals schläft';
 
   @override
-  String get introInputQualityNote => 'Der Haken: Dieser Verbrauch steht niemals still. Er schwankt mit deinem Schlaf, deinen Hormonen und deinem Stress. Eine starre Tabelle kann das nicht wissen.';
+  String get introInputQualityNote => 'Der Haken: Diesen Verbrauch kann niemand direkt messen. Deshalb starten wir mit einem Startwert, geschätzt aus deinen Angaben.';
 
   @override
-  String get introFollowTargetHighlight => 'die reine Physik';
+  String get introFollowTargetHighlight => 'korrigiert die Schätzung';
 
   @override
   String get introFollowTargetNote => 'Die erste Woche ist also eine Messung, kein Urteil. Lies nicht zu viel hinein.';
@@ -3202,7 +3198,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get introTrendHighlight => 'Die Woche sagt alles';
 
   @override
-  String get introTrendNote => 'Wir lesen den Trend über die ganze Woche. Ein schlechter Morgen wirft deinen Plan nicht um.';
+  String get introTrendNote => 'Für die Korrektur lesen wir deshalb den Trend der ganzen Woche. Ein schlechter Morgen wirft deinen Plan nicht um.';
 
   @override
   String get introExtrasHighlight => 'der Rest deiner Küche';
@@ -3211,7 +3207,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get introExtrasNote => 'Erfassen fühlt sich nicht mehr nach Hausaufgabe an, wenn das Essen schon in der App liegt.';
 
   @override
-  String get introSummarySubtitle => 'Das ist dein geschätzter Ausgangspunkt für Tag 1. Nach sieben Tagen Tracking vergleicht YAMT dein erfasstes Essen mit deinem Gewicht und korrigiert die Zahl – danach jede weitere Woche.';
+  String get introSummarySubtitle => 'Das ist dein geschätzter Startwert. Ab deinem Starttag vergleicht YAMT sieben Tage lang dein Essen mit deinem Gewicht und korrigiert die Zahl, danach jede Woche.';
 
   @override
   String get introBodyTitle => 'Wie sind deine aktuellen Eckdaten?';
@@ -3223,30 +3219,54 @@ class AppLocalizationsDe extends AppLocalizations {
   String get introWeightKgUnit => 'kg';
 
   @override
-  String get introSportTitle => 'Machst du Sport an festen Tagen?';
+  String get introSportTitle => 'An welchen Tagen trainierst du?';
 
   @override
-  String get introSportSubtitle => 'Tippe deine Trainingstage an. Ohne Auswahl bekommt jeder Tag dasselbe Ziel.';
+  String get introSportSubtitle => 'Trainingstage bekommen mehr, Ruhetage weniger. Die Wochensumme bleibt gleich.';
 
   @override
   String get introWeekDepotTitle => 'Kalorien pro Tag über die Woche';
 
   @override
-  String introActivityFactor(String factor) {
-    return 'Faktor $factor';
-  }
-
-  @override
   String get introIdentityPrivacyNote => 'Deine Angaben dienen nur der Energieberechnung.';
 
   @override
-  String get introBodyTrendNote => 'Tagesschwankungen sind egal. Wir lesen deinen Wochentrend, nicht einzelne Ausreißer.';
-
-  @override
-  String get introSummaryDepotLabel => 'Wochendepot';
+  String get introBodyWeighInNote => 'Wieg dich am besten morgens nach dem Aufstehen. So bleiben deine Werte vergleichbar.';
 
   @override
   String get introSummaryDepotHint => 'Trainingstage borgen sich Kalorien von den Ruhetagen. Die Wochensumme bleibt gleich.';
+
+  @override
+  String get introStartDayTitle => 'Wann startet deine erste Woche?';
+
+  @override
+  String get introStartDayToday => 'Heute';
+
+  @override
+  String get introStartDayTodayHint => 'Trag auch nach, was du heute schon gegessen hast.';
+
+  @override
+  String get introStartDayTomorrow => 'Morgen';
+
+  @override
+  String get introStartDayTomorrowHint => 'Heute in Ruhe ausprobieren. Es zählt noch nicht.';
+
+  @override
+  String get introStartDayOther => 'Anderer Tag';
+
+  @override
+  String get introStartDayOtherHint => 'Bis dahin übst du, ohne dass etwas zählt.';
+
+  @override
+  String get introStartTodayAction => 'Heute starten';
+
+  @override
+  String get introStartTomorrowAction => 'Morgen starten';
+
+  @override
+  String introStartOnDateAction(String date) {
+    return 'Am $date starten';
+  }
 
   @override
   String get introCategoryHowItWorks => 'Wie YAMT rechnet';
@@ -3256,6 +3276,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get introCategoryYourStart => 'Dein Start';
+
+  @override
+  String get introCategoryBeyondCalories => 'Mehr als Kalorien';
 
   @override
   String get introChapterEnergyBalance => 'Energiebilanz';
@@ -3312,7 +3335,10 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get introTargetWeightHint => 'Wähle dein Wunschgewicht.';
+  String get introTargetWeightHint => 'Dreh das Rad oder lass es stehen, um dein Gewicht zu halten.';
+
+  @override
+  String get introTargetTitle => 'Wo willst du hin?';
 
   @override
   String get introBirthDayLabel => 'Tag';
@@ -3336,34 +3362,34 @@ class AppLocalizationsDe extends AppLocalizations {
   String get introPacePerWeekUnit => 'kg / Woche';
 
   @override
-  String get introActivityTitle => 'Wie aktiv bist du außerhalb von Sport?';
+  String get introActivityTitle => 'Wie aktiv ist deine typische Woche?';
 
   @override
-  String get introActivitySubtitle => 'Spaziergänge, Stehen und dein Beruf machen den Löwenanteil aus.';
+  String get introActivitySubtitle => 'Zähl Alltag und Sport zusammen: Beruf, Wege zu Fuß und dein Training.';
 
   @override
-  String get introActivitySittingTitle => 'Überwiegend sitzend';
+  String get introActivitySittingTitle => 'Kaum aktiv';
 
   @override
-  String get introActivitySittingBody => 'Schreibtisch, Auto, Sofa';
+  String get introActivitySittingBody => 'Schreibtisch, Auto, Sofa, kaum Sport';
 
   @override
-  String get introActivityLightTitle => 'Sitzend, aber in Bewegung';
+  String get introActivityLightTitle => 'Leicht aktiv';
 
   @override
-  String get introActivityLightBody => 'Büro, täglich zu Fuß oder Rad';
+  String get introActivityLightBody => 'Täglich zu Fuß oder 1–2 lockere Einheiten pro Woche';
 
   @override
-  String get introActivityOnFeetTitle => 'Den ganzen Tag auf den Beinen';
+  String get introActivityOnFeetTitle => 'Moderat aktiv';
 
   @override
-  String get introActivityOnFeetBody => 'Verkauf, Pflege, Küche';
+  String get introActivityOnFeetBody => 'Viel auf den Beinen oder 3–4 Einheiten pro Woche';
 
   @override
-  String get introActivityHardLabourTitle => 'Körperlich harte Arbeit';
+  String get introActivityHardLabourTitle => 'Sehr aktiv';
 
   @override
-  String get introActivityHardLabourBody => 'Bau, Handwerk, Lager';
+  String get introActivityHardLabourBody => 'Harte körperliche Arbeit oder Training an den meisten Tagen';
 
   @override
   String get introSummaryExpenditureLabel => 'Dein berechneter Verbrauch';

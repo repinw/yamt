@@ -52,11 +52,7 @@ class CalorieCalculatorProfile {
     this.birthDate,
     this.targetWeightKg,
     this.maintainUntil,
-    this.trainingWeekdays = const <int>[
-      DateTime.monday,
-      DateTime.wednesday,
-      DateTime.friday,
-    ],
+    this.trainingWeekdays = const <int>[],
     this.trainingDayKcalOffset = 0.0,
   });
 

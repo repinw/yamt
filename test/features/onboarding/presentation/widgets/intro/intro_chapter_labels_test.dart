@@ -18,12 +18,13 @@ void main() {
   });
 
   test('labels the next action with the following chapter', () {
-    expect(CalorieIntroPage.sport.nextActionLabel(l10n), 'Next: Pace');
+    expect(CalorieIntroPage.target.nextActionLabel(l10n), 'Next: Pace');
     expect(CalorieIntroPage.summary.nextActionLabel(l10n), isNull);
   });
 
-  test('groups pages into three sections', () {
+  test('groups pages into four sections', () {
     expect(CalorieIntroPage.trend.categoryName(l10n), 'How YAMT calculates');
+    expect(CalorieIntroPage.extras.categoryName(l10n), 'Beyond calories');
     expect(CalorieIntroPage.identity.categoryName(l10n), 'Your profile');
     expect(CalorieIntroPage.summary.categoryName(l10n), 'Your start');
   });

@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.da
 import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/macro_carryover_calculator.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
+import 'package:yamt/features/calories/domain/macro_reference_weight.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/macro_goal_settings_controller.dart';
 
@@ -34,13 +35,18 @@ class DailyNutritionTargetResolverService
     final isMale =
         (profile?.sex ?? CalorieCalculatorSex.male) ==
         CalorieCalculatorSex.male;
-    final weightKg = profile?.weightKg ?? (isMale ? 80.0 : 65.0);
+    final weightKg = profile == null
+        ? (isMale ? 80.0 : 65.0)
+        : macroReferenceWeightKg(
+            weightKg: profile.weightKg,
+            heightCm: profile.heightCm,
+          );
 
     final baseResult = MacroBudgetCalculator.calculate(
       goalKcal: goalKcal,
       weightKg: weightKg,
       proteinGramsPerKg: macroSettings.effectiveProteinMultiplier(
-        isMale: isMale,
+        hasTrainingDays: profile?.trainingWeekdays.isNotEmpty ?? false,
       ),
       fatGramsPerKg: macroSettings.effectiveFatMultiplier(isMale: isMale),
     );

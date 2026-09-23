@@ -20,26 +20,36 @@ widgets live in `lib/features/calories`.
   in without leaving onboarding.
 - Explains the model in one idea per page: calories in against calories out, that
   the first number is an estimate from the entered details, that it is corrected
-  every week against the real weight, that the goal then subtracts or adds
-  calories, that the progress view shows the real trend, and what the rest of the
-  kitchen features do.
-- Collects gender and birthday, height and current weight, target weight, daily
-  activity level, training schedule, and weekly pace through the calorie
-  calculator form controller.
+  every week against the real weight, that the correction reads the weekly trend
+  instead of single weigh-ins, and that the goal then subtracts or adds calories.
+  A last page in its own section shows the rest of the kitchen features.
+- Collects gender and birthday, height and current weight, target weight, weekly
+  pace, weekly activity level, and training days through the calorie calculator
+  form controller. Pace comes before training, so the week chart on the training
+  page already shows the final target.
 - Uses vertical scroll wheels instead of keyboards: day, month, and year for the
   birthday, and one wheel each for height, weight, target weight, and pace.
   Weight moves in steps of 0.1 kg, pace in steps of 0.05 kg per week.
-- Asks about everyday movement only, in four steps from mostly sitting to
-  physically hard work. Training days are a page of their own.
+- Asks how active a typical week is, everyday movement and training together, in
+  four steps. The levels mean the same as in the calorie settings, so training
+  is not counted twice. The training page only spreads the weekly budget over
+  training and rest days.
 - Derives the goal mode from target weight against current weight, and skips the
   pace page when the user wants to maintain weight.
 - Estimates the day the target weight is reached and shows it on the pace page.
 - Warns about an ambitious pace and about a goal clamped to the minimum.
-- Ends on a summary with two numbers: the calculated daily expenditure and the
-  daily intake target, with the difference between them explained.
-- Saves the calculated calorie goal through the calorie goal controller, always
-  starting today.
-- Bootstraps Burn Week from today.
+- Ends on a summary with the calculated daily expenditure and the daily intake
+  target, the difference between them explained, and with training days the
+  targets of a training day and of a rest day.
+- Asks on the summary when the first tracked week starts: today, tomorrow, or
+  another day up to two weeks ahead. Before noon it proposes today, from noon on
+  tomorrow, so an evening sign-up does not spoil the first week. The finish
+  action names the choice.
+- Saves the calculated calorie goal through the calorie goal controller,
+  counting from the chosen start day.
+- Bootstraps Burn Week when the user starts today. A later start leaves the days
+  before it as diary practice days, and Burn Week live sync starts the run on the
+  start day.
 - Marks calorie onboarding as completed in user-scoped app preferences.
 - Automatically treats users with an existing saved calorie goal as completed,
   then backfills the completion marker.
@@ -73,8 +83,8 @@ internal. No other feature assembles the intro pages.
 - `calorieGoalOnboardingCompletedProvider` (`keepAlive`): whether the current
   user finished onboarding.
 - `calorieGoalOnboardingFinishFlowProvider`: the finish workflow.
-- `calorieIntroControllerProvider` (auto-dispose): page index, validation-error
-  visibility, saving state, and route-exit flag.
+- `calorieIntroControllerProvider` (auto-dispose): page index, start day,
+  validation-error visibility, saving state, and route-exit flag.
 
 ## Folder Structure
 
@@ -82,8 +92,8 @@ internal. No other feature assembles the intro pages.
 
 Coordinates the cross-feature finish action:
 
-- `calorie_goal_onboarding_finish_flow.dart`: Saves the calculated goal with
-  today as the start date and bootstraps Burn Week.
+- `calorie_goal_onboarding_finish_flow.dart`: Saves the calculated goal from the
+  chosen start day and bootstraps Burn Week for a start today.
 
 `domain/`
 
@@ -93,10 +103,14 @@ Contains pure onboarding-specific logic:
   preference key and marker value.
 - `goal_target_date_estimator.dart`: Estimates the day the target weight is
   reached from the current weight, the target weight, and the weekly pace.
-- `intro_activity_option.dart`: The four everyday-activity levels onboarding
+- `intro_activity_option.dart`: The four weekly activity levels onboarding
   offers and the calculator level each maps to. The calculator's extreme level
   is not offered here; it stays reachable from the calorie settings, and an
   existing extreme profile shows the closest offered level.
+- `tracking_start_day.dart`: The proposed start day (today before noon,
+  tomorrow from noon on) and the latest day the start picker offers.
+- `training_week_goals.dart`: Spreads a daily target over training and rest
+  days so that the weekly sum stays the same.
 
 `provider/`
 
@@ -152,7 +166,7 @@ Contains the page, the intro flow, and its pages:
     `intro_weekday_selector.dart`, all inside `intro_field_card.dart`.
   - Choices and results: `intro_choice_card.dart` on `intro_selectable_card.dart`,
     `intro_gender_card.dart`, `intro_week_depot_chart.dart`,
-    `intro_summary_result_card.dart`.
+    `intro_summary_result_card.dart`, `intro_start_day_selector.dart`.
   - Notes: `intro_page_note.dart` and `intro_warning_note.dart`.
 
 `*.g.dart`
@@ -193,10 +207,11 @@ Generated Riverpod files. They should not be edited manually.
 4. The shared next control asks `CalorieIntroController.next` for the target
    page. When the current page is incomplete the controller returns `null` and
    turns on validation errors instead of moving.
-5. The identity page needs gender and a birthday, the body page needs height and
-   weight, and the target page needs a target weight. Every picker shows a
-   plausible starting value but reports nothing until the user moves it, so an
-   untouched page still fails validation.
+5. The identity page needs gender and a birthday, and the body page needs height
+   and weight. Those pickers show a plausible starting value but report nothing
+   until the user moves them, so an untouched page still fails validation. The
+   target wheel starts on the current weight; continuing without moving it keeps
+   that weight, so maintaining needs no extra scrolling.
 6. Maintain-weight users skip the pace page in both directions.
 
 ### Saving The Goal
@@ -204,11 +219,14 @@ Generated Riverpod files. They should not be edited manually.
 1. The summary page calls the finish callback.
 2. `CalorieIntroFinishHandler` reads the calculated profile from the form state.
 3. `CalorieGoalOnboardingFinishFlow.saveGoal` receives a
-   `CalorieGoalOnboardingFinishRequest` with the profile and today.
-4. The goal controller saves the calculated goal starting today, with
-   `countGoalStartDayForLearning` set to `false`, because onboarding usually
-   happens in the middle of an untracked day.
-5. Burn Week is bootstrapped from today.
+   `CalorieGoalOnboardingFinishRequest` with the profile, today, and the chosen
+   start day from `CalorieIntroController`.
+4. The goal controller saves the calculated goal counting from the start day.
+   The start day counts for learning, because the user chose it knowing that the
+   whole day has to be tracked. A later start is saved with
+   `allowFutureGoalStart`.
+5. A start today bootstraps Burn Week from today. A later start leaves the run
+   to Burn Week live sync, and the diary shows practice days until the start.
 6. On success, onboarding writes the completion marker.
 7. The flow allows route exit and returns to the previous route or diary home.
 8. On failure, saving state is reset and a localized failure snackbar is shown.
@@ -254,9 +272,11 @@ Generated Riverpod files. They should not be edited manually.
 
 `test/features/onboarding` mirrors the feature structure:
 
-- `application/` tests the finish flow: goal saved for today, counting start
-  day, Burn Week bootstrap, and the failed-save path.
-- `domain/` tests preference keys and the target-date estimator.
+- `application/` tests the finish flow: goal saved for today, a later start day,
+  counting the start day, Burn Week bootstrap only for a start today, and the
+  failed-save path.
+- `domain/` tests preference keys, the target-date estimator, the proposed start
+  day, and the training-week split.
 - `presentation/controllers/` tests page navigation, per-page gating, the
   maintain-mode pace skip, and the saving flags.
 - `presentation/models/` tests chapter numbering and page order;
@@ -265,8 +285,8 @@ Generated Riverpod files. They should not be edited manually.
 - `domain/intro_activity_option_test.dart` tests the four levels and the
   nearest-level fallback.
 - `presentation/widgets/intro/` drives the whole intro: the happy path to a
-  saved goal, blocked pages, the estimated target date, the login action, and
-  the save-failure snackbar. `intro_birth_date_card_test.dart` covers the
+  saved goal, the start-day choice, blocked pages, the untouched target wheel,
+  the estimated target date, the login action, and the save-failure snackbar. `intro_birth_date_card_test.dart` covers the
   birthday dials, including the day and age-bound clamping.
 - `presentation/` tests that the page shows a spinner until settings load.
 

@@ -17,7 +17,8 @@ void main() {
 
       final settings = container.read(macroGoalSettingsControllerProvider);
 
-      expect(settings.isSportActive, isTrue);
+      // Sport follows the training days until the user sets it.
+      expect(settings.isSportActive, isNull);
       expect(settings.customProteinMultiplier, isNull);
       expect(settings.customFatMultiplier, isNull);
     });
@@ -114,10 +115,10 @@ void main() {
         expect(current.isSportActive, isFalse);
         expect(current.customProteinMultiplier, isNull);
         expect(current.customFatMultiplier, isNull);
-        // Effective multipliers revert to inactive defaults (1.2 P, 0.9 F
+        // Effective multipliers revert to inactive defaults (1.2 P, 0.8 F
         // for male).
-        expect(current.effectiveProteinMultiplier(isMale: true), 1.2);
-        expect(current.effectiveFatMultiplier(isMale: true), 0.9);
+        expect(current.effectiveProteinMultiplier(hasTrainingDays: true), 1.2);
+        expect(current.effectiveFatMultiplier(isMale: true), 0.8);
       },
     );
   });

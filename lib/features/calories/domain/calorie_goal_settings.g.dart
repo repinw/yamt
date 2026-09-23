@@ -47,7 +47,7 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
           (json['training_weekdays'] as List<dynamic>?)
               ?.map((e) => (e as num).toInt())
               .toList() ??
-          const <int>[DateTime.monday, DateTime.wednesday, DateTime.friday],
+          const <int>[],
       trainingDayKcalOffset: json['training_day_kcal_offset'] == null
           ? 0.0
           : const FlexibleDoubleConverter().fromJson(

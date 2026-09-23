@@ -2,22 +2,30 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_intro_layout_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
+import 'package:yamt/features/onboarding/domain/training_week_goals.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shows the calculated expenditure and the resulting daily intake target.
+///
+/// With training days it also shows the target of a training day and of a
+/// rest day.
 class IntroSummaryResultCard extends StatelessWidget {
   /// Creates the summary result card.
   const new({
     required this.calculation,
-    required this.trainingDaysCount,
+    required this.trainingWeekdays,
+    required this.trainingDayKcalOffset,
     super.key,
   });
 
   /// Result of the calorie goal calculation.
   final CalorieGoalCalculationResult calculation;
 
-  /// Number of weekdays that carry a workout.
-  final int trainingDaysCount;
+  /// Weekdays that carry a workout, 1 = Monday.
+  final List<int> trainingWeekdays;
+
+  /// Extra calories granted on a training day.
+  final double trainingDayKcalOffset;
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +33,13 @@ class IntroSummaryResultCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final difference = (calculation.finalGoalKcal - calculation.tdeeKcal)
         .round();
+    final trainingDays = trainingWeekdays.length;
+    final restDays = DateTime.daysPerWeek - trainingDays;
+    final weekGoals = resolveTrainingWeekGoals(
+      baseGoalKcal: calculation.finalGoalKcal,
+      trainingDays: trainingDays,
+      offsetKcal: trainingDayKcalOffset,
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -60,13 +75,22 @@ class IntroSummaryResultCard extends StatelessWidget {
               hint: _targetHint(l10n, difference),
               emphasized: true,
             ),
-            if (trainingDaysCount > 0) ...[
+            if (trainingDays > 0 && restDays > 0) ...[
               const Divider(height: AppSpacing.xxl),
               _ResultRow(
                 icon: Icons.fitness_center_rounded,
-                label: l10n.introSummaryDepotLabel,
-                value: l10n.onboardingTrainingDaysTrainingResult(
-                  trainingDaysCount,
+                label: l10n.onboardingTrainingDaysTrainingResult(trainingDays),
+                value: l10n.introSummaryKcalValue(
+                  weekGoals.trainingDayKcal.round(),
+                ),
+                emphasized: false,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _ResultRow(
+                icon: Icons.weekend_outlined,
+                label: l10n.onboardingTrainingDaysRestResult(restDays),
+                value: l10n.introSummaryKcalValue(
+                  weekGoals.restDayKcal.round(),
                 ),
                 hint: l10n.introSummaryDepotHint,
                 emphasized: false,
@@ -96,14 +120,14 @@ class _ResultRow extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
-    required this.hint,
     required this.emphasized,
+    this.hint,
   });
 
   final IconData icon;
   final String label;
   final String value;
-  final String hint;
+  final String? hint;
   final bool emphasized;
 
   @override
@@ -131,13 +155,15 @@ class _ResultRow extends StatelessWidget {
                   color: colors.onSurface,
                 ),
               ),
-              const SizedBox(height: AppSpacing.xxs),
-              Text(
-                hint,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: colors.onSurfaceVariant,
+              if (hint case final hint?) ...[
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  hint,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
                 ),
-              ),
+              ],
             ],
           ),
         ),

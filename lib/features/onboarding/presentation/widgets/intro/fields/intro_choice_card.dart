@@ -6,17 +6,17 @@ import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
 
 /// Compact one-row choice of the onboarding intro.
 ///
-/// Selection shows through the card tint and border; the right side carries a
-/// small value chip, for example a PAL factor.
+/// Selection shows through the card tint and border; the right side can carry
+/// a small value chip, for example a date.
 class IntroChoiceCard extends StatelessWidget {
   /// Creates a choice card.
   const new({
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.trailingLabel,
     required this.isSelected,
     required this.onTap,
+    this.trailingLabel,
     super.key,
   });
 
@@ -29,8 +29,8 @@ class IntroChoiceCard extends StatelessWidget {
   /// One-line explanation below the title.
   final String subtitle;
 
-  /// Value chip on the right.
-  final String trailingLabel;
+  /// Value chip on the right, if any.
+  final String? trailingLabel;
 
   /// Whether this choice is selected.
   final bool isSelected;
@@ -81,7 +81,7 @@ class IntroChoiceCard extends StatelessWidget {
                 ),
                 Text(
                   subtitle,
-                  maxLines: 1,
+                  maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: colors.onSurfaceVariant,
@@ -90,31 +90,48 @@ class IntroChoiceCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: AppSpacing.sm),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? colors.primaryContainer
-                  : colors.surfaceContainerHighest,
-              borderRadius: BorderRadius.circular(AppRadius.xs),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xs,
-                vertical: AppSpacing.xxs,
-              ),
-              child: Text(
-                trailingLabel,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: isSelected
-                      ? colors.onPrimaryContainer
-                      : colors.onSurfaceVariant,
-                ),
-              ),
-            ),
-          ),
+          if (trailingLabel case final label?) ...[
+            const SizedBox(width: AppSpacing.sm),
+            _ValueChip(label: label, isSelected: isSelected),
+          ],
         ],
+      ),
+    );
+  }
+}
+
+class _ValueChip extends StatelessWidget {
+  const new({required this.label, required this.isSelected});
+
+  final String label;
+  final bool isSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isSelected
+            ? colors.primaryContainer
+            : colors.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppRadius.xs),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.xs,
+          vertical: AppSpacing.xxs,
+        ),
+        child: Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(
+            fontWeight: FontWeight.w700,
+            color: isSelected
+                ? colors.onPrimaryContainer
+                : colors.onSurfaceVariant,
+          ),
+        ),
       ),
     );
   }

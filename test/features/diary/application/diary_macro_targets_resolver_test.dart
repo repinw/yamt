@@ -32,6 +32,7 @@ void main() {
                     activityLevel: 1.55,
                     goalMode: CalorieGoalMode.maintain,
                     goalSpeedKgPerWeek: 0,
+                    trainingWeekdays: [1, 3, 5],
                   ),
                 ),
               ),
@@ -50,13 +51,13 @@ void main() {
             )
             .read();
 
-        // Male active: 2.0 P, 1.0 F
-        // 80 * 2.0 = 160g protein (640 kcal)
-        // 80 * 1.0 = 80g fat (720 kcal)
-        // (2400 - 1360) / 4 = 260g carbs
-        expect(targets.protein, 160.0);
-        expect(targets.fat, 80.0);
-        expect(targets.carbs, 260.0);
+        // Male active: 1.6 P, 0.8 F
+        // 80 * 1.6 = 128g protein (512 kcal)
+        // 80 * 0.8 = 64g fat (576 kcal)
+        // (2400 - 1088) / 4 = 328g carbs
+        expect(targets.protein, closeTo(128, 0.001));
+        expect(targets.fat, closeTo(64, 0.001));
+        expect(targets.carbs, closeTo(328, 0.001));
       },
     );
 
@@ -102,13 +103,13 @@ void main() {
             )
             .read();
 
-        // Female inactive: 1.2 P, 1.0 F
+        // Female inactive: 1.2 P, 0.9 F
         // 60 * 1.2 = 72g protein (288 kcal)
-        // 60 * 1.0 = 60g fat (540 kcal)
-        // (1800 - 828) / 4 = 243g carbs
-        expect(targets.protein, 72.0);
-        expect(targets.fat, 60.0);
-        expect(targets.carbs, 243.0);
+        // 60 * 0.9 = 54g fat (486 kcal)
+        // (1800 - 774) / 4 = 256.5g carbs
+        expect(targets.protein, closeTo(72, 0.001));
+        expect(targets.fat, closeTo(54, 0.001));
+        expect(targets.carbs, closeTo(256.5, 0.001));
       },
     );
 
@@ -175,11 +176,12 @@ void main() {
           )
           .read();
 
-      // Fallback defaults: male (2.0 P, 1.0 F), 80kg
-      // 80 * 2.0 = 160g protein, 80 * 1.0 = 80g fat
-      expect(targets.protein, 160.0);
-      expect(targets.fat, 80.0);
-      expect(targets.carbs, 210.0); // (2200 - 640 - 720) / 4 = 840 / 4 = 210g
+      // Fallback defaults without training days: male (1.2 P, 0.8 F), 80kg
+      // 80 * 1.2 = 96g protein, 80 * 0.8 = 64g fat
+      expect(targets.protein, closeTo(96, 0.001));
+      expect(targets.fat, closeTo(64, 0.001));
+      // (2200 - 384 - 576) / 4 = 310g
+      expect(targets.carbs, closeTo(310, 0.001));
     });
 
     test('applies positive carryover (75% carbs / 25% fat split, protein untouched)', () {
@@ -203,14 +205,14 @@ void main() {
           )
           .read();
 
-      // Base: 80kg male: 160g protein, 80g fat, 260g carbs.
+      // Base: 80kg male: 96g protein, 64g fat, 360g carbs.
       // Carryover +100 kcal:
-      // Protein: unchanged (160.0)
-      // Carbs: 260 + (75 / 4.1) = 278.29g
-      // Fat: 80 + (25 / 9.3) = 82.69g
-      expect(targets.protein, 160.0);
-      expect(targets.carbs, closeTo(260.0 + (75.0 / 4.1), 0.01));
-      expect(targets.fat, closeTo(80.0 + (25.0 / 9.3), 0.01));
+      // Protein: unchanged (96.0)
+      // Carbs: 360 + (75 / 4.1)
+      // Fat: 64 + (25 / 9.3)
+      expect(targets.protein, closeTo(96, 0.001));
+      expect(targets.carbs, closeTo(360.0 + (75.0 / 4.1), 0.01));
+      expect(targets.fat, closeTo(64.0 + (25.0 / 9.3), 0.01));
     });
 
     test('applies negative carryover (Schutzregeln A & B)', () {
@@ -234,14 +236,14 @@ void main() {
           )
           .read();
 
-      // Base: 80kg male, 2000 kcal: 160g protein, 80g fat, 160g carbs.
+      // Base: 80kg male, 2000 kcal: 96g protein, 64g fat, 260g carbs.
       // Carryover -200 kcal:
-      // Protein: unchanged (160.0)
-      // Fat: 80 - (50 / 9.3) = 74.62g
-      // Carbs: 160 - (150 / 4.1) = 123.41g
-      expect(targets.protein, 160.0);
-      expect(targets.fat, closeTo(80.0 - (50.0 / 9.3), 0.01));
-      expect(targets.carbs, closeTo(160.0 - (150.0 / 4.1), 0.01));
+      // Protein: unchanged (96.0)
+      // Fat: 64 - (50 / 9.3)
+      // Carbs: 260 - (150 / 4.1)
+      expect(targets.protein, closeTo(96, 0.001));
+      expect(targets.fat, closeTo(64.0 - (50.0 / 9.3), 0.01));
+      expect(targets.carbs, closeTo(260.0 - (150.0 / 4.1), 0.01));
     });
   });
 }

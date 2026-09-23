@@ -3,6 +3,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_buffer_badge.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_practice_day_badge.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_balance_metrics_row.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_balance_subtitle_row.dart';
@@ -24,6 +25,7 @@ class DiaryDailyBalanceCard extends StatelessWidget {
     required this.onToggleDetails,
     this.kcalBarKey,
     this.macroBarsKey,
+    this.practiceStartDate,
     super.key,
   });
 
@@ -41,6 +43,9 @@ class DiaryDailyBalanceCard extends StatelessWidget {
 
   /// Key of the macro bars, used to detect when they scroll away.
   final Key? macroBarsKey;
+
+  /// First counting day when the selected day is a practice day before it.
+  final DateTime? practiceStartDate;
 
   @override
   Widget build(BuildContext context) {
@@ -74,6 +79,10 @@ class DiaryDailyBalanceCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  if (practiceStartDate case final startDate?) ...[
+                    DiaryBalancePracticeDayBadge(startDate: startDate),
+                    const SizedBox(height: AppSpacing.sm),
+                  ],
                   if (compactHeader)
                     DiaryQuietKcalRow(data: data, bar: kcalBar)
                   else ...[

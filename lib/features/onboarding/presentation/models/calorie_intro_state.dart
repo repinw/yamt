@@ -9,6 +9,7 @@ import 'package:yamt/features/onboarding/presentation/models/'
 class CalorieIntroState {
   /// Creates intro state.
   const new({
+    required this.startDate,
     this.page = 0,
     this.showErrors = false,
     this.allowRouteExit = false,
@@ -17,6 +18,9 @@ class CalorieIntroState {
 
   /// Pages in display order.
   static const List<CalorieIntroPage> pages = CalorieIntroPage.values;
+
+  /// Day the first tracked week starts.
+  final DateTime startDate;
 
   /// Current page index.
   final int page;
@@ -60,12 +64,14 @@ class CalorieIntroState {
 
   /// Copy with.
   CalorieIntroState copyWith({
+    DateTime? startDate,
     int? page,
     bool? showErrors,
     bool? allowRouteExit,
     bool? isSaving,
   }) {
     return CalorieIntroState(
+      startDate: startDate ?? this.startDate,
       page: page ?? this.page,
       showErrors: showErrors ?? this.showErrors,
       allowRouteExit: allowRouteExit ?? this.allowRouteExit,
@@ -79,6 +85,7 @@ class CalorieIntroState {
       return true;
     }
     return other is CalorieIntroState &&
+        other.startDate == startDate &&
         other.page == page &&
         other.showErrors == showErrors &&
         other.allowRouteExit == allowRouteExit &&
@@ -86,5 +93,6 @@ class CalorieIntroState {
   }
 
   @override
-  int get hashCode => Object.hash(page, showErrors, allowRouteExit, isSaving);
+  int get hashCode =>
+      Object.hash(startDate, page, showErrors, allowRouteExit, isSaving);
 }

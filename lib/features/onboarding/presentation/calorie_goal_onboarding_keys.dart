@@ -36,6 +36,19 @@ abstract final class CalorieGoalOnboardingKeys {
     'calorie_intro_target_date_estimate',
   );
 
+  /// The start-day choice for today.
+  static const introStartTodayChoice = Key('calorie_intro_start_today_choice');
+
+  /// The start-day choice for tomorrow.
+  static const introStartTomorrowChoice = Key(
+    'calorie_intro_start_tomorrow_choice',
+  );
+
+  /// The start-day choice that opens a date picker.
+  static const introStartOtherDayChoice = Key(
+    'calorie_intro_start_other_day_choice',
+  );
+
   /// The action that saves the goal and leaves onboarding.
   static const introFinishAction = Key('calorie_intro_finish_action');
 

@@ -2,30 +2,26 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 
-/// Scientific recommendations for macro multipliers based on sex and activity.
+/// Recommended macro multipliers based on sex and activity.
+///
+/// The multipliers apply to the macro reference weight, not to the full body
+/// weight (see `macroReferenceWeightKg`).
 abstract final class MacroCalculationDefaults {
   /// Default protein multiplier in g/kg.
-  static double defaultProteinMultiplier({
-    required bool isMale,
-    required bool isSportActive,
-  }) {
-    if (isSportActive) {
-      return isMale ? 2.0 : 1.8;
-    } else {
-      return 1.2;
-    }
+  ///
+  /// 1.6 g/kg covers muscle gain and retention for people who train; more
+  /// brings no measurable benefit for most. Without training 1.2 g/kg keeps
+  /// muscle during a diet.
+  static double defaultProteinMultiplier({required bool isSportActive}) {
+    return isSportActive ? 1.6 : 1.2;
   }
 
   /// Default fat multiplier in g/kg.
-  static double defaultFatMultiplier({
-    required bool isMale,
-    required bool isSportActive,
-  }) {
-    if (isSportActive) {
-      return isMale ? 1.0 : 1.2;
-    } else {
-      return isMale ? 0.9 : 1.0;
-    }
+  ///
+  /// Fat needs do not depend on training; women get a little more for their
+  /// hormone balance.
+  static double defaultFatMultiplier({required bool isMale}) {
+    return isMale ? 0.8 : 0.9;
   }
 }
 
@@ -34,7 +30,7 @@ abstract final class MacroCalculationDefaults {
 class MacroGoalSettings {
   /// Creates macro goal settings.
   const new({
-    this.isSportActive = true,
+    this.isSportActive,
     this.customProteinMultiplier,
     this.customFatMultiplier,
   });
@@ -42,7 +38,7 @@ class MacroGoalSettings {
   /// Parses from JSON map.
   factory fromJson(Map<String, dynamic> json) {
     return MacroGoalSettings(
-      isSportActive: json['is_sport_active'] as bool? ?? true,
+      isSportActive: json['is_sport_active'] as bool?,
       customProteinMultiplier: (json['custom_protein_multiplier'] as num?)
           ?.toDouble(),
       customFatMultiplier: (json['custom_fat_multiplier'] as num?)?.toDouble(),
@@ -50,7 +46,17 @@ class MacroGoalSettings {
   }
 
   /// Whether the user engages in regular sport/workouts.
-  final bool isSportActive;
+  ///
+  /// `null` until the user sets it in the macro settings. Until then the
+  /// training days of the calorie profile decide, so nobody has to know what
+  /// a g/kg multiplier is.
+  final bool? isSportActive;
+
+  /// Whether the sport defaults apply, given whether the profile has
+  /// [hasTrainingDays].
+  bool resolveSportActive({required bool hasTrainingDays}) {
+    return isSportActive ?? hasTrainingDays;
+  }
 
   /// Custom protein multiplier in g/kg if overridden by user.
   final double? customProteinMultiplier;
@@ -59,21 +65,17 @@ class MacroGoalSettings {
   final double? customFatMultiplier;
 
   /// Resolves the effective protein multiplier in g/kg.
-  double effectiveProteinMultiplier({required bool isMale}) {
+  double effectiveProteinMultiplier({required bool hasTrainingDays}) {
     return customProteinMultiplier ??
         MacroCalculationDefaults.defaultProteinMultiplier(
-          isMale: isMale,
-          isSportActive: isSportActive,
+          isSportActive: resolveSportActive(hasTrainingDays: hasTrainingDays),
         );
   }
 
   /// Resolves the effective fat multiplier in g/kg.
   double effectiveFatMultiplier({required bool isMale}) {
     return customFatMultiplier ??
-        MacroCalculationDefaults.defaultFatMultiplier(
-          isMale: isMale,
-          isSportActive: isSportActive,
-        );
+        MacroCalculationDefaults.defaultFatMultiplier(isMale: isMale);
   }
 
   /// Creates a copy with optionally replaced fields.
@@ -97,7 +99,7 @@ class MacroGoalSettings {
 
   /// Converts to JSON map.
   Map<String, dynamic> toJson() => {
-    'is_sport_active': isSportActive,
+    'is_sport_active': ?isSportActive,
     if (customProteinMultiplier != null)
       'custom_protein_multiplier': customProteinMultiplier,
     if (customFatMultiplier != null)

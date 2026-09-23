@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
+import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/diary_entries_provider.dart';
 
@@ -43,15 +44,25 @@ class DiaryBalanceCardData {
 }
 
 /// Practice day state for the diary balance card.
+///
+/// A practice day renders like a normal day against the goal that starts on
+/// [startDate], so the user learns the card before anything counts.
 class DiaryBalancePracticeDayData {
   /// Creates practice day data.
-  const new({required this.startDate, required this.futureGoalKcal});
+  const new({
+    required this.startDate,
+    required this.futureGoalKcal,
+    required this.daily,
+  });
 
   /// First official counting day.
   final DateTime startDate;
 
   /// Goal that will become active on [startDate].
   final double? futureGoalKcal;
+
+  /// Daily metrics measured against [futureGoalKcal], without carryover.
+  final DiaryDailyBalanceMetrics daily;
 }
 
 /// Adapter source that hides Calories feature types from diary widgets.
@@ -111,10 +122,21 @@ class DiaryBalanceSource {
       startDate: practiceStartDate,
       selectedDay: selectedDay,
     )) {
+      final practiceGoalKcal = resolveDiaryDisplayGoalKcal(
+        weekOverview: _weekOverview,
+        selectedDayOverview: _selectedDayOverview,
+      );
       return DiaryBalanceCardData.practiceDay(
         practiceDay: DiaryBalancePracticeDayData(
           startDate: practiceStartDate!,
           futureGoalKcal: _weekOverview.futureGoalKcal,
+          daily: resolveDiaryDailyBalanceMetrics(
+            flexibleGoalKcal: practiceGoalKcal,
+            totalKcal: _selectedDayOverview.totalKcal,
+            goalKcal: practiceGoalKcal,
+            baseGoalKcal: practiceGoalKcal,
+            activitySegmentKcal: 0,
+          ),
         ),
       );
     }
@@ -212,4 +234,24 @@ bool shouldShowDiaryBalancePracticeDay({
     return false;
   }
   return normalizeDiaryDay(selectedDay).isBefore(normalizeDiaryDay(startDate));
+}
+
+/// Goal kcal the diary measures [selectedDayOverview] against.
+///
+/// Practice days before a future goal start have no goal of their own, so
+/// they borrow the goal that starts later. This keeps the kcal bar and the
+/// macro targets visible while nothing counts yet.
+double resolveDiaryDisplayGoalKcal({
+  required CalorieWeekOverview weekOverview,
+  required CalorieWeekDayOverview selectedDayOverview,
+}) {
+  final isPracticeDay = shouldShowDiaryBalancePracticeDay(
+    goalStartsInFuture: weekOverview.goalStartsInFuture,
+    startDate: weekOverview.nextGoalStartDate,
+    selectedDay: selectedDayOverview.date,
+  );
+  if (!isPracticeDay) {
+    return selectedDayOverview.goalKcal;
+  }
+  return weekOverview.futureGoalKcal ?? selectedDayOverview.goalKcal;
 }

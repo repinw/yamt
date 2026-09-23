@@ -39,7 +39,7 @@ class IntroTargetPage extends StatelessWidget {
       minFillHeight: AppIntroLayout.fillMinHeightOnePicker,
       kicker: args.kicker,
       accent: args.accent,
-      title: l10n.onboardingGoalWeightTitle,
+      title: l10n.introTargetTitle,
       subtitle: l10n.onboardingGoalWeightSubtitle,
       body: ({required fill}) => IntroPickerStack(
         fill: fill,

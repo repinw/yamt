@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/features/calories/domain/macro_reference_weight.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/provider/'
@@ -41,6 +42,8 @@ List<Widget> buildCalorieIntroPages({
   required CalorieGoalCalculatorFormController formNotifier,
   required bool showErrors,
   required DateTime today,
+  required DateTime startDate,
+  required ValueChanged<DateTime> onStartDateChanged,
   required VoidCallback onStart,
   required VoidCallback onLogin,
 }) {
@@ -74,75 +77,89 @@ List<Widget> buildCalorieIntroPages({
     );
   }
 
-  final pages = <Widget>[
-    IntroWelcomePage(onStart: onStart, onLogin: onLogin),
-    story(
-      CalorieIntroPage.calorieModel,
+  Widget pageFor(CalorieIntroPage page) => switch (page) {
+    CalorieIntroPage.welcome => IntroWelcomePage(
+      onStart: onStart,
+      onLogin: onLogin,
+    ),
+    CalorieIntroPage.calorieModel => story(
+      page,
       icon: Icons.balance,
       title: l10n.introCalorieModelTitle,
       titleHighlight: l10n.introCalorieModelHighlight,
       body: l10n.introCalorieModelBody,
       footnote: l10n.introCalorieModelNote,
     ),
-    story(
-      CalorieIntroPage.inputQuality,
+    CalorieIntroPage.inputQuality => story(
+      page,
       icon: Icons.calculate_outlined,
       title: l10n.introInputQualityTitle,
       titleHighlight: l10n.introInputQualityHighlight,
       body: l10n.introInputQualityBody,
       footnote: l10n.introInputQualityNote,
     ),
-    story(
-      CalorieIntroPage.followTarget,
+    CalorieIntroPage.followTarget => story(
+      page,
       icon: Icons.auto_mode,
       title: l10n.introFollowTargetTitle,
       titleHighlight: l10n.introFollowTargetHighlight,
       body: l10n.introFollowTargetBody,
       footnote: l10n.introFollowTargetNote,
     ),
-    story(
-      CalorieIntroPage.goalDirection,
-      icon: Icons.swap_vert,
-      title: l10n.introGoalDirectionTitle,
-      titleHighlight: l10n.introGoalDirectionHighlight,
-      body: l10n.introGoalDirectionBody,
-      footnote: l10n.introGoalDirectionNote,
-    ),
-    story(
-      CalorieIntroPage.trend,
+    CalorieIntroPage.trend => story(
+      page,
       icon: Icons.show_chart,
       title: l10n.introTrendTitle,
       titleHighlight: l10n.introTrendHighlight,
       body: l10n.introTrendBody,
       footnote: l10n.introTrendNote,
     ),
-    story(
-      CalorieIntroPage.extras,
+    CalorieIntroPage.goalDirection => story(
+      page,
+      icon: Icons.swap_vert,
+      title: l10n.introGoalDirectionTitle,
+      titleHighlight: l10n.introGoalDirectionHighlight,
+      body: l10n.introGoalDirectionBody,
+      footnote: l10n.introGoalDirectionNote,
+    ),
+    CalorieIntroPage.extras => story(
+      page,
       icon: Icons.kitchen_outlined,
       title: l10n.introExtrasTitle,
       titleHighlight: l10n.introExtrasHighlight,
       body: l10n.introExtrasBody,
       footnote: l10n.introExtrasNote,
     ),
-    IntroIdentityPage(args: argsFor(CalorieIntroPage.identity), today: today),
-    IntroBodyPage(args: argsFor(CalorieIntroPage.body)),
-    IntroTargetPage(args: argsFor(CalorieIntroPage.target)),
-    IntroActivityPage(args: argsFor(CalorieIntroPage.activity)),
-    IntroSportPage(args: argsFor(CalorieIntroPage.sport)),
-    IntroPacePage(args: argsFor(CalorieIntroPage.pace), today: today),
-    IntroSummaryPage(
-      kicker: kickerOf(CalorieIntroPage.summary),
-      accent: accentOf(CalorieIntroPage.summary),
-      calculation: formState.calculation,
-      trainingDaysCount: formState.trainingWeekdays.length,
+    CalorieIntroPage.identity => IntroIdentityPage(
+      args: argsFor(page),
+      today: today,
     ),
-  ];
+    CalorieIntroPage.body => IntroBodyPage(args: argsFor(page)),
+    CalorieIntroPage.target => IntroTargetPage(args: argsFor(page)),
+    CalorieIntroPage.pace => IntroPacePage(args: argsFor(page), today: today),
+    CalorieIntroPage.activity => IntroActivityPage(args: argsFor(page)),
+    CalorieIntroPage.sport => IntroSportPage(args: argsFor(page)),
+    CalorieIntroPage.summary => IntroSummaryPage(
+      kicker: kickerOf(page),
+      accent: accentOf(page),
+      calculation: formState.calculation,
+      trainingWeekdays: formState.trainingWeekdays,
+      trainingDayKcalOffset: formState.trainingDayKcalOffset,
+      today: today,
+      startDate: startDate,
+      onStartDateChanged: onStartDateChanged,
+      adjustedMacroWeightKg: switch (formState.profile) {
+        final profile? => macroAdjustedWeightKg(
+          weightKg: profile.weightKg,
+          heightCm: profile.heightCm,
+        ),
+        null => null,
+      },
+    ),
+  };
 
   return [
-    for (var index = 0; index < pages.length; index++)
-      IntroChapterTheme(
-        accent: accentOf(CalorieIntroPage.values[index]),
-        child: pages[index],
-      ),
+    for (final page in CalorieIntroPage.values)
+      IntroChapterTheme(accent: accentOf(page), child: pageFor(page)),
   ];
 }

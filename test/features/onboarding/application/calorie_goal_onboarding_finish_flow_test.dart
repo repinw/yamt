@@ -5,6 +5,8 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_transition_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -53,11 +55,19 @@ Future<_Harness> _buildHarness() async {
   );
 }
 
-Future<bool> _saveOnboardingGoal(_Harness harness, DateTime today) {
+Future<bool> _saveOnboardingGoal(
+  _Harness harness,
+  DateTime today, {
+  DateTime? startDate,
+}) {
   return harness.container
       .read(calorieGoalOnboardingFinishFlowProvider)
       .saveGoal(
-        CalorieGoalOnboardingFinishRequest(profile: _profile, today: today),
+        CalorieGoalOnboardingFinishRequest(
+          profile: _profile,
+          today: today,
+          startDate: startDate ?? today,
+        ),
       );
 }
 
@@ -75,7 +85,7 @@ void main() {
       expect(goalEntry.effectiveDate, normalizeDiaryDay(today));
     });
 
-    test('starts counting on the goal start day', () async {
+    test('counts today for learning when the user starts today', () async {
       final harness = await _buildHarness();
       final today = DateTime(2026, 4, 22, 18);
 
@@ -84,6 +94,38 @@ void main() {
       final settings = await harness.settingsRepository.readSettings();
       final goalEntry = settings.goalHistory.single;
       expect(goalEntry.effectiveCountingStartDate, normalizeDiaryDay(today));
+      expect(goalEntryCountsStartDay(goalEntry), isTrue);
+    });
+
+    test('starts counting on a later start day', () async {
+      final harness = await _buildHarness();
+      final today = DateTime(2026, 4, 22, 18);
+      final startDate = DateTime(2026, 4, 23);
+
+      final saved = await _saveOnboardingGoal(
+        harness,
+        today,
+        startDate: startDate,
+      );
+
+      expect(saved, isTrue);
+      final settings = await harness.settingsRepository.readSettings();
+      final goalEntry = settings.goalHistory.single;
+      expect(goalEntry.effectiveCountingStartDate, startDate);
+      expect(goalEntryCountsStartDay(goalEntry), isTrue);
+      expect(settings.nextGoalStartAfterDay(today), startDate);
+    });
+
+    test('leaves burn week to live sync for a later start day', () async {
+      final harness = await _buildHarness();
+
+      await _saveOnboardingGoal(
+        harness,
+        DateTime(2026, 4, 22, 18),
+        startDate: DateTime(2026, 4, 23),
+      );
+
+      expect(harness.runStateRepository.state.currentWeekStartDayKey, isNull);
     });
 
     test('bootstraps burn week from today', () async {

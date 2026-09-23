@@ -32,6 +32,7 @@ class CalorieIntroFinishHandler {
   Future<void> finish({
     required BuildContext context,
     required CalorieGoalCalculatorFormState formState,
+    required DateTime startDate,
     required bool Function() isMounted,
   }) async {
     final l10n = AppLocalizations.of(context)!;
@@ -46,7 +47,11 @@ class CalorieIntroFinishHandler {
 
     _introController.startSaving();
     final success = await _finishFlow.saveGoal(
-      CalorieGoalOnboardingFinishRequest(profile: profile, today: _now()),
+      CalorieGoalOnboardingFinishRequest(
+        profile: profile,
+        today: _now(),
+        startDate: startDate,
+      ),
     );
     if (!isMounted()) {
       return;

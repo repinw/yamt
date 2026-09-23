@@ -1,7 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_state.dart';
+import 'package:yamt/features/onboarding/domain/tracking_start_day.dart';
 import 'package:yamt/features/onboarding/presentation/models/'
     'calorie_intro_page.dart';
 import 'package:yamt/features/onboarding/presentation/models/'
@@ -14,7 +17,13 @@ part 'calorie_intro_controller.g.dart';
 class CalorieIntroController extends _$CalorieIntroController {
   @override
   CalorieIntroState build() {
-    return const CalorieIntroState();
+    final now = ref.watch(clockProvider)();
+    return CalorieIntroState(startDate: defaultTrackingStartDay(now));
+  }
+
+  /// Selects the day the first tracked week starts.
+  void selectStartDate(DateTime day) {
+    state = state.copyWith(startDate: normalizeDiaryDay(day));
   }
 
   /// Moves to the next page. Returns the target index when it changed.

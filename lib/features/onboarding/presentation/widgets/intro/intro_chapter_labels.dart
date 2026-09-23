@@ -30,7 +30,10 @@ extension CalorieIntroPageLabels on CalorieIntroPage {
     if (this == CalorieIntroPage.summary) {
       return l10n.introCategoryYourStart;
     }
-    return index <= CalorieIntroPage.extras.index
+    if (this == CalorieIntroPage.extras) {
+      return l10n.introCategoryBeyondCalories;
+    }
+    return index < CalorieIntroPage.extras.index
         ? l10n.introCategoryHowItWorks
         : l10n.introCategoryYourProfile;
   }

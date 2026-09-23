@@ -3809,17 +3809,11 @@ abstract class AppLocalizations {
   /// **'Fresh run starts on {date}.'**
   String burnWeekRunRestartsOn(Object date);
 
-  /// No description provided for @burnWeekPracticeDayTitle.
+  /// No description provided for @burnWeekPracticeDayBadge.
   ///
   /// In en, this message translates to:
-  /// **'Practice day'**
-  String get burnWeekPracticeDayTitle;
-
-  /// No description provided for @burnWeekPracticeDayMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Today does not count yet. You can try tracking, and Burn Week starts on {date}.'**
-  String burnWeekPracticeDayMessage(Object date);
+  /// **'Practice day · counts from {date}'**
+  String burnWeekPracticeDayBadge(Object date);
 
   /// No description provided for @burnWeekWeekDayLabel.
   ///
@@ -4925,6 +4919,12 @@ abstract class AppLocalizations {
   /// **'Carbohydrates are filled with remaining calories'**
   String get settingsMacroGoalsCarbsAutoLabel;
 
+  /// No description provided for @macroAdjustedWeightNote.
+  ///
+  /// In en, this message translates to:
+  /// **'For protein and fat we use an adjusted body weight of {weight} kg, because fat tissue needs hardly any protein. These are guidelines, not medical advice. With severe overweight or conditions such as diabetes or kidney disease, talk to your doctor about your diet.'**
+  String macroAdjustedWeightNote(String weight);
+
   /// No description provided for @settingsMacroGoalsPreviewTitle.
   ///
   /// In en, this message translates to:
@@ -5843,18 +5843,6 @@ abstract class AppLocalizations {
   /// **'Next'**
   String get onboardingNextAction;
 
-  /// No description provided for @onboardingFinishAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Let\'s go'**
-  String get onboardingFinishAction;
-
-  /// No description provided for @onboardingGoalWeightTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your Goal'**
-  String get onboardingGoalWeightTitle;
-
   /// No description provided for @onboardingGoalWeightSubtitle.
   ///
   /// In en, this message translates to:
@@ -5870,19 +5858,19 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingGoalWeightLoseFeedback.
   ///
   /// In en, this message translates to:
-  /// **'You want to lose weight. A healthy goal!'**
+  /// **'You want to lose weight.'**
   String get onboardingGoalWeightLoseFeedback;
 
   /// No description provided for @onboardingGoalWeightGainFeedback.
   ///
   /// In en, this message translates to:
-  /// **'You want to gain weight. Building muscle is great!'**
+  /// **'You want to gain weight.'**
   String get onboardingGoalWeightGainFeedback;
 
   /// No description provided for @onboardingGoalWeightMaintainFeedback.
   ///
   /// In en, this message translates to:
-  /// **'You want to maintain your weight. Perfect!'**
+  /// **'You want to maintain your weight.'**
   String get onboardingGoalWeightMaintainFeedback;
 
   /// No description provided for @onboardingPaceTitle.
@@ -5972,7 +5960,7 @@ abstract class AppLocalizations {
   /// No description provided for @introCalorieModelBody.
   ///
   /// In en, this message translates to:
-  /// **'Every bite and every sip is pure chemical energy for your body. Calories are not a number on a scale and not an enemy to fight — they are the fuel that keeps your cells alive.'**
+  /// **'Your weight follows a simple equation: the energy you eat against the energy your body burns. Eat more than you burn and you gain. Eat less and you lose.'**
   String get introCalorieModelBody;
 
   /// No description provided for @introInputQualityTitle.
@@ -5990,7 +5978,7 @@ abstract class AppLocalizations {
   /// No description provided for @introFollowTargetTitle.
   ///
   /// In en, this message translates to:
-  /// **'In the end, plain physics decides.'**
+  /// **'Your scale corrects the estimate.'**
   String get introFollowTargetTitle;
 
   /// No description provided for @introFollowTargetBody.
@@ -6068,7 +6056,7 @@ abstract class AppLocalizations {
   /// No description provided for @introCalorieModelNote.
   ///
   /// In en, this message translates to:
-  /// **'This half of the equation is tangible: what you eat can be weighed, seen and logged almost to the gram.'**
+  /// **'The food half of the equation is tangible: what you eat can be weighed, seen and logged almost to the gram.'**
   String get introCalorieModelNote;
 
   /// No description provided for @introInputQualityHighlight.
@@ -6080,13 +6068,13 @@ abstract class AppLocalizations {
   /// No description provided for @introInputQualityNote.
   ///
   /// In en, this message translates to:
-  /// **'The catch: that burn never holds still. It shifts with your sleep, your hormones and your stress. No fixed table can know that.'**
+  /// **'The catch: nobody can measure that burn directly. So we begin with a starting value, estimated from your details.'**
   String get introInputQualityNote;
 
   /// No description provided for @introFollowTargetHighlight.
   ///
   /// In en, this message translates to:
-  /// **'plain physics'**
+  /// **'corrects the estimate'**
   String get introFollowTargetHighlight;
 
   /// No description provided for @introFollowTargetNote.
@@ -6116,7 +6104,7 @@ abstract class AppLocalizations {
   /// No description provided for @introTrendNote.
   ///
   /// In en, this message translates to:
-  /// **'We read the trend across the whole week, so a bad morning never rewrites your plan.'**
+  /// **'That is why the correction reads the trend across the whole week, so a bad morning never rewrites your plan.'**
   String get introTrendNote;
 
   /// No description provided for @introExtrasHighlight.
@@ -6134,7 +6122,7 @@ abstract class AppLocalizations {
   /// No description provided for @introSummarySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'This is your estimated starting point for day one. After seven days of tracking YAMT compares your logged food with your weight and corrects the number — and again every week after that.'**
+  /// **'This is your estimated starting value. From your start day YAMT compares your food with your weight for seven days and corrects the number, then again every week.'**
   String get introSummarySubtitle;
 
   /// No description provided for @introBodyTitle.
@@ -6158,13 +6146,13 @@ abstract class AppLocalizations {
   /// No description provided for @introSportTitle.
   ///
   /// In en, this message translates to:
-  /// **'Do you train on fixed days?'**
+  /// **'On which days do you train?'**
   String get introSportTitle;
 
   /// No description provided for @introSportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Tap your training days. With none selected every day gets the same target.'**
+  /// **'Training days get more, rest days less. The weekly total stays the same.'**
   String get introSportSubtitle;
 
   /// No description provided for @introWeekDepotTitle.
@@ -6173,35 +6161,83 @@ abstract class AppLocalizations {
   /// **'Calories per day across the week'**
   String get introWeekDepotTitle;
 
-  /// No description provided for @introActivityFactor.
-  ///
-  /// In en, this message translates to:
-  /// **'Factor {factor}'**
-  String introActivityFactor(String factor);
-
   /// No description provided for @introIdentityPrivacyNote.
   ///
   /// In en, this message translates to:
   /// **'Your details are used for the energy calculation only.'**
   String get introIdentityPrivacyNote;
 
-  /// No description provided for @introBodyTrendNote.
+  /// No description provided for @introBodyWeighInNote.
   ///
   /// In en, this message translates to:
-  /// **'Day-to-day swings do not matter. We read your weekly weight trend, not single highs and lows.'**
-  String get introBodyTrendNote;
-
-  /// No description provided for @introSummaryDepotLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Week depot'**
-  String get introSummaryDepotLabel;
+  /// **'Weigh yourself in the morning after getting up. That keeps your values comparable.'**
+  String get introBodyWeighInNote;
 
   /// No description provided for @introSummaryDepotHint.
   ///
   /// In en, this message translates to:
   /// **'Training days borrow from rest days. The weekly sum stays the same.'**
   String get introSummaryDepotHint;
+
+  /// No description provided for @introStartDayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When does your first week start?'**
+  String get introStartDayTitle;
+
+  /// No description provided for @introStartDayToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get introStartDayToday;
+
+  /// No description provided for @introStartDayTodayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Also log what you have already eaten today.'**
+  String get introStartDayTodayHint;
+
+  /// No description provided for @introStartDayTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get introStartDayTomorrow;
+
+  /// No description provided for @introStartDayTomorrowHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Try the app today. It does not count yet.'**
+  String get introStartDayTomorrowHint;
+
+  /// No description provided for @introStartDayOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Another day'**
+  String get introStartDayOther;
+
+  /// No description provided for @introStartDayOtherHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Until then you practice and nothing counts.'**
+  String get introStartDayOtherHint;
+
+  /// No description provided for @introStartTodayAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start today'**
+  String get introStartTodayAction;
+
+  /// No description provided for @introStartTomorrowAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tomorrow'**
+  String get introStartTomorrowAction;
+
+  /// No description provided for @introStartOnDateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start on {date}'**
+  String introStartOnDateAction(String date);
 
   /// No description provided for @introCategoryHowItWorks.
   ///
@@ -6220,6 +6256,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your start'**
   String get introCategoryYourStart;
+
+  /// No description provided for @introCategoryBeyondCalories.
+  ///
+  /// In en, this message translates to:
+  /// **'Beyond calories'**
+  String get introCategoryBeyondCalories;
 
   /// No description provided for @introChapterEnergyBalance.
   ///
@@ -6320,8 +6362,14 @@ abstract class AppLocalizations {
   /// No description provided for @introTargetWeightHint.
   ///
   /// In en, this message translates to:
-  /// **'Pick your target weight.'**
+  /// **'Turn the wheel, or leave it to maintain your weight.'**
   String get introTargetWeightHint;
+
+  /// No description provided for @introTargetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Where do you want to go?'**
+  String get introTargetTitle;
 
   /// No description provided for @introBirthDayLabel.
   ///
@@ -6368,61 +6416,61 @@ abstract class AppLocalizations {
   /// No description provided for @introActivityTitle.
   ///
   /// In en, this message translates to:
-  /// **'How active are you outside of sport?'**
+  /// **'How active is your typical week?'**
   String get introActivityTitle;
 
   /// No description provided for @introActivitySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Walking, standing and your job make up the lion\'s share.'**
+  /// **'Count daily life and sport together: your job, walking and your training.'**
   String get introActivitySubtitle;
 
   /// No description provided for @introActivitySittingTitle.
   ///
   /// In en, this message translates to:
-  /// **'Mostly sitting'**
+  /// **'Barely active'**
   String get introActivitySittingTitle;
 
   /// No description provided for @introActivitySittingBody.
   ///
   /// In en, this message translates to:
-  /// **'Desk, car, sofa'**
+  /// **'Desk, car, sofa, hardly any sport'**
   String get introActivitySittingBody;
 
   /// No description provided for @introActivityLightTitle.
   ///
   /// In en, this message translates to:
-  /// **'Sitting, but on the move'**
+  /// **'Lightly active'**
   String get introActivityLightTitle;
 
   /// No description provided for @introActivityLightBody.
   ///
   /// In en, this message translates to:
-  /// **'Desk job, walk or cycle daily'**
+  /// **'Walking daily or 1–2 easy workouts a week'**
   String get introActivityLightBody;
 
   /// No description provided for @introActivityOnFeetTitle.
   ///
   /// In en, this message translates to:
-  /// **'On your feet all day'**
+  /// **'Moderately active'**
   String get introActivityOnFeetTitle;
 
   /// No description provided for @introActivityOnFeetBody.
   ///
   /// In en, this message translates to:
-  /// **'Retail, care, kitchen'**
+  /// **'On your feet a lot or 3–4 workouts a week'**
   String get introActivityOnFeetBody;
 
   /// No description provided for @introActivityHardLabourTitle.
   ///
   /// In en, this message translates to:
-  /// **'Physically hard work'**
+  /// **'Very active'**
   String get introActivityHardLabourTitle;
 
   /// No description provided for @introActivityHardLabourBody.
   ///
   /// In en, this message translates to:
-  /// **'Construction, trades, warehouse'**
+  /// **'Hard physical work or training on most days'**
   String get introActivityHardLabourBody;
 
   /// No description provided for @introSummaryExpenditureLabel.

@@ -1,21 +1,23 @@
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 
-/// Daily-life activity levels offered during onboarding.
+/// Activity levels of a typical week offered during onboarding.
 ///
-/// Onboarding asks only about everyday movement, because training days are
-/// collected on their own page. The extreme calculator level is therefore not
-/// offered here; it stays reachable from the calorie settings.
+/// Each level covers everyday movement and training together, like the
+/// calculator levels in the calorie settings. The training page afterwards
+/// only spreads the weekly budget over training and rest days. The extreme
+/// calculator level is not offered here; it stays reachable from the calorie
+/// settings.
 enum IntroActivityOption {
-  /// Sitting all day, barely any walking.
+  /// Sitting all day, barely any walking or training.
   sitting(CalorieActivityLevelOption.none),
 
-  /// Mostly sitting, but walking or cycling every day.
+  /// Mostly sitting, with daily walks or one or two easy workouts.
   light(CalorieActivityLevelOption.low),
 
-  /// On the feet for most of the day.
+  /// On the feet most of the day, or three to four workouts a week.
   onFeet(CalorieActivityLevelOption.medium),
 
-  /// Physically demanding work.
+  /// Physically demanding work, or training on most days.
   hardLabour(CalorieActivityLevelOption.high);
 
   new(this.calorieOption);

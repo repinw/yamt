@@ -31,6 +31,8 @@ import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_backdrop.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_chapter_chrome.dart';
+import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
+    'intro_start_day_selector.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/'
     'intro_chapter_labels.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -66,8 +68,26 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
     FocusManager.instance.primaryFocus?.unfocus();
   }
 
+  /// The target wheel starts on the current weight. Continuing without moving
+  /// it keeps that weight, so maintaining needs no scroll away and back.
+  void _acceptUntouchedTargetWeight() {
+    final formState = ref.read(_formProvider);
+    final isTargetPage =
+        ref.read(calorieIntroControllerProvider).currentPage ==
+        CalorieIntroPage.target;
+    if (!isTargetPage ||
+        formState.targetWeightKgText.isNotEmpty ||
+        formState.weightKgText.isEmpty) {
+      return;
+    }
+    ref
+        .read(_formProvider.notifier)
+        .updateTargetWeightKg(formState.weightKgText);
+  }
+
   Future<void> _handleNext() async {
     _dismissKeyboard();
+    _acceptUntouchedTargetWeight();
     final targetPage = _introController.next(ref.read(_formProvider));
     if (targetPage == null) {
       return;
@@ -102,6 +122,7 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
     ).finish(
       context: context,
       formState: ref.read(_formProvider),
+      startDate: ref.read(calorieIntroControllerProvider).startDate,
       isMounted: () => mounted,
     );
   }
@@ -120,6 +141,12 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
     final accent = page.accent.resolve(context);
     final counterAccent = page.accent.counterpart.resolve(context);
     final nextLabel = page.nextActionLabel(l10n) ?? l10n.onboardingNextAction;
+    final finishLabel = introStartActionLabel(
+      l10n,
+      today: _now,
+      startDate: introState.startDate,
+      locale: Localizations.localeOf(context).toLanguageTag(),
+    );
 
     return PopScope(
       canPop: introState.allowRouteExit,
@@ -137,6 +164,8 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
               formNotifier: ref.read(_formProvider.notifier),
               showErrors: introState.showErrors,
               today: _now,
+              startDate: introState.startDate,
+              onStartDateChanged: _introController.selectStartDate,
               onStart: _handleNext,
               onLogin: _handleLogin,
             ),
@@ -161,7 +190,7 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
                     )
                   : FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: Text(l10n.onboardingFinishAction, maxLines: 1),
+                      child: Text(finishLabel, maxLines: 1),
                     ),
             ),
             showBackButton: introState.showsBackAction,

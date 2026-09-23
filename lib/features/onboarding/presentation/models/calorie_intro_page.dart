@@ -12,11 +12,11 @@ enum CalorieIntroPage {
   /// Explains that the estimate is corrected every week.
   followTarget,
 
-  /// Explains how the goal shifts the target away from the expenditure.
-  goalDirection,
-
   /// Explains the weight and burn trend.
   trend,
+
+  /// Explains how the goal shifts the target away from the expenditure.
+  goalDirection,
 
   /// Explains the kitchen features around tracking.
   extras,
@@ -30,16 +30,16 @@ enum CalorieIntroPage {
   /// Asks for the target weight.
   target,
 
-  /// Asks for the daily-life activity level.
-  activity,
-
-  /// Asks for the weekly training schedule.
-  sport,
-
   /// Asks for the weight-change pace.
   pace,
 
-  /// Shows the calculated goal and finishes onboarding.
+  /// Asks for the activity level of a typical week, training included.
+  activity,
+
+  /// Asks which weekdays carry a workout.
+  sport,
+
+  /// Shows the calculated goal, asks for the start day, and finishes.
   summary;
 
   /// Position of this page in the chapter count, starting at 1.

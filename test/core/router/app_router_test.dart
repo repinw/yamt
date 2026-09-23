@@ -125,12 +125,12 @@ Future<void> _completeCalorieOnboarding(WidgetTester tester) async {
     CalorieGoalOnboardingKeys.introTargetWeightWheel,
   );
   await _tapCalorieOnboardingNext(tester);
+  await _tapCalorieOnboardingNext(tester);
 
-  await tester.tap(find.text('Sitting, but on the move'));
+  await tester.tap(find.text('Lightly active'));
   await tester.pumpAndSettle();
   await _tapCalorieOnboardingNext(tester);
 
-  await _tapCalorieOnboardingNext(tester);
   await _tapCalorieOnboardingNext(tester);
 
   final finish = find.byKey(CalorieGoalOnboardingKeys.introFinishAction);
