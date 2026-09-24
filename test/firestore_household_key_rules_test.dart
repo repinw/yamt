@@ -70,7 +70,10 @@ void main() {
           'allow read: if canAccessHouseholdOwnedData(uid); '
           'allow create: if canAccessHouseholdOwnedData(uid) '
           "&& isEncryptedDocument(request.resource.data, ['happened_at']); "
-          'allow update, delete: if false; }',
+          'allow update: if canAccessHouseholdOwnedData(uid) '
+          "&& !('payload' in resource.data) "
+          "&& isEncryptedDocument(request.resource.data, ['happened_at']); "
+          'allow delete: if false; }',
         ),
       );
     });

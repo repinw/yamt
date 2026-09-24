@@ -884,11 +884,17 @@ service cloud.firestore {
         && isEncryptedDocument(request.resource.data, ['discarded_at']);
     }
 
+    // Events are append-only. The update rule is temporary: the plaintext
+    // migration encrypts existing events in place. Remove it with the
+    // migration.
     match /users/{uid}/inventory_activity_events/{eventId} {
       allow read: if canAccessHouseholdOwnedData(uid);
       allow create: if canAccessHouseholdOwnedData(uid)
         && isEncryptedDocument(request.resource.data, ['happened_at']);
-      allow update, delete: if false;
+      allow update: if canAccessHouseholdOwnedData(uid)
+        && !('payload' in resource.data)
+        && isEncryptedDocument(request.resource.data, ['happened_at']);
+      allow delete: if false;
     }
 
     // The household key of the data owner uid, wrapped with the data key of
