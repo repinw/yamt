@@ -33,6 +33,8 @@ class SettingsProfileSummaryCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             summary.when(
+              // Weight data arrives after the goals; keep them on screen.
+              skipLoadingOnReload: true,
               data: (state) => SettingsProfileSummarySections(state: state),
               loading: () => const Center(
                 child: SizedBox.square(

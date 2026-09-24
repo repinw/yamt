@@ -1347,6 +1347,24 @@
       }
     }
   },
+  "settingsProfileSummaryCurrentWeightLabel": "Current weight",
+  "settingsProfileSummaryTdeeLabel": "Expenditure (TDEE)",
+  "settingsProfileSummaryTdeeLearnedValue": "{kcal} kcal/day (learned)",
+  "@settingsProfileSummaryTdeeLearnedValue": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsProfileSummaryTdeeEstimatedValue": "{kcal} kcal/day (estimated)",
+  "@settingsProfileSummaryTdeeEstimatedValue": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
   "settingsProfileSummaryNoProfile": "No body data yet. The calorie calculator saves it.",
   "settingsProfileSummaryGoalsTitle": "Goals",
   "settingsProfileSummaryCaloriesLabel": "Calories",

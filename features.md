@@ -61,9 +61,14 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Burn Week balance cards with daily and weekly progress.
 - Weekly check-in prompts and success/hint cards.
 - Side menu from the diary top bar with a profile card: name (when set),
-  height, sex, birthday with age, and the current goals (daily calories,
-  target weight, goal mode with pace, protein, carbs, fat). A button opens the
-  macro settings; the card updates when they are saved.
+  height, current weight, sex, birthday with age, daily expenditure (TDEE),
+  and the current goals (daily calories, target weight, goal mode with pace,
+  protein, carbs, fat). A button opens the macro settings; the card updates
+  when they are saved.
+- The card's current weight is the latest weigh-in of the last seven days,
+  else the profile weight. Its TDEE is the one learned in the latest weekly
+  check-in, marked "learned", else the calculator's estimate from the
+  profile, marked "estimated".
 
 ## Calories And Burn Week
 

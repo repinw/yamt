@@ -2609,6 +2609,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get settingsProfileSummaryCurrentWeightLabel => 'Current weight';
+
+  @override
+  String get settingsProfileSummaryTdeeLabel => 'Expenditure (TDEE)';
+
+  @override
+  String settingsProfileSummaryTdeeLearnedValue(String kcal) {
+    return '$kcal kcal/day (learned)';
+  }
+
+  @override
+  String settingsProfileSummaryTdeeEstimatedValue(String kcal) {
+    return '$kcal kcal/day (estimated)';
+  }
+
+  @override
   String get settingsProfileSummaryNoProfile => 'No body data yet. The calorie calculator saves it.';
 
   @override

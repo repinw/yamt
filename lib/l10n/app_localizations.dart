@@ -4907,6 +4907,30 @@ abstract class AppLocalizations {
   /// **'{age, plural, =1{1 year} other{{age} years}}'**
   String settingsProfileSummaryAgeValue(int age);
 
+  /// No description provided for @settingsProfileSummaryCurrentWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Current weight'**
+  String get settingsProfileSummaryCurrentWeightLabel;
+
+  /// No description provided for @settingsProfileSummaryTdeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenditure (TDEE)'**
+  String get settingsProfileSummaryTdeeLabel;
+
+  /// No description provided for @settingsProfileSummaryTdeeLearnedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal/day (learned)'**
+  String settingsProfileSummaryTdeeLearnedValue(String kcal);
+
+  /// No description provided for @settingsProfileSummaryTdeeEstimatedValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal/day (estimated)'**
+  String settingsProfileSummaryTdeeEstimatedValue(String kcal);
+
   /// No description provided for @settingsProfileSummaryNoProfile.
   ///
   /// In en, this message translates to:

@@ -5,6 +5,8 @@ import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/settings/presentation/controllers/profile_summary_controller.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_profile_summary_card/settings_profile_summary_body_facts.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_profile_summary_card/settings_profile_summary_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Name, body data, and goal list of the profile summary card.
@@ -25,13 +27,10 @@ class SettingsProfileSummarySections extends StatelessWidget {
       children: [
         _ProfileHeader(name: state.name),
         const SizedBox(height: AppSpacing.md),
-        switch ((state.profile, state.ageYears)) {
-          (final profile?, final ageYears?) => _BodyFacts(
-            profile: profile,
-            ageYears: ageYears,
-          ),
-          _ => _HintText(l10n.settingsProfileSummaryNoProfile),
-        },
+        if (state.hasBodyData)
+          SettingsProfileSummaryBodyFacts(state: state)
+        else
+          _HintText(l10n.settingsProfileSummaryNoProfile),
         const Divider(height: AppSpacing.xxxl),
         Text(
           l10n.settingsProfileSummaryGoalsTitle,
@@ -88,53 +87,6 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-class _BodyFacts extends StatelessWidget {
-  const new({required this.profile, required this.ageYears});
-
-  final CalorieCalculatorProfile profile;
-  final int ageYears;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final decimal = NumberFormat.decimalPattern(locale)
-      ..maximumFractionDigits = 1;
-    final birthDate = profile.birthDate;
-
-    return Column(
-      children: [
-        _SummaryRow(
-          label: l10n.settingsProfileSummaryHeightLabel,
-          value: l10n.settingsProfileSummaryHeightValue(
-            decimal.format(profile.heightCm),
-          ),
-        ),
-        _SummaryRow(
-          label: l10n.caloriesCalculatorSexLabel,
-          value: switch (profile.sex) {
-            CalorieCalculatorSex.male => l10n.caloriesCalculatorSexMale,
-            CalorieCalculatorSex.female => l10n.caloriesCalculatorSexFemale,
-          },
-        ),
-        if (birthDate == null)
-          _SummaryRow(
-            label: l10n.settingsProfileSummaryAgeLabel,
-            value: l10n.settingsProfileSummaryAgeValue(ageYears),
-          )
-        else
-          _SummaryRow(
-            label: l10n.settingsProfileSummaryBirthdayLabel,
-            value: l10n.settingsProfileSummaryBirthdayValue(
-              DateFormat.yMMMd(locale).format(birthDate),
-              ageYears,
-            ),
-          ),
-      ],
-    );
-  }
-}
-
 class _GoalList extends StatelessWidget {
   const new({required this.state});
 
@@ -160,40 +112,40 @@ class _GoalList extends StatelessWidget {
 
     return Column(
       children: [
-        _SummaryRow(
+        SettingsProfileSummaryRow(
           label: l10n.settingsProfileSummaryCaloriesLabel,
           value: l10n.settingsProfileSummaryCaloriesValue(
             whole.format(goalKcal),
           ),
         ),
         if (targetWeightKg != null)
-          _SummaryRow(
+          SettingsProfileSummaryRow(
             label: l10n.settingsProfileSummaryTargetWeightLabel,
             value: l10n.settingsProfileSummaryWeightValue(
               decimal.format(targetWeightKg),
             ),
           ),
         if (profile != null)
-          _SummaryRow(
+          SettingsProfileSummaryRow(
             label: l10n.caloriesCalculatorGoalModeLabel,
             value: _goalModeText(l10n, profile, decimal),
           ),
         if (macros != null) ...[
-          _SummaryRow(
+          SettingsProfileSummaryRow(
             label: l10n.caloriesProteinLabel,
             value: l10n.settingsProfileSummaryGramsValue(
               whole.format(macros.proteinGrams),
             ),
             valueColor: accents.protein,
           ),
-          _SummaryRow(
+          SettingsProfileSummaryRow(
             label: l10n.caloriesCarbsLabel,
             value: l10n.settingsProfileSummaryGramsValue(
               whole.format(macros.carbsGrams),
             ),
             valueColor: accents.carbs,
           ),
-          _SummaryRow(
+          SettingsProfileSummaryRow(
             label: l10n.caloriesFatLabel,
             value: l10n.settingsProfileSummaryGramsValue(
               whole.format(macros.fatGrams),
@@ -222,48 +174,6 @@ class _GoalList extends StatelessWidget {
         pace,
       ),
     };
-  }
-}
-
-class _SummaryRow extends StatelessWidget {
-  const new({required this.label, required this.value, this.valueColor});
-
-  final String label;
-  final String value;
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: textTheme.bodyMedium?.copyWith(
-                color: colors.onSurfaceVariant,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Flexible(
-            child: Text(
-              value,
-              textAlign: TextAlign.end,
-              style: textTheme.bodyMedium?.copyWith(
-                color: valueColor ?? colors.onSurface,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
 

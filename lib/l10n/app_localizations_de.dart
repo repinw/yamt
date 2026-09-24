@@ -2609,6 +2609,22 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get settingsProfileSummaryCurrentWeightLabel => 'Aktuelles Gewicht';
+
+  @override
+  String get settingsProfileSummaryTdeeLabel => 'Verbrauch (TDEE)';
+
+  @override
+  String settingsProfileSummaryTdeeLearnedValue(String kcal) {
+    return '$kcal kcal/Tag (gelernt)';
+  }
+
+  @override
+  String settingsProfileSummaryTdeeEstimatedValue(String kcal) {
+    return '$kcal kcal/Tag (geschätzt)';
+  }
+
+  @override
   String get settingsProfileSummaryNoProfile => 'Noch keine Körperdaten. Der Kalorienrechner speichert sie.';
 
   @override

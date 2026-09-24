@@ -28,11 +28,12 @@ settings.
   delegates Health connection actions to the Health feature.
 - Reusable settings tile components under `presentation/widgets/settings_tiles/`.
 - `presentation/widgets/settings_profile_summary_card/settings_profile_summary_card.dart`
-  is the profile card of the Home side menu: optional name, height, sex,
-  birthday with age, and the current goals (calories, target weight, goal
-  mode, protein, carbs, fat). Its button opens the macro goals sheet. Body
-  data and goals come from the calorie calculator profile; the macros come
-  from the Calories nutrition target resolver, like the diary's.
+  is the profile card of the Home side menu: optional name, height, current
+  weight, sex, birthday with age, daily expenditure (TDEE), and the current
+  goals (calories, target weight, goal mode, protein, carbs, fat). Its button
+  opens the macro goals sheet. Body data and goals come from the calorie
+  calculator profile; the macros come from the Calories nutrition target
+  resolver, like the diary's.
 
 Other features should compose the page or complete settings widgets instead of
 wiring Settings provider internals directly.
@@ -51,6 +52,8 @@ Current providers:
 
 - `core` for routes, theme controllers, app version, shared layout, and common
   widgets.
+- `features/activity` for the current weight on the profile summary card,
+  read from the diary weight data of today.
 - `features/auth` for account data, auth actions, and auth error mapping.
 - `features/calories` for the profile summary card's body data and goals
   (settings repository and nutrition target resolver), and calorie goal
