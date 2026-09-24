@@ -8,9 +8,6 @@ const int burnWeekDaysPerWeek = 7;
 /// First week number shown for a fresh Burn Week run.
 const int burnWeekLearningRunWeekNumber = 1;
 
-/// Current persisted Burn Week run-state schema.
-const int burnWeekRunStateSchemaVersion = 1;
-
 /// Persistent Burn Week run state for real users.
 @JsonSerializable(fieldRename: FieldRename.snake)
 class BurnWeekRunState {
@@ -36,12 +33,8 @@ class BurnWeekRunState {
       runLimitWarningThisWeek = false;
 
   /// Decodes from persisted json.
-  factory fromJson(Map<String, dynamic> json) {
-    if (!hasCurrentBurnWeekRunStateSchema(json)) {
-      return const BurnWeekRunState.initial();
-    }
-    return _$BurnWeekRunStateFromJson(json);
-  }
+  factory fromJson(Map<String, dynamic> json) =>
+      _$BurnWeekRunStateFromJson(json);
 
   /// Current persisted week start day key.
   final String? currentWeekStartDayKey;
@@ -69,10 +62,7 @@ class BurnWeekRunState {
   final bool runLimitWarningThisWeek;
 
   /// Encodes to persisted json.
-  Map<String, dynamic> toJson() => {
-    'schema_version': burnWeekRunStateSchemaVersion,
-    ..._$BurnWeekRunStateToJson(this),
-  };
+  Map<String, dynamic> toJson() => _$BurnWeekRunStateToJson(this);
 
   /// Copies current state with overrides.
   BurnWeekRunState copyWith({
@@ -100,11 +90,6 @@ class BurnWeekRunState {
           runLimitWarningThisWeek ?? this.runLimitWarningThisWeek,
     );
   }
-}
-
-/// Whether persisted json belongs to the current Burn Week schema.
-bool hasCurrentBurnWeekRunStateSchema(Map<String, dynamic> json) {
-  return json['schema_version'] == burnWeekRunStateSchemaVersion;
 }
 
 const _keepValue = Object();

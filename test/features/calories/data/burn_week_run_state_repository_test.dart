@@ -46,35 +46,11 @@ void main() {
     expect(saved, isTrue);
     expect(profileData['uid'], 'user-1');
     expect(profileData['burn_week_run_state'], isA<Map<String, dynamic>>());
-    expect(
-      (profileData['burn_week_run_state']
-          as Map<String, dynamic>)['schema_version'],
-      burnWeekRunStateSchemaVersion,
-    );
     expect(restored.currentWeekStartDayKey, '2026-04-21');
     expect(restored.lastActiveDayKey, isNull);
     expect(restored.runWeekNumber, 3);
     expect(restored.starCount, 2);
     expect(restored.starBrokeThisWeek, isTrue);
-  });
-
-  test('readState ignores old unversioned profile entry', () async {
-    final firestore = FakeFirebaseFirestore();
-    await firestore.collection('users').doc('user-1').set(<String, dynamic>{
-      'burn_week_run_state': <String, dynamic>{
-        'run_week_number': 7,
-        'star_count': 4,
-      },
-    });
-    final repository = FirestoreBurnWeekRunStateRepository(
-      firestore: firestore,
-      currentUserId: 'user-1',
-    );
-
-    final state = await repository.readState();
-
-    expect(state.runWeekNumber, burnWeekLearningRunWeekNumber);
-    expect(state.starCount, 0);
   });
 
   test('readState falls back to fresh state on malformed entry', () async {

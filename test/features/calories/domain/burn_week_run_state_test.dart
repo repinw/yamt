@@ -14,16 +14,6 @@ void main() {
     expect(state.runLimitWarningThisWeek, isFalse);
   });
 
-  test('fromJson ignores entries without current schema', () {
-    final state = BurnWeekRunState.fromJson(const <String, dynamic>{
-      'run_week_number': 8,
-      'star_count': 4,
-    });
-
-    expect(state.runWeekNumber, burnWeekLearningRunWeekNumber);
-    expect(state.starCount, 0);
-  });
-
   test('toJson and fromJson round-trip values', () {
     const state = BurnWeekRunState(
       currentWeekStartDayKey: '2026-04-21',
@@ -36,7 +26,6 @@ void main() {
 
     final decoded = BurnWeekRunState.fromJson(state.toJson());
 
-    expect(state.toJson()['schema_version'], burnWeekRunStateSchemaVersion);
     expect(decoded.currentWeekStartDayKey, '2026-04-21');
     expect(decoded.lastActiveDayKey, isNull);
     expect(decoded.runWeekNumber, 4);
