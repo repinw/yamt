@@ -136,7 +136,8 @@ produces an initial TDEE from height, weight, age, sex, and selected activity le
 Goal mode and speed then apply deficit or surplus to create the initial daily target.
 
 Health Connect is restricted strictly to body weight readings (`HealthDataType.weight`).
-Wearable activity readings (steps, active calories burned) are decoupled from TDEE calculation.
+The app does not read wearable activity (steps, workouts, active calories), so
+tracked activity never changes TDEE or the daily target.
 
 ### Calorie Cycling & Training Days
 

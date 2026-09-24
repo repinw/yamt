@@ -90,17 +90,16 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## Activity And Weight
 
 - Activity and weight section used by the diary.
-- Steps, workouts, burned calories, and manual/imported weight data.
+- Manual and imported weight data.
 - Weight prompt when today has no weight, on the Progress tab and on today's
   diary page. Dismissing it hides it on both for that day.
 - Health connection actions from diary-owned surfaces.
-- Activity aggregation for calorie and diary calculations.
 
 ## Health Integration
 
 - Health Connect and Apple Health connection/disconnection flows.
 - Health access status, permission, history, install, and unsupported states.
-- Imported steps, workouts, burned calories, and weight data.
+- Imported weight data.
 - Manual weight repository with per-day overrides.
 - Platform stubs for unsupported targets.
 
