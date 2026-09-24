@@ -134,4 +134,4 @@ final class UserProfileProvider
   }
 }
 
-String _$userProfileHash() => r'bde601069f8c7332c26a4a2b1920b735752df764';
+String _$userProfileHash() => r'895a21faf63a929677e280f5433df373bcf47c12';

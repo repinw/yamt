@@ -60,4 +60,39 @@ void main() {
       isFalse,
     );
   });
+
+  group('withCommittedHouseholdId', () {
+    const committed = UserProfile(uid: 'member');
+    const joined = UserProfile(uid: 'member', householdId: 'host');
+
+    test('keeps the committed household id while a join is pending', () {
+      final profile = withCommittedHouseholdId(
+        joined,
+        hasPendingWrites: true,
+        lastCommittedProfile: committed,
+      );
+
+      expect(profile.householdId, isNull);
+    });
+
+    test('returns the household id once the server committed it', () {
+      final profile = withCommittedHouseholdId(
+        joined,
+        hasPendingWrites: false,
+        lastCommittedProfile: committed,
+      );
+
+      expect(profile, joined);
+    });
+
+    test('returns the cached profile before any committed snapshot', () {
+      final profile = withCommittedHouseholdId(
+        joined,
+        hasPendingWrites: true,
+        lastCommittedProfile: null,
+      );
+
+      expect(profile, joined);
+    });
+  });
 }

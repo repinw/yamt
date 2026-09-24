@@ -33,29 +33,51 @@ Stream<UserProfile?> userProfile(Ref ref) {
   }
 
   final document = firestore.collection(_usersCollection).doc(user.uid);
-  return document.snapshots().asyncMap((snapshot) async {
-    final syncedProfile = UserProfile(
-      uid: user.uid,
-      householdId: householdIdFromUserProfileSnapshot(snapshot),
-      email: normalizeOptionalUserProfileValue(user.email),
-      displayName: normalizeOptionalUserProfileValue(user.displayName),
-      isAnonymous: user.isAnonymous,
+  UserProfile? lastCommittedProfile;
+  // Metadata changes report the moment the server commits a pending write.
+  return document.snapshots(includeMetadataChanges: true).asyncMap((
+    snapshot,
+  ) async {
+    final profile = await _syncUserProfile(document, snapshot, user);
+    final hasPendingWrites = snapshot.metadata.hasPendingWrites;
+    final visibleProfile = withCommittedHouseholdId(
+      profile,
+      hasPendingWrites: hasPendingWrites,
+      lastCommittedProfile: lastCommittedProfile,
     );
-
-    if (!snapshot.exists) {
-      await document.set(syncedProfile.toJson(), SetOptions(merge: true));
-      return syncedProfile;
+    if (!hasPendingWrites) {
+      lastCommittedProfile = profile;
     }
+    return visibleProfile;
+  });
+}
 
-    final storedProfile = decodeUserProfileDocument(
-      snapshot.data() ?? const <String, dynamic>{},
-      snapshot.id,
-    );
-    if (storedProfile == syncedProfile) {
-      return storedProfile;
-    }
+Future<UserProfile> _syncUserProfile(
+  DocumentReference<Map<String, dynamic>> document,
+  DocumentSnapshot<Map<String, dynamic>> snapshot,
+  User user,
+) async {
+  final syncedProfile = UserProfile(
+    uid: user.uid,
+    householdId: householdIdFromUserProfileSnapshot(snapshot),
+    email: normalizeOptionalUserProfileValue(user.email),
+    displayName: normalizeOptionalUserProfileValue(user.displayName),
+    isAnonymous: user.isAnonymous,
+  );
 
+  if (!snapshot.exists) {
     await document.set(syncedProfile.toJson(), SetOptions(merge: true));
     return syncedProfile;
-  });
+  }
+
+  final storedProfile = decodeUserProfileDocument(
+    snapshot.data() ?? const <String, dynamic>{},
+    snapshot.id,
+  );
+  if (storedProfile == syncedProfile) {
+    return storedProfile;
+  }
+
+  await document.set(syncedProfile.toJson(), SetOptions(merge: true));
+  return syncedProfile;
 }

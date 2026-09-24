@@ -32,6 +32,23 @@ String? householdIdFromUserProfileSnapshot(
   );
 }
 
+/// Returns [profile] with the household id of [lastCommittedProfile] while
+/// the snapshot has writes that the server has not committed yet.
+///
+/// Joining a household writes the householdId to the local cache first.
+/// Firestore rules read the committed value, so household data keeps its
+/// current owner until the server commits the join.
+UserProfile withCommittedHouseholdId(
+  UserProfile profile, {
+  required bool hasPendingWrites,
+  required UserProfile? lastCommittedProfile,
+}) {
+  if (!hasPendingWrites || lastCommittedProfile == null) {
+    return profile;
+  }
+  return profile.copyWith(householdId: lastCommittedProfile.householdId);
+}
+
 /// Trims empty optional profile strings down to `null`.
 String? normalizeOptionalUserProfileValue(String? value) {
   final normalized = value?.trim();
