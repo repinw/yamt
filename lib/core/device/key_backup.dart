@@ -19,6 +19,10 @@ abstract interface class KeyBackup {
   /// Deletes the value saved under [name].
   Future<void> delete(String name);
 
+  /// Lets the user pick a password saved for this app in the password
+  /// manager. Returns `null` when the user cancels or nothing is saved.
+  Future<String?> loadFromPasswordManager();
+
   /// Offers to save [password] for the account [id] in the password manager.
   ///
   /// Returns `false` when the user cancels.
@@ -58,6 +62,11 @@ class AndroidKeyBackup implements KeyBackup {
   }
 
   @override
+  Future<String?> loadFromPasswordManager() {
+    return _channel.invokeMethod<String>('loadFromPasswordManager');
+  }
+
+  @override
   Future<bool> saveToPasswordManager({
     required String id,
     required String password,
@@ -87,6 +96,11 @@ class UnavailableKeyBackup implements KeyBackup {
 
   @override
   Future<void> delete(String name) async {}
+
+  @override
+  Future<String?> loadFromPasswordManager() {
+    throw UnsupportedError('No password manager on this platform.');
+  }
 
   @override
   Future<bool> saveToPasswordManager({

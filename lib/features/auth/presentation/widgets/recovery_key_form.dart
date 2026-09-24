@@ -39,6 +39,22 @@ class _RecoveryKeyFormState extends ConsumerState<RecoveryKeyForm> {
     });
   }
 
+  Future<void> _pickFromPasswordManager(AppLocalizations l10n) async {
+    setState(() => _errorText = null);
+    final picked = await ref
+        .read(dataKeyControllerProvider.notifier)
+        .pickRecoveryKeyFromPasswordManager();
+    if (!mounted) return;
+    if (picked == null) {
+      if (ref.read(dataKeyControllerProvider).hasError) {
+        setState(() => _errorText = l10n.dataKeyPickFailed);
+      }
+      return;
+    }
+    _keyController.text = picked;
+    await _restore(l10n);
+  }
+
   Future<void> _startFresh(AppLocalizations l10n) async {
     final confirmed = await showDialog<bool>(
       context: context,
@@ -72,6 +88,9 @@ class _RecoveryKeyFormState extends ConsumerState<RecoveryKeyForm> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isBusy = ref.watch(dataKeyControllerProvider).isLoading;
+    final canUsePasswordManager = ref.watch(
+      canSaveRecoveryKeyToPasswordManagerProvider,
+    );
     return ListView(
       padding: AppInsets.page,
       children: [
@@ -95,7 +114,15 @@ class _RecoveryKeyFormState extends ConsumerState<RecoveryKeyForm> {
           onSubmitted: (_) => _restore(l10n),
         ),
         const SizedBox(height: AppSpacing.xl),
-        FilledButton(
+        if (canUsePasswordManager) ...[
+          FilledButton.icon(
+            onPressed: isBusy ? null : () => _pickFromPasswordManager(l10n),
+            icon: const Icon(Icons.password),
+            label: Text(l10n.dataKeyPickFromPasswordManagerAction),
+          ),
+          const SizedBox(height: AppSpacing.md),
+        ],
+        OutlinedButton(
           onPressed: isBusy ? null : () => _restore(l10n),
           child: Text(l10n.dataKeyRestoreAction),
         ),

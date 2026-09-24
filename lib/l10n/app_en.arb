@@ -1994,5 +1994,7 @@
   "dataKeyStartFreshConfirmAction": "Delete and start fresh",
   "dataKeyStartFreshFailed": "Could not start fresh.",
   "dataKeyLoadFailed": "Could not load your data key. Check your connection.",
-  "dataKeyRetryAction": "Try again"
+  "dataKeyRetryAction": "Try again",
+  "dataKeyPickFromPasswordManagerAction": "Paste from password manager",
+  "dataKeyPickFailed": "Could not open the password manager."
 }

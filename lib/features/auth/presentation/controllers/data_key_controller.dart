@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/device/key_backup.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 
 part 'data_key_controller.g.dart';
@@ -52,6 +53,22 @@ class DataKeyController extends _$DataKeyController {
     });
     if (!succeeded) return RecoveryKeySaveResult.failed;
     return saved ? RecoveryKeySaveResult.saved : RecoveryKeySaveResult.canceled;
+  }
+
+  /// Lets the user pick the recovery key from the password manager.
+  ///
+  /// Returns `null` when the user cancels, nothing is saved, or the password
+  /// manager fails; a failure is left in the state.
+  Future<String?> pickRecoveryKeyFromPasswordManager() async {
+    String? picked;
+    final succeeded = await _run((_) async {
+      final repository = ref.read(userDataKeyRepositoryProvider);
+      if (repository == null) {
+        throw StateError('Firestore is unavailable.');
+      }
+      picked = await repository.pickRecoveryKeyFromPasswordManager();
+    });
+    return succeeded ? picked : null;
   }
 
   /// Restores the data key with a typed recovery key.

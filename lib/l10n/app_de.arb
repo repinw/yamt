@@ -1968,5 +1968,7 @@
   "dataKeyStartFreshConfirmAction": "Löschen und neu starten",
   "dataKeyStartFreshFailed": "Neustart fehlgeschlagen.",
   "dataKeyLoadFailed": "Dein Datenschlüssel konnte nicht geladen werden. Prüfe deine Verbindung.",
-  "dataKeyRetryAction": "Erneut versuchen"
+  "dataKeyRetryAction": "Erneut versuchen",
+  "dataKeyPickFromPasswordManagerAction": "Aus Passwortmanager einfügen",
+  "dataKeyPickFailed": "Passwortmanager konnte nicht geöffnet werden."
 }

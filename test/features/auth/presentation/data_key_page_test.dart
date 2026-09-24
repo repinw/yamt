@@ -23,9 +23,7 @@ class _FailingOnceSession extends UserDataKeySession {
 void main() {
   setUp(() => _builds = 0);
 
-  testWidgets('retry loads the data key again after a failure', (
-    tester,
-  ) async {
+  testWidgets('retry loads the data key again after a failure', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [

@@ -32,6 +32,12 @@ class FakeKeyBackup implements KeyBackup {
     values.remove(name);
   }
 
+  /// What [loadFromPasswordManager] returns.
+  String? passwordToPick;
+
+  @override
+  Future<String?> loadFromPasswordManager() async => passwordToPick;
+
   @override
   Future<bool> saveToPasswordManager({
     required String id,

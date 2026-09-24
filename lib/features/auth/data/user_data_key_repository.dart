@@ -156,6 +156,12 @@ class UserDataKeyRepository {
     );
   }
 
+  /// Lets the user pick the recovery key from the password manager. Returns
+  /// `null` when the user cancels or nothing is saved.
+  Future<String?> pickRecoveryKeyFromPasswordManager() {
+    return _keyBackup.loadFromPasswordManager();
+  }
+
   /// Loads the wrapped data key from the backup document.
   Future<String?> loadBackup(String uid) async {
     final snapshot = await _backupDocument(uid).get();

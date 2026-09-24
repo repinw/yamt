@@ -85,7 +85,7 @@ final class DataKeyControllerProvider
   DataKeyController create() => DataKeyController();
 }
 
-String _$dataKeyControllerHash() => r'1f68ca047618094efb41ae0a2db525b017f1e4e0';
+String _$dataKeyControllerHash() => r'd43cbe7de3019922177094a2fc5384231e9e0f12';
 
 /// Runs the actions of the data key pages.
 

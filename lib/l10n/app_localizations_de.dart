@@ -4067,4 +4067,10 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dataKeyRetryAction => 'Erneut versuchen';
+
+  @override
+  String get dataKeyPickFromPasswordManagerAction => 'Aus Passwortmanager einfügen';
+
+  @override
+  String get dataKeyPickFailed => 'Passwortmanager konnte nicht geöffnet werden.';
 }

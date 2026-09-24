@@ -5,8 +5,15 @@ import androidx.credentials.CreateCredentialResponse
 import androidx.credentials.CreatePasswordRequest
 import androidx.credentials.CredentialManager
 import androidx.credentials.CredentialManagerCallback
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.GetCredentialResponse
+import androidx.credentials.GetPasswordOption
+import androidx.credentials.PasswordCredential
 import androidx.credentials.exceptions.CreateCredentialCancellationException
 import androidx.credentials.exceptions.CreateCredentialException
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
 import com.google.android.gms.auth.blockstore.Blockstore
 import com.google.android.gms.auth.blockstore.DeleteBytesRequest
 import com.google.android.gms.auth.blockstore.RetrieveBytesRequest
@@ -39,6 +46,7 @@ class KeyBackupChannel(
             "load" -> load(call, result)
             "delete" -> delete(call, result)
             "saveToPasswordManager" -> saveToPasswordManager(call, result)
+            "loadFromPasswordManager" -> loadFromPasswordManager(result)
             else -> result.notImplemented()
         }
     }
@@ -108,6 +116,29 @@ class KeyBackupChannel(
                 override fun onError(e: CreateCredentialException) {
                     if (e is CreateCredentialCancellationException) {
                         result.success(false)
+                    } else {
+                        result.error(PASSWORD_MANAGER_FAILED, e.message, null)
+                    }
+                }
+            },
+        )
+    }
+
+    private fun loadFromPasswordManager(result: MethodChannel.Result) {
+        credentialManager.getCredentialAsync(
+            activity,
+            GetCredentialRequest(listOf(GetPasswordOption())),
+            null,
+            activity.mainExecutor,
+            object : CredentialManagerCallback<GetCredentialResponse, GetCredentialException> {
+                override fun onResult(response: GetCredentialResponse) {
+                    val credential = response.credential
+                    result.success((credential as? PasswordCredential)?.password)
+                }
+
+                override fun onError(e: GetCredentialException) {
+                    if (e is GetCredentialCancellationException || e is NoCredentialException) {
+                        result.success(null)
                     } else {
                         result.error(PASSWORD_MANAGER_FAILED, e.message, null)
                     }

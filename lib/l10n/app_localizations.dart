@@ -7738,6 +7738,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Try again'**
   String get dataKeyRetryAction;
+
+  /// No description provided for @dataKeyPickFromPasswordManagerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Paste from password manager'**
+  String get dataKeyPickFromPasswordManagerAction;
+
+  /// No description provided for @dataKeyPickFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the password manager.'**
+  String get dataKeyPickFailed;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
