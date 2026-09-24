@@ -1,14 +1,24 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 
 void main() {
+  late UserDataCipher signedIn;
+
+  setUpAll(() async {
+    signedIn = (
+      uid: 'user-1',
+      cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+    );
+  });
+
   test('readState returns fresh state when profile has no entry', () async {
-    final firestore = FakeFirebaseFirestore();
     final repository = FirestoreBurnWeekRunStateRepository(
-      firestore: firestore,
-      currentUserId: 'user-1',
+      firestore: FakeFirebaseFirestore(),
+      dataCipher: signedIn,
     );
 
     final state = await repository.readState();
@@ -18,11 +28,11 @@ void main() {
     expect(state.lastActiveDayKey, isNull);
   });
 
-  test('saveState persists nested user profile entry', () async {
+  test('saveState stores an encrypted entry on the user profile', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreBurnWeekRunStateRepository(
       firestore: firestore,
-      currentUserId: 'user-1',
+      dataCipher: signedIn,
     );
     const savedState = BurnWeekRunState(
       currentWeekStartDayKey: '2026-04-21',
@@ -34,15 +44,12 @@ void main() {
 
     final saved = await repository.saveState(savedState);
     final restored = await repository.readState();
-    final profileSnapshot = await firestore
-        .collection('users')
-        .doc('user-1')
-        .get();
-    final profileData = profileSnapshot.data()!;
+    final profileData = (await firestore.doc('users/user-1').get()).data()!;
 
     expect(saved, isTrue);
     expect(profileData['uid'], 'user-1');
-    expect(profileData['burn_week_run_state'], isA<Map<String, dynamic>>());
+    expect(profileData['burn_week_run_state'], isA<String>());
+    expect(profileData['burn_week_run_state'], isNot(contains('2026-04-21')));
     expect(restored.currentWeekStartDayKey, '2026-04-21');
     expect(restored.lastActiveDayKey, isNull);
     expect(restored.runWeekNumber, 3);
@@ -57,7 +64,7 @@ void main() {
     });
     final repository = FirestoreBurnWeekRunStateRepository(
       firestore: firestore,
-      currentUserId: 'user-1',
+      dataCipher: signedIn,
     );
 
     final state = await repository.readState();
@@ -66,11 +73,10 @@ void main() {
     expect(state.starCount, 0);
   });
 
-  test('missing user reads fresh state and refuses save', () async {
-    final firestore = FakeFirebaseFirestore();
+  test('missing data key reads fresh state and refuses save', () async {
     final repository = FirestoreBurnWeekRunStateRepository(
-      firestore: firestore,
-      currentUserId: null,
+      firestore: FakeFirebaseFirestore(),
+      dataCipher: null,
     );
 
     final state = await repository.readState();

@@ -31,7 +31,7 @@ final class BurnWeekRunStateRepositoryProvider
         argument: null,
         retry: null,
         name: r'burnWeekRunStateRepositoryProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -60,4 +60,4 @@ final class BurnWeekRunStateRepositoryProvider
 }
 
 String _$burnWeekRunStateRepositoryHash() =>
-    r'e7e7822d9c7ec19204ce2cfa9b5be777ccf2ed53';
+    r'09af162e049248948c41908f731f58c639e49f76';

@@ -59,4 +59,4 @@ final class CalorieSettingsRepositoryProvider
 }
 
 String _$calorieSettingsRepositoryHash() =>
-    r'e13ca88ed5f3917d1666c8f142c62e3a43be967c';
+    r'7cf7fecda65ebe96387aef5bd766b4fd6081b5d1';

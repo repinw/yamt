@@ -2,9 +2,9 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/firestore_json_normalizer.dart';
+import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 
 part 'burn_week_run_state_repository.g.dart';
@@ -38,35 +38,37 @@ class _UnavailableBurnWeekRunStateRepository
 }
 
 /// Firestore-backed Burn Week state stored on the user profile document.
+///
+/// Household members can read the profile document, so the state is stored
+/// as a payload encrypted with the data key of the user.
 class FirestoreBurnWeekRunStateRepository
     implements BurnWeekRunStateRepository {
   /// Creates repository.
-  const new({required this._firestore, required this._currentUserId});
+  const new({required this._firestore, required this._dataCipher});
 
   final FirebaseFirestore _firestore;
-  final String? _currentUserId;
+  final UserDataCipher? _dataCipher;
 
   @override
   Future<BurnWeekRunState> readState() async {
-    final userId = _normalizedUserId();
-    if (userId == null) {
+    final dataCipher = _dataCipher;
+    if (dataCipher == null) {
       return const BurnWeekRunState.initial();
     }
 
     try {
-      final snapshot = await _document(userId).get();
-      final rawState = snapshot.data()?[_burnWeekRunStateField];
-      if (rawState is! Map) {
+      final field = _encryptedField(dataCipher.uid);
+      final snapshot = await _firestore.doc(field.documentPath).get();
+      final payload = snapshot.data()?[_burnWeekRunStateField];
+      if (payload is! String) {
         return const BurnWeekRunState.initial();
       }
-      final normalizedState = normalizeFirestoreValue(rawState);
-      if (normalizedState is! Map<String, dynamic>) {
-        return const BurnWeekRunState.initial();
-      }
-      return BurnWeekRunState.fromJson(normalizedState);
+      return BurnWeekRunState.fromJson(
+        await dataCipher.cipher.decryptJson(payload, aad: field.aad),
+      );
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to read Burn Week state for user $userId.',
+        'Failed to read Burn Week state for user ${dataCipher.uid}.',
         name: _logName,
         error: error,
         stackTrace: stackTrace,
@@ -77,20 +79,25 @@ class FirestoreBurnWeekRunStateRepository
 
   @override
   Future<bool> saveState(BurnWeekRunState state) async {
-    final userId = _normalizedUserId();
-    if (userId == null) {
+    final dataCipher = _dataCipher;
+    if (dataCipher == null) {
       return false;
     }
 
     try {
-      await _document(userId).set(<String, dynamic>{
+      final userId = dataCipher.uid;
+      final field = _encryptedField(userId);
+      await _firestore.doc(field.documentPath).set(<String, dynamic>{
         'uid': userId,
-        _burnWeekRunStateField: state.toJson(),
+        _burnWeekRunStateField: await dataCipher.cipher.encryptJson(
+          state.toJson(),
+          aad: field.aad,
+        ),
       }, SetOptions(merge: true));
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to save Burn Week state for user $userId.',
+        'Failed to save Burn Week state for user ${dataCipher.uid}.',
         name: _logName,
         error: error,
         stackTrace: stackTrace,
@@ -99,33 +106,23 @@ class FirestoreBurnWeekRunStateRepository
     }
   }
 
-  String? _normalizedUserId() {
-    final userId = _currentUserId?.trim();
-    if (userId == null || userId.isEmpty) {
-      return null;
-    }
-    return userId;
-  }
-
-  DocumentReference<Map<String, dynamic>> _document(String userId) {
-    return _firestore.collection(_usersCollection).doc(userId);
+  EncryptedDocumentField _encryptedField(String userId) {
+    return EncryptedDocumentField(
+      '$_usersCollection/$userId',
+      _burnWeekRunStateField,
+    );
   }
 }
 
 /// Burn Week run state repository provider.
-@riverpod
+@Riverpod(keepAlive: true)
 BurnWeekRunStateRepository burnWeekRunStateRepository(Ref ref) {
-  ref.keepAlive();
   final firestore = ref.watch(firebaseFirestoreProvider);
   if (firestore == null) {
     return const _UnavailableBurnWeekRunStateRepository();
   }
-  final authState = ref.watch(authStateChangesProvider);
-  final currentUserId =
-      authState.asData?.value?.uid ??
-      ref.watch(firebaseAuthProvider).currentUser?.uid;
   return FirestoreBurnWeekRunStateRepository(
     firestore: firestore,
-    currentUserId: currentUserId,
+    dataCipher: ref.watch(userDataCipherProvider),
   );
 }

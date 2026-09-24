@@ -16,8 +16,21 @@ CalorieProductProfile? decodeCalorieProductDocument(
   if (raw == null) {
     return null;
   }
+  return decodeCalorieProductJson(
+    normalizeFirestoreJson(raw),
+    fallbackBarcode: fallbackBarcode,
+    documentId: snapshot.id,
+  );
+}
 
-  final normalized = normalizeFirestoreJson(raw);
+/// Decodes normalized product JSON into a [CalorieProductProfile], or `null`
+/// if it is malformed.
+CalorieProductProfile? decodeCalorieProductJson(
+  Map<String, dynamic> json, {
+  required String fallbackBarcode,
+  required String documentId,
+}) {
+  final normalized = Map<String, dynamic>.of(json);
   final barcode = normalized['barcode'];
   if (barcode is! String || barcode.isEmpty) {
     normalized['barcode'] = fallbackBarcode;
@@ -27,7 +40,7 @@ CalorieProductProfile? decodeCalorieProductDocument(
     return CalorieProductProfile.fromJson(normalized);
   } on Object catch (error, stackTrace) {
     log(
-      'Malformed calorie product cache document ${snapshot.id}.',
+      'Malformed calorie product cache document $documentId.',
       name: _codecLogName,
       error: error,
       stackTrace: stackTrace,

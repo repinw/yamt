@@ -1,7 +1,9 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 
@@ -10,13 +12,16 @@ const _weightsCollection = 'health_weights';
 const _logName = 'FirestoreManualHealthWeightRepository';
 
 /// Defines firestore manual health weight repository.
+///
+/// Weights are stored encrypted with the data key of the user. The document
+/// id is the day.
 class FirestoreManualHealthWeightRepository
     implements ManualHealthWeightRepository {
   /// Creates an instance.
-  new({required this._firestore, required this._currentUserId});
+  new({required this._firestore, required this._dataCipher});
 
   final FirebaseFirestore? _firestore;
-  final String? _currentUserId;
+  final UserDataCipher? _dataCipher;
 
   @override
   Future<List<ManualHealthWeightEntry>> readEntries() async {
@@ -27,14 +32,9 @@ class FirestoreManualHealthWeightRepository
 
     try {
       final snapshot = await collection.get();
-      final entries =
-          snapshot.docs
-              .map(
-                (document) => ManualHealthWeightEntry.fromJson(document.data()),
-              )
-              .whereType<ManualHealthWeightEntry>()
-              .toList(growable: false)
-            ..sort((left, right) => left.day.compareTo(right.day));
+      final decoded = await Future.wait(snapshot.docs.map(_decodeDocument));
+      final entries = decoded.nonNulls.toList(growable: false)
+        ..sort((left, right) => left.day.compareTo(right.day));
       return List<ManualHealthWeightEntry>.unmodifiable(entries);
     } on Object catch (error, stackTrace) {
       log(
@@ -55,9 +55,12 @@ class FirestoreManualHealthWeightRepository
     }
 
     try {
-      await collection.doc(_documentIdForDay(entry.day)).set(<String, Object?>{
-        ...entry.toJson(),
-        'updatedAt': FieldValue.serverTimestamp(),
+      final reference = collection.doc(_documentIdForDay(entry.day));
+      await reference.set(<String, Object?>{
+        encryptedPayloadField: await _dataCipher!.cipher.encryptJson(
+          entry.toJson(),
+          aad: reference.path,
+        ),
       });
       return true;
     } on Object catch (error, stackTrace) {
@@ -92,9 +95,34 @@ class FirestoreManualHealthWeightRepository
     }
   }
 
+  Future<ManualHealthWeightEntry?> _decodeDocument(
+    QueryDocumentSnapshot<Map<String, dynamic>> document,
+  ) async {
+    try {
+      final payload = document.data()[encryptedPayloadField];
+      if (payload is! String) {
+        throw FormatException('Weight ${document.id} has no payload.');
+      }
+      return ManualHealthWeightEntry.fromJson(
+        await _dataCipher!.cipher.decryptJson(
+          payload,
+          aad: document.reference.path,
+        ),
+      );
+    } on Object catch (error, stackTrace) {
+      log(
+        'Skipping malformed weight entry ${document.id}.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
   CollectionReference<Map<String, dynamic>>? _collection() {
     final firestore = _firestore;
-    final userId = _normalizedUserId;
+    final userId = _dataCipher?.uid;
     if (firestore == null || userId == null) {
       return null;
     }
@@ -102,14 +130,6 @@ class FirestoreManualHealthWeightRepository
         .collection(_usersCollection)
         .doc(userId)
         .collection(_weightsCollection);
-  }
-
-  String? get _normalizedUserId {
-    final userId = _currentUserId?.trim();
-    if (userId == null || userId.isEmpty) {
-      return null;
-    }
-    return userId;
   }
 }
 

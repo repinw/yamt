@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -27,55 +29,76 @@ CalorieEntry _createEntry(String id, {String? imageUrl}) {
 void main() {
   group('CalorieEntryDocumentCodec', () {
     late FakeFirebaseFirestore firestore;
+    late PayloadCipher cipher;
 
-    setUp(() {
+    setUp(() async {
       firestore = FakeFirebaseFirestore();
+      cipher = PayloadCipher(await PayloadCipher.newDataKey());
     });
 
-    test(
-      'decodeCalorieEntryDocument decodes valid document snapshot',
-      () async {
-        final entry = _createEntry('entry-1');
-        final docRef = firestore.collection('entries').doc('entry-1');
-        await docRef.set(entry.toJson());
+    Future<void> store(CalorieEntry entry) async {
+      final reference = firestore.collection('entries').doc(entry.id);
+      await reference.set(
+        await encodeCalorieEntryDocument(
+          entry,
+          reference: reference,
+          cipher: cipher,
+        ),
+      );
+    }
 
-        final snapshot = await docRef.get();
-        final decoded = decodeCalorieEntryDocument(snapshot);
+    test('stores only the payload and logged_at', () async {
+      final entry = _createEntry('entry-1');
 
-        expect(decoded.id, 'entry-1');
-        expect(decoded.name, 'Banana');
-        expect(decoded.consumedAmount, 120);
-      },
-    );
+      await store(entry);
 
-    test(
-      'decodeCalorieEntrySnapshot decodes valid query and skips malformed',
-      () async {
-        final entry1 = _createEntry('entry-1');
-        await firestore
-            .collection('entries')
-            .doc('entry-1')
-            .set(entry1.toJson());
-        // Malformed document: missing required fields
-        await firestore.collection('entries').doc('bad-entry').set(
-          <String, dynamic>{'id': 'bad-entry', 'consumed_amount': 'invalid'},
-        );
+      final stored = (await firestore.doc('entries/entry-1').get()).data()!;
+      expect(stored.keys, unorderedEquals(<String>['payload', 'logged_at']));
+      expect(
+        (stored['logged_at'] as Timestamp).toDate(),
+        entry.loggedAt.toLocal(),
+      );
+      expect(stored['payload'], isNot(contains('Banana')));
+    });
 
-        final querySnapshot = await firestore.collection('entries').get();
-        final malformedIds = <String>[];
+    test('decodeCalorieEntryDocument decrypts a stored entry', () async {
+      await store(_createEntry('entry-1'));
 
-        final entries = decodeCalorieEntrySnapshot(
-          querySnapshot,
-          onMalformed: (docId, error, stackTrace) {
-            malformedIds.add(docId);
-          },
-        );
+      final snapshot = await firestore.doc('entries/entry-1').get();
+      final decoded = await decodeCalorieEntryDocument(
+        snapshot,
+        cipher: cipher,
+      );
 
-        expect(entries, hasLength(1));
-        expect(entries.single.id, 'entry-1');
-        expect(malformedIds, ['bad-entry']);
-      },
-    );
+      expect(decoded.id, 'entry-1');
+      expect(decoded.name, 'Banana');
+      expect(decoded.consumedAmount, 120);
+    });
+
+    test('decodeCalorieEntrySnapshot skips malformed documents', () async {
+      await store(_createEntry('entry-1'));
+      await firestore
+          .collection('entries')
+          .doc('plaintext')
+          .set(_createEntry('plaintext').toJson());
+      await firestore.collection('entries').doc('other-key').set(
+        <String, dynamic>{
+          'payload': await PayloadCipher(await PayloadCipher.newDataKey())
+              .encryptJson(<String, dynamic>{}, aad: 'entries/other-key'),
+        },
+      );
+
+      final querySnapshot = await firestore.collection('entries').get();
+      final malformedIds = <String>[];
+      final entries = await decodeCalorieEntrySnapshot(
+        querySnapshot,
+        cipher: cipher,
+        onMalformed: (docId, error, stackTrace) => malformedIds.add(docId),
+      );
+
+      expect(entries.map((entry) => entry.id), <String>['entry-1']);
+      expect(malformedIds, unorderedEquals(<String>['plaintext', 'other-key']));
+    });
 
     test(
       'prepareCalorieEntryForSave sets userId, updatedAt, normalizes imageUrl',

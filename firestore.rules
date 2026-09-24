@@ -76,23 +76,26 @@ service cloud.firestore {
       return !(key in data) || data[key] == null || data[key] is string;
     }
 
-    function isOptionalMap(data, key) {
-      return !(key in data) || data[key] == null || data[key] is map;
-    }
-
     function isOptionalNumber(data, key) {
       return !(key in data) || data[key] == null || data[key] is number;
     }
 
-    function canWriteBurnWeekRunStateOnly(data) {
-      return data.keys().hasOnly(['burn_week_run_state'])
-        && isOptionalMap(data, 'burn_week_run_state');
+    // Private documents hold only a payload that the data key of the user
+    // encrypts, plus the plaintext fields that queries need.
+    function isEncryptedDocument(data, plaintextKeys) {
+      return data.keys().hasOnly(['payload'].concat(plaintextKeys))
+        && data.payload is string;
+    }
+
+    // The Burn Week state on the profile is an encrypted payload string.
+    function hasEncryptedRunState(data) {
+      return isOptionalString(data, 'burn_week_run_state');
     }
 
     function canCreateBurnWeekRunStateProfile(uid, data) {
       return data.keys().hasOnly(['uid', 'burn_week_run_state'])
         && data.uid == uid
-        && isOptionalMap(data, 'burn_week_run_state');
+        && hasEncryptedRunState(data);
     }
 
     function isMissingOptionalStringValue(data, key) {
@@ -567,16 +570,6 @@ service cloud.firestore {
         && data.updated_at is string;
     }
 
-    function isAllowedCalorieSource(source) {
-      return source in [
-        'user_override',
-        'global_catalog',
-        'off_barcode',
-        'off_search',
-        'ocr',
-      ];
-    }
-
     function isAllowedServingSuggestionUnit(unit) {
       return unit in ['g', 'ml'];
     }
@@ -709,33 +702,6 @@ service cloud.firestore {
         && data.updated_at is string;
     }
 
-    function isValidCalorieProductCore(data) {
-      return data.keys().hasAll([
-          'barcode',
-          'name',
-          'per100_kcal',
-          'per100_protein',
-          'per100_carbs',
-          'per100_fat',
-          'source',
-          'created_at',
-          'updated_at',
-        ])
-        && data.barcode is string
-        && data.name is string
-        && data.per100_kcal is number
-        && data.per100_protein is number
-        && data.per100_carbs is number
-        && data.per100_fat is number
-        && data.created_at is timestamp
-        && data.updated_at is timestamp
-        && data.source is string
-        && isAllowedCalorieSource(data.source)
-        && isOptionalString(data, 'brand')
-        && isOptionalString(data, 'image_url')
-        && isOptionalString(data, 'off_product_id');
-    }
-
     match /calorie_product_catalog/{barcode} {
       allow read: if isSignedIn();
       allow create, update, delete: if false;
@@ -838,15 +804,18 @@ service cloud.firestore {
     match /users/{uid} {
       allow read: if canReadUserDocument(uid);
       allow create: if isOwner(uid)
-        && request.resource.data.uid == uid;
+        && request.resource.data.uid == uid
+        && hasEncryptedRunState(request.resource.data);
       allow create: if isOwner(uid)
         && canCreateBurnWeekRunStateProfile(uid, request.resource.data);
-      allow update: if (isOwner(uid) && request.resource.data.uid == uid)
+      allow update: if (isOwner(uid)
+          && request.resource.data.uid == uid
+          && hasEncryptedRunState(request.resource.data))
         || canRemoveHouseholdMember(uid)
         || (isOwner(uid)
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['burn_week_run_state'])
-          && isOptionalMap(request.resource.data, 'burn_week_run_state'));
+          && hasEncryptedRunState(request.resource.data));
       allow delete: if isOwner(uid);
     }
 
@@ -888,42 +857,28 @@ service cloud.firestore {
     }
 
     match /users/{uid}/calorie_entries/{entryId} {
-      allow read, create, update, delete: if isOwner(uid);
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && isEncryptedDocument(request.resource.data, ['logged_at'])
+        && request.resource.data.logged_at is timestamp;
     }
 
     match /users/{uid}/calorie_settings/{settingsId} {
-      allow read, create, update, delete: if isOwner(uid);
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && isEncryptedDocument(request.resource.data, []);
     }
 
     match /users/{uid}/health_weights/{weightId} {
-      allow read, create, update, delete: if isOwner(uid);
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && isEncryptedDocument(request.resource.data, []);
     }
 
     match /users/{uid}/calorie_product_overrides/{barcode} {
-      allow read: if isOwner(uid);
+      allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid)
-        && request.resource.data.keys().hasOnly([
-          'barcode',
-          'name',
-          'brand',
-          'image_url',
-          'per100_kcal',
-          'per100_protein',
-          'per100_carbs',
-          'per100_fat',
-          'source',
-          'off_product_id',
-          'created_at',
-          'updated_at',
-          'user_id',
-          'reason',
-        ])
-        && request.resource.data.barcode == barcode
-        && request.resource.data.user_id == uid
-        && request.resource.data.reason is string
-        && request.resource.data.source == 'user_override'
-        && isValidCalorieProductCore(request.resource.data);
-      allow delete: if isOwner(uid);
+        && isEncryptedDocument(request.resource.data, []);
     }
 
     match /users/{uid}/global_food_item_serving_prefs/{itemKey} {

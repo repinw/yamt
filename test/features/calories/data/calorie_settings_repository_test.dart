@@ -2,24 +2,44 @@ import 'dart:async';
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 
-class _FakeCalorieSettingsUserSession implements CalorieSettingsUserSession {
-  new({this.currentUserId});
-
-  @override
-  final String? currentUserId;
-}
+const _settingsPath = 'users/user-1/calorie_settings/default';
 
 void main() {
-  test('setDailyGoal persists and readSettings returns value', () async {
-    final firestore = FakeFirebaseFirestore();
-    final repository = FirestoreCalorieSettingsRepository(
-      session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
+  late UserDataCipher signedIn;
+
+  setUpAll(() async {
+    signedIn = (
+      uid: 'user-1',
+      cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+    );
+  });
+
+  FirestoreCalorieSettingsRepository repositoryFor(
+    FakeFirebaseFirestore firestore,
+  ) {
+    return FirestoreCalorieSettingsRepository(
+      dataCipher: signedIn,
       firestore: firestore,
     );
+  }
+
+  Future<void> seedSettings(
+    FakeFirebaseFirestore firestore,
+    Map<String, dynamic> json,
+  ) async {
+    await firestore.doc(_settingsPath).set(<String, dynamic>{
+      'payload': await signedIn.cipher.encryptJson(json, aad: _settingsPath),
+    });
+  }
+
+  test('setDailyGoal persists and readSettings returns value', () async {
+    final repository = repositoryFor(FakeFirebaseFirestore());
 
     final saved = await repository.setDailyGoal(2400);
     final settings = await repository.readSettings();
@@ -29,12 +49,18 @@ void main() {
     expect(settings.hasGoal, isTrue);
   });
 
-  test('clearDailyGoal resets goal to empty settings', () async {
+  test('stores only an encrypted payload', () async {
     final firestore = FakeFirebaseFirestore();
-    final repository = FirestoreCalorieSettingsRepository(
-      session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
-      firestore: firestore,
-    );
+
+    await repositoryFor(firestore).setDailyGoal(2400);
+
+    final stored = (await firestore.doc(_settingsPath).get()).data()!;
+    expect(stored.keys, <String>['payload']);
+    expect(stored['payload'], isNot(contains('2400')));
+  });
+
+  test('clearDailyGoal resets goal to empty settings', () async {
+    final repository = repositoryFor(FakeFirebaseFirestore());
 
     await repository.setDailyGoal(2200);
     final cleared = await repository.clearDailyGoal();
@@ -46,11 +72,7 @@ void main() {
   });
 
   test('watchSettings emits realtime updates', () async {
-    final firestore = FakeFirebaseFirestore();
-    final repository = FirestoreCalorieSettingsRepository(
-      session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
-      firestore: firestore,
-    );
+    final repository = repositoryFor(FakeFirebaseFirestore());
 
     final emitted = <CalorieGoalSettings>[];
     final subscription = repository.watchSettings().listen(emitted.add);
@@ -66,11 +88,7 @@ void main() {
   });
 
   test('saveSettings persists calculator profile fields', () async {
-    final firestore = FakeFirebaseFirestore();
-    final repository = FirestoreCalorieSettingsRepository(
-      session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
-      firestore: firestore,
-    );
+    final repository = repositoryFor(FakeFirebaseFirestore());
 
     final settings = CalorieGoalSettings.single(
       dailyKcalGoal: 1850,
@@ -99,7 +117,7 @@ void main() {
     expect(readBack.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
   });
 
-  test('readSettings decodes clean calorie settings document', () async {
+  test('readSettings decodes a full calorie settings payload', () async {
     const profile = CalorieCalculatorProfile(
       sex: CalorieCalculatorSex.female,
       weightKg: 65,
@@ -110,39 +128,30 @@ void main() {
       goalSpeedKgPerWeek: 0.5,
     );
     final firestore = FakeFirebaseFirestore();
-    await firestore
-        .collection('users')
-        .doc('user-1')
-        .collection('calorie_settings')
-        .doc('default')
-        .set({
+    await seedSettings(firestore, {
+      'daily_kcal_goal': 1850,
+      'calculator_profile': profile.toJson(),
+      'calorie_math_version': currentCalorieMathVersion,
+      'updated_at': DateTime(2026, 4, 18, 8),
+      'goal_history': [
+        {
           'daily_kcal_goal': 1850,
           'calculator_profile': profile.toJson(),
-          'calorie_math_version': currentCalorieMathVersion,
-          'updated_at': DateTime(2026, 4, 18, 8),
-          'goal_history': [
-            {
-              'daily_kcal_goal': 1850,
-              'calculator_profile': profile.toJson(),
-              'effective_date': DateTime(2026, 4, 18),
-              'changed_at': DateTime(2026, 4, 18, 8),
-              'counting_start_date': DateTime(2026, 4, 18),
-              'source': 'calculator',
-            },
-          ],
-          'pending_weekly_check_in': {
-            'window_start_date': DateTime(2026, 4, 18),
-            'window_end_date': DateTime(2026, 4, 24),
-            'due_date': DateTime(2026, 4, 25),
-          },
-          'skipped_intake_day_keys': ['2026-4-18'],
-        });
-    final repository = FirestoreCalorieSettingsRepository(
-      session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
-      firestore: firestore,
-    );
+          'effective_date': DateTime(2026, 4, 18),
+          'changed_at': DateTime(2026, 4, 18, 8),
+          'counting_start_date': DateTime(2026, 4, 18),
+          'source': 'calculator',
+        },
+      ],
+      'pending_weekly_check_in': {
+        'window_start_date': DateTime(2026, 4, 18),
+        'window_end_date': DateTime(2026, 4, 24),
+        'due_date': DateTime(2026, 4, 25),
+      },
+      'skipped_intake_day_keys': ['2026-4-18'],
+    });
 
-    final settings = await repository.readSettings();
+    final settings = await repositoryFor(firestore).readSettings();
 
     expect(settings.calorieMathVersion, currentCalorieMathVersion);
     expect(settings.dailyKcalGoal, 1850);
@@ -155,15 +164,6 @@ void main() {
     );
     expect(settings.pendingWeeklyCheckIn, isNotNull);
     expect(settings.skippedIntakeDayKeys, ['2026-4-18']);
-
-    final persistedSnapshot = await firestore
-        .collection('users')
-        .doc('user-1')
-        .collection('calorie_settings')
-        .doc('default')
-        .get();
-    final persisted = persistedSnapshot.data()!;
-    expect(persisted['calorie_math_version'], currentCalorieMathVersion);
   });
 
   test(
@@ -179,45 +179,25 @@ void main() {
         goalSpeedKgPerWeek: 0,
       );
       final firestore = FakeFirebaseFirestore();
-      await firestore
-          .collection('users')
-          .doc('user-1')
-          .collection('calorie_settings')
-          .doc('default')
-          .set({
-            'daily_kcal_goal': 2300,
-            'calculator_profile': profile.toJson(),
-            'calorie_math_version': currentCalorieMathVersion,
-            'updated_at': DateTime(2026, 4, 2, 8),
-          });
-      final repository = FirestoreCalorieSettingsRepository(
-        session: _FakeCalorieSettingsUserSession(currentUserId: 'user-1'),
-        firestore: firestore,
-      );
+      await seedSettings(firestore, {
+        'daily_kcal_goal': 2300,
+        'calculator_profile': profile.toJson(),
+        'calorie_math_version': currentCalorieMathVersion,
+        'updated_at': DateTime(2026, 4, 2, 8),
+      });
 
-      final settings = await repository.readSettings();
+      final settings = await repositoryFor(firestore).readSettings();
 
       expect(settings.calorieMathVersion, currentCalorieMathVersion);
       expect(settings.dailyKcalGoal, 2300);
       expect(settings.hasGoal, isTrue);
       expect(settings.goalHistory, isEmpty);
-
-      final persistedSnapshot = await firestore
-          .collection('users')
-          .doc('user-1')
-          .collection('calorie_settings')
-          .doc('default')
-          .get();
-      final persisted = persistedSnapshot.data()!;
-      expect(persisted['daily_kcal_goal'], 2300);
-      expect(persisted['calorie_math_version'], currentCalorieMathVersion);
-      expect(persisted.containsKey('goal_history'), isFalse);
     },
   );
 
   test('repository returns empty defaults when no user is signed in', () async {
     final repository = FirestoreCalorieSettingsRepository(
-      session: _FakeCalorieSettingsUserSession(),
+      dataCipher: null,
       firestore: FakeFirebaseFirestore(),
     );
 

@@ -2,14 +2,13 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_document_codec.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
-import 'package:yamt/features/calories/data/'
-    'calorie_product_cache_user_session.dart';
 import 'package:yamt/features/calories/data/'
     'unavailable_calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
@@ -23,27 +22,38 @@ const _userOverridesCollection = 'calorie_product_overrides';
 const _offProductsCollection = 'off_products';
 
 /// Defines firestore calorie product cache repository.
+///
+/// The user's own product corrections are stored encrypted with the data key
+/// of the user. The global catalog stays readable.
 class FirestoreCalorieProductCacheRepository
     implements CalorieProductCacheRepositoryContract {
   /// Creates an instance.
-  new({required this._session, required this._firestore});
+  new({required this._dataCipher, required this._firestore});
 
-  final CalorieProductCacheUserSession _session;
+  final UserDataCipher? _dataCipher;
   final FirebaseFirestore _firestore;
 
   @override
   Future<CalorieProductProfile?> readUserOverride(String barcode) async {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final dataCipher = _dataCipher;
+    if (dataCipher == null) {
       return null;
     }
 
     try {
-      final snapshot = await _userOverrideDoc(userId, barcode).get();
-      if (!snapshot.exists) {
+      final snapshot = await _userOverrideDoc(dataCipher.uid, barcode).get();
+      final payload = snapshot.data()?[encryptedPayloadField];
+      if (payload is! String) {
         return null;
       }
-      return decodeCalorieProductDocument(snapshot, fallbackBarcode: barcode);
+      return decodeCalorieProductJson(
+        await dataCipher.cipher.decryptJson(
+          payload,
+          aad: snapshot.reference.path,
+        ),
+        fallbackBarcode: barcode,
+        documentId: snapshot.id,
+      );
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read calorie override for $barcode.',
@@ -122,19 +132,25 @@ class FirestoreCalorieProductCacheRepository
     required CalorieProductProfile profile,
     required String reason,
   }) async {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final dataCipher = _dataCipher;
+    if (dataCipher == null) {
       return false;
     }
 
     try {
-      final payload = prepareUserOverridePayload(
+      final override = prepareUserOverridePayload(
         profile: profile,
-        userId: userId,
+        userId: dataCipher.uid,
         reason: reason,
         now: DateTime.now(),
       );
-      await _userOverrideDoc(userId, profile.barcode).set(payload);
+      final reference = _userOverrideDoc(dataCipher.uid, profile.barcode);
+      await reference.set(<String, dynamic>{
+        encryptedPayloadField: await dataCipher.cipher.encryptJson(
+          override,
+          aad: reference.path,
+        ),
+      });
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -145,14 +161,6 @@ class FirestoreCalorieProductCacheRepository
       );
       return false;
     }
-  }
-
-  String? _currentUserId() {
-    final userId = _session.currentUserId;
-    if (userId == null || userId.isEmpty) {
-      return null;
-    }
-    return userId;
   }
 
   DocumentReference<Map<String, dynamic>> _globalDoc(String barcode) {
@@ -178,16 +186,13 @@ class FirestoreCalorieProductCacheRepository
 /// Calorie product cache repository.
 @riverpod
 CalorieProductCacheRepositoryContract calorieProductCacheRepository(Ref ref) {
-  final authState = ref.watch(authStateChangesProvider);
-  final currentUserId = authState.asData?.value?.uid;
+  final dataCipher = ref.watch(userDataCipherProvider);
   final firestore = ref.watch(firebaseFirestoreProvider);
   if (firestore == null) {
     return const UnavailableCalorieProductCacheRepository();
   }
   return FirestoreCalorieProductCacheRepository(
-    session: CurrentCalorieProductCacheUserSession(
-      currentUserId: currentUserId,
-    ),
+    dataCipher: dataCipher,
     firestore: firestore,
   );
 }

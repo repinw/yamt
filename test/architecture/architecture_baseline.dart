@@ -488,7 +488,6 @@ const architectureBaseline = <String, Map<String, int>>{
   'sdk-instance': {
     'lib/features/auth/data/auth_service.dart': 1,
     'lib/features/auth/data/google_sign_in_provider.dart': 1,
-    'lib/features/calories/data/calorie_settings_repository.dart': 1,
     'lib/features/inventory/data/global_food_item_repository.dart': 1,
     'lib/features/inventory/data/global_food_receipt_alias_repository.dart': 1,
   },
@@ -649,7 +648,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/application/calorie_entry_delete_flow.dart': 1,
     'lib/features/calories/application/calorie_inventory_entry_save_handler.dart':
         2,
-    'lib/features/calories/data/burn_week_run_state_repository.dart': 1,
     'lib/features/calories/debug/calorie_debug_action_controller.dart': 1,
     'lib/features/calories/presentation/controllers/calorie_entry_editor_controller.dart':
         1,
@@ -725,9 +723,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/scanner/data/google_ai_receipt_schema.dart': 1,
   },
   'session-interface': {
-    'lib/features/calories/data/calorie_log_user_session.dart': 1,
-    'lib/features/calories/data/calorie_product_cache_user_session.dart': 1,
-    'lib/features/calories/data/calorie_settings_repository.dart': 1,
     'lib/features/inventory/data/inventory_user_session.dart': 1,
     'lib/features/shoppinglist/data/shopping_list_user_session.dart': 1,
   },

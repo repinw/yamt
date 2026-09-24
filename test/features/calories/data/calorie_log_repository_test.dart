@@ -2,17 +2,13 @@ import 'dart:async';
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/calorie_log_user_session.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 
-class _FakeCalorieLogUserSession implements CalorieLogUserSession {
-  new({this.currentUserId});
-
-  @override
-  final String? currentUserId;
-}
+late UserDataCipher signedIn;
 
 CalorieEntry _entry(
   String id, {
@@ -39,10 +35,33 @@ CalorieEntry _entry(
 }
 
 void main() {
+  setUpAll(() async {
+    signedIn = (
+      uid: 'user-1',
+      cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+    );
+  });
+
+  test('stored entries are encrypted', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieLogRepository(
+      dataCipher: signedIn,
+      firestore: firestore,
+    );
+
+    await repository.saveEntry(_entry('a', loggedAt: DateTime(2026, 2, 25, 8)));
+    await pumpEventQueue();
+
+    final stored = (await firestore.doc('users/user-1/calorie_entries/a').get())
+        .data()!;
+    expect(stored.keys, unorderedEquals(<String>['payload', 'logged_at']));
+    expect(stored['payload'], isNot(contains('Yogurt')));
+  });
+
   test('watchEntriesForDay only returns entries from selected day', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      dataCipher: signedIn,
       firestore: firestore,
     );
 
@@ -60,7 +79,7 @@ void main() {
   test('save getById and delete operate on one document per entry', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      dataCipher: signedIn,
       firestore: firestore,
     );
 
@@ -79,7 +98,7 @@ void main() {
   test('saveEntry normalizes imageUrl when loading entry back', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      dataCipher: signedIn,
       firestore: firestore,
     );
 
@@ -102,7 +121,7 @@ void main() {
   test('returns safe defaults when no user is signed in', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(),
+      dataCipher: null,
       firestore: firestore,
     );
 
@@ -122,7 +141,7 @@ void main() {
   test('readEntriesForDay keeps ordering by logged_at', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      dataCipher: signedIn,
       firestore: firestore,
     );
 
@@ -141,7 +160,7 @@ void main() {
   test('readEntriesInRange returns ordered entries within bounds', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      dataCipher: signedIn,
       firestore: firestore,
     );
 
@@ -172,7 +191,7 @@ void main() {
   test('readFirstEntryDate returns earliest logged_at value', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      dataCipher: signedIn,
       firestore: firestore,
     );
 
@@ -191,7 +210,7 @@ void main() {
   test('watchEntriesForDay streams realtime updates', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      dataCipher: signedIn,
       firestore: firestore,
     );
 
@@ -216,7 +235,7 @@ void main() {
       'when no user is signed in', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(),
+      dataCipher: null,
       firestore: firestore,
     );
 
@@ -233,11 +252,11 @@ void main() {
   test('cachedById returns entries the repository saved or watched', () async {
     final firestore = FakeFirebaseFirestore();
     final writer = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      dataCipher: signedIn,
       firestore: firestore,
     );
     final reader = FirestoreCalorieLogRepository(
-      session: _FakeCalorieLogUserSession(currentUserId: 'user-1'),
+      dataCipher: signedIn,
       firestore: firestore,
     );
     final entry = _entry('entry-1', loggedAt: DateTime(2026, 2, 25, 9));

@@ -61,4 +61,4 @@ final class CalorieProductCacheRepositoryProvider
 }
 
 String _$calorieProductCacheRepositoryHash() =>
-    r'3418ff0f0935e403b1a2ed8bdc2ea6f45b00a14a';
+    r'0f03218823f9a30c565bf1a1d3d8c5793d4ffd9c';
