@@ -238,7 +238,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - End-to-end encryption of household data (inventory, shopping list, prepared
   meals, recipes, kitchen utensils, discard and activity events) with a
   household key. Each member holds the key wrapped with their own data key.
-  Members who joined before encryption join again once.
+  A member whose join stopped before the key was saved is asked to join
+  again.
 - Household members list with leader and current-user badges.
 - Remove member, leave household, and leader-only action handling.
 - Shared household scope for inventory, shopping lists, utensils, prepared

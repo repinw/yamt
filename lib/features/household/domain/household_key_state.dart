@@ -12,8 +12,8 @@ final class HouseholdKeyUnavailable extends HouseholdKeyState {
 }
 
 /// The user is a member of [ownerUid]'s household but holds no key for it,
-/// for example after joining before household encryption existed. The user
-/// must join again with a QR code or link.
+/// for example because the join stopped before the key entry was saved. The
+/// user must join again with a QR code or link.
 final class HouseholdKeyInviteRequired extends HouseholdKeyState {
   /// Creates the state.
   const new({required this.ownerUid});
