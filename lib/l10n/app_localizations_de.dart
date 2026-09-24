@@ -3998,4 +3998,61 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get receiptReviewNutritionProtein => 'Protein';
+
+  @override
+  String get recoveryKeyTitle => 'Wiederherstellungsschlüssel';
+
+  @override
+  String get recoveryKeyExplanation => 'Dein Tagebuch, dein Gewicht und deine Körperdaten werden verschlüsselt, bevor sie dieses Handy verlassen. Nur dieser Schlüssel stellt sie auf einem neuen Handy wieder her. Speichere ihn in deinem Passwortmanager. Niemand kann ihn für dich wiederherstellen, auch wir nicht.';
+
+  @override
+  String get recoveryKeyCopyTooltip => 'Wiederherstellungsschlüssel kopieren';
+
+  @override
+  String get recoveryKeyCopied => 'Wiederherstellungsschlüssel kopiert';
+
+  @override
+  String get recoveryKeyConfirmAction => 'Ich habe ihn gespeichert';
+
+  @override
+  String get recoveryKeyConfirmFailed => 'Bestätigung konnte nicht gespeichert werden.';
+
+  @override
+  String get recoveryKeyUnavailable => 'Gäste haben keinen Wiederherstellungsschlüssel. Verknüpfe ein Konto, um einen zu bekommen.';
+
+  @override
+  String get dataKeyRestoreTitle => 'Daten wiederherstellen';
+
+  @override
+  String get dataKeyRestoreExplanation => 'Deine Daten sind verschlüsselt. Gib den Wiederherstellungsschlüssel ein, den du beim Anlegen deines Kontos gespeichert hast.';
+
+  @override
+  String get dataKeyRestoreAction => 'Wiederherstellen';
+
+  @override
+  String get dataKeyRestoreInvalid => 'Dieser Wiederherstellungsschlüssel stimmt nicht.';
+
+  @override
+  String get dataKeyRestoreFailed => 'Daten konnten nicht wiederhergestellt werden.';
+
+  @override
+  String get dataKeyStartFreshAction => 'Ohne alte Daten neu starten';
+
+  @override
+  String get dataKeyStartFreshDialogTitle => 'Alte Daten löschen?';
+
+  @override
+  String get dataKeyStartFreshDialogMessage => 'Ohne den Wiederherstellungsschlüssel können dein Tagebuch, dein Gewicht und deine Ziele nicht gelesen werden. Sie werden gelöscht.';
+
+  @override
+  String get dataKeyStartFreshConfirmAction => 'Löschen und neu starten';
+
+  @override
+  String get dataKeyStartFreshFailed => 'Neustart fehlgeschlagen.';
+
+  @override
+  String get dataKeyLoadFailed => 'Dein Datenschlüssel konnte nicht geladen werden. Prüfe deine Verbindung.';
+
+  @override
+  String get dataKeyRetryAction => 'Erneut versuchen';
 }

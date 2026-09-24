@@ -6,6 +6,7 @@ import 'package:yamt/features/auth/application/'
 import 'package:yamt/features/auth/application/'
     'initial_guest_auth_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
 
@@ -22,12 +23,33 @@ String? appRouterRedirect(Ref ref, GoRouterState state) {
     return path == AppRoutes.welcome ? null : AppRoutes.welcome;
   }
 
+  final dataKeyRoute = _forcedDataKeyRoute(ref, path);
+  if (dataKeyRoute != null) {
+    return path == dataKeyRoute ? null : dataKeyRoute;
+  }
+
   final isAnon = currentUser.isAnonymous;
   if (path == AppRoutes.welcome) {
     return _redirectFromWelcome(ref, state, isAnonymous: isAnon);
   }
 
   return _redirectForOnboarding(ref, path, isAnonymous: isAnon);
+}
+
+/// Returns the route that the data key forces, or `null` once it is ready.
+///
+/// The private data stays unreadable until the key is ready, so the app waits
+/// on the splash, shows a new recovery key once, or asks for the recovery key.
+String? _forcedDataKeyRoute(Ref ref, String path) {
+  final session = ref.read(userDataKeySessionProvider);
+  if (session.hasError) return AppRoutes.dataKey;
+  return switch (session.value) {
+    null => path == AppRoutes.welcome ? null : AppRoutes.splash,
+    UserDataKeyRecoveryRequired() => AppRoutes.dataKey,
+    final UserDataKeyReady ready when ready.needsRecoveryKeyConfirmation =>
+      AppRoutes.dataKey,
+    UserDataKeyReady() || UserDataKeySignedOut() => null,
+  };
 }
 
 String? _redirectFromWelcome(
@@ -78,6 +100,7 @@ String? _redirectForCalorieGoal(AsyncValue<bool> calorieState, String path) {
 bool _isTerminalRoute(String path) {
   return path == AppRoutes.root ||
       path == AppRoutes.splash ||
+      path == AppRoutes.dataKey ||
       path == AppRoutes.guestNameSetup ||
       path == AppRoutes.calorieGoalSetup;
 }

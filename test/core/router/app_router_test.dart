@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cryptography/cryptography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,12 +9,15 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/features/auth/application/'
     'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -166,6 +170,7 @@ ProviderContainer _createContainerWithAuth(
   CalorieGoalSettings initialCalorieSettings =
       const CalorieGoalSettings.empty(),
   Future<UserCredential> Function()? onSignInAnonymously,
+  UserDataKeyState? dataKeyState,
 }) {
   final calorieLogRepository = FakeCalorieLogRepository();
   final calorieSettingsRepository = FakeCalorieSettingsRepository(
@@ -201,6 +206,10 @@ ProviderContainer _createContainerWithAuth(
         const _FakePreparedMealRepository(),
       ),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
+      if (dataKeyState != null)
+        userDataKeySessionProvider.overrideWith(
+          () => _FakeUserDataKeySession(dataKeyState),
+        ),
     ],
   );
   addTearDown(container.dispose);
@@ -1134,6 +1143,63 @@ void main() {
     expect(find.text('Welcome to YAMT'), findsOneWidget);
   });
 
+  testWidgets('asks for the recovery key on a new device', (tester) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+      dataKeyState: const UserDataKeyRecoveryRequired(uid: 'uid-123'),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    final router = container.read(appRouterProvider);
+    expect(router.state.uri.path, AppRoutes.dataKey);
+    expect(find.text('Restore your data'), findsOneWidget);
+
+    router.go(AppRoutes.homeCalories);
+    await _pumpRouterTransition(tester);
+    expect(router.state.uri.path, AppRoutes.dataKey);
+  });
+
+  testWidgets('shows a new recovery key once and then opens home', (
+    tester,
+  ) async {
+    final recoveryKey = RecoveryKey.generate();
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+      dataKeyState: UserDataKeyReady(
+        uid: 'uid-123',
+        cipher: PayloadCipher(SecretKey(List<int>.filled(32, 1))),
+        recoveryKey: recoveryKey,
+        recoveryKeyConfirmed: false,
+      ),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    final router = container.read(appRouterProvider);
+    expect(router.state.uri.path, AppRoutes.dataKey);
+    expect(find.text(recoveryKey.formatted), findsOneWidget);
+
+    await tester.tap(find.text('I saved it'));
+    await tester.pump();
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(router.state.uri.path, AppRoutes.homeCalories);
+  });
+
   testWidgets('guest sign-in on welcome page routes to onboarding', (
     tester,
   ) async {
@@ -1165,6 +1231,28 @@ void main() {
     );
     expect(find.text('Welcome to YAMT'), findsOneWidget);
   });
+}
+
+class _FakeUserDataKeySession extends UserDataKeySession {
+  new(this._initialState);
+
+  final UserDataKeyState _initialState;
+
+  @override
+  Future<UserDataKeyState> build() async => _initialState;
+
+  @override
+  Future<void> confirmRecoveryKeySaved() async {
+    final current = state.requireValue as UserDataKeyReady;
+    state = AsyncData(
+      UserDataKeyReady(
+        uid: current.uid,
+        cipher: current.cipher,
+        recoveryKey: current.recoveryKey,
+        recoveryKeyConfirmed: true,
+      ),
+    );
+  }
 }
 
 class _FakeInventoryItemRepository

@@ -6,7 +6,9 @@ import 'package:yamt/core/router/hero_sheet_page.dart';
 import 'package:yamt/core/router/home_shell_routes.dart';
 import 'package:yamt/core/router/route_page_helpers.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/presentation/data_key_page.dart';
 import 'package:yamt/features/auth/presentation/guest_name_setup_page.dart';
+import 'package:yamt/features/auth/presentation/recovery_key_page.dart';
 import 'package:yamt/features/auth/presentation/welcome_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
@@ -66,6 +68,10 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       builder: (context, state) => const CalorieGoalOnboardingPage(),
     ),
     GoRoute(
+      path: AppRoutes.dataKey,
+      builder: (context, state) => const DataKeyPage(),
+    ),
+    GoRoute(
       path: AppRoutes.home,
       redirect: (context, state) => AppRoutes.homeDiary,
     ),
@@ -93,6 +99,10 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.homeSettingsAccount,
       builder: (context, state) => const AccountPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.homeSettingsRecoveryKey,
+      builder: (context, state) => const RecoveryKeyPage(),
     ),
     GoRoute(
       path: AppRoutes.homeSettingsHousehold,

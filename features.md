@@ -22,6 +22,13 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Credential conflict handling when a sign-in method is already used.
 - Account details, sign out, and account deletion.
 - Persisted user profile data for profile-aware UI and household membership.
+- End-to-end encryption of private health data (diary entries, weight, calorie
+  goals and body data, Burn Week state, own product corrections) with a
+  per-user key. The server stores only ciphertext.
+- Recovery key: a real account sees it once after creation or after linking a
+  guest, and again under Account. On a new device the app asks for it before
+  anything else; without it the user can start fresh, which deletes the old
+  private data.
 
 ## Onboarding
 

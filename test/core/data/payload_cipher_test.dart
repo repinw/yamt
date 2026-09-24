@@ -48,9 +48,8 @@ void main() {
   });
 
   test('fails with a wrong key', () async {
-    final payload = await PayloadCipher(
-      await PayloadCipher.newDataKey(),
-    ).encryptJson(<String, dynamic>{'a': 1}, aad: aad);
+    final payload = await PayloadCipher(await PayloadCipher.newDataKey())
+        .encryptJson(<String, dynamic>{'a': 1}, aad: aad);
     final otherCipher = PayloadCipher(await PayloadCipher.newDataKey());
 
     await expectLater(

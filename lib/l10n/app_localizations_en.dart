@@ -3998,4 +3998,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get receiptReviewNutritionProtein => 'Protein';
+
+  @override
+  String get recoveryKeyTitle => 'Recovery key';
+
+  @override
+  String get recoveryKeyExplanation => 'Your diary, weight, and body data are encrypted before they leave this phone. Only this key can restore them on a new phone. Save it in your password manager. Nobody can recover it for you, not even us.';
+
+  @override
+  String get recoveryKeyCopyTooltip => 'Copy recovery key';
+
+  @override
+  String get recoveryKeyCopied => 'Recovery key copied';
+
+  @override
+  String get recoveryKeyConfirmAction => 'I saved it';
+
+  @override
+  String get recoveryKeyConfirmFailed => 'Could not save your confirmation.';
+
+  @override
+  String get recoveryKeyUnavailable => 'Guests have no recovery key. Link an account to get one.';
+
+  @override
+  String get dataKeyRestoreTitle => 'Restore your data';
+
+  @override
+  String get dataKeyRestoreExplanation => 'Your data is encrypted. Enter the recovery key that you saved when you created your account.';
+
+  @override
+  String get dataKeyRestoreAction => 'Restore';
+
+  @override
+  String get dataKeyRestoreInvalid => 'This recovery key is not correct.';
+
+  @override
+  String get dataKeyRestoreFailed => 'Could not restore your data.';
+
+  @override
+  String get dataKeyStartFreshAction => 'Start fresh without old data';
+
+  @override
+  String get dataKeyStartFreshDialogTitle => 'Delete old data?';
+
+  @override
+  String get dataKeyStartFreshDialogMessage => 'Without the recovery key, your diary, weight, and goals cannot be read. They will be deleted.';
+
+  @override
+  String get dataKeyStartFreshConfirmAction => 'Delete and start fresh';
+
+  @override
+  String get dataKeyStartFreshFailed => 'Could not start fresh.';
+
+  @override
+  String get dataKeyLoadFailed => 'Could not load your data key. Check your connection.';
+
+  @override
+  String get dataKeyRetryAction => 'Try again';
 }

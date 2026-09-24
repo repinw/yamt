@@ -7600,6 +7600,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Protein'**
   String get receiptReviewNutritionProtein;
+
+  /// No description provided for @recoveryKeyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery key'**
+  String get recoveryKeyTitle;
+
+  /// No description provided for @recoveryKeyExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your diary, weight, and body data are encrypted before they leave this phone. Only this key can restore them on a new phone. Save it in your password manager. Nobody can recover it for you, not even us.'**
+  String get recoveryKeyExplanation;
+
+  /// No description provided for @recoveryKeyCopyTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy recovery key'**
+  String get recoveryKeyCopyTooltip;
+
+  /// No description provided for @recoveryKeyCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery key copied'**
+  String get recoveryKeyCopied;
+
+  /// No description provided for @recoveryKeyConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'I saved it'**
+  String get recoveryKeyConfirmAction;
+
+  /// No description provided for @recoveryKeyConfirmFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save your confirmation.'**
+  String get recoveryKeyConfirmFailed;
+
+  /// No description provided for @recoveryKeyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Guests have no recovery key. Link an account to get one.'**
+  String get recoveryKeyUnavailable;
+
+  /// No description provided for @dataKeyRestoreTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore your data'**
+  String get dataKeyRestoreTitle;
+
+  /// No description provided for @dataKeyRestoreExplanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Your data is encrypted. Enter the recovery key that you saved when you created your account.'**
+  String get dataKeyRestoreExplanation;
+
+  /// No description provided for @dataKeyRestoreAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore'**
+  String get dataKeyRestoreAction;
+
+  /// No description provided for @dataKeyRestoreInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'This recovery key is not correct.'**
+  String get dataKeyRestoreInvalid;
+
+  /// No description provided for @dataKeyRestoreFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not restore your data.'**
+  String get dataKeyRestoreFailed;
+
+  /// No description provided for @dataKeyStartFreshAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Start fresh without old data'**
+  String get dataKeyStartFreshAction;
+
+  /// No description provided for @dataKeyStartFreshDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete old data?'**
+  String get dataKeyStartFreshDialogTitle;
+
+  /// No description provided for @dataKeyStartFreshDialogMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Without the recovery key, your diary, weight, and goals cannot be read. They will be deleted.'**
+  String get dataKeyStartFreshDialogMessage;
+
+  /// No description provided for @dataKeyStartFreshConfirmAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete and start fresh'**
+  String get dataKeyStartFreshConfirmAction;
+
+  /// No description provided for @dataKeyStartFreshFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start fresh.'**
+  String get dataKeyStartFreshFailed;
+
+  /// No description provided for @dataKeyLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your data key. Check your connection.'**
+  String get dataKeyLoadFailed;
+
+  /// No description provided for @dataKeyRetryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get dataKeyRetryAction;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -15,6 +15,9 @@ abstract final class AppRoutes {
   /// Calorie goal setup route.
   static const calorieGoalSetup = '/welcome/calorie-goal';
 
+  /// Data key route: shows a new recovery key or asks for it on a new device.
+  static const dataKey = '/data-key';
+
   /// Home shell route.
   static const home = '/home';
 
@@ -80,6 +83,9 @@ abstract final class AppRoutes {
 
   /// Account settings route.
   static const homeSettingsAccount = '/home/settings/account';
+
+  /// Recovery key route, opened from the account settings.
+  static const homeSettingsRecoveryKey = '/home/settings/account/recovery-key';
 
   /// Household settings route.
   static const homeSettingsHousehold = '/home/settings/household';

@@ -10,6 +10,13 @@ Auth owns:
 - Persisted user profile model and Firestore profile document normalization.
 - Auth entry pages and auth-specific presentation widgets.
 - Local profile-setup completion status.
+- The per-user data key that encrypts private health data in Firestore, its
+  recovery-key backup, and the pages that show or ask for the recovery key.
+  Guests keep the key only on the device. A real account also stores the key,
+  wrapped with the recovery key, in `users/{uid}/private/data_key`.
+- The list of private collections that the data key encrypts, used to delete
+  them when a user starts fresh and, temporarily, to encrypt plaintext data
+  from before encryption.
 
 Auth does not own:
 
@@ -33,6 +40,13 @@ Other features may import these concrete files directly:
   flows.
 - `presentation/auth_error_message_mapper.dart` for auth error messages.
 - `presentation/welcome_page.dart` and `presentation/guest_name_setup_page.dart`
+  for app routing.
+- `data/user_data_key_session.dart` for `userDataCipherProvider`, which
+  repositories of private data watch, and `userDataKeySessionProvider` for the
+  app routing gate.
+- `data/user_data_key_repository.dart` for deleting the local keys when an
+  account is deleted.
+- `presentation/data_key_page.dart` and `presentation/recovery_key_page.dart`
   for app routing.
 - `application/initial_guest_auth_controller.dart` for initial app routing and
   cold-start guest auth.

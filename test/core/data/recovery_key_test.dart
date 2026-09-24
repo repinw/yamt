@@ -43,9 +43,8 @@ void main() {
     final dataKey = await PayloadCipher.newDataKey();
 
     final wrapped = await recoveryKey.wrapDataKey(dataKey, uid: 'u1');
-    final unwrapped = await RecoveryKey.parse(
-      recoveryKey.formatted,
-    ).unwrapDataKey(wrapped, uid: 'u1');
+    final unwrapped = await RecoveryKey.parse(recoveryKey.formatted)
+        .unwrapDataKey(wrapped, uid: 'u1');
 
     expect(await unwrapped.extractBytes(), await dataKey.extractBytes());
   });

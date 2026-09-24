@@ -10,6 +10,7 @@ import 'package:yamt/features/auth/application/'
 import 'package:yamt/features/auth/application/'
     'initial_guest_auth_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
 
@@ -31,6 +32,9 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
       listenable.refresh();
     })
     ..listen(initialGuestAuthControllerProvider, (previous, next) {
+      listenable.refresh();
+    })
+    ..listen(userDataKeySessionProvider, (previous, next) {
       listenable.refresh();
     })
     ..listen(authProfileSetupCompletedProvider, (previous, next) {

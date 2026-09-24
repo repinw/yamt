@@ -6,6 +6,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
 import 'package:yamt/features/settings/data/secondary_auth_client.dart';
 
@@ -239,6 +240,8 @@ class AccountController extends _$AccountController {
       if (!ref.mounted) return;
       state = const AsyncLoading();
       final auth = ref.read(firebaseAuthProvider);
+      // Read before the shutdown: it makes the repository unavailable.
+      final userDataKeyRepository = ref.read(userDataKeyRepositoryProvider);
       sessionShutdownController = ref.read(
         sessionShutdownControllerProvider.notifier,
       );
@@ -250,7 +253,9 @@ class AccountController extends _$AccountController {
           message: 'No authenticated user found.',
         );
       }
+      final uid = user.uid;
       await user.delete();
+      await userDataKeyRepository?.deleteLocalKeys(uid);
 
       if (!ref.mounted) return;
       state = const AsyncData(null);

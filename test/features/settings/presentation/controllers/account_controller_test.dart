@@ -1,10 +1,13 @@
 import 'dart:async';
 
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
 import 'package:yamt/features/settings/data/secondary_auth_client.dart';
@@ -79,14 +82,25 @@ void main() {
     expect(container.read(accountControllerProvider).hasError, isTrue);
   });
 
-  test('deleteCurrentAccount deletes authenticated user', () async {
+  test('deleteCurrentAccount deletes the user and its local keys', () async {
+    FlutterSecureStorage.setMockInitialValues(<String, String>{
+      'data_key_u1': 'key',
+      'recovery_key_u1': 'recovery',
+      'data_key_u2': 'other',
+    });
     final auth = _MockFirebaseAuth();
     final user = _MockUser();
     when(() => auth.currentUser).thenReturn(user);
+    when(() => user.uid).thenReturn('u1');
     when(user.delete).thenAnswer((_) async {});
 
     final container = ProviderContainer(
-      overrides: [firebaseAuthProvider.overrideWithValue(auth)],
+      overrides: [
+        firebaseAuthProvider.overrideWithValue(auth),
+        firebaseFirestoreProvider.overrideWith(
+          (ref) => FakeFirebaseFirestore(),
+        ),
+      ],
     );
     addTearDown(container.dispose);
 
@@ -99,6 +113,10 @@ void main() {
       container.read(accountControllerProvider),
       const AsyncData<void>(null),
     );
+    const storage = FlutterSecureStorage();
+    expect(await storage.read(key: 'data_key_u1'), isNull);
+    expect(await storage.read(key: 'recovery_key_u1'), isNull);
+    expect(await storage.read(key: 'data_key_u2'), 'other');
   });
 
   test('deleteCurrentAccount throws when no active user exists', () async {

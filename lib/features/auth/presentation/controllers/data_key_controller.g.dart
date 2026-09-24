@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'account_controller.dart';
+part of 'data_key_controller.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -8,39 +8,39 @@ part of 'account_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Defines account controller.
+/// Runs the actions of the data key pages.
 
-@ProviderFor(AccountController)
-final accountControllerProvider = AccountControllerProvider._();
+@ProviderFor(DataKeyController)
+final dataKeyControllerProvider = DataKeyControllerProvider._();
 
-/// Defines account controller.
-final class AccountControllerProvider
-    extends $AsyncNotifierProvider<AccountController, void> {
-  /// Defines account controller.
-  AccountControllerProvider._()
+/// Runs the actions of the data key pages.
+final class DataKeyControllerProvider
+    extends $AsyncNotifierProvider<DataKeyController, void> {
+  /// Runs the actions of the data key pages.
+  DataKeyControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'accountControllerProvider',
+        name: r'dataKeyControllerProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$accountControllerHash();
+  String debugGetCreateSourceHash() => _$dataKeyControllerHash();
 
   @$internal
   @override
-  AccountController create() => AccountController();
+  DataKeyController create() => DataKeyController();
 }
 
-String _$accountControllerHash() => r'220dacc2d8ca1fcc9a9a35265bece268aedf8e81';
+String _$dataKeyControllerHash() => r'd2727df31e18d19ba3f7dcab6efb2f79a9459ce2';
 
-/// Defines account controller.
+/// Runs the actions of the data key pages.
 
-abstract class _$AccountController extends $AsyncNotifier<void> {
+abstract class _$DataKeyController extends $AsyncNotifier<void> {
   FutureOr<void> build();
   @$mustCallSuper
   @override
