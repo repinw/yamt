@@ -5,8 +5,8 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 const Duration _progressAnimationDuration = Duration(milliseconds: 1000);
 const Curve _progressAnimationCurve = Curves.easeOut;
 
-/// Tags the segments' animated values, so the next day's bar continues from
-/// this one.
+/// Tags the eaten segment's animated value, so the next day's bar continues
+/// from this one.
 const Object _handoffTag = #dailyGoalProgressTrack;
 
 /// Animated daily kcal progress track.

@@ -769,7 +769,6 @@ void main() {
         goalSpeedKgPerWeek: 0,
       ),
       effectiveDate: startDay,
-      activityTrackingStartDate: startDay,
       source: CalorieGoalSource.calculator,
       weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
         windowStartDate: DateTime(2026, 4),

@@ -31,7 +31,6 @@ class CalorieGoalSettings {
     required this.pendingWeeklyCheckIn,
     required this.skippedIntakeDayKeys,
     required this.calorieMathVersion,
-    this.activityTrackingStartDate,
     this.trainingWeekdays = const <int>[],
     this.trainingDayKcalOffset = 0.0,
     this.trainingDayOverrides = const <String, bool>{},
@@ -48,7 +47,6 @@ class CalorieGoalSettings {
     : dailyKcalGoal = null,
       calculatorProfile = null,
       calorieMathVersion = currentCalorieMathVersion,
-      activityTrackingStartDate = null,
       updatedAt = null,
       goalHistory = const <CalorieGoalHistoryEntry>[],
       pendingWeeklyCheckIn = null,
@@ -63,7 +61,6 @@ class CalorieGoalSettings {
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
     required DateTime effectiveDate,
-    DateTime? activityTrackingStartDate,
     DateTime? countingStartDate,
     DateTime? updatedAt,
     CalorieGoalSource source = CalorieGoalSource.manual,
@@ -89,9 +86,6 @@ class CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
       calorieMathVersion: currentCalorieMathVersion,
-      activityTrackingStartDate: activityTrackingStartDate == null
-          ? null
-          : normalizeDiaryDay(activityTrackingStartDate),
       updatedAt: updatedAt ?? effectiveDate,
       trainingWeekdays: resolvedWeekdays,
       trainingDayKcalOffset: resolvedOffset,
@@ -123,10 +117,6 @@ class CalorieGoalSettings {
   /// The calorie math data version.
   @JsonKey(defaultValue: currentCalorieMathVersion)
   final int calorieMathVersion;
-
-  /// First day where health activity tracking should affect calorie math.
-  @NullableFlexibleDateTimeConverter()
-  final DateTime? activityTrackingStartDate;
 
   /// The updated at.
   @NullableFlexibleDateTimeConverter()
@@ -213,7 +203,6 @@ class CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
       calorieMathVersion: calorieMathVersion,
-      activityTrackingStartDate: activityTrackingStartDate,
       updatedAt: updatedAt,
       goalHistory: goalHistory,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn,
@@ -233,7 +222,6 @@ class CalorieGoalSettings {
     double? dailyKcalGoal,
     CalorieCalculatorProfile? calculatorProfile,
     int? calorieMathVersion,
-    DateTime? activityTrackingStartDate,
     DateTime? updatedAt,
     List<CalorieGoalHistoryEntry>? goalHistory,
     PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
@@ -247,9 +235,6 @@ class CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal ?? this.dailyKcalGoal,
       calculatorProfile: calculatorProfile ?? this.calculatorProfile,
       calorieMathVersion: calorieMathVersion ?? this.calorieMathVersion,
-      activityTrackingStartDate: activityTrackingStartDate == null
-          ? this.activityTrackingStartDate
-          : normalizeDiaryDay(activityTrackingStartDate),
       updatedAt: updatedAt ?? this.updatedAt,
       goalHistory: goalHistory ?? this.goalHistory,
       pendingWeeklyCheckIn: pendingWeeklyCheckIn ?? this.pendingWeeklyCheckIn,

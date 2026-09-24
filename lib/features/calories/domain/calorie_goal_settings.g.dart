@@ -38,8 +38,6 @@ CalorieGoalSettings _$CalorieGoalSettingsFromJson(Map<String, dynamic> json) =>
               .toList() ??
           [],
       calorieMathVersion: (json['calorie_math_version'] as num?)?.toInt() ?? 3,
-      activityTrackingStartDate: const NullableFlexibleDateTimeConverter()
-          .fromJson(json['activity_tracking_start_date']),
       trainingWeekdays:
           (json['training_weekdays'] as List<dynamic>?)
               ?.map((e) => (e as num).toInt())
@@ -70,8 +68,6 @@ Map<String, dynamic> _$CalorieGoalSettingsToJson(
   ),
   'calculator_profile': instance.calculatorProfile?.toJson(),
   'calorie_math_version': instance.calorieMathVersion,
-  'activity_tracking_start_date': const NullableFlexibleDateTimeConverter()
-      .toJson(instance.activityTrackingStartDate),
   'updated_at': const NullableFlexibleDateTimeConverter().toJson(
     instance.updatedAt,
   ),

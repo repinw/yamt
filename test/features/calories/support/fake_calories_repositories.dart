@@ -334,6 +334,7 @@ class FakeHealthConnectionService implements HealthConnectionService {
     return status;
   }
 }
+
 class FakeHealthWeightService implements HealthWeightService {
   new(this.samples);
 

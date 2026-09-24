@@ -193,7 +193,7 @@ class DiaryDailyBalanceData {
   /// Optional left subtitle.
   final String? leftSubtitle;
 
-  /// Subtitle components for the daily card (e.g. base, carryover, sport).
+  /// Subtitle components for the daily card (base and carryover).
   final List<DiaryDailyBalanceSubtitlePart> leftSubtitleParts;
 
   /// Detailed budget and carryover breakdown.

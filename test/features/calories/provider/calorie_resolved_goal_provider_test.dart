@@ -52,16 +52,11 @@ void main() {
       otherDay,
       day,
     ]);
-    final detailedActivityRequest = ResolvedCalorieGoalDaysRequest.fromDays(
-      <DateTime>[day, otherDay],
-      forceDetailedActivity: true,
-    );
 
     expect(request, sameRequest);
     expect(request.hashCode, sameRequest.hashCode);
     expect(request, duplicateRequest);
     expect(request == reversedRequest, isFalse);
-    expect(request == detailedActivityRequest, isFalse);
   });
 
   test('resolves batch goals by day key without swapping day data', () async {

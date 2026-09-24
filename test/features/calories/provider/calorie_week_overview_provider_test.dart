@@ -264,7 +264,6 @@ void main() {
           dailyKcalGoal: 2000,
           calculatorProfile: null,
           effectiveDate: yesterday,
-          activityTrackingStartDate: yesterday,
         ),
       );
       addTearDown(logRepository.dispose);

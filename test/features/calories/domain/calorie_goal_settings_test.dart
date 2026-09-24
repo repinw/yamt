@@ -30,7 +30,6 @@ void main() {
         goalSpeedKgPerWeek: 0.5,
       ),
       effectiveDate: DateTime(2026, 2, 25, 11),
-      activityTrackingStartDate: DateTime(2026, 2, 26, 14),
     );
 
     final decoded = CalorieGoalSettings.fromJson(settings.toJson());
@@ -43,7 +42,6 @@ void main() {
     expect(decoded.goalHistory, hasLength(1));
     expect(decoded.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
     expect(decoded.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
-    expect(decoded.activityTrackingStartDate, DateTime(2026, 2, 26));
   });
 
   test('json without math version decodes as current clean shape', () {

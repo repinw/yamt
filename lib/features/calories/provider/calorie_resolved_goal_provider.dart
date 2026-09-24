@@ -43,10 +43,7 @@ class ResolvedCalorieGoalData {
 @immutable
 class ResolvedCalorieGoalDaysRequest {
   /// Creates request from diary days.
-  factory fromDays(
-    Iterable<DateTime> days, {
-    bool forceDetailedActivity = false,
-  }) {
+  factory fromDays(Iterable<DateTime> days) {
     final daysByKey = <String, DateTime>{};
     for (final day in days) {
       final normalizedDay = normalizeDiaryDay(day);
@@ -55,17 +52,13 @@ class ResolvedCalorieGoalDaysRequest {
     return ResolvedCalorieGoalDaysRequest._(
       List<DateTime>.unmodifiable(daysByKey.values),
       List<String>.unmodifiable(daysByKey.keys),
-      forceDetailedActivity,
     );
   }
 
-  const new _(this.days, this._dayKeys, this.forceDetailedActivity);
+  const new _(this.days, this._dayKeys);
 
   /// Normalized days to resolve.
   final List<DateTime> days;
-
-  /// Whether to bypass aggregate Health activity for requested days.
-  final bool forceDetailedActivity;
 
   final List<String> _dayKeys;
 
@@ -75,16 +68,12 @@ class ResolvedCalorieGoalDaysRequest {
       return true;
     }
     return other is ResolvedCalorieGoalDaysRequest &&
-        _dayKeyListEquality.equals(_dayKeys, other._dayKeys) &&
-        forceDetailedActivity == other.forceDetailedActivity;
+        _dayKeyListEquality.equals(_dayKeys, other._dayKeys);
   }
 
   @override
   int get hashCode {
-    return Object.hash(
-      _dayKeyListEquality.hash(_dayKeys),
-      forceDetailedActivity,
-    );
+    return _dayKeyListEquality.hash(_dayKeys);
   }
 }
 
