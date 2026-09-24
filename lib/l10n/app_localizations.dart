@@ -4865,6 +4865,108 @@ abstract class AppLocalizations {
   /// **'Guest mode'**
   String get settingsProfileGuestSubtitle;
 
+  /// No description provided for @settingsProfileSummaryFallbackTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your profile'**
+  String get settingsProfileSummaryFallbackTitle;
+
+  /// No description provided for @settingsProfileSummaryHeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get settingsProfileSummaryHeightLabel;
+
+  /// No description provided for @settingsProfileSummaryHeightValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{height} cm'**
+  String settingsProfileSummaryHeightValue(String height);
+
+  /// No description provided for @settingsProfileSummaryBirthdayLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday'**
+  String get settingsProfileSummaryBirthdayLabel;
+
+  /// No description provided for @settingsProfileSummaryBirthdayValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} ({age, plural, =1{1 year} other{{age} years}})'**
+  String settingsProfileSummaryBirthdayValue(String date, int age);
+
+  /// No description provided for @settingsProfileSummaryAgeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get settingsProfileSummaryAgeLabel;
+
+  /// No description provided for @settingsProfileSummaryAgeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{age, plural, =1{1 year} other{{age} years}}'**
+  String settingsProfileSummaryAgeValue(int age);
+
+  /// No description provided for @settingsProfileSummaryNoProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'No body data yet. The calorie calculator saves it.'**
+  String get settingsProfileSummaryNoProfile;
+
+  /// No description provided for @settingsProfileSummaryGoalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Goals'**
+  String get settingsProfileSummaryGoalsTitle;
+
+  /// No description provided for @settingsProfileSummaryCaloriesLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get settingsProfileSummaryCaloriesLabel;
+
+  /// No description provided for @settingsProfileSummaryCaloriesValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal/day'**
+  String settingsProfileSummaryCaloriesValue(String kcal);
+
+  /// No description provided for @settingsProfileSummaryTargetWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Target weight'**
+  String get settingsProfileSummaryTargetWeightLabel;
+
+  /// No description provided for @settingsProfileSummaryWeightValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} kg'**
+  String settingsProfileSummaryWeightValue(String weight);
+
+  /// No description provided for @settingsProfileSummaryPaceValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{mode} · {pace} kg/week'**
+  String settingsProfileSummaryPaceValue(String mode, String pace);
+
+  /// No description provided for @settingsProfileSummaryGramsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g'**
+  String settingsProfileSummaryGramsValue(String grams);
+
+  /// No description provided for @settingsProfileSummaryEditMacrosAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit macros'**
+  String get settingsProfileSummaryEditMacrosAction;
+
+  /// No description provided for @settingsProfileSummaryLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load profile.'**
+  String get settingsProfileSummaryLoadFailed;
+
   /// No description provided for @settingsAccountHouseholdSectionTitle.
   ///
   /// In en, this message translates to:

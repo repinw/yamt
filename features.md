@@ -60,6 +60,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   and stripes the overage share at the end of its bar.
 - Burn Week balance cards with daily and weekly progress.
 - Weekly check-in prompts and success/hint cards.
+- Side menu from the diary top bar with a profile card: name (when set),
+  height, sex, birthday with age, and the current goals (daily calories,
+  target weight, goal mode with pace, protein, carbs, fat). A button opens the
+  macro settings; the card updates when they are saved.
 
 ## Calories And Burn Week
 

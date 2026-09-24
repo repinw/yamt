@@ -1316,6 +1316,78 @@
   "homeSettingsActionContextPlaceholder": "Settings action coming soon.",
   "settingsManagePreferencesSubtitle": "Manage your preferences",
   "settingsProfileGuestSubtitle": "Guest mode",
+  "settingsProfileSummaryFallbackTitle": "Your profile",
+  "settingsProfileSummaryHeightLabel": "Height",
+  "settingsProfileSummaryHeightValue": "{height} cm",
+  "@settingsProfileSummaryHeightValue": {
+    "placeholders": {
+      "height": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsProfileSummaryBirthdayLabel": "Birthday",
+  "settingsProfileSummaryBirthdayValue": "{date} ({age, plural, =1{1 year} other{{age} years}})",
+  "@settingsProfileSummaryBirthdayValue": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsProfileSummaryAgeLabel": "Age",
+  "settingsProfileSummaryAgeValue": "{age, plural, =1{1 year} other{{age} years}}",
+  "@settingsProfileSummaryAgeValue": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsProfileSummaryNoProfile": "No body data yet. The calorie calculator saves it.",
+  "settingsProfileSummaryGoalsTitle": "Goals",
+  "settingsProfileSummaryCaloriesLabel": "Calories",
+  "settingsProfileSummaryCaloriesValue": "{kcal} kcal/day",
+  "@settingsProfileSummaryCaloriesValue": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsProfileSummaryTargetWeightLabel": "Target weight",
+  "settingsProfileSummaryWeightValue": "{weight} kg",
+  "@settingsProfileSummaryWeightValue": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsProfileSummaryPaceValue": "{mode} · {pace} kg/week",
+  "@settingsProfileSummaryPaceValue": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      },
+      "pace": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsProfileSummaryGramsValue": "{grams} g",
+  "@settingsProfileSummaryGramsValue": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsProfileSummaryEditMacrosAction": "Edit macros",
+  "settingsProfileSummaryLoadFailed": "Could not load profile.",
   "settingsAccountHouseholdSectionTitle": "Household",
   "settingsHealthGoalsSectionTitle": "Health & Goals",
   "settingsMacroGoalsTitle": "Macro Goals",

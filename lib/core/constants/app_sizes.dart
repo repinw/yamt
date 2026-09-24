@@ -119,4 +119,7 @@ abstract final class AppSizes {
 
   /// Dot radius of a measured weigh-in in the weight chart.
   static const double weightChartScaleDotRadius = 2.5;
+
+  /// Radius of the avatar on the profile summary card.
+  static const double profileAvatarRadius = 22;
 }

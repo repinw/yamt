@@ -2570,6 +2570,83 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsProfileGuestSubtitle => 'Guest mode';
 
   @override
+  String get settingsProfileSummaryFallbackTitle => 'Your profile';
+
+  @override
+  String get settingsProfileSummaryHeightLabel => 'Height';
+
+  @override
+  String settingsProfileSummaryHeightValue(String height) {
+    return '$height cm';
+  }
+
+  @override
+  String get settingsProfileSummaryBirthdayLabel => 'Birthday';
+
+  @override
+  String settingsProfileSummaryBirthdayValue(String date, int age) {
+    String _temp0 = intl.Intl.pluralLogic(
+      age,
+      locale: localeName,
+      other: '$age years',
+      one: '1 year',
+    );
+    return '$date ($_temp0)';
+  }
+
+  @override
+  String get settingsProfileSummaryAgeLabel => 'Age';
+
+  @override
+  String settingsProfileSummaryAgeValue(int age) {
+    String _temp0 = intl.Intl.pluralLogic(
+      age,
+      locale: localeName,
+      other: '$age years',
+      one: '1 year',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsProfileSummaryNoProfile => 'No body data yet. The calorie calculator saves it.';
+
+  @override
+  String get settingsProfileSummaryGoalsTitle => 'Goals';
+
+  @override
+  String get settingsProfileSummaryCaloriesLabel => 'Calories';
+
+  @override
+  String settingsProfileSummaryCaloriesValue(String kcal) {
+    return '$kcal kcal/day';
+  }
+
+  @override
+  String get settingsProfileSummaryTargetWeightLabel => 'Target weight';
+
+  @override
+  String settingsProfileSummaryWeightValue(String weight) {
+    return '$weight kg';
+  }
+
+  @override
+  String settingsProfileSummaryPaceValue(String mode, String pace) {
+    return '$mode · $pace kg/week';
+  }
+
+  @override
+  String settingsProfileSummaryGramsValue(String grams) {
+    return '$grams g';
+  }
+
+  @override
+  String get settingsProfileSummaryEditMacrosAction => 'Edit macros';
+
+  @override
+  String get settingsProfileSummaryLoadFailed => 'Could not load profile.';
+
+  @override
   String get settingsAccountHouseholdSectionTitle => 'Household';
 
   @override

@@ -2570,6 +2570,83 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsProfileGuestSubtitle => 'Gastmodus';
 
   @override
+  String get settingsProfileSummaryFallbackTitle => 'Dein Profil';
+
+  @override
+  String get settingsProfileSummaryHeightLabel => 'Größe';
+
+  @override
+  String settingsProfileSummaryHeightValue(String height) {
+    return '$height cm';
+  }
+
+  @override
+  String get settingsProfileSummaryBirthdayLabel => 'Geburtstag';
+
+  @override
+  String settingsProfileSummaryBirthdayValue(String date, int age) {
+    String _temp0 = intl.Intl.pluralLogic(
+      age,
+      locale: localeName,
+      other: '$age Jahre',
+      one: '1 Jahr',
+    );
+    return '$date ($_temp0)';
+  }
+
+  @override
+  String get settingsProfileSummaryAgeLabel => 'Alter';
+
+  @override
+  String settingsProfileSummaryAgeValue(int age) {
+    String _temp0 = intl.Intl.pluralLogic(
+      age,
+      locale: localeName,
+      other: '$age Jahre',
+      one: '1 Jahr',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsProfileSummaryNoProfile => 'Noch keine Körperdaten. Der Kalorienrechner speichert sie.';
+
+  @override
+  String get settingsProfileSummaryGoalsTitle => 'Ziele';
+
+  @override
+  String get settingsProfileSummaryCaloriesLabel => 'Kalorien';
+
+  @override
+  String settingsProfileSummaryCaloriesValue(String kcal) {
+    return '$kcal kcal/Tag';
+  }
+
+  @override
+  String get settingsProfileSummaryTargetWeightLabel => 'Zielgewicht';
+
+  @override
+  String settingsProfileSummaryWeightValue(String weight) {
+    return '$weight kg';
+  }
+
+  @override
+  String settingsProfileSummaryPaceValue(String mode, String pace) {
+    return '$mode · $pace kg/Woche';
+  }
+
+  @override
+  String settingsProfileSummaryGramsValue(String grams) {
+    return '$grams g';
+  }
+
+  @override
+  String get settingsProfileSummaryEditMacrosAction => 'Makros bearbeiten';
+
+  @override
+  String get settingsProfileSummaryLoadFailed => 'Profil konnte nicht geladen werden.';
+
+  @override
   String get settingsAccountHouseholdSectionTitle => 'Haushalt';
 
   @override
