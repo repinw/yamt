@@ -41,7 +41,7 @@ final class ProfileSummaryControllerProvider
 }
 
 String _$profileSummaryControllerHash() =>
-    r'd1cc325e8fe9e1263463dad695af2551428eda9a';
+    r'e5f521fc667ea72c117a6dbbfe1f09ab235eac1c';
 
 /// Combines the user's name, calculator profile, and macro targets for the
 /// profile summary card.

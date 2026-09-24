@@ -3,17 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/auth/domain/user_profile.dart';
-import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_profile_summary_card/settings_profile_summary_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../../../../helpers/memory_app_preferences.dart';
+import '../../../../helpers/profile_summary_source_overrides.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 
 /// Width of a Material drawer, where the card is shown.
@@ -21,20 +18,22 @@ const _drawerWidth = 304.0;
 
 final _birthDate = DateTime(1990, 10, 2);
 
+final _profile = CalorieCalculatorProfile(
+  sex: CalorieCalculatorSex.female,
+  weightKg: 60,
+  heightCm: 165,
+  ageYears: 30,
+  birthDate: _birthDate,
+  activityLevel: 1.4,
+  goalMode: CalorieGoalMode.lose,
+  goalSpeedKgPerWeek: 0.5,
+  targetWeightKg: 55,
+);
+
 CalorieGoalSettings _settingsWithGoal() {
   return CalorieGoalSettings.single(
     dailyKcalGoal: 1810,
-    calculatorProfile: CalorieCalculatorProfile(
-      sex: CalorieCalculatorSex.female,
-      weightKg: 60,
-      heightCm: 165,
-      ageYears: 30,
-      birthDate: _birthDate,
-      activityLevel: 1.4,
-      goalMode: CalorieGoalMode.lose,
-      goalSpeedKgPerWeek: 0.5,
-      targetWeightKg: 55,
-    ),
+    calculatorProfile: _profile,
     effectiveDate: DateTime(2026, 9),
   );
 }
@@ -43,19 +42,17 @@ Future<void> _pumpCard(
   WidgetTester tester, {
   required FakeCalorieSettingsRepository repository,
   String? displayName,
+  List<ManualHealthWeightEntry> weighIns = const [],
   double textScale = 1,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [
-        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-        calorieSettingsRepositoryProvider.overrideWithValue(repository),
-        clockProvider.overrideWithValue(() => DateTime(2026, 9, 24, 10)),
-        userProfileProvider.overrideWith(
-          (ref) =>
-              Stream.value(UserProfile(uid: 'u1', displayName: displayName)),
-        ),
-      ],
+      overrides: profileSummarySourceOverrides(
+        settingsRepository: repository,
+        now: DateTime(2026, 9, 24, 10),
+        displayName: displayName,
+        weighIns: weighIns,
+      ),
       child: MaterialApp(
         locale: const Locale('de'),
         localizationsDelegates: appLocalizationsDelegates,
@@ -90,17 +87,35 @@ void main() {
     );
     addTearDown(repository.dispose);
 
-    await _pumpCard(tester, repository: repository, displayName: 'Alex');
+    await _pumpCard(
+      tester,
+      repository: repository,
+      displayName: 'Alex',
+      weighIns: [
+        ManualHealthWeightEntry(day: DateTime(2026, 9, 22), weightKg: 61.2),
+      ],
+    );
+    final tdeeKcal = CalorieGoalCalculator.calculate(_profile).tdeeKcal;
 
     expect(find.text('Alex'), findsOneWidget);
     expect(find.text('A'), findsOneWidget);
     expect(find.text('Größe'), findsOneWidget);
     expect(find.text('165 cm'), findsOneWidget);
+    expect(find.text('Aktuelles Gewicht'), findsOneWidget);
+    expect(find.text('61,2 kg'), findsOneWidget);
     expect(find.text('Geschlecht'), findsOneWidget);
     expect(find.text('Weiblich'), findsOneWidget);
     expect(find.text('Geburtstag'), findsOneWidget);
     expect(
       find.text('${DateFormat.yMMMd('de').format(_birthDate)} (35 Jahre)'),
+      findsOneWidget,
+    );
+    expect(find.text('Verbrauch (TDEE)'), findsOneWidget);
+    expect(
+      find.text(
+        '${NumberFormat.decimalPattern('de').format(tdeeKcal.round())} '
+        'kcal/Tag (geschätzt)',
+      ),
       findsOneWidget,
     );
     expect(find.text('Ziele'), findsOneWidget);
@@ -157,9 +172,11 @@ void main() {
     addTearDown(repository.dispose);
 
     await _pumpCard(tester, repository: repository);
-    await tester.tap(
-      find.byKey(SettingsProfileSummaryCard.editMacrosButtonKey),
+    final editMacrosButton = find.byKey(
+      SettingsProfileSummaryCard.editMacrosButtonKey,
     );
+    await tester.ensureVisible(editMacrosButton);
+    await tester.tap(editMacrosButton);
     await tester.pumpAndSettle();
 
     expect(find.text('Makronährstoff-Verteilung'), findsOneWidget);
