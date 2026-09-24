@@ -11,18 +11,13 @@ void main() {
   });
 
   test(
-    'difficulty tiers keep one heart and shrink safe zone at higher stars',
+    'difficulty tiers shrink safe zone at higher stars',
     () {
       expect(resolveBurnWeekMockDifficulty(0).label, 'Learning');
       expect(resolveBurnWeekMockDifficulty(2).label, 'Steady');
       expect(resolveBurnWeekMockDifficulty(4).label, 'Solid');
       expect(resolveBurnWeekMockDifficulty(6).label, 'Elite');
       expect(resolveBurnWeekMockDifficulty(8).label, 'Master');
-      expect(resolveBurnWeekMockDifficulty(0).minimumHearts, 1);
-      expect(resolveBurnWeekMockDifficulty(2).minimumHearts, 1);
-      expect(resolveBurnWeekMockDifficulty(4).minimumHearts, 1);
-      expect(resolveBurnWeekMockDifficulty(6).minimumHearts, 1);
-      expect(resolveBurnWeekMockDifficulty(8).minimumHearts, 1);
       expect(resolveBurnWeekMockDifficulty(8).safeZoneMultiplier, 0.4);
     },
   );
@@ -94,10 +89,9 @@ void main() {
     expect(resolveBurnWeekMockPaceRatio(overWeek), 1);
   });
 
-  test('earned star requires hearts and no broken star or missed tracking', () {
+  test('earned star requires no broken star or missed tracking', () {
     expect(
       resolveBurnWeekEarnedStar(
-        heartCount: 2,
         starBrokeThisWeek: false,
         missedTrackingThisWeek: false,
       ),
@@ -105,15 +99,6 @@ void main() {
     );
     expect(
       resolveBurnWeekEarnedStar(
-        heartCount: 0,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
-      ),
-      isFalse,
-    );
-    expect(
-      resolveBurnWeekEarnedStar(
-        heartCount: 2,
         starBrokeThisWeek: true,
         missedTrackingThisWeek: false,
       ),
@@ -121,7 +106,6 @@ void main() {
     );
     expect(
       resolveBurnWeekEarnedStar(
-        heartCount: 2,
         starBrokeThisWeek: false,
         missedTrackingThisWeek: true,
       ),

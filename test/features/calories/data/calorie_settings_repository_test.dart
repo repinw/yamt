@@ -153,7 +153,6 @@ void main() {
       settings.goalHistory.single.effectiveCountingStartDate,
       DateTime(2026, 4, 18),
     );
-    expect(settings.expectedActivityKcal, isNull);
     expect(settings.pendingWeeklyCheckIn, isNotNull);
     expect(settings.skippedIntakeDayKeys, ['2026-4-18']);
 
@@ -189,7 +188,6 @@ void main() {
             'daily_kcal_goal': 2300,
             'calculator_profile': profile.toJson(),
             'calorie_math_version': currentCalorieMathVersion,
-            'expected_activity_kcal': 420,
             'updated_at': DateTime(2026, 4, 2, 8),
           });
       final repository = FirestoreCalorieSettingsRepository(
@@ -203,7 +201,6 @@ void main() {
       expect(settings.dailyKcalGoal, 2300);
       expect(settings.hasGoal, isTrue);
       expect(settings.goalHistory, isEmpty);
-      expect(settings.expectedActivityKcal, 420);
 
       final persistedSnapshot = await firestore
           .collection('users')

@@ -23,9 +23,6 @@ CalorieGoalHistoryEntry _$CalorieGoalHistoryEntryFromJson(
   changedAt: const NullableFlexibleDateTimeConverter().fromJson(
     json['changed_at'],
   ),
-  expectedActivityKcal: const NullableFlexibleDoubleConverter().fromJson(
-    json['expected_activity_kcal'],
-  ),
   countingStartDate: const NullableFlexibleDateTimeConverter().fromJson(
     json['counting_start_date'],
   ),
@@ -63,9 +60,6 @@ Map<String, dynamic> _$CalorieGoalHistoryEntryToJson(
     instance.dailyKcalGoal,
   ),
   'calculator_profile': instance.calculatorProfile?.toJson(),
-  'expected_activity_kcal': const NullableFlexibleDoubleConverter().toJson(
-    instance.expectedActivityKcal,
-  ),
   'effective_date': const FlexibleDateTimeConverter().toJson(
     instance.effectiveDate,
   ),

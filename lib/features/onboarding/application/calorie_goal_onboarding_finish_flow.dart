@@ -71,10 +71,7 @@ class CalorieGoalOnboardingFinishFlow {
       return true;
     }
 
-    await _burnWeekController.bootstrapRunFrom(
-      weekStartDate: startDate,
-      heartCreditKcal: 0,
-    );
+    await _burnWeekController.bootstrapRunFrom(weekStartDate: startDate);
     return true;
   }
 }

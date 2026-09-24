@@ -8,9 +8,6 @@ const int burnWeekDaysPerWeek = 7;
 /// First week number shown for a fresh Burn Week run.
 const int burnWeekLearningRunWeekNumber = 1;
 
-/// Fresh users start with one heart.
-const int burnWeekInitialHeartCount = 1;
-
 /// Current persisted Burn Week run-state schema.
 const int burnWeekRunStateSchemaVersion = 1;
 
@@ -22,8 +19,6 @@ class BurnWeekRunState {
     required this.currentWeekStartDayKey,
     required this.runWeekNumber,
     required this.starCount,
-    required this.heartCount,
-    required this.heartCreditKcal,
     required this.starBrokeThisWeek,
     required this.missedTrackingThisWeek,
     this.runLimitWarningThisWeek = false,
@@ -36,8 +31,6 @@ class BurnWeekRunState {
       lastActiveDayKey = null,
       runWeekNumber = burnWeekLearningRunWeekNumber,
       starCount = 0,
-      heartCount = burnWeekInitialHeartCount,
-      heartCreditKcal = 0,
       starBrokeThisWeek = false,
       missedTrackingThisWeek = false,
       runLimitWarningThisWeek = false;
@@ -64,14 +57,6 @@ class BurnWeekRunState {
   @JsonKey(defaultValue: 0)
   final int starCount;
 
-  /// Current hearts.
-  @JsonKey(defaultValue: burnWeekInitialHeartCount)
-  final int heartCount;
-
-  /// Heart kcal applied this week.
-  @JsonKey(defaultValue: 0)
-  final double heartCreditKcal;
-
   /// Whether a star already broke this week.
   @JsonKey(defaultValue: false)
   final bool starBrokeThisWeek;
@@ -95,8 +80,6 @@ class BurnWeekRunState {
     Object? lastActiveDayKey = _keepValue,
     int? runWeekNumber,
     int? starCount,
-    int? heartCount,
-    double? heartCreditKcal,
     bool? starBrokeThisWeek,
     bool? missedTrackingThisWeek,
     bool? runLimitWarningThisWeek,
@@ -110,8 +93,6 @@ class BurnWeekRunState {
           : lastActiveDayKey as String?,
       runWeekNumber: runWeekNumber ?? this.runWeekNumber,
       starCount: starCount ?? this.starCount,
-      heartCount: heartCount ?? this.heartCount,
-      heartCreditKcal: heartCreditKcal ?? this.heartCreditKcal,
       starBrokeThisWeek: starBrokeThisWeek ?? this.starBrokeThisWeek,
       missedTrackingThisWeek:
           missedTrackingThisWeek ?? this.missedTrackingThisWeek,

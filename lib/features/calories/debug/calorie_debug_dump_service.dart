@@ -665,7 +665,6 @@ String _calculatorProfileUsedText({
     'goal_mode=${profile.goalMode.name}',
     'goal_speed_kg_per_week=${_formatNumber(profile.goalSpeedKgPerWeek)}',
     'bmr=${_formatNumber(calculation.bmrKcal)}',
-    'expected_activity=${_formatNumber(calculation.expectedActivityKcal)}',
     'daily_adjustment=${_formatNumber(calculation.dailyAdjustmentKcal)}',
     'final_goal=${_formatNumber(calculation.finalGoalKcal)}',
   ].join(',');

@@ -15,11 +15,6 @@ CalorieWeekDayOverview _$CalorieWeekDayOverviewFromJson(
   entryCount: (json['entry_count'] as num).toInt(),
   baseGoalKcal: (json['base_goal_kcal'] as num?)?.toDouble(),
   activityBonusKcal: (json['activity_bonus_kcal'] as num?)?.toDouble() ?? 0,
-  todayActiveKcal: (json['today_active_kcal'] as num?)?.toInt() ?? 0,
-  expectedActivityKcal:
-      (json['expected_activity_kcal'] as num?)?.toDouble() ?? 0,
-  isActivityTrackingActive:
-      json['is_activity_tracking_active'] as bool? ?? false,
   isPauseDay: json['is_pause_day'] as bool? ?? false,
 );
 
@@ -31,9 +26,6 @@ Map<String, dynamic> _$CalorieWeekDayOverviewToJson(
   'goal_kcal': instance.goalKcal,
   'base_goal_kcal': instance.baseGoalKcal,
   'activity_bonus_kcal': instance.activityBonusKcal,
-  'today_active_kcal': instance.todayActiveKcal,
-  'expected_activity_kcal': instance.expectedActivityKcal,
-  'is_activity_tracking_active': instance.isActivityTrackingActive,
   'entry_count': instance.entryCount,
   'is_pause_day': instance.isPauseDay,
 };

@@ -55,7 +55,6 @@ class CalorieWeeklyCheckInCalculation {
     double? measuredTdeeKcal,
     double? calculatedTdeeKcal,
     double? newGoalKcal,
-    this.todayActiveKcal = 0,
     this.activityDeltaKcal = 0,
     double? dynamicGoalTodayKcal,
     double? measuredTotalTdeeKcal,
@@ -97,9 +96,6 @@ class CalorieWeeklyCheckInCalculation {
 
   /// The new daily goal kcal after target mode and movement cap.
   final double newGoalKcal;
-
-  /// The today active kcal.
-  final int todayActiveKcal;
 
   /// The activity delta kcal.
   final double activityDeltaKcal;
@@ -219,7 +215,6 @@ abstract final class CalorieWeeklyCheckInCalculator {
     required List<double> intakeKcalByDay,
     required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
     List<int> lastWeekActiveKcalByDay = const <int>[],
-    int todayActiveKcal = 0,
     List<int>? learningActiveKcalByDay,
   }) {
     assert(
@@ -291,7 +286,6 @@ abstract final class CalorieWeeklyCheckInCalculator {
       measuredTdeeKcal: measuredTdeeKcal,
       calculatedTdeeKcal: calculatedTdeeKcal,
       newGoalKcal: newGoalKcal,
-      todayActiveKcal: todayActiveKcal,
       dynamicGoalTodayKcal: dynamicGoalTodayKcal,
       averageCreditedActivityKcal: 0,
     );

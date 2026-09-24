@@ -15,15 +15,11 @@ class BurnWeekMockDifficulty {
   /// Creates Burn Week mock difficulty.
   const new({
     required this.label,
-    required this.minimumHearts,
     required this.safeZoneMultiplier,
   });
 
   /// User-facing tier label.
   final String label;
-
-  /// Minimum hearts restored at week start.
-  final int minimumHearts;
 
   /// Multiplier applied to one-day safe-zone width.
   final double safeZoneMultiplier;
@@ -62,10 +58,10 @@ class BurnWeekMockMetrics {
   /// Target calories for current time.
   final double targetKcal;
 
-  /// Effective kcal after heart credit is applied.
+  /// Effective consumed kcal used by the game marker.
   final double consumedKcal;
 
-  /// Real logged kcal before virtual heart credit is applied.
+  /// Real logged kcal.
   final double actualConsumedKcal;
 
   /// Safe-zone lower bound.
@@ -131,45 +127,39 @@ BurnWeekMockDifficulty resolveBurnWeekMockDifficulty(int starCount) {
   if (starCount >= 8) {
     return const BurnWeekMockDifficulty(
       label: 'Master',
-      minimumHearts: 1,
       safeZoneMultiplier: 0.4,
     );
   }
   if (starCount >= 6) {
     return const BurnWeekMockDifficulty(
       label: 'Elite',
-      minimumHearts: burnWeekInitialHeartCount,
       safeZoneMultiplier: 0.55,
     );
   }
   if (starCount >= 4) {
     return const BurnWeekMockDifficulty(
       label: 'Solid',
-      minimumHearts: burnWeekInitialHeartCount,
       safeZoneMultiplier: 0.7,
     );
   }
   if (starCount >= 2) {
     return const BurnWeekMockDifficulty(
       label: 'Steady',
-      minimumHearts: burnWeekInitialHeartCount,
       safeZoneMultiplier: 0.85,
     );
   }
   return const BurnWeekMockDifficulty(
     label: 'Learning',
-    minimumHearts: burnWeekInitialHeartCount,
     safeZoneMultiplier: 1,
   );
 }
 
 /// Whether current week earns one new star.
 bool resolveBurnWeekEarnedStar({
-  required int heartCount,
   required bool starBrokeThisWeek,
   required bool missedTrackingThisWeek,
 }) {
-  return heartCount > 0 && !starBrokeThisWeek && !missedTrackingThisWeek;
+  return !starBrokeThisWeek && !missedTrackingThisWeek;
 }
 
 int _resolveClampedElapsedDebugSeconds(int elapsedDebugSeconds) {

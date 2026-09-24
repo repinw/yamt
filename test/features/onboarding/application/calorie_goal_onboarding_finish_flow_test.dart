@@ -140,7 +140,6 @@ void main() {
         diaryDayKey(normalizeDiaryDay(today)),
       );
       expect(runState.runWeekNumber, burnWeekLearningRunWeekNumber);
-      expect(runState.heartCreditKcal, 0);
     });
 
     test(

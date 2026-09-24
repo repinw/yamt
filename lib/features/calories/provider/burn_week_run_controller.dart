@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
@@ -175,7 +173,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
   /// Bootstraps Burn Week run from given day with onboarding placement.
   Future<void> bootstrapRunFrom({
     required DateTime weekStartDate,
-    required double heartCreditKcal,
     int runWeekNumber = burnWeekLearningRunWeekNumber,
   }) async {
     final current = await future;
@@ -183,7 +180,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       const BurnWeekRunState.initial().copyWith(
         currentWeekStartDayKey: diaryDayKey(weekStartDate),
         runWeekNumber: runWeekNumber,
-        heartCreditKcal: heartCreditKcal,
       ),
       previous: current,
     );
@@ -201,27 +197,11 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     );
   }
 
-  /// Refills hearts after the user completes a weekly check-in.
-  Future<void> refillHeartsForWeeklyCheckIn() async {
-    final current = await future;
-    final minimumHearts = resolveBurnWeekMockDifficulty(current.starCount)
-        .minimumHearts;
-    final nextHeartCount = math.max(current.heartCount, minimumHearts);
-    if (nextHeartCount == current.heartCount) {
-      return;
-    }
-    await _save(
-      current.copyWith(heartCount: nextHeartCount),
-      previous: current,
-    );
-  }
-
   BurnWeekRunState _advanceToNextWeek({
     required BurnWeekRunState current,
     required String nextWeekStartDayKey,
   }) {
     final earnedStar = resolveBurnWeekEarnedStar(
-      heartCount: current.heartCount,
       starBrokeThisWeek: current.starBrokeThisWeek,
       missedTrackingThisWeek: current.missedTrackingThisWeek,
     );
@@ -230,8 +210,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
       currentWeekStartDayKey: nextWeekStartDayKey,
       runWeekNumber: current.runWeekNumber + 1,
       starCount: nextStarCount,
-      heartCount: current.heartCount,
-      heartCreditKcal: 0,
       starBrokeThisWeek: false,
       missedTrackingThisWeek: false,
       runLimitWarningThisWeek: false,
@@ -273,8 +251,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
         left.lastActiveDayKey == right.lastActiveDayKey &&
         left.runWeekNumber == right.runWeekNumber &&
         left.starCount == right.starCount &&
-        left.heartCount == right.heartCount &&
-        left.heartCreditKcal == right.heartCreditKcal &&
         left.starBrokeThisWeek == right.starBrokeThisWeek &&
         left.missedTrackingThisWeek == right.missedTrackingThisWeek &&
         left.runLimitWarningThisWeek == right.runLimitWarningThisWeek;
@@ -290,8 +266,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
         currentWeekStartDayKey == weekStartDayKey &&
         current.runWeekNumber == burnWeekLearningRunWeekNumber &&
         current.starCount == 0 &&
-        current.heartCount == burnWeekInitialHeartCount &&
-        current.heartCreditKcal == 0 &&
         !current.starBrokeThisWeek;
   }
 }

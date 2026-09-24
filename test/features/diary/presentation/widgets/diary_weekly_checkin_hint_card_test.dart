@@ -174,7 +174,6 @@ DiaryWeeklyCheckInData _checkInData({
             calculatedTrueTdeeKcal: 2450,
             newGoalKcal: 2200,
             lastWeekAverageActiveKcal: 300,
-            todayActiveKcal: 350,
             activityDeltaKcal: 25,
             dynamicGoalTodayKcal: 2225,
           )

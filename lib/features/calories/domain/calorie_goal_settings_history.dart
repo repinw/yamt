@@ -12,7 +12,6 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
     required DateTime changedAt,
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
-    double? expectedActivityKcal,
     DateTime? countingStartDate,
     CalorieGoalSource source = CalorieGoalSource.manual,
     CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
@@ -29,7 +28,6 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
       changedAt: changedAt,
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
-      expectedActivityKcal: expectedActivityKcal,
       countingStartDate: normalizedCountingStartDate,
       source: source,
       weeklyCheckInSnapshot: weeklyCheckInSnapshot,
@@ -40,7 +38,6 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
       calorieMathVersion: currentCalorieMathVersion,
-      expectedActivityKcal: expectedActivityKcal,
       activityTrackingStartDate: activityTrackingStartDate,
       updatedAt: changedAt,
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
@@ -59,7 +56,6 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
     required DateTime changedAt,
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
-    required double? expectedActivityKcal,
     required DateTime countingStartDate,
     required CalorieGoalSource source,
     required CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
@@ -80,7 +76,6 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
       CalorieGoalHistoryEntry(
         dailyKcalGoal: dailyKcalGoal,
         calculatorProfile: calculatorProfile,
-        expectedActivityKcal: expectedActivityKcal,
         effectiveDate: effectiveDate,
         changedAt: changedAt,
         countingStartDate: countingStartDate,
@@ -105,7 +100,6 @@ extension CalorieGoalSettingsHistoryMutations on CalorieGoalSettings {
     return copyWith(
       dailyKcalGoal: previousGoal?.dailyKcalGoal,
       calculatorProfile: previousGoal?.calculatorProfile,
-      expectedActivityKcal: previousGoal?.expectedActivityKcal,
       goalHistory: List<CalorieGoalHistoryEntry>.unmodifiable(nextHistory),
     );
   }

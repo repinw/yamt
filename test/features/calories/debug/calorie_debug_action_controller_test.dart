@@ -286,7 +286,6 @@ CalorieWeeklyCheckInData _weeklyCheckInData() {
       calculatedBaseTdeeKcal: 2450,
       newBaseGoalKcal: 2200,
       averageCreditedActivityKcal: 300,
-      todayActiveKcal: 350,
       activityDeltaKcal: 25,
       dynamicGoalTodayKcal: 2225,
     ),

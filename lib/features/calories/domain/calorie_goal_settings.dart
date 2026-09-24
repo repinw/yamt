@@ -31,7 +31,6 @@ class CalorieGoalSettings {
     required this.pendingWeeklyCheckIn,
     required this.skippedIntakeDayKeys,
     required this.calorieMathVersion,
-    this.expectedActivityKcal,
     this.activityTrackingStartDate,
     this.trainingWeekdays = const <int>[],
     this.trainingDayKcalOffset = 0.0,
@@ -49,7 +48,6 @@ class CalorieGoalSettings {
     : dailyKcalGoal = null,
       calculatorProfile = null,
       calorieMathVersion = currentCalorieMathVersion,
-      expectedActivityKcal = null,
       activityTrackingStartDate = null,
       updatedAt = null,
       goalHistory = const <CalorieGoalHistoryEntry>[],
@@ -65,7 +63,6 @@ class CalorieGoalSettings {
     required double? dailyKcalGoal,
     required CalorieCalculatorProfile? calculatorProfile,
     required DateTime effectiveDate,
-    double? expectedActivityKcal,
     DateTime? activityTrackingStartDate,
     DateTime? countingStartDate,
     DateTime? updatedAt,
@@ -92,7 +89,6 @@ class CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
       calorieMathVersion: currentCalorieMathVersion,
-      expectedActivityKcal: expectedActivityKcal,
       activityTrackingStartDate: activityTrackingStartDate == null
           ? null
           : normalizeDiaryDay(activityTrackingStartDate),
@@ -105,7 +101,6 @@ class CalorieGoalSettings {
         CalorieGoalHistoryEntry(
           dailyKcalGoal: dailyKcalGoal,
           calculatorProfile: calculatorProfile,
-          expectedActivityKcal: expectedActivityKcal,
           effectiveDate: normalizeDiaryDay(effectiveDate),
           changedAt: effectiveDate,
           countingStartDate: normalizedCountingStartDate,
@@ -128,10 +123,6 @@ class CalorieGoalSettings {
   /// The calorie math data version.
   @JsonKey(defaultValue: currentCalorieMathVersion)
   final int calorieMathVersion;
-
-  /// Expected daily activity kcal from PAL or learned activity baseline.
-  @NullableFlexibleDoubleConverter()
-  final double? expectedActivityKcal;
 
   /// First day where health activity tracking should affect calorie math.
   @NullableFlexibleDateTimeConverter()
@@ -222,7 +213,6 @@ class CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
       calorieMathVersion: calorieMathVersion,
-      expectedActivityKcal: expectedActivityKcal,
       activityTrackingStartDate: activityTrackingStartDate,
       updatedAt: updatedAt,
       goalHistory: goalHistory,
@@ -243,7 +233,6 @@ class CalorieGoalSettings {
     double? dailyKcalGoal,
     CalorieCalculatorProfile? calculatorProfile,
     int? calorieMathVersion,
-    double? expectedActivityKcal,
     DateTime? activityTrackingStartDate,
     DateTime? updatedAt,
     List<CalorieGoalHistoryEntry>? goalHistory,
@@ -258,7 +247,6 @@ class CalorieGoalSettings {
       dailyKcalGoal: dailyKcalGoal ?? this.dailyKcalGoal,
       calculatorProfile: calculatorProfile ?? this.calculatorProfile,
       calorieMathVersion: calorieMathVersion ?? this.calorieMathVersion,
-      expectedActivityKcal: expectedActivityKcal ?? this.expectedActivityKcal,
       activityTrackingStartDate: activityTrackingStartDate == null
           ? this.activityTrackingStartDate
           : normalizeDiaryDay(activityTrackingStartDate),

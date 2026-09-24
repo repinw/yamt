@@ -11,7 +11,6 @@ void main() {
       goalSpeedKgPerWeek: 0,
       intakeKcalByDay: const <double>[2753, 2975, 906, 2745, 2040, 1811, 3200],
       lastWeekActiveKcalByDay: const <int>[0, 16, 21, 569, 495, 455, 492],
-      todayActiveKcal: 150,
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 84.05),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 1, weightKg: 84.14),
@@ -66,7 +65,6 @@ void main() {
       goalSpeedKgPerWeek: 0,
       intakeKcalByDay: const <double>[2000, 2000, 2000, 2000, 2000, 2000],
       lastWeekActiveKcalByDay: const <int>[100, 100, 100, 100, 100, 100],
-      todayActiveKcal: 250,
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 5, weightKg: 79.5),

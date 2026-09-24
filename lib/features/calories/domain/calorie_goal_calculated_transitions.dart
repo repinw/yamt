@@ -60,10 +60,6 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
       now: now,
       countGoalStartDayForLearning: countGoalStartDayForLearning,
     );
-    final expectedActivityChanged =
-        currentGoalEntry?.expectedActivityKcal != null &&
-        currentGoalEntry?.expectedActivityKcal !=
-            calculation.expectedActivityKcal;
     final goalChanged =
         currentGoalEntry?.effectiveDate != normalizedEffectiveDate ||
         currentGoalEntry?.effectiveCountingStartDate !=
@@ -74,7 +70,6 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
           normalizedGoalStartDate: normalizedGoalStartDate,
           countGoalStartDayForLearning: countGoalStartDayForLearning,
         ) ||
-        expectedActivityChanged ||
         !sameCalculatorProfile(currentGoalEntry?.calculatorProfile, profile) ||
         currentGoalEntry?.source != CalorieGoalSource.calculator;
 
@@ -98,7 +93,6 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
       changedAt: changedAt,
       dailyKcalGoal: calculation.finalGoalKcal,
       calculatorProfile: profile,
-      expectedActivityKcal: calculation.expectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: CalorieGoalSource.calculator,
       replaceFutureHistory: true,
@@ -127,8 +121,6 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
         currentGoalEntry?.dailyKcalGoal ?? dailyKcalGoal;
     final currentCalculatorProfile =
         currentGoalEntry?.calculatorProfile ?? calculatorProfile;
-    final currentExpectedActivityKcal =
-        currentGoalEntry?.expectedActivityKcal ?? expectedActivityKcal;
     final currentSource = currentGoalEntry?.source ?? CalorieGoalSource.manual;
     final normalizedGoalStartDate = normalizeDiaryDay(goalStartDate);
     final normalizedToday = normalizeDiaryDay(now);
@@ -153,7 +145,6 @@ extension CalorieGoalCalculatedTransitions on CalorieGoalSettings {
       changedAt: changedAt,
       dailyKcalGoal: currentDailyKcalGoal,
       calculatorProfile: currentCalculatorProfile,
-      expectedActivityKcal: currentExpectedActivityKcal,
       countingStartDate: normalizedGoalStartDate,
       source: currentSource,
       replaceFutureHistory: true,

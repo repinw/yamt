@@ -250,8 +250,6 @@ void main() {
         currentWeekStartDayKey: '2026-4-8',
         runWeekNumber: 2,
         starCount: 1,
-        heartCount: 0,
-        heartCreditKcal: 0,
         starBrokeThisWeek: true,
         missedTrackingThisWeek: false,
       ),
@@ -292,11 +290,10 @@ void main() {
     final snapshot = settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot;
     expect(snapshot?.windowStartDate, goalStart);
     expect(snapshot?.windowEndDate, DateTime(2026, 4, 14));
-    expect(runStateRepository.state.heartCount, burnWeekInitialHeartCount);
   });
 
   test('rejectWeeklyCheckIn preserves previous goal, marks snapshot rejected, '
-      'clears pending, and refills hearts', () async {
+      'and clears pending', () async {
     final goalStart = DateTime(2026, 4, 8);
     final dueDate = DateTime(2026, 4, 15);
     final settingsRepository = FakeCalorieSettingsRepository(
@@ -321,8 +318,6 @@ void main() {
         currentWeekStartDayKey: '2026-4-8',
         runWeekNumber: 2,
         starCount: 1,
-        heartCount: 0,
-        heartCreditKcal: 0,
         starBrokeThisWeek: true,
         missedTrackingThisWeek: false,
       ),
@@ -359,7 +354,6 @@ void main() {
     final checkInEntry = history.firstWhere((e) => e.isWeeklyCheckIn);
     expect(checkInEntry.weeklyCheckInSnapshot?.isRejected, isTrue);
     expect(checkInEntry.hasLearnedTdee, isFalse);
-    expect(runStateRepository.state.heartCount, burnWeekInitialHeartCount);
   });
 
   test(
@@ -770,6 +764,5 @@ const _defaultWeeklyCheckInCalculation = CalorieWeeklyCheckInCalculation(
   calculatedTrueTdeeKcal: 2665.82,
   newGoalKcal: 2626.875,
   lastWeekAverageActiveKcal: 300,
-  todayActiveKcal: 8,
   dynamicGoalTodayKcal: 2626.875,
 );

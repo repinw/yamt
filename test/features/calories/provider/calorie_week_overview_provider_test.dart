@@ -268,7 +268,6 @@ void main() {
           dailyKcalGoal: 2000,
           calculatorProfile: null,
           effectiveDate: yesterday,
-          expectedActivityKcal: 0,
           activityTrackingStartDate: yesterday,
         ),
       );
@@ -337,7 +336,6 @@ void main() {
           dailyKcalGoal: 2000,
           calculatorProfile: null,
           effectiveDate: firstVisibleDay,
-          expectedActivityKcal: 0,
           activityTrackingStartDate: firstVisibleDay,
         ),
       );

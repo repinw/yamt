@@ -21,7 +21,6 @@ class ResolvedCalorieGoalData {
     required this.goalKcal,
     required this.activityDeltaKcal,
     required this.lastWeekAverageActiveKcal,
-    required this.todayActiveKcal,
     required this.usedLearnedTdee,
     required this.usesPreLearningActivityBonus,
     required this.wasClampedToMinimum,
@@ -29,8 +28,6 @@ class ResolvedCalorieGoalData {
     this.activityCapKcal = 0,
     this.wasActivityCapped = false,
     this.activityComparisonKcal = 0,
-    this.expectedActivityKcal = 0,
-    this.isActivityTrackingActive = false,
   });
 
   /// The day.
@@ -57,17 +54,8 @@ class ResolvedCalorieGoalData {
   /// Whether the activity cap lowered the credited kcal.
   final bool wasActivityCapped;
 
-  /// Expected daily activity kcal baseline.
-  final double expectedActivityKcal;
-
-  /// Whether health/activity tracking is active for this day.
-  final bool isActivityTrackingActive;
-
   /// The last week average active kcal.
   final double lastWeekAverageActiveKcal;
-
-  /// The selected day active kcal.
-  final int todayActiveKcal;
 
   /// The used learned tdee.
   final bool usedLearnedTdee;
@@ -152,7 +140,6 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
         goalKcal: goalKcal,
         activityDeltaKcal: 0,
         lastWeekAverageActiveKcal: 0,
-        todayActiveKcal: 0,
         usedLearnedTdee: settings.hasLearnedTdee,
         usesPreLearningActivityBonus: false,
         wasClampedToMinimum: goalKcal <= 1200.0,
@@ -185,7 +172,6 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
       goalKcal: goalKcal,
       activityDeltaKcal: 0,
       lastWeekAverageActiveKcal: 0,
-      todayActiveKcal: 0,
       usedLearnedTdee: settings.hasLearnedTdee,
       usesPreLearningActivityBonus: false,
       wasClampedToMinimum: goalKcal <= 1200.0,

@@ -6,7 +6,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snaps
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 part 'calorie_weekly_checkin_controller.g.dart';
@@ -191,11 +190,6 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
 
     final saved = await goalController.clearPendingWeeklyCheckIn();
 
-    if (saved && ref.mounted) {
-      await ref
-          .read(burnWeekRunControllerProvider.notifier)
-          .refillHeartsForWeeklyCheckIn();
-    }
     if (!ref.mounted) {
       return saved;
     }
@@ -265,11 +259,6 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
 
     final saved = await goalController.clearPendingWeeklyCheckIn();
 
-    if (saved && ref.mounted) {
-      await ref
-          .read(burnWeekRunControllerProvider.notifier)
-          .refillHeartsForWeeklyCheckIn();
-    }
     if (!ref.mounted) {
       return saved;
     }

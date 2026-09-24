@@ -44,9 +44,6 @@ class CalorieWeekDayOverview {
     required this.entryCount,
     double? baseGoalKcal,
     this.activityBonusKcal = 0,
-    this.todayActiveKcal = 0,
-    this.expectedActivityKcal = 0,
-    this.isActivityTrackingActive = false,
     this.isPauseDay = false,
   }) : baseGoalKcal = baseGoalKcal ?? goalKcal;
 
@@ -71,15 +68,6 @@ class CalorieWeekDayOverview {
 
   /// Eatable activity kcal counted toward the day.
   final double activityBonusKcal;
-
-  /// Active energy tracked on this day.
-  final int todayActiveKcal;
-
-  /// Expected baseline active calories for this day.
-  final double expectedActivityKcal;
-
-  /// Whether activity tracking is active for this day.
-  final bool isActivityTrackingActive;
 
   /// The entry count.
   final int entryCount;

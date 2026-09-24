@@ -264,7 +264,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
       days: dates.learningDays,
       activeKcalByDay: healthData.activeKcalByDay,
     ),
-    todayActiveKcal: healthData.todayActiveKcal,
     weightPoints: weightData.weightPoints,
   );
   final inputHash = weeklyCheckInInputHash(

@@ -252,7 +252,6 @@ void main() {
       0,
     ]);
     expect(checkInData.calculation?.lastWeekAverageActiveKcal, 0.0);
-    expect(checkInData.calculation?.todayActiveKcal, 0);
   });
 
   test(

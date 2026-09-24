@@ -16,7 +16,6 @@ class CalorieGoalCalculationResult {
   const new({
     required this.bmrKcal,
     required this.tdeeKcal,
-    required this.expectedActivityKcal,
     required this.dailyAdjustmentKcal,
     required this.finalGoalKcal,
     required this.wasClampedToMinimum,
@@ -27,9 +26,6 @@ class CalorieGoalCalculationResult {
 
   /// The tdee kcal.
   final double tdeeKcal;
-
-  /// Expected daily activity kcal from PAL.
-  final double expectedActivityKcal;
 
   /// The daily adjustment kcal.
   final double dailyAdjustmentKcal;
@@ -49,7 +45,6 @@ abstract final class CalorieGoalCalculator {
   ) {
     final bmrKcal = _calculateBmr(profile);
     final tdeeKcal = bmrKcal * profile.activityLevel;
-    final expectedActivityKcal = tdeeKcal - bmrKcal;
     final goalSpeedKgPerWeek = profile.goalMode == CalorieGoalMode.maintain
         ? 0.0
         : profile.goalSpeedKgPerWeek;
@@ -67,7 +62,6 @@ abstract final class CalorieGoalCalculator {
     final result = CalorieGoalCalculationResult(
       bmrKcal: bmrKcal,
       tdeeKcal: tdeeKcal,
-      expectedActivityKcal: expectedActivityKcal,
       dailyAdjustmentKcal: dailyAdjustmentKcal,
       finalGoalKcal: wasClampedToMinimum
           ? minimumCalorieGoalKcal
@@ -86,7 +80,6 @@ abstract final class CalorieGoalCalculator {
           'goalSpeedKgPerWeek=${_format(profile.goalSpeedKgPerWeek)} '
           '-> bmrKcal=${_format(result.bmrKcal)} '
           'tdeeKcal=${_format(result.tdeeKcal)} '
-          'expectedActivityKcal=${_format(result.expectedActivityKcal)} '
           'dailyAdjustmentKcal=${_format(result.dailyAdjustmentKcal)} '
           'finalGoalKcal=${_format(result.finalGoalKcal)} '
           'wasClampedToMinimum=${result.wasClampedToMinimum}';

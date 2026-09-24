@@ -150,8 +150,6 @@ bool isInitialBurnWeekRunState(BurnWeekRunState state) {
       state.lastActiveDayKey == null &&
       state.runWeekNumber == burnWeekLearningRunWeekNumber &&
       state.starCount == 0 &&
-      state.heartCount == burnWeekInitialHeartCount &&
-      state.heartCreditKcal == 0 &&
       !state.starBrokeThisWeek &&
       !state.missedTrackingThisWeek;
 }
@@ -160,8 +158,6 @@ bool isInitialBurnWeekRunState(BurnWeekRunState state) {
 bool isFreshBurnWeekRunState(BurnWeekRunState state) {
   return state.runWeekNumber == burnWeekLearningRunWeekNumber &&
       state.starCount == 0 &&
-      state.heartCount == burnWeekInitialHeartCount &&
-      state.heartCreditKcal == 0 &&
       !state.starBrokeThisWeek;
 }
 
@@ -175,8 +171,6 @@ bool isScheduledFutureFreshBurnWeekRun({
       isSameDiaryDay(storedWeekStartDate, expectedWeekStartDate) &&
       runState.runWeekNumber == burnWeekLearningRunWeekNumber &&
       runState.starCount == 0 &&
-      runState.heartCount == burnWeekInitialHeartCount &&
-      runState.heartCreditKcal == 0 &&
       !runState.starBrokeThisWeek &&
       !runState.missedTrackingThisWeek;
 }

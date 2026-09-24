@@ -93,7 +93,6 @@ void main() {
             totalKcal: 500,
             goalKcal: 2000,
             baseGoalKcal: 2000,
-            expectedActivityKcal: 400,
             activityBonusKcal: 150,
             entryCount: 2,
           ),
@@ -115,9 +114,6 @@ void main() {
         goalKcal: 2000,
         baseGoalKcal: 2000,
         activitySegmentKcal: 150,
-        expectedActivityKcal: 400,
-        todayActiveKcal: 550,
-        isActivityTrackingActive: true,
       );
 
       final data = DiaryDailyBudgetDetailsData.from(

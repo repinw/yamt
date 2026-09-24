@@ -163,7 +163,6 @@ void main() {
       selectedDay: selectedDay,
       burnWeekRunState: const BurnWeekRunState.initial().copyWith(
         runWeekNumber: 2,
-        heartCount: 1,
       ),
       dashboardState: const DiaryDayDashboardState(
         data: null,
@@ -1236,7 +1235,6 @@ DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
       calculatedTrueTdeeKcal: 2400,
       newGoalKcal: 2200,
       lastWeekAverageActiveKcal: 250,
-      todayActiveKcal: 300,
       activityDeltaKcal: 50,
       dynamicGoalTodayKcal: 2250,
     ),

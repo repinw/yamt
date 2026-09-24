@@ -16,7 +16,6 @@ class CalorieGoalHistoryEntry {
     required this.calculatorProfile,
     required this.effectiveDate,
     required this.changedAt,
-    this.expectedActivityKcal,
     this.countingStartDate,
     this.source = CalorieGoalSource.manual,
     this.weeklyCheckInSnapshot,
@@ -37,10 +36,6 @@ class CalorieGoalHistoryEntry {
 
   /// The calculator profile.
   final CalorieCalculatorProfile? calculatorProfile;
-
-  /// Expected daily activity kcal for this goal snapshot.
-  @NullableFlexibleDoubleConverter()
-  final double? expectedActivityKcal;
 
   /// The effective date.
   @FlexibleDateTimeConverter()
@@ -130,7 +125,6 @@ class CalorieGoalHistoryEntry {
     return CalorieGoalHistoryEntry(
       dailyKcalGoal: dailyKcalGoal,
       calculatorProfile: calculatorProfile,
-      expectedActivityKcal: expectedActivityKcal,
       effectiveDate: effectiveDate,
       changedAt: changedAt,
       countingStartDate: countingStartDate,

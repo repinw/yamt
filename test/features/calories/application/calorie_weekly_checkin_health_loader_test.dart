@@ -52,7 +52,6 @@ void main() {
       expect(data.usesHealthActivity, isFalse);
       expect(data.activeKcalByDay[diaryDayKey(start)], 0);
       expect(data.activeKcalByDay[diaryDayKey(secondDay)], 0);
-      expect(data.todayActiveKcal, 0);
       // Samples before the learning start are not loaded.
       expect(data.healthWeightSamples.map((sample) => sample.weightKg), [
         80,
@@ -81,7 +80,6 @@ void main() {
       diaryDayKey(start): 0,
       diaryDayKey(secondDay): 0,
     });
-    expect(data.todayActiveKcal, 0);
     expect(data.healthWeightSamples, isEmpty);
   });
 

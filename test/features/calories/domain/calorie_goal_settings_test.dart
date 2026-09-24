@@ -30,7 +30,6 @@ void main() {
         goalSpeedKgPerWeek: 0.5,
       ),
       effectiveDate: DateTime(2026, 2, 25, 11),
-      expectedActivityKcal: 420,
       activityTrackingStartDate: DateTime(2026, 2, 26, 14),
     );
 
@@ -38,14 +37,12 @@ void main() {
 
     expect(decoded.dailyKcalGoal, 2300);
     expect(decoded.calorieMathVersion, currentCalorieMathVersion);
-    expect(decoded.expectedActivityKcal, 420);
     expect(decoded.calculatorProfile?.sex, CalorieCalculatorSex.female);
     expect(decoded.calculatorProfile?.goalMode, CalorieGoalMode.lose);
     expect(decoded.updatedAt, DateTime(2026, 2, 25, 11));
     expect(decoded.goalHistory, hasLength(1));
     expect(decoded.goalHistory.single.effectiveDate, DateTime(2026, 2, 25));
     expect(decoded.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
-    expect(decoded.goalHistory.single.expectedActivityKcal, 420);
     expect(decoded.activityTrackingStartDate, DateTime(2026, 2, 26));
   });
 
@@ -202,18 +199,15 @@ void main() {
           changedAt: DateTime(2026, 2, 20, 8),
           dailyKcalGoal: 2400,
           calculatorProfile: null,
-          expectedActivityKcal: 300,
         )
         .applyGoalChange(
           changedAt: DateTime(2026, 2, 24, 9),
           dailyKcalGoal: 1800,
           calculatorProfile: null,
-          expectedActivityKcal: 450,
         )
         .withoutLatestGoalEntry();
 
     expect(settings.dailyKcalGoal, 2400);
-    expect(settings.expectedActivityKcal, 300);
     expect(settings.goalHistory, hasLength(1));
     expect(settings.goalKcalForDay(DateTime(2026, 2, 23)), 2400);
     expect(settings.goalKcalForDay(DateTime(2026, 2, 25)), 2400);

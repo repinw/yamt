@@ -14,9 +14,6 @@ class DiaryDailyBalanceMetrics {
     required this.activitySegmentReferenceKcal,
     this.baseGoalKcal = 0,
     this.carryoverKcal = 0,
-    this.todayActiveKcal = 0,
-    this.expectedActivityKcal = 0,
-    this.isActivityTrackingActive = false,
   });
 
   /// Calorie adjustment from buffer.
@@ -48,15 +45,6 @@ class DiaryDailyBalanceMetrics {
 
   /// Carryover kcal adjustment distributed to today from previous days.
   final double carryoverKcal;
-
-  /// Active energy tracked on this day.
-  final int todayActiveKcal;
-
-  /// Expected baseline active calories for this day.
-  final double expectedActivityKcal;
-
-  /// Whether activity tracking is active for this day.
-  final bool isActivityTrackingActive;
 }
 
 /// Resolves daily target and display values from scalar inputs.
@@ -68,9 +56,6 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
   required double activitySegmentKcal,
   double bufferAdjustmentKcal = 0,
   double? carryoverKcal,
-  int todayActiveKcal = 0,
-  double expectedActivityKcal = 0,
-  bool isActivityTrackingActive = false,
 }) {
   final realEatenKcal = totalKcal;
   final eatenKcal = math.max<double>(0, realEatenKcal + bufferAdjustmentKcal);
@@ -101,9 +86,6 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
     activitySegmentReferenceKcal: activitySegmentReferenceKcal,
     baseGoalKcal: baseGoalKcal,
     carryoverKcal: resolvedCarryoverKcal,
-    todayActiveKcal: todayActiveKcal,
-    expectedActivityKcal: expectedActivityKcal,
-    isActivityTrackingActive: isActivityTrackingActive,
   );
 }
 

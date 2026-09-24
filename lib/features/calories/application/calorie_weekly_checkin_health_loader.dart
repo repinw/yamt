@@ -24,14 +24,12 @@ Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
   final activeKcalByDay = <String, int>{
     for (final day in dates.learningDays) diaryDayKey(day): 0,
   };
-  const todayActiveKcal = 0;
 
   final status = await healthStatusFuture;
   _throwIfUnmounted(isMounted);
   if (status.accessState != HealthDataAccessState.ready) {
     return CalorieWeeklyCheckInHealthData(
       activeKcalByDay: activeKcalByDay,
-      todayActiveKcal: todayActiveKcal,
       healthWeightSamples: const <HealthWeightSample>[],
       usesHealthActivity: false,
     );
@@ -48,7 +46,6 @@ Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
 
   return CalorieWeeklyCheckInHealthData(
     activeKcalByDay: activeKcalByDay,
-    todayActiveKcal: todayActiveKcal,
     healthWeightSamples: healthWeightSamples,
     usesHealthActivity: false,
   );

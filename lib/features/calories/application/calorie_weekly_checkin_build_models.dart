@@ -75,13 +75,11 @@ class CalorieWeeklyCheckInWindowDates {
 class CalorieWeeklyCheckInHealthData {
   const new({
     required this.activeKcalByDay,
-    required this.todayActiveKcal,
     required this.healthWeightSamples,
     required this.usesHealthActivity,
   });
 
   final Map<String, int> activeKcalByDay;
-  final int todayActiveKcal;
   final List<HealthWeightSample> healthWeightSamples;
   final bool usesHealthActivity;
 }

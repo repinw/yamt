@@ -50,13 +50,10 @@ void main() {
       cached.selectedDayEntries.single.loggedAt,
       data.selectedDayEntries.single.loggedAt,
     );
-    expect(cached.weekOverview.days.last.todayActiveKcal, 350);
-    expect(cached.weekOverview.days.last.expectedActivityKcal, 200);
-    expect(cached.weekOverview.days.last.isActivityTrackingActive, isTrue);
     expect(cached.runState.toJson(), data.runState.toJson());
   });
 
-  test('reads older snapshots without activity fields', () async {
+  test('returns null for a snapshot without week days', () async {
     final preferences = MemoryAppPreferences();
     const store = DiaryDayDashboardCacheStore();
     await store.save(
@@ -69,23 +66,6 @@ void main() {
     ) as Map<String, dynamic>;
     final data = json['data'] as Map<String, dynamic>;
     final overview = data['week_overview'] as Map<String, dynamic>;
-    for (final item in overview['days'] as List<dynamic>) {
-      (item as Map<String, dynamic>)
-        ..remove('today_active_kcal')
-        ..remove('expected_activity_kcal')
-        ..remove('is_activity_tracking_active');
-    }
-    await preferences.setString(_cacheKey(userId, day), jsonEncode(json));
-    final cached = store.readSync(
-      preferences: preferences,
-      userId: userId,
-      day: day,
-    );
-    expect(cached, isNotNull);
-    expect(cached!.weekOverview.days.last.todayActiveKcal, 0);
-    expect(cached.weekOverview.days.last.expectedActivityKcal, 0);
-    expect(cached.weekOverview.days.last.isActivityTrackingActive, isFalse);
-
     overview['days'] = <dynamic>[];
     await preferences.setString(_cacheKey(userId, day), jsonEncode(json));
     expect(
@@ -216,9 +196,6 @@ CalorieWeekOverview _weekOverview(DateTime day) {
         totalKcal: offset == 0 ? 120 : 0,
         goalKcal: 2000,
         entryCount: offset == 0 ? 1 : 0,
-        todayActiveKcal: 350,
-        expectedActivityKcal: 200,
-        isActivityTrackingActive: true,
       ),
   ];
 
