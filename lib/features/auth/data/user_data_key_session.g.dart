@@ -11,7 +11,9 @@ part of 'user_data_key_session.dart';
 /// Resolves the data key of the signed-in user.
 ///
 /// A guest key lives only on the device. A real account also gets a key
-/// backup in Firestore that only the recovery key opens.
+/// backup in Firestore that only the recovery key opens. The recovery key is
+/// also backed up with the platform (Google Block Store, iCloud Keychain), so
+/// a new device usually restores the data key without asking.
 
 @ProviderFor(UserDataKeySession)
 final userDataKeySessionProvider = UserDataKeySessionProvider._();
@@ -19,13 +21,17 @@ final userDataKeySessionProvider = UserDataKeySessionProvider._();
 /// Resolves the data key of the signed-in user.
 ///
 /// A guest key lives only on the device. A real account also gets a key
-/// backup in Firestore that only the recovery key opens.
+/// backup in Firestore that only the recovery key opens. The recovery key is
+/// also backed up with the platform (Google Block Store, iCloud Keychain), so
+/// a new device usually restores the data key without asking.
 final class UserDataKeySessionProvider
     extends $AsyncNotifierProvider<UserDataKeySession, UserDataKeyState> {
   /// Resolves the data key of the signed-in user.
   ///
   /// A guest key lives only on the device. A real account also gets a key
-  /// backup in Firestore that only the recovery key opens.
+  /// backup in Firestore that only the recovery key opens. The recovery key is
+  /// also backed up with the platform (Google Block Store, iCloud Keychain), so
+  /// a new device usually restores the data key without asking.
   UserDataKeySessionProvider._()
     : super(
         from: null,
@@ -46,12 +52,14 @@ final class UserDataKeySessionProvider
 }
 
 String _$userDataKeySessionHash() =>
-    r'aa37be08c84c5f7b163cb1935cd5f8e0799c27b6';
+    r'a7200685cc33372b0070fc3093f883620341f7f2';
 
 /// Resolves the data key of the signed-in user.
 ///
 /// A guest key lives only on the device. A real account also gets a key
-/// backup in Firestore that only the recovery key opens.
+/// backup in Firestore that only the recovery key opens. The recovery key is
+/// also backed up with the platform (Google Block Store, iCloud Keychain), so
+/// a new device usually restores the data key without asking.
 
 abstract class _$UserDataKeySession extends $AsyncNotifier<UserDataKeyState> {
   FutureOr<UserDataKeyState> build();

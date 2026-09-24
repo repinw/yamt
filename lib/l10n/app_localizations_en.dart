@@ -4003,7 +4003,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recoveryKeyTitle => 'Recovery key';
 
   @override
-  String get recoveryKeyExplanation => 'Your diary, weight, and body data are encrypted before they leave this phone. Only this key can restore them on a new phone. Save it in your password manager. Nobody can recover it for you, not even us.';
+  String get recoveryKeyExplanation => 'Your diary, weight, and body data are encrypted before they leave this phone. A new phone with the same Google or Apple account usually gets the key automatically. You need this recovery key only when you switch between Android and iPhone or lose your phone. Nobody can recover it for you, not even us.';
+
+  @override
+  String get recoveryKeySaveToPasswordManagerAction => 'Save in password manager';
+
+  @override
+  String get recoveryKeySaved => 'Recovery key saved';
+
+  @override
+  String get recoveryKeySaveFailed => 'Could not save the recovery key.';
+
+  @override
+  String get recoveryKeyNotSavedHint => 'Not saved yet';
 
   @override
   String get recoveryKeyCopyTooltip => 'Copy recovery key';

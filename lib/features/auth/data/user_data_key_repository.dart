@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cryptography/cryptography.dart';
@@ -8,11 +9,13 @@ import 'package:yamt/core/data/firestore_batch_write.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/core/data/recovery_key.dart';
+import 'package:yamt/core/device/key_backup.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/secure_storage_provider.dart';
 
 part 'user_data_key_repository.g.dart';
 
+const _logName = 'UserDataKeyRepository';
 const _usersCollection = 'users';
 const _privateCollection = 'private';
 const _backupDocumentId = 'data_key';
@@ -24,10 +27,15 @@ const _maxBatchSize = 400;
 /// backup in Firestore that only the recovery key can open.
 class UserDataKeyRepository {
   /// Creates the repository.
-  const new({required this._storage, required this._firestore});
+  const new({
+    required this._storage,
+    required this._firestore,
+    required this._keyBackup,
+  });
 
   final FlutterSecureStorage _storage;
   final FirebaseFirestore _firestore;
+  final KeyBackup _keyBackup;
 
   /// Loads the data key stored on this device.
   Future<SecretKey?> loadLocalDataKey(String uid) async {
@@ -77,7 +85,7 @@ class UserDataKeyRepository {
     return _saveFlag(_plaintextMigratedName(uid), value: true);
   }
 
-  /// Deletes everything this device stores for [uid].
+  /// Deletes everything this device and the platform backup store for [uid].
   Future<void> deleteLocalKeys(String uid) async {
     for (final name in <String>[
       _dataKeyName(uid),
@@ -87,6 +95,65 @@ class UserDataKeyRepository {
     ]) {
       await _storage.delete(key: name);
     }
+    try {
+      await _keyBackup.delete(_recoveryKeyName(uid));
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to delete the platform backup of the recovery key.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  /// Backs up the recovery key with the platform (Google Block Store), so a
+  /// new device restores the data key without asking the user.
+  ///
+  /// A failure only costs that convenience, so it is logged, not thrown.
+  Future<void> backUpRecoveryKey(String uid, RecoveryKey recoveryKey) async {
+    try {
+      await _keyBackup.save(_recoveryKeyName(uid), recoveryKey.formatted);
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to back up the recovery key with the platform.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
+  }
+
+  /// Loads the recovery key from the platform backup, or `null` if there is
+  /// none or it cannot be read.
+  Future<RecoveryKey?> loadBackedUpRecoveryKey(String uid) async {
+    try {
+      final formatted = await _keyBackup.load(_recoveryKeyName(uid));
+      return formatted == null ? null : RecoveryKey.parse(formatted);
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to read the platform backup of the recovery key.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
+  /// Whether [saveRecoveryKeyToPasswordManager] is available.
+  bool get canSaveToPasswordManager => _keyBackup.canSaveToPasswordManager;
+
+  /// Offers to save [recoveryKey] in the password manager under
+  /// [accountName]. Returns `false` when the user cancels.
+  Future<bool> saveRecoveryKeyToPasswordManager({
+    required String accountName,
+    required RecoveryKey recoveryKey,
+  }) {
+    return _keyBackup.saveToPasswordManager(
+      id: accountName,
+      password: recoveryKey.formatted,
+    );
   }
 
   /// Loads the wrapped data key from the backup document.
@@ -209,5 +276,6 @@ UserDataKeyRepository? userDataKeyRepository(Ref ref) {
   return UserDataKeyRepository(
     storage: ref.watch(secureStorageProvider),
     firestore: firestore,
+    keyBackup: ref.watch(keyBackupProvider),
   );
 }

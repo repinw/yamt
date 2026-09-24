@@ -4003,7 +4003,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get recoveryKeyTitle => 'Wiederherstellungsschlüssel';
 
   @override
-  String get recoveryKeyExplanation => 'Dein Tagebuch, dein Gewicht und deine Körperdaten werden verschlüsselt, bevor sie dieses Handy verlassen. Nur dieser Schlüssel stellt sie auf einem neuen Handy wieder her. Speichere ihn in deinem Passwortmanager. Niemand kann ihn für dich wiederherstellen, auch wir nicht.';
+  String get recoveryKeyExplanation => 'Dein Tagebuch, dein Gewicht und deine Körperdaten werden verschlüsselt, bevor sie dieses Handy verlassen. Ein neues Handy mit demselben Google- oder Apple-Konto bekommt den Schlüssel meist automatisch. Diesen Wiederherstellungsschlüssel brauchst du nur, wenn du zwischen Android und iPhone wechselst oder dein Handy verlierst. Niemand kann ihn für dich wiederherstellen, auch wir nicht.';
+
+  @override
+  String get recoveryKeySaveToPasswordManagerAction => 'Im Passwortmanager speichern';
+
+  @override
+  String get recoveryKeySaved => 'Wiederherstellungsschlüssel gespeichert';
+
+  @override
+  String get recoveryKeySaveFailed => 'Wiederherstellungsschlüssel konnte nicht gespeichert werden.';
+
+  @override
+  String get recoveryKeyNotSavedHint => 'Noch nicht gesichert';
 
   @override
   String get recoveryKeyCopyTooltip => 'Wiederherstellungsschlüssel kopieren';

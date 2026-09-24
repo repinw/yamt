@@ -6,11 +6,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/data/auth_service.dart'
     show authStateChangesProvider;
 import 'package:yamt/features/auth/presentation/auth_error_message_mapper.dart';
+import 'package:yamt/features/auth/presentation/widgets/recovery_key_tile.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_page_flow_service.dart';
 import 'package:yamt/features/settings/presentation/widgets/account_guest_card/account_guest_card.dart';
@@ -287,13 +287,7 @@ class _AccountPageState extends ConsumerState<AccountPage> {
           ),
         if (user.isAnonymous) const SizedBox(height: AppSpacing.md),
         AccountUserInfoCard(user: user, l10n: l10n),
-        if (!user.isAnonymous)
-          ListTile(
-            leading: const Icon(Icons.key_outlined),
-            title: Text(l10n.recoveryKeyTitle),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () => context.push(AppRoutes.homeSettingsRecoveryKey),
-          ),
+        if (!user.isAnonymous) const RecoveryKeyTile(),
         const SizedBox(height: AppSpacing.xl),
         FilledButton.icon(
           onPressed: isActionLoading ? null : () => _signOut(l10n),

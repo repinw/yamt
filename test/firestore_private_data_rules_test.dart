@@ -7,9 +7,9 @@ void main() {
     late String compactRules;
 
     setUpAll(() {
-      compactRules = File(
-        'firestore.rules',
-      ).readAsStringSync().replaceAll(RegExp(r'\s+'), ' ');
+      compactRules = File('firestore.rules')
+          .readAsStringSync()
+          .replaceAll(RegExp(r'\s+'), ' ');
     });
 
     test('private documents accept only an encrypted payload', () {

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/auth_exceptions.dart';
+import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/auth/presentation/widgets/recovery_key_form.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

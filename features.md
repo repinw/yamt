@@ -25,8 +25,12 @@ and feature description docs. This is product-facing; architecture rules stay in
 - End-to-end encryption of private health data (diary entries, weight, calorie
   goals and body data, Burn Week state, own product corrections) with a
   per-user key. The server stores only ciphertext.
-- Recovery key: a real account sees it once after creation or after linking a
-  guest, and again under Account. On a new device the app asks for it before
+- Recovery key: a real account gets one after creation or after linking a
+  guest. It is shown under Account, with a hint until the user saves it in the
+  password manager (Android) or marks it as saved. It never blocks the app.
+- A new device of the same platform account restores the key without asking:
+  Google Block Store on Android, iCloud Keychain on iPhone. Only when that
+  fails (platform switch, no backup) the app asks for the recovery key before
   anything else; without it the user can start fresh, which deletes the old
   private data.
 

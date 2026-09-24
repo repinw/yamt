@@ -85,6 +85,8 @@ class _RecoveryKeyFormState extends ConsumerState<RecoveryKeyForm> {
           enabled: !isBusy,
           autocorrect: false,
           enableSuggestions: false,
+          // Lets the password manager fill in a saved recovery key.
+          autofillHints: const <String>[AutofillHints.password],
           textCapitalization: TextCapitalization.characters,
           decoration: InputDecoration(
             labelText: l10n.recoveryKeyTitle,

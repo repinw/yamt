@@ -13,7 +13,9 @@ Auth owns:
 - The per-user data key that encrypts private health data in Firestore, its
   recovery-key backup, and the pages that show or ask for the recovery key.
   Guests keep the key only on the device. A real account also stores the key,
-  wrapped with the recovery key, in `users/{uid}/private/data_key`.
+  wrapped with the recovery key, in `users/{uid}/private/data_key`, and backs
+  up the recovery key with the platform (`lib/core/device/key_backup.dart`:
+  Google Block Store; iOS syncs through the iCloud Keychain instead).
 - The list of private collections that the data key encrypts, used to delete
   them when a user starts fresh and, temporarily, to encrypt plaintext data
   from before encryption.
@@ -48,6 +50,7 @@ Other features may import these concrete files directly:
   account is deleted.
 - `presentation/data_key_page.dart` and `presentation/recovery_key_page.dart`
   for app routing.
+- `presentation/widgets/recovery_key_tile.dart` for the account settings.
 - `application/initial_guest_auth_controller.dart` for initial app routing and
   cold-start guest auth.
 

@@ -32,6 +32,11 @@ dependencies {
 
   // Add the dependencies for any other desired Firebase products
   // https://firebase.google.com/docs/android/setup#available-libraries
+
+  // Backup of the recovery key: Block Store and the password manager.
+  implementation("com.google.android.gms:play-services-auth-blockstore:16.4.0")
+  implementation("androidx.credentials:credentials:1.6.0")
+  implementation("androidx.credentials:credentials-play-services-auth:1.6.0")
 }
 
 

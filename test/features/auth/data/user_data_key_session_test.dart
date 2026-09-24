@@ -8,10 +8,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/recovery_key.dart';
+import 'package:yamt/core/device/key_backup.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/auth_exceptions.dart';
+import 'package:yamt/features/auth/domain/user_data_key_state.dart';
+
+import '../../../helpers/fake_key_backup.dart';
 
 class _MockUser extends Mock implements User;
 
@@ -27,10 +31,12 @@ User _user({required bool isAnonymous}) {
 void main() {
   late FakeFirebaseFirestore firestore;
   late StreamController<User?> authChanges;
+  late FakeKeyBackup keyBackup;
 
   setUp(() {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
     firestore = FakeFirebaseFirestore();
+    keyBackup = FakeKeyBackup();
     authChanges = StreamController<User?>.broadcast();
     addTearDown(authChanges.close);
   });
@@ -40,6 +46,7 @@ void main() {
       overrides: [
         authStateChangesProvider.overrideWith((ref) => authChanges.stream),
         firebaseFirestoreProvider.overrideWith((ref) => firestore),
+        keyBackupProvider.overrideWithValue(keyBackup),
       ],
     );
     addTearDown(container.dispose);
@@ -93,6 +100,35 @@ void main() {
     expect(
       await PayloadCipher(dataKey).decryptJson(payload, aad: 'sample'),
       <String, dynamic>{'kcal': 250},
+    );
+    expect(keyBackup.values['recovery_key_u1'], ready.recoveryKey!.formatted);
+  });
+
+  test('a guest key is not backed up with the platform', () async {
+    final container = createContainer();
+
+    await signIn(container, isAnonymous: true);
+
+    expect(keyBackup.values, isEmpty);
+  });
+
+  test('saving in the password manager confirms the recovery key', () async {
+    final container = createContainer();
+    final state = await signIn(container, isAnonymous: false);
+
+    final saved = await container
+        .read(userDataKeySessionProvider.notifier)
+        .saveRecoveryKeyToPasswordManager(accountName: 'jane@example.com');
+
+    expect(saved, isTrue);
+    expect(
+      keyBackup.savedPasswords['jane@example.com'],
+      (state as UserDataKeyReady).recoveryKey!.formatted,
+    );
+    final confirmed = container.read(userDataKeySessionProvider).requireValue;
+    expect(
+      (confirmed as UserDataKeyReady).needsRecoveryKeyConfirmation,
+      isFalse,
     );
   });
 
@@ -148,6 +184,30 @@ void main() {
 
       expect(state, isA<UserDataKeyRecoveryRequired>());
       expect(container.read(userDataCipherProvider), isNull);
+    });
+
+    test('the platform backup restores the key without asking', () async {
+      keyBackup.values['recovery_key_u1'] = recoveryKey.formatted;
+      final container = createContainer();
+      final payload = await encryptedSample(originalCipher);
+
+      final state = await signIn(container, isAnonymous: false);
+
+      final ready = state as UserDataKeyReady;
+      expect(ready.needsRecoveryKeyConfirmation, isFalse);
+      expect(
+        await ready.cipher.decryptJson(payload, aad: 'sample'),
+        <String, dynamic>{'kcal': 250},
+      );
+    });
+
+    test('a stale platform backup still asks for the key', () async {
+      keyBackup.values['recovery_key_u1'] = RecoveryKey.generate().formatted;
+      final container = createContainer();
+
+      final state = await signIn(container, isAnonymous: false);
+
+      expect(state, isA<UserDataKeyRecoveryRequired>());
     });
 
     test('a wrong or malformed recovery key is rejected', () async {

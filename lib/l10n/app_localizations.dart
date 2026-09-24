@@ -7610,8 +7610,32 @@ abstract class AppLocalizations {
   /// No description provided for @recoveryKeyExplanation.
   ///
   /// In en, this message translates to:
-  /// **'Your diary, weight, and body data are encrypted before they leave this phone. Only this key can restore them on a new phone. Save it in your password manager. Nobody can recover it for you, not even us.'**
+  /// **'Your diary, weight, and body data are encrypted before they leave this phone. A new phone with the same Google or Apple account usually gets the key automatically. You need this recovery key only when you switch between Android and iPhone or lose your phone. Nobody can recover it for you, not even us.'**
   String get recoveryKeyExplanation;
+
+  /// No description provided for @recoveryKeySaveToPasswordManagerAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save in password manager'**
+  String get recoveryKeySaveToPasswordManagerAction;
+
+  /// No description provided for @recoveryKeySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Recovery key saved'**
+  String get recoveryKeySaved;
+
+  /// No description provided for @recoveryKeySaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the recovery key.'**
+  String get recoveryKeySaveFailed;
+
+  /// No description provided for @recoveryKeyNotSavedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Not saved yet'**
+  String get recoveryKeyNotSavedHint;
 
   /// No description provided for @recoveryKeyCopyTooltip.
   ///

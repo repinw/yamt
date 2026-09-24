@@ -8,6 +8,55 @@ part of 'data_key_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Whether this platform can save the recovery key in the password manager.
+
+@ProviderFor(canSaveRecoveryKeyToPasswordManager)
+final canSaveRecoveryKeyToPasswordManagerProvider =
+    CanSaveRecoveryKeyToPasswordManagerProvider._();
+
+/// Whether this platform can save the recovery key in the password manager.
+
+final class CanSaveRecoveryKeyToPasswordManagerProvider
+    extends $FunctionalProvider<bool, bool, bool>
+    with $Provider<bool> {
+  /// Whether this platform can save the recovery key in the password manager.
+  CanSaveRecoveryKeyToPasswordManagerProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'canSaveRecoveryKeyToPasswordManagerProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() =>
+      _$canSaveRecoveryKeyToPasswordManagerHash();
+
+  @$internal
+  @override
+  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  bool create(Ref ref) {
+    return canSaveRecoveryKeyToPasswordManager(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$canSaveRecoveryKeyToPasswordManagerHash() =>
+    r'6a45a5164cec745a0023dd0dbf84c5de4897710f';
+
 /// Runs the actions of the data key pages.
 
 @ProviderFor(DataKeyController)
@@ -36,7 +85,7 @@ final class DataKeyControllerProvider
   DataKeyController create() => DataKeyController();
 }
 
-String _$dataKeyControllerHash() => r'd2727df31e18d19ba3f7dcab6efb2f79a9459ce2';
+String _$dataKeyControllerHash() => r'1f68ca047618094efb41ae0a2db525b017f1e4e0';
 
 /// Runs the actions of the data key pages.
 

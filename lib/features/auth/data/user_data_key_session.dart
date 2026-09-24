@@ -5,63 +5,18 @@ import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/domain/auth_exceptions.dart';
+import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 
 part 'user_data_key_session.g.dart';
 
 typedef _Identity = ({String uid, bool isAnonymous});
 
-/// State of the data key that encrypts the private data of the current user.
-sealed class UserDataKeyState {
-  const new();
-}
-
-/// No user is signed in, or Firestore is unavailable.
-final class UserDataKeySignedOut extends UserDataKeyState {
-  /// Creates the state.
-  const new();
-}
-
-/// The account has a key backup, but this device has no key. The user must
-/// enter the recovery key or start fresh.
-final class UserDataKeyRecoveryRequired extends UserDataKeyState {
-  /// Creates the state.
-  const new({required this.uid});
-
-  /// The user id.
-  final String uid;
-}
-
-/// The data key is available and old plaintext data is encrypted.
-final class UserDataKeyReady extends UserDataKeyState {
-  /// Creates the state.
-  const new({
-    required this.uid,
-    required this.cipher,
-    required this.recoveryKey,
-    required this.recoveryKeyConfirmed,
-  });
-
-  /// The user id.
-  final String uid;
-
-  /// Encrypts and decrypts the private documents of [uid].
-  final PayloadCipher cipher;
-
-  /// The recovery key of a real account; `null` for a guest.
-  final RecoveryKey? recoveryKey;
-
-  /// Whether the user confirmed that the recovery key is saved.
-  final bool recoveryKeyConfirmed;
-
-  /// Whether the app must show the recovery key before anything else.
-  bool get needsRecoveryKeyConfirmation =>
-      recoveryKey != null && !recoveryKeyConfirmed;
-}
-
 /// Resolves the data key of the signed-in user.
 ///
 /// A guest key lives only on the device. A real account also gets a key
-/// backup in Firestore that only the recovery key opens.
+/// backup in Firestore that only the recovery key opens. The recovery key is
+/// also backed up with the platform (Google Block Store, iCloud Keychain), so
+/// a new device usually restores the data key without asking.
 @Riverpod(keepAlive: true)
 class UserDataKeySession extends _$UserDataKeySession {
   @override
@@ -96,19 +51,20 @@ class UserDataKeySession extends _$UserDataKeySession {
     }
 
     final RecoveryKey recoveryKey;
-    final SecretKey dataKey;
     try {
       recoveryKey = RecoveryKey.parse(typedRecoveryKey);
-      dataKey = await recoveryKey.unwrapDataKey(wrappedKey, uid: uid);
     } on FormatException {
       throw const InvalidRecoveryKeyException();
-    } on SecretBoxAuthenticationError {
+    }
+    final dataKey = await _restoreKeys(
+      repository,
+      uid: uid,
+      wrappedKey: wrappedKey,
+      recoveryKey: recoveryKey,
+    );
+    if (dataKey == null) {
       throw const InvalidRecoveryKeyException();
     }
-
-    await repository.saveLocalDataKey(uid, dataKey);
-    await repository.saveLocalRecoveryKey(uid, recoveryKey);
-    await repository.saveRecoveryKeyConfirmed(uid, confirmed: true);
     await _reload();
   }
 
@@ -131,6 +87,26 @@ class UserDataKeySession extends _$UserDataKeySession {
         recoveryKeyConfirmed: true,
       ),
     );
+  }
+
+  /// Offers to save the recovery key in the password manager under
+  /// [accountName]. Saving counts as confirmed. Returns `false` when the user
+  /// cancels.
+  Future<bool> saveRecoveryKeyToPasswordManager({
+    required String accountName,
+  }) async {
+    final recoveryKey = switch (state.value) {
+      UserDataKeyReady(:final recoveryKey?) => recoveryKey,
+      _ => throw StateError('No recovery key to save.'),
+    };
+    final saved = await _requireRepository().saveRecoveryKeyToPasswordManager(
+      accountName: accountName,
+      recoveryKey: recoveryKey,
+    );
+    if (saved) {
+      await confirmRecoveryKeySaved();
+    }
+    return saved;
   }
 
   /// Deletes the private data and starts over with a new data key.
@@ -163,27 +139,29 @@ class UserDataKeySession extends _$UserDataKeySession {
     await _reload();
   }
 
-  /// Deletes the keys of the current user from this device.
-  Future<void> deleteLocalKeys() async {
-    final uid = switch (state.value) {
-      UserDataKeyRecoveryRequired(:final uid) => uid,
-      UserDataKeyReady(:final uid) => uid,
-      UserDataKeySignedOut() || null => null,
-    };
-    if (uid == null) return;
-    await _requireRepository().deleteLocalKeys(uid);
-  }
-
   Future<UserDataKeyState> _resolve(
     UserDataKeyRepository repository,
     _Identity identity,
   ) async {
     final uid = identity.uid;
-    final localDataKey = await repository.loadLocalDataKey(uid);
-    if (localDataKey == null &&
-        !identity.isAnonymous &&
-        await repository.loadBackup(uid) != null) {
-      return UserDataKeyRecoveryRequired(uid: uid);
+    var localDataKey = await repository.loadLocalDataKey(uid);
+    if (localDataKey == null && !identity.isAnonymous) {
+      final wrappedKey = await repository.loadBackup(uid);
+      if (wrappedKey != null) {
+        // A new device: the platform backup may still hold the recovery key.
+        final backedUpKey = await repository.loadBackedUpRecoveryKey(uid);
+        localDataKey = backedUpKey == null
+            ? null
+            : await _restoreKeys(
+                repository,
+                uid: uid,
+                wrappedKey: wrappedKey,
+                recoveryKey: backedUpKey,
+              );
+        if (localDataKey == null) {
+          return UserDataKeyRecoveryRequired(uid: uid);
+        }
+      }
     }
 
     final dataKey = localDataKey ?? await PayloadCipher.newDataKey();
@@ -204,6 +182,7 @@ class UserDataKeySession extends _$UserDataKeySession {
         await repository.deleteLocalKeys(uid);
         return UserDataKeyRecoveryRequired(uid: uid);
       }
+      await repository.backUpRecoveryKey(uid, recoveryKey);
       recoveryKeyConfirmed = await repository.loadRecoveryKeyConfirmed(uid);
     }
 
@@ -252,6 +231,26 @@ class UserDataKeySession extends _$UserDataKeySession {
       await repository.replaceBackup(uid, wrappedKey);
     }
     return recoveryKey;
+  }
+
+  /// Opens the key backup with [recoveryKey] and stores both keys on this
+  /// device. Returns `null` if [recoveryKey] does not open the backup.
+  Future<SecretKey?> _restoreKeys(
+    UserDataKeyRepository repository, {
+    required String uid,
+    required String wrappedKey,
+    required RecoveryKey recoveryKey,
+  }) async {
+    final SecretKey dataKey;
+    try {
+      dataKey = await recoveryKey.unwrapDataKey(wrappedKey, uid: uid);
+    } on SecretBoxAuthenticationError {
+      return null;
+    }
+    await repository.saveLocalDataKey(uid, dataKey);
+    await repository.saveLocalRecoveryKey(uid, recoveryKey);
+    await repository.saveRecoveryKeyConfirmed(uid, confirmed: true);
+    return dataKey;
   }
 
   UserDataKeyRepository _requireRepository() {

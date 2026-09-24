@@ -19,6 +19,7 @@ import 'package:yamt/features/auth/application/'
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
+import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -1166,10 +1167,7 @@ void main() {
     expect(router.state.uri.path, AppRoutes.dataKey);
   });
 
-  testWidgets('shows a new recovery key once and then opens home', (
-    tester,
-  ) async {
-    final recoveryKey = RecoveryKey.generate();
+  testWidgets('an unsaved recovery key does not block the app', (tester) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
       completedProfileSetupUserIds: {'uid-123'},
@@ -1177,7 +1175,7 @@ void main() {
       dataKeyState: UserDataKeyReady(
         uid: 'uid-123',
         cipher: PayloadCipher(SecretKey(List<int>.filled(32, 1))),
-        recoveryKey: recoveryKey,
+        recoveryKey: RecoveryKey.generate(),
         recoveryKeyConfirmed: false,
       ),
     );
@@ -1188,16 +1186,10 @@ void main() {
     await _pumpRouterTransition(tester);
     await _pumpRouterTransition(tester);
 
-    final router = container.read(appRouterProvider);
-    expect(router.state.uri.path, AppRoutes.dataKey);
-    expect(find.text(recoveryKey.formatted), findsOneWidget);
-
-    await tester.tap(find.text('I saved it'));
-    await tester.pump();
-    await _pumpRouterTransition(tester);
-    await _pumpRouterTransition(tester);
-
-    expect(router.state.uri.path, AppRoutes.homeCalories);
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeCalories,
+    );
   });
 
   testWidgets('guest sign-in on welcome page routes to onboarding', (
@@ -1240,19 +1232,6 @@ class _FakeUserDataKeySession extends UserDataKeySession {
 
   @override
   Future<UserDataKeyState> build() async => _initialState;
-
-  @override
-  Future<void> confirmRecoveryKeySaved() async {
-    final current = state.requireValue as UserDataKeyReady;
-    state = AsyncData(
-      UserDataKeyReady(
-        uid: current.uid,
-        cipher: current.cipher,
-        recoveryKey: current.recoveryKey,
-        recoveryKeyConfirmed: true,
-      ),
-    );
-  }
 }
 
 class _FakeInventoryItemRepository

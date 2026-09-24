@@ -9,7 +9,5 @@ part 'secure_storage_provider.g.dart';
 /// iPhone of the same Apple account finds them again.
 @Riverpod(keepAlive: true)
 FlutterSecureStorage secureStorage(Ref ref) {
-  return const FlutterSecureStorage(
-    iOptions: IOSOptions(synchronizable: true),
-  );
+  return const FlutterSecureStorage(iOptions: IOSOptions(synchronizable: true));
 }
