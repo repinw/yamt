@@ -821,9 +821,11 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly([
           'hostUid',
           'expiresAt',
+          'wrapped_household_key',
         ])
         && request.resource.data.hostUid == request.auth.uid
-        && request.resource.data.expiresAt is timestamp;
+        && request.resource.data.expiresAt is timestamp
+        && request.resource.data.wrapped_household_key is string;
       allow delete: if isVerifiedAccount()
         && resource.data.hostUid == request.auth.uid;
     }
@@ -873,6 +875,18 @@ service cloud.firestore {
     match /users/{uid}/inventory_activity_events/{eventId} {
       allow read, create: if canAccessHouseholdOwnedData(uid);
       allow update, delete: if false;
+    }
+
+    // The household key of the data owner uid, wrapped with the data key of
+    // one member. Only that member can open it. The owner may delete it to
+    // remove the member.
+    match /users/{uid}/household_keys/{memberUid} {
+      allow read: if isOwner(memberUid) && canAccessHouseholdOwnedData(uid);
+      allow create, update: if isOwner(memberUid)
+        && canAccessHouseholdOwnedData(uid)
+        && request.resource.data.keys().hasOnly(['wrapped_key'])
+        && request.resource.data.wrapped_key is string;
+      allow delete: if isOwner(memberUid) || isOwner(uid);
     }
 
     // Backup of the data key, wrapped with the recovery key of the user.

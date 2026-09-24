@@ -11,6 +11,7 @@ String householdErrorMessage(AppLocalizations l10n, Object error) {
       l10n.householdInviteVerificationRequired,
     HouseholdLeaderRequiredException() => l10n.householdLeaderOnly,
     HouseholdMemberRemovalDeniedException() => l10n.householdRemoveMemberFailed,
+    HouseholdKeyUnavailableException() => l10n.householdKeyUnavailable,
     _ => l10n.householdActionFailed,
   };
 }

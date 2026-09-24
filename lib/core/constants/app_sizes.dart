@@ -119,4 +119,10 @@ abstract final class AppSizes {
 
   /// Dot radius of a measured weigh-in in the weight chart.
   static const double weightChartScaleDotRadius = 2.5;
+
+  /// Edge length of the household invite QR code.
+  static const double householdInviteQrCode = 200;
+
+  /// Edge length of the scan window for QR codes.
+  static const double qrScanWindow = 240;
 }

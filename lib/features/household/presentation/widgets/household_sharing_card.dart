@@ -7,8 +7,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/'
     'household_members_provider.dart';
+import 'package:yamt/features/household/domain/household_key_state.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_membership_controller.dart';
 import 'package:yamt/features/household/presentation/household_error_message.dart';
@@ -68,14 +70,24 @@ class HouseholdSharingCard extends ConsumerWidget {
     final isLeader = !user.isAnonymous && !isGuestMember;
     final hasAdditionalMembers = members.length > 1;
     final isBusy = membershipState.isLoading;
+    final needsRejoin =
+        isGuestMember &&
+        ref.watch(householdKeySessionProvider).value
+            is HouseholdKeyInviteRequired;
 
     return _HouseholdCardShell(
       title: l10n.householdTitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (!isGuestMember && !hasAdditionalMembers)
+          if (needsRejoin) ...[
+            _HouseholdInfoBanner(message: l10n.householdRejoinRequired),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+          if (needsRejoin || (!isGuestMember && !hasAdditionalMembers))
             HouseholdJoinSection(isBusy: isBusy),
+          if (needsRejoin && hasAdditionalMembers)
+            const SizedBox(height: AppSpacing.lg),
           if (hasAdditionalMembers) ...[
             HouseholdMembersSection(
               members: members,

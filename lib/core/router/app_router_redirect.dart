@@ -8,12 +8,20 @@ import 'package:yamt/features/auth/application/'
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
+import 'package:yamt/features/household/application/pending_household_invite.dart';
+import 'package:yamt/features/household/domain/household_invite.dart';
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
 
 /// Evaluates application-wide redirects based on auth and onboarding state.
 String? appRouterRedirect(Ref ref, GoRouterState state) {
   final path = state.matchedLocation;
+  final invite = HouseholdInvite.fromDeepLink(state.uri);
+  if (invite != null) {
+    // The sign-in and onboarding redirects may come first, so the invite
+    // waits until the household page opens.
+    ref.read(pendingHouseholdInviteProvider.notifier).invite = invite;
+  }
   final authState = ref.read(authStateChangesProvider);
   final guestState = ref.read(initialGuestAuthControllerProvider);
   final isAuthLoading = authState.isLoading || guestState.isLoading;
@@ -78,10 +86,21 @@ String? _redirectForOnboarding(
   final calorieState = hasProfile
       ? ref.read(calorieGoalOnboardingCompletedProvider)
       : const AsyncData<bool>(false);
-  return _redirectForCalorieGoal(calorieState, path);
+  final hasPendingInvite = ref.read(pendingHouseholdInviteProvider) != null;
+  return _redirectForCalorieGoal(
+    calorieState,
+    path,
+    homeRoute: hasPendingInvite
+        ? AppRoutes.homeSettingsHousehold
+        : AppRoutes.homeDiary,
+  );
 }
 
-String? _redirectForCalorieGoal(AsyncValue<bool> calorieState, String path) {
+String? _redirectForCalorieGoal(
+  AsyncValue<bool> calorieState,
+  String path, {
+  required String homeRoute,
+}) {
   final isStartup = path == AppRoutes.root || path == AppRoutes.splash;
   if (calorieState.isLoading) {
     return (isStartup || path == AppRoutes.calorieGoalSetup)
@@ -93,7 +112,7 @@ String? _redirectForCalorieGoal(AsyncValue<bool> calorieState, String path) {
         ? null
         : AppRoutes.calorieGoalSetup;
   }
-  return _isTerminalRoute(path) ? AppRoutes.homeDiary : null;
+  return _isTerminalRoute(path) ? homeRoute : null;
 }
 
 bool _isTerminalRoute(String path) {

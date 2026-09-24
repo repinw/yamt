@@ -17,7 +17,10 @@ final householdInviteCodeControllerProvider =
 /// Defines household invite code controller.
 final class HouseholdInviteCodeControllerProvider
     extends
-        $NotifierProvider<HouseholdInviteCodeController, AsyncValue<String?>> {
+        $NotifierProvider<
+          HouseholdInviteCodeController,
+          AsyncValue<HouseholdInvite?>
+        > {
   /// Defines household invite code controller.
   HouseholdInviteCodeControllerProvider._()
     : super(
@@ -38,31 +41,36 @@ final class HouseholdInviteCodeControllerProvider
   HouseholdInviteCodeController create() => HouseholdInviteCodeController();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(AsyncValue<String?> value) {
+  Override overrideWithValue(AsyncValue<HouseholdInvite?> value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<AsyncValue<String?>>(value),
+      providerOverride: $SyncValueProvider<AsyncValue<HouseholdInvite?>>(value),
     );
   }
 }
 
 String _$householdInviteCodeControllerHash() =>
-    r'efa72de373689731872ccb89b90f24effa881520';
+    r'8298948d7c462469f2c2f14926daa8f6b3bddc77';
 
 /// Defines household invite code controller.
 
 abstract class _$HouseholdInviteCodeController
-    extends $Notifier<AsyncValue<String?>> {
-  AsyncValue<String?> build();
+    extends $Notifier<AsyncValue<HouseholdInvite?>> {
+  AsyncValue<HouseholdInvite?> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<AsyncValue<String?>, AsyncValue<String?>>;
+    final ref =
+        this.ref
+            as $Ref<AsyncValue<HouseholdInvite?>, AsyncValue<HouseholdInvite?>>;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<AsyncValue<String?>, AsyncValue<String?>>,
-              AsyncValue<String?>,
+              AnyNotifier<
+                AsyncValue<HouseholdInvite?>,
+                AsyncValue<HouseholdInvite?>
+              >,
+              AsyncValue<HouseholdInvite?>,
               Object?,
               Object?
             >;

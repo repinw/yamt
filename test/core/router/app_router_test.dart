@@ -31,6 +31,7 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/household/domain/household_invite.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -753,6 +754,31 @@ void main() {
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettingsAccount);
     expect(find.text('Sign out'), findsOneWidget);
+  });
+
+  testWidgets('a household invite link opens the household page', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedProfileSetupUserIds: {'uid-123'},
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+    final invite = HouseholdInvite(
+      code: '123456',
+      secret: RecoveryKey.generate(),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    final router = container.read(appRouterProvider);
+    final link = Uri.parse(invite.link);
+    router.go(Uri(path: link.path, query: link.query).toString());
+    await _pumpRouterTransition(tester);
+
+    expect(router.state.uri.path, AppRoutes.homeSettingsHousehold);
   });
 
   testWidgets('cookbook menu entry opens templates page', (tester) async {

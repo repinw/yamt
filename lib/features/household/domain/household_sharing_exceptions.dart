@@ -51,3 +51,10 @@ class HouseholdMembershipRequiredException implements Exception {
   /// The household membership required exception.
   const new();
 }
+
+/// Thrown when the household key is not ready yet, for example while the
+/// user's data key is still loading.
+class HouseholdKeyUnavailableException implements Exception {
+  /// The household key unavailable exception.
+  const new();
+}

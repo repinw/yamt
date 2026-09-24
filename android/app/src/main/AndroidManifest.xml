@@ -61,6 +61,13 @@
                 <action
                     android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
             </intent-filter>
+            <!-- Household invite links from the QR code: yamt://household/join -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="yamt" android:host="household"/>
+            </intent-filter>
         </activity>
         <activity-alias
             android:name="ViewPermissionUsageActivity"

@@ -2,7 +2,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/widgets/app_qr_code.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/household/domain/household_invite.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_invite_code_controller.dart';
 import 'package:yamt/features/household/presentation/household_error_message.dart';
@@ -20,7 +23,7 @@ class HouseholdInviteSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final inviteState = ref.watch(householdInviteCodeControllerProvider);
-    final code = inviteState.asData?.value;
+    final invite = inviteState.asData?.value;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -30,7 +33,7 @@ class HouseholdInviteSection extends ConsumerWidget {
           style: Theme.of(context).textTheme.titleMedium,
         ),
         const SizedBox(height: AppSpacing.sm),
-        if (code == null)
+        if (invite == null)
           FilledButton.icon(
             onPressed: isBusy
                 ? null
@@ -42,10 +45,10 @@ class HouseholdInviteSection extends ConsumerWidget {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.qr_code_2_outlined),
-            label: Text(l10n.householdInviteGenerateCode),
+            label: Text(l10n.householdInviteCreate),
           )
         else
-          _GeneratedCodeView(code: code, isBusy: isBusy),
+          _GeneratedInviteView(invite: invite, isBusy: isBusy),
       ],
     );
   }
@@ -71,10 +74,10 @@ class HouseholdInviteSection extends ConsumerWidget {
   }
 }
 
-class _GeneratedCodeView extends ConsumerWidget {
-  const new({required this.code, required this.isBusy});
+class _GeneratedInviteView extends ConsumerWidget {
+  const new({required this.invite, required this.isBusy});
 
-  final String code;
+  final HouseholdInvite invite;
   final bool isBusy;
 
   @override
@@ -85,26 +88,17 @@ class _GeneratedCodeView extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.secondaryContainer,
-            borderRadius: BorderRadius.circular(AppRadius.lg),
+        Center(
+          child: AppQrCode(
+            data: invite.link,
+            size: AppSizes.householdInviteQrCode,
           ),
-          child: Padding(
-            padding: AppInsets.card,
-            child: Column(
-              children: [
-                Text(
-                  code,
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    letterSpacing: 4,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(l10n.householdInviteCodeValidFor),
-              ],
-            ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Center(
+          child: Text(
+            l10n.householdInviteValidFor,
+            style: theme.textTheme.bodySmall,
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
@@ -113,15 +107,15 @@ class _GeneratedCodeView extends ConsumerWidget {
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: () async {
-                  await Clipboard.setData(ClipboardData(text: code));
+                  await Clipboard.setData(ClipboardData(text: invite.link));
                   if (!context.mounted) {
                     return;
                   }
                   ScaffoldMessenger.of(context)
-                      .showAppSnackBar(l10n.householdInviteCodeCopied);
+                      .showAppSnackBar(l10n.householdInviteLinkCopied);
                 },
-                icon: const Icon(Icons.copy_outlined),
-                label: Text(l10n.householdInviteCopyCode),
+                icon: const Icon(Icons.link),
+                label: Text(l10n.householdInviteCopyLink),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -146,7 +140,7 @@ class _GeneratedCodeView extends ConsumerWidget {
                       }
                     },
               icon: const Icon(Icons.refresh),
-              tooltip: l10n.householdInviteRefreshCode,
+              tooltip: l10n.householdInviteRefresh,
             ),
           ],
         ),

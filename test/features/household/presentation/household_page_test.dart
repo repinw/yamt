@@ -9,6 +9,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/household/application/household_members_provider.dart';
+import 'package:yamt/features/household/domain/household_invite.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_invite_code_controller.dart';
 import 'package:yamt/features/household/presentation/controllers/'
@@ -22,8 +23,8 @@ class _MockUser extends Mock implements User;
 
 class _FakeHouseholdInviteCodeController extends HouseholdInviteCodeController {
   @override
-  AsyncValue<String?> build() {
-    return const AsyncData<String?>(null);
+  AsyncValue<HouseholdInvite?> build() {
+    return const AsyncData<HouseholdInvite?>(null);
   }
 }
 

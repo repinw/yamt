@@ -7,8 +7,10 @@ import 'package:yamt/features/auth/application/'
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
+import 'package:yamt/features/household/domain/household_invite.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_invite_code_controller.dart';
 
@@ -21,14 +23,18 @@ class HouseholdMembershipController extends _$HouseholdMembershipController {
   FutureOr<void> build() {}
 
   /// Join household.
-  Future<void> joinHousehold(String code, {String? displayName}) async {
+  Future<void> joinHousehold(
+    HouseholdInvite invite, {
+    String? displayName,
+  }) async {
     await _runAction(() async {
       final normalizedName = displayName?.trim();
       if (normalizedName != null && normalizedName.isNotEmpty) {
         await _updateDisplayName(normalizedName);
       }
-      await ref.read(householdRepositoryProvider).joinHousehold(code);
+      await ref.read(householdRepositoryProvider).joinHousehold(invite);
       _clearHouseholdScopeRecovery();
+      ref.invalidate(householdKeySessionProvider);
       ref.read(householdInviteCodeControllerProvider.notifier).clear();
     });
   }

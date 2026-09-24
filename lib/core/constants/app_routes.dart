@@ -90,6 +90,9 @@ abstract final class AppRoutes {
   /// Household settings route.
   static const homeSettingsHousehold = '/home/settings/household';
 
+  /// Path of the household invite deep link `yamt://household/join`.
+  static const householdJoinLink = '/join';
+
   /// Builds the analytics path with goal cycles preselected by [cycleIds].
   static String homeCaloriesAnalyticsPath({required Set<String> cycleIds}) {
     return Uri(

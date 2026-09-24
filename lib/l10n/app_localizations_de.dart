@@ -2770,10 +2770,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdJoinTitle => 'Haushalt beitreten';
 
   @override
-  String get householdJoinCodeLabel => 'Code';
+  String get householdJoinLinkLabel => 'Einladungslink';
 
   @override
-  String get householdJoinCodeHint => '6-stelligen Einladungscode eingeben';
+  String get householdJoinLinkHint => 'Link einfügen oder QR-Code scannen';
 
   @override
   String get householdJoinAction => 'Beitreten';
@@ -2782,10 +2782,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdJoinSuccess => 'Haushalt beigetreten.';
 
   @override
-  String get householdJoinInvalidCode => 'Ungültiger Haushaltscode.';
+  String get householdJoinInvalidCode => 'Ungültige Einladung.';
 
   @override
-  String get householdJoinExpiredCode => 'Dieser Haushaltscode ist abgelaufen.';
+  String get householdJoinExpiredCode => 'Diese Einladung ist abgelaufen.';
 
   @override
   String get householdJoinOwnCode => 'Du kannst deinem eigenen Haushalt nicht beitreten.';
@@ -2809,22 +2809,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdInviteTitle => 'Mitglieder einladen';
 
   @override
-  String get householdInviteGenerateCode => 'Code erstellen';
+  String get householdInviteCreate => 'Einladung erstellen';
 
   @override
-  String get householdInviteCodeValidFor => 'Code 24 Stunden gültig';
+  String get householdInviteValidFor => 'Einladung 24 Stunden gültig';
 
   @override
-  String get householdInviteCopyCode => 'Code kopieren';
+  String get householdInviteCopyLink => 'Link kopieren';
 
   @override
-  String get householdInviteCodeCopied => 'Code kopiert.';
+  String get householdInviteLinkCopied => 'Link kopiert.';
 
   @override
-  String get householdInviteRefreshCode => 'Neuen Code erstellen';
+  String get householdInviteRefresh => 'Neue Einladung erstellen';
 
   @override
   String get householdInviteVerificationRequired => 'Verknüpfe dein Konto erst mit Google oder E-Mail, bevor du einen Haushalt leitest.';
+
+  @override
+  String get householdJoinScanQr => 'QR-Code scannen';
+
+  @override
+  String get householdRejoinRequired => 'Bitte tritt dem Haushalt erneut per QR-Code bei, damit du die gemeinsamen Daten lesen kannst.';
+
+  @override
+  String get householdKeyUnavailable => 'Dein Schlüssel wird noch geladen. Versuche es gleich noch einmal.';
 
   @override
   String get householdHostVerificationHint => 'Um andere Personen in deinen Haushalt einzuladen, verknüpfe dein Gastkonto mit Google oder E-Mail & Passwort.';

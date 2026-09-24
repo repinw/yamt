@@ -5,10 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/household_members_provider.dart';
+import 'package:yamt/features/household/domain/household_invite.dart';
+import 'package:yamt/features/household/domain/household_key_state.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_invite_code_controller.dart';
 import 'package:yamt/features/household/presentation/controllers/'
@@ -21,24 +25,40 @@ class _MockUser extends Mock implements User;
 
 class _FakeHouseholdInviteCodeController extends HouseholdInviteCodeController {
   @override
-  AsyncValue<String?> build() {
-    return const AsyncData<String?>(null);
+  AsyncValue<HouseholdInvite?> build() {
+    return const AsyncData<HouseholdInvite?>(null);
   }
+}
+
+class _FakeHouseholdKeySession extends HouseholdKeySession {
+  new(this._state);
+
+  final HouseholdKeyState _state;
+
+  @override
+  Future<HouseholdKeyState> build() async => _state;
+}
+
+String _inviteLink(String code) {
+  return HouseholdInvite(code: code, secret: RecoveryKey.generate()).link;
 }
 
 class _FakeHouseholdMembershipController extends HouseholdMembershipController {
   new({this.onRemoveMember, this.onJoinHousehold});
 
   final Future<void> Function(String userId)? onRemoveMember;
-  final Future<void> Function(String code, String? displayName)?
+  final Future<void> Function(HouseholdInvite invite, String? displayName)?
   onJoinHousehold;
 
   @override
   FutureOr<void> build() {}
 
   @override
-  Future<void> joinHousehold(String code, {String? displayName}) async {
-    await onJoinHousehold?.call(code, displayName);
+  Future<void> joinHousehold(
+    HouseholdInvite invite, {
+    String? displayName,
+  }) async {
+    await onJoinHousehold?.call(invite, displayName);
     state = const AsyncData<void>(null);
   }
 
@@ -68,6 +88,7 @@ void main() {
     required List<UserProfile> members,
     HouseholdInviteCodeController? inviteController,
     HouseholdMembershipController? membershipController,
+    HouseholdKeyState keyState = const HouseholdKeyUnavailable(),
   }) {
     final container = ProviderContainer(
       overrides: [
@@ -79,6 +100,9 @@ void main() {
         ),
         householdMembershipControllerProvider.overrideWith(
           () => membershipController ?? _FakeHouseholdMembershipController(),
+        ),
+        householdKeySessionProvider.overrideWith(
+          () => _FakeHouseholdKeySession(keyState),
         ),
       ],
     );
@@ -238,7 +262,7 @@ void main() {
   });
 
   testWidgets(
-    'user without name entering code and clicking join sees name prompt '
+    'user without name entering link and clicking join sees name prompt '
     'dialog and joins with entered name',
     (tester) async {
       final user = buildUser(uid: 'guest-1', isAnonymous: true);
@@ -252,8 +276,8 @@ void main() {
           profile: profile,
           members: [profile],
           membershipController: _FakeHouseholdMembershipController(
-            onJoinHousehold: (code, displayName) async {
-              joinedCode = code;
+            onJoinHousehold: (invite, displayName) async {
+              joinedCode = invite.code;
               joinedDisplayName = displayName;
             },
           ),
@@ -261,7 +285,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), '123456');
+      await tester.enterText(find.byType(TextField), _inviteLink('123456'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.widgetWithText(FilledButton, 'Join'));
@@ -295,8 +319,8 @@ void main() {
           profile: profile,
           members: [profile],
           membershipController: _FakeHouseholdMembershipController(
-            onJoinHousehold: (code, displayName) async {
-              joinedCode = code;
+            onJoinHousehold: (invite, displayName) async {
+              joinedCode = invite.code;
               joinedDisplayName = displayName;
             },
           ),
@@ -304,7 +328,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.enterText(find.byType(TextField), '654321');
+      await tester.enterText(find.byType(TextField), _inviteLink('654321'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.widgetWithText(FilledButton, 'Join'));
@@ -330,7 +354,7 @@ void main() {
         profile: profile,
         members: [profile],
         membershipController: _FakeHouseholdMembershipController(
-          onJoinHousehold: (code, displayName) async {
+          onJoinHousehold: (invite, displayName) async {
             joinCalled = true;
           },
         ),
@@ -338,7 +362,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextField), '123456');
+    await tester.enterText(find.byType(TextField), _inviteLink('123456'));
     await tester.pumpAndSettle();
 
     await tester.tap(find.widgetWithText(FilledButton, 'Join'));
@@ -351,5 +375,56 @@ void main() {
 
     expect(find.text('Enter your name'), findsNothing);
     expect(joinCalled, isFalse);
+  });
+
+  testWidgets('member without household key sees rejoin hint and join', (
+    tester,
+  ) async {
+    final user = buildUser(uid: 'member-1', isAnonymous: false);
+    const host = UserProfile(uid: 'host-1', displayName: 'Host');
+    const profile = UserProfile(
+      uid: 'member-1',
+      displayName: 'Member',
+      householdId: 'host-1',
+    );
+
+    await tester.pumpWidget(
+      buildApp(
+        user: user,
+        profile: profile,
+        members: [host, profile],
+        keyState: const HouseholdKeyInviteRequired(ownerUid: 'host-1'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(
+        'Please join the household again with a QR code to read the shared '
+        'data.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Join household'), findsOneWidget);
+  });
+
+  testWidgets('join stays disabled for text that is no invite link', (
+    tester,
+  ) async {
+    final user = buildUser(uid: 'user-1', isAnonymous: false);
+    const profile = UserProfile(uid: 'user-1', displayName: 'User');
+
+    await tester.pumpWidget(
+      buildApp(user: user, profile: profile, members: [profile]),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), '123456');
+    await tester.pump();
+
+    final button = tester.widget<FilledButton>(
+      find.widgetWithText(FilledButton, 'Join'),
+    );
+    expect(button.onPressed, isNull);
   });
 }

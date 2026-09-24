@@ -109,6 +109,10 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       builder: (context, state) => const HouseholdPage(),
     ),
     GoRoute(
+      path: AppRoutes.householdJoinLink,
+      redirect: (context, state) => AppRoutes.homeSettingsHousehold,
+    ),
+    GoRoute(
       path: AppRoutes.homeCaloriesEntryCreate,
       redirect: _redirectCalorieEntryCreate,
       builder: _buildCalorieEntryCreate,

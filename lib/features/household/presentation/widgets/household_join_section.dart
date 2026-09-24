@@ -1,12 +1,15 @@
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/household/application/pending_household_invite.dart';
+import 'package:yamt/features/household/domain/household_invite.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_membership_controller.dart';
 import 'package:yamt/features/household/presentation/household_error_message.dart';
+import 'package:yamt/features/household/presentation/widgets/'
+    'household_invite_scanner.dart';
 import 'package:yamt/features/household/presentation/widgets/'
     'household_join_name_dialog/household_join_name_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -25,11 +28,27 @@ class HouseholdJoinSection extends ConsumerStatefulWidget {
 }
 
 class _HouseholdJoinSectionState extends ConsumerState<HouseholdJoinSection> {
-  final TextEditingController _codeController = TextEditingController();
+  final TextEditingController _linkController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // A deep link fills the form after the first frame, because taking the
+    // invite changes a provider.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      final invite = ref.read(pendingHouseholdInviteProvider.notifier).take();
+      if (invite != null) {
+        _linkController.text = invite.link;
+      }
+    });
+  }
 
   @override
   void dispose() {
-    _codeController.dispose();
+    _linkController.dispose();
     super.dispose();
   }
 
@@ -51,27 +70,32 @@ class _HouseholdJoinSectionState extends ConsumerState<HouseholdJoinSection> {
           children: [
             Expanded(
               child: TextField(
-                controller: _codeController,
+                controller: _linkController,
                 decoration: InputDecoration(
-                  labelText: l10n.householdJoinCodeLabel,
-                  hintText: l10n.householdJoinCodeHint,
+                  labelText: l10n.householdJoinLinkLabel,
+                  hintText: l10n.householdJoinLinkHint,
                   border: const OutlineInputBorder(),
-                  counterText: '',
+                  suffixIcon: IconButton(
+                    onPressed: widget.isBusy
+                        ? null
+                        : () => _scanInvite(context, l10n),
+                    icon: const Icon(Icons.qr_code_scanner),
+                    tooltip: l10n.householdJoinScanQr,
+                  ),
                 ),
-                keyboardType: TextInputType.number,
-                maxLength: 6,
-                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                keyboardType: TextInputType.url,
+                autocorrect: false,
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
             ValueListenableBuilder<TextEditingValue>(
-              valueListenable: _codeController,
+              valueListenable: _linkController,
               builder: (context, value, _) {
-                final isReady = value.text.trim().length == 6;
+                final invite = HouseholdInvite.tryParse(value.text);
                 return FilledButton(
-                  onPressed: widget.isBusy || !isReady
+                  onPressed: widget.isBusy || invite == null
                       ? null
-                      : () => _joinHousehold(context, l10n),
+                      : () => _joinHousehold(context, l10n, invite),
                   child: membershipState.isLoading
                       ? const SizedBox(
                           width: 18,
@@ -88,9 +112,19 @@ class _HouseholdJoinSectionState extends ConsumerState<HouseholdJoinSection> {
     );
   }
 
+  Future<void> _scanInvite(BuildContext context, AppLocalizations l10n) async {
+    final invite = await openHouseholdInviteScanner(context);
+    if (invite == null || !context.mounted) {
+      return;
+    }
+    _linkController.text = invite.link;
+    await _joinHousehold(context, l10n, invite);
+  }
+
   Future<void> _joinHousehold(
     BuildContext context,
     AppLocalizations l10n,
+    HouseholdInvite invite,
   ) async {
     final messenger = ScaffoldMessenger.of(context);
     final profile = ref.read(userProfileProvider).asData?.value;
@@ -116,11 +150,11 @@ class _HouseholdJoinSectionState extends ConsumerState<HouseholdJoinSection> {
     try {
       await ref
           .read(householdMembershipControllerProvider.notifier)
-          .joinHousehold(_codeController.text, displayName: nameToSet);
+          .joinHousehold(invite, displayName: nameToSet);
       if (!mounted) {
         return;
       }
-      _codeController.clear();
+      _linkController.clear();
       messenger.showAppSnackBar(l10n.householdJoinSuccess);
     } on Object catch (error) {
       if (!mounted) {

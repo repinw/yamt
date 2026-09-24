@@ -5273,17 +5273,17 @@ abstract class AppLocalizations {
   /// **'Join household'**
   String get householdJoinTitle;
 
-  /// No description provided for @householdJoinCodeLabel.
+  /// No description provided for @householdJoinLinkLabel.
   ///
   /// In en, this message translates to:
-  /// **'Code'**
-  String get householdJoinCodeLabel;
+  /// **'Invite link'**
+  String get householdJoinLinkLabel;
 
-  /// No description provided for @householdJoinCodeHint.
+  /// No description provided for @householdJoinLinkHint.
   ///
   /// In en, this message translates to:
-  /// **'Enter 6-digit invite code'**
-  String get householdJoinCodeHint;
+  /// **'Paste link or scan QR code'**
+  String get householdJoinLinkHint;
 
   /// No description provided for @householdJoinAction.
   ///
@@ -5300,13 +5300,13 @@ abstract class AppLocalizations {
   /// No description provided for @householdJoinInvalidCode.
   ///
   /// In en, this message translates to:
-  /// **'Invalid household code.'**
+  /// **'Invalid invite.'**
   String get householdJoinInvalidCode;
 
   /// No description provided for @householdJoinExpiredCode.
   ///
   /// In en, this message translates to:
-  /// **'This household code has expired.'**
+  /// **'This invite has expired.'**
   String get householdJoinExpiredCode;
 
   /// No description provided for @householdJoinOwnCode.
@@ -5351,41 +5351,59 @@ abstract class AppLocalizations {
   /// **'Invite members'**
   String get householdInviteTitle;
 
-  /// No description provided for @householdInviteGenerateCode.
+  /// No description provided for @householdInviteCreate.
   ///
   /// In en, this message translates to:
-  /// **'Generate code'**
-  String get householdInviteGenerateCode;
+  /// **'Create invite'**
+  String get householdInviteCreate;
 
-  /// No description provided for @householdInviteCodeValidFor.
+  /// No description provided for @householdInviteValidFor.
   ///
   /// In en, this message translates to:
-  /// **'Code valid for 24 hours'**
-  String get householdInviteCodeValidFor;
+  /// **'Invite valid for 24 hours'**
+  String get householdInviteValidFor;
 
-  /// No description provided for @householdInviteCopyCode.
+  /// No description provided for @householdInviteCopyLink.
   ///
   /// In en, this message translates to:
-  /// **'Copy code'**
-  String get householdInviteCopyCode;
+  /// **'Copy link'**
+  String get householdInviteCopyLink;
 
-  /// No description provided for @householdInviteCodeCopied.
+  /// No description provided for @householdInviteLinkCopied.
   ///
   /// In en, this message translates to:
-  /// **'Code copied.'**
-  String get householdInviteCodeCopied;
+  /// **'Link copied.'**
+  String get householdInviteLinkCopied;
 
-  /// No description provided for @householdInviteRefreshCode.
+  /// No description provided for @householdInviteRefresh.
   ///
   /// In en, this message translates to:
-  /// **'Generate new code'**
-  String get householdInviteRefreshCode;
+  /// **'Create new invite'**
+  String get householdInviteRefresh;
 
   /// No description provided for @householdInviteVerificationRequired.
   ///
   /// In en, this message translates to:
   /// **'Verify your account with Google or email before you lead a household.'**
   String get householdInviteVerificationRequired;
+
+  /// No description provided for @householdJoinScanQr.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan QR code'**
+  String get householdJoinScanQr;
+
+  /// No description provided for @householdRejoinRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Please join the household again with a QR code to read the shared data.'**
+  String get householdRejoinRequired;
+
+  /// No description provided for @householdKeyUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Your key is still loading. Please try again in a moment.'**
+  String get householdKeyUnavailable;
 
   /// No description provided for @householdHostVerificationHint.
   ///
