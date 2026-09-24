@@ -5,6 +5,7 @@
   "homeCalories": "Diary",
   "homeCookbook": "Cookbook",
   "homeSettings": "Settings",
+  "homeProfile": "Profile",
   "homeProgress": "Progress",
   "homeMenuTooltip": "Menu",
   "aiChefTooltip": "Let the AI suggest a random recipe",
