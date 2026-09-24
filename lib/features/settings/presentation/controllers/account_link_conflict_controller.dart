@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/auth/application/auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/settings/data/secondary_auth_client.dart';
 
@@ -76,6 +78,11 @@ class AccountLinkConflictController extends _$AccountLinkConflictController {
     // Remove the existing account so the credential can be linked to the
     // current guest account.
     await existingUser.delete();
+    // Keeps the router from sending the linked guest to the name setup.
+    await markAuthProfileSetupCompleted(
+      ref.read(appPreferencesProvider),
+      guestUser.uid,
+    );
     await guestUser.linkWithCredential(credential);
   }
 

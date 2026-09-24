@@ -3,13 +3,17 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/settings/data/secondary_auth_client.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_link_conflict_controller.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User;
+class _MockUser extends Mock implements User {
+  @override
+  String get uid => 'guest-1';
+}
 
 class _MockUserCredential extends Mock implements UserCredential;
 
@@ -22,6 +26,10 @@ class _MockSecondaryAuthClient extends Mock implements SecondaryAuthClient;
 void main() {
   setUpAll(() {
     registerFallbackValue(_MockAuthCredential());
+  });
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
   });
 
   test(

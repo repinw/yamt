@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
+import 'package:yamt/features/auth/application/auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
@@ -54,6 +56,10 @@ class AccountController extends _$AccountController {
         googleAuthControllerProvider.notifier,
       );
       final auth = ref.read(firebaseAuthProvider);
+      final guestUserId = auth.currentUser?.uid;
+      if (guestUserId != null) {
+        await _markGuestProfileSetUp(guestUserId);
+      }
       await googleAuthController.linkCurrentUserWithGoogle();
 
       final user = auth.currentUser;
@@ -92,6 +98,7 @@ class AccountController extends _$AccountController {
       state = const AsyncLoading();
       final auth = ref.read(firebaseAuthProvider);
       final guestUser = requireGuestUser(auth);
+      await _markGuestProfileSetUp(guestUser.uid);
       final linkedCredential = await guestUser.linkWithCredential(credential);
       final linkedUser = linkedCredential.user;
       final isLinked = linkedUser != null && !linkedUser.isAnonymous;
@@ -179,6 +186,17 @@ class AccountController extends _$AccountController {
       }
       keepAliveLink.close();
     }
+  }
+
+  /// Linking keeps the uid, and the guest already went through onboarding.
+  /// Without the mark, the router sends the linked account to the name setup
+  /// while the link dialog is still open, and closing the dialog then pops
+  /// the last page.
+  Future<void> _markGuestProfileSetUp(String userId) {
+    return markAuthProfileSetupCompleted(
+      ref.read(appPreferencesProvider),
+      userId,
+    );
   }
 
   Future<void> _pauseFirestoreBackedStreams(

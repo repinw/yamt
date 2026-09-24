@@ -6,14 +6,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 
+import '../../../../helpers/memory_app_preferences.dart';
+
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _MockUser extends Mock implements User;
+class _MockUser extends Mock implements User {
+  @override
+  String get uid => 'guest-1';
+}
 
 class _MockUserCredential extends Mock implements UserCredential;
 
@@ -34,6 +42,10 @@ class _FakeGoogleAuthController extends GoogleAuthController {
 void main() {
   setUpAll(() {
     registerFallbackValue(_MockAuthCredential());
+  });
+
+  setUp(() {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
   });
 
   test('generated provider hash methods are callable', () {
@@ -78,14 +90,13 @@ void main() {
 
   test('deleteCurrentAccount deletes the user and its local keys', () async {
     FlutterSecureStorage.setMockInitialValues(<String, String>{
-      'data_key_u1': 'key',
-      'recovery_key_u1': 'recovery',
+      'data_key_guest-1': 'key',
+      'recovery_key_guest-1': 'recovery',
       'data_key_u2': 'other',
     });
     final auth = _MockFirebaseAuth();
     final user = _MockUser();
     when(() => auth.currentUser).thenReturn(user);
-    when(() => user.uid).thenReturn('u1');
     when(user.delete).thenAnswer((_) async {});
 
     final container = ProviderContainer(
@@ -108,9 +119,44 @@ void main() {
       const AsyncData<void>(null),
     );
     const storage = FlutterSecureStorage();
-    expect(await storage.read(key: 'data_key_u1'), isNull);
-    expect(await storage.read(key: 'recovery_key_u1'), isNull);
+    expect(await storage.read(key: 'data_key_guest-1'), isNull);
+    expect(await storage.read(key: 'recovery_key_guest-1'), isNull);
     expect(await storage.read(key: 'data_key_u2'), 'other');
+  });
+
+  test('linking marks the guest profile as set up before it links', () async {
+    final auth = _MockFirebaseAuth();
+    final guestUser = _MockUser();
+    final linkedUser = _MockUser();
+    final linkedCredential = _MockUserCredential();
+    final preferences = MemoryAppPreferences();
+    final profileKey = AuthProfileSetupPreferences.keyForUser('guest-1');
+    String? markerDuringLink;
+    when(() => auth.currentUser).thenReturn(guestUser);
+    when(() => guestUser.isAnonymous).thenReturn(true);
+    when(() => linkedUser.isAnonymous).thenReturn(false);
+    when(() => linkedCredential.user).thenReturn(linkedUser);
+    when(() => guestUser.linkWithCredential(any())).thenAnswer((_) async {
+      markerDuringLink = preferences.getStringSync(profileKey);
+      return linkedCredential;
+    });
+
+    final container = ProviderContainer(
+      overrides: [
+        firebaseAuthProvider.overrideWithValue(auth),
+        appPreferencesProvider.overrideWithValue(preferences),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await container
+        .read(accountControllerProvider.notifier)
+        .linkGuestWithEmailPassword(
+          email: 'jane@example.com',
+          password: 'secret123',
+        );
+
+    expect(markerDuringLink, AuthProfileSetupPreferences.completedValue);
   });
 
   test('deleteCurrentAccount throws when no active user exists', () async {

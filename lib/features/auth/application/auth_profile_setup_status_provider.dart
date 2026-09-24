@@ -20,3 +20,15 @@ bool authProfileSetupCompleted(Ref ref) {
   return preferences.getStringSync(key) ==
       AuthProfileSetupPreferences.completedValue;
 }
+
+/// Marks the profile of [userId] as set up, so the router skips the name
+/// setup for it.
+Future<void> markAuthProfileSetupCompleted(
+  AppPreferences preferences,
+  String userId,
+) {
+  return preferences.setString(
+    AuthProfileSetupPreferences.keyForUser(userId),
+    AuthProfileSetupPreferences.completedValue,
+  );
+}
