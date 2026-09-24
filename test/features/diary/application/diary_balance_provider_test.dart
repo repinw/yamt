@@ -111,7 +111,7 @@ void main() {
         ),
       );
 
-      expect(data.loadedMetrics?.weekly.pacing.actualConsumedKcal, 0);
+      expect(data.loadedMetrics?.weekly.pacing.consumedKcal, 0);
       expect(data.loadedMetrics?.weekly.progressDay, 1);
     },
   );

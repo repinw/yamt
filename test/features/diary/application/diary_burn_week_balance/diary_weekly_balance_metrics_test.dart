@@ -81,7 +81,6 @@ void main() {
     );
 
     expect(metrics.goalKcal, 14000);
-    expect(metrics.pacing.actualConsumedKcal, 1800);
     expect(metrics.pacing.consumedKcal, 1800);
   });
 
@@ -107,7 +106,7 @@ void main() {
       now: selectedDay.add(const Duration(hours: 12)),
     );
 
-    expect(metrics.pacing.actualConsumedKcal, 17600);
+    expect(metrics.pacing.consumedKcal, 17600);
     expect(metrics.goalKcal, 17900);
   });
 

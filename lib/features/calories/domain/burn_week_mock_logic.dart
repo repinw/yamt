@@ -13,10 +13,7 @@ const int _secondsPerDay = 24 * 60 * 60;
 /// Difficulty tier for Burn Week mock progression.
 class BurnWeekMockDifficulty {
   /// Creates Burn Week mock difficulty.
-  const new({
-    required this.label,
-    required this.safeZoneMultiplier,
-  });
+  const new({required this.label, required this.safeZoneMultiplier});
 
   /// User-facing tier label.
   final String label;
@@ -39,9 +36,8 @@ class BurnWeekMockMetrics {
     required this.safeZoneMaxKcal,
     required this.barMinKcal,
     required this.barMaxKcal,
-    double? actualConsumedKcal,
     this.plannedLaterKcal = 0,
-  }) : actualConsumedKcal = actualConsumedKcal ?? consumedKcal;
+  });
 
   /// The resolved daily goal used by the mock.
   final double dailyGoalKcal;
@@ -58,11 +54,8 @@ class BurnWeekMockMetrics {
   /// Target calories for current time.
   final double targetKcal;
 
-  /// Effective consumed kcal used by the game marker.
+  /// Consumed kcal in the displayed week.
   final double consumedKcal;
-
-  /// Real logged kcal.
-  final double actualConsumedKcal;
 
   /// Safe-zone lower bound.
   final double safeZoneMinKcal;
@@ -84,9 +77,6 @@ class BurnWeekMockMetrics {
 
   /// Flame marker position inside visible bar.
   double get consumedRatio => ratioForKcal(consumedKcal);
-
-  /// Game-effective marker position inside visible bar.
-  double get effectiveConsumedRatio => ratioForKcal(consumedKcal);
 
   /// Planned-shadow end position inside visible bar.
   double get plannedEndRatio {
@@ -148,10 +138,7 @@ BurnWeekMockDifficulty resolveBurnWeekMockDifficulty(int starCount) {
       safeZoneMultiplier: 0.85,
     );
   }
-  return const BurnWeekMockDifficulty(
-    label: 'Learning',
-    safeZoneMultiplier: 1,
-  );
+  return const BurnWeekMockDifficulty(label: 'Learning', safeZoneMultiplier: 1);
 }
 
 /// Whether current week earns one new star.

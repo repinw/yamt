@@ -6,7 +6,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 class DiaryBalanceProgressBar extends StatelessWidget {
   /// Creates a diary balance progress bar.
   const new({
-    required this.actualConsumedKcal,
+    required this.consumedKcal,
     required this.targetKcal,
     required this.weeklyGoalKcal,
     required this.totalDays,
@@ -14,8 +14,8 @@ class DiaryBalanceProgressBar extends StatelessWidget {
     super.key,
   });
 
-  /// Real consumed calories in the displayed Burn Week.
-  final double actualConsumedKcal;
+  /// Consumed calories in the displayed Burn Week.
+  final double consumedKcal;
 
   /// Pacing target in calories for the displayed day.
   final double targetKcal;
@@ -33,7 +33,7 @@ class DiaryBalanceProgressBar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (compact) {
       return DiaryCompactBalanceProgressBar(
-        actualConsumedKcal: actualConsumedKcal,
+        consumedKcal: consumedKcal,
         targetKcal: targetKcal,
         weeklyGoalKcal: weeklyGoalKcal,
         totalDays: totalDays,
@@ -41,7 +41,7 @@ class DiaryBalanceProgressBar extends StatelessWidget {
     }
 
     return DiaryExpandedBalanceProgressBar(
-      actualConsumedKcal: actualConsumedKcal,
+      consumedKcal: consumedKcal,
       targetKcal: targetKcal,
       weeklyGoalKcal: weeklyGoalKcal,
       totalDays: totalDays,

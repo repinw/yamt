@@ -4,22 +4,19 @@ import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart'
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 
 void main() {
-  test(
-    'readState returns fresh state when profile has no entry',
-    () async {
-      final firestore = FakeFirebaseFirestore();
-      final repository = FirestoreBurnWeekRunStateRepository(
-        firestore: firestore,
-        currentUserId: 'user-1',
-      );
+  test('readState returns fresh state when profile has no entry', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreBurnWeekRunStateRepository(
+      firestore: firestore,
+      currentUserId: 'user-1',
+    );
 
-      final state = await repository.readState();
+    final state = await repository.readState();
 
-      expect(state.runWeekNumber, 1);
-      expect(state.starCount, 0);
-      expect(state.lastActiveDayKey, isNull);
-    },
-  );
+    expect(state.runWeekNumber, 1);
+    expect(state.starCount, 0);
+    expect(state.lastActiveDayKey, isNull);
+  });
 
   test('saveState persists nested user profile entry', () async {
     final firestore = FakeFirebaseFirestore();

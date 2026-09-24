@@ -305,9 +305,7 @@ void main() {
     await container.read(burnWeekRunControllerProvider.future);
     await container
         .read(burnWeekRunControllerProvider.notifier)
-        .bootstrapRunFrom(
-          weekStartDate: DateTime(2026, 4, 21),
-        );
+        .bootstrapRunFrom(weekStartDate: DateTime(2026, 4, 21));
 
     expect(repository.state.currentWeekStartDayKey, '2026-4-21');
     expect(repository.state.runWeekNumber, burnWeekLearningRunWeekNumber);

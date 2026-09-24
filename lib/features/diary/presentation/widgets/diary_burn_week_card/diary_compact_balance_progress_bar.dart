@@ -8,15 +8,15 @@ import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progres
 class DiaryCompactBalanceProgressBar extends StatelessWidget {
   /// Creates a compact diary balance progress bar.
   const new({
-    required this.actualConsumedKcal,
+    required this.consumedKcal,
     required this.targetKcal,
     required this.weeklyGoalKcal,
     required this.totalDays,
     super.key,
   });
 
-  /// Real consumed calories in the displayed Burn Week.
-  final double actualConsumedKcal;
+  /// Consumed calories in the displayed Burn Week.
+  final double consumedKcal;
 
   /// Pacing target in calories for the displayed day.
   final double targetKcal;
@@ -36,7 +36,7 @@ class DiaryCompactBalanceProgressBar extends StatelessWidget {
     final trackColor = colors.surfaceContainerHighest;
 
     final progressRatio = diaryBalanceProgressRatioForKcal(
-      actualConsumedKcal,
+      consumedKcal,
       weeklyGoalKcal,
     );
     final segmentCount = totalDays > 0 ? totalDays : 7;

@@ -14,15 +14,15 @@ import 'package:yamt/l10n/app_localizations.dart';
 class DiaryExpandedBalanceProgressBar extends StatelessWidget {
   /// Creates an expanded diary balance progress bar.
   const new({
-    required this.actualConsumedKcal,
+    required this.consumedKcal,
     required this.targetKcal,
     required this.weeklyGoalKcal,
     required this.totalDays,
     super.key,
   });
 
-  /// Real consumed calories in the displayed Burn Week.
-  final double actualConsumedKcal;
+  /// Consumed calories in the displayed Burn Week.
+  final double consumedKcal;
 
   /// Pacing target in calories for the displayed day.
   final double targetKcal;
@@ -53,8 +53,8 @@ class DiaryExpandedBalanceProgressBar extends StatelessWidget {
             targetKcal,
             weeklyGoalKcal,
           );
-          final actualConsumedRatio = diaryBalanceProgressRatioForKcal(
-            actualConsumedKcal,
+          final consumedRatio = diaryBalanceProgressRatioForKcal(
+            consumedKcal,
             weeklyGoalKcal,
           );
           const progressTop =
@@ -71,7 +71,7 @@ class DiaryExpandedBalanceProgressBar extends StatelessWidget {
               children: [
                 DiaryExpandedBalanceProgressTrack(
                   width: width,
-                  actualConsumedRatio: actualConsumedRatio,
+                  consumedRatio: consumedRatio,
                   activityColor: activity,
                   fatColor: accents.fat,
                   trackColor: trackColor,

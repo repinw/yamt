@@ -10,17 +10,14 @@ void main() {
     expect(usesBurnWeekMockFallbackGoal(2200), isFalse);
   });
 
-  test(
-    'difficulty tiers shrink safe zone at higher stars',
-    () {
-      expect(resolveBurnWeekMockDifficulty(0).label, 'Learning');
-      expect(resolveBurnWeekMockDifficulty(2).label, 'Steady');
-      expect(resolveBurnWeekMockDifficulty(4).label, 'Solid');
-      expect(resolveBurnWeekMockDifficulty(6).label, 'Elite');
-      expect(resolveBurnWeekMockDifficulty(8).label, 'Master');
-      expect(resolveBurnWeekMockDifficulty(8).safeZoneMultiplier, 0.4);
-    },
-  );
+  test('difficulty tiers shrink safe zone at higher stars', () {
+    expect(resolveBurnWeekMockDifficulty(0).label, 'Learning');
+    expect(resolveBurnWeekMockDifficulty(2).label, 'Steady');
+    expect(resolveBurnWeekMockDifficulty(4).label, 'Solid');
+    expect(resolveBurnWeekMockDifficulty(6).label, 'Elite');
+    expect(resolveBurnWeekMockDifficulty(8).label, 'Master');
+    expect(resolveBurnWeekMockDifficulty(8).safeZoneMultiplier, 0.4);
+  });
 
   test('metrics use cumulative weekly target and full week bar', () {
     final metrics = resolveBurnWeekMockMetrics(
@@ -55,7 +52,6 @@ void main() {
 
     expect(metrics.targetRatio, closeTo(0.5, 0.001));
     expect(metrics.consumedRatio, closeTo(0.25, 0.001));
-    expect(metrics.effectiveConsumedRatio, closeTo(0.25, 0.001));
     expect(metrics.plannedEndRatio, closeTo(0.375, 0.001));
     expect(metrics.safeZoneStartRatio, closeTo(0.1875, 0.001));
     expect(metrics.safeZoneEndRatio, closeTo(0.6875, 0.001));

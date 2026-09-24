@@ -61,7 +61,7 @@ DiaryWeeklyBalanceMetrics resolveDiaryWeeklyBalanceMetrics({
   );
   final displayWeeklyGoalKcal = _resolveDisplayWeeklyGoalKcal(
     baseWeeklyGoalKcal: weeklyGoalKcal,
-    actualConsumedKcal: pacing.actualConsumedKcal,
+    consumedKcal: pacing.consumedKcal,
     selectedDayTargetKcal: resolveDiaryDailyTargetKcal(
       flexibleGoalKcal: weekOverview.todayFlexibleGoalKcal,
       goalKcal: selectedDayOverview.goalKcal,
@@ -84,7 +84,7 @@ DiaryWeeklyBalanceMetrics resolveDiaryWeeklyBalanceMetrics({
 
 double _resolveDisplayWeeklyGoalKcal({
   required double baseWeeklyGoalKcal,
-  required double actualConsumedKcal,
+  required double consumedKcal,
   required double selectedDayTargetKcal,
   required double selectedDayTotalKcal,
 }) {
@@ -95,7 +95,7 @@ double _resolveDisplayWeeklyGoalKcal({
 
   return math.max<double>(
     baseWeeklyGoalKcal,
-    actualConsumedKcal + selectedDayLeftKcal,
+    consumedKcal + selectedDayLeftKcal,
   );
 }
 

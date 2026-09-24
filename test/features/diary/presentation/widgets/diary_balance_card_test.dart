@@ -100,7 +100,7 @@ void main() {
           body: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: DiaryBalanceProgressBar(
-              actualConsumedKcal: 3100,
+              consumedKcal: 3100,
               targetKcal: 4915,
               weeklyGoalKcal: 17204,
               totalDays: 7,
@@ -121,13 +121,9 @@ void main() {
   testWidgets('weekly progress animates fill and target marker', (
     tester,
   ) async {
-    await _pumpWeeklyProgressBar(tester, actualConsumedKcal: 0, targetKcal: 0);
+    await _pumpWeeklyProgressBar(tester, consumedKcal: 0, targetKcal: 0);
 
-    await _pumpWeeklyProgressBar(
-      tester,
-      actualConsumedKcal: 500,
-      targetKcal: 700,
-    );
+    await _pumpWeeklyProgressBar(tester, consumedKcal: 500, targetKcal: 700);
     await tester.pump(const Duration(milliseconds: 500));
 
     final midTrackRect = tester.getRect(
@@ -945,7 +941,7 @@ Future<void> _pumpBalanceCard(
 
 Future<void> _pumpWeeklyProgressBar(
   WidgetTester tester, {
-  required double actualConsumedKcal,
+  required double consumedKcal,
   required double targetKcal,
 }) async {
   await tester.pumpWidget(
@@ -958,7 +954,7 @@ Future<void> _pumpWeeklyProgressBar(
           child: SizedBox(
             width: 300,
             child: DiaryBalanceProgressBar(
-              actualConsumedKcal: actualConsumedKcal,
+              consumedKcal: consumedKcal,
               targetKcal: targetKcal,
               weeklyGoalKcal: 1000,
               totalDays: 7,
@@ -1036,7 +1032,6 @@ DiaryWeeklyBalanceMetrics _weeklyBalanceMetrics() {
       paceRatio: 6 / 7,
       targetKcal: 15218,
       consumedKcal: 15726,
-      actualConsumedKcal: 15726,
       safeZoneMinKcal: 14000,
       safeZoneMaxKcal: 16500,
       barMinKcal: 0,

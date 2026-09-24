@@ -8,7 +8,7 @@ class DiaryExpandedBalanceProgressTrack extends StatelessWidget {
   /// Creates an expanded progress track.
   const new({
     required this.width,
-    required this.actualConsumedRatio,
+    required this.consumedRatio,
     required this.activityColor,
     required this.fatColor,
     required this.trackColor,
@@ -22,7 +22,7 @@ class DiaryExpandedBalanceProgressTrack extends StatelessWidget {
   final double width;
 
   /// Animated consumed ratio from `0` to `1`.
-  final double actualConsumedRatio;
+  final double consumedRatio;
 
   /// Start color for consumed fill.
   final Color activityColor;
@@ -58,7 +58,7 @@ class DiaryExpandedBalanceProgressTrack extends StatelessWidget {
               Positioned.fill(child: ColoredBox(color: trackColor)),
               _AnimatedProgressFill(
                 width: width,
-                actualConsumedRatio: actualConsumedRatio,
+                consumedRatio: consumedRatio,
                 activityColor: activityColor,
                 fatColor: fatColor,
               ),
@@ -81,13 +81,13 @@ class DiaryExpandedBalanceProgressTrack extends StatelessWidget {
 class _AnimatedProgressFill extends StatelessWidget {
   const new({
     required this.width,
-    required this.actualConsumedRatio,
+    required this.consumedRatio,
     required this.activityColor,
     required this.fatColor,
   });
 
   final double width;
-  final double actualConsumedRatio;
+  final double consumedRatio;
   final Color activityColor;
   final Color fatColor;
 
@@ -96,7 +96,7 @@ class _AnimatedProgressFill extends StatelessWidget {
     return TweenAnimationBuilder<double>(
       duration: diaryBalanceProgressAnimationDuration,
       curve: diaryBalanceProgressAnimationCurve,
-      tween: Tween<double>(begin: 0, end: actualConsumedRatio),
+      tween: Tween<double>(begin: 0, end: consumedRatio),
       builder: (context, value, child) {
         return Positioned(
           left: 0,

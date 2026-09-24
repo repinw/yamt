@@ -214,7 +214,6 @@ void main() {
       safeZoneMultiplier: 1,
     );
 
-    expect(metrics.actualConsumedKcal, 2000);
     expect(metrics.consumedKcal, 2000);
     expect(metrics.targetKcal, 2000);
   });

@@ -37,7 +37,7 @@ class DiaryWeeklyBalanceCard extends StatelessWidget {
     final activity = MetricAccentColors.of(context)
         .activityFor(colors.brightness);
     final actualKcal = numberFormat.format(
-      weeklyMetrics.pacing.actualConsumedKcal.round(),
+      weeklyMetrics.pacing.consumedKcal.round(),
     );
     final goalKcal = numberFormat.format(weeklyMetrics.goalKcal.round());
     final valueLabel =
@@ -101,7 +101,7 @@ class DiaryWeeklyBalanceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 DiaryBalanceProgressBar(
-                  actualConsumedKcal: weeklyMetrics.pacing.actualConsumedKcal,
+                  consumedKcal: weeklyMetrics.pacing.consumedKcal,
                   targetKcal: weeklyMetrics.targetKcal,
                   weeklyGoalKcal: weeklyMetrics.goalKcal,
                   totalDays: weeklyMetrics.totalDays,
