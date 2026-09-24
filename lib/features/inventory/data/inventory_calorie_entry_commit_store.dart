@@ -2,7 +2,7 @@
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/'
@@ -25,7 +25,6 @@ part 'inventory_calorie_entry_commit_store.g.dart';
 /// The inventory calorie entry commit store provider.
 @riverpod
 InventoryCalorieEntryCommitStore inventoryCalorieEntryCommitStore(Ref ref) {
-  final currentUserId = ref.watch(authStateChangesProvider).asData?.value?.uid;
   final inventoryOwnerUserId = ref.watch(
     effectiveHouseholdDataOwnerUserIdProvider,
   );
@@ -36,7 +35,7 @@ InventoryCalorieEntryCommitStore inventoryCalorieEntryCommitStore(Ref ref) {
 
   return FirestoreInventoryCalorieEntryCommitStore(
     firestore: firestore,
-    currentUserId: currentUserId,
+    dataCipher: ref.watch(userDataCipherProvider),
     inventoryOwnerUserId: inventoryOwnerUserId,
     actor: ref.watch(inventoryActivityActorProvider),
   );

@@ -2,6 +2,8 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/data/'
@@ -26,7 +28,7 @@ class FirestoreInventoryCalorieEntryCommitStore
   /// The firestore inventory calorie entry commit store.
   const new({
     required this.firestore,
-    required this.currentUserId,
+    required this.dataCipher,
     required this.inventoryOwnerUserId,
     required this.actor,
     this.mutationBuilder = const InventoryCalorieEntryCommitMutationBuilder(),
@@ -35,8 +37,9 @@ class FirestoreInventoryCalorieEntryCommitStore
   /// The Firestore instance.
   final FirebaseFirestore firestore;
 
-  /// The current user ID.
-  final String? currentUserId;
+  /// The signed-in user and the cipher for their diary, or `null` while the
+  /// data key is not ready.
+  final UserDataCipher? dataCipher;
 
   /// The inventory owner user ID.
   final String? inventoryOwnerUserId;
@@ -52,18 +55,18 @@ class FirestoreInventoryCalorieEntryCommitStore
     required CalorieEntry entry,
     required PendingInventoryConsumption pendingConsumption,
   }) async {
-    final entryUserId = _resolveEntryUserId(entry.userId);
+    final cipher = dataCipher;
     final inventoryUserId = _resolveInventoryUserId();
-    if (entryUserId == null || inventoryUserId == null) {
+    if (cipher == null || inventoryUserId == null) {
       log(
-        'Cannot commit calorie entry ${entry.id}: no user id resolved '
-        '(entryUserId=${entry.userId}, '
-        'currentUserId=$currentUserId, '
+        'Cannot commit calorie entry ${entry.id}: no data key or user id '
+        '(currentUserId=${cipher?.uid}, '
         'inventoryOwnerUserId=$inventoryOwnerUserId).',
         name: _commitStoreLogName,
       );
       return null;
     }
+    final entryUserId = cipher.uid;
     if (pendingConsumption.amount < 1) {
       log(
         'Cannot commit calorie entry ${entry.id}: invalid pending amount '
@@ -126,11 +129,15 @@ class FirestoreInventoryCalorieEntryCommitStore
         updatedAt: DateTime.now(),
       );
 
+      final entryRef = _calorieEntriesCollectionRef(entryUserId)
+          .doc(normalizedEntry.id);
+      final entryDocument = await encodeCalorieEntryDocument(
+        normalizedEntry,
+        reference: entryRef,
+        cipher: cipher.cipher,
+      );
       final batch = firestore.batch()
-        ..set(
-          _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
-          normalizedEntry.toJson(),
-        )
+        ..set(entryRef, entryDocument)
         ..update(
           inventoryRef,
           mutationBuilder.buildInventoryUpdate(committedItem),
@@ -181,19 +188,6 @@ class FirestoreInventoryCalorieEntryCommitStore
     }
   }
 
-  String? _resolveEntryUserId(String entryUserId) {
-    final trimmedCurrentUserId = currentUserId?.trim();
-    if (trimmedCurrentUserId != null && trimmedCurrentUserId.isNotEmpty) {
-      return trimmedCurrentUserId;
-    }
-
-    final normalizedEntryUserId = entryUserId.trim();
-    if (normalizedEntryUserId.isNotEmpty) {
-      return normalizedEntryUserId;
-    }
-    return null;
-  }
-
   String? _resolveInventoryUserId() {
     final trimmedInventoryOwnerUserId = inventoryOwnerUserId?.trim();
     if (trimmedInventoryOwnerUserId != null &&
@@ -201,11 +195,7 @@ class FirestoreInventoryCalorieEntryCommitStore
       return trimmedInventoryOwnerUserId;
     }
 
-    final trimmedCurrentUserId = currentUserId?.trim();
-    if (trimmedCurrentUserId != null && trimmedCurrentUserId.isNotEmpty) {
-      return trimmedCurrentUserId;
-    }
-    return null;
+    return dataCipher?.uid;
   }
 
   CollectionReference<Map<String, dynamic>> _inventoryCollection(

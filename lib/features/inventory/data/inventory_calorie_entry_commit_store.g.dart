@@ -62,4 +62,4 @@ final class InventoryCalorieEntryCommitStoreProvider
 }
 
 String _$inventoryCalorieEntryCommitStoreHash() =>
-    r'd8ecc99cd8297c7189e35e2f87815700c61c3316';
+    r'fce7f786a216d3b6dca3315d1ed8a52ae5163978';

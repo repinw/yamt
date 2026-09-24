@@ -6,7 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
@@ -24,7 +25,6 @@ const _preparedMealsCollection = 'prepared_meals';
 PreparedMealCalorieEntryCommitStore? preparedMealCalorieEntryCommitStore(
   Ref ref,
 ) {
-  final currentUserId = ref.watch(authStateChangesProvider).asData?.value?.uid;
   final preparedMealOwnerUserId = ref.watch(
     effectiveHouseholdDataOwnerUserIdProvider,
   );
@@ -35,7 +35,7 @@ PreparedMealCalorieEntryCommitStore? preparedMealCalorieEntryCommitStore(
 
   return FirestorePreparedMealCalorieEntryCommitStore(
     firestore: firestore,
-    currentUserId: currentUserId,
+    dataCipher: ref.watch(userDataCipherProvider),
     preparedMealOwnerUserId: preparedMealOwnerUserId,
   );
 }
@@ -52,27 +52,27 @@ class FirestorePreparedMealCalorieEntryCommitStore
   /// The firestore prepared meal calorie entry commit store.
   const new({
     required this._firestore,
-    required this._currentUserId,
+    required this._dataCipher,
     required this._preparedMealOwnerUserId,
   });
 
   final FirebaseFirestore _firestore;
-  final String? _currentUserId;
+  final UserDataCipher? _dataCipher;
   final String? _preparedMealOwnerUserId;
 
   @override
   Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry}) async {
-    final entryUserId = _resolveEntryUserId(entry.userId);
+    final dataCipher = _dataCipher;
     final preparedMealOwnerUserId = _resolvePreparedMealOwnerUserId();
     final preparedMealId = entry.bundleSourcePreparedMealId?.trim();
     final consumedPortions = entry.bundleConsumedPortions ?? 0;
-    if (entryUserId == null ||
+    if (dataCipher == null ||
         preparedMealOwnerUserId == null ||
         preparedMealId == null ||
         preparedMealId.isEmpty) {
       log(
         'Cannot commit prepared meal calorie entry ${entry.id}: '
-        'missing user or meal id.',
+        'missing data key, user, or meal id.',
         name: _commitStoreLogName,
       );
       return false;
@@ -125,7 +125,7 @@ class FirestorePreparedMealCalorieEntryCommitStore
       }
 
       final normalizedEntry = entry.copyWith(
-        userId: entryUserId,
+        userId: dataCipher.uid,
         imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
       );
       final committedAt = normalizedEntry.updatedAt;
@@ -143,11 +143,15 @@ class FirestorePreparedMealCalorieEntryCommitStore
         mealUpdates['remaining_net_weight'] = nextMeal.remainingNetWeight;
       }
 
+      final entryRef = _calorieEntriesCollectionRef(dataCipher.uid)
+          .doc(normalizedEntry.id);
+      final entryDocument = await encodeCalorieEntryDocument(
+        normalizedEntry,
+        reference: entryRef,
+        cipher: dataCipher.cipher,
+      );
       final batch = _firestore.batch()
-        ..set(
-          _calorieEntriesCollectionRef(entryUserId).doc(normalizedEntry.id),
-          normalizedEntry.toJson(),
-        )
+        ..set(entryRef, entryDocument)
         ..update(mealRef, mealUpdates);
       commitBatchInBackground(
         batch,
@@ -167,30 +171,13 @@ class FirestorePreparedMealCalorieEntryCommitStore
     }
   }
 
-  String? _resolveEntryUserId(String entryUserId) {
-    final currentUserId = _currentUserId?.trim();
-    if (currentUserId != null && currentUserId.isNotEmpty) {
-      return currentUserId;
-    }
-
-    final normalizedEntryUserId = entryUserId.trim();
-    if (normalizedEntryUserId.isNotEmpty) {
-      return normalizedEntryUserId;
-    }
-    return null;
-  }
-
   String? _resolvePreparedMealOwnerUserId() {
     final preparedMealOwnerUserId = _preparedMealOwnerUserId?.trim();
     if (preparedMealOwnerUserId != null && preparedMealOwnerUserId.isNotEmpty) {
       return preparedMealOwnerUserId;
     }
 
-    final currentUserId = _currentUserId?.trim();
-    if (currentUserId != null && currentUserId.isNotEmpty) {
-      return currentUserId;
-    }
-    return null;
+    return _dataCipher?.uid;
   }
 
   CollectionReference<Map<String, dynamic>> _calorieEntriesCollectionRef(

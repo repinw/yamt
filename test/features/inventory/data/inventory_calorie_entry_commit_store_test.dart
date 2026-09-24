@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
@@ -84,7 +86,23 @@ Map<String, dynamic> _withDocumentId(
   return <String, dynamic>{'id': snapshot.id, ...?snapshot.data()};
 }
 
+late PayloadCipher _cipher;
+
+UserDataCipher _signedIn(String uid) => (uid: uid, cipher: _cipher);
+
+Future<Map<String, dynamic>> _decrypted(
+  DocumentSnapshot<Map<String, dynamic>> snapshot,
+) {
+  return _cipher.decryptJson(
+    snapshot.data()!['payload'] as String,
+    aad: snapshot.reference.path,
+  );
+}
+
 void main() {
+  setUpAll(() async {
+    _cipher = PayloadCipher(await PayloadCipher.newDataKey());
+  });
   test(
     'commitEntryAndInventory saves entry and reduces inventory together',
     () async {
@@ -95,7 +113,7 @@ void main() {
 
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
-        currentUserId: 'user-1',
+        dataCipher: _signedIn('user-1'),
         inventoryOwnerUserId: 'user-1',
         actor: _actor,
       );
@@ -120,7 +138,11 @@ void main() {
           .get();
       expect(savedEntrySnapshot.exists, isTrue);
       expect(
-        savedEntrySnapshot.data()?['source_inventory_item_id'],
+        savedEntrySnapshot.data()!.keys,
+        unorderedEquals(<String>['payload', 'logged_at']),
+      );
+      expect(
+        (await _decrypted(savedEntrySnapshot))['source_inventory_item_id'],
         'inventory-1',
       );
 
@@ -159,7 +181,7 @@ void main() {
 
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
-        currentUserId: 'user-1',
+        dataCipher: _signedIn('user-1'),
         inventoryOwnerUserId: 'user-1',
         actor: _actor,
       );
@@ -203,7 +225,7 @@ void main() {
 
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
-        currentUserId: 'user-1',
+        dataCipher: _signedIn('user-1'),
         inventoryOwnerUserId: 'user-1',
         actor: _actor,
       );
@@ -237,7 +259,7 @@ void main() {
 
     final store = FirestoreInventoryCalorieEntryCommitStore(
       firestore: firestore,
-      currentUserId: 'member-1',
+      dataCipher: _signedIn('member-1'),
       inventoryOwnerUserId: 'host-1',
       actor: const InventoryActivityActor(
         userId: 'member-1',
@@ -268,7 +290,7 @@ void main() {
     ).doc('inventory-1').get();
 
     expect(savedEntry.exists, isTrue);
-    expect(savedEntry.data()?['user_id'], 'member-1');
+    expect((await _decrypted(savedEntry))['user_id'], 'member-1');
     expect(savedItem.data()?['current_amount'], 500);
     final activity = await _activityCollection(
       firestore: firestore,
