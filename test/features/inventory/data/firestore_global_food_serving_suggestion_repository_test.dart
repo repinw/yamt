@@ -255,6 +255,7 @@ void main() {
       expect(sharedSnapshot.data()!['selection_count'], 2);
       expect(sharedSnapshot.data()!['unique_user_count'], 1);
       expect(sharedSnapshot.data()!['label'], 'Scheibe');
+      expect(sharedSnapshot.data()!['created_by_uid'], 'user-1');
       expect(globalPrefSnapshot.data()!['amount'], 35);
       expect(globalPrefSnapshot.data()!['label'], 'Scheibe');
       expect(fingerprintPrefSnapshot.data()!['amount'], 35);

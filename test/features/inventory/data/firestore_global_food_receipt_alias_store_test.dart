@@ -69,7 +69,10 @@ void main() {
           ),
         );
 
-    final store = FirestoreGlobalFoodReceiptAliasStore(firestore: firestore);
+    final store = FirestoreGlobalFoodReceiptAliasStore(
+      firestore: firestore,
+      currentUserId: 'user-1',
+    );
     final documents = await store.searchCandidates(
       normalizedStoreName: 'aldi',
       lookupKey: 'aldi|milch 3 5',
@@ -99,7 +102,10 @@ void main() {
             ),
           );
 
-      final store = FirestoreGlobalFoodReceiptAliasStore(firestore: firestore);
+      final store = FirestoreGlobalFoodReceiptAliasStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
       final documents = await store.searchCandidates(
         normalizedStoreName: 'aldi',
         lookupKey: 'aldi|kaese scheiben',
@@ -121,7 +127,10 @@ void main() {
     'upsertAll increments the selection counter for a duplicate id',
     () async {
       final firestore = FakeFirebaseFirestore();
-      final store = FirestoreGlobalFoodReceiptAliasStore(firestore: firestore);
+      final store = FirestoreGlobalFoodReceiptAliasStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
 
       final firstData = _aliasData(
         id: 'alias-1',
@@ -159,4 +168,31 @@ void main() {
       expect(snapshot.data()!['updated_at'], '2026-03-01T11:00:00.000Z');
     },
   );
+
+  test('upsertAll records the creator and keeps it on updates', () async {
+    final firestore = FakeFirebaseFirestore();
+    final data = _aliasData(
+      id: 'alias-1',
+      storeName: 'Aldi',
+      normalizedStoreName: 'aldi',
+      receiptName: 'MILCH 3,5%',
+      normalizedReceiptName: 'milch 3 5',
+      globalFoodItemId: 'milk',
+    );
+
+    await FirestoreGlobalFoodReceiptAliasStore(
+      firestore: firestore,
+      currentUserId: 'creator',
+    ).upsertAll(documentsById: <String, Map<String, dynamic>>{'alias-1': data});
+    await FirestoreGlobalFoodReceiptAliasStore(
+      firestore: firestore,
+      currentUserId: 'other-user',
+    ).upsertAll(documentsById: <String, Map<String, dynamic>>{'alias-1': data});
+
+    final snapshot = await _aliasCollection(firestore: firestore)
+        .doc('alias-1')
+        .get();
+    expect(snapshot.data()!['created_by_uid'], 'creator');
+    expect(snapshot.data()!['selection_count'], 2);
+  });
 }

@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 
 import 'package:yamt/features/inventory/data/firestore_global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
@@ -16,13 +17,17 @@ part 'global_food_item_repository.g.dart';
 /// Global food item repository.
 @riverpod
 GlobalFoodItemRepository globalFoodItemRepository(Ref ref) {
-  final store = _resolveStore();
+  final currentUserId = ref.watch(authStateChangesProvider).asData?.value?.uid;
+  final store = _resolveStore(currentUserId);
   return FirestoreGlobalFoodItemRepository(store: store);
 }
 
-GlobalFoodItemStore _resolveStore() {
+GlobalFoodItemStore _resolveStore(String? currentUserId) {
   try {
-    return FirestoreGlobalFoodItemStore(firestore: FirebaseFirestore.instance);
+    return FirestoreGlobalFoodItemStore(
+      firestore: FirebaseFirestore.instance,
+      currentUserId: currentUserId,
+    );
   } on Object catch (error, stackTrace) {
     log(
       'Falling back to unavailable global food item store.',

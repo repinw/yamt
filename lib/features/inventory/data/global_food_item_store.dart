@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
+import 'package:yamt/features/inventory/data/global_catalog_created_by_field.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_item_patch.dart';
 
@@ -78,9 +79,12 @@ abstract interface class GlobalFoodItemStore {
 /// Defines firestore global food item store.
 class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
   /// The firestore global food item store.
-  const new({required this._firestore});
+  const new({required this._firestore, required this._currentUserId});
 
   final FirebaseFirestore _firestore;
+
+  /// The author of new items.
+  final String? _currentUserId;
 
   FirestoreAtomicReplaceService get _atomicReplaceService {
     return FirestoreAtomicReplaceService(firestore: _firestore);
@@ -230,7 +234,10 @@ class FirestoreGlobalFoodItemStore implements GlobalFoodItemStore {
         final nextDocument = _compactMap(entry.value);
         final snapshot = await transaction.get(reference);
         if (!snapshot.exists) {
-          transaction.set(reference, nextDocument);
+          transaction.set(reference, <String, dynamic>{
+            ...nextDocument,
+            ...globalCatalogCreatedBy(_currentUserId),
+          });
           return;
         }
 

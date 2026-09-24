@@ -59,7 +59,10 @@ void main() {
         foodFingerprint: 'milk__acme',
       );
 
-      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      final store = FirestoreGlobalFoodItemStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
       final documents = await store.searchCandidates(
         normalizedName: 'whole milk',
         foodFingerprint: 'milk__acme',
@@ -85,7 +88,10 @@ void main() {
         barcode: '4006381333931',
       );
 
-      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      final store = FirestoreGlobalFoodItemStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
       final documents = await store.searchCandidates(barcode: '4006381333931');
 
       expect(documents, hasLength(1));
@@ -106,11 +112,46 @@ void main() {
       storeName: 'Aldi',
     );
 
-    final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+    final store = FirestoreGlobalFoodItemStore(
+      firestore: firestore,
+      currentUserId: 'user-1',
+    );
     final documents = await store.searchCandidates(normalizedStoreName: 'aldi');
 
     expect(documents, hasLength(1));
     expect(documents.single.id, 'milk');
+  });
+
+  test('upsertAll records the creator only on new items', () async {
+    final firestore = FakeFirebaseFirestore();
+    final collection = _globalFoodCollection(firestore: firestore);
+    final item = <String, dynamic>{
+      'id': 'milk',
+      'name': 'Milk',
+      'food_fingerprint': 'milk__fingerprint',
+      'normalized_name': 'milk',
+      'search_tokens': const <String>['milk'],
+      'status': 'active',
+      'created_at': '2026-03-01T10:00:00.000Z',
+      'updated_at': '2026-03-01T10:00:00.000Z',
+    };
+
+    await FirestoreGlobalFoodItemStore(
+      firestore: firestore,
+      currentUserId: 'creator',
+    ).upsertAll(documentsById: <String, Map<String, dynamic>>{'milk': item});
+    await FirestoreGlobalFoodItemStore(
+      firestore: firestore,
+      currentUserId: 'other-user',
+    ).upsertAll(
+      documentsById: <String, Map<String, dynamic>>{
+        'milk': <String, dynamic>{...item, 'brand': 'Acme'},
+      },
+    );
+
+    final snapshot = await collection.doc('milk').get();
+    expect(snapshot.data()!['created_by_uid'], 'creator');
+    expect(snapshot.data()!['brand'], 'Acme');
   });
 
   test(
@@ -129,7 +170,10 @@ void main() {
         'updated_at': '2026-03-01T10:00:00.000Z',
       });
 
-      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      final store = FirestoreGlobalFoodItemStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
       await store.upsertAll(
         documentsById: <String, Map<String, dynamic>>{
           'milk': <String, dynamic>{
@@ -173,7 +217,10 @@ void main() {
         'updated_at': '2026-03-01T10:00:00.000Z',
       });
 
-      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      final store = FirestoreGlobalFoodItemStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
       await store.upsertAll(
         documentsById: <String, Map<String, dynamic>>{
           'milk': <String, dynamic>{
@@ -243,7 +290,10 @@ void main() {
         'updated_at': '2026-03-01T10:00:00.000Z',
       });
 
-      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      final store = FirestoreGlobalFoodItemStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
       await store.upsertAll(
         documentsById: <String, Map<String, dynamic>>{
           'milk': <String, dynamic>{
@@ -286,7 +336,10 @@ void main() {
         'updated_at': '2026-03-01T10:00:00.000Z',
       });
 
-      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      final store = FirestoreGlobalFoodItemStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
       await store.upsertAll(
         documentsById: <String, Map<String, dynamic>>{
           'milk': <String, dynamic>{
@@ -342,7 +395,10 @@ void main() {
         'updated_at': '2026-03-01T10:00:00.000Z',
       });
 
-      final store = FirestoreGlobalFoodItemStore(firestore: firestore);
+      final store = FirestoreGlobalFoodItemStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      );
       await store.upsertAll(
         documentsById: <String, Map<String, dynamic>>{
           'milk': <String, dynamic>{

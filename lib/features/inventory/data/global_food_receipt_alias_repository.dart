@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 
 import 'package:yamt/features/inventory/data/firestore_global_food_receipt_alias_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
@@ -16,14 +17,16 @@ part 'global_food_receipt_alias_repository.g.dart';
 /// The global food receipt alias repository provider.
 @Riverpod(keepAlive: true)
 GlobalFoodReceiptAliasRepository globalFoodReceiptAliasRepository(Ref ref) {
-  final store = _resolveStore();
+  final currentUserId = ref.watch(authStateChangesProvider).asData?.value?.uid;
+  final store = _resolveStore(currentUserId);
   return FirestoreGlobalFoodReceiptAliasRepository(store: store);
 }
 
-GlobalFoodReceiptAliasStore _resolveStore() {
+GlobalFoodReceiptAliasStore _resolveStore(String? currentUserId) {
   try {
     return FirestoreGlobalFoodReceiptAliasStore(
       firestore: FirebaseFirestore.instance,
+      currentUserId: currentUserId,
     );
   } on Object catch (error, stackTrace) {
     log(

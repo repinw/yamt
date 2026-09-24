@@ -62,4 +62,4 @@ final class GlobalFoodReceiptAliasRepositoryProvider
 }
 
 String _$globalFoodReceiptAliasRepositoryHash() =>
-    r'0e0b8b5174a60a9d4e07ccbcd8e0fbeb9e137c56';
+    r'b5e53ee189fe0c0484876e51cfb189be29b40316';

@@ -59,4 +59,4 @@ final class GlobalFoodItemRepositoryProvider
 }
 
 String _$globalFoodItemRepositoryHash() =>
-    r'1fffcaa946f787a0a666f6980112f6fc424d1cc7';
+    r'aaf98359b98cd7966bcbcbd6d7b9cb0fb9d4b281';

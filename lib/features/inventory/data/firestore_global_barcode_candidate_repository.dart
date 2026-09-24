@@ -5,6 +5,7 @@ import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/utils/json_parsing_utils.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository_contract.dart';
+import 'package:yamt/features/inventory/data/global_catalog_created_by_field.dart';
 import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
@@ -182,7 +183,10 @@ class FirestoreGlobalBarcodeCandidateRepository
           'updated_at': selectedAtText,
         });
       } else {
-        transaction.set(candidateRef, candidate.toJson());
+        transaction.set(candidateRef, <String, dynamic>{
+          ...candidate.toJson(),
+          globalCatalogCreatedByField: currentUserId,
+        });
       }
       transaction.set(voteRef, <String, dynamic>{
         'barcode': normalizedBarcode,

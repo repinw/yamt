@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/inventory/data/global_catalog_created_by_field.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/'
@@ -200,6 +201,11 @@ class FirestoreGlobalFoodServingSuggestionRepository
             'unique_user_count': nextUniqueUserCount,
             'created_at': currentData['created_at'] ?? nowText,
             'updated_at': nowText,
+            ...globalCatalogCreatedBy(
+              suggestionSnapshot.exists
+                  ? currentData[globalCatalogCreatedByField]
+                  : currentUserId,
+            ),
           })
           ..set(voteRef, <String, dynamic>{
             'item_key': sharedKey,

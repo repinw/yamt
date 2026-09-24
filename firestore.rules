@@ -294,6 +294,7 @@ service cloud.firestore {
           'search_tokens',
           'status',
           'merged_into_id',
+          'created_by_uid',
           'created_at',
           'updated_at',
         ])
@@ -333,6 +334,7 @@ service cloud.firestore {
         && isOptionalString(data, 'normalized_brand')
         && isOptionalString(data, 'normalized_store_name')
         && isOptionalString(data, 'merged_into_id')
+        && isOptionalString(data, 'created_by_uid')
         && isValidOptionalGlobalFoodNutrition(data, 'nutrition');
     }
 
@@ -407,6 +409,7 @@ service cloud.firestore {
           'unique_user_count',
           'completeness_score',
           'global_food_item',
+          'created_by_uid',
           'created_at',
           'updated_at',
         ])
@@ -440,6 +443,7 @@ service cloud.firestore {
           data.global_food_item_id
         )
         && data.global_food_item.barcode == data.barcode
+        && isOptionalString(data, 'created_by_uid')
         && data.created_at is string
         && data.updated_at is string;
     }
@@ -530,6 +534,7 @@ service cloud.firestore {
           'lookup_key',
           'selection_count',
           'global_food_item',
+          'created_by_uid',
           'created_at',
           'updated_at',
         ])
@@ -559,6 +564,7 @@ service cloud.firestore {
         && data.receipt_search_tokens is list
         && data.lookup_key is string
         && data.lookup_key.size() > 0
+        && isOptionalString(data, 'created_by_uid')
         && data.selection_count is int
         && data.selection_count > 0
         && data.global_food_item is map
@@ -568,6 +574,17 @@ service cloud.firestore {
         )
         && data.created_at is string
         && data.updated_at is string;
+    }
+
+    // A new global catalog document records its author.
+    function isCreatedByCurrentUser(data) {
+      return data.get('created_by_uid', null) == request.auth.uid;
+    }
+
+    // An update keeps the author, also when an older document has none.
+    function keepsAuthor(next, current) {
+      return next.get('created_by_uid', null)
+        == current.get('created_by_uid', null);
     }
 
     function isAllowedServingSuggestionUnit(unit) {
@@ -585,6 +602,7 @@ service cloud.firestore {
           'label',
           'selection_count',
           'unique_user_count',
+          'created_by_uid',
           'created_at',
           'updated_at',
         ])
@@ -622,6 +640,7 @@ service cloud.firestore {
         && data.unit is string
         && isAllowedServingSuggestionUnit(data.unit)
         && isOptionalString(data, 'label')
+        && isOptionalString(data, 'created_by_uid')
         && data.selection_count is int
         && data.selection_count > 0
         && data.unique_user_count is int
@@ -721,7 +740,8 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create: if isSignedIn()
         && !exists(/databases/$(database)/documents/global_food_items/$(itemId))
-        && isValidGlobalFoodItem(request.resource.data, itemId);
+        && isValidGlobalFoodItem(request.resource.data, itemId)
+        && isCreatedByCurrentUser(request.resource.data);
       allow update: if isSignedIn()
         && canPatchGlobalFoodItem(
           request.resource.data,
@@ -737,7 +757,8 @@ service cloud.firestore {
         && !exists(
           /databases/$(database)/documents/global_barcode_candidates/$(candidateId)
         )
-        && isValidGlobalBarcodeCandidate(request.resource.data, candidateId);
+        && isValidGlobalBarcodeCandidate(request.resource.data, candidateId)
+        && isCreatedByCurrentUser(request.resource.data);
       allow update: if isSignedIn()
         && isBarcodeCandidateVoteUpdate(
           candidateId,
@@ -749,8 +770,12 @@ service cloud.firestore {
 
     match /global_food_item_receipt_aliases/{aliasId} {
       allow read: if isSignedIn();
-      allow create, update: if isSignedIn()
-        && isValidGlobalFoodReceiptAlias(request.resource.data, aliasId);
+      allow create: if isSignedIn()
+        && isValidGlobalFoodReceiptAlias(request.resource.data, aliasId)
+        && isCreatedByCurrentUser(request.resource.data);
+      allow update: if isSignedIn()
+        && isValidGlobalFoodReceiptAlias(request.resource.data, aliasId)
+        && keepsAuthor(request.resource.data, resource.data);
       allow delete: if false;
     }
 
@@ -763,7 +788,8 @@ service cloud.firestore {
         && isValidGlobalFoodServingSuggestion(
           request.resource.data,
           suggestionId
-        );
+        )
+        && isCreatedByCurrentUser(request.resource.data);
       allow update: if isSignedIn()
         && isValidGlobalFoodServingSuggestion(
           request.resource.data,
@@ -780,6 +806,7 @@ service cloud.firestore {
         && request.resource.data.created_at == resource.data.created_at
         && request.resource.data.get('label', null)
           == resource.data.get('label', null)
+        && keepsAuthor(request.resource.data, resource.data)
         && request.resource.data.selection_count
           == resource.data.selection_count + 1
         && request.resource.data.unique_user_count >= resource.data.unique_user_count

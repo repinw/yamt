@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/features/inventory/data/global_catalog_created_by_field.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 
 const String _storeLogName = 'FirestoreGlobalFoodReceiptAliasStore';
@@ -41,9 +42,12 @@ abstract interface class GlobalFoodReceiptAliasStore {
 class FirestoreGlobalFoodReceiptAliasStore
     implements GlobalFoodReceiptAliasStore {
   /// The firestore global food receipt alias store.
-  const new({required this._firestore});
+  const new({required this._firestore, required this._currentUserId});
 
   final FirebaseFirestore _firestore;
+
+  /// The author of new aliases.
+  final String? _currentUserId;
 
   @override
   Future<List<GlobalFoodReceiptAliasDocument>> searchCandidates({
@@ -146,7 +150,10 @@ class FirestoreGlobalFoodReceiptAliasStore
           final reference = _collection().doc(entry.key);
           final snapshot = snapshotsById[entry.key]!;
           if (!snapshot.exists) {
-            transaction.set(reference, entry.value);
+            transaction.set(reference, <String, dynamic>{
+              ...entry.value,
+              ...globalCatalogCreatedBy(_currentUserId),
+            });
             continue;
           }
 
@@ -158,7 +165,10 @@ class FirestoreGlobalFoodReceiptAliasStore
           final merged = Map<String, dynamic>.from(entry.value)
             ..['created_at'] =
                 currentData['created_at'] ?? entry.value['created_at']
-            ..['selection_count'] = currentCount + nextCount;
+            ..['selection_count'] = currentCount + nextCount
+            ..addAll(
+              globalCatalogCreatedBy(currentData[globalCatalogCreatedByField]),
+            );
           transaction.set(reference, merged);
         }
       });
