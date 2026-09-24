@@ -877,8 +877,6 @@
   "caloriesWeeklyCheckInDialogWindowLabel": "Window",
   "caloriesWeeklyCheckInDialogTrendLabel": "Weight trend",
   "caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel": "Measured total TDEE",
-  "caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel": "Measured base TDEE",
-  "caloriesWeeklyCheckInDialogCreditedActivityAverageLabel": "Credited activity avg",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "New target",
   "caloriesWeeklyCheckInDialogLowConfidence": "Low confidence: only start and end weights were available.",
   "caloriesWeeklyCheckInBlockedUnstableWeight": "Weight data was too noisy this week for a reliable TDEE update. Add steadier weigh-ins and try again.",

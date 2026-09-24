@@ -55,16 +55,13 @@ class CalorieWeeklyCheckInCalculation {
     double? measuredTdeeKcal,
     double? calculatedTdeeKcal,
     double? newGoalKcal,
-    this.activityDeltaKcal = 0,
     double? dynamicGoalTodayKcal,
     double? measuredTotalTdeeKcal,
     double? measuredBaseTdeeKcal,
     double? calculatedBaseTdeeKcal,
     double? newBaseGoalKcal,
-    double? averageCreditedActivityKcal,
     double? measuredTrueTdeeKcal,
     double? calculatedTrueTdeeKcal,
-    double? lastWeekAverageActiveKcal,
   }) : measuredTdeeKcal =
            measuredTdeeKcal ??
            measuredTotalTdeeKcal ??
@@ -78,9 +75,7 @@ class CalorieWeeklyCheckInCalculation {
            0,
        newGoalKcal = newGoalKcal ?? newBaseGoalKcal ?? 0,
        dynamicGoalTodayKcal =
-           dynamicGoalTodayKcal ?? newGoalKcal ?? newBaseGoalKcal ?? 0,
-       averageCreditedActivityKcal =
-           averageCreditedActivityKcal ?? lastWeekAverageActiveKcal ?? 0;
+           dynamicGoalTodayKcal ?? newGoalKcal ?? newBaseGoalKcal ?? 0;
 
   /// The trend weight change per day.
   final double trendWeightChangePerDay;
@@ -97,14 +92,8 @@ class CalorieWeeklyCheckInCalculation {
   /// The new daily goal kcal after target mode and movement cap.
   final double newGoalKcal;
 
-  /// The activity delta kcal.
-  final double activityDeltaKcal;
-
   /// The dynamic goal today kcal.
   final double dynamicGoalTodayKcal;
-
-  /// Average corrected activity kcal in the learning window (legacy).
-  final double averageCreditedActivityKcal;
 
   /// Backwards-compatible label for measured total TDEE.
   double get measuredTotalTdeeKcal => measuredTdeeKcal;
@@ -123,9 +112,6 @@ class CalorieWeeklyCheckInCalculation {
 
   /// Backwards-compatible label for Base-TDEE while UI copy is updated.
   double get calculatedTrueTdeeKcal => calculatedTdeeKcal;
-
-  /// Backwards-compatible label for average credited activity.
-  double get lastWeekAverageActiveKcal => averageCreditedActivityKcal;
 }
 
 /// Defines measured TDEE calculation before EMA smoothing.
@@ -138,14 +124,12 @@ class CalorieMeasuredTdeeCalculation {
     double? measuredTotalTdeeKcal,
     double? measuredBaseTdeeKcal,
     double? measuredTrueTdeeKcal,
-    double? averageCreditedActivityKcal,
   }) : measuredTdeeKcal =
            measuredTdeeKcal ??
            measuredTotalTdeeKcal ??
            measuredBaseTdeeKcal ??
            measuredTrueTdeeKcal ??
-           0,
-       averageCreditedActivityKcal = averageCreditedActivityKcal ?? 0;
+           0;
 
   /// The trend weight change per day.
   final double trendWeightChangePerDay;
@@ -155,9 +139,6 @@ class CalorieMeasuredTdeeCalculation {
 
   /// The measured true TDEE kcal.
   final double measuredTdeeKcal;
-
-  /// Average corrected activity kcal in the learning window.
-  final double averageCreditedActivityKcal;
 
   /// Backwards-compatible label for measured total TDEE.
   double get measuredTotalTdeeKcal => measuredTdeeKcal;
@@ -214,8 +195,6 @@ abstract final class CalorieWeeklyCheckInCalculator {
     required double goalSpeedKgPerWeek,
     required List<double> intakeKcalByDay,
     required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
-    List<int> lastWeekActiveKcalByDay = const <int>[],
-    List<int>? learningActiveKcalByDay,
   }) {
     assert(
       intakeKcalByDay.length >= weeklyCheckInWindowLengthDays - 1 &&
@@ -287,7 +266,6 @@ abstract final class CalorieWeeklyCheckInCalculator {
       calculatedTdeeKcal: calculatedTdeeKcal,
       newGoalKcal: newGoalKcal,
       dynamicGoalTodayKcal: dynamicGoalTodayKcal,
-      averageCreditedActivityKcal: 0,
     );
   }
 
@@ -313,7 +291,6 @@ abstract final class CalorieWeeklyCheckInCalculator {
   static CalorieMeasuredTdeeCalculation calculateMeasuredTdee({
     required List<double> intakeKcalByDay,
     required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
-    List<int> rawActivityKcalByDay = const <int>[],
   }) {
     // Raw weigh-ins with a robust slope: pre-smoothing the weights delays
     // the learned TDEE without making it calmer.
@@ -328,7 +305,6 @@ abstract final class CalorieWeeklyCheckInCalculator {
       trendWeightChangePerDay: trendWeightChangePerDay,
       averageIntakeKcal: averageIntakeKcal,
       measuredTdeeKcal: measuredTdeeKcal,
-      averageCreditedActivityKcal: 0,
     );
   }
 
@@ -362,7 +338,6 @@ abstract final class CalorieWeeklyCheckInCalculator {
     required bool isGaining,
     required List<double> intakeKcalByDay,
     required List<CalorieWeeklyCheckInWeightPoint> weightPoints,
-    List<int> rawActivityKcalByDay = const <int>[],
     double maxGoalAdjustmentKcal = _maxWeeklyGoalAdjustmentKcal,
   }) {
     final measured = calculateMeasuredTdee(

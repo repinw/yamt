@@ -171,7 +171,6 @@ _DebugWeeklyRowResult _weeklyCheckInRow({
     days: dates.windowDays,
     calorieEntriesByDay: entriesByDay,
     settings: settings,
-    activeKcalByDay: const <String, int>{},
     weightByDay: weightData.weightByDay,
   );
   final blockedWindowReason = windowIntake.blockedReason;

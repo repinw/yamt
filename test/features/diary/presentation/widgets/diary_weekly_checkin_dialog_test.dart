@@ -34,8 +34,6 @@ void main() {
       findsNothing,
     );
     expect(find.text('Measured total TDEE'), findsOneWidget);
-    expect(find.text('Measured base TDEE'), findsOneWidget);
-    expect(find.text('Credited activity avg'), findsOneWidget);
     expect(find.text('New target'), findsOneWidget);
 
     await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.laterButton));
@@ -83,24 +81,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(results, [DiaryWeeklyCheckInDialogAction.trackMissingWeight]);
-  });
-
-  testWidgets('ready dialog hides health activity metrics without health', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _App(
-        checkInData: _checkInData(usesHealthActivity: false),
-        onResult: (_) {},
-      ),
-    );
-
-    await _openDialog(tester);
-
-    expect(find.text('Measured total TDEE'), findsOneWidget);
-    expect(find.text('New target'), findsOneWidget);
-    expect(find.text('Measured base TDEE'), findsNothing);
-    expect(find.text('Credited activity avg'), findsNothing);
   });
 
   testWidgets('reached goal only offers a new goal and cannot be dismissed', (
@@ -188,7 +168,6 @@ DiaryWeeklyCheckInData _checkInData({
   CalorieWeeklyCheckInBlockedReason? blockedReason,
   List<DateTime> missingWeightDays = const <DateTime>[],
   bool lowConfidence = false,
-  bool usesHealthActivity = true,
 }) {
   final pending = PendingCalorieGoalWeeklyCheckIn(
     windowStartDate: DateTime(2026, 4),
@@ -208,8 +187,6 @@ DiaryWeeklyCheckInData _checkInData({
             measuredBaseTdeeKcal: 2200,
             calculatedBaseTdeeKcal: 2450,
             newBaseGoalKcal: 2200,
-            averageCreditedActivityKcal: 300,
-            activityDeltaKcal: 25,
             dynamicGoalTodayKcal: 2225,
           )
         : null,
@@ -219,6 +196,5 @@ DiaryWeeklyCheckInData _checkInData({
     freshness: CalorieLearnedTdeeFreshness.fresh,
     latestLearnedTdeeAt: null,
     lowConfidence: lowConfidence,
-    usesHealthActivity: usesHealthActivity,
   );
 }

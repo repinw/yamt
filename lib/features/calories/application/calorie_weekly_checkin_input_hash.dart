@@ -25,7 +25,6 @@ String weeklyCheckInInputHash({
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
   required CalorieGoalSettings settings,
   required CalorieWeeklyCheckInWeightData weightData,
-  required Map<String, int> activeKcalByDay,
 }) {
   final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
     settings: settings,
@@ -71,9 +70,7 @@ String weeklyCheckInInputHash({
         ..write(':count=')
         ..write(entries.length)
         ..write(':kcal=')
-        ..write(_hashDouble(sumCalorieEntryKcal(entries)))
-        ..write(':active=')
-        ..write(activeKcalByDay[dayKey] ?? 0);
+        ..write(_hashDouble(sumCalorieEntryKcal(entries)));
     }
   }
 

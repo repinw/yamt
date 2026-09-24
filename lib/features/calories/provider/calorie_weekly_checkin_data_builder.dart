@@ -30,8 +30,6 @@ import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dar
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
-import 'package:yamt/features/health/data/diary_health_service.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -58,7 +56,6 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(Ref ref) async {
     healthConnectionControllerProvider.future,
   );
   final healthWeightService = ref.watch(healthWeightServiceProvider);
-  final diaryHealthService = ref.watch(diaryHealthServiceProvider);
 
   final settings = await settingsFuture;
   if (!ref.mounted) {
@@ -102,7 +99,6 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(Ref ref) async {
     manualEntriesFuture: manualEntriesFuture,
     healthStatusFuture: healthStatusFuture,
     healthWeightService: healthWeightService,
-    diaryHealthService: diaryHealthService,
     settings: settings,
     pendingWeeklyCheckIn: cacheWeeklyCheckIn,
     today: today,
@@ -120,7 +116,6 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(Ref ref) async {
     freshness: freshness,
     latestLearnedTdeeAt: settings.latestLearnedTdeeChangedAt,
     lowConfidence: dayData.lowConfidence,
-    usesHealthActivity: dayData.usesHealthActivity,
     inputHash: dayData.inputHash,
   );
 }
@@ -150,7 +145,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
   required Future<List<ManualHealthWeightEntry>> manualEntriesFuture,
   required Future<HealthConnectionStatus> healthStatusFuture,
   required HealthWeightService healthWeightService,
-  required DiaryHealthService diaryHealthService,
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   required DateTime today,
@@ -174,10 +168,7 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
   final healthData = await loadCalorieWeeklyCheckInHealthData(
     healthStatusFuture: healthStatusFuture,
     healthWeightService: healthWeightService,
-    diaryHealthService: diaryHealthService,
-    settings: settings,
     dates: dates,
-    today: today,
     isMounted: () => ref.mounted,
   );
   final weightSeries = WeightTrendCalculator.fromSources(
@@ -193,7 +184,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     days: dates.windowDays,
     calorieEntriesByDay: calorieEntriesByDay,
     settings: settings,
-    activeKcalByDay: healthData.activeKcalByDay,
     weightByDay: weightData.weightByDay,
   );
   if (windowIntakeData.blockedReason != null) {
@@ -204,7 +194,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
       missingIntakeDays: windowIntakeData.missingIntakeDays,
       missingWeightDays: const <DateTime>[],
       lowConfidence: false,
-      usesHealthActivity: healthData.usesHealthActivity,
       inputHash: null,
     );
   }
@@ -222,7 +211,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
       missingIntakeDays: learningIntakeData.missingIntakeDays,
       missingWeightDays: const <DateTime>[],
       lowConfidence: false,
-      usesHealthActivity: healthData.usesHealthActivity,
       inputHash: null,
     );
   }
@@ -232,7 +220,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     weightData: weightData,
     windowDays: windowIntakeData.days,
     missingIntakeDays: windowIntakeData.missingIntakeDays,
-    usesHealthActivity: healthData.usesHealthActivity,
   );
   if (weightBlockedData != null) {
     return weightBlockedData;
@@ -244,7 +231,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     dates: dates,
     calorieEntriesByDay: calorieEntriesByDay,
     dailyWeightByDay: weightSeries.rawByDay,
-    activeKcalByDay: healthData.activeKcalByDay,
   );
   final calculatorProfile = CalorieWeeklyWindowResolver.calculatorProfileForDay(
     settings: settings,
@@ -256,14 +242,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     goalMode: calculatorProfile?.goalMode ?? CalorieGoalMode.maintain,
     goalSpeedKgPerWeek: calculatorProfile?.goalSpeedKgPerWeek ?? 0,
     intakeKcalByDay: learningIntakeData.intakeKcalByDay,
-    lastWeekActiveKcalByDay: windowIntakeData.days
-        .where((day) => !day.isPauseDay)
-        .map((day) => day.activeKcal)
-        .toList(growable: false),
-    learningActiveKcalByDay: activityKcalByDay(
-      days: dates.learningDays,
-      activeKcalByDay: healthData.activeKcalByDay,
-    ),
     weightPoints: weightData.weightPoints,
   );
   final inputHash = weeklyCheckInInputHash(
@@ -273,7 +251,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     calorieEntriesByDay: calorieEntriesByDay,
     settings: settings,
     weightData: weightData,
-    activeKcalByDay: healthData.activeKcalByDay,
   );
   if (!kReleaseMode) {
     final daysLabel = windowIntakeData.days
@@ -282,7 +259,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
               ':logged=${day.loggedIntakeKcal.toStringAsFixed(2)}'
               ',resolved='
               '${day.resolvedIntakeKcal?.toStringAsFixed(2) ?? 'null'}'
-              ',active=${day.activeKcal}'
               ',weight=${day.weightKg?.toStringAsFixed(2) ?? 'null'}'
               ',skipped=${day.isSkippedIntakeDay}';
         })
@@ -307,7 +283,6 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     missingIntakeDays: windowIntakeData.missingIntakeDays,
     missingWeightDays: const <DateTime>[],
     lowConfidence: weightData.weightPoints.length <= 2,
-    usesHealthActivity: healthData.usesHealthActivity,
     inputHash: inputHash,
   );
 }

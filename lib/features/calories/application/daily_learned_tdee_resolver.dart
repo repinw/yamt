@@ -140,7 +140,6 @@ abstract final class DailyLearnedTdeeResolver {
     required CalorieGoalSettings settings,
     required Map<String, List<CalorieEntry>> entriesByDay,
     required Map<String, double> dailyWeightByDay,
-    required Map<String, int> activeKcalByDay,
   }) {
     final savedGoal = savedLearnedGoalForDay(
       settings: settings,
@@ -219,7 +218,6 @@ abstract final class DailyLearnedTdeeResolver {
         measured: calculation.measured,
         calculatedBaseTdeeKcal: calculation.calculatedTdeeKcal,
         newBaseGoalKcal: calculation.newGoalKcal,
-        averageCreditedActivityKcal: 0,
       );
       previousGoalKcal = calculation.newGoalKcal;
       previousLearnedTdeeKcal = calculation.calculatedTdeeKcal;
@@ -252,7 +250,6 @@ abstract final class DailyLearnedTdeeResolver {
       ),
       calculatedBaseTdeeKcal: snapshot.calculatedTdeeKcal,
       newBaseGoalKcal: snapshot.baseGoalKcal,
-      averageCreditedActivityKcal: 0,
     );
   }
 
@@ -264,24 +261,6 @@ abstract final class DailyLearnedTdeeResolver {
   /// Finds latest day in a collection.
   static DateTime latestDay(Iterable<DateTime> days) {
     return days.reduce((current, day) => day.isAfter(current) ? day : current);
-  }
-
-  /// Filters unique windows from context list.
-  static List<WeeklyLearnedWindow> uniqueWindows(
-    List<DailyLearnedTdeeDayContext> contexts,
-  ) {
-    final windowsByKey = <String, WeeklyLearnedWindow>{};
-    for (final context in contexts) {
-      for (final window in context.windows) {
-        windowsByKey[_windowKey(window)] = window;
-      }
-    }
-    return List<WeeklyLearnedWindow>.unmodifiable(windowsByKey.values);
-  }
-
-  static String _windowKey(WeeklyLearnedWindow window) {
-    return '${diaryDayKey(window.windowStartDate)}:'
-        '${diaryDayKey(window.windowEndDate)}';
   }
 
   static bool _hasEntriesForAnyDay({
@@ -552,16 +531,6 @@ abstract final class DailyLearnedTdeeResolver {
       return result.tdeeKcal;
     }
     return fallbackGoalKcal;
-  }
-
-  /// Extracts activity values for days.
-  static List<int> activityKcalByDay({
-    required List<DateTime> days,
-    required Map<String, int> activeKcalByDay,
-  }) {
-    return days
-        .map((day) => activeKcalByDay[diaryDayKey(day)] ?? 0)
-        .toList(growable: false);
   }
 
   /// Resolves the goal mode for a day.

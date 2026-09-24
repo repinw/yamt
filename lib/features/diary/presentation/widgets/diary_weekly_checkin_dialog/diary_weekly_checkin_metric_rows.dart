@@ -33,7 +33,6 @@ class DiaryWeeklyCheckInCalculationRows extends StatelessWidget {
   const new({
     required this.calculation,
     required this.lowConfidence,
-    required this.usesHealthActivity,
     super.key,
   });
 
@@ -43,9 +42,6 @@ class DiaryWeeklyCheckInCalculationRows extends StatelessWidget {
   /// Whether calculation is low confidence.
   final bool lowConfidence;
 
-  /// Whether health activity was available.
-  final bool usesHealthActivity;
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -54,12 +50,6 @@ class DiaryWeeklyCheckInCalculationRows extends StatelessWidget {
         _TrendRow(calculation: calculation),
         const SizedBox(height: AppSpacing.sm),
         _MeasuredTotalTdeeRow(calculation: calculation),
-        if (usesHealthActivity) ...<Widget>[
-          const SizedBox(height: AppSpacing.sm),
-          _MeasuredBaseTdeeRow(calculation: calculation),
-          const SizedBox(height: AppSpacing.sm),
-          _CreditedActivityRow(calculation: calculation),
-        ],
         const SizedBox(height: AppSpacing.sm),
         _NewTargetRow(calculation: calculation),
         if (lowConfidence) ...const <Widget>[
@@ -103,42 +93,6 @@ class _MeasuredTotalTdeeRow extends StatelessWidget {
       label: l10n.caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel,
       value:
           '${_formatKcal(context, calculation.measuredTotalTdeeKcal)} '
-          '${l10n.caloriesUnitKcal}',
-    );
-  }
-}
-
-class _MeasuredBaseTdeeRow extends StatelessWidget {
-  const new({required this.calculation});
-
-  final CalorieWeeklyCheckInCalculation calculation;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return _MetricRow(
-      label: l10n.caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel,
-      value:
-          '${_formatKcal(context, calculation.measuredBaseTdeeKcal)} '
-          '${l10n.caloriesUnitKcal}',
-    );
-  }
-}
-
-class _CreditedActivityRow extends StatelessWidget {
-  const new({required this.calculation});
-
-  final CalorieWeeklyCheckInCalculation calculation;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return _MetricRow(
-      label: l10n.caloriesWeeklyCheckInDialogCreditedActivityAverageLabel,
-      value:
-          '${_formatKcal(context, calculation.averageCreditedActivityKcal)} '
           '${l10n.caloriesUnitKcal}',
     );
   }

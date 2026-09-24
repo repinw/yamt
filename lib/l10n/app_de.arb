@@ -867,8 +867,6 @@
   "caloriesWeeklyCheckInDialogWindowLabel": "Zeitraum",
   "caloriesWeeklyCheckInDialogTrendLabel": "Gewichtstrend",
   "caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel": "Gemessener Gesamt-TDEE",
-  "caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel": "Gemessener Basis-TDEE",
-  "caloriesWeeklyCheckInDialogCreditedActivityAverageLabel": "Angerechnete Aktivität Ø",
   "caloriesWeeklyCheckInDialogNewTargetLabel": "Neues Ziel",
   "caloriesWeeklyCheckInDialogLowConfidence": "Niedrige Sicherheit: Es lagen nur Start- und Endgewicht vor.",
   "caloriesWeeklyCheckInBlockedUnstableWeight": "Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.",

@@ -17,7 +17,6 @@ class CalorieWeeklyCheckInDayData {
     required this.missingIntakeDays,
     required this.missingWeightDays,
     required this.lowConfidence,
-    required this.usesHealthActivity,
     required this.inputHash,
   });
 
@@ -27,7 +26,6 @@ class CalorieWeeklyCheckInDayData {
   final List<DateTime> missingIntakeDays;
   final List<DateTime> missingWeightDays;
   final bool lowConfidence;
-  final bool usesHealthActivity;
   final String? inputHash;
 }
 
@@ -73,15 +71,9 @@ class CalorieWeeklyCheckInWindowDates {
 }
 
 class CalorieWeeklyCheckInHealthData {
-  const new({
-    required this.activeKcalByDay,
-    required this.healthWeightSamples,
-    required this.usesHealthActivity,
-  });
+  const new({required this.healthWeightSamples});
 
-  final Map<String, int> activeKcalByDay;
   final List<HealthWeightSample> healthWeightSamples;
-  final bool usesHealthActivity;
 }
 
 class CalorieWeeklyLearningSeed {

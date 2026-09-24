@@ -97,7 +97,6 @@ CalorieWeeklyCheckInDayData? validateWeeklyCheckInWeightData({
   required CalorieWeeklyCheckInWeightData weightData,
   required List<CalorieWeeklyCheckInWindowDay> windowDays,
   required List<DateTime> missingIntakeDays,
-  required bool usesHealthActivity,
 }) {
   final missingWeightDays = <DateTime>[];
   final hasLearningStartWeight =
@@ -116,7 +115,6 @@ CalorieWeeklyCheckInDayData? validateWeeklyCheckInWeightData({
       missingIntakeDays: missingIntakeDays,
       missingWeightDays: missingWeightDays,
       lowConfidence: false,
-      usesHealthActivity: usesHealthActivity,
       inputHash: null,
     );
   }
@@ -129,7 +127,6 @@ CalorieWeeklyCheckInDayData? validateWeeklyCheckInWeightData({
       missingIntakeDays: missingIntakeDays,
       missingWeightDays: missingWeightDays,
       lowConfidence: false,
-      usesHealthActivity: usesHealthActivity,
       inputHash: null,
     );
   }

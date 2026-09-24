@@ -35,7 +35,6 @@ class DiaryWeeklyCheckInDialogContent extends StatelessWidget {
             DiaryWeeklyCheckInCalculationRows(
               calculation: calculation,
               lowConfidence: checkInData.lowConfidence,
-              usesHealthActivity: checkInData.usesHealthActivity,
             ),
           ],
           if (checkInData.isBlocked) ...<Widget>[

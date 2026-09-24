@@ -3,7 +3,6 @@ import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_health_loader.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -19,46 +18,32 @@ const _readyStatus = HealthConnectionStatus(
 );
 
 void main() {
-  test(
-    'loads health weights and skips activity queries for weekly check-in',
-    () async {
-      final start = DateTime(2026, 4, 8);
-      final secondDay = nextDiaryDay(start);
-      final today = DateTime(2026, 4, 15);
-      final dates = _dates(start: start, secondDay: secondDay);
-      final diaryHealthService = FakeDiaryHealthService(const {});
-      final healthWeightService = FakeHealthWeightService([
-        HealthWeightSample(recordedAt: addDiaryDays(start, -1), weightKg: 85),
-        HealthWeightSample(
-          recordedAt: start.add(const Duration(hours: 8)),
-          weightKg: 80,
-        ),
-        HealthWeightSample(
-          recordedAt: start.add(const Duration(hours: 20)),
-          weightKg: 82,
-        ),
-      ]);
+  test('loads health weights for weekly check-in', () async {
+    final start = DateTime(2026, 4, 8);
+    final secondDay = nextDiaryDay(start);
+    final dates = _dates(start: start, secondDay: secondDay);
+    final healthWeightService = FakeHealthWeightService([
+      HealthWeightSample(recordedAt: addDiaryDays(start, -1), weightKg: 85),
+      HealthWeightSample(
+        recordedAt: start.add(const Duration(hours: 8)),
+        weightKg: 80,
+      ),
+      HealthWeightSample(
+        recordedAt: start.add(const Duration(hours: 20)),
+        weightKg: 82,
+      ),
+    ]);
 
-      final data = await loadCalorieWeeklyCheckInHealthData(
-        healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
-        healthWeightService: healthWeightService,
-        diaryHealthService: diaryHealthService,
-        settings: _settings(start),
-        dates: dates,
-        today: today,
-        isMounted: () => true,
-      );
+    final data = await loadCalorieWeeklyCheckInHealthData(
+      healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
+      healthWeightService: healthWeightService,
+      dates: dates,
+      isMounted: () => true,
+    );
 
-      expect(data.usesHealthActivity, isFalse);
-      expect(data.activeKcalByDay[diaryDayKey(start)], 0);
-      expect(data.activeKcalByDay[diaryDayKey(secondDay)], 0);
-      // Samples before the learning start are not loaded.
-      expect(data.healthWeightSamples.map((sample) => sample.weightKg), [
-        80,
-        82,
-      ]);
-    },
-  );
+    // Samples before the learning start are not loaded.
+    expect(data.healthWeightSamples.map((sample) => sample.weightKg), [80, 82]);
+  });
 
   test('returns empty health data when access is unavailable', () async {
     final start = DateTime(2026, 4, 8);
@@ -68,18 +53,10 @@ void main() {
         const HealthConnectionStatus.unsupported(),
       ),
       healthWeightService: FakeHealthWeightService(const []),
-      diaryHealthService: FakeDiaryHealthService(const {}),
-      settings: _settings(start),
       dates: _dates(start: start, secondDay: secondDay),
-      today: DateTime(2026, 4, 15),
       isMounted: () => true,
     );
 
-    expect(data.usesHealthActivity, isFalse);
-    expect(data.activeKcalByDay, {
-      diaryDayKey(start): 0,
-      diaryDayKey(secondDay): 0,
-    });
     expect(data.healthWeightSamples, isEmpty);
   });
 
@@ -92,26 +69,12 @@ void main() {
       () => loadCalorieWeeklyCheckInHealthData(
         healthStatusFuture: Future<HealthConnectionStatus>.value(_readyStatus),
         healthWeightService: healthWeightService,
-        diaryHealthService: FakeDiaryHealthService(const {}),
-        settings: _settings(start),
         dates: _dates(start: start, secondDay: secondDay),
-        today: DateTime(2026, 4, 15),
         isMounted: () => false,
       ),
       throwsA(isA<StateError>()),
     );
   });
-}
-
-CalorieGoalSettings _settings(
-  DateTime start, {
-  DateTime? activityTrackingStartDate,
-}) {
-  return CalorieGoalSettings.single(
-    dailyKcalGoal: 2000,
-    calculatorProfile: null,
-    effectiveDate: start,
-  ).copyWith(activityTrackingStartDate: activityTrackingStartDate ?? start);
 }
 
 CalorieWeeklyCheckInWindowDates _dates({

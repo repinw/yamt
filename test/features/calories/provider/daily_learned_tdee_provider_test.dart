@@ -22,7 +22,6 @@ import 'package:yamt/features/health/data/health_connection_service_provider.dar
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
 import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -349,91 +348,6 @@ void main() {
     expect(result.newGoalKcal, closeTo(2479.49, 0.01));
   });
 
-  test('uses aggregate activity kcal for credited activity average', () async {
-    final startDay = DateTime(2026, 4);
-    final today = startDay.add(
-      const Duration(days: dailyLearnedTdeeMaximumLookbackDays),
-    );
-    final latestWindowStart = startDay.add(const Duration(days: 21));
-    final diaryHealthService = FakeTrendDiaryHealthService(
-      const <String, DiaryHealthDayData>{},
-      trendDays: [
-        for (var index = 0; index < 7; index += 1)
-          DiaryHealthActivityTrendDay(
-            day: latestWindowStart.add(Duration(days: index)),
-            totalSteps: 0,
-            activeEnergyKcal: 140,
-          ),
-      ],
-    );
-    final harness = _DailyLearnedHarness(
-      settings: _learnedSettings(
-        startDay: startDay,
-        windowEndDate: startDay.add(const Duration(days: 6)),
-      ).copyWith(activityTrackingStartDate: latestWindowStart),
-      entries: _dailyEntries(
-        startDay: startDay,
-        count: dailyLearnedTdeeMaximumLookbackDays,
-        kcalForIndex: (_) => 2500,
-      ),
-      healthWeights: _stableBoundaryWeights(
-        startDay: startDay,
-        boundaryCount: 4,
-      ),
-      diaryHealthService: diaryHealthService,
-    );
-    addTearDown(harness.dispose);
-
-    final result = await _readDailyLearned(harness.container, today: today);
-
-    expect(diaryHealthService.loadDayDataCallCount, 0);
-    expect(result, isNotNull);
-    expect(result!.averageActiveKcal, 0.0);
-  });
-
-  test('ignores aggregate activity before activity tracking start', () async {
-    final startDay = DateTime(2026, 4);
-    final today = startDay.add(
-      const Duration(days: dailyLearnedTdeeMaximumLookbackDays),
-    );
-    final latestWindowStart = startDay.add(const Duration(days: 21));
-    final trackingStartDate = latestWindowStart.add(const Duration(days: 3));
-    final diaryHealthService = FakeTrendDiaryHealthService(
-      const <String, DiaryHealthDayData>{},
-      trendDays: [
-        for (var index = 0; index < 7; index += 1)
-          DiaryHealthActivityTrendDay(
-            day: latestWindowStart.add(Duration(days: index)),
-            totalSteps: 0,
-            activeEnergyKcal: 140,
-          ),
-      ],
-    );
-    final harness = _DailyLearnedHarness(
-      settings: _learnedSettings(
-        startDay: startDay,
-        windowEndDate: startDay.add(const Duration(days: 6)),
-      ).copyWith(activityTrackingStartDate: trackingStartDate),
-      entries: _dailyEntries(
-        startDay: startDay,
-        count: dailyLearnedTdeeMaximumLookbackDays,
-        kcalForIndex: (_) => 2500,
-      ),
-      healthWeights: _stableBoundaryWeights(
-        startDay: startDay,
-        boundaryCount: 4,
-      ),
-      diaryHealthService: diaryHealthService,
-    );
-    addTearDown(harness.dispose);
-
-    final result = await _readDailyLearned(harness.container, today: today);
-
-    expect(result, isNotNull);
-    expect(result!.averageActiveKcal, 0.0);
-    expect(diaryHealthService.trendRequests, isEmpty);
-  });
-
   test(
     'uses median health weight for odd and even daily sample counts',
     () async {
@@ -672,7 +586,6 @@ void main() {
     expect(result, isNotNull);
     expect(result!.calculatedBaseTdeeKcal, closeTo(1395.59, 0.01));
     expect(result.newGoalKcal, closeTo(1283.81, 0.01));
-    expect(result.averageCreditedActivityKcal, closeTo(0, 0.01));
     expect(result.measured.measuredTotalTdeeKcal, closeTo(601.73, 0.01));
   });
 

@@ -1234,8 +1234,6 @@ DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
       measuredTrueTdeeKcal: 2450,
       calculatedTrueTdeeKcal: 2400,
       newGoalKcal: 2200,
-      lastWeekAverageActiveKcal: 250,
-      activityDeltaKcal: 50,
       dynamicGoalTodayKcal: 2250,
     ),
     blockedReason: blockedReason,
@@ -1255,7 +1253,6 @@ CalorieWeeklyCheckInWindowDay _weeklyCheckInWindowDay(DateTime day) {
     resolvedIntakeKcal: null,
     isSkippedIntakeDay: false,
     isPauseDay: false,
-    activeKcal: 0,
     weightKg: null,
   );
 }

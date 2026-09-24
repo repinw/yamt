@@ -70,7 +70,6 @@ void main() {
       dates: dates,
       calorieEntriesByDay: entriesByDay,
       dailyWeightByDay: {diaryDayKey(addDiaryDays(firstStart, 7)): 79},
-      activeKcalByDay: const <String, int>{},
     );
 
     expect(seed.previousGoalKcal, expected.newGoalKcal);
@@ -101,7 +100,6 @@ void main() {
       dates: dates,
       calorieEntriesByDay: const <String, List<CalorieEntry>>{},
       dailyWeightByDay: {diaryDayKey(addDiaryDays(firstStart, 7)): 79},
-      activeKcalByDay: const <String, int>{},
     );
 
     expect(seed.previousGoalKcal, 2000);

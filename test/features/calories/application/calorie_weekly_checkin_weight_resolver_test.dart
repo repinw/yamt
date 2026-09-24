@@ -56,7 +56,6 @@ void main() {
         resolvedIntakeKcal: 1000,
         isSkippedIntakeDay: false,
         isPauseDay: false,
-        activeKcal: 0,
         weightKg: null,
       ),
     ];
@@ -69,7 +68,6 @@ void main() {
       ),
       windowDays: windowDays,
       missingIntakeDays: const <DateTime>[],
-      usesHealthActivity: false,
     );
     final missingEnd = validateWeeklyCheckInWeightData(
       dates: dates,
@@ -81,7 +79,6 @@ void main() {
       ),
       windowDays: windowDays,
       missingIntakeDays: const <DateTime>[],
-      usesHealthActivity: false,
     );
 
     expect(

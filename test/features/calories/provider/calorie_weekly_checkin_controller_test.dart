@@ -763,6 +763,5 @@ const _defaultWeeklyCheckInCalculation = CalorieWeeklyCheckInCalculation(
   measuredTrueTdeeKcal: 3223.35,
   calculatedTrueTdeeKcal: 2665.82,
   newGoalKcal: 2626.875,
-  lastWeekAverageActiveKcal: 300,
   dynamicGoalTodayKcal: 2626.875,
 );

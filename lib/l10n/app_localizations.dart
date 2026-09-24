@@ -3533,18 +3533,6 @@ abstract class AppLocalizations {
   /// **'Measured total TDEE'**
   String get caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel;
 
-  /// No description provided for @caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Measured base TDEE'**
-  String get caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel;
-
-  /// No description provided for @caloriesWeeklyCheckInDialogCreditedActivityAverageLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Credited activity avg'**
-  String get caloriesWeeklyCheckInDialogCreditedActivityAverageLabel;
-
   /// No description provided for @caloriesWeeklyCheckInDialogNewTargetLabel.
   ///
   /// In en, this message translates to:

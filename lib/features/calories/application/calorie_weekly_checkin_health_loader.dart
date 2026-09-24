@@ -3,9 +3,7 @@
 
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
@@ -15,23 +13,14 @@ const _weeklyCheckInDisposedMessage = 'Calorie weekly check-in disposed.';
 Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
   required Future<HealthConnectionStatus> healthStatusFuture,
   required HealthWeightService healthWeightService,
-  required DiaryHealthService diaryHealthService,
-  required CalorieGoalSettings settings,
   required CalorieWeeklyCheckInWindowDates dates,
-  required DateTime today,
   required bool Function() isMounted,
 }) async {
-  final activeKcalByDay = <String, int>{
-    for (final day in dates.learningDays) diaryDayKey(day): 0,
-  };
-
   final status = await healthStatusFuture;
   _throwIfUnmounted(isMounted);
   if (status.accessState != HealthDataAccessState.ready) {
-    return CalorieWeeklyCheckInHealthData(
-      activeKcalByDay: activeKcalByDay,
-      healthWeightSamples: const <HealthWeightSample>[],
-      usesHealthActivity: false,
+    return const CalorieWeeklyCheckInHealthData(
+      healthWeightSamples: <HealthWeightSample>[],
     );
   }
 
@@ -45,9 +34,7 @@ Future<CalorieWeeklyCheckInHealthData> loadCalorieWeeklyCheckInHealthData({
   _throwIfUnmounted(isMounted);
 
   return CalorieWeeklyCheckInHealthData(
-    activeKcalByDay: activeKcalByDay,
     healthWeightSamples: healthWeightSamples,
-    usesHealthActivity: false,
   );
 }
 

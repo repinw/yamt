@@ -13,7 +13,6 @@ class DailyLearnedTdeeGoalData {
     required this.measured,
     required this.calculatedBaseTdeeKcal,
     required this.newBaseGoalKcal,
-    required this.averageCreditedActivityKcal,
   });
 
   /// The measured TDEE before EMA smoothing.
@@ -25,17 +24,11 @@ class DailyLearnedTdeeGoalData {
   /// The capped base target goal.
   final double newBaseGoalKcal;
 
-  /// Average credited activity kcal for the learned window.
-  final double averageCreditedActivityKcal;
-
   /// Backwards-compatible label while old UI copy is renamed.
   double get calculatedTrueTdeeKcal => calculatedBaseTdeeKcal;
 
   /// Backwards-compatible label for base goal.
   double get newGoalKcal => newBaseGoalKcal;
-
-  /// Backwards-compatible label for credited activity average.
-  double get averageActiveKcal => averageCreditedActivityKcal;
 }
 
 /// One day request for learned TDEE batch resolution.

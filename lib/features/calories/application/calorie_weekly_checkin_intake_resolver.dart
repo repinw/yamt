@@ -32,7 +32,6 @@ CalorieWeeklyWindowIntakeData resolveWeeklyWindowIntakeData({
   required List<DateTime> days,
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
   required CalorieGoalSettings settings,
-  required Map<String, int> activeKcalByDay,
   required Map<String, double> weightByDay,
 }) {
   final missingIntakeDays = <DateTime>[];
@@ -53,7 +52,6 @@ CalorieWeeklyWindowIntakeData resolveWeeklyWindowIntakeData({
         resolvedIntakeKcal: null,
         isSkippedIntakeDay: !hasEntries,
         isPauseDay: isExplicitPause,
-        activeKcal: activeKcalByDay[dayKey] ?? 0,
         weightKg: weightByDay[dayKey],
       ),
     );
@@ -134,16 +132,6 @@ double sumCalorieEntryKcal(List<CalorieEntry> entries) {
   return entries.fold<double>(0, (sum, entry) => sum + entry.totalKcal);
 }
 
-/// Returns activity values matching [days].
-List<int> activityKcalByDay({
-  required List<DateTime> days,
-  required Map<String, int> activeKcalByDay,
-}) {
-  return days
-      .map((day) => activeKcalByDay[diaryDayKey(day)] ?? 0)
-      .toList(growable: false);
-}
-
 CalorieWeeklyWindowIntakeData _resolveSkippedWindowIntake({
   required List<CalorieWeeklyCheckInWindowDay> windowDays,
   required List<DateTime> missingIntakeDays,
@@ -205,7 +193,6 @@ CalorieWeeklyCheckInWindowDay _copyWindowDayWithResolvedIntake({
     resolvedIntakeKcal: resolvedIntakeKcal,
     isSkippedIntakeDay: day.isSkippedIntakeDay,
     isPauseDay: day.isPauseDay,
-    activeKcal: day.activeKcal,
     weightKg: day.weightKg,
   );
 }

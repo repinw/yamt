@@ -5,14 +5,11 @@ import 'package:yamt/features/calories/application/'
     'daily_learned_tdee_resolver.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
-import 'package:yamt/features/health/data/diary_health_service.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -44,7 +41,6 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
       manualHealthWeightEntriesControllerProvider.future,
     );
     final healthWeightService = ref.watch(healthWeightServiceProvider);
-    final diaryHealthService = ref.watch(diaryHealthServiceProvider);
     final result = <String, DailyLearnedTdeeGoalData?>{
       for (final dayRequest in request.days) diaryDayKey(dayRequest.day): null,
     };
@@ -93,12 +89,6 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
         ),
       ),
     );
-    final activeKcalByDay = await _loadActiveKcalByDay(
-      diaryHealthService: diaryHealthService,
-      settings: settings,
-      healthStatus: healthStatus,
-      windows: DailyLearnedTdeeResolver.uniqueWindows(contexts),
-    );
     final entriesByDay = entries.groupByDiaryDayKey();
     final weightSeries = WeightTrendCalculator.fromSources(
       manualEntries: manualEntries,
@@ -112,7 +102,6 @@ Future<Map<String, DailyLearnedTdeeGoalData?>> dailyLearnedTdeeGoalsForDays(
         settings: settings,
         entriesByDay: entriesByDay,
         dailyWeightByDay: weightSeries.rawByDay,
-        activeKcalByDay: activeKcalByDay,
       );
     }
 
@@ -141,7 +130,6 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     manualHealthWeightEntriesControllerProvider.future,
   );
   final healthWeightService = ref.watch(healthWeightServiceProvider);
-  final diaryHealthService = ref.watch(diaryHealthServiceProvider);
 
   final normalizedDay = normalizeDiaryDay(day);
   final normalizedToday = normalizeDiaryDay(today);
@@ -191,12 +179,6 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     ),
     endDateExclusive: nextDiaryDay(lastWindow.nextBoundaryDay),
   );
-  final activeKcalByDay = await _loadActiveKcalByDay(
-    diaryHealthService: diaryHealthService,
-    settings: settings,
-    healthStatus: healthStatus,
-    windows: windows,
-  );
   final entriesByDay = entries.groupByDiaryDayKey();
   final weightSeries = WeightTrendCalculator.fromSources(
     manualEntries: manualEntries,
@@ -219,7 +201,6 @@ Future<DailyLearnedTdeeGoalData?> dailyLearnedTdeeGoalForDay(
     settings: settings,
     entriesByDay: entriesByDay,
     dailyWeightByDay: weightSeries.rawByDay,
-    activeKcalByDay: activeKcalByDay,
   );
 }
 
@@ -236,19 +217,4 @@ Future<List<HealthWeightSample>> _loadHealthWeights({
     startInclusive: startDate,
     endExclusive: endDateExclusive,
   );
-}
-
-Future<Map<String, int>> _loadActiveKcalByDay({
-  required DiaryHealthService diaryHealthService,
-  required CalorieGoalSettings settings,
-  required HealthConnectionStatus healthStatus,
-  required List<WeeklyLearnedWindow> windows,
-}) async {
-  final activeKcalByDay = <String, int>{};
-  for (final window in windows) {
-    for (final day in window.windowDays) {
-      activeKcalByDay[diaryDayKey(day)] = 0;
-    }
-  }
-  return activeKcalByDay;
 }

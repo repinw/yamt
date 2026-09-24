@@ -25,7 +25,6 @@ CalorieWeeklyLearningSeed resolveCascadedPreviousLearningSeedForWindow({
   required CalorieWeeklyCheckInWindowDates dates,
   required Map<String, List<CalorieEntry>> calorieEntriesByDay,
   required Map<String, double> dailyWeightByDay,
-  required Map<String, int> activeKcalByDay,
 }) {
   final anchorEntry = dates.anchorEntry;
   if (anchorEntry == null) {
@@ -107,10 +106,6 @@ CalorieWeeklyLearningSeed resolveCascadedPreviousLearningSeedForWindow({
       isLosing: goalMode == CalorieGoalMode.lose,
       isGaining: goalMode == CalorieGoalMode.gain,
       intakeKcalByDay: learningIntakeData.intakeKcalByDay,
-      rawActivityKcalByDay: activityKcalByDay(
-        days: previousDates.learningDays,
-        activeKcalByDay: activeKcalByDay,
-      ),
       weightPoints: weightData.weightPoints,
     );
     seed = CalorieWeeklyLearningSeed(

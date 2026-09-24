@@ -21,14 +21,12 @@ void main() {
         diaryDayKey(secondDay): [_entry('b', secondDay, 800)],
       },
       settings: settings,
-      activeKcalByDay: {diaryDayKey(start): 150},
       weightByDay: {diaryDayKey(secondDay): 80},
     );
 
     expect(data.blockedReason, isNull);
     expect(data.missingIntakeDays, isEmpty);
     expect(data.days.map((day) => day.resolvedIntakeKcal), [1200, 800]);
-    expect(data.days.first.activeKcal, 150);
     expect(data.days.last.weightKg, 80);
   });
 
@@ -44,7 +42,6 @@ void main() {
         diaryDayKey(day1): [_entry('a', day1, 1200)],
       },
       settings: _settings(day1),
-      activeKcalByDay: const <String, int>{},
       weightByDay: const <String, double>{},
     );
 
@@ -71,7 +68,6 @@ void main() {
           diaryDayKey(thirdDay): [_entry('c', thirdDay, 2000)],
         },
         settings: settings,
-        activeKcalByDay: const <String, int>{},
         weightByDay: const <String, double>{},
       );
 
@@ -96,7 +92,6 @@ void main() {
         diaryDayKey(secondDay): [_entry('b', secondDay, 1800)],
       },
       settings: settings,
-      activeKcalByDay: const <String, int>{},
       weightByDay: const <String, double>{},
     );
 

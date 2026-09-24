@@ -1834,12 +1834,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel => 'Measured total TDEE';
 
   @override
-  String get caloriesWeeklyCheckInDialogMeasuredBaseTdeeLabel => 'Measured base TDEE';
-
-  @override
-  String get caloriesWeeklyCheckInDialogCreditedActivityAverageLabel => 'Credited activity avg';
-
-  @override
   String get caloriesWeeklyCheckInDialogNewTargetLabel => 'New target';
 
   @override

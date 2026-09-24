@@ -10,7 +10,6 @@ void main() {
       goalMode: CalorieGoalMode.maintain,
       goalSpeedKgPerWeek: 0,
       intakeKcalByDay: const <double>[2753, 2975, 906, 2745, 2040, 1811, 3200],
-      lastWeekActiveKcalByDay: const <int>[0, 16, 21, 569, 495, 455, 492],
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 84.05),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 1, weightKg: 84.14),
@@ -40,7 +39,6 @@ void main() {
       goalMode: CalorieGoalMode.maintain,
       goalSpeedKgPerWeek: 0,
       intakeKcalByDay: const <double>[2000, 2000, 2000, 2000, 2000, 2000, 2000],
-      lastWeekActiveKcalByDay: const <int>[0, 0, 0, 0, 0, 0, 0],
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 90),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 1, weightKg: 89.5),
@@ -64,7 +62,6 @@ void main() {
       goalMode: CalorieGoalMode.maintain,
       goalSpeedKgPerWeek: 0,
       intakeKcalByDay: const <double>[2000, 2000, 2000, 2000, 2000, 2000],
-      lastWeekActiveKcalByDay: const <int>[100, 100, 100, 100, 100, 100],
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 5, weightKg: 79.5),
@@ -81,14 +78,13 @@ void main() {
     expect(result.dynamicGoalTodayKcal, closeTo(2261.07, 0.01));
   });
 
-  test('rest day uses learned Base-TDEE without activity credit', () {
+  test('stable weight keeps learned Base-TDEE at intake', () {
     final result = CalorieWeeklyCheckInCalculator.calculate(
       previousGoalKcal: 1600,
       previousLearnedTdeeKcal: 1600,
       goalMode: CalorieGoalMode.maintain,
       goalSpeedKgPerWeek: 0,
       intakeKcalByDay: const <double>[1600, 1600, 1600, 1600, 1600, 1600, 1600],
-      lastWeekActiveKcalByDay: const <int>[800, 800, 800, 800, 800, 800, 800],
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 6, weightKg: 80),
@@ -116,7 +112,6 @@ void main() {
           1100,
           1100,
         ],
-        lastWeekActiveKcalByDay: const <int>[0, 0, 0, 0, 0, 0, 0],
         weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
           CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
           CalorieWeeklyCheckInWeightPoint(dayIndex: 6, weightKg: 80),
@@ -134,7 +129,6 @@ void main() {
       goalMode: CalorieGoalMode.lose,
       goalSpeedKgPerWeek: 0.5,
       intakeKcalByDay: const <double>[2500, 2500, 2500, 2500, 2500, 2500, 2500],
-      lastWeekActiveKcalByDay: const <int>[0, 0, 0, 0, 0, 0, 0],
       weightPoints: const <CalorieWeeklyCheckInWeightPoint>[
         CalorieWeeklyCheckInWeightPoint(dayIndex: 0, weightKg: 80),
         CalorieWeeklyCheckInWeightPoint(dayIndex: 6, weightKg: 80),

@@ -47,7 +47,6 @@ class CalorieWeeklyCheckInWindowDay {
     required this.resolvedIntakeKcal,
     required this.isSkippedIntakeDay,
     required this.isPauseDay,
-    required this.activeKcal,
     required this.weightKg,
   });
 
@@ -69,9 +68,6 @@ class CalorieWeeklyCheckInWindowDay {
   /// Whether this day is marked as a pause day.
   final bool isPauseDay;
 
-  /// The active kcal.
-  final int activeKcal;
-
   /// The weight kg.
   final double? weightKg;
 }
@@ -90,7 +86,6 @@ class CalorieWeeklyCheckInData {
     required this.freshness,
     required this.latestLearnedTdeeAt,
     required this.lowConfidence,
-    this.usesHealthActivity = false,
     this.cacheWeeklyCheckIn,
     this.inputHash,
   });
@@ -127,9 +122,6 @@ class CalorieWeeklyCheckInData {
 
   /// The low confidence.
   final bool lowConfidence;
-
-  /// Whether health activity was available for this check-in.
-  final bool usesHealthActivity;
 
   /// Stable hash for inputs used by [calculation].
   final String? inputHash;
