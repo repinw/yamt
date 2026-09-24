@@ -43,7 +43,6 @@ class CalorieWeekDayOverview {
     required this.goalKcal,
     required this.entryCount,
     double? baseGoalKcal,
-    this.activityBonusKcal = 0,
     this.isPauseDay = false,
   }) : baseGoalKcal = baseGoalKcal ?? goalKcal;
 
@@ -63,11 +62,8 @@ class CalorieWeekDayOverview {
   /// The goal kcal.
   final double goalKcal;
 
-  /// The saved base goal kcal before daily activity adjustment.
+  /// The saved base goal kcal before carryover.
   final double baseGoalKcal;
-
-  /// Eatable activity kcal counted toward the day.
-  final double activityBonusKcal;
 
   /// The entry count.
   final int entryCount;

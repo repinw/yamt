@@ -58,8 +58,6 @@ class DiaryDailyBalanceCard extends StatelessWidget {
       key: kcalBarKey,
       eatenKcal: data.metrics.eatenKcal,
       targetKcal: data.metrics.targetKcal,
-      activitySegmentKcal: data.metrics.activitySegmentKcal,
-      activitySegmentReferenceKcal: data.metrics.activitySegmentReferenceKcal,
       numberFormat: data.numberFormat,
       unit: l10n.caloriesUnitKcal,
       compact: true,

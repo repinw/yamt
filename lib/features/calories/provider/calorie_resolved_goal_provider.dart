@@ -19,15 +19,8 @@ class ResolvedCalorieGoalData {
     required this.day,
     required this.storedGoalKcal,
     required this.goalKcal,
-    required this.activityDeltaKcal,
-    required this.lastWeekAverageActiveKcal,
     required this.usedLearnedTdee,
-    required this.usesPreLearningActivityBonus,
     required this.wasClampedToMinimum,
-    this.correctedActivityKcal = 0,
-    this.activityCapKcal = 0,
-    this.wasActivityCapped = false,
-    this.activityComparisonKcal = 0,
   });
 
   /// The day.
@@ -39,29 +32,8 @@ class ResolvedCalorieGoalData {
   /// The goal kcal.
   final double goalKcal;
 
-  /// The activity delta kcal.
-  final double activityDeltaKcal;
-
-  /// The signed activity comparison against the learned baseline.
-  final double activityComparisonKcal;
-
-  /// Activity kcal after import correction.
-  final double correctedActivityKcal;
-
-  /// Activity kcal cap for this day.
-  final double activityCapKcal;
-
-  /// Whether the activity cap lowered the credited kcal.
-  final bool wasActivityCapped;
-
-  /// The last week average active kcal.
-  final double lastWeekAverageActiveKcal;
-
   /// The used learned tdee.
   final bool usedLearnedTdee;
-
-  /// Whether using a pre-learning activity bonus.
-  final bool usesPreLearningActivityBonus;
 
   /// Whether clamped to minimum.
   final bool wasClampedToMinimum;
@@ -138,10 +110,7 @@ Future<Map<String, ResolvedCalorieGoalData>> resolvedCalorieGoalsForDays(
         day: normalizedDay,
         storedGoalKcal: storedGoalKcal,
         goalKcal: goalKcal,
-        activityDeltaKcal: 0,
-        lastWeekAverageActiveKcal: 0,
         usedLearnedTdee: settings.hasLearnedTdee,
-        usesPreLearningActivityBonus: false,
         wasClampedToMinimum: goalKcal <= 1200.0,
       );
     }
@@ -170,10 +139,7 @@ Future<ResolvedCalorieGoalData> resolvedCalorieGoalForDay(
       day: normalizedDay,
       storedGoalKcal: storedGoalKcal,
       goalKcal: goalKcal,
-      activityDeltaKcal: 0,
-      lastWeekAverageActiveKcal: 0,
       usedLearnedTdee: settings.hasLearnedTdee,
-      usesPreLearningActivityBonus: false,
       wasClampedToMinimum: goalKcal <= 1200.0,
     );
   } finally {

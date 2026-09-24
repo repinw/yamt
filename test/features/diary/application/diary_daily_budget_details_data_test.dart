@@ -28,7 +28,6 @@ void main() {
             date: wednesday,
             totalKcal: 500,
             goalKcal: 2000,
-            activityBonusKcal: 100,
             entryCount: 1,
           ),
         ],
@@ -52,8 +51,6 @@ void main() {
         targetKcal: 2160,
         baseGoalKcal: 2000,
         carryoverKcal: 60,
-        activitySegmentKcal: 100,
-        activitySegmentReferenceKcal: 2160,
       );
 
       final data = DiaryDailyBudgetDetailsData.from(
@@ -82,49 +79,6 @@ void main() {
 
       expect(data.totalCarryoverBeforeTodayKcal, 300);
       expect(data.remainingRunDays, 5); // 7 - 2 finished days
-    });
-
-    test('discards legacy activity kcal', () {
-      final monday = DateTime(2026, 4, 13);
-      final weekOverview = CalorieWeekOverview(
-        days: [
-          CalorieWeekDayOverview(
-            date: monday,
-            totalKcal: 500,
-            goalKcal: 2000,
-            baseGoalKcal: 2000,
-            activityBonusKcal: 150,
-            entryCount: 2,
-          ),
-        ],
-        totalConsumedKcal: 500,
-        totalGoalKcal: 2000,
-        remainingKcal: 1500,
-        balanceStartDate: monday,
-        carryoverBeforeTodayKcal: 0,
-        todayFlexibleGoalKcal: 2000,
-        goalStartsInFuture: false,
-        nextGoalStartDate: null,
-        futureGoalKcal: null,
-      );
-
-      final metrics = resolveDiaryDailyBalanceMetrics(
-        flexibleGoalKcal: 2000,
-        totalKcal: 500,
-        goalKcal: 2000,
-        baseGoalKcal: 2000,
-        activitySegmentKcal: 150,
-      );
-
-      final data = DiaryDailyBudgetDetailsData.from(
-        weekOverview: weekOverview,
-        selectedDayOverview: weekOverview.days.first,
-        metrics: metrics,
-        isPauseDay: false,
-        carryoverStartDate: monday,
-      );
-
-      expect(data.baseGoalKcal, 2000);
     });
 
     test('handles pause days in previous days history', () {
@@ -166,8 +120,6 @@ void main() {
         dayLeftKcal: 2000,
         targetKcal: 2000,
         baseGoalKcal: 2000,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 2000,
       );
 
       final data = DiaryDailyBudgetDetailsData.from(
@@ -217,8 +169,6 @@ void main() {
         dayLeftKcal: 1600,
         targetKcal: 2000,
         baseGoalKcal: 2000,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 2000,
       );
 
       final data = DiaryDailyBudgetDetailsData.from(
@@ -272,8 +222,6 @@ void main() {
         targetKcal: 1000,
         baseGoalKcal: 2000,
         carryoverKcal: -1000,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 2000,
       );
 
       final data = DiaryDailyBudgetDetailsData.from(
@@ -374,8 +322,6 @@ void main() {
         targetKcal: 2277,
         baseGoalKcal: 2403,
         carryoverKcal: -126,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 2277,
       );
 
       final data = DiaryDailyBudgetDetailsData.from(
@@ -427,8 +373,6 @@ void main() {
         targetKcal: 2627,
         baseGoalKcal: 2753,
         carryoverKcal: -126,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 2627,
       );
 
       final data = DiaryDailyBudgetDetailsData.from(

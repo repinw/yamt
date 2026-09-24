@@ -74,7 +74,6 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
             totalKcal: entry.value.totalKcal,
             goalKcal: goal.goalKcal,
             baseGoalKcal: goal.storedGoalKcal,
-            activityBonusKcal: goal.activityDeltaKcal,
             entryCount: entry.value.entryCount,
             isPauseDay: settings.isPauseDay(entry.value.date),
           );
@@ -125,7 +124,6 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
             totalKcal: overview.totalKcal,
             goalKcal: overview.goalKcal,
             baseGoalKcal: overview.baseGoalKcal,
-            activityBonusKcal: overview.activityBonusKcal,
             entryCount: overview.entryCount,
             isPauseDay: overview.isPauseDay,
           ),
@@ -215,7 +213,6 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
       totalKcal: totalKcal,
       goalKcal: resolvedGoal.goalKcal,
       baseGoalKcal: resolvedGoal.storedGoalKcal,
-      activityBonusKcal: resolvedGoal.activityDeltaKcal,
       entryCount: entries.length,
       isPauseDay: settings.isPauseDay(normalizedDay),
     );

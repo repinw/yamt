@@ -2390,11 +2390,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String diaryBalanceSportShort(String value) {
-    return 'Sport $value';
-  }
-
-  @override
   String get diaryBudgetDetailsTitle => 'Daily budget details';
 
   @override

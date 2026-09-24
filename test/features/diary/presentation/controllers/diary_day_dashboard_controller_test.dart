@@ -120,9 +120,9 @@ void main() {
     'refresh invalidates stale cached week overview before loading',
     () async {
       final preferences = MemoryAppPreferences();
-      var weekOverview = _weekOverviewWithActivityBonus(
+      var weekOverview = _weekOverviewWithTodayExtraGoal(
         selectedDay: selectedDay,
-        activityBonusKcal: 0,
+        todayExtraGoalKcal: 0,
       );
       var weekOverviewReadCount = 0;
       final logRepository = FakeCalorieLogRepository();
@@ -142,16 +142,16 @@ void main() {
       await container.read(
         calorieWeekOverviewForWindowProvider(selectedDay).future,
       );
-      weekOverview = _weekOverviewWithActivityBonus(
+      weekOverview = _weekOverviewWithTodayExtraGoal(
         selectedDay: selectedDay,
-        activityBonusKcal: 674.25,
+        todayExtraGoalKcal: 674.25,
       );
       container.read(diaryDayDashboardControllerProvider(selectedDay));
 
       final refreshed = await _waitForDashboardRefresh(container, selectedDay);
 
       expect(weekOverviewReadCount, greaterThanOrEqualTo(2));
-      expect(refreshed.data?.weekOverview.days.last.activityBonusKcal, 674.25);
+      expect(refreshed.data?.weekOverview.days.last.goalKcal, 2674.25);
     },
   );
 
@@ -453,9 +453,9 @@ final class _RecordingProviderObserver extends ProviderObserver {
   }
 }
 
-CalorieWeekOverview _weekOverviewWithActivityBonus({
+CalorieWeekOverview _weekOverviewWithTodayExtraGoal({
   required DateTime selectedDay,
-  required double activityBonusKcal,
+  required double todayExtraGoalKcal,
 }) {
   final normalizedDay = normalizeDiaryDay(selectedDay);
   final days = [
@@ -463,9 +463,8 @@ CalorieWeekOverview _weekOverviewWithActivityBonus({
       CalorieWeekDayOverview(
         date: normalizedDay.subtract(Duration(days: offset)),
         totalKcal: 0,
-        goalKcal: offset == 0 ? 2000 + activityBonusKcal : 2000,
+        goalKcal: offset == 0 ? 2000 + todayExtraGoalKcal : 2000,
         baseGoalKcal: 2000,
-        activityBonusKcal: offset == 0 ? activityBonusKcal : 0,
         entryCount: 0,
       ),
   ];
@@ -476,7 +475,7 @@ CalorieWeekOverview _weekOverviewWithActivityBonus({
     remainingKcal: days.fold<double>(0, (sum, day) => sum + day.goalKcal),
     balanceStartDate: normalizedDay.subtract(const Duration(days: 6)),
     carryoverBeforeTodayKcal: 0,
-    todayFlexibleGoalKcal: 2000 + activityBonusKcal,
+    todayFlexibleGoalKcal: 2000 + todayExtraGoalKcal,
     goalStartsInFuture: false,
     nextGoalStartDate: null,
     futureGoalKcal: null,

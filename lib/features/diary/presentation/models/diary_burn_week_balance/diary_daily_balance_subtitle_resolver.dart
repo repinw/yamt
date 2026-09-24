@@ -59,8 +59,6 @@ DiaryDailyBalanceSubtitleResult _buildSubtitleAdjustments(
       _buildBaseGoalPart(metrics, numberFormat, l10n),
     if (metrics.carryoverKcal.round() != 0)
       _buildCarryoverPart(metrics, numberFormat, l10n),
-    if (metrics.activitySegmentKcal.round() > 0)
-      _buildSportPart(metrics, numberFormat, l10n),
   ];
   final text = parts.isEmpty
       ? null
@@ -73,9 +71,7 @@ DiaryDailyBalanceSubtitlePart _buildBaseGoalPart(
   NumberFormat numberFormat,
   AppLocalizations l10n,
 ) {
-  final hasOtherAdjustments =
-      metrics.carryoverKcal.round() != 0 ||
-      metrics.activitySegmentKcal.round() > 0;
+  final hasOtherAdjustments = metrics.carryoverKcal.round() != 0;
   final baseValue = hasOtherAdjustments
       ? numberFormat.format(metrics.baseGoalKcal.round())
       : formatDiaryKcal(
@@ -98,18 +94,4 @@ DiaryDailyBalanceSubtitlePart _buildCarryoverPart(
   label: l10n.diaryBalanceCarryoverShort('').trim(),
   value: formatDiarySignedKcal(metrics.carryoverKcal, numberFormat, '').trim(),
   type: DiaryDailyBalanceSubtitleType.carryover,
-);
-
-DiaryDailyBalanceSubtitlePart _buildSportPart(
-  DiaryDailyBalanceMetrics metrics,
-  NumberFormat numberFormat,
-  AppLocalizations l10n,
-) => (
-  label: l10n.diaryBalanceSportShort('').trim(),
-  value: formatDiarySignedKcal(
-    metrics.activitySegmentKcal,
-    numberFormat,
-    '',
-  ).trim(),
-  type: DiaryDailyBalanceSubtitleType.sport,
 );

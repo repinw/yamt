@@ -8,16 +8,14 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_goal_progress_track.dart';
 
-/// Daily kcal progress bar with an activity extension segment.
+/// Daily kcal progress bar.
 class DiaryDailyGoalProgressBar extends StatelessWidget {
   /// Creates a daily goal progress bar.
   const new({
     required this.eatenKcal,
     required this.targetKcal,
-    required this.activitySegmentKcal,
     required this.numberFormat,
     required this.unit,
-    this.activitySegmentReferenceKcal,
     this.compact = false,
     super.key,
   });
@@ -25,14 +23,8 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
   /// Kcal eaten for the selected day.
   final double eatenKcal;
 
-  /// Target kcal including activity not already counted in the base goal.
+  /// Target kcal for the selected day.
   final double targetKcal;
-
-  /// Positive activity kcal displayed at the end of the bar.
-  final double activitySegmentKcal;
-
-  /// Target basis used to size the activity segment visually.
-  final double? activitySegmentReferenceKcal;
 
   /// Locale-aware number formatter.
   final NumberFormat numberFormat;
@@ -48,39 +40,9 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final accents = MetricAccentColors.of(context);
     final target = math.max<double>(0, targetKcal);
-    final activitySegment = math.min<double>(
-      math.max<double>(0, activitySegmentKcal),
-      target,
-    );
-    final activityReferenceCandidate = activitySegmentReferenceKcal ?? target;
-    final boundedActivityReference = target <= 0
-        ? activityReferenceCandidate
-        : math.min<double>(target, activityReferenceCandidate);
-    final activityReference = math.max<double>(
-      activitySegment,
-      boundedActivityReference,
-    );
     final eatenRatio = target <= 0 ? 0.0 : (eatenKcal / target).clamp(0.0, 1.0);
-    final activitySegmentRatio = activityReference <= 0
-        ? 0.0
-        : (activitySegment / activityReference).clamp(0.0, 1.0);
-    final activitySegmentStartRatio = math.max<double>(
-      0,
-      1 - activitySegmentRatio,
-    );
-    final activityFillRatio = math.min<double>(
-      activitySegmentRatio,
-      math.max<double>(0, eatenRatio - activitySegmentStartRatio),
-    );
     final targetLabel = formatDiaryKcal(numberFormat, target, unit);
-    final activitySegmentLabel = formatDiarySignedKcal(
-      activitySegment,
-      numberFormat,
-      unit,
-    );
     final trackColor = colors.progressTrack;
-    final activityColor = accents.activityFor(colors.brightness);
-    final activityTextColor = accents.activityTextFor(colors.brightness);
     final primary = accents.today;
     final barHeight = compact ? 10.0 : 12.0;
 
@@ -99,14 +61,6 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
                 ),
               ),
               const Spacer(),
-              if (activitySegment > 0) ...[
-                _ActivitySegmentPill(
-                  label: activitySegmentLabel,
-                  color: activityColor,
-                  textColor: activityTextColor,
-                ),
-                const SizedBox(width: AppSpacing.xs),
-              ],
               Text(
                 targetLabel,
                 maxLines: 1,
@@ -126,64 +80,9 @@ class DiaryDailyGoalProgressBar extends StatelessWidget {
           height: barHeight,
           trackColor: trackColor,
           eatenColor: primary,
-          activityColor: activityColor,
           eatenRatio: eatenRatio,
-          activitySegmentRatio: activitySegmentRatio,
-          activityFillRatio: activityFillRatio,
-          activitySegmentStartRatio: activitySegmentStartRatio,
-          dividerColor: colors.surfaceContainerLow,
         ),
       ],
-    );
-  }
-}
-
-class _ActivitySegmentPill extends StatelessWidget {
-  const new({
-    required this.label,
-    required this.color,
-    required this.textColor,
-  });
-
-  final String label;
-  final Color color;
-  final Color textColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Color.alphaBlend(
-          color.withValues(alpha: isDark ? 0.18 : 0.12),
-          colors.surfaceContainerLow,
-        ),
-        borderRadius: BorderRadius.circular(7),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.directions_run_rounded, size: 11, color: textColor),
-            const SizedBox(width: AppSpacing.xxs),
-            Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: textColor,
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0,
-                height: 1,
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

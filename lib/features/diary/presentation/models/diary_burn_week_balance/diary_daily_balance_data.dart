@@ -13,9 +13,6 @@ enum DiaryDailyBalanceSubtitleType {
 
   /// Carryover adjustment from previous days.
   carryover,
-
-  /// Extra sport / activity calorie adjustment.
-  sport,
 }
 
 /// A localized text component of the daily balance subtitle.

@@ -2,49 +2,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 
 void main() {
-  test('adds activity to the daily target only when it is not counted yet', () {
+  test('uses the flexible goal as the daily target', () {
     final metrics = resolveDiaryDailyBalanceMetrics(
       flexibleGoalKcal: 2498,
       totalKcal: 655,
       goalKcal: 2498,
       baseGoalKcal: 2498,
-      activitySegmentKcal: 171,
     );
 
-    expect(metrics.activitySegmentKcal, 171);
-    expect(metrics.targetKcal, 2669);
-    expect(metrics.dayLeftKcal, 2014);
+    expect(metrics.targetKcal, 2498);
+    expect(metrics.dayLeftKcal, 1843);
   });
-
-  test('does not add already-counted activity twice', () {
-    final metrics = resolveDiaryDailyBalanceMetrics(
-      flexibleGoalKcal: 2669,
-      totalKcal: 655,
-      goalKcal: 2669,
-      baseGoalKcal: 2498,
-      activitySegmentKcal: 171,
-    );
-
-    expect(metrics.activitySegmentKcal, 171);
-    expect(metrics.targetKcal, 2669);
-    expect(metrics.dayLeftKcal, 2014);
-  });
-
-  test(
-    'keeps activity segment based on base plus activity when carryover grows',
-    () {
-      final metrics = resolveDiaryDailyBalanceMetrics(
-        flexibleGoalKcal: 5000,
-        totalKcal: 655,
-        goalKcal: 2669,
-        baseGoalKcal: 2498,
-        activitySegmentKcal: 171,
-      );
-
-      expect(metrics.targetKcal, 5000);
-      expect(metrics.activitySegmentReferenceKcal, 2669);
-    },
-  );
 
   test('applies buffer adjustment to display values only', () {
     final metrics = resolveDiaryDailyBalanceMetrics(
@@ -52,7 +20,6 @@ void main() {
       totalKcal: 655,
       goalKcal: 2669,
       baseGoalKcal: 2498,
-      activitySegmentKcal: 171,
       bufferAdjustmentKcal: 250,
     );
 

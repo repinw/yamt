@@ -10,8 +10,6 @@ class DiaryDailyBalanceMetrics {
     required this.realDayLeftKcal,
     required this.dayLeftKcal,
     required this.targetKcal,
-    required this.activitySegmentKcal,
-    required this.activitySegmentReferenceKcal,
     this.baseGoalKcal = 0,
     this.carryoverKcal = 0,
   });
@@ -34,13 +32,7 @@ class DiaryDailyBalanceMetrics {
   /// Final daily target shown by the daily progress bar.
   final double targetKcal;
 
-  /// Positive activity kcal that extends the daily progress bar.
-  final double activitySegmentKcal;
-
-  /// Target basis used to size the activity segment visually.
-  final double activitySegmentReferenceKcal;
-
-  /// Stored base goal kcal before activity and carryover.
+  /// Stored base goal kcal before carryover.
   final double baseGoalKcal;
 
   /// Carryover kcal adjustment distributed to today from previous days.
@@ -53,26 +45,13 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
   required double totalKcal,
   required double goalKcal,
   required double baseGoalKcal,
-  required double activitySegmentKcal,
   double bufferAdjustmentKcal = 0,
   double? carryoverKcal,
 }) {
   final realEatenKcal = totalKcal;
   final eatenKcal = math.max<double>(0, realEatenKcal + bufferAdjustmentKcal);
-  final targetKcal = resolveDiaryDailyTargetKcal(
-    flexibleGoalKcal: flexibleGoalKcal,
-    goalKcal: goalKcal,
-    baseGoalKcal: baseGoalKcal,
-    activitySegmentKcal: activitySegmentKcal,
-  );
-  final positiveActivitySegmentKcal = math.max<double>(0, activitySegmentKcal);
-  final activitySegmentReferenceKcal = resolveDiaryActivitySegmentReferenceKcal(
-    goalKcal: goalKcal,
-    baseGoalKcal: baseGoalKcal,
-    activitySegmentKcal: positiveActivitySegmentKcal,
-  );
-  final realDayLeftKcal = targetKcal - realEatenKcal;
-  final dayLeftKcal = targetKcal - eatenKcal;
+  final realDayLeftKcal = flexibleGoalKcal - realEatenKcal;
+  final dayLeftKcal = flexibleGoalKcal - eatenKcal;
   final resolvedCarryoverKcal = carryoverKcal ?? (flexibleGoalKcal - goalKcal);
 
   return DiaryDailyBalanceMetrics(
@@ -81,39 +60,8 @@ DiaryDailyBalanceMetrics resolveDiaryDailyBalanceMetrics({
     eatenKcal: eatenKcal,
     realDayLeftKcal: realDayLeftKcal,
     dayLeftKcal: dayLeftKcal,
-    targetKcal: targetKcal,
-    activitySegmentKcal: positiveActivitySegmentKcal,
-    activitySegmentReferenceKcal: activitySegmentReferenceKcal,
+    targetKcal: flexibleGoalKcal,
     baseGoalKcal: baseGoalKcal,
     carryoverKcal: resolvedCarryoverKcal,
   );
-}
-
-/// Resolves the daily target used by the diary daily balance card.
-double resolveDiaryDailyTargetKcal({
-  required double flexibleGoalKcal,
-  required double goalKcal,
-  required double baseGoalKcal,
-  required double activitySegmentKcal,
-}) {
-  final alreadyCountedActivityKcal = math.max<double>(
-    0,
-    goalKcal - baseGoalKcal,
-  );
-  final positiveActivitySegmentKcal = math.max<double>(0, activitySegmentKcal);
-  final missingActivityKcal = math.max<double>(
-    0,
-    positiveActivitySegmentKcal - alreadyCountedActivityKcal,
-  );
-  return flexibleGoalKcal + missingActivityKcal;
-}
-
-/// Resolves the visual target basis for the activity segment.
-double resolveDiaryActivitySegmentReferenceKcal({
-  required double goalKcal,
-  required double baseGoalKcal,
-  required double activitySegmentKcal,
-}) {
-  final positiveActivitySegmentKcal = math.max<double>(0, activitySegmentKcal);
-  return math.max<double>(goalKcal, baseGoalKcal + positiveActivitySegmentKcal);
 }

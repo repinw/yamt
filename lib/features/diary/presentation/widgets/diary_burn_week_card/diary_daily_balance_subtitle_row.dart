@@ -86,9 +86,6 @@ class DiaryDailyBalanceSubtitleText extends StatelessWidget {
       final valueColor = switch (part.type) {
         DiaryDailyBalanceSubtitleType.base => colors.onSurface,
         DiaryDailyBalanceSubtitleType.carryover => accents.today,
-        DiaryDailyBalanceSubtitleType.sport => accents.activityFor(
-          colors.brightness,
-        ),
       };
       spans.addAll([
         TextSpan(text: '${part.label} ', style: labelStyle),

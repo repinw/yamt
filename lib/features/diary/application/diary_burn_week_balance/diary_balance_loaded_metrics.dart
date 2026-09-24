@@ -120,7 +120,6 @@ DiaryDailyBalanceMetrics _resolveDailyMetrics(
   totalKcal: context.selectedDayOverview.totalKcal,
   goalKcal: context.selectedDayOverview.goalKcal,
   baseGoalKcal: context.selectedDayOverview.goalKcal,
-  activitySegmentKcal: 0,
 );
 
 DiaryWeeklyBalanceMetrics _resolveWeeklyMetrics(

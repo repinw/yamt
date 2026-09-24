@@ -7,8 +7,6 @@ import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/application/diary_burn_week_balance/'
-    'diary_daily_balance_metrics.dart';
 
 /// Derived values for the weekly Burn Week pacing card.
 class DiaryWeeklyBalanceMetrics {
@@ -62,12 +60,7 @@ DiaryWeeklyBalanceMetrics resolveDiaryWeeklyBalanceMetrics({
   final displayWeeklyGoalKcal = _resolveDisplayWeeklyGoalKcal(
     baseWeeklyGoalKcal: weeklyGoalKcal,
     consumedKcal: pacing.consumedKcal,
-    selectedDayTargetKcal: resolveDiaryDailyTargetKcal(
-      flexibleGoalKcal: weekOverview.todayFlexibleGoalKcal,
-      goalKcal: selectedDayOverview.goalKcal,
-      baseGoalKcal: selectedDayOverview.baseGoalKcal,
-      activitySegmentKcal: selectedDayOverview.activityBonusKcal,
-    ),
+    selectedDayTargetKcal: weekOverview.todayFlexibleGoalKcal,
     selectedDayTotalKcal: selectedDayOverview.totalKcal,
   );
 
@@ -132,22 +125,10 @@ double _resolveProgressWeeklyGoalKcal({
     }
     return sum + day.baseGoalKcal;
   });
-  final baseWeeklyGoalKcal = math.max<double>(
+  return math.max<double>(
     fallbackDailyGoalKcal * burnWeekDaysPerWeek,
     visibleCurrentWeekBaseGoalKcal,
   );
-
-  final currentWeekActivityBonus = weekOverview.days.fold<double>(0, (
-    sum,
-    day,
-  ) {
-    if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-      return sum;
-    }
-    return sum + day.activityBonusKcal;
-  });
-
-  return baseWeeklyGoalKcal + currentWeekActivityBonus;
 }
 
 BurnWeekMockMetrics _resolveBurnWeekMetrics({

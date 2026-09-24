@@ -10,18 +10,16 @@ void main() {
   final selectedDay = DateTime(2026, 4, 15);
 
   group('DiaryDailyBalanceData.from', () {
-    test('formats leftSubtitle with base, carryover, and sport components', () {
+    test('formats leftSubtitle with base and carryover components', () {
       const metrics = DiaryDailyBalanceMetrics(
         bufferAdjustmentKcal: 0,
         realEatenKcal: 1000,
         eatenKcal: 1000,
-        realDayLeftKcal: 1350,
-        dayLeftKcal: 1350,
-        targetKcal: 2350,
+        realDayLeftKcal: 1150,
+        dayLeftKcal: 1150,
+        targetKcal: 2150,
         baseGoalKcal: 2000,
         carryoverKcal: 150,
-        activitySegmentKcal: 200,
-        activitySegmentReferenceKcal: 2350,
       );
 
       final data = DiaryDailyBalanceData.from(
@@ -33,11 +31,11 @@ void main() {
         now: selectedDay,
       );
 
-      expect(data.leftValue, '1,350');
+      expect(data.leftValue, '1,150');
       expect(data.leftUnit, 'kcal');
       expect(data.eatenValue, '1,000');
-      expect(data.targetAddition, '/ 2,350');
-      expect(data.leftSubtitle, 'Base 2,000 · Carryover +150 · Sport +200');
+      expect(data.targetAddition, '/ 2,150');
+      expect(data.leftSubtitle, 'Base 2,000 · Carryover +150');
       expect(data.leftSubtitleParts, [
         (
           label: 'Base',
@@ -48,11 +46,6 @@ void main() {
           label: 'Carryover',
           value: '+150',
           type: DiaryDailyBalanceSubtitleType.carryover,
-        ),
-        (
-          label: 'Sport',
-          value: '+200',
-          type: DiaryDailyBalanceSubtitleType.sport,
         ),
       ]);
     });
@@ -67,8 +60,6 @@ void main() {
         targetKcal: 1920,
         baseGoalKcal: 2000,
         carryoverKcal: -80,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 1920,
       );
 
       final data = DiaryDailyBalanceData.from(
@@ -106,8 +97,6 @@ void main() {
           dayLeftKcal: 1000,
           targetKcal: 2000,
           baseGoalKcal: 2000,
-          activitySegmentKcal: 0,
-          activitySegmentReferenceKcal: 2000,
         );
 
         final data = DiaryDailyBalanceData.from(
@@ -140,8 +129,6 @@ void main() {
         targetKcal: 2000,
         baseGoalKcal: 2000,
         carryoverKcal: 150,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 2000,
       );
 
       final data = DiaryDailyBalanceData.from(
@@ -170,8 +157,6 @@ void main() {
         targetKcal: 2150,
         baseGoalKcal: 2000,
         carryoverKcal: 150,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 2150,
       );
 
       final futureDay = selectedDay.add(const Duration(days: 1));
@@ -205,8 +190,6 @@ void main() {
           dayLeftKcal: 2000,
           targetKcal: 2000,
           baseGoalKcal: 2000,
-          activitySegmentKcal: 0,
-          activitySegmentReferenceKcal: 2000,
         );
 
         final futureDay = selectedDay.add(const Duration(days: 1));
@@ -236,8 +219,6 @@ void main() {
         dayLeftKcal: -600,
         targetKcal: 2000,
         baseGoalKcal: 2000,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 2000,
       );
 
       final data = DiaryDailyBalanceData.from(
@@ -262,8 +243,6 @@ void main() {
         dayLeftKcal: -600,
         targetKcal: 2000,
         baseGoalKcal: 2000,
-        activitySegmentKcal: 0,
-        activitySegmentReferenceKcal: 2000,
       );
 
       final data = DiaryDailyBalanceData.from(

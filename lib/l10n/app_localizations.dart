@@ -4541,12 +4541,6 @@ abstract class AppLocalizations {
   /// **'Carryover {value}'**
   String diaryBalanceCarryoverShort(String value);
 
-  /// No description provided for @diaryBalanceSportShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Sport {value}'**
-  String diaryBalanceSportShort(String value);
-
   /// No description provided for @diaryBudgetDetailsTitle.
   ///
   /// In en, this message translates to:

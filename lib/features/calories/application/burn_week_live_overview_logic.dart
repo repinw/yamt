@@ -39,19 +39,9 @@ BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
     visibleCurrentWeekBaseGoalKcal,
   );
 
-  final currentWeekActivityBonus = weekOverview.days.fold<double>(0, (
-    sum,
-    day,
-  ) {
-    if (isBeforeBurnWeekDay(day.date, currentWeekStartDate)) {
-      return sum;
-    }
-    return sum + day.activityBonusKcal;
-  });
-  final rawWeeklyGoalKcal = baseWeeklyGoalKcal + currentWeekActivityBonus;
   final adjustedWeeklyGoalKcal = math.max<double>(
     fallbackDailyGoalKcal,
-    rawWeeklyGoalKcal + previousWeekOverflowKcal,
+    baseWeeklyGoalKcal + previousWeekOverflowKcal,
   );
   final dailyGoalKcal = adjustedWeeklyGoalKcal / burnWeekDaysPerWeek;
   final completedDaysCount = weekOverview.days

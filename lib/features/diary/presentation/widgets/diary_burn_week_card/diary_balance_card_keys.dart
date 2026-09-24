@@ -15,16 +15,6 @@ abstract final class DiaryBalanceCardKeys {
     'diary-balance-daily-progress-eaten-fill',
   );
 
-  /// Daily activity progress extension key.
-  static const dailyProgressActivityFill = ValueKey<String>(
-    'diary-balance-daily-progress-activity-fill',
-  );
-
-  /// Daily activity preview extension key.
-  static const dailyProgressActivityPreview = ValueKey<String>(
-    'diary-balance-daily-progress-activity-preview',
-  );
-
   /// Target marker key.
   static const targetMarker = ValueKey<String>('diary-balance-target-marker');
 

@@ -1178,14 +1178,6 @@
       }
     }
   },
-  "diaryBalanceSportShort": "Sport {value}",
-  "@diaryBalanceSportShort": {
-    "placeholders": {
-      "value": {
-        "type": "String"
-      }
-    }
-  },
   "diaryBudgetDetailsTitle": "Daily budget details",
   "diaryBudgetDetailsButtonLabel": "Details",
   "diaryBudgetDetailsTodaySectionTitle": "Today's calculation",

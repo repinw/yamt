@@ -135,7 +135,6 @@ class DiaryBalanceSource {
             totalKcal: _selectedDayOverview.totalKcal,
             goalKcal: practiceGoalKcal,
             baseGoalKcal: practiceGoalKcal,
-            activitySegmentKcal: 0,
           ),
         ),
       );

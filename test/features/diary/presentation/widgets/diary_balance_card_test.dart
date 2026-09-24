@@ -215,53 +215,10 @@ void main() {
     expect(fractionallySizedBoxes[6].widthFactor, lessThan(1.0));
   });
 
-  testWidgets('daily progress ignores legacy activity kcal', (tester) async {
-    final selectedDay = DateTime(2026, 4, 27);
+  testWidgets('daily progress animates eaten segment', (tester) async {
+    await _pumpDailyProgressBar(tester, eatenKcal: 0, targetKcal: 1200);
 
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: '2026-4-27',
-      ),
-      activityBonusKcal: 200,
-    );
-
-    final trackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
-    );
-    final eatenRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
-    );
-    expect(eatenRect.width / trackRect.width, closeTo(1000 / 2000, 0.02));
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
-      findsNothing,
-    );
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-      findsNothing,
-    );
-  });
-
-  testWidgets('daily progress animates eaten and filled activity segments', (
-    tester,
-  ) async {
-    await _pumpDailyProgressBar(
-      tester,
-      eatenKcal: 0,
-      targetKcal: 1200,
-      activitySegmentKcal: 0,
-    );
-
-    await _pumpDailyProgressBar(
-      tester,
-      eatenKcal: 1200,
-      targetKcal: 1200,
-      activitySegmentKcal: 300,
-    );
+    await _pumpDailyProgressBar(tester, eatenKcal: 1200, targetKcal: 1200);
     await tester.pump(const Duration(milliseconds: 500));
 
     final midTrackRect = tester.getRect(
@@ -270,14 +227,9 @@ void main() {
     final midEatenRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
     );
-    final midActivityRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-    );
 
     expect(midEatenRect.width, greaterThan(0));
     expect(midEatenRect.width, lessThan(midTrackRect.width));
-    expect(midActivityRect.width, greaterThan(0));
-    expect(midActivityRect.width, lessThan(midTrackRect.width * 0.25));
 
     await tester.pumpAndSettle();
 
@@ -287,15 +239,8 @@ void main() {
     final settledEatenRect = tester.getRect(
       find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
     );
-    final settledActivityRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-    );
 
     expect(settledEatenRect.width / settledTrackRect.width, closeTo(1, 0.02));
-    expect(
-      settledActivityRect.width / settledTrackRect.width,
-      closeTo(0.25, 0.02),
-    );
   });
 
   testWidgets('pause day shows special balance', (tester) async {
@@ -664,97 +609,6 @@ void main() {
     expect(_findTextContaining('-838 kcal'), findsNothing);
   });
 
-  testWidgets('daily progress ignores legacy corrected activity kcal', (
-    tester,
-  ) async {
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: '2026-4-27',
-      ),
-      goalKcal: 2774.25,
-      baseGoalKcal: 2100,
-      activityBonusKcal: 674.25,
-      todayFlexibleGoalKcal: 2774.25,
-    );
-
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
-      findsNothing,
-    );
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-      findsNothing,
-    );
-  });
-
-  testWidgets('daily progress ignores legacy activity kcal with carryover', (
-    tester,
-  ) async {
-    final selectedDay = DateTime(2026, 4, 27);
-
-    await _pumpBalanceCard(
-      tester,
-      selectedDay: selectedDay,
-      weekStartDate: selectedDay,
-      dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
-      runState: const BurnWeekRunState.initial().copyWith(
-        currentWeekStartDayKey: '2026-4-27',
-      ),
-      goalKcal: 2774.25,
-      baseGoalKcal: 2100,
-      activityBonusKcal: 674.25,
-      todayFlexibleGoalKcal: 5000,
-    );
-
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
-      findsNothing,
-    );
-    expect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-      findsNothing,
-    );
-  });
-
-  testWidgets('daily progress fills eaten activity with negative carryover', (
-    tester,
-  ) async {
-    await _pumpDailyProgressBar(
-      tester,
-      eatenKcal: 1358,
-      targetKcal: 1471,
-      activitySegmentKcal: 674.25,
-      activitySegmentReferenceKcal: 2774.25,
-    );
-    await tester.pumpAndSettle();
-
-    final trackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
-    );
-    final previewRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityPreview),
-    );
-    final activityRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressActivityFill),
-    );
-    final eatenRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
-    );
-
-    expect(previewRect.width / trackRect.width, closeTo(674.25 / 1471, 0.02));
-    expect(
-      activityRect.width / trackRect.width,
-      closeTo((1358 + 674.25 - 1471) / 1471, 0.02),
-    );
-    expect(activityRect.right, closeTo(eatenRect.right, 0.5));
-  });
-
   testWidgets('shows retry content when week overview fails', (tester) async {
     final selectedDay = normalizeDiaryDay(
       DateTime.now().subtract(const Duration(days: 1)),
@@ -818,11 +672,9 @@ void main() {
       dayTotals: const [0, 0, 0, 0, 0, 0, 800],
       runState: const BurnWeekRunState.initial(),
       baseGoalKcal: 2000,
-      activityBonusKcal: 200,
     );
 
     expect(_findTextContaining('Base 2,000 kcal'), findsOneWidget);
-    expect(_findTextContaining('Sport'), findsNothing);
   });
 }
 
@@ -839,7 +691,6 @@ Future<void> _pumpBalanceCard(
   bool settle = true,
   double goalKcal = 2000,
   double? baseGoalKcal,
-  double activityBonusKcal = 0,
   double todayFlexibleGoalKcal = 2000,
   bool goalStartsInFuture = false,
   DateTime? nextGoalStartDate,
@@ -859,7 +710,6 @@ Future<void> _pumpBalanceCard(
     dayTotals: dayTotals,
     goalKcal: goalKcal,
     baseGoalKcal: baseGoalKcal,
-    activityBonusKcal: activityBonusKcal,
     todayFlexibleGoalKcal: todayFlexibleGoalKcal,
     goalStartsInFuture: goalStartsInFuture,
     nextGoalStartDate: nextGoalStartDate,
@@ -999,8 +849,6 @@ Future<void> _pumpDailyProgressBar(
   WidgetTester tester, {
   required double eatenKcal,
   required double targetKcal,
-  required double activitySegmentKcal,
-  double? activitySegmentReferenceKcal,
 }) async {
   await tester.pumpWidget(
     MaterialApp(
@@ -1011,8 +859,6 @@ Future<void> _pumpDailyProgressBar(
             child: DiaryDailyGoalProgressBar(
               eatenKcal: eatenKcal,
               targetKcal: targetKcal,
-              activitySegmentKcal: activitySegmentKcal,
-              activitySegmentReferenceKcal: activitySegmentReferenceKcal,
               numberFormat: NumberFormat.decimalPattern('en'),
               unit: 'kcal',
             ),
@@ -1058,7 +904,6 @@ CalorieWeekOverview _weekOverview({
   required List<double> dayTotals,
   double goalKcal = 2000,
   double? baseGoalKcal,
-  double activityBonusKcal = 0,
   double todayFlexibleGoalKcal = 2000,
   bool goalStartsInFuture = false,
   DateTime? nextGoalStartDate,
@@ -1073,7 +918,6 @@ CalorieWeekOverview _weekOverview({
         totalKcal: dayTotals[6 - offset],
         goalKcal: goalKcal,
         baseGoalKcal: baseGoalKcal,
-        activityBonusKcal: offset == 0 ? activityBonusKcal : 0,
         entryCount: dayTotals[6 - offset] > 0 ? 1 : 0,
         isPauseDay: offset == 0 && isPauseDay,
       ),

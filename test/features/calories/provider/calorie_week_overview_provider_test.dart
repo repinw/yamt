@@ -387,7 +387,6 @@ void main() {
       final trainingOverview = overview.days.firstWhere(
         (day) => day.date == trainingDay,
       );
-      expect(trainingOverview.activityBonusKcal, 0.0);
       expect(trainingOverview.goalKcal, closeTo(2000.0, 0.001));
       expect(diaryHealthService.trendRequests, isEmpty);
       expect(diaryHealthService.loadDayDataCallCount, 0);

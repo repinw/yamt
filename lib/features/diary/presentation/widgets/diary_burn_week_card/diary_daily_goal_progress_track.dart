@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/visible_value_animation_builder.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 
@@ -17,12 +16,7 @@ class DiaryDailyGoalProgressTrack extends StatelessWidget {
     required this.height,
     required this.trackColor,
     required this.eatenColor,
-    required this.activityColor,
     required this.eatenRatio,
-    required this.activitySegmentRatio,
-    required this.activityFillRatio,
-    required this.activitySegmentStartRatio,
-    required this.dividerColor,
     super.key,
   });
 
@@ -35,23 +29,8 @@ class DiaryDailyGoalProgressTrack extends StatelessWidget {
   /// Main eaten progress color.
   final Color eatenColor;
 
-  /// Full activity fill color.
-  final Color activityColor;
-
   /// Eaten progress ratio from 0 to 1.
   final double eatenRatio;
-
-  /// Activity allowance ratio from 0 to 1.
-  final double activitySegmentRatio;
-
-  /// Full-color activity ratio already covered by eaten progress.
-  final double activityFillRatio;
-
-  /// Left edge ratio where activity allowance starts.
-  final double activitySegmentStartRatio;
-
-  /// Divider color between base and activity allowance.
-  final Color dividerColor;
 
   @override
   Widget build(BuildContext context) {
@@ -66,75 +45,16 @@ class DiaryDailyGoalProgressTrack extends StatelessWidget {
             child: Stack(
               children: [
                 Positioned.fill(child: ColoredBox(color: trackColor)),
-                if (activitySegmentRatio > 0)
-                  _ActivityPreviewSegment(
-                    width: width,
-                    activitySegmentRatio: activitySegmentRatio,
-                    color: activityColor.withValues(
-                      alpha: AppOpacities.diaryActivityPreviewSegment,
-                    ),
-                  ),
                 _EatenProgressSegment(
                   width: width,
                   eatenRatio: eatenRatio,
                   color: eatenColor,
-                ),
-                if (activitySegmentRatio > 0)
-                  _ActivityFilledSegment(
-                    width: width,
-                    activityFillRatio: activityFillRatio,
-                    activitySegmentStartRatio: activitySegmentStartRatio,
-                    color: activityColor,
-                  ),
-                _ActivityDivider(
-                  width: width,
-                  activitySegmentRatio: activitySegmentRatio,
-                  color: dividerColor,
                 ),
               ],
             ),
           ),
         );
       },
-    );
-  }
-}
-
-class _ActivityPreviewSegment extends StatelessWidget {
-  const new({
-    required this.width,
-    required this.activitySegmentRatio,
-    required this.color,
-  });
-
-  final double width;
-  final double activitySegmentRatio;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return VisibleValueAnimationBuilder(
-      duration: _progressAnimationDuration,
-      curve: _progressAnimationCurve,
-      value: activitySegmentRatio,
-      handoffTag: (_handoffTag, #activityPreview),
-      builder: (context, value, child) {
-        if (value <= 0) {
-          return const SizedBox.shrink();
-        }
-
-        return Positioned(
-          right: 0,
-          top: 0,
-          bottom: 0,
-          width: width * value,
-          child: child!,
-        );
-      },
-      child: ColoredBox(
-        key: DiaryBalanceCardKeys.dailyProgressActivityPreview,
-        color: color,
-      ),
     );
   }
 }
@@ -173,79 +93,6 @@ class _EatenProgressSegment extends StatelessWidget {
           borderRadius: BorderRadius.circular(999),
         ),
       ),
-    );
-  }
-}
-
-class _ActivityFilledSegment extends StatelessWidget {
-  const new({
-    required this.width,
-    required this.activityFillRatio,
-    required this.activitySegmentStartRatio,
-    required this.color,
-  });
-
-  final double width;
-  final double activityFillRatio;
-  final double activitySegmentStartRatio;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return VisibleValueAnimationBuilder(
-      duration: _progressAnimationDuration,
-      curve: _progressAnimationCurve,
-      value: activityFillRatio,
-      handoffTag: (_handoffTag, #activityFill),
-      builder: (context, value, child) {
-        return Positioned(
-          left: width * activitySegmentStartRatio,
-          top: 0,
-          bottom: 0,
-          width: width * value,
-          child: child!,
-        );
-      },
-      child: ColoredBox(
-        key: DiaryBalanceCardKeys.dailyProgressActivityFill,
-        color: color,
-      ),
-    );
-  }
-}
-
-class _ActivityDivider extends StatelessWidget {
-  const new({
-    required this.width,
-    required this.activitySegmentRatio,
-    required this.color,
-  });
-
-  final double width;
-  final double activitySegmentRatio;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return VisibleValueAnimationBuilder(
-      duration: _progressAnimationDuration,
-      curve: _progressAnimationCurve,
-      value: activitySegmentRatio,
-      handoffTag: (_handoffTag, #activityDivider),
-      builder: (context, value, child) {
-        if (value <= 0) {
-          return const SizedBox.shrink();
-        }
-
-        return Positioned(
-          right: width * value,
-          top: 0,
-          bottom: 0,
-          width: 1,
-          child: child!,
-        );
-      },
-      child: ColoredBox(color: color),
     );
   }
 }
