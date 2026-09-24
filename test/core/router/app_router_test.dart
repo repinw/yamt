@@ -730,6 +730,19 @@ void main() {
     await _pumpRouterTransition(tester);
     await tester.tap(find.byIcon(Icons.menu_rounded).hitTestable());
     await _pumpRouterTransition(tester);
+    await tester.tap(find.text('Profile').hitTestable());
+    await _pumpRouterTransition(tester);
+    expect(router.state.uri.path, AppRoutes.homeProfile);
+    expect(
+      find.descendant(of: find.byType(AppBar), matching: find.text('Profile')),
+      findsOneWidget,
+    );
+
+    await tester.pageBack();
+    await _pumpRouterTransition(tester);
+    expect(router.state.uri.path, AppRoutes.homeCalories);
+    await tester.tap(find.byIcon(Icons.menu_rounded).hitTestable());
+    await _pumpRouterTransition(tester);
     await tester.tap(find.text('Settings').hitTestable());
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeSettings);

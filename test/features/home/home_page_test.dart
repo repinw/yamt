@@ -60,7 +60,6 @@ import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
-import 'package:yamt/features/settings/presentation/widgets/settings_profile_summary_card/settings_profile_summary_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
@@ -446,6 +445,11 @@ Widget _buildHarness({
             const Scaffold(body: Text('Settings route')),
       ),
       GoRoute(
+        path: AppRoutes.homeProfile,
+        builder: (context, state) =>
+            const Scaffold(body: Text('Profile route')),
+      ),
+      GoRoute(
         path: AppRoutes.homeShopping,
         builder: (context, state) =>
             const Scaffold(body: Text('Shopping route')),
@@ -654,7 +658,7 @@ void main() {
     }
   });
 
-  testWidgets('diary menu opens the profile card and settings', (tester) async {
+  testWidgets('diary menu button on the left opens settings', (tester) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
 
@@ -675,18 +679,40 @@ void main() {
     await tester.tap(menuButton);
     await tester.pumpAndSettle();
     expect(find.byType(HomeMenuDrawer), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(HomeMenuDrawer),
-        matching: find.byType(SettingsProfileSummaryCard),
-      ),
-      findsOneWidget,
-    );
 
     await tester.tap(find.byKey(HomeMenuDrawer.settingsTileKey));
     await tester.pumpAndSettle();
 
     expect(find.text('Settings route'), findsOneWidget);
+  });
+
+  testWidgets('diary menu opens the profile', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: _diaryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(HomeShellMenuButton.buttonKey));
+    await tester.pumpAndSettle();
+    final profileTile = find.byKey(HomeMenuDrawer.profileTileKey);
+    expect(
+      tester.getTopLeft(profileTile).dy,
+      lessThan(
+        tester.getTopLeft(find.byKey(HomeMenuDrawer.settingsTileKey)).dy,
+      ),
+    );
+
+    await tester.tap(profileTile);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomeMenuDrawer), findsNothing);
+    expect(find.text('Profile route'), findsOneWidget);
   });
 
   testWidgets('tabs other than diary have no menu button', (tester) async {

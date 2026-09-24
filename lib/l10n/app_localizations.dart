@@ -125,6 +125,12 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get homeSettings;
 
+  /// No description provided for @homeProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get homeProfile;
+
   /// No description provided for @homeProgress.
   ///
   /// In en, this message translates to:

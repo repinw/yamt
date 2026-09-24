@@ -60,12 +60,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   and stripes the overage share at the end of its bar.
 - Burn Week balance cards with daily and weekly progress.
 - Weekly check-in prompts and success/hint cards.
-- Side menu from the diary top bar with a profile card: name (when set),
-  height, current weight, sex, birthday with age, daily expenditure (TDEE),
-  and the current goals (daily calories, target weight, goal mode with pace,
-  protein, carbs, fat). A button opens the macro settings; the card updates
-  when they are saved.
-- The card's current weight is the latest weigh-in of the last seven days,
+- Side menu from the diary top bar with Profile and Settings entries.
+- Profile page from the side menu: name (when set), height, current weight,
+  sex, birthday with age, daily expenditure (TDEE), and the current goals
+  (daily calories, target weight, goal mode with pace, protein, carbs, fat).
+  A button opens the macro settings; the page updates when they are saved.
+- The profile's current weight is the latest weigh-in of the last seven days,
   else the profile weight. Its TDEE is the one learned in the latest weekly
   check-in, marked "learned", else the calculator's estimate from the
   profile, marked "estimated".

@@ -78,6 +78,9 @@ abstract final class AppRoutes {
   /// Settings route, opened from the home side menu.
   static const homeSettings = '/home/settings';
 
+  /// Profile route, opened from the home side menu.
+  static const homeProfile = '/home/profile';
+
   /// Account settings route.
   static const homeSettingsAccount = '/home/settings/account';
 

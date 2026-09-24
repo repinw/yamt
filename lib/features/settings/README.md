@@ -6,7 +6,8 @@ settings.
 
 ## Owns
 
-- Settings and account pages under `presentation/pages/`.
+- Settings and account pages under `presentation/pages/`, and the profile
+  page `presentation/profile_page.dart`.
 - Settings tiles, account cards, the profile summary card, and account
   dialogs under `presentation/widgets/<widget_name>/`.
 - Account page flow and account controller state under `presentation/controllers/`.
@@ -24,11 +25,14 @@ settings.
   pushed page with its own app bar, opened from the Home side menu at
   `AppRoutes.homeSettings`.
 - `presentation/pages/account_page.dart` is the account management page.
+- `presentation/profile_page.dart` is the profile page. It is a pushed page
+  with its own app bar, opened from the Home side menu at
+  `AppRoutes.homeProfile`, and shows the profile summary card.
 - `presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart` is the settings-owned tile that
   delegates Health connection actions to the Health feature.
 - Reusable settings tile components under `presentation/widgets/settings_tiles/`.
 - `presentation/widgets/settings_profile_summary_card/settings_profile_summary_card.dart`
-  is the profile card of the Home side menu: optional name, height, current
+  is the card of the profile page: optional name, height, current
   weight, sex, birthday with age, daily expenditure (TDEE), and the current
   goals (calories, target weight, goal mode, protein, carbs, fat). Its button
   opens the macro goals sheet. Body data and goals come from the calorie

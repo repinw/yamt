@@ -24,6 +24,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeSettings => 'Einstellungen';
 
   @override
+  String get homeProfile => 'Profil';
+
+  @override
   String get homeProgress => 'Fortschritt';
 
   @override

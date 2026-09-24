@@ -6,10 +6,10 @@ Home owns the tab shell, tab navigation, and shell-level composition.
 
 - Home shell routing and tab selection: Diary, Inventory, Cookbook, Progress.
 - Shell-only navigation state and bottom navigation chrome.
-- The side menu (`widgets/home_menu_drawer.dart`) with the Settings-owned
-  profile summary card, Settings and, in debug builds only, the Calories debug
-  actions. Only the Diary top bar opens it, through `HomeShellMenuButton` from
-  `core/widgets` on its left side.
+- The side menu (`widgets/home_menu_drawer.dart`) with Profile, Settings and,
+  in debug builds only, the Calories debug actions. Profile and Settings open
+  the Settings-owned pages. Only the Diary top bar opens the menu, through
+  `HomeShellMenuButton` from `core/widgets` on its left side.
 
 ## Does Not Own
 
