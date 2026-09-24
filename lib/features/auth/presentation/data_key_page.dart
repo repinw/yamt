@@ -29,8 +29,11 @@ class DataKeyPage extends ConsumerWidget {
           _ => const Center(child: CircularProgressIndicator()),
         },
         loading: () => const Center(child: CircularProgressIndicator()),
+        // Reads the controller on tap: it is auto-dispose and nothing on
+        // this view watches it, so a notifier read during build is gone by
+        // the time the user taps.
         error: (error, stackTrace) => _LoadFailedView(
-          onRetry: ref.read(dataKeyControllerProvider.notifier).retry,
+          onRetry: () => ref.read(dataKeyControllerProvider.notifier).retry(),
         ),
       ),
     );
