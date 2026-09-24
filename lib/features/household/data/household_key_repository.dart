@@ -17,21 +17,31 @@ const _wrappedKeyField = 'wrapped_key';
 const _keyJsonField = 'key';
 const _migratedFlagValue = 'true';
 
+/// Fields of an inventory item that stay readable for the recent manual
+/// items query.
+const inventoryItemPlaintextFields = <String>[
+  'entry_date',
+  'origin',
+  'is_deposit',
+  'is_discount',
+];
+
+/// Field of a discard event that stays readable for ordering.
+const inventoryDiscardEventPlaintextFields = <String>['discarded_at'];
+
+/// Field of an activity event that stays readable for ordering.
+const inventoryActivityEventPlaintextFields = <String>['happened_at'];
+
 /// The household collections that the household key encrypts, with the fields
 /// that stay readable for queries.
 const householdEncryptedCollections = <String, List<String>>{
-  'inventory_items': <String>[
-    'entry_date',
-    'origin',
-    'is_deposit',
-    'is_discount',
-  ],
+  'inventory_items': inventoryItemPlaintextFields,
   'shopping_list_items': <String>[],
   'prepared_meals': <String>[],
   'prepared_meal_templates': <String>[],
   'kitchen_utensils': <String>[],
-  'inventory_discard_events': <String>['discarded_at'],
-  'inventory_activity_events': <String>['happened_at'],
+  'inventory_discard_events': inventoryDiscardEventPlaintextFields,
+  'inventory_activity_events': inventoryActivityEventPlaintextFields,
 };
 
 /// Stores the household key of a data owner, wrapped separately for every

@@ -1,10 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/plaintext_document_encryption.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -72,6 +76,46 @@ CalorieEntry _entry({num consumedPortions = 2}) {
 }
 
 late PayloadCipher _cipher;
+late PayloadCipher _householdCipher;
+
+HouseholdCipher _household(String ownerUid) {
+  return (
+    ownerUid: ownerUid,
+    key: _householdCipherKey,
+    cipher: _householdCipher,
+  );
+}
+
+late SecretKey _householdCipherKey;
+
+SealedCollection _sealedMeals(
+  FirebaseFirestore firestore, {
+  String userId = 'user-1',
+}) {
+  return SealedCollection(
+    _preparedMealCollection(firestore: firestore, userId: userId),
+    cipher: _householdCipher,
+  );
+}
+
+Future<void> _putMeal(
+  FirebaseFirestore firestore,
+  Map<String, dynamic> json, {
+  String userId = 'user-1',
+}) async {
+  final meals = _sealedMeals(firestore, userId: userId);
+  await meals.reference.doc('meal-1').set(await meals.seal('meal-1', json));
+}
+
+Future<Map<String, dynamic>> _openMeal(
+  FirebaseFirestore firestore, {
+  String userId = 'user-1',
+}) async {
+  final meals = _sealedMeals(firestore, userId: userId);
+  final snapshot = await meals.reference.doc('meal-1').get();
+  expect(snapshot.data()!.keys, <String>[encryptedPayloadField]);
+  return (await meals.open(snapshot))!;
+}
 
 UserDataCipher _signedIn(String uid) => (uid: uid, cipher: _cipher);
 
@@ -87,19 +131,19 @@ Future<Map<String, dynamic>> _decrypted(
 void main() {
   setUpAll(() async {
     _cipher = PayloadCipher(await PayloadCipher.newDataKey());
+    _householdCipherKey = await PayloadCipher.newDataKey();
+    _householdCipher = PayloadCipher(_householdCipherKey);
   });
   test(
     'commitEntryAndPreparedMeal saves entry and reduces meal together',
     () async {
       final firestore = FakeFirebaseFirestore();
-      await _preparedMealCollection(firestore: firestore)
-          .doc('meal-1')
-          .set(_meal().toJson());
+      await _putMeal(firestore, _meal().toJson());
 
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        preparedMealOwnerUserId: 'user-1',
+        householdCipher: _household('user-1'),
       );
 
       final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -121,14 +165,9 @@ void main() {
         unorderedEquals(<String>['payload', 'logged_at']),
       );
 
-      final savedMeal = await _preparedMealCollection(firestore: firestore)
-          .doc('meal-1')
-          .get();
-      expect(savedMeal.data()?['remaining_portions'], 2);
-      expect(
-        savedMeal.data()?['updated_at'],
-        _entry().updatedAt.toIso8601String(),
-      );
+      final savedMeal = await _openMeal(firestore);
+      expect(savedMeal['remaining_portions'], 2);
+      expect(savedMeal['updated_at'], _entry().updatedAt.toIso8601String());
     },
   );
 
@@ -136,14 +175,12 @@ void main() {
     'commitEntryAndPreparedMeal persists fractional remaining portions',
     () async {
       final firestore = FakeFirebaseFirestore();
-      await _preparedMealCollection(firestore: firestore)
-          .doc('meal-1')
-          .set(_meal(remainingPortions: 1).toJson());
+      await _putMeal(firestore, _meal(remainingPortions: 1).toJson());
 
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        preparedMealOwnerUserId: 'user-1',
+        householdCipher: _household('user-1'),
       );
 
       final saved = await store.commitEntryAndPreparedMeal(
@@ -158,10 +195,8 @@ void main() {
           .get();
       expect((await _decrypted(savedEntry))['bundle_consumed_portions'], 0.5);
 
-      final savedMeal = await _preparedMealCollection(firestore: firestore)
-          .doc('meal-1')
-          .get();
-      expect(savedMeal.data()?['remaining_portions'], 0.5);
+      final savedMeal = await _openMeal(firestore);
+      expect(savedMeal['remaining_portions'], 0.5);
     },
   );
 
@@ -169,22 +204,21 @@ void main() {
     'commitEntryAndPreparedMeal updates remaining_net_weight for weighed meals',
     () async {
       final firestore = FakeFirebaseFirestore();
-      await _preparedMealCollection(firestore: firestore)
-          .doc('meal-1')
-          .set(
-            _meal()
-                .copyWith(
-                  finalNetWeight: 2253,
-                  totalPortions: 4,
-                  remainingPortions: 4,
-                )
-                .toJson(),
-          );
+      await _putMeal(
+        firestore,
+        _meal()
+            .copyWith(
+              finalNetWeight: 2253,
+              totalPortions: 4,
+              remainingPortions: 4,
+            )
+            .toJson(),
+      );
 
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        preparedMealOwnerUserId: 'user-1',
+        householdCipher: _household('user-1'),
       );
 
       final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -192,25 +226,21 @@ void main() {
       expect(saved, isTrue);
       await pumpEventQueue();
 
-      final savedMeal = await _preparedMealCollection(firestore: firestore)
-          .doc('meal-1')
-          .get();
-      expect(savedMeal.data()?['remaining_portions'], 2);
-      expect(savedMeal.data()?['remaining_net_weight'], 1127);
+      final savedMeal = await _openMeal(firestore);
+      expect(savedMeal['remaining_portions'], 2);
+      expect(savedMeal['remaining_net_weight'], 1127);
     },
   );
 
   test('commitEntryAndPreparedMeal leaves meal untouched when portions '
       'exceed remaining stock', () async {
     final firestore = FakeFirebaseFirestore();
-    await _preparedMealCollection(firestore: firestore)
-        .doc('meal-1')
-        .set(_meal(remainingPortions: 1).toJson());
+    await _putMeal(firestore, _meal(remainingPortions: 1).toJson());
 
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
       dataCipher: _signedIn('user-1'),
-      preparedMealOwnerUserId: 'user-1',
+      householdCipher: _household('user-1'),
     );
 
     final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -222,10 +252,8 @@ void main() {
         .get();
     expect(savedEntry.exists, isFalse);
 
-    final savedMeal = await _preparedMealCollection(firestore: firestore)
-        .doc('meal-1')
-        .get();
-    expect(savedMeal.data()?['remaining_portions'], 1);
+    final savedMeal = await _openMeal(firestore);
+    expect(savedMeal['remaining_portions'], 1);
   });
 
   test(
@@ -236,7 +264,7 @@ void main() {
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        preparedMealOwnerUserId: 'user-1',
+        householdCipher: _household('user-1'),
       );
 
       final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -253,18 +281,17 @@ void main() {
   test('commitEntryAndPreparedMeal returns false for meals with pending '
       'ingredients', () async {
     final firestore = FakeFirebaseFirestore();
-    await _preparedMealCollection(firestore: firestore)
-        .doc('meal-1')
-        .set(
-          _meal()
-              .copyWith(pendingRecipeIngredients: const <String>['200 g Rice'])
-              .toJson(),
-        );
+    await _putMeal(
+      firestore,
+      _meal()
+          .copyWith(pendingRecipeIngredients: const <String>['200 g Rice'])
+          .toJson(),
+    );
 
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
       dataCipher: _signedIn('user-1'),
-      preparedMealOwnerUserId: 'user-1',
+      householdCipher: _household('user-1'),
     );
 
     final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -276,27 +303,22 @@ void main() {
         .get();
     expect(savedEntry.exists, isFalse);
 
-    final savedMeal = await _preparedMealCollection(firestore: firestore)
-        .doc('meal-1')
-        .get();
-    expect(savedMeal.data()?['pending_recipe_ingredients'], const <String>[
+    final savedMeal = await _openMeal(firestore);
+    expect(savedMeal['pending_recipe_ingredients'], const <String>[
       '200 g Rice',
     ]);
-    expect(savedMeal.data()?['remaining_portions'], 4);
+    expect(savedMeal['remaining_portions'], 4);
   });
 
   test('commitEntryAndPreparedMeal uses shared meal owner and personal '
       'entry user', () async {
     final firestore = FakeFirebaseFirestore();
-    await _preparedMealCollection(
-      firestore: firestore,
-      userId: 'host-1',
-    ).doc('meal-1').set(_meal().toJson());
+    await _putMeal(firestore, _meal().toJson(), userId: 'host-1');
 
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
       dataCipher: _signedIn('member-1'),
-      preparedMealOwnerUserId: 'host-1',
+      householdCipher: _household('host-1'),
     );
 
     final saved = await store.commitEntryAndPreparedMeal(
@@ -310,13 +332,10 @@ void main() {
       firestore: firestore,
       userId: 'member-1',
     ).doc('entry-1').get();
-    final savedMeal = await _preparedMealCollection(
-      firestore: firestore,
-      userId: 'host-1',
-    ).doc('meal-1').get();
+    final savedMeal = await _openMeal(firestore, userId: 'host-1');
 
     expect(savedEntry.exists, isTrue);
     expect((await _decrypted(savedEntry))['user_id'], 'member-1');
-    expect(savedMeal.data()?['remaining_portions'], 2);
+    expect(savedMeal['remaining_portions'], 2);
   });
 }

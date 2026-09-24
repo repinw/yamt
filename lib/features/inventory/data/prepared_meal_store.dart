@@ -2,6 +2,8 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
 
 const String _storeLogName = 'FirestorePreparedMealStore';
 const String _usersCollection = 'users';
@@ -34,12 +36,13 @@ abstract interface class PreparedMealStore {
   });
 }
 
-/// Defines firestore prepared meal store.
+/// Stores prepared meals encrypted with the household key [_cipher].
 class FirestorePreparedMealStore implements PreparedMealStore {
   /// The firestore prepared meal store.
-  const new({required this._firestore});
+  const new({required this._firestore, required this._cipher});
 
   final FirebaseFirestore _firestore;
+  final PayloadCipher _cipher;
 
   FirestoreAtomicReplaceService get _atomicReplaceService {
     return FirestoreAtomicReplaceService(firestore: _firestore);
@@ -47,13 +50,18 @@ class FirestorePreparedMealStore implements PreparedMealStore {
 
   @override
   Future<List<PreparedMealDocument>> readAll({required String userId}) async {
-    final snapshot = await _collection(userId).get();
-    return _mapSnapshot(snapshot);
+    final collection = _collection(userId);
+    return _mapDocuments(
+      await collection.openAll(await collection.reference.get()),
+    );
   }
 
   @override
   Stream<List<PreparedMealDocument>> watchAll({required String userId}) {
-    return _collection(userId).snapshots().map(_mapSnapshot);
+    final collection = _collection(userId);
+    return collection.reference.snapshots().asyncMap(
+      (snapshot) async => _mapDocuments(await collection.openAll(snapshot)),
+    );
   }
 
   @override
@@ -62,9 +70,11 @@ class FirestorePreparedMealStore implements PreparedMealStore {
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
+      final collection = _collection(userId);
+      await collection.ensureAllSealed();
       await _atomicReplaceService.replaceAll(
-        collection: _collection(userId),
-        documentsById: documentsById,
+        collection: collection.reference,
+        documentsById: await collection.sealAll(documentsById),
       );
       return true;
     } on Object catch (error, stackTrace) {
@@ -78,22 +88,21 @@ class FirestorePreparedMealStore implements PreparedMealStore {
     }
   }
 
-  CollectionReference<Map<String, dynamic>> _collection(String userId) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_preparedMealsCollection);
+  SealedCollection _collection(String userId) {
+    return SealedCollection(
+      _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection(_preparedMealsCollection),
+      cipher: _cipher,
+    );
   }
 
-  List<PreparedMealDocument> _mapSnapshot(
-    QuerySnapshot<Map<String, dynamic>> snapshot,
-  ) {
-    return snapshot.docs
+  List<PreparedMealDocument> _mapDocuments(List<OpenedDocument> documents) {
+    return documents
         .map(
-          (document) => PreparedMealDocument(
-            id: document.id,
-            data: Map<String, dynamic>.from(document.data()),
-          ),
+          (document) =>
+              PreparedMealDocument(id: document.id, data: document.data),
         )
         .toList(growable: false);
   }

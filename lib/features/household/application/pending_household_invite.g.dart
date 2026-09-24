@@ -45,7 +45,7 @@ final class PendingHouseholdInviteProvider
 }
 
 String _$pendingHouseholdInviteHash() =>
-    r'71224e44d6237010f9c82b6aaa3fa781e42056d3';
+    r'8b810722bd12f5c3c3ef2c353b11e229b557b8ac';
 
 /// An invite link that opened the app and waits for the join form.
 

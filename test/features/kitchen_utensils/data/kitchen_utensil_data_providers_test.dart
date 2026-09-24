@@ -3,11 +3,12 @@ import 'dart:typed_data';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'firestore_kitchen_utensil_repository.dart';
@@ -81,13 +82,18 @@ void main() {
     resetFirebaseStorageProviderDebugHooks();
   });
 
-  test('user session provider reads household owner id', () {
+  test('user session provider reads household owner id', () async {
+    final key = await PayloadCipher.newDataKey();
     final container = ProviderContainer(
       overrides: [
         authStateChangesProvider.overrideWith(
           (ref) => const Stream<User?>.empty(),
         ),
-        householdDataOwnerUserIdProvider.overrideWith((ref) => 'owner-1'),
+        householdCipherProvider.overrideWithValue((
+          ownerUid: 'owner-1',
+          key: key,
+          cipher: PayloadCipher(key),
+        )),
       ],
     );
     addTearDown(container.dispose);

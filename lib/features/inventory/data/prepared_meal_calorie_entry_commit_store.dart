@@ -5,12 +5,13 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 part 'prepared_meal_calorie_entry_commit_store.g.dart';
@@ -25,9 +26,6 @@ const _preparedMealsCollection = 'prepared_meals';
 PreparedMealCalorieEntryCommitStore? preparedMealCalorieEntryCommitStore(
   Ref ref,
 ) {
-  final preparedMealOwnerUserId = ref.watch(
-    effectiveHouseholdDataOwnerUserIdProvider,
-  );
   final firestore = ref.watch(firebaseFirestoreProvider);
   if (firestore == null) {
     return null;
@@ -36,7 +34,7 @@ PreparedMealCalorieEntryCommitStore? preparedMealCalorieEntryCommitStore(
   return FirestorePreparedMealCalorieEntryCommitStore(
     firestore: firestore,
     dataCipher: ref.watch(userDataCipherProvider),
-    preparedMealOwnerUserId: preparedMealOwnerUserId,
+    householdCipher: ref.watch(householdCipherProvider),
   );
 }
 
@@ -53,26 +51,26 @@ class FirestorePreparedMealCalorieEntryCommitStore
   const new({
     required this._firestore,
     required this._dataCipher,
-    required this._preparedMealOwnerUserId,
+    required this._householdCipher,
   });
 
   final FirebaseFirestore _firestore;
   final UserDataCipher? _dataCipher;
-  final String? _preparedMealOwnerUserId;
+  final HouseholdCipher? _householdCipher;
 
   @override
   Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry}) async {
     final dataCipher = _dataCipher;
-    final preparedMealOwnerUserId = _resolvePreparedMealOwnerUserId();
+    final household = _householdCipher;
     final preparedMealId = entry.bundleSourcePreparedMealId?.trim();
     final consumedPortions = entry.bundleConsumedPortions ?? 0;
     if (dataCipher == null ||
-        preparedMealOwnerUserId == null ||
+        household == null ||
         preparedMealId == null ||
         preparedMealId.isEmpty) {
       log(
         'Cannot commit prepared meal calorie entry ${entry.id}: '
-        'missing data key, user, or meal id.',
+        'missing data key, household key, or meal id.',
         name: _commitStoreLogName,
       );
       return false;
@@ -91,10 +89,11 @@ class FirestorePreparedMealCalorieEntryCommitStore
     // local copy, so two offline consumptions of the same meal may overwrite
     // each other.
     try {
-      final mealRef = _preparedMealCollection(preparedMealOwnerUserId)
-          .doc(preparedMealId);
+      final mealCollection = _preparedMealCollection(household);
+      final mealRef = mealCollection.reference.doc(preparedMealId);
       final mealSnapshot = await readDocumentLocalFirst(mealRef);
-      if (!mealSnapshot.exists) {
+      final storedMeal = await mealCollection.open(mealSnapshot);
+      if (storedMeal == null) {
         log(
           'Prepared meal $preparedMealId missing while committing '
           'calorie entry ${entry.id}.',
@@ -103,9 +102,8 @@ class FirestorePreparedMealCalorieEntryCommitStore
         return false;
       }
 
-      final rawMeal = Map<String, dynamic>.from(
-        mealSnapshot.data() ?? const <String, dynamic>{},
-      )..['id'] = mealSnapshot.id;
+      final rawMeal = Map<String, dynamic>.from(storedMeal)
+        ..['id'] = mealSnapshot.id;
       final currentMeal = PreparedMeal.fromJson(rawMeal);
       if (currentMeal.hasPendingRecipeIngredients) {
         log(
@@ -150,9 +148,15 @@ class FirestorePreparedMealCalorieEntryCommitStore
         reference: entryRef,
         cipher: dataCipher.cipher,
       );
+      // The meal is encrypted as a whole, so the batch writes the full
+      // document instead of updating single fields.
+      final mealDocument = await mealCollection.seal(mealRef.id, {
+        ...storedMeal,
+        ...mealUpdates,
+      });
       final batch = _firestore.batch()
         ..set(entryRef, entryDocument)
-        ..update(mealRef, mealUpdates);
+        ..set(mealRef, mealDocument);
       commitBatchInBackground(
         batch,
         failureMessage:
@@ -171,15 +175,6 @@ class FirestorePreparedMealCalorieEntryCommitStore
     }
   }
 
-  String? _resolvePreparedMealOwnerUserId() {
-    final preparedMealOwnerUserId = _preparedMealOwnerUserId?.trim();
-    if (preparedMealOwnerUserId != null && preparedMealOwnerUserId.isNotEmpty) {
-      return preparedMealOwnerUserId;
-    }
-
-    return _dataCipher?.uid;
-  }
-
   CollectionReference<Map<String, dynamic>> _calorieEntriesCollectionRef(
     String userId,
   ) {
@@ -189,12 +184,13 @@ class FirestorePreparedMealCalorieEntryCommitStore
         .collection(_calorieEntriesCollection);
   }
 
-  CollectionReference<Map<String, dynamic>> _preparedMealCollection(
-    String userId,
-  ) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_preparedMealsCollection);
+  SealedCollection _preparedMealCollection(HouseholdCipher household) {
+    return SealedCollection(
+      _firestore
+          .collection(_usersCollection)
+          .doc(household.ownerUid)
+          .collection(_preparedMealsCollection),
+      cipher: household.cipher,
+    );
   }
 }

@@ -62,7 +62,7 @@ final class InventoryActivityEventRepositoryProvider
 }
 
 String _$inventoryActivityEventRepositoryHash() =>
-    r'3802846e87f7a0ff30848c855c5c2656ec9ca290';
+    r'c161ea9435f659381199ad0f5bffda3cfc83038b';
 
 /// Current inventory activity actor.
 

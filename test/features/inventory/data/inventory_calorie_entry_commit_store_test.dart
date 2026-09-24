@@ -1,10 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/plaintext_document_encryption.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
@@ -80,13 +85,60 @@ CalorieEntry _entry() {
   );
 }
 
-Map<String, dynamic> _withDocumentId(
-  DocumentSnapshot<Map<String, dynamic>> snapshot,
-) {
-  return <String, dynamic>{'id': snapshot.id, ...?snapshot.data()};
+late PayloadCipher _cipher;
+late SecretKey _householdKey;
+
+HouseholdCipher _household(String ownerUid) {
+  return (
+    ownerUid: ownerUid,
+    key: _householdKey,
+    cipher: PayloadCipher(_householdKey),
+  );
 }
 
-late PayloadCipher _cipher;
+SealedCollection _sealedItems(
+  FirebaseFirestore firestore, {
+  String userId = 'user-1',
+}) {
+  return SealedCollection(
+    _inventoryCollection(firestore: firestore, userId: userId),
+    cipher: PayloadCipher(_householdKey),
+    plaintextFields: inventoryItemPlaintextFields,
+  );
+}
+
+Future<void> _putItem(
+  FirebaseFirestore firestore,
+  Map<String, dynamic> json, {
+  String userId = 'user-1',
+}) async {
+  final items = _sealedItems(firestore, userId: userId);
+  await items.reference
+      .doc('inventory-1')
+      .set(await items.seal('inventory-1', json));
+}
+
+Future<Map<String, dynamic>> _openItem(
+  FirebaseFirestore firestore, {
+  String userId = 'user-1',
+}) async {
+  final items = _sealedItems(firestore, userId: userId);
+  final snapshot = await items.reference.doc('inventory-1').get();
+  return <String, dynamic>{'id': snapshot.id, ...?await items.open(snapshot)};
+}
+
+Future<List<Map<String, dynamic>>> _openActivity(
+  FirebaseFirestore firestore, {
+  String userId = 'user-1',
+}) async {
+  final events = SealedCollection(
+    _activityCollection(firestore: firestore, userId: userId),
+    cipher: PayloadCipher(_householdKey),
+    plaintextFields: inventoryActivityEventPlaintextFields,
+  );
+  final opened = await events.openAll(await events.reference.get());
+  return opened.map((document) => document.data).toList();
+}
 
 UserDataCipher _signedIn(String uid) => (uid: uid, cipher: _cipher);
 
@@ -102,19 +154,18 @@ Future<Map<String, dynamic>> _decrypted(
 void main() {
   setUpAll(() async {
     _cipher = PayloadCipher(await PayloadCipher.newDataKey());
+    _householdKey = await PayloadCipher.newDataKey();
   });
   test(
     'commitEntryAndInventory saves entry and reduces inventory together',
     () async {
       final firestore = FakeFirebaseFirestore();
-      await _inventoryCollection(firestore: firestore)
-          .doc('inventory-1')
-          .set(_inventoryItem().toJson());
+      await _putItem(firestore, _inventoryItem().toJson());
 
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        inventoryOwnerUserId: 'user-1',
+        householdCipher: _household('user-1'),
         actor: _actor,
       );
 
@@ -146,20 +197,30 @@ void main() {
         'inventory-1',
       );
 
-      final savedItemSnapshot = await _inventoryCollection(firestore: firestore)
+      final rawItem = await _inventoryCollection(firestore: firestore)
           .doc('inventory-1')
           .get();
-      final savedItem = InventoryItem.fromJson(
-        _withDocumentId(savedItemSnapshot),
+      expect(
+        rawItem.data()!.keys,
+        unorderedEquals(<String>[
+          encryptedPayloadField,
+          ...inventoryItemPlaintextFields,
+        ]),
       );
+      final savedItem = InventoryItem.fromJson(await _openItem(firestore));
+      expect(savedItem.name, 'Milk');
       expect(savedItem.currentAmount, 500);
       expect(savedItem.quantity, 1);
       expect(savedItem.lastConsumedAt, _entry().loggedAt);
 
       final activitySnapshot = await _activityCollection(firestore: firestore)
           .get();
+      expect(
+        activitySnapshot.docs.single.data().keys,
+        unorderedEquals(<String>[encryptedPayloadField, 'happened_at']),
+      );
       final activityEvent = InventoryActivityEvent.fromJson(
-        activitySnapshot.docs.single.data(),
+        (await _openActivity(firestore)).single,
       );
       expect(activityEvent.type, InventoryActivityEventType.itemConsumed);
       expect(activityEvent.actorUserId, 'user-1');
@@ -175,14 +236,12 @@ void main() {
     'commitEntryAndInventory fails when pending amount exceeds stock',
     () async {
       final firestore = FakeFirebaseFirestore();
-      await _inventoryCollection(firestore: firestore)
-          .doc('inventory-1')
-          .set(_inventoryItem(currentAmount: 100).toJson());
+      await _putItem(firestore, _inventoryItem(currentAmount: 100).toJson());
 
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        inventoryOwnerUserId: 'user-1',
+        householdCipher: _household('user-1'),
         actor: _actor,
       );
 
@@ -202,12 +261,7 @@ void main() {
           .get();
       expect(savedEntrySnapshot.exists, isFalse);
 
-      final savedItemSnapshot = await _inventoryCollection(firestore: firestore)
-          .doc('inventory-1')
-          .get();
-      final savedItem = InventoryItem.fromJson(
-        _withDocumentId(savedItemSnapshot),
-      );
+      final savedItem = InventoryItem.fromJson(await _openItem(firestore));
       expect(savedItem.currentAmount, 100);
     },
   );
@@ -219,14 +273,12 @@ void main() {
       final itemJson = _inventoryItem().toJson()
         ..['custom_server_flag'] = true
         ..['notes'] = 'keep me';
-      await _inventoryCollection(firestore: firestore)
-          .doc('inventory-1')
-          .set(itemJson);
+      await _putItem(firestore, itemJson);
 
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        inventoryOwnerUserId: 'user-1',
+        householdCipher: _household('user-1'),
         actor: _actor,
       );
 
@@ -240,27 +292,22 @@ void main() {
       );
       await pumpEventQueue();
 
-      final savedItemSnapshot = await _inventoryCollection(firestore: firestore)
-          .doc('inventory-1')
-          .get();
-      expect(savedItemSnapshot.data()?['custom_server_flag'], isTrue);
-      expect(savedItemSnapshot.data()?['notes'], 'keep me');
-      expect(savedItemSnapshot.data()?['current_amount'], 500);
+      final savedItem = await _openItem(firestore);
+      expect(savedItem['custom_server_flag'], isTrue);
+      expect(savedItem['notes'], 'keep me');
+      expect(savedItem['current_amount'], 500);
     },
   );
 
   test('commitEntryAndInventory uses shared inventory owner '
       'and personal entry user', () async {
     final firestore = FakeFirebaseFirestore();
-    await _inventoryCollection(
-      firestore: firestore,
-      userId: 'host-1',
-    ).doc('inventory-1').set(_inventoryItem().toJson());
+    await _putItem(firestore, _inventoryItem().toJson(), userId: 'host-1');
 
     final store = FirestoreInventoryCalorieEntryCommitStore(
       firestore: firestore,
       dataCipher: _signedIn('member-1'),
-      inventoryOwnerUserId: 'host-1',
+      householdCipher: _household('host-1'),
       actor: const InventoryActivityActor(
         userId: 'member-1',
         displayName: 'Jamie',
@@ -284,18 +331,12 @@ void main() {
       firestore: firestore,
       userId: 'member-1',
     ).doc('entry-1').get();
-    final savedItem = await _inventoryCollection(
-      firestore: firestore,
-      userId: 'host-1',
-    ).doc('inventory-1').get();
+    final savedItem = await _openItem(firestore, userId: 'host-1');
 
     expect(savedEntry.exists, isTrue);
     expect((await _decrypted(savedEntry))['user_id'], 'member-1');
-    expect(savedItem.data()?['current_amount'], 500);
-    final activity = await _activityCollection(
-      firestore: firestore,
-      userId: 'host-1',
-    ).get();
-    expect(activity.docs.single.data()['actor_user_id'], 'member-1');
+    expect(savedItem['current_amount'], 500);
+    final activity = await _openActivity(firestore, userId: 'host-1');
+    expect(activity.single['actor_user_id'], 'member-1');
   });
 }

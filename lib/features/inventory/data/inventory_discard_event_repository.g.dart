@@ -62,4 +62,4 @@ final class InventoryDiscardEventRepositoryProvider
 }
 
 String _$inventoryDiscardEventRepositoryHash() =>
-    r'4c0922316ff682326a37e438270fb48e40fba6d7';
+    r'd525516881ae30d6cae9692f2697d2e94833ff33';

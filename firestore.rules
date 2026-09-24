@@ -849,31 +849,45 @@ service cloud.firestore {
     }
 
     match /users/{uid}/inventory_items/{itemId} {
-      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
+      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow create, update: if canAccessHouseholdOwnedData(uid)
+        && isEncryptedDocument(request.resource.data, ['entry_date', 'origin', 'is_deposit', 'is_discount']);
     }
 
     match /users/{uid}/shopping_list_items/{itemId} {
-      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
+      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow create, update: if canAccessHouseholdOwnedData(uid)
+        && isEncryptedDocument(request.resource.data, []);
     }
 
     match /users/{uid}/prepared_meals/{mealId} {
-      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
+      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow create, update: if canAccessHouseholdOwnedData(uid)
+        && isEncryptedDocument(request.resource.data, []);
     }
 
     match /users/{uid}/prepared_meal_templates/{templateId} {
-      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
+      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow create, update: if canAccessHouseholdOwnedData(uid)
+        && isEncryptedDocument(request.resource.data, []);
     }
 
     match /users/{uid}/kitchen_utensils/{utensilId} {
-      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
+      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow create, update: if canAccessHouseholdOwnedData(uid)
+        && isEncryptedDocument(request.resource.data, []);
     }
 
     match /users/{uid}/inventory_discard_events/{eventId} {
-      allow read, create, update, delete: if canAccessHouseholdOwnedData(uid);
+      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow create, update: if canAccessHouseholdOwnedData(uid)
+        && isEncryptedDocument(request.resource.data, ['discarded_at']);
     }
 
     match /users/{uid}/inventory_activity_events/{eventId} {
-      allow read, create: if canAccessHouseholdOwnedData(uid);
+      allow read: if canAccessHouseholdOwnedData(uid);
+      allow create: if canAccessHouseholdOwnedData(uid)
+        && isEncryptedDocument(request.resource.data, ['happened_at']);
       allow update, delete: if false;
     }
 

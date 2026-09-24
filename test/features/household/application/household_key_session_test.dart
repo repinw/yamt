@@ -10,6 +10,9 @@ import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/domain/household_key_state.dart';
+import 'package:yamt/features/inventory/data/inventory_activity_event_repository.dart';
+import 'package:yamt/features/inventory/data/inventory_discard_event_repository.dart';
+import 'package:yamt/features/inventory/data/inventory_item_store.dart';
 
 void main() {
   late FakeFirebaseFirestore firestore;
@@ -115,5 +118,74 @@ void main() {
       ]),
     );
     expect(await keys.loadPlaintextMigrated('member-1'), isTrue);
+  });
+
+  test('migrated household documents open in the stores', () async {
+    final itemData = <String, dynamic>{
+      'name': 'Milch',
+      'entry_date': Timestamp.fromDate(DateTime.utc(2026, 9, 24)),
+      'origin': 'manualAdd',
+      'is_deposit': false,
+      'is_discount': false,
+      'quantity': 2,
+    };
+    await firestore
+        .collection('users/member-1/inventory_items')
+        .doc('i1')
+        .set(itemData);
+    await firestore
+        .collection('users/member-1/inventory_discard_events')
+        .doc('d1')
+        .set(<String, dynamic>{
+          'id': 'd1',
+          'source_type': 'inventoryItem',
+          'source_id': 'i1',
+          'name': 'Milch',
+          'reason': 'expired',
+          'discarded_at': '2026-09-20T10:00:00.000',
+          'discarded_amount': 1,
+          'discarded_value': 1.5,
+          'currency_code': 'EUR',
+        });
+    await firestore
+        .collection('users/member-1/inventory_activity_events')
+        .doc('a1')
+        .set(<String, dynamic>{
+          'id': 'a1',
+          'type': 'itemAdded',
+          'actor_user_id': 'member-1',
+          'actor_display_name': 'Alex',
+          'happened_at': '2026-09-20T10:00:00.000',
+          'item_id': 'i1',
+          'item_name': 'Milch',
+          'amount': 1,
+          'amount_scale': 1,
+          'before_quantity': null,
+          'after_quantity': 1,
+          'before_current_amount': null,
+          'after_current_amount': 0,
+        });
+    final container = createContainer(ownerUid: 'member-1');
+
+    final state = await container.read(householdKeySessionProvider.future);
+    final cipher = PayloadCipher((state as HouseholdKeyReady).key);
+
+    final items = await FirestoreInventoryItemStore(
+      firestore: firestore,
+      cipher: cipher,
+    ).readAll(userId: 'member-1');
+    expect(items.single.data, itemData);
+    final discards = await FirestoreInventoryDiscardEventRepository(
+      firestore: firestore,
+      cipher: cipher,
+      currentUserId: 'member-1',
+    ).readAll();
+    expect(discards.single.name, 'Milch');
+    final activity = await FirestoreInventoryActivityEventRepository(
+      firestore: firestore,
+      cipher: cipher,
+      currentUserId: 'member-1',
+    ).watchRecent().first;
+    expect(activity.single.itemName, 'Milch');
   });
 }

@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_image_store.dart';
 import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_store.dart';
@@ -16,21 +16,25 @@ const _dataProviderLogName = 'KitchenUtensilDataProviders';
 /// Current household-scoped user session for kitchen utensils.
 final kitchenUtensilUserSessionProvider = Provider<InventoryUserSession>((ref) {
   ref.watch(authStateChangesProvider);
-  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+  final currentUserId = ref.watch(householdCipherProvider)?.ownerUid;
   return _CurrentKitchenUtensilUserSession(currentUserId: currentUserId);
 });
 
 /// Firestore-backed kitchen utensil metadata store.
 final kitchenUtensilStoreProvider = Provider<KitchenUtensilStore>((ref) {
   final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null) {
+  final householdCipher = ref.watch(householdCipherProvider);
+  if (firestore == null || householdCipher == null) {
     log(
       'Falling back to unavailable kitchen utensil store.',
       name: _dataProviderLogName,
     );
     return const _UnavailableKitchenUtensilStore();
   }
-  return FirestoreKitchenUtensilStore(firestore: firestore);
+  return FirestoreKitchenUtensilStore(
+    firestore: firestore,
+    cipher: householdCipher.cipher,
+  );
 });
 
 /// Firebase Storage-backed kitchen utensil image store.

@@ -3,9 +3,12 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 
 part 'inventory_discard_event_repository.g.dart';
@@ -26,13 +29,18 @@ abstract interface class InventoryDiscardEventRepository {
   Future<bool> deleteEvent(String eventId);
 }
 
-/// Defines firestore inventory discard event repository.
+/// Stores discard events encrypted with the household key [_cipher].
 class FirestoreInventoryDiscardEventRepository
     implements InventoryDiscardEventRepository {
   /// Creates an instance.
-  new({required this._firestore, required this._currentUserId});
+  new({
+    required this._firestore,
+    required this._cipher,
+    required this._currentUserId,
+  });
 
   final FirebaseFirestore _firestore;
+  final PayloadCipher _cipher;
   final String? _currentUserId;
 
   @override
@@ -43,10 +51,11 @@ class FirestoreInventoryDiscardEventRepository
     }
 
     try {
-      final snapshot = await _collection(userId)
+      final collection = _collection(userId);
+      final snapshot = await collection.reference
           .orderBy('discarded_at', descending: true)
           .get();
-      return _decodeSnapshot(snapshot);
+      return _decodeDocuments(await collection.openAll(snapshot));
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read discard events for user $userId',
@@ -66,7 +75,10 @@ class FirestoreInventoryDiscardEventRepository
     }
 
     try {
-      await _collection(userId).doc(event.id).set(event.toJson());
+      final collection = _collection(userId);
+      await collection.reference
+          .doc(event.id)
+          .set(await collection.seal(event.id, event.toJson()));
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -88,7 +100,7 @@ class FirestoreInventoryDiscardEventRepository
     }
 
     try {
-      await _collection(userId).doc(normalizedEventId).delete();
+      await _collection(userId).reference.doc(normalizedEventId).delete();
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -109,21 +121,22 @@ class FirestoreInventoryDiscardEventRepository
     return userId;
   }
 
-  CollectionReference<Map<String, dynamic>> _collection(String userId) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_discardEventsCollection);
+  SealedCollection _collection(String userId) {
+    return SealedCollection(
+      _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection(_discardEventsCollection),
+      cipher: _cipher,
+      plaintextFields: inventoryDiscardEventPlaintextFields,
+    );
   }
 
-  List<InventoryDiscardEvent> _decodeSnapshot(
-    QuerySnapshot<Map<String, dynamic>> snapshot,
-  ) {
+  List<InventoryDiscardEvent> _decodeDocuments(List<OpenedDocument> documents) {
     final events = <InventoryDiscardEvent>[];
-    for (final document in snapshot.docs) {
+    for (final document in documents) {
       try {
-        final rawData = document.data();
-        final normalizedData = normalizeFirestoreJson(rawData);
+        final normalizedData = normalizeFirestoreJson(document.data);
         normalizedData['id'] = normalizedData['id'] ?? document.id;
         events.add(InventoryDiscardEvent.fromJson(normalizedData));
       } on Object catch (error, stackTrace) {
@@ -163,9 +176,9 @@ class _UnavailableInventoryDiscardEventRepository
 @riverpod
 InventoryDiscardEventRepository inventoryDiscardEventRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
-  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+  final householdCipher = ref.watch(householdCipherProvider);
   final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null) {
+  if (firestore == null || householdCipher == null) {
     log(
       'Falling back to unavailable discard event repository.',
       name: _discardEventRepositoryLogName,
@@ -175,6 +188,7 @@ InventoryDiscardEventRepository inventoryDiscardEventRepository(Ref ref) {
 
   return FirestoreInventoryDiscardEventRepository(
     firestore: firestore,
-    currentUserId: currentUserId,
+    cipher: householdCipher.cipher,
+    currentUserId: householdCipher.ownerUid,
   );
 }

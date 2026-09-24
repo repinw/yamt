@@ -3,9 +3,12 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 
@@ -24,10 +27,30 @@ InventoryDiscardEvent _discardEvent({String id = 'event-1'}) {
 }
 
 void main() {
+  late PayloadCipher cipher;
+
+  setUp(() async {
+    cipher = PayloadCipher(await PayloadCipher.newDataKey());
+  });
+
+  Future<void> put(
+    CollectionReference<Map<String, dynamic>> collection,
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    final sealed = SealedCollection(
+      collection,
+      cipher: cipher,
+      plaintextFields: inventoryDiscardEventPlaintextFields,
+    );
+    await collection.doc(id).set(await sealed.seal(id, data));
+  }
+
   test('readAll skips malformed discard events', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryDiscardEventRepository(
       firestore: firestore,
+      cipher: cipher,
       currentUserId: 'user-1',
     );
     final collection = firestore
@@ -35,7 +58,7 @@ void main() {
         .doc('user-1')
         .collection('inventory_discard_events');
 
-    await collection.doc('valid').set(<String, dynamic>{
+    await put(collection, 'valid', <String, dynamic>{
       'id': 'valid',
       'source_type': 'inventoryItem',
       'source_id': 'item-1',
@@ -46,7 +69,7 @@ void main() {
       'discarded_value': 1.5,
       'currency_code': 'EUR',
     });
-    await collection.doc('invalid').set(<String, dynamic>{
+    await put(collection, 'invalid', <String, dynamic>{
       'id': 'invalid',
       'source_type': 'inventoryItem',
       'source_id': 'item-2',
@@ -69,6 +92,7 @@ void main() {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryDiscardEventRepository(
       firestore: firestore,
+      cipher: cipher,
       currentUserId: 'user-1',
     );
     final collection = firestore
@@ -77,7 +101,7 @@ void main() {
         .collection('inventory_discard_events');
     final discardedAt = DateTime.parse('2026-03-20T10:00:00.000Z');
 
-    await collection.doc('timestamp').set(<String, dynamic>{
+    await put(collection, 'timestamp', <String, dynamic>{
       'id': 'timestamp',
       'source_type': 'inventoryItem',
       'source_id': 'item-1',
@@ -106,6 +130,7 @@ void main() {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryDiscardEventRepository(
       firestore: firestore,
+      cipher: cipher,
       currentUserId: 'user-1',
     );
     final collection = firestore
@@ -113,7 +138,7 @@ void main() {
         .doc('user-1')
         .collection('inventory_discard_events');
 
-    await collection.doc('delete-me').set(<String, dynamic>{
+    await put(collection, 'delete-me', <String, dynamic>{
       'id': 'delete-me',
       'source_type': 'inventoryItem',
       'source_id': 'item-1',
@@ -137,10 +162,12 @@ void main() {
     () async {
       final repositoryWithoutUser = FirestoreInventoryDiscardEventRepository(
         firestore: FakeFirebaseFirestore(),
+        cipher: cipher,
         currentUserId: null,
       );
       final repositoryWithUser = FirestoreInventoryDiscardEventRepository(
         firestore: FakeFirebaseFirestore(),
+        cipher: cipher,
         currentUserId: 'user-1',
       );
 
@@ -158,9 +185,7 @@ void main() {
           authStateChangesProvider.overrideWith(
             (ref) => Stream<User?>.value(null),
           ),
-          effectiveHouseholdDataOwnerUserIdProvider.overrideWith(
-            (ref) => 'user-1',
-          ),
+          householdCipherProvider.overrideWithValue(null),
           firebaseFirestoreProvider.overrideWith((ref) => null),
         ],
       );

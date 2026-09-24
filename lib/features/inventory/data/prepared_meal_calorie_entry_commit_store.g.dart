@@ -62,4 +62,4 @@ final class PreparedMealCalorieEntryCommitStoreProvider
 }
 
 String _$preparedMealCalorieEntryCommitStoreHash() =>
-    r'7b9bb95fc70fb93257760fe786d7f964b33e8662';
+    r'ee79b7fd21fd0a5b7268ede34809fa9362f89fcd';

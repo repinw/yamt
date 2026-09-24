@@ -1,14 +1,23 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 
 void main() {
+  late PayloadCipher cipher;
+
+  setUp(() async {
+    cipher = PayloadCipher(await PayloadCipher.newDataKey());
+  });
+
   test('repository appends and watches recent events newest first', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryActivityEventRepository(
       firestore: firestore,
+      cipher: cipher,
       currentUserId: 'owner-1',
     );
     final older = _event(
@@ -27,6 +36,13 @@ void main() {
 
     expect(saved, isTrue);
     await pumpEventQueue();
+    final raw = await firestore
+        .doc('users/owner-1/inventory_activity_events/event-1')
+        .get();
+    expect(
+      raw.data()!.keys,
+      unorderedEquals(<String>[encryptedPayloadField, 'happened_at']),
+    );
     await expectLater(
       repository.watchRecent(limit: 10),
       emits(
@@ -44,6 +60,7 @@ void main() {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryActivityEventRepository(
       firestore: firestore,
+      cipher: cipher,
       currentUserId: 'owner-1',
     );
     final events = List<InventoryActivityEvent>.generate(501, (index) {

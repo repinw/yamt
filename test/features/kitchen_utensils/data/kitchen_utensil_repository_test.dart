@@ -4,6 +4,8 @@ import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -124,7 +126,10 @@ void main() {
     'FirestoreKitchenUtensilStore upserts, watches, reads, and deletes',
     () async {
       final firestore = FakeFirebaseFirestore();
-      final store = FirestoreKitchenUtensilStore(firestore: firestore);
+      final store = FirestoreKitchenUtensilStore(
+        firestore: firestore,
+        cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+      );
 
       expect(
         await store.upsert(
@@ -135,6 +140,10 @@ void main() {
         isTrue,
       );
 
+      final raw = await firestore
+          .doc('users/owner-1/kitchen_utensils/pot-1')
+          .get();
+      expect(raw.data()!.keys, <String>[encryptedPayloadField]);
       final watchedDocuments = await store.watchAll(userId: 'owner-1').first;
       final readDocuments = await store.readAll(userId: 'owner-1');
 

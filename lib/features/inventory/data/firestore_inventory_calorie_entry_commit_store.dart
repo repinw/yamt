@@ -2,10 +2,13 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
 import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_mutation_builder.dart';
 import 'package:yamt/features/inventory/data/'
@@ -29,7 +32,7 @@ class FirestoreInventoryCalorieEntryCommitStore
   const new({
     required this.firestore,
     required this.dataCipher,
-    required this.inventoryOwnerUserId,
+    required this.householdCipher,
     required this.actor,
     this.mutationBuilder = const InventoryCalorieEntryCommitMutationBuilder(),
   });
@@ -41,8 +44,9 @@ class FirestoreInventoryCalorieEntryCommitStore
   /// data key is not ready.
   final UserDataCipher? dataCipher;
 
-  /// The inventory owner user ID.
-  final String? inventoryOwnerUserId;
+  /// The inventory owner and the household key, or `null` while the
+  /// household key is not ready.
+  final HouseholdCipher? householdCipher;
 
   /// The inventory activity actor.
   final InventoryActivityActor? actor;
@@ -56,16 +60,17 @@ class FirestoreInventoryCalorieEntryCommitStore
     required PendingInventoryConsumption pendingConsumption,
   }) async {
     final cipher = dataCipher;
-    final inventoryUserId = _resolveInventoryUserId();
-    if (cipher == null || inventoryUserId == null) {
+    final household = householdCipher;
+    if (cipher == null || household == null) {
       log(
-        'Cannot commit calorie entry ${entry.id}: no data key or user id '
-        '(currentUserId=${cipher?.uid}, '
-        'inventoryOwnerUserId=$inventoryOwnerUserId).',
+        'Cannot commit calorie entry ${entry.id}: no data key or household '
+        'key (currentUserId=${cipher?.uid}, '
+        'inventoryOwnerUserId=${household?.ownerUid}).',
         name: _commitStoreLogName,
       );
       return null;
     }
+    final inventoryUserId = household.ownerUid;
     final entryUserId = cipher.uid;
     if (pendingConsumption.amount < 1) {
       log(
@@ -88,10 +93,13 @@ class FirestoreInventoryCalorieEntryCommitStore
     // copy, so two offline consumptions of the same item may overwrite each
     // other.
     try {
-      final inventoryRef = _inventoryCollection(inventoryUserId)
-          .doc(pendingConsumption.itemId);
+      final inventoryCollection = _inventoryCollection(household);
+      final inventoryRef = inventoryCollection.reference.doc(
+        pendingConsumption.itemId,
+      );
       final inventorySnapshot = await readDocumentLocalFirst(inventoryRef);
-      if (!inventorySnapshot.exists) {
+      final storedItem = await inventoryCollection.open(inventorySnapshot);
+      if (storedItem == null) {
         log(
           'Inventory item ${pendingConsumption.itemId} no longer exists '
           'while committing calorie entry ${entry.id}.',
@@ -100,9 +108,8 @@ class FirestoreInventoryCalorieEntryCommitStore
         return null;
       }
 
-      final rawItem = Map<String, dynamic>.from(
-        inventorySnapshot.data() ?? const <String, dynamic>{},
-      )..['id'] = inventorySnapshot.id;
+      final rawItem = Map<String, dynamic>.from(storedItem)
+        ..['id'] = inventorySnapshot.id;
 
       final currentItem = InventoryItem.fromJson(rawItem);
       final committedItem = mutationBuilder.buildCommittedItem(
@@ -136,12 +143,15 @@ class FirestoreInventoryCalorieEntryCommitStore
         reference: entryRef,
         cipher: cipher.cipher,
       );
+      // The item is encrypted as a whole, so the batch writes the full
+      // document instead of updating single fields.
+      final itemDocument = await inventoryCollection.seal(inventoryRef.id, {
+        ...storedItem,
+        ...mutationBuilder.buildInventoryUpdate(committedItem),
+      });
       final batch = firestore.batch()
         ..set(entryRef, entryDocument)
-        ..update(
-          inventoryRef,
-          mutationBuilder.buildInventoryUpdate(committedItem),
-        );
+        ..set(inventoryRef, itemDocument);
       final activityEvent = mutationBuilder.buildActivityEvent(
         actor: actor,
         beforeItem: currentItem,
@@ -150,9 +160,13 @@ class FirestoreInventoryCalorieEntryCommitStore
         happenedAt: normalizedEntry.loggedAt,
       );
       if (activityEvent != null) {
+        final activityCollection = _activityEventsCollection(household);
         batch.set(
-          _activityEventsCollectionRef(inventoryUserId).doc(activityEvent.id),
-          activityEvent.toJson(),
+          activityCollection.reference.doc(activityEvent.id),
+          await activityCollection.seal(
+            activityEvent.id,
+            activityEvent.toJson(),
+          ),
         );
       }
       commitBatchInBackground(
@@ -188,23 +202,15 @@ class FirestoreInventoryCalorieEntryCommitStore
     }
   }
 
-  String? _resolveInventoryUserId() {
-    final trimmedInventoryOwnerUserId = inventoryOwnerUserId?.trim();
-    if (trimmedInventoryOwnerUserId != null &&
-        trimmedInventoryOwnerUserId.isNotEmpty) {
-      return trimmedInventoryOwnerUserId;
-    }
-
-    return dataCipher?.uid;
-  }
-
-  CollectionReference<Map<String, dynamic>> _inventoryCollection(
-    String userId,
-  ) {
-    return firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_inventoryItemsCollection);
+  SealedCollection _inventoryCollection(HouseholdCipher household) {
+    return SealedCollection(
+      firestore
+          .collection(_usersCollection)
+          .doc(household.ownerUid)
+          .collection(_inventoryItemsCollection),
+      cipher: household.cipher,
+      plaintextFields: inventoryItemPlaintextFields,
+    );
   }
 
   CollectionReference<Map<String, dynamic>> _calorieEntriesCollectionRef(
@@ -216,12 +222,14 @@ class FirestoreInventoryCalorieEntryCommitStore
         .collection(_calorieEntriesCollection);
   }
 
-  CollectionReference<Map<String, dynamic>> _activityEventsCollectionRef(
-    String userId,
-  ) {
-    return firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_inventoryActivityEventsCollection);
+  SealedCollection _activityEventsCollection(HouseholdCipher household) {
+    return SealedCollection(
+      firestore
+          .collection(_usersCollection)
+          .doc(household.ownerUid)
+          .collection(_inventoryActivityEventsCollection),
+      cipher: household.cipher,
+      plaintextFields: inventoryActivityEventPlaintextFields,
+    );
   }
 }

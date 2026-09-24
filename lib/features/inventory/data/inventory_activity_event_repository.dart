@@ -4,9 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 
 part 'inventory_activity_event_repository.g.dart';
@@ -26,13 +29,19 @@ abstract interface class InventoryActivityEventRepository {
   Future<bool> appendAll(List<InventoryActivityEvent> events);
 }
 
-/// Firestore inventory activity event repository.
+/// Stores inventory activity events encrypted with the household key
+/// [_cipher].
 class FirestoreInventoryActivityEventRepository
     implements InventoryActivityEventRepository {
   /// Creates repository.
-  const new({required this._firestore, required this._currentUserId});
+  const new({
+    required this._firestore,
+    required this._cipher,
+    required this._currentUserId,
+  });
 
   final FirebaseFirestore _firestore;
+  final PayloadCipher _cipher;
   final String? _currentUserId;
 
   @override
@@ -46,11 +55,15 @@ class FirestoreInventoryActivityEventRepository
       );
     }
 
-    return _collection(userId)
+    final collection = _collection(userId);
+    return collection.reference
         .orderBy('happened_at', descending: true)
         .limit(limit)
         .snapshots()
-        .map(_decodeSnapshot);
+        .asyncMap(
+          (snapshot) async =>
+              _decodeDocuments(await collection.openAll(snapshot)),
+        );
   }
 
   @override
@@ -62,6 +75,11 @@ class FirestoreInventoryActivityEventRepository
 
     try {
       final collection = _collection(userId);
+      final sealedById = await collection.sealAll(
+        <String, Map<String, dynamic>>{
+          for (final event in events) event.id: event.toJson(),
+        },
+      );
       for (
         var start = 0;
         start < events.length;
@@ -71,7 +89,7 @@ class FirestoreInventoryActivityEventRepository
         final end = _chunkEnd(start: start, itemCount: events.length);
         for (var index = start; index < end; index += 1) {
           final event = events[index];
-          batch.set(collection.doc(event.id), event.toJson());
+          batch.set(collection.reference.doc(event.id), sealedById[event.id]!);
         }
         commitBatchInBackground(
           batch,
@@ -100,20 +118,24 @@ class FirestoreInventoryActivityEventRepository
     return userId;
   }
 
-  CollectionReference<Map<String, dynamic>> _collection(String userId) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_activityEventsCollection);
+  SealedCollection _collection(String userId) {
+    return SealedCollection(
+      _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection(_activityEventsCollection),
+      cipher: _cipher,
+      plaintextFields: inventoryActivityEventPlaintextFields,
+    );
   }
 
-  List<InventoryActivityEvent> _decodeSnapshot(
-    QuerySnapshot<Map<String, dynamic>> snapshot,
+  List<InventoryActivityEvent> _decodeDocuments(
+    List<OpenedDocument> documents,
   ) {
     final events = <InventoryActivityEvent>[];
-    for (final document in snapshot.docs) {
+    for (final document in documents) {
       try {
-        final data = normalizeFirestoreJson(document.data());
+        final data = normalizeFirestoreJson(document.data);
         data['id'] = data['id'] ?? document.id;
         events.add(InventoryActivityEvent.fromJson(data));
       } on Object catch (error, stackTrace) {
@@ -160,9 +182,9 @@ class _UnavailableInventoryActivityEventRepository
 @riverpod
 InventoryActivityEventRepository inventoryActivityEventRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
-  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+  final householdCipher = ref.watch(householdCipherProvider);
   final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null) {
+  if (firestore == null || householdCipher == null) {
     log(
       'Falling back to unavailable inventory activity event repository.',
       name: _activityLogName,
@@ -172,7 +194,8 @@ InventoryActivityEventRepository inventoryActivityEventRepository(Ref ref) {
 
   return FirestoreInventoryActivityEventRepository(
     firestore: firestore,
-    currentUserId: currentUserId,
+    cipher: householdCipher.cipher,
+    currentUserId: householdCipher.ownerUid,
   );
 }
 

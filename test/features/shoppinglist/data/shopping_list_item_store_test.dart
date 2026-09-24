@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_item_store.dart';
 
 const _usersCollection = 'users';
@@ -54,18 +56,43 @@ CollectionReference<Map<String, dynamic>> _shoppingListCollectionRef({
       .collection(_shoppingListCollection);
 }
 
+late PayloadCipher _cipher;
+
+Future<void> _put(
+  CollectionReference<Map<String, dynamic>> collection,
+  String id,
+  Map<String, dynamic> data,
+) async {
+  final sealed = SealedCollection(collection, cipher: _cipher);
+  await collection.doc(id).set(await sealed.seal(id, data));
+}
+
+Future<Map<String, Map<String, dynamic>>> _openAll(
+  CollectionReference<Map<String, dynamic>> collection,
+) async {
+  final sealed = SealedCollection(collection, cipher: _cipher);
+  return <String, Map<String, dynamic>>{
+    for (final document in await sealed.openAll(await collection.get()))
+      document.id: document.data,
+  };
+}
+
 Future<void> _seedStaleDocuments({
   required CollectionReference<Map<String, dynamic>> collection,
   required int count,
 }) async {
   for (var index = 0; index < count; index++) {
-    await collection.doc('stale-$index').set(<String, dynamic>{
+    await _put(collection, 'stale-$index', <String, dynamic>{
       'name': 'Item $index',
     });
   }
 }
 
 void main() {
+  setUp(() async {
+    _cipher = PayloadCipher(await PayloadCipher.newDataKey());
+  });
+
   test('chunker returns no chunks for empty operations', () {
     final chunks = FirestoreBatchChunker.chunk<int>(
       operations: const <int>[],
@@ -108,10 +135,13 @@ void main() {
         firestore: firestore,
         userId: 'user-1',
       );
-      await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
-      await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
+      await _put(collection, 'a', <String, dynamic>{'name': 'Old Milk'});
+      await _put(collection, 'b', <String, dynamic>{'name': 'Bread'});
 
-      final store = FirestoreShoppingListItemStore(firestore: firestore);
+      final store = FirestoreShoppingListItemStore(
+        firestore: firestore,
+        cipher: _cipher,
+      );
       final replaced = await store.replaceAll(
         userId: 'user-1',
         documentsById: <String, Map<String, dynamic>>{
@@ -121,9 +151,7 @@ void main() {
       );
 
       final snapshot = await collection.get();
-      final dataById = <String, Map<String, dynamic>>{
-        for (final doc in snapshot.docs) doc.id: doc.data(),
-      };
+      final dataById = await _openAll(collection);
 
       expect(replaced, isTrue);
       expect(snapshot.docs, hasLength(2));
@@ -137,7 +165,7 @@ void main() {
     late final CollectionReference<Map<String, dynamic>> collection;
     final firestore = _HookedFakeFirebaseFirestore(
       onBeforeRunTransaction: () async {
-        await collection.doc('a').set(<String, dynamic>{
+        await _put(collection, 'a', <String, dynamic>{
           'name': 'Changed elsewhere',
         });
       },
@@ -146,10 +174,13 @@ void main() {
       firestore: firestore,
       userId: 'user-1',
     );
-    await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
-    await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
+    await _put(collection, 'a', <String, dynamic>{'name': 'Old Milk'});
+    await _put(collection, 'b', <String, dynamic>{'name': 'Bread'});
 
-    final store = FirestoreShoppingListItemStore(firestore: firestore);
+    final store = FirestoreShoppingListItemStore(
+      firestore: firestore,
+      cipher: _cipher,
+    );
 
     final replaced = await store.replaceAll(
       userId: 'user-1',
@@ -159,9 +190,7 @@ void main() {
     );
 
     final snapshot = await collection.get();
-    final dataById = <String, Map<String, dynamic>>{
-      for (final doc in snapshot.docs) doc.id: doc.data(),
-    };
+    final dataById = await _openAll(collection);
 
     expect(replaced, isTrue);
     expect(snapshot.docs, hasLength(2));
@@ -182,10 +211,13 @@ void main() {
         firestore: firestore,
         userId: 'user-1',
       );
-      await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
-      await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
+      await _put(collection, 'a', <String, dynamic>{'name': 'Old Milk'});
+      await _put(collection, 'b', <String, dynamic>{'name': 'Bread'});
 
-      final store = FirestoreShoppingListItemStore(firestore: firestore);
+      final store = FirestoreShoppingListItemStore(
+        firestore: firestore,
+        cipher: _cipher,
+      );
       final replaced = await store.replaceAll(
         userId: 'user-1',
         documentsById: <String, Map<String, dynamic>>{
@@ -194,9 +226,7 @@ void main() {
       );
 
       final snapshot = await collection.get();
-      final dataById = <String, Map<String, dynamic>>{
-        for (final doc in snapshot.docs) doc.id: doc.data(),
-      };
+      final dataById = await _openAll(collection);
 
       expect(replaced, isTrue);
       expect(snapshot.docs, hasLength(1));
@@ -218,7 +248,10 @@ void main() {
           'item-$index': <String, dynamic>{'index': index},
       };
 
-      final store = FirestoreShoppingListItemStore(firestore: firestore);
+      final store = FirestoreShoppingListItemStore(
+        firestore: firestore,
+        cipher: _cipher,
+      );
       final replaced = await store.replaceAll(
         userId: 'user-1',
         documentsById: documentsById,
@@ -258,7 +291,10 @@ void main() {
           'keep-$index': <String, dynamic>{'name': 'Keep $index'},
       };
 
-      final store = FirestoreShoppingListItemStore(firestore: firestore);
+      final store = FirestoreShoppingListItemStore(
+        firestore: firestore,
+        cipher: _cipher,
+      );
       final replaced = await store.replaceAll(
         userId: 'user-1',
         documentsById: documentsById,
@@ -286,7 +322,10 @@ void main() {
       );
       await _seedStaleDocuments(collection: collection, count: 501);
 
-      final store = FirestoreShoppingListItemStore(firestore: firestore);
+      final store = FirestoreShoppingListItemStore(
+        firestore: firestore,
+        cipher: _cipher,
+      );
       final replaced = await store.replaceAll(
         userId: 'user-1',
         documentsById: <String, Map<String, dynamic>>{
@@ -298,9 +337,7 @@ void main() {
       final staleCount = snapshot.docs
           .where((doc) => doc.id.startsWith('stale-'))
           .length;
-      final keepData = snapshot.docs
-          .firstWhere((doc) => doc.id == 'keep')
-          .data();
+      final keepData = (await _openAll(collection))['keep'];
 
       expect(replaced, isFalse);
       expect(staleCount, 501);

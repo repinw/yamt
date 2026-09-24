@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/plaintext_document_encryption.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_store.dart';
 
 const _usersCollection = 'users';
@@ -17,16 +21,41 @@ CollectionReference<Map<String, dynamic>> _inventoryCollection({
 }
 
 void main() {
+  late PayloadCipher cipher;
+
+  setUp(() async {
+    cipher = PayloadCipher(await PayloadCipher.newDataKey());
+  });
+
+  SealedCollection sealed(CollectionReference<Map<String, dynamic>> reference) {
+    return SealedCollection(
+      reference,
+      cipher: cipher,
+      plaintextFields: inventoryItemPlaintextFields,
+    );
+  }
+
+  Future<void> put(
+    CollectionReference<Map<String, dynamic>> reference,
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    await reference.doc(id).set(await sealed(reference).seal(id, data));
+  }
+
   test('readAll maps documents to InventoryItemDocument', () async {
     final firestore = FakeFirebaseFirestore();
     final collection = _inventoryCollection(
       firestore: firestore,
       userId: 'user-1',
     );
-    await collection.doc('a').set(<String, dynamic>{'name': 'Milk'});
-    await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
+    await put(collection, 'a', <String, dynamic>{'name': 'Milk'});
+    await put(collection, 'b', <String, dynamic>{'name': 'Bread'});
 
-    final store = FirestoreInventoryItemStore(firestore: firestore);
+    final store = FirestoreInventoryItemStore(
+      firestore: firestore,
+      cipher: cipher,
+    );
     final documents = await store.readAll(userId: 'user-1');
     final mappedById = <String, Map<String, dynamic>>{
       for (final document in documents) document.id: document.data,
@@ -43,10 +72,13 @@ void main() {
       firestore: firestore,
       userId: 'user-1',
     );
-    final store = FirestoreInventoryItemStore(firestore: firestore);
+    final store = FirestoreInventoryItemStore(
+      firestore: firestore,
+      cipher: cipher,
+    );
 
     final nextEmission = store.watchAll(userId: 'user-1').skip(1).first;
-    await collection.doc('a').set(<String, dynamic>{'name': 'Milk'});
+    await put(collection, 'a', <String, dynamic>{'name': 'Milk'});
     final documents = await nextEmission;
 
     expect(documents, hasLength(1));
@@ -62,10 +94,13 @@ void main() {
         firestore: firestore,
         userId: 'user-1',
       );
-      await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
-      await collection.doc('b').set(<String, dynamic>{'name': 'Bread'});
+      await put(collection, 'a', <String, dynamic>{'name': 'Old Milk'});
+      await put(collection, 'b', <String, dynamic>{'name': 'Bread'});
 
-      final store = FirestoreInventoryItemStore(firestore: firestore);
+      final store = FirestoreInventoryItemStore(
+        firestore: firestore,
+        cipher: cipher,
+      );
       final replaced = await store.replaceAll(
         userId: 'user-1',
         documentsById: <String, Map<String, dynamic>>{
@@ -76,7 +111,8 @@ void main() {
 
       final snapshot = await collection.get();
       final dataById = <String, Map<String, dynamic>>{
-        for (final doc in snapshot.docs) doc.id: doc.data(),
+        for (final doc in await sealed(collection).openAll(snapshot))
+          doc.id: doc.data,
       };
 
       expect(replaced, isTrue);
@@ -101,7 +137,10 @@ void main() {
           'item-$index': <String, dynamic>{'index': index},
       };
 
-      final store = FirestoreInventoryItemStore(firestore: firestore);
+      final store = FirestoreInventoryItemStore(
+        firestore: firestore,
+        cipher: cipher,
+      );
       final replaced = await store.replaceAll(
         userId: 'user-1',
         documentsById: documentsById,
@@ -115,4 +154,64 @@ void main() {
       expect(snapshot.docs.any((doc) => doc.id == 'item-500'), isTrue);
     },
   );
+
+  test('stores only the payload and the query fields', () async {
+    final firestore = FakeFirebaseFirestore();
+    final store = FirestoreInventoryItemStore(
+      firestore: firestore,
+      cipher: cipher,
+    );
+    await store.replaceAll(
+      userId: 'user-1',
+      documentsById: <String, Map<String, dynamic>>{
+        'a': <String, dynamic>{
+          'name': 'Milk',
+          'origin': 'manualAdd',
+          'is_deposit': false,
+          'is_discount': false,
+          'entry_date': '2026-09-24T10:00:00.000',
+        },
+      },
+    );
+
+    final raw = await _inventoryCollection(
+      firestore: firestore,
+      userId: 'user-1',
+    ).doc('a').get();
+    expect(
+      raw.data()!.keys,
+      unorderedEquals(<String>[
+        encryptedPayloadField,
+        'origin',
+        'is_deposit',
+        'is_discount',
+        'entry_date',
+      ]),
+    );
+    final recent = await store.readRecentManual(userId: 'user-1', limit: 5);
+    expect(recent.single.data['name'], 'Milk');
+  });
+
+  test('replaceAll keeps a plaintext document and reports failure', () async {
+    final firestore = FakeFirebaseFirestore();
+    final collection = _inventoryCollection(
+      firestore: firestore,
+      userId: 'user-1',
+    );
+    await collection.doc('plain').set(<String, dynamic>{'name': 'Milk'});
+    final store = FirestoreInventoryItemStore(
+      firestore: firestore,
+      cipher: cipher,
+    );
+
+    final replaced = await store.replaceAll(
+      userId: 'user-1',
+      documentsById: <String, Map<String, dynamic>>{
+        'b': <String, dynamic>{'name': 'Bread'},
+      },
+    );
+
+    expect(replaced, isFalse);
+    expect((await collection.doc('plain').get()).exists, isTrue);
+  });
 }

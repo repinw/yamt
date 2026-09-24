@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 
 import 'package:yamt/features/inventory/data/firestore_prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
@@ -21,8 +21,9 @@ part 'prepared_meal_template_repository.g.dart';
 @riverpod
 PreparedMealTemplateRepository preparedMealTemplateRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
-  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
-  final store = _resolveStore(ref);
+  final householdCipher = ref.watch(householdCipherProvider);
+  final currentUserId = householdCipher?.ownerUid;
+  final store = _resolveStore(ref, householdCipher);
   return FirestorePreparedMealTemplateRepository(
     session: _CurrentPreparedMealTemplateUserSession(
       currentUserId: currentUserId,
@@ -32,16 +33,22 @@ PreparedMealTemplateRepository preparedMealTemplateRepository(Ref ref) {
   );
 }
 
-PreparedMealTemplateStore _resolveStore(Ref ref) {
+PreparedMealTemplateStore _resolveStore(
+  Ref ref,
+  HouseholdCipher? householdCipher,
+) {
   final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null) {
+  if (firestore == null || householdCipher == null) {
     log(
       'Falling back to unavailable prepared meal template store.',
       name: 'PreparedMealTemplateRepositoryProvider',
     );
     return const _UnavailablePreparedMealTemplateStore();
   }
-  return FirestorePreparedMealTemplateStore(firestore: firestore);
+  return FirestorePreparedMealTemplateStore(
+    firestore: firestore,
+    cipher: householdCipher.cipher,
+  );
 }
 
 class _CurrentPreparedMealTemplateUserSession implements InventoryUserSession {

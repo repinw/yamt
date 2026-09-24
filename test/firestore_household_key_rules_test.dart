@@ -39,5 +39,40 @@ void main() {
         ),
       );
     });
+
+    test('household documents accept only an encrypted payload', () {
+      const collections = <String, String>{
+        'inventory_items/{itemId}':
+            "['entry_date', 'origin', 'is_deposit', 'is_discount']",
+        'shopping_list_items/{itemId}': '[]',
+        'prepared_meals/{mealId}': '[]',
+        'prepared_meal_templates/{templateId}': '[]',
+        'kitchen_utensils/{utensilId}': '[]',
+        'inventory_discard_events/{eventId}': "['discarded_at']",
+      };
+      for (final MapEntry(key: collection, value: keys)
+          in collections.entries) {
+        expect(
+          compactRules,
+          contains(
+            'match /users/{uid}/$collection { '
+            'allow read, delete: if canAccessHouseholdOwnedData(uid); '
+            'allow create, update: if canAccessHouseholdOwnedData(uid) '
+            '&& isEncryptedDocument(request.resource.data, $keys); }',
+          ),
+          reason: collection,
+        );
+      }
+      expect(
+        compactRules,
+        contains(
+          'match /users/{uid}/inventory_activity_events/{eventId} { '
+          'allow read: if canAccessHouseholdOwnedData(uid); '
+          'allow create: if canAccessHouseholdOwnedData(uid) '
+          "&& isEncryptedDocument(request.resource.data, ['happened_at']); "
+          'allow update, delete: if false; }',
+        ),
+      );
+    });
   });
 }

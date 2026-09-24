@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/shoppinglist/data/firestore_shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_item_store.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository_contract.dart';
@@ -14,14 +14,19 @@ part 'shopping_list_repository.g.dart';
 @riverpod
 ShoppingListRepository shoppingListRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
-  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+  final householdCipher = ref.watch(householdCipherProvider);
   final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null) {
+  if (firestore == null || householdCipher == null) {
     return const _UnavailableShoppingListRepository();
   }
   return FirestoreShoppingListRepository(
-    session: _CurrentShoppingListUserSession(currentUserId: currentUserId),
-    store: FirestoreShoppingListItemStore(firestore: firestore),
+    session: _CurrentShoppingListUserSession(
+      currentUserId: householdCipher.ownerUid,
+    ),
+    store: FirestoreShoppingListItemStore(
+      firestore: firestore,
+      cipher: householdCipher.cipher,
+    ),
   );
 }
 

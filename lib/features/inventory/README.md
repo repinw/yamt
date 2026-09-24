@@ -8,7 +8,10 @@ discard events, and inventory-backed calorie handoff context.
 - Inventory item domain models, amount parsing, consumption, discard events.
 - Household inventory activity events and timeline UI for shared stock changes.
 - Prepared meal domain models and mutation workflows.
-- Inventory repositories and stores for Firestore-backed inventory data.
+- Inventory repositories and stores for Firestore-backed inventory data. The
+  stores encrypt every document with the household key
+  (`householdCipherProvider`); only the fields that queries need stay
+  readable.
 - Inventory pages, widgets, controllers, and presentation-only helpers.
 - Global food item matching and serving suggestion persistence used by
   inventory flows.

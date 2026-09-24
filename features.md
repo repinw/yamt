@@ -231,9 +231,14 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## Household
 
 - Household page from settings.
-- Join household with invite code.
-- Generate, refresh, and copy invite codes.
-- Invite-code expiry and validation handling.
+- Invite with a QR code or a link (`yamt://household/join`), valid for 24
+  hours. The link carries a secret that the server never sees.
+- Join by scanning the QR code, pasting the link, or opening the link.
+- Invite expiry and validation handling.
+- End-to-end encryption of household data (inventory, shopping list, prepared
+  meals, recipes, kitchen utensils, discard and activity events) with a
+  household key. Each member holds the key wrapped with their own data key.
+  Members who joined before encryption join again once.
 - Household members list with leader and current-user badges.
 - Remove member, leave household, and leader-only action handling.
 - Shared household scope for inventory, shopping lists, utensils, prepared

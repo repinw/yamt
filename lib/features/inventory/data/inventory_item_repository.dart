@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 
 import 'package:yamt/features/inventory/data/'
     'firestore_inventory_item_repository.dart';
@@ -24,25 +24,30 @@ part 'inventory_item_repository.g.dart';
 @riverpod
 InventoryItemRepository inventoryItemRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
-  final currentUserId = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
-  final store = _resolveStore(ref);
+  final householdCipher = ref.watch(householdCipherProvider);
+  final store = _resolveStore(ref, householdCipher);
   return FirestoreInventoryItemRepository(
-    session: _CurrentInventoryUserSession(currentUserId: currentUserId),
+    session: _CurrentInventoryUserSession(
+      currentUserId: householdCipher?.ownerUid,
+    ),
     sessionShutdownSignal: ref.watch(sessionShutdownSignalProvider),
     store: store,
   );
 }
 
-InventoryItemStore _resolveStore(Ref ref) {
+InventoryItemStore _resolveStore(Ref ref, HouseholdCipher? householdCipher) {
   final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null) {
+  if (firestore == null || householdCipher == null) {
     log(
       'Falling back to unavailable inventory item store.',
       name: 'InventoryItemRepositoryProvider',
     );
     return const _UnavailableInventoryItemStore();
   }
-  return FirestoreInventoryItemStore(firestore: firestore);
+  return FirestoreInventoryItemStore(
+    firestore: firestore,
+    cipher: householdCipher.cipher,
+  );
 }
 
 class _CurrentInventoryUserSession implements InventoryUserSession {

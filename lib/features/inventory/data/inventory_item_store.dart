@@ -4,6 +4,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
 
 const String _storeLogName = 'FirestoreInventoryItemStore';
 const String _usersCollection = 'users';
@@ -54,13 +57,14 @@ abstract interface class InventoryItemRecentManualStore {
   });
 }
 
-/// Defines firestore inventory item store.
+/// Stores inventory items encrypted with the household key [_cipher].
 class FirestoreInventoryItemStore
     implements InventoryItemStore, InventoryItemRecentManualStore {
   /// The firestore inventory item store.
-  const new({required this._firestore});
+  const new({required this._firestore, required this._cipher});
 
   final FirebaseFirestore _firestore;
+  final PayloadCipher _cipher;
 
   FirestoreAtomicReplaceService get _atomicReplaceService {
     return FirestoreAtomicReplaceService(firestore: _firestore);
@@ -71,8 +75,10 @@ class FirestoreInventoryItemStore
 
   @override
   Future<List<InventoryItemDocument>> readAll({required String userId}) async {
-    final snapshot = await _collection(userId).get();
-    return _mapSnapshot(snapshot);
+    final collection = _collection(userId);
+    return _mapDocuments(
+      await collection.openAll(await collection.reference.get()),
+    );
   }
 
   @override
@@ -84,19 +90,23 @@ class FirestoreInventoryItemStore
       return const <InventoryItemDocument>[];
     }
 
-    final snapshot = await _collection(userId)
+    final collection = _collection(userId);
+    final snapshot = await collection.reference
         .where('origin', isEqualTo: 'manualAdd')
         .where('is_deposit', isEqualTo: false)
         .where('is_discount', isEqualTo: false)
         .orderBy('entry_date', descending: true)
         .limit(limit)
         .get();
-    return _mapSnapshot(snapshot);
+    return _mapDocuments(await collection.openAll(snapshot));
   }
 
   @override
   Stream<List<InventoryItemDocument>> watchAll({required String userId}) {
-    return _collection(userId).snapshots().map(_mapSnapshot);
+    final collection = _collection(userId);
+    return collection.reference.snapshots().asyncMap(
+      (snapshot) async => _mapDocuments(await collection.openAll(snapshot)),
+    );
   }
 
   @override
@@ -105,9 +115,11 @@ class FirestoreInventoryItemStore
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
+      final collection = _collection(userId);
+      await collection.ensureAllSealed();
       await _atomicReplaceService.replaceAll(
-        collection: _collection(userId),
-        documentsById: documentsById,
+        collection: collection.reference,
+        documentsById: await collection.sealAll(documentsById),
       );
       return true;
     } on Object catch (error, stackTrace) {
@@ -127,9 +139,10 @@ class FirestoreInventoryItemStore
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
+      final collection = _collection(userId);
       final operations = _atomicReplaceService.buildUpsertOperations(
-        collection: _collection(userId),
-        documentsById: documentsById,
+        collection: collection.reference,
+        documentsById: await collection.sealAll(documentsById),
       );
       for (final chunk in FirestoreBatchChunker.chunk(
         operations: operations,
@@ -158,22 +171,22 @@ class FirestoreInventoryItemStore
     }
   }
 
-  CollectionReference<Map<String, dynamic>> _collection(String userId) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_inventoryItemsCollection);
+  SealedCollection _collection(String userId) {
+    return SealedCollection(
+      _firestore
+          .collection(_usersCollection)
+          .doc(userId)
+          .collection(_inventoryItemsCollection),
+      cipher: _cipher,
+      plaintextFields: inventoryItemPlaintextFields,
+    );
   }
 
-  List<InventoryItemDocument> _mapSnapshot(
-    QuerySnapshot<Map<String, dynamic>> snapshot,
-  ) {
-    return snapshot.docs
+  List<InventoryItemDocument> _mapDocuments(List<OpenedDocument> documents) {
+    return documents
         .map(
-          (document) => InventoryItemDocument(
-            id: document.id,
-            data: Map<String, dynamic>.from(document.data()),
-          ),
+          (document) =>
+              InventoryItemDocument(id: document.id, data: document.data),
         )
         .toList(growable: false);
   }
