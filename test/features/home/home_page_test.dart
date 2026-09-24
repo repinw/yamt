@@ -58,6 +58,7 @@ import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_profile_summary_card/settings_profile_summary_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
@@ -634,7 +635,7 @@ void main() {
     }
   });
 
-  testWidgets('diary menu button on the left opens settings', (tester) async {
+  testWidgets('diary menu opens the profile card and settings', (tester) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
 
@@ -655,6 +656,13 @@ void main() {
     await tester.tap(menuButton);
     await tester.pumpAndSettle();
     expect(find.byType(HomeMenuDrawer), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(HomeMenuDrawer),
+        matching: find.byType(SettingsProfileSummaryCard),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(HomeMenuDrawer.settingsTileKey));
     await tester.pumpAndSettle();

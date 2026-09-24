@@ -138,4 +138,7 @@ abstract final class AppSizes {
 
   /// Most product images in a collage of several foods.
   static const int collageImages = 4;
+
+  /// Radius of the avatar on the profile summary card.
+  static const double profileAvatarRadius = 22;
 }
