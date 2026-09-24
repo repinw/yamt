@@ -52,6 +52,7 @@ dependencies:
   package_info_plus: ^10.2.1
   path_provider: ^2.1.6
   permission_handler: ^13.0.2
+  qr_flutter: ^4.1.0
   riverpod: ^3.4.3
   riverpod_annotation: ^4.0.7
   shared_preferences: ^2.5.5
