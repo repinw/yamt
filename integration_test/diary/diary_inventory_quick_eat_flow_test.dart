@@ -27,12 +27,10 @@ import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart'
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -151,9 +149,6 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       ),
       healthConnectionServiceProvider.overrideWithValue(
         FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
-      ),
-      diaryHealthServiceProvider.overrideWithValue(
-        FakeDiaryHealthService(const <String, DiaryHealthDayData>{}),
       ),
       healthWeightServiceProvider.overrideWithValue(
         FakeHealthWeightService(const <HealthWeightSample>[]),

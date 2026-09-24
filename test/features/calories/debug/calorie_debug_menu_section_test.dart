@@ -7,7 +7,6 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_menu_section.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -98,9 +97,6 @@ Future<void> _pumpDebugMenu(
         calorieLogRepositoryProvider.overrideWithValue(resolvedLogRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(
           resolvedSettingsRepository,
-        ),
-        diaryHealthServiceProvider.overrideWithValue(
-          FakeDiaryHealthService({}),
         ),
         healthConnectionServiceProvider.overrideWithValue(
           FakeHealthConnectionService(

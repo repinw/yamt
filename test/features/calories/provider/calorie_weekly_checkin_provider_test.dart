@@ -22,8 +22,6 @@ import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
-import 'package:yamt/features/health/data/diary_health_service.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
@@ -31,7 +29,6 @@ import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -89,7 +86,6 @@ ProviderContainer _createContainer({
   required ManualHealthWeightRepository manualRepository,
   HealthConnectionService? healthConnectionService,
   FakeHealthWeightService? healthWeightService,
-  DiaryHealthService? diaryHealthService,
   BurnWeekRunState burnWeekRunState = const BurnWeekRunState.initial(),
 }) {
   return ProviderContainer(
@@ -110,8 +106,6 @@ ProviderContainer _createContainer({
       ),
       if (healthWeightService != null)
         healthWeightServiceProvider.overrideWith((ref) => healthWeightService),
-      if (diaryHealthService != null)
-        diaryHealthServiceProvider.overrideWith((ref) => diaryHealthService),
       manualHealthWeightRepositoryProvider.overrideWith(
         (ref) => manualRepository,
       ),
@@ -629,9 +623,6 @@ void main() {
         manualRepository: manualRepository,
         healthConnectionService: FakeHealthConnectionService(_readyStatus),
         healthWeightService: healthWeightService,
-        diaryHealthService: FakeDiaryHealthService(
-          const <String, DiaryHealthDayData>{},
-        ),
       );
       addTearDown(container.dispose);
 
@@ -689,9 +680,6 @@ void main() {
       manualRepository: manualRepository,
       healthConnectionService: FakeHealthConnectionService(_readyStatus),
       healthWeightService: healthWeightService,
-      diaryHealthService: FakeDiaryHealthService(
-        const <String, DiaryHealthDayData>{},
-      ),
     );
     addTearDown(container.dispose);
 
@@ -747,9 +735,6 @@ void main() {
         manualRepository: manualRepository,
         healthConnectionService: FakeHealthConnectionService(_readyStatus),
         healthWeightService: healthWeightService,
-        diaryHealthService: FakeDiaryHealthService(
-          const <String, DiaryHealthDayData>{},
-        ),
       );
       addTearDown(container.dispose);
 
@@ -827,9 +812,6 @@ void main() {
         manualRepository: manualRepository,
         healthConnectionService: FakeHealthConnectionService(_readyStatus),
         healthWeightService: healthWeightService,
-        diaryHealthService: FakeDiaryHealthService(
-          const <String, DiaryHealthDayData>{},
-        ),
       );
       addTearDown(container.dispose);
       final subscription = container.listen(

@@ -9,12 +9,9 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/health/data/diary_health_service.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
-import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -337,87 +334,6 @@ class FakeHealthConnectionService implements HealthConnectionService {
     return status;
   }
 }
-
-class FakeDiaryHealthService implements DiaryHealthService {
-  new(this.dataByDay);
-
-  final Map<String, DiaryHealthDayData> dataByDay;
-  int loadDayDataCallCount = 0;
-
-  @override
-  Future<DiaryHealthDayData> loadDayData({
-    required DateTime day,
-    double? userHeightCm,
-  }) async {
-    loadDayDataCallCount += 1;
-    return dataByDay[diaryDayKey(day)] ??
-        const DiaryHealthDayData(totalSteps: 0, workouts: []);
-  }
-}
-
-class FakeTrendDiaryHealthService extends FakeDiaryHealthService
-    implements
-        DiaryHealthActivityTrendRefreshService,
-        DiaryHealthActivityTrendService {
-  new(
-    super.dataByDay, {
-    required this.trendDays,
-    List<DiaryHealthActivityTrendDay>? refreshTrendDays,
-    this.shouldThrowTrend = false,
-    this.shouldThrowRefreshTrend = false,
-  }) : refreshTrendDays = refreshTrendDays ?? trendDays;
-
-  final List<DiaryHealthActivityTrendDay> trendDays;
-  final List<DiaryHealthActivityTrendDay> refreshTrendDays;
-  final bool shouldThrowTrend;
-  final bool shouldThrowRefreshTrend;
-  final trendRequests = <({DateTime startInclusive, DateTime endExclusive})>[];
-  final refreshRequests =
-      <({DateTime startInclusive, DateTime endExclusive})>[];
-
-  @override
-  Future<List<DiaryHealthActivityTrendDay>> loadActivityTrendDays({
-    required DateTime startInclusive,
-    required DateTime endExclusive,
-  }) async {
-    trendRequests.add((
-      startInclusive: normalizeDiaryDay(startInclusive),
-      endExclusive: normalizeDiaryDay(endExclusive),
-    ));
-    if (shouldThrowTrend) {
-      throw StateError('trend failed');
-    }
-    return trendDays
-        .where(
-          (day) =>
-              !day.day.isBefore(startInclusive) &&
-              day.day.isBefore(endExclusive),
-        )
-        .toList(growable: false);
-  }
-
-  @override
-  Future<List<DiaryHealthActivityTrendDay>> refreshActivityTrendDays({
-    required DateTime startInclusive,
-    required DateTime endExclusive,
-  }) async {
-    refreshRequests.add((
-      startInclusive: normalizeDiaryDay(startInclusive),
-      endExclusive: normalizeDiaryDay(endExclusive),
-    ));
-    if (shouldThrowRefreshTrend) {
-      throw StateError('trend refresh failed');
-    }
-    return refreshTrendDays
-        .where(
-          (day) =>
-              !day.day.isBefore(startInclusive) &&
-              day.day.isBefore(endExclusive),
-        )
-        .toList(growable: false);
-  }
-}
-
 class FakeHealthWeightService implements HealthWeightService {
   new(this.samples);
 

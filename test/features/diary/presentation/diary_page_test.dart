@@ -63,12 +63,10 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_progress_section.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -709,12 +707,6 @@ void main() {
       tester,
       selectedDay: selectedDay,
       healthConnectionService: FakeHealthConnectionService(healthStatus),
-      healthDataByDay: {
-        diaryDayKey(selectedDay): const DiaryHealthDayData(
-          totalSteps: 4321,
-          workouts: [],
-        ),
-      },
       body: SingleChildScrollView(
         child: DiaryWeeklyProgressSection(selectedDay: selectedDay),
       ),
@@ -975,8 +967,6 @@ Future<ProviderContainer> _pumpDiaryPage(
   MemoryAppPreferences? appPreferences,
   BurnWeekRunState? burnWeekRunState,
   DiaryDayDashboardState? dashboardState,
-  Map<String, DiaryHealthDayData> healthDataByDay =
-      const <String, DiaryHealthDayData>{},
   List<ProviderObserver> providerObservers = const [],
   List<Override> overrides = const [],
   bool overrideWeeklyCheckInProvider = true,
@@ -1049,9 +1039,6 @@ Future<ProviderContainer> _pumpDiaryPage(
             FakeHealthConnectionService(
               const HealthConnectionStatus.unsupported(),
             ),
-      ),
-      diaryHealthServiceProvider.overrideWithValue(
-        FakeDiaryHealthService(healthDataByDay),
       ),
       healthWeightServiceProvider.overrideWithValue(
         FakeHealthWeightService(const <HealthWeightSample>[]),

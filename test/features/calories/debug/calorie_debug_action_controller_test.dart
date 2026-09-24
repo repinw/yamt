@@ -12,7 +12,6 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -166,7 +165,6 @@ _CaloriePageActionHarness _createHarness({
       calorieSettingsRepositoryProvider.overrideWithValue(
         resolvedSettingsRepository,
       ),
-      diaryHealthServiceProvider.overrideWithValue(FakeDiaryHealthService({})),
       healthConnectionServiceProvider.overrideWithValue(
         FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
       ),

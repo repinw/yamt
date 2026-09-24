@@ -357,13 +357,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/diary/presentation/diary_quick_eat_flow_support.dart': 1,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
         1,
-    'lib/features/health/data/diary_health_activity_trend_day_cache_codec.dart':
-        1,
-    'lib/features/health/data/diary_health_activity_trend_day_cache_store.dart':
-        1,
-    'lib/features/health/data/diary_health_day_cache_codec.dart': 1,
-    'lib/features/health/data/diary_health_day_cache_store.dart': 1,
-    'lib/features/health/data/diary_health_mobile_cache_helpers.dart': 1,
     'lib/features/home_widget/application/home_widget_action_uri_codec.dart': 1,
     'lib/features/home_widget/data/home_widget_plugin_bridge.dart': 1,
     'lib/features/household/application/household_access_recovery_utils.dart':

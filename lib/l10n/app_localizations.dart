@@ -4583,12 +4583,6 @@ abstract class AppLocalizations {
   /// **'Expected activity'**
   String get diaryBudgetDetailsExpectedActivityLabel;
 
-  /// No description provided for @diaryBudgetDetailsExtraSportLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Extra activity / workouts'**
-  String get diaryBudgetDetailsExtraSportLabel;
-
   /// No description provided for @diaryBudgetDetailsCarryoverLabel.
   ///
   /// In en, this message translates to:
@@ -4679,18 +4673,6 @@ abstract class AppLocalizations {
   /// **'This is the first day of your active run. There is no carryover yet.'**
   String get diaryBudgetDetailsNoPreviousDays;
 
-  /// No description provided for @diaryWorkoutsBaselineProgress.
-  ///
-  /// In en, this message translates to:
-  /// **'{current} / {target} kcal baseline activity • {remaining} kcal to bonus'**
-  String diaryWorkoutsBaselineProgress(String current, String target, String remaining);
-
-  /// No description provided for @diaryWorkoutsBonusEarned.
-  ///
-  /// In en, this message translates to:
-  /// **'+{bonus} kcal extra sport bonus credited to daily goal!'**
-  String diaryWorkoutsBonusEarned(String bonus);
-
   /// No description provided for @diaryActivityTitle.
   ///
   /// In en, this message translates to:
@@ -4775,53 +4757,11 @@ abstract class AppLocalizations {
   /// **'Step details'**
   String get diaryStepDetailsTitle;
 
-  /// No description provided for @diaryStepsDuringWorkoutsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Steps during workouts'**
-  String get diaryStepsDuringWorkoutsLabel;
-
   /// No description provided for @diaryStepsDuringOtherActivityLabel.
   ///
   /// In en, this message translates to:
   /// **'Other active steps'**
   String get diaryStepsDuringOtherActivityLabel;
-
-  /// No description provided for @diaryStepsOutsideWorkoutsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Steps outside'**
-  String get diaryStepsOutsideWorkoutsLabel;
-
-  /// No description provided for @diaryWorkoutsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Workouts'**
-  String get diaryWorkoutsTitle;
-
-  /// No description provided for @diaryWorkoutsLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Workouts could not be loaded'**
-  String get diaryWorkoutsLoadFailed;
-
-  /// No description provided for @diaryWorkoutsEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No workouts'**
-  String get diaryWorkoutsEmpty;
-
-  /// No description provided for @diaryWorkoutFallbackTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Workout'**
-  String get diaryWorkoutFallbackTitle;
-
-  /// No description provided for @diaryWorkoutMinutesLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{minutes} min'**
-  String diaryWorkoutMinutesLabel(String minutes);
 
   /// No description provided for @caloriesBundlePortions.
   ///

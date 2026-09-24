@@ -2411,9 +2411,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBudgetDetailsExpectedActivityLabel => 'Vermutete Aktivität';
 
   @override
-  String get diaryBudgetDetailsExtraSportLabel => 'Zusätzlicher Sport';
-
-  @override
   String get diaryBudgetDetailsCarryoverLabel => 'Übertrag aus Vortagen';
 
   @override
@@ -2463,16 +2460,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBudgetDetailsNoPreviousDays => 'Dies ist der erste Tag deines aktuellen Laufs. Es gibt noch keinen Übertrag.';
 
   @override
-  String diaryWorkoutsBaselineProgress(String current, String target, String remaining) {
-    return '$current / $target kcal Basis-Aktivität • Noch $remaining kcal bis zum Bonus';
-  }
-
-  @override
-  String diaryWorkoutsBonusEarned(String bonus) {
-    return '+$bonus kcal Extra-Sport wurden deinem Tagesziel gutgeschrieben!';
-  }
-
-  @override
   String get diaryActivityTitle => 'Aktivität';
 
   @override
@@ -2519,30 +2506,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryStepDetailsTitle => 'Schritte Details';
 
   @override
-  String get diaryStepsDuringWorkoutsLabel => 'Schritte im Training';
-
-  @override
   String get diaryStepsDuringOtherActivityLabel => 'Sonstige aktive Schritte';
-
-  @override
-  String get diaryStepsOutsideWorkoutsLabel => 'Schritte außerhalb';
-
-  @override
-  String get diaryWorkoutsTitle => 'Trainings';
-
-  @override
-  String get diaryWorkoutsLoadFailed => 'Trainings konnten nicht geladen werden';
-
-  @override
-  String get diaryWorkoutsEmpty => 'Keine Trainings';
-
-  @override
-  String get diaryWorkoutFallbackTitle => 'Training';
-
-  @override
-  String diaryWorkoutMinutesLabel(String minutes) {
-    return '$minutes Min.';
-  }
 
   @override
   String caloriesBundlePortions(String consumed, int total) {

@@ -1166,7 +1166,6 @@
   "diaryBudgetDetailsBaseGoalLabel": "Basis-Tagesziel",
   "diaryBudgetDetailsBaseGoalWithoutActivityLabel": "Basis-Tagesziel (ohne Aktivität)",
   "diaryBudgetDetailsExpectedActivityLabel": "Vermutete Aktivität",
-  "diaryBudgetDetailsExtraSportLabel": "Zusätzlicher Sport",
   "diaryBudgetDetailsCarryoverLabel": "Übertrag aus Vortagen",
   "diaryBudgetDetailsEffectiveGoalLabel": "Effektives Tagesziel",
   "diaryBudgetDetailsEatenLabel": "Bisher gegessen",
@@ -1208,28 +1207,6 @@
   },
   "diaryBudgetDetailsSafetyCapActive": "Schutzregel aktiv: Tageskürzung wurde begrenzt, um Heißhunger zu verhindern.",
   "diaryBudgetDetailsNoPreviousDays": "Dies ist der erste Tag deines aktuellen Laufs. Es gibt noch keinen Übertrag.",
-  "diaryWorkoutsBaselineProgress": "{current} / {target} kcal Basis-Aktivität • Noch {remaining} kcal bis zum Bonus",
-  "@diaryWorkoutsBaselineProgress": {
-    "placeholders": {
-      "current": {
-        "type": "String"
-      },
-      "target": {
-        "type": "String"
-      },
-      "remaining": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryWorkoutsBonusEarned": "+{bonus} kcal Extra-Sport wurden deinem Tagesziel gutgeschrieben!",
-  "@diaryWorkoutsBonusEarned": {
-    "placeholders": {
-      "bonus": {
-        "type": "String"
-      }
-    }
-  },
   "diaryActivityTitle": "Aktivität",
   "diaryActivityWeightLoadFailed": "Aktivität und Gewicht konnten nicht geladen werden",
   "diaryWeightTitle": "Gewicht",
@@ -1258,21 +1235,7 @@
   "diaryStepsTitle": "Schritte",
   "diaryStepsLoadFailed": "Schritte konnten nicht geladen werden",
   "diaryStepDetailsTitle": "Schritte Details",
-  "diaryStepsDuringWorkoutsLabel": "Schritte im Training",
   "diaryStepsDuringOtherActivityLabel": "Sonstige aktive Schritte",
-  "diaryStepsOutsideWorkoutsLabel": "Schritte außerhalb",
-  "diaryWorkoutsTitle": "Trainings",
-  "diaryWorkoutsLoadFailed": "Trainings konnten nicht geladen werden",
-  "diaryWorkoutsEmpty": "Keine Trainings",
-  "diaryWorkoutFallbackTitle": "Training",
-  "diaryWorkoutMinutesLabel": "{minutes} Min.",
-  "@diaryWorkoutMinutesLabel": {
-    "placeholders": {
-      "minutes": {
-        "type": "String"
-      }
-    }
-  },
   "caloriesBundlePortions": "{consumed}/{total} Portionen",
   "@caloriesBundlePortions": {
     "placeholders": {

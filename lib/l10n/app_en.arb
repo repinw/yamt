@@ -1185,7 +1185,6 @@
   "diaryBudgetDetailsBaseGoalLabel": "Base daily goal",
   "diaryBudgetDetailsBaseGoalWithoutActivityLabel": "Base daily goal (without activity)",
   "diaryBudgetDetailsExpectedActivityLabel": "Expected activity",
-  "diaryBudgetDetailsExtraSportLabel": "Extra activity / workouts",
   "diaryBudgetDetailsCarryoverLabel": "Carryover from previous days",
   "diaryBudgetDetailsEffectiveGoalLabel": "Effective daily goal",
   "diaryBudgetDetailsEatenLabel": "Food eaten so far",
@@ -1227,28 +1226,6 @@
   },
   "diaryBudgetDetailsSafetyCapActive": "Safety limit active: Daily reduction was capped to prevent extreme restriction.",
   "diaryBudgetDetailsNoPreviousDays": "This is the first day of your active run. There is no carryover yet.",
-  "diaryWorkoutsBaselineProgress": "{current} / {target} kcal baseline activity • {remaining} kcal to bonus",
-  "@diaryWorkoutsBaselineProgress": {
-    "placeholders": {
-      "current": {
-        "type": "String"
-      },
-      "target": {
-        "type": "String"
-      },
-      "remaining": {
-        "type": "String"
-      }
-    }
-  },
-  "diaryWorkoutsBonusEarned": "+{bonus} kcal extra sport bonus credited to daily goal!",
-  "@diaryWorkoutsBonusEarned": {
-    "placeholders": {
-      "bonus": {
-        "type": "String"
-      }
-    }
-  },
   "diaryActivityTitle": "Activity",
   "diaryActivityWeightLoadFailed": "Activity and weight could not be loaded",
   "diaryWeightTitle": "Weight",
@@ -1277,21 +1254,7 @@
   "diaryStepsTitle": "Steps",
   "diaryStepsLoadFailed": "Steps could not be loaded",
   "diaryStepDetailsTitle": "Step details",
-  "diaryStepsDuringWorkoutsLabel": "Steps during workouts",
   "diaryStepsDuringOtherActivityLabel": "Other active steps",
-  "diaryStepsOutsideWorkoutsLabel": "Steps outside",
-  "diaryWorkoutsTitle": "Workouts",
-  "diaryWorkoutsLoadFailed": "Workouts could not be loaded",
-  "diaryWorkoutsEmpty": "No workouts",
-  "diaryWorkoutFallbackTitle": "Workout",
-  "diaryWorkoutMinutesLabel": "{minutes} min",
-  "@diaryWorkoutMinutesLabel": {
-    "placeholders": {
-      "minutes": {
-        "type": "String"
-      }
-    }
-  },
   "caloriesBundlePortions": "{consumed}/{total} portions",
   "@caloriesBundlePortions": {
     "placeholders": {

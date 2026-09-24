@@ -1,13 +1,12 @@
 # Health Feature
 
-Health owns platform health access, Health Connect permission state, raw health
-activity data, health weight samples, and manual fallback weight entries.
+Health owns platform health access, Health Connect permission state, health
+weight samples, and manual fallback weight entries. It reads only weight.
 
 ## Owns
 
 - Health platform services and repositories under `data/`.
-- Health connection, activity, workout, energy, and weight domain models under
-  `domain/`.
+- Health connection and weight domain models under `domain/`.
 - The trend weight: one daily weight from manual entries and Health samples,
   interpolated between weigh-ins and smoothed, so water swings do not show as
   weight changes.
@@ -17,7 +16,7 @@ activity data, health weight samples, and manual fallback weight entries.
 ## Does Not Own
 
 - Calorie goal settings, weekly check-in state, or calorie refresh behavior.
-- Diary page composition or activity card layout.
+- Diary page composition.
 - App authentication flows.
 
 ## Public Edge
@@ -26,8 +25,8 @@ activity data, health weight samples, and manual fallback weight entries.
   permission actions used by integrating features.
 - `presentation/controllers/health_connection_controller.dart`
 - `presentation/controllers/manual_health_weight_entries_controller.dart`
-- Service providers in `data/` for health connection, diary health data, health
-  weight samples, and manual weight fallback storage.
+- Service providers in `data/` for health connection, health weight samples,
+  and manual weight fallback storage.
 - Domain models in `domain/` used by Activity, Calories, Diary, and Settings.
 
 Other features should use the application connection facade instead of wiring
@@ -42,7 +41,6 @@ health changes belong in the consuming calorie or activity application layer.
 
 Main providers:
 
-- `data/diary_health_service_provider.dart`
 - `data/health_connection_service_provider.dart`
 - `data/health_weight_service_provider.dart`
 - `data/manual_health_weight_repository_provider.dart`

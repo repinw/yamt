@@ -17,12 +17,10 @@ import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snaps
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/daily_learned_tdee_provider.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
@@ -139,7 +137,6 @@ class _DailyLearnedHarness {
     required List<HealthWeightSample> healthWeights,
     List<ManualHealthWeightEntry> manualWeights =
         const <ManualHealthWeightEntry>[],
-    FakeDiaryHealthService? diaryHealthService,
     BurnWeekRunState burnWeekRunState = const BurnWeekRunState.initial(),
   }) {
     logRepository = FakeCalorieLogRepository(initialEntries: entries);
@@ -156,11 +153,6 @@ class _DailyLearnedHarness {
         ),
         healthConnectionServiceProvider.overrideWith(
           (ref) => FakeHealthConnectionService(_readyStatus),
-        ),
-        diaryHealthServiceProvider.overrideWith(
-          (ref) =>
-              diaryHealthService ??
-              FakeDiaryHealthService(const <String, DiaryHealthDayData>{}),
         ),
         healthWeightServiceProvider.overrideWith(
           (ref) => FakeHealthWeightService(healthWeights),

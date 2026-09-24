@@ -21,13 +21,9 @@ import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart';
-import 'package:yamt/features/health/data/diary_health_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
-import 'package:yamt/features/health/domain/diary_health_activity_trend_day.dart';
-import 'package:yamt/features/health/domain/diary_health_day_data.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/domain/health_workout_session.dart';
 
 import '../support/fake_calories_repositories.dart';
 
@@ -250,7 +246,7 @@ void main() {
   });
 
   test(
-    'calorieWeekOverview includes past activity bonus in spread carryover',
+    'calorieWeekOverview spreads past under-eating into carryover',
     () async {
       final today = DateTime(2026, 4, 10);
       final yesterday = today.subtract(const Duration(days: 1));
@@ -283,25 +279,6 @@ void main() {
           healthConnectionServiceProvider.overrideWith(
             (ref) => FakeHealthConnectionService(_readyHealthStatus),
           ),
-          diaryHealthServiceProvider.overrideWith(
-            (ref) => FakeDiaryHealthService(<String, DiaryHealthDayData>{
-              diaryDayKey(yesterday): DiaryHealthDayData(
-                totalSteps: 0,
-                workouts: <HealthWorkoutSession>[
-                  HealthWorkoutSession(
-                    id: 'run-1',
-                    start: yesterday.add(const Duration(hours: 8)),
-                    endExclusive: yesterday.add(const Duration(hours: 9)),
-                    durationMinutes: 60,
-                    activityLabel: 'Run',
-                    sourceName: 'Health',
-                    totalCalories: 1000,
-                    totalSteps: 0,
-                  ),
-                ],
-              ),
-            }),
-          ),
         ],
       );
       addTearDown(container.dispose);
@@ -313,83 +290,6 @@ void main() {
 
       expect(overview.carryoverBeforeTodayKcal, closeTo(83.333, 0.001));
       expect(overview.todayFlexibleGoalKcal, closeTo(2083.333, 0.001));
-    },
-  );
-
-  test(
-    'calorieWeekOverview keeps visible past activity on the weekly bar',
-    () async {
-      final selectedDay = DateTime(2026, 4, 10);
-      final trainingDay = selectedDay.subtract(const Duration(days: 1));
-      final firstVisibleDay = selectedDay.subtract(const Duration(days: 6));
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _entry(
-            'training-day',
-            loggedAt: trainingDay.add(const Duration(hours: 12)),
-            totalKcal: 1500,
-          ),
-        ],
-      );
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2000,
-          calculatorProfile: null,
-          effectiveDate: firstVisibleDay,
-          activityTrackingStartDate: firstVisibleDay,
-        ),
-      );
-      final diaryHealthService = FakeTrendDiaryHealthService(
-        <String, DiaryHealthDayData>{
-          diaryDayKey(trainingDay): DiaryHealthDayData(
-            totalSteps: 0,
-            workouts: <HealthWorkoutSession>[
-              HealthWorkoutSession(
-                id: 'run-1',
-                start: trainingDay.add(const Duration(hours: 8)),
-                endExclusive: trainingDay.add(const Duration(hours: 9)),
-                durationMinutes: 60,
-                activityLabel: 'Run',
-                sourceName: 'Health',
-                totalCalories: 1041,
-                totalSteps: 0,
-              ),
-            ],
-          ),
-        },
-        trendDays: <DiaryHealthActivityTrendDay>[
-          DiaryHealthActivityTrendDay(
-            day: trainingDay,
-            totalSteps: 0,
-            activeEnergyKcal: 0,
-          ),
-        ],
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
-
-      final container = ProviderContainer(
-        overrides: [
-          calorieLogRepositoryProvider.overrideWithValue(logRepository),
-          calorieSettingsRepositoryProvider.overrideWithValue(
-            settingsRepository,
-          ),
-          healthConnectionServiceProvider.overrideWith(
-            (ref) => FakeHealthConnectionService(_readyHealthStatus),
-          ),
-          diaryHealthServiceProvider.overrideWith((ref) => diaryHealthService),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final overview = await _readWeekOverviewForWindow(container, selectedDay);
-
-      final trainingOverview = overview.days.firstWhere(
-        (day) => day.date == trainingDay,
-      );
-      expect(trainingOverview.goalKcal, closeTo(2000.0, 0.001));
-      expect(diaryHealthService.trendRequests, isEmpty);
-      expect(diaryHealthService.loadDayDataCallCount, 0);
     },
   );
 
