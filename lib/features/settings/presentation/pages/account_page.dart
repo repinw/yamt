@@ -12,6 +12,7 @@ import 'package:yamt/features/auth/data/auth_service.dart'
 import 'package:yamt/features/auth/presentation/auth_error_message_mapper.dart';
 import 'package:yamt/features/auth/presentation/widgets/recovery_key_tile.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_link_conflict_controller.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_page_flow_service.dart';
 import 'package:yamt/features/settings/presentation/widgets/account_guest_card/account_guest_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/account_user_info_card/account_user_info_card.dart';
@@ -310,7 +311,9 @@ class _AccountPageState extends ConsumerState<AccountPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authStateChangesProvider);
-    final isActionLoading = ref.watch(accountControllerProvider).isLoading;
+    final isActionLoading =
+        ref.watch(accountControllerProvider).isLoading ||
+        ref.watch(accountLinkConflictControllerProvider).isLoading;
 
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsAccountTitle)),

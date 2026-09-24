@@ -36,7 +36,7 @@ final class AccountControllerProvider
   AccountController create() => AccountController();
 }
 
-String _$accountControllerHash() => r'220dacc2d8ca1fcc9a9a35265bece268aedf8e81';
+String _$accountControllerHash() => r'22c02a2c7b0e7a266a7171f73f47d3e3f7f28ba9';
 
 /// Defines account controller.
 

@@ -3,12 +3,12 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_link_conflict_controller.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_page_flow_service.dart';
 
 class _MockAuthCredential extends Fake implements AuthCredential;
 
-class _RecordingAccountController extends AccountController {
+class _RecordingAccountController extends AccountLinkConflictController {
   var _overwriteCalls = 0;
   var _deleteCalls = 0;
   AuthCredential? _overwriteCredential;
@@ -94,7 +94,7 @@ void main() {
     () async {
       final container = ProviderContainer(
         overrides: [
-          accountControllerProvider.overrideWith(
+          accountLinkConflictControllerProvider.overrideWith(
             _RecordingAccountController.new,
           ),
         ],
@@ -102,7 +102,7 @@ void main() {
       addTearDown(container.dispose);
       final service = container.read(accountPageFlowServiceProvider);
       final controller = container.read(
-        accountControllerProvider.notifier,
+        accountLinkConflictControllerProvider.notifier,
       ) as _RecordingAccountController;
       final credential = _MockAuthCredential();
 
@@ -123,7 +123,7 @@ void main() {
     () async {
       final container = ProviderContainer(
         overrides: [
-          accountControllerProvider.overrideWith(
+          accountLinkConflictControllerProvider.overrideWith(
             _RecordingAccountController.new,
           ),
         ],
@@ -131,7 +131,7 @@ void main() {
       addTearDown(container.dispose);
       final service = container.read(accountPageFlowServiceProvider);
       final controller = container.read(
-        accountControllerProvider.notifier,
+        accountLinkConflictControllerProvider.notifier,
       ) as _RecordingAccountController;
       final credential = _MockAuthCredential();
 

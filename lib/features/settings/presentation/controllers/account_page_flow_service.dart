@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_link_conflict_controller.dart';
 
 part 'account_page_flow_service.g.dart';
 
@@ -16,7 +16,7 @@ enum AccountCredentialConflictChoice {
 /// The account page flow service provider.
 @riverpod
 AccountPageFlowService accountPageFlowService(Ref ref) {
-  final controller = ref.watch(accountControllerProvider.notifier);
+  final controller = ref.watch(accountLinkConflictControllerProvider.notifier);
   return AccountPageFlowService(
     overwriteExistingGoogleAccountWithGuest:
         controller.overwriteExistingGoogleAccountWithGuest,

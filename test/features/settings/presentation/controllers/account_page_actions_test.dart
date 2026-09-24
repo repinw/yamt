@@ -8,6 +8,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
+import 'package:yamt/features/settings/presentation/controllers/account_link_conflict_controller.dart';
 import 'package:yamt/features/settings/presentation/pages/account_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -63,22 +64,31 @@ class _FakeAccountController extends AccountController {
   }
 
   @override
+  Future<void> deleteCurrentAccount() async {
+    await onDeleteCurrentAccount?.call();
+  }
+}
+
+class _FakeAccountLinkConflictController extends AccountLinkConflictController {
+  new({required this.accountController});
+
+  final _FakeAccountController accountController;
+
+  @override
+  FutureOr<void> build() {}
+
+  @override
   Future<void> overwriteExistingGoogleAccountWithGuest(
     AuthCredential credential,
   ) async {
-    await onOverwriteExisting?.call(credential);
+    await accountController.onOverwriteExisting?.call(credential);
   }
 
   @override
   Future<void> deleteGuestAndSignInWithGoogleCredential(
     AuthCredential credential,
   ) async {
-    await onDeleteGuestAndSignIn?.call(credential);
-  }
-
-  @override
-  Future<void> deleteCurrentAccount() async {
-    await onDeleteCurrentAccount?.call();
+    await accountController.onDeleteGuestAndSignIn?.call(credential);
   }
 }
 
@@ -90,6 +100,9 @@ Widget _wrap({
     overrides: [
       authStateChangesProvider.overrideWith((ref) => authStream),
       accountControllerProvider.overrideWith(() => controller),
+      accountLinkConflictControllerProvider.overrideWith(
+        () => _FakeAccountLinkConflictController(accountController: controller),
+      ),
     ],
   );
   addTearDown(container.dispose);
