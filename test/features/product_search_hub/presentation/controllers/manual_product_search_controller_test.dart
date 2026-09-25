@@ -567,6 +567,30 @@ void main() {
     );
   });
 
+  test('an eat-now save without package size keeps the gram unit', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: _item(name: '')),
+    );
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+    final notifier = container.read(provider.notifier)
+      ..updateNameText('Brötchen')
+      ..updateWeightUnit(InventoryAmountUnit.gram)
+      ..updateKcalText('270')
+      ..updateCarbsText('50')
+      ..updateProteinText('9')
+      ..updateFatText('2');
+
+    final payload = notifier.buildSavePayload(
+      action: InventoryReceiptManualProductAction.eatNow,
+    );
+
+    expect(payload?.item.amountUnit, InventoryAmountUnit.gram);
+    expect(payload?.item.usesAmountProgress, isFalse);
+  });
+
   test('updateBarcode enables the nutrition label scan', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -712,7 +736,7 @@ void main() {
     expect(state.selectedWeightUnit, InventoryAmountUnit.piece);
   });
 
-  test('invalid weight clears amount and leaves the unit to the user', () {
+  test('invalid weight clears amount and keeps the item unit', () {
     final config = _config(
       itemWeight: 'unbekannt',
       itemAmountUnit: InventoryAmountUnit.piece,
@@ -725,7 +749,7 @@ void main() {
     );
 
     expect(state.weightAmount, isEmpty);
-    expect(state.selectedWeightUnit, isNull);
+    expect(state.selectedWeightUnit, InventoryAmountUnit.piece);
   });
 
   test(

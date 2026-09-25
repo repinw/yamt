@@ -156,7 +156,7 @@ class InventoryItemEatSheetState {
   /// Largest value of the amount ruler: the stock, in pieces in portion
   /// mode.
   double get amountMax {
-    final max = calculator.maxAmount.toDouble();
+    final max = calculator.rulerMax.toDouble();
     return usesPortionMode ? max / calculator.inventoryAmountScale : max;
   }
 
@@ -175,7 +175,7 @@ class InventoryItemEatSheetState {
           ? _fractionalPieceStep
           : 1;
     }
-    return eatAmountStep(calculator.maxAmount).toDouble();
+    return eatAmountStep(calculator.rulerMax).toDouble();
   }
 
   /// Piece size that matches the entered weight and name, if any.

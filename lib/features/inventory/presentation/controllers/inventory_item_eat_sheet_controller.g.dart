@@ -29,6 +29,7 @@ final class InventoryItemEatSheetControllerProvider
       int? initialInventoryAmount,
       DateTime? initialLoggedAt,
       MealType? initialMealType,
+      bool hasOpenStock,
     })
     super.argument,
   }) : super(
@@ -74,7 +75,7 @@ final class InventoryItemEatSheetControllerProvider
 }
 
 String _$inventoryItemEatSheetControllerHash() =>
-    r'a506c8b44e7bd0d88f3c7936aaa7870fa62c4de6';
+    r'647a23118f38ceaf3cfbccd8ac5a450beb628cde';
 
 /// Holds the input of the eat sheet for one inventory item.
 
@@ -90,6 +91,7 @@ final class InventoryItemEatSheetControllerFamily extends $Family
             int? initialInventoryAmount,
             DateTime? initialLoggedAt,
             MealType? initialMealType,
+            bool hasOpenStock,
           })
         > {
   InventoryItemEatSheetControllerFamily._()
@@ -108,12 +110,14 @@ final class InventoryItemEatSheetControllerFamily extends $Family
     int? initialInventoryAmount,
     DateTime? initialLoggedAt,
     MealType? initialMealType,
+    bool hasOpenStock = false,
   }) => InventoryItemEatSheetControllerProvider._(
     argument: (
       item: item,
       initialInventoryAmount: initialInventoryAmount,
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
+      hasOpenStock: hasOpenStock,
     ),
     from: this,
   );
@@ -133,17 +137,20 @@ abstract class _$InventoryItemEatSheetController
             int? initialInventoryAmount,
             DateTime? initialLoggedAt,
             MealType? initialMealType,
+            bool hasOpenStock,
           });
   InventoryItem get item => _$args.item;
   int? get initialInventoryAmount => _$args.initialInventoryAmount;
   DateTime? get initialLoggedAt => _$args.initialLoggedAt;
   MealType? get initialMealType => _$args.initialMealType;
+  bool get hasOpenStock => _$args.hasOpenStock;
 
   InventoryItemEatSheetState build({
     required InventoryItem item,
     int? initialInventoryAmount,
     DateTime? initialLoggedAt,
     MealType? initialMealType,
+    bool hasOpenStock = false,
   });
   @$mustCallSuper
   @override
@@ -169,6 +176,7 @@ abstract class _$InventoryItemEatSheetController
         initialInventoryAmount: _$args.initialInventoryAmount,
         initialLoggedAt: _$args.initialLoggedAt,
         initialMealType: _$args.initialMealType,
+        hasOpenStock: _$args.hasOpenStock,
       ),
     );
   }

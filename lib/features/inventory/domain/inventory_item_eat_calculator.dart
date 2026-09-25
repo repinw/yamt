@@ -31,13 +31,26 @@ class InventoryItemEatPortionInput {
 /// Amount and portion rules for eating an inventory item.
 class InventoryItemEatCalculator {
   /// Creates the calculator for [item] with at most [maxAmount] to eat.
-  const new({required this.item, required this.maxAmount});
+  ///
+  /// [rulerMaxAmount] sets the range of the amount ruler when it differs
+  /// from [maxAmount], which marks a stock without a real limit.
+  const new({required this.item, required this.maxAmount, this.rulerMaxAmount});
 
   /// Item being eaten.
   final InventoryItem item;
 
   /// Maximum inventory amount that may be eaten.
   final int maxAmount;
+
+  /// Range of the amount ruler for a stock without a real limit.
+  final int? rulerMaxAmount;
+
+  /// Whether the stock does not limit the amount, as for a newly picked
+  /// product whose stock is set to the eaten amount afterwards.
+  bool get hasOpenStock => rulerMaxAmount != null;
+
+  /// Largest value of the amount ruler, in inventory units.
+  int get rulerMax => rulerMaxAmount ?? maxAmount;
 
   /// Whether the item needs a manually entered calorie portion.
   bool get requiresManualCaloriePortion {

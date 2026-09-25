@@ -86,10 +86,14 @@ List<InventoryItemEatMarker> _markers(
   InventoryItemEatSheetState state,
   ServingSuggestionResolution resolution,
 ) {
+  final hasOpenStock = state.calculator.hasOpenStock;
   if (state.usesPortionMode) {
-    return [InventoryItemEatMarker(value: state.amountMax, isAll: true)];
+    return [
+      if (!hasOpenStock)
+        InventoryItemEatMarker(value: state.amountMax, isAll: true),
+    ];
   }
-  final maxAmount = state.calculator.maxAmount;
+  final maxAmount = state.calculator.rulerMax;
   final amounts = <int>{};
   final candidates = [
     for (final portion in namedPortions(state, resolution))
@@ -101,7 +105,8 @@ List<InventoryItemEatMarker> _markers(
     for (final (:amount, :label) in candidates)
       if (amount >= 1 && amount < maxAmount && amounts.add(amount))
         InventoryItemEatMarker(value: amount.toDouble(), label: label),
-    InventoryItemEatMarker(value: maxAmount.toDouble(), isAll: true),
+    if (!hasOpenStock)
+      InventoryItemEatMarker(value: maxAmount.toDouble(), isAll: true),
   ];
 }
 

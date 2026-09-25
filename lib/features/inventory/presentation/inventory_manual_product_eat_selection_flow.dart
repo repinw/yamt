@@ -75,6 +75,7 @@ abstract final class InventoryManualProductEatSelectionFlow {
       addMoreActionText: continueBatchOnConfirm
           ? null
           : l10n.inventoryItemEatSheetAddMoreAction,
+      hasOpenStock: true,
     );
   }
 

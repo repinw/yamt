@@ -33,6 +33,7 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.initialLoggedAt,
     this.initialMealType,
     this.addMoreActionText,
+    this.hasOpenStock = false,
     super.key,
   });
 
@@ -60,6 +61,10 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
   /// Text of the "add more" button. The button is hidden when null.
   final String? addMoreActionText;
 
+  /// Whether the stock does not limit the amount, as for a newly picked
+  /// product.
+  final bool hasOpenStock;
+
   @override
   ConsumerState<InventoryItemEatSheetBody> createState() =>
       _InventoryItemEatSheetBodyState();
@@ -73,6 +78,7 @@ class _InventoryItemEatSheetBodyState
         initialInventoryAmount: widget.initialInventoryAmount,
         initialLoggedAt: widget.initialLoggedAt,
         initialMealType: widget.initialMealType,
+        hasOpenStock: widget.hasOpenStock,
       );
   final _inventoryAmount = EatSheetTextField();
   final _pieceCount = EatSheetTextField();
@@ -139,7 +145,9 @@ class _InventoryItemEatSheetBodyState
         EatPageHeader(
           title: item.name,
           brand: item.brand,
-          caption: l10n.eatPageInStock(state.stockLabel(l10n)),
+          caption: calculator.hasOpenStock
+              ? null
+              : l10n.eatPageInStock(state.stockLabel(l10n)),
           imageUrl: item.imageUrl,
           fallbackKey: const Key('inventory_item_eat_sheet_hero_fallback'),
         ),

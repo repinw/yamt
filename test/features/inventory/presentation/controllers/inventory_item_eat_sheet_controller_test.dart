@@ -99,7 +99,11 @@ class _FakeSuggestionRepository
   ProviderContainer container,
   InventoryItemEatSheetControllerProvider provider,
 })
-_setUp(InventoryItem item, {_FakeSuggestionRepository? repository}) {
+_setUp(
+  InventoryItem item, {
+  _FakeSuggestionRepository? repository,
+  bool hasOpenStock = false,
+}) {
   final container = ProviderContainer(
     overrides: [
       clockProvider.overrideWithValue(() => _now),
@@ -109,7 +113,10 @@ _setUp(InventoryItem item, {_FakeSuggestionRepository? repository}) {
     ],
   );
   addTearDown(container.dispose);
-  final provider = inventoryItemEatSheetControllerProvider(item: item);
+  final provider = inventoryItemEatSheetControllerProvider(
+    item: item,
+    hasOpenStock: hasOpenStock,
+  );
   container.listen(provider, (_, _) {});
   return (container: container, provider: provider);
 }
@@ -208,6 +215,41 @@ void main() {
       container.read(provider).errors,
       contains(InventoryItemEatSheetError.invalidInventoryAmount),
     );
+  });
+
+  test('an open stock accepts any amount and shows no stock mark', () {
+    final (:container, :provider) = _setUp(_gramItem(), hasOpenStock: true);
+    final controller = container.read(provider.notifier)..setAmountText('2500');
+
+    final state = container.read(provider);
+    expect(state.usesPortionMode, isFalse);
+    expect(state.amountMax, 1000);
+    expect(state.markers.where((marker) => marker.isAll), isEmpty);
+
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+
+    expect(outcome, isA<InventoryItemEatSubmitted>());
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.inventoryAmount, 2500);
+  });
+
+  test('a gram product without package size is eaten in grams', () {
+    final item = InventoryItem.create(
+      id: 'roll',
+      name: 'Roll',
+      entryDate: DateTime(2026, 5),
+      storeName: 'Store',
+      quantity: 1,
+      amountUnit: InventoryAmountUnit.gram,
+      nutrition: _nutrition,
+    );
+    final (:container, :provider) = _setUp(item, hasOpenStock: true);
+
+    final state = container.read(provider);
+
+    expect(state.usesPortionMode, isFalse);
+    expect(state.inventoryAmountText, '100');
+    expect(state.nutrition?.eaten.kcal, 100);
   });
 
   test('piece items start with portion inputs and need a portion', () {

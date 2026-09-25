@@ -50,7 +50,9 @@ class InventoryReceiptManualProductController
       barcode:
           config.item.normalizedBarcode ?? config.selectedProduct?.code ?? '',
       weightAmount: weightInput.amount,
-      selectedWeightUnit: weightInput.amount.isEmpty ? null : weightInput.unit,
+      selectedWeightUnit: weightInput.amount.isEmpty
+          ? config.item.amountUnit
+          : weightInput.unit,
       kcalText: formatManualProductDouble(nutrition?.per100Kcal),
       saturatedFatText: formatManualProductDouble(
         nutrition?.per100SaturatedFat,
@@ -425,7 +427,8 @@ class InventoryReceiptManualProductController
           weight: inventoryWeight,
           parsedAmount: resolvedWeightInput.parsedAmount,
           quantity: _config.item.quantity,
-        );
+        )
+        .withWeightUnitWithoutPackage(state.selectedWeightUnit);
     final selectedEditKind = _selectedProductEditKindForItem(
       updatedItem,
       globalPackageWeight: globalPackageWeight,

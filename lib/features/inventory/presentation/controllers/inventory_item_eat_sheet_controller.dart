@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_calculator.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_open_eat_stock.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_submission.dart';
@@ -33,19 +34,25 @@ class InventoryItemEatSheetController
     int? initialInventoryAmount,
     DateTime? initialLoggedAt,
     MealType? initialMealType,
+    bool hasOpenStock = false,
   }) {
     final now = ref.watch(clockProvider)();
     final loggedAt = initialLoggedAt ?? now;
-    final calculator = InventoryItemEatCalculator(
-      item: item,
-      maxAmount: consumableInventoryAmount(item) ?? 0,
-    );
+    final calculator = hasOpenStock
+        ? openStockEatCalculator(item)
+        : InventoryItemEatCalculator(
+            item: item,
+            maxAmount: consumableInventoryAmount(item) ?? 0,
+          );
+    final startAmount =
+        initialInventoryAmount ??
+        (hasOpenStock ? openStockDefaultAmount(calculator) : null);
     unawaited(Future.microtask(_loadServingSuggestions));
     return _derive(
       InventoryItemEatSheetState(
         calculator: calculator,
         inventoryAmountText: calculator.formatInventoryAmount(
-          calculator.defaultInventoryAmount(initialInventoryAmount),
+          calculator.defaultInventoryAmount(startAmount),
         ),
         portionCountText: '1',
         portionAmountText: '',
