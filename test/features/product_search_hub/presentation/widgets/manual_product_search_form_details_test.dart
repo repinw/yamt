@@ -244,6 +244,50 @@ void main() {
     expect(scanButton.onPressed, isNull);
   });
 
+  testWidgets('keyboard confirm jumps to the next empty required field', (
+    tester,
+  ) async {
+    final scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
+
+    await tester.pumpWidget(
+      _wrapDetailsForm(
+        scrollController: scrollController,
+        onScanNutritionLabel: null,
+        nameText: '',
+        kcalText: '',
+        carbsText: '',
+      ),
+    );
+
+    bool hasFocus(String key) {
+      final field = tester.widget<EditableText>(
+        find.descendant(
+          of: find.byKey(Key(key)),
+          matching: find.byType(EditableText),
+        ),
+      );
+      return field.focusNode.hasFocus;
+    }
+
+    await tester.showKeyboard(
+      find.byKey(const Key('receipt_review_manual_name_field')),
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pumpAndSettle();
+    expect(hasFocus('receipt_review_manual_kcal_field'), isTrue);
+
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pumpAndSettle();
+    expect(hasFocus('receipt_review_manual_fat_field'), isFalse);
+    expect(hasFocus('receipt_review_manual_carbs_field'), isTrue);
+
+    await tester.testTextInput.receiveAction(TextInputAction.next);
+    await tester.pumpAndSettle();
+    expect(hasFocus('receipt_review_manual_carbs_field'), isFalse);
+    expect(hasFocus('receipt_review_manual_protein_field'), isFalse);
+  });
+
   testWidgets('patches every registered field from updated props', (
     tester,
   ) async {

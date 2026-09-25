@@ -19,6 +19,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_preview.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_form/manual_product_required_field_focus.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_search_input.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'nutrition_label_scan_indicator/nutrition_label_scan_indicator.dart';
@@ -160,6 +162,23 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
   final _formKey = GlobalKey<FormBuilderState>();
   final GlobalKey _nutritionOcrButtonAnchorKey = GlobalKey();
   bool _isPatchingFormValues = false;
+  final _requiredFocus = ManualProductRequiredFieldFocus();
+
+  @override
+  void dispose() {
+    _requiredFocus.dispose();
+    super.dispose();
+  }
+
+  void _focusNextRequired(FocusNode current) {
+    _requiredFocus.focusNextEmpty(current, [
+      widget.nameText,
+      widget.kcalText,
+      widget.fatText,
+      widget.carbsText,
+      widget.proteinText,
+    ]);
+  }
 
   @override
   void didUpdateWidget(covariant ManualProductDetailsForm oldWidget) {
@@ -299,6 +318,8 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
             initialValue: widget.nameText,
             label: l10n.inventoryReceiptReviewFieldName,
             isRequired: true,
+            focusNode: _requiredFocus.name,
+            onSubmitted: () => _focusNextRequired(_requiredFocus.name),
             fieldKey: const Key('receipt_review_manual_name_field'),
             keyboardType: TextInputType.text,
             onChanged: (value) {
@@ -366,6 +387,8 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
             initialValue: widget.kcalText,
             label: l10n.caloriesPer100KcalLabel,
             isRequired: true,
+            focusNode: _requiredFocus.kcal,
+            onSubmitted: () => _focusNextRequired(_requiredFocus.kcal),
             fieldKey: const Key('receipt_review_manual_kcal_field'),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: manualProductNumericInputFormatters,
@@ -379,6 +402,8 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
             initialValue: widget.fatText,
             label: l10n.caloriesPer100FatLabel,
             isRequired: true,
+            focusNode: _requiredFocus.fat,
+            onSubmitted: () => _focusNextRequired(_requiredFocus.fat),
             fieldKey: const Key('receipt_review_manual_fat_field'),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: manualProductNumericInputFormatters,
@@ -404,6 +429,8 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
             initialValue: widget.carbsText,
             label: l10n.caloriesPer100CarbsLabel,
             isRequired: true,
+            focusNode: _requiredFocus.carbs,
+            onSubmitted: () => _focusNextRequired(_requiredFocus.carbs),
             fieldKey: const Key('receipt_review_manual_carbs_field'),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: manualProductNumericInputFormatters,
@@ -429,6 +456,8 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
             initialValue: widget.proteinText,
             label: l10n.caloriesPer100ProteinLabel,
             isRequired: true,
+            focusNode: _requiredFocus.protein,
+            onSubmitted: () => _focusNextRequired(_requiredFocus.protein),
             fieldKey: const Key('receipt_review_manual_protein_field'),
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             inputFormatters: manualProductNumericInputFormatters,

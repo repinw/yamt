@@ -208,6 +208,8 @@ class ManualProductTextField extends StatelessWidget {
     super.key,
     this.inputFormatters,
     this.isRequired = false,
+    this.focusNode,
+    this.onSubmitted,
   });
 
   /// Form field name.
@@ -234,6 +236,12 @@ class ManualProductTextField extends StatelessWidget {
   /// Whether the label marks the field as required.
   final bool isRequired;
 
+  /// Optional focus node.
+  final FocusNode? focusNode;
+
+  /// Called when the user confirms the field on the keyboard.
+  final VoidCallback? onSubmitted;
+
   @override
   Widget build(BuildContext context) {
     return FormBuilderTextField(
@@ -242,6 +250,9 @@ class ManualProductTextField extends StatelessWidget {
       initialValue: initialValue,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
+      focusNode: focusNode,
+      textInputAction: onSubmitted == null ? null : TextInputAction.next,
+      onSubmitted: onSubmitted == null ? null : (_) => onSubmitted!(),
       onChanged: onChanged,
       onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       decoration: InputDecoration(
