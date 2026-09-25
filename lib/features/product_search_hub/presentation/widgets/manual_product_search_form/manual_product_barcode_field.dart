@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_search_input.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -39,7 +40,7 @@ class ManualProductBarcodeField extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _field(l10n),
-        CheckboxListTile(
+        AppCheckboxListTile(
           key: const Key('receipt_review_manual_no_barcode_checkbox'),
           value: hasNoBarcode,
           onChanged: (value) => onNoBarcodeChanged(value ?? false),
