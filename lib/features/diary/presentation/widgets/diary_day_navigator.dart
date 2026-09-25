@@ -9,7 +9,6 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/core/widgets/home_top_bar_actions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const double _swipeVelocityThreshold = 300;
@@ -100,7 +99,10 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
           width: AppSizes.diaryTopBarSide,
           child: Align(
             alignment: Alignment.centerLeft,
-            child: HomeTopBarActions(actions: widget.leadingActions),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: widget.leadingActions,
+            ),
           ),
         ),
         Expanded(
@@ -179,10 +181,7 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: _labelMinWidth),
         child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xs,
-            vertical: AppSpacing.xxs,
-          ),
+          padding: const EdgeInsets.all(AppSpacing.xxs),
           child: FittedBox(
             fit: BoxFit.scaleDown,
             child: ClipRect(

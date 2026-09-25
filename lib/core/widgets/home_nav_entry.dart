@@ -8,7 +8,6 @@ class HomeNavEntry {
     required this.item,
     required this.isSelected,
     required this.onTap,
-    this.showTopIndicator = false,
   });
 
   /// The item.
@@ -16,9 +15,6 @@ class HomeNavEntry {
 
   /// Whether selected.
   final bool isSelected;
-
-  /// Whether to show a small top indicator above this entry.
-  final bool showTopIndicator;
 
   /// The on tap.
   final VoidCallback onTap;

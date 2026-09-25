@@ -104,8 +104,15 @@ class _QuarterBar extends StatelessWidget {
         color: colors.paper,
         border: Border(left: side, right: side, bottom: side),
       ),
-      child: SizedBox(
+      // The quarters sit inside the frame, so it stays visible.
+      child: Container(
         height: AppFoodLabel.kcalBar,
+        padding: const EdgeInsets.fromLTRB(
+          AppFoodLabel.outline,
+          0,
+          AppFoodLabel.outline,
+          AppFoodLabel.outline,
+        ),
         child: Row(
           spacing: AppFoodLabel.outline,
           children: [

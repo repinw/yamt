@@ -63,7 +63,7 @@ class DiaryDayTypeToggle extends ConsumerWidget {
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     fontFamily: AppFonts.mono,
                     color: colors.ink,
-                    letterSpacing: AppFoodLabel.brandTracking,
+                    letterSpacing: AppFoodLabel.navLabelTracking,
                   ),
                 ),
               ),

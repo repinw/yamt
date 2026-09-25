@@ -33,11 +33,8 @@ abstract final class AppSizes {
   /// Icon size in snack bars.
   static const double snackBarIcon = 20;
 
-  /// Width of the selected-item indicator in the home bottom navigation.
-  static const double homeBottomNavIndicatorWidth = 16;
-
   /// Height of the selected-item indicator in the home bottom navigation.
-  static const double homeBottomNavIndicatorHeight = 2;
+  static const double homeBottomNavIndicatorHeight = 3;
 
   /// Max width for settings-style content columns.
   static const double narrowContentMaxWidth = 560;
@@ -68,7 +65,7 @@ abstract final class AppSizes {
 
   /// Width of each side slot of the diary top bar, so the day stays
   /// centered.
-  static const double diaryTopBarSide = 96;
+  static const double diaryTopBarSide = 88;
 
   /// Diameter for circular home top bar icon buttons.
   static const double homeTopBarIconButton = 36;

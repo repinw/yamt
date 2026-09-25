@@ -36,7 +36,6 @@ class HomeBottomNavBar extends StatelessWidget {
                   child: _HomeBottomNavItemButton(
                     item: entry.item,
                     isSelected: entry.isSelected,
-                    showTopIndicator: entry.showTopIndicator,
                     onTap: entry.onTap,
                   ),
                 ),
@@ -53,12 +52,10 @@ class _HomeBottomNavItemButton extends StatelessWidget {
     required this.item,
     required this.isSelected,
     required this.onTap,
-    required this.showTopIndicator,
   });
   final HomeNavItem item;
   final bool isSelected;
   final VoidCallback onTap;
-  final bool showTopIndicator;
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
@@ -70,46 +67,51 @@ class _HomeBottomNavItemButton extends StatelessWidget {
       child: AppInkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedContainer(
-                duration: AppDurations.homeBottomNavIndicator,
-                curve: Curves.easeOutCubic,
-                width: showTopIndicator
-                    ? AppSizes.homeBottomNavIndicatorWidth
-                    : 0,
-                height: AppSizes.homeBottomNavIndicatorHeight,
-                color: showTopIndicator ? colors.accent : Colors.transparent,
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              Icon(
-                item.icon,
-                color: foregroundColor,
-                size: AppSizes.homeBottomNavIcon,
-              ),
-              const SizedBox(height: AppSpacing.xxs),
-              SizedBox(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Lime rule on top of the selected tab.
+            AnimatedOpacity(
+              opacity: isSelected ? 1 : 0,
+              duration: AppDurations.homeBottomNavIndicator,
+              child: SizedBox(
                 width: double.infinity,
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    item.label.toUpperCase(),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      fontFamily: AppFonts.mono,
-                      color: foregroundColor,
-                      fontSize: AppFontSizes.homeBottomNavLabel,
-                      letterSpacing: AppFoodLabel.navLabelTracking,
+                height: AppSizes.homeBottomNavIndicatorHeight,
+                child: ColoredBox(color: colors.accent),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    item.icon,
+                    color: foregroundColor,
+                    size: AppSizes.homeBottomNavIcon,
+                  ),
+                  const SizedBox(height: AppSpacing.xxs),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        item.label.toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontFamily: AppFonts.mono,
+                          color: foregroundColor,
+                          fontSize: AppFontSizes.homeBottomNavLabel,
+                          letterSpacing: AppFoodLabel.navLabelTracking,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
