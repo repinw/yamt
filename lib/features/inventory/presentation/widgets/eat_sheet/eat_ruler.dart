@@ -1,8 +1,8 @@
-import 'package:flutter/foundation.dart' show listEquals;
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/food_label_ruler_ticks.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.dart';
 
 /// One mark on the amount ruler.
@@ -78,15 +78,13 @@ class EatRuler extends StatelessWidget {
                 right: 0,
                 top: 0,
                 height: AppFoodLabel.rulerTicks,
-                child: CustomPaint(
-                  painter: _RulerPainter(
-                    tickColor: colors.ink,
-                    markColor: colors.accentText,
-                    markFractions: [
-                      if (max > 0)
-                        for (final mark in sorted) mark.value / max,
-                    ],
-                  ),
+                child: FoodLabelRulerTicks(
+                  tickColor: colors.ink,
+                  markColor: colors.accentText,
+                  markFractions: [
+                    if (max > 0)
+                      for (final mark in sorted) mark.value / max,
+                  ],
                 ),
               ),
               Positioned.fill(
@@ -134,45 +132,5 @@ class EatRuler extends StatelessWidget {
       return max;
     }
     return ((raw / step).round() * step).clamp(0, max);
-  }
-}
-
-class _RulerPainter extends CustomPainter {
-  const new({
-    required this.tickColor,
-    required this.markColor,
-    required this.markFractions,
-  });
-
-  final Color tickColor;
-  final Color markColor;
-  final List<double> markFractions;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final tick = Paint()
-      ..color = tickColor
-      ..strokeWidth = 1;
-    const count = AppFoodLabel.rulerTickCount;
-    for (var i = 0; i <= count; i++) {
-      final x = size.width * i / count;
-      final long = i % AppFoodLabel.rulerLongTickEvery == 0;
-      final top = long ? 0.0 : size.height / 2;
-      canvas.drawLine(Offset(x, top), Offset(x, size.height), tick);
-    }
-    final mark = Paint()
-      ..color = markColor
-      ..strokeWidth = AppFoodLabel.rulerMarkTick;
-    for (final fraction in markFractions) {
-      final x = size.width * fraction.clamp(0, 1);
-      canvas.drawLine(Offset(x, 0), Offset(x, size.height), mark);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_RulerPainter oldDelegate) {
-    return oldDelegate.tickColor != tickColor ||
-        oldDelegate.markColor != markColor ||
-        !listEquals(oldDelegate.markFractions, markFractions);
   }
 }

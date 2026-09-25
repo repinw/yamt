@@ -4,6 +4,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/food_label_dashed_line.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Full-screen frame of the eat page: a top bar with close and time, the
@@ -103,13 +104,7 @@ class EatPageScaffold extends StatelessWidget {
                   ),
                 ),
               ),
-              CustomPaint(
-                painter: _DashedLinePainter(colors.ink),
-                child: const SizedBox(
-                  height: AppFoodLabel.outline,
-                  width: double.infinity,
-                ),
-              ),
+              FoodLabelDashedLine(color: colors.ink),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.xl,
@@ -233,27 +228,5 @@ class _ConfirmButton extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _DashedLinePainter extends CustomPainter {
-  const new(this.color);
-
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = size.height;
-    final y = size.height / 2;
-    for (var x = 0.0; x < size.width; x += AppFoodLabel.dash * 2) {
-      canvas.drawLine(Offset(x, y), Offset(x + AppFoodLabel.dash, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(_DashedLinePainter oldDelegate) {
-    return oldDelegate.color != color;
   }
 }
