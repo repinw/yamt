@@ -36,6 +36,9 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
   final cacheRepository = ref.read(calorieProductCacheRepositoryProvider);
   final postPersistHook = ref.read(calorieEntryPostPersistHookProvider);
   final clock = ref.read(clockProvider);
+  // Read before the save: recording the mutation rebuilds this provider, so
+  // its ref is no longer usable afterwards.
+  final goalController = ref.read(calorieGoalControllerProvider.notifier);
 
   return (
     entry, {
@@ -68,9 +71,7 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
     // Follow-up writes run in the background so the caller returns at once.
     _runInBackground(
       'Failed to clear skipped intake day.',
-      () => ref
-          .read(calorieGoalControllerProvider.notifier)
-          .clearSkippedIntakeDay(entry.loggedAt),
+      () => goalController.clearSkippedIntakeDay(entry.loggedAt),
     );
 
     if (scannedSourceRef != null) {

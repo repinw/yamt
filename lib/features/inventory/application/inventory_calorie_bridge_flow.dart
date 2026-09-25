@@ -154,21 +154,32 @@ class InventoryCalorieBridgeFlow {
       updatedAt: now,
     );
 
-    final saved = await container.read(calorieEntrySaverProvider)(
-      entry,
-      isNewEntry: true,
-      inventoryContext: inventoryContext,
-      scannedSourceRef: scannedSourceRef,
-      persistEntry: (entry) {
-        return container
-            .read(inventoryBackedCalorieEntrySaveFlowProvider)
-            .saveEntry(
-              entry: entry,
-              pendingConsumptionId: inventoryContext.pendingConsumptionId,
-              pendingConsumption: pendingConsumption,
-            );
-      },
+    // The saver is auto-dispose and uses its ref after the save, so it must
+    // stay alive for the whole call.
+    final saverSubscription = container.listen(
+      calorieEntrySaverProvider,
+      (_, _) {},
     );
+    final bool saved;
+    try {
+      saved = await saverSubscription.read()(
+        entry,
+        isNewEntry: true,
+        inventoryContext: inventoryContext,
+        scannedSourceRef: scannedSourceRef,
+        persistEntry: (entry) {
+          return container
+              .read(inventoryBackedCalorieEntrySaveFlowProvider)
+              .saveEntry(
+                entry: entry,
+                pendingConsumptionId: inventoryContext.pendingConsumptionId,
+                pendingConsumption: pendingConsumption,
+              );
+        },
+      );
+    } finally {
+      saverSubscription.close();
+    }
     if (!saved) {
       return null;
     }
