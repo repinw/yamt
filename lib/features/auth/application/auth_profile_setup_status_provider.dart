@@ -6,14 +6,22 @@ import 'package:yamt/features/auth/domain/'
 
 part 'auth_profile_setup_status_provider.g.dart';
 
-/// Auth profile setup completed.
+/// Whether the signed-in user has a name, so the router skips the name setup.
+///
+/// The name lives on the account, so signing in to an existing account on a
+/// new device counts as set up. The stored mark covers a linked guest whose
+/// account has no name yet.
 @Riverpod(keepAlive: true)
 bool authProfileSetupCompleted(Ref ref) {
   final authState = ref.watch(authStateChangesProvider);
-  final userId = authState.asData?.value?.uid;
-  if (userId == null) {
+  final user = authState.asData?.value;
+  if (user == null) {
     return false;
   }
+  if (user.displayName?.trim().isNotEmpty ?? false) {
+    return true;
+  }
+  final userId = user.uid;
 
   final preferences = ref.watch(appPreferencesProvider);
   final key = AuthProfileSetupPreferences.keyForUser(userId);

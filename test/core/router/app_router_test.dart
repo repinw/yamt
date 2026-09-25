@@ -442,7 +442,7 @@ void main() {
     );
   });
 
-  testWidgets('redirects freshly created named user to setup page', (
+  testWidgets('skips name setup for freshly created named user', (
     tester,
   ) async {
     final container = _createContainerWithAuth(
@@ -462,7 +462,7 @@ void main() {
 
     expect(
       container.read(appRouterProvider).state.uri.path,
-      AppRoutes.guestNameSetup,
+      AppRoutes.calorieGoalSetup,
     );
   });
 
@@ -573,28 +573,29 @@ void main() {
     );
   });
 
-  testWidgets('redirects returning named user without setup marker to setup', (
-    tester,
-  ) async {
-    final container = _createContainerWithAuth(
-      Stream<User?>.value(
-        _authenticatedUser(
-          uid: 'returning-user',
-          displayName: 'Returning Google User',
+  testWidgets(
+    'skips name setup for returning named user without setup marker',
+    (tester) async {
+      final container = _createContainerWithAuth(
+        Stream<User?>.value(
+          _authenticatedUser(
+            uid: 'returning-user',
+            displayName: 'Returning Google User',
+          ),
         ),
-      ),
-    );
+      );
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const YAMT()),
-    );
-    await _pumpRouterTransition(tester);
+      await tester.pumpWidget(
+        UncontrolledProviderScope(container: container, child: const YAMT()),
+      );
+      await _pumpRouterTransition(tester);
 
-    expect(
-      container.read(appRouterProvider).state.uri.path,
-      AppRoutes.guestNameSetup,
-    );
-  });
+      expect(
+        container.read(appRouterProvider).state.uri.path,
+        AppRoutes.calorieGoalSetup,
+      );
+    },
+  );
 
   testWidgets(
     'stays on calorie setup after guest name update without onboarding',
@@ -644,7 +645,9 @@ void main() {
       );
       await tester.pump();
 
-      authController.add(_authenticatedUser(uid: 'setup-user'));
+      authController.add(
+        _authenticatedUser(uid: 'setup-user', displayName: null),
+      );
       await tester.pump();
       await _pumpRouterTransition(tester);
 

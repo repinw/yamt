@@ -14,9 +14,10 @@ import '../../../helpers/memory_app_preferences.dart';
 class _MockUser extends Mock implements User;
 
 void main() {
-  User buildUser(String uid) {
+  User buildUser(String uid, {String? displayName}) {
     final user = _MockUser();
     when(() => user.uid).thenReturn(uid);
+    when(() => user.displayName).thenReturn(displayName);
     return user;
   }
 
@@ -72,6 +73,26 @@ void main() {
       expect(container.read(authProfileSetupCompletedProvider), isFalse);
     },
   );
+
+  test('returns true when the account already has a name', () async {
+    final container = buildContainer(
+      user: buildUser('user-1', displayName: 'Wladik'),
+      preferences: MemoryAppPreferences(),
+    );
+    await seedAuthState(container);
+
+    expect(container.read(authProfileSetupCompletedProvider), isTrue);
+  });
+
+  test('returns false when the account name is blank', () async {
+    final container = buildContainer(
+      user: buildUser('user-1', displayName: '  '),
+      preferences: MemoryAppPreferences(),
+    );
+    await seedAuthState(container);
+
+    expect(container.read(authProfileSetupCompletedProvider), isFalse);
+  });
 }
 
 Future<void> seedAuthState(ProviderContainer container) async {
