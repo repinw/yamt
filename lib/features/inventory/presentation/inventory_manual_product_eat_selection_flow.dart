@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -50,6 +52,11 @@ abstract final class InventoryManualProductEatSelectionFlow {
   }) async {
     final maxAmount = resolveInventoryManualAddConsumableAmount(item);
     if (maxAmount == null) {
+      log(
+        'Item ${item.id} has nothing left to eat '
+        '(quantity=${item.quantity}, currentAmount=${item.currentAmount}).',
+        name: 'InventoryManualProductEatSelectionFlow',
+      );
       showInventoryManualAddSnackBar(
         context: context,
         message: l10n.inventoryItemActionFailed,

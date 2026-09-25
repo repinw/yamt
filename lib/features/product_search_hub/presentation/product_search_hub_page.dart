@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -205,6 +206,11 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     required inventory_models.InventoryReceiptManualProductResult result,
   }) async {
     if (_isSourceBlocked(sourceKey)) {
+      log(
+        'Ignoring product search hub result $sourceKey: already selected '
+        'or a save is running (saving=$_isMutatingSelection).',
+        name: 'ProductSearchHubPage',
+      );
       return;
     }
     if (widget.args.mode == ProductSearchHubMode.selection) {

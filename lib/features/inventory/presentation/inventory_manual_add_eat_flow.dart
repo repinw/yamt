@@ -26,6 +26,11 @@ Future<bool> completeInventoryManualAddEatFlow({
   if (maxAmount == null ||
       request.inventoryAmount < 1 ||
       request.inventoryAmount > maxAmount) {
+    log(
+      'Manual-add eat amount ${request.inventoryAmount} is outside the '
+      'consumable amount $maxAmount of item ${item.id}.',
+      name: 'InventoryManualAddEatFlow',
+    );
     showInventoryManualAddSnackBar(
       context: context,
       message: l10n.inventoryItemActionFailed,
@@ -54,6 +59,11 @@ Future<bool> completeInventoryManualAddEatFlow({
     final pendingConsumption = await inventoryController
         .stagePendingConsumption(item.id, request.inventoryAmount);
     if (pendingConsumption == null) {
+      log(
+        'Could not stage consumption of ${request.inventoryAmount} for item '
+        '${item.id}.',
+        name: 'InventoryManualAddEatFlow',
+      );
       if (context.mounted) {
         showInventoryManualAddSnackBar(
           context: context,

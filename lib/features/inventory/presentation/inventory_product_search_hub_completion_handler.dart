@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -46,6 +48,11 @@ class InventoryProductSearchHubCompletionHandler
     }
     if (outcome.status != InventoryManualProductSaveStatus.saved ||
         outcome.item == null) {
+      log(
+        'Product search hub result $sourceKey ended with '
+        '${outcome.status.name}.',
+        name: 'InventoryProductSearchHubCompletionHandler',
+      );
       if (outcome.status == InventoryManualProductSaveStatus.failed) {
         ScaffoldMessenger.of(context).showAppSnackBar(
           l10n.inventoryManualAddSaveFailed,

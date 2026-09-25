@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/application/'
@@ -23,6 +25,8 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_recent_item_key.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+const _resultFlowLogName = 'ProductSearchHubResultFlow';
 
 /// Completes a product-search hub result selected by the user.
 typedef ProductSearchHubResultCompleter = Future<void> Function({
@@ -114,6 +118,11 @@ Future<void> editAndSaveProductSearchHubRecentItem({
 }) async {
   final sourceKey = productSearchHubRecentItemSelectionKey(item);
   if (isSourceBlocked(sourceKey)) {
+    log(
+      'Ignoring recent item ${item.id}: $sourceKey is already selected or '
+      'a save is running.',
+      name: _resultFlowLogName,
+    );
     return;
   }
 
@@ -270,9 +279,11 @@ _directDiaryRecentItemResult({
   if (args.mode != ProductSearchHubMode.diary) {
     return null;
   }
+  // A recent item is an old stock entry that is usually eaten up. Eating it
+  // again starts from one full package.
   return productSearchHubDirectDiaryInventoryItemResult(
     args: args,
-    item: item,
+    item: item.withDerivedAmount(quantity: 1, fallbackUnit: item.amountUnit),
     selectedGlobalFoodItemId: manualProductRecentItemGlobalFoodItemId(item),
     globalPackageWeight: item.weight,
   );

@@ -204,6 +204,11 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
   final savedItem = adjustItem?.call(builtItem) ?? builtItem;
   final inventorySaved = await inventoryItemsController.addItem(savedItem);
   if (!inventorySaved) {
+    log(
+      'Inventory rejected manual product ${savedItem.id} '
+      '(${savedItem.name}).',
+      name: _inventoryManualProductSaveLogName,
+    );
     return const InventoryManualProductSaveOutcome.failed();
   }
   unawaited(

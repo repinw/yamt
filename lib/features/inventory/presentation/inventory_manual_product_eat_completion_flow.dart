@@ -73,6 +73,11 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
     continueBatchOnConfirm: continueBatchOnConfirm,
   );
   if (!context.mounted || eatResult == null) {
+    log(
+      'Manual product eat selection closed without a result '
+      '(mounted=${context.mounted}).',
+      name: _inventoryManualProductEatFlowLogName,
+    );
     return const InventoryManualProductSaveOutcome.canceled();
   }
 
@@ -95,6 +100,11 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
     final savedItem = saveOutcome.item;
     if (saveOutcome.status != InventoryManualProductSaveStatus.saved ||
         savedItem == null) {
+      log(
+        'Manual product was not saved to inventory '
+        '(status=${saveOutcome.status.name}).',
+        name: _inventoryManualProductEatFlowLogName,
+      );
       return saveOutcome;
     }
     if (!context.mounted) {
@@ -109,6 +119,11 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
       onDirectCalorieEntrySaved: (entryId) => savedCalorieEntryId = entryId,
     );
     if (!completedEatFlow) {
+      log(
+        'Eat flow for manual product ${savedItem.id} did not complete; '
+        'deleting the saved inventory item.',
+        name: _inventoryManualProductEatFlowLogName,
+      );
       await _deleteSavedItem(container, savedItem);
       return const InventoryManualProductSaveOutcome.canceled();
     }
