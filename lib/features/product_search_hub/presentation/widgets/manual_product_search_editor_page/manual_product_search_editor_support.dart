@@ -16,34 +16,16 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Checks whether [state] or [config] satisfies nutritional values for eat now.
-bool canEatNow({
-  required InventoryReceiptManualProductState state,
-  required InventoryReceiptManualProductConfig config,
-}) {
-  if (state.hasNutritionInput) {
-    return true;
-  }
-  if (state.selectedProduct?.nutrition?.hasAnyNutritionValue == true) {
-    return true;
-  }
-  if (config.selectedProduct?.nutrition?.hasAnyNutritionValue == true) {
-    return true;
-  }
-  return config.item.nutrition?.hasAnyNutritionValue == true;
-}
-
 /// Checks whether the form can currently be saved.
 bool canSaveManualProduct({
   required InventoryReceiptManualProductState state,
   required InventoryReceiptManualProductAction selectedAction,
-  required InventoryReceiptManualProductConfig config,
 }) {
-  if (!state.hasBarcode && !state.hasNutritionInput) {
+  if (!state.hasRequiredFields) {
     return false;
   }
   if (selectedAction == InventoryReceiptManualProductAction.eatNow) {
-    return canEatNow(state: state, config: config);
+    return true;
   }
   return state.hasPackageWeightInput;
 }
@@ -145,11 +127,7 @@ Future<void> executeEditorSave({
   final provider = inventoryReceiptManualProductControllerProvider(config);
   final state = ref.read(provider);
   if (state.isRunningNutritionOcr ||
-      !canSaveManualProduct(
-        state: state,
-        selectedAction: selectedAction,
-        config: config,
-      )) {
+      !canSaveManualProduct(state: state, selectedAction: selectedAction)) {
     return;
   }
   final payload = controller.buildSavePayload(action: selectedAction);

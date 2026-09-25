@@ -81,6 +81,14 @@
   "productSearchHubSearchLoadFailed": "Product search failed.",
   "productSearchHubSearchRetryAction": "Retry",
   "productSearchHubSearchEmptyState": "No matching products found.",
+  "productSearchHubRequiredFieldLabel": "{label} *",
+  "@productSearchHubRequiredFieldLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "productSearchHubNoBarcodeAction": "No barcode",
   "productSearchHubCreateProductAction": "Create product",
   "productSearchHubCartTitle": "Selected products",

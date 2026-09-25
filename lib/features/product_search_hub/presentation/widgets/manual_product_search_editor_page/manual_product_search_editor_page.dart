@@ -117,7 +117,6 @@ class _InventoryReceiptManualProductEditorPageState
     final canSave = canSaveManualProduct(
       state: state,
       selectedAction: _selectedAction,
-      config: widget.config,
     );
 
     return ManualProductSearchEditorFormView(

@@ -954,7 +954,6 @@ void main() {
       expect(state.saltText, isEmpty);
       expect(state.weightAmount, '500');
       expect(state.selectedWeightUnit, InventoryAmountUnit.milliliter);
-      expect(state.hasCompleteNutritionInput, isFalse);
       expect(state.nameText, 'Olivenoel');
       expect(state.brandText, 'Gut Bio');
 

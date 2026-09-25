@@ -127,33 +127,13 @@ class InventoryReceiptManualProductState {
     return parseManualProductDouble(weightAmount) != null;
   }
 
-  /// Whether nutrition input.
-  bool get hasNutritionInput {
-    return normalizeManualProductText(kcalText) != null ||
-        normalizeManualProductText(saturatedFatText) != null ||
-        normalizeManualProductText(polyunsaturatedFatText) != null ||
-        normalizeManualProductText(proteinText) != null ||
-        normalizeManualProductText(carbsText) != null ||
-        normalizeManualProductText(sugarText) != null ||
-        normalizeManualProductText(fiberText) != null ||
-        normalizeManualProductText(fatText) != null ||
-        normalizeManualProductText(saltText) != null;
-  }
-
-  /// Whether complete nutrition input.
-  bool get hasCompleteNutritionInput {
-    return parseManualProductDouble(kcalText) != null &&
-        parseManualProductDouble(saturatedFatText) != null &&
-        parseManualProductDouble(proteinText) != null &&
+  /// Whether name, kcal, carbs, protein and fat are filled in.
+  bool get hasRequiredFields {
+    return normalizeManualProductText(nameText) != null &&
+        parseManualProductDouble(kcalText) != null &&
         parseManualProductDouble(carbsText) != null &&
-        parseManualProductDouble(sugarText) != null &&
-        parseManualProductDouble(fatText) != null &&
-        parseManualProductDouble(saltText) != null;
-  }
-
-  /// Whether save.
-  bool get canSave {
-    return hasPackageWeightInput && (hasBarcode || hasNutritionInput);
+        parseManualProductDouble(proteinText) != null &&
+        parseManualProductDouble(fatText) != null;
   }
 
   /// Whether scan nutrition label.

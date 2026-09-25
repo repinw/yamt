@@ -81,6 +81,14 @@
   "productSearchHubSearchLoadFailed": "Produktsuche fehlgeschlagen.",
   "productSearchHubSearchRetryAction": "Erneut versuchen",
   "productSearchHubSearchEmptyState": "Keine passenden Produkte gefunden.",
+  "productSearchHubRequiredFieldLabel": "{label} *",
+  "@productSearchHubRequiredFieldLabel": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "productSearchHubNoBarcodeAction": "Kein Barcode",
   "productSearchHubCreateProductAction": "Produkt erstellen",
   "productSearchHubCartTitle": "Ausgewählte Produkte",

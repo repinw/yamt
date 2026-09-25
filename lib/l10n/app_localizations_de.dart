@@ -174,6 +174,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Keine passenden Produkte gefunden.';
 
   @override
+  String productSearchHubRequiredFieldLabel(String label) {
+    return '$label *';
+  }
+
+  @override
   String get productSearchHubNoBarcodeAction => 'Kein Barcode';
 
   @override

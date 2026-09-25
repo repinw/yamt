@@ -171,6 +171,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productSearchHubSearchEmptyState => 'No matching products found.';
 
   @override
+  String productSearchHubRequiredFieldLabel(String label) {
+    return '$label *';
+  }
+
+  @override
   String get productSearchHubNoBarcodeAction => 'No barcode';
 
   @override

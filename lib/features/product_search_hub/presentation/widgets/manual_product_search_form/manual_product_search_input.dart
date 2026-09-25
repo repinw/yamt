@@ -205,6 +205,7 @@ class ManualProductTextField extends StatelessWidget {
     required this.onChanged,
     super.key,
     this.inputFormatters,
+    this.isRequired = false,
   });
 
   /// Form field name.
@@ -228,6 +229,9 @@ class ManualProductTextField extends StatelessWidget {
   /// Optional input formatters.
   final List<TextInputFormatter>? inputFormatters;
 
+  /// Whether the label marks the field as required.
+  final bool isRequired;
+
   @override
   Widget build(BuildContext context) {
     return FormBuilderTextField(
@@ -239,7 +243,10 @@ class ManualProductTextField extends StatelessWidget {
       onChanged: onChanged,
       onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       decoration: InputDecoration(
-        labelText: label,
+        labelText: isRequired
+            ? AppLocalizations.of(context)!
+                  .productSearchHubRequiredFieldLabel(label)
+            : label,
         border: const OutlineInputBorder(),
       ),
     );
