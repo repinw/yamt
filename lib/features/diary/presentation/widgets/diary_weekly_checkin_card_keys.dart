@@ -10,6 +10,11 @@ abstract final class DiaryWeeklyCheckInCardKeys {
     'diary-weekly-checkin-success-card',
   );
 
+  /// Close button of the success card.
+  static const successCardClose = ValueKey<String>(
+    'diary-weekly-checkin-success-card-close',
+  );
+
   /// The weekly check-in continue button.
   static const continueButton = ValueKey<String>(
     'diary-weekly-checkin-continue',

@@ -838,6 +838,39 @@ void main() {
     );
   });
 
+  testWidgets('shows the check-in success card only on today', (tester) async {
+    final today = normalizeDiaryDay(DateTime.now());
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: previousDiaryDay(today),
+      settingsRepository: FakeCalorieSettingsRepository(
+        initialSettings: _weeklyCheckInGoalSettings(today),
+      ),
+    );
+
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.successCard), findsNothing);
+  });
+
+  testWidgets('closing the check-in success card keeps it closed', (
+    tester,
+  ) async {
+    final today = normalizeDiaryDay(DateTime.now());
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: today,
+      settingsRepository: FakeCalorieSettingsRepository(
+        initialSettings: _weeklyCheckInGoalSettings(today),
+      ),
+    );
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.successCardClose));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.successCard), findsNothing);
+  });
+
   testWidgets('shows a practice day before tomorrow goal start', (
     tester,
   ) async {
@@ -1268,5 +1301,21 @@ CalorieEntry _entry({
     loggedAt: loggedAt,
     createdAt: loggedAt,
     updatedAt: loggedAt,
+  );
+}
+
+CalorieGoalSettings _weeklyCheckInGoalSettings(DateTime today) {
+  return CalorieGoalSettings.single(
+    dailyKcalGoal: 1800,
+    calculatorProfile: null,
+    effectiveDate: today,
+    source: CalorieGoalSource.weeklyCheckIn,
+    weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: today.subtract(const Duration(days: 7)),
+      windowEndDate: today.subtract(const Duration(days: 1)),
+      trendWeightChangePerDay: -0.05,
+      calculatedTdeeKcal: 2200,
+      lowConfidence: false,
+    ),
   );
 }

@@ -9,11 +9,32 @@ import 'package:yamt/l10n/app_localizations.dart';
 void main() {
   testWidgets('formats rounded goal', (tester) async {
     await tester.pumpWidget(
-      const _App(child: DiaryWeeklyCheckInSuccessCard(goalKcal: 2224.6)),
+      _App(
+        child: DiaryWeeklyCheckInSuccessCard(
+          goalKcal: 2224.6,
+          onDismiss: () async {},
+        ),
+      ),
     );
 
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.successCard), findsOneWidget);
     expect(find.textContaining('2,225'), findsOneWidget);
+  });
+
+  testWidgets('close button dismisses the message', (tester) async {
+    var dismissed = 0;
+    await tester.pumpWidget(
+      _App(
+        child: DiaryWeeklyCheckInSuccessCard(
+          goalKcal: 2000,
+          onDismiss: () async => dismissed++,
+        ),
+      ),
+    );
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.successCardClose));
+
+    expect(dismissed, 1);
   });
 }
 

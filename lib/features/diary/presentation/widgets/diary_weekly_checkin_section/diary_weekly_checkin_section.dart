@@ -117,7 +117,7 @@ class _DiaryWeeklyCheckInSectionState
             onToggleSelectedDaySkipped: _toggleSkippedCalorieIntakeDay,
           ),
         ],
-        const DiaryWeeklyCheckInSuccessHost(),
+        DiaryWeeklyCheckInSuccessHost(selectedDay: widget.selectedDay),
       ],
     );
   }
