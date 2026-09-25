@@ -564,41 +564,48 @@ void main() {
     expect(state.canScanNutritionLabel, isTrue);
   });
 
-  test('applyScannedBarcodeOnly clears product and nutrition state', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
+  test(
+    'applyScannedBarcodeOnly keeps entered values and drops the product',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
 
-    const selectedProduct = OffProductSearchResult(
-      code: '4311596490202',
-      name: 'Booster Absolute Zero',
-      brand: 'Booster',
-      packageWeight: '330 ml',
-      score: 100,
-      nutrition: GlobalFoodNutrition(
-        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-        per100Kcal: 2,
-        per100Protein: 0,
-        per100Carbs: 0,
-        per100Fat: 0,
-        per100Fiber: 1,
-      ),
-    );
-    final config = InventoryReceiptManualProductConfig(
-      item: _item(),
-      selectedProduct: selectedProduct,
-    );
-    final provider = inventoryReceiptManualProductControllerProvider(config);
-    container.read(provider.notifier).applyScannedBarcodeOnly('4006381333931');
-    final state = container.read(provider);
+      const selectedProduct = OffProductSearchResult(
+        code: '4311596490202',
+        name: 'Booster Absolute Zero',
+        brand: 'Booster',
+        packageWeight: '330 ml',
+        score: 100,
+        nutrition: GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 2,
+          per100Protein: 0,
+          per100Carbs: 0,
+          per100Fat: 0,
+          per100Fiber: 1,
+        ),
+      );
+      final config = InventoryReceiptManualProductConfig(
+        item: _item(),
+        selectedProduct: selectedProduct,
+      );
+      final provider = inventoryReceiptManualProductControllerProvider(config);
+      final subscription = container.listen(provider, (_, _) {});
+      addTearDown(subscription.close);
+      container.read(provider.notifier)
+        ..updateNameText('Mein Booster')
+        ..applyScannedBarcodeOnly('4006381333931');
+      final state = container.read(provider);
 
-    expect(state.barcode, '4006381333931');
-    expect(state.nameText, 'Unknown');
-    expect(state.brandText, isEmpty);
-    expect(state.selectedProduct, isNull);
-    expect(state.kcalText, isEmpty);
-    expect(state.fiberText, isEmpty);
-    expect(state.showFiberField, isFalse);
-  });
+      expect(state.barcode, '4006381333931');
+      expect(state.nameText, 'Mein Booster');
+      expect(state.brandText, 'Booster');
+      expect(state.selectedProduct, isNull);
+      expect(state.kcalText, '2');
+      expect(state.fiberText, '1');
+      expect(state.showFiberField, isTrue);
+    },
+  );
 
   test('buildSavePayload stores normalized manual piece amount for inventory'
       ' and global payload', () {

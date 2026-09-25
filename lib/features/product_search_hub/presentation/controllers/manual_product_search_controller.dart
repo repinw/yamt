@@ -238,23 +238,8 @@ class InventoryReceiptManualProductController
   void applyScannedBarcodeOnly(String barcode) {
     state = state.copyWith(
       barcode: barcode,
-      nameText: _config.item.name,
-      brandText: _config.item.brand ?? '',
+      hasNoBarcode: false,
       selectedProduct: null,
-      ocrDraft: null,
-      kcalText: '',
-      saturatedFatText: '',
-      polyunsaturatedFatText: '',
-      proteinText: '',
-      carbsText: '',
-      sugarText: '',
-      fiberText: '',
-      fatText: '',
-      saltText: '',
-      showPolyunsaturatedFatField: false,
-      showFiberField: false,
-      isAddingOptionalNutrition: false,
-      optionalNutritionValueText: '',
       error: null,
     );
   }
