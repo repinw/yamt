@@ -47,7 +47,6 @@ class ProductSearchHubSearchRecentSection extends StatelessWidget {
   const new({
     required this.selectedProductKeys,
     required this.onProductPressed,
-    required this.onProductCopied,
     super.key,
   });
 
@@ -56,9 +55,6 @@ class ProductSearchHubSearchRecentSection extends StatelessWidget {
 
   /// Called when a recent product is selected.
   final ValueChanged<InventoryItem> onProductPressed;
-
-  /// Called when a recent product is copied as template.
-  final ValueChanged<InventoryItem> onProductCopied;
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +74,6 @@ class ProductSearchHubSearchRecentSection extends StatelessWidget {
           child: ProductSearchHubRecentlySelectedTab(
             selectedProductKeys: selectedProductKeys,
             onProductPressed: onProductPressed,
-            onProductCopied: onProductCopied,
           ),
         ),
       ],

@@ -42,9 +42,7 @@ class ProductSearchHubSearchView extends ConsumerStatefulWidget {
     required this.selectedProductKeys,
     required this.onBackPressed,
     required this.onProductSelected,
-    required this.onProductCopied,
     required this.onRecentItemPressed,
-    required this.onRecentItemCopied,
     required this.onEntryResult,
     required this.onInitialIntentCancelled,
     this.bottomOverlay,
@@ -67,14 +65,8 @@ class ProductSearchHubSearchView extends ConsumerStatefulWidget {
   /// Called when a search result is selected.
   final ValueChanged<OffProductSearchResult> onProductSelected;
 
-  /// Called when a search result is copied as a template.
-  final ValueChanged<OffProductSearchResult> onProductCopied;
-
   /// Called when a recent product is selected.
   final ValueChanged<InventoryItem> onRecentItemPressed;
-
-  /// Called when a recent product is copied as a template.
-  final ValueChanged<InventoryItem> onRecentItemCopied;
 
   /// Called when the AI or custom product editor returns a product.
   final ValueChanged<ProductSearchHubEditedResult> onEntryResult;
@@ -211,9 +203,7 @@ class _ProductSearchHubSearchViewState
       onCreateOwnPressed: () => _openEditedEntry(_openCustomEntry),
       onRetry: _searchCoordinator.retrySearch,
       onResultSelected: widget.onProductSelected,
-      onResultCopied: widget.onProductCopied,
       onRecentItemPressed: widget.onRecentItemPressed,
-      onRecentItemCopied: widget.onRecentItemCopied,
     );
   }
 

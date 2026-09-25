@@ -21,7 +21,6 @@ class ProductSearchHubRecentlySelectedTab extends ConsumerWidget {
   const new({
     required this.selectedProductKeys,
     required this.onProductPressed,
-    this.onProductCopied,
     super.key,
   });
 
@@ -30,9 +29,6 @@ class ProductSearchHubRecentlySelectedTab extends ConsumerWidget {
 
   /// Called when a recent product is selected.
   final ValueChanged<InventoryItem> onProductPressed;
-
-  /// Called when a recent product is copied as template.
-  final ValueChanged<InventoryItem>? onProductCopied;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -67,7 +63,6 @@ class ProductSearchHubRecentlySelectedTab extends ConsumerWidget {
                   items: items,
                   selectedProductKeys: selectedProductKeys,
                   onProductPressed: onProductPressed,
-                  onProductCopied: onProductCopied,
                 ),
         );
   }
@@ -150,18 +145,14 @@ class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
     required this.items,
     required this.selectedProductKeys,
     required this.onProductPressed,
-    this.onProductCopied,
   });
 
   final List<InventoryItem> items;
   final Set<String> selectedProductKeys;
   final ValueChanged<InventoryItem> onProductPressed;
-  final ValueChanged<InventoryItem>? onProductCopied;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return ListView.separated(
       key: const Key('product_search_hub_recently_selected_list'),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
@@ -184,15 +175,6 @@ class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
             imageUrl: item.imageUrl,
             packageWeight: item.weight,
             nutrition: item.nutrition,
-            onCopy: onProductCopied == null
-                ? null
-                : () {
-                    onProductCopied!(item);
-                  },
-            copyTooltip: l10n.productSearchHubCopyActionTooltip,
-            copyButtonKey: Key(
-              'product_search_hub_recently_selected_copy_${item.id}',
-            ),
             trailing: isSelected
                 ? const Icon(
                     Icons.check_circle_rounded,

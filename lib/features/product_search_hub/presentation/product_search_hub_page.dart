@@ -82,9 +82,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       onBackPressed: () =>
           popProductSearchHubRoute(context: context, isBlocked: false),
       onProductSelected: _openProduct,
-      onProductCopied: _copyProduct,
-      onRecentItemPressed: (item) => _openRecentItem(item, isCopy: false),
-      onRecentItemCopied: (item) => _openRecentItem(item, isCopy: true),
+      onRecentItemPressed: _openRecentItem,
       onEntryResult: (entry) => _runWhenIdle(
         () => _completeEditedResult(
           sourceKey: entry.sourceKey,
@@ -111,30 +109,15 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     ),
   );
 
-  void _copyProduct(OffProductSearchResult product) => _runWhenIdle(
-    () => copyAndEditProductSearchHubProduct(
+  void _openRecentItem(InventoryItem item) => _runWhenIdle(
+    () => editAndSaveProductSearchHubRecentItem(
       context: context,
       args: widget.args,
-      product: product,
+      item: item,
       isSourceBlocked: _isSourceBlocked,
       completeResult: _completeEditedResult,
     ),
   );
-
-  void _openRecentItem(InventoryItem item, {required bool isCopy}) {
-    final openItem = isCopy
-        ? copyAndEditProductSearchHubRecentItem
-        : editAndSaveProductSearchHubRecentItem;
-    _runWhenIdle(
-      () => openItem(
-        context: context,
-        args: widget.args,
-        item: item,
-        isSourceBlocked: _isSourceBlocked,
-        completeResult: _completeEditedResult,
-      ),
-    );
-  }
 
   bool _isSourceBlocked(String sourceKey) {
     return _selectionState.containsSourceKey(sourceKey) || _isMutatingSelection;

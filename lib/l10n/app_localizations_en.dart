@@ -201,14 +201,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'No recently selected products yet.';
 
   @override
-  String get productSearchHubCopyActionTooltip =>
-      'Copy as new product (e.g. if recipe changed)';
-
-  @override
-  String get productSearchHubCopiedInfoMessage =>
-      'Copied as template. Nutrition and details can now be adjusted.';
-
-  @override
   String get inventoryPageTitle => 'My inventory';
 
   @override

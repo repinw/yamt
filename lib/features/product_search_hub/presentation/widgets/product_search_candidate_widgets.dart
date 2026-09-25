@@ -19,9 +19,6 @@ class InventoryProductCandidateTile extends StatelessWidget {
     this.statusLabel,
     this.onTap,
     this.trailing,
-    this.onCopy,
-    this.copyTooltip,
-    this.copyButtonKey,
   });
 
   /// The product name.
@@ -51,20 +48,10 @@ class InventoryProductCandidateTile extends StatelessWidget {
   /// Optional trailing widget.
   final Widget? trailing;
 
-  /// Optional copy callback.
-  final VoidCallback? onCopy;
-
-  /// Optional copy tooltip text.
-  final String? copyTooltip;
-
-  /// Optional copy button key.
-  final Key? copyButtonKey;
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
     final borderRadius = BorderRadius.circular(AppRadius.xl);
-    final hasActions = onCopy != null || trailing != null;
 
     final tile = Padding(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -88,18 +75,9 @@ class InventoryProductCandidateTile extends StatelessWidget {
               statusLabel: statusLabel,
             ),
           ),
-          if (hasActions) ...[
+          if (trailing != null) ...[
             const SizedBox(width: AppSpacing.sm),
-            if (onCopy != null)
-              _InventoryCandidateCopyButton(
-                tooltip: copyTooltip ?? 'Kopieren',
-                buttonKey: copyButtonKey,
-                onPressed: onCopy!,
-              ),
-            if (trailing != null) ...[
-              if (onCopy != null) const SizedBox(width: AppSpacing.xs),
-              trailing!,
-            ],
+            trailing!,
           ],
         ],
       ),
@@ -117,36 +95,6 @@ class InventoryProductCandidateTile extends StatelessWidget {
           onTap: onTap,
           borderRadius: borderRadius,
           child: tile,
-        ),
-      ),
-    );
-  }
-}
-
-class _InventoryCandidateCopyButton extends StatelessWidget {
-  const new({required this.tooltip, required this.onPressed, this.buttonKey});
-
-  final String tooltip;
-  final VoidCallback onPressed;
-  final Key? buttonKey;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return Tooltip(
-      message: tooltip,
-      child: IconButton(
-        key: buttonKey,
-        onPressed: onPressed,
-        icon: const Icon(Icons.content_copy_rounded, size: 20),
-        style: IconButton.styleFrom(
-          fixedSize: const Size.square(42),
-          backgroundColor: colors.surfaceContainerHigh,
-          foregroundColor: colors.onSurfaceVariant,
-          side: BorderSide(color: colors.outlineVariant.withValues(alpha: 0.7)),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-          ),
         ),
       ),
     );

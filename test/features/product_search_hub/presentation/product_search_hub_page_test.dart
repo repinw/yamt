@@ -604,31 +604,6 @@ void main() {
     expect(find.text('caller'), findsOneWidget);
   });
 
-  testWidgets('diary copy search result opens editor instead of direct eat', (
-    tester,
-  ) async {
-    ManualProductSearchRouteArgs? childArgs;
-
-    await _pumpRouteHarness(
-      tester,
-      args: _diaryArgs(),
-      searchResults: [_searchProduct()],
-      inventoryController: _SuccessfulInventoryItemsController(),
-      onChildRouteArgs: (args) => childArgs = args,
-    );
-
-    await _searchFor(tester, 'Milk');
-    await tester.tap(
-      find.byKey(
-        const Key('product_search_hub_search_result_copy_4006381333931'),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(childArgs?.item.name, 'Search Milk');
-    expect(childArgs?.initialInfoMessage, isNotNull);
-  });
-
   testWidgets('diary recent product opens recent item flow', (tester) async {
     ManualProductSearchRouteArgs? childArgs;
     final inventoryController = _SuccessfulInventoryItemsController();
@@ -656,34 +631,31 @@ void main() {
     expect(inventoryController.addedItems, isEmpty);
   });
 
-  testWidgets('copying recently selected product opens editor', (tester) async {
-    ManualProductSearchRouteArgs? childArgs;
-
+  testWidgets('search results and recent products have no copy button', (
+    tester,
+  ) async {
     await _pumpRouteHarness(
       tester,
-      args: const ProductSearchHubRouteArgs.inventory(),
-      recentItems: [
-        _item(
-          id: 'recent-yogurt',
-          name: 'Greek yogurt',
-          brand: 'Dairy Co',
-          weight: '500 g',
-        ),
-      ],
-      inventoryController: _SuccessfulInventoryItemsController(),
-      onChildRouteArgs: (args) => childArgs = args,
+      args: _diaryArgs(),
+      recentItems: [_item(id: 'recent-yogurt', name: 'Greek yogurt')],
+      searchResults: [_searchProduct()],
     );
 
-    await tester.tap(
+    expect(
       find.byKey(
-        const Key('product_search_hub_recently_selected_copy_recent-yogurt'),
+        const Key('product_search_hub_recently_selected_item_recent-yogurt'),
       ),
+      findsOneWidget,
     );
-    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.content_copy_rounded), findsNothing);
 
-    expect(childArgs?.item.name, 'Greek yogurt');
-    expect(childArgs?.item.id, isNot('recent-yogurt'));
-    expect(childArgs?.initialInfoMessage, isNotNull);
+    await _searchFor(tester, 'Milk');
+
+    expect(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.content_copy_rounded), findsNothing);
   });
 }
 

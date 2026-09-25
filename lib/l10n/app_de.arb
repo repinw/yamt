@@ -90,8 +90,6 @@
   "productSearchHubRecentlySelectedLoadFailed": "Zuletzt ausgewählte Produkte konnten nicht geladen werden.",
   "productSearchHubRecentlySelectedRetryAction": "Erneut versuchen",
   "productSearchHubRecentlySelectedEmptyState": "Noch keine zuletzt ausgewählten Produkte.",
-  "productSearchHubCopyActionTooltip": "Als neues Produkt kopieren (z. B. bei veränderter Rezeptur)",
-  "productSearchHubCopiedInfoMessage": "Als Vorlage kopiert. Nährwerte und Angaben können jetzt angepasst werden.",
   "inventoryPageTitle": "Mein Vorrat",
   "inventoryActionScanCamera": "Beleg scannen (Kamera)",
   "inventoryActionUploadFile": "Beleg hochladen (Bild/PDF)",

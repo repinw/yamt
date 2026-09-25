@@ -38,9 +38,7 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
     required this.onCreateOwnPressed,
     required this.onRetry,
     required this.onResultSelected,
-    required this.onResultCopied,
     required this.onRecentItemPressed,
-    required this.onRecentItemCopied,
     this.bottomOverlay,
     super.key,
   });
@@ -102,14 +100,8 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
   /// Result selected callback.
   final ValueChanged<OffProductSearchResult> onResultSelected;
 
-  /// Result copied callback.
-  final ValueChanged<OffProductSearchResult> onResultCopied;
-
   /// Recent product selected callback.
   final ValueChanged<InventoryItem> onRecentItemPressed;
-
-  /// Recent product copied callback.
-  final ValueChanged<InventoryItem> onRecentItemCopied;
 
   @override
   Widget build(BuildContext context) {
@@ -170,7 +162,6 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
       return ProductSearchHubSearchRecentSection(
         selectedProductKeys: selectedProductKeys,
         onProductPressed: onRecentItemPressed,
-        onProductCopied: onRecentItemCopied,
       );
     }
     return ProductSearchHubSearchResults(
@@ -180,7 +171,6 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
       onCreateOwnPressed: onCreateOwnPressed,
       onRetry: onRetry,
       onResultSelected: onResultSelected,
-      onResultCopied: onResultCopied,
     );
   }
 }

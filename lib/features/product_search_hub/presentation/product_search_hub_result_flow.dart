@@ -11,8 +11,6 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
 import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_copy_factory.dart';
-import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
@@ -110,83 +108,6 @@ Future<void> editAndSaveProductSearchHubRecentItem({
       args: args,
     ),
   );
-}
-
-/// Opens the copy follow-up flow for a selected OFF product.
-Future<void> copyAndEditProductSearchHubProduct({
-  required BuildContext context,
-  required ProductSearchHubRouteArgs args,
-  required OffProductSearchResult product,
-  required ProductSearchHubSourceBlocker isSourceBlocked,
-  required ProductSearchHubResultCompleter completeResult,
-}) async {
-  final l10n = AppLocalizations.of(context)!;
-  final draftItem = cloneSearchResultAsDraftItem(
-    template: product,
-    now: DateTime.now(),
-    storeName: l10n.inventoryManualAddStoreName,
-    baseItem: args.item,
-  );
-
-  await _editAndSaveCopiedDraft(
-    context: context,
-    args: args,
-    draftItem: draftItem,
-    isSourceBlocked: isSourceBlocked,
-    completeResult: completeResult,
-    infoMessage: l10n.productSearchHubCopiedInfoMessage,
-  );
-}
-
-/// Opens the copy follow-up flow for a recently selected inventory item.
-Future<void> copyAndEditProductSearchHubRecentItem({
-  required BuildContext context,
-  required ProductSearchHubRouteArgs args,
-  required InventoryItem item,
-  required ProductSearchHubSourceBlocker isSourceBlocked,
-  required ProductSearchHubResultCompleter completeResult,
-}) async {
-  final l10n = AppLocalizations.of(context)!;
-  final draftItem = cloneInventoryItemAsDraftItem(
-    template: item,
-    now: DateTime.now(),
-    storeName: l10n.inventoryManualAddStoreName,
-    baseItem: args.item,
-  );
-
-  await _editAndSaveCopiedDraft(
-    context: context,
-    args: args,
-    draftItem: draftItem,
-    isSourceBlocked: isSourceBlocked,
-    completeResult: completeResult,
-    infoMessage: l10n.productSearchHubCopiedInfoMessage,
-  );
-}
-
-Future<void> _editAndSaveCopiedDraft({
-  required BuildContext context,
-  required ProductSearchHubRouteArgs args,
-  required InventoryItem draftItem,
-  required ProductSearchHubSourceBlocker isSourceBlocked,
-  required ProductSearchHubResultCompleter completeResult,
-  required String infoMessage,
-}) async {
-  final sourceKey = draftItem.id;
-  if (isSourceBlocked(sourceKey)) {
-    return;
-  }
-
-  final result = await openProductSearchHubCustomProductEditor(
-    context: context,
-    draftItem: draftItem,
-    args: args,
-    initialInfoMessage: infoMessage,
-  );
-  if (!context.mounted || result == null) {
-    return;
-  }
-  await completeResult(sourceKey: sourceKey, result: result);
 }
 
 Future<void> _editAndSaveDraft({

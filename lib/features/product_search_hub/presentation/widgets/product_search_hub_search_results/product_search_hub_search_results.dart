@@ -21,7 +21,6 @@ class ProductSearchHubSearchResults extends StatelessWidget {
     required this.onCreateOwnPressed,
     this.keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.onDrag,
     this.onResultSelected,
-    this.onResultCopied,
     super.key,
   });
 
@@ -45,9 +44,6 @@ class ProductSearchHubSearchResults extends StatelessWidget {
 
   /// Called when a result is selected.
   final ValueChanged<OffProductSearchResult>? onResultSelected;
-
-  /// Called when a result is copied as a template.
-  final ValueChanged<OffProductSearchResult>? onResultCopied;
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +76,6 @@ class ProductSearchHubSearchResults extends StatelessWidget {
       showLoading: isSearching,
       keyboardDismissBehavior: keyboardDismissBehavior,
       onResultSelected: onResultSelected,
-      onResultCopied: onResultCopied,
     );
   }
 }
@@ -181,14 +176,12 @@ class _ProductSearchHubSearchResultList extends StatelessWidget {
     required this.showLoading,
     required this.keyboardDismissBehavior,
     required this.onResultSelected,
-    this.onResultCopied,
   });
 
   final List<OffProductSearchResult> results;
   final bool showLoading;
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
   final ValueChanged<OffProductSearchResult>? onResultSelected;
-  final ValueChanged<OffProductSearchResult>? onResultCopied;
 
   @override
   Widget build(BuildContext context) {
@@ -219,15 +212,6 @@ class _ProductSearchHubSearchResultList extends StatelessWidget {
                 nutrition: result.nutrition,
                 statusLabel: gradeOffProductNutrition(result.nutrition)
                     .localizedLabel(l10n),
-                onCopy: onResultCopied == null
-                    ? null
-                    : () {
-                        onResultCopied!(result);
-                      },
-                copyTooltip: l10n.productSearchHubCopyActionTooltip,
-                copyButtonKey: Key(
-                  'product_search_hub_search_result_copy_${result.code}',
-                ),
                 onTap: onResultSelected == null
                     ? null
                     : () {
