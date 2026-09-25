@@ -101,7 +101,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     return [
       HomeNavEntry(
         item: HomeNavItem(
-          icon: Icons.menu_book_rounded,
+          icon: Icons.menu_book_outlined,
           label: l10n.homeCalories,
         ),
         isSelected: currentTab == HomeTabType.diary,
@@ -109,7 +109,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       ),
       HomeNavEntry(
         item: HomeNavItem(
-          icon: Icons.inventory_2_rounded,
+          icon: Icons.inventory_2_outlined,
           label: l10n.homeInventory,
         ),
         isSelected: currentTab == HomeTabType.inventory,
@@ -117,7 +117,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       ),
       HomeNavEntry(
         item: HomeNavItem(
-          icon: Icons.auto_stories_rounded,
+          icon: Icons.auto_stories_outlined,
           label: l10n.homeCookbook,
         ),
         isSelected: currentTab == HomeTabType.cookbook,
@@ -125,7 +125,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       ),
       HomeNavEntry(
         item: HomeNavItem(
-          icon: Icons.insights_rounded,
+          icon: Icons.insights_outlined,
           label: l10n.homeProgress,
         ),
         isSelected: currentTab == HomeTabType.progress,

@@ -68,19 +68,19 @@ class DiaryQuickEatDock extends ConsumerWidget {
                     _SquareButton(
                       source: DiaryQuickEatSource.inventory,
                       // Same icon as the inventory tab of the home bar.
-                      icon: Icons.inventory_2_rounded,
+                      icon: Icons.inventory_2_outlined,
                       tooltip: l10n.diaryQuickEatSourceInventory,
                       onPressed: open,
                     ),
                     _SquareButton(
                       source: DiaryQuickEatSource.manualSearch,
-                      icon: Icons.search_rounded,
+                      icon: Icons.search_outlined,
                       tooltip: l10n.diaryQuickEatSourceManualSearch,
                       onPressed: open,
                     ),
                     _SquareButton(
                       source: DiaryQuickEatSource.ai,
-                      icon: Icons.auto_awesome_rounded,
+                      icon: Icons.auto_awesome_outlined,
                       tooltip: l10n.diaryQuickEatSourceAi,
                       onPressed: open,
                     ),
