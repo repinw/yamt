@@ -22,10 +22,6 @@ Future<void> showInventoryFabActionSheet({
     builder: (sheetContext) {
       return InventoryFabActionSheet(
         isCameraEnabled: isCameraEnabled,
-        onProductSearchHub: () => _closeAndRun(
-          sheetContext,
-          () => InventoryActionSheetFlow.openProductSearchHub(context: context),
-        ),
         onManualSearch: () => _closeAndRun(
           sheetContext,
           () => InventoryActionSheetFlow.openManualSearch(

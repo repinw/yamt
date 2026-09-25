@@ -8,7 +8,6 @@ class InventoryFabActionSheet extends StatelessWidget {
   /// Creates inventory action sheet.
   const new({
     required this.isCameraEnabled,
-    required this.onProductSearchHub,
     required this.onManualSearch,
     required this.onBarcodeScan,
     required this.onAiSuggestion,
@@ -19,9 +18,6 @@ class InventoryFabActionSheet extends StatelessWidget {
 
   /// Whether camera action can be used.
   final bool isCameraEnabled;
-
-  /// Opens unified product search hub.
-  final VoidCallback onProductSearchHub;
 
   /// Opens manual product search.
   final VoidCallback onManualSearch;
@@ -53,12 +49,6 @@ class InventoryFabActionSheet extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                InventoryFabActionTile(
-                  key: const Key('inventory_action_product_search_hub_fab'),
-                  icon: Icons.add_shopping_cart_rounded,
-                  label: l10n.productSearchHubTitle,
-                  onPressed: onProductSearchHub,
-                ),
                 InventoryFabActionTile(
                   key: const Key('inventory_action_manual_search_fab'),
                   icon: Icons.search_rounded,

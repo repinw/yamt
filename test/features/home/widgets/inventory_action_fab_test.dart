@@ -59,53 +59,49 @@ Future<void> _tapFabAndSettle(WidgetTester tester) async {
 
 void main() {
   group('InventoryActionFab', () {
-    testWidgets('floating button opens action menu with hub action', (
-      tester,
-    ) async {
-      await _pumpHarness(tester, embedded: false);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'floating button opens action menu without add product action',
+      (tester) async {
+        await _pumpHarness(tester, embedded: false);
+        await tester.pumpAndSettle();
 
-      await _tapFabAndSettle(tester);
+        await _tapFabAndSettle(tester);
 
-      expect(
-        find.byKey(const Key('inventory_action_product_search_hub_fab')),
-        findsOneWidget,
-      );
+        expect(
+          find.byKey(const Key('inventory_action_product_search_hub_fab')),
+          findsNothing,
+        );
 
-      await tester.tap(
-        find.byKey(const Key('inventory_action_product_search_hub_fab')),
-      );
-      await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const Key('inventory_action_manual_search_fab')),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(ProductSearchHubPage), findsOneWidget);
-      expect(
-        find.byKey(
-          const Key('product_search_hub_recently_selected_empty_state'),
-        ),
-        findsOneWidget,
-      );
-    });
+        expect(find.byType(ProductSearchHubPage), findsOneWidget);
+      },
+    );
 
-    testWidgets('embedded button opens action sheet with hub action', (
-      tester,
-    ) async {
-      await _pumpHarness(tester);
-      await tester.pumpAndSettle();
+    testWidgets(
+      'embedded button opens action sheet without add product action',
+      (tester) async {
+        await _pumpHarness(tester);
+        await tester.pumpAndSettle();
 
-      await _tapFabAndSettle(tester);
+        await _tapFabAndSettle(tester);
 
-      expect(
-        find.byKey(const Key('inventory_action_product_search_hub_fab')),
-        findsOneWidget,
-      );
+        expect(
+          find.byKey(const Key('inventory_action_product_search_hub_fab')),
+          findsNothing,
+        );
 
-      await tester.tap(
-        find.byKey(const Key('inventory_action_product_search_hub_fab')),
-      );
-      await tester.pumpAndSettle();
+        await tester.tap(
+          find.byKey(const Key('inventory_action_manual_search_fab')),
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.byType(ProductSearchHubPage), findsOneWidget);
-    });
+        expect(find.byType(ProductSearchHubPage), findsOneWidget);
+      },
+    );
   });
 }
 

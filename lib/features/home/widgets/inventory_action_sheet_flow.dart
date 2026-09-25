@@ -75,13 +75,6 @@ class InventoryActionSheetFlow {
     }
   }
 
-  /// Open product search hub.
-  static Future<void> openProductSearchHub({
-    required BuildContext context,
-  }) async {
-    await _openProductSearchHub(context);
-  }
-
   /// Open action sheet.
   static Future<void> openActionSheet({
     required BuildContext context,

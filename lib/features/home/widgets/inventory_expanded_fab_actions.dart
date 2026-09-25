@@ -22,15 +22,6 @@ List<Widget> buildInventoryExpandedFabActions({
 }) {
   return [
     InventoryFabMenuAction(
-      key: const Key('inventory_action_product_search_hub_fab'),
-      heroTag: 'inventory_action_product_search_hub_fab',
-      icon: Icons.add_shopping_cart_rounded,
-      label: l10n.productSearchHubTitle,
-      onPressed: () => runAction(
-        () => InventoryActionSheetFlow.openProductSearchHub(context: context),
-      ),
-    ),
-    InventoryFabMenuAction(
       key: const Key('inventory_action_manual_search_fab'),
       heroTag: 'inventory_action_manual_search_fab',
       icon: Icons.search_rounded,
