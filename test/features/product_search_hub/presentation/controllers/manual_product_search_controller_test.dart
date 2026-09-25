@@ -572,6 +572,53 @@ void main() {
     expect(preview?.imageUrl, 'https://example.com/image.png');
   });
 
+  test(
+    'no barcode mark clears the barcode and allows the label scan',
+    () async {
+      String? scannedBarcode;
+      final container = ProviderContainer(
+        overrides: [
+          nutritionLabelOcrRepositoryProvider.overrideWithValue(
+            _FakeNutritionOcrRepository(
+              onScanNutritionLabel: (barcode) async {
+                scannedBarcode = barcode;
+                return NutritionLabelOcrResult.succeeded(
+                  draft: NutritionLabelOcrDraft(
+                    barcode: barcode,
+                    per100Kcal: 88,
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final provider = inventoryReceiptManualProductControllerProvider(
+        InventoryReceiptManualProductConfig(
+          item: _item().copyWith(barcode: '4006381333931'),
+        ),
+      );
+      final subscription = container.listen(provider, (_, _) {});
+      addTearDown(subscription.close);
+      final notifier = container.read(provider.notifier)
+        ..updateHasNoBarcode(value: true);
+
+      expect(container.read(provider).barcode, isEmpty);
+      expect(container.read(provider).canScanNutritionLabel, isTrue);
+
+      final outcome = await notifier.scanNutritionLabel();
+
+      expect(
+        outcome,
+        InventoryReceiptManualProductNutritionScanOutcome.applied,
+      );
+      expect(scannedBarcode, isEmpty);
+      expect(container.read(provider).kcalText, '88');
+    },
+  );
+
   test('updateBarcode enables the nutrition label scan', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

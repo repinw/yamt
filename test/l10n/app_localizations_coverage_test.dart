@@ -28,6 +28,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.productSearchHubSearchRetryAction,
     l10n.productSearchHubSearchEmptyState,
     l10n.productSearchHubCreateProductAction,
+    l10n.productSearchHubNoBarcodeAction,
     l10n.productSearchHubCartTitle,
     l10n.productSearchHubCartAddAction,
     l10n.productSearchHubCartRemoveAction,

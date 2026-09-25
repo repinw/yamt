@@ -374,6 +374,12 @@ abstract class AppLocalizations {
   /// **'No matching products found.'**
   String get productSearchHubSearchEmptyState;
 
+  /// No description provided for @productSearchHubNoBarcodeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'No barcode'**
+  String get productSearchHubNoBarcodeAction;
+
   /// No description provided for @productSearchHubCreateProductAction.
   ///
   /// In en, this message translates to:

@@ -12,9 +12,7 @@ const maximumTrackingStartDelayDays = 14;
 /// Start day onboarding proposes for the first tracked week at [now].
 DateTime defaultTrackingStartDay(DateTime now) {
   final today = normalizeDiaryDay(now);
-  return now.hour < trackingStartTomorrowFromHour
-      ? today
-      : nextDiaryDay(today);
+  return now.hour < trackingStartTomorrowFromHour ? today : nextDiaryDay(today);
 }
 
 /// Latest start day the user may pick at [now].

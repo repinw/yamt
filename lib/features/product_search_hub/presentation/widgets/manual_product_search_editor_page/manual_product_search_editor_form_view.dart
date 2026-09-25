@@ -30,6 +30,7 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
     required this.canSave,
     required this.onScanBarcode,
     required this.onScanNutritionLabel,
+    required this.onNoBarcodeChanged,
     required this.onActionChanged,
     required this.onCancel,
     required this.onSave,
@@ -66,6 +67,9 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
   /// Nutrition label scan callback.
   final VoidCallback? onScanNutritionLabel;
 
+  /// Called when the "no barcode" mark changes.
+  final ValueChanged<bool> onNoBarcodeChanged;
+
   /// Action change callback.
   final ValueChanged<InventoryReceiptManualProductAction> onActionChanged;
 
@@ -89,6 +93,7 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
         nameText: state.nameText,
         brandText: state.brandText,
         barcodeText: state.barcode,
+        hasNoBarcode: state.hasNoBarcode,
         weightAmount: state.weightAmount,
         selectedWeightUnit: state.selectedWeightUnit,
         kcalText: state.kcalText,
@@ -118,6 +123,7 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
         onNameChanged: controller.updateNameText,
         onBrandChanged: controller.updateBrandText,
         onBarcodeChanged: controller.updateBarcode,
+        onNoBarcodeChanged: onNoBarcodeChanged,
         onWeightAmountChanged: controller.updateWeightAmount,
         onWeightUnitChanged: controller.updateWeightUnit,
         onKcalChanged: controller.updateKcalText,

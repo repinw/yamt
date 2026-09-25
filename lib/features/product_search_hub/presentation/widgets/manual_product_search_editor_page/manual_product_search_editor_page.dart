@@ -148,10 +148,18 @@ class _InventoryReceiptManualProductEditorPageState
       onScanNutritionLabel: state.canScanNutritionLabel
           ? _onScanNutritionLabel
           : null,
+      onNoBarcodeChanged: _onNoBarcodeChanged,
       onActionChanged: (action) => setState(() => _selectedAction = action),
       onCancel: _closePage,
       onSave: _onSave,
     );
+  }
+
+  void _onNoBarcodeChanged(bool hasNoBarcode) {
+    _controller.updateHasNoBarcode(value: hasNoBarcode);
+    if (hasNoBarcode) {
+      _onScanNutritionLabel();
+    }
   }
 
   void _onScanNutritionLabel() {

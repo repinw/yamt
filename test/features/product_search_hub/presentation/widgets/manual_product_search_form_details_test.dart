@@ -20,6 +20,8 @@ Widget _wrapDetailsForm({
   String brandText = 'Ja!',
   String barcodeText = '',
   VoidCallback? onScanBarcode,
+  bool hasNoBarcode = false,
+  ValueChanged<bool>? onNoBarcodeChanged,
   ValueChanged<String>? onBarcodeChanged,
   String weightAmount = '200',
   InventoryAmountUnit selectedWeightUnit = InventoryAmountUnit.gram,
@@ -62,6 +64,7 @@ Widget _wrapDetailsForm({
                 nameText: nameText,
                 brandText: brandText,
                 barcodeText: barcodeText,
+                hasNoBarcode: hasNoBarcode,
                 weightAmount: weightAmount,
                 selectedWeightUnit: selectedWeightUnit,
                 kcalText: kcalText,
@@ -95,6 +98,7 @@ Widget _wrapDetailsForm({
                 onBrandChanged: (_) {},
                 onBarcodeChanged: onBarcodeChanged ?? (_) {},
                 onScanBarcode: onScanBarcode ?? () {},
+                onNoBarcodeChanged: onNoBarcodeChanged ?? (_) {},
                 onWeightAmountChanged: (_) {},
                 onWeightUnitChanged: (_) {},
                 onScanNutritionLabel: onScanNutritionLabel,
@@ -195,6 +199,49 @@ void main() {
     await tester.tap(scanButton);
     await tester.pump();
     expect(scanTapped, 1);
+  });
+
+  testWidgets('no barcode mark reports changes and locks the barcode', (
+    tester,
+  ) async {
+    final scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
+    final marks = <bool>[];
+
+    await tester.pumpWidget(
+      _wrapDetailsForm(
+        scrollController: scrollController,
+        onScanNutritionLabel: null,
+        onNoBarcodeChanged: marks.add,
+      ),
+    );
+
+    final checkbox = find.byKey(
+      const Key('receipt_review_manual_no_barcode_checkbox'),
+    );
+    await tester.ensureVisible(checkbox);
+    await tester.pumpAndSettle();
+    await tester.tap(checkbox);
+    await tester.pump();
+    expect(marks, [true]);
+
+    await tester.pumpWidget(
+      _wrapDetailsForm(
+        scrollController: scrollController,
+        onScanNutritionLabel: () {},
+        hasNoBarcode: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final field = tester.widget<FormBuilderTextField>(
+      find.byKey(const Key('receipt_review_manual_barcode_field')),
+    );
+    expect(field.enabled, isFalse);
+    final scanButton = tester.widget<IconButton>(
+      find.byKey(const Key('receipt_review_manual_barcode_scan_button')),
+    );
+    expect(scanButton.onPressed, isNull);
   });
 
   testWidgets('patches every registered field from updated props', (

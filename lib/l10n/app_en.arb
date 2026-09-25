@@ -81,6 +81,7 @@
   "productSearchHubSearchLoadFailed": "Product search failed.",
   "productSearchHubSearchRetryAction": "Retry",
   "productSearchHubSearchEmptyState": "No matching products found.",
+  "productSearchHubNoBarcodeAction": "No barcode",
   "productSearchHubCreateProductAction": "Create product",
   "productSearchHubCartTitle": "Selected products",
   "productSearchHubCartAddAction": "Add",

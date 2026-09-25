@@ -81,6 +81,7 @@
   "productSearchHubSearchLoadFailed": "Produktsuche fehlgeschlagen.",
   "productSearchHubSearchRetryAction": "Erneut versuchen",
   "productSearchHubSearchEmptyState": "Keine passenden Produkte gefunden.",
+  "productSearchHubNoBarcodeAction": "Kein Barcode",
   "productSearchHubCreateProductAction": "Produkt erstellen",
   "productSearchHubCartTitle": "Ausgewählte Produkte",
   "productSearchHubCartAddAction": "Eintragen",

@@ -225,9 +225,8 @@ class _AiChefDialogState extends ConsumerState<AiChefDialog> {
   }
 
   void _showSnackBar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showAppSnackBar(message, tone: AppSnackBarTone.error);
+    ScaffoldMessenger.of(context)
+        .showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 }
 

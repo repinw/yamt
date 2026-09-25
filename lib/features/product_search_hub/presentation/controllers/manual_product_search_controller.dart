@@ -124,6 +124,15 @@ class InventoryReceiptManualProductController
     state = state.copyWith(barcode: value, error: null);
   }
 
+  /// Marks the product as having no barcode and clears the barcode.
+  void updateHasNoBarcode({required bool value}) {
+    state = state.copyWith(
+      hasNoBarcode: value,
+      barcode: value ? '' : state.barcode,
+      error: null,
+    );
+  }
+
   /// Update weight amount.
   void updateWeightAmount(String value) {
     state = state.copyWith(weightAmount: value, error: null);
@@ -306,8 +315,9 @@ class InventoryReceiptManualProductController
   Future<InventoryReceiptManualProductNutritionScanOutcome>
   scanNutritionLabel() async {
     final barcode = normalizeBarcode(state.barcode);
-    if (barcode.isEmpty || state.isRunningNutritionOcr) {
-      if (barcode.isEmpty) {
+    final isMissingBarcode = barcode.isEmpty && !state.hasNoBarcode;
+    if (isMissingBarcode || state.isRunningNutritionOcr) {
+      if (isMissingBarcode) {
         state = state.copyWith(
           error: InventoryReceiptManualProductError.requiredProductOrNutrition,
         );

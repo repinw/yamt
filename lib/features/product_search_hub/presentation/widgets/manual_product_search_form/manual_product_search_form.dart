@@ -21,6 +21,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.nameText,
     required this.brandText,
     required this.barcodeText,
+    required this.hasNoBarcode,
     required this.weightAmount,
     required this.selectedWeightUnit,
     required this.kcalText,
@@ -48,6 +49,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onNameChanged,
     required this.onBrandChanged,
     required this.onBarcodeChanged,
+    required this.onNoBarcodeChanged,
     required this.onWeightAmountChanged,
     required this.onWeightUnitChanged,
     required this.onKcalChanged,
@@ -90,6 +92,9 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   /// The barcode text.
   final String barcodeText;
+
+  /// Whether the product is marked as having no barcode.
+  final bool hasNoBarcode;
 
   /// The weight amount text.
   final String weightAmount;
@@ -171,6 +176,9 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// Called when the barcode text changes.
   final ValueChanged<String> onBarcodeChanged;
 
+  /// Called when the "no barcode" mark changes.
+  final ValueChanged<bool> onNoBarcodeChanged;
+
   /// The on weight amount changed.
   final ValueChanged<String> onWeightAmountChanged;
 
@@ -251,6 +259,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
         nameText: nameText,
         brandText: brandText,
         barcodeText: barcodeText,
+        hasNoBarcode: hasNoBarcode,
         weightAmount: weightAmount,
         selectedWeightUnit: selectedWeightUnit,
         kcalText: kcalText,
@@ -279,6 +288,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
         onNameChanged: onNameChanged,
         onBrandChanged: onBrandChanged,
         onBarcodeChanged: onBarcodeChanged,
+        onNoBarcodeChanged: onNoBarcodeChanged,
         onScanBarcode: onScanBarcode,
         onWeightAmountChanged: onWeightAmountChanged,
         onWeightUnitChanged: onWeightUnitChanged,

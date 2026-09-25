@@ -35,9 +35,7 @@ class SettingsMacroGoalsAdjustedWeightNotice extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              l10n.macroAdjustedWeightNote(
-                adjustedWeightKg.round().toString(),
-              ),
+              l10n.macroAdjustedWeightNote(adjustedWeightKg.round().toString()),
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colors.onSurfaceVariant,
               ),

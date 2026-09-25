@@ -17,6 +17,7 @@ class InventoryReceiptManualProductState {
     this.nameText = '',
     this.brandText = '',
     this.barcode = '',
+    this.hasNoBarcode = false,
     this.weightAmount = '',
     this.selectedWeightUnit = InventoryAmountUnit.gram,
     this.kcalText = '',
@@ -55,6 +56,9 @@ class InventoryReceiptManualProductState {
 
   /// The barcode.
   final String barcode;
+
+  /// Whether the user marked the product as having no barcode.
+  final bool hasNoBarcode;
 
   /// The weight amount.
   final String weightAmount;
@@ -167,7 +171,7 @@ class InventoryReceiptManualProductState {
 
   /// Whether scan nutrition label.
   bool get canScanNutritionLabel {
-    return !isRunningNutritionOcr && hasBarcode;
+    return !isRunningNutritionOcr && (hasBarcode || hasNoBarcode);
   }
 
   /// The available optional nutrition types.
@@ -206,6 +210,7 @@ class InventoryReceiptManualProductState {
     String? nameText,
     String? brandText,
     String? barcode,
+    bool? hasNoBarcode,
     String? weightAmount,
     InventoryAmountUnit? selectedWeightUnit,
     String? kcalText,
@@ -236,6 +241,7 @@ class InventoryReceiptManualProductState {
       nameText: nameText ?? this.nameText,
       brandText: brandText ?? this.brandText,
       barcode: barcode ?? this.barcode,
+      hasNoBarcode: hasNoBarcode ?? this.hasNoBarcode,
       weightAmount: weightAmount ?? this.weightAmount,
       selectedWeightUnit: selectedWeightUnit ?? this.selectedWeightUnit,
       kcalText: kcalText ?? this.kcalText,

@@ -30,6 +30,7 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.nameText,
     required this.brandText,
     required this.barcodeText,
+    required this.hasNoBarcode,
     required this.weightAmount,
     required this.selectedWeightUnit,
     required this.kcalText,
@@ -58,6 +59,7 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.onBrandChanged,
     required this.onBarcodeChanged,
     required this.onScanBarcode,
+    required this.onNoBarcodeChanged,
     required this.onWeightAmountChanged,
     required this.onWeightUnitChanged,
     required this.onScanNutritionLabel,
@@ -87,6 +89,7 @@ class ManualProductDetailsForm extends StatefulWidget {
   final String nameText;
   final String brandText;
   final String barcodeText;
+  final bool hasNoBarcode;
   final String weightAmount;
   final InventoryAmountUnit selectedWeightUnit;
   final String kcalText;
@@ -120,6 +123,7 @@ class ManualProductDetailsForm extends StatefulWidget {
   final ValueChanged<String> onBrandChanged;
   final ValueChanged<String> onBarcodeChanged;
   final VoidCallback onScanBarcode;
+  final ValueChanged<bool> onNoBarcodeChanged;
   final ValueChanged<String> onWeightAmountChanged;
   final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
   final VoidCallback? onScanNutritionLabel;
@@ -318,6 +322,8 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
               _onTextChanged(value, widget.onBarcodeChanged);
             },
             onScan: widget.onScanBarcode,
+            hasNoBarcode: widget.hasNoBarcode,
+            onNoBarcodeChanged: widget.onNoBarcodeChanged,
           ),
           const SizedBox(height: AppSpacing.lg),
           ManualProductWeightFields(

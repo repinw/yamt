@@ -174,6 +174,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Keine passenden Produkte gefunden.';
 
   @override
+  String get productSearchHubNoBarcodeAction => 'Kein Barcode';
+
+  @override
   String get productSearchHubCreateProductAction => 'Produkt erstellen';
 
   @override
