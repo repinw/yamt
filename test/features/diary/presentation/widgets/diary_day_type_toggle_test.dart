@@ -58,9 +58,9 @@ void main() {
   }
 
   final cases = <DateTime, String>{
-    DateTime(2026, 4, 27): '🏋️',
-    DateTime(2026, 4, 28): '🛋️',
-    DateTime(2026, 4, 29): '⏸️',
+    DateTime(2026, 4, 27): 'TRAINING',
+    DateTime(2026, 4, 28): 'RUHE',
+    DateTime(2026, 4, 29): 'PAUSE',
   };
 
   for (final entry in cases.entries) {
@@ -75,7 +75,7 @@ void main() {
     });
   }
 
-  testWidgets('tapping the emoji opens the day type sheet', (tester) async {
+  testWidgets('tapping the chip opens the day type sheet', (tester) async {
     await pumpToggle(tester, DateTime(2026, 4, 27));
     await tester.pump();
 

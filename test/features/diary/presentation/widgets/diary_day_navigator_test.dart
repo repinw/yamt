@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_navigator.dart';
@@ -45,23 +46,26 @@ void main() {
     );
   }
 
-  testWidgets('shows Heute, Gestern or DD.MM', (tester) async {
+  testWidgets('shows Heute, Gestern or the weekday over the date', (
+    tester,
+  ) async {
     await pumpNavigator(tester, selectedDay: today);
-    expect(find.text('Heute'), findsOneWidget);
+    expect(find.text('HEUTE'), findsOneWidget);
+    expect(find.text(DateFormat('EEE d. MMM', 'de').format(today)), findsOne);
     expect(find.text('🏋️'), findsOneWidget);
-    expect(find.byIcon(Icons.calendar_month_outlined), findsNothing);
 
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 26));
     await tester.pumpAndSettle();
-    expect(find.text('Gestern'), findsOneWidget);
+    expect(find.text('GESTERN'), findsOneWidget);
 
-    await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 5));
+    final earlier = DateTime(2026, 4, 5);
+    await pumpNavigator(tester, selectedDay: earlier);
     await tester.pumpAndSettle();
-    expect(find.text('05.04'), findsOneWidget);
-
-    await pumpNavigator(tester, selectedDay: DateTime(2026, 5, 3));
-    await tester.pumpAndSettle();
-    expect(find.text('03.05'), findsOneWidget);
+    expect(
+      find.text(DateFormat('EEEE', 'de').format(earlier).toUpperCase()),
+      findsOneWidget,
+    );
+    expect(find.text(DateFormat('EEE d. MMM', 'de').format(earlier)), findsOne);
     expect(tester.takeException(), isNull);
   });
 

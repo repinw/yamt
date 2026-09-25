@@ -13,6 +13,9 @@ abstract final class AppFoodLabel {
   /// Width of the thick outlines.
   static const double outline = 2;
 
+  /// Width of the thin frame of a small chip.
+  static const double chipOutline = 1.5;
+
   /// Line under the nutrition label header.
   static const double labelHeaderRule = 6;
 
@@ -55,6 +58,9 @@ abstract final class AppFoodLabel {
   /// Letter spacing of the brand line.
   static const double brandTracking = 1.6;
 
+  /// Letter spacing of the bottom navigation labels.
+  static const double navLabelTracking = 0.8;
+
   /// Opacity of the slider's touch halo.
   static const double sliderOverlayAlpha = 0.24;
 
@@ -80,7 +86,7 @@ abstract final class AppFoodLabel {
   /// Width of the value column of a diary macro row.
   static const double macroValueColumn = 112;
 
-  /// Highest HSL lightness of a macro label on light paper, so bright
-  /// macro colors such as the fat yellow stay readable as text.
+  /// Highest HSL lightness of macro colored text on light paper, so bright
+  /// macro colors such as the fat yellow stay readable.
   static const double lightLabelMaxLightness = 0.38;
 }

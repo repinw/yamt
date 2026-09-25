@@ -2446,6 +2446,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDayTypePause => 'Pause day';
 
   @override
+  String get diaryDayTypeTrainingShort => 'Training';
+
+  @override
+  String get diaryDayTypeRestShort => 'Rest';
+
+  @override
+  String get diaryDayTypePauseShort => 'Pause';
+
+  @override
   String get diaryDayTypeSheetTitle => 'Choose day type';
 
   @override
@@ -2512,6 +2521,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryBalanceHideDetails => 'Show fewer numbers';
+
+  @override
+  String get diaryMealsEmptyTitle => 'Nothing eaten yet';
+
+  @override
+  String get diaryMealsEmptyHint =>
+      'Log food below with the barcode, inventory, search, or AI.';
 
   @override
   String diaryBalanceEatenAmount(String kcal) {

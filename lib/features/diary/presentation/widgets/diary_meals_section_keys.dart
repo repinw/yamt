@@ -19,6 +19,9 @@ abstract final class DiaryMealsSectionKeys {
     return ValueKey<String>('diary-quick-eat-source-${source.name}');
   }
 
+  /// Hint shown on a day without logged food.
+  static const emptyState = ValueKey<String>('diary-meals-empty-state');
+
   /// Retry button key.
   static const retryButton = ValueKey<String>('diary-meals-retry-button');
 }

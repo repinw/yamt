@@ -1,6 +1,9 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/theme/app_fonts.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/home_nav_entry.dart';
 import 'package:yamt/core/widgets/home_nav_item.dart';
@@ -14,16 +17,12 @@ class HomeBottomNavBar extends StatelessWidget {
   final List<HomeNavEntry> entries;
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
+        color: colors.paper,
         border: Border(
-          top: BorderSide(
-            color: colors.outlineVariant.withValues(
-              alpha: AppOpacities.homeBottomNavBorder,
-            ),
-          ),
+          top: BorderSide(color: colors.ink, width: AppFoodLabel.outline),
         ),
       ),
       child: SafeArea(
@@ -62,12 +61,8 @@ class _HomeBottomNavItemButton extends StatelessWidget {
   final bool showTopIndicator;
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final foregroundColor = isSelected
-        ? colors.primary
-        : colors.onSurfaceVariant.withValues(
-            alpha: AppOpacities.homeBottomNavUnselected,
-          );
+    final colors = FoodLabelColors.of(context);
+    final foregroundColor = isSelected ? colors.accentText : colors.muted;
     return Semantics(
       button: true,
       selected: isSelected,
@@ -87,10 +82,7 @@ class _HomeBottomNavItemButton extends StatelessWidget {
                     ? AppSizes.homeBottomNavIndicatorWidth
                     : 0,
                 height: AppSizes.homeBottomNavIndicatorHeight,
-                decoration: BoxDecoration(
-                  color: showTopIndicator ? colors.primary : Colors.transparent,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                ),
+                color: showTopIndicator ? colors.accent : Colors.transparent,
               ),
               const SizedBox(height: AppSpacing.xxs),
               Icon(
@@ -104,12 +96,14 @@ class _HomeBottomNavItemButton extends StatelessWidget {
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    item.label,
+                    item.label.toUpperCase(),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      fontFamily: AppFonts.mono,
                       color: foregroundColor,
                       fontSize: AppFontSizes.homeBottomNavLabel,
+                      letterSpacing: AppFoodLabel.navLabelTracking,
                     ),
                   ),
                 ),

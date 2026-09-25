@@ -707,7 +707,7 @@ void main() {
 
     final router = container.read(appRouterProvider);
     expect(router.state.uri.path, AppRoutes.homeCalories);
-    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('TODAY'), findsOneWidget);
     expect(find.text('STATISTICS'), findsNothing);
 
     await tester.tap(_homeNavIcon(Icons.inventory_2_rounded));
@@ -731,7 +731,7 @@ void main() {
     router.go(AppRoutes.homeCalories);
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeCalories);
-    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('TODAY'), findsOneWidget);
 
     await tester.tap(_homeNavIcon(Icons.insights_rounded));
     await _pumpRouterTransition(tester);

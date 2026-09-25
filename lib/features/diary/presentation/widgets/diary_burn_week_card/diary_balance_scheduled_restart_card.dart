@@ -1,10 +1,11 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
+import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Card shown when a failed run is scheduled to restart later.
+/// Shown in place of the daily balance when a failed run is scheduled to
+/// restart later. Like the balance, it has no card frame.
 class DiaryBalanceScheduledRestartCard extends StatelessWidget {
   /// Creates a scheduled restart card.
   const new({required this.scheduledRestartDate, super.key});
@@ -20,7 +21,8 @@ class DiaryBalanceScheduledRestartCard extends StatelessWidget {
     );
     final colors = Theme.of(context).colorScheme;
 
-    return DiaryBalanceShell(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
       child: Column(
         children: [
           Icon(Icons.favorite_border_rounded, color: colors.error, size: 34),
@@ -28,8 +30,11 @@ class DiaryBalanceScheduledRestartCard extends StatelessWidget {
           Text(
             l10n.burnWeekRunOverTitle,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleLarge
-                ?.copyWith(color: colors.error, fontWeight: FontWeight.w900),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontFamily: AppFonts.display,
+              color: colors.error,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(

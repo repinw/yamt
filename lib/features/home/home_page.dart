@@ -140,7 +140,8 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     final currentTab = _currentTab();
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
-      HomeTabType.diary => const DiaryQuickEatDock(),
+      // Keeps floating snack bars above the diary's quick-eat dock.
+      HomeTabType.diary => const SizedBox(height: diaryQuickEatDockHeight),
       HomeTabType.cookbook || HomeTabType.progress => null,
     };
 
@@ -164,7 +165,16 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
                 bottom: 0,
                 child: ValueListenableBuilder<double>(
                   valueListenable: _chromeVisibilityController,
-                  child: HomeBottomNavBar(entries: _navEntries(context, l10n)),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // The dock sits on the navigation bar and hides with
+                      // it.
+                      if (currentTab == HomeTabType.diary)
+                        const DiaryQuickEatDock(),
+                      HomeBottomNavBar(entries: _navEntries(context, l10n)),
+                    ],
+                  ),
                   builder: (context, visibility, bottomNavBar) {
                     return HomeShellBottomChrome(
                       visibility: visibility,
@@ -177,10 +187,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
           ),
         ),
       ),
-      // The diary dock spans the width and sits right on the navigation bar.
-      floatingActionButtonLocation: currentTab == HomeTabType.diary
-          ? const _BottomDockLocation()
-          : FloatingActionButtonLocation.endFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
       // The chrome wraps an empty slot too: floating snack bars sit above the
       // floating action button slot, so they clear the bottom navigation.
@@ -207,21 +214,5 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       return null;
     }
     return const InventoryActionFab();
-  }
-}
-
-/// Places the floating action button slot full width at the bottom, above
-/// the system inset, so a dock meets the navigation bar without a gap.
-class _BottomDockLocation extends FloatingActionButtonLocation {
-  const new();
-
-  @override
-  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
-    return Offset(
-      0,
-      scaffoldGeometry.scaffoldSize.height -
-          scaffoldGeometry.floatingActionButtonSize.height -
-          scaffoldGeometry.minInsets.bottom,
-    );
   }
 }

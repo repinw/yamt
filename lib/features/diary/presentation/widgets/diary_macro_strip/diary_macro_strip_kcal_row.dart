@@ -1,11 +1,14 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_amount_text.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Kcal row of the macro strip: label, thin bar, and amount.
+/// Kcal row of the macro strip: label, a thin bar of four quarters like the
+/// daily ruler, and amount.
 class DiaryMacroStripKcalRow extends StatelessWidget {
   /// Creates the widget.
   const new({
@@ -37,24 +40,37 @@ class DiaryMacroStripKcalRow extends StatelessWidget {
       fontWeight: FontWeight.w700,
     );
     final progress = target <= 0 ? 0.0 : (eaten / target).clamp(0.0, 1.0);
+    final labelColors = FoodLabelColors.of(context);
 
     return Row(
       children: [
         Text(l10n.caloriesUnitKcal, style: labelStyle),
         const SizedBox(width: AppSpacing.xs),
         Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(AppRadius.pill),
-            child: SizedBox(
-              height: AppSizes.stripProgressBarHeight,
-              child: ColoredBox(
-                color: colors.surfaceContainerHighest,
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: progress,
-                  child: ColoredBox(color: colors.primary),
-                ),
-              ),
+          child: SizedBox(
+            height: AppSizes.stripProgressBarHeight,
+            child: Row(
+              spacing: AppFoodLabel.outline,
+              children: [
+                for (final (index, alpha)
+                    in AppFoodLabel.kcalQuarterAlphas.indexed)
+                  Expanded(
+                    child: ColoredBox(
+                      color: labelColors.rule,
+                      child: FractionallySizedBox(
+                        alignment: Alignment.centerLeft,
+                        widthFactor:
+                            (progress * AppFoodLabel.kcalQuarterAlphas.length -
+                                    index)
+                                .clamp(0.0, 1.0),
+                        heightFactor: 1,
+                        child: ColoredBox(
+                          color: labelColors.accent.withValues(alpha: alpha),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ),

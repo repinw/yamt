@@ -129,7 +129,7 @@ class _BarcodeButton extends StatelessWidget {
       child: FilledButton.icon(
         key: DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.barcode),
         onPressed: onPressed,
-        icon: const Icon(Icons.barcode_reader),
+        icon: _BarcodeIcon(color: colors.onAccent),
         label: Text(
           label,
           maxLines: 1,
@@ -186,4 +186,52 @@ class _SquareButton extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Small barcode: vertical bars of different widths, sized like an icon.
+class _BarcodeIcon extends StatelessWidget {
+  const new({required this.color});
+
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final size = IconTheme.of(context).size ?? AppSizes.barcodeIcon;
+    return CustomPaint(
+      size: Size(size, size * AppSizes.barcodeIconAspect),
+      painter: _BarcodePainter(color),
+    );
+  }
+}
+
+class _BarcodePainter extends CustomPainter {
+  const new(this.color);
+
+  final Color color;
+
+  /// Left edge and width of each bar, in 24ths of the icon width.
+  static const _bars = [
+    (2.0, 2.0),
+    (5.5, 1.0),
+    (8.0, 2.5),
+    (12.5, 1.0),
+    (15.0, 2.0),
+    (18.5, 1.0),
+    (20.5, 1.5),
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final unit = size.width / 24;
+    final paint = Paint()..color = color;
+    for (final (left, width) in _bars) {
+      canvas.drawRect(
+        Rect.fromLTWH(left * unit, 0, width * unit, size.height),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_BarcodePainter oldDelegate) => oldDelegate.color != color;
 }

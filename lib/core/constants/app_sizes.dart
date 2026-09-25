@@ -60,6 +60,16 @@ abstract final class AppSizes {
   /// Height of a full-width primary action button.
   static const double primaryActionHeight = 56;
 
+  /// Width of the drawn barcode icon when no icon size is set.
+  static const double barcodeIcon = 20;
+
+  /// Height of the drawn barcode icon relative to its width.
+  static const double barcodeIconAspect = 0.75;
+
+  /// Width of each side slot of the diary top bar, so the day stays
+  /// centered.
+  static const double diaryTopBarSide = 96;
+
   /// Diameter for circular home top bar icon buttons.
   static const double homeTopBarIconButton = 36;
 

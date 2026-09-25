@@ -19,7 +19,7 @@ import '../../support/diary_dashboard_test_support.dart';
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
-  testWidgets('empty day shows no meal groups', (tester) async {
+  testWidgets('empty day shows a hint instead of meal groups', (tester) async {
     await _pumpMealsSection(
       tester,
       selectedDay: selectedDay,
@@ -31,6 +31,8 @@ void main() {
 
     expect(find.byType(DiaryMealGroup), findsNothing);
     expect(find.byType(DiaryMealsSkeleton), findsNothing);
+    expect(find.byKey(DiaryMealsSectionKeys.emptyState), findsOneWidget);
+    expect(find.text('Nothing eaten yet'), findsOneWidget);
   });
 
   testWidgets('logged meals render groups with readable entry rows', (

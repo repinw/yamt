@@ -11,6 +11,7 @@ import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meals_empty_state.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -54,6 +55,10 @@ class DiaryMealsSection extends ConsumerWidget {
     final loggedSections = sections.where(
       (section) => section.entries.isNotEmpty,
     );
+
+    if (loggedSections.isEmpty) {
+      return const DiaryMealsEmptyState();
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

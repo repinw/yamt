@@ -64,11 +64,13 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 - Daily diary page for meals, calorie balance, activity, and weight.
 - Date selection and calendar strip navigation. Swiping the diary slides to
-  the previous or next day.
+  the previous or next day. The top bar shows today, yesterday, or the weekday
+  in small capitals over the date, and the day type as a framed chip.
+- A day without logged food shows a short hint that points to the dock.
 - Meal sections for breakfast, lunch, dinner, and snacks.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
-  Its buttons sit in a dock at the bottom of the diary, above the navigation
-  bar: square buttons for inventory, search, and AI, and a lime barcode button
+  Its buttons sit in a dock on the bottom navigation bar of the diary tab and
+  hide with it: square buttons for inventory, search, and AI, and a lime barcode button
   on the right.
 - Daily head in the food label look, without a card frame: the kcal left as a
   big number over a ruler, whose bar has four equal quarters of the target

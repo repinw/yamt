@@ -37,9 +37,11 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   the weekly check-in, and only on today.
 - `presentation/widgets/diary_quick_eat_dock.dart` (`DiaryQuickEatDock`) is
   public UI for `features/home`: the quick-eat buttons for the selected day.
-  The home shell shows it in the floating action button slot of the diary tab,
-  so it moves with the bottom navigation bar. The day view pads its content by
-  `diaryQuickEatDockHeight`.
+  The home shell stacks it on the bottom navigation bar of the diary tab, so it
+  hides and returns with the bar. The day view pads its content by
+  `diaryQuickEatDockHeight`, and the shell keeps floating snack bars above it.
+- `presentation/widgets/diary_meals_empty_state.dart` points to the dock on a
+  day without logged food.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the
   diary-facing daily and weekly calorie balance UI.
   The daily card uses the food label look (`FoodLabelColors`, `AppFonts`)

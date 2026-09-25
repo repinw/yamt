@@ -45,15 +45,14 @@ class DiaryKcalLeftHeader extends StatelessWidget {
     final unit = data.isFutureDay ? data.caloriesUnit : data.leftUnit;
     final mono = textTheme.labelMedium?.copyWith(fontFamily: AppFonts.mono);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.xs,
       children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: AppSpacing.xs,
-            children: [
-              Text(
+        Row(
+          children: [
+            Expanded(
+              child: Text(
                 label.toUpperCase(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -63,7 +62,20 @@ class DiaryKcalLeftHeader extends StatelessWidget {
                   letterSpacing: AppFoodLabel.brandTracking,
                 ),
               ),
-              FittedBox(
+            ),
+            // Shows that a tap opens or closes the details.
+            AnimatedRotation(
+              turns: showDetails ? 0.5 : 0,
+              duration: AppDurations.compactMetricExpansion,
+              child: Icon(Icons.expand_more_rounded, color: colors.ink),
+            ),
+          ],
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: FittedBox(
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Row(
@@ -86,11 +98,11 @@ class DiaryKcalLeftHeader extends StatelessWidget {
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+            if (showDetails && !data.isPauseDay)
+              _EatenOfTarget(data: data, style: mono),
+          ],
         ),
-        if (showDetails && !data.isPauseDay)
-          _EatenOfTarget(data: data, style: mono),
       ],
     );
   }

@@ -1,9 +1,11 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
-import 'package:yamt/core/theme/metric_accent_colors.dart';
+import 'package:yamt/core/theme/app_fonts.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
@@ -28,8 +30,8 @@ abstract final class DiaryDayNavigatorKeys {
   static const label = ValueKey<String>('diary-day-navigator-label');
 }
 
-/// Centered single-day pill with previous/next arrows, leading and trailing
-/// actions.
+/// Centered day with previous/next arrows: today, yesterday or the weekday in
+/// small capitals over the date, between leading and trailing actions.
 class DiaryDayNavigator extends StatefulWidget {
   /// Creates a diary day navigator.
   const new({
@@ -91,71 +93,58 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
 
   @override
   Widget build(BuildContext context) {
-    // Reserve the wider side's actions on both sides so the pill stays
-    // centered.
-    final actionsWidth = _actionsWidth(
-      widget.leadingActions.length > widget.actions.length
-          ? widget.leadingActions.length
-          : widget.actions.length,
-    );
-
-    return Stack(
-      alignment: Alignment.center,
+    // Both sides get the same width, so the day stays centered.
+    return Row(
       children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: actionsWidth),
-          child: GestureDetector(
-            behavior: HitTestBehavior.translucent,
-            onHorizontalDragEnd: _handleSwipe,
-            child: _buildPill(context),
-          ),
-        ),
-        if (widget.leadingActions.isNotEmpty)
-          Align(
+        SizedBox(
+          width: AppSizes.diaryTopBarSide,
+          child: Align(
             alignment: Alignment.centerLeft,
             child: HomeTopBarActions(actions: widget.leadingActions),
           ),
-        if (widget.actions.isNotEmpty)
-          Align(
-            alignment: Alignment.centerRight,
-            child: HomeTopBarActions(actions: widget.actions),
+        ),
+        Expanded(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onHorizontalDragEnd: _handleSwipe,
+            child: Center(child: _buildPill(context)),
           ),
+        ),
+        SizedBox(
+          width: AppSizes.diaryTopBarSide,
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: widget.actions,
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  double _actionsWidth(int count) {
-    if (count == 0) {
-      return 0;
-    }
-    return count * (AppSizes.homeTopBarIconButton + AppSpacing.xs) +
-        AppSpacing.xs;
-  }
-
   Widget _buildPill(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return Material(
-      color: colors.surfaceContainerHigh,
-      borderRadius: BorderRadius.circular(AppRadius.pill),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: _pillHeight),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildArrow(
-              key: DiaryDayNavigatorKeys.previous,
-              icon: Icons.chevron_left_rounded,
-              onPressed: widget.canGoBack ? widget.onPrevious : null,
-            ),
-            Flexible(child: _buildLabel(context)),
-            _buildArrow(
-              key: DiaryDayNavigatorKeys.next,
-              icon: Icons.chevron_right_rounded,
-              onPressed: widget.canGoForward ? widget.onNext : null,
-            ),
-          ],
-        ),
+    return ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: _pillHeight),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildArrow(
+            key: DiaryDayNavigatorKeys.previous,
+            icon: Icons.chevron_left_rounded,
+            onPressed: widget.canGoBack ? widget.onPrevious : null,
+          ),
+          Flexible(child: _buildLabel(context)),
+          _buildArrow(
+            key: DiaryDayNavigatorKeys.next,
+            icon: Icons.chevron_right_rounded,
+            onPressed: widget.canGoForward ? widget.onNext : null,
+          ),
+        ],
       ),
     );
   }
@@ -179,21 +168,19 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
   }
 
   Widget _buildLabel(BuildContext context) {
-    final theme = Theme.of(context);
-    final isToday = isSameCalendarDay(widget.selectedDay, widget.today);
-    final foregroundColor = isToday
-        ? MetricAccentColors.of(context).today
-        : theme.colorScheme.onSurface;
+    final textTheme = Theme.of(context).textTheme;
+    final colors = FoodLabelColors.of(context);
+    final locale = Localizations.localeOf(context).toLanguageTag();
 
     return AppInkWell(
       key: DiaryDayNavigatorKeys.label,
-      borderRadius: BorderRadius.circular(AppRadius.pill),
+      borderRadius: BorderRadius.circular(AppRadius.xs),
       onTap: widget.onOpenCalendar,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: _labelMinWidth),
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xxs,
+            horizontal: AppSpacing.xs,
             vertical: AppSpacing.xxs,
           ),
           child: FittedBox(
@@ -202,16 +189,34 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
               child: AnimatedSwitcher(
                 duration: _dayChangeDuration,
                 transitionBuilder: _buildTransition,
-                child: Text(
-                  _dayLabel(context),
+                child: Column(
                   key: ValueKey<DateTime>(dateOnly(widget.selectedDay)),
-                  maxLines: 1,
-                  softWrap: false,
-                  textAlign: TextAlign.center,
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: foregroundColor,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _relativeLabel(context).toUpperCase(),
+                      maxLines: 1,
+                      style: textTheme.labelSmall?.copyWith(
+                        fontFamily: AppFonts.mono,
+                        color: colors.muted,
+                        letterSpacing: AppFoodLabel.brandTracking,
+                      ),
+                    ),
+                    Text(
+                      DateFormat(
+                        'EEE d. MMM',
+                        locale,
+                      ).format(widget.selectedDay),
+                      maxLines: 1,
+                      softWrap: false,
+                      style: textTheme.titleLarge?.copyWith(
+                        fontFamily: AppFonts.display,
+                        fontWeight: FontWeight.w800,
+                        color: colors.ink,
+                        height: 1,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -221,7 +226,8 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
     );
   }
 
-  String _dayLabel(BuildContext context) {
+  /// Today, yesterday, or the weekday.
+  String _relativeLabel(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     if (isSameCalendarDay(widget.selectedDay, widget.today)) {
       return l10n.diaryTodayTitle;
@@ -229,7 +235,10 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
     if (isSameCalendarDay(widget.selectedDay, previousLocalDay(widget.today))) {
       return l10n.diaryYesterdayTitle;
     }
-    return DateFormat('dd.MM').format(widget.selectedDay);
+    return DateFormat(
+      'EEEE',
+      Localizations.localeOf(context).toLanguageTag(),
+    ).format(widget.selectedDay);
   }
 
   Widget _buildTransition(Widget child, Animation<double> animation) {

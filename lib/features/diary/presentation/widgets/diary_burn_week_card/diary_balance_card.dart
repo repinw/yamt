@@ -97,6 +97,7 @@ class DiaryBalanceCard extends ConsumerWidget {
     if (showError) {
       final l10n = AppLocalizations.of(context)!;
       return DiaryBalanceShell(
+        framed: false,
         child: MetricErrorRetryContent(
           message: l10n.diaryBalanceLoadFailed,
           retryLabel: l10n.caloriesRetryAction,

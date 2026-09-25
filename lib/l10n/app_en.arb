@@ -1168,6 +1168,9 @@
   "diaryDayTypeTraining": "Training day",
   "diaryDayTypeRest": "Rest day",
   "diaryDayTypePause": "Pause day",
+  "diaryDayTypeTrainingShort": "Training",
+  "diaryDayTypeRestShort": "Rest",
+  "diaryDayTypePauseShort": "Pause",
   "diaryDayTypeSheetTitle": "Choose day type",
   "diaryDayTypeSheetBody": "Adjust your calorie target to your activity plan.",
   "diaryDayTypeTrainingOffsetSubtitle": "+{kcal} kcal higher calorie target",
@@ -1196,6 +1199,8 @@
   "diaryBalanceOverGoalLabel": "Over goal",
   "diaryBalanceShowDetails": "Show all numbers",
   "diaryBalanceHideDetails": "Show fewer numbers",
+  "diaryMealsEmptyTitle": "Nothing eaten yet",
+  "diaryMealsEmptyHint": "Log food below with the barcode, inventory, search, or AI.",
   "diaryBalanceEatenAmount": "{kcal} eaten",
   "@diaryBalanceEatenAmount": {
     "placeholders": {

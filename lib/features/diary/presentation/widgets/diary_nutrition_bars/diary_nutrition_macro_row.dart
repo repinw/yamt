@@ -9,8 +9,8 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_animated_macro_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Single macronutrient row: label in the macro color, a bar of four equal
-/// segments, and the grams left, or over, as a big number.
+/// Single macronutrient row: the label, a bar of four equal segments, and
+/// the grams left, or over, as a big number in the macro color.
 ///
 /// Eating beyond the target stripes the end of the bar. With totals, the
 /// eaten and target grams sit under the number.
@@ -55,11 +55,12 @@ class DiaryNutritionMacroRow extends StatelessWidget {
     final amount = numberFormat.format(
       isOverTarget ? -remaining.round() : math.max(0, remaining.round()),
     );
-    final valueColor = isOverTarget ? error : colors.ink;
-    final mono = textTheme.labelSmall?.copyWith(fontFamily: AppFonts.mono);
-    final labelColor = Theme.of(context).brightness == Brightness.light
+    // Bright macro colors are darkened as text on light paper.
+    final textColor = Theme.of(context).brightness == Brightness.light
         ? _darkened(color, AppFoodLabel.lightLabelMaxLightness)
         : color;
+    final valueColor = isOverTarget ? error : textColor;
+    final mono = textTheme.labelSmall?.copyWith(fontFamily: AppFonts.mono);
 
     return Row(
       spacing: AppSpacing.md,
@@ -73,7 +74,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
             style: textTheme.titleMedium?.copyWith(
               fontFamily: AppFonts.display,
               fontWeight: FontWeight.w800,
-              color: labelColor,
+              color: colors.ink,
             ),
           ),
         ),

@@ -576,11 +576,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(DiaryDayNavigator), findsOneWidget);
-    expect(find.text('Today'), findsOneWidget);
+    expect(find.text('TODAY'), findsOneWidget);
     expect(
       find.descendant(
         of: find.byType(HomeShellTabTopChrome),
-        matching: find.text('Diary'),
+        matching: find.text('DIARY'),
       ),
       findsNothing,
     );
@@ -603,7 +603,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(DateFormat('dd.MM').format(oldDay)), findsOneWidget);
+    expect(
+      find.text(DateFormat('EEE d. MMM', 'en').format(oldDay)),
+      findsOneWidget,
+    );
 
     await tester.tap(find.byKey(DiaryDayNavigatorKeys.label));
     await tester.pumpAndSettle();
@@ -1420,7 +1423,7 @@ void main() {
 
     expect(find.byType(InventoryActionFab), findsOneWidget);
 
-    await tester.tap(find.text('Diary'));
+    await tester.tap(find.text('DIARY'));
     await tester.pump();
 
     expect(find.byType(InventoryActionFab), findsNothing);
@@ -1757,21 +1760,21 @@ void main() {
       matching: find.text(label),
     );
 
-    expect(navLabel('Diary'), findsOneWidget);
-    expect(navLabel('Inventory'), findsOneWidget);
-    expect(navLabel('Cookbook'), findsOneWidget);
-    expect(navLabel('Progress'), findsOneWidget);
+    expect(navLabel('DIARY'), findsOneWidget);
+    expect(navLabel('INVENTORY'), findsOneWidget);
+    expect(navLabel('COOKBOOK'), findsOneWidget);
+    expect(navLabel('PROGRESS'), findsOneWidget);
     expect(
-      tester.getCenter(navLabel('Diary')).dx,
-      lessThan(tester.getCenter(navLabel('Inventory')).dx),
+      tester.getCenter(navLabel('DIARY')).dx,
+      lessThan(tester.getCenter(navLabel('INVENTORY')).dx),
     );
     expect(
-      tester.getCenter(navLabel('Inventory')).dx,
-      lessThan(tester.getCenter(navLabel('Cookbook')).dx),
+      tester.getCenter(navLabel('INVENTORY')).dx,
+      lessThan(tester.getCenter(navLabel('COOKBOOK')).dx),
     );
     expect(
-      tester.getCenter(navLabel('Cookbook')).dx,
-      lessThan(tester.getCenter(navLabel('Progress')).dx),
+      tester.getCenter(navLabel('COOKBOOK')).dx,
+      lessThan(tester.getCenter(navLabel('PROGRESS')).dx),
     );
     expect(find.text('SETTINGS'), findsNothing);
     expect(tester.takeException(), isNull);

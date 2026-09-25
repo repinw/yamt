@@ -13,7 +13,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_day_navigator.dar
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_toggle.dart';
 
 const double _diaryTopChromeMinHeight = 56;
-const double _diaryTopChromeLabelLineHeight = 28;
+const double _diaryTopChromeLabelLineHeight = 40;
 const double _diaryTopChromeVerticalPadding = 28;
 
 /// Home-shell top chrome for the diary tab: a day navigator above the day

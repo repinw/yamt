@@ -4312,6 +4312,24 @@ abstract class AppLocalizations {
   /// **'Pause day'**
   String get diaryDayTypePause;
 
+  /// No description provided for @diaryDayTypeTrainingShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get diaryDayTypeTrainingShort;
+
+  /// No description provided for @diaryDayTypeRestShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest'**
+  String get diaryDayTypeRestShort;
+
+  /// No description provided for @diaryDayTypePauseShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get diaryDayTypePauseShort;
+
   /// No description provided for @diaryDayTypeSheetTitle.
   ///
   /// In en, this message translates to:
@@ -4437,6 +4455,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Show fewer numbers'**
   String get diaryBalanceHideDetails;
+
+  /// No description provided for @diaryMealsEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing eaten yet'**
+  String get diaryMealsEmptyTitle;
+
+  /// No description provided for @diaryMealsEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Log food below with the barcode, inventory, search, or AI.'**
+  String get diaryMealsEmptyHint;
 
   /// No description provided for @diaryBalanceEatenAmount.
   ///
