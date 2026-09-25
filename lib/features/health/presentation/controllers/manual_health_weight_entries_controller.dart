@@ -27,7 +27,7 @@ class ManualHealthWeightEntriesController
     extends _$ManualHealthWeightEntriesController {
   @override
   FutureOr<List<ManualHealthWeightEntry>> build() async {
-    return await ref.read(manualHealthWeightRepositoryProvider).readEntries();
+    return await ref.watch(manualHealthWeightRepositoryProvider).readEntries();
   }
 
   /// Save entry.

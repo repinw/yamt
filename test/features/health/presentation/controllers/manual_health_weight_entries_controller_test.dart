@@ -157,6 +157,23 @@ class _FakeManualHealthWeightRepository
   }
 }
 
+/// Stands in for the repository provider switching to a new repository when
+/// the user data key becomes ready.
+class _SelectedRepository extends Notifier<_FakeManualHealthWeightRepository> {
+  new(this._initial);
+
+  final _FakeManualHealthWeightRepository _initial;
+
+  @override
+  _FakeManualHealthWeightRepository build() => _initial;
+
+  _FakeManualHealthWeightRepository get selected => state;
+
+  set selected(_FakeManualHealthWeightRepository repository) {
+    state = repository;
+  }
+}
+
 void main() {
   ProviderContainer buildContainer({
     required _FakeManualHealthWeightRepository repository,
@@ -507,4 +524,45 @@ void main() {
       expect(repository.entries.single.weightKg, 71.2);
     },
   );
+
+  test('build reloads entries when the repository changes', () async {
+    final lockedRepository = _FakeManualHealthWeightRepository();
+    final unlockedRepository = _FakeManualHealthWeightRepository(
+      entries: [
+        ManualHealthWeightEntry(day: DateTime(2026, 3, 20), weightKg: 72.1),
+      ],
+    );
+    final selectedRepositoryProvider =
+        NotifierProvider<
+          _SelectedRepository,
+          _FakeManualHealthWeightRepository
+        >(() => _SelectedRepository(lockedRepository));
+    final container = ProviderContainer(
+      overrides: [
+        manualHealthWeightRepositoryProvider.overrideWith(
+          (ref) => ref.watch(selectedRepositoryProvider),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      manualHealthWeightEntriesControllerProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+
+    expect(
+      await container.read(manualHealthWeightEntriesControllerProvider.future),
+      isEmpty,
+    );
+
+    container.read(selectedRepositoryProvider.notifier).selected =
+        unlockedRepository;
+    final entries = await container.read(
+      manualHealthWeightEntriesControllerProvider.future,
+    );
+
+    expect(entries, hasLength(1));
+    expect(entries.single.weightKg, 72.1);
+  });
 }
