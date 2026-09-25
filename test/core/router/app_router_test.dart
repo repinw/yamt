@@ -710,7 +710,7 @@ void main() {
     expect(find.textContaining('TODAY · '), findsOneWidget);
     expect(find.text('STATISTICS'), findsNothing);
 
-    await tester.tap(_homeNavIcon(Icons.inventory_2_outlined));
+    await tester.tap(_homeNavIcon(Icons.inventory_2_rounded));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
     expect(router.state.uri.path, AppRoutes.homeInventory);
@@ -733,12 +733,12 @@ void main() {
     expect(router.state.uri.path, AppRoutes.homeCalories);
     expect(find.textContaining('TODAY · '), findsOneWidget);
 
-    await tester.tap(_homeNavIcon(Icons.insights_outlined));
+    await tester.tap(_homeNavIcon(Icons.insights_rounded));
     await _pumpRouterTransition(tester);
     expect(router.state.uri.path, AppRoutes.homeProgress);
     expect(find.byIcon(Icons.menu_rounded).hitTestable(), findsNothing);
 
-    await tester.tap(_homeNavIcon(Icons.menu_book_outlined));
+    await tester.tap(_homeNavIcon(Icons.menu_book_rounded));
     await _pumpRouterTransition(tester);
     await tester.tap(find.byIcon(Icons.menu_rounded).hitTestable());
     await _pumpRouterTransition(tester);
@@ -798,7 +798,7 @@ void main() {
     final router = container.read(appRouterProvider);
     expect(router.state.uri.path, AppRoutes.homeCalories);
 
-    await tester.tap(find.byIcon(Icons.auto_stories_outlined).hitTestable());
+    await tester.tap(find.byIcon(Icons.auto_stories_rounded).hitTestable());
     await _pumpRouterTransition(tester);
 
     expect(router.state.uri.path, AppRoutes.homeInventoryTemplates);
