@@ -15,7 +15,6 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _wrapDetailsForm({
   required ScrollController scrollController,
-  required bool showDetails,
   required VoidCallback? onScanNutritionLabel,
   String nameText = 'Banane',
   String brandText = 'Ja!',
@@ -37,8 +36,6 @@ Widget _wrapDetailsForm({
   String optionalNutritionValueText = '',
   InventoryAmountUnit optionalNutritionUnit = InventoryAmountUnit.gram,
   InventoryReceiptOptionalNutritionType? optionalNutritionType,
-  bool canCreateManualDraft = false,
-  VoidCallback? onCreateManualDraft,
 }) {
   return MaterialApp(
     localizationsDelegates: appLocalizationsDelegates,
@@ -55,15 +52,12 @@ Widget _wrapDetailsForm({
               child: ManualProductDetailsForm(
                 searchResults: const [],
                 recentItems: <InventoryItem>[_recentItem()],
-                showDetails: showDetails,
-                preview: showDetails
-                    ? const InventoryReceiptManualProductPreviewData(
-                        imageUrl: null,
-                        name: 'Banane',
-                        brand: 'Ja!',
-                        weight: '200 g',
-                      )
-                    : null,
+                preview: const InventoryReceiptManualProductPreviewData(
+                  imageUrl: null,
+                  name: 'Banane',
+                  brand: 'Ja!',
+                  weight: '200 g',
+                ),
                 nameText: nameText,
                 brandText: brandText,
                 weightAmount: weightAmount,
@@ -90,8 +84,6 @@ Widget _wrapDetailsForm({
                       InventoryReceiptOptionalNutritionType.fiber,
                     ],
                 errorText: null,
-                canCreateManualDraft: canCreateManualDraft,
-                onCreateManualDraft: onCreateManualDraft ?? () {},
                 showActionSelector: false,
                 selectedAction:
                     InventoryReceiptManualProductAction.addToInventory,
@@ -168,7 +160,6 @@ void main() {
     await tester.pumpWidget(
       _wrapDetailsForm(
         scrollController: scrollController,
-        showDetails: true,
         onScanNutritionLabel: null,
         showPolyunsaturatedFatField: true,
         showFiberField: true,
@@ -193,7 +184,6 @@ void main() {
     await tester.pumpWidget(
       _wrapDetailsForm(
         scrollController: scrollController,
-        showDetails: true,
         onScanNutritionLabel: null,
         showPolyunsaturatedFatField: true,
         showFiberField: true,
@@ -206,7 +196,6 @@ void main() {
     await tester.pumpWidget(
       _wrapDetailsForm(
         scrollController: scrollController,
-        showDetails: true,
         onScanNutritionLabel: null,
         nameText: 'Apfel',
         brandText: 'Biohof',
@@ -285,32 +274,6 @@ void main() {
     );
   });
 
-  testWidgets('scrolls when details become visible', (tester) async {
-    final scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        showDetails: false,
-        onScanNutritionLabel: null,
-      ),
-    );
-
-    expect(scrollController.offset, 0);
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        showDetails: true,
-        onScanNutritionLabel: null,
-      ),
-    );
-    await _settleScrollAnimation(tester);
-
-    expect(scrollController.offset, greaterThan(0));
-  });
-
   testWidgets('scrolls when nutrition OCR button becomes enabled', (
     tester,
   ) async {
@@ -320,7 +283,6 @@ void main() {
     await tester.pumpWidget(
       _wrapDetailsForm(
         scrollController: scrollController,
-        showDetails: true,
         onScanNutritionLabel: null,
       ),
     );
@@ -330,7 +292,6 @@ void main() {
     await tester.pumpWidget(
       _wrapDetailsForm(
         scrollController: scrollController,
-        showDetails: true,
         onScanNutritionLabel: () {},
       ),
     );
@@ -348,7 +309,6 @@ void main() {
     await tester.pumpWidget(
       _wrapDetailsForm(
         scrollController: scrollController,
-        showDetails: true,
         onScanNutritionLabel: null,
       ),
     );
@@ -358,7 +318,6 @@ void main() {
     await tester.pumpWidget(
       _wrapDetailsForm(
         scrollController: scrollController,
-        showDetails: true,
         onScanNutritionLabel: null,
         nameText: 'Banane Bio',
       ),
@@ -377,7 +336,6 @@ void main() {
     await tester.pumpWidget(
       _wrapDetailsForm(
         scrollController: scrollController,
-        showDetails: false,
         onScanNutritionLabel: null,
       ),
     );
@@ -385,7 +343,6 @@ void main() {
     await tester.pumpWidget(
       _wrapDetailsForm(
         scrollController: scrollController,
-        showDetails: true,
         onScanNutritionLabel: () {},
       ),
     );

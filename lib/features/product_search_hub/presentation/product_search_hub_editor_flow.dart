@@ -5,8 +5,6 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart'
     as manual_product_models;
@@ -84,34 +82,13 @@ openProductSearchHubCustomProductEditor({
   required InventoryItem draftItem,
   required ProductSearchHubRouteArgs args,
   String? scannedBarcode,
-  String? initialName,
   String? initialInfoMessage,
 }) {
-  final draftWithInitialValues = productSearchHubDraftItemWithInitialValues(
-    draftItem: draftItem,
-    scannedBarcode: scannedBarcode,
-    initialName: initialName,
-  );
   return _openProductSearchHubEditor(
     context: context,
-    draftItem: draftWithInitialValues,
+    draftItem: draftItem.copyWith(barcode: scannedBarcode ?? draftItem.barcode),
     args: args,
     initialInfoMessage: initialInfoMessage,
-  );
-}
-
-/// Applies optional initial editor values to a hub draft item.
-InventoryItem productSearchHubDraftItemWithInitialValues({
-  required InventoryItem draftItem,
-  required String? scannedBarcode,
-  required String? initialName,
-}) {
-  final normalizedName = initialName == null
-      ? null
-      : normalizeManualProductText(initialName);
-  return draftItem.copyWith(
-    barcode: scannedBarcode ?? draftItem.barcode,
-    name: normalizedName ?? draftItem.name,
   );
 }
 

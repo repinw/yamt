@@ -243,7 +243,7 @@ class _ProductSearchHubSearchViewState
       context: context,
       l10n: l10n,
       args: widget.args,
-      initialName: _searchController.text,
+      searchQuery: _searchController.text,
     );
   }
 

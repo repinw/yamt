@@ -126,15 +126,6 @@ Future<void> launchEditorAiSearchPage({
   );
 }
 
-/// Stops voice search and triggers starting a manual product draft.
-Future<void> startManualProductDraftWithVoiceCleanup({
-  required TextVoiceSearchController voiceSearchController,
-  required InventoryReceiptManualProductController controller,
-}) async {
-  await voiceSearchController.stopVoiceSearchIfNeeded();
-  controller.startManualProductDraft();
-}
-
 /// Shows an editor message on the nearest ScaffoldMessenger.
 void showEditorSnackBar(
   BuildContext context,

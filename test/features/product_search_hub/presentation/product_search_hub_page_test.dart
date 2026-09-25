@@ -631,6 +631,74 @@ void main() {
     expect(inventoryController.addedItems, isEmpty);
   });
 
+  testWidgets('create action opens an empty editor form', (tester) async {
+    ManualProductSearchRouteArgs? childArgs;
+
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.search,
+      ),
+      searchResults: [_searchProduct()],
+      onChildRouteArgs: (args) => childArgs = args,
+    );
+
+    await _searchFor(tester, 'Custom Skyr');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+    expect(childArgs?.item.name, isEmpty);
+    expect(childArgs?.item.barcode, isEmpty);
+    expect(childArgs?.selectedProduct, isNull);
+  });
+
+  testWidgets('empty results create button opens an empty editor form', (
+    tester,
+  ) async {
+    ManualProductSearchRouteArgs? childArgs;
+
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.search,
+      ),
+      onChildRouteArgs: (args) => childArgs = args,
+    );
+
+    await _searchFor(tester, 'Custom Skyr');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_product_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+    expect(childArgs?.item.name, isEmpty);
+  });
+
+  testWidgets('create action keeps a searched barcode', (tester) async {
+    ManualProductSearchRouteArgs? childArgs;
+
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.search,
+      ),
+      onChildRouteArgs: (args) => childArgs = args,
+    );
+
+    await _searchFor(tester, '4006381333931');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(childArgs?.item.name, isEmpty);
+    expect(childArgs?.item.barcode, '4006381333931');
+  });
+
   testWidgets('search results and recent products have no copy button', (
     tester,
   ) async {

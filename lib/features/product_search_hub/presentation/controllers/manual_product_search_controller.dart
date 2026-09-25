@@ -250,27 +250,6 @@ class InventoryReceiptManualProductController
     );
   }
 
-  /// Starts a user-created product draft from the current search query.
-  void startManualProductDraft() {
-    _searchDebounce?.cancel();
-    _activeSearchRequestId++;
-    final draftName =
-        normalizeManualProductText(state.searchQuery) ??
-        normalizeManualProductText(state.nameText) ??
-        normalizeManualProductText(_config.item.name) ??
-        '';
-    state = state.copyWith(
-      searchQuery: draftName,
-      nameText: draftName,
-      isSearching: false,
-      searchResults: const <OffProductSearchResult>[],
-      isManualDraft: true,
-      selectedProduct: null,
-      ocrDraft: null,
-      error: null,
-    );
-  }
-
   /// Apply scanned product.
   void applyScannedProduct(OffProductSearchResult product) {
     _searchDebounce?.cancel();
@@ -314,7 +293,6 @@ class InventoryReceiptManualProductController
       optionalNutritionValueText: '',
       searchResults: const <OffProductSearchResult>[],
       isSearching: false,
-      isManualDraft: true,
       error: null,
     );
   }
@@ -700,7 +678,6 @@ class InventoryReceiptManualProductController
       showFiberField: nutrition?.per100Fiber != null,
       isAddingOptionalNutrition: false,
       optionalNutritionValueText: '',
-      isManualDraft: false,
       selectedProduct: product,
       ocrDraft: null,
       searchResults: const <OffProductSearchResult>[],

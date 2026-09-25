@@ -186,7 +186,6 @@ class _InventoryReceiptManualProductEditorPageState
       onSearchResultAction: _handleSearchResultAction,
       onScanBarcode: () => unawaited(_openBarcodeScanner()),
       onAiSearchTap: () => unawaited(_openAiSearchPage()),
-      onCreateManualDraft: () => unawaited(_startManualProductDraft()),
       onScanNutritionLabel: state.canScanNutritionLabel
           ? _onScanNutritionLabel
           : null,
@@ -278,12 +277,6 @@ class _InventoryReceiptManualProductEditorPageState
     onSaved: widget.onSaved,
     onClosePage: _closePage,
   );
-
-  Future<void> _startManualProductDraft() =>
-      startManualProductDraftWithVoiceCleanup(
-        voiceSearchController: _voiceSearchController,
-        controller: _controller,
-      );
 
   void _showSnackBar(String message) =>
       showEditorSnackBar(context, message, tone: AppSnackBarTone.error);

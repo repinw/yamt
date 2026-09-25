@@ -257,10 +257,7 @@ void main() {
         find.byKey(const Key('inventory_manual_add_eat_amount_field')),
         findsNothing,
       );
-      expect(
-        find.byKey(const Key('eat_page_amount_field')),
-        findsOneWidget,
-      );
+      expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
       expect(inventoryController.addedItems, isEmpty);
     },
   );

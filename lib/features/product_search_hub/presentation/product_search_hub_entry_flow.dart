@@ -42,14 +42,16 @@ Future<ProductSearchHubEditedResult?> openProductSearchHubAiEntry({
   return _editedResult(result);
 }
 
-/// Opens custom product entry flow.
+/// Opens custom product entry flow with an empty form.
+///
+/// A barcode in [searchQuery] is carried into the form. Other text is not.
 Future<ProductSearchHubEditedResult?> openProductSearchHubCustomEntry({
   required BuildContext context,
   required AppLocalizations l10n,
   required ProductSearchHubRouteArgs args,
-  String initialName = '',
+  String searchQuery = '',
 }) async {
-  final normalized = normalizeBarcode(initialName);
+  final normalized = normalizeBarcode(searchQuery);
   final isBarcode = normalized.isNotEmpty && isSupportedBarcode(normalized);
   final result = await openProductSearchHubCustomProductEditor(
     context: context,
@@ -59,7 +61,6 @@ Future<ProductSearchHubEditedResult?> openProductSearchHubCustomEntry({
     ),
     args: args,
     scannedBarcode: isBarcode ? normalized : null,
-    initialName: isBarcode ? '' : initialName,
   );
   return _editedResult(result);
 }

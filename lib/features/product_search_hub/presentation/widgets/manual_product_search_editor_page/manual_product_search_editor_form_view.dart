@@ -40,7 +40,6 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
     required this.onSearchResultAction,
     required this.onScanBarcode,
     required this.onAiSearchTap,
-    required this.onCreateManualDraft,
     required this.onScanNutritionLabel,
     required this.onActionChanged,
     required this.onCancel,
@@ -100,9 +99,6 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
   /// AI search callback.
   final VoidCallback onAiSearchTap;
 
-  /// Manual draft creation callback.
-  final VoidCallback onCreateManualDraft;
-
   /// Nutrition label scan callback.
   final VoidCallback? onScanNutritionLabel;
 
@@ -130,7 +126,6 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
         isRunningNutritionOcr: state.isRunningNutritionOcr,
         nutritionOcrImageBytes: state.nutritionOcrImageBytes,
         autofocusSearch: autofocusSearch,
-        showDetails: state.showDetails,
         searchResults: state.searchResults,
         recentItems: const <InventoryItem>[],
         nameText: state.nameText,
@@ -156,8 +151,6 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
         availableOptionalNutritionTypes: state.availableOptionalNutritionTypes,
         errorText: resolveManualProductErrorText(l10n, state.error),
         onAiSearchTap: onAiSearchTap,
-        canCreateManualDraft: state.canCreateManualDraft,
-        onCreateManualDraft: onCreateManualDraft,
         showActionSelector:
             showEatImmediatelyOption &&
             showActionSelector &&

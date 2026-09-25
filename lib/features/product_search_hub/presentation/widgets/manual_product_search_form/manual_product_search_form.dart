@@ -109,7 +109,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.isSearching,
     required this.canSave,
     required this.isRunningNutritionOcr,
-    required this.showDetails,
     required this.searchResults,
     required this.recentItems,
     required this.nameText,
@@ -136,8 +135,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.preview,
     required this.errorText,
     required this.onAiSearchTap,
-    required this.canCreateManualDraft,
-    required this.onCreateManualDraft,
     required this.showActionSelector,
     required this.selectedAction,
     required this.onSearchResultSelected,
@@ -197,9 +194,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   /// The autofocus search.
   final bool autofocusSearch;
-
-  /// The show details.
-  final bool showDetails;
 
   /// The search results.
   final List<OffProductSearchResult> searchResults;
@@ -280,12 +274,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   /// Open AI search page.
   final VoidCallback onAiSearchTap;
-
-  /// Whether user-created draft can be started.
-  final bool canCreateManualDraft;
-
-  /// Starts user-created draft.
-  final VoidCallback onCreateManualDraft;
 
   /// Whether action selector visible.
   final bool showActionSelector;
@@ -415,7 +403,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
       body: ManualProductDetailsForm(
         searchResults: searchResults,
         recentItems: recentItems,
-        showDetails: showDetails,
         preview: preview,
         nameText: nameText,
         brandText: brandText,
@@ -439,8 +426,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
         optionalNutritionType: optionalNutritionType,
         availableOptionalNutritionTypes: availableOptionalNutritionTypes,
         errorText: errorText,
-        canCreateManualDraft: canCreateManualDraft,
-        onCreateManualDraft: onCreateManualDraft,
         showActionSelector: showActionSelector,
         selectedAction: selectedAction,
         canSave: canSave,
