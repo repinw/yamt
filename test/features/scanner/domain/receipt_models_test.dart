@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
@@ -14,7 +15,10 @@ void main() {
       imageUrl: 'https://example.com/frischkaese.jpg',
       packageSize: '150g',
       confidence: 0.95,
-      nutritionPer100g: {'calories': 240, 'fat': 22},
+      nutrition: GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Fat: 22,
+      ),
     );
 
     const productMilch = ProductCandidate(
@@ -26,19 +30,23 @@ void main() {
       imageUrl: 'https://example.com/milch.jpg',
       packageSize: '1l',
       source: CandidateSource.barcode,
-      nutritionPer100g: {'calories': 64, 'fat': 3.8},
+      nutrition: GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Fat: 3.8,
+      ),
     );
 
     test('Nährwerte folgen der deutschen Reihenfolge Fett, KH, Protein', () {
       const product = ProductCandidate(
         id: 'nutrition-order',
         name: 'Testprodukt',
-        nutritionPer100g: {
-          'kcal': 46,
-          'fat': 1.4,
-          'carbs': 6.8,
-          'protein': 0.8,
-        },
+        nutrition: GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+          per100Kcal: 46,
+          per100Fat: 1.4,
+          per100Carbs: 6.8,
+          per100Protein: 0.8,
+        ),
       );
 
       expect(product.formattedMacros, '46 kcal · F: 1.4g · KH: 6.8g · P: 0.8g');

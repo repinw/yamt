@@ -82,11 +82,15 @@ void main() {
       createdAt: DateTime(2026),
       updatedAt: DateTime(2026),
       nutrition: const GlobalFoodNutrition(
-        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
         per100Kcal: 64,
         per100Protein: 3.3,
         per100Carbs: 4.8,
         per100Fat: 3.8,
+        per100Sugar: 4.8,
+        per100SaturatedFat: 2.4,
+        per100Salt: 0.13,
+        per100Fiber: 0.1,
       ),
     );
 
@@ -128,8 +132,17 @@ void main() {
       expect(candidate.confidence, 0.95);
       expect(candidate.source, CandidateSource.aliasExact);
       expect(candidate.requiresPersistence, isTrue);
-      expect(candidate.nutritionPer100g?['kcal'], 64);
-      expect(candidate.nutritionPer100g?['protein'], 3.3);
+      expect(candidate.nutrition, testGlobalItem.nutrition);
+      expect(
+        candidate.nutrition?.qualityStatus,
+        GlobalFoodNutritionQualityStatus.unverified,
+      );
+      expect(candidate.kcal, 64);
+      expect(candidate.protein, 3.3);
+      expect(candidate.nutrition?.per100Sugar, 4.8);
+      expect(candidate.nutrition?.per100SaturatedFat, 2.4);
+      expect(candidate.nutrition?.per100Salt, 0.13);
+      expect(candidate.nutrition?.per100Fiber, 0.1);
       expect(matcher.recordedItems.first.storeName, 'REWE');
     });
 
@@ -177,12 +190,24 @@ void main() {
         final emptyResult = await resolver.resolveByBarcode('');
         expect(emptyResult, isNull);
 
+        const offNutrition = GlobalFoodNutrition(
+          qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+          per100Kcal: 249,
+          per100Protein: 8.9,
+          per100Carbs: 48.4,
+          per100Fat: 1.5,
+          per100Sugar: 3.1,
+          per100SaturatedFat: 0.4,
+          per100Salt: 1.4,
+          per100Fiber: 6.5,
+        );
         searchRepo.barcodeResults = [
           const OffProductSearchResult(
             code: '4008300001018',
             name: 'Bauernbrot 500g',
             score: 1,
             brand: 'Harry',
+            nutrition: offNutrition,
           ),
         ];
 
@@ -192,6 +217,15 @@ void main() {
         expect(found.brand, 'Harry');
         expect(found.source, CandidateSource.barcode);
         expect(found.requiresPersistence, isTrue);
+        expect(found.nutrition, offNutrition);
+        expect(
+          found.nutrition?.qualityStatus,
+          GlobalFoodNutritionQualityStatus.unverified,
+        );
+        expect(found.nutrition?.per100Sugar, 3.1);
+        expect(found.nutrition?.per100SaturatedFat, 0.4);
+        expect(found.nutrition?.per100Salt, 1.4);
+        expect(found.nutrition?.per100Fiber, 6.5);
       },
     );
 

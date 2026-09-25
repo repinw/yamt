@@ -27,7 +27,7 @@ mixin _$ProductCandidate {
  CandidateSource get source;/// Whether this candidate must be added to the global food catalog before
 /// inventory items and receipt aliases may reference it.
  bool get requiresPersistence;/// Nährwerte pro 100g/ml.
- Map<String, num>? get nutritionPer100g;
+ GlobalFoodNutrition? get nutrition;
 /// Create a copy of ProductCandidate
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -39,20 +39,20 @@ $ProductCandidateCopyWith<ProductCandidate> get copyWith => _$ProductCandidateCo
 @override
 bool operator ==(Object other) {
   final _this = this as ProductCandidate;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductCandidate&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.brand, _this.brand) || other.brand == _this.brand)&&(identical(other.category, _this.category) || other.category == _this.category)&&(identical(other.barcode, _this.barcode) || other.barcode == _this.barcode)&&(identical(other.imageUrl, _this.imageUrl) || other.imageUrl == _this.imageUrl)&&(identical(other.packageSize, _this.packageSize) || other.packageSize == _this.packageSize)&&(identical(other.confidence, _this.confidence) || other.confidence == _this.confidence)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.requiresPersistence, _this.requiresPersistence) || other.requiresPersistence == _this.requiresPersistence)&&const DeepCollectionEquality().equals(other.nutritionPer100g, _this.nutritionPer100g));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductCandidate&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.brand, _this.brand) || other.brand == _this.brand)&&(identical(other.category, _this.category) || other.category == _this.category)&&(identical(other.barcode, _this.barcode) || other.barcode == _this.barcode)&&(identical(other.imageUrl, _this.imageUrl) || other.imageUrl == _this.imageUrl)&&(identical(other.packageSize, _this.packageSize) || other.packageSize == _this.packageSize)&&(identical(other.confidence, _this.confidence) || other.confidence == _this.confidence)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.requiresPersistence, _this.requiresPersistence) || other.requiresPersistence == _this.requiresPersistence)&&(identical(other.nutrition, _this.nutrition) || other.nutrition == _this.nutrition));
 }
 
 
 @override
 int get hashCode {
   final _this = this as ProductCandidate;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.brand,_this.category,_this.barcode,_this.imageUrl,_this.packageSize,_this.confidence,_this.source,_this.requiresPersistence,const DeepCollectionEquality().hash(_this.nutritionPer100g));
+  return Object.hash(runtimeType,_this.id,_this.name,_this.brand,_this.category,_this.barcode,_this.imageUrl,_this.packageSize,_this.confidence,_this.source,_this.requiresPersistence,_this.nutrition);
 }
 
 @override
 String toString() {
   final _this = this as ProductCandidate;
-  return 'ProductCandidate(id: ${_this.id}, name: ${_this.name}, brand: ${_this.brand}, category: ${_this.category}, barcode: ${_this.barcode}, imageUrl: ${_this.imageUrl}, packageSize: ${_this.packageSize}, confidence: ${_this.confidence}, source: ${_this.source}, requiresPersistence: ${_this.requiresPersistence}, nutritionPer100g: ${_this.nutritionPer100g})';
+  return 'ProductCandidate(id: ${_this.id}, name: ${_this.name}, brand: ${_this.brand}, category: ${_this.category}, barcode: ${_this.barcode}, imageUrl: ${_this.imageUrl}, packageSize: ${_this.packageSize}, confidence: ${_this.confidence}, source: ${_this.source}, requiresPersistence: ${_this.requiresPersistence}, nutrition: ${_this.nutrition})';
 }
 
 
@@ -63,11 +63,11 @@ abstract mixin class $ProductCandidateCopyWith<$Res>  {
   factory $ProductCandidateCopyWith(ProductCandidate value, $Res Function(ProductCandidate) _then) = _$ProductCandidateCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? brand, String? category, String? barcode, String? imageUrl, String? packageSize, double confidence, CandidateSource source, bool requiresPersistence, Map<String, num>? nutritionPer100g
+ String id, String name, String? brand, String? category, String? barcode, String? imageUrl, String? packageSize, double confidence, CandidateSource source, bool requiresPersistence, GlobalFoodNutrition? nutrition
 });
 
 
-
+$GlobalFoodNutritionCopyWith<$Res>? get nutrition;
 
 }
 /// @nodoc
@@ -80,7 +80,7 @@ class _$ProductCandidateCopyWithImpl<$Res>
 
 /// Create a copy of ProductCandidate
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? brand = freezed,Object? category = freezed,Object? barcode = freezed,Object? imageUrl = freezed,Object? packageSize = freezed,Object? confidence = null,Object? source = null,Object? requiresPersistence = null,Object? nutritionPer100g = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? brand = freezed,Object? category = freezed,Object? barcode = freezed,Object? imageUrl = freezed,Object? packageSize = freezed,Object? confidence = null,Object? source = null,Object? requiresPersistence = null,Object? nutrition = freezed,}) {
   return _then(ProductCandidate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -92,11 +92,23 @@ as String?,packageSize: freezed == packageSize ? _self.packageSize : packageSize
 as String?,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
 as double,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as CandidateSource,requiresPersistence: null == requiresPersistence ? _self.requiresPersistence : requiresPersistence // ignore: cast_nullable_to_non_nullable
-as bool,nutritionPer100g: freezed == nutritionPer100g ? _self.nutritionPer100g : nutritionPer100g // ignore: cast_nullable_to_non_nullable
-as Map<String, num>?,
+as bool,nutrition: freezed == nutrition ? _self.nutrition : nutrition // ignore: cast_nullable_to_non_nullable
+as GlobalFoodNutrition?,
   ));
 }
+/// Create a copy of ProductCandidate
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$GlobalFoodNutritionCopyWith<$Res>? get nutrition {
+    if (_self.nutrition == null) {
+    return null;
+  }
 
+  return $GlobalFoodNutritionCopyWith<$Res>(_self.nutrition!, (value) {
+    return _then(_self.copyWith(nutrition: value));
+  });
+}
 }
 
 
@@ -178,10 +190,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  Map<String, num>? nutritionPer100g)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  GlobalFoodNutrition? nutrition)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductCandidate() when $default != null:
-return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutritionPer100g);case _:
+return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutrition);case _:
   return orElse();
 
 }
@@ -199,10 +211,10 @@ return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  Map<String, num>? nutritionPer100g)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  GlobalFoodNutrition? nutrition)  $default,) {final _that = this;
 switch (_that) {
 case _ProductCandidate():
-return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutritionPer100g);case _:
+return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutrition);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -219,10 +231,10 @@ return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  Map<String, num>? nutritionPer100g)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  GlobalFoodNutrition? nutrition)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductCandidate() when $default != null:
-return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutritionPer100g);case _:
+return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutrition);case _:
   return null;
 
 }
@@ -234,7 +246,7 @@ return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_th
 
 
 class _ProductCandidate extends ProductCandidate {
-  const _ProductCandidate({required this.id, required this.name, this.brand, this.category, this.barcode, this.imageUrl, this.packageSize, this.confidence = 1.0, this.source = CandidateSource.catalogFuzzy, this.requiresPersistence = false,  Map<String, num>? nutritionPer100g}): _nutritionPer100g = nutritionPer100g,super._();
+  const _ProductCandidate({required this.id, required this.name, this.brand, this.category, this.barcode, this.imageUrl, this.packageSize, this.confidence = 1.0, this.source = CandidateSource.catalogFuzzy, this.requiresPersistence = false, this.nutrition}): super._();
   
 
 /// Eindeutige ID im Katalog (z. B. GlobalFoodItem-ID oder Barcode).
@@ -259,16 +271,7 @@ class _ProductCandidate extends ProductCandidate {
 /// inventory items and receipt aliases may reference it.
 @override@JsonKey() final  bool requiresPersistence;
 /// Nährwerte pro 100g/ml.
- final  Map<String, num>? _nutritionPer100g;
-/// Nährwerte pro 100g/ml.
-@override Map<String, num>? get nutritionPer100g {
-  final value = _nutritionPer100g;
-  if (value == null) return null;
-  if (_nutritionPer100g is EqualUnmodifiableMapView) return _nutritionPer100g;
-  // ignore: implicit_dynamic_type
-  return EqualUnmodifiableMapView(value);
-}
-
+@override final  GlobalFoodNutrition? nutrition;
 
 /// Create a copy of ProductCandidate
 /// with the given fields replaced by the non-null parameter values.
@@ -280,18 +283,18 @@ _$ProductCandidateCopyWith<_ProductCandidate> get copyWith => __$ProductCandidat
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductCandidate&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.category, category) || other.category == category)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.packageSize, packageSize) || other.packageSize == packageSize)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.source, source) || other.source == source)&&(identical(other.requiresPersistence, requiresPersistence) || other.requiresPersistence == requiresPersistence)&&const DeepCollectionEquality().equals(other.nutritionPer100g, _nutritionPer100g));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductCandidate&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.category, category) || other.category == category)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.packageSize, packageSize) || other.packageSize == packageSize)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.source, source) || other.source == source)&&(identical(other.requiresPersistence, requiresPersistence) || other.requiresPersistence == requiresPersistence)&&(identical(other.nutrition, nutrition) || other.nutrition == nutrition));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,brand,category,barcode,imageUrl,packageSize,confidence,source,requiresPersistence,const DeepCollectionEquality().hash(_nutritionPer100g));
+    return Object.hash(runtimeType,id,name,brand,category,barcode,imageUrl,packageSize,confidence,source,requiresPersistence,nutrition);
 }
 
 @override
 String toString() {
-    return 'ProductCandidate(id: $id, name: $name, brand: $brand, category: $category, barcode: $barcode, imageUrl: $imageUrl, packageSize: $packageSize, confidence: $confidence, source: $source, requiresPersistence: $requiresPersistence, nutritionPer100g: $nutritionPer100g)';
+    return 'ProductCandidate(id: $id, name: $name, brand: $brand, category: $category, barcode: $barcode, imageUrl: $imageUrl, packageSize: $packageSize, confidence: $confidence, source: $source, requiresPersistence: $requiresPersistence, nutrition: $nutrition)';
 }
 
 
@@ -302,11 +305,11 @@ abstract mixin class _$ProductCandidateCopyWith<$Res> implements $ProductCandida
   factory _$ProductCandidateCopyWith(_ProductCandidate value, $Res Function(_ProductCandidate) _then) = __$ProductCandidateCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? brand, String? category, String? barcode, String? imageUrl, String? packageSize, double confidence, CandidateSource source, bool requiresPersistence, Map<String, num>? nutritionPer100g
+ String id, String name, String? brand, String? category, String? barcode, String? imageUrl, String? packageSize, double confidence, CandidateSource source, bool requiresPersistence, GlobalFoodNutrition? nutrition
 });
 
 
-
+@override $GlobalFoodNutritionCopyWith<$Res>? get nutrition;
 
 }
 /// @nodoc
@@ -319,7 +322,7 @@ class __$ProductCandidateCopyWithImpl<$Res>
 
 /// Create a copy of ProductCandidate
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? brand = freezed,Object? category = freezed,Object? barcode = freezed,Object? imageUrl = freezed,Object? packageSize = freezed,Object? confidence = null,Object? source = null,Object? requiresPersistence = null,Object? nutritionPer100g = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? brand = freezed,Object? category = freezed,Object? barcode = freezed,Object? imageUrl = freezed,Object? packageSize = freezed,Object? confidence = null,Object? source = null,Object? requiresPersistence = null,Object? nutrition = freezed,}) {
   return _then(_ProductCandidate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -331,12 +334,24 @@ as String?,packageSize: freezed == packageSize ? _self.packageSize : packageSize
 as String?,confidence: null == confidence ? _self.confidence : confidence // ignore: cast_nullable_to_non_nullable
 as double,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as CandidateSource,requiresPersistence: null == requiresPersistence ? _self.requiresPersistence : requiresPersistence // ignore: cast_nullable_to_non_nullable
-as bool,nutritionPer100g: freezed == nutritionPer100g ? _self._nutritionPer100g : nutritionPer100g // ignore: cast_nullable_to_non_nullable
-as Map<String, num>?,
+as bool,nutrition: freezed == nutrition ? _self.nutrition : nutrition // ignore: cast_nullable_to_non_nullable
+as GlobalFoodNutrition?,
   ));
 }
 
+/// Create a copy of ProductCandidate
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$GlobalFoodNutritionCopyWith<$Res>? get nutrition {
+    if (_self.nutrition == null) {
+    return null;
+  }
 
+  return $GlobalFoodNutritionCopyWith<$Res>(_self.nutrition!, (value) {
+    return _then(_self.copyWith(nutrition: value));
+  });
+}
 }
 
 // dart format on

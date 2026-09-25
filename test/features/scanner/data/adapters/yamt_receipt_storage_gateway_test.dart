@@ -3,6 +3,7 @@ import 'package:yamt/features/inventory/data/global_food_item_repository_contrac
 import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/scanner/data/adapters/yamt_receipt_storage_gateway.dart';
@@ -94,6 +95,18 @@ void main() {
     late _FakeAliasRepository aliasRepo;
     late YamtReceiptStorageGateway gateway;
 
+    const testMilchNutrition = GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+      per100Kcal: 64,
+      per100Protein: 3.3,
+      per100Carbs: 4.8,
+      per100Fat: 3.8,
+      per100Sugar: 4.8,
+      per100SaturatedFat: 2.4,
+      per100Salt: 0.13,
+      per100Fiber: 0.1,
+    );
+
     const testMilchCandidate = ProductCandidate(
       id: 'g_milch_1',
       name: 'Ja! Frische Vollmilch 3.8% 1L',
@@ -102,7 +115,7 @@ void main() {
       imageUrl: 'https://example.com/milch.jpg',
       packageSize: '1L',
       requiresPersistence: true,
-      nutritionPer100g: {'kcal': 64, 'protein': 3.3},
+      nutrition: testMilchNutrition,
     );
 
     setUp(() {
@@ -165,8 +178,19 @@ void main() {
       expect(savedItem.unitPrice, 1.19);
       expect(savedItem.barcode, '4311501234567');
       expect(savedItem.imageUrl, 'https://example.com/milch.jpg');
+      expect(savedItem.nutrition, testMilchNutrition);
+      expect(
+        savedItem.nutrition?.qualityStatus,
+        GlobalFoodNutritionQualityStatus.unverified,
+      );
       expect(savedItem.nutrition?.per100Kcal, 64);
       expect(savedItem.nutrition?.per100Protein, 3.3);
+      expect(savedItem.nutrition?.per100Carbs, 4.8);
+      expect(savedItem.nutrition?.per100Fat, 3.8);
+      expect(savedItem.nutrition?.per100Sugar, 4.8);
+      expect(savedItem.nutrition?.per100SaturatedFat, 2.4);
+      expect(savedItem.nutrition?.per100Salt, 0.13);
+      expect(savedItem.nutrition?.per100Fiber, 0.1);
 
       expect(globalFoodRepo.appendedItems, hasLength(1));
       final globalItem = globalFoodRepo.appendedItems.single;
@@ -174,6 +198,15 @@ void main() {
       expect(globalItem.name, 'Ja! Frische Vollmilch 3.8% 1L');
       expect(globalItem.packageWeight, '1L');
       expect(globalItem.barcode, '4311501234567');
+      expect(globalItem.nutrition, testMilchNutrition);
+      expect(
+        globalItem.nutrition?.qualityStatus,
+        GlobalFoodNutritionQualityStatus.unverified,
+      );
+      expect(globalItem.nutrition?.per100Sugar, 4.8);
+      expect(globalItem.nutrition?.per100SaturatedFat, 2.4);
+      expect(globalItem.nutrition?.per100Salt, 0.13);
+      expect(globalItem.nutrition?.per100Fiber, 0.1);
 
       expect(aliasRepo.appendedAliases.length, 1);
       final alias = aliasRepo.appendedAliases.first;
@@ -181,6 +214,42 @@ void main() {
       expect(alias.receiptName, 'JA! VOLLM. 1L');
       expect(alias.globalFoodItemId, 'g_milch_1');
     });
+
+    test(
+      'saveReceipt keeps full nutrition and quality status on inventory '
+      'and global item',
+      () async {
+        const receipt = ScannedReceipt(
+          id: 'rec_full_nutrition',
+          storeName: 'REWE',
+        );
+        const items = [
+          ReceiptLineItem(
+            id: 'line_full_nutrition',
+            rawName: 'JA! VOLLM. 1L',
+            totalPrice: 1.19,
+            status: ReceiptItemStatus.confirmed,
+            matchedProduct: testMilchCandidate,
+          ),
+        ];
+
+        await gateway.saveReceipt(receipt: receipt, items: items);
+
+        final savedItem = invRepo.appendedItems.single;
+        expect(savedItem.nutrition, testMilchNutrition);
+        expect(
+          savedItem.nutrition?.qualityStatus,
+          GlobalFoodNutritionQualityStatus.unverified,
+        );
+
+        final globalItem = globalFoodRepo.appendedItems.single;
+        expect(globalItem.nutrition, testMilchNutrition);
+        expect(
+          globalItem.nutrition?.qualityStatus,
+          GlobalFoodNutritionQualityStatus.unverified,
+        );
+      },
+    );
 
     test('saveReceipt does not recreate an existing catalog product', () async {
       const receipt = ScannedReceipt(id: 'rec_existing', storeName: 'REWE');

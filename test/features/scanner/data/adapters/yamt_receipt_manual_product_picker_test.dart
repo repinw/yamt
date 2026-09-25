@@ -74,7 +74,7 @@ void main() {
       expect(candidate.id, 'inv-item-789');
       expect(candidate.name, 'Apfel lose');
       expect(candidate.hasNutrition, isFalse);
-      expect(candidate.nutritionPer100g, isNull);
+      expect(candidate.nutrition, isNull);
     });
   });
 }

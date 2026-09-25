@@ -3,7 +3,6 @@ import 'package:yamt/features/inventory/data/global_food_item_repository_contrac
 import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
-import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_unit_aliases.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -59,7 +58,7 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
     return items
         .map((item) {
           final product = item.matchedProduct;
-          final nutrition = _buildNutrition(product?.nutritionPer100g);
+          final nutrition = product?.nutrition;
           final amount = _resolveInventoryAmount(item, product?.packageSize);
           final unitPrice =
               item.unitPrice ??
@@ -151,7 +150,7 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
       barcode: product.barcode,
       imageUrl: product.imageUrl,
       packageWeight: _firstNonEmpty(item.packageWeight, product.packageSize),
-      nutrition: _buildNutrition(product.nutritionPer100g),
+      nutrition: product.nutrition,
     );
   }
 
@@ -201,23 +200,6 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
     if (alias != null) {
       await _globalFoodReceiptAliasRepository.appendAll([alias]);
     }
-  }
-
-  GlobalFoodNutrition? _buildNutrition(Map<String, dynamic>? nutritionMap) {
-    if (nutritionMap == null || nutritionMap.isEmpty) return null;
-    return GlobalFoodNutrition(
-      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-      per100Kcal: _asDouble(nutritionMap['kcal']),
-      per100Protein: _asDouble(nutritionMap['protein']),
-      per100Carbs: _asDouble(nutritionMap['carbs']),
-      per100Fat: _asDouble(nutritionMap['fat']),
-    );
-  }
-
-  double? _asDouble(dynamic value) {
-    if (value == null) return null;
-    if (value is num) return value.toDouble();
-    return double.tryParse(value.toString());
   }
 
   ({int quantity, String? weight}) _resolveInventoryAmount(

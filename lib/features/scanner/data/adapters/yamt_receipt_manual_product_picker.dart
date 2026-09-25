@@ -6,8 +6,6 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
-import 'package:yamt/features/scanner/data/adapters/'
-    'yamt_nutrition_converter.dart';
 import 'package:yamt/features/scanner/domain/contracts/'
     'receipt_manual_product_picker.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
@@ -81,7 +79,7 @@ class YamtReceiptManualProductPicker implements ReceiptManualProductPicker {
       imageUrl: item.imageUrl,
       packageSize: item.weight,
       source: CandidateSource.manualSearch,
-      nutritionPer100g: YamtNutritionConverter.toNutritionMap(item.nutrition),
+      nutrition: item.nutrition,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -158,7 +159,12 @@ void main() {
           id: 'chosen-custom-prod',
           name: 'Custom Hafermilch',
           brand: 'Eigenmarke',
-          nutritionPer100g: {'kcal': 50, 'protein': 1.5, 'fat': 2.0},
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 50,
+            per100Protein: 1.5,
+            per100Fat: 2,
+          ),
         );
 
         await pumpTestWidget(tester);

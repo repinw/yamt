@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/presentation/widgets/receipt_review_item_card.dart';
@@ -137,12 +138,13 @@ void main() {
           id: 'p5',
           name: 'Haferdrink',
           packageSize: '1 l',
-          nutritionPer100g: {
-            'kcal': 46,
-            'protein': 0.8,
-            'carbs': 6.8,
-            'fat': 1.4,
-          },
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 46,
+            per100Protein: 0.8,
+            per100Carbs: 6.8,
+            per100Fat: 1.4,
+          ),
         ),
       );
 

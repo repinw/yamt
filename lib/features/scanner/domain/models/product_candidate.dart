@@ -1,4 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 
 part 'product_candidate.freezed.dart';
 
@@ -59,24 +60,22 @@ abstract class ProductCandidate with _$ProductCandidate {
     @Default(false) bool requiresPersistence,
 
     /// Nährwerte pro 100g/ml.
-    Map<String, num>? nutritionPer100g,
+    GlobalFoodNutrition? nutrition,
   }) = _ProductCandidate;
 
   const new _();
 
   /// Energy in kcal per 100g/ml if available.
-  double? get kcal =>
-      (nutritionPer100g?['kcal'] ?? nutritionPer100g?['energy_kcal'])
-          ?.toDouble();
+  double? get kcal => nutrition?.per100Kcal;
 
   /// Protein in grams per 100g/ml if available.
-  double? get protein => nutritionPer100g?['protein']?.toDouble();
+  double? get protein => nutrition?.per100Protein;
 
   /// Carbohydrates in grams per 100g/ml if available.
-  double? get carbs => nutritionPer100g?['carbs']?.toDouble();
+  double? get carbs => nutrition?.per100Carbs;
 
   /// Fat in grams per 100g/ml if available.
-  double? get fat => nutritionPer100g?['fat']?.toDouble();
+  double? get fat => nutrition?.per100Fat;
 
   /// Whether any macro nutrition value is present.
   bool get hasNutrition =>

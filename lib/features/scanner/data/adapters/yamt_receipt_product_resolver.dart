@@ -2,8 +2,6 @@ import 'package:yamt/features/inventory/application/global_food_item_matcher.dar
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/scanner/data/adapters/'
-    'yamt_nutrition_converter.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_product_resolver.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -150,7 +148,7 @@ class YamtReceiptProductResolver implements ReceiptProductResolver {
       confidence: candidate.score,
       source: _mapReason(candidate.reason),
       requiresPersistence: candidate.requiresPersistence,
-      nutritionPer100g: YamtNutritionConverter.toNutritionMap(item.nutrition),
+      nutrition: item.nutrition,
     );
   }
 
@@ -168,7 +166,7 @@ class YamtReceiptProductResolver implements ReceiptProductResolver {
       confidence: result.score,
       source: source,
       requiresPersistence: true,
-      nutritionPer100g: YamtNutritionConverter.toNutritionMap(result.nutrition),
+      nutrition: result.nutrition,
     );
   }
 
