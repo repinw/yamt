@@ -43,5 +43,5 @@ abstract interface class ProductSearchGateway {
   });
 
   /// Reads recently selected manual products.
-  Future<List<InventoryItem>> readRecentItems({int limit = 6});
+  Future<List<InventoryItem>> readRecentItems();
 }

@@ -9,25 +9,36 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 void main() {
-  test('sorts newest manual items first and limits results to six', () {
-    final items = List<InventoryItem>.generate(8, (index) {
+  test('sorts newest manual items first and limits results to twenty', () {
+    final items = List<InventoryItem>.generate(25, (index) {
       return _item(
         id: 'item-$index',
         name: 'Item $index',
-        entryDate: DateTime.utc(2026, 1, index + 1),
+        entryDate: DateTime.utc(2026).add(Duration(days: index)),
       );
     });
 
     final recent = buildManualProductRecentItems(items);
 
-    expect(recent.map((item) => item.id), <String>[
-      'item-7',
-      'item-6',
-      'item-5',
-      'item-4',
-      'item-3',
-      'item-2',
-    ]);
+    expect(
+      recent.map((item) => item.id),
+      List<String>.generate(20, (index) => 'item-${24 - index}'),
+    );
+  });
+
+  test('keeps twenty products when each product was added three times', () {
+    final items = List<InventoryItem>.generate(60, (index) {
+      return _item(
+        id: 'entry-$index',
+        name: 'Product ${index ~/ 3}',
+        entryDate: DateTime.utc(2026).add(Duration(hours: index)),
+      );
+    });
+
+    final recent = buildManualProductRecentItems(items);
+
+    expect(recent, hasLength(20));
+    expect(recent.map((item) => item.name).toSet(), hasLength(20));
   });
 
   test('dedupes by global id, barcode, and name brand weight key', () {
@@ -116,7 +127,7 @@ void main() {
     final recent = await service.readRecentItems();
 
     expect(recent.map((item) => item.id), <String>['new', 'old']);
-    expect(repository.readRecentManualLimit, 6);
+    expect(repository.readRecentManualLimit, 80);
     expect(repository.didCallReadAll, isFalse);
   });
 
@@ -142,17 +153,13 @@ void main() {
       final recent = await service.readRecentItems();
 
       expect(repository.totalItems, 10000);
-      expect(repository.readRecentManualLimit, 6);
-      expect(repository.readRecentManualReturnedCount, 6);
+      expect(repository.readRecentManualLimit, 80);
+      expect(repository.readRecentManualReturnedCount, 80);
       expect(repository.didCallReadAll, isFalse);
-      expect(recent.map((item) => item.id), <String>[
-        'item-9999',
-        'item-9998',
-        'item-9997',
-        'item-9996',
-        'item-9995',
-        'item-9994',
-      ]);
+      expect(
+        recent.map((item) => item.id),
+        List<String>.generate(20, (index) => 'item-${9999 - index}'),
+      );
     },
   );
 

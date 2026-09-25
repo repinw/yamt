@@ -1,9 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'product_search_hub_recently_selected_tab/'
+    'product_search_hub_recently_selected_tab.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_actions/product_search_hub_search_actions.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_bar/product_search_hub_search_bar.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 const _productSearchHubSearchActionsAppearDuration = Duration(milliseconds: 90);
 
@@ -99,6 +104,47 @@ class ProductSearchHubSearchBlank extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       onTap: onTap,
       child: const SizedBox.expand(),
+    );
+  }
+}
+
+/// Recently selected products shown while the search query is empty.
+class ProductSearchHubSearchRecentSection extends StatelessWidget {
+  /// Creates the recent products section.
+  const new({
+    required this.onProductPressed,
+    required this.onProductCopied,
+    super.key,
+  });
+
+  /// Called when a recent product is selected.
+  final ValueChanged<InventoryItem> onProductPressed;
+
+  /// Called when a recent product is copied as template.
+  final ValueChanged<InventoryItem> onProductCopied;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: Text(
+            l10n.productSearchHubRecentlySelectedTab,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ),
+        Expanded(
+          child: ProductSearchHubRecentlySelectedTab(
+            selectedProductKeys: const <String>{},
+            onProductPressed: onProductPressed,
+            onProductCopied: onProductCopied,
+          ),
+        ),
+      ],
     );
   }
 }

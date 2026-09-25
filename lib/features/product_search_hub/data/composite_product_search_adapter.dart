@@ -82,22 +82,12 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
   }
 
   @override
-  Future<List<InventoryItem>> readRecentItems({int limit = 6}) async {
+  Future<List<InventoryItem>> readRecentItems() async {
     final service = _recentItemsService;
     if (service == null) {
       return const <InventoryItem>[];
     }
-    try {
-      return await service.readRecentItems();
-    } on Object catch (error, stackTrace) {
-      log(
-        'Recent items lookup failed.',
-        name: _productSearchHubSearchLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return const <InventoryItem>[];
-    }
+    return await service.readRecentItems();
   }
 
   Future<List<GlobalBarcodeCandidate>> _readLearnedCandidates(

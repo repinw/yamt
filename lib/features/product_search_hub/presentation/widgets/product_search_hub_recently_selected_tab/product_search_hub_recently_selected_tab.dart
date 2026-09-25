@@ -1,12 +1,11 @@
-import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'composite_product_search_adapter.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'product_search_hub_recent_items.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_recent_item_key.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -17,7 +16,7 @@ const _productSearchHubRecentlySelectedLogName =
     'ProductSearchHubRecentlySelectedTab';
 
 /// Recently selected manual products for the product search hub.
-class ProductSearchHubRecentlySelectedTab extends ConsumerStatefulWidget {
+class ProductSearchHubRecentlySelectedTab extends ConsumerWidget {
   /// Creates recently selected product tab.
   const new({
     required this.selectedProductKeys,
@@ -36,88 +35,41 @@ class ProductSearchHubRecentlySelectedTab extends ConsumerStatefulWidget {
   final ValueChanged<InventoryItem>? onProductCopied;
 
   @override
-  ConsumerState<ProductSearchHubRecentlySelectedTab> createState() {
-    return _ProductSearchHubRecentlySelectedTabState();
-  }
-}
-
-class _ProductSearchHubRecentlySelectedTabState
-    extends ConsumerState<ProductSearchHubRecentlySelectedTab> {
-  var _items = const <InventoryItem>[];
-  var _isLoading = true;
-  var _hasLoadFailed = false;
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(_loadItems());
-  }
-
-  Future<void> _loadItems() async {
-    setState(() {
-      _isLoading = true;
-      _hasLoadFailed = false;
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    ref.listen(productSearchHubRecentItemsProvider, (previous, next) {
+      if (next case AsyncError(:final error, :final stackTrace)) {
+        log(
+          'Failed to load recently selected products.',
+          name: _productSearchHubRecentlySelectedLogName,
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
     });
 
-    try {
-      final gateway = ref.read(productSearchGatewayProvider);
-      final items = await gateway.readRecentItems();
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _items = items;
-        _isLoading = false;
-      });
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to load recently selected products.',
-        name: _productSearchHubRecentlySelectedLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        _isLoading = false;
-        _hasLoadFailed = true;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (_isLoading) {
-      return _ProductSearchHubRecentlySelectedLoading(
-        label: l10n.productSearchHubRecentlySelectedLoading,
-      );
-    }
-
-    if (_hasLoadFailed) {
-      return _ProductSearchHubRecentlySelectedError(
-        message: l10n.productSearchHubRecentlySelectedLoadFailed,
-        retryLabel: l10n.productSearchHubRecentlySelectedRetryAction,
-        onRetry: () {
-          unawaited(_loadItems());
-        },
-      );
-    }
-
-    if (_items.isEmpty) {
-      return _ProductSearchHubRecentlySelectedEmpty(
-        message: l10n.productSearchHubRecentlySelectedEmptyState,
-      );
-    }
-
-    return _ProductSearchHubRecentlySelectedList(
-      items: _items,
-      selectedProductKeys: widget.selectedProductKeys,
-      onProductPressed: widget.onProductPressed,
-      onProductCopied: widget.onProductCopied,
-    );
+    return ref
+        .watch(productSearchHubRecentItemsProvider)
+        .when(
+          loading: () => _ProductSearchHubRecentlySelectedLoading(
+            label: l10n.productSearchHubRecentlySelectedLoading,
+          ),
+          error: (error, stackTrace) => _ProductSearchHubRecentlySelectedError(
+            message: l10n.productSearchHubRecentlySelectedLoadFailed,
+            retryLabel: l10n.productSearchHubRecentlySelectedRetryAction,
+            onRetry: () => ref.invalidate(productSearchHubRecentItemsProvider),
+          ),
+          data: (items) => items.isEmpty
+              ? _ProductSearchHubRecentlySelectedEmpty(
+                  message: l10n.productSearchHubRecentlySelectedEmptyState,
+                )
+              : _ProductSearchHubRecentlySelectedList(
+                  items: items,
+                  selectedProductKeys: selectedProductKeys,
+                  onProductPressed: onProductPressed,
+                  onProductCopied: onProductCopied,
+                ),
+        );
   }
 }
 

@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
@@ -40,6 +41,18 @@ class ProductSearchHubCopyResult {
 
   /// The product template that was copied.
   final OffProductSearchResult product;
+}
+
+/// Recently selected product picked in the focused search.
+class ProductSearchHubRecentItemResult {
+  /// Creates a recent item result.
+  const new(this.item, {required this.isCopy});
+
+  /// The recently selected product.
+  final InventoryItem item;
+
+  /// Whether the product was copied as a template instead of selected.
+  final bool isCopy;
 }
 
 /// Opens AI entry flow.

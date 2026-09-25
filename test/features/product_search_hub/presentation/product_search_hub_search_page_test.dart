@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
@@ -25,10 +26,14 @@ Widget _buildHarness({
   List<OffProductSearchResult> searchResults = const <OffProductSearchResult>[],
   ProductSearchHubRouteArgs args = const ProductSearchHubRouteArgs.inventory(),
   ProductSearchHubSearchLookup? lookupProducts,
+  List<InventoryItem> recentItems = const <InventoryItem>[],
 }) {
   return ProviderScope(
     overrides: [
       voiceSearchServiceProvider.overrideWithValue(_FakeVoiceSearchService()),
+      inventoryItemRepositoryProvider.overrideWithValue(
+        _FakeInventoryItemRepository(recentItems),
+      ),
     ],
     child: MaterialApp(
       locale: const Locale('en'),
@@ -349,6 +354,9 @@ void main() {
           voiceSearchServiceProvider.overrideWithValue(
             _FakeVoiceSearchService(),
           ),
+          inventoryItemRepositoryProvider.overrideWithValue(
+            const _FakeInventoryItemRepository(<InventoryItem>[]),
+          ),
         ],
         child: MaterialApp(
           locale: const Locale('en'),
@@ -415,6 +423,91 @@ void main() {
       expect(copyResult.product.code, 'copy-target');
     }
   });
+
+  testWidgets('focused search shows recent products while query is empty', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(recentItems: [_recentItem(id: 'recent-yogurt')]),
+    );
+    await tester.pumpAndSettle();
+    await _pumpFocusedSearchReady(tester);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Recently selected'), findsOneWidget);
+    expect(
+      find.byKey(
+        const Key('product_search_hub_recently_selected_item_recent-yogurt'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.enterText(
+      find.byKey(const Key('product_search_hub_search_field')),
+      'Milk',
+    );
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Recently selected'), findsNothing);
+  });
+
+  testWidgets('recent product tap returns ProductSearchHubRecentItemResult', (
+    tester,
+  ) async {
+    Object? poppedResult;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          voiceSearchServiceProvider.overrideWithValue(
+            _FakeVoiceSearchService(),
+          ),
+          inventoryItemRepositoryProvider.overrideWithValue(
+            _FakeInventoryItemRepository([_recentItem(id: 'recent-yogurt')]),
+          ),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Builder(
+            builder: (context) {
+              return TextButton(
+                onPressed: () async {
+                  poppedResult = await Navigator.of(context).push(
+                    MaterialPageRoute<Object>(
+                      builder: (_) => const ProductSearchHubSearchPage(),
+                    ),
+                  );
+                },
+                child: const Text('Open'),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+    await _pumpFocusedSearchReady(tester);
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(
+        const Key('product_search_hub_recently_selected_item_recent-yogurt'),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final recentResult = poppedResult;
+    expect(recentResult, isA<ProductSearchHubRecentItemResult>());
+    if (recentResult is ProductSearchHubRecentItemResult) {
+      expect(recentResult.item.id, 'recent-yogurt');
+      expect(recentResult.isCopy, isFalse);
+    }
+  });
 }
 
 Future<void> _pumpFocusedSearchReady(WidgetTester tester) async {
@@ -467,4 +560,48 @@ class _FakeVoiceSearchService implements VoiceSearchService {
 
   @override
   Future<void> stopListening() async {}
+}
+
+InventoryItem _recentItem({required String id}) {
+  return InventoryItem.create(
+    id: id,
+    name: 'Greek yogurt',
+    entryDate: DateTime.utc(2026),
+    storeName: 'Store',
+    quantity: 1,
+    origin: InventoryItemOrigin.manualAdd,
+  );
+}
+
+class _FakeInventoryItemRepository
+    implements InventoryItemRepository, InventoryItemRecentManualReader {
+  const new(this._items);
+
+  final List<InventoryItem> _items;
+
+  @override
+  bool get supportsLimitedRecentManualReads => true;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
+
+  @override
+  Future<List<InventoryItem>> readAll() async {
+    return List<InventoryItem>.from(_items);
+  }
+
+  @override
+  Future<List<InventoryItem>> readRecentManualItems({
+    required int limit,
+  }) async {
+    return List<InventoryItem>.from(_items.take(limit));
+  }
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async => true;
+
+  @override
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield List<InventoryItem>.from(_items);
+  }
 }

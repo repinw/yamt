@@ -4,6 +4,7 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_bar/product_search_hub_search_bar.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -37,6 +38,8 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
     required this.onBlankTap,
     required this.onRetry,
     required this.onResultSelected,
+    required this.onRecentItemPressed,
+    required this.onRecentItemCopied,
     this.onResultCopied,
     this.autofocusSearchField = true,
     super.key,
@@ -111,6 +114,12 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
   /// Result copied callback.
   final ValueChanged<OffProductSearchResult>? onResultCopied;
 
+  /// Recent product selected callback.
+  final ValueChanged<InventoryItem> onRecentItemPressed;
+
+  /// Recent product copied callback.
+  final ValueChanged<InventoryItem> onRecentItemCopied;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,7 +161,13 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
 
   Widget _buildContent() {
     if (!hasSearchQuery) {
-      return ProductSearchHubSearchBlank(onTap: onBlankTap);
+      if (!showFocusedSearchField || isClosing) {
+        return ProductSearchHubSearchBlank(onTap: onBlankTap);
+      }
+      return ProductSearchHubSearchRecentSection(
+        onProductPressed: onRecentItemPressed,
+        onProductCopied: onRecentItemCopied,
+      );
     }
     return ProductSearchHubSearchResults(
       results: searchResults,

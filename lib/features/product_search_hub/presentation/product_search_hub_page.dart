@@ -77,8 +77,10 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       onBarcodePressed: _openBarcodeScan,
       onAiPressed: _openAiProduct,
       onCreateOwnPressed: _openCustomProduct,
-      onRecentlySelectedProductPressed: _addRecentlySelectedProduct,
-      onRecentlySelectedProductCopied: _copyRecentlySelectedProduct,
+      onRecentlySelectedProductPressed: (item) =>
+          _openRecentItem(item, isCopy: false),
+      onRecentlySelectedProductCopied: (item) =>
+          _openRecentItem(item, isCopy: true),
       onCountPressed: _openSelectedProductsSheet,
       onSubmitPressed: _closeHub,
     );
@@ -100,6 +102,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     String? initialQuery,
     bool startVoiceSearchOnMount = false,
     bool autofocusSearchField = true,
+    bool closeHubOnCancel = false,
   }) async {
     var routeArgs = widget.args;
     if (initialQuery != null) {
@@ -115,7 +118,14 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       AppRoutes.homeProductSearchHubSearch,
       extra: routeArgs,
     );
-    if (!mounted || result == null) {
+    if (!mounted) return;
+    if (result == null) {
+      // Opened straight from the caller: cancel returns there, not to the hub.
+      if (closeHubOnCancel && _selectionState.selections.isEmpty) _closeHub();
+      return;
+    }
+    if (result is ProductSearchHubRecentItemResult) {
+      _openRecentItem(result.item, isCopy: result.isCopy);
       return;
     }
     await handleProductSearchHubSearchResult(
@@ -127,32 +137,27 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     );
   }
 
-  void _addRecentlySelectedProduct(InventoryItem item) => _runWhenIdle(
-    () => editAndSaveProductSearchHubRecentItem(
-      context: context,
-      args: widget.args,
-      item: item,
-      isSourceBlocked: _isSourceBlocked,
-      completeResult: _completeEditedResult,
-    ),
-  );
-
-  void _copyRecentlySelectedProduct(InventoryItem item) => _runWhenIdle(
-    () => copyAndEditProductSearchHubRecentItem(
-      context: context,
-      args: widget.args,
-      item: item,
-      isSourceBlocked: _isSourceBlocked,
-      completeResult: _completeEditedResult,
-    ),
-  );
+  void _openRecentItem(InventoryItem item, {required bool isCopy}) {
+    final openItem = isCopy
+        ? copyAndEditProductSearchHubRecentItem
+        : editAndSaveProductSearchHubRecentItem;
+    _runWhenIdle(
+      () => openItem(
+        context: context,
+        args: widget.args,
+        item: item,
+        isSourceBlocked: _isSourceBlocked,
+        completeResult: _completeEditedResult,
+      ),
+    );
+  }
 
   void _openInitialIntent() {
     switch (widget.args.initialIntent) {
       case ProductSearchHubInitialIntent.launcher:
         break;
       case ProductSearchHubInitialIntent.search:
-        _openProductSearch();
+        _runWhenIdle(() => _openProductSearchRoute(closeHubOnCancel: true));
       case ProductSearchHubInitialIntent.ai:
         _openAiProduct();
       case ProductSearchHubInitialIntent.barcode:

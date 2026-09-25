@@ -6,7 +6,11 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 part 'manual_product_recent_items_service.g.dart';
 
-const _manualProductRecentItemLimit = 6;
+const _manualProductRecentItemLimit = 20;
+
+// The same product is often added many times, so read more documents than the
+// list shows and keep the newest one of each product.
+const _manualProductRecentReadLimit = 80;
 
 /// Application service for recent manual product candidates.
 @riverpod
@@ -29,7 +33,7 @@ class ManualProductRecentItemsService {
     if (repository is InventoryItemRecentManualReader) {
       final recentReader = repository as InventoryItemRecentManualReader;
       final items = await recentReader.readRecentManualItems(
-        limit: _manualProductRecentItemLimit,
+        limit: _manualProductRecentReadLimit,
       );
       return buildManualProductRecentItems(items);
     }

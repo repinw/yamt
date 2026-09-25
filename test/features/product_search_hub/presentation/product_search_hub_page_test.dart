@@ -384,10 +384,7 @@ void main() {
 
     expect(childArgs, isNull);
     expect(inventoryController.addedItems, isEmpty);
-    expect(
-      find.byKey(const Key('eat_page_amount_field')),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
   });
 
   testWidgets('diary direct search log-only save shows no overlay', (
@@ -645,6 +642,76 @@ void main() {
       expect(childArgs, isNotNull);
       expect(childArgs?.item.name, 'Search Milk');
       expect(childArgs?.initialInfoMessage, isNotNull);
+    },
+  );
+
+  testWidgets(
+    'diary mode recent product from focused search opens recent item flow',
+    (tester) async {
+      ManualProductSearchRouteArgs? childArgs;
+      final inventoryController = _SuccessfulInventoryItemsController();
+
+      await _pumpRouteHarness(
+        tester,
+        args: ProductSearchHubRouteArgs.diary(
+          initialIntent: ProductSearchHubInitialIntent.search,
+          preselectedMealType: MealType.lunch,
+          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
+        ),
+        searchRouteResults: [
+          ProductSearchHubRecentItemResult(
+            _item(id: 'recent-yogurt', name: 'Greek yogurt', weight: '500 g'),
+            isCopy: false,
+          ),
+        ],
+        inventoryController: inventoryController,
+        onChildRouteArgs: (args) => childArgs = args,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('return_search_product_result')));
+      await tester.pumpAndSettle();
+
+      // Without nutrition the recent item opens its editor, not a copy.
+      expect(childArgs?.initialRecentItem?.id, 'recent-yogurt');
+      expect(childArgs?.initialInfoMessage, isNull);
+      expect(inventoryController.addedItems, isEmpty);
+    },
+  );
+
+  testWidgets(
+    'diary mode copied recent product from focused search opens editor',
+    (tester) async {
+      ManualProductSearchRouteArgs? childArgs;
+      final inventoryController = _SuccessfulInventoryItemsController();
+      final recentItem = _item(
+        id: 'recent-yogurt',
+        name: 'Greek yogurt',
+        brand: 'Dairy Co',
+        weight: '500 g',
+      );
+
+      await _pumpRouteHarness(
+        tester,
+        args: ProductSearchHubRouteArgs.diary(
+          initialIntent: ProductSearchHubInitialIntent.search,
+          preselectedMealType: MealType.lunch,
+          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
+        ),
+        searchRouteResults: [
+          ProductSearchHubRecentItemResult(recentItem, isCopy: true),
+        ],
+        inventoryController: inventoryController,
+        onChildRouteArgs: (args) => childArgs = args,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('return_search_product_result')));
+      await tester.pumpAndSettle();
+
+      expect(childArgs, isNotNull);
+      expect(childArgs?.item.name, 'Greek yogurt');
+      expect(childArgs?.item.id, isNot('recent-yogurt'));
     },
   );
 

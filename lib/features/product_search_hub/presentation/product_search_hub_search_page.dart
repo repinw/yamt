@@ -181,11 +181,10 @@ class _ProductSearchHubSearchPageState
     final l10n = AppLocalizations.of(context)!;
 
     return PopScope<void>(
+      // System back takes the same animated close path as the app bar back.
+      canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          _isClosing = true;
-          _hideSearchKeyboard();
-        }
+        if (!didPop) _closeSearchPage();
       },
       child: ProductSearchHubSearchPageContent(
         title: widget.args.title(l10n),
@@ -211,6 +210,12 @@ class _ProductSearchHubSearchPageState
         onRetry: _retrySearch,
         onResultSelected: _closeSearchPage,
         onResultCopied: _handleResultCopied,
+        onRecentItemPressed: (item) => _closeSearchPage(
+          ProductSearchHubRecentItemResult(item, isCopy: false),
+        ),
+        onRecentItemCopied: (item) => _closeSearchPage(
+          ProductSearchHubRecentItemResult(item, isCopy: true),
+        ),
       ),
     );
   }
