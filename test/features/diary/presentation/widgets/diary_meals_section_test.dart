@@ -7,6 +7,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashed_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
@@ -86,6 +87,8 @@ void main() {
       find.byKey(DiaryMealsSectionKeys.mealGroup(MealType.breakfast)),
       findsOneWidget,
     );
+    // The same dashed lines as on an empty day frame the meals.
+    expect(find.byType(DiaryDashedSection), findsOneWidget);
     expect(
       find.byKey(DiaryMealsSectionKeys.mealGroup(MealType.dinner)),
       findsOneWidget,

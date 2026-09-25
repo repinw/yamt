@@ -8,6 +8,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_dashed_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
@@ -15,7 +16,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_meals_empty_state
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Meals logged on the selected diary day.
+/// Meals logged on the selected diary day, between dashed lines.
 class DiaryMealsSection extends ConsumerWidget {
   /// Creates the diary meals section.
   const new({required this.selectedDay, super.key});
@@ -60,20 +61,22 @@ class DiaryMealsSection extends ConsumerWidget {
       return const DiaryMealsEmptyState();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppSpacing.xxl,
-      children: [
-        for (final section in loggedSections)
-          DiaryMealGroup(
-            section: section,
-            onTapEntry: (entry) => unawaited(
-              context.push<void>(
-                AppRoutes.homeCaloriesEntryDetailsPath(entry.id),
+    return DiaryDashedSection(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppSpacing.xxl,
+        children: [
+          for (final section in loggedSections)
+            DiaryMealGroup(
+              section: section,
+              onTapEntry: (entry) => unawaited(
+                context.push<void>(
+                  AppRoutes.homeCaloriesEntryDetailsPath(entry.id),
+                ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 }
