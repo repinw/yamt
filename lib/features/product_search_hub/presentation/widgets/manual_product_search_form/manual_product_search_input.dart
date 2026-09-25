@@ -36,6 +36,9 @@ abstract final class ManualProductSearchFormFieldName {
   /// Product brand.
   static const brand = 'manual_product_brand';
 
+  /// Product barcode.
+  static const barcode = 'manual_product_barcode';
+
   /// Weight amount.
   static const weightAmount = 'manual_product_weight_amount';
 
@@ -82,6 +85,7 @@ abstract final class ManualProductSearchFormFieldName {
   static const List<String> registeredNames = [
     name,
     brand,
+    barcode,
     weightAmount,
     weightUnit,
     kcal,

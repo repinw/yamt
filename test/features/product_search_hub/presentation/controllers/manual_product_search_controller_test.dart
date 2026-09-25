@@ -572,6 +572,24 @@ void main() {
     expect(preview?.imageUrl, 'https://example.com/image.png');
   });
 
+  test('updateBarcode enables the nutrition label scan', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: _item().copyWith(barcode: '')),
+    );
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+    expect(container.read(provider).canScanNutritionLabel, isFalse);
+
+    container.read(provider.notifier).updateBarcode('4006381333931');
+
+    final state = container.read(provider);
+    expect(state.barcode, '4006381333931');
+    expect(state.canScanNutritionLabel, isTrue);
+  });
+
   test('applyScannedBarcodeOnly clears product and nutrition state', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

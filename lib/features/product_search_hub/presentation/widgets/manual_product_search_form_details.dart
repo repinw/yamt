@@ -15,6 +15,8 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_action_selector.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_form/manual_product_barcode_field.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_optional_nutrition.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_preview.dart';
@@ -35,6 +37,7 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.preview,
     required this.nameText,
     required this.brandText,
+    required this.barcodeText,
     required this.weightAmount,
     required this.selectedWeightUnit,
     required this.kcalText,
@@ -65,6 +68,8 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.onRecentItemSelected,
     required this.onNameChanged,
     required this.onBrandChanged,
+    required this.onBarcodeChanged,
+    required this.onScanBarcode,
     required this.onWeightAmountChanged,
     required this.onWeightUnitChanged,
     required this.onScanNutritionLabel,
@@ -95,6 +100,7 @@ class ManualProductDetailsForm extends StatefulWidget {
   final InventoryReceiptManualProductPreviewData? preview;
   final String nameText;
   final String brandText;
+  final String barcodeText;
   final String weightAmount;
   final InventoryAmountUnit selectedWeightUnit;
   final String kcalText;
@@ -130,6 +136,8 @@ class ManualProductDetailsForm extends StatefulWidget {
   final ValueChanged<InventoryItem> onRecentItemSelected;
   final ValueChanged<String> onNameChanged;
   final ValueChanged<String> onBrandChanged;
+  final ValueChanged<String> onBarcodeChanged;
+  final VoidCallback onScanBarcode;
   final ValueChanged<String> onWeightAmountChanged;
   final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
   final VoidCallback? onScanNutritionLabel;
@@ -232,6 +240,7 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
     final values = <String, dynamic>{
       ManualProductSearchFormFieldName.name: form.nameText,
       ManualProductSearchFormFieldName.brand: form.brandText,
+      ManualProductSearchFormFieldName.barcode: form.barcodeText,
       ManualProductSearchFormFieldName.weightAmount: form.weightAmount,
       ManualProductSearchFormFieldName.weightUnit: form.selectedWeightUnit,
       ManualProductSearchFormFieldName.kcal: form.kcalText,
@@ -331,6 +340,14 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
             onChanged: (value) {
               _onTextChanged(value, widget.onBrandChanged);
             },
+          ),
+          const SizedBox(height: AppSpacing.md),
+          ManualProductBarcodeField(
+            initialValue: widget.barcodeText,
+            onChanged: (value) {
+              _onTextChanged(value, widget.onBarcodeChanged);
+            },
+            onScan: widget.onScanBarcode,
           ),
           const SizedBox(height: AppSpacing.lg),
           ManualProductWeightFields(

@@ -119,6 +119,11 @@ class InventoryReceiptManualProductController
     state = state.copyWith(brandText: value, error: null);
   }
 
+  /// Update barcode.
+  void updateBarcode(String value) {
+    state = state.copyWith(barcode: value, error: null);
+  }
+
   /// Update weight amount.
   void updateWeightAmount(String value) {
     state = state.copyWith(weightAmount: value, error: null);

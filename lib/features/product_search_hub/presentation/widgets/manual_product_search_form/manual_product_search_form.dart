@@ -113,6 +113,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.recentItems,
     required this.nameText,
     required this.brandText,
+    required this.barcodeText,
     required this.weightAmount,
     required this.selectedWeightUnit,
     required this.kcalText,
@@ -142,6 +143,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onScanBarcode,
     required this.onNameChanged,
     required this.onBrandChanged,
+    required this.onBarcodeChanged,
     required this.onWeightAmountChanged,
     required this.onWeightUnitChanged,
     required this.onKcalChanged,
@@ -206,6 +208,9 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   /// The brand text.
   final String brandText;
+
+  /// The barcode text.
+  final String barcodeText;
 
   /// The weight amount text.
   final String weightAmount;
@@ -298,6 +303,9 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   /// The on brand changed.
   final ValueChanged<String> onBrandChanged;
+
+  /// Called when the barcode text changes.
+  final ValueChanged<String> onBarcodeChanged;
 
   /// The on search changed.
   final ValueChanged<String>? onSearchChanged;
@@ -406,6 +414,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
         preview: preview,
         nameText: nameText,
         brandText: brandText,
+        barcodeText: barcodeText,
         weightAmount: weightAmount,
         selectedWeightUnit: selectedWeightUnit,
         kcalText: kcalText,
@@ -437,6 +446,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
         onRecentItemSelected: onRecentItemSelected,
         onNameChanged: onNameChanged,
         onBrandChanged: onBrandChanged,
+        onBarcodeChanged: onBarcodeChanged,
+        onScanBarcode: onScanBarcode,
         onWeightAmountChanged: onWeightAmountChanged,
         onWeightUnitChanged: onWeightUnitChanged,
         onScanNutritionLabel: onScanNutritionLabel,

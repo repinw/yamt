@@ -18,6 +18,9 @@ Widget _wrapDetailsForm({
   required VoidCallback? onScanNutritionLabel,
   String nameText = 'Banane',
   String brandText = 'Ja!',
+  String barcodeText = '',
+  VoidCallback? onScanBarcode,
+  ValueChanged<String>? onBarcodeChanged,
   String weightAmount = '200',
   InventoryAmountUnit selectedWeightUnit = InventoryAmountUnit.gram,
   String kcalText = '89',
@@ -60,6 +63,7 @@ Widget _wrapDetailsForm({
                 ),
                 nameText: nameText,
                 brandText: brandText,
+                barcodeText: barcodeText,
                 weightAmount: weightAmount,
                 selectedWeightUnit: selectedWeightUnit,
                 kcalText: kcalText,
@@ -95,6 +99,8 @@ Widget _wrapDetailsForm({
                 onRecentItemSelected: (_) {},
                 onNameChanged: (_) {},
                 onBrandChanged: (_) {},
+                onBarcodeChanged: onBarcodeChanged ?? (_) {},
+                onScanBarcode: onScanBarcode ?? () {},
                 onWeightAmountChanged: (_) {},
                 onWeightUnitChanged: (_) {},
                 onScanNutritionLabel: onScanNutritionLabel,
@@ -175,6 +181,39 @@ void main() {
     );
   });
 
+  testWidgets('barcode field forwards typing and opens the scanner', (
+    tester,
+  ) async {
+    final scrollController = ScrollController();
+    addTearDown(scrollController.dispose);
+    final barcodes = <String>[];
+    var scanTapped = 0;
+
+    await tester.pumpWidget(
+      _wrapDetailsForm(
+        scrollController: scrollController,
+        onScanNutritionLabel: null,
+        onBarcodeChanged: barcodes.add,
+        onScanBarcode: () => scanTapped += 1,
+      ),
+    );
+
+    final field = find.byKey(const Key('receipt_review_manual_barcode_field'));
+    await tester.ensureVisible(field);
+    await tester.enterText(field, '40a06');
+    await tester.pump();
+    expect(barcodes.last, '4006');
+
+    final scanButton = find.byKey(
+      const Key('receipt_review_manual_barcode_scan_button'),
+    );
+    await tester.ensureVisible(scanButton);
+    await tester.pumpAndSettle();
+    await tester.tap(scanButton);
+    await tester.pump();
+    expect(scanTapped, 1);
+  });
+
   testWidgets('patches every registered field from updated props', (
     tester,
   ) async {
@@ -199,6 +238,7 @@ void main() {
         onScanNutritionLabel: null,
         nameText: 'Apfel',
         brandText: 'Biohof',
+        barcodeText: '4006381333931',
         weightAmount: '250',
         selectedWeightUnit: InventoryAmountUnit.milliliter,
         kcalText: '52',
@@ -224,6 +264,10 @@ void main() {
     expect(
       _fieldValue(tester, ManualProductSearchFormFieldName.brand),
       'Biohof',
+    );
+    expect(
+      _fieldValue(tester, ManualProductSearchFormFieldName.barcode),
+      '4006381333931',
     );
     expect(
       _fieldValue(tester, ManualProductSearchFormFieldName.weightAmount),
