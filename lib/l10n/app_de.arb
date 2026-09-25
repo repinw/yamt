@@ -1153,6 +1153,7 @@
   "caloriesUnitMilliliter": "ml",
   "diaryTodayTitle": "Heute",
   "diaryYesterdayTitle": "Gestern",
+  "diaryDayRelativeWeekday": "{relative} · {weekday}",
   "diaryDayTypeTraining": "Trainingstag",
   "diaryDayTypeRest": "Ruhetag",
   "diaryDayTypePause": "Pausentag",

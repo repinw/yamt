@@ -50,13 +50,13 @@ void main() {
     tester,
   ) async {
     await pumpNavigator(tester, selectedDay: today);
-    expect(find.text('HEUTE'), findsOneWidget);
-    expect(find.text(DateFormat('EEE d. MMM', 'de').format(today)), findsOne);
+    expect(find.text('HEUTE · MONTAG'), findsOneWidget);
+    expect(find.text(DateFormat('d. MMM', 'de').format(today)), findsOne);
     expect(find.text('🏋️'), findsOneWidget);
 
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 26));
     await tester.pumpAndSettle();
-    expect(find.text('GESTERN'), findsOneWidget);
+    expect(find.text('GESTERN · SONNTAG'), findsOneWidget);
 
     final earlier = DateTime(2026, 4, 5);
     await pumpNavigator(tester, selectedDay: earlier);
@@ -65,7 +65,7 @@ void main() {
       find.text(DateFormat('EEEE', 'de').format(earlier).toUpperCase()),
       findsOneWidget,
     );
-    expect(find.text(DateFormat('EEE d. MMM', 'de').format(earlier)), findsOne);
+    expect(find.text(DateFormat('d. MMM', 'de').format(earlier)), findsOne);
     expect(tester.takeException(), isNull);
   });
 

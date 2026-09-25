@@ -576,7 +576,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(DiaryDayNavigator), findsOneWidget);
-    expect(find.text('TODAY'), findsOneWidget);
+    expect(find.textContaining('TODAY · '), findsOneWidget);
     expect(
       find.descendant(
         of: find.byType(HomeShellTabTopChrome),
@@ -604,7 +604,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text(DateFormat('EEE d. MMM', 'en').format(oldDay)),
+      find.text(DateFormat('d. MMM', 'en').format(oldDay)),
       findsOneWidget,
     );
 

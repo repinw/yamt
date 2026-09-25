@@ -2490,6 +2490,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryYesterdayTitle => 'Gestern';
 
   @override
+  String diaryDayRelativeWeekday(String relative, String weekday) {
+    return '$relative · $weekday';
+  }
+
+  @override
   String get diaryDayTypeTraining => 'Trainingstag';
 
   @override

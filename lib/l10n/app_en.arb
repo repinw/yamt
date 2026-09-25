@@ -1165,6 +1165,17 @@
   "caloriesUnitMilliliter": "ml",
   "diaryTodayTitle": "Today",
   "diaryYesterdayTitle": "Yesterday",
+  "diaryDayRelativeWeekday": "{relative} · {weekday}",
+  "@diaryDayRelativeWeekday": {
+    "placeholders": {
+      "relative": {
+        "type": "String"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
   "diaryDayTypeTraining": "Training day",
   "diaryDayTypeRest": "Rest day",
   "diaryDayTypePause": "Pause day",
