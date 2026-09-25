@@ -123,7 +123,9 @@ EatNutrition? _nutrition(InventoryItemEatSheetState state) {
     inventoryAmountText: state.inventoryAmountText,
     inedibleAmountText: state.inedibleAmountText,
   );
-  return amount == null ? null : EatNutrition.fromPer100(nutrition, amount);
+  return amount == null
+      ? EatNutrition.per100Only(nutrition)
+      : EatNutrition.fromPer100(nutrition, amount);
 }
 
 /// Removes surrounding space and turns an empty [label] into null.

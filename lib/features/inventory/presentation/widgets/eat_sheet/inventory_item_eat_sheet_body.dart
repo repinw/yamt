@@ -158,14 +158,18 @@ class _InventoryItemEatSheetBodyState
               context,
               eaten: nutrition.eaten,
               per100: nutrition.per100,
+              unknownEaten: l10n.eatPageAmountUnknown,
             ),
             per100Header: l10n.caloriesEntryPer100Label(
               state.nutritionUnit(l10n),
             ),
-            eatenHeader: l10n.inventoryEatSheetAmountWithUnit(
-              formatInventoryNutritionValue(nutrition.amount ?? 0),
-              state.nutritionUnit(l10n),
-            ),
+            eatenHeader: switch (nutrition.amount) {
+              final amount? => l10n.inventoryEatSheetAmountWithUnit(
+                formatInventoryNutritionValue(amount),
+                state.nutritionUnit(l10n),
+              ),
+              null => l10n.eatPageAmountUnknown,
+            },
           ),
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

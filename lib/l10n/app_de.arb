@@ -89,6 +89,7 @@
       }
     }
   },
+  "eatPageAmountUnknown": "–",
   "productSearchHubNoBarcodeAction": "Kein Barcode",
   "productSearchHubCreateProductAction": "Produkt erstellen",
   "productSearchHubCartTitle": "Ausgewählte Produkte",

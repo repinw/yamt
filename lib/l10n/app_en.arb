@@ -89,6 +89,7 @@
       }
     }
   },
+  "eatPageAmountUnknown": "–",
   "productSearchHubNoBarcodeAction": "No barcode",
   "productSearchHubCreateProductAction": "Create product",
   "productSearchHubCartTitle": "Selected products",

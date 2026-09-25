@@ -380,6 +380,12 @@ abstract class AppLocalizations {
   /// **'{label} *'**
   String productSearchHubRequiredFieldLabel(String label);
 
+  /// No description provided for @eatPageAmountUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'–'**
+  String get eatPageAmountUnknown;
+
   /// No description provided for @productSearchHubNoBarcodeAction.
   ///
   /// In en, this message translates to:

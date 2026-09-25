@@ -29,6 +29,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.productSearchHubSearchEmptyState,
     l10n.productSearchHubCreateProductAction,
     l10n.productSearchHubNoBarcodeAction,
+    l10n.eatPageAmountUnknown,
     l10n.productSearchHubRequiredFieldLabel('Name'),
     l10n.productSearchHubCartTitle,
     l10n.productSearchHubCartAddAction,

@@ -179,6 +179,9 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get eatPageAmountUnknown => '–';
+
+  @override
   String get productSearchHubNoBarcodeAction => 'Kein Barcode';
 
   @override

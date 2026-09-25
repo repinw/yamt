@@ -693,14 +693,29 @@ void main() {
     await _pumpSheet(tester, _pieceItem(), onResult: (value) => result = value);
 
     await tester.enterText(find.byKey(_pieceWeightKey), '200');
-    await tester.tap(
-      find.byKey(const Key('inventory_item_portion_unit_button')),
+    final unitButton = find.byKey(
+      const Key('inventory_item_portion_unit_button'),
     );
+    await tester.ensureVisible(unitButton);
+    await tester.pumpAndSettle();
+    await tester.tap(unitButton);
     await tester.pump();
     await _tapConfirmButton(tester);
 
     expect(result?.calorieAmount, 200);
     expect(result?.calorieUnit, ConsumedUnit.milliliters);
+  });
+
+  testWidgets('shows the per-100 column before the piece weight is known', (
+    tester,
+  ) async {
+    await _pumpSheet(tester, _pieceItem(), onResult: (_) {});
+
+    expect(
+      find.byKey(const Key('inventory_item_nutrition_table')),
+      findsOneWidget,
+    );
+    expect(find.textContaining('100'), findsWidgets);
   });
 
   testWidgets('fractional pieces keep the scaled stock amount', (tester) async {

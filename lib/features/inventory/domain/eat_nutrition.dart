@@ -13,21 +13,19 @@ class EatNutrition {
 
   /// Scales per-100 values of [nutrition] to [amount] grams or milliliters.
   factory fromPer100(GlobalFoodNutrition nutrition, double amount) {
-    final per100 = NutritionFacts(
-      kcal: nutrition.per100Kcal,
-      fat: nutrition.per100Fat,
-      saturatedFat: nutrition.per100SaturatedFat,
-      polyunsaturatedFat: nutrition.per100PolyunsaturatedFat,
-      carbs: nutrition.per100Carbs,
-      sugar: nutrition.per100Sugar,
-      fiber: nutrition.per100Fiber,
-      protein: nutrition.per100Protein,
-      salt: nutrition.per100Salt,
-    );
+    final per100 = _per100Facts(nutrition);
     return EatNutrition(
       eaten: per100.scaled(amount / _per100Basis),
       per100: per100,
       amount: amount,
+    );
+  }
+
+  /// Per-100 values of [nutrition] while the eaten amount is unknown.
+  factory per100Only(GlobalFoodNutrition nutrition) {
+    return EatNutrition(
+      eaten: const NutritionFacts(),
+      per100: _per100Facts(nutrition),
     );
   }
 
@@ -51,4 +49,18 @@ class EatNutrition {
 
   /// Eaten grams or milliliters, or null when unknown.
   final double? amount;
+}
+
+NutritionFacts _per100Facts(GlobalFoodNutrition nutrition) {
+  return NutritionFacts(
+    kcal: nutrition.per100Kcal,
+    fat: nutrition.per100Fat,
+    saturatedFat: nutrition.per100SaturatedFat,
+    polyunsaturatedFat: nutrition.per100PolyunsaturatedFat,
+    carbs: nutrition.per100Carbs,
+    sugar: nutrition.per100Sugar,
+    fiber: nutrition.per100Fiber,
+    protein: nutrition.per100Protein,
+    salt: nutrition.per100Salt,
+  );
 }
