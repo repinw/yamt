@@ -21,8 +21,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_support.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_page_types.dart';
 
 /// Full manual product editor for product details and nutrition input.
 class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
@@ -31,11 +29,8 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
     required this.config,
     required this.showEatImmediatelyOption,
     required this.initialAction,
-    required this.closeCurrentEditorOnSave,
     this.quickEatConfig = InventoryManualAddQuickEatConfig.standard,
     this.showActionSelector = true,
-    this.onSaved,
-    this.autofocusSearch = false,
     this.initialRecentItem,
     this.initialInfoMessage,
     super.key,
@@ -53,18 +48,8 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   /// Initially selected save action.
   final InventoryReceiptManualProductAction initialAction;
 
-  /// Whether saving should pop only this editor route.
-  final bool closeCurrentEditorOnSave;
-
   /// Whether the form should show the action selector.
   final bool showActionSelector;
-
-  /// Called when the editor saves a product.
-  final Future<void> Function(InventoryReceiptManualProductResult result)?
-  onSaved;
-
-  /// Whether the search field should autofocus.
-  final bool autofocusSearch;
 
   /// Optional recent item to apply after mount.
   final InventoryItem? initialRecentItem;
@@ -173,8 +158,6 @@ class _InventoryReceiptManualProductEditorPageState
         config: widget.config,
         controller: _controller,
         selectedAction: _selectedAction,
-        closeCurrentEditorOnSave: widget.closeCurrentEditorOnSave,
-        onSaved: widget.onSaved,
         onClosePage: _closePage,
       ),
     );
@@ -186,10 +169,8 @@ class _InventoryReceiptManualProductEditorPageState
     config: widget.config,
     controller: _controller,
     showEatImmediatelyOption: widget.showEatImmediatelyOption,
-    autofocusSearch: widget.autofocusSearch,
     onApplyAction: _apply,
     onShowSnackBar: _showSnackBar,
-    onSaved: widget.onSaved,
     onClosePage: _closePage,
   );
 

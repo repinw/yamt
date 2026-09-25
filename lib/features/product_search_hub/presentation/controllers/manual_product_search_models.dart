@@ -1,23 +1,16 @@
 import 'package:flutter/foundation.dart';
-import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
-import 'package:yamt/features/product_search_hub/domain/manual_product_search_value_utils.dart';
 
 @immutable
 /// Defines inventory receipt manual product config.
 class InventoryReceiptManualProductConfig {
   /// The inventory receipt manual product config.
-  const new({
-    required this.item,
-    this.selectedProduct,
-    this.includeStoreInSearch = true,
-    this.includeWeightInSearch = true,
-  });
+  const new({required this.item, this.selectedProduct});
 
   /// The item.
   final InventoryItem item;
@@ -25,30 +18,17 @@ class InventoryReceiptManualProductConfig {
   /// The selected product.
   final OffProductSearchResult? selectedProduct;
 
-  /// The include store in search.
-  final bool includeStoreInSearch;
-
-  /// The include weight in search.
-  final bool includeWeightInSearch;
-
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         other is InventoryReceiptManualProductConfig &&
             other.item == item &&
-            _selectedProductEquals(other.selectedProduct, selectedProduct) &&
-            other.includeStoreInSearch == includeStoreInSearch &&
-            other.includeWeightInSearch == includeWeightInSearch;
+            _selectedProductEquals(other.selectedProduct, selectedProduct);
   }
 
   @override
   int get hashCode {
-    return Object.hash(
-      item,
-      _selectedProductHash(selectedProduct),
-      includeStoreInSearch,
-      includeWeightInSearch,
-    );
+    return Object.hash(item, _selectedProductHash(selectedProduct));
   }
 
   static bool _selectedProductEquals(
@@ -232,62 +212,6 @@ typedef InventoryReceiptManualProductSavePayload = ({
   bool requiresGlobalPersistence,
   String? globalPackageWeight,
 });
-
-/// Build manual product initial search query.
-String? buildManualProductInitialSearchQuery(
-  InventoryReceiptManualProductConfig config,
-) {
-  final selectedProductName = normalizeManualProductText(
-    config.selectedProduct?.name ?? '',
-  );
-  if (selectedProductName != null) {
-    return selectedProductName;
-  }
-
-  final parts = <String>[];
-  final normalizedParts = <String>{};
-
-  void addPart(String? value, {bool canBeBarcode = true}) {
-    final normalized = normalizeManualProductText(value ?? '');
-    if (normalized == null) {
-      return;
-    }
-    if (!canBeBarcode && _looksLikeBarcodeText(normalized)) {
-      return;
-    }
-
-    final key = normalized.toLowerCase();
-    if (!normalizedParts.add(key)) {
-      return;
-    }
-    parts.add(normalized);
-  }
-
-  addPart(config.item.ocrName ?? config.item.name, canBeBarcode: false);
-  addPart(config.item.brand);
-  addPart(_initialSearchStoreName(config.item));
-
-  if (parts.isEmpty) {
-    return null;
-  }
-  return parts.join(' ');
-}
-
-String? _initialSearchStoreName(InventoryItem item) {
-  if (item.isManuallyAdded) {
-    return null;
-  }
-  return normalizeManualProductText(item.storeName);
-}
-
-bool _looksLikeBarcodeText(String value) {
-  final normalized = normalizeBarcode(value);
-  if (normalized.isEmpty) {
-    return false;
-  }
-  final compact = value.replaceAll(RegExp(r'[\s-]+'), '');
-  return compact == normalized;
-}
 
 String? _normalizeReusableGlobalFoodItemId(String? value) {
   final normalized = value?.trim();

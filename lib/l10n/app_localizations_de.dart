@@ -210,17 +210,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryPageTitle => 'Mein Vorrat';
 
   @override
-  String get inventoryActionScanCamera => 'Beleg scannen (Kamera)';
-
-  @override
-  String get inventoryActionUploadFile => 'Beleg hochladen (Bild/PDF)';
-
-  @override
   String get inventoryActionCameraUnsupported =>
       'Kamera wird auf dieser Plattform nicht unterstützt.';
-
-  @override
-  String get inventoryActionManualAdd => 'Lebensmittel manuell hinzufügen';
 
   @override
   String get inventoryActionManualSearch => 'Manuelle Suche';

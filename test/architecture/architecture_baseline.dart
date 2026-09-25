@@ -72,7 +72,7 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/home/home_page.dart': 2,
     'lib/features/home/widgets/home_menu_drawer.dart': 1,
     'lib/features/home/widgets/inventory_action_fab.dart': 1,
-    'lib/features/home/widgets/inventory_action_sheet_flow.dart': 3,
+    'lib/features/home/widgets/inventory_action_sheet_flow.dart': 2,
     'lib/features/home_widget/presentation/controllers/home_widget_sync_controller.dart':
         1,
     'lib/features/inventory/application/inventory_calorie_entry_post_persist_hook.dart':
@@ -113,13 +113,9 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_actions.dart':
         1,
-    'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_barcode_context.dart':
-        1,
     'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_barcode_coordinator.dart':
         1,
     'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_form_view.dart':
-        1,
-    'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_navigation.dart':
         1,
     'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_page.dart':
         1,

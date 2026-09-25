@@ -109,7 +109,6 @@ Future<InventoryReceiptManualProductResult?> _openProductSearchHubEditor({
       ),
       showEatImmediatelyOption: args.isDiary,
       initialAction: args.initialManualProductAction,
-      closeCurrentEditorOnSave: true,
       showActionSelector: false,
       quickEatConfig: productSearchHubQuickEatConfig(args),
       initialRecentItem: initialRecentItem,

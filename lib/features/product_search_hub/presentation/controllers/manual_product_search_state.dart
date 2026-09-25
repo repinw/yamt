@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:yamt/core/utils/barcode_utils.dart';
-import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_nutrition/domain/nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_search_value_utils.dart';
@@ -13,7 +12,6 @@ const _keepValue = Object();
 class InventoryReceiptManualProductState {
   /// The inventory receipt manual product state.
   const new({
-    this.searchQuery = '',
     this.nameText = '',
     this.brandText = '',
     this.barcode = '',
@@ -36,17 +34,12 @@ class InventoryReceiptManualProductState {
     this.optionalNutritionUnit = InventoryAmountUnit.gram,
     this.optionalNutritionType =
         InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
-    this.isSearching = false,
-    this.searchResults = const <OffProductSearchResult>[],
     this.selectedProduct,
     this.ocrDraft,
     this.isRunningNutritionOcr = false,
     this.nutritionOcrImageBytes,
     this.error,
   });
-
-  /// The search query.
-  final String searchQuery;
 
   /// The name text.
   final String nameText;
@@ -110,12 +103,6 @@ class InventoryReceiptManualProductState {
 
   /// The optional nutrition type.
   final InventoryReceiptOptionalNutritionType optionalNutritionType;
-
-  /// Whether searching.
-  final bool isSearching;
-
-  /// The search results.
-  final List<OffProductSearchResult> searchResults;
 
   /// The selected product.
   final InventoryReceiptManualProductSelection? selectedProduct;
@@ -206,7 +193,6 @@ class InventoryReceiptManualProductState {
 
   /// Copy with.
   InventoryReceiptManualProductState copyWith({
-    String? searchQuery,
     String? nameText,
     String? brandText,
     String? barcode,
@@ -228,8 +214,6 @@ class InventoryReceiptManualProductState {
     String? optionalNutritionValueText,
     InventoryAmountUnit? optionalNutritionUnit,
     InventoryReceiptOptionalNutritionType? optionalNutritionType,
-    bool? isSearching,
-    List<OffProductSearchResult>? searchResults,
     Object? selectedProduct = _keepValue,
     Object? ocrDraft = _keepValue,
     bool? isRunningNutritionOcr,
@@ -237,7 +221,6 @@ class InventoryReceiptManualProductState {
     Object? error = _keepValue,
   }) {
     return InventoryReceiptManualProductState(
-      searchQuery: searchQuery ?? this.searchQuery,
       nameText: nameText ?? this.nameText,
       brandText: brandText ?? this.brandText,
       barcode: barcode ?? this.barcode,
@@ -265,8 +248,6 @@ class InventoryReceiptManualProductState {
           optionalNutritionUnit ?? this.optionalNutritionUnit,
       optionalNutritionType:
           optionalNutritionType ?? this.optionalNutritionType,
-      isSearching: isSearching ?? this.isSearching,
-      searchResults: searchResults ?? this.searchResults,
       selectedProduct: selectedProduct == _keepValue
           ? this.selectedProduct
           : selectedProduct as InventoryReceiptManualProductSelection?,

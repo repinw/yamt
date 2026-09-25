@@ -54,18 +54,13 @@ Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
         config: InventoryReceiptManualProductConfig(
           item: args.item,
           selectedProduct: args.selectedProduct,
-          includeStoreInSearch: args.includeStoreInSearch,
-          includeWeightInSearch: args.includeWeightInSearch,
         ),
         quickEatConfig: args.quickEatConfig,
         showEatImmediatelyOption: args.showEatImmediatelyOption,
         initialAction: args.initialAction,
-        closeCurrentEditorOnSave: args.closeCurrentEditorOnSave,
         showActionSelector: args.showActionSelector,
-        autofocusSearch: args.autofocusSearch,
         initialRecentItem: args.initialRecentItem,
         initialInfoMessage: args.initialInfoMessage,
-        onSaved: args.onSaved,
       ),
     ManualProductSearchChildFlow.aiSearch => ManualProductAiSearchPage(
       item: args.item,

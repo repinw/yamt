@@ -21,14 +21,12 @@ Future<void> launchEditorBarcodeScanner({
   required InventoryReceiptManualProductConfig config,
   required InventoryReceiptManualProductController controller,
   required bool showEatImmediatelyOption,
-  required bool autofocusSearch,
   required void Function(
     InventoryReceiptManualProductAction action,
     VoidCallback apply,
   )
   onApplyAction,
   required void Function(String message) onShowSnackBar,
-  required Future<void> Function(InventoryReceiptManualProductResult)? onSaved,
   required void Function(InventoryReceiptManualProductResult) onClosePage,
 }) {
   return openEditorBarcodeScanner(
@@ -37,7 +35,6 @@ Future<void> launchEditorBarcodeScanner({
     config: config,
     controller: controller,
     showEatImmediatelyOption: showEatImmediatelyOption,
-    autofocusSearch: autofocusSearch,
     onDirectComplete: onClosePage,
     onApplyScannedProduct: (product, action) =>
         onApplyAction(action, () => controller.applyScannedProduct(product)),
@@ -45,8 +42,6 @@ Future<void> launchEditorBarcodeScanner({
         onApplyAction(action, () => controller.applyRecentItem(item)),
     onApplyScannedBarcodeOnly: controller.applyScannedBarcodeOnly,
     onShowSnackBar: onShowSnackBar,
-    onSaved: onSaved,
-    onClosePage: onClosePage,
   );
 }
 

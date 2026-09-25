@@ -7,9 +7,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
-import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
-import 'package:yamt/features/scanner/presentation/widgets/inventory_receipt_actions_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines inventory action sheet flow.
@@ -73,37 +71,6 @@ class InventoryActionSheetFlow {
     if (saved) {
       ref.invalidate(inventoryItemsControllerProvider);
     }
-  }
-
-  /// Open action sheet.
-  static Future<void> openActionSheet({
-    required BuildContext context,
-    required WidgetRef ref,
-    required AppLocalizations l10n,
-  }) {
-    final isCameraEnabled = ref.read(receiptCameraSupportedProvider);
-
-    return showModalBottomSheet<void>(
-      context: context,
-      useRootNavigator: true,
-      builder: (sheetContext) {
-        return InventoryReceiptActionsSheet(
-          isCameraEnabled: isCameraEnabled,
-          onManualAddTap: () {
-            sheetContext.pop();
-            unawaited(_openProductSearchHub(context));
-          },
-          onScanCameraTap: () {
-            sheetContext.pop();
-            unawaited(scanCamera(context: context, ref: ref, l10n: l10n));
-          },
-          onUploadFileTap: () {
-            sheetContext.pop();
-            unawaited(uploadFile(context: context, ref: ref, l10n: l10n));
-          },
-        );
-      },
-    );
   }
 
   static Future<void> _openProductSearchHub(

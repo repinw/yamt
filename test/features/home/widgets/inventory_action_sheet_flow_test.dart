@@ -13,12 +13,7 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-enum _ActionSheetFlowTestAction {
-  manualSearch,
-  aiSuggestion,
-  barcodeScan,
-  actionSheet,
-}
+enum _ActionSheetFlowTestAction { manualSearch, aiSuggestion, barcodeScan }
 
 class _ActionSheetFlowHost extends ConsumerWidget {
   const new({required this.action});
@@ -46,12 +41,6 @@ class _ActionSheetFlowHost extends ConsumerWidget {
           case _ActionSheetFlowTestAction.barcodeScan:
             await InventoryActionSheetFlow.openBarcodeScanner(
               context: context,
-              l10n: l10n,
-            );
-          case _ActionSheetFlowTestAction.actionSheet:
-            await InventoryActionSheetFlow.openActionSheet(
-              context: context,
-              ref: ref,
               l10n: l10n,
             );
         }
@@ -157,39 +146,6 @@ void main() {
         expect(args.mode, ProductSearchHubMode.inventory);
         expect(args.initialIntent, entry.value);
       }
-    });
-
-    testWidgets('action sheet disables camera and opens launcher flow', (
-      tester,
-    ) async {
-      Object? routeExtra;
-
-      await _pumpHarness(
-        tester,
-        action: _ActionSheetFlowTestAction.actionSheet,
-        isCameraSupported: false,
-        onHubRouteExtra: (extra) => routeExtra = extra,
-      );
-
-      await tester.tap(
-        find.byKey(const Key('run_inventory_action_sheet_flow')),
-      );
-      await tester.pumpAndSettle();
-
-      expect(find.text('Add food manually'), findsOneWidget);
-      expect(find.text('Scan receipt (camera)'), findsOneWidget);
-      expect(find.text('Upload receipt (image/PDF)'), findsOneWidget);
-      expect(
-        find.text('Camera is not supported on this platform.'),
-        findsOneWidget,
-      );
-
-      await tester.tap(find.text('Add food manually'));
-      await tester.pumpAndSettle();
-
-      final args = routeExtra! as ProductSearchHubRouteArgs;
-      expect(args.mode, ProductSearchHubMode.inventory);
-      expect(args.initialIntent, ProductSearchHubInitialIntent.launcher);
     });
   });
 }

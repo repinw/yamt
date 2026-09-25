@@ -207,17 +207,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryPageTitle => 'My inventory';
 
   @override
-  String get inventoryActionScanCamera => 'Scan receipt (camera)';
-
-  @override
-  String get inventoryActionUploadFile => 'Upload receipt (image/PDF)';
-
-  @override
   String get inventoryActionCameraUnsupported =>
       'Camera is not supported on this platform.';
-
-  @override
-  String get inventoryActionManualAdd => 'Add food manually';
 
   @override
   String get inventoryActionManualSearch => 'Manual search';

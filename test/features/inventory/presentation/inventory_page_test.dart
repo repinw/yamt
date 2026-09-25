@@ -930,9 +930,7 @@ void main() {
     expect(find.text('Milk'), findsWidgets);
     expect(find.text('All'), findsOneWidget);
 
-    final amountField = find.byKey(
-      const Key('eat_page_amount_field'),
-    );
+    final amountField = find.byKey(const Key('eat_page_amount_field'));
     expect(amountField, findsOneWidget);
     await tester.enterText(amountField, '120');
 
@@ -1015,9 +1013,7 @@ void main() {
 
       await _tapVisible(tester, find.byTooltip('Eat'));
 
-      final amountField = find.byKey(
-        const Key('eat_page_amount_field'),
-      );
+      final amountField = find.byKey(const Key('eat_page_amount_field'));
       expect(amountField, findsOneWidget);
       await tester.enterText(amountField, '100');
 
@@ -1303,9 +1299,7 @@ void main() {
 
     await _tapVisible(tester, find.byTooltip('Eat'));
 
-    final amountField = find.byKey(
-      const Key('eat_page_amount_field'),
-    );
+    final amountField = find.byKey(const Key('eat_page_amount_field'));
     expect(amountField, findsOneWidget);
     await tester.enterText(amountField, '999');
     await tester.enterText(

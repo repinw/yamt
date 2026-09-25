@@ -14,8 +14,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_page/manual_product_search_editor_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_page_types.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -39,7 +37,6 @@ void main() {
                     showEatImmediatelyOption: false,
                     initialAction:
                         InventoryReceiptManualProductAction.addToInventory,
-                    closeCurrentEditorOnSave: true,
                     showActionSelector: true,
                   ),
                 ).then((value) => result = value),
@@ -89,7 +86,6 @@ void main() {
                   showEatImmediatelyOption: false,
                   initialAction:
                       InventoryReceiptManualProductAction.addToInventory,
-                  closeCurrentEditorOnSave: true,
                   showActionSelector: true,
                 ),
               ),
@@ -119,43 +115,6 @@ void main() {
 
     expect(find.byKey(const Key('open_go_router_route')), findsOneWidget);
   });
-
-  testWidgets('editor route uses route-local save handler', (tester) async {
-    InventoryReceiptManualProductResult? savedResult;
-    Future<void> handleSaved(InventoryReceiptManualProductResult result) async {
-      savedResult = result;
-    }
-
-    await _pumpChild(
-      tester,
-      buildManualProductSearchChild(
-        ManualProductSearchRouteArgs.editor(
-          config: InventoryReceiptManualProductConfig(item: _item()),
-          showEatImmediatelyOption: false,
-          initialAction: InventoryReceiptManualProductAction.addToInventory,
-          closeCurrentEditorOnSave: false,
-          showActionSelector: true,
-          autofocusSearch: true,
-          onSaved: handleSaved,
-        ),
-      ),
-    );
-
-    final page = tester.widget<InventoryReceiptManualProductEditorPage>(
-      find.byType(InventoryReceiptManualProductEditorPage),
-    );
-    final result = InventoryReceiptManualProductResult(
-      item: _item(),
-      action: InventoryReceiptManualProductAction.addToInventory,
-    );
-
-    expect(page.closeCurrentEditorOnSave, isFalse);
-    expect(page.onSaved, isNotNull);
-
-    await page.onSaved!(result);
-
-    expect(savedResult, same(result));
-  });
 }
 
 Future<void> _pumpRouter(WidgetTester tester, GoRouter router) async {
@@ -171,24 +130,6 @@ Future<void> _pumpRouter(WidgetTester tester, GoRouter router) async {
         routerConfig: router,
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-      ),
-    ),
-  );
-}
-
-Future<void> _pumpChild(WidgetTester tester, Widget child) async {
-  await tester.pumpWidget(
-    ProviderScope(
-      overrides: [
-        inventoryItemRepositoryProvider.overrideWithValue(
-          const _EmptyInventoryItemRepository(),
-        ),
-      ],
-      child: MaterialApp(
-        locale: const Locale('en'),
-        localizationsDelegates: appLocalizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: child,
       ),
     ),
   );

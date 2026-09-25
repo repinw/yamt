@@ -6,19 +6,12 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_page_types.dart';
 
 /// Query/path parameter name for child route flow type.
 const manualProductSearchFlowParam = 'flow';
 
 /// Query parameter name for child route payload id.
 const manualProductSearchPayloadParam = 'payload';
-
-/// Handles a save result emitted by a product-search route.
-typedef ManualProductSearchRouteSaveHandler = Future<void> Function(
-  InventoryReceiptManualProductResult result,
-);
 
 /// Stores transient route payloads behind short URL-safe ids.
 class ManualProductSearchRoutePayloadStore {
@@ -93,20 +86,14 @@ class ManualProductSearchRouteArgs {
   const new _({
     required this.flow,
     required this.item,
-    required this.includeStoreInSearch,
-    required this.includeWeightInSearch,
     required this.showEatImmediatelyOption,
     required this.initialAction,
-    required this.closeCurrentEditorOnSave,
     required this.showActionSelector,
-    required this.autofocusSearch,
-    required this.initialStartVoiceSearch,
     required this.quickEatConfig,
     this.selectedProduct,
     this.initialRecentItem,
     this.initialPrompt,
     this.initialInfoMessage,
-    this.onSaved,
   });
 
   /// Creates manual editor route args.
@@ -114,32 +101,22 @@ class ManualProductSearchRouteArgs {
     required InventoryReceiptManualProductConfig config,
     required bool showEatImmediatelyOption,
     required InventoryReceiptManualProductAction initialAction,
-    required bool closeCurrentEditorOnSave,
     required bool showActionSelector,
-    bool autofocusSearch = false,
-    bool initialStartVoiceSearch = false,
     InventoryManualAddQuickEatConfig quickEatConfig =
         InventoryManualAddQuickEatConfig.standard,
     InventoryItem? initialRecentItem,
     String? initialInfoMessage,
-    ManualProductSearchRouteSaveHandler? onSaved,
   }) {
     return ManualProductSearchRouteArgs._(
       flow: ManualProductSearchChildFlow.editor,
       item: config.item,
       selectedProduct: config.selectedProduct,
-      includeStoreInSearch: config.includeStoreInSearch,
-      includeWeightInSearch: config.includeWeightInSearch,
       showEatImmediatelyOption: showEatImmediatelyOption,
       initialAction: initialAction,
-      closeCurrentEditorOnSave: closeCurrentEditorOnSave,
       showActionSelector: showActionSelector,
-      autofocusSearch: autofocusSearch,
-      initialStartVoiceSearch: initialStartVoiceSearch,
       quickEatConfig: quickEatConfig,
       initialRecentItem: initialRecentItem,
       initialInfoMessage: initialInfoMessage,
-      onSaved: onSaved,
     );
   }
 
@@ -155,14 +132,9 @@ class ManualProductSearchRouteArgs {
     return ManualProductSearchRouteArgs._(
       flow: ManualProductSearchChildFlow.aiSearch,
       item: item,
-      includeStoreInSearch: true,
-      includeWeightInSearch: true,
       showEatImmediatelyOption: showEatImmediatelyOption,
       initialAction: initialAction,
-      closeCurrentEditorOnSave: true,
       showActionSelector: true,
-      autofocusSearch: false,
-      initialStartVoiceSearch: false,
       quickEatConfig: quickEatConfig,
       initialPrompt: initialPrompt,
     );
@@ -212,38 +184,20 @@ class ManualProductSearchRouteArgs {
   /// Initial AI prompt.
   final String? initialPrompt;
 
-  /// Whether store is included in manual search.
-  final bool includeStoreInSearch;
-
-  /// Whether weight is included in manual search.
-  final bool includeWeightInSearch;
-
   /// Whether eat-now is available.
   final bool showEatImmediatelyOption;
 
   /// Initial save action.
   final InventoryReceiptManualProductAction initialAction;
 
-  /// Whether editor save should close only the current route.
-  final bool closeCurrentEditorOnSave;
-
   /// Whether editor action selector is shown.
   final bool showActionSelector;
-
-  /// Whether editor search field should autofocus.
-  final bool autofocusSearch;
-
-  /// Whether editor voice search should start immediately.
-  final bool initialStartVoiceSearch;
 
   /// Quick-eat config scoped to product-search child pages.
   final InventoryManualAddQuickEatConfig quickEatConfig;
 
   /// Optional editor info message.
   final String? initialInfoMessage;
-
-  /// Optional route-local save handler.
-  final ManualProductSearchRouteSaveHandler? onSaved;
 
   /// Concrete URL location for this route payload.
   String locationForPayload(String payloadId) {

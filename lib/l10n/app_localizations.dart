@@ -440,29 +440,11 @@ abstract class AppLocalizations {
   /// **'My inventory'**
   String get inventoryPageTitle;
 
-  /// No description provided for @inventoryActionScanCamera.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan receipt (camera)'**
-  String get inventoryActionScanCamera;
-
-  /// No description provided for @inventoryActionUploadFile.
-  ///
-  /// In en, this message translates to:
-  /// **'Upload receipt (image/PDF)'**
-  String get inventoryActionUploadFile;
-
   /// No description provided for @inventoryActionCameraUnsupported.
   ///
   /// In en, this message translates to:
   /// **'Camera is not supported on this platform.'**
   String get inventoryActionCameraUnsupported;
-
-  /// No description provided for @inventoryActionManualAdd.
-  ///
-  /// In en, this message translates to:
-  /// **'Add food manually'**
-  String get inventoryActionManualAdd;
 
   /// No description provided for @inventoryActionManualSearch.
   ///

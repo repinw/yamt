@@ -1,8 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -17,16 +15,11 @@ class EditorBarcodeDispatchContext {
     required this.context,
     required this.config,
     required this.controller,
-    required this.showEatImmediatelyOption,
-    required this.autofocusSearch,
-    required this.quickEatConfig,
     required this.onDirectComplete,
     required this.onApplyScannedProduct,
     required this.onApplyScannedInventoryItem,
     required this.onApplyScannedBarcodeOnly,
     required this.onShowSnackBar,
-    required this.onSaved,
-    required this.onClosePage,
   });
 
   /// Build context of the editor page.
@@ -37,15 +30,6 @@ class EditorBarcodeDispatchContext {
 
   /// Manual product search controller.
   final InventoryReceiptManualProductController controller;
-
-  /// Whether immediate eat option is supported.
-  final bool showEatImmediatelyOption;
-
-  /// Whether autofocus search is enabled.
-  final bool autofocusSearch;
-
-  /// Quick eat configuration.
-  final InventoryManualAddQuickEatConfig quickEatConfig;
 
   /// Callback when a direct eat flow completes.
   final void Function(InventoryReceiptManualProductResult result)
@@ -70,10 +54,4 @@ class EditorBarcodeDispatchContext {
 
   /// SnackBar message callback.
   final void Function(String message) onShowSnackBar;
-
-  /// Optional save handler.
-  final Future<void> Function(InventoryReceiptManualProductResult)? onSaved;
-
-  /// Page close callback.
-  final void Function(InventoryReceiptManualProductResult) onClosePage;
 }

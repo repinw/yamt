@@ -1,15 +1,11 @@
 import 'dart:async';
-import 'dart:developer' show log;
 import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
-import 'package:yamt/core/utils/store_name_normalizer.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'off_product_search_result_quality.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'global_food_item_edit_policy.dart';
@@ -31,26 +27,16 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
 
 part 'manual_product_search_controller.g.dart';
 
-const _manualProductControllerLogName =
-    'InventoryReceiptManualProductController';
-
 /// Defines inventory receipt manual product controller.
 @riverpod
 class InventoryReceiptManualProductController
     extends _$InventoryReceiptManualProductController {
-  static const _searchDebounceDuration = Duration(milliseconds: 300);
-  static const _searchResultLimit = 20;
   static const _nutritionValueTolerance = 0.000001;
 
-  Timer? _searchDebounce;
   @override
   InventoryReceiptManualProductState build(
     InventoryReceiptManualProductConfig config,
   ) {
-    ref.onDispose(() {
-      _searchDebounce?.cancel();
-    });
-
     final nutrition =
         config.item.nutrition ?? config.selectedProduct?.nutrition;
     final weightInput = resolveManualProductWeightInput(
@@ -59,7 +45,6 @@ class InventoryReceiptManualProductController
     );
 
     return InventoryReceiptManualProductState(
-      searchQuery: buildManualProductInitialSearchQuery(config) ?? '',
       nameText: config.selectedProduct?.name ?? config.item.name,
       brandText: config.selectedProduct?.brand ?? config.item.brand ?? '',
       barcode:
@@ -87,26 +72,6 @@ class InventoryReceiptManualProductController
               config.selectedProduct!,
             ),
     );
-  }
-
-  /// Update search query.
-  void updateSearchQuery(String value) {
-    state = state.copyWith(searchQuery: value, error: null);
-    _searchDebounce?.cancel();
-
-    final query = normalizeManualProductText(value);
-    if (query == null || query.length < 2) {
-      _activeSearchRequestId++;
-      state = state.copyWith(
-        isSearching: false,
-        searchResults: const <OffProductSearchResult>[],
-      );
-      return;
-    }
-
-    _searchDebounce = Timer(_searchDebounceDuration, () {
-      unawaited(_runProductSearch(query));
-    });
   }
 
   /// Update name text.
@@ -255,19 +220,8 @@ class InventoryReceiptManualProductController
     state = state.copyWith(saltText: value, error: null);
   }
 
-  /// Apply search result.
-  void applySearchResult(OffProductSearchResult product) {
-    _searchDebounce?.cancel();
-    _activeSearchRequestId++;
-    _applySelectedProductSelection(
-      InventoryReceiptManualProductSelection.fromSearchResult(product),
-    );
-  }
-
   /// Apply scanned product.
   void applyScannedProduct(OffProductSearchResult product) {
-    _searchDebounce?.cancel();
-    _activeSearchRequestId++;
     _applySelectedProductSelection(
       InventoryReceiptManualProductSelection.fromSearchResult(product),
     );
@@ -275,8 +229,6 @@ class InventoryReceiptManualProductController
 
   /// Apply recent item.
   void applyRecentItem(InventoryItem item) {
-    _searchDebounce?.cancel();
-    _activeSearchRequestId++;
     _applySelectedProductSelection(
       InventoryReceiptManualProductSelection.fromInventoryItem(item),
     );
@@ -284,8 +236,6 @@ class InventoryReceiptManualProductController
 
   /// Apply scanned barcode only.
   void applyScannedBarcodeOnly(String barcode) {
-    _searchDebounce?.cancel();
-    _activeSearchRequestId++;
     state = state.copyWith(
       barcode: barcode,
       nameText: _config.item.name,
@@ -305,8 +255,6 @@ class InventoryReceiptManualProductController
       showFiberField: false,
       isAddingOptionalNutrition: false,
       optionalNutritionValueText: '',
-      searchResults: const <OffProductSearchResult>[],
-      isSearching: false,
       error: null,
     );
   }
@@ -376,8 +324,6 @@ class InventoryReceiptManualProductController
     }
     state = state.copyWith(nutritionOcrImageBytes: imageBytes);
   }
-
-  int _activeSearchRequestId = 0;
 
   InventoryReceiptManualProductConfig get _config => config;
 
@@ -623,44 +569,6 @@ class InventoryReceiptManualProductController
     );
   }
 
-  Future<void> _runProductSearch(String query) async {
-    final requestId = ++_activeSearchRequestId;
-    state = state.copyWith(isSearching: true);
-
-    try {
-      final results = await ref
-          .read(offProductSearchRepositoryProvider)
-          .search(
-            query: query,
-            store: _resolvedSearchStore(),
-            weight: _resolvedSearchWeight(),
-            limit: _searchResultLimit,
-          );
-      final visibleResults = collapseDominatedOffProductSearchResults(results);
-
-      if (!ref.mounted || requestId != _activeSearchRequestId) {
-        return;
-      }
-
-      state = state.copyWith(isSearching: false, searchResults: visibleResults);
-    } on Object catch (error, stackTrace) {
-      log(
-        'Manual product search failed for query "$query".',
-        name: _manualProductControllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      if (!ref.mounted || requestId != _activeSearchRequestId) {
-        return;
-      }
-
-      state = state.copyWith(
-        isSearching: false,
-        searchResults: const <OffProductSearchResult>[],
-      );
-    }
-  }
-
   void _applySelectedProductSelection(
     InventoryReceiptManualProductSelection product,
   ) {
@@ -670,7 +578,6 @@ class InventoryReceiptManualProductController
       fallbackUnit: state.selectedWeightUnit,
     );
     state = state.copyWith(
-      searchQuery: product.name,
       nameText: product.name,
       brandText: product.brand ?? '',
       barcode: product.barcode,
@@ -695,8 +602,6 @@ class InventoryReceiptManualProductController
       optionalNutritionValueText: '',
       selectedProduct: product,
       ocrDraft: null,
-      searchResults: const <OffProductSearchResult>[],
-      isSearching: false,
       error: null,
     );
   }
@@ -872,36 +777,5 @@ class InventoryReceiptManualProductController
       servingQuantityUnit: selection.servingQuantityUnit,
       nutrition: selection.nutrition,
     );
-  }
-
-  String? _resolvedSearchStore() {
-    if (!_config.includeStoreInSearch) {
-      return null;
-    }
-
-    final normalizedStoreName = normalizeStoreName(_config.item.storeName);
-    final normalizedBrandStore = _normalizeSupportedExternalStore(
-      _config.item.brand,
-    );
-    final supportedStore = _normalizeSupportedExternalStore(
-      normalizedStoreName,
-    );
-    return supportedStore ?? normalizedBrandStore;
-  }
-
-  String? _resolvedSearchWeight() {
-    if (!_config.includeWeightInSearch) {
-      return null;
-    }
-    return normalizeManualProductText(_config.item.weight ?? '');
-  }
-
-  String? _normalizeSupportedExternalStore(String? rawValue) {
-    final normalized = normalizeStoreName(rawValue);
-    return switch (normalized) {
-      'Aldi' => 'Aldi',
-      'Netto' => 'Netto',
-      _ => null,
-    };
   }
 }

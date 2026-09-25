@@ -20,9 +20,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_barcode_context.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_page/'
-    'manual_product_search_editor_navigation.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_editor_page/'
     'manual_product_search_editor_support.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
@@ -39,7 +36,6 @@ Future<void> openEditorBarcodeScanner({
   required InventoryReceiptManualProductConfig config,
   required InventoryReceiptManualProductController controller,
   required bool showEatImmediatelyOption,
-  required bool autofocusSearch,
   required void Function(InventoryReceiptManualProductResult result)
   onDirectComplete,
   required void Function(
@@ -54,8 +50,6 @@ Future<void> openEditorBarcodeScanner({
   onApplyScannedInventoryItem,
   required void Function(String barcode) onApplyScannedBarcodeOnly,
   required void Function(String message) onShowSnackBar,
-  required Future<void> Function(InventoryReceiptManualProductResult)? onSaved,
-  required void Function(InventoryReceiptManualProductResult) onClosePage,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final result = await showModalBottomSheet<ManualBarcodeScanResult>(
@@ -102,16 +96,11 @@ Future<void> openEditorBarcodeScanner({
     context: context,
     config: config,
     controller: controller,
-    showEatImmediatelyOption: showEatImmediatelyOption,
-    autofocusSearch: autofocusSearch,
-    quickEatConfig: quickEatConfig,
     onDirectComplete: onDirectComplete,
     onApplyScannedProduct: onApplyScannedProduct,
     onApplyScannedInventoryItem: onApplyScannedInventoryItem,
     onApplyScannedBarcodeOnly: onApplyScannedBarcodeOnly,
     onShowSnackBar: onShowSnackBar,
-    onSaved: onSaved,
-    onClosePage: onClosePage,
   );
   await _dispatchBarcodeScanResult(dispatchContext, result);
 }
@@ -173,26 +162,13 @@ Future<void> _handleScannedExternalProduct(
     }
   }
 
-  if (ctx.autofocusSearch || ctx.quickEatConfig.quickEatOnly) {
-    await openSelectedProductEditor(
-      context: ctx.context,
-      quickEatConfig: ctx.quickEatConfig,
-      parentConfig: ctx.config,
-      product: product,
-      action: action,
-      showEatImmediatelyOption: ctx.showEatImmediatelyOption,
-      showActionSelector: false,
-      initialInfoMessage: action == InventoryReceiptManualProductAction.eatNow
-          ? AppLocalizations.of(ctx.context)!
-                .inventoryManualAddEatNowRequiresNutrition
-          : null,
-      onSaved: ctx.onSaved,
-      onClosePage: ctx.onClosePage,
-    );
-    return;
-  }
-
   ctx.onApplyScannedProduct(product, action);
+  if (action == InventoryReceiptManualProductAction.eatNow) {
+    ctx.onShowSnackBar(
+      AppLocalizations.of(ctx.context)!
+          .inventoryManualAddEatNowRequiresNutrition,
+    );
+  }
 }
 
 void _handleScannedGlobalFoodItem(

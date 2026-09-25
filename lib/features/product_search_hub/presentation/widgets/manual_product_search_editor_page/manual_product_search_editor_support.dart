@@ -16,35 +16,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Replaces text in [controller] with [nextText] while preserving selection.
-void replaceControllerText(
-  TextEditingController controller,
-  String nextText, {
-  bool collapseSelectionToEnd = false,
-}) {
-  if (controller.text == nextText) {
-    return;
-  }
-
-  final selection = collapseSelectionToEnd
-      ? TextSelection.collapsed(offset: nextText.length)
-      : clampTextSelection(controller.selection, nextText.length);
-
-  controller.value = TextEditingValue(text: nextText, selection: selection);
-}
-
-/// Clamps [selection] offsets to [textLength].
-TextSelection clampTextSelection(TextSelection selection, int textLength) {
-  final baseOffset = selection.baseOffset.clamp(0, textLength);
-  final extentOffset = selection.extentOffset.clamp(0, textLength);
-  return TextSelection(
-    baseOffset: baseOffset,
-    extentOffset: extentOffset,
-    affinity: selection.affinity,
-    isDirectional: selection.isDirectional,
-  );
-}
-
 /// Checks whether [state] or [config] satisfies nutritional values for eat now.
 bool canEatNow({
   required InventoryReceiptManualProductState state,
@@ -169,8 +140,6 @@ Future<void> executeEditorSave({
   required InventoryReceiptManualProductConfig config,
   required InventoryReceiptManualProductController controller,
   required InventoryReceiptManualProductAction selectedAction,
-  required bool closeCurrentEditorOnSave,
-  required Future<void> Function(InventoryReceiptManualProductResult)? onSaved,
   required void Function(InventoryReceiptManualProductResult) onClosePage,
 }) async {
   final provider = inventoryReceiptManualProductControllerProvider(config);
@@ -192,14 +161,6 @@ Future<void> executeEditorSave({
     payload: payload,
     action: selectedAction,
   );
-  if (closeCurrentEditorOnSave) {
-    onClosePage(result);
-    return;
-  }
-  if (onSaved != null) {
-    await onSaved(result);
-    return;
-  }
   onClosePage(result);
 }
 
