@@ -65,6 +65,20 @@ Future<ProductSearchHubEditedResult?> openProductSearchHubCustomEntry({
   return _editedResult(result);
 }
 
+/// Reopens the editor for a created product whose follow-up was canceled.
+Future<ProductSearchHubEditedResult?> reopenProductSearchHubCreatedEntry({
+  required BuildContext context,
+  required ProductSearchHubRouteArgs args,
+  required inventory_models.InventoryReceiptManualProductResult result,
+}) async {
+  final edited = await openProductSearchHubCustomProductEditor(
+    context: context,
+    draftItem: result.item,
+    args: args,
+  );
+  return _editedResult(edited);
+}
+
 ProductSearchHubEditedResult? _editedResult(
   inventory_models.InventoryReceiptManualProductResult? result,
 ) {

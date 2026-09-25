@@ -18,6 +18,8 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_entry_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_navigation.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_result_flow.dart';
@@ -83,12 +85,8 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
           popProductSearchHubRoute(context: context, isBlocked: false),
       onProductSelected: _openProduct,
       onRecentItemPressed: _openRecentItem,
-      onEntryResult: (entry) => _runWhenIdle(
-        () => _completeEditedResult(
-          sourceKey: entry.sourceKey,
-          result: entry.result,
-        ),
-      ),
+      onEntryResult: (entry) =>
+          _runWhenIdle(() => _completeCreatedEntry(entry)),
       onInitialIntentCancelled: _closeHub,
     );
   }
@@ -123,7 +121,29 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     return _selectionState.containsSourceKey(sourceKey) || _isMutatingSelection;
   }
 
-  Future<void> _completeEditedResult({
+  /// Completes a created product. Canceling the eat or save dialog that
+  /// follows reopens the editor with the entered values.
+  Future<void> _completeCreatedEntry(ProductSearchHubEditedResult entry) async {
+    ProductSearchHubEditedResult? current = entry;
+    while (current != null) {
+      final wasCanceled = await _completeEditedResult(
+        sourceKey: current.sourceKey,
+        result: current.result,
+      );
+      if (!wasCanceled || !mounted) {
+        return;
+      }
+      current = await reopenProductSearchHubCreatedEntry(
+        context: context,
+        args: widget.args,
+        result: current.result,
+      );
+    }
+  }
+
+  /// Completes [result] for the route mode. Returns whether the user canceled
+  /// the follow-up dialog.
+  Future<bool> _completeEditedResult({
     required String sourceKey,
     required inventory_models.InventoryReceiptManualProductResult result,
   }) async {
@@ -133,11 +153,11 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
         'or a save is running (saving=$_isMutatingSelection).',
         name: 'ProductSearchHubPage',
       );
-      return;
+      return false;
     }
     if (widget.args.mode == ProductSearchHubMode.selection) {
       _closeHub(result);
-      return;
+      return false;
     }
 
     setState(() => _isMutatingSelection = true);
@@ -150,7 +170,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       continueDiaryBatch: _selectionState.selections.isNotEmpty,
     );
     if (!context.mounted) {
-      return;
+      return false;
     }
     final shouldContinueBatch =
         completion.shouldCloseHub && _selectionState.selections.isNotEmpty;
@@ -165,6 +185,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     if (completion.shouldCloseHub && !shouldContinueBatch) {
       _closeHub(true);
     }
+    return completion.wasCanceled;
   }
 
   Future<void> _removeSavedSelection(

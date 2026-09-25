@@ -2,10 +2,17 @@ import 'package:yamt/features/product_search_hub/domain/product_search_hub_saved
 
 /// Result of completing a hub product result.
 class ProductSearchHubCompletionResult {
-  const new _({required this.shouldCloseHub, this.selection});
+  const new _({
+    required this.shouldCloseHub,
+    this.selection,
+    this.wasCanceled = false,
+  });
 
   /// No user-visible completion action.
   const new none() : this._(shouldCloseHub: false);
+
+  /// The user canceled the follow-up dialog.
+  const new canceled() : this._(shouldCloseHub: false, wasCanceled: true);
 
   /// Close the hub after a direct save.
   const new closeHub({ProductSearchHubSavedSelection? selection})
@@ -20,4 +27,7 @@ class ProductSearchHubCompletionResult {
 
   /// Saved selection to show in overlay.
   final ProductSearchHubSavedSelection? selection;
+
+  /// Whether the user canceled the follow-up dialog.
+  final bool wasCanceled;
 }

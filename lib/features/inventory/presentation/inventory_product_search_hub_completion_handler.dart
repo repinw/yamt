@@ -59,6 +59,9 @@ class InventoryProductSearchHubCompletionHandler
           tone: AppSnackBarTone.error,
         );
       }
+      if (outcome.status == InventoryManualProductSaveStatus.canceled) {
+        return const ProductSearchHubCompletionResult.canceled();
+      }
       return const ProductSearchHubCompletionResult.none();
     }
     return ProductSearchHubCompletionResult.showOverlay(

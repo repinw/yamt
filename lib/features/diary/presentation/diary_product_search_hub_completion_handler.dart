@@ -65,6 +65,9 @@ class DiaryProductSearchHubCompletionHandler
           tone: AppSnackBarTone.error,
         );
       }
+      if (outcome.status == InventoryManualProductEatStatus.canceled) {
+        return const ProductSearchHubCompletionResult.canceled();
+      }
       return const ProductSearchHubCompletionResult.none();
     }
     final selection = ProductSearchHubSavedSelection(

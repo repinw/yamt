@@ -400,6 +400,38 @@ void main() {
     expect(inventoryController.addedItems, hasLength(1));
   });
 
+  testWidgets('back on the eat page reopens the editor of a created product', (
+    tester,
+  ) async {
+    final childArgs = <ManualProductSearchRouteArgs>[];
+
+    await _pumpRouteHarness(
+      tester,
+      args: _diaryArgs(),
+      childRouteResults: [_diarySheetResult(id: 'created-item', name: 'Skyr')],
+      inventoryController: _SuccessfulInventoryItemsController(),
+      firebaseAuth: _signedInAuth(),
+      commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+      onChildRouteArgs: childArgs.add,
+    );
+
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('return_child_result')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('product search child route'), findsOneWidget);
+    expect(childArgs.last.flow, ManualProductSearchChildFlow.editor);
+    expect(childArgs.last.item.id, 'created-item');
+    expect(childArgs.last.item.name, 'Skyr');
+  });
+
   testWidgets('diary add-more eat stays on the page with overlay', (
     tester,
   ) async {
