@@ -91,7 +91,7 @@ class ManualProductDetailsForm extends StatefulWidget {
   final String barcodeText;
   final bool hasNoBarcode;
   final String weightAmount;
-  final InventoryAmountUnit selectedWeightUnit;
+  final InventoryAmountUnit? selectedWeightUnit;
   final String kcalText;
   final String saturatedFatText;
   final String polyunsaturatedFatText;

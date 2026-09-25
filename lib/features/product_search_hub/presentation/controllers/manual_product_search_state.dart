@@ -17,7 +17,7 @@ class InventoryReceiptManualProductState {
     this.barcode = '',
     this.hasNoBarcode = false,
     this.weightAmount = '',
-    this.selectedWeightUnit = InventoryAmountUnit.gram,
+    this.selectedWeightUnit,
     this.kcalText = '',
     this.saturatedFatText = '',
     this.polyunsaturatedFatText = '',
@@ -57,7 +57,7 @@ class InventoryReceiptManualProductState {
   final String weightAmount;
 
   /// The selected weight unit.
-  final InventoryAmountUnit selectedWeightUnit;
+  final InventoryAmountUnit? selectedWeightUnit;
 
   /// The kcal text.
   final String kcalText;
@@ -127,9 +127,10 @@ class InventoryReceiptManualProductState {
     return parseManualProductDouble(weightAmount) != null;
   }
 
-  /// Whether name, kcal, carbs, protein and fat are filled in.
+  /// Whether name, unit, kcal, carbs, protein and fat are filled in.
   bool get hasRequiredFields {
     return normalizeManualProductText(nameText) != null &&
+        selectedWeightUnit != null &&
         parseManualProductDouble(kcalText) != null &&
         parseManualProductDouble(carbsText) != null &&
         parseManualProductDouble(proteinText) != null &&

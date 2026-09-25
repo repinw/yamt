@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -10,6 +11,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 const _complete = InventoryReceiptManualProductState(
   nameText: 'Skyr',
   weightAmount: '500',
+  selectedWeightUnit: InventoryAmountUnit.gram,
   kcalText: '63',
   carbsText: '4',
   proteinText: '11',
@@ -17,7 +19,7 @@ const _complete = InventoryReceiptManualProductState(
 );
 
 void main() {
-  test('saving needs name, kcal, carbs, protein and fat', () {
+  test('saving needs name, unit, kcal, carbs, protein and fat', () {
     expect(
       canSaveManualProduct(
         state: _complete,
@@ -28,6 +30,13 @@ void main() {
 
     for (final missing in <InventoryReceiptManualProductState>[
       _complete.copyWith(nameText: ' '),
+      InventoryReceiptManualProductState(
+        nameText: _complete.nameText,
+        kcalText: _complete.kcalText,
+        carbsText: _complete.carbsText,
+        proteinText: _complete.proteinText,
+        fatText: _complete.fatText,
+      ),
       _complete.copyWith(kcalText: ''),
       _complete.copyWith(carbsText: ''),
       _complete.copyWith(proteinText: ''),

@@ -50,7 +50,7 @@ class InventoryReceiptManualProductController
       barcode:
           config.item.normalizedBarcode ?? config.selectedProduct?.code ?? '',
       weightAmount: weightInput.amount,
-      selectedWeightUnit: weightInput.unit,
+      selectedWeightUnit: weightInput.amount.isEmpty ? null : weightInput.unit,
       kcalText: formatManualProductDouble(nutrition?.per100Kcal),
       saturatedFatText: formatManualProductDouble(
         nutrition?.per100SaturatedFat,
@@ -567,7 +567,9 @@ class InventoryReceiptManualProductController
       brandText: product.brand ?? '',
       barcode: product.barcode,
       weightAmount: weightInput.amount,
-      selectedWeightUnit: weightInput.unit,
+      selectedWeightUnit: weightInput.amount.isEmpty
+          ? state.selectedWeightUnit
+          : weightInput.unit,
       kcalText: formatManualProductDouble(nutrition?.per100Kcal),
       saturatedFatText: formatManualProductDouble(
         nutrition?.per100SaturatedFat,
@@ -594,7 +596,7 @@ class InventoryReceiptManualProductController
   void _applyOcrDraft(NutritionLabelOcrDraft draft) {
     final ocrWeightInput = resolveManualProductOcrWeightInput(
       draft.quantityLabel,
-      fallbackUnit: state.selectedWeightUnit,
+      fallbackUnit: state.selectedWeightUnit ?? InventoryAmountUnit.gram,
     );
     final ocrName = normalizeManualProductText(draft.name ?? '');
     final ocrBrand = normalizeManualProductText(draft.brand ?? '');

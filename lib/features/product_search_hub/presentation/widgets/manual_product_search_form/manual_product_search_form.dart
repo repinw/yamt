@@ -100,7 +100,7 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   final String weightAmount;
 
   /// The selected weight unit.
-  final InventoryAmountUnit selectedWeightUnit;
+  final InventoryAmountUnit? selectedWeightUnit;
 
   /// The kcal text.
   final String kcalText;

@@ -120,8 +120,8 @@ class ManualProductWeightFields extends StatelessWidget {
   /// Current amount text.
   final String amountValue;
 
-  /// Selected weight unit.
-  final InventoryAmountUnit selectedUnit;
+  /// Selected weight unit, or null until the user picks one.
+  final InventoryAmountUnit? selectedUnit;
 
   /// Called when amount changes.
   final ValueChanged<String?> onAmountChanged;
@@ -167,7 +167,9 @@ class ManualProductWeightFields extends StatelessWidget {
             name: ManualProductSearchFormFieldName.weightUnit,
             initialValue: selectedUnit,
             decoration: InputDecoration(
-              labelText: l10n.inventoryReceiptReviewFieldWeightUnit,
+              labelText: l10n.productSearchHubRequiredFieldLabel(
+                l10n.inventoryReceiptReviewFieldWeightUnit,
+              ),
               border: const OutlineInputBorder(),
             ),
             items: [

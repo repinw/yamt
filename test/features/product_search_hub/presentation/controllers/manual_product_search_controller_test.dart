@@ -546,6 +546,27 @@ void main() {
     },
   );
 
+  test('an empty draft starts without a unit until the user picks one', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: _item(name: '')),
+    );
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+
+    expect(container.read(provider).selectedWeightUnit, isNull);
+
+    container
+        .read(provider.notifier)
+        .updateWeightUnit(InventoryAmountUnit.milliliter);
+
+    expect(
+      container.read(provider).selectedWeightUnit,
+      InventoryAmountUnit.milliliter,
+    );
+  });
+
   test('updateBarcode enables the nutrition label scan', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -691,7 +712,7 @@ void main() {
     expect(state.selectedWeightUnit, InventoryAmountUnit.piece);
   });
 
-  test('invalid weight keeps fallback unit and clears amount', () {
+  test('invalid weight clears amount and leaves the unit to the user', () {
     final config = _config(
       itemWeight: 'unbekannt',
       itemAmountUnit: InventoryAmountUnit.piece,
@@ -704,7 +725,7 @@ void main() {
     );
 
     expect(state.weightAmount, isEmpty);
-    expect(state.selectedWeightUnit, InventoryAmountUnit.piece);
+    expect(state.selectedWeightUnit, isNull);
   });
 
   test(
