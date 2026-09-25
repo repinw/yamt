@@ -63,7 +63,6 @@ Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
         closeCurrentEditorOnSave: args.closeCurrentEditorOnSave,
         showActionSelector: args.showActionSelector,
         autofocusSearch: args.autofocusSearch,
-        initialStartVoiceSearch: args.initialStartVoiceSearch,
         initialRecentItem: args.initialRecentItem,
         initialInfoMessage: args.initialInfoMessage,
         onSaved: args.onSaved,

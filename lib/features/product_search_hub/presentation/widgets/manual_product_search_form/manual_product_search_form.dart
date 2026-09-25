@@ -1,10 +1,6 @@
 import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
-import 'package:yamt/features/inventory/data/'
-    'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart'
@@ -12,105 +8,16 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_preview.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_recent_items.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_search_shell.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form_details.dart';
-
-/// Defines inventory receipt manual product launcher content.
-class InventoryReceiptManualProductLauncherContent extends StatelessWidget {
-  /// The inventory receipt manual product launcher content.
-  const new({
-    required this.title,
-    required this.searchController,
-    required this.recentItems,
-    required this.onClose,
-    required this.onAiSearchTap,
-    required this.onSearchTap,
-    required this.onVoiceSearchTap,
-    required this.onRecentItemSelected,
-    required this.onScanBarcode,
-    super.key,
-    this.showRecentItemActions = false,
-    this.onRecentItemStoreSelected,
-    this.onRecentItemEatSelected,
-  });
-
-  /// Dialog title.
-  final String title;
-
-  /// The search controller.
-  final TextEditingController searchController;
-
-  /// The recent items.
-  final List<InventoryItem> recentItems;
-
-  /// Close action.
-  final VoidCallback onClose;
-
-  /// Open AI search page.
-  final VoidCallback onAiSearchTap;
-
-  /// The on search tap.
-  final VoidCallback onSearchTap;
-
-  /// The on voice search tap.
-  final VoidCallback onVoiceSearchTap;
-
-  /// The on recent item selected.
-  final ValueChanged<InventoryItem> onRecentItemSelected;
-
-  /// The on scan barcode.
-  final VoidCallback onScanBarcode;
-
-  /// Whether recent items show action buttons.
-  final bool showRecentItemActions;
-
-  /// The on recent item store selected.
-  final ValueChanged<InventoryItem>? onRecentItemStoreSelected;
-
-  /// The on recent item eat selected.
-  final ValueChanged<InventoryItem>? onRecentItemEatSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return ManualProductSearchShell(
-      title: title,
-      onClose: onClose,
-      searchBar: ManualProductSearchToolbar(
-        searchController: searchController,
-        clearButtonKey: const Key(
-          'receipt_review_manual_launcher_search_clear_button',
-        ),
-        fieldKey: const Key('receipt_review_manual_launcher_search_field'),
-        readOnly: true,
-        onTap: onSearchTap,
-        onVoiceSearchPressed: onVoiceSearchTap,
-        onAiSearchTap: onAiSearchTap,
-        onScanBarcode: onScanBarcode,
-      ),
-      body: ManualProductRecentItems(
-        items: recentItems,
-        onSelect: onRecentItemSelected,
-        onStoreSelect: showRecentItemActions ? onRecentItemStoreSelected : null,
-        onEatSelect: showRecentItemActions ? onRecentItemEatSelected : null,
-      ),
-    );
-  }
-}
 
 /// Defines inventory receipt manual product form.
 class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The inventory receipt manual product form.
   const new({
-    required this.title,
-    required this.searchController,
-    required this.isSearching,
     required this.canSave,
     required this.isRunningNutritionOcr,
-    required this.searchResults,
-    required this.recentItems,
     required this.nameText,
     required this.brandText,
     required this.barcodeText,
@@ -135,11 +42,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.availableOptionalNutritionTypes,
     required this.preview,
     required this.errorText,
-    required this.onAiSearchTap,
     required this.showActionSelector,
     required this.selectedAction,
-    required this.onSearchResultSelected,
-    required this.onRecentItemSelected,
     required this.onScanBarcode,
     required this.onNameChanged,
     required this.onBrandChanged,
@@ -165,25 +69,9 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
     required this.onCancel,
     required this.onSave,
     super.key,
-    this.autofocusSearch = false,
     this.nutritionOcrImageBytes,
-    this.onSearchChanged,
-    this.voiceSearchService,
-    this.voiceSearchController,
-    this.startVoiceSearchOnMount = false,
-    this.onSearchResultStoreSelected,
-    this.onSearchResultEatSelected,
     this.onActionChanged,
   });
-
-  /// Dialog title.
-  final String title;
-
-  /// The search controller.
-  final TextEditingController searchController;
-
-  /// Whether searching.
-  final bool isSearching;
 
   /// Whether save.
   final bool canSave;
@@ -193,15 +81,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
 
   /// Captured nutrition-label image shown while OCR runs.
   final Uint8List? nutritionOcrImageBytes;
-
-  /// The autofocus search.
-  final bool autofocusSearch;
-
-  /// The search results.
-  final List<OffProductSearchResult> searchResults;
-
-  /// The recent items.
-  final List<InventoryItem> recentItems;
 
   /// The name text.
   final String nameText;
@@ -277,23 +156,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// The error text.
   final String? errorText;
 
-  /// Open AI search page.
-  final VoidCallback onAiSearchTap;
-
   /// Whether action selector visible.
   final bool showActionSelector;
-
-  /// The on search result selected.
-  final ValueChanged<OffProductSearchResult> onSearchResultSelected;
-
-  /// The on search result store selected.
-  final ValueChanged<OffProductSearchResult>? onSearchResultStoreSelected;
-
-  /// The on search result eat selected.
-  final ValueChanged<OffProductSearchResult>? onSearchResultEatSelected;
-
-  /// The on recent item selected.
-  final ValueChanged<InventoryItem> onRecentItemSelected;
 
   /// The on scan barcode.
   final VoidCallback onScanBarcode;
@@ -307,20 +171,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   /// Called when the barcode text changes.
   final ValueChanged<String> onBarcodeChanged;
 
-  /// The on search changed.
-  final ValueChanged<String>? onSearchChanged;
-
   /// The on weight amount changed.
   final ValueChanged<String> onWeightAmountChanged;
-
-  /// The voice search service.
-  final VoiceSearchService? voiceSearchService;
-
-  /// The voice search controller.
-  final TextVoiceSearchController? voiceSearchController;
-
-  /// The start voice search on mount.
-  final bool startVoiceSearchOnMount;
 
   /// The on weight unit changed.
   final ValueChanged<InventoryAmountUnit> onWeightUnitChanged;
@@ -393,24 +245,8 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ManualProductSearchShell(
-      title: title,
       onClose: onCancel,
-      searchBar: ManualProductSearchToolbar(
-        searchController: searchController,
-        clearButtonKey: const Key('receipt_review_manual_search_clear_button'),
-        fieldKey: const Key('receipt_review_manual_search_field'),
-        isSearching: isSearching,
-        autofocus: autofocusSearch,
-        onChanged: onSearchChanged,
-        voiceSearchService: voiceSearchService,
-        voiceSearchController: voiceSearchController,
-        startVoiceSearchOnMount: startVoiceSearchOnMount,
-        onAiSearchTap: onAiSearchTap,
-        onScanBarcode: onScanBarcode,
-      ),
       body: ManualProductDetailsForm(
-        searchResults: searchResults,
-        recentItems: recentItems,
         preview: preview,
         nameText: nameText,
         brandText: brandText,
@@ -440,10 +276,6 @@ class InventoryReceiptManualProductForm extends StatelessWidget {
         canSave: canSave,
         isRunningNutritionOcr: isRunningNutritionOcr,
         nutritionOcrImageBytes: nutritionOcrImageBytes,
-        onSearchResultSelected: onSearchResultSelected,
-        onSearchResultStoreSelected: onSearchResultStoreSelected,
-        onSearchResultEatSelected: onSearchResultEatSelected,
-        onRecentItemSelected: onRecentItemSelected,
         onNameChanged: onNameChanged,
         onBrandChanged: onBrandChanged,
         onBarcodeChanged: onBarcodeChanged,

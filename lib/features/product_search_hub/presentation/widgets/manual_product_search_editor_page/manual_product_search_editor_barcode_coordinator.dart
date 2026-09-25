@@ -40,7 +40,6 @@ Future<void> openEditorBarcodeScanner({
   required InventoryReceiptManualProductController controller,
   required bool showEatImmediatelyOption,
   required bool autofocusSearch,
-  required Future<void> Function() onStopVoiceSearch,
   required void Function(InventoryReceiptManualProductResult result)
   onDirectComplete,
   required void Function(
@@ -58,11 +57,6 @@ Future<void> openEditorBarcodeScanner({
   required Future<void> Function(InventoryReceiptManualProductResult)? onSaved,
   required void Function(InventoryReceiptManualProductResult) onClosePage,
 }) async {
-  await onStopVoiceSearch();
-  if (!context.mounted) {
-    return;
-  }
-
   final l10n = AppLocalizations.of(context)!;
   final result = await showModalBottomSheet<ManualBarcodeScanResult>(
     context: context,

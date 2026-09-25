@@ -2,10 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
-import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
@@ -13,8 +10,6 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
-import 'package:yamt/features/product_search_hub/presentation/controllers/'
-    'manual_product_search_state.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_page/'
     'manual_product_search_editor_actions.dart';
@@ -25,9 +20,11 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_page/'
     'manual_product_search_editor_support.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_page_route.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 
-/// Full manual product editor for search, product details, and nutrition input.
+/// Full manual product editor for product details and nutrition input.
 class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   /// Creates a manual product editor page.
   const new({
@@ -39,7 +36,6 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
     this.showActionSelector = true,
     this.onSaved,
     this.autofocusSearch = false,
-    this.initialStartVoiceSearch = false,
     this.initialRecentItem,
     this.initialInfoMessage,
     super.key,
@@ -70,9 +66,6 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   /// Whether the search field should autofocus.
   final bool autofocusSearch;
 
-  /// Whether voice search should start when mounted.
-  final bool initialStartVoiceSearch;
-
   /// Optional recent item to apply after mount.
   final InventoryItem? initialRecentItem;
 
@@ -86,10 +79,6 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
 
 class _InventoryReceiptManualProductEditorPageState
     extends ConsumerState<InventoryReceiptManualProductEditorPage> {
-  late final VoiceSearchService _voiceSearchService;
-  final _voiceSearchController = TextVoiceSearchController();
-  late final TextEditingController _searchController;
-  ProviderSubscription<InventoryReceiptManualProductState>? _stateSubscription;
   bool _didBindProviderState = false;
   bool _didScheduleInitialRecentItem = false;
   late InventoryReceiptManualProductAction _selectedAction =
@@ -105,11 +94,9 @@ class _InventoryReceiptManualProductEditorPageState
   @override
   void initState() {
     super.initState();
-    _voiceSearchService = ref.read(voiceSearchServiceProvider);
     if (widget.quickEatConfig.quickEatOnly) {
       _selectedAction = InventoryReceiptManualProductAction.eatNow;
     }
-    _searchController = TextEditingController();
     scheduleEditorInitialInfoMessage(
       message: widget.initialInfoMessage,
       isMounted: () => mounted,
@@ -129,11 +116,6 @@ class _InventoryReceiptManualProductEditorPageState
       return;
     }
     _didBindProviderState = true;
-    _syncSearchController(ref.read(_provider));
-    _stateSubscription = ref.listenManual<InventoryReceiptManualProductState>(
-      _provider,
-      (previous, next) => _syncSearchController(next),
-    );
     if (!_didScheduleInitialRecentItem) {
       _didScheduleInitialRecentItem = true;
       scheduleEditorInitialRecentItem(
@@ -142,22 +124,6 @@ class _InventoryReceiptManualProductEditorPageState
         onApplyRecentItem: _controller.applyRecentItem,
       );
     }
-  }
-
-  void _syncSearchController(InventoryReceiptManualProductState state) {
-    replaceControllerText(
-      _searchController,
-      state.searchQuery,
-      collapseSelectionToEnd: true,
-    );
-  }
-
-  @override
-  void dispose() {
-    _voiceSearchController.dispose();
-    _stateSubscription?.close();
-    _searchController.dispose();
-    super.dispose();
   }
 
   @override
@@ -172,20 +138,13 @@ class _InventoryReceiptManualProductEditorPageState
     return ManualProductSearchEditorFormView(
       state: state,
       controller: _controller,
-      searchController: _searchController,
-      voiceSearchController: _voiceSearchController,
-      voiceSearchService: _voiceSearchService,
       quickEatConfig: widget.quickEatConfig,
       selectedAction: _selectedAction,
       showActionSelector: _showActionSelector,
       showEatImmediatelyOption: widget.showEatImmediatelyOption,
-      autofocusSearch: widget.autofocusSearch,
-      startVoiceSearchOnMount: widget.initialStartVoiceSearch,
       preview: buildEditorPreviewData(_controller),
       canSave: canSave,
-      onSearchResultAction: _handleSearchResultAction,
       onScanBarcode: () => unawaited(_openBarcodeScanner()),
-      onAiSearchTap: () => unawaited(_openAiSearchPage()),
       onScanNutritionLabel: state.canScanNutritionLabel
           ? _onScanNutritionLabel
           : null,
@@ -219,34 +178,11 @@ class _InventoryReceiptManualProductEditorPageState
     );
   }
 
-  void _handleSearchResultAction(
-    OffProductSearchResult product,
-    InventoryReceiptManualProductAction action,
-  ) {
-    unawaited(
-      launchEditorSearchResultAction(
-        context: context,
-        quickEatConfig: widget.quickEatConfig,
-        product: product,
-        action: action,
-        config: widget.config,
-        controller: _controller,
-        voiceSearchController: _voiceSearchController,
-        autofocusSearch: widget.autofocusSearch,
-        showEatImmediatelyOption: widget.showEatImmediatelyOption,
-        onSaved: widget.onSaved,
-        onClosePage: _closePage,
-        onApplyAction: _apply,
-      ),
-    );
-  }
-
   Future<void> _openBarcodeScanner() => launchEditorBarcodeScanner(
     context: context,
     quickEatConfig: widget.quickEatConfig,
     config: widget.config,
     controller: _controller,
-    voiceSearchController: _voiceSearchController,
     showEatImmediatelyOption: widget.showEatImmediatelyOption,
     autofocusSearch: widget.autofocusSearch,
     onApplyAction: _apply,
@@ -265,25 +201,9 @@ class _InventoryReceiptManualProductEditorPageState
     }
   }
 
-  Future<void> _openAiSearchPage() => launchEditorAiSearchPage(
-    context: context,
-    quickEatConfig: widget.quickEatConfig,
-    config: widget.config,
-    voiceSearchController: _voiceSearchController,
-    searchQuery: _searchController.text,
-    showEatImmediatelyOption: widget.showEatImmediatelyOption,
-    selectedAction: _selectedAction,
-    closeCurrentEditorOnSave: widget.closeCurrentEditorOnSave,
-    onSaved: widget.onSaved,
-    onClosePage: _closePage,
-  );
-
   void _showSnackBar(String message) =>
       showEditorSnackBar(context, message, tone: AppSnackBarTone.error);
 
-  void _closePage<T extends Object?>([T? result]) => closeEditorPage(
-    context: context,
-    voiceSearchController: _voiceSearchController,
-    result: result,
-  );
+  void _closePage<T extends Object?>([T? result]) =>
+      popManualProductSearchPage(context, result);
 }

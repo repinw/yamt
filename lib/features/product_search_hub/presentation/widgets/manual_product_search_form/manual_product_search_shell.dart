@@ -1,25 +1,22 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shell for manual product search modal pages.
 class ManualProductSearchShell extends StatelessWidget {
   /// Creates a manual product search shell.
   const new({
-    required this.title,
-    required this.searchBar,
     required this.body,
     required this.onClose,
+    this.title,
+    this.searchBar,
     super.key,
   });
 
   /// Dialog title.
-  final String title;
+  final String? title;
 
   /// Search bar area.
-  final Widget searchBar;
+  final Widget? searchBar;
 
   /// Main content.
   final Widget body;
@@ -45,13 +42,15 @@ class ManualProductSearchShell extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ManualProductDialogHeader(title: title, onClose: onClose),
-            const SizedBox(height: AppSpacing.lg),
-            Theme(data: _buildSearchToolbarTheme(context), child: searchBar),
-            const SizedBox(height: AppSpacing.lg),
-            Divider(
-              height: 1,
-              color: colors.outlineVariant.withValues(alpha: 0.55),
-            ),
+            if (searchBar case final searchBar?) ...[
+              const SizedBox(height: AppSpacing.lg),
+              Theme(data: _buildSearchToolbarTheme(context), child: searchBar),
+              const SizedBox(height: AppSpacing.lg),
+              Divider(
+                height: 1,
+                color: colors.outlineVariant.withValues(alpha: 0.55),
+              ),
+            ],
             const SizedBox(height: AppSpacing.lg),
             body,
           ],
@@ -61,111 +60,13 @@ class ManualProductSearchShell extends StatelessWidget {
   }
 }
 
-/// Search toolbar for manual product flows.
-class ManualProductSearchToolbar extends StatelessWidget {
-  /// Creates a manual product search toolbar.
-  const new({
-    required this.searchController,
-    required this.onAiSearchTap,
-    required this.onScanBarcode,
-    required this.clearButtonKey,
-    required this.fieldKey,
-    super.key,
-    this.isSearching = false,
-    this.readOnly = false,
-    this.autofocus = false,
-    this.onTap,
-    this.onChanged,
-    this.onVoiceSearchPressed,
-    this.voiceSearchService,
-    this.voiceSearchController,
-    this.startVoiceSearchOnMount = false,
-  });
-
-  /// Search text controller.
-  final TextEditingController searchController;
-
-  /// Opens AI search.
-  final VoidCallback onAiSearchTap;
-
-  /// Opens barcode scanner.
-  final VoidCallback onScanBarcode;
-
-  /// Clear button key.
-  final Key clearButtonKey;
-
-  /// Search field key.
-  final Key fieldKey;
-
-  /// Whether search is running.
-  final bool isSearching;
-
-  /// Whether search input is read-only.
-  final bool readOnly;
-
-  /// Whether search input autofocuses.
-  final bool autofocus;
-
-  /// Tap callback.
-  final VoidCallback? onTap;
-
-  /// Text change callback.
-  final ValueChanged<String>? onChanged;
-
-  /// Voice search button callback.
-  final VoidCallback? onVoiceSearchPressed;
-
-  /// Voice search service.
-  final VoiceSearchService? voiceSearchService;
-
-  /// Voice search controller.
-  final TextVoiceSearchController? voiceSearchController;
-
-  /// Whether voice search should start on mount.
-  final bool startVoiceSearchOnMount;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        TextVoiceSearchBar(
-          controller: searchController,
-          label: l10n.inventoryReceiptReviewManualSearchLabel,
-          hintText: l10n.inventoryReceiptReviewManualSearchLabel,
-          isSearching: isSearching,
-          voiceButtonKey: const Key(
-            'receipt_review_manual_voice_search_button',
-          ),
-          clearButtonKey: clearButtonKey,
-          fieldKey: fieldKey,
-          readOnly: readOnly,
-          autofocus: autofocus,
-          onTap: onTap,
-          onChanged: onChanged,
-          onVoiceSearchPressed: onVoiceSearchPressed,
-          voiceSearchService: voiceSearchService,
-          voiceSearchController: voiceSearchController,
-          startVoiceSearchOnMount: startVoiceSearchOnMount,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        ManualProductQuickActionsRow(
-          onAiSearchTap: onAiSearchTap,
-          onScanBarcode: onScanBarcode,
-        ),
-      ],
-    );
-  }
-}
-
 /// Header for manual product modal pages.
 class ManualProductDialogHeader extends StatelessWidget {
   /// Creates a manual product dialog header.
-  const new({required this.title, required this.onClose, super.key});
+  const new({required this.onClose, super.key, this.title});
 
   /// Dialog title.
-  final String title;
+  final String? title;
 
   /// Close action.
   final VoidCallback onClose;
@@ -177,11 +78,13 @@ class ManualProductDialogHeader extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.w800),
-          ),
+          child: title == null
+              ? const SizedBox.shrink()
+              : Text(
+                  title!,
+                  style: Theme.of(context).textTheme.headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.w800),
+                ),
         ),
         DecoratedBox(
           decoration: BoxDecoration(
@@ -194,49 +97,6 @@ class ManualProductDialogHeader extends StatelessWidget {
           child: CloseButton(
             color: colors.onSurfaceVariant,
             onPressed: onClose,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Quick action buttons shown below manual search field.
-class ManualProductQuickActionsRow extends StatelessWidget {
-  /// Creates quick action buttons.
-  const new({
-    required this.onAiSearchTap,
-    required this.onScanBarcode,
-    super.key,
-  });
-
-  /// Opens AI search.
-  final VoidCallback onAiSearchTap;
-
-  /// Opens barcode scanner.
-  final VoidCallback onScanBarcode;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            key: const Key('receipt_review_manual_ai_search_button'),
-            onPressed: onAiSearchTap,
-            icon: const Icon(Icons.auto_awesome_rounded),
-            label: Text(l10n.inventoryManualAddAiSearchAction),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        Expanded(
-          child: OutlinedButton.icon(
-            key: const Key('receipt_review_manual_scan_button'),
-            onPressed: onScanBarcode,
-            icon: const Icon(Icons.qr_code_scanner_rounded),
-            label: Text(l10n.inventoryManualAddScanBarcodeAction),
           ),
         ),
       ],

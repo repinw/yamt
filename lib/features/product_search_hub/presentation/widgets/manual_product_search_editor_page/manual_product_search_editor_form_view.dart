@@ -1,8 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
-import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -20,26 +16,19 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_search_form.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Form view displaying search, product details, and save actions.
+/// Form view displaying product details and save actions.
 class ManualProductSearchEditorFormView extends StatelessWidget {
   /// Creates the editor form view.
   const new({
     required this.state,
     required this.controller,
-    required this.searchController,
-    required this.voiceSearchController,
-    required this.voiceSearchService,
     required this.quickEatConfig,
     required this.selectedAction,
     required this.showActionSelector,
     required this.showEatImmediatelyOption,
-    required this.autofocusSearch,
-    required this.startVoiceSearchOnMount,
     required this.preview,
     required this.canSave,
-    required this.onSearchResultAction,
     required this.onScanBarcode,
-    required this.onAiSearchTap,
     required this.onScanNutritionLabel,
     required this.onActionChanged,
     required this.onCancel,
@@ -53,15 +42,6 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
   /// Product search controller.
   final InventoryReceiptManualProductController controller;
 
-  /// Text editing controller for search query.
-  final TextEditingController searchController;
-
-  /// Controller for voice search.
-  final TextVoiceSearchController voiceSearchController;
-
-  /// Voice search service.
-  final VoiceSearchService voiceSearchService;
-
   /// Quick eat configuration.
   final InventoryManualAddQuickEatConfig quickEatConfig;
 
@@ -74,30 +54,14 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
   /// Whether the immediate eat action is supported.
   final bool showEatImmediatelyOption;
 
-  /// Whether search autofocus is enabled.
-  final bool autofocusSearch;
-
-  /// Whether voice search starts on mount.
-  final bool startVoiceSearchOnMount;
-
   /// Preview data for the selected product.
   final InventoryReceiptManualProductPreviewData? preview;
 
   /// Whether the product can currently be saved.
   final bool canSave;
 
-  /// Search result action callback.
-  final void Function(
-    OffProductSearchResult product,
-    InventoryReceiptManualProductAction action,
-  )
-  onSearchResultAction;
-
   /// Barcode scanning callback.
   final VoidCallback onScanBarcode;
-
-  /// AI search callback.
-  final VoidCallback onAiSearchTap;
 
   /// Nutrition label scan callback.
   final VoidCallback? onScanNutritionLabel;
@@ -118,16 +82,10 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: InventoryReceiptManualProductForm(
-        title: l10n.inventoryManualAddSearchDialogTitle,
         preview: preview,
-        searchController: searchController,
-        isSearching: state.isSearching,
         canSave: canSave,
         isRunningNutritionOcr: state.isRunningNutritionOcr,
         nutritionOcrImageBytes: state.nutritionOcrImageBytes,
-        autofocusSearch: autofocusSearch,
-        searchResults: state.searchResults,
-        recentItems: const <InventoryItem>[],
         nameText: state.nameText,
         brandText: state.brandText,
         barcodeText: state.barcode,
@@ -151,37 +109,11 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
         optionalNutritionType: state.resolvedOptionalNutritionType,
         availableOptionalNutritionTypes: state.availableOptionalNutritionTypes,
         errorText: resolveManualProductErrorText(l10n, state.error),
-        onAiSearchTap: onAiSearchTap,
         showActionSelector:
             showEatImmediatelyOption &&
             showActionSelector &&
             !quickEatConfig.quickEatOnly,
         selectedAction: selectedAction,
-        onSearchResultSelected: (product) => onSearchResultAction(
-          product,
-          quickEatConfig.quickEatOnly
-              ? InventoryReceiptManualProductAction.eatNow
-              : InventoryReceiptManualProductAction.addToInventory,
-        ),
-        onSearchResultStoreSelected: showEatImmediatelyOption
-            ? quickEatConfig.quickEatOnly
-                  ? null
-                  : (product) => onSearchResultAction(
-                      product,
-                      InventoryReceiptManualProductAction.addToInventory,
-                    )
-            : null,
-        onSearchResultEatSelected: showEatImmediatelyOption
-            ? (product) => onSearchResultAction(
-                product,
-                InventoryReceiptManualProductAction.eatNow,
-              )
-            : null,
-        onRecentItemSelected: controller.applyRecentItem,
-        onSearchChanged: controller.updateSearchQuery,
-        voiceSearchService: voiceSearchService,
-        voiceSearchController: voiceSearchController,
-        startVoiceSearchOnMount: startVoiceSearchOnMount,
         onScanBarcode: onScanBarcode,
         onNameChanged: controller.updateNameText,
         onBrandChanged: controller.updateBrandText,

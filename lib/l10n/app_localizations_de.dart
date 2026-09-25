@@ -429,9 +429,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewProductSelectionLabel => 'Produkt auswählen';
 
   @override
-  String get inventoryReceiptReviewManualSearchLabel => 'Produkt suchen';
-
-  @override
   String get inventoryReceiptReviewRecentProductsTitle => 'Zuletzt hinzugefügt';
 
   @override
@@ -914,9 +911,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryManualAddEatSucceeded => 'Ins Tagebuch eingetragen';
 
   @override
-  String get inventoryManualAddSearchDialogTitle => 'Produktsuche';
-
-  @override
   String get inventoryManualAddPackageSizeLabel => 'Packungsgröße';
 
   @override
@@ -985,9 +979,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get inventoryManualAddVoiceSearchFailed =>
       'Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.';
-
-  @override
-  String get inventoryManualAddAiSearchAction => 'KI-Vorschlag';
 
   @override
   String get inventoryManualAddAiSearchTitle => 'Lebensmittel mit KI erstellen';

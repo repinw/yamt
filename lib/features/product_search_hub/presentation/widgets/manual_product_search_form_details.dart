@@ -6,8 +6,6 @@ import 'dart:typed_data';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/inventory/data/'
-    'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart'
@@ -21,19 +19,13 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_preview.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_recent_items.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_search_input.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_search_results.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'nutrition_label_scan_indicator/nutrition_label_scan_indicator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class ManualProductDetailsForm extends StatefulWidget {
   const new({
-    required this.searchResults,
-    required this.recentItems,
     required this.preview,
     required this.nameText,
     required this.brandText,
@@ -62,10 +54,6 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.selectedAction,
     required this.canSave,
     required this.isRunningNutritionOcr,
-    required this.onSearchResultSelected,
-    required this.onSearchResultStoreSelected,
-    required this.onSearchResultEatSelected,
-    required this.onRecentItemSelected,
     required this.onNameChanged,
     required this.onBrandChanged,
     required this.onBarcodeChanged,
@@ -95,8 +83,6 @@ class ManualProductDetailsForm extends StatefulWidget {
     this.onActionChanged,
   });
 
-  final List<OffProductSearchResult> searchResults;
-  final List<InventoryItem> recentItems;
   final InventoryReceiptManualProductPreviewData? preview;
   final String nameText;
   final String brandText;
@@ -130,10 +116,6 @@ class ManualProductDetailsForm extends StatefulWidget {
   final bool isRunningNutritionOcr;
 
   final Uint8List? nutritionOcrImageBytes;
-  final ValueChanged<OffProductSearchResult> onSearchResultSelected;
-  final ValueChanged<OffProductSearchResult>? onSearchResultStoreSelected;
-  final ValueChanged<OffProductSearchResult>? onSearchResultEatSelected;
-  final ValueChanged<InventoryItem> onRecentItemSelected;
   final ValueChanged<String> onNameChanged;
   final ValueChanged<String> onBrandChanged;
   final ValueChanged<String> onBarcodeChanged;
@@ -303,18 +285,6 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.searchResults.isNotEmpty)
-            ManualProductSearchResults(
-              results: widget.searchResults,
-              onSelect: widget.onSearchResultSelected,
-              onStoreSelect: widget.onSearchResultStoreSelected,
-              onEatSelect: widget.onSearchResultEatSelected,
-            )
-          else
-            ManualProductRecentItems(
-              items: widget.recentItems,
-              onSelect: widget.onRecentItemSelected,
-            ),
           if (widget.preview case final preview?) ...[
             const SizedBox(height: AppSpacing.lg),
             ManualProductPreview(preview: preview),

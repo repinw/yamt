@@ -123,8 +123,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_page.dart':
         1,
-    'lib/features/product_search_hub/presentation/widgets/manual_product_search_form/manual_product_search_results.dart':
-        1,
     'lib/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart':
         1,
     'lib/features/product_search_hub/presentation/widgets/product_ai_search_page/product_ai_search_body.dart':

@@ -235,7 +235,6 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.inventoryManualAddLookupFailed,
     l10n.inventoryManualAddSaveFailed,
     l10n.inventoryManualAddEatSucceeded,
-    l10n.inventoryManualAddSearchDialogTitle,
     l10n.inventoryManualAddEatNowRequiresNutrition,
     l10n.inventoryManualAddMissingBarcodeTitle,
     l10n.inventoryManualAddMissingBarcodeMessage,

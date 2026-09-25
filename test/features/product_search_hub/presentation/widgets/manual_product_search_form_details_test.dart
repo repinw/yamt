@@ -53,8 +53,6 @@ Widget _wrapDetailsForm({
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: ManualProductDetailsForm(
-                searchResults: const [],
-                recentItems: <InventoryItem>[_recentItem()],
                 preview: const InventoryReceiptManualProductPreviewData(
                   imageUrl: null,
                   name: 'Banane',
@@ -93,10 +91,6 @@ Widget _wrapDetailsForm({
                     InventoryReceiptManualProductAction.addToInventory,
                 canSave: true,
                 isRunningNutritionOcr: false,
-                onSearchResultSelected: (_) {},
-                onSearchResultStoreSelected: null,
-                onSearchResultEatSelected: null,
-                onRecentItemSelected: (_) {},
                 onNameChanged: (_) {},
                 onBrandChanged: (_) {},
                 onBarcodeChanged: onBarcodeChanged ?? (_) {},
@@ -127,17 +121,6 @@ Widget _wrapDetailsForm({
         ),
       ),
     ),
-  );
-}
-
-InventoryItem _recentItem() {
-  return InventoryItem.create(
-    id: 'recent-1',
-    name: 'Banane',
-    brand: 'Ja!',
-    entryDate: DateTime.parse('2026-04-19T12:00:00Z'),
-    storeName: 'Rewe',
-    quantity: 1,
   );
 }
 

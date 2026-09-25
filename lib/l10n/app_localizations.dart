@@ -842,12 +842,6 @@ abstract class AppLocalizations {
   /// **'Select product'**
   String get inventoryReceiptReviewProductSelectionLabel;
 
-  /// No description provided for @inventoryReceiptReviewManualSearchLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Search product'**
-  String get inventoryReceiptReviewManualSearchLabel;
-
   /// No description provided for @inventoryReceiptReviewRecentProductsTitle.
   ///
   /// In en, this message translates to:
@@ -1612,12 +1606,6 @@ abstract class AppLocalizations {
   /// **'Added to diary'**
   String get inventoryManualAddEatSucceeded;
 
-  /// No description provided for @inventoryManualAddSearchDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Product search'**
-  String get inventoryManualAddSearchDialogTitle;
-
   /// No description provided for @inventoryManualAddPackageSizeLabel.
   ///
   /// In en, this message translates to:
@@ -1743,12 +1731,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Voice search could not be started. Please try again.'**
   String get inventoryManualAddVoiceSearchFailed;
-
-  /// No description provided for @inventoryManualAddAiSearchAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Create with AI'**
-  String get inventoryManualAddAiSearchAction;
 
   /// No description provided for @inventoryManualAddAiSearchTitle.
   ///

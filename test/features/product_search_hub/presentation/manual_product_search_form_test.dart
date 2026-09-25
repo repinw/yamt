@@ -1,8 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
-import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
@@ -10,8 +9,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_preview.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_search_form.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_search_shell.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 Widget _wrapForm({required WidgetBuilder builder, Listenable? listenable}) {
@@ -29,55 +26,7 @@ Widget _wrapForm({required WidgetBuilder builder, Listenable? listenable}) {
   );
 }
 
-InventoryItem _recentItem() {
-  return InventoryItem.create(
-    id: 'recent-1',
-    name: 'Banane',
-    brand: 'Ja!',
-    entryDate: DateTime.parse('2026-04-19T12:00:00Z'),
-    storeName: 'Rewe',
-    quantity: 1,
-  );
-}
-
-OffProductSearchResult _searchResult() {
-  return const OffProductSearchResult(
-    code: '4006381333931',
-    name: 'Wurst',
-    brand: 'Metzger',
-    packageWeight: '200 g',
-    score: 99,
-    nutrition: GlobalFoodNutrition(
-      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
-      per100Kcal: 210,
-      per100Fat: 17,
-      per100SaturatedFat: 6,
-      per100Carbs: 1,
-      per100Sugar: 1,
-      per100Protein: 15,
-      per100Salt: 1.8,
-    ),
-  );
-}
-
-InventoryReceiptManualProductLauncherContent _buildLauncher({
-  required TextEditingController searchController,
-}) {
-  return InventoryReceiptManualProductLauncherContent(
-    title: 'Produktsuche',
-    searchController: searchController,
-    recentItems: <InventoryItem>[_recentItem()],
-    onClose: () {},
-    onAiSearchTap: () {},
-    onSearchTap: () {},
-    onVoiceSearchTap: () {},
-    onRecentItemSelected: (_) {},
-    onScanBarcode: () {},
-  );
-}
-
 InventoryReceiptManualProductForm _buildForm({
-  required TextEditingController searchController,
   String nameText = '',
   String brandText = '',
   String weightAmount = '',
@@ -91,17 +40,12 @@ InventoryReceiptManualProductForm _buildForm({
   String proteinText = '',
   String saltText = '',
   String optionalNutritionValueText = '',
-  List<OffProductSearchResult> searchResults = const <OffProductSearchResult>[],
-  List<InventoryItem> recentItems = const <InventoryItem>[],
   bool canSave = true,
   bool canAddOptionalNutrition = false,
   bool isAddingOptionalNutrition = false,
   InventoryReceiptOptionalNutritionType? optionalNutritionType,
   VoidCallback? onSave,
   VoidCallback? onCancel,
-  ValueChanged<OffProductSearchResult>? onSearchResultSelected,
-  ValueChanged<OffProductSearchResult>? onSearchResultStoreSelected,
-  ValueChanged<OffProductSearchResult>? onSearchResultEatSelected,
   ValueChanged<String>? onNameChanged,
   ValueChanged<String>? onBrandChanged,
   ValueChanged<String>? onWeightAmountChanged,
@@ -119,13 +63,8 @@ InventoryReceiptManualProductForm _buildForm({
   VoidCallback? onApplyOptionalNutrition,
 }) {
   return InventoryReceiptManualProductForm(
-    title: 'Produktsuche',
-    searchController: searchController,
-    isSearching: false,
     canSave: canSave,
     isRunningNutritionOcr: false,
-    searchResults: searchResults,
-    recentItems: recentItems,
     nameText: nameText,
     brandText: brandText,
     barcodeText: '',
@@ -159,11 +98,8 @@ InventoryReceiptManualProductForm _buildForm({
       weight: '200 g',
     ),
     errorText: null,
-    onAiSearchTap: () {},
     showActionSelector: false,
     selectedAction: InventoryReceiptManualProductAction.addToInventory,
-    onSearchResultSelected: onSearchResultSelected ?? (_) {},
-    onRecentItemSelected: (_) {},
     onScanBarcode: () {},
     onNameChanged: onNameChanged ?? (_) {},
     onBrandChanged: onBrandChanged ?? (_) {},
@@ -188,8 +124,6 @@ InventoryReceiptManualProductForm _buildForm({
     onCancelOptionalNutrition: () {},
     onCancel: onCancel ?? () {},
     onSave: onSave ?? () {},
-    onSearchResultStoreSelected: onSearchResultStoreSelected,
-    onSearchResultEatSelected: onSearchResultEatSelected,
   );
 }
 
@@ -201,101 +135,34 @@ Finder _editableTextWithin(Key key) {
 }
 
 void main() {
-  testWidgets('manual search toolbar wires field and quick actions', (
+  testWidgets('editor form has no search bar and shows the barcode field', (
     tester,
   ) async {
-    final searchController = TextEditingController(text: 'Banane');
-    addTearDown(searchController.dispose);
-
-    var searchTapped = 0;
-    var voiceTapped = 0;
-    var aiTapped = 0;
-    var scanTapped = 0;
-
-    await tester.pumpWidget(
-      _wrapForm(
-        builder: (_) => ManualProductSearchToolbar(
-          searchController: searchController,
-          clearButtonKey: const Key('toolbar_clear_button'),
-          fieldKey: const Key('toolbar_field'),
-          readOnly: true,
-          onTap: () => searchTapped += 1,
-          onVoiceSearchPressed: () => voiceTapped += 1,
-          onAiSearchTap: () => aiTapped += 1,
-          onScanBarcode: () => scanTapped += 1,
-        ),
-      ),
-    );
+    await tester.pumpWidget(_wrapForm(builder: (_) => _buildForm()));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('toolbar_field')));
-    await tester.tap(
-      find.byKey(const Key('receipt_review_manual_voice_search_button')),
+    expect(find.byType(TextVoiceSearchBar), findsNothing);
+    expect(find.text('Product search'), findsNothing);
+    expect(
+      find.byKey(const Key('receipt_review_manual_name_field')),
+      findsOneWidget,
     );
-    await tester.tap(
-      find.byKey(const Key('receipt_review_manual_ai_search_button')),
+    expect(
+      find.byKey(const Key('receipt_review_manual_barcode_field')),
+      findsOneWidget,
     );
-    await tester.tap(
-      find.byKey(const Key('receipt_review_manual_scan_button')),
-    );
-    await tester.pump();
-
-    expect(searchTapped, 1);
-    expect(voiceTapped, 1);
-    expect(aiTapped, 1);
-    expect(scanTapped, 1);
-  });
-
-  testWidgets('launcher shows ai and scan actions below search bar', (
-    tester,
-  ) async {
-    final searchController = TextEditingController(text: 'Banane');
-    addTearDown(searchController.dispose);
-
-    await tester.pumpWidget(
-      _wrapForm(
-        builder: (_) => _buildLauncher(searchController: searchController),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final searchFieldTop = tester.getTopLeft(
-      find.byKey(const Key('receipt_review_manual_launcher_search_field')),
-    );
-    final aiButtonTop = tester.getTopLeft(
-      find.byKey(const Key('receipt_review_manual_ai_search_button')),
-    );
-    final scanButtonTop = tester.getTopLeft(
-      find.byKey(const Key('receipt_review_manual_scan_button')),
-    );
-
-    expect(aiButtonTop.dy, greaterThan(searchFieldTop.dy));
-    expect(scanButtonTop.dy, greaterThan(searchFieldTop.dy));
-
-    final aiIcon = tester.widget<Icon>(
-      find.descendant(
-        of: find.byKey(const Key('receipt_review_manual_ai_search_button')),
-        matching: find.byType(Icon),
-      ),
-    );
-    expect(aiIcon.icon, Icons.auto_awesome_rounded);
   });
 
   testWidgets('details form keeps button wiring and weight unit callback', (
     tester,
   ) async {
-    final searchController = TextEditingController(text: 'Banane');
-
     var didSave = false;
     var didCancel = false;
     InventoryAmountUnit? changedUnit;
 
-    addTearDown(searchController.dispose);
-
     await tester.pumpWidget(
       _wrapForm(
         builder: (_) => _buildForm(
-          searchController: searchController,
           nameText: 'Banane',
           brandText: 'Ja!',
           weightAmount: '200',
@@ -306,7 +173,6 @@ void main() {
           sugarText: '18',
           proteinText: '1',
           saltText: '0',
-          recentItems: <InventoryItem>[_recentItem()],
           onSave: () => didSave = true,
           onCancel: () => didCancel = true,
           onWeightUnitChanged: (value) => changedUnit = value,
@@ -352,127 +218,19 @@ void main() {
     expect(didCancel, isTrue);
   });
 
-  testWidgets('search results keep select, inventory, and eat actions', (
-    tester,
-  ) async {
-    final searchController = TextEditingController(text: 'Wurst');
-    final result = _searchResult();
-
-    OffProductSearchResult? selectedResult;
-    OffProductSearchResult? storeResult;
-    OffProductSearchResult? eatResult;
-
-    addTearDown(searchController.dispose);
-
-    await tester.pumpWidget(
-      _wrapForm(
-        builder: (_) => _buildForm(
-          searchController: searchController,
-          searchResults: <OffProductSearchResult>[result],
-          onSearchResultSelected: (value) => selectedResult = value,
-          onSearchResultStoreSelected: (value) => storeResult = value,
-          onSearchResultEatSelected: (value) => eatResult = value,
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.byKey(
-        const Key('receipt_review_manual_search_result_4006381333931'),
-      ),
-    );
-    await tester.pump();
-    expect(selectedResult?.code, result.code);
-
-    await tester.tap(
-      find.byKey(
-        const Key(
-          'receipt_review_manual_search_result_store_button_4006381333931',
-        ),
-      ),
-    );
-    await tester.pump();
-    expect(storeResult?.code, result.code);
-
-    await tester.tap(
-      find.byKey(
-        const Key(
-          'receipt_review_manual_search_result_eat_button_4006381333931',
-        ),
-      ),
-    );
-    await tester.pump();
-    expect(eatResult?.code, result.code);
-  });
-
-  testWidgets('search results can show eat action without inventory action', (
-    tester,
-  ) async {
-    final searchController = TextEditingController(text: 'Wurst');
-    final result = _searchResult();
-    OffProductSearchResult? eatResult;
-
-    addTearDown(searchController.dispose);
-
-    await tester.pumpWidget(
-      _wrapForm(
-        builder: (_) => _buildForm(
-          searchController: searchController,
-          searchResults: <OffProductSearchResult>[result],
-          onSearchResultEatSelected: (value) => eatResult = value,
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(
-        const Key(
-          'receipt_review_manual_search_result_store_button_4006381333931',
-        ),
-      ),
-      findsNothing,
-    );
-    expect(
-      find.byKey(
-        const Key(
-          'receipt_review_manual_search_result_eat_button_4006381333931',
-        ),
-      ),
-      findsOneWidget,
-    );
-
-    await tester.tap(
-      find.byKey(
-        const Key(
-          'receipt_review_manual_search_result_eat_button_4006381333931',
-        ),
-      ),
-    );
-    await tester.pump();
-
-    expect(eatResult?.code, result.code);
-  });
-
   testWidgets(
     'optional nutrition composer sanitizes numeric input and enables apply',
     (tester) async {
-      final searchController = TextEditingController(text: 'Wurst');
       final optionalNutritionValue = ValueNotifier<String>('');
 
       var didApply = false;
 
-      addTearDown(() {
-        searchController.dispose();
-        optionalNutritionValue.dispose();
-      });
+      addTearDown(optionalNutritionValue.dispose);
 
       await tester.pumpWidget(
         _wrapForm(
           listenable: optionalNutritionValue,
           builder: (_) => _buildForm(
-            searchController: searchController,
             nameText: 'Wurst',
             brandText: 'Metzger',
             weightAmount: '200',

@@ -423,9 +423,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewProductSelectionLabel => 'Select product';
 
   @override
-  String get inventoryReceiptReviewManualSearchLabel => 'Search product';
-
-  @override
   String get inventoryReceiptReviewRecentProductsTitle => 'Recently added';
 
   @override
@@ -898,9 +895,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryManualAddEatSucceeded => 'Added to diary';
 
   @override
-  String get inventoryManualAddSearchDialogTitle => 'Product search';
-
-  @override
   String get inventoryManualAddPackageSizeLabel => 'Package size';
 
   @override
@@ -969,9 +963,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get inventoryManualAddVoiceSearchFailed =>
       'Voice search could not be started. Please try again.';
-
-  @override
-  String get inventoryManualAddAiSearchAction => 'Create with AI';
 
   @override
   String get inventoryManualAddAiSearchTitle => 'Create food with AI';
