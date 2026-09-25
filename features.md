@@ -153,6 +153,16 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Manual nutrition entry and extended nutrient fields.
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.
+- "Create" opens an empty product form. Name, unit, kcal, carbs, protein,
+  and fat are required; confirming a required field on the keyboard jumps
+  to the next empty one.
+- The form has a barcode field with a scan button and a "no barcode" mark.
+  The nutrition label scan needs a barcode or that mark. Scanning an unknown
+  barcode keeps the entered values.
+- Going back from the eat dialog after "Create" reopens the product form.
+- Eating a newly picked product has no stock limit: the stock is set to the
+  eaten amount. A product with g or ml but no package size is eaten in that
+  unit. The eat page always shows the per-100 column.
 - Recent manual items (up to 20) shown while the search query is empty.
 - Several products can be added in one visit; a counter overlay shows them.
 

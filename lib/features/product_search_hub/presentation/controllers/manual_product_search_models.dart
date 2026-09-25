@@ -223,19 +223,3 @@ String? _normalizeReusableGlobalFoodItemId(String? value) {
   }
   return normalized;
 }
-
-/// Keeps the unit of a product that has no package size.
-extension ManualProductItemWeightUnit on InventoryItem {
-  /// Sets [unit] as the amount unit when no package size set one.
-  ///
-  /// Only grams and milliliters are kept: the eat page then asks for that
-  /// unit instead of pieces. Pieces need no unit.
-  InventoryItem withWeightUnitWithoutPackage(InventoryAmountUnit? unit) {
-    if (amountUnit != null ||
-        (unit != InventoryAmountUnit.gram &&
-            unit != InventoryAmountUnit.milliliter)) {
-      return this;
-    }
-    return copyWith(amountUnit: unit);
-  }
-}

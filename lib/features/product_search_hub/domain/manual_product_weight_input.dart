@@ -1,4 +1,5 @@
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_search_value_utils.dart';
 
 /// Parsed manual product weight input ready for inventory persistence.
@@ -142,4 +143,20 @@ String _convertFallbackAmount({
     return rawAmount;
   }
   return formatManualProductDouble(parsed * multiplier);
+}
+
+/// Keeps the unit of a product that has no package size.
+extension ManualProductItemWeightUnit on InventoryItem {
+  /// Sets [unit] as the amount unit when no package size set one.
+  ///
+  /// Only grams and milliliters are kept: the eat page then asks for that
+  /// unit instead of pieces. Pieces need no unit.
+  InventoryItem withWeightUnitWithoutPackage(InventoryAmountUnit? unit) {
+    if (amountUnit != null ||
+        (unit != InventoryAmountUnit.gram &&
+            unit != InventoryAmountUnit.milliliter)) {
+      return this;
+    }
+    return copyWith(amountUnit: unit);
+  }
 }
