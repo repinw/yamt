@@ -22,8 +22,8 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
 ## Public Edge
 
 - `presentation/diary_page.dart` is the main page.
-- `presentation/widgets/diary_meals_section.dart` owns the quick-eat buttons
-  and the meals logged on the selected day. Identical foods in one meal are
+- `presentation/widgets/diary_meals_section.dart` owns the meals logged on the
+  selected day. Identical foods in one meal are
   merged into one row (`domain/diary_meal_entry_group.dart`) that expands to
   its single entries. Rows that open one entry tag their image with
   `HeroTags.loggedEntryImage`, so it flies into the Calories details sheet.
@@ -35,10 +35,17 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   budget, activity, and weight card. The Progress tab shows it; the diary page
   does not. The diary page shows only the Activity missing-weight prompt, below
   the weekly check-in, and only on today.
+- `presentation/widgets/diary_quick_eat_dock.dart` (`DiaryQuickEatDock`) is
+  public UI for `features/home`: the quick-eat buttons for the selected day.
+  The home shell shows it in the floating action button slot of the diary tab,
+  so it moves with the bottom navigation bar. The day view pads its content by
+  `diaryQuickEatDockHeight`.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the
   diary-facing daily and weekly calorie balance UI.
-  The daily card is quiet by default (kcal and grams left only) and shows all
-  numbers after a tap. Over the target it shows the overage with an
+  The daily card uses the food label look (`FoodLabelColors`, `AppFonts`)
+  without a frame: a big kcal-left number, a ruler with four equal quarters,
+  and the macro rows. It is quiet by default (kcal and grams left only) and
+  shows all numbers after a tap. Over the target it shows the overage with an
   "Over goal" label in the error color.
 - `presentation/diary_home_widget_summary_provider.dart`
   (`diaryHomeWidgetSummaryProvider`) with its value type

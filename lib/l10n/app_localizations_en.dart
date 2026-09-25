@@ -2514,6 +2514,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBalanceHideDetails => 'Show fewer numbers';
 
   @override
+  String diaryBalanceEatenAmount(String kcal) {
+    return '$kcal eaten';
+  }
+
+  @override
+  String diaryBalanceOfTarget(String kcal) {
+    return 'of $kcal';
+  }
+
+  @override
+  String diaryBalanceScaleTarget(String kcal) {
+    return 'Goal $kcal';
+  }
+
+  @override
+  String get diaryMacroLeftSuffix => 'g left';
+
+  @override
+  String get diaryMacroOverSuffix => 'g over';
+
+  @override
+  String diaryMacroEatenOfTarget(String eaten, String target) {
+    return '$eaten / $target g';
+  }
+
+  @override
   String diaryAmountLeft(String amount) {
     return '$amount left';
   }

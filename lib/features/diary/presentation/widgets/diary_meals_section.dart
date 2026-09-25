@@ -8,15 +8,13 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
-import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Quick-eat buttons and the meals logged on the selected diary day.
+/// Meals logged on the selected diary day.
 class DiaryMealsSection extends ConsumerWidget {
   /// Creates the diary meals section.
   const new({required this.selectedDay, super.key});
@@ -59,19 +57,9 @@ class DiaryMealsSection extends ConsumerWidget {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.xxl,
       children: [
-        DiaryQuickEatBar(
-          expanded: loggedSections.isEmpty,
-          onSelected: (source) => unawaited(
-            DiaryQuickEatFlow.openSource(
-              context: context,
-              source: source,
-              selectedDay: normalizedDay,
-            ),
-          ),
-        ),
-        for (final section in loggedSections) ...[
-          const SizedBox(height: AppSpacing.xxl),
+        for (final section in loggedSections)
           DiaryMealGroup(
             section: section,
             onTapEntry: (entry) => unawaited(
@@ -80,7 +68,6 @@ class DiaryMealsSection extends ConsumerWidget {
               ),
             ),
           ),
-        ],
       ],
     );
   }

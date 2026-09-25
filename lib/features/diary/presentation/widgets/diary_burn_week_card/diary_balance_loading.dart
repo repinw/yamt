@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_shell.dart';
 
 /// Loading state for the diary Burn Week card.
 class DiaryBalanceLoading extends StatelessWidget {
@@ -13,12 +13,10 @@ class DiaryBalanceLoading extends StatelessWidget {
     final baseColor = colors.surfaceContainerHigh;
     final highlightColor = colors.surfaceBright;
 
-    return DiaryBalanceShell(
-      child: _ShimmerSkeleton(
-        baseColor: baseColor,
-        highlightColor: highlightColor,
-        child: const _DiaryDailyBalanceSkeleton(),
-      ),
+    return _ShimmerSkeleton(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: const _DiaryDailyBalanceSkeleton(),
     );
   }
 }
@@ -102,109 +100,35 @@ class _DiaryDailyBalanceSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: _DailyMetricSkeleton(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                labelWidth: 54,
-                valueWidth: 96,
-                subtitleWidth: 76,
-              ),
-            ),
-            SizedBox(width: AppSpacing.xl),
-            Expanded(
-              child: _DailyMetricSkeleton(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                labelWidth: 84,
-                valueWidth: 118,
-                subtitleWidth: 82,
-              ),
-            ),
-          ],
-        ),
-        SizedBox(height: AppSpacing.md),
-        _DailyProgressSkeleton(),
+        _SkeletonBlock(width: 96, height: 12),
+        SizedBox(height: AppSpacing.xs),
+        _SkeletonBlock(width: 160, height: 56),
+        SizedBox(height: AppSpacing.lg),
+        _SkeletonBlock(height: AppFoodLabel.rulerTicks + AppFoodLabel.kcalBar),
         SizedBox(height: AppSpacing.xl),
-        _MacroBarsSkeleton(),
+        _MacroRowSkeleton(),
+        SizedBox(height: AppSpacing.sm),
+        _MacroRowSkeleton(),
+        SizedBox(height: AppSpacing.sm),
+        _MacroRowSkeleton(),
       ],
     );
   }
 }
 
-class _DailyMetricSkeleton extends StatelessWidget {
-  const new({
-    required this.crossAxisAlignment,
-    required this.labelWidth,
-    required this.valueWidth,
-    required this.subtitleWidth,
-  });
-
-  final CrossAxisAlignment crossAxisAlignment;
-  final double labelWidth;
-  final double valueWidth;
-  final double subtitleWidth;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: crossAxisAlignment,
-      children: [
-        _SkeletonBlock(width: labelWidth, height: 12),
-        const SizedBox(height: AppSpacing.sm),
-        _SkeletonBlock(width: valueWidth, height: 34),
-        const SizedBox(height: AppSpacing.xs),
-        _SkeletonBlock(width: subtitleWidth, height: 12),
-      ],
-    );
-  }
-}
-
-class _DailyProgressSkeleton extends StatelessWidget {
-  const new();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [_SkeletonBlock(height: 10)],
-    );
-  }
-}
-
-class _MacroBarsSkeleton extends StatelessWidget {
+class _MacroRowSkeleton extends StatelessWidget {
   const new();
 
   @override
   Widget build(BuildContext context) {
     return const Row(
+      spacing: AppSpacing.md,
       children: [
-        Expanded(child: _MacroBarSkeleton()),
-        SizedBox(width: AppSpacing.xl),
-        Expanded(child: _MacroBarSkeleton()),
-        SizedBox(width: AppSpacing.xl),
-        Expanded(child: _MacroBarSkeleton()),
-      ],
-    );
-  }
-}
-
-class _MacroBarSkeleton extends StatelessWidget {
-  const new();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SkeletonBlock(width: 48, height: 12),
-        SizedBox(height: AppSpacing.xs),
-        _SkeletonBlock(height: 8),
-        SizedBox(height: AppSpacing.xs),
-        _SkeletonBlock(width: 64, height: 12),
+        _SkeletonBlock(width: AppFoodLabel.macroLabelColumn, height: 16),
+        Expanded(child: _SkeletonBlock(height: AppFoodLabel.macroBar)),
+        _SkeletonBlock(width: AppFoodLabel.macroValueColumn, height: 22),
       ],
     );
   }

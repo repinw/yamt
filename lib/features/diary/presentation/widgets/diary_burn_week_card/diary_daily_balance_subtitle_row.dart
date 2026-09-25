@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/metric_accent_colors.dart';
+import 'package:yamt/core/theme/app_fonts.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_budget_details_button.dart';
 
@@ -47,8 +48,8 @@ class DiaryDailyBalanceSubtitleText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final accents = MetricAccentColors.of(context);
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
 
     if (data.isPauseDay ||
         data.isFutureDay ||
@@ -58,43 +59,34 @@ class DiaryDailyBalanceSubtitleText extends StatelessWidget {
         data.leftSubtitle ?? '',
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: data.isPauseDay
-              ? colors.onSurfaceVariant
-              : accents.today.withValues(alpha: 0.78),
-          fontWeight: FontWeight.w800,
-          letterSpacing: 0,
+        style: textTheme.labelSmall?.copyWith(
+          fontFamily: AppFonts.mono,
+          color: data.isPauseDay ? colors.muted : colors.accentText,
         ),
       );
     }
 
     final spans = <InlineSpan>[];
-    final labelStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
-      color: colors.onSurfaceVariant,
-      fontWeight: FontWeight.w700,
-      letterSpacing: 0,
-    );
-    final separatorStyle = Theme.of(context).textTheme.labelSmall?.copyWith(
-      color: colors.onSurfaceVariant.withValues(alpha: 0.6),
-      fontWeight: FontWeight.w800,
+    final labelStyle = textTheme.labelSmall?.copyWith(
+      fontFamily: AppFonts.mono,
+      color: colors.muted,
     );
 
     for (final part in data.leftSubtitleParts) {
       if (spans.isNotEmpty) {
-        spans.add(TextSpan(text: ' · ', style: separatorStyle));
+        spans.add(TextSpan(text: ' · ', style: labelStyle));
       }
       final valueColor = switch (part.type) {
-        DiaryDailyBalanceSubtitleType.base => colors.onSurface,
-        DiaryDailyBalanceSubtitleType.carryover => accents.today,
+        DiaryDailyBalanceSubtitleType.base => colors.ink,
+        DiaryDailyBalanceSubtitleType.carryover => colors.accentText,
       };
       spans.addAll([
         TextSpan(text: '${part.label} ', style: labelStyle),
         TextSpan(
           text: part.value,
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          style: labelStyle?.copyWith(
             color: valueColor,
-            fontWeight: FontWeight.w800,
-            letterSpacing: 0,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ]);

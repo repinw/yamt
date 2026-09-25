@@ -10,6 +10,7 @@ import 'package:yamt/core/widgets/home_shell_bottom_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_floating_action_button_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
 import 'package:yamt/features/home/widgets/home_menu_drawer.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome_visibility_controller.dart';
 import 'package:yamt/features/home/widgets/'
@@ -139,7 +140,8 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     final currentTab = _currentTab();
     final floatingActionButton = switch (currentTab) {
       HomeTabType.inventory => _buildInventoryFab(ref),
-      HomeTabType.diary || HomeTabType.cookbook || HomeTabType.progress => null,
+      HomeTabType.diary => const DiaryQuickEatDock(),
+      HomeTabType.cookbook || HomeTabType.progress => null,
     };
 
     return Scaffold(
@@ -175,7 +177,10 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
           ),
         ),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      // The diary dock spans the width and sits right on the navigation bar.
+      floatingActionButtonLocation: currentTab == HomeTabType.diary
+          ? const _BottomDockLocation()
+          : FloatingActionButtonLocation.endFloat,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
       // The chrome wraps an empty slot too: floating snack bars sit above the
       // floating action button slot, so they clear the bottom navigation.
@@ -202,5 +207,21 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       return null;
     }
     return const InventoryActionFab();
+  }
+}
+
+/// Places the floating action button slot full width at the bottom, above
+/// the system inset, so a dock meets the navigation bar without a gap.
+class _BottomDockLocation extends FloatingActionButtonLocation {
+  const new();
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    return Offset(
+      0,
+      scaffoldGeometry.scaffoldSize.height -
+          scaffoldGeometry.floatingActionButtonSize.height -
+          scaffoldGeometry.minInsets.bottom,
+    );
   }
 }

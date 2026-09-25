@@ -7,7 +7,6 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
-import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
@@ -20,7 +19,7 @@ import '../../support/diary_dashboard_test_support.dart';
 void main() {
   final selectedDay = DateTime(2026, 4, 27);
 
-  testWidgets('empty day shows only large quick-eat buttons', (tester) async {
+  testWidgets('empty day shows no meal groups', (tester) async {
     await _pumpMealsSection(
       tester,
       selectedDay: selectedDay,
@@ -30,17 +29,8 @@ void main() {
       ],
     );
 
-    for (final source in DiaryQuickEatSource.values) {
-      expect(
-        find.byKey(DiaryMealsSectionKeys.quickEatSource(source)),
-        findsOneWidget,
-      );
-    }
-    expect(find.text('Inventory'), findsOneWidget);
-    expect(find.text('Search'), findsOneWidget);
-    expect(find.text('AI'), findsOneWidget);
-    expect(find.text('Barcode'), findsOneWidget);
     expect(find.byType(DiaryMealGroup), findsNothing);
+    expect(find.byType(DiaryMealsSkeleton), findsNothing);
   });
 
   testWidgets('logged meals render groups with readable entry rows', (
@@ -88,15 +78,6 @@ void main() {
         ]),
         _mealSection(MealType.snack, const []),
       ],
-    );
-
-    // Buttons shrink to emoji only once food is logged.
-    expect(find.text('Inventory'), findsNothing);
-    expect(
-      find.byKey(
-        DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.inventory),
-      ),
-      findsOneWidget,
     );
 
     expect(

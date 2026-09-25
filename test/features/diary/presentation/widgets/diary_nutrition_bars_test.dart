@@ -67,9 +67,9 @@ void main() {
           .map((widget) => widget.widthFactor),
       everyElement(0),
     );
-    expect(find.textContaining('24 / 0g', findRichText: true), findsOneWidget);
-    expect(find.textContaining('18 / 0g', findRichText: true), findsOneWidget);
-    expect(find.textContaining('9 / 0g', findRichText: true), findsOneWidget);
+    expect(find.textContaining('24 / 0 g', findRichText: true), findsOneWidget);
+    expect(find.textContaining('18 / 0 g', findRichText: true), findsOneWidget);
+    expect(find.textContaining('9 / 0 g', findRichText: true), findsOneWidget);
   });
 
   testWidgets('embedded mode renders macros without standalone title', (
@@ -91,17 +91,20 @@ void main() {
 
     expect(find.text('Nutrition'), findsNothing);
     expect(
-      find.textContaining('24 / 120g', findRichText: true),
+      find.textContaining('24 / 120 g', findRichText: true),
       findsOneWidget,
     );
-    expect(find.textContaining('18 / 90g', findRichText: true), findsOneWidget);
-    expect(find.textContaining('9 / 45g', findRichText: true), findsOneWidget);
+    expect(
+      find.textContaining('18 / 90 g', findRichText: true),
+      findsOneWidget,
+    );
+    expect(find.textContaining('9 / 45 g', findRichText: true), findsOneWidget);
     expect(find.text('Protein'), findsOneWidget);
     expect(find.text('Carbs'), findsOneWidget);
     expect(find.text('Fat'), findsOneWidget);
-    expect(find.text('72g'), findsOneWidget); // 90 - 18 = 72g protein left
-    expect(find.text('96g'), findsOneWidget); // 120 - 24 = 96g carbs left
-    expect(find.text('36g'), findsOneWidget); // 45 - 9 = 36g fat left
+    expect(find.text('72'), findsOneWidget); // 90 - 18 = 72g protein left
+    expect(find.text('96'), findsOneWidget); // 120 - 24 = 96g carbs left
+    expect(find.text('36'), findsOneWidget); // 45 - 9 = 36g fat left
   });
 
   testWidgets('renders over-target macro with plus indicator', (tester) async {
@@ -119,9 +122,9 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.text('+15g'), findsOneWidget); // 135 - 120 = +15g carbs
-    expect(find.text('0g'), findsOneWidget); // exactly at protein target
-    expect(find.text('5g'), findsOneWidget); // 45 - 40 = 5g fat left
+    expect(find.text('+15'), findsOneWidget); // 135 - 120 = +15g carbs
+    expect(find.text('0'), findsOneWidget); // exactly at protein target
+    expect(find.text('5'), findsOneWidget); // 45 - 40 = 5g fat left
   });
 
   test('mapper clamps negative calorie goals to zero macro targets', () {
@@ -183,7 +186,7 @@ void main() {
 
     expect(find.text('Nutrition could not be loaded'), findsNothing);
     expect(
-      find.textContaining('24 / 120g', findRichText: true),
+      find.textContaining('24 / 120 g', findRichText: true),
       findsOneWidget,
     );
   });
@@ -217,7 +220,7 @@ void main() {
     );
 
     expect(
-      find.textContaining('24 / 120g', findRichText: true),
+      find.textContaining('24 / 120 g', findRichText: true),
       findsOneWidget,
     );
 
@@ -228,7 +231,7 @@ void main() {
     await tester.pump();
 
     expect(
-      find.textContaining('24 / 120g', findRichText: true),
+      find.textContaining('24 / 120 g', findRichText: true),
       findsOneWidget,
     );
   });

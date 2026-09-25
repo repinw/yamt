@@ -2,27 +2,18 @@ import 'dart:math' as math;
 
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_color_roles.dart';
+import 'package:yamt/core/theme/app_fonts.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_animated_macro_bar.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_scaled_value_text.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
-const double _valueWidth = 42;
-const double _totalWidth = 68;
-
-/// Width of the value column of a quiet macro row.
-const double diaryQuietMacroValueWidth = 60;
-
-/// Gap between a macro row's value and label columns.
-const double diaryMacroValueLabelGap = 6;
-
-/// Width of a macro row's label column.
-const double diaryMacroLabelWidth = 44;
-
-/// Single macronutrient progress row with remaining value, label,
-/// segmented bar, and optionally the consumed/target ratio.
+/// Single macronutrient row: label in the macro color, a bar of four equal
+/// segments, and the grams left, or over, as a big number.
 ///
-/// Eating beyond the target stripes the end of the bar.
+/// Eating beyond the target stripes the end of the bar. With totals, the
+/// eaten and target grams sit under the number.
 class DiaryNutritionMacroRow extends StatelessWidget {
   /// Creates a nutrition macro row.
   const new({
@@ -31,7 +22,6 @@ class DiaryNutritionMacroRow extends StatelessWidget {
     required this.target,
     required this.color,
     required this.numberFormat,
-    required this.unit,
     this.showTotal = true,
     super.key,
   });
@@ -51,103 +41,105 @@ class DiaryNutritionMacroRow extends StatelessWidget {
   /// Localized number formatter.
   final NumberFormat numberFormat;
 
-  /// Display unit string (e.g. "g").
-  final String unit;
-
-  /// Whether the consumed/target ratio is shown after the bar.
+  /// Whether eaten and target grams are shown under the number.
   final bool showTotal;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
+    final colors = FoodLabelColors.of(context);
+    final error = Theme.of(context).colorScheme.error;
     final remaining = target - current;
     final isOverTarget = remaining < -0.5;
-    final roundedRemaining = remaining.round();
-    final remainingFormatted = numberFormat.format(
-      math.max(0, roundedRemaining),
+    final amount = numberFormat.format(
+      isOverTarget ? -remaining.round() : math.max(0, remaining.round()),
     );
-    final trackColor = colors.progressTrack;
-    final textTheme = Theme.of(context).textTheme;
-    // Without the totals column the remaining grams get more room and size.
-    final valueStyle =
-        (showTotal ? textTheme.titleMedium : textTheme.titleLarge)?.copyWith(
-          color: color,
-          fontWeight: FontWeight.w900,
-          letterSpacing: -0.4,
-        );
+    final valueColor = isOverTarget ? error : colors.ink;
+    final mono = textTheme.labelSmall?.copyWith(fontFamily: AppFonts.mono);
+    final labelColor = Theme.of(context).brightness == Brightness.light
+        ? _darkened(color, AppFoodLabel.lightLabelMaxLightness)
+        : color;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          // Column 1: Remaining or overage value (right-aligned)
-          SizedBox(
-            width: showTotal ? _valueWidth : diaryQuietMacroValueWidth,
-            child: DiaryScaledValueText(
-              isOverTarget
-                  ? '+${numberFormat.format(-roundedRemaining)}$unit'
-                  : '$remainingFormatted$unit',
-              style: valueStyle,
+    return Row(
+      spacing: AppSpacing.md,
+      children: [
+        SizedBox(
+          width: AppFoodLabel.macroLabelColumn,
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: textTheme.titleMedium?.copyWith(
+              fontFamily: AppFonts.display,
+              fontWeight: FontWeight.w800,
+              color: labelColor,
             ),
           ),
-          const SizedBox(width: diaryMacroValueLabelGap),
-          // Column 2: Macro label
-          SizedBox(
-            width: diaryMacroLabelWidth,
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: colors.onSurface,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
+        ),
+        Expanded(
+          child: DiaryAnimatedMacroBar(
+            handoffTag: (#diaryMacroBar, label),
+            current: current,
+            target: target,
+            color: color,
+            trackColor: colors.rule,
+            overflowColor: error,
+            height: AppFoodLabel.macroBar,
           ),
-          const SizedBox(width: AppSpacing.sm),
-          // Column 3: 4-segment animated bar
-          Expanded(
-            child: DiaryAnimatedMacroBar(
-              handoffTag: (#diaryMacroBar, label),
-              current: current,
-              target: target,
-              color: color,
-              trackColor: trackColor,
-              isDark: isDark,
-            ),
-          ),
-          if (showTotal) ...[
-            const SizedBox(width: AppSpacing.sm),
-            // Column 4: Context Current / Target
-            SizedBox(
-              width: _totalWidth,
-              child: RichText(
-                textAlign: TextAlign.right,
-                maxLines: 1,
-                text: TextSpan(
+        ),
+        SizedBox(
+          width: AppFoodLabel.macroValueColumn,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerRight,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  spacing: AppSpacing.xxs,
                   children: [
-                    TextSpan(
-                      text: numberFormat.format(current.round()),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colors.onSurface,
+                    Text(
+                      isOverTarget ? '+$amount' : amount,
+                      style: textTheme.titleLarge?.copyWith(
+                        fontFamily: AppFonts.display,
                         fontWeight: FontWeight.w800,
+                        color: valueColor,
                       ),
                     ),
-                    TextSpan(
-                      text: ' / ${numberFormat.format(target.round())}$unit',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
+                    Text(
+                      isOverTarget
+                          ? l10n.diaryMacroOverSuffix
+                          : l10n.diaryMacroLeftSuffix,
+                      style: mono?.copyWith(
+                        color: valueColor,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
-        ],
-      ),
+              if (showTotal)
+                Text(
+                  l10n.diaryMacroEatenOfTarget(
+                    numberFormat.format(current.round()),
+                    numberFormat.format(target.round()),
+                  ),
+                  maxLines: 1,
+                  style: mono?.copyWith(color: colors.muted),
+                ),
+            ],
+          ),
+        ),
+      ],
     );
   }
+}
+
+/// [color] with its HSL lightness capped at [maxLightness].
+Color _darkened(Color color, double maxLightness) {
+  final hsl = HSLColor.fromColor(color);
+  return hsl.withLightness(math.min(hsl.lightness, maxLightness)).toColor();
 }

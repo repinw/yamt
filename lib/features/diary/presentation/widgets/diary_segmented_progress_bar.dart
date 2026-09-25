@@ -1,17 +1,16 @@
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 
-/// Animated multi-segment progress bar with rounded pill capsules.
+/// Multi-segment progress bar with square segments, like a food label.
 class DiarySegmentedProgressBar extends StatelessWidget {
   /// Creates a segmented progress bar.
   const new({
     required this.progress,
     required this.color,
     required this.trackColor,
-    required this.isDark,
+    this.overflowColor,
     this.overflow = 0.0,
     this.segmentCount = 4,
     this.height = 6.0,
@@ -32,8 +31,8 @@ class DiarySegmentedProgressBar extends StatelessWidget {
   /// Track background color.
   final Color trackColor;
 
-  /// Whether the current theme is dark mode.
-  final bool isDark;
+  /// Color of the overage stripes. Defaults to [color].
+  final Color? overflowColor;
 
   /// Number of segments in the bar.
   final int segmentCount;
@@ -67,10 +66,7 @@ class DiarySegmentedProgressBar extends StatelessWidget {
             padding: EdgeInsets.only(right: index < count - 1 ? spacing : 0.0),
             child: Container(
               height: height,
-              decoration: BoxDecoration(
-                color: trackColor,
-                borderRadius: BorderRadius.circular(AppRadius.pill),
-              ),
+              color: trackColor,
               child: Stack(
                 fit: StackFit.expand,
                 children: [
@@ -78,22 +74,8 @@ class DiarySegmentedProgressBar extends StatelessWidget {
                     alignment: Alignment.centerLeft,
                     child: FractionallySizedBox(
                       widthFactor: segmentFill,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                          // The glow reads as a blur on light backgrounds,
-                          // so only dark mode gets it.
-                          boxShadow: isDark && segmentFill > 0
-                              ? [
-                                  BoxShadow(
-                                    color: color.withValues(alpha: 0.35),
-                                    blurRadius: 3,
-                                  ),
-                                ]
-                              : null,
-                        ),
-                      ),
+                      heightFactor: 1,
+                      child: ColoredBox(color: color),
                     ),
                   ),
                   if (stripedFill > 0)
@@ -104,13 +86,10 @@ class DiarySegmentedProgressBar extends StatelessWidget {
                         // A childless CustomPaint would otherwise shrink to
                         // zero height.
                         heightFactor: 1,
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(AppRadius.pill),
-                          child: CustomPaint(
-                            painter: _OverflowStripePainter(
-                              color: color,
-                              background: trackColor,
-                            ),
+                        child: CustomPaint(
+                          painter: _OverflowStripePainter(
+                            color: overflowColor ?? color,
+                            background: trackColor,
                           ),
                         ),
                       ),

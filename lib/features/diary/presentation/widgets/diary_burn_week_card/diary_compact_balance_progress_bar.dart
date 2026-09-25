@@ -30,7 +30,6 @@ class DiaryCompactBalanceProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final isDark = colors.brightness == Brightness.dark;
     final accents = MetricAccentColors.of(context);
     final activity = accents.activityFor(colors.brightness);
     final trackColor = colors.surfaceContainerHighest;
@@ -59,7 +58,6 @@ class DiaryCompactBalanceProgressBar extends StatelessWidget {
                   progress: animatedProgress,
                   color: activity,
                   trackColor: trackColor,
-                  isDark: isDark,
                   segmentCount: segmentCount,
                 );
               },

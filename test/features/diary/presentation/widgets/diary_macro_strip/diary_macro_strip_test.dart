@@ -152,11 +152,11 @@ void main() {
     await scrollTo(101);
     expect(stage.value, DiaryMacroStripStage.kcal);
 
-    // The fat row starts at 276; the 40px kcal row reaches it at 236.
-    await scrollTo(235);
+    // The fat row starts at 280; the 40px kcal row reaches it at 240.
+    await scrollTo(239);
     expect(stage.value, DiaryMacroStripStage.kcal);
 
-    await scrollTo(237);
+    await scrollTo(241);
     expect(stage.value, DiaryMacroStripStage.full);
 
     await scrollTo(0);

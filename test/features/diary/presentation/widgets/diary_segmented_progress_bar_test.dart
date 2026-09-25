@@ -27,7 +27,6 @@ void main() {
                   overflow: overflow,
                   color: Colors.blue,
                   trackColor: Colors.grey,
-                  isDark: false,
                 ),
               ),
             ),
@@ -52,6 +51,16 @@ void main() {
 
       final factors = getWidthFactors(tester);
       expect(factors, [1.0, 0.0, 0.0, 0.0]);
+    });
+
+    testWidgets('a filled segment covers the full bar height', (tester) async {
+      await pumpBar(tester, progress: 0.25);
+
+      final fill = find.descendant(
+        of: find.byType(FractionallySizedBox).first,
+        matching: find.byType(ColoredBox),
+      );
+      expect(tester.getSize(fill).height, 6);
     });
 
     testWidgets('fills first two segments at 0.50 progress', (tester) async {
@@ -151,7 +160,6 @@ void main() {
                 progress: 0.5,
                 color: Colors.orange,
                 trackColor: Colors.grey,
-                isDark: false,
                 segmentCount: 7,
               ),
             ),

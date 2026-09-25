@@ -4438,6 +4438,42 @@ abstract class AppLocalizations {
   /// **'Show fewer numbers'**
   String get diaryBalanceHideDetails;
 
+  /// No description provided for @diaryBalanceEatenAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} eaten'**
+  String diaryBalanceEatenAmount(String kcal);
+
+  /// No description provided for @diaryBalanceOfTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'of {kcal}'**
+  String diaryBalanceOfTarget(String kcal);
+
+  /// No description provided for @diaryBalanceScaleTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {kcal}'**
+  String diaryBalanceScaleTarget(String kcal);
+
+  /// No description provided for @diaryMacroLeftSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'g left'**
+  String get diaryMacroLeftSuffix;
+
+  /// No description provided for @diaryMacroOverSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **'g over'**
+  String get diaryMacroOverSuffix;
+
+  /// No description provided for @diaryMacroEatenOfTarget.
+  ///
+  /// In en, this message translates to:
+  /// **'{eaten} / {target} g'**
+  String diaryMacroEatenOfTarget(String eaten, String target);
+
   /// No description provided for @diaryAmountLeft.
   ///
   /// In en, this message translates to:

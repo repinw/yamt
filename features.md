@@ -67,8 +67,16 @@ and feature description docs. This is product-facing; architecture rules stay in
   the previous or next day.
 - Meal sections for breakfast, lunch, dinner, and snacks.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
-- Nutrition bars and macro summaries. A macro above its target shows `+X g`
-  and stripes the overage share at the end of its bar.
+  Its buttons sit in a dock at the bottom of the diary, above the navigation
+  bar: square buttons for inventory, search, and AI, and a lime barcode button
+  on the right.
+- Daily head in the food label look, without a card frame: the kcal left as a
+  big number over a ruler, whose bar has four equal quarters of the target
+  that fill in order. It is quiet by default; a tap shows eaten and target,
+  base and carryover, and the eaten grams per macro.
+- Nutrition bars and macro summaries: each macro shows its label, a bar of four
+  segments, and the grams left. A macro above its target shows `+X g over` and
+  stripes the overage share at the end of its bar.
 - Burn Week balance cards with daily and weekly progress.
 - Weekly check-in prompts and success/hint cards.
 

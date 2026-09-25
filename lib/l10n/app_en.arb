@@ -1196,6 +1196,43 @@
   "diaryBalanceOverGoalLabel": "Over goal",
   "diaryBalanceShowDetails": "Show all numbers",
   "diaryBalanceHideDetails": "Show fewer numbers",
+  "diaryBalanceEatenAmount": "{kcal} eaten",
+  "@diaryBalanceEatenAmount": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBalanceOfTarget": "of {kcal}",
+  "@diaryBalanceOfTarget": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryBalanceScaleTarget": "Goal {kcal}",
+  "@diaryBalanceScaleTarget": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryMacroLeftSuffix": "g left",
+  "diaryMacroOverSuffix": "g over",
+  "diaryMacroEatenOfTarget": "{eaten} / {target} g",
+  "@diaryMacroEatenOfTarget": {
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      },
+      "target": {
+        "type": "String"
+      }
+    }
+  },
   "diaryAmountLeft": "{amount} left",
   "@diaryAmountLeft": {
     "placeholders": {

@@ -7,7 +7,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/di
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Gap between the protein, carbs, and fat rows.
-const double diaryMacroRowGap = AppSpacing.xs;
+const double diaryMacroRowGap = AppSpacing.sm;
 
 /// Content of the diary nutrition bars displaying all three macro rows.
 class DiaryNutritionBarsContent extends StatelessWidget {
@@ -59,7 +59,6 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               target: data.goals.protein,
               color: accentColors.protein,
               numberFormat: numberFormat,
-              unit: l10n.caloriesUnitGram,
               showTotal: showTotals,
             ),
             const SizedBox(height: diaryMacroRowGap),
@@ -69,7 +68,6 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               target: data.goals.carbs,
               color: accentColors.carbs,
               numberFormat: numberFormat,
-              unit: l10n.caloriesUnitGram,
               showTotal: showTotals,
             ),
             const SizedBox(height: diaryMacroRowGap),
@@ -79,7 +77,6 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               target: data.goals.fat,
               color: accentColors.fat,
               numberFormat: numberFormat,
-              unit: l10n.caloriesUnitGram,
               showTotal: showTotals,
             ),
           ],

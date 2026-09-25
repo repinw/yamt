@@ -12,6 +12,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_trigger.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_page_header.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
 
 /// Scrollable content of one diary day: daily card, header, and meals.
 ///
@@ -55,7 +56,9 @@ class _DiaryDayViewState extends ConsumerState<DiaryDayView> {
   @override
   Widget build(BuildContext context) {
     final horizontalPagePadding = responsivePageHorizontalPadding(context);
-    final bottomPagePadding = homeShellPageBottomPadding(context);
+    // The quick-eat dock covers the bottom of the page.
+    final bottomPagePadding =
+        homeShellPageBottomPadding(context) + diaryQuickEatDockHeight;
     final dashboardData = ref
         .watch(diaryDayDashboardControllerProvider(widget.day))
         .data;

@@ -69,7 +69,6 @@ class DiaryMacroStripMacroItem extends StatelessWidget {
           overflow: diaryMacroOverageShare(current: current, target: target),
           color: color,
           trackColor: colors.surfaceContainerHighest,
-          isDark: colors.brightness == Brightness.dark,
           height: AppSizes.stripProgressBarHeight,
         ),
       ],

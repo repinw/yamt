@@ -31,9 +31,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_progress.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_balance_shell.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_daily_goal_progress_bar.dart';
+    'diary_burn_week_card/diary_kcal_ruler.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_weekly_balance_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -55,7 +53,10 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(DiaryBalanceShell), findsOneWidget);
+    expect(
+      tester.getSize(find.byType(DiaryBalanceLoading)).height,
+      greaterThan(150),
+    );
     expect(tester.takeException(), isNull);
   });
 
@@ -72,7 +73,7 @@ void main() {
       ),
     );
 
-    expect(find.text('EATEN'), findsOneWidget);
+    expect(find.text('1,000 eaten'), findsOneWidget);
     expect(find.text('LEFT TODAY'), findsOneWidget);
     expect(find.text('Week 1'), findsNothing);
     expect(find.text('Day 1 of 7'), findsNothing);
@@ -84,7 +85,7 @@ void main() {
       find.byKey(const ValueKey<String>('diary-balance-consumed-marker')),
       findsNothing,
     );
-    expect(_findTextContaining('1,000 kcal'), findsWidgets);
+    expect(_findTextContaining('1,000'), findsWidgets);
     expect(_findTextContaining('14,000 kcal'), findsNothing);
   });
 
@@ -215,32 +216,43 @@ void main() {
     expect(fractionallySizedBoxes[6].widthFactor, lessThan(1.0));
   });
 
-  testWidgets('daily progress animates eaten segment', (tester) async {
+  testWidgets('daily ruler fills its first quarter, then the next ones', (
+    tester,
+  ) async {
     await _pumpDailyProgressBar(tester, eatenKcal: 0, targetKcal: 1200);
 
-    await _pumpDailyProgressBar(tester, eatenKcal: 1200, targetKcal: 1200);
+    await _pumpDailyProgressBar(tester, eatenKcal: 300, targetKcal: 1200);
     await tester.pump(const Duration(milliseconds: 500));
 
-    final midTrackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
-    );
-    final midEatenRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
-    );
+    double firstQuarterFill() {
+      final fill = tester.getRect(
+        find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
+      );
+      final quarter = tester.getRect(
+        find
+            .ancestor(
+              of: find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
+              matching: find.byType(ColoredBox),
+            )
+            .first,
+      );
+      return fill.width / quarter.width;
+    }
 
-    expect(midEatenRect.width, greaterThan(0));
-    expect(midEatenRect.width, lessThan(midTrackRect.width));
+    expect(firstQuarterFill(), inExclusiveRange(0, 1));
 
     await tester.pumpAndSettle();
 
-    final settledTrackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
-    );
-    final settledEatenRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.dailyProgressEatenFill),
-    );
-
-    expect(settledEatenRect.width / settledTrackRect.width, closeTo(1, 0.02));
+    expect(firstQuarterFill(), closeTo(1, 0.01));
+    final fills = tester
+        .widgetList<FractionallySizedBox>(
+          find.descendant(
+            of: find.byKey(DiaryBalanceCardKeys.dailyProgressTrack),
+            matching: find.byType(FractionallySizedBox),
+          ),
+        )
+        .map((box) => box.widthFactor);
+    expect(fills, [1, 0, 0, 0]);
   });
 
   testWidgets('pause day shows special balance', (tester) async {
@@ -433,11 +445,11 @@ void main() {
       themeMode: ThemeMode.dark,
     );
 
-    expect(find.text('EATEN'), findsOneWidget);
+    expect(find.text('2,500 eaten'), findsOneWidget);
     expect(find.text('OVER GOAL'), findsOneWidget);
     expect(find.text('LEFT TODAY'), findsNothing);
-    expect(_findTextContaining('500 kcal'), findsOneWidget);
-    expect(_findTextContaining('-500 kcal'), findsNothing);
+    expect(find.text('500'), findsOneWidget);
+    expect(_findTextContaining('-500'), findsNothing);
   });
 
   testWidgets('decides future days from the clock provider', (tester) async {
@@ -456,7 +468,7 @@ void main() {
       ),
     );
 
-    expect(find.text('BASE'), findsOneWidget);
+    expect(_findTextContaining('Base '), findsOneWidget);
     expect(find.text('LEFT TODAY'), findsNothing);
   });
 
@@ -479,7 +491,7 @@ void main() {
     );
 
     expect(find.text('PLANNED WITH CARRYOVER'), findsOneWidget);
-    expect(find.text('BASE'), findsNothing);
+    expect(_findTextContaining('Base '), findsNothing);
   });
 
   testWidgets('quiet card shows only what is left and toggles on tap', (
@@ -501,8 +513,7 @@ void main() {
     );
 
     expect(find.text('LEFT TODAY'), findsOneWidget);
-    expect(find.text('EATEN'), findsNothing);
-    expect(find.byIcon(Icons.expand_more_rounded), findsOneWidget);
+    expect(_findTextContaining(' eaten'), findsNothing);
     expect(
       find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
       findsNothing,
@@ -511,16 +522,16 @@ void main() {
     await tester.tap(find.text('LEFT TODAY'));
     await tester.pumpAndSettle();
 
-    expect(find.text('EATEN'), findsOneWidget);
+    expect(find.text('1,200 eaten'), findsOneWidget);
     expect(
       find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
       findsOneWidget,
     );
 
-    await tester.tap(find.text('EATEN'));
+    await tester.tap(find.text('LEFT TODAY'));
     await tester.pumpAndSettle();
 
-    expect(find.text('EATEN'), findsNothing);
+    expect(_findTextContaining(' eaten'), findsNothing);
   });
 
   testWidgets('renders future non-live day snapshot', (tester) async {
@@ -539,9 +550,9 @@ void main() {
       ),
     );
 
-    expect(find.text('BASE'), findsOneWidget);
+    expect(_findTextContaining('Base '), findsOneWidget);
     expect(find.text('PLANNED WITH CARRYOVER'), findsOneWidget);
-    expect(find.text('EATEN'), findsNothing);
+    expect(_findTextContaining(' eaten'), findsNothing);
     expect(find.text('LEFT TODAY'), findsNothing);
     expect(find.text('Day 7 of 7'), findsNothing);
     expect(find.byIcon(Icons.stars_rounded), findsNothing);
@@ -605,8 +616,8 @@ void main() {
     );
 
     expect(find.text('OVER GOAL'), findsOneWidget);
-    expect(_findTextContaining('838 kcal'), findsOneWidget);
-    expect(_findTextContaining('-838 kcal'), findsNothing);
+    expect(find.text('838'), findsOneWidget);
+    expect(find.text('-838'), findsNothing);
   });
 
   testWidgets('shows retry content when week overview fails', (tester) async {
@@ -856,12 +867,7 @@ Future<void> _pumpDailyProgressBar(
         body: Center(
           child: SizedBox(
             width: 300,
-            child: DiaryDailyGoalProgressBar(
-              eatenKcal: eatenKcal,
-              targetKcal: targetKcal,
-              numberFormat: NumberFormat.decimalPattern('en'),
-              unit: 'kcal',
-            ),
+            child: DiaryKcalRuler(eatenKcal: eatenKcal, targetKcal: targetKcal),
           ),
         ),
       ),

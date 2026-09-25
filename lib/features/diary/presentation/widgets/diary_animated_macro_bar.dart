@@ -15,8 +15,8 @@ class DiaryAnimatedMacroBar extends StatelessWidget {
     required this.target,
     required this.color,
     required this.trackColor,
-    required this.isDark,
     required this.handoffTag,
+    this.overflowColor,
     this.height = 6.0,
     super.key,
   });
@@ -33,8 +33,8 @@ class DiaryAnimatedMacroBar extends StatelessWidget {
   /// Track background color.
   final Color trackColor;
 
-  /// Whether the current theme is dark mode.
-  final bool isDark;
+  /// Color of the overage stripes. Defaults to [color].
+  final Color? overflowColor;
 
   /// Height of each segment.
   final double height;
@@ -57,7 +57,7 @@ class DiaryAnimatedMacroBar extends StatelessWidget {
         ),
         color: color,
         trackColor: trackColor,
-        isDark: isDark,
+        overflowColor: overflowColor,
         height: height,
       ),
     );

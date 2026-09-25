@@ -2569,6 +2569,32 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBalanceHideDetails => 'Weniger Zahlen anzeigen';
 
   @override
+  String diaryBalanceEatenAmount(String kcal) {
+    return '$kcal gegessen';
+  }
+
+  @override
+  String diaryBalanceOfTarget(String kcal) {
+    return 'von $kcal';
+  }
+
+  @override
+  String diaryBalanceScaleTarget(String kcal) {
+    return 'Ziel $kcal';
+  }
+
+  @override
+  String get diaryMacroLeftSuffix => 'g übrig';
+
+  @override
+  String get diaryMacroOverSuffix => 'g drüber';
+
+  @override
+  String diaryMacroEatenOfTarget(String eaten, String target) {
+    return '$eaten / $target g';
+  }
+
+  @override
   String diaryAmountLeft(String amount) {
     return '$amount übrig';
   }

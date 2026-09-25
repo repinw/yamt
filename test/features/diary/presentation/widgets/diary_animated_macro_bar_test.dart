@@ -15,7 +15,6 @@ void main() {
               target: 100,
               color: Colors.blue,
               trackColor: Colors.grey,
-              isDark: false,
               handoffTag: #macro,
             ),
           ),
