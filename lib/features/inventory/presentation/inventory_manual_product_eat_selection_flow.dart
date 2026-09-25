@@ -3,15 +3,15 @@ import 'dart:developer' show log;
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_eat_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_quick_eat_sheet_picker.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Resolves the inventory request used by the manual-product eat flow.
@@ -50,8 +50,7 @@ abstract final class InventoryManualProductEatSelectionFlow {
     required DateTime? preselectedLoggedAt,
     required bool continueBatchOnConfirm,
   }) async {
-    final maxAmount = resolveInventoryManualAddConsumableAmount(item);
-    if (maxAmount == null) {
+    if (consumableInventoryAmount(item) == null) {
       log(
         'Item ${item.id} has nothing left to eat '
         '(quantity=${item.quantity}, currentAmount=${item.currentAmount}).',
@@ -63,11 +62,9 @@ abstract final class InventoryManualProductEatSelectionFlow {
       );
       return null;
     }
-    return await const InventoryQuickEatSheetPicker().pickItemResult(
+    return await showInventoryItemEatSheetResult(
       context: context,
       item: item,
-      maxAmount: maxAmount,
-      invalidAmountMessage: l10n.inventoryReceiptReviewInvalidNumber,
       confirmIntent: _confirmIntent(continueBatchOnConfirm),
       initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
         item: item,

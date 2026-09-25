@@ -11,10 +11,9 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 import 'package:yamt/features/inventory/application/'
     'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/application/inventory_calorie_nutrient_details.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 
 /// Defines inventory calorie bridge flow.

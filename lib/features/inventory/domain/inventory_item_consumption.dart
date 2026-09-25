@@ -26,3 +26,20 @@ class PendingInventoryConsumption {
   /// The amount.
   final int amount;
 }
+
+/// The stock of [item] that can be eaten, in its stored amount unit.
+///
+/// Items tracked by amount count their current amount. Other items count
+/// their quantity. Returns null when nothing can be eaten.
+int? consumableInventoryAmount(InventoryItem item) {
+  if (item.usesAmountProgress) {
+    if (item.amountUnit == null || item.currentAmount < 1) {
+      return null;
+    }
+    return item.currentAmount;
+  }
+  if (item.quantity < 1) {
+    return null;
+  }
+  return item.quantity;
+}

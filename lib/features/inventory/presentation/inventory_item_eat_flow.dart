@@ -5,22 +5,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_item_eat_policy.dart';
+import 'package:yamt/features/inventory/application/inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/inventory_quick_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines inventory item eat flow.
+/// Where a staged eat takes its stock from.
+enum InventoryEatStockSource {
+  /// The loaded inventory list, so the row updates at once.
+  inventoryList,
+
+  /// The item the caller shows, without loading the inventory list.
+  snapshot,
+}
+
+/// Eats an inventory item: stages the stock and logs the calorie entry.
 class InventoryItemEatFlow {
   const new _();
 
@@ -30,6 +42,55 @@ class InventoryItemEatFlow {
     InventoryItemEatRequest request,
   ) {
     return canDirectlySaveInventoryItemEatRequest(item, request);
+  }
+
+  /// Opens the eat sheet for [item] and logs the entered amount.
+  ///
+  /// Stages the stock from [item] itself. Returns the saved entry, or null
+  /// when the user cancels or saving fails.
+  static Future<CalorieEntry?> eat({
+    required BuildContext context,
+    required InventoryItem item,
+    DateTime? initialLoggedAt,
+    MealType? initialMealType,
+  }) async {
+    final request = await showInventoryItemEatSheet(
+      context: context,
+      item: item,
+      initialLoggedAt: initialLoggedAt,
+      initialMealType: initialMealType,
+    );
+    if (request == null || !context.mounted) {
+      return null;
+    }
+    return await runInventoryQuickEatFlow(context, (scope) async {
+      final pendingConsumptionId = await scope.actions
+          .stageInventoryItemConsumption(
+            item: item,
+            amount: request.inventoryAmount,
+          );
+      if (pendingConsumptionId == null) {
+        scope.messenger.showAppSnackBar(
+          scope.l10n.inventoryItemActionFailed,
+          tone: AppSnackBarTone.error,
+        );
+        return null;
+      }
+      if (!context.mounted) {
+        await scope.actions.discardInventoryItemConsumption(
+          pendingConsumptionId,
+        );
+        return null;
+      }
+      return await complete(
+        context: context,
+        container: scope.container,
+        itemBeforeMutation: item,
+        request: request,
+        pendingConsumptionId: pendingConsumptionId,
+        stockSource: InventoryEatStockSource.snapshot,
+      );
+    });
   }
 
   /// Stages consumption and completes the eat flow.
@@ -62,7 +123,6 @@ class InventoryItemEatFlow {
       request: request,
       pendingConsumptionId: pendingConsumption.id,
       pendingConsumption: pendingConsumption,
-      inventoryController: inventoryController,
     );
 
     if (shouldAwaitCompletion(item, request)) {
@@ -73,29 +133,38 @@ class InventoryItemEatFlow {
     return true;
   }
 
-  /// Complete.
-  static Future<bool> complete({
+  /// Logs the calorie entry for a staged [request].
+  ///
+  /// Saves directly when the item has enough nutrition data, and opens the
+  /// calorie editor otherwise. Discards the staged stock from [stockSource]
+  /// on failure. Returns the saved entry, or null.
+  static Future<CalorieEntry?> complete({
     required BuildContext context,
     required ProviderContainer container,
     required InventoryItem itemBeforeMutation,
     required InventoryItemEatRequest request,
     required String pendingConsumptionId,
+    InventoryEatStockSource stockSource = InventoryEatStockSource.inventoryList,
     PendingInventoryConsumption? pendingConsumption,
-    InventoryItemsController? inventoryController,
     void Function(String calorieEntryId)? onDirectCalorieEntrySaved,
   }) async {
     final l10n = AppLocalizations.of(context)!;
+    Future<CalorieEntry?> fail({String? message, bool showMessage = true}) {
+      return _discardAndFail(
+        context: showMessage && context.mounted ? context : null,
+        container: container,
+        stockSource: stockSource,
+        pendingConsumptionId: pendingConsumptionId,
+        message: message,
+      );
+    }
+
     try {
       final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
         itemBeforeMutation,
       );
       if (profile == null) {
-        return await _discardAndFail(
-          context: context,
-          container: container,
-          pendingConsumptionId: pendingConsumptionId,
-          message: l10n.inventoryItemActionFailed,
-        );
+        return await fail(message: l10n.inventoryItemActionFailed);
       }
 
       final inventoryContext = InventoryCalorieBridgeFlow.buildInventoryContext(
@@ -127,23 +196,14 @@ class InventoryItemEatFlow {
               entry: savedEntry,
             );
           }
-          return true;
+          return savedEntry;
         }
 
-        return await _discardAndFail(
-          context: context.mounted ? context : null,
-          container: container,
-          pendingConsumptionId: pendingConsumptionId,
-          message: l10n.caloriesSaveFailed,
-        );
+        return await fail(message: l10n.caloriesSaveFailed);
       }
 
       if (!context.mounted) {
-        return await _discardAndFail(
-          context: null,
-          container: container,
-          pendingConsumptionId: pendingConsumptionId,
-        );
+        return await fail(showMessage: false);
       }
 
       final savedEntry = await context.push<CalorieEntry>(
@@ -163,7 +223,7 @@ class InventoryItemEatFlow {
           entry: savedEntry,
         );
       }
-      return savedEntry != null;
+      return savedEntry;
     } on Object catch (error, stackTrace) {
       developer.log(
         'Eat flow failed unexpectedly.',
@@ -171,39 +231,32 @@ class InventoryItemEatFlow {
         error: error,
         stackTrace: stackTrace,
       );
-      return await _discardAndFail(
-        context: context.mounted ? context : null,
-        container: container,
-        pendingConsumptionId: pendingConsumptionId,
-        message: l10n.inventoryItemActionFailed,
-      );
+      return await fail(message: l10n.inventoryItemActionFailed);
     }
   }
 
-  static Future<bool> _discardAndFail({
+  static Future<CalorieEntry?> _discardAndFail({
     required BuildContext? context,
     required ProviderContainer container,
+    required InventoryEatStockSource stockSource,
     required String pendingConsumptionId,
     String? message,
   }) async {
-    await _discardPendingConsumption(
-      container: container,
-      pendingConsumptionId: pendingConsumptionId,
-    );
+    await switch (stockSource) {
+      InventoryEatStockSource.inventoryList =>
+        container
+            .read(inventoryItemsControllerProvider.notifier)
+            .discardPendingConsumption(pendingConsumptionId),
+      InventoryEatStockSource.snapshot =>
+        container
+            .read(inventoryQuickEatActionsProvider)
+            .discardInventoryItemConsumption(pendingConsumptionId),
+    };
     if (context != null && context.mounted && message != null) {
       ScaffoldMessenger.of(context)
           .showAppSnackBar(message, tone: AppSnackBarTone.error);
     }
-    return false;
-  }
-
-  static Future<void> _discardPendingConsumption({
-    required ProviderContainer container,
-    required String pendingConsumptionId,
-  }) {
-    return container
-        .read(inventoryItemsControllerProvider.notifier)
-        .discardPendingConsumption(pendingConsumptionId);
+    return null;
   }
 
   static void _showEatenSnackBar({

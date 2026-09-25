@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -15,14 +14,6 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Callback used to eat a prepared meal.
-typedef PreparedMealEatCallback = Future<bool> Function({
-  required String mealId,
-  required num portions,
-  required MealType mealType,
-  required DateTime loggedDay,
-});
 
 /// Callback used to discard prepared meal portions.
 typedef PreparedMealDiscardCallback = Future<bool> Function(
@@ -68,7 +59,6 @@ typedef PreparedMealSaveTemplateCallback = Future<bool> Function(
 class PreparedMealSectionActions {
   /// Creates prepared meal section actions.
   const new({
-    required this.onEatPreparedMeal,
     required this.onThrowAwayPreparedMeal,
     required this.onFillPendingPreparedMealIngredient,
     required this.onIgnorePendingPreparedMealIngredient,
@@ -77,9 +67,6 @@ class PreparedMealSectionActions {
     required this.onSelectPreparedMealEditIngredients,
     required this.onSavePreparedMealTemplate,
   });
-
-  /// The on eat prepared meal.
-  final PreparedMealEatCallback onEatPreparedMeal;
 
   /// The on throw away prepared meal.
   final PreparedMealDiscardCallback onThrowAwayPreparedMeal;
@@ -293,7 +280,6 @@ class _PreparedMealEntry extends StatelessWidget {
       meal: meal,
       initiallyExpanded: meal.id == expandedPreparedMealId,
       enabled: enabled,
-      onEatPressed: actions.onEatPreparedMeal,
       onThrowAwayPressed: actions.onThrowAwayPreparedMeal,
       onFillPendingIngredientPressed:
           actions.onFillPendingPreparedMealIngredient,

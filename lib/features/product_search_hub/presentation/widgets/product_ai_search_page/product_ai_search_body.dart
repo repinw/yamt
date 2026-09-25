@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/meal_log_time_row.dart';
 import 'package:yamt/core/widgets/nutrition_profile_card.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
@@ -14,8 +15,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_action_selector.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_ai_search_page/product_ai_density_adjust_card.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_ai_search_page/product_ai_eat_when_section.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_ai_search_page/product_ai_headline_card.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -33,11 +32,11 @@ class ManualProductAiSearchBody extends StatelessWidget {
     required this.weightErrorText,
     required this.selectedAction,
     required this.showEatImmediatelyOption,
-    required this.isLoggedAtToday,
-    required this.loggedAtLabel,
+    required this.loggedAt,
+    required this.today,
     required this.selectedMealType,
     required this.onActionChanged,
-    required this.onPickLoggedAt,
+    required this.onDayPicked,
     required this.onMealTypeSelected,
     required this.onWeightChanged,
     required this.onPer100KcalChanged,
@@ -70,11 +69,11 @@ class ManualProductAiSearchBody extends StatelessWidget {
   /// Whether eat-now is available.
   final bool showEatImmediatelyOption;
 
-  /// Whether selected eat date is today.
-  final bool isLoggedAtToday;
+  /// When the food is logged.
+  final DateTime loggedAt;
 
-  /// Selected eat date label.
-  final String? loggedAtLabel;
+  /// The current day.
+  final DateTime today;
 
   /// Selected meal type.
   final MealType selectedMealType;
@@ -82,8 +81,8 @@ class ManualProductAiSearchBody extends StatelessWidget {
   /// Called when action changes.
   final ValueChanged<InventoryReceiptManualProductAction> onActionChanged;
 
-  /// Opens date picker.
-  final VoidCallback onPickLoggedAt;
+  /// Called with the picked day.
+  final ValueChanged<DateTime> onDayPicked;
 
   /// Called when meal type changes.
   final ValueChanged<MealType> onMealTypeSelected;
@@ -173,12 +172,12 @@ class ManualProductAiSearchBody extends StatelessWidget {
           ],
           if (showEatImmediatelyOption &&
               selectedAction == InventoryReceiptManualProductAction.eatNow) ...[
-            AiEatWhenSection(
-              isToday: isLoggedAtToday,
-              label: loggedAtLabel,
-              selectedMealType: selectedMealType,
-              onPickLoggedAt: onPickLoggedAt,
-              onMealTypeSelected: onMealTypeSelected,
+            MealLogTimeRow(
+              loggedAt: loggedAt,
+              today: today,
+              mealType: selectedMealType,
+              onDayPicked: onDayPicked,
+              onMealTypeChanged: onMealTypeSelected,
             ),
             const SizedBox(height: AppSpacing.md),
           ],

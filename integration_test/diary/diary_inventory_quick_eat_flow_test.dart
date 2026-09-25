@@ -49,11 +49,11 @@ final _selectedDay = DateTime(2026, 5, 13);
 const _userId = 'user-1';
 const _householdId = 'household-1';
 const _locale = Locale('de');
-const _inventoryItemAmountFieldKey = Key('inventory_item_amount_dialog_field');
+const _inventoryItemAmountFieldKey = Key('eat_page_amount_field');
 const _inventoryItemAmountConfirmButtonKey = Key(
   'inventory_item_amount_dialog_confirm_button',
 );
-const _preparedMealPortionsFieldKey = Key('prepared_meal_portions_field');
+const _preparedMealPortionsFieldKey = Key('eat_page_amount_field');
 const _preparedMealConfirmButtonKey = Key('prepared_meal_eat_confirm_button');
 
 class _DiaryInventoryQuickEatHarness {

@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
-import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
@@ -27,7 +26,6 @@ class PreparedMealCard extends ConsumerStatefulWidget {
   /// The prepared meal card.
   const new({
     required this.meal,
-    required this.onEatPressed,
     required this.onThrowAwayPressed,
     required this.onUnbundlePressed,
     required this.onEditPressed,
@@ -42,15 +40,6 @@ class PreparedMealCard extends ConsumerStatefulWidget {
 
   /// The meal.
   final PreparedMeal meal;
-
-  /// The on eat pressed.
-  final Future<bool> Function({
-    required String mealId,
-    required num portions,
-    required MealType mealType,
-    required DateTime loggedDay,
-  })
-  onEatPressed;
 
   /// The on throw away pressed.
   final Future<bool> Function(
@@ -126,15 +115,6 @@ class _PreparedMealCardState extends ConsumerState<PreparedMealCard>
 
   @override
   PreparedMeal get actionMeal => widget.meal;
-
-  @override
-  Future<bool> Function({
-    required DateTime loggedDay,
-    required String mealId,
-    required MealType mealType,
-    required num portions,
-  })
-  get eatPressedAction => widget.onEatPressed;
 
   @override
   Future<bool> Function(

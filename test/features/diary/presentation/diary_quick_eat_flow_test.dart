@@ -9,6 +9,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -16,11 +17,11 @@ import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dar
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
-import 'package:yamt/features/inventory/application/inventory_quick_eat_picker.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/inventory_quick_eat_sheet_picker.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -250,7 +251,7 @@ void main() {
     await tester.tap(find.text('Stage Failure Food'));
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      find.byKey(const Key('eat_page_amount_field')),
       '100',
     );
     await tester.pump();
@@ -291,7 +292,7 @@ void main() {
       await tester.tap(find.text('No Nutrition Food'));
       await tester.pumpAndSettle();
       await tester.enterText(
-        find.byKey(const Key('inventory_item_amount_dialog_field')),
+        find.byKey(const Key('eat_page_amount_field')),
         '100',
       );
       await tester.pump();
@@ -353,6 +354,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 300));
 
     expect(dashboardRetryCount, greaterThanOrEqualTo(1));
+    expect(find.text('Added to diary'), findsOneWidget);
   });
 }
 
@@ -476,20 +478,11 @@ Future<void> _pumpInventoryFlowHarness(
         diaryQuickEatInventoryProvider.overrideWith(
           (ref) => _diaryQuickEatInventoryData(inventoryItems, preparedMeals),
         ),
-        diaryQuickEatInventoryActionsProvider.overrideWithValue(
-          _TestDiaryQuickEatInventoryActions(
-            failConsume: failPreparedMealConsume,
-            failStage: failInventoryStage,
-          ),
-        ),
         inventoryQuickEatActionsProvider.overrideWithValue(
           _TestDiaryQuickEatInventoryActions(
             failConsume: failPreparedMealConsume,
             failStage: failInventoryStage,
           ),
-        ),
-        inventoryQuickEatPickerProvider.overrideWithValue(
-          const InventoryQuickEatSheetPicker(),
         ),
       ],
       child: const MaterialApp(
@@ -519,14 +512,8 @@ Future<void> _pumpDelayedInventoryFlowHarness(
           await mealsGate.future;
           return _diaryQuickEatInventoryData(inventoryItems, preparedMeals);
         }),
-        diaryQuickEatInventoryActionsProvider.overrideWithValue(
-          const _TestDiaryQuickEatInventoryActions(),
-        ),
         inventoryQuickEatActionsProvider.overrideWithValue(
           const _TestDiaryQuickEatInventoryActions(),
-        ),
-        inventoryQuickEatPickerProvider.overrideWithValue(
-          const InventoryQuickEatSheetPicker(),
         ),
       ],
       child: const MaterialApp(
@@ -590,8 +577,7 @@ Override _dashboardOverrideFor(
   );
 }
 
-class _TestDiaryQuickEatInventoryActions
-    implements DiaryQuickEatInventoryActions, InventoryQuickEatActions {
+class _TestDiaryQuickEatInventoryActions implements InventoryQuickEatActions {
   const new({this.failConsume = false, this.failStage = false});
 
   final bool failConsume;
@@ -617,13 +603,22 @@ class _TestDiaryQuickEatInventoryActions
   }
 
   @override
-  Future<bool> consumePreparedMeal({
+  Future<CalorieEntry?> consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
   }) async {
-    return !failConsume;
+    if (failConsume) {
+      return null;
+    }
+    return buildConsumedPreparedMealCalorieEntry(
+      meal: meal,
+      consumedPortions: consumedPortions,
+      mealType: mealType,
+      now: () => loggedDay,
+      nextEntryId: () => 'entry-${meal.id}',
+    );
   }
 }
 

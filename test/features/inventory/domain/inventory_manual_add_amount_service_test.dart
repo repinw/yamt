@@ -5,50 +5,6 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_manual_add_amount_service.dart';
 
 void main() {
-  test('consumable amount guards invalid items', () {
-    final stockedQuantityItem = InventoryItem.create(
-      id: 'item-stocked',
-      name: 'Yogurt',
-      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
-      storeName: 'Added manually',
-      quantity: 3,
-    );
-    final stockedAmountItem = InventoryItem.create(
-      id: 'item-amount',
-      name: 'Milk',
-      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
-      storeName: 'Added manually',
-      quantity: 1,
-      initialAmount: 1000,
-      currentAmount: 750,
-      amountUnit: InventoryAmountUnit.milliliter,
-    );
-    final quantitylessItem = InventoryItem.create(
-      id: 'item-0',
-      name: 'Nothing',
-      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
-      storeName: 'Added manually',
-      quantity: 0,
-    );
-    final depletedAmountItem = InventoryItem.create(
-      id: 'item-1',
-      name: 'Milk',
-      entryDate: DateTime.parse('2026-04-07T10:00:00Z'),
-      storeName: 'Added manually',
-      quantity: 1,
-      initialAmount: 1000,
-      amountUnit: InventoryAmountUnit.milliliter,
-    );
-
-    expect(resolveInventoryManualAddConsumableAmount(stockedQuantityItem), 3);
-    expect(resolveInventoryManualAddConsumableAmount(stockedAmountItem), 750);
-    expect(resolveInventoryManualAddConsumableAmount(quantitylessItem), isNull);
-    expect(
-      resolveInventoryManualAddConsumableAmount(depletedAmountItem),
-      isNull,
-    );
-  });
-
   test('prompt requirement depends on resolved amount data', () {
     final amountItem = _amountItem(
       weight: '300 ml',

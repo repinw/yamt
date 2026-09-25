@@ -926,12 +926,12 @@ void main() {
 
     await _tapVisible(tester, find.byTooltip('Eat'));
 
-    expect(find.text('LOG FOOD'), findsOneWidget);
+    expect(find.text('Nutrition'), findsOneWidget);
     expect(find.text('Milk'), findsWidgets);
     expect(find.text('All'), findsOneWidget);
 
     final amountField = find.byKey(
-      const Key('inventory_item_amount_dialog_field'),
+      const Key('eat_page_amount_field'),
     );
     expect(amountField, findsOneWidget);
     await tester.enterText(amountField, '120');
@@ -982,8 +982,7 @@ void main() {
 
     await _scrollUntilVisible(tester, _stockLabel('1000g / 1000g'));
     await _tapVisible(tester, find.byTooltip('Eat'));
-    await tester.tap(find.text('All'));
-    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.text('All'));
 
     await _tapAmountDialogConfirm(tester);
 
@@ -1017,7 +1016,7 @@ void main() {
       await _tapVisible(tester, find.byTooltip('Eat'));
 
       final amountField = find.byKey(
-        const Key('inventory_item_amount_dialog_field'),
+        const Key('eat_page_amount_field'),
       );
       expect(amountField, findsOneWidget);
       await tester.enterText(amountField, '100');
@@ -1305,15 +1304,26 @@ void main() {
     await _tapVisible(tester, find.byTooltip('Eat'));
 
     final amountField = find.byKey(
-      const Key('inventory_item_amount_dialog_field'),
+      const Key('eat_page_amount_field'),
     );
     expect(amountField, findsOneWidget);
     await tester.enterText(amountField, '999');
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+      '100',
+    );
+    await tester.pump();
 
     await _tapAmountDialogConfirm(tester);
 
     expect(find.text('Please enter valid numbers.'), findsOneWidget);
     expect(amountField, findsOneWidget);
+
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_cancel_button')),
+    );
+    await tester.pumpAndSettle();
+
     expect(_stockLabel('3 /3'), findsOneWidget);
   });
 

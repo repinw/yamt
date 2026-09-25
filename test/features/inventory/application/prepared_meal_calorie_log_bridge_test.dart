@@ -91,15 +91,14 @@ void main() {
         ],
       );
 
-      final saved = await container
-          .read(preparedMealCalorieLogBridgeProvider)
-          .logConsumedPreparedMeal(
-            meal: meal,
-            consumedPortions: 1,
-            mealType: MealType.lunch,
-          );
+      final saved = await _consume(
+        container.read(preparedMealCalorieLogBridgeProvider),
+        meal: meal,
+        consumedPortions: 1,
+        mealType: MealType.lunch,
+      );
 
-      expect(saved, isTrue);
+      expect(saved, isNotNull);
       expect(calorieLogRepository.entries, hasLength(1));
 
       final entry = calorieLogRepository.entries.single;
@@ -192,13 +191,14 @@ void main() {
     final bridge = container.read(preparedMealCalorieLogBridgeProvider);
     container.invalidate(preparedMealCalorieLogBridgeProvider);
 
-    final saved = await bridge.logConsumedPreparedMeal(
+    final saved = await _consume(
+      bridge,
       meal: meal,
       consumedPortions: 1,
       mealType: MealType.dinner,
     );
 
-    expect(saved, isTrue);
+    expect(saved, isNotNull);
     final entry = calorieLogRepository.entries.single;
     expect(entry.imageAssetId, meal.imageAssetId);
   });
@@ -228,14 +228,15 @@ void main() {
       components: const <PreparedMealComponent>[],
     );
 
-    final saved = await bridge.logConsumedPreparedMeal(
+    final saved = await _consume(
+      bridge,
       meal: meal,
       consumedPortions: 1,
       mealType: MealType.dinner,
       loggedDay: DateTime(2026, 3, 30),
     );
 
-    expect(saved, isTrue);
+    expect(saved, isNotNull);
     final entry = savedEntries.single;
     expect(normalizeDiaryDay(entry.loggedAt), DateTime(2026, 3, 30));
     expect(entry.loggedAt.hour, 18);
@@ -288,7 +289,7 @@ void main() {
       },
     );
 
-    expect(saved, isFalse);
+    expect(saved, isNull);
     expect(directSaveCalled, isFalse);
     expect(fallbackSaveCalled, isFalse);
     expect(
@@ -338,11 +339,30 @@ void main() {
       },
     );
 
-    expect(saved, isFalse);
+    expect(saved, isNull);
     expect(saveCalls, hasLength(2));
     expect(saveCalls.first.previousMeals.single.remainingPortions, 2);
     expect(saveCalls.first.nextMeals.single.remainingPortions, 1);
     expect(saveCalls.last.previousMeals.single.remainingPortions, 1);
     expect(saveCalls.last.nextMeals.single.remainingPortions, 2);
   });
+}
+
+Future<CalorieEntry?> _consume(
+  PreparedMealCalorieLogBridge bridge, {
+  required PreparedMeal meal,
+  required num consumedPortions,
+  required MealType mealType,
+  DateTime? loggedDay,
+}) {
+  return bridge.consumePreparedMeal(
+    currentMeals: [meal],
+    nextMeals: [meal],
+    meal: meal,
+    consumedPortions: consumedPortions,
+    mealType: mealType,
+    loggedDay: loggedDay,
+    publishMeals: (_) {},
+    saveMeals: (_, _) async => true,
+  );
 }

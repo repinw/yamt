@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/application/'
@@ -49,8 +50,9 @@ abstract interface class InventoryQuickEatActions {
   /// Discards staged inventory consumption.
   Future<void> discardInventoryItemConsumption(String pendingConsumptionId);
 
-  /// Consumes one prepared meal.
-  Future<bool> consumePreparedMeal({
+  /// Consumes one prepared meal and returns the saved calorie entry, or null
+  /// when it failed.
+  Future<CalorieEntry?> consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
@@ -106,25 +108,25 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
   }
 
   @override
-  Future<bool> consumePreparedMeal({
+  Future<CalorieEntry?> consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
   }) {
-    return _mutationQueue.run<bool>(
+    return _mutationQueue.run<CalorieEntry?>(
       operation: () => _consumePreparedMeal(
         meal: meal,
         consumedPortions: consumedPortions,
         mealType: mealType,
         loggedDay: loggedDay,
       ),
-      fallbackValue: false,
+      fallbackValue: null,
       onError: _logMutationError,
     );
   }
 
-  Future<bool> _consumePreparedMeal({
+  Future<CalorieEntry?> _consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
@@ -132,7 +134,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
   }) async {
     if (consumedPortions <= 0 ||
         !_canConsumePreparedMeal(meal, consumedPortions)) {
-      return false;
+      return null;
     }
     final currentMeals = <PreparedMeal>[meal];
     final nextMeals = applyPreparedMealPortionReduction(

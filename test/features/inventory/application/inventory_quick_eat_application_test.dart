@@ -167,7 +167,7 @@ void main() {
       loggedDay: DateTime(2026, 9, 19),
     );
 
-    expect(saved, isTrue);
+    expect(saved, isNotNull);
     expect(savedEntries.single.bundleSourcePreparedMealId, 'meal-1');
     expect(repository.readAllCallCount, 0);
   });
@@ -191,7 +191,7 @@ void main() {
       loggedDay: DateTime(2026, 9, 19),
     );
 
-    expect(saved, isTrue);
+    expect(saved, isNotNull);
     expect(repository.meals.map((meal) => meal.id), <String>[
       'meal-1',
       'meal-2',

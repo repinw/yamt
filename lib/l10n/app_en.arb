@@ -342,30 +342,119 @@
   "inventoryItemDeletedMessage": "Item deleted.",
   "inventoryItemRemovedMessage": "Item removed.",
   "inventoryItemEatAction": "Eat",
-  "inventoryItemEatSheetEyebrow": "Log food",
-  "inventoryItemEatSheetAmountLabel": "Enter amount",
-  "inventoryItemEatSheetAvailableAmount": "Available in inventory: {amount} {unit}",
-  "@inventoryItemEatSheetAvailableAmount": {
-    "placeholders": {
-      "amount": {},
-      "unit": {}
-    }
-  },
-  "inventoryItemEatSheetAllAction": "All",
   "inventoryAmountDialogAllRemainingAction": "All/Rest",
-  "inventoryItemEatSheetPortionLabelFieldLabel": "Portion label",
-  "inventoryItemEatSheetPortionAmountFieldLabel": "Amount per portion",
   "inventoryItemEatSheetDecreasePortionCountAction": "Decrease portions",
   "inventoryItemEatSheetIncreasePortionCountAction": "Increase portions",
   "inventoryItemEatSheetDefaultPortionLabel": "Portion",
-  "inventoryItemEatSheetNewPortionAction": "+ New portion...",
-  "inventoryItemEatSheetNewPortionTitle": "New portion",
-  "inventoryItemEatSheetSavePortionAction": "Save portion",
-  "inventoryItemEatSheetUnitGram": "Gram",
-  "inventoryItemEatSheetUnitMilliliter": "Milliliter",
   "inventoryItemEatSheetUnitPiece": "Piece",
-  "inventoryItemEatSheetPortionTotalLabel": "Total: {amount} {unit}",
-  "@inventoryItemEatSheetPortionTotalLabel": {
+  "inventoryItemEatSheetInedibleAmountLabel": "Subtract inedible part",
+  "inventoryItemEatSheetInedibleAmountFieldLabel": "Inedible amount",
+  "inventoryItemEatSheetInedibleAmountError": "The deducted amount must be smaller than the eaten amount.",
+  "inventoryItemEatSheetConfirmAction": "Log",
+  "inventoryItemEatSheetAddMoreAction": "+ More",
+  "eatPageNutritionTitle": "Nutrition",
+  "eatPageWhen": "{day} · {meal}",
+  "@eatPageWhen": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPagePickDay": "Other day…",
+  "eatPageRememberPortion": "+ Remember this amount as a portion",
+  "eatPagePortionNameLabel": "Name for {amount}",
+  "@eatPagePortionNameLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPagePortionNameHint": "e.g. slice",
+  "eatPageSavePortion": "Save",
+  "eatPagePieceWeight": "1 {label} =",
+  "@eatPagePieceWeight": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageInStock": "{amount} in stock",
+  "@eatPageInStock": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageTotal": "= {amount}",
+  "@eatPageTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageKcal": "{kcal} kcal",
+  "@eatPageKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "eatPageRememberPieceSize": "+ Remember as piece size",
+  "eatPagePieceSizeNameHint": "e.g. L",
+  "eatPageAll": "All",
+  "eatPageMark": "{label} {amount}",
+  "@eatPageMark": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPagePortionMultiple": "= {count} × {label}",
+  "@eatPagePortionMultiple": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageApprox": "≈ {amount}",
+  "@eatPageApprox": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPagePortionsUnit": "port.",
+  "inventoryEatSheetPortionsHeader": "{count, plural, =1{{amount} portion} other{{amount} portions}}",
+  "@inventoryEatSheetPortionsHeader": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryEatSheetAmountCompact": "{amount}{unit}",
+  "@inventoryEatSheetAmountCompact": {
     "placeholders": {
       "amount": {
         "type": "String"
@@ -375,13 +464,25 @@
       }
     }
   },
-  "inventoryItemEatSheetInedibleAmountLabel": "Subtract inedible part",
-  "inventoryItemEatSheetInedibleAmountHint": "Optional, e.g. bones",
-  "inventoryItemEatSheetInedibleAmountFieldLabel": "Inedible amount",
-  "inventoryItemEatSheetInedibleAmountError": "The deducted amount must be smaller than the eaten amount.",
-  "inventoryItemEatSheetConfirmAction": "Add",
-  "inventoryItemEatSheetAddMoreAction": "+ More",
-  "inventoryItemEatSheetClearAmountAction": "Clear amount",
+  "inventoryEatSheetAmountWithUnit": "{amount} {unit}",
+  "@inventoryEatSheetAmountWithUnit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryItemEatSheetInedibleAmountSummary": "Inedible part: {amount}",
+  "@inventoryItemEatSheetInedibleAmountSummary": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryItemAddToListAction": "Add to list",
   "inventoryItemAddToShoppingListAction": "Add to shopping list",
   "inventoryItemBuyAgainSucceeded": "Item added to shopping list.",
@@ -543,7 +644,7 @@
   "preparedMealMissingNutritionMessage": "At least one selected ingredient is missing complete nutrition values.",
   "preparedMealItemUnavailableMessage": "At least one selected ingredient is no longer available in inventory.",
   "preparedMealActionFailed": "Prepared meal action failed. Please try again.",
-  "preparedMealIngredientsCount": "{count} ingredients",
+  "preparedMealIngredientsCount": "{count, plural, =1{1 ingredient} other{{count} ingredients}}",
   "@preparedMealIngredientsCount": {
     "placeholders": {
       "count": {
@@ -572,7 +673,6 @@
     }
   },
   "preparedMealUnbundleAction": "Return to inventory",
-  "preparedMealEatTitle": "Eat prepared meal",
   "preparedMealDiaryDayLabel": "Diary day",
   "preparedMealThrowAwayTitle": "Throw away portions",
   "preparedMealPortionsToUseLabel": "Portions to use",

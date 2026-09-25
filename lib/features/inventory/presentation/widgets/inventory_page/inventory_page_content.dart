@@ -146,18 +146,6 @@ class InventoryPageContent extends ConsumerWidget {
         itemsSnapshot: items,
       ),
       onThrowAwayItem: controller.throwAwayItemDetailed,
-      onEatPreparedMeal:
-          ({
-            required mealId,
-            required portions,
-            required mealType,
-            required loggedDay,
-          }) => mealsController.consumePreparedMeal(
-            mealId: mealId,
-            consumedPortions: portions,
-            mealType: mealType,
-            loggedDay: loggedDay,
-          ),
       onThrowAwayPreparedMeal: (mealId, portions, reason) =>
           mealsController.throwAwayPreparedMeal(
             mealId: mealId,

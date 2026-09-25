@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
-    'inventory_manual_add_amount_service.dart';
+    'inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -32,7 +32,7 @@ void main() {
       weight: '500 g',
       nutrition: _completeNutrition,
     ).copyWith(quantity: 0, currentAmount: 0);
-    expect(resolveInventoryManualAddConsumableAmount(eatenUp), isNull);
+    expect(consumableInventoryAmount(eatenUp), isNull);
 
     InventoryReceiptManualProductResult? completed;
     await tester.pumpWidget(
@@ -61,6 +61,6 @@ void main() {
     expect(item.name, 'Skyr');
     expect(item.quantity, 1);
     expect(item.currentAmount, 500);
-    expect(resolveInventoryManualAddConsumableAmount(item), 500);
+    expect(consumableInventoryAmount(item), 500);
   });
 }

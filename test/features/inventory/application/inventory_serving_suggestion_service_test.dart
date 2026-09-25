@@ -97,49 +97,6 @@ void main() {
     expect(repository.readCalls.single.globalFoodItemId, 'off-cheese');
     expect(repository.readCalls.single.limit, 3);
   });
-
-  test(
-    'recordCreatedPortion delegates item identifiers and portion data',
-    () async {
-      final repository = _FakeGlobalFoodServingSuggestionRepository();
-      final service = InventoryServingSuggestionService(repository);
-      final selectedAt = DateTime.parse('2026-04-10T10:00:00.000Z');
-
-      await service.recordCreatedPortion(
-        item: _item(),
-        amount: 25,
-        unit: ConsumedUnit.grams,
-        label: 'Slice',
-        selectedAt: selectedAt,
-      );
-
-      expect(repository.recordCalls, hasLength(1));
-      expect(repository.recordCalls.single.foodFingerprint, 'cheese__acme');
-      expect(repository.recordCalls.single.globalFoodItemId, 'off-cheese');
-      expect(repository.recordCalls.single.amount, 25);
-      expect(repository.recordCalls.single.unit, ConsumedUnit.grams);
-      expect(repository.recordCalls.single.label, 'Slice');
-      expect(repository.recordCalls.single.selectedAt, selectedAt);
-    },
-  );
-
-  test('recordCreatedPortion surfaces repository failures', () async {
-    final failure = Exception('no write permission');
-    final repository = _FakeGlobalFoodServingSuggestionRepository()
-      ..recordFailure = failure;
-    final service = InventoryServingSuggestionService(repository);
-
-    expect(
-      service.recordCreatedPortion(
-        item: _item(),
-        amount: 25,
-        unit: ConsumedUnit.grams,
-        selectedAt: DateTime.parse('2026-04-10T10:00:00.000Z'),
-      ),
-      throwsA(same(failure)),
-    );
-  });
-
   test(
     'recordSelection delegates explicit identifiers and portion data',
     () async {

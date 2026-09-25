@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/config/firebase_config.dart';
+import 'package:yamt/core/config/font_licenses.dart';
 import 'package:yamt/core/debug/app_provider_observer.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/application/'
@@ -23,7 +24,6 @@ import 'package:yamt/features/inventory/application/'
     'inventory_calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
-import 'package:yamt/features/inventory/application/inventory_quick_eat_picker.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_calorie_entry_delete_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -34,8 +34,6 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_search_launcher.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_product_search_hub_completion_handler.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_quick_eat_sheet_picker.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -43,6 +41,7 @@ import 'package:yamt/features/product_search_hub/domain/'
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  registerFontLicenses();
 
   await setupFirebase();
   final appPreferences = await _createAppPreferences();
@@ -76,9 +75,6 @@ Future<void> main() async {
         }),
         inventoryManualProductSearchLauncherProvider.overrideWith(
           (ref) => buildInventoryProductSearchHubManualProductSearchLauncher(),
-        ),
-        inventoryQuickEatPickerProvider.overrideWithValue(
-          const InventoryQuickEatSheetPicker(),
         ),
         productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
           final container = ref.container;

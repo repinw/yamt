@@ -15,8 +15,8 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_add_dialogs.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_manual_missing_barcode_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualProductSaveItemId = Uuid();

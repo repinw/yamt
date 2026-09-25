@@ -152,6 +152,9 @@ abstract final class AppOpacities {
 
   /// Measured weigh-in dots behind the trend line in the weight chart.
   static const double weightChartScaleDot = 0.35;
+
+  /// Tinted background of an icon badge.
+  static const double iconBadgeBackground = 0.12;
 }
 
 /// Shared font-size scale for app typography.

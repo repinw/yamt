@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -112,14 +113,7 @@ class _ManualProductAiSearchPageState
     final weightErrorText = _hasWeightError
         ? l10n.inventoryManualAddAiSearchWeightRequired
         : null;
-    final now = ref.read(clockProvider)();
-    final isLoggedAtToday = isProductAiLoggedAtToday(
-      selectedLoggedAt: _selectedLoggedAt,
-      now: now,
-    );
-    final loggedAtLabel = isLoggedAtToday
-        ? null
-        : MaterialLocalizations.of(context).formatMediumDate(_selectedLoggedAt);
+    final now = ref.watch(clockProvider)();
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -143,17 +137,15 @@ class _ManualProductAiSearchPageState
           quickEatConfig: widget.quickEatConfig,
           selectedAction: _selectedAction,
           showEatImmediatelyOption: widget.showEatImmediatelyOption,
-          isLoggedAtToday: isLoggedAtToday,
-          loggedAtLabel: loggedAtLabel,
+          loggedAt: _selectedLoggedAt,
+          today: now,
           selectedMealType: _selectedMealType,
           onActionChanged: (action) {
             setState(() {
               _selectedAction = action;
             });
           },
-          onPickLoggedAt: () {
-            unawaited(_pickLoggedAt());
-          },
+          onDayPicked: _selectLoggedDay,
           onMealTypeSelected: _selectMealType,
           onWeightChanged: _handleWeightChanged,
           onPer100KcalChanged: (value) {
@@ -250,18 +242,9 @@ class _ManualProductAiSearchPageState
     _closePage(result);
   }
 
-  Future<void> _pickLoggedAt() async {
-    final pickedDate = await pickProductAiLoggedDate(
-      context: context,
-      selectedLoggedAt: _selectedLoggedAt,
-      now: ref.read(clockProvider)(),
-    );
-    if (!mounted || pickedDate == null) {
-      return;
-    }
-
+  void _selectLoggedDay(DateTime day) {
     setState(() {
-      _selectedLoggedAt = pickedDate;
+      _selectedLoggedAt = loggedAtOnDay(day, now: ref.read(clockProvider)());
     });
   }
 

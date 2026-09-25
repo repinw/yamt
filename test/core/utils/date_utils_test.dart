@@ -35,4 +35,14 @@ void main() {
       isFalse,
     );
   });
+
+  test('loggedAtOnDay keeps the day and takes the time of day from now', () {
+    expect(
+      loggedAtOnDay(
+        DateTime(2026, 4, 30),
+        now: DateTime(2026, 5, 2, 18, 45, 30),
+      ),
+      DateTime(2026, 4, 30, 18, 45),
+    );
+  });
 }

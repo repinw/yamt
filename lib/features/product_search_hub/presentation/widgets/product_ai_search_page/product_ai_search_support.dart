@@ -1,4 +1,3 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/application/'
@@ -41,42 +40,6 @@ double? parseProductAiWeightInput(String value) {
     return null;
   }
   return parsed;
-}
-
-/// Checks whether [selectedLoggedAt] is on the same calendar day as [now].
-bool isProductAiLoggedAtToday({
-  required DateTime selectedLoggedAt,
-  required DateTime now,
-}) {
-  final today = DateUtils.dateOnly(now);
-  final selectedDay = DateUtils.dateOnly(selectedLoggedAt);
-  return selectedDay == today;
-}
-
-/// Prompts user to pick a logged-at date clamped up to [now].
-Future<DateTime?> pickProductAiLoggedDate({
-  required BuildContext context,
-  required DateTime selectedLoggedAt,
-  required DateTime now,
-}) async {
-  final initialDate = DateUtils.dateOnly(selectedLoggedAt);
-  final lastDate = DateUtils.dateOnly(now);
-  final pickedDate = await showDatePicker(
-    context: context,
-    initialDate: initialDate.isAfter(lastDate) ? lastDate : initialDate,
-    firstDate: DateTime(2000),
-    lastDate: lastDate,
-  );
-  if (pickedDate == null) {
-    return null;
-  }
-  return DateTime(
-    pickedDate.year,
-    pickedDate.month,
-    pickedDate.day,
-    now.hour,
-    now.minute,
-  );
 }
 
 /// Builds a [ManualProductAiSearchResult] from user selections.

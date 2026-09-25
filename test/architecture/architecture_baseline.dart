@@ -81,17 +81,9 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/presentation/controllers/inventory_items_controller.dart':
         1,
-    'lib/features/inventory/presentation/controllers/prepared_meals_controller.dart':
-        1,
     'lib/features/inventory/presentation/inventory_calorie_entry_delete_flow.dart':
         1,
     'lib/features/inventory/presentation/inventory_shopping_list_page.dart': 1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_eat_sheet.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_eat_sheet_input_sections.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_new_portion_dialog.dart':
-        1,
     'lib/features/meal_templates/presentation/meal_template_import_review_page.dart':
         1,
     'lib/features/meal_templates/presentation/widgets/meal_templates_page/meal_templates_page.dart':
@@ -259,7 +251,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/diary/presentation/diary_inventory_food_picker.dart': 1,
     'lib/features/diary/presentation/diary_product_search_hub_completion_handler.dart':
         1,
-    'lib/features/diary/presentation/diary_quick_eat_flow_support.dart': 1,
     'lib/features/diary/presentation/diary_weekly_checkin_dialog_scheduler.dart':
         1,
     'lib/features/diary/presentation/diary_weekly_checkin_messages.dart': 1,
@@ -273,7 +264,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/inventory_calorie_stock_adjuster.dart':
         1,
     'lib/features/inventory/presentation/inventory_controller_access.dart': 1,
-    'lib/features/inventory/presentation/inventory_manual_add_dialogs.dart': 1,
     'lib/features/inventory/presentation/inventory_manual_add_quick_eat_config.dart':
         1,
     'lib/features/inventory/presentation/inventory_manual_product_eat_coordinator.dart':
@@ -285,8 +275,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/inventory_prepared_meal_edit_coordinator.dart':
         1,
     'lib/features/inventory/presentation/inventory_product_search_hub_completion_handler.dart':
-        1,
-    'lib/features/inventory/presentation/inventory_quick_eat_sheet_picker.dart':
         1,
     'lib/features/inventory/presentation/utils/off_product_nutrition_grade_extension.dart':
         1,
@@ -354,7 +342,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/diary/data/diary_day_dashboard_cache_store.dart': 1,
     'lib/features/diary/presentation/diary_product_search_hub_completion_handler.dart':
         1,
-    'lib/features/diary/presentation/diary_quick_eat_flow_support.dart': 1,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
         1,
     'lib/features/home_widget/application/home_widget_action_uri_codec.dart': 1,
@@ -532,8 +519,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_discount_rows_field.dart':
         1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_eat_sheet_view.dart':
-        1,
     'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row.dart':
         1,
     'lib/features/inventory/presentation/widgets/shared/status_line.dart': 1,
@@ -605,19 +590,7 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/presentation/controllers/prepared_meals_controller.dart':
         1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_eat_sheet_display.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_eat_sheet_input_sections.dart':
-        2,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_eat_sheet_models.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_eat_sheet_view.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_new_portion_dialog.dart':
-        1,
     'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row_action_coordinator.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_action_dialogs.dart':
         1,
     'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_card_actions.dart':
         1,
@@ -626,8 +599,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_card_display.dart':
         1,
     'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_card_pending_ingredient.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_eat_sheet_widgets.dart':
         1,
     'lib/features/kitchen_utensils/presentation/controllers/kitchen_utensils_controller.dart':
         1,
@@ -695,8 +666,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/data/prepared_meal_repository.dart': 3,
     'lib/features/inventory/data/prepared_meal_template_repository.dart': 3,
     'lib/features/inventory/domain/inventory_item.dart': 1,
-    'lib/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart':
-        1,
     'lib/features/inventory/presentation/controllers/prepared_meals_controller.dart':
         1,
     'lib/features/inventory/presentation/widgets/shared/inventory_nutrition_strip.dart':

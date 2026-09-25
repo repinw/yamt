@@ -7,6 +7,7 @@ import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
@@ -14,6 +15,7 @@ import 'package:yamt/features/inventory/presentation/constants/'
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_amount_unit_l10n.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -24,8 +26,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_amount_input_dialog.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_candidate_swap_flow.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_progress.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -358,8 +358,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
     final result = await showInventoryItemEatSheet(
       context: context,
       item: widget.item,
-      maxAmount: config.maxAmount,
-      invalidAmountMessage: widget.l10n.inventoryReceiptReviewInvalidNumber,
     );
     if (!mounted || result == null) {
       return;
@@ -551,11 +549,11 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
   }
 
   _ItemAmountInputConfig? _buildInputConfig(InventoryItem item) {
+    final maxAmount = consumableInventoryAmount(item);
+    if (maxAmount == null) {
+      return null;
+    }
     if (item.usesAmountProgress) {
-      final maxAmount = item.currentAmount > 0 ? item.currentAmount : 0;
-      if (maxAmount < 1 || item.amountUnit == null) {
-        return null;
-      }
       return _ItemAmountInputConfig(
         maxAmount: maxAmount,
         fieldLabel: widget.l10n.inventoryReceiptReviewFieldWeight,
@@ -565,10 +563,6 @@ class _InventoryItemRowState extends ConsumerState<InventoryItemRow> {
       );
     }
 
-    final maxAmount = item.quantity > 0 ? item.quantity : 0;
-    if (maxAmount < 1) {
-      return null;
-    }
     return _ItemAmountInputConfig(
       maxAmount: maxAmount,
       fieldLabel: widget.l10n.inventoryReceiptReviewFieldQuantity,

@@ -8,17 +8,29 @@ part of 'auth_profile_setup_status_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Auth profile setup completed.
+/// Whether the signed-in user has a name, so the router skips the name setup.
+///
+/// The name lives on the account, so signing in to an existing account on a
+/// new device counts as set up. The stored mark covers a linked guest whose
+/// account has no name yet.
 
 @ProviderFor(authProfileSetupCompleted)
 final authProfileSetupCompletedProvider = AuthProfileSetupCompletedProvider._();
 
-/// Auth profile setup completed.
+/// Whether the signed-in user has a name, so the router skips the name setup.
+///
+/// The name lives on the account, so signing in to an existing account on a
+/// new device counts as set up. The stored mark covers a linked guest whose
+/// account has no name yet.
 
 final class AuthProfileSetupCompletedProvider
     extends $FunctionalProvider<bool, bool, bool>
     with $Provider<bool> {
-  /// Auth profile setup completed.
+  /// Whether the signed-in user has a name, so the router skips the name setup.
+  ///
+  /// The name lives on the account, so signing in to an existing account on a
+  /// new device counts as set up. The stored mark covers a linked guest whose
+  /// account has no name yet.
   AuthProfileSetupCompletedProvider._()
     : super(
         from: null,
@@ -53,4 +65,4 @@ final class AuthProfileSetupCompletedProvider
 }
 
 String _$authProfileSetupCompletedHash() =>
-    r'4cfd2e7d68052015c1168037a63df4060ee36798';
+    r'bfc11e2dcb1a6812196e743760c433dc8f660043';

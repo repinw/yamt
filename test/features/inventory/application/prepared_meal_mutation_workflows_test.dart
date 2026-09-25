@@ -1,7 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
@@ -753,84 +750,6 @@ void main() {
       expect(harness.saveCalls, 1);
       expect(harness.lastSavedMeals.single.pendingRecipeIngredients, isEmpty);
     });
-
-    test('consumePreparedMeal saves reduced meal and calorie entry', () async {
-      final rice = _measuredItem(
-        id: 'rice',
-        name: 'Rice',
-        currentAmount: 400,
-        initialAmount: 400,
-        initialQuantity: 1,
-      );
-      final harness = _WorkflowHarness(
-        meals: <PreparedMeal>[
-          _meal(
-            id: 'meal-1',
-            name: 'Rice Bowl',
-            totalPortions: 4,
-            remainingPortions: 4,
-            totalKcal: 400,
-            totalProtein: 40,
-            totalCarbs: 80,
-            totalFat: 20,
-            components: <PreparedMealComponent>[
-              _component(
-                item: rice,
-                usedAmount: 400,
-                totalKcal: 400,
-                totalProtein: 40,
-                totalCarbs: 80,
-                totalFat: 20,
-              ),
-            ],
-          ),
-        ],
-      );
-      var savedEntryCount = 0;
-      final bridge = PreparedMealCalorieLogBridge(
-        saveEntry: (_) async {
-          savedEntryCount += 1;
-          return true;
-        },
-        now: () => DateTime(2026, 4, 19, 12),
-        nextEntryId: () => 'entry-1',
-      );
-
-      final saved = await harness.workflows.consumePreparedMeal(
-        mealId: 'meal-1',
-        consumedPortions: 0.5,
-        mealType: MealType.breakfast,
-        loggedDay: null,
-        calorieLogBridge: bridge,
-      );
-
-      expect(saved, isTrue);
-      expect(savedEntryCount, 1);
-      expect(harness.saveCalls, 1);
-      expect(harness.lastSavedMeals.single.remainingPortions, 3.5);
-      expect(harness.publishCalls, 0);
-    });
-
-    test('consumePreparedMeal returns false for invalid portions', () async {
-      final harness = _WorkflowHarness();
-      final bridge = PreparedMealCalorieLogBridge(
-        saveEntry: (_) async => true,
-        now: () => DateTime(2026, 4, 19),
-        nextEntryId: () => 'entry-1',
-      );
-
-      final saved = await harness.workflows.consumePreparedMeal(
-        mealId: 'meal-1',
-        consumedPortions: 0,
-        mealType: MealType.breakfast,
-        loggedDay: null,
-        calorieLogBridge: bridge,
-      );
-
-      expect(saved, isFalse);
-      expect(harness.loadCalls, 0);
-    });
-
     test(
       'throwAwayPreparedMeal saves reduced meal and discard event',
       () async {

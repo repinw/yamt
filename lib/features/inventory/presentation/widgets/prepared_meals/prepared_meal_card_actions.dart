@@ -6,22 +6,19 @@ import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/data/local_image_asset_ref.dart';
-import 'package:yamt/core/data/local_image_store_provider.dart';
-import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/prepared_meal_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
-import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_action_dialogs.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card_pending_ingredient.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_edit_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/prepared_meal_portion_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const preparedMealCardLogName = 'PreparedMealCard';
@@ -35,14 +32,6 @@ mixin PreparedMealCardActions<T extends ConsumerStatefulWidget>
   set workingState(bool value);
 
   PreparedMeal get actionMeal;
-
-  Future<bool> Function({
-    required String mealId,
-    required num portions,
-    required MealType mealType,
-    required DateTime loggedDay,
-  })
-  get eatPressedAction;
 
   Future<bool> Function(
     String mealId,
@@ -124,29 +113,7 @@ mixin PreparedMealCardActions<T extends ConsumerStatefulWidget>
   }
 
   Future<void> _runEatFlow() async {
-    final l10n = AppLocalizations.of(context)!;
-    final imageRef = maybeLocalImageAssetRef(actionMeal.imageAssetId);
-    final imageBytes = imageRef == null
-        ? null
-        : ref.read(localImageBytesProvider(imageRef)).asData?.value;
-    final result = await showPreparedMealEatDialog(
-      context,
-      actionMeal,
-      imageBytes: imageBytes,
-    );
-    if (!mounted || result == null) {
-      return;
-    }
-
-    await _runAction(
-      () => eatPressedAction(
-        mealId: actionMeal.id,
-        portions: result.portions,
-        mealType: result.mealType,
-        loggedDay: result.loggedDay,
-      ),
-      failureMessage: l10n.preparedMealActionFailed,
-    );
+    await PreparedMealEatFlow.eat(context: context, meal: actionMeal);
   }
 
   Future<void> _runEditFlow() async {

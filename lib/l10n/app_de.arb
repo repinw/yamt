@@ -342,30 +342,119 @@
   "inventoryItemDeletedMessage": "Artikel gelöscht.",
   "inventoryItemRemovedMessage": "Artikel aussortiert.",
   "inventoryItemEatAction": "Essen",
-  "inventoryItemEatSheetEyebrow": "Essen loggen",
-  "inventoryItemEatSheetAmountLabel": "Menge eingeben",
-  "inventoryItemEatSheetAvailableAmount": "Im Vorrat verfügbar: {amount} {unit}",
-  "@inventoryItemEatSheetAvailableAmount": {
-    "placeholders": {
-      "amount": {},
-      "unit": {}
-    }
-  },
-  "inventoryItemEatSheetAllAction": "Alles",
   "inventoryAmountDialogAllRemainingAction": "Alles/Rest",
-  "inventoryItemEatSheetPortionLabelFieldLabel": "Portionsname",
-  "inventoryItemEatSheetPortionAmountFieldLabel": "Menge pro Portion",
   "inventoryItemEatSheetDecreasePortionCountAction": "Portionen verringern",
   "inventoryItemEatSheetIncreasePortionCountAction": "Portionen erhöhen",
   "inventoryItemEatSheetDefaultPortionLabel": "Portion",
-  "inventoryItemEatSheetNewPortionAction": "+ Neue Portion...",
-  "inventoryItemEatSheetNewPortionTitle": "Neue Portion",
-  "inventoryItemEatSheetSavePortionAction": "Portion speichern",
-  "inventoryItemEatSheetUnitGram": "Gramm",
-  "inventoryItemEatSheetUnitMilliliter": "Milliliter",
   "inventoryItemEatSheetUnitPiece": "Stück",
-  "inventoryItemEatSheetPortionTotalLabel": "Gesamt: {amount} {unit}",
-  "@inventoryItemEatSheetPortionTotalLabel": {
+  "inventoryItemEatSheetInedibleAmountLabel": "Nicht essbaren Anteil abziehen",
+  "inventoryItemEatSheetInedibleAmountFieldLabel": "Nicht essbarer Anteil",
+  "inventoryItemEatSheetInedibleAmountError": "Der Abzug muss kleiner als die verzehrte Menge sein.",
+  "inventoryItemEatSheetConfirmAction": "Eintragen",
+  "inventoryItemEatSheetAddMoreAction": "+ Mehr",
+  "eatPageNutritionTitle": "Nährwerte",
+  "eatPageWhen": "{day} · {meal}",
+  "@eatPageWhen": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPagePickDay": "Anderer Tag…",
+  "eatPageRememberPortion": "+ diese Menge als Portion merken",
+  "eatPagePortionNameLabel": "Name für {amount}",
+  "@eatPagePortionNameLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPagePortionNameHint": "z. B. Scheibe",
+  "eatPageSavePortion": "Speichern",
+  "eatPagePieceWeight": "1 {label} =",
+  "@eatPagePieceWeight": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageInStock": "{amount} im Vorrat",
+  "@eatPageInStock": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageTotal": "= {amount}",
+  "@eatPageTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageKcal": "{kcal} kcal",
+  "@eatPageKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "eatPageRememberPieceSize": "+ als Stückgröße merken",
+  "eatPagePieceSizeNameHint": "z. B. L",
+  "eatPageAll": "Alles",
+  "eatPageMark": "{label} {amount}",
+  "@eatPageMark": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPagePortionMultiple": "= {count} × {label}",
+  "@eatPagePortionMultiple": {
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageApprox": "≈ {amount}",
+  "@eatPageApprox": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPagePortionsUnit": "Port.",
+  "inventoryEatSheetPortionsHeader": "{count, plural, =1{{amount} Portion} other{{amount} Portionen}}",
+  "@inventoryEatSheetPortionsHeader": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryEatSheetAmountCompact": "{amount}{unit}",
+  "@inventoryEatSheetAmountCompact": {
     "placeholders": {
       "amount": {
         "type": "String"
@@ -375,13 +464,25 @@
       }
     }
   },
-  "inventoryItemEatSheetInedibleAmountLabel": "Nicht essbaren Anteil abziehen",
-  "inventoryItemEatSheetInedibleAmountHint": "Optional, z. B. Knochen",
-  "inventoryItemEatSheetInedibleAmountFieldLabel": "Nicht essbarer Anteil",
-  "inventoryItemEatSheetInedibleAmountError": "Der Abzug muss kleiner als die verzehrte Menge sein.",
-  "inventoryItemEatSheetConfirmAction": "Hinzufügen",
-  "inventoryItemEatSheetAddMoreAction": "+ Mehr",
-  "inventoryItemEatSheetClearAmountAction": "Menge leeren",
+  "inventoryEatSheetAmountWithUnit": "{amount} {unit}",
+  "@inventoryEatSheetAmountWithUnit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryItemEatSheetInedibleAmountSummary": "Nicht essbar: {amount}",
+  "@inventoryItemEatSheetInedibleAmountSummary": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryItemAddToListAction": "Auf Liste",
   "inventoryItemAddToShoppingListAction": "Zur Einkaufsliste hinzufügen",
   "inventoryItemBuyAgainSucceeded": "Artikel zur Einkaufsliste hinzugefügt.",
@@ -543,7 +644,7 @@
   "preparedMealMissingNutritionMessage": "Mindestens einer ausgewählten Zutat fehlen vollständige Nährwerte.",
   "preparedMealItemUnavailableMessage": "Mindestens eine ausgewählte Zutat ist nicht mehr im Inventar verfügbar.",
   "preparedMealActionFailed": "Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.",
-  "preparedMealIngredientsCount": "{count} Zutaten",
+  "preparedMealIngredientsCount": "{count, plural, =1{1 Zutat} other{{count} Zutaten}}",
   "@preparedMealIngredientsCount": {
     "placeholders": {
       "count": {
@@ -572,7 +673,6 @@
     }
   },
   "preparedMealUnbundleAction": "Auflösen",
-  "preparedMealEatTitle": "Mahlzeit essen",
   "preparedMealDiaryDayLabel": "Tagebuchtag",
   "preparedMealThrowAwayTitle": "Portionen wegwerfen",
   "preparedMealPortionsToUseLabel": "Portionen verwenden",

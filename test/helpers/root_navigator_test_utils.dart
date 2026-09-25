@@ -47,3 +47,11 @@ void expectRootPopupRoutePushed({
   );
   expect(nestedObserver.pushedRoutes.whereType<PopupRoute<dynamic>>(), isEmpty);
 }
+
+void expectRootPageRoutePushed({
+  required RecordingNavigatorObserver rootObserver,
+  required RecordingNavigatorObserver nestedObserver,
+}) {
+  expect(rootObserver.pushedRoutes.whereType<PageRoute<dynamic>>(), isNotEmpty);
+  expect(nestedObserver.pushedRoutes, isEmpty);
+}

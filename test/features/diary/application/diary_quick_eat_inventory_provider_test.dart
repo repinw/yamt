@@ -49,7 +49,7 @@ void main() {
     },
   );
 
-  test('resolves max amount for quantity and amount-progress items', () {
+  test('accepts quantity and amount-progress items with stock left', () {
     final quantityItem = _item(id: 'quantity', quantity: 3);
     final emptyQuantityItem = _item(id: 'empty-quantity', quantity: 0);
     final amountItem = _item(
@@ -72,15 +72,10 @@ void main() {
       currentAmount: 125,
     );
 
-    expect(maxDiaryQuickEatInventoryAmount(quantityItem), 3);
     expect(canDiaryQuickEatInventoryItem(quantityItem), isTrue);
-    expect(maxDiaryQuickEatInventoryAmount(emptyQuantityItem), isNull);
     expect(canDiaryQuickEatInventoryItem(emptyQuantityItem), isFalse);
-    expect(maxDiaryQuickEatInventoryAmount(amountItem), 125);
     expect(canDiaryQuickEatInventoryItem(amountItem), isTrue);
-    expect(maxDiaryQuickEatInventoryAmount(emptyAmountItem), isNull);
     expect(canDiaryQuickEatInventoryItem(emptyAmountItem), isFalse);
-    expect(maxDiaryQuickEatInventoryAmount(amountLikeQuantityItem), 2);
     expect(canDiaryQuickEatInventoryItem(amountLikeQuantityItem), isTrue);
   });
 }

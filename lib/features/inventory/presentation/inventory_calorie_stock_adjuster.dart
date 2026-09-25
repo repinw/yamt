@@ -5,9 +5,8 @@ import 'package:yamt/features/calories/application/'
     'calorie_entry_amount_edit_flow.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_stock_adjustment.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'

@@ -7,7 +7,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/inventory/application/inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -164,12 +167,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -205,12 +202,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -231,7 +222,7 @@ void main() {
       find.byKey(const Key('prepared_meal_eat_sheet_hero_cover')),
       findsOneWidget,
     );
-    expect(find.text('Portions to use'), findsOneWidget);
+    expect(find.text('Nutrition'), findsOneWidget);
   });
 
   testWidgets('PreparedMealCard shows portions progress under header bar', (
@@ -247,12 +238,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -293,12 +278,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal().copyWith(remainingPortions: 0.5),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -337,12 +316,6 @@ void main() {
                   remainingPortions: 3000,
                   finalNetWeight: 3000,
                 ),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -377,12 +350,6 @@ void main() {
                   remainingPortions: 2,
                   finalNetWeight: 3000,
                 ),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -423,12 +390,6 @@ void main() {
                         .toJson(),
                     'remaining_net_weight': 2253,
                   }),
-                  onEatPressed: ({
-                    required mealId,
-                    required portions,
-                    required mealType,
-                    required loggedDay,
-                  }) async => true,
                   onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed: (mealId, result) async => true,
@@ -460,12 +421,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -477,7 +432,7 @@ void main() {
       ),
     );
 
-    expect(find.text('1 INGREDIENTS'), findsOneWidget);
+    expect(find.text('1 INGREDIENT'), findsOneWidget);
   });
 
   testWidgets('PreparedMealCard uses theme primary color for eat button', (
@@ -498,12 +453,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -543,12 +492,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -588,12 +531,6 @@ void main() {
               body: _wrapCard(
                 PreparedMealCard(
                   meal: _depletedMeal(),
-                  onEatPressed: ({
-                    required mealId,
-                    required portions,
-                    required mealType,
-                    required loggedDay,
-                  }) async => true,
                   onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed: (mealId, result) async => true,
@@ -632,12 +569,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: meal,
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async {
                   unbundledMealId = mealId;
@@ -678,12 +609,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: meal,
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async {
                   thrownAwayMealId = mealId;
                   thrownAwayPortions = portions;
@@ -739,12 +664,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -781,12 +700,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -824,12 +737,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -929,12 +836,6 @@ void main() {
               body: _wrapCard(
                 PreparedMealCard(
                   meal: meal,
-                  onEatPressed: ({
-                    required mealId,
-                    required portions,
-                    required mealType,
-                    required loggedDay,
-                  }) async => true,
                   onThrowAwayPressed: (mealId, portions, reason) async => true,
                   onUnbundlePressed: (mealId) async => true,
                   onEditPressed: (mealId, result) async => true,
@@ -954,81 +855,51 @@ void main() {
     },
   );
 
-  testWidgets(
-    'PreparedMealCard re-enables eat action after optimistic meal update',
-    (tester) async {
-      final firstAction = Completer<bool>();
-      var meal = _meal();
-      var invocationCount = 0;
-      late StateSetter setHostState;
+  testWidgets('PreparedMealCard eats through the eat flow and stays enabled', (
+    tester,
+  ) async {
+    final actions = _PendingQuickEatActions();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            locale: const Locale('en'),
-            localizationsDelegates: appLocalizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(
-              body: StatefulBuilder(
-                builder: (context, setState) {
-                  setHostState = setState;
-                  return _wrapCard(
-                    PreparedMealCard(
-                      meal: meal,
-                      onEatPressed:
-                          ({
-                            required mealId,
-                            required portions,
-                            required mealType,
-                            required loggedDay,
-                          }) async {
-                            invocationCount += 1;
-                            if (invocationCount == 1) {
-                              setHostState(() {
-                                meal = meal.copyWith(
-                                  remainingPortions: 1,
-                                  updatedAt: DateTime.parse(
-                                    '2026-03-27T12:05:00Z',
-                                  ),
-                                );
-                              });
-                              return await firstAction.future;
-                            }
-                            return true;
-                          },
-                      onThrowAwayPressed: (mealId, portions, reason) async =>
-                          true,
-                      onUnbundlePressed: (mealId) async => true,
-                      onEditPressed: (mealId, result) async => true,
-                      onSaveTemplatePressed: (meal) async => true,
-                    ),
-                  );
-                },
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          inventoryQuickEatActionsProvider.overrideWithValue(actions),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, result) async => true,
+                onSaveTemplatePressed: (meal) async => true,
               ),
             ),
           ),
         ),
-      );
+      ),
+    );
 
-      await tester.tap(find.byTooltip('Eat'));
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const Key('prepared_meal_eat_confirm_button')),
-      );
-      await tester.pump();
-      await tester.pump();
+    await tester.tap(find.byTooltip('Eat'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('prepared_meal_eat_confirm_button')));
+    await tester.pump();
+    await tester.pump();
 
-      await tester.tap(find.byTooltip('Eat'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Eat'));
+    await tester.pumpAndSettle();
 
-      expect(invocationCount, 1);
-      expect(
-        find.byKey(const Key('prepared_meal_eat_sheet_hero_cover')),
-        findsOneWidget,
-      );
-      firstAction.complete(true);
-    },
-  );
+    expect(actions.consumeCalls, 1);
+    expect(
+      find.byKey(const Key('prepared_meal_eat_sheet_hero_cover')),
+      findsOneWidget,
+    );
+    actions.pending.complete(null);
+  });
 
   testWidgets('PreparedMealCard hides per-100 mode for piece meals', (
     tester,
@@ -1087,12 +958,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: meal,
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -1125,12 +990,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _incompleteMeal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -1189,12 +1048,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _incompleteMeal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -1246,12 +1099,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _incompleteMeal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -1298,12 +1145,6 @@ void main() {
             body: _wrapCard(
               PreparedMealCard(
                 meal: _meal(),
-                onEatPressed: ({
-                  required mealId,
-                  required portions,
-                  required mealType,
-                  required loggedDay,
-                }) async => true,
                 onThrowAwayPressed: (mealId, portions, reason) async => true,
                 onUnbundlePressed: (mealId) async => true,
                 onEditPressed: (mealId, result) async => true,
@@ -1329,4 +1170,33 @@ void main() {
       findsOneWidget,
     );
   });
+}
+
+class _PendingQuickEatActions implements InventoryQuickEatActions {
+  final pending = Completer<CalorieEntry?>();
+  int consumeCalls = 0;
+
+  @override
+  Future<CalorieEntry?> consumePreparedMeal({
+    required PreparedMeal meal,
+    required num consumedPortions,
+    required MealType mealType,
+    required DateTime loggedDay,
+  }) {
+    consumeCalls += 1;
+    return pending.future;
+  }
+
+  @override
+  Future<void> discardInventoryItemConsumption(String pendingConsumptionId) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String?> stageInventoryItemConsumption({
+    required InventoryItem item,
+    required int amount,
+  }) {
+    throw UnimplementedError();
+  }
 }

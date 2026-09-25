@@ -6,6 +6,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/meal_log_time_row.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -139,9 +140,7 @@ DateTime _targetLoggedAtDate() {
 }
 
 Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {
-  final loggedAtButton = find.byKey(
-    const Key('manual_product_ai_logged_at_button'),
-  );
+  final loggedAtButton = find.byKey(MealLogTimeRow.dayButtonKey);
   await tester.ensureVisible(loggedAtButton);
   await tester.tap(loggedAtButton);
   await tester.pumpAndSettle();
@@ -171,9 +170,7 @@ Future<void> _cancelLoggedAtDateChange(
   WidgetTester tester,
   DateTime targetDate,
 ) async {
-  final loggedAtButton = find.byKey(
-    const Key('manual_product_ai_logged_at_button'),
-  );
+  final loggedAtButton = find.byKey(MealLogTimeRow.dayButtonKey);
   await tester.ensureVisible(loggedAtButton);
   await tester.tap(loggedAtButton);
   await tester.pumpAndSettle();
@@ -535,10 +532,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const Key('manual_product_ai_logged_at_button')),
-      findsNothing,
-    );
+    expect(find.byKey(MealLogTimeRow.dayButtonKey), findsNothing);
 
     await tester.ensureVisible(
       find.byKey(const Key('receipt_review_manual_eat_action_button')),
@@ -548,20 +542,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const Key('manual_product_ai_logged_at_button')),
-      findsOneWidget,
-    );
+    expect(find.byKey(MealLogTimeRow.dayButtonKey), findsOneWidget);
 
     await tester.tap(
       find.byKey(const Key('receipt_review_manual_inventory_action_button')),
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.byKey(const Key('manual_product_ai_logged_at_button')),
-      findsNothing,
-    );
+    expect(find.byKey(MealLogTimeRow.dayButtonKey), findsNothing);
 
     await tester.tap(
       find.byKey(const Key('receipt_review_manual_eat_action_button')),
@@ -571,10 +559,7 @@ void main() {
     final targetDate = _targetLoggedAtDate();
     await _pickLoggedAtDate(tester, targetDate);
 
-    expect(
-      find.byKey(const Key('manual_product_ai_logged_at_labeled')),
-      findsOneWidget,
-    );
+    expect(find.byKey(MealLogTimeRow.dayLabeledKey), findsOneWidget);
 
     final mealTypeDropdown = find.byType(DropdownButton<MealType>);
     await tester.ensureVisible(mealTypeDropdown);
@@ -648,14 +633,8 @@ void main() {
     final today = DateUtils.dateOnly(DateTime.now());
     await _cancelLoggedAtDateChange(tester, _targetLoggedAtDate());
 
-    expect(
-      find.byKey(const Key('manual_product_ai_logged_at_compact')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('manual_product_ai_logged_at_labeled')),
-      findsNothing,
-    );
+    expect(find.byKey(MealLogTimeRow.dayCompactKey), findsOneWidget);
+    expect(find.byKey(MealLogTimeRow.dayLabeledKey), findsNothing);
 
     await tester.ensureVisible(
       find.byKey(const Key('manual_product_ai_save_button')),

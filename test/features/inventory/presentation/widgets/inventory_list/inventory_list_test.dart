@@ -97,12 +97,6 @@ Widget _buildInventoryListBody({
     onEatItem: (itemId, request) async => true,
     onThrowAwayItem: (itemId, amount, reason) async =>
         (discardEventId: 'discard-$itemId', removedAmount: amount),
-    onEatPreparedMeal: ({
-      required mealId,
-      required portions,
-      required mealType,
-      required loggedDay,
-    }) async => true,
     onThrowAwayPreparedMeal: (mealId, portions, reason) async => true,
     onFillPendingPreparedMealIngredient: (
       mealId,

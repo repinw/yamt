@@ -5,10 +5,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
@@ -22,7 +21,7 @@ Future<bool> completeInventoryManualAddEatFlow({
   void Function(String calorieEntryId)? onDirectCalorieEntrySaved,
 }) async {
   final l10n = AppLocalizations.of(context)!;
-  final maxAmount = resolveInventoryManualAddConsumableAmount(item);
+  final maxAmount = consumableInventoryAmount(item);
   if (maxAmount == null ||
       request.inventoryAmount < 1 ||
       request.inventoryAmount > maxAmount) {
@@ -79,16 +78,16 @@ Future<bool> completeInventoryManualAddEatFlow({
       return false;
     }
 
-    return await InventoryItemEatFlow.complete(
+    final entry = await InventoryItemEatFlow.complete(
       context: context,
       container: container,
       itemBeforeMutation: item,
       request: request,
       pendingConsumptionId: pendingConsumption.id,
       pendingConsumption: pendingConsumption,
-      inventoryController: inventoryController,
       onDirectCalorieEntrySaved: onDirectCalorieEntrySaved,
     );
+    return entry != null;
   } on Object catch (error, stackTrace) {
     log(
       'Manual-add eat flow failed while preparing inventory controller.',

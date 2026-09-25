@@ -1,6 +1,3 @@
-import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_consumption_workflows.dart';
 import 'package:yamt/features/inventory/application/'
@@ -183,24 +180,6 @@ class PreparedMealMutationWorkflows {
         .ignorePreparedMealPendingIngredient(
           mealId: mealId,
           ingredient: ingredient,
-        );
-  }
-
-  /// Consumes prepared meal portions and forwards calorie logging.
-  Future<bool> consumePreparedMeal({
-    required String mealId,
-    required num consumedPortions,
-    required MealType mealType,
-    required DateTime? loggedDay,
-    required PreparedMealCalorieLogBridge calorieLogBridge,
-  }) {
-    return PreparedMealConsumptionWorkflows(context: _context)
-        .consumePreparedMeal(
-          mealId: mealId,
-          consumedPortions: consumedPortions,
-          mealType: mealType,
-          loggedDay: loggedDay,
-          calorieLogBridge: calorieLogBridge,
         );
   }
 

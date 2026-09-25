@@ -120,6 +120,9 @@ abstract final class AppSizes {
   /// Dot radius of a measured weigh-in in the weight chart.
   static const double weightChartScaleDotRadius = 2.5;
 
+  /// Icon inside an icon badge.
+  static const double iconBadgeIcon = 18;
+
   /// Edge length of the household invite QR code.
   static const double householdInviteQrCode = 200;
 

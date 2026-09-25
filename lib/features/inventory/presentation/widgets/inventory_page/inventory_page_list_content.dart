@@ -21,7 +21,6 @@ class InventoryPageListContent extends StatelessWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
-    required this.onEatPreparedMeal,
     required this.onThrowAwayPreparedMeal,
     required this.onFillPendingPreparedMealIngredient,
     required this.onIgnorePendingPreparedMealIngredient,
@@ -76,9 +75,6 @@ class InventoryPageListContent extends StatelessWidget {
   )
   onThrowAwayItem;
 
-  /// Prepared meal eat callback.
-  final PreparedMealEatCallback onEatPreparedMeal;
-
   /// Prepared meal discard callback.
   final PreparedMealDiscardCallback onThrowAwayPreparedMeal;
 
@@ -127,7 +123,6 @@ class InventoryPageListContent extends StatelessWidget {
       onDeleteItem: onDeleteItem,
       onEatItem: onEatItem,
       onThrowAwayItem: onThrowAwayItem,
-      onEatPreparedMeal: onEatPreparedMeal,
       onThrowAwayPreparedMeal: onThrowAwayPreparedMeal,
       onFillPendingPreparedMealIngredient: onFillPendingPreparedMealIngredient,
       onIgnorePendingPreparedMealIngredient:

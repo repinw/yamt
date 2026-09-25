@@ -385,7 +385,7 @@ void main() {
     expect(childArgs, isNull);
     expect(inventoryController.addedItems, isEmpty);
     expect(
-      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      find.byKey(const Key('eat_page_amount_field')),
       findsOneWidget,
     );
   });

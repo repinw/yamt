@@ -375,7 +375,7 @@ void main() {
     await tester.tap(find.byTooltip('Eat').first);
     await tester.pumpAndSettle();
     await tester.enterText(
-      find.byKey(const Key('inventory_item_amount_dialog_field')),
+      find.byKey(const Key('eat_page_amount_field')),
       '1',
     );
     await tester.ensureVisible(
@@ -389,8 +389,7 @@ void main() {
       find.byKey(const Key('inventory_item_portion_amount_field')),
       '25',
     );
-    await tester.tap(find.text('Save portion'));
-    await tester.pumpAndSettle();
+    await tester.pump();
     await tester.tap(
       find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
     );

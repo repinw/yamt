@@ -62,7 +62,6 @@ class InventoryList extends ConsumerStatefulWidget {
     required this.onDeleteItem,
     required this.onEatItem,
     required this.onThrowAwayItem,
-    required this.onEatPreparedMeal,
     required this.onThrowAwayPreparedMeal,
     required this.onFillPendingPreparedMealIngredient,
     required this.onIgnorePendingPreparedMealIngredient,
@@ -116,9 +115,6 @@ class InventoryList extends ConsumerStatefulWidget {
     InventoryDiscardReason reason,
   )
   onThrowAwayItem;
-
-  /// The on eat prepared meal.
-  final PreparedMealEatCallback onEatPreparedMeal;
 
   /// The on throw away prepared meal.
   final PreparedMealDiscardCallback onThrowAwayPreparedMeal;
@@ -267,7 +263,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             isSelectionMode: widget.isSelectionMode,
             onToggleExpanded: _togglePreparedMealsSection,
             actions: PreparedMealSectionActions(
-              onEatPreparedMeal: widget.onEatPreparedMeal,
               onThrowAwayPreparedMeal: widget.onThrowAwayPreparedMeal,
               onFillPendingPreparedMealIngredient:
                   widget.onFillPendingPreparedMealIngredient,

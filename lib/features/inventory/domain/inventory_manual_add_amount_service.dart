@@ -3,20 +3,6 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 const _inventoryManualAddAmountParser = InventoryAmountParser();
 
-/// Resolves the amount that can be consumed from a manual-add item.
-int? resolveInventoryManualAddConsumableAmount(InventoryItem item) {
-  if (item.usesAmountProgress) {
-    if (item.amountUnit == null || item.currentAmount < 1) {
-      return null;
-    }
-    return item.currentAmount;
-  }
-  if (item.quantity < 1) {
-    return null;
-  }
-  return item.quantity;
-}
-
 /// Whether manual add must ask for the consumed amount first.
 bool requiresInventoryManualAddConsumedAmountPrompt(InventoryItem item) {
   return item.weight == null ||

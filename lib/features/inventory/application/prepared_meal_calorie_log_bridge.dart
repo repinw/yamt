@@ -64,30 +64,9 @@ class PreparedMealCalorieLogBridge {
   final DateTime Function() _now;
   final String Function() _nextEntryId;
 
-  /// Log consumed prepared meal.
-  Future<bool> logConsumedPreparedMeal({
-    required PreparedMeal meal,
-    required num consumedPortions,
-    required MealType mealType,
-    DateTime? loggedDay,
-  }) {
-    final entry = buildConsumedPreparedMealCalorieEntry(
-      meal: meal,
-      consumedPortions: consumedPortions,
-      mealType: mealType,
-      now: _now,
-      nextEntryId: _nextEntryId,
-      loggedDay: loggedDay,
-    );
-    if (entry == null) {
-      return Future<bool>.value(false);
-    }
-
-    return _saveEntry(entry);
-  }
-
-  /// Consume prepared meal.
-  Future<bool> consumePreparedMeal({
+  /// Saves the calorie entry for eating [consumedPortions] of [meal] and
+  /// the reduced meal. Returns the saved entry, or null on failure.
+  Future<CalorieEntry?> consumePreparedMeal({
     required List<PreparedMeal> currentMeals,
     required List<PreparedMeal> nextMeals,
     required PreparedMeal meal,
@@ -106,7 +85,7 @@ class PreparedMealCalorieLogBridge {
       loggedDay: loggedDay,
     );
     if (entry == null) {
-      return false;
+      return null;
     }
 
     final atomicSave = _saveEntryAtomically;
@@ -114,26 +93,26 @@ class PreparedMealCalorieLogBridge {
       publishMeals(nextMeals);
       final saved = await atomicSave(entry);
       if (saved) {
-        return true;
+        return entry;
       }
       publishMeals(currentMeals);
-      return false;
+      return null;
     }
 
     final mealsSaved = await saveMeals(currentMeals, nextMeals);
     if (!mealsSaved) {
-      return false;
+      return null;
     }
 
     final calorieSaved = await _saveEntry(entry);
     if (calorieSaved) {
-      return true;
+      return entry;
     }
 
     // Fallback path cannot make meal rollback atomic with calorie save.
     // Best-effort restore only.
     await saveMeals(nextMeals, currentMeals);
-    return false;
+    return null;
   }
 }
 

@@ -22,3 +22,8 @@ bool isSameCalendarDay(DateTime left, DateTime right) {
       left.month == right.month &&
       left.day == right.day;
 }
+
+/// Places a meal log on [day] at the current time of day from [now].
+DateTime loggedAtOnDay(DateTime day, {required DateTime now}) {
+  return DateTime(day.year, day.month, day.day, now.hour, now.minute);
+}

@@ -16,8 +16,7 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card_display.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_card_pending_ingredient.dart';
-import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_component_avatar.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/prepared_meal_component_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
@@ -179,31 +178,14 @@ class PreparedMealCardExpandedContent extends StatelessWidget {
             PreparedMealPriceCard(label: priceLabel, value: priceValue),
             const SizedBox(height: AppSpacing.md),
           ],
-          ...meal.components.map((component) {
-            return Padding(
+          for (final component in meal.components)
+            Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Row(
-                children: [
-                  PreparedMealComponentAvatar(
-                    key: Key(
-                      'prepared_meal_ingredient_avatar_'
-                      '${component.inventoryItemId}',
-                    ),
-                    label: component.name,
-                    imageUrl: component.imageUrl,
-                  ),
-                  const SizedBox(width: AppSpacing.sm),
-                  Expanded(child: Text(component.name)),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(
-                    '${component.usedAmount} ${component.usedUnit.code}',
-                    style: Theme.of(context).textTheme.bodySmall
-                        ?.copyWith(color: colors.onSurfaceVariant),
-                  ),
-                ],
+              child: PreparedMealComponentRow(
+                component: component,
+                amount: component.usedAmount.toDouble(),
               ),
-            );
-          }),
+            ),
           if (meal.hasPendingRecipeIngredients) ...[
             const SizedBox(height: AppSpacing.sm),
             Text(

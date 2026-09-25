@@ -43,10 +43,6 @@ Other features may consume these public Inventory entry points:
   batches without waiting for the server. The Diary "eat food" flow sizes a
   new item to the eaten amount before its only write and saves the shared
   catalog product and barcode selection in the background.
-- `application/inventory_quick_eat_picker.dart` for quick-eat picker contract
-  used by integrating features.
-- `presentation/inventory_quick_eat_sheet_picker.dart` for inventory-owned
-  quick-eat sheet picker implementation.
 - `application/inventory_manual_product_eat_flow_contract.dart` and
   `presentation/inventory_manual_product_eat_coordinator.dart` for manual-product
   completion from product-search integrations.
@@ -67,6 +63,16 @@ Other features may consume these public Inventory entry points:
 
 Callers should not assemble Inventory internal row/card widgets unless they are
 already documented as a reusable presentation surface.
+
+## Public UI
+
+- `presentation/inventory_item_eat_flow.dart`: `InventoryItemEatFlow.eat` opens
+  the eat sheet for an inventory item, stages the stock from the item the
+  caller shows, and logs the calorie entry.
+- `presentation/prepared_meal_eat_flow.dart`: `PreparedMealEatFlow.eat` opens
+  the eat sheet for a prepared meal and logs the eaten portions as one bundle
+  entry.
+- `PreparedMealCover` and the receipt review sheets listed above.
 
 ## Providers
 

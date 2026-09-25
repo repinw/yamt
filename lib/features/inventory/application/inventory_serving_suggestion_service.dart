@@ -39,24 +39,6 @@ class InventoryServingSuggestionService {
     );
   }
 
-  /// Persists a user-created portion for [item].
-  Future<void> recordCreatedPortion({
-    required InventoryItem item,
-    required double amount,
-    required ConsumedUnit unit,
-    required DateTime selectedAt,
-    String? label,
-  }) {
-    return _repository.recordSelection(
-      foodFingerprint: item.resolvedFoodFingerprint,
-      globalFoodItemId: item.globalFoodItemId,
-      amount: amount,
-      unit: unit,
-      label: label,
-      selectedAt: selectedAt,
-    );
-  }
-
   /// Records a background learned serving selection without surfacing failures.
   Future<void> recordSelection({
     required String foodFingerprint,

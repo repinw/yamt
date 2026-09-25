@@ -1,13 +1,17 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/diary/presentation/controllers/'
+    'diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
-import 'package:yamt/features/diary/presentation/'
-    'diary_quick_eat_inventory_item_flow.dart';
-import 'package:yamt/features/diary/presentation/'
-    'diary_quick_eat_prepared_meal_flow.dart';
+import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/prepared_meal_eat_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 
@@ -128,21 +132,46 @@ class DiaryQuickEatFlow {
     required MealType mealType,
     required DateTime loggedAt,
   }) async {
-    switch (selection) {
-      case DiaryInventoryItemFoodSelection(:final item):
-        await eatDiaryQuickEatInventoryItem(
-          context: context,
-          item: item,
-          mealType: mealType,
-          loggedAt: loggedAt,
-        );
-      case DiaryPreparedMealFoodSelection(:final meal):
-        await eatDiaryQuickEatPreparedMeal(
-          context: context,
-          meal: meal,
-          mealType: mealType,
-          loggedAt: loggedAt,
-        );
+    final container = ProviderScope.containerOf(context, listen: false);
+    final entry = await _eatSelection(
+      context: context,
+      selection: selection,
+      mealType: mealType,
+      loggedAt: loggedAt,
+    );
+    if (entry == null) {
+      return;
     }
+    unawaited(
+      container
+          .read(
+            diaryDayDashboardControllerProvider(
+              normalizeLocalDay(entry.loggedAt),
+            ).notifier,
+          )
+          .refreshAfterMutation(),
+    );
+  }
+
+  static Future<CalorieEntry?> _eatSelection({
+    required BuildContext context,
+    required DiaryInventoryFoodSelection selection,
+    required MealType mealType,
+    required DateTime loggedAt,
+  }) {
+    return switch (selection) {
+      DiaryInventoryItemFoodSelection(:final item) => InventoryItemEatFlow.eat(
+        context: context,
+        item: item,
+        initialLoggedAt: loggedAt,
+        initialMealType: mealType,
+      ),
+      DiaryPreparedMealFoodSelection(:final meal) => PreparedMealEatFlow.eat(
+        context: context,
+        meal: meal,
+        initialLoggedAt: loggedAt,
+        initialMealType: mealType,
+      ),
+    };
   }
 }

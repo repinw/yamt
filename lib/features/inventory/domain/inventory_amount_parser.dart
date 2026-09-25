@@ -123,6 +123,28 @@ int? parseInventoryAmountInput({
   return scaledAmount;
 }
 
+/// Parses a decimal greater than zero. Accepts a comma as decimal separator.
+double? parsePositiveDecimalInput(String rawValue) {
+  final parsed = _parseDecimalInput(rawValue);
+  if (parsed == null || parsed <= 0) {
+    return null;
+  }
+  return parsed;
+}
+
+/// Parses a decimal of zero or more. Accepts a comma as decimal separator.
+double? parseNonNegativeDecimalInput(String rawValue) {
+  final parsed = _parseDecimalInput(rawValue);
+  if (parsed == null || parsed < 0) {
+    return null;
+  }
+  return parsed;
+}
+
+double? _parseDecimalInput(String rawValue) {
+  return double.tryParse(rawValue.trim().replaceAll(',', '.'));
+}
+
 /// Defines inventory amount parser.
 class InventoryAmountParser {
   /// The inventory amount parser.

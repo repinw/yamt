@@ -627,27 +627,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatAction => 'Eat';
 
   @override
-  String get inventoryItemEatSheetEyebrow => 'Log food';
-
-  @override
-  String get inventoryItemEatSheetAmountLabel => 'Enter amount';
-
-  @override
-  String inventoryItemEatSheetAvailableAmount(Object amount, Object unit) {
-    return 'Available in inventory: $amount $unit';
-  }
-
-  @override
-  String get inventoryItemEatSheetAllAction => 'All';
-
-  @override
   String get inventoryAmountDialogAllRemainingAction => 'All/Rest';
-
-  @override
-  String get inventoryItemEatSheetPortionLabelFieldLabel => 'Portion label';
-
-  @override
-  String get inventoryItemEatSheetPortionAmountFieldLabel => 'Amount per portion';
 
   @override
   String get inventoryItemEatSheetDecreasePortionCountAction => 'Decrease portions';
@@ -659,33 +639,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatSheetDefaultPortionLabel => 'Portion';
 
   @override
-  String get inventoryItemEatSheetNewPortionAction => '+ New portion...';
-
-  @override
-  String get inventoryItemEatSheetNewPortionTitle => 'New portion';
-
-  @override
-  String get inventoryItemEatSheetSavePortionAction => 'Save portion';
-
-  @override
-  String get inventoryItemEatSheetUnitGram => 'Gram';
-
-  @override
-  String get inventoryItemEatSheetUnitMilliliter => 'Milliliter';
-
-  @override
   String get inventoryItemEatSheetUnitPiece => 'Piece';
 
   @override
-  String inventoryItemEatSheetPortionTotalLabel(String amount, String unit) {
-    return 'Total: $amount $unit';
-  }
-
-  @override
   String get inventoryItemEatSheetInedibleAmountLabel => 'Subtract inedible part';
-
-  @override
-  String get inventoryItemEatSheetInedibleAmountHint => 'Optional, e.g. bones';
 
   @override
   String get inventoryItemEatSheetInedibleAmountFieldLabel => 'Inedible amount';
@@ -694,13 +651,108 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatSheetInedibleAmountError => 'The deducted amount must be smaller than the eaten amount.';
 
   @override
-  String get inventoryItemEatSheetConfirmAction => 'Add';
+  String get inventoryItemEatSheetConfirmAction => 'Log';
 
   @override
   String get inventoryItemEatSheetAddMoreAction => '+ More';
 
   @override
-  String get inventoryItemEatSheetClearAmountAction => 'Clear amount';
+  String get eatPageNutritionTitle => 'Nutrition';
+
+  @override
+  String eatPageWhen(String day, String meal) {
+    return '$day · $meal';
+  }
+
+  @override
+  String get eatPagePickDay => 'Other day…';
+
+  @override
+  String get eatPageRememberPortion => '+ Remember this amount as a portion';
+
+  @override
+  String eatPagePortionNameLabel(String amount) {
+    return 'Name for $amount';
+  }
+
+  @override
+  String get eatPagePortionNameHint => 'e.g. slice';
+
+  @override
+  String get eatPageSavePortion => 'Save';
+
+  @override
+  String eatPagePieceWeight(String label) {
+    return '1 $label =';
+  }
+
+  @override
+  String eatPageInStock(String amount) {
+    return '$amount in stock';
+  }
+
+  @override
+  String eatPageTotal(String amount) {
+    return '= $amount';
+  }
+
+  @override
+  String eatPageKcal(int kcal) {
+    return '$kcal kcal';
+  }
+
+  @override
+  String get eatPageRememberPieceSize => '+ Remember as piece size';
+
+  @override
+  String get eatPagePieceSizeNameHint => 'e.g. L';
+
+  @override
+  String get eatPageAll => 'All';
+
+  @override
+  String eatPageMark(String label, String amount) {
+    return '$label $amount';
+  }
+
+  @override
+  String eatPagePortionMultiple(String count, String label) {
+    return '= $count × $label';
+  }
+
+  @override
+  String eatPageApprox(String amount) {
+    return '≈ $amount';
+  }
+
+  @override
+  String get eatPagePortionsUnit => 'port.';
+
+  @override
+  String inventoryEatSheetPortionsHeader(num count, String amount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$amount portions',
+      one: '$amount portion',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String inventoryEatSheetAmountCompact(String amount, String unit) {
+    return '$amount$unit';
+  }
+
+  @override
+  String inventoryEatSheetAmountWithUnit(String amount, String unit) {
+    return '$amount $unit';
+  }
+
+  @override
+  String inventoryItemEatSheetInedibleAmountSummary(String amount) {
+    return 'Inedible part: $amount';
+  }
 
   @override
   String get inventoryItemAddToListAction => 'Add to list';
@@ -1082,7 +1134,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String preparedMealIngredientsCount(int count) {
-    return '$count ingredients';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ingredients',
+      one: '1 ingredient',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -1119,9 +1177,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preparedMealUnbundleAction => 'Return to inventory';
-
-  @override
-  String get preparedMealEatTitle => 'Eat prepared meal';
 
   @override
   String get preparedMealDiaryDayLabel => 'Diary day';

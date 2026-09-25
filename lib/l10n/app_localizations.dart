@@ -1247,47 +1247,11 @@ abstract class AppLocalizations {
   /// **'Eat'**
   String get inventoryItemEatAction;
 
-  /// No description provided for @inventoryItemEatSheetEyebrow.
-  ///
-  /// In en, this message translates to:
-  /// **'Log food'**
-  String get inventoryItemEatSheetEyebrow;
-
-  /// No description provided for @inventoryItemEatSheetAmountLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter amount'**
-  String get inventoryItemEatSheetAmountLabel;
-
-  /// No description provided for @inventoryItemEatSheetAvailableAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'Available in inventory: {amount} {unit}'**
-  String inventoryItemEatSheetAvailableAmount(Object amount, Object unit);
-
-  /// No description provided for @inventoryItemEatSheetAllAction.
-  ///
-  /// In en, this message translates to:
-  /// **'All'**
-  String get inventoryItemEatSheetAllAction;
-
   /// No description provided for @inventoryAmountDialogAllRemainingAction.
   ///
   /// In en, this message translates to:
   /// **'All/Rest'**
   String get inventoryAmountDialogAllRemainingAction;
-
-  /// No description provided for @inventoryItemEatSheetPortionLabelFieldLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Portion label'**
-  String get inventoryItemEatSheetPortionLabelFieldLabel;
-
-  /// No description provided for @inventoryItemEatSheetPortionAmountFieldLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Amount per portion'**
-  String get inventoryItemEatSheetPortionAmountFieldLabel;
 
   /// No description provided for @inventoryItemEatSheetDecreasePortionCountAction.
   ///
@@ -1307,59 +1271,17 @@ abstract class AppLocalizations {
   /// **'Portion'**
   String get inventoryItemEatSheetDefaultPortionLabel;
 
-  /// No description provided for @inventoryItemEatSheetNewPortionAction.
-  ///
-  /// In en, this message translates to:
-  /// **'+ New portion...'**
-  String get inventoryItemEatSheetNewPortionAction;
-
-  /// No description provided for @inventoryItemEatSheetNewPortionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'New portion'**
-  String get inventoryItemEatSheetNewPortionTitle;
-
-  /// No description provided for @inventoryItemEatSheetSavePortionAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Save portion'**
-  String get inventoryItemEatSheetSavePortionAction;
-
-  /// No description provided for @inventoryItemEatSheetUnitGram.
-  ///
-  /// In en, this message translates to:
-  /// **'Gram'**
-  String get inventoryItemEatSheetUnitGram;
-
-  /// No description provided for @inventoryItemEatSheetUnitMilliliter.
-  ///
-  /// In en, this message translates to:
-  /// **'Milliliter'**
-  String get inventoryItemEatSheetUnitMilliliter;
-
   /// No description provided for @inventoryItemEatSheetUnitPiece.
   ///
   /// In en, this message translates to:
   /// **'Piece'**
   String get inventoryItemEatSheetUnitPiece;
 
-  /// No description provided for @inventoryItemEatSheetPortionTotalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Total: {amount} {unit}'**
-  String inventoryItemEatSheetPortionTotalLabel(String amount, String unit);
-
   /// No description provided for @inventoryItemEatSheetInedibleAmountLabel.
   ///
   /// In en, this message translates to:
   /// **'Subtract inedible part'**
   String get inventoryItemEatSheetInedibleAmountLabel;
-
-  /// No description provided for @inventoryItemEatSheetInedibleAmountHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Optional, e.g. bones'**
-  String get inventoryItemEatSheetInedibleAmountHint;
 
   /// No description provided for @inventoryItemEatSheetInedibleAmountFieldLabel.
   ///
@@ -1376,7 +1298,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryItemEatSheetConfirmAction.
   ///
   /// In en, this message translates to:
-  /// **'Add'**
+  /// **'Log'**
   String get inventoryItemEatSheetConfirmAction;
 
   /// No description provided for @inventoryItemEatSheetAddMoreAction.
@@ -1385,11 +1307,137 @@ abstract class AppLocalizations {
   /// **'+ More'**
   String get inventoryItemEatSheetAddMoreAction;
 
-  /// No description provided for @inventoryItemEatSheetClearAmountAction.
+  /// No description provided for @eatPageNutritionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Clear amount'**
-  String get inventoryItemEatSheetClearAmountAction;
+  /// **'Nutrition'**
+  String get eatPageNutritionTitle;
+
+  /// No description provided for @eatPageWhen.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} · {meal}'**
+  String eatPageWhen(String day, String meal);
+
+  /// No description provided for @eatPagePickDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Other day…'**
+  String get eatPagePickDay;
+
+  /// No description provided for @eatPageRememberPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Remember this amount as a portion'**
+  String get eatPageRememberPortion;
+
+  /// No description provided for @eatPagePortionNameLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Name for {amount}'**
+  String eatPagePortionNameLabel(String amount);
+
+  /// No description provided for @eatPagePortionNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. slice'**
+  String get eatPagePortionNameHint;
+
+  /// No description provided for @eatPageSavePortion.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get eatPageSavePortion;
+
+  /// No description provided for @eatPagePieceWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'1 {label} ='**
+  String eatPagePieceWeight(String label);
+
+  /// No description provided for @eatPageInStock.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} in stock'**
+  String eatPageInStock(String amount);
+
+  /// No description provided for @eatPageTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'= {amount}'**
+  String eatPageTotal(String amount);
+
+  /// No description provided for @eatPageKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal'**
+  String eatPageKcal(int kcal);
+
+  /// No description provided for @eatPageRememberPieceSize.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Remember as piece size'**
+  String get eatPageRememberPieceSize;
+
+  /// No description provided for @eatPagePieceSizeNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. L'**
+  String get eatPagePieceSizeNameHint;
+
+  /// No description provided for @eatPageAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get eatPageAll;
+
+  /// No description provided for @eatPageMark.
+  ///
+  /// In en, this message translates to:
+  /// **'{label} {amount}'**
+  String eatPageMark(String label, String amount);
+
+  /// No description provided for @eatPagePortionMultiple.
+  ///
+  /// In en, this message translates to:
+  /// **'= {count} × {label}'**
+  String eatPagePortionMultiple(String count, String label);
+
+  /// No description provided for @eatPageApprox.
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {amount}'**
+  String eatPageApprox(String amount);
+
+  /// No description provided for @eatPagePortionsUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'port.'**
+  String get eatPagePortionsUnit;
+
+  /// No description provided for @inventoryEatSheetPortionsHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{amount} portion} other{{amount} portions}}'**
+  String inventoryEatSheetPortionsHeader(num count, String amount);
+
+  /// No description provided for @inventoryEatSheetAmountCompact.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount}{unit}'**
+  String inventoryEatSheetAmountCompact(String amount, String unit);
+
+  /// No description provided for @inventoryEatSheetAmountWithUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} {unit}'**
+  String inventoryEatSheetAmountWithUnit(String amount, String unit);
+
+  /// No description provided for @inventoryItemEatSheetInedibleAmountSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Inedible part: {amount}'**
+  String inventoryItemEatSheetInedibleAmountSummary(String amount);
 
   /// No description provided for @inventoryItemAddToListAction.
   ///
@@ -2126,7 +2174,7 @@ abstract class AppLocalizations {
   /// No description provided for @preparedMealIngredientsCount.
   ///
   /// In en, this message translates to:
-  /// **'{count} ingredients'**
+  /// **'{count, plural, =1{1 ingredient} other{{count} ingredients}}'**
   String preparedMealIngredientsCount(int count);
 
   /// No description provided for @preparedMealIncompleteLabel.
@@ -2194,12 +2242,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Return to inventory'**
   String get preparedMealUnbundleAction;
-
-  /// No description provided for @preparedMealEatTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat prepared meal'**
-  String get preparedMealEatTitle;
 
   /// No description provided for @preparedMealDiaryDayLabel.
   ///
