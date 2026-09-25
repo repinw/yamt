@@ -13,11 +13,9 @@ import 'package:yamt/features/product_search_hub/domain/product_search_gateway.d
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_entry_flow.dart';
+    'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_lookup.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_results/product_search_hub_search_results.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -39,7 +37,7 @@ Widget _buildHarness({
       locale: const Locale('en'),
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
-      home: ProductSearchHubSearchPage(
+      home: ProductSearchHubPage(
         args: args,
         lookupProducts:
             lookupProducts ??
@@ -54,7 +52,7 @@ Widget _buildHarness({
 }
 
 void main() {
-  testWidgets('focused search lists matching products', (tester) async {
+  testWidgets('search lists matching products', (tester) async {
     await tester.pumpWidget(
       _buildHarness(
         searchResults: const [
@@ -86,9 +84,7 @@ void main() {
     expect(find.text('Dairy Co'), findsOneWidget);
   });
 
-  testWidgets('focused search passes route search context to lookup', (
-    tester,
-  ) async {
+  testWidgets('search passes route search context to lookup', (tester) async {
     String? capturedStore;
     String? capturedBrand;
     String? capturedWeight;
@@ -128,7 +124,7 @@ void main() {
     expect(capturedWeight, '500 g');
   });
 
-  testWidgets('focused search starts with route item query', (tester) async {
+  testWidgets('search starts with route item query', (tester) async {
     String? capturedQuery;
 
     await tester.pumpWidget(
@@ -168,7 +164,7 @@ void main() {
     );
   });
 
-  testWidgets('focused search ignores stale lookup results', (tester) async {
+  testWidgets('search ignores stale lookup results', (tester) async {
     final firstLookup = Completer<ProductSearchHubSearchLookupResult>();
     final queries = <String>[];
 
@@ -227,7 +223,7 @@ void main() {
     );
   });
 
-  testWidgets('focused search field can be edited and cleared', (tester) async {
+  testWidgets('search field can be edited and cleared', (tester) async {
     await tester.pumpWidget(_buildHarness());
     await tester.pumpAndSettle();
     await _pumpFocusedSearchReady(tester);
@@ -251,9 +247,7 @@ void main() {
     expect(field.controller?.text, isEmpty);
   });
 
-  testWidgets('focused search renders AI and create actions only', (
-    tester,
-  ) async {
+  testWidgets('search renders barcode, AI, and create actions', (tester) async {
     await tester.pumpWidget(_buildHarness());
     await tester.pumpAndSettle();
     await _pumpFocusedSearchReady(tester);
@@ -345,86 +339,7 @@ void main() {
     expect(didCreate, isTrue);
   });
 
-  testWidgets('copy button returns ProductSearchHubCopyResult', (tester) async {
-    Object? poppedResult;
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          voiceSearchServiceProvider.overrideWithValue(
-            _FakeVoiceSearchService(),
-          ),
-          inventoryItemRepositoryProvider.overrideWithValue(
-            const _FakeInventoryItemRepository(<InventoryItem>[]),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Builder(
-            builder: (context) {
-              return TextButton(
-                onPressed: () async {
-                  poppedResult = await Navigator.of(context).push(
-                    MaterialPageRoute<Object>(
-                      builder: (_) => ProductSearchHubSearchPage(
-                        lookupProducts:
-                            ({
-                              required query,
-                              required limit,
-                              store,
-                              brand,
-                              weight,
-                            }) async {
-                              return ProductSearchHubSearchLookupResult.success(
-                                const [
-                                  OffProductSearchResult(
-                                    code: 'copy-target',
-                                    name: 'Organic Milk',
-                                    score: 1,
-                                  ),
-                                ],
-                              );
-                            },
-                      ),
-                    ),
-                  );
-                },
-                child: const Text('Open'),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-    await _pumpFocusedSearchReady(tester);
-
-    await tester.enterText(
-      find.byKey(const Key('product_search_hub_search_field')),
-      'Organic',
-    );
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.pumpAndSettle();
-
-    final copyButtonFinder = find.byKey(
-      const Key('product_search_hub_search_result_copy_copy-target'),
-    );
-    expect(copyButtonFinder, findsOneWidget);
-    await tester.tap(copyButtonFinder);
-    await tester.pumpAndSettle();
-
-    final copyResult = poppedResult;
-    expect(copyResult, isA<ProductSearchHubCopyResult>());
-    if (copyResult is ProductSearchHubCopyResult) {
-      expect(copyResult.product.code, 'copy-target');
-    }
-  });
-
-  testWidgets('focused search shows recent products while query is empty', (
+  testWidgets('search shows recent products while query is empty', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -450,63 +365,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Recently selected'), findsNothing);
-  });
-
-  testWidgets('recent product tap returns ProductSearchHubRecentItemResult', (
-    tester,
-  ) async {
-    Object? poppedResult;
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          voiceSearchServiceProvider.overrideWithValue(
-            _FakeVoiceSearchService(),
-          ),
-          inventoryItemRepositoryProvider.overrideWithValue(
-            _FakeInventoryItemRepository([_recentItem(id: 'recent-yogurt')]),
-          ),
-        ],
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Builder(
-            builder: (context) {
-              return TextButton(
-                onPressed: () async {
-                  poppedResult = await Navigator.of(context).push(
-                    MaterialPageRoute<Object>(
-                      builder: (_) => const ProductSearchHubSearchPage(),
-                    ),
-                  );
-                },
-                child: const Text('Open'),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-    await _pumpFocusedSearchReady(tester);
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.byKey(
-        const Key('product_search_hub_recently_selected_item_recent-yogurt'),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final recentResult = poppedResult;
-    expect(recentResult, isA<ProductSearchHubRecentItemResult>());
-    if (recentResult is ProductSearchHubRecentItemResult) {
-      expect(recentResult.item.id, 'recent-yogurt');
-      expect(recentResult.isCopy, isFalse);
-    }
   });
 }
 

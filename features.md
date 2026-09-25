@@ -145,7 +145,7 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## Product Search And Manual Add
 
-- Manual product search launcher and product editor.
+- One product search page with barcode, AI, and own-product actions, and the product editor.
 - Barcode scan lookup with multiple-candidate picker and not-found handling.
 - Voice search for manual product text where supported.
 - AI food creation from free text, with review draft instead of direct save.
@@ -153,7 +153,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Manual nutrition entry and extended nutrient fields.
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.
-- Recent manual items for faster repeated entry.
+- Recent manual items (up to 20) shown while the search query is empty.
+- Several products can be added in one visit; a counter overlay shows them.
 
 ## Product Nutrition OCR
 

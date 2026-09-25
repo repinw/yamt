@@ -27,9 +27,6 @@ abstract final class AppRoutes {
   /// Product search hub route.
   static const homeProductSearchHub = '/home/product-search-hub';
 
-  /// Focused product search route for the product search hub.
-  static const homeProductSearchHubSearch = '/home/product-search-hub/search';
-
   /// Product-search child flow route.
   static const productSearchChildFlow = '/product-search/child-flow/:flow';
 

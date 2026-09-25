@@ -4,7 +4,7 @@ Einheitliche Produktsuche, Produkteditor, KI-Drafterstellung und Barcode-Assiste
 
 ## Owns
 
-- Einheitlicher Einstiegspunkt (`ProductSearchHubPage`) und Vollbildsuche (`ProductSearchHubSearchPage`).
+- Eine Produktsuche-Seite (`ProductSearchHubPage`) mit Suchfeld, Barcode-, KI- und Eigenes-Produkt-Aktionen, zuletzt ausgewählten Produkten und Auswahl-Overlay.
 - Manueller Produkteditor (`InventoryReceiptManualProductEditorPage`), Formulare und Nährwertvalidierung.
 - KI-gestützte Produktdrafterstellung (`ManualProductAiSearchPage`, `ProductAiSearchService`, `FirebaseProductAiSearchRepository`).
 - Koordination der Kontext-Modi (`inventory`, `diary`, `selection`).
@@ -23,8 +23,7 @@ Einheitliche Produktsuche, Produkteditor, KI-Drafterstellung und Barcode-Assiste
 
 ## Public Edges
 
-- `ProductSearchHubPage` für Hauptsuch- und Auswahlrouten.
-- `ProductSearchHubSearchPage` für die animierte Suchoberfläche.
+- `ProductSearchHubPage` für alle Such- und Auswahlrouten.
 - `ManualProductSearchRouteArgs`, `buildManualProductSearchRoutePage` für Kind-Flows.
 - `ProductSearchHubSavedSelection` und `ProductSearchHubCompletionResult` für Entkopplung und typsichere Resultate.
 - `ProductSearchHubCompletionHandler` (`abstract interface class`) für modusspezifische Abschlusslogik.

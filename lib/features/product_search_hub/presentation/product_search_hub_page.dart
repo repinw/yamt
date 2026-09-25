@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/inventory/data/'
+    'off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
@@ -16,34 +16,42 @@ import 'package:yamt/features/product_search_hub/domain/'
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_barcode_scanner.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_entry_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_navigation.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_result_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_search_lookup.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_selection_state.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_search_hub_scaffold/product_search_hub_scaffold.dart';
+    'product_search_hub_search_view/product_search_hub_search_view.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'product_search_hub_selection_overlay/'
+    'product_search_hub_selection_overlay.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_selection_overlay/'
     'product_search_hub_selection_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Unified product search hub page.
+/// Product search page shared by inventory, diary, and product pickers.
+///
+/// The search view handles input. This page completes picked products for the
+/// route mode and keeps the products saved so far.
 class ProductSearchHubPage extends StatefulWidget {
   /// Creates a product search hub page.
   const new({
     super.key,
     this.args = const ProductSearchHubRouteArgs.inventory(),
+    this.lookupProducts,
   });
 
   /// Route args.
   final ProductSearchHubRouteArgs args;
+
+  /// Optional lookup override for widget tests.
+  final ProductSearchHubSearchLookup? lookupProducts;
 
   @override
   State<ProductSearchHubPage> createState() => _ProductSearchHubPageState();
@@ -54,35 +62,36 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   var _isMutatingSelection = false;
 
   @override
-  void initState() {
-    super.initState();
-    if (widget.args.initialIntent == ProductSearchHubInitialIntent.launcher) {
-      return;
-    }
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _openInitialIntent();
-    });
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return ProductSearchHubScaffold(
-      title: widget.args.title(AppLocalizations.of(context)!),
-      savedSelections: _selectionState.selections,
-      isMutatingSelection: _isMutatingSelection,
-      showDiarySourceActions: widget.args.showsDiarySourceActions,
+    final selections = _selectionState.selections;
+
+    return ProductSearchHubSearchView(
+      args: widget.args,
+      isBusy: _isMutatingSelection,
+      lookupProducts: widget.lookupProducts,
       selectedProductKeys: _selectionState.sourceKeys,
-      onSearchTap: _openProductSearch,
-      onVoiceSearchTap: _openProductVoiceSearch,
-      onBarcodePressed: _openBarcodeScan,
-      onAiPressed: _openAiProduct,
-      onCreateOwnPressed: _openCustomProduct,
-      onRecentlySelectedProductPressed: (item) =>
-          _openRecentItem(item, isCopy: false),
-      onRecentlySelectedProductCopied: (item) =>
-          _openRecentItem(item, isCopy: true),
-      onCountPressed: _openSelectedProductsSheet,
-      onSubmitPressed: _closeHub,
+      bottomOverlay: selections.isEmpty
+          ? null
+          : ProductSearchHubSelectionOverlay(
+              productCount: selections.length,
+              isSaving: _isMutatingSelection,
+              onCountPressed: _openSelectedProductsSheet,
+              onSubmitPressed: _closeHub,
+            ),
+      // Back never waits for a save: an offline write may not finish.
+      onBackPressed: () =>
+          popProductSearchHubRoute(context: context, isBlocked: false),
+      onProductSelected: _openProduct,
+      onProductCopied: _copyProduct,
+      onRecentItemPressed: (item) => _openRecentItem(item, isCopy: false),
+      onRecentItemCopied: (item) => _openRecentItem(item, isCopy: true),
+      onEntryResult: (entry) => _runWhenIdle(
+        () => _completeEditedResult(
+          sourceKey: entry.sourceKey,
+          result: entry.result,
+        ),
+      ),
+      onInitialIntentCancelled: _closeHub,
     );
   }
 
@@ -92,50 +101,25 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     }
   }
 
-  void _openProductSearch() => _runWhenIdle(_openProductSearchRoute);
-
-  void _openProductVoiceSearch() => _runWhenIdle(
-    () => _openProductSearchRoute(startVoiceSearchOnMount: true),
-  );
-
-  Future<void> _openProductSearchRoute({
-    String? initialQuery,
-    bool startVoiceSearchOnMount = false,
-    bool autofocusSearchField = true,
-    bool closeHubOnCancel = false,
-  }) async {
-    var routeArgs = widget.args;
-    if (initialQuery != null) {
-      routeArgs = routeArgs.withInitialQuery(
-        initialQuery,
-        autofocusSearchField: autofocusSearchField,
-      );
-    }
-    if (startVoiceSearchOnMount) {
-      routeArgs = routeArgs.withVoiceSearchOnMount();
-    }
-    final result = await context.push<Object?>(
-      AppRoutes.homeProductSearchHubSearch,
-      extra: routeArgs,
-    );
-    if (!mounted) return;
-    if (result == null) {
-      // Opened straight from the caller: cancel returns there, not to the hub.
-      if (closeHubOnCancel && _selectionState.selections.isEmpty) _closeHub();
-      return;
-    }
-    if (result is ProductSearchHubRecentItemResult) {
-      _openRecentItem(result.item, isCopy: result.isCopy);
-      return;
-    }
-    await handleProductSearchHubSearchResult(
+  void _openProduct(OffProductSearchResult product) => _runWhenIdle(
+    () => editAndSaveProductSearchHubProduct(
       context: context,
       args: widget.args,
-      result: result,
+      product: product,
       isSourceBlocked: _isSourceBlocked,
       completeResult: _completeEditedResult,
-    );
-  }
+    ),
+  );
+
+  void _copyProduct(OffProductSearchResult product) => _runWhenIdle(
+    () => copyAndEditProductSearchHubProduct(
+      context: context,
+      args: widget.args,
+      product: product,
+      isSourceBlocked: _isSourceBlocked,
+      completeResult: _completeEditedResult,
+    ),
+  );
 
   void _openRecentItem(InventoryItem item, {required bool isCopy}) {
     final openItem = isCopy
@@ -149,56 +133,6 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
         isSourceBlocked: _isSourceBlocked,
         completeResult: _completeEditedResult,
       ),
-    );
-  }
-
-  void _openInitialIntent() {
-    switch (widget.args.initialIntent) {
-      case ProductSearchHubInitialIntent.launcher:
-        break;
-      case ProductSearchHubInitialIntent.search:
-        _runWhenIdle(() => _openProductSearchRoute(closeHubOnCancel: true));
-      case ProductSearchHubInitialIntent.ai:
-        _openAiProduct();
-      case ProductSearchHubInitialIntent.barcode:
-        _openBarcodeScan();
-    }
-  }
-
-  void _openBarcodeScan() => _runWhenIdle(_openBarcodeScanFlow);
-
-  Future<void> _openBarcodeScanFlow() async {
-    final scannedBarcode = await openProductSearchHubBarcodeScanner(
-      context: context,
-    );
-    if (!mounted || scannedBarcode == null || scannedBarcode.trim().isEmpty) {
-      return;
-    }
-    await _openProductSearchRoute(
-      initialQuery: scannedBarcode.trim(),
-      autofocusSearchField: false,
-    );
-  }
-
-  void _openAiProduct() =>
-      _runWhenIdle(() => _openEntry(openProductSearchHubAiEntry));
-
-  void _openCustomProduct() =>
-      _runWhenIdle(() => _openEntry(openProductSearchHubCustomEntry));
-
-  Future<void> _openEntry(ProductSearchHubEntryOpener openEntry) async {
-    final l10n = AppLocalizations.of(context)!;
-    final result = await openEntry(
-      context: context,
-      l10n: l10n,
-      args: widget.args,
-    );
-    if (!context.mounted || result == null) {
-      return;
-    }
-    await _completeEditedResult(
-      sourceKey: result.sourceKey,
-      result: result.result,
     );
   }
 

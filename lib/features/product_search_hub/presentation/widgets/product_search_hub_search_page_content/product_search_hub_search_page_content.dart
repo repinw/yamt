@@ -13,9 +13,12 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_results/product_search_hub_search_results.dart';
 
-/// Visual shell for focused product search page.
+// Keeps the last list rows above the selection overlay.
+const _productSearchHubSelectionOverlayClearance = 92.0;
+
+/// Visual shell for the product search hub page.
 class ProductSearchHubSearchPageContent extends StatelessWidget {
-  /// Creates focused search page content.
+  /// Creates search page content.
   const new({
     required this.title,
     required this.searchController,
@@ -23,25 +26,22 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
     required this.isSearching,
     required this.voiceSearchService,
     required this.voiceSearchController,
-    required this.startVoiceSearchOnMount,
-    required this.showFocusedSearchField,
-    required this.isClosing,
     required this.hasSearchQuery,
     required this.searchResults,
     required this.hasSearchFailed,
+    required this.selectedProductKeys,
     required this.onBackPressed,
     required this.onSearchChanged,
     required this.onClear,
     required this.onBarcodePressed,
     required this.onAiPressed,
     required this.onCreateOwnPressed,
-    required this.onBlankTap,
     required this.onRetry,
     required this.onResultSelected,
+    required this.onResultCopied,
     required this.onRecentItemPressed,
     required this.onRecentItemCopied,
-    this.onResultCopied,
-    this.autofocusSearchField = true,
+    this.bottomOverlay,
     super.key,
   });
 
@@ -63,26 +63,20 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
   /// Voice search controller.
   final TextVoiceSearchController voiceSearchController;
 
-  /// Whether voice should auto-start after mount.
-  final bool startVoiceSearchOnMount;
-
-  /// Whether focused field is visible.
-  final bool showFocusedSearchField;
-
-  /// Whether page is closing.
-  final bool isClosing;
-
   /// Whether enough query text exists.
   final bool hasSearchQuery;
 
   /// Search results.
   final List<OffProductSearchResult> searchResults;
 
-  /// Whether search field should autofocus.
-  final bool autofocusSearchField;
-
   /// Whether search failed.
   final bool hasSearchFailed;
+
+  /// Source keys of the products selected so far.
+  final Set<String> selectedProductKeys;
+
+  /// Selection overlay shown above the bottom edge.
+  final Widget? bottomOverlay;
 
   /// Back callback.
   final VoidCallback onBackPressed;
@@ -102,9 +96,6 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
   /// Create own callback.
   final VoidCallback onCreateOwnPressed;
 
-  /// Blank area tap callback.
-  final VoidCallback onBlankTap;
-
   /// Retry callback.
   final VoidCallback onRetry;
 
@@ -112,7 +103,7 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
   final ValueChanged<OffProductSearchResult> onResultSelected;
 
   /// Result copied callback.
-  final ValueChanged<OffProductSearchResult>? onResultCopied;
+  final ValueChanged<OffProductSearchResult> onResultCopied;
 
   /// Recent product selected callback.
   final ValueChanged<InventoryItem> onRecentItemPressed;
@@ -122,38 +113,53 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final overlay = bottomOverlay;
+
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: onBackPressed),
         title: Text(title),
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            children: [
-              _ProductSearchHubSearchFieldStack(
-                searchController: searchController,
-                searchFocusNode: searchFocusNode,
-                isSearching: isSearching,
-                voiceSearchService: voiceSearchService,
-                voiceSearchController: voiceSearchController,
-                startVoiceSearchOnMount: startVoiceSearchOnMount,
-                showFocusedSearchField: showFocusedSearchField,
-                autofocusSearchField: autofocusSearchField,
-                isClosing: isClosing,
-                onSearchChanged: onSearchChanged,
-                onClear: onClear,
+        child: Stack(
+          children: [
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.xl,
+                AppSpacing.xl,
+                overlay == null
+                    ? AppSpacing.xl
+                    : _productSearchHubSelectionOverlayClearance,
               ),
-              ProductSearchHubSearchActionSection(
-                isVisible: showFocusedSearchField && !isClosing,
-                onBarcodePressed: onBarcodePressed,
-                onAiPressed: onAiPressed,
-                onCreateOwnPressed: onCreateOwnPressed,
+              child: Column(
+                children: [
+                  ProductSearchHubSearchBar(
+                    controller: searchController,
+                    focusNode: searchFocusNode,
+                    isSearching: isSearching,
+                    voiceSearchService: voiceSearchService,
+                    voiceSearchController: voiceSearchController,
+                    onChanged: onSearchChanged,
+                    onClear: onClear,
+                  ),
+                  ProductSearchHubSearchActionSection(
+                    onBarcodePressed: onBarcodePressed,
+                    onAiPressed: onAiPressed,
+                    onCreateOwnPressed: onCreateOwnPressed,
+                  ),
+                  Expanded(child: _buildContent()),
+                ],
               ),
-              Expanded(child: _buildContent()),
-            ],
-          ),
+            ),
+            if (overlay != null)
+              Positioned(
+                left: AppSpacing.xl,
+                right: AppSpacing.xl,
+                bottom: AppSpacing.xl,
+                child: overlay,
+              ),
+          ],
         ),
       ),
     );
@@ -161,10 +167,8 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
 
   Widget _buildContent() {
     if (!hasSearchQuery) {
-      if (!showFocusedSearchField || isClosing) {
-        return ProductSearchHubSearchBlank(onTap: onBlankTap);
-      }
       return ProductSearchHubSearchRecentSection(
+        selectedProductKeys: selectedProductKeys,
         onProductPressed: onRecentItemPressed,
         onProductCopied: onRecentItemCopied,
       );
@@ -174,64 +178,9 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
       isSearching: isSearching,
       hasFailed: hasSearchFailed,
       onCreateOwnPressed: onCreateOwnPressed,
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.manual,
       onRetry: onRetry,
       onResultSelected: onResultSelected,
       onResultCopied: onResultCopied,
-    );
-  }
-}
-
-class _ProductSearchHubSearchFieldStack extends StatelessWidget {
-  const new({
-    required this.searchController,
-    required this.searchFocusNode,
-    required this.isSearching,
-    required this.voiceSearchService,
-    required this.voiceSearchController,
-    required this.startVoiceSearchOnMount,
-    required this.showFocusedSearchField,
-    required this.autofocusSearchField,
-    required this.isClosing,
-    required this.onSearchChanged,
-    required this.onClear,
-  });
-
-  final TextEditingController searchController;
-  final FocusNode searchFocusNode;
-  final bool isSearching;
-  final VoiceSearchService voiceSearchService;
-  final TextVoiceSearchController voiceSearchController;
-  final bool startVoiceSearchOnMount;
-  final bool showFocusedSearchField;
-  final bool autofocusSearchField;
-  final bool isClosing;
-  final ValueChanged<String> onSearchChanged;
-  final VoidCallback onClear;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Hero(
-          tag: productSearchHubSearchBarHeroTag,
-          child: ProductSearchHubSearchHeroField(
-            isVisible: !showFocusedSearchField || isClosing,
-          ),
-        ),
-        if (showFocusedSearchField && !isClosing)
-          ProductSearchHubSearchBar(
-            controller: searchController,
-            focusNode: searchFocusNode,
-            isSearching: isSearching,
-            voiceSearchService: voiceSearchService,
-            voiceSearchController: voiceSearchController,
-            startVoiceSearchOnMount: startVoiceSearchOnMount,
-            autofocus: autofocusSearchField,
-            onChanged: onSearchChanged,
-            onClear: onClear,
-          ),
-      ],
     );
   }
 }

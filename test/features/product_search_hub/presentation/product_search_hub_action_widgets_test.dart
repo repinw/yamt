@@ -8,8 +8,6 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_search_hub_action_grid/product_search_hub_action_grid.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_actions/product_search_hub_search_actions.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_selection_overlay/'
@@ -17,23 +15,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('action grid tolerates cramped constraints', (tester) async {
-    await tester.pumpWidget(
-      _buildMaterialHarness(
-        child: const SizedBox(
-          width: 20,
-          child: ProductSearchHubActionGrid(showDiarySourceActions: true),
-        ),
-      ),
-    );
-
-    expect(tester.takeException(), isNull);
-    expect(
-      find.byKey(const Key('product_search_hub_barcode_action')),
-      findsOneWidget,
-    );
-  });
-
   testWidgets('search actions tolerate cramped constraints', (tester) async {
     await tester.pumpWidget(
       _buildMaterialHarness(

@@ -21,8 +21,6 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_editor_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_entry_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_recent_item_key.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -36,39 +34,6 @@ typedef ProductSearchHubResultCompleter = Future<void> Function({
 
 /// Reports whether a source key is already blocked by current hub state.
 typedef ProductSearchHubSourceBlocker = bool Function(String sourceKey);
-
-/// Handles a focused-search route result.
-Future<void> handleProductSearchHubSearchResult({
-  required BuildContext context,
-  required ProductSearchHubRouteArgs args,
-  required Object result,
-  required ProductSearchHubSourceBlocker isSourceBlocked,
-  required ProductSearchHubResultCompleter completeResult,
-}) async {
-  if (result is OffProductSearchResult) {
-    await editAndSaveProductSearchHubProduct(
-      context: context,
-      args: args,
-      product: result,
-      isSourceBlocked: isSourceBlocked,
-      completeResult: completeResult,
-    );
-    return;
-  }
-  if (result is ProductSearchHubCopyResult) {
-    await copyAndEditProductSearchHubProduct(
-      context: context,
-      args: args,
-      product: result.product,
-      isSourceBlocked: isSourceBlocked,
-      completeResult: completeResult,
-    );
-    return;
-  }
-  if (result is ProductSearchHubEditedResult) {
-    await completeResult(sourceKey: result.sourceKey, result: result.result);
-  }
-}
 
 /// Opens the right follow-up flow for a selected OFF product.
 Future<void> editAndSaveProductSearchHubProduct({

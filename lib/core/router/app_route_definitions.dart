@@ -30,8 +30,6 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'models/product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
@@ -83,12 +81,6 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.homeProductSearchHub,
       builder: (context, state) => ProductSearchHubPage(
-        args: resolveProductSearchHubRouteArgs(state.extra),
-      ),
-    ),
-    GoRoute(
-      path: AppRoutes.homeProductSearchHubSearch,
-      builder: (context, state) => ProductSearchHubSearchPage(
         args: resolveProductSearchHubRouteArgs(state.extra),
       ),
     ),

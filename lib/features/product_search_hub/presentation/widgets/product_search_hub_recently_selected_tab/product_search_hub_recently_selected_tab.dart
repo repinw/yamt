@@ -164,6 +164,7 @@ class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
 
     return ListView.separated(
       key: const Key('product_search_hub_recently_selected_list'),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
       itemCount: items.length,
       separatorBuilder: (context, index) {

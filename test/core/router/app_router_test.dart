@@ -45,8 +45,6 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -898,7 +896,7 @@ void main() {
     },
   );
 
-  testWidgets('product search hub route renders shell page', (tester) async {
+  testWidgets('product search hub route renders search page', (tester) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
       completedProfileSetupUserIds: {'uid-123'},
@@ -924,39 +922,11 @@ void main() {
     expect(find.byType(ProductSearchHubPage), findsOneWidget);
     expect(find.text('Add to inventory'), findsOneWidget);
     expect(
-      find.byKey(const Key('product_search_hub_recently_selected_empty_state')),
+      find.byKey(const Key('product_search_hub_search_field')),
       findsOneWidget,
     );
-  });
-
-  testWidgets('product search hub search route renders focused page', (
-    tester,
-  ) async {
-    final container = _createContainerWithAuth(
-      Stream<User?>.value(_authenticatedUser()),
-      completedProfileSetupUserIds: {'uid-123'},
-      completedCalorieGoalOnboardingUserIds: {'uid-123'},
-    );
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(container: container, child: const YAMT()),
-    );
-    await _pumpRouterTransition(tester);
-
-    final router = container.read(appRouterProvider);
-    final routes = router.configuration.routes.whereType<GoRoute>().toList();
-    final searchRoute = routes.firstWhere(
-      (route) => route.path == AppRoutes.homeProductSearchHubSearch,
-    );
-
-    expect(searchRoute.path, AppRoutes.homeProductSearchHubSearch);
-
-    router.go(AppRoutes.homeProductSearchHubSearch);
-    await _pumpRouterTransition(tester);
-
-    expect(find.byType(ProductSearchHubSearchPage), findsOneWidget);
     expect(
-      find.byKey(const Key('product_search_hub_search_field')),
+      find.byKey(const Key('product_search_hub_recently_selected_empty_state')),
       findsOneWidget,
     );
   });

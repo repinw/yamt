@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -5,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
@@ -30,11 +33,11 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/product_search_hub/application/'
     'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_gateway.dart';
+import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_entry_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -42,14 +45,17 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+const _searchFieldKey = Key('product_search_hub_search_field');
+
 Future<void> _pumpHarness(
   WidgetTester tester, {
   List<InventoryItem> recentItems = const <InventoryItem>[],
-  Widget child = const ProductSearchHubPage(),
+  ProductSearchHubRouteArgs args = const ProductSearchHubRouteArgs.inventory(),
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        voiceSearchServiceProvider.overrideWithValue(_FakeVoiceSearchService()),
         inventoryItemRepositoryProvider.overrideWithValue(
           _FakeInventoryItemRepository(recentItems),
         ),
@@ -58,71 +64,47 @@ Future<void> _pumpHarness(
         locale: const Locale('en'),
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: child,
+        home: ProductSearchHubPage(args: args),
       ),
     ),
   );
+  await tester.pumpAndSettle();
+  await _pumpKeyboardDelay(tester);
 }
 
+/// Opens the page on top of a caller route, like the app does.
 Future<void> _pumpRouteHarness(
   WidgetTester tester, {
   required ProductSearchHubRouteArgs args,
   List<InventoryItem> recentItems = const <InventoryItem>[],
-  OffProductSearchResult? searchRouteProductResult,
-  List<Object?> searchRouteResults = const <Object?>[],
-  ProductSearchHubEditedResult? searchRouteEditedResult,
+  List<OffProductSearchResult> searchResults = const <OffProductSearchResult>[],
+  List<InventoryReceiptManualProductResult> childRouteResults =
+      const <InventoryReceiptManualProductResult>[],
   InventoryItemsController? inventoryController,
   FirebaseAuth? firebaseAuth,
   InventoryCalorieEntryCommitStore? commitStore,
-  ValueChanged<ProductSearchHubRouteArgs>? onSearchRouteArgs,
   ValueChanged<ManualProductSearchRouteArgs>? onChildRouteArgs,
+  ValueChanged<Object?>? onPagePopped,
 }) async {
-  var searchRouteProductResultIndex = 0;
-
-  Object? nextSearchRouteResult() {
-    if (searchRouteResults.isNotEmpty) {
-      final index = searchRouteProductResultIndex < searchRouteResults.length
-          ? searchRouteProductResultIndex
-          : searchRouteResults.length - 1;
-      searchRouteProductResultIndex += 1;
-      return searchRouteResults[index];
-    }
-    if (searchRouteEditedResult != null) {
-      return searchRouteEditedResult;
-    }
-    return searchRouteProductResult;
-  }
+  var childRouteResultIndex = 0;
 
   final router = GoRouter(
     routes: [
       GoRoute(
         path: AppRoutes.root,
-        builder: (context, state) {
-          return ProductSearchHubPage(args: args);
-        },
+        builder: (context, state) => const Scaffold(body: Text('caller')),
       ),
       GoRoute(
-        path: AppRoutes.homeProductSearchHubSearch,
-        builder: (context, state) {
-          onSearchRouteArgs?.call(state.extra! as ProductSearchHubRouteArgs);
-          return Scaffold(
-            body: Column(
-              children: [
-                const Text('focused search route'),
-                if (searchRouteProductResult != null ||
-                    searchRouteResults.isNotEmpty ||
-                    searchRouteEditedResult != null)
-                  FilledButton(
-                    key: const Key('return_search_product_result'),
-                    onPressed: () {
-                      context.pop<Object?>(nextSearchRouteResult());
-                    },
-                    child: const Text('return product'),
-                  ),
-              ],
-            ),
-          );
-        },
+        path: AppRoutes.homeProductSearchHub,
+        builder: (context, state) => ProductSearchHubPage(
+          args: args,
+          lookupProducts:
+              ({required query, required limit, store, brand, weight}) async {
+                return ProductSearchHubSearchLookupResult.success(
+                  searchResults,
+                );
+              },
+        ),
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
@@ -138,7 +120,20 @@ Future<void> _pumpRouteHarness(
           if (childArgs != null) {
             onChildRouteArgs?.call(childArgs);
           }
-          return const Scaffold(body: Text('product search child route'));
+          return Scaffold(
+            body: Column(
+              children: [
+                const Text('product search child route'),
+                if (childRouteResults.isNotEmpty)
+                  FilledButton(
+                    key: const Key('return_child_result'),
+                    onPressed: () =>
+                        context.pop(childRouteResults[childRouteResultIndex++]),
+                    child: const Text('return product'),
+                  ),
+              ],
+            ),
+          );
         },
       ),
     ],
@@ -147,6 +142,7 @@ Future<void> _pumpRouteHarness(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        voiceSearchServiceProvider.overrideWithValue(_FakeVoiceSearchService()),
         inventoryItemRepositoryProvider.overrideWithValue(
           _FakeInventoryItemRepository(recentItems),
         ),
@@ -192,122 +188,114 @@ Future<void> _pumpRouteHarness(
       ),
     ),
   );
+  await tester.pumpAndSettle();
+  unawaited(
+    router
+        .push<Object?>(AppRoutes.homeProductSearchHub)
+        .then((result) => onPagePopped?.call(result)),
+  );
+  await tester.pumpAndSettle();
+  await _pumpKeyboardDelay(tester);
+}
+
+Future<void> _pumpKeyboardDelay(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 500));
+  await tester.pumpAndSettle();
+}
+
+Future<void> _searchFor(WidgetTester tester, String query) async {
+  await tester.enterText(find.byKey(_searchFieldKey), query);
+  await tester.pump(const Duration(milliseconds: 300));
+  await tester.pumpAndSettle();
+}
+
+bool _searchFieldHasFocus(WidgetTester tester) {
+  final field = tester.widget<EditableText>(
+    find.descendant(
+      of: find.byKey(_searchFieldKey),
+      matching: find.byType(EditableText),
+    ),
+  );
+  return field.focusNode.hasFocus;
+}
+
+ProductSearchHubRouteArgs _diaryArgs({
+  ProductSearchHubInitialIntent initialIntent =
+      ProductSearchHubInitialIntent.search,
+}) {
+  return ProductSearchHubRouteArgs.diary(
+    initialIntent: initialIntent,
+    preselectedMealType: MealType.lunch,
+    preselectedLoggedAt: DateTime(2026, 4, 13, 12),
+  );
+}
+
+_MockFirebaseAuth _signedInAuth() {
+  final firebaseAuth = _MockFirebaseAuth();
+  final user = _MockUser();
+  when(() => user.uid).thenReturn('user-1');
+  when(() => firebaseAuth.currentUser).thenReturn(user);
+  return firebaseAuth;
+}
+
+Future<void> _tapAddMore(WidgetTester tester) async {
+  final addMoreButton = find.byKey(
+    const Key('inventory_item_amount_dialog_add_more_button'),
+  );
+  await tester.ensureVisible(addMoreButton);
+  await tester.tap(addMoreButton);
+  await tester.pumpAndSettle();
+  await _pumpUntil(
+    tester,
+    () => find
+        .byKey(const Key('product_search_hub_selection_overlay'))
+        .evaluate()
+        .isNotEmpty,
+  );
 }
 
 void main() {
-  testWidgets('renders product search hub shell', (tester) async {
+  testWidgets('renders search page with actions and recent products', (
+    tester,
+  ) async {
     await _pumpHarness(tester);
-    await tester.pumpAndSettle();
 
     expect(find.text('Add to inventory'), findsOneWidget);
+    expect(find.byKey(_searchFieldKey), findsOneWidget);
     expect(
-      find.byKey(const Key('product_search_hub_barcode_action')),
+      find.byKey(const Key('product_search_hub_search_barcode_action')),
       findsOneWidget,
     );
     expect(
-      find.byKey(const Key('product_search_hub_ai_action')),
+      find.byKey(const Key('product_search_hub_search_ai_action')),
       findsOneWidget,
     );
     expect(
-      find.byKey(const Key('product_search_hub_receipt_action')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const Key('product_search_hub_inventory_action')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const Key('product_search_hub_meal_action')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const Key('product_search_hub_create_own_action')),
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
       findsOneWidget,
     );
-    expect(find.text('Barcode'), findsOneWidget);
-    expect(find.text('AI'), findsOneWidget);
-    expect(find.text('Receipt'), findsNothing);
-    expect(find.text('From inventory'), findsNothing);
-    expect(find.text('Meal'), findsNothing);
-    expect(find.text('Create'), findsOneWidget);
-    expect(
-      find.byKey(const Key('product_search_hub_search_field')),
-      findsOneWidget,
-    );
+    expect(find.text('Recently selected'), findsOneWidget);
     expect(
       find.byKey(const Key('product_search_hub_recently_selected_empty_state')),
       findsOneWidget,
     );
-    expect(find.text('Recently selected'), findsOneWidget);
   });
 
-  testWidgets('diary mode renders diary title and source actions', (
-    tester,
-  ) async {
-    await _pumpHarness(
-      tester,
-      child: const ProductSearchHubPage(
-        args: ProductSearchHubRouteArgs.diary(),
-      ),
-    );
-    await tester.pumpAndSettle();
+  testWidgets('diary mode renders diary title', (tester) async {
+    await _pumpHarness(tester, args: const ProductSearchHubRouteArgs.diary());
 
     expect(find.text('Eat food'), findsOneWidget);
-    expect(
-      find.byKey(const Key('product_search_hub_receipt_action')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('product_search_hub_inventory_action')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('product_search_hub_meal_action')),
-      findsOneWidget,
-    );
-    _expectOutlinedActionEnabled(
-      tester,
-      const Key('product_search_hub_receipt_action'),
-      isEnabled: false,
-    );
-    _expectOutlinedActionEnabled(
-      tester,
-      const Key('product_search_hub_inventory_action'),
-      isEnabled: false,
-    );
-    _expectOutlinedActionEnabled(
-      tester,
-      const Key('product_search_hub_meal_action'),
-      isEnabled: false,
-    );
   });
 
-  testWidgets('selection mode renders generic title without source actions', (
-    tester,
-  ) async {
+  testWidgets('selection mode renders generic title', (tester) async {
     await _pumpHarness(
       tester,
-      child: ProductSearchHubPage(
-        args: ProductSearchHubRouteArgs.selection(
-          item: _item(id: 'item-1', name: 'Milk'),
-        ),
+      args: ProductSearchHubRouteArgs.selection(
+        item: _item(id: 'item-1', name: 'Milk'),
       ),
     );
-    await tester.pumpAndSettle();
 
     expect(find.text('Add product'), findsOneWidget);
-    expect(
-      find.byKey(const Key('product_search_hub_receipt_action')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const Key('product_search_hub_inventory_action')),
-      findsNothing,
-    );
-    expect(
-      find.byKey(const Key('product_search_hub_meal_action')),
-      findsNothing,
-    );
   });
 
   testWidgets('renders recently selected products', (tester) async {
@@ -322,7 +310,6 @@ void main() {
         ),
       ],
     );
-    await tester.pumpAndSettle();
 
     expect(
       find.byKey(
@@ -334,30 +321,33 @@ void main() {
     expect(find.text('Dairy Co'), findsOneWidget);
   });
 
-  testWidgets('renders recently selected tab', (tester) async {
-    await _pumpHarness(tester);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Recently selected'), findsOneWidget);
-  });
-
-  testWidgets('search initial intent opens focused search route', (
-    tester,
-  ) async {
-    ProductSearchHubRouteArgs? searchArgs;
-
-    await _pumpRouteHarness(
+  testWidgets('search intent focuses the search field', (tester) async {
+    await _pumpHarness(
       tester,
       args: const ProductSearchHubRouteArgs.inventory(
         initialIntent: ProductSearchHubInitialIntent.search,
       ),
-      onSearchRouteArgs: (args) => searchArgs = args,
     );
+
+    expect(_searchFieldHasFocus(tester), isTrue);
+  });
+
+  testWidgets('launcher intent leaves the keyboard closed', (tester) async {
+    await _pumpHarness(tester);
+
+    expect(_searchFieldHasFocus(tester), isFalse);
+  });
+
+  testWidgets('back with nothing selected returns to the caller', (
+    tester,
+  ) async {
+    await _pumpRouteHarness(tester, args: _diaryArgs());
+
+    await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
-    expect(find.text('focused search route'), findsOneWidget);
-    expect(searchArgs?.mode, ProductSearchHubMode.inventory);
-    expect(searchArgs?.initialIntent, ProductSearchHubInitialIntent.search);
+    expect(find.text('caller'), findsOneWidget);
+    expect(find.byType(ProductSearchHubPage), findsNothing);
   });
 
   testWidgets('diary search result opens eat sheet without editor', (
@@ -368,18 +358,16 @@ void main() {
 
     await _pumpRouteHarness(
       tester,
-      args: ProductSearchHubRouteArgs.diary(
-        initialIntent: ProductSearchHubInitialIntent.search,
-        preselectedMealType: MealType.lunch,
-        preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-      ),
-      searchRouteProductResult: _searchProduct(),
+      args: _diaryArgs(),
+      searchResults: [_searchProduct()],
       inventoryController: inventoryController,
       onChildRouteArgs: (args) => childArgs = args,
     );
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('return_search_product_result')));
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
     await tester.pumpAndSettle();
 
     expect(childArgs, isNull);
@@ -387,82 +375,52 @@ void main() {
     expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
   });
 
-  testWidgets('diary direct search log-only save shows no overlay', (
+  testWidgets('diary created product log-only save closes the page', (
     tester,
   ) async {
     final inventoryController = _SuccessfulInventoryItemsController();
-    final firebaseAuth = _MockFirebaseAuth();
-    final user = _MockUser();
-    when(() => user.uid).thenReturn('user-1');
-    when(() => firebaseAuth.currentUser).thenReturn(user);
 
     await _pumpRouteHarness(
       tester,
-      args: ProductSearchHubRouteArgs.diary(
-        initialIntent: ProductSearchHubInitialIntent.search,
-        preselectedMealType: MealType.lunch,
-        preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-      ),
-      searchRouteEditedResult: ProductSearchHubEditedResult(
-        sourceKey: 'manual-source',
-        result: _diaryEatResult(),
-      ),
+      args: _diaryArgs(),
+      childRouteResults: [_diaryEatResult()],
       inventoryController: inventoryController,
-      firebaseAuth: firebaseAuth,
+      firebaseAuth: _signedInAuth(),
       commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
     );
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('return_search_product_result')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('focused search route'), findsNothing);
-    expect(find.text('Eat food'), findsOneWidget);
-    expect(
-      find.byKey(const Key('product_search_hub_selection_overlay')),
-      findsNothing,
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
     );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('return_child_result')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('caller'), findsOneWidget);
     expect(inventoryController.addedItems, hasLength(1));
   });
 
-  testWidgets('diary add-more eat stays in hub with overlay', (tester) async {
+  testWidgets('diary add-more eat stays on the page with overlay', (
+    tester,
+  ) async {
     final inventoryController = _SuccessfulInventoryItemsController();
-    final firebaseAuth = _MockFirebaseAuth();
-    final user = _MockUser();
-    when(() => user.uid).thenReturn('user-1');
-    when(() => firebaseAuth.currentUser).thenReturn(user);
 
     await _pumpRouteHarness(
       tester,
-      args: ProductSearchHubRouteArgs.diary(
-        initialIntent: ProductSearchHubInitialIntent.search,
-        preselectedMealType: MealType.lunch,
-        preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-      ),
-      searchRouteProductResult: _searchProduct(),
+      args: _diaryArgs(),
+      searchResults: [_searchProduct()],
       inventoryController: inventoryController,
-      firebaseAuth: firebaseAuth,
+      firebaseAuth: _signedInAuth(),
       commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
     );
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('return_search_product_result')));
-    await tester.pumpAndSettle();
-    final addMoreButton = find.byKey(
-      const Key('inventory_item_amount_dialog_add_more_button'),
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
     );
-    await tester.ensureVisible(addMoreButton);
-    await tester.tap(addMoreButton);
     await tester.pumpAndSettle();
-    await _pumpUntil(
-      tester,
-      () => find
-          .byKey(const Key('product_search_hub_selection_overlay'))
-          .evaluate()
-          .isNotEmpty,
-    );
+    await _tapAddMore(tester);
 
-    expect(find.text('focused search route'), findsNothing);
     expect(find.text('Eat food'), findsOneWidget);
     expect(
       find.byKey(const Key('product_search_hub_selection_overlay')),
@@ -475,56 +433,32 @@ void main() {
     tester,
   ) async {
     final inventoryController = _SuccessfulInventoryItemsController();
-    final firebaseAuth = _MockFirebaseAuth();
-    final user = _MockUser();
-    when(() => user.uid).thenReturn('user-1');
-    when(() => firebaseAuth.currentUser).thenReturn(user);
 
     await _pumpRouteHarness(
       tester,
-      args: ProductSearchHubRouteArgs.diary(
-        initialIntent: ProductSearchHubInitialIntent.search,
-        preselectedMealType: MealType.lunch,
-        preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-      ),
-      searchRouteResults: [
-        ProductSearchHubEditedResult(
-          sourceKey: 'manual-source-1',
-          result: _diarySheetResult(id: 'manual-item-1', name: 'Milk'),
-        ),
-        ProductSearchHubEditedResult(
-          sourceKey: 'manual-source-2',
-          result: _diarySheetResult(id: 'manual-item-2', name: 'Bread'),
-        ),
+      args: _diaryArgs(),
+      childRouteResults: [
+        _diarySheetResult(id: 'manual-item-1', name: 'Milk'),
+        _diarySheetResult(id: 'manual-item-2', name: 'Bread'),
       ],
       inventoryController: inventoryController,
-      firebaseAuth: firebaseAuth,
+      firebaseAuth: _signedInAuth(),
       commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
     );
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('return_search_product_result')));
-    await tester.pumpAndSettle();
-    final addMoreButton = find.byKey(
-      const Key('inventory_item_amount_dialog_add_more_button'),
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
     );
-    await tester.ensureVisible(addMoreButton);
-    await tester.tap(addMoreButton);
     await tester.pumpAndSettle();
-    await _pumpUntil(
-      tester,
-      () => find
-          .byKey(const Key('product_search_hub_selection_overlay'))
-          .evaluate()
-          .isNotEmpty,
-    );
+    await tester.tap(find.byKey(const Key('return_child_result')));
+    await tester.pumpAndSettle();
+    await _tapAddMore(tester);
 
-    await tester.ensureVisible(
-      find.byKey(const Key('product_search_hub_search_field')),
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
     );
-    await tester.tap(find.byKey(const Key('product_search_hub_search_field')));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('return_search_product_result')));
+    await tester.tap(find.byKey(const Key('return_child_result')));
     await tester.pump();
 
     final addButton = find.byKey(
@@ -549,11 +483,6 @@ void main() {
           .isNotEmpty,
     );
 
-    expect(find.text('focused search route'), findsNothing);
-    expect(
-      find.byKey(const Key('product_search_hub_selection_overlay')),
-      findsOneWidget,
-    );
     expect(
       find.descendant(
         of: find.byKey(const Key('product_search_hub_cart_count_button')),
@@ -564,9 +493,35 @@ void main() {
     expect(inventoryController.addedItems, hasLength(2));
   });
 
-  testWidgets('inventory search result still opens product editor', (
+  testWidgets('selection mode returns the edited product to the caller', (
     tester,
   ) async {
+    Object? poppedResult;
+    final editedResult = _diarySheetResult(id: 'picked-item', name: 'Milk');
+
+    await _pumpRouteHarness(
+      tester,
+      args: ProductSearchHubRouteArgs.selection(
+        item: _item(id: 'receipt-item', name: 'Milk'),
+      ),
+      searchResults: [_searchProduct()],
+      childRouteResults: [editedResult],
+      onPagePopped: (result) => poppedResult = result,
+    );
+
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('return_child_result')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('caller'), findsOneWidget);
+    expect(poppedResult, same(editedResult));
+  });
+
+  testWidgets('inventory search result opens product editor', (tester) async {
     ManualProductSearchRouteArgs? childArgs;
 
     await _pumpRouteHarness(
@@ -574,12 +529,14 @@ void main() {
       args: const ProductSearchHubRouteArgs.inventory(
         initialIntent: ProductSearchHubInitialIntent.search,
       ),
-      searchRouteProductResult: _searchProduct(),
+      searchResults: [_searchProduct()],
       onChildRouteArgs: (args) => childArgs = args,
     );
-    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('return_search_product_result')));
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('product search child route'), findsOneWidget);
@@ -596,11 +553,26 @@ void main() {
       ),
       onChildRouteArgs: (args) => childArgs = args,
     );
-    await tester.pumpAndSettle();
 
     expect(find.text('product search child route'), findsOneWidget);
     expect(childArgs?.flow, ManualProductSearchChildFlow.aiSearch);
     expect(childArgs?.showEatImmediatelyOption, isFalse);
+  });
+
+  testWidgets('cancelled AI initial intent returns to the caller', (
+    tester,
+  ) async {
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.ai,
+      ),
+    );
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('caller'), findsOneWidget);
   });
 
   testWidgets('barcode initial intent opens barcode scanner sheet', (
@@ -612,112 +584,80 @@ void main() {
         initialIntent: ProductSearchHubInitialIntent.barcode,
       ),
     );
-    await tester.pumpAndSettle();
 
     expect(find.text('Scan barcode'), findsOneWidget);
   });
 
-  testWidgets(
-    'diary mode copy search result opens editor instead of direct eat',
-    (tester) async {
-      ManualProductSearchRouteArgs? childArgs;
-      final inventoryController = _SuccessfulInventoryItemsController();
+  testWidgets('cancelled barcode initial intent returns to the caller', (
+    tester,
+  ) async {
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.barcode,
+      ),
+    );
 
-      await _pumpRouteHarness(
-        tester,
-        args: ProductSearchHubRouteArgs.diary(
-          initialIntent: ProductSearchHubInitialIntent.search,
-          preselectedMealType: MealType.lunch,
-          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-        ),
-        searchRouteResults: [ProductSearchHubCopyResult(_searchProduct())],
-        inventoryController: inventoryController,
-        onChildRouteArgs: (args) => childArgs = args,
-      );
-      await tester.pumpAndSettle();
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('return_search_product_result')));
-      await tester.pumpAndSettle();
+    expect(find.text('caller'), findsOneWidget);
+  });
 
-      expect(childArgs, isNotNull);
-      expect(childArgs?.item.name, 'Search Milk');
-      expect(childArgs?.initialInfoMessage, isNotNull);
-    },
-  );
+  testWidgets('diary copy search result opens editor instead of direct eat', (
+    tester,
+  ) async {
+    ManualProductSearchRouteArgs? childArgs;
 
-  testWidgets(
-    'diary mode recent product from focused search opens recent item flow',
-    (tester) async {
-      ManualProductSearchRouteArgs? childArgs;
-      final inventoryController = _SuccessfulInventoryItemsController();
+    await _pumpRouteHarness(
+      tester,
+      args: _diaryArgs(),
+      searchResults: [_searchProduct()],
+      inventoryController: _SuccessfulInventoryItemsController(),
+      onChildRouteArgs: (args) => childArgs = args,
+    );
 
-      await _pumpRouteHarness(
-        tester,
-        args: ProductSearchHubRouteArgs.diary(
-          initialIntent: ProductSearchHubInitialIntent.search,
-          preselectedMealType: MealType.lunch,
-          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-        ),
-        searchRouteResults: [
-          ProductSearchHubRecentItemResult(
-            _item(id: 'recent-yogurt', name: 'Greek yogurt', weight: '500 g'),
-            isCopy: false,
-          ),
-        ],
-        inventoryController: inventoryController,
-        onChildRouteArgs: (args) => childArgs = args,
-      );
-      await tester.pumpAndSettle();
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(
+        const Key('product_search_hub_search_result_copy_4006381333931'),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('return_search_product_result')));
-      await tester.pumpAndSettle();
+    expect(childArgs?.item.name, 'Search Milk');
+    expect(childArgs?.initialInfoMessage, isNotNull);
+  });
 
-      // Without nutrition the recent item opens its editor, not a copy.
-      expect(childArgs?.initialRecentItem?.id, 'recent-yogurt');
-      expect(childArgs?.initialInfoMessage, isNull);
-      expect(inventoryController.addedItems, isEmpty);
-    },
-  );
+  testWidgets('diary recent product opens recent item flow', (tester) async {
+    ManualProductSearchRouteArgs? childArgs;
+    final inventoryController = _SuccessfulInventoryItemsController();
 
-  testWidgets(
-    'diary mode copied recent product from focused search opens editor',
-    (tester) async {
-      ManualProductSearchRouteArgs? childArgs;
-      final inventoryController = _SuccessfulInventoryItemsController();
-      final recentItem = _item(
-        id: 'recent-yogurt',
-        name: 'Greek yogurt',
-        brand: 'Dairy Co',
-        weight: '500 g',
-      );
+    await _pumpRouteHarness(
+      tester,
+      args: _diaryArgs(),
+      recentItems: [
+        _item(id: 'recent-yogurt', name: 'Greek yogurt', weight: '500 g'),
+      ],
+      inventoryController: inventoryController,
+      onChildRouteArgs: (args) => childArgs = args,
+    );
 
-      await _pumpRouteHarness(
-        tester,
-        args: ProductSearchHubRouteArgs.diary(
-          initialIntent: ProductSearchHubInitialIntent.search,
-          preselectedMealType: MealType.lunch,
-          preselectedLoggedAt: DateTime(2026, 4, 13, 12),
-        ),
-        searchRouteResults: [
-          ProductSearchHubRecentItemResult(recentItem, isCopy: true),
-        ],
-        inventoryController: inventoryController,
-        onChildRouteArgs: (args) => childArgs = args,
-      );
-      await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(
+        const Key('product_search_hub_recently_selected_item_recent-yogurt'),
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byKey(const Key('return_search_product_result')));
-      await tester.pumpAndSettle();
-
-      expect(childArgs, isNotNull);
-      expect(childArgs?.item.name, 'Greek yogurt');
-      expect(childArgs?.item.id, isNot('recent-yogurt'));
-    },
-  );
+    // Without nutrition the recent item opens its editor, not a copy.
+    expect(childArgs?.initialRecentItem?.id, 'recent-yogurt');
+    expect(childArgs?.initialInfoMessage, isNull);
+    expect(inventoryController.addedItems, isEmpty);
+  });
 
   testWidgets('copying recently selected product opens editor', (tester) async {
     ManualProductSearchRouteArgs? childArgs;
-    final inventoryController = _SuccessfulInventoryItemsController();
 
     await _pumpRouteHarness(
       tester,
@@ -730,37 +670,21 @@ void main() {
           weight: '500 g',
         ),
       ],
-      inventoryController: inventoryController,
+      inventoryController: _SuccessfulInventoryItemsController(),
       onChildRouteArgs: (args) => childArgs = args,
     );
-    await tester.pumpAndSettle();
 
-    final copyButton = find.byKey(
-      const Key('product_search_hub_recently_selected_copy_recent-yogurt'),
+    await tester.tap(
+      find.byKey(
+        const Key('product_search_hub_recently_selected_copy_recent-yogurt'),
+      ),
     );
-    expect(copyButton, findsOneWidget);
-    await tester.tap(copyButton);
     await tester.pumpAndSettle();
 
-    expect(childArgs, isNotNull);
     expect(childArgs?.item.name, 'Greek yogurt');
     expect(childArgs?.item.id, isNot('recent-yogurt'));
     expect(childArgs?.initialInfoMessage, isNotNull);
   });
-}
-
-void _expectOutlinedActionEnabled(
-  WidgetTester tester,
-  Key actionKey, {
-  required bool isEnabled,
-}) {
-  final buttonFinder = find.descendant(
-    of: find.byKey(actionKey),
-    matching: find.byType(OutlinedButton),
-  );
-  expect(buttonFinder, findsOneWidget);
-  final button = tester.widget<OutlinedButton>(buttonFinder);
-  expect(button.onPressed != null, isEnabled);
 }
 
 Future<void> _pumpUntil(WidgetTester tester, bool Function() condition) async {
@@ -937,4 +861,24 @@ InventoryItem _itemWithNutrition({required String id, required String name}) {
       per100Fat: 3.5,
     ),
   );
+}
+
+class _FakeVoiceSearchService implements VoiceSearchService {
+  @override
+  bool get isListening => false;
+
+  @override
+  Future<void> cancelListening() async {}
+
+  @override
+  Future<VoiceSearchFailure?> startListening({
+    required ValueChanged<VoiceSearchRecognition> onResult,
+    required ValueChanged<bool> onListeningStateChanged,
+    required ValueChanged<VoiceSearchFailure> onError,
+  }) async {
+    return VoiceSearchFailure.unavailable;
+  }
+
+  @override
+  Future<void> stopListening() async {}
 }
