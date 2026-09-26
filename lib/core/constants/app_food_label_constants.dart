@@ -7,8 +7,18 @@ abstract final class AppFoodLabel {
   /// Tilt of the image tile in radians (about -3 degrees).
   static const double imageTilt = -0.052;
 
-  /// Icon inside the image tile when there is no image.
-  static const double imageFallbackIcon = 40;
+  /// Icon inside the image tile when there is no image, as a share of the
+  /// tile edge.
+  static const double imageFallbackIconShare = 40 / 76;
+
+  /// Edge length of a food image in a list row.
+  static const double rowImageTile = 40;
+
+  /// Edge length of one food image in a meal header.
+  static const double mealImageTile = 56;
+
+  /// How far the images of a meal header overlap.
+  static const double mealImageOverlap = 18;
 
   /// Width of the thick outlines.
   static const double outline = 2;

@@ -5,7 +5,7 @@ import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_hero_image.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_image_tile.dart';
 
 /// Head of the eat page: a tilted image tile, the brand, the name and a
 /// short caption.
@@ -53,39 +53,11 @@ class EatPageHeader extends StatelessWidget {
     return Row(
       spacing: AppSpacing.xl,
       children: [
-        Transform.rotate(
-          angle: AppFoodLabel.imageTilt,
-          child: DecoratedBox(
-            key: imageKey,
-            decoration: BoxDecoration(
-              color: colors.tile,
-              border: Border.all(
-                color: colors.ink,
-                width: AppFoodLabel.outline,
-              ),
-            ),
-            child: SizedBox.square(
-              dimension: AppFoodLabel.imageTile,
-              // The image sits inside the frame, so the frame stays visible.
-              child: Padding(
-                padding: const EdgeInsets.all(AppFoodLabel.outline),
-                child: ClipRect(
-                  child: EatSheetHeroImage(
-                    imageUrl: imageUrl,
-                    imageBytes: imageBytes,
-                    fallback: Center(
-                      child: Icon(
-                        Icons.restaurant_rounded,
-                        key: fallbackKey,
-                        color: colors.onTile,
-                        size: AppFoodLabel.imageFallbackIcon,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+        EatImageTile(
+          key: imageKey,
+          imageUrl: imageUrl,
+          imageBytes: imageBytes,
+          fallbackKey: fallbackKey,
         ),
         Expanded(
           child: Column(
