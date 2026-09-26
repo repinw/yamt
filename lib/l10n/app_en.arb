@@ -357,14 +357,21 @@
   "eatPageReplaceProduct": "Replace product",
   "eatPageOnShoppingList": "On the shopping list",
   "eatPageCombineLink": "+ Combine with another food",
-  "eatPageCombineTitle": "Log together",
   "eatPageCombineAdd": "+ Add food",
   "eatPageCombinePickConfirm": "Add",
   "eatPageCombineSearch": "Search for a food",
   "eatPageCombineAddFood": "Add",
   "eatPageCombineStore": "Keep in stock",
+  "eatPageMealTotal": "total {amount}",
+  "@eatPageMealTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "eatPageMealUnknownValue": "–",
   "eatPageCombineConfirm": "Log meal",
-  "eatPageCombineAmountAbove": "amount above",
   "eatPageCombineRemove": "Remove from the list",
   "eatPageCombineSaved": "Meal logged.",
   "eatPageWhen": "{day} · {meal}",

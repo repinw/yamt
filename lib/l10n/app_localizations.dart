@@ -1295,12 +1295,6 @@ abstract class AppLocalizations {
   /// **'+ Combine with another food'**
   String get eatPageCombineLink;
 
-  /// No description provided for @eatPageCombineTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Log together'**
-  String get eatPageCombineTitle;
-
   /// No description provided for @eatPageCombineAdd.
   ///
   /// In en, this message translates to:
@@ -1331,17 +1325,23 @@ abstract class AppLocalizations {
   /// **'Keep in stock'**
   String get eatPageCombineStore;
 
+  /// No description provided for @eatPageMealTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'total {amount}'**
+  String eatPageMealTotal(String amount);
+
+  /// No description provided for @eatPageMealUnknownValue.
+  ///
+  /// In en, this message translates to:
+  /// **'–'**
+  String get eatPageMealUnknownValue;
+
   /// No description provided for @eatPageCombineConfirm.
   ///
   /// In en, this message translates to:
   /// **'Log meal'**
   String get eatPageCombineConfirm;
-
-  /// No description provided for @eatPageCombineAmountAbove.
-  ///
-  /// In en, this message translates to:
-  /// **'amount above'**
-  String get eatPageCombineAmountAbove;
 
   /// No description provided for @eatPageCombineRemove.
   ///

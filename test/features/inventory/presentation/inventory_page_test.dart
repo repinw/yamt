@@ -39,6 +39,8 @@ import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
@@ -969,7 +971,7 @@ void main() {
     expect(commitStore.entry?.mealType, expectedMealType);
   });
 
-  testWidgets('item hub asks the amount of each picked stock item', (
+  testWidgets('item hub adds picked stock items with a default amount', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
@@ -991,16 +993,16 @@ void main() {
     expect(find.text('2 selected'), findsOneWidget);
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
 
-    for (final amount in ['100', '150']) {
-      await tester.enterText(
-        find.byKey(const Key('eat_page_amount_field')).last,
-        amount,
-      );
-      await _tapAmountDialogConfirm(tester);
-    }
+    expect(find.byKey(const Key('eat_page_amount_field')), findsNothing);
+    expect(find.text('Milk + Oats + Rice'), findsOneWidget);
+    expect(find.text('100 g'), findsNWidgets(2));
+    expect(find.byKey(EatMealTable.tableKey), findsOneWidget);
 
-    expect(find.text('Oats · 100 g'), findsOneWidget);
-    expect(find.text('Rice · 150 g'), findsOneWidget);
+    await _tapVisible(tester, find.text('Rice'));
+    await tester.drag(find.byKey(EatRuler.sliderKey), const Offset(-200, 0));
+    await tester.pumpAndSettle();
+
+    expect(find.text('100 g'), findsOneWidget);
   });
 
   testWidgets('item hub logs a searched food together as a new stock item', (
@@ -1054,13 +1056,8 @@ void main() {
     await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
     await _tapVisible(tester, find.text('pick bread'));
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')).last,
-      '80',
-    );
-    await _tapAmountDialogConfirm(tester);
 
-    expect(find.text('Bread · 80 g'), findsOneWidget);
+    expect(find.text('Milk + Bread'), findsOneWidget);
 
     await _tapAmountDialogConfirm(tester);
 
@@ -1068,7 +1065,7 @@ void main() {
     expect(commitStore.entry?.name, 'Milk + Bread');
     final breadPending = commitStore.pendingConsumptions!.last;
     expect(breadPending.itemId, isNot('draft-bread'));
-    expect(breadPending.amount, 80);
+    expect(breadPending.amount, 100);
     expect(
       commitStore.entry?.bundleComponents.last.sourceInventoryItemId,
       breadPending.itemId,
@@ -1109,12 +1106,6 @@ void main() {
     await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
     await _tapVisible(tester, find.text('Oats'));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')).last,
-      '100',
-    );
-    expect(find.text('Add'), findsWidgets);
-    await _tapAmountDialogConfirm(tester);
 
     await _tapVisible(
       tester,
@@ -1165,14 +1156,9 @@ void main() {
     await _tapVisible(tester, find.text('Oats'));
     expect(find.text('1 selected'), findsOneWidget);
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')).last,
-      '100',
-    );
-    await _tapAmountDialogConfirm(tester);
 
-    expect(find.text('Log together'), findsOneWidget);
-    expect(find.text('Oats · 100 g'), findsOneWidget);
+    expect(find.text('Milk + Oats'), findsOneWidget);
+    expect(find.text('total 300 g'), findsOneWidget);
     expect(find.text('Log meal'), findsOneWidget);
 
     await _tapAmountDialogConfirm(tester);

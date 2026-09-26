@@ -1,31 +1,32 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
-import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
+import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_add_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_food_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_title.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_text_link.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Hub section to log other stock items together with [hubItem].
+/// Hub section to log other foods together with [hubItem].
 ///
-/// Shows a link while nothing is picked, then the list of foods to log
-/// together.
-class EatCombineSection extends ConsumerWidget {
+/// Shows a link while nothing is picked, then one row per food with its
+/// image, amount and calories. Tapping a row opens a ruler for its amount;
+/// the hub item's row drives the hub's own amount.
+class EatCombineSection extends ConsumerStatefulWidget {
   /// Creates the section.
   const new({required this.hubItem, super.key});
 
@@ -36,33 +37,77 @@ class EatCombineSection extends ConsumerWidget {
   final InventoryItem hubItem;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EatCombineSection> createState() => _EatCombineSectionState();
+}
+
+class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
+  String? _openId;
+
+  InventoryItem get hubItem => widget.hubItem;
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final picks = ref.watch(inventoryItemCombineControllerProvider(hubItem.id));
     final addLink = EatTextLink(
-      buttonKey: addKey,
+      buttonKey: EatCombineSection.addKey,
       label: picks.isEmpty ? l10n.eatPageCombineLink : l10n.eatPageCombineAdd,
-      onPressed: () => _add(context, ref),
+      onPressed: _add,
     );
     if (picks.isEmpty) {
       return addLink;
     }
+    final hubProvider = inventoryItemEatSheetControllerProvider(item: hubItem);
+    final hubState = ref.watch(hubProvider);
+    final hubKcal = hubState.nutrition?.eaten.kcal;
+    final notifier = ref.read(
+      inventoryItemCombineControllerProvider(hubItem.id).notifier,
+    );
+
     return EatFramedBox(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          EatLabelTitle(text: l10n.eatPageCombineTitle),
-          _FoodLine(name: hubItem.name, amount: l10n.eatPageCombineAmountAbove),
+          EatCombineFoodRow(
+            imageUrl: hubItem.imageUrl,
+            name: hubItem.name,
+            amount: hubState.enteredAmountLabel(l10n),
+            kcal: hubKcal == null ? null : l10n.eatPageKcal(hubKcal.round()),
+            isOpen: _openId == hubItem.id,
+            onTap: () => _toggle(hubItem.id),
+            ruler: inventoryItemUsesFixedCalorieUnit(hubItem)
+                ? EatRuler(
+                    value: hubState.amountValue,
+                    max: hubState.amountMax,
+                    step: hubState.amountStep,
+                    marks: const <EatRulerMark>[],
+                    onChanged: ref.read(hubProvider.notifier).pickAmount,
+                  )
+                : null,
+          ),
           for (final pick in picks)
-            _FoodLine(
+            EatCombineFoodRow(
+              key: ValueKey<String>(pick.item.id),
+              imageUrl: pick.item.imageUrl,
               name: pick.item.name,
               amount: pick.component.amountLabel,
               kcal: l10n.eatPageKcal(pick.component.totalKcal.round()),
-              onRemove: () => ref
-                  .read(
-                    inventoryItemCombineControllerProvider(hubItem.id).notifier,
-                  )
-                  .remove(pick.item.id),
+              isOpen: _openId == pick.item.id,
+              onTap: () => _toggle(pick.item.id),
+              onRemove: () => notifier.remove(pick.item.id),
+              ruler: defaultMealFoodAmount(pick.item) == null
+                  ? null
+                  : EatRuler(
+                      value: pick.request.inventoryAmount.toDouble(),
+                      max: mealFoodMaxAmount(
+                        pick.item,
+                        hasOpenStock: pick.searchResult != null,
+                      ).toDouble(),
+                      step: _rulerStep,
+                      marks: const <EatRulerMark>[],
+                      onChanged: (value) =>
+                          notifier.setAmount(pick.item.id, value.round()),
+                    ),
             ),
           addLink,
         ],
@@ -70,9 +115,14 @@ class EatCombineSection extends ConsumerWidget {
     );
   }
 
-  /// Opens the inventory to pick foods, then asks the amount of each.
-  /// A food whose amount page is closed is left out.
-  Future<void> _add(BuildContext context, WidgetRef ref) async {
+  void _toggle(String id) {
+    setState(() => _openId = _openId == id ? null : id);
+  }
+
+  /// Opens the inventory to pick foods. Foods counted in grams or
+  /// milliliters join with a default amount; any other food gets its amount
+  /// on the eat page, and is left out when that page is closed.
+  Future<void> _add() async {
     final notifier = ref.read(
       inventoryItemCombineControllerProvider(hubItem.id).notifier,
     );
@@ -89,11 +139,15 @@ class EatCombineSection extends ConsumerWidget {
       for (final item in picked.stock) (item, null),
       if (searched != null) (searched.item, searched),
     ]) {
-      if (!context.mounted) {
+      if (!mounted) {
         return;
       }
+      if (searchResult?.eatSelection == null &&
+          notifier.addWithDefaultAmount(item, searchResult: searchResult)) {
+        continue;
+      }
       final request = await _askAmount(context, item, searchResult);
-      if (request == null || !context.mounted) {
+      if (request == null || !mounted) {
         continue;
       }
       if (!InventoryCombinedEatService.canCombine(item) ||
@@ -145,53 +199,4 @@ class EatCombineSection extends ConsumerWidget {
   }
 }
 
-class _FoodLine extends StatelessWidget {
-  const new({
-    required this.name,
-    required this.amount,
-    this.kcal,
-    this.onRemove,
-  });
-
-  final String name;
-  final String amount;
-  final String? kcal;
-  final VoidCallback? onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = FoodLabelColors.of(context);
-    final style = Theme.of(context).textTheme.bodyMedium
-        ?.copyWith(fontFamily: AppFonts.mono, color: colors.ink);
-    final kcalText = kcal;
-    final remove = onRemove;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: colors.ink)),
-      ),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
-        child: Row(
-          spacing: AppSpacing.sm,
-          children: [
-            Expanded(
-              child: Text(
-                '$name · $amount',
-                style: style?.copyWith(fontWeight: FontWeight.w700),
-              ),
-            ),
-            if (kcalText != null) Text(kcalText, style: style),
-            if (remove != null)
-              IconButton(
-                tooltip: l10n.eatPageCombineRemove,
-                onPressed: remove,
-                icon: Icon(Icons.close_rounded, color: colors.muted),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+const _rulerStep = 5.0;

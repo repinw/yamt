@@ -138,13 +138,18 @@ and feature description docs. This is product-facing; architecture rules stay in
   own.
 - The item hub can log other stock items together with its item: "+ Combine
   with another food" opens the Vorrat list in selection mode (only items with
-  nutrition values and stock), then asks the amount of each picked item,
+  nutrition values and stock, counted in grams or milliliters). Picked items
+  join with 100 g or ml; tapping a food's row opens a ruler for its amount.
+  The hub then shows all foods' images side by side, the meal name, and one
+  nutrition label for the whole meal, per 100 g and in total ("–" when one
+  food lacks a value; no per-100 column when grams and milliliters mix),
   and "Log meal" saves one combined diary entry named "A + B". The entry and
   every stock change are written together. A combined entry cannot change its
   amount or be eaten again; deleting it can return the stock of every food.
   Instead of logging, "In Vorrat" keeps the picked foods in stock as one
-  prepared meal "A + B" with one portion. On the pick's eat page the button
-  reads "Add", since it only adds the food to the list.
+  prepared meal "A + B" with one portion. A food found by search that is not
+  counted in grams or milliliters still gets its amount on the eat page,
+  whose button reads "Add".
 - Amount parsing and unit handling for grams, milliliters, pieces, and custom
   serving data.
 - Receipt grouping and by-receipt inventory mode.

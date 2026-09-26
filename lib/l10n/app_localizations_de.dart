@@ -653,9 +653,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageCombineLink => '+ mit anderem Lebensmittel kombinieren';
 
   @override
-  String get eatPageCombineTitle => 'Zusammen eintragen';
-
-  @override
   String get eatPageCombineAdd => '+ Lebensmittel hinzufügen';
 
   @override
@@ -671,10 +668,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageCombineStore => 'In Vorrat';
 
   @override
-  String get eatPageCombineConfirm => 'Mahlzeit eintragen';
+  String eatPageMealTotal(String amount) {
+    return 'gesamt $amount';
+  }
 
   @override
-  String get eatPageCombineAmountAbove => 'Menge oben';
+  String get eatPageMealUnknownValue => '–';
+
+  @override
+  String get eatPageCombineConfirm => 'Mahlzeit eintragen';
 
   @override
   String get eatPageCombineRemove => 'Aus der Liste nehmen';

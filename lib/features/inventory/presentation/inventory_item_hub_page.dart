@@ -1,17 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/domain/nutrition_facts.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
+import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_header.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_sheet_body.dart';
@@ -81,6 +87,8 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     final picks = ref.watch(
       inventoryItemCombineControllerProvider(widget.item.id),
     );
+    final meal = picks.isEmpty ? null : _meal(picks);
+    final hasMealRuler = inventoryItemUsesFixedCalorieUnit(widget.item);
     return InventoryItemEatSheetBody(
       item: widget.item,
       confirmIntent: InventoryItemEatSheetIntent.logOnly,
@@ -92,17 +100,61 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
           ? null
           : AppLocalizations.of(context)!.eatPageCombineStore,
       secondaryIntent: InventoryItemEatSheetIntent.storeAsMeal,
+      header: meal == null
+          ? null
+          : EatMealHeader(
+              title: [
+                widget.item.name,
+                for (final pick in picks) pick.item.name,
+              ].join(' + '),
+              imageUrls: [
+                widget.item.imageUrl,
+                for (final pick in picks) pick.item.imageUrl,
+              ],
+            ),
+      // In a meal the hub item's row carries its ruler.
+      showAmount: meal == null || !hasMealRuler,
       footer: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpacing.xxl,
         children: [
           if (InventoryCombinedEatService.canCombine(widget.item))
             EatCombineSection(hubItem: widget.item),
+          ?meal == null ? null : EatMealTable(meal: meal),
           actions,
         ],
       ),
       onSubmitted: (result) => _submit(result, picks),
     );
+  }
+
+  /// Nutrients of the hub item's entered amount together with [picks].
+  EatMealNutrition _meal(List<InventoryCombinePick> picks) {
+    final hub = ref.watch(
+      inventoryItemEatSheetControllerProvider(item: widget.item),
+    );
+    final nutrition = hub.nutrition;
+    final hubAmount = nutrition?.amount ?? 0;
+    return EatMealNutrition.combine([
+      eatMealFoodOf(widget.item, hubAmount) ??
+          (
+            eaten: nutrition?.eaten ?? const NutritionFacts(),
+            amount: hubAmount,
+            unit: ConsumedUnit.grams,
+          ),
+      for (final pick in picks)
+        eatMealFoodOf(pick.item, pick.request.inventoryAmount.toDouble()) ??
+            (
+              eaten: NutritionFacts(
+                kcal: pick.component.totalKcal,
+                protein: pick.component.totalProtein,
+                carbs: pick.component.totalCarbs,
+                fat: pick.component.totalFat,
+              ),
+              amount: 0,
+              unit: ConsumedUnit.grams,
+            ),
+    ]);
   }
 
   void _submit(

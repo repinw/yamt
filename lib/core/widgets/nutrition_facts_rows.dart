@@ -35,13 +35,14 @@ class NutritionFactsRow {
 
 /// The food label rows for [eaten] and optional [per100] values, in label
 /// order. Nutrients without an eaten value are left out, unless
-/// [unknownEaten] is given: then a nutrient with a per-100 value shows
-/// [unknownEaten] as its eaten value.
+/// [unknownEaten] is given: then a nutrient with a per-100 value, or with a
+/// value in [listed], shows [unknownEaten] for each missing value.
 List<NutritionFactsRow> nutritionFactsRows(
   BuildContext context, {
   required NutritionFacts eaten,
   NutritionFacts? per100,
   String? unknownEaten,
+  NutritionFacts? listed,
 }) {
   final l10n = AppLocalizations.of(context)!;
   final locale = Localizations.localeOf(context).toLanguageTag();
@@ -66,15 +67,18 @@ List<NutritionFactsRow> nutritionFactsRows(
     final eatenValue = read(eaten);
     final formatValue = format ?? gramValue;
     final per100Value = per100 == null ? null : read(per100);
+    final isListed = listed != null && read(listed) != null;
     final eatenText = eatenValue == null
-        ? (per100Value == null ? null : unknownEaten)
+        ? (per100Value == null && !isListed ? null : unknownEaten)
         : formatValue(eatenValue);
     if (eatenText == null) {
       return null;
     }
     return NutritionFactsRow(
       label: label,
-      per100: per100Value == null ? null : formatValue(per100Value),
+      per100: per100Value == null
+          ? (per100 != null && isListed ? unknownEaten : null)
+          : formatValue(per100Value),
       eaten: eatenText,
       accent: accent,
       isPart: isPart,

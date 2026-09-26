@@ -36,6 +36,8 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.confirmLabel,
     this.extraKcal = 0,
     this.secondaryIntent = InventoryItemEatSheetIntent.addMore,
+    this.header,
+    this.showAmount = true,
     super.key,
   });
 
@@ -81,6 +83,12 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
 
   /// Intent of the second button.
   final InventoryItemEatSheetIntent secondaryIntent;
+
+  /// Head in place of the item's header and nutrition label.
+  final Widget? header;
+
+  /// Whether the page shows its amount ruler.
+  final bool showAmount;
 
   @override
   ConsumerState<InventoryItemEatSheetBody> createState() =>
@@ -164,85 +172,88 @@ class _InventoryItemEatSheetBodyState
           ? null
           : () => _submit(widget.secondaryIntent),
       children: [
-        InventoryItemEatLabelSection(item: item, state: state),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            EatAmountRuler(
-              controller: amountField.controller,
-              focusNode: amountField.focusNode,
-              unitLabel: state.amountUnit(l10n),
-              value: state.amountValue,
-              max: state.amountMax,
-              step: state.amountStep,
-              marks: [
-                for (final marker in state.markers)
-                  EatRulerMark(
-                    label: state.markLabel(l10n, marker),
-                    value: marker.value,
-                    isSelected: state.amountValue == marker.value,
-                    onPressed: () => _controller.pickAmount(marker.value),
-                  ),
-              ],
-              allowFractionalInput:
-                  state.usesPortionMode ||
-                  calculator.allowsFractionalInventoryAmount,
-              hint: state.amountHint(l10n),
-              errorText: state.amountError(l10n),
-              onTextChanged: (text) => _controller.setAmountText(text),
-              onSliderChanged: (value) => _controller.pickAmount(value),
-            ),
-            if (state.usesPortionMode) ...[
-              EatInlineAmountField(
-                fieldKey: InventoryItemEatSheetBody.pieceWeightKey,
-                label: l10n.eatPagePieceWeight(state.defaultPortionLabel(l10n)),
-                unitLabel: consumedUnitSymbol(l10n, state.portionUnit),
-                controller: _pieceWeight.controller,
-                focusNode: _pieceWeight.focusNode,
-                errorText: state.portionAmountError(l10n),
-                onChanged: _controller.setPortionAmountText,
-                unitKey: InventoryItemEatSheetBody.pieceWeightUnitKey,
-                onUnitPressed: units.length < 2
-                    ? null
-                    : _controller.switchPortionUnit,
-              ),
-              Wrap(
-                spacing: AppSpacing.sm,
-                children: [
-                  for (final size in state.pieceSizes)
-                    EatChip(
-                      label: state.pieceSizeLabel(l10n, size),
-                      isSelected: size == selectedSize,
-                      onPressed: () => _controller.pickPieceSize(size),
+        widget.header ?? InventoryItemEatLabelSection(item: item, state: state),
+        if (widget.showAmount)
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              EatAmountRuler(
+                controller: amountField.controller,
+                focusNode: amountField.focusNode,
+                unitLabel: state.amountUnit(l10n),
+                value: state.amountValue,
+                max: state.amountMax,
+                step: state.amountStep,
+                marks: [
+                  for (final marker in state.markers)
+                    EatRulerMark(
+                      label: state.markLabel(l10n, marker),
+                      value: marker.value,
+                      isSelected: state.amountValue == marker.value,
+                      onPressed: () => _controller.pickAmount(marker.value),
                     ),
                 ],
+                allowFractionalInput:
+                    state.usesPortionMode ||
+                    calculator.allowsFractionalInventoryAmount,
+                hint: state.amountHint(l10n),
+                errorText: state.amountError(l10n),
+                onTextChanged: (text) => _controller.setAmountText(text),
+                onSliderChanged: (value) => _controller.pickAmount(value),
               ),
-              if (state.pieceWeightLabel(l10n) case final weight?
-                  when selectedSize?.label == null)
+              if (state.usesPortionMode) ...[
+                EatInlineAmountField(
+                  fieldKey: InventoryItemEatSheetBody.pieceWeightKey,
+                  label: l10n.eatPagePieceWeight(
+                    state.defaultPortionLabel(l10n),
+                  ),
+                  unitLabel: consumedUnitSymbol(l10n, state.portionUnit),
+                  controller: _pieceWeight.controller,
+                  focusNode: _pieceWeight.focusNode,
+                  errorText: state.portionAmountError(l10n),
+                  onChanged: _controller.setPortionAmountText,
+                  unitKey: InventoryItemEatSheetBody.pieceWeightUnitKey,
+                  onUnitPressed: units.length < 2
+                      ? null
+                      : _controller.switchPortionUnit,
+                ),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  children: [
+                    for (final size in state.pieceSizes)
+                      EatChip(
+                        label: state.pieceSizeLabel(l10n, size),
+                        isSelected: size == selectedSize,
+                        onPressed: () => _controller.pickPieceSize(size),
+                      ),
+                  ],
+                ),
+                if (state.pieceWeightLabel(l10n) case final weight?
+                    when selectedSize?.label == null)
+                  EatRememberPortion(
+                    amountLabel: weight,
+                    linkLabel: l10n.eatPageRememberPieceSize,
+                    nameHint: l10n.eatPagePieceSizeNameHint,
+                    onSave: _controller.rememberPortion,
+                  ),
+              ] else
                 EatRememberPortion(
-                  amountLabel: weight,
-                  linkLabel: l10n.eatPageRememberPieceSize,
-                  nameHint: l10n.eatPagePieceSizeNameHint,
+                  amountLabel: state.enteredAmountLabel(l10n),
                   onSave: _controller.rememberPortion,
                 ),
-            ] else
-              EatRememberPortion(
-                amountLabel: state.enteredAmountLabel(l10n),
-                onSave: _controller.rememberPortion,
-              ),
-            if (calculator.supportsInedibleAmountAdjustment)
-              EatInedibleLine(
-                controller: _inedibleAmount.controller,
-                focusNode: _inedibleAmount.focusNode,
-                errorText: state.inedibleError(l10n),
-                unitLabel: state.amountUnit(l10n),
-                summaryText: state.inedibleSummary(l10n),
-                isExpanded: state.isInedibleExpanded,
-                onChanged: (text) => _controller.setInedibleAmountText(text),
-                onToggleExpanded: _toggleInedible,
-              ),
-          ],
-        ),
+              if (calculator.supportsInedibleAmountAdjustment)
+                EatInedibleLine(
+                  controller: _inedibleAmount.controller,
+                  focusNode: _inedibleAmount.focusNode,
+                  errorText: state.inedibleError(l10n),
+                  unitLabel: state.amountUnit(l10n),
+                  summaryText: state.inedibleSummary(l10n),
+                  isExpanded: state.isInedibleExpanded,
+                  onChanged: (text) => _controller.setInedibleAmountText(text),
+                  onToggleExpanded: _toggleInedible,
+                ),
+            ],
+          ),
         ?footer,
       ],
     );
