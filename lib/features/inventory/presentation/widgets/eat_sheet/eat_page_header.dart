@@ -17,6 +17,7 @@ class EatPageHeader extends StatelessWidget {
     this.caption,
     this.imageUrl,
     this.imageBytes,
+    this.collageImageUrls = const <String?>[],
     this.imageKey,
     this.fallbackKey,
     super.key,
@@ -36,6 +37,9 @@ class EatPageHeader extends StatelessWidget {
 
   /// Local image.
   final Uint8List? imageBytes;
+
+  /// Product images of several foods, shown without an own image.
+  final List<String?> collageImageUrls;
 
   /// Key of the image tile.
   final Key? imageKey;
@@ -57,6 +61,7 @@ class EatPageHeader extends StatelessWidget {
           key: imageKey,
           imageUrl: imageUrl,
           imageBytes: imageBytes,
+          collageImageUrls: collageImageUrls,
           fallbackKey: fallbackKey,
         ),
         Expanded(

@@ -135,4 +135,7 @@ abstract final class AppSizes {
 
   /// Edge length of the scan window for QR codes.
   static const double qrScanWindow = 240;
+
+  /// Most product images in a collage of several foods.
+  static const int collageImages = 4;
 }

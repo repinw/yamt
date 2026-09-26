@@ -65,6 +65,27 @@ void main() {
     expect(find.text('2 port. in stock'), findsOneWidget);
   });
 
+  testWidgets('header shows the foods as a collage without an own image', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const _TestApp(
+        child: EatPageHeader(
+          title: 'Milk + Oats',
+          collageImageUrls: [
+            'https://example.com/milk.png',
+            null,
+            'https://example.com/oats.png',
+          ],
+          fallbackKey: Key('fallback_icon'),
+        ),
+      ),
+    );
+
+    expect(find.byKey(const Key('eat_image_tile_collage')), findsOneWidget);
+    expect(find.byKey(const Key('fallback_icon')), findsNothing);
+  });
+
   testWidgets('hero image falls back when image url is invalid', (
     tester,
   ) async {

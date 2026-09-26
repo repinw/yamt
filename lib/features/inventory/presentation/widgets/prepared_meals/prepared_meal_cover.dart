@@ -2,10 +2,9 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
-import 'package:yamt/features/inventory/presentation/constants/inventory_ui_constants.dart';
+import 'package:yamt/core/widgets/product_image_collage.dart';
 
 /// Cover image of a prepared meal.
 ///
@@ -86,38 +85,13 @@ class PreparedMealCover extends StatelessWidget {
   }
 
   Widget? _componentCollage() {
-    final urls = componentImageUrls
-        .map(normalizeProductImageUrl)
-        .nonNulls
-        .take(AppInventoryItemVisuals.coverCollageImages)
-        .toList(growable: false);
+    final urls = productCollageImageUrls(componentImageUrls);
     if (urls.isEmpty) {
       return null;
     }
-    Widget image(String url) => AppCachedNetworkImage(
-      imageUrl: url,
-      fit: BoxFit.cover,
-      errorBuilder: (_, _, _) => const SizedBox.shrink(),
-    );
-    Widget row(List<String> rowUrls) => Expanded(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSizes.dividerThickness,
-        children: [for (final url in rowUrls) Expanded(child: image(url))],
-      ),
-    );
-    if (urls.length < 3) {
-      return Column(
-        key: const Key('prepared_meal_cover_collage'),
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [row(urls)],
-      );
-    }
-    return Column(
+    return ProductImageCollage(
       key: const Key('prepared_meal_cover_collage'),
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppSizes.dividerThickness,
-      children: [row(urls.sublist(0, 2)), row(urls.sublist(2))],
+      imageUrls: urls,
     );
   }
 }

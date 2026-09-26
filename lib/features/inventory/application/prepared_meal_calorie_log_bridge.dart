@@ -137,6 +137,12 @@ CalorieEntry? buildConsumedPreparedMealCalorieEntry({
     id: nextEntryId(),
     userId: '',
     name: meal.name,
+    imageUrl:
+        meal.imageUrl ??
+        meal.components
+            .map((component) => component.imageUrl)
+            .nonNulls
+            .firstOrNull,
     imageAssetId: meal.imageAssetId,
     mealType: mealType,
     totalKcal: meal.totalKcal * portionRatio,

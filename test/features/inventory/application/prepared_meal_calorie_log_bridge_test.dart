@@ -160,6 +160,8 @@ void main() {
     expect(entry!.bundleConsumedPortions, 0.5);
     expect(entry.totalKcal, 50);
     expect(entry.bundleComponents.single.amountLabel, '25 g');
+    // Without an own meal image the diary shows the first food's image.
+    expect(entry.imageUrl, rice.imageUrl);
   });
 
   test('bridge still saves after provider invalidation', () async {

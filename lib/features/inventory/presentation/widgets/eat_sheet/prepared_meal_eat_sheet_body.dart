@@ -101,6 +101,9 @@ class _PreparedMealEatSheetBodyState
           caption: l10n.eatPageInStock(state.stockLabel(l10n)),
           imageUrl: meal.imageUrl,
           imageBytes: imageBytes,
+          collageImageUrls: [
+            for (final component in meal.components) component.imageUrl,
+          ],
           imageKey: const Key('prepared_meal_eat_sheet_hero_cover'),
         ),
         if (nutrition != null)
