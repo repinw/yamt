@@ -16,6 +16,8 @@ class CalorieEntryBundleComponent {
     required this.totalFat,
     this.brand,
     this.imageUrl,
+    this.sourceInventoryItemId,
+    this.sourceInventoryAmountToRestore,
   });
 
   /// Creates a [CalorieEntryBundleComponent] for from json.
@@ -34,6 +36,19 @@ class CalorieEntryBundleComponent {
 
   /// The image url.
   final String? imageUrl;
+
+  /// Stock item the component was eaten from, in a combined entry.
+  final String? sourceInventoryItemId;
+
+  /// Stock amount that deleting a combined entry can return to
+  /// [sourceInventoryItemId].
+  final int? sourceInventoryAmountToRestore;
+
+  /// Whether deleting the entry can return this component's stock.
+  bool get canRestoreToInventory {
+    return (sourceInventoryItemId?.trim().isNotEmpty ?? false) &&
+        (sourceInventoryAmountToRestore ?? 0) > 0;
+  }
 
   /// The total kcal.
   @FlexibleDoubleConverter()
@@ -74,6 +89,8 @@ class CalorieEntryBundleComponent {
       totalProtein: totalProtein ?? this.totalProtein,
       totalCarbs: totalCarbs ?? this.totalCarbs,
       totalFat: totalFat ?? this.totalFat,
+      sourceInventoryItemId: sourceInventoryItemId,
+      sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
     );
   }
 }

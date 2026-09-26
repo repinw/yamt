@@ -128,7 +128,9 @@ abstract final class CalorieEntryDetailsActions {
     required CalorieEntryEditorController controller,
     required CalorieEntry entry,
   }) async {
-    if (entry.canRestoreToInventory || entry.canReturnPreparedMealToInventory) {
+    if (entry.canRestoreToInventory ||
+        entry.canReturnPreparedMealToInventory ||
+        entry.canReturnCombinedToInventory) {
       await CalorieEntryEditorFlowHandler.returnEntryToInventory(
         context,
         entry: entry,

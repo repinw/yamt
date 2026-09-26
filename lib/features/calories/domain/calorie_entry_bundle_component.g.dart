@@ -17,6 +17,9 @@ CalorieEntryBundleComponent _$CalorieEntryBundleComponentFromJson(
   totalFat: const FlexibleDoubleConverter().fromJson(json['total_fat']),
   brand: json['brand'] as String?,
   imageUrl: json['image_url'] as String?,
+  sourceInventoryItemId: json['source_inventory_item_id'] as String?,
+  sourceInventoryAmountToRestore:
+      (json['source_inventory_amount_to_restore'] as num?)?.toInt(),
 );
 
 Map<String, dynamic> _$CalorieEntryBundleComponentToJson(
@@ -26,6 +29,8 @@ Map<String, dynamic> _$CalorieEntryBundleComponentToJson(
   'amount_label': instance.amountLabel,
   'brand': instance.brand,
   'image_url': instance.imageUrl,
+  'source_inventory_item_id': instance.sourceInventoryItemId,
+  'source_inventory_amount_to_restore': instance.sourceInventoryAmountToRestore,
   'total_kcal': const FlexibleDoubleConverter().toJson(instance.totalKcal),
   'total_protein': const FlexibleDoubleConverter().toJson(
     instance.totalProtein,

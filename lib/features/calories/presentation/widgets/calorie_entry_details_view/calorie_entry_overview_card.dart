@@ -107,7 +107,12 @@ class _EntryTitle extends StatelessWidget {
     final colors = theme.colorScheme;
     final brand = calorieEntryPrimaryBrand(entry);
     final eyebrow =
-        brand ?? (entry.isBundle ? l10n.preparedMealSectionTitle : null);
+        brand ??
+        (entry.isCombined
+            ? l10n.caloriesCombinedEntryLabel
+            : entry.isBundle
+            ? l10n.preparedMealSectionTitle
+            : null);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

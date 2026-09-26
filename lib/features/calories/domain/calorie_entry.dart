@@ -338,10 +338,20 @@ class CalorieEntry {
     return true;
   }
 
-  /// Whether bundle.
-  bool get isBundle {
-    return (bundleSourcePreparedMealId?.trim().isNotEmpty ?? false) &&
-        bundleComponents.isNotEmpty;
+  /// Whether the entry lists several foods: a prepared meal or a combined
+  /// entry.
+  bool get isBundle => bundleComponents.isNotEmpty;
+
+  /// Whether the entry combines foods logged together, without a prepared
+  /// meal.
+  bool get isCombined {
+    return isBundle && (bundleSourcePreparedMealId?.trim().isEmpty ?? true);
+  }
+
+  /// Whether deleting the combined entry can return stock of its foods.
+  bool get canReturnCombinedToInventory {
+    return isCombined &&
+        bundleComponents.any((component) => component.canRestoreToInventory);
   }
 
   /// Whether restore to inventory.

@@ -1405,6 +1405,15 @@
   "diaryStepsLoadFailed": "Steps could not be loaded",
   "diaryStepDetailsTitle": "Step details",
   "diaryStepsDuringOtherActivityLabel": "Other active steps",
+  "caloriesCombinedFoodCount": "{count, plural, =1{1 food} other{{count} foods}}",
+  "@caloriesCombinedFoodCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesCombinedEntryLabel": "Combined",
   "caloriesBundlePortions": "{consumed}/{total} portions",
   "@caloriesBundlePortions": {
     "placeholders": {

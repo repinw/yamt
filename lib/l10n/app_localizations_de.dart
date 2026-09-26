@@ -2582,6 +2582,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryStepsDuringOtherActivityLabel => 'Sonstige aktive Schritte';
 
   @override
+  String caloriesCombinedFoodCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Lebensmittel',
+      one: '1 Lebensmittel',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get caloriesCombinedEntryLabel => 'Kombiniert';
+
+  @override
   String caloriesBundlePortions(String consumed, int total) {
     return '$consumed/$total Portionen';
   }

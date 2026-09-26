@@ -1,5 +1,6 @@
 import 'dart:developer' show log;
 
+import 'package:yamt/features/calories/application/calorie_entry_combined_stock_restore.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 
@@ -42,8 +43,19 @@ class CalorieEntryInventoryRestoreCoordinator {
   /// Checks if source prepared meal exists.
   final Future<bool> Function(String mealId) sourcePreparedMealExists;
 
+  CalorieEntryCombinedStockRestore get _combined {
+    return CalorieEntryCombinedStockRestore(
+      restoreConsumedItem: restoreConsumedItem,
+      rollbackRestoredItem: rollbackRestoredItem,
+      sourceInventoryItemExists: sourceInventoryItemExists,
+    );
+  }
+
   /// Whether the entry's inventory restore source still exists.
   Future<bool> canRestoreSource(CalorieEntry entry) async {
+    if (entry.canReturnCombinedToInventory) {
+      return await _combined.canRestoreSource(entry);
+    }
     if (entry.canReturnPreparedMealToInventory) {
       final mealId = entry.bundleSourcePreparedMealId?.trim();
       if (mealId == null || mealId.isEmpty) {
@@ -66,6 +78,9 @@ class CalorieEntryInventoryRestoreCoordinator {
   /// Takes the stock or portions that deleting [entry] returned out of the
   /// inventory again. Undoes [restoreAndCompensate] after the entry is back.
   Future<bool> takeBackRestored(CalorieEntry entry) async {
+    if (entry.canReturnCombinedToInventory) {
+      return await _combined.takeBackRestored(entry);
+    }
     if (entry.canReturnPreparedMealToInventory) {
       final mealId = entry.bundleSourcePreparedMealId?.trim();
       final portions = entry.bundleConsumedPortions;
@@ -95,6 +110,12 @@ class CalorieEntryInventoryRestoreCoordinator {
     required CalorieEntry entry,
     required Future<bool> Function() onDiaryDelete,
   }) async {
+    if (entry.canReturnCombinedToInventory) {
+      return await _combined.restoreAndCompensate(
+        entry: entry,
+        onDiaryDelete: onDiaryDelete,
+      );
+    }
     if (entry.canReturnPreparedMealToInventory) {
       return await _returnPreparedMealToInventory(
         entry: entry,

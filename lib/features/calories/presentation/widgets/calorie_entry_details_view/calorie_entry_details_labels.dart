@@ -30,6 +30,9 @@ String calorieEntryConsumedAmountLabel(
   AppLocalizations l10n,
   CalorieEntry entry,
 ) {
+  if (entry.isCombined) {
+    return l10n.caloriesCombinedFoodCount(entry.bundleComponents.length);
+  }
   if (entry.isBundle) {
     return l10n.caloriesBundlePortions(
       _formatBundlePortions(

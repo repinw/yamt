@@ -4817,6 +4817,18 @@ abstract class AppLocalizations {
   /// **'Other active steps'**
   String get diaryStepsDuringOtherActivityLabel;
 
+  /// No description provided for @caloriesCombinedFoodCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 food} other{{count} foods}}'**
+  String caloriesCombinedFoodCount(int count);
+
+  /// No description provided for @caloriesCombinedEntryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Combined'**
+  String get caloriesCombinedEntryLabel;
+
   /// No description provided for @caloriesBundlePortions.
   ///
   /// In en, this message translates to:
