@@ -131,8 +131,11 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Inventory item edit, consumption, discard, and delete flows.
 - Tapping an item row opens the item hub: the food label eat page plus an
   "Item" card with add to shopping list, edit, replace product, and remove.
-  A used-up item shows only the card, and its main button adds it to the
-  shopping list. Rows have no action buttons of their own.
+  Action dialogs open over the hub, so cancelling one returns to it. A
+  finished edit, replace or remove closes the hub; adding to the shopping
+  list keeps it open. A used-up item shows only the card, and its main
+  button adds it to the shopping list. Rows have no action buttons of their
+  own.
 - Amount parsing and unit handling for grams, milliliters, pieces, and custom
   serving data.
 - Receipt grouping and by-receipt inventory mode.

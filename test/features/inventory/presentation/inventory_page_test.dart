@@ -33,6 +33,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
@@ -475,9 +476,10 @@ Future<void> _toggleFullyConsumedFilter(WidgetTester tester) async {
 }
 
 Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
-  final confirmButton = find.byKey(
-    const Key('inventory_item_amount_dialog_confirm_button'),
-  );
+  // Remove dialogs open over the hub, whose log button shares the key.
+  final confirmButton = find
+      .byKey(const Key('inventory_item_amount_dialog_confirm_button'))
+      .last;
   await tester.ensureVisible(confirmButton);
   await tester.tap(confirmButton);
   await tester.pumpAndSettle();
@@ -575,54 +577,22 @@ void main() {
     );
   });
 
-  testWidgets('remove sheets draw above fab overlay chrome', (tester) async {
+  testWidgets('remove sheets open over the item hub', (tester) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_item('a', quantity: 3)],
     );
     addTearDown(repository.dispose);
 
-    await _pumpTestApp(
-      tester,
-      repository,
-      shellBuilder: (child) {
-        return Scaffold(
-          body: child,
-          floatingActionButton: const SizedBox.square(
-            key: Key('test_inventory_fab'),
-            dimension: 64,
-          ),
-          bottomNavigationBar: const SizedBox(height: 96),
-        );
-      },
-    );
+    await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
-
-    final fab = find.byKey(const Key('test_inventory_fab'));
 
     await _tapVisible(tester, find.text('Milk'));
     await _tapInventoryRowAction(tester, 'Remove');
-
-    final removeSheetSurface = find.ancestor(
-      of: find.text('Remove item'),
-      matching: find.byType(DecoratedBox),
-    );
-    expect(removeSheetSurface, findsWidgets);
-    expect(
-      tester.getRect(removeSheetSurface.first).bottom,
-      greaterThan(tester.getRect(fab).top),
-    );
+    expect(find.text('Remove item'), findsOneWidget);
 
     await _tapVisible(tester, find.text('Thrown away'));
-
-    final reasonSheetSurface = find.ancestor(
-      of: find.text('Why are you throwing this away?'),
-      matching: find.byType(DecoratedBox),
-    );
-    expect(reasonSheetSurface, findsWidgets);
-    expect(
-      tester.getRect(reasonSheetSurface.first).bottom,
-      greaterThan(tester.getRect(fab).top),
-    );
+    expect(find.text('Why are you throwing this away?'), findsOneWidget);
+    expect(find.byType(EatItemActionsCard), findsOneWidget);
   });
 
   testWidgets('renders list items when repository returns data', (

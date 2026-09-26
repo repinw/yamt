@@ -177,7 +177,7 @@ void main() {
     expect(find.text('Action failed. Please try again.'), findsOneWidget);
   });
 
-  testWidgets('the shopping list action closes the hub and buys again', (
+  testWidgets('the shopping list action buys again and keeps the hub open', (
     tester,
   ) async {
     final controller = await _pumpRow(tester);
@@ -185,8 +185,9 @@ void main() {
 
     await _tapAction(tester, _shoppingListActionKey);
 
-    expect(find.byType(EatItemActionsCard), findsNothing);
     expect(controller.boughtAgain, <String>['milk']);
+    expect(find.byType(EatItemActionsCard), findsOneWidget);
+    expect(find.text('On the shopping list'), findsOneWidget);
     expect(find.text('Item added to shopping list.'), findsOneWidget);
   });
 
@@ -239,6 +240,36 @@ void main() {
     expect(find.text('Edit inventory item'), findsNothing);
   });
 
+  testWidgets('cancelling the remove dialog returns to the hub', (
+    tester,
+  ) async {
+    final controller = await _pumpRow(tester);
+    await _openHub(tester);
+
+    await _tapAction(tester, _removeActionKey);
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(EatItemActionsCard), findsOneWidget);
+    expect(controller.deleted, isEmpty);
+    expect(controller.discarded, isEmpty);
+  });
+
+  testWidgets('closing the editor without changes returns to the hub', (
+    tester,
+  ) async {
+    await _pumpRow(tester);
+    await _openHub(tester);
+
+    await _tapAction(tester, _editActionKey);
+    await tester.ensureVisible(find.text('Apply changes'));
+    await tester.tap(find.text('Apply changes'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Edit inventory item'), findsNothing);
+    expect(find.byType(EatItemActionsCard), findsOneWidget);
+  });
+
   testWidgets('the remove action deletes the item completely', (tester) async {
     final controller = await _pumpRow(tester);
     await _openHub(tester);
@@ -267,7 +298,7 @@ void main() {
       '1',
     );
     await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')).last,
     );
     await tester.pumpAndSettle();
 
