@@ -72,5 +72,6 @@ DiaryMealEntry _mealEntryFrom(CalorieEntry entry) {
     consumedUnit: entry.consumedUnit,
     bundleConsumedPortions: entry.bundleConsumedPortions,
     bundleTotalPortions: entry.bundleTotalPortions,
+    combinedFoods: entry.isCombined ? entry.bundleComponents : null,
   );
 }

@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/diary/domain/diary_meal_entry_group.dart';
 
 part 'diary_meal_section.g.dart';
@@ -23,6 +24,7 @@ class DiaryMealEntry {
     this.consumedUnit,
     this.bundleConsumedPortions,
     this.bundleTotalPortions,
+    this.combinedFoods,
   });
 
   /// Creates data from persisted JSON.
@@ -74,6 +76,10 @@ class DiaryMealEntry {
 
   /// Total portions if part of a bundle.
   final int? bundleTotalPortions;
+
+  /// Foods of a combined entry, or null when the entry is one food or a
+  /// prepared meal.
+  final List<CalorieEntryBundleComponent>? combinedFoods;
 }
 
 /// Diary meal section with entries and kcal total.

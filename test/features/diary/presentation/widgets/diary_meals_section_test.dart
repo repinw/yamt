@@ -5,6 +5,7 @@ import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashed_section.dart';
@@ -173,6 +174,53 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Oats'), findsOneWidget);
+  });
+
+  testWidgets('a combined entry expands to its foods', (tester) async {
+    const food = CalorieEntryBundleComponent(
+      name: 'Bread',
+      amountLabel: '80 g',
+      totalKcal: 190,
+      totalProtein: 6,
+      totalCarbs: 36,
+      totalFat: 2,
+    );
+    final combined = DiaryMealEntry(
+      id: 'combined-1',
+      mealType: MealType.lunch,
+      name: 'Bread + Gouda',
+      totalKcal: 407,
+      totalProtein: 21,
+      totalCarbs: 36,
+      totalFat: 19,
+      consumedAmount: 100,
+      consumedUnit: ConsumedUnit.grams,
+      combinedFoods: [
+        food,
+        food.copyWith(name: 'Gouda', amountLabel: '60 g', totalKcal: 217),
+      ],
+    );
+
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(MealType.lunch, [combined]),
+      ],
+    );
+
+    expect(find.text('Bread + Gouda'), findsOneWidget);
+    expect(find.text('2 foods'), findsOneWidget);
+    expect(find.text('100 g'), findsNothing);
+    expect(find.text('Gouda'), findsNothing);
+
+    await tester.tap(find.text('Bread + Gouda'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Bread'), findsOneWidget);
+    expect(find.text('Gouda'), findsOneWidget);
+    expect(find.text('60 g'), findsOneWidget);
+    expect(find.text('217 kcal'), findsOneWidget);
   });
 
   testWidgets('shows retry and reloads after meals load error', (tester) async {

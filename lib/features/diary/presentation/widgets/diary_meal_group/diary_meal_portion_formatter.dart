@@ -10,6 +10,10 @@ String? formatDiaryMealPortionLabel(
   DiaryMealEntry entry,
 ) {
   final l10n = AppLocalizations.of(context)!;
+  final combinedFoods = entry.combinedFoods;
+  if (combinedFoods != null) {
+    return l10n.caloriesCombinedFoodCount(combinedFoods.length);
+  }
   if (entry.bundleTotalPortions != null && entry.bundleTotalPortions! > 0) {
     final consumed = entry.bundleConsumedPortions ?? 0;
     final formattedConsumed = NumberFormat.decimalPattern(
