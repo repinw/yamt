@@ -35,6 +35,7 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.onSubmitted,
     this.confirmLabel,
     this.extraKcal = 0,
+    this.secondaryIntent = InventoryItemEatSheetIntent.addMore,
     super.key,
   });
 
@@ -77,6 +78,9 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
 
   /// Calories logged together with this item, added to the confirm button.
   final double extraKcal;
+
+  /// Intent of the second button.
+  final InventoryItemEatSheetIntent secondaryIntent;
 
   @override
   ConsumerState<InventoryItemEatSheetBody> createState() =>
@@ -158,7 +162,7 @@ class _InventoryItemEatSheetBodyState
       ),
       onSecondary: addMoreText == null
           ? null
-          : () => _submit(InventoryItemEatSheetIntent.addMore),
+          : () => _submit(widget.secondaryIntent),
       children: [
         InventoryItemEatLabelSection(item: item, state: state),
         Column(

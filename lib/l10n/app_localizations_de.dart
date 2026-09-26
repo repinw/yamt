@@ -665,7 +665,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageCombineSearch => 'Lebensmittel suchen';
 
   @override
-  String get eatPageCombineConfirm => 'Alle eintragen';
+  String get eatPageCombineAddFood => 'Hinzufügen';
+
+  @override
+  String get eatPageCombineStore => 'In Vorrat';
+
+  @override
+  String get eatPageCombineConfirm => 'Mahlzeit eintragen';
 
   @override
   String get eatPageCombineAmountAbove => 'Menge oben';
@@ -674,7 +680,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageCombineRemove => 'Aus der Liste nehmen';
 
   @override
-  String get eatPageCombineSaved => 'Zusammen eingetragen.';
+  String get eatPageCombineSaved => 'Mahlzeit eingetragen.';
 
   @override
   String eatPageWhen(String day, String meal) {

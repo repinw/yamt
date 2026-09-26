@@ -66,6 +66,14 @@ abstract final class InventoryItemHubFlow {
           request: request,
           picks: picks,
         );
+      case InventoryItemHubStoreMeal(:final request, :final picks):
+        await InventoryCombinedEatFlow.storeAsMeal(
+          context: context,
+          ref: ref,
+          item: item,
+          request: request,
+          picks: picks,
+        );
     }
   }
 

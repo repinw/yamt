@@ -108,14 +108,22 @@ class EatCombineSection extends ConsumerWidget {
     }
   }
 
-  /// A food found by search has no stock yet, so its amount is open.
+  /// Asks the amount of [item] on the eat page, whose button adds the food
+  /// to the list instead of logging it. A food found by search has no stock
+  /// yet, so its amount is open.
   static Future<InventoryItemEatRequest?> _askAmount(
     BuildContext context,
     InventoryItem item,
     InventoryReceiptManualProductResult? searchResult,
   ) async {
+    final confirmLabel = AppLocalizations.of(context)!.eatPageCombineAddFood;
     if (searchResult == null) {
-      return await showInventoryItemEatSheet(context: context, item: item);
+      final result = await showInventoryItemEatSheetResult(
+        context: context,
+        item: item,
+        confirmLabel: confirmLabel,
+      );
+      return result?.request;
     }
     final selected = inventoryManualAddEatRequestFromSelection(
       searchResult.eatSelection,
@@ -131,6 +139,7 @@ class EatCombineSection extends ConsumerWidget {
         rawWeight: item.weight,
       ),
       hasOpenStock: true,
+      confirmLabel: confirmLabel,
     );
     return result?.request;
   }

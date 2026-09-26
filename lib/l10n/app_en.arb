@@ -361,10 +361,12 @@
   "eatPageCombineAdd": "+ Add food",
   "eatPageCombinePickConfirm": "Add",
   "eatPageCombineSearch": "Search for a food",
-  "eatPageCombineConfirm": "Log all",
+  "eatPageCombineAddFood": "Add",
+  "eatPageCombineStore": "Keep in stock",
+  "eatPageCombineConfirm": "Log meal",
   "eatPageCombineAmountAbove": "amount above",
   "eatPageCombineRemove": "Remove from the list",
-  "eatPageCombineSaved": "Logged together.",
+  "eatPageCombineSaved": "Meal logged.",
   "eatPageWhen": "{day} · {meal}",
   "@eatPageWhen": {
     "placeholders": {

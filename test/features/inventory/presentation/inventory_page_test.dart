@@ -26,12 +26,14 @@ import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
@@ -226,6 +228,24 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
           currentAmount: 1000 - pending.amount,
         ),
     ];
+  }
+}
+
+class _RecordingPreparedMealRepository implements PreparedMealRepository {
+  List<PreparedMeal> saved = const <PreparedMeal>[];
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() async* {
+    yield saved;
+  }
+
+  @override
+  Future<List<PreparedMeal>> readAll() async => saved;
+
+  @override
+  Future<bool> saveAll(List<PreparedMeal> meals) async {
+    saved = meals;
+    return true;
   }
 }
 
@@ -1044,7 +1064,7 @@ void main() {
 
     await _tapAmountDialogConfirm(tester);
 
-    expect(find.text('Logged together.'), findsOneWidget);
+    expect(find.text('Meal logged.'), findsOneWidget);
     expect(commitStore.entry?.name, 'Milk + Bread');
     final breadPending = commitStore.pendingConsumptions!.last;
     expect(breadPending.itemId, isNot('draft-bread'));
@@ -1053,6 +1073,57 @@ void main() {
       commitStore.entry?.bundleComponents.last.sourceInventoryItemId,
       breadPending.itemId,
     );
+  });
+
+  testWidgets('item hub keeps combined foods in stock as a prepared meal', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _itemWithNutrition('a'),
+        _itemWithNutrition('b', name: 'Oats'),
+      ],
+    );
+    final mealRepository = _RecordingPreparedMealRepository();
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    addTearDown(repository.dispose);
+    when(() => user.uid).thenReturn('user-1');
+    when(() => auth.currentUser).thenReturn(user);
+
+    await _pumpTestApp(
+      tester,
+      repository,
+      overrides: <Override>[
+        preparedMealRepositoryProvider.overrideWithValue(mealRepository),
+        firebaseAuthProvider.overrideWithValue(auth),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')),
+      '200',
+    );
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.text('Oats'));
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')).last,
+      '100',
+    );
+    expect(find.text('Add'), findsWidgets);
+    await _tapAmountDialogConfirm(tester);
+
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('inventory_item_amount_dialog_add_more_button')),
+    );
+
+    final meal = mealRepository.saved.single;
+    expect(meal.name, 'Milk + Oats');
+    expect(meal.totalPortions, 1);
   });
 
   testWidgets('item hub logs a second stock item together as one entry', (
@@ -1102,11 +1173,11 @@ void main() {
 
     expect(find.text('Log together'), findsOneWidget);
     expect(find.text('Oats · 100 g'), findsOneWidget);
-    expect(find.text('Log all'), findsOneWidget);
+    expect(find.text('Log meal'), findsOneWidget);
 
     await _tapAmountDialogConfirm(tester);
 
-    expect(find.text('Logged together.'), findsOneWidget);
+    expect(find.text('Meal logged.'), findsOneWidget);
     expect(commitStore.entry?.name, 'Milk + Oats');
     expect(commitStore.entry?.isCombined, isTrue);
     expect(commitStore.pendingConsumptions?.map((p) => (p.itemId, p.amount)), [

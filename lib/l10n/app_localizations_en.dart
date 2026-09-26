@@ -665,7 +665,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageCombineSearch => 'Search for a food';
 
   @override
-  String get eatPageCombineConfirm => 'Log all';
+  String get eatPageCombineAddFood => 'Add';
+
+  @override
+  String get eatPageCombineStore => 'Keep in stock';
+
+  @override
+  String get eatPageCombineConfirm => 'Log meal';
 
   @override
   String get eatPageCombineAmountAbove => 'amount above';
@@ -674,7 +680,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageCombineRemove => 'Remove from the list';
 
   @override
-  String get eatPageCombineSaved => 'Logged together.';
+  String get eatPageCombineSaved => 'Meal logged.';
 
   @override
   String eatPageWhen(String day, String meal) {

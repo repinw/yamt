@@ -361,10 +361,12 @@
   "eatPageCombineAdd": "+ Lebensmittel hinzufügen",
   "eatPageCombinePickConfirm": "Übernehmen",
   "eatPageCombineSearch": "Lebensmittel suchen",
-  "eatPageCombineConfirm": "Alle eintragen",
+  "eatPageCombineAddFood": "Hinzufügen",
+  "eatPageCombineStore": "In Vorrat",
+  "eatPageCombineConfirm": "Mahlzeit eintragen",
   "eatPageCombineAmountAbove": "Menge oben",
   "eatPageCombineRemove": "Aus der Liste nehmen",
-  "eatPageCombineSaved": "Zusammen eingetragen.",
+  "eatPageCombineSaved": "Mahlzeit eingetragen.",
   "eatPageWhen": "{day} · {meal}",
   "@eatPageWhen": {
     "placeholders": {

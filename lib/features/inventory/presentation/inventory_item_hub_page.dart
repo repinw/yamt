@@ -6,7 +6,6 @@ import 'package:yamt/features/inventory/application/inventory_combined_eat_servi
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
@@ -89,6 +88,10 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
           ? null
           : AppLocalizations.of(context)!.eatPageCombineConfirm,
       extraKcal: picks.fold(0, (sum, pick) => sum + pick.component.totalKcal),
+      addMoreActionText: picks.isEmpty
+          ? null
+          : AppLocalizations.of(context)!.eatPageCombineStore,
+      secondaryIntent: InventoryItemEatSheetIntent.storeAsMeal,
       footer: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpacing.xxl,
@@ -98,14 +101,15 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
           actions,
         ],
       ),
-      onSubmitted: (result) => _submit(result.request, picks),
+      onSubmitted: (result) => _submit(result, picks),
     );
   }
 
   void _submit(
-    InventoryItemEatRequest request,
+    InventoryItemEatSheetResult result,
     List<InventoryCombinePick> picks,
   ) {
+    final request = result.request;
     if (picks.isEmpty) {
       Navigator.of(context).pop(InventoryItemHubEat(request));
       return;
@@ -120,8 +124,11 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       }
       return;
     }
-    Navigator.of(context)
-        .pop(InventoryItemHubCombine(request: request, picks: picks));
+    Navigator.of(context).pop(
+      result.intent == InventoryItemEatSheetIntent.storeAsMeal
+          ? InventoryItemHubStoreMeal(request: request, picks: picks)
+          : InventoryItemHubCombine(request: request, picks: picks),
+    );
   }
 
   Future<void> _run(InventoryItemHubAction action) async {

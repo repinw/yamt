@@ -7,6 +7,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_product_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -88,6 +89,63 @@ abstract final class InventoryCombinedEatFlow {
     } finally {
       serviceSubscription.close();
     }
+  }
+
+  /// Keeps [item] and [picks] in stock as one prepared meal "A + B" with
+  /// one portion, made of the entered amounts. Foods found by search are
+  /// added to the inventory first and deleted again on failure.
+  static Future<void> storeAsMeal({
+    required BuildContext context,
+    required WidgetRef ref,
+    required InventoryItem item,
+    required InventoryItemEatRequest request,
+    required List<InventoryCombinePick> picks,
+  }) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final container = ref.container;
+    final inventory = container.read(inventoryItemsControllerProvider.notifier);
+    final meals = container.read(preparedMealsControllerProvider.notifier);
+    final added = <InventoryItem>[];
+    final parts = <(InventoryItem, InventoryItemEatRequest)>[(item, request)];
+    for (final pick in picks) {
+      final stockItem = await _stockItemFor(context, container, pick);
+      if (stockItem == null) {
+        break;
+      }
+      if (pick.searchResult != null) {
+        added.add(stockItem);
+      }
+      parts.add((stockItem, pick.request));
+    }
+    final result = parts.length == picks.length + 1
+        ? await meals.createPreparedMeal(
+            name: parts.map((part) => part.$1.name).join(' + '),
+            totalPortions: 1,
+            items: [
+              for (final (item, request) in parts)
+                PreparedMealItemInput(
+                  itemId: item.id,
+                  usedAmount: request.inventoryAmount,
+                ),
+            ],
+          )
+        : null;
+    final mealId = result?.preparedMealId;
+    if (result == null || !result.isSuccess || mealId == null) {
+      for (final item in added) {
+        await inventory.deleteItem(item.id);
+      }
+      messenger.showAppSnackBar(
+        l10n.preparedMealActionFailed,
+        tone: AppSnackBarTone.error,
+      );
+      return;
+    }
+    messenger.showAppSnackBar(
+      l10n.preparedMealCreatedMessage,
+      onUndo: () => meals.unbundlePreparedMeal(mealId),
+    );
   }
 
   /// The stock item of [pick]. A food found by search is added to the

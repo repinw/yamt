@@ -43,3 +43,16 @@ final class InventoryItemHubCombine extends InventoryItemHubResult {
   /// The other foods.
   final List<InventoryCombinePick> picks;
 }
+
+/// Keep the hub's item and [picks] in stock as one prepared meal.
+@immutable
+final class InventoryItemHubStoreMeal extends InventoryItemHubResult {
+  /// Creates the result.
+  const new({required this.request, required this.picks});
+
+  /// The entered amount of the hub's item.
+  final InventoryItemEatRequest request;
+
+  /// The other foods.
+  final List<InventoryCombinePick> picks;
+}

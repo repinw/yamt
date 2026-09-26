@@ -1319,10 +1319,22 @@ abstract class AppLocalizations {
   /// **'Search for a food'**
   String get eatPageCombineSearch;
 
+  /// No description provided for @eatPageCombineAddFood.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get eatPageCombineAddFood;
+
+  /// No description provided for @eatPageCombineStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep in stock'**
+  String get eatPageCombineStore;
+
   /// No description provided for @eatPageCombineConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Log all'**
+  /// **'Log meal'**
   String get eatPageCombineConfirm;
 
   /// No description provided for @eatPageCombineAmountAbove.
@@ -1340,7 +1352,7 @@ abstract class AppLocalizations {
   /// No description provided for @eatPageCombineSaved.
   ///
   /// In en, this message translates to:
-  /// **'Logged together.'**
+  /// **'Meal logged.'**
   String get eatPageCombineSaved;
 
   /// No description provided for @eatPageWhen.
