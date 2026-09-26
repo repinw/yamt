@@ -1511,12 +1511,6 @@ abstract class AppLocalizations {
   /// **'You can edit the item only while it is still fully available.'**
   String get inventoryItemEditRequiresFullItem;
 
-  /// No description provided for @inventoryItemSwapCandidateAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Swap candidate'**
-  String get inventoryItemSwapCandidateAction;
-
   /// No description provided for @inventoryItemSwapCandidateRequiresFullItem.
   ///
   /// In en, this message translates to:

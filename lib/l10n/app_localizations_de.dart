@@ -795,9 +795,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryItemEditRequiresFullItem => 'Du kannst den Artikel nur bearbeiten, solange er noch vollständig vorhanden ist.';
 
   @override
-  String get inventoryItemSwapCandidateAction => 'Tauschen';
-
-  @override
   String get inventoryItemSwapCandidateRequiresFullItem => 'Du kannst den Kandidaten nur tauschen, solange der Artikel noch vollständig vorhanden ist.';
 
   @override
