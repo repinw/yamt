@@ -137,7 +137,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   button adds it to the shopping list. Rows have no action buttons of their
   own.
 - The item hub can log other stock items together with its item: "+ Combine
-  with another food" picks a Vorrat item with nutrition values and its amount,
+  with another food" opens the Vorrat list in selection mode (only items with
+  nutrition values and stock), then asks the amount of each picked item,
   and "Log all" saves one combined diary entry named "A + B". The entry and
   every stock change are written together. A combined entry cannot change its
   amount or be eaten again; deleting it can return the stock of every food.

@@ -32,6 +32,7 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
@@ -947,6 +948,40 @@ void main() {
     expect(commitStore.entry?.mealType, expectedMealType);
   });
 
+  testWidgets('item hub asks the amount of each picked stock item', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _itemWithNutrition('a'),
+        _itemWithNutrition('b', name: 'Oats'),
+        _itemWithNutrition('c', name: 'Rice'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(tester, repository);
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.text('Oats'));
+    await _tapVisible(tester, find.text('Rice'));
+    expect(find.text('2 selected'), findsOneWidget);
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+
+    for (final amount in ['100', '150']) {
+      await tester.enterText(
+        find.byKey(const Key('eat_page_amount_field')).last,
+        amount,
+      );
+      await _tapAmountDialogConfirm(tester);
+    }
+
+    expect(find.text('Oats · 100 g'), findsOneWidget);
+    expect(find.text('Rice · 150 g'), findsOneWidget);
+  });
+
   testWidgets('item hub logs a second stock item together as one entry', (
     tester,
   ) async {
@@ -982,10 +1017,10 @@ void main() {
       '200',
     );
     await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
-    await _tapVisible(
-      tester,
-      find.byKey(const ValueKey<String>('eat_combine_candidate_b')),
-    );
+    expect(find.text('Milk'), findsNothing);
+    await _tapVisible(tester, find.text('Oats'));
+    expect(find.text('1 selected'), findsOneWidget);
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
     await tester.enterText(
       find.byKey(const Key('eat_page_amount_field')).last,
       '100',

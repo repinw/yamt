@@ -9,7 +9,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_picker_sheet.dart';
+import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_title.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
@@ -65,33 +65,37 @@ class EatCombineSection extends ConsumerWidget {
     );
   }
 
+  /// Opens the inventory to pick foods, then asks the amount of each.
+  /// A food whose amount page is closed is left out.
   Future<void> _add(BuildContext context, WidgetRef ref) async {
     final notifier = ref.read(
       inventoryItemCombineControllerProvider(hubItem.id).notifier,
     );
     final items = ref.read(inventoryItemsControllerProvider).value;
-    final item = await showEatCombinePickerSheet(
+    final picked = await showInventoryCombinePickPage(
       context,
       candidates: notifier.candidatesFrom(items ?? const <InventoryItem>[]),
     );
-    if (item == null || !context.mounted) {
-      return;
-    }
-    final request = await showInventoryItemEatSheet(
-      context: context,
-      item: item,
-    );
-    if (request == null || !context.mounted) {
-      return;
-    }
-    if (!canDirectlySaveInventoryItemEatRequest(item, request)) {
-      ScaffoldMessenger.of(context).showAppSnackBar(
-        AppLocalizations.of(context)!.inventoryItemActionFailed,
-        tone: AppSnackBarTone.error,
+    for (final item in picked ?? const <InventoryItem>[]) {
+      if (!context.mounted) {
+        return;
+      }
+      final request = await showInventoryItemEatSheet(
+        context: context,
+        item: item,
       );
-      return;
+      if (request == null || !context.mounted) {
+        continue;
+      }
+      if (!canDirectlySaveInventoryItemEatRequest(item, request)) {
+        ScaffoldMessenger.of(context).showAppSnackBar(
+          AppLocalizations.of(context)!.inventoryItemActionFailed,
+          tone: AppSnackBarTone.error,
+        );
+        continue;
+      }
+      notifier.add(item, request);
     }
-    notifier.add(item, request);
   }
 }
 

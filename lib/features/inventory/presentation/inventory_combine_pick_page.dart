@@ -1,0 +1,92 @@
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_list.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+/// Opens the inventory list to pick the foods to log together with the
+/// item hub's item. Returns the picked items in list order, or null.
+Future<List<InventoryItem>?> showInventoryCombinePickPage(
+  BuildContext context, {
+  required List<InventoryItem> candidates,
+}) {
+  return Navigator.of(context, rootNavigator: true).push<List<InventoryItem>>(
+    MaterialPageRoute<List<InventoryItem>>(
+      fullscreenDialog: true,
+      builder: (_) => InventoryCombinePickPage(candidates: candidates),
+    ),
+  );
+}
+
+/// The inventory list in selection mode, showing only [candidates].
+class InventoryCombinePickPage extends StatefulWidget {
+  /// Creates the page.
+  const new({required this.candidates, super.key});
+
+  /// Key of the button that takes over the selection.
+  static const confirmKey = Key('inventory_combine_pick_confirm');
+
+  /// Stock items that can be combined.
+  final List<InventoryItem> candidates;
+
+  @override
+  State<InventoryCombinePickPage> createState() =>
+      _InventoryCombinePickPageState();
+}
+
+class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
+  var _selected = const <String>{};
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          _selected.isEmpty
+              ? l10n.inventoryPageTitle
+              : l10n.preparedMealSelectionCount(_selected.length),
+        ),
+        actions: [
+          TextButton(
+            key: InventoryCombinePickPage.confirmKey,
+            onPressed: _selected.isEmpty ? null : _confirm,
+            child: Text(l10n.eatPageCombinePickConfirm),
+          ),
+        ],
+      ),
+      body: InventoryList(
+        items: widget.candidates,
+        preparedMeals: const <PreparedMeal>[],
+        emptyStateActionButton: null,
+        // Prepared meals are not listed here, so their actions never run.
+        onThrowAwayPreparedMeal: (_, _, _) async => false,
+        onFillPendingPreparedMealIngredient: (_, _, _) async => false,
+        onIgnorePendingPreparedMealIngredient: (_, _) async => false,
+        onUnbundlePreparedMeal: (_) async => false,
+        onEditPreparedMeal: (_, _) async => false,
+        onSelectPreparedMealEditIngredients: (_, _) async => false,
+        onSavePreparedMealTemplate: (_) async => false,
+        isSelectionMode: true,
+        selectedItemIds: _selected,
+        onItemLongPress: _toggle,
+        onSelectionToggle: _toggle,
+      ),
+    );
+  }
+
+  void _toggle(String itemId) {
+    setState(() {
+      _selected = _selected.contains(itemId)
+          ? ({..._selected}..remove(itemId))
+          : {..._selected, itemId};
+    });
+  }
+
+  void _confirm() {
+    Navigator.of(context).pop([
+      for (final item in widget.candidates)
+        if (_selected.contains(item.id)) item,
+    ]);
+  }
+}

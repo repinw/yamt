@@ -659,16 +659,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageCombineAdd => '+ Lebensmittel hinzufügen';
 
   @override
+  String get eatPageCombinePickConfirm => 'Übernehmen';
+
+  @override
   String get eatPageCombineConfirm => 'Alle eintragen';
 
   @override
   String get eatPageCombineAmountAbove => 'Menge oben';
-
-  @override
-  String get eatPageCombinePickerTitle => 'Aus dem Vorrat';
-
-  @override
-  String get eatPageCombinePickerEmpty => 'Kein weiteres Lebensmittel mit Nährwerten im Vorrat.';
 
   @override
   String get eatPageCombineRemove => 'Aus der Liste nehmen';

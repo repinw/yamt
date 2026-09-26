@@ -1307,6 +1307,12 @@ abstract class AppLocalizations {
   /// **'+ Add food'**
   String get eatPageCombineAdd;
 
+  /// No description provided for @eatPageCombinePickConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get eatPageCombinePickConfirm;
+
   /// No description provided for @eatPageCombineConfirm.
   ///
   /// In en, this message translates to:
@@ -1318,18 +1324,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'amount above'**
   String get eatPageCombineAmountAbove;
-
-  /// No description provided for @eatPageCombinePickerTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'From your stock'**
-  String get eatPageCombinePickerTitle;
-
-  /// No description provided for @eatPageCombinePickerEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No other food with nutrition values in stock.'**
-  String get eatPageCombinePickerEmpty;
 
   /// No description provided for @eatPageCombineRemove.
   ///

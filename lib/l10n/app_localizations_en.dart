@@ -659,16 +659,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageCombineAdd => '+ Add food';
 
   @override
+  String get eatPageCombinePickConfirm => 'Add';
+
+  @override
   String get eatPageCombineConfirm => 'Log all';
 
   @override
   String get eatPageCombineAmountAbove => 'amount above';
-
-  @override
-  String get eatPageCombinePickerTitle => 'From your stock';
-
-  @override
-  String get eatPageCombinePickerEmpty => 'No other food with nutrition values in stock.';
 
   @override
   String get eatPageCombineRemove => 'Remove from the list';
