@@ -1313,6 +1313,12 @@ abstract class AppLocalizations {
   /// **'Search for a food'**
   String get eatPageCombineSearch;
 
+  /// No description provided for @eatPageCombineNeedsNutrition.
+  ///
+  /// In en, this message translates to:
+  /// **'This food has no nutrition values to add up.'**
+  String get eatPageCombineNeedsNutrition;
+
   /// No description provided for @eatPageCombineAddFood.
   ///
   /// In en, this message translates to:

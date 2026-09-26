@@ -61,8 +61,7 @@ class InventoryCombinedEatService {
   /// Whether [item] can be part of a combined entry: it needs nutrition
   /// values to add up.
   static bool canCombine(InventoryItem item) {
-    return InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(item) !=
-        null;
+    return item.nutrition?.hasAnyNutritionValue ?? false;
   }
 
   /// Saves [foods] as one entry and finalizes their staged consumptions.
@@ -173,7 +172,8 @@ class InventoryCombinedEatService {
         totalCarbs: profile.per100Carbs * factor,
         totalFat: profile.per100Fat * factor,
         sourceInventoryItemId: food.item.id,
-        sourceInventoryAmountToRestore: food.request.inventoryAmount,
+        // The commit takes the staged amount, which the stock may have capped.
+        sourceInventoryAmountToRestore: food.pending.amount,
       ),
       details: profile.nutrientDetails,
       amount: amount,

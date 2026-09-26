@@ -79,6 +79,8 @@ class CalorieEntryCombinedStockRestore {
   }
 
   /// Takes the returned stock out again after the entry came back by undo.
+  /// When one food cannot be taken out, the foods already taken out are
+  /// returned again, so the stock matches the deleted entry.
   Future<bool> takeBackRestored(CalorieEntry entry) async {
     return await _takeBack(entry, await _existingSources(entry));
   }
@@ -87,7 +89,7 @@ class CalorieEntryCombinedStockRestore {
     CalorieEntry entry,
     List<CalorieEntryBundleComponent> sources,
   ) async {
-    var allTakenBack = true;
+    final takenBack = <CalorieEntryBundleComponent>[];
     for (final source in sources) {
       final ok = await rollbackRestoredItem(
         source.sourceInventoryItemId!,
@@ -97,13 +99,20 @@ class CalorieEntryCombinedStockRestore {
       if (!ok) {
         log(
           'Taking back ${source.sourceInventoryItemId} of combined entry '
-          '${entry.id} failed.',
+          '${entry.id} failed; returning ${takenBack.length} foods again.',
           name: _logName,
         );
-        allTakenBack = false;
+        for (final returned in takenBack) {
+          await restoreConsumedItem(
+            returned.sourceInventoryItemId!,
+            returned.sourceInventoryAmountToRestore!,
+          );
+        }
+        return false;
       }
+      takenBack.add(source);
     }
-    return allTakenBack;
+    return true;
   }
 
   Future<List<CalorieEntryBundleComponent>> _existingSources(

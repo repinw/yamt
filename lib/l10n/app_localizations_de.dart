@@ -662,6 +662,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageCombineSearch => 'Lebensmittel suchen';
 
   @override
+  String get eatPageCombineNeedsNutrition => 'Dieses Lebensmittel hat keine Nährwerte zum Zusammenrechnen.';
+
+  @override
   String get eatPageCombineAddFood => 'Hinzufügen';
 
   @override

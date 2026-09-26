@@ -79,7 +79,7 @@ InventoryItem _item(String id, String name, double kcal, {double? sugar}) {
   );
 }
 
-InventoryCombinedFood _food(InventoryItem item, int amount) {
+InventoryCombinedFood _food(InventoryItem item, int amount, {int? staged}) {
   return (
     item: item,
     request: InventoryItemEatRequest(
@@ -90,7 +90,7 @@ InventoryCombinedFood _food(InventoryItem item, int amount) {
     pending: PendingInventoryConsumption(
       id: 'pending-${item.id}',
       itemId: item.id,
-      amount: amount,
+      amount: staged ?? amount,
     ),
   );
 }
@@ -132,7 +132,8 @@ void main() {
     final commitStore = _RecordingCommitStore();
     final (service, pendingStore) = await _service(_container(commitStore));
     final bread = _food(_item('bread', 'Bread', 250, sugar: 2), 80);
-    final gouda = _food(_item('gouda', 'Gouda', 361, sugar: 0), 60);
+    // The stock capped the gouda at 50 of the wanted 60.
+    final gouda = _food(_item('gouda', 'Gouda', 361, sugar: 0), 60, staged: 50);
     pendingStore
       ..stage(bread.pending)
       ..stage(gouda.pending);
@@ -149,7 +150,7 @@ void main() {
     expect(entry?.nutrientDetails?.per100Sugar, closeTo(1.6, 0.001));
     expect(entry?.bundleComponents.map((c) => c.amountLabel), ['80 g', '60 g']);
     expect(entry?.bundleComponents.last.sourceInventoryItemId, 'gouda');
-    expect(entry?.bundleComponents.last.sourceInventoryAmountToRestore, 60);
+    expect(entry?.bundleComponents.last.sourceInventoryAmountToRestore, 50);
     expect(commitStore.pendings?.map((p) => p.itemId), ['bread', 'gouda']);
     expect(pendingStore.pendingConsumptionById('pending-bread'), isNull);
     expect(pendingStore.pendingConsumptionById('pending-gouda'), isNull);

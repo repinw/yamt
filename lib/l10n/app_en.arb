@@ -360,6 +360,7 @@
   "eatPageCombineAdd": "+ Add food",
   "eatPageCombinePickConfirm": "Add",
   "eatPageCombineSearch": "Search for a food",
+  "eatPageCombineNeedsNutrition": "This food has no nutrition values to add up.",
   "eatPageCombineAddFood": "Add",
   "eatPageCombineStore": "Keep in stock",
   "eatPageMealTotal": "total {amount}",

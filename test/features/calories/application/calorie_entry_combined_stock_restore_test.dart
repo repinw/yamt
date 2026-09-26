@@ -44,10 +44,15 @@ CalorieEntry _entry() {
 }
 
 class _Stock {
-  new({this.existing = const {'bread', 'gouda'}, this.failRestoreOf});
+  new({
+    this.existing = const {'bread', 'gouda'},
+    this.failRestoreOf,
+    this.failTakeBackOf,
+  });
 
   final Set<String> existing;
   final String? failRestoreOf;
+  final String? failTakeBackOf;
   final restored = <(String, int)>[];
   final takenBack = <(String, int, DateTime?)>[];
 
@@ -61,6 +66,9 @@ class _Stock {
         return true;
       },
       rollbackRestoredItem: (itemId, amount, {consumedAt}) async {
+        if (itemId == failTakeBackOf) {
+          return false;
+        }
         takenBack.add((itemId, amount, consumedAt));
         return true;
       },
@@ -144,5 +152,15 @@ void main() {
 
     expect(takenBack, isTrue);
     expect(stock.takenBack.map((call) => call.$1), ['bread', 'gouda']);
+  });
+
+  test('returns the taken-back stock when a later take-back fails', () async {
+    final stock = _Stock(failTakeBackOf: 'gouda');
+
+    final takenBack = await stock.restore.takeBackRestored(_entry());
+
+    expect(takenBack, isFalse);
+    expect(stock.takenBack.map((call) => call.$1), ['bread']);
+    expect(stock.restored, [('bread', 80)]);
   });
 }

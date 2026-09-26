@@ -360,6 +360,7 @@
   "eatPageCombineAdd": "+ Lebensmittel hinzufügen",
   "eatPageCombinePickConfirm": "Übernehmen",
   "eatPageCombineSearch": "Lebensmittel suchen",
+  "eatPageCombineNeedsNutrition": "Dieses Lebensmittel hat keine Nährwerte zum Zusammenrechnen.",
   "eatPageCombineAddFood": "Hinzufügen",
   "eatPageCombineStore": "In Vorrat",
   "eatPageMealTotal": "gesamt {amount}",

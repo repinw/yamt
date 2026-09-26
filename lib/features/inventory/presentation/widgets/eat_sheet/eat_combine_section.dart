@@ -140,6 +140,10 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
       if (!mounted) {
         return;
       }
+      if (!InventoryCombinedEatService.canCombine(item)) {
+        _showCannotCombine(context);
+        continue;
+      }
       if (searchResult?.eatSelection == null &&
           notifier.addWithDefaultAmount(item, searchResult: searchResult)) {
         continue;
@@ -148,16 +152,19 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
       if (request == null || !mounted) {
         continue;
       }
-      if (!InventoryCombinedEatService.canCombine(item) ||
-          !canDirectlySaveInventoryItemEatRequest(item, request)) {
-        ScaffoldMessenger.of(context).showAppSnackBar(
-          AppLocalizations.of(context)!.inventoryItemActionFailed,
-          tone: AppSnackBarTone.error,
-        );
+      if (!canDirectlySaveInventoryItemEatRequest(item, request)) {
+        _showCannotCombine(context);
         continue;
       }
       notifier.add(item, request, searchResult: searchResult);
     }
+  }
+
+  static void _showCannotCombine(BuildContext context) {
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      AppLocalizations.of(context)!.eatPageCombineNeedsNutrition,
+      tone: AppSnackBarTone.error,
+    );
   }
 
   /// Asks the amount of [item] on the eat page, whose button adds the food

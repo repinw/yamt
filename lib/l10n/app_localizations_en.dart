@@ -662,6 +662,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageCombineSearch => 'Search for a food';
 
   @override
+  String get eatPageCombineNeedsNutrition => 'This food has no nutrition values to add up.';
+
+  @override
   String get eatPageCombineAddFood => 'Add';
 
   @override
