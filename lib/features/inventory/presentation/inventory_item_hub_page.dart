@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/nutrition_facts.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -103,10 +104,10 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       header: meal == null
           ? null
           : EatMealHeader(
-              title: [
+              title: combinedFoodName([
                 widget.item.name,
                 for (final pick in picks) pick.item.name,
-              ].join(' + '),
+              ]),
               imageUrls: [
                 widget.item.imageUrl,
                 for (final pick in picks) pick.item.imageUrl,

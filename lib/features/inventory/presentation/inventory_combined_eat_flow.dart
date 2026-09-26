@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -105,8 +106,8 @@ abstract final class InventoryCombinedEatFlow {
     }
   }
 
-  /// Keeps [item] and [picks] in stock as one prepared meal "A + B" with
-  /// one portion, made of the entered amounts.
+  /// Keeps [item] and [picks] in stock as one prepared meal with one
+  /// portion, made of the entered amounts.
   static Future<void> storeAsMeal({
     required BuildContext context,
     required WidgetRef ref,
@@ -137,7 +138,7 @@ abstract final class InventoryCombinedEatFlow {
         return;
       }
       final result = await meals.createPreparedMeal(
-        name: prepared.map((part) => part.$1.name).join(' + '),
+        name: combinedFoodName(prepared.map((part) => part.$1.name)),
         totalPortions: 1,
         items: [
           for (final (item, request) in prepared)

@@ -5,9 +5,9 @@ import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 
 /// Builds one diary entry for [components] eaten together.
 ///
-/// The entry is named "A + B" after its components, and its totals are the
-/// sums of the components. Like a prepared meal entry it counts as 100 g of
-/// itself, so the per-100 values equal the totals.
+/// The entry is named after its components (see [combinedFoodName]), and
+/// its totals are the sums of the components. Like a prepared meal entry
+/// it counts as 100 g of itself, so the per-100 values equal the totals.
 CalorieEntry buildCombinedCalorieEntry({
   required String id,
   required String userId,
@@ -36,7 +36,7 @@ CalorieEntry buildCombinedCalorieEntry({
   return CalorieEntry(
     id: id,
     userId: userId,
-    name: components.map((component) => component.name).join(' + '),
+    name: combinedFoodName(components.map((component) => component.name)),
     imageUrl: imageUrl,
     mealType: mealType,
     consumedAmount: 100,
@@ -88,4 +88,19 @@ CalorieNutrientDetails? combineCalorieNutrientDetails(
     per100Salt: sum((details) => details.per100Salt),
   );
   return combined.hasAnyValue ? combined : null;
+}
+
+/// Name of foods eaten together: distinct names joined with " + ", and a
+/// name that appears several times counted once, such as "2× Apfel + Brot".
+String combinedFoodName(Iterable<String> names) {
+  final counts = <String, int>{};
+  for (final name in names) {
+    counts[name] = (counts[name] ?? 0) + 1;
+  }
+  return counts.entries
+      .map(
+        (entry) =>
+            entry.value == 1 ? entry.key : '${entry.value}× ${entry.key}',
+      )
+      .join(' + ');
 }

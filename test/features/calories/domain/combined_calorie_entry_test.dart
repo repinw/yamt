@@ -105,6 +105,12 @@ void main() {
     expect(entry.isCombined, isFalse);
   });
 
+  test('counts a food that appears several times in the name', () {
+    expect(combinedFoodName(['Apfel', 'Apfel']), '2× Apfel');
+    expect(combinedFoodName(['Apfel', 'Brot', 'Apfel']), '2× Apfel + Brot');
+    expect(combinedFoodName(['Brot', 'Gouda']), 'Brot + Gouda');
+  });
+
   test('needs at least two foods', () {
     expect(() => _combined([_component('Bread')]), throwsArgumentError);
   });
