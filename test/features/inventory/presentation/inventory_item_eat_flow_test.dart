@@ -82,25 +82,21 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   CalorieEntry? entry;
 
   @override
-  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
-    required CalorieEntry entry,
-    required PendingInventoryConsumption pendingConsumption,
-  }) async {
-    this.entry = entry;
-    this.pendingConsumption = pendingConsumption;
-    return InventoryCalorieEntryCommitResult(
-      itemId: pendingConsumption.itemId,
-      quantity: 1,
-      currentAmount: 500,
-    );
-  }
-
-  @override
   Future<List<InventoryCalorieEntryCommitResult>?>
   commitEntryAndInventoryItems({
     required CalorieEntry entry,
     required List<PendingInventoryConsumption> pendingConsumptions,
-  }) => throw UnimplementedError();
+  }) async {
+    this.entry = entry;
+    pendingConsumption = pendingConsumptions.single;
+    return [
+      InventoryCalorieEntryCommitResult(
+        itemId: pendingConsumptions.single.itemId,
+        quantity: 1,
+        currentAmount: 500,
+      ),
+    ];
+  }
 }
 
 class _RecordingInventoryItemsController extends InventoryItemsController {

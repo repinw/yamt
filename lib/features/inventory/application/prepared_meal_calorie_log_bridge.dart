@@ -1,6 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
@@ -44,7 +45,7 @@ PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
               },
             );
           },
-    now: DateTime.now,
+    now: ref.watch(clockProvider),
     nextEntryId: const Uuid().v4,
   );
 }

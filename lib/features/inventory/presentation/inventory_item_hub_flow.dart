@@ -56,16 +56,14 @@ abstract final class InventoryItemHubFlow {
         if (!started && context.mounted) {
           _showFailure(context);
         }
-      case InventoryItemHubCombine(:final request, :final picks):
-        await InventoryCombinedEatFlow.eat(
-          context: context,
-          ref: ref,
-          item: item,
-          request: request,
-          picks: picks,
-        );
-      case InventoryItemHubStoreMeal(:final request, :final picks):
-        await InventoryCombinedEatFlow.storeAsMeal(
+      case InventoryItemHubMeal(
+        :final request,
+        :final picks,
+        :final keepInStock,
+      ):
+        await (keepInStock
+            ? InventoryCombinedEatFlow.storeAsMeal
+            : InventoryCombinedEatFlow.eat)(
           context: context,
           ref: ref,
           item: item,

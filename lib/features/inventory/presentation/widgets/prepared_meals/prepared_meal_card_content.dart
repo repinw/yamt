@@ -20,8 +20,6 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/prep
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
-    'inventory_item_row_view_data.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_nutrition_strip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_segmented_button_frame.dart';

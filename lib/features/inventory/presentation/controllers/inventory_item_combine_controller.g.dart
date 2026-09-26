@@ -9,12 +9,18 @@ part of 'inventory_item_combine_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Foods picked on the item hub of [hubItemId] to log together with it.
+///
+/// The hub item's own request decides day and meal; a pick's `loggedAt` and
+/// `mealType` are placeholders.
 
 @ProviderFor(InventoryItemCombineController)
 final inventoryItemCombineControllerProvider =
     InventoryItemCombineControllerFamily._();
 
 /// Foods picked on the item hub of [hubItemId] to log together with it.
+///
+/// The hub item's own request decides day and meal; a pick's `loggedAt` and
+/// `mealType` are placeholders.
 final class InventoryItemCombineControllerProvider
     extends
         $NotifierProvider<
@@ -22,6 +28,9 @@ final class InventoryItemCombineControllerProvider
           List<InventoryCombinePick>
         > {
   /// Foods picked on the item hub of [hubItemId] to log together with it.
+  ///
+  /// The hub item's own request decides day and meal; a pick's `loggedAt` and
+  /// `mealType` are placeholders.
   InventoryItemCombineControllerProvider._({
     required InventoryItemCombineControllerFamily super.from,
     required String super.argument,
@@ -71,6 +80,9 @@ String _$inventoryItemCombineControllerHash() =>
     r'2d80ddc0b412d9b322c15eb989b5d868a5a97e14';
 
 /// Foods picked on the item hub of [hubItemId] to log together with it.
+///
+/// The hub item's own request decides day and meal; a pick's `loggedAt` and
+/// `mealType` are placeholders.
 
 final class InventoryItemCombineControllerFamily extends $Family
     with
@@ -91,6 +103,9 @@ final class InventoryItemCombineControllerFamily extends $Family
       );
 
   /// Foods picked on the item hub of [hubItemId] to log together with it.
+  ///
+  /// The hub item's own request decides day and meal; a pick's `loggedAt` and
+  /// `mealType` are placeholders.
 
   InventoryItemCombineControllerProvider call(String hubItemId) =>
       InventoryItemCombineControllerProvider._(argument: hubItemId, from: this);
@@ -100,6 +115,9 @@ final class InventoryItemCombineControllerFamily extends $Family
 }
 
 /// Foods picked on the item hub of [hubItemId] to log together with it.
+///
+/// The hub item's own request decides day and meal; a pick's `loggedAt` and
+/// `mealType` are placeholders.
 
 abstract class _$InventoryItemCombineController
     extends $Notifier<List<InventoryCombinePick>> {

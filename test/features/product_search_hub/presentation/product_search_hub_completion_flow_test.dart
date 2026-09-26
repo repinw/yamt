@@ -797,23 +797,19 @@ class _SuccessfulInventoryCalorieEntryCommitStore
   const new();
 
   @override
-  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
-    required CalorieEntry entry,
-    required PendingInventoryConsumption pendingConsumption,
-  }) async {
-    return InventoryCalorieEntryCommitResult(
-      itemId: pendingConsumption.itemId,
-      quantity: 1,
-      currentAmount: 400,
-    );
-  }
-
-  @override
   Future<List<InventoryCalorieEntryCommitResult>?>
   commitEntryAndInventoryItems({
     required CalorieEntry entry,
     required List<PendingInventoryConsumption> pendingConsumptions,
-  }) => throw UnimplementedError();
+  }) async {
+    return [
+      InventoryCalorieEntryCommitResult(
+        itemId: pendingConsumptions.single.itemId,
+        quantity: 1,
+        currentAmount: 400,
+      ),
+    ];
+  }
 }
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;

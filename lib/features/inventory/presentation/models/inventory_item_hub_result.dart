@@ -31,28 +31,23 @@ final class InventoryItemHubEat extends InventoryItemHubResult {
   final InventoryItemEatRequest request;
 }
 
-/// Log the hub's item together with [picks] as one entry.
+/// Log the hub's item together with [picks] as one entry, or keep them in
+/// stock as one prepared meal.
 @immutable
-final class InventoryItemHubCombine extends InventoryItemHubResult {
+final class InventoryItemHubMeal extends InventoryItemHubResult {
   /// Creates the result.
-  const new({required this.request, required this.picks});
+  const new({
+    required this.request,
+    required this.picks,
+    required this.keepInStock,
+  });
 
   /// The entered amount and log time of the hub's item.
   final InventoryItemEatRequest request;
 
   /// The other foods.
   final List<InventoryCombinePick> picks;
-}
 
-/// Keep the hub's item and [picks] in stock as one prepared meal.
-@immutable
-final class InventoryItemHubStoreMeal extends InventoryItemHubResult {
-  /// Creates the result.
-  const new({required this.request, required this.picks});
-
-  /// The entered amount of the hub's item.
-  final InventoryItemEatRequest request;
-
-  /// The other foods.
-  final List<InventoryCombinePick> picks;
+  /// Whether the foods go into stock as a prepared meal instead of the diary.
+  final bool keepInStock;
 }

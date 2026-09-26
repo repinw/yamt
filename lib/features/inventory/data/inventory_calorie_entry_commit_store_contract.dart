@@ -4,12 +4,6 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 
 /// Defines inventory calorie entry commit store.
 abstract interface class InventoryCalorieEntryCommitStore {
-  /// Commit entry and inventory.
-  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
-    required CalorieEntry entry,
-    required PendingInventoryConsumption pendingConsumption,
-  });
-
   /// Saves [entry] and takes every pending consumption out of its stock item
   /// in one write. Returns the new stock per item in the given order, or
   /// null when nothing was written.

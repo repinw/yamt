@@ -215,41 +215,38 @@ void main() {
       expect(alias.globalFoodItemId, 'g_milch_1');
     });
 
-    test(
-      'saveReceipt keeps full nutrition and quality status on inventory '
-      'and global item',
-      () async {
-        const receipt = ScannedReceipt(
-          id: 'rec_full_nutrition',
-          storeName: 'REWE',
-        );
-        const items = [
-          ReceiptLineItem(
-            id: 'line_full_nutrition',
-            rawName: 'JA! VOLLM. 1L',
-            totalPrice: 1.19,
-            status: ReceiptItemStatus.confirmed,
-            matchedProduct: testMilchCandidate,
-          ),
-        ];
+    test('saveReceipt keeps full nutrition and quality status on inventory '
+        'and global item', () async {
+      const receipt = ScannedReceipt(
+        id: 'rec_full_nutrition',
+        storeName: 'REWE',
+      );
+      const items = [
+        ReceiptLineItem(
+          id: 'line_full_nutrition',
+          rawName: 'JA! VOLLM. 1L',
+          totalPrice: 1.19,
+          status: ReceiptItemStatus.confirmed,
+          matchedProduct: testMilchCandidate,
+        ),
+      ];
 
-        await gateway.saveReceipt(receipt: receipt, items: items);
+      await gateway.saveReceipt(receipt: receipt, items: items);
 
-        final savedItem = invRepo.appendedItems.single;
-        expect(savedItem.nutrition, testMilchNutrition);
-        expect(
-          savedItem.nutrition?.qualityStatus,
-          GlobalFoodNutritionQualityStatus.unverified,
-        );
+      final savedItem = invRepo.appendedItems.single;
+      expect(savedItem.nutrition, testMilchNutrition);
+      expect(
+        savedItem.nutrition?.qualityStatus,
+        GlobalFoodNutritionQualityStatus.unverified,
+      );
 
-        final globalItem = globalFoodRepo.appendedItems.single;
-        expect(globalItem.nutrition, testMilchNutrition);
-        expect(
-          globalItem.nutrition?.qualityStatus,
-          GlobalFoodNutritionQualityStatus.unverified,
-        );
-      },
-    );
+      final globalItem = globalFoodRepo.appendedItems.single;
+      expect(globalItem.nutrition, testMilchNutrition);
+      expect(
+        globalItem.nutrition?.qualityStatus,
+        GlobalFoodNutritionQualityStatus.unverified,
+      );
+    });
 
     test('saveReceipt does not recreate an existing catalog product', () async {
       const receipt = ScannedReceipt(id: 'rec_existing', storeName: 'REWE');

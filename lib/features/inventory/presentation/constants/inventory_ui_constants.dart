@@ -71,6 +71,9 @@ abstract final class AppInventoryEatAction {
 abstract final class AppInventoryItemVisuals {
   /// The fallback emoji.
   static const String fallbackEmoji = '🍽️';
+
+  /// Most product images in a prepared meal cover collage.
+  static const int coverCollageImages = 4;
 }
 
 /// Defines compact inventory closed-tile sizing.

@@ -169,14 +169,16 @@ void main() {
         actor: _actor,
       );
 
-      final result = await store.commitEntryAndInventory(
+      final result = (await store.commitEntryAndInventoryItems(
         entry: _entry(),
-        pendingConsumption: const PendingInventoryConsumption(
-          id: 'pending-1',
-          itemId: 'inventory-1',
-          amount: 250,
-        ),
-      );
+        pendingConsumptions: [
+          const PendingInventoryConsumption(
+            id: 'pending-1',
+            itemId: 'inventory-1',
+            amount: 250,
+          ),
+        ],
+      ))?.single;
 
       expect(result, isNotNull);
       expect(result?.itemId, 'inventory-1');
@@ -245,14 +247,16 @@ void main() {
         actor: _actor,
       );
 
-      final result = await store.commitEntryAndInventory(
+      final result = (await store.commitEntryAndInventoryItems(
         entry: _entry(),
-        pendingConsumption: const PendingInventoryConsumption(
-          id: 'pending-1',
-          itemId: 'inventory-1',
-          amount: 250,
-        ),
-      );
+        pendingConsumptions: [
+          const PendingInventoryConsumption(
+            id: 'pending-1',
+            itemId: 'inventory-1',
+            amount: 250,
+          ),
+        ],
+      ))?.single;
 
       expect(result, isNull);
 
@@ -282,14 +286,16 @@ void main() {
         actor: _actor,
       );
 
-      await store.commitEntryAndInventory(
+      (await store.commitEntryAndInventoryItems(
         entry: _entry(),
-        pendingConsumption: const PendingInventoryConsumption(
-          id: 'pending-1',
-          itemId: 'inventory-1',
-          amount: 250,
-        ),
-      );
+        pendingConsumptions: [
+          const PendingInventoryConsumption(
+            id: 'pending-1',
+            itemId: 'inventory-1',
+            amount: 250,
+          ),
+        ],
+      ))?.single;
       await pumpEventQueue();
 
       final savedItem = await _openItem(firestore);
@@ -315,14 +321,16 @@ void main() {
     );
     final entry = _entry().copyWith(userId: 'member-1');
 
-    final result = await store.commitEntryAndInventory(
+    final result = (await store.commitEntryAndInventoryItems(
       entry: entry,
-      pendingConsumption: const PendingInventoryConsumption(
-        id: 'pending-1',
-        itemId: 'inventory-1',
-        amount: 250,
-      ),
-    );
+      pendingConsumptions: const [
+        PendingInventoryConsumption(
+          id: 'pending-1',
+          itemId: 'inventory-1',
+          amount: 250,
+        ),
+      ],
+    ))?.single;
 
     expect(result, isNotNull);
     await pumpEventQueue();

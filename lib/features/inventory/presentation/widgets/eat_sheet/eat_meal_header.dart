@@ -21,7 +21,9 @@ class EatMealHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     const size = AppFoodLabel.mealImageTile;
     const step = size - AppFoodLabel.mealImageOverlap;
-    final shown = imageUrls.take(_maxImages).toList(growable: false);
+    final shown = imageUrls
+        .take(AppFoodLabel.mealHeaderImages)
+        .toList(growable: false);
 
     return Row(
       spacing: AppSpacing.lg,
@@ -63,5 +65,3 @@ class EatMealHeader extends StatelessWidget {
     );
   }
 }
-
-const _maxImages = 4;

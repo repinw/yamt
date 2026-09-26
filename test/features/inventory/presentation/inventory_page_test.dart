@@ -209,20 +209,6 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   CalorieEntry? entry;
 
   @override
-  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
-    required CalorieEntry entry,
-    required PendingInventoryConsumption pendingConsumption,
-  }) async {
-    this.entry = entry;
-    this.pendingConsumption = pendingConsumption;
-    return InventoryCalorieEntryCommitResult(
-      itemId: pendingConsumption.itemId,
-      quantity: 1,
-      currentAmount: 1000 - pendingConsumption.amount,
-    );
-  }
-
-  @override
   Future<List<InventoryCalorieEntryCommitResult>?>
   commitEntryAndInventoryItems({
     required CalorieEntry entry,
@@ -230,6 +216,9 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   }) async {
     this.entry = entry;
     this.pendingConsumptions = pendingConsumptions;
+    pendingConsumption = pendingConsumptions.length == 1
+        ? pendingConsumptions.single
+        : null;
     await calorieLog?.saveEntry(entry);
     return [
       for (final pending in pendingConsumptions)

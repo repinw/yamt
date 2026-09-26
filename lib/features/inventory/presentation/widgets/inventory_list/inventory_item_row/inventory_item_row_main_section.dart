@@ -1,25 +1,23 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/constants/inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_image_tile.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row_snapshot.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_progress.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_tile_header_layout.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/inventory_item_row_view_data.dart';
 
 /// Image, name, brand and remaining stock of an inventory item row.
 class InventoryItemRowMainSection extends StatelessWidget {
   /// Creates the main section.
   const new({
     required this.item,
-    required this.viewData,
     required this.showSelectionCheckbox,
     required this.isSelected,
     super.key,
   });
 
   /// The item.
-  final InventoryItemRowSnapshot item;
-
-  /// The view data.
-  final InventoryItemRowViewData viewData;
+  final InventoryItem item;
 
   /// The show selection checkbox.
   final bool showSelectionCheckbox;
@@ -29,14 +27,28 @@ class InventoryItemRowMainSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final progress = const InventoryItemProgressCalculator().fromItem(item);
+    final brand = item.brand?.trim() ?? '';
+
     return InventoryTileHeaderLayout(
       leading: InventoryItemImageTile(imageUrl: item.imageUrl),
-      badgeText: viewData.hasBrand ? viewData.brand : null,
+      badgeText: brand.isEmpty ? null : brand,
       title: item.name,
-      titleStyle: viewData.nameTextStyle,
-      progressRatio: viewData.remainingRatio,
-      progressLabel: viewData.remainingLabel,
-      segmentedByUnits: viewData.segmentedByUnits,
+      titleStyle: Theme.of(context).textTheme.titleMedium?.copyWith(
+        color: item.isFullyConsumed
+            ? colors.onSurface.withValues(
+                alpha: AppOpacities.inventoryUsedUpName,
+              )
+            : colors.onSurface,
+        fontSize: AppInventoryClosedTile.titleFontSize,
+        fontWeight: FontWeight.w700,
+        height: AppInventoryClosedTile.titleLineHeight,
+        letterSpacing: 0,
+      ),
+      progressRatio: progress.remainingRatio,
+      progressLabel: progress.remainingLabel,
+      segmentedByUnits: progress.segmentedByUnits,
       totalUnits: item.initialQuantity,
       remainingUnits: item.quantity,
       showSelectionCheckbox: showSelectionCheckbox,

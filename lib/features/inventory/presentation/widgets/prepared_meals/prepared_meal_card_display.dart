@@ -15,8 +15,7 @@ import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_item_row_constants.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/'
-    'inventory_item_row_view_data.dart';
+import 'package:yamt/features/inventory/presentation/widgets/shared/inventory_nutrition_strip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/'
     'inventory_segmented_button_style.dart';
 import 'package:yamt/l10n/app_localizations.dart';

@@ -5,6 +5,7 @@ import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_title.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Nutrition table drawn like a food label: a framed box, a heavy rule
@@ -43,51 +44,27 @@ class EatLabelTable extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: colors.ink,
-                  width: AppFoodLabel.labelHeaderRule,
+          EatLabelTitle(
+            text: l10n.eatPageNutritionTitle,
+            trailing: [
+              if (per100 != null)
+                SizedBox(
+                  width: AppFoodLabel.per100Column,
+                  child: Text(
+                    per100,
+                    textAlign: TextAlign.end,
+                    style: headerStyle,
+                  ),
+                ),
+              SizedBox(
+                width: AppFoodLabel.eatenColumn,
+                child: Text(
+                  eatenHeader,
+                  textAlign: TextAlign.end,
+                  style: headerStyle,
                 ),
               ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Text(
-                      l10n.eatPageNutritionTitle,
-                      style: textTheme.titleLarge?.copyWith(
-                        fontFamily: AppFonts.display,
-                        fontWeight: FontWeight.w800,
-                        color: colors.ink,
-                        height: 1,
-                      ),
-                    ),
-                  ),
-                  if (per100 != null)
-                    SizedBox(
-                      width: AppFoodLabel.per100Column,
-                      child: Text(
-                        per100,
-                        textAlign: TextAlign.end,
-                        style: headerStyle,
-                      ),
-                    ),
-                  SizedBox(
-                    width: AppFoodLabel.eatenColumn,
-                    child: Text(
-                      eatenHeader,
-                      textAlign: TextAlign.end,
-                      style: headerStyle,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
           for (final (index, row) in rows.indexed)
             _LabelRow(

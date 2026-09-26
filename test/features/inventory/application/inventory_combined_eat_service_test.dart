@@ -29,12 +29,6 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   List<PendingInventoryConsumption>? pendings;
 
   @override
-  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
-    required CalorieEntry entry,
-    required PendingInventoryConsumption pendingConsumption,
-  }) => throw UnimplementedError();
-
-  @override
   Future<List<InventoryCalorieEntryCommitResult>?>
   commitEntryAndInventoryItems({
     required CalorieEntry entry,

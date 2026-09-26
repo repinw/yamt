@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
@@ -7,12 +8,10 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_manual_add_amount_service.dart';
-import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
-import 'package:yamt/features/inventory/presentation/inventory_manual_add_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_food_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
@@ -104,7 +103,7 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
                         pick.item,
                         hasOpenStock: pick.searchResult != null,
                       ).toDouble(),
-                      step: _rulerStep,
+                      step: AppFoodLabel.mealRulerStep,
                       marks: const <EatRulerMark>[],
                       onChanged: (value) => ref
                           .read(combineProvider.notifier)
@@ -121,9 +120,10 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
     setState(() => _openId = _openId == id ? null : id);
   }
 
-  /// Opens the inventory to pick foods. Foods counted in grams or
-  /// milliliters join with a default amount; any other food gets its amount
-  /// on the eat page, and is left out when that page is closed.
+  /// Opens the inventory to pick foods. Stock items join with a default
+  /// amount. A food found by search joins the same way, unless it needs its
+  /// amount entered on the eat page; it is left out when that page is
+  /// closed.
   Future<void> _add() async {
     final notifier = ref.read(
       inventoryItemCombineControllerProvider(hubItem.id).notifier,
@@ -152,7 +152,7 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
           notifier.addWithDefaultAmount(item, searchResult: searchResult)) {
         continue;
       }
-      final request = await _askAmount(context, item, searchResult);
+      final request = await _askAmount(context, item);
       if (request == null || !mounted) {
         continue;
       }
@@ -171,29 +171,13 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
     );
   }
 
-  /// Asks the amount of [item] on the eat page, whose button adds the food
-  /// to the list instead of logging it. A food found by search has no stock
-  /// yet, so its amount is open.
+  /// Asks the amount of a food found by search on the eat page, whose
+  /// button adds the food to the list instead of logging it. The food has
+  /// no stock yet, so its amount is open.
   static Future<InventoryItemEatRequest?> _askAmount(
     BuildContext context,
     InventoryItem item,
-    InventoryReceiptManualProductResult? searchResult,
   ) async {
-    final confirmLabel = AppLocalizations.of(context)!.eatPageCombineAddFood;
-    if (searchResult == null) {
-      final result = await showInventoryItemEatSheetResult(
-        context: context,
-        item: item,
-        confirmLabel: confirmLabel,
-      );
-      return result?.request;
-    }
-    final selected = inventoryManualAddEatRequestFromSelection(
-      searchResult.eatSelection,
-    );
-    if (selected != null) {
-      return selected;
-    }
     final result = await showInventoryItemEatSheetResult(
       context: context,
       item: item,
@@ -202,10 +186,8 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
         rawWeight: item.weight,
       ),
       hasOpenStock: true,
-      confirmLabel: confirmLabel,
+      confirmLabel: AppLocalizations.of(context)!.eatPageCombineAddFood,
     );
     return result?.request;
   }
 }
-
-const _rulerStep = 5.0;

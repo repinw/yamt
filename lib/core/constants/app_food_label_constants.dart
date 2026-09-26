@@ -9,13 +9,19 @@ abstract final class AppFoodLabel {
 
   /// Icon inside the image tile when there is no image, as a share of the
   /// tile edge.
-  static const double imageFallbackIconShare = 40 / 76;
+  static const double imageFallbackIconShare = 40 / imageTile;
 
   /// Edge length of one food image in a meal header.
   static const double mealImageTile = 56;
 
   /// How far the images of a meal header overlap.
   static const double mealImageOverlap = 18;
+
+  /// Most images shown in a meal header.
+  static const int mealHeaderImages = 4;
+
+  /// Step of the amount ruler of a food in a meal.
+  static const double mealRulerStep = 5;
 
   /// Width of the thick outlines.
   static const double outline = 2;

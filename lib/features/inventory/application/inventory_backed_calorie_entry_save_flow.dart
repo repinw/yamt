@@ -62,10 +62,10 @@ class InventoryBackedCalorieEntrySaveFlow {
     );
 
     final commitStore = _ref.read(inventoryCalorieEntryCommitStoreProvider);
-    final commitResult = await commitStore.commitEntryAndInventory(
+    final commitResult = (await commitStore.commitEntryAndInventoryItems(
       entry: entry,
-      pendingConsumption: effectivePendingConsumption,
-    );
+      pendingConsumptions: [effectivePendingConsumption],
+    ))?.single;
     if (commitResult == null) {
       log(
         'Commit store returned null for calorie entry ${entry.id} '

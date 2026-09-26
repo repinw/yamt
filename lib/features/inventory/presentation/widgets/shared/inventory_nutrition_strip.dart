@@ -1,7 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
-import 'package:yamt/features/inventory/presentation/widgets/shared/'
-    'inventory_item_row_view_data.dart';
 
 export 'package:yamt/features/inventory/presentation/formatters/'
     'inventory_nutrition_format.dart'
@@ -30,4 +28,16 @@ class InventoryNutritionStrip extends StatelessWidget {
       colorScheme: colorScheme,
     );
   }
+}
+
+/// Defines inventory nutrition metric.
+class InventoryNutritionMetric {
+  /// The inventory nutrition metric.
+  const new({required this.label, required this.value});
+
+  /// The label.
+  final String label;
+
+  /// The value.
+  final String value;
 }

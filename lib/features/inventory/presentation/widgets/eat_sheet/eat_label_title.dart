@@ -7,10 +7,13 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 /// Title of a food label box, with the heavy rule under it.
 class EatLabelTitle extends StatelessWidget {
   /// Creates the title.
-  const new({required this.text, super.key});
+  const new({required this.text, this.trailing = const <Widget>[], super.key});
 
   /// Title text.
   final String text;
+
+  /// Widgets at the end of the title line, such as column headers.
+  final List<Widget> trailing;
 
   @override
   Widget build(BuildContext context) {
@@ -26,14 +29,22 @@ class EatLabelTitle extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontFamily: AppFonts.display,
-            fontWeight: FontWeight.w800,
-            color: colors.ink,
-            height: 1,
-          ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Expanded(
+              child: Text(
+                text,
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontFamily: AppFonts.display,
+                  fontWeight: FontWeight.w800,
+                  color: colors.ink,
+                  height: 1,
+                ),
+              ),
+            ),
+            ...trailing,
+          ],
         ),
       ),
     );

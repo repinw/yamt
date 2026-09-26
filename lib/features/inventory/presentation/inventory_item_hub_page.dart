@@ -168,9 +168,11 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       return;
     }
     Navigator.of(context).pop(
-      result.intent == InventoryItemEatSheetIntent.storeAsMeal
-          ? InventoryItemHubStoreMeal(request: request, picks: picks)
-          : InventoryItemHubCombine(request: request, picks: picks),
+      InventoryItemHubMeal(
+        request: request,
+        picks: picks,
+        keepInStock: result.intent == InventoryItemEatSheetIntent.storeAsMeal,
+      ),
     );
   }
 

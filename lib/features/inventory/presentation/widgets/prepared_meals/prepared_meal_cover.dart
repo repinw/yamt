@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/features/inventory/presentation/constants/inventory_ui_constants.dart';
 
 /// Cover image of a prepared meal.
 ///
@@ -88,7 +89,7 @@ class PreparedMealCover extends StatelessWidget {
     final urls = componentImageUrls
         .map(normalizeProductImageUrl)
         .nonNulls
-        .take(_maxCollageImages)
+        .take(AppInventoryItemVisuals.coverCollageImages)
         .toList(growable: false);
     if (urls.isEmpty) {
       return null;
@@ -120,8 +121,6 @@ class PreparedMealCover extends StatelessWidget {
     );
   }
 }
-
-const _maxCollageImages = 4;
 
 class _PreparedMealCoverFallback extends StatelessWidget {
   const new({required this.label});

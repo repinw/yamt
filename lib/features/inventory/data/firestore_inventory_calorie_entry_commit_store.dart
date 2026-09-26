@@ -55,18 +55,6 @@ class FirestoreInventoryCalorieEntryCommitStore
   final InventoryCalorieEntryCommitMutationBuilder mutationBuilder;
 
   @override
-  Future<InventoryCalorieEntryCommitResult?> commitEntryAndInventory({
-    required CalorieEntry entry,
-    required PendingInventoryConsumption pendingConsumption,
-  }) async {
-    final results = await commitEntryAndInventoryItems(
-      entry: entry,
-      pendingConsumptions: [pendingConsumption],
-    );
-    return results?.single;
-  }
-
-  @override
   Future<List<InventoryCalorieEntryCommitResult>?>
   commitEntryAndInventoryItems({
     required CalorieEntry entry,
