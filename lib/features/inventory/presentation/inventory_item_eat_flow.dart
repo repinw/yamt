@@ -12,6 +12,7 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
+import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -167,10 +168,17 @@ class InventoryItemEatFlow {
         return await fail(message: l10n.inventoryItemActionFailed);
       }
 
+      final stagedAmount =
+          pendingConsumption?.amount ??
+          container
+              .read(inventoryPendingConsumptionStoreProvider)
+              .pendingConsumptionById(pendingConsumptionId)
+              ?.amount;
       final inventoryContext = InventoryCalorieBridgeFlow.buildInventoryContext(
         item: itemBeforeMutation,
         pendingConsumptionId: pendingConsumptionId,
         request: request,
+        stagedAmount: stagedAmount,
       );
       final scannedSourceRef = InventoryCalorieBridgeFlow.buildScannedSourceRef(
         item: itemBeforeMutation,

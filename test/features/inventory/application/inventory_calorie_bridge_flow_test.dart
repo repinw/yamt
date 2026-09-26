@@ -278,6 +278,22 @@ void main() {
     expect(context.consumedUnit, ConsumedUnit.grams);
   });
 
+  test('buildInventoryContext restores the staged amount, not the wish', () {
+    final context = InventoryCalorieBridgeFlow.buildInventoryContext(
+      item: _amountItemWithNutrition(),
+      pendingConsumptionId: 'pending-1',
+      request: InventoryItemEatRequest(
+        inventoryAmount: 250,
+        loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+        mealType: MealType.lunch,
+      ),
+      stagedAmount: 180,
+    );
+
+    expect(context.inventoryAmountToRestore, 180);
+    expect(context.consumedAmount, 250);
+  });
+
   test('buildInventoryContext prefers manual portion for fixed-unit items', () {
     final item = _amountItemWithNutrition();
     final request = InventoryItemEatRequest(

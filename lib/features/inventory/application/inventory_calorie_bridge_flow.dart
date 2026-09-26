@@ -68,10 +68,14 @@ class InventoryCalorieBridgeFlow {
   }
 
   /// Build inventory context.
+  ///
+  /// [stagedAmount] is what the stock actually gave, which may be less than
+  /// the request when the stock ran low; deleting the entry returns that.
   static CalorieInventoryCreateContext buildInventoryContext({
     required InventoryItem item,
     required String pendingConsumptionId,
     required InventoryItemEatRequest request,
+    int? stagedAmount,
   }) {
     final fixedUnit = inventoryItemConsumedUnit(item);
     if (!request.hasManualCaloriePortion && fixedUnit == null) {
@@ -92,7 +96,7 @@ class InventoryCalorieBridgeFlow {
       foodFingerprint: item.resolvedFoodFingerprint,
       globalFoodItemId: item.globalFoodItemId,
       pendingConsumptionId: pendingConsumptionId,
-      inventoryAmountToRestore: request.inventoryAmount,
+      inventoryAmountToRestore: stagedAmount ?? request.inventoryAmount,
       itemName: item.name,
       itemBrand: item.brand,
       consumedAmount: consumedAmount,
