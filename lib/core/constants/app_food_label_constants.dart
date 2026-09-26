@@ -44,6 +44,9 @@ abstract final class AppFoodLabel {
   /// Width of the eaten column of the nutrition label.
   static const double eatenColumn = 76;
 
+  /// Gap between the per-100 and the eaten column of the nutrition label.
+  static const double labelColumnGap = 8;
+
   /// Height of the tick band of the ruler.
   static const double rulerTicks = 26;
 

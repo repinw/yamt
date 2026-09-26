@@ -47,7 +47,7 @@ class EatLabelTable extends StatelessWidget {
           EatLabelTitle(
             text: l10n.eatPageNutritionTitle,
             trailing: [
-              if (per100 != null)
+              if (per100 != null) ...[
                 SizedBox(
                   width: AppFoodLabel.per100Column,
                   child: Text(
@@ -56,6 +56,8 @@ class EatLabelTable extends StatelessWidget {
                     style: headerStyle,
                   ),
                 ),
+                const SizedBox(width: AppFoodLabel.labelColumnGap),
+              ],
               SizedBox(
                 width: AppFoodLabel.eatenColumn,
                 child: Text(
@@ -133,7 +135,7 @@ class _LabelRow extends StatelessWidget {
                 ),
               ),
             ),
-            if (showPer100)
+            if (showPer100) ...[
               SizedBox(
                 width: AppFoodLabel.per100Column,
                 child: Text(
@@ -142,6 +144,8 @@ class _LabelRow extends StatelessWidget {
                   style: base,
                 ),
               ),
+              const SizedBox(width: AppFoodLabel.labelColumnGap),
+            ],
             SizedBox(
               width: AppFoodLabel.eatenColumn,
               child: Text(
