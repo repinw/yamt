@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_macro_summary.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_thumb.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// One food of a combined diary entry: name, macros, kcal, and amount.
@@ -36,6 +37,8 @@ class DiaryCombinedFoodRow extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
           child: Row(
             children: [
+              MealThumb.food(food: food),
+              const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

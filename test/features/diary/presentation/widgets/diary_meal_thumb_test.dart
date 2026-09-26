@@ -18,7 +18,7 @@ void main() {
   );
 
   Widget buildTestWidget() {
-    return const ProviderScope(
+    return ProviderScope(
       child: MaterialApp(
         home: Scaffold(
           body: Center(child: MealThumb(entry: entry)),

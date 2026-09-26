@@ -5,32 +5,54 @@ import 'package:yamt/core/constants/hero_tags.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
 const _thumbSize = 44.0;
 
 /// Entry image, or the entry's initial when no image loads.
 class MealThumb extends ConsumerWidget {
-  /// Creates a meal thumbnail.
-  const new({required this.entry, this.heroEnabled = false, super.key});
-
-  /// Entry whose media should be rendered.
-  final DiaryMealEntry entry;
-
-  /// Whether the image flies into the entry details sheet on open.
+  /// Creates a meal thumbnail for [entry].
   ///
-  /// Only rows that open one entry enable it: a merged row stands for several
-  /// entries and must not share a tag with its children.
-  final bool heroEnabled;
+  /// With [heroEnabled] the image flies into the entry details sheet on
+  /// open. Only rows that open one entry enable it: a merged row stands for
+  /// several entries and must not share a tag with its children.
+  new({
+    required DiaryMealEntry entry,
+    bool heroEnabled = false,
+    super.key,
+  }) : name = entry.name,
+       imageUrl = entry.imageUrl,
+       imageAssetId = entry.imageAssetId,
+       heroEntryId = heroEnabled ? entry.id : null;
+
+  /// Creates a thumbnail for one food of a combined entry.
+  new food({required CalorieEntryBundleComponent food, super.key})
+    : name = food.name,
+      imageUrl = food.imageUrl,
+      imageAssetId = null,
+      heroEntryId = null;
+
+  /// Name whose initial shows without an image.
+  final String name;
+
+  /// Image address.
+  final String? imageUrl;
+
+  /// Local image asset id.
+  final String? imageAssetId;
+
+  /// Entry whose image flies into its details sheet, or null.
+  final String? heroEntryId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final imageRef = maybeLocalImageAssetRef(entry.imageAssetId);
+    final imageRef = maybeLocalImageAssetRef(imageAssetId);
     final storedImageBytes = imageRef == null
         ? null
         : ref.watch(localImageBytesProvider(imageRef)).asData?.value;
-    final imageUrl = entry.imageUrl;
-    final fallback = _MealThumbFallback(label: entry.name);
+    final imageUrl = this.imageUrl;
+    final fallback = _MealThumbFallback(label: name);
     final thumb = ClipRRect(
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: SizedBox.square(
@@ -48,10 +70,11 @@ class MealThumb extends ConsumerWidget {
     );
     final hasImage = storedImageBytes != null || imageUrl != null;
 
-    if (!heroEnabled || !hasImage) {
+    final heroEntryId = this.heroEntryId;
+    if (heroEntryId == null || !hasImage) {
       return thumb;
     }
-    return Hero(tag: HeroTags.loggedEntryImage(entry.id), child: thumb);
+    return Hero(tag: HeroTags.loggedEntryImage(heroEntryId), child: thumb);
   }
 }
 
