@@ -49,4 +49,13 @@ class _UnavailableInventoryCalorieEntryCommitStore
   }) async {
     return null;
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) async {
+    return null;
+  }
 }

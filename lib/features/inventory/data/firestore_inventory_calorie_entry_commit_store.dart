@@ -59,6 +59,19 @@ class FirestoreInventoryCalorieEntryCommitStore
     required CalorieEntry entry,
     required PendingInventoryConsumption pendingConsumption,
   }) async {
+    final results = await commitEntryAndInventoryItems(
+      entry: entry,
+      pendingConsumptions: [pendingConsumption],
+    );
+    return results?.single;
+  }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) async {
     final cipher = dataCipher;
     final household = householdCipher;
     if (cipher == null || household == null) {
@@ -70,21 +83,22 @@ class FirestoreInventoryCalorieEntryCommitStore
       );
       return null;
     }
-    final inventoryUserId = household.ownerUid;
-    final entryUserId = cipher.uid;
-    if (pendingConsumption.amount < 1) {
+    final itemIds = pendingConsumptions.map((pending) => pending.itemId);
+    if (pendingConsumptions.isEmpty ||
+        itemIds.toSet().length != pendingConsumptions.length ||
+        pendingConsumptions.any((pending) => pending.amount < 1)) {
       log(
-        'Cannot commit calorie entry ${entry.id}: invalid pending amount '
-        '${pendingConsumption.amount} for item ${pendingConsumption.itemId}.',
+        'Cannot commit calorie entry ${entry.id}: invalid pending '
+        'consumptions ${pendingConsumptions.map(_describe).join(', ')}.',
         name: _commitStoreLogName,
       );
       return null;
     }
 
     log(
-      'Committing calorie entry ${entry.id} with inventory item '
-      '${pendingConsumption.itemId} for inventory owner $inventoryUserId '
-      '(amount=${pendingConsumption.amount}).',
+      'Committing calorie entry ${entry.id} with inventory items '
+      '${pendingConsumptions.map(_describe).join(', ')} for inventory owner '
+      '${household.ownerUid}.',
       name: _commitStoreLogName,
     );
 
@@ -93,113 +107,134 @@ class FirestoreInventoryCalorieEntryCommitStore
     // copy, so two offline consumptions of the same item may overwrite each
     // other.
     try {
-      final inventoryCollection = _inventoryCollection(household);
-      final inventoryRef = inventoryCollection.reference.doc(
-        pendingConsumption.itemId,
-      );
-      final inventorySnapshot = await readDocumentLocalFirst(inventoryRef);
-      final storedItem = await inventoryCollection.open(inventorySnapshot);
-      if (storedItem == null) {
-        log(
-          'Inventory item ${pendingConsumption.itemId} no longer exists '
-          'while committing calorie entry ${entry.id}.',
-          name: _commitStoreLogName,
-        );
-        return null;
-      }
-
-      final rawItem = Map<String, dynamic>.from(storedItem)
-        ..['id'] = inventorySnapshot.id;
-
-      final currentItem = InventoryItem.fromJson(rawItem);
-      final committedItem = mutationBuilder.buildCommittedItem(
-        item: currentItem,
-        amount: pendingConsumption.amount,
-        consumedAt: entry.loggedAt,
-      );
-      if (committedItem == null) {
-        log(
-          'Inventory commit rejected for calorie entry ${entry.id} '
-          '(itemId=${currentItem.id}, '
-          'quantity=${currentItem.quantity}, '
-          'currentAmount=${currentItem.currentAmount}, '
-          'requestedAmount=${pendingConsumption.amount}, '
-          'usesAmountProgress=${currentItem.usesAmountProgress}).',
-          name: _commitStoreLogName,
-        );
-        return null;
-      }
-
       final normalizedEntry = entry.copyWith(
-        userId: entryUserId,
+        userId: cipher.uid,
         imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
         updatedAt: DateTime.now(),
       );
-
-      final entryRef = _calorieEntriesCollectionRef(entryUserId)
+      final entryRef = _calorieEntriesCollectionRef(cipher.uid)
           .doc(normalizedEntry.id);
-      final entryDocument = await encodeCalorieEntryDocument(
-        normalizedEntry,
-        reference: entryRef,
-        cipher: cipher.cipher,
-      );
-      // The item is encrypted as a whole, so the batch writes the full
-      // document instead of updating single fields.
-      final itemDocument = await inventoryCollection.seal(inventoryRef.id, {
-        ...storedItem,
-        ...mutationBuilder.buildInventoryUpdate(committedItem),
-      });
       final batch = firestore.batch()
-        ..set(entryRef, entryDocument)
-        ..set(inventoryRef, itemDocument);
-      final activityEvent = mutationBuilder.buildActivityEvent(
-        actor: actor,
-        beforeItem: currentItem,
-        afterItem: committedItem,
-        amount: pendingConsumption.amount,
-        happenedAt: normalizedEntry.loggedAt,
-      );
-      if (activityEvent != null) {
-        final activityCollection = _activityEventsCollection(household);
-        batch.set(
-          activityCollection.reference.doc(activityEvent.id),
-          await activityCollection.seal(
-            activityEvent.id,
-            activityEvent.toJson(),
+        ..set(
+          entryRef,
+          await encodeCalorieEntryDocument(
+            normalizedEntry,
+            reference: entryRef,
+            cipher: cipher.cipher,
           ),
         );
+      final results = <InventoryCalorieEntryCommitResult>[];
+      for (final pending in pendingConsumptions) {
+        final result = await _addItemCommit(
+          batch: batch,
+          household: household,
+          entry: normalizedEntry,
+          pending: pending,
+        );
+        if (result == null) {
+          return null;
+        }
+        results.add(result);
       }
       commitBatchInBackground(
         batch,
         failureMessage:
-            'Server rejected calorie entry ${entry.id} with inventory item '
-            '${pendingConsumption.itemId}.',
+            'Server rejected calorie entry ${entry.id} with inventory items '
+            '${itemIds.join(', ')}.',
         logName: _commitStoreLogName,
       );
-
       log(
         'Batch queued for calorie entry ${entry.id} '
-        '(itemId=${committedItem.id}, '
-        'nextQuantity=${committedItem.quantity}, '
-        'nextCurrentAmount=${committedItem.currentAmount}).',
+        '(${results.length} inventory items).',
         name: _commitStoreLogName,
       );
-
-      return InventoryCalorieEntryCommitResult(
-        itemId: committedItem.id,
-        quantity: committedItem.quantity,
-        currentAmount: committedItem.currentAmount,
-      );
+      return results;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to commit calorie entry ${entry.id} with inventory item '
-        '${pendingConsumption.itemId}.',
+        'Failed to commit calorie entry ${entry.id} with inventory items '
+        '${itemIds.join(', ')}.',
         name: _commitStoreLogName,
         error: error,
         stackTrace: stackTrace,
       );
       return null;
     }
+  }
+
+  /// Adds the stock change of [pending] and its activity event to [batch].
+  /// Returns null when the item is gone or has too little stock.
+  Future<InventoryCalorieEntryCommitResult?> _addItemCommit({
+    required WriteBatch batch,
+    required HouseholdCipher household,
+    required CalorieEntry entry,
+    required PendingInventoryConsumption pending,
+  }) async {
+    final inventoryCollection = _inventoryCollection(household);
+    final inventoryRef = inventoryCollection.reference.doc(pending.itemId);
+    final inventorySnapshot = await readDocumentLocalFirst(inventoryRef);
+    final storedItem = await inventoryCollection.open(inventorySnapshot);
+    if (storedItem == null) {
+      log(
+        'Inventory item ${pending.itemId} no longer exists while committing '
+        'calorie entry ${entry.id}.',
+        name: _commitStoreLogName,
+      );
+      return null;
+    }
+
+    final currentItem = InventoryItem.fromJson(
+      Map<String, dynamic>.from(storedItem)..['id'] = inventorySnapshot.id,
+    );
+    final committedItem = mutationBuilder.buildCommittedItem(
+      item: currentItem,
+      amount: pending.amount,
+      consumedAt: entry.loggedAt,
+    );
+    if (committedItem == null) {
+      log(
+        'Inventory commit rejected for calorie entry ${entry.id} '
+        '(itemId=${currentItem.id}, '
+        'quantity=${currentItem.quantity}, '
+        'currentAmount=${currentItem.currentAmount}, '
+        'requestedAmount=${pending.amount}, '
+        'usesAmountProgress=${currentItem.usesAmountProgress}).',
+        name: _commitStoreLogName,
+      );
+      return null;
+    }
+
+    // The item is encrypted as a whole, so the batch writes the full
+    // document instead of updating single fields.
+    batch.set(
+      inventoryRef,
+      await inventoryCollection.seal(inventoryRef.id, {
+        ...storedItem,
+        ...mutationBuilder.buildInventoryUpdate(committedItem),
+      }),
+    );
+    final activityEvent = mutationBuilder.buildActivityEvent(
+      actor: actor,
+      beforeItem: currentItem,
+      afterItem: committedItem,
+      amount: pending.amount,
+      happenedAt: entry.loggedAt,
+    );
+    if (activityEvent != null) {
+      final activityCollection = _activityEventsCollection(household);
+      batch.set(
+        activityCollection.reference.doc(activityEvent.id),
+        await activityCollection.seal(activityEvent.id, activityEvent.toJson()),
+      );
+    }
+    return InventoryCalorieEntryCommitResult(
+      itemId: committedItem.id,
+      quantity: committedItem.quantity,
+      currentAmount: committedItem.currentAmount,
+    );
+  }
+
+  static String _describe(PendingInventoryConsumption pending) {
+    return '${pending.itemId} x ${pending.amount}';
   }
 
   SealedCollection _inventoryCollection(HouseholdCipher household) {

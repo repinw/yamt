@@ -56,3 +56,36 @@ CalorieEntry buildCombinedCalorieEntry({
     nutrientDetails: nutrientDetails,
   );
 }
+
+/// Label nutrients of foods eaten together, per 100 g of the combined entry.
+///
+/// A combined entry counts as 100 g of itself, so each value is the sum of
+/// what the foods' eaten amounts contain. A value is unknown when one food does
+/// not list it.
+CalorieNutrientDetails? combineCalorieNutrientDetails(
+  Iterable<({CalorieNutrientDetails? details, double amount})> foods,
+) {
+  double? sum(double? Function(CalorieNutrientDetails details) value) {
+    var total = 0.0;
+    for (final food in foods) {
+      final details = food.details;
+      final per100 = details == null ? null : value(details);
+      if (per100 == null) {
+        return null;
+      }
+      total += per100 * food.amount / 100;
+    }
+    return total;
+  }
+
+  final combined = CalorieNutrientDetails(
+    per100SaturatedFat: sum((details) => details.per100SaturatedFat),
+    per100PolyunsaturatedFat: sum(
+      (details) => details.per100PolyunsaturatedFat,
+    ),
+    per100Sugar: sum((details) => details.per100Sugar),
+    per100Fiber: sum((details) => details.per100Fiber),
+    per100Salt: sum((details) => details.per100Salt),
+  );
+  return combined.hasAnyValue ? combined : null;
+}

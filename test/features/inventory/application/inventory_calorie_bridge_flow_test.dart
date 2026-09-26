@@ -90,6 +90,13 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
       currentAmount: 500,
     );
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) => throw UnimplementedError();
 }
 
 class _SaveDirectEntryButton extends ConsumerWidget {

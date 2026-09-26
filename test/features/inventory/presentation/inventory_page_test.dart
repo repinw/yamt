@@ -205,6 +205,13 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
       currentAmount: 1000 - pendingConsumption.amount,
     );
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) => throw UnimplementedError();
 }
 
 class _DelayedStageInventoryItemsController extends InventoryItemsController {

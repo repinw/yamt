@@ -807,6 +807,13 @@ class _SuccessfulInventoryCalorieEntryCommitStore
       currentAmount: 400,
     );
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) => throw UnimplementedError();
 }
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
+import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
 
 final DateTime _now = DateTime.parse('2026-09-26T12:00:00Z');
@@ -36,6 +37,8 @@ CalorieEntry _combined(List<CalorieEntryBundleComponent> components) {
 }
 
 void main() {
+  _nutrientTests();
+
   test('names the entry after its foods and sums their values', () {
     final entry = _combined([
       _component('Bread', kcal: 190),
@@ -104,5 +107,43 @@ void main() {
 
   test('needs at least two foods', () {
     expect(() => _combined([_component('Bread')]), throwsArgumentError);
+  });
+}
+
+void _nutrientTests() {
+  test('sums label nutrients of the eaten amounts', () {
+    final details = combineCalorieNutrientDetails([
+      (
+        details: const CalorieNutrientDetails(per100Sugar: 10, per100Salt: 1),
+        amount: 50,
+      ),
+      (
+        details: const CalorieNutrientDetails(per100Sugar: 4, per100Salt: 2),
+        amount: 200,
+      ),
+    ]);
+
+    expect(details?.per100Sugar, 13);
+    expect(details?.per100Salt, 4.5);
+  });
+
+  test('leaves a nutrient unknown when one food lacks it', () {
+    final details = combineCalorieNutrientDetails([
+      (
+        details: const CalorieNutrientDetails(per100Sugar: 10, per100Salt: 1),
+        amount: 50,
+      ),
+      (details: const CalorieNutrientDetails(per100Salt: 2), amount: 100),
+    ]);
+
+    expect(details?.per100Sugar, isNull);
+    expect(details?.per100Salt, 2.5);
+  });
+
+  test('is null when no food lists nutrients', () {
+    expect(
+      combineCalorieNutrientDetails([(details: null, amount: 50)]),
+      isNull,
+    );
   });
 }

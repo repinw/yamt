@@ -111,19 +111,19 @@ Future<void> _putItem(
   FirebaseFirestore firestore,
   Map<String, dynamic> json, {
   String userId = 'user-1',
+  String itemId = 'inventory-1',
 }) async {
   final items = _sealedItems(firestore, userId: userId);
-  await items.reference
-      .doc('inventory-1')
-      .set(await items.seal('inventory-1', json));
+  await items.reference.doc(itemId).set(await items.seal(itemId, json));
 }
 
 Future<Map<String, dynamic>> _openItem(
   FirebaseFirestore firestore, {
   String userId = 'user-1',
+  String itemId = 'inventory-1',
 }) async {
   final items = _sealedItems(firestore, userId: userId);
-  final snapshot = await items.reference.doc('inventory-1').get();
+  final snapshot = await items.reference.doc(itemId).get();
   return <String, dynamic>{'id': snapshot.id, ...?await items.open(snapshot)};
 }
 
@@ -338,5 +338,104 @@ void main() {
     expect(savedItem['current_amount'], 500);
     final activity = await _openActivity(firestore, userId: 'host-1');
     expect(activity.single['actor_user_id'], 'member-1');
+  });
+
+  group('commitEntryAndInventoryItems', () {
+    const milk = PendingInventoryConsumption(
+      id: 'pending-1',
+      itemId: 'inventory-1',
+      amount: 250,
+    );
+    const bread = PendingInventoryConsumption(
+      id: 'pending-2',
+      itemId: 'inventory-2',
+      amount: 1,
+    );
+
+    Future<FirestoreInventoryCalorieEntryCommitStore> storeWithItems(
+      FakeFirebaseFirestore firestore, {
+      int breadQuantity = 2,
+    }) async {
+      await _putItem(firestore, _inventoryItem().toJson());
+      await _putItem(
+        firestore,
+        InventoryItem.create(
+          id: 'inventory-2',
+          name: 'Bread',
+          entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+          storeName: 'Store',
+          quantity: breadQuantity,
+          initialQuantity: 2,
+        ).toJson(),
+        itemId: 'inventory-2',
+      );
+      return FirestoreInventoryCalorieEntryCommitStore(
+        firestore: firestore,
+        dataCipher: _signedIn('user-1'),
+        householdCipher: _household('user-1'),
+        actor: _actor,
+      );
+    }
+
+    test('saves the entry and reduces every item in one write', () async {
+      final firestore = FakeFirebaseFirestore();
+      final store = await storeWithItems(firestore);
+
+      final results = await store.commitEntryAndInventoryItems(
+        entry: _entry(),
+        pendingConsumptions: const [milk, bread],
+      );
+      await pumpEventQueue();
+
+      expect(results?.map((result) => result.itemId), [
+        'inventory-1',
+        'inventory-2',
+      ]);
+      final entry = await _entryCollection(firestore: firestore)
+          .doc('entry-1')
+          .get();
+      expect(entry.exists, isTrue);
+      expect((await _openItem(firestore))['current_amount'], 500);
+      final savedBread = await _openItem(firestore, itemId: 'inventory-2');
+      expect(savedBread['quantity'], 1);
+      expect(await _openActivity(firestore), hasLength(2));
+    });
+
+    test('writes nothing when one item has too little stock', () async {
+      final firestore = FakeFirebaseFirestore();
+      final store = await storeWithItems(firestore, breadQuantity: 0);
+
+      final results = await store.commitEntryAndInventoryItems(
+        entry: _entry(),
+        pendingConsumptions: const [milk, bread],
+      );
+      await pumpEventQueue();
+
+      expect(results, isNull);
+      final entry = await _entryCollection(firestore: firestore)
+          .doc('entry-1')
+          .get();
+      expect(entry.exists, isFalse);
+      expect((await _openItem(firestore))['current_amount'], 750);
+    });
+
+    test('rejects the same item twice', () async {
+      final firestore = FakeFirebaseFirestore();
+      final store = await storeWithItems(firestore);
+
+      final results = await store.commitEntryAndInventoryItems(
+        entry: _entry(),
+        pendingConsumptions: const [
+          milk,
+          PendingInventoryConsumption(
+            id: 'pending-3',
+            itemId: 'inventory-1',
+            amount: 100,
+          ),
+        ],
+      );
+
+      expect(results, isNull);
+    });
   });
 }

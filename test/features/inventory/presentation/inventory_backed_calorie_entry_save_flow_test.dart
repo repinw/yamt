@@ -69,6 +69,13 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
       currentAmount: 0,
     );
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) => throw UnimplementedError();
 }
 
 InventoryItem _inventoryItem() {
