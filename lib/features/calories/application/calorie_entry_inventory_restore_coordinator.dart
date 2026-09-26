@@ -13,6 +13,8 @@ class CalorieEntryInventoryRestoreCoordinator {
   const new({
     required this.restoreConsumedItem,
     required this.rollbackRestoredItem,
+    required this.restoreConsumedItems,
+    required this.rollbackRestoredItems,
     required this.sourceInventoryItemExists,
     required this.restorePreparedMealPortions,
     required this.rollbackRestoredPreparedMeal,
@@ -25,6 +27,17 @@ class CalorieEntryInventoryRestoreCoordinator {
   /// Rolls back restored inventory item amount.
   final Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})
   rollbackRestoredItem;
+
+  /// Restores the amounts of several inventory items in one write.
+  final Future<bool> Function(Map<String, int> amountsByItemId)
+  restoreConsumedItems;
+
+  /// Rolls back restored amounts of several inventory items in one write.
+  final Future<bool> Function(
+    Map<String, int> amountsByItemId, {
+    DateTime? consumedAt,
+  })
+  rollbackRestoredItems;
 
   /// Checks if source inventory item exists.
   final Future<bool> Function(String itemId) sourceInventoryItemExists;
@@ -45,8 +58,8 @@ class CalorieEntryInventoryRestoreCoordinator {
 
   CalorieEntryCombinedStockRestore get _combined {
     return CalorieEntryCombinedStockRestore(
-      restoreConsumedItem: restoreConsumedItem,
-      rollbackRestoredItem: rollbackRestoredItem,
+      restoreConsumedItems: restoreConsumedItems,
+      rollbackRestoredItems: rollbackRestoredItems,
       sourceInventoryItemExists: sourceInventoryItemExists,
     );
   }

@@ -34,6 +34,8 @@ CalorieEntryDeleteFlow calorieEntryDeleteFlow(Ref ref) {
     },
     restoreConsumedItem: _restoreConsumedItemUnavailable,
     rollbackRestoredItem: _rollbackRestoredItemUnavailable,
+    restoreConsumedItems: _restoreConsumedItemsUnavailable,
+    rollbackRestoredItems: _rollbackRestoredItemsUnavailable,
     sourceInventoryItemExists: _sourceInventoryItemUnavailable,
     restorePreparedMealPortions: _restorePreparedMealPortionsUnavailable,
     rollbackRestoredPreparedMeal: _rollbackPreparedMealUnavailable,
@@ -60,6 +62,13 @@ class CalorieEntryDeleteFlow {
       DateTime? consumedAt,
     })
     rollbackRestoredItem,
+    required Future<bool> Function(Map<String, int> amountsByItemId)
+    restoreConsumedItems,
+    required Future<bool> Function(
+      Map<String, int> amountsByItemId, {
+      DateTime? consumedAt,
+    })
+    rollbackRestoredItems,
     required Future<bool> Function(String itemId) sourceInventoryItemExists,
     required Future<bool> Function({
       required String mealId,
@@ -76,6 +85,8 @@ class CalorieEntryDeleteFlow {
   }) : _inventoryRestorer = CalorieEntryInventoryRestoreCoordinator(
          restoreConsumedItem: restoreConsumedItem,
          rollbackRestoredItem: rollbackRestoredItem,
+         restoreConsumedItems: restoreConsumedItems,
+         rollbackRestoredItems: rollbackRestoredItems,
          sourceInventoryItemExists: sourceInventoryItemExists,
          restorePreparedMealPortions: restorePreparedMealPortions,
          rollbackRestoredPreparedMeal: rollbackRestoredPreparedMeal,
@@ -156,6 +167,19 @@ Future<bool> _restoreConsumedItemUnavailable(String itemId, int amount) async {
 Future<bool> _rollbackRestoredItemUnavailable(
   String itemId,
   int amount, {
+  DateTime? consumedAt,
+}) async {
+  return false;
+}
+
+Future<bool> _restoreConsumedItemsUnavailable(
+  Map<String, int> amountsByItemId,
+) async {
+  return false;
+}
+
+Future<bool> _rollbackRestoredItemsUnavailable(
+  Map<String, int> amountsByItemId, {
   DateTime? consumedAt,
 }) async {
   return false;

@@ -44,32 +44,24 @@ CalorieEntry _entry() {
 }
 
 class _Stock {
-  new({
-    this.existing = const {'bread', 'gouda'},
-    this.failRestoreOf,
-    this.failTakeBackOf,
-  });
+  new({this.existing = const {'bread', 'gouda'}, this.failRestore = false});
 
   final Set<String> existing;
-  final String? failRestoreOf;
-  final String? failTakeBackOf;
-  final restored = <(String, int)>[];
-  final takenBack = <(String, int, DateTime?)>[];
+  final bool failRestore;
+  final restored = <Map<String, int>>[];
+  final takenBack = <(Map<String, int>, DateTime?)>[];
 
   CalorieEntryCombinedStockRestore get restore {
     return CalorieEntryCombinedStockRestore(
-      restoreConsumedItem: (itemId, amount) async {
-        if (itemId == failRestoreOf) {
+      restoreConsumedItems: (amounts) async {
+        if (failRestore) {
           return false;
         }
-        restored.add((itemId, amount));
+        restored.add(amounts);
         return true;
       },
-      rollbackRestoredItem: (itemId, amount, {consumedAt}) async {
-        if (itemId == failTakeBackOf) {
-          return false;
-        }
-        takenBack.add((itemId, amount, consumedAt));
+      rollbackRestoredItems: (amounts, {consumedAt}) async {
+        takenBack.add((amounts, consumedAt));
         return true;
       },
       sourceInventoryItemExists: (itemId) async => existing.contains(itemId),
@@ -78,7 +70,7 @@ class _Stock {
 }
 
 void main() {
-  test('returns the stock of every food, then deletes the entry', () async {
+  test('returns the stock of every food in one write, then deletes', () async {
     final stock = _Stock();
     var deleted = false;
 
@@ -89,8 +81,11 @@ void main() {
 
     expect(result.isSuccess, isTrue);
     expect(result.restoredToInventory, isTrue);
-    expect(stock.restored, [('bread', 80), ('gouda', 60)]);
+    expect(stock.restored, [
+      {'bread': 80, 'gouda': 60},
+    ]);
     expect(deleted, isTrue);
+    expect(stock.takenBack, isEmpty);
   });
 
   test('skips foods whose stock item is gone', () async {
@@ -102,7 +97,9 @@ void main() {
     );
 
     expect(result.isSuccess, isTrue);
-    expect(stock.restored, [('gouda', 60)]);
+    expect(stock.restored, [
+      {'gouda': 60},
+    ]);
   });
 
   test('reports a missing source when no stock item exists', () async {
@@ -119,8 +116,8 @@ void main() {
     expect(await stock.restore.canRestoreSource(_entry()), isFalse);
   });
 
-  test('takes back earlier returns when one return fails', () async {
-    final stock = _Stock(failRestoreOf: 'gouda');
+  test('keeps the entry when the return fails', () async {
+    final stock = _Stock(failRestore: true);
     var deleted = false;
 
     final result = await stock.restore.restoreAndCompensate(
@@ -130,10 +127,10 @@ void main() {
 
     expect(result.failureReason, CalorieEntryDeleteFailureReason.restoreFailed);
     expect(deleted, isFalse);
-    expect(stock.takenBack, [('bread', 80, _loggedAt)]);
+    expect(stock.takenBack, isEmpty);
   });
 
-  test('takes back all returns when the diary delete fails', () async {
+  test('takes the stock back when the diary delete fails', () async {
     final stock = _Stock();
 
     final result = await stock.restore.restoreAndCompensate(
@@ -142,25 +139,24 @@ void main() {
     );
 
     expect(result.failureReason, CalorieEntryDeleteFailureReason.deleteFailed);
-    expect(stock.takenBack.map((call) => call.$1), ['bread', 'gouda']);
+    expect(stock.takenBack.single.$1, {'bread': 80, 'gouda': 60});
+    expect(stock.takenBack.single.$2, _loggedAt);
   });
 
-  test('takes the stock back after an undo', () async {
+  test('takes the stock back in one write after an undo', () async {
     final stock = _Stock();
 
     final takenBack = await stock.restore.takeBackRestored(_entry());
 
     expect(takenBack, isTrue);
-    expect(stock.takenBack.map((call) => call.$1), ['bread', 'gouda']);
+    expect(stock.takenBack.single.$1, {'bread': 80, 'gouda': 60});
+    expect(stock.takenBack.single.$2, _loggedAt);
   });
 
-  test('returns the taken-back stock when a later take-back fails', () async {
-    final stock = _Stock(failTakeBackOf: 'gouda');
+  test('has nothing to take back when every stock item is gone', () async {
+    final stock = _Stock(existing: const {});
 
-    final takenBack = await stock.restore.takeBackRestored(_entry());
-
-    expect(takenBack, isFalse);
-    expect(stock.takenBack.map((call) => call.$1), ['bread']);
-    expect(stock.restored, [('bread', 80)]);
+    expect(await stock.restore.takeBackRestored(_entry()), isTrue);
+    expect(stock.takenBack, isEmpty);
   });
 }

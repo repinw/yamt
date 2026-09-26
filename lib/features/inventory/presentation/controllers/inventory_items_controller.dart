@@ -716,37 +716,109 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   /// Restore consumed item.
   Future<bool> restoreConsumedItem(String itemId, int amount) {
-    if (amount < 1) {
+    return restoreConsumedItems({itemId: amount});
+  }
+
+  /// Returns several amounts to their items in one write. Nothing changes
+  /// when an item is missing or an amount is below 1.
+  Future<bool> restoreConsumedItems(Map<String, int> amountsByItemId) {
+    if (amountsByItemId.isEmpty || amountsByItemId.values.any((a) => a < 1)) {
       return Future<bool>.value(false);
     }
     return _runSerializedMutation(() async {
       final currentItems = await _currentPersistedItems();
-      final nextItems = buildRestoredItems(
-        currentItems: currentItems,
-        itemId: itemId,
-        amount: amount,
-      );
-      if (nextItems == null) {
-        return false;
+      var nextItems = currentItems;
+      for (final MapEntry(key: itemId, value: amount)
+          in amountsByItemId.entries) {
+        final restored = buildRestoredItems(
+          currentItems: nextItems,
+          itemId: itemId,
+          amount: amount,
+        );
+        if (restored == null) {
+          return false;
+        }
+        nextItems = restored;
       }
-      final restored = await _saveItems(
+      final saved = await _saveItems(
         previousItems: currentItems,
         nextItems: nextItems,
       );
-      if (restored) {
-        final beforeItem = _findItem(currentItems, itemId);
-        final afterItem = _findItem(nextItems, itemId);
-        await _recordActivityEvent(
-          _buildActivityEvent(
-            type: InventoryActivityEventType.itemRestored,
-            item: afterItem ?? beforeItem,
-            amount: amount,
-            beforeItem: beforeItem,
-            afterItem: afterItem,
-          ),
-        );
+      if (saved) {
+        for (final MapEntry(key: itemId, value: amount)
+            in amountsByItemId.entries) {
+          final beforeItem = _findItem(currentItems, itemId);
+          final afterItem = _findItem(nextItems, itemId);
+          await _recordActivityEvent(
+            _buildActivityEvent(
+              type: InventoryActivityEventType.itemRestored,
+              item: afterItem ?? beforeItem,
+              amount: amount,
+              beforeItem: beforeItem,
+              afterItem: afterItem,
+            ),
+          );
+        }
       }
-      return restored;
+      return saved;
+    });
+  }
+
+  /// Takes several amounts out of their items in one write, each capped at
+  /// what its item holds. Nothing changes when an item is missing or empty.
+  Future<bool> eatItems(
+    Map<String, int> amountsByItemId, {
+    DateTime? consumedAt,
+  }) {
+    if (amountsByItemId.isEmpty) {
+      return Future<bool>.value(false);
+    }
+    return _runSerializedMutation(() async {
+      final currentItems = await _currentPersistedItems();
+      var nextItems = currentItems;
+      final removedAmounts = <String, int>{};
+      for (final MapEntry(key: itemId, value: amount)
+          in amountsByItemId.entries) {
+        final removedAmount = _resolveEffectiveConsumptionAmount(
+          currentItems: nextItems,
+          itemId: itemId,
+          requestedAmount: amount,
+        );
+        final reduced = removedAmount == null
+            ? null
+            : buildReducedItems(
+                currentItems: nextItems,
+                itemId: itemId,
+                amount: removedAmount,
+                consumedAt: consumedAt,
+              );
+        if (removedAmount == null || reduced == null) {
+          return false;
+        }
+        removedAmounts[itemId] = removedAmount;
+        nextItems = reduced;
+      }
+      final saved = await _saveItems(
+        previousItems: currentItems,
+        nextItems: nextItems,
+      );
+      if (saved) {
+        for (final MapEntry(key: itemId, value: amount)
+            in removedAmounts.entries) {
+          final beforeItem = _findItem(currentItems, itemId);
+          await _recordActivityEvent(
+            _buildActivityEvent(
+              type: InventoryActivityEventType.itemConsumed,
+              item: beforeItem,
+              amount: amount,
+              beforeItem: beforeItem,
+              afterItem: _findItem(nextItems, itemId),
+              happenedAt: consumedAt,
+            ),
+          );
+        }
+      }
+      return saved;
     });
   }
 

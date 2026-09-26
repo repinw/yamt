@@ -1,36 +1,40 @@
 import 'dart:developer' show log;
 
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 
 const _logName = 'CalorieEntryCombinedStockRestore';
 
 /// Returns the stock of a combined entry's foods when the entry is deleted.
 ///
-/// Foods whose stock item no longer exists are skipped. When one return
-/// fails, or the diary delete fails, the returns already made are taken back.
+/// Foods whose stock item no longer exists are skipped. All other foods are
+/// returned in one inventory write, so either every food comes back or none.
+/// When the diary delete fails afterwards, the stock is taken out again.
 class CalorieEntryCombinedStockRestore {
   /// Creates the restore with the inventory operations it needs.
   const new({
-    required this.restoreConsumedItem,
-    required this.rollbackRestoredItem,
+    required this.restoreConsumedItems,
+    required this.rollbackRestoredItems,
     required this.sourceInventoryItemExists,
   });
 
-  /// Returns an amount to a stock item.
-  final Future<bool> Function(String itemId, int amount) restoreConsumedItem;
+  /// Returns amounts to stock items in one write.
+  final Future<bool> Function(Map<String, int> amountsByItemId)
+  restoreConsumedItems;
 
-  /// Takes a returned amount out of a stock item again.
-  final Future<bool> Function(String itemId, int amount, {DateTime? consumedAt})
-  rollbackRestoredItem;
+  /// Takes returned amounts out of stock items again in one write.
+  final Future<bool> Function(
+    Map<String, int> amountsByItemId, {
+    DateTime? consumedAt,
+  })
+  rollbackRestoredItems;
 
   /// Whether a stock item still exists.
   final Future<bool> Function(String itemId) sourceInventoryItemExists;
 
   /// Whether at least one of [entry]'s stock items still exists.
   Future<bool> canRestoreSource(CalorieEntry entry) async {
-    return (await _existingSources(entry)).isNotEmpty;
+    return (await _existingAmounts(entry)).isNotEmpty;
   }
 
   /// Returns the stock of [entry]'s foods, then runs [onDiaryDelete].
@@ -38,8 +42,8 @@ class CalorieEntryCombinedStockRestore {
     required CalorieEntry entry,
     required Future<bool> Function() onDiaryDelete,
   }) async {
-    final sources = await _existingSources(entry);
-    if (sources.isEmpty) {
+    final amounts = await _existingAmounts(entry);
+    if (amounts.isEmpty) {
       log(
         'No stock item of combined entry ${entry.id} exists anymore.',
         name: _logName,
@@ -49,82 +53,50 @@ class CalorieEntryCombinedStockRestore {
       );
     }
 
-    final restored = <CalorieEntryBundleComponent>[];
-    for (final source in sources) {
-      final ok = await restoreConsumedItem(
-        source.sourceInventoryItemId!,
-        source.sourceInventoryAmountToRestore!,
+    if (!await restoreConsumedItems(amounts)) {
+      log(
+        'Returning the stock of combined entry ${entry.id} failed.',
+        name: _logName,
       );
-      if (!ok) {
-        log(
-          'Returning ${source.sourceInventoryItemId} of combined entry '
-          '${entry.id} failed; taking back ${restored.length} returns.',
-          name: _logName,
-        );
-        await _takeBack(entry, restored);
-        return const CalorieEntryDeleteResult.failure(
-          CalorieEntryDeleteFailureReason.restoreFailed,
-        );
-      }
-      restored.add(source);
+      return const CalorieEntryDeleteResult.failure(
+        CalorieEntryDeleteFailureReason.restoreFailed,
+      );
     }
 
     if (await onDiaryDelete()) {
       return const CalorieEntryDeleteResult.success(restoredToInventory: true);
     }
-    await _takeBack(entry, restored);
+    if (!await rollbackRestoredItems(amounts, consumedAt: entry.loggedAt)) {
+      log(
+        'Taking back the stock of combined entry ${entry.id} after a failed '
+        'diary delete failed.',
+        name: _logName,
+      );
+    }
     return const CalorieEntryDeleteResult.failure(
       CalorieEntryDeleteFailureReason.deleteFailed,
     );
   }
 
   /// Takes the returned stock out again after the entry came back by undo.
-  /// When one food cannot be taken out, the foods already taken out are
-  /// returned again, so the stock matches the deleted entry.
   Future<bool> takeBackRestored(CalorieEntry entry) async {
-    return await _takeBack(entry, await _existingSources(entry));
-  }
-
-  Future<bool> _takeBack(
-    CalorieEntry entry,
-    List<CalorieEntryBundleComponent> sources,
-  ) async {
-    final takenBack = <CalorieEntryBundleComponent>[];
-    for (final source in sources) {
-      final ok = await rollbackRestoredItem(
-        source.sourceInventoryItemId!,
-        source.sourceInventoryAmountToRestore!,
-        consumedAt: entry.loggedAt,
-      );
-      if (!ok) {
-        log(
-          'Taking back ${source.sourceInventoryItemId} of combined entry '
-          '${entry.id} failed; returning ${takenBack.length} foods again.',
-          name: _logName,
-        );
-        for (final returned in takenBack) {
-          await restoreConsumedItem(
-            returned.sourceInventoryItemId!,
-            returned.sourceInventoryAmountToRestore!,
-          );
-        }
-        return false;
-      }
-      takenBack.add(source);
+    final amounts = await _existingAmounts(entry);
+    if (amounts.isEmpty) {
+      return true;
     }
-    return true;
+    return await rollbackRestoredItems(amounts, consumedAt: entry.loggedAt);
   }
 
-  Future<List<CalorieEntryBundleComponent>> _existingSources(
-    CalorieEntry entry,
-  ) async {
-    final sources = <CalorieEntryBundleComponent>[];
+  /// The amount to return per stock item that still exists.
+  Future<Map<String, int>> _existingAmounts(CalorieEntry entry) async {
+    final amounts = <String, int>{};
     for (final component in entry.bundleComponents) {
+      final itemId = component.sourceInventoryItemId;
       if (component.canRestoreToInventory &&
-          await sourceInventoryItemExists(component.sourceInventoryItemId!)) {
-        sources.add(component);
+          await sourceInventoryItemExists(itemId!)) {
+        amounts[itemId] = component.sourceInventoryAmountToRestore!;
       }
     }
-    return sources;
+    return amounts;
   }
 }

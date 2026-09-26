@@ -63,6 +63,8 @@ CalorieEntryDeleteFlow _deleteFlow() {
     deleteEntryById: (_) async => true,
     restoreConsumedItem: (_, _) async => true,
     rollbackRestoredItem: (_, _, {consumedAt}) async => true,
+    restoreConsumedItems: (_) async => true,
+    rollbackRestoredItems: (_, {consumedAt}) async => true,
     sourceInventoryItemExists: (_) async => true,
     restorePreparedMealPortions: ({required mealId, required portions}) async {
       _restoredPortions.add((mealId: mealId, portions: portions));

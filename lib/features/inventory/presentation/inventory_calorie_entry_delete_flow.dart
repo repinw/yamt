@@ -57,6 +57,26 @@ CalorieEntryDeleteFlow inventoryCalorieEntryDeleteFlow(Ref ref) {
         },
       );
     },
+    restoreConsumedItems: (amountsByItemId) {
+      return withInventoryController(
+        ref: ref,
+        operationName: 'restore consumed inventory items',
+        fallbackValue: false,
+        operation: (controller) {
+          return controller.restoreConsumedItems(amountsByItemId);
+        },
+      );
+    },
+    rollbackRestoredItems: (amountsByItemId, {consumedAt}) {
+      return withInventoryController(
+        ref: ref,
+        operationName: 'rollback restored inventory items',
+        fallbackValue: false,
+        operation: (controller) {
+          return controller.eatItems(amountsByItemId, consumedAt: consumedAt);
+        },
+      );
+    },
     sourceInventoryItemExists: (itemId) {
       return _sourceInventoryItemExists(
         itemId: itemId,
