@@ -77,8 +77,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/application/inventory_calorie_entry_post_persist_hook.dart':
         1,
-    'lib/features/inventory/application/prepared_meal_calorie_log_bridge.dart':
-        1,
     'lib/features/inventory/presentation/controllers/inventory_items_controller.dart':
         1,
     'lib/features/inventory/presentation/inventory_calorie_entry_delete_flow.dart':

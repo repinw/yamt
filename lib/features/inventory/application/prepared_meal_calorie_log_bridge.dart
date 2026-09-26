@@ -1,10 +1,10 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
@@ -26,16 +26,15 @@ typedef PreparedMealSaveCallback = Future<bool> Function(
 @riverpod
 PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
   final commitStore = ref.watch(preparedMealCalorieEntryCommitStoreProvider);
-  final calorieEntriesController = ref.read(
-    calorieEntriesControllerProvider.notifier,
-  );
+  // The saver, not the auto-dispose entries controller: nothing listens to
+  // the controller here, so it could be disposed while it still loads.
+  final saveCalorieEntry = ref.watch(calorieEntrySaverProvider);
   return PreparedMealCalorieLogBridge(
-    saveEntry: (entry) =>
-        calorieEntriesController.saveEntry(entry, isNewEntry: true),
+    saveEntry: (entry) => saveCalorieEntry(entry, isNewEntry: true),
     saveEntryAtomically: commitStore == null
         ? null
         : (entry) {
-            return calorieEntriesController.saveEntry(
+            return saveCalorieEntry(
               entry,
               isNewEntry: true,
               persistEntry: (persistedEntry) {

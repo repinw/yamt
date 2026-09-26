@@ -203,6 +203,48 @@ void main() {
     expect(entry.imageAssetId, meal.imageAssetId);
   });
 
+  test(
+    'bridge still saves after unused calorie providers were disposed',
+    () async {
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(calorieLogRepository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final meal = PreparedMeal(
+        id: 'meal-3',
+        name: 'Milk + Oats',
+        totalPortions: 1,
+        remainingPortions: 1,
+        totalKcal: 314,
+        totalProtein: 13,
+        totalCarbs: 43,
+        totalFat: 10,
+        createdAt: DateTime.parse('2026-09-26T12:00:00Z'),
+        updatedAt: DateTime.parse('2026-09-26T12:00:00Z'),
+        components: const <PreparedMealComponent>[],
+      );
+
+      // Nothing listens, so auto-dispose providers read while building the
+      // bridge are gone before the save.
+      final bridge = container.read(preparedMealCalorieLogBridgeProvider);
+      await pumpEventQueue();
+
+      final saved = await _consume(
+        bridge,
+        meal: meal,
+        consumedPortions: 1,
+        mealType: MealType.breakfast,
+      );
+
+      expect(saved, isNotNull);
+      expect(calorieLogRepository.entries.single.name, 'Milk + Oats');
+    },
+  );
+
   test('bridge writes selected diary day while keeping current time', () async {
     final savedEntries = <CalorieEntry>[];
     final bridge = PreparedMealCalorieLogBridge(
