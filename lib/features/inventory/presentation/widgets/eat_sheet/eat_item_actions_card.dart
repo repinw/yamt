@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
@@ -7,6 +6,7 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_title.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Item" card of the item hub: shopping list, edit, replace and remove,
@@ -36,28 +36,7 @@ class EatItemActionsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  color: colors.ink,
-                  width: AppFoodLabel.labelHeaderRule,
-                ),
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-              child: Text(
-                l10n.eatPageItemTitle,
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontFamily: AppFonts.display,
-                  fontWeight: FontWeight.w800,
-                  color: colors.ink,
-                  height: 1,
-                ),
-              ),
-            ),
-          ),
+          EatLabelTitle(text: l10n.eatPageItemTitle),
           _ActionLine(
             key: const Key('eat_item_action_shopping_list'),
             icon: Icons.shopping_cart_outlined,

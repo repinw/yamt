@@ -1,8 +1,17 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
@@ -19,10 +28,12 @@ typedef InventoryItemHubActionRunner = Future<bool> Function(
 
 /// Item hub: the eat page of a stock item plus the item's own actions.
 ///
-/// Pops with the entered eat request. The actions run while the hub stays
-/// open, so cancelling one returns to the hub. An item without stock to eat
-/// shows only its actions, and the main button puts it on the shopping list.
-class InventoryItemHubPage extends StatefulWidget {
+/// Pops with an [InventoryItemHubResult]: the entered amount, or the amount
+/// together with other foods to log as one entry. The actions run while the
+/// hub stays open, so cancelling one returns to the hub. An item without
+/// stock to eat shows only its actions, and the main button puts it on the
+/// shopping list.
+class InventoryItemHubPage extends ConsumerStatefulWidget {
   /// Creates the hub for [item].
   const new({
     required this.item,
@@ -41,10 +52,11 @@ class InventoryItemHubPage extends StatefulWidget {
   final InventoryItemHubActionRunner onAction;
 
   @override
-  State<InventoryItemHubPage> createState() => _InventoryItemHubPageState();
+  ConsumerState<InventoryItemHubPage> createState() =>
+      _InventoryItemHubPageState();
 }
 
-class _InventoryItemHubPageState extends State<InventoryItemHubPage> {
+class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
   // The card sits below the page's own snackbar messenger, so its context
   // shows action hints on the hub.
   final GlobalKey _cardKey = GlobalKey();
@@ -67,12 +79,49 @@ class _InventoryItemHubPageState extends State<InventoryItemHubPage> {
             _run(InventoryItemHubAction.addToShoppingList),
       );
     }
+    final picks = ref.watch(
+      inventoryItemCombineControllerProvider(widget.item.id),
+    );
     return InventoryItemEatSheetBody(
       item: widget.item,
       confirmIntent: InventoryItemEatSheetIntent.logOnly,
-      footer: actions,
-      onSubmitted: (result) => Navigator.of(context).pop(result.request),
+      confirmLabel: picks.isEmpty
+          ? null
+          : AppLocalizations.of(context)!.eatPageCombineConfirm,
+      extraKcal: picks.fold(0, (sum, pick) => sum + pick.component.totalKcal),
+      footer: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppSpacing.xxl,
+        children: [
+          if (InventoryCombinedEatService.canCombine(widget.item))
+            EatCombineSection(hubItem: widget.item),
+          actions,
+        ],
+      ),
+      onSubmitted: (result) => _submit(result.request, picks),
     );
+  }
+
+  void _submit(
+    InventoryItemEatRequest request,
+    List<InventoryCombinePick> picks,
+  ) {
+    if (picks.isEmpty) {
+      Navigator.of(context).pop(InventoryItemHubEat(request));
+      return;
+    }
+    final hubContext = _cardKey.currentContext;
+    if (!canDirectlySaveInventoryItemEatRequest(widget.item, request)) {
+      if (hubContext != null) {
+        ScaffoldMessenger.of(hubContext).showAppSnackBar(
+          AppLocalizations.of(context)!.inventoryItemActionFailed,
+          tone: AppSnackBarTone.error,
+        );
+      }
+      return;
+    }
+    Navigator.of(context)
+        .pop(InventoryItemHubCombine(request: request, picks: picks));
   }
 
   Future<void> _run(InventoryItemHubAction action) async {

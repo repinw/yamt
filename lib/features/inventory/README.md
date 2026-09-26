@@ -69,6 +69,9 @@ already documented as a reusable presentation surface.
 - `presentation/inventory_item_eat_flow.dart`: `InventoryItemEatFlow.eat` opens
   the eat sheet for an inventory item, stages the stock from the item the
   caller shows, and logs the calorie entry.
+- `presentation/inventory_combined_eat_flow.dart`: `InventoryCombinedEatFlow.eat`
+  logs a stock item together with other stock items as one combined calorie
+  entry, written in one batch with every stock change.
 - `presentation/prepared_meal_eat_flow.dart`: `PreparedMealEatFlow.eat` opens
   the eat sheet for a prepared meal and logs the eaten portions as one bundle
   entry.

@@ -4,12 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/inventory_combined_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_remove_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_candidate_swap_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -29,9 +30,9 @@ abstract final class InventoryItemHubFlow {
     required bool isOnShoppingList,
   }) async {
     final pageMessenger = ScaffoldMessenger.of(context);
-    final request = await Navigator.of(context, rootNavigator: true)
-        .push<InventoryItemEatRequest>(
-          MaterialPageRoute<InventoryItemEatRequest>(
+    final result = await Navigator.of(context, rootNavigator: true)
+        .push<InventoryItemHubResult>(
+          MaterialPageRoute<InventoryItemHubResult>(
             fullscreenDialog: true,
             builder: (_) => InventoryItemHubPage(
               item: item,
@@ -41,18 +42,30 @@ abstract final class InventoryItemHubFlow {
             ),
           ),
         );
-    if (request == null || !context.mounted) {
+    if (!context.mounted) {
       return;
     }
-
-    final started = await InventoryItemEatFlow.stageAndComplete(
-      context: context,
-      container: ref.container,
-      item: item,
-      request: request,
-    );
-    if (!started && context.mounted) {
-      _showFailure(context);
+    switch (result) {
+      case null:
+        return;
+      case InventoryItemHubEat(:final request):
+        final started = await InventoryItemEatFlow.stageAndComplete(
+          context: context,
+          container: ref.container,
+          item: item,
+          request: request,
+        );
+        if (!started && context.mounted) {
+          _showFailure(context);
+        }
+      case InventoryItemHubCombine(:final request, :final picks):
+        await InventoryCombinedEatFlow.eat(
+          context: context,
+          ref: ref,
+          item: item,
+          request: request,
+          picks: picks,
+        );
     }
   }
 

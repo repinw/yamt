@@ -650,6 +650,33 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageOnShoppingList => 'Steht auf der Einkaufsliste';
 
   @override
+  String get eatPageCombineLink => '+ mit anderem Lebensmittel kombinieren';
+
+  @override
+  String get eatPageCombineTitle => 'Zusammen eintragen';
+
+  @override
+  String get eatPageCombineAdd => '+ Lebensmittel hinzufügen';
+
+  @override
+  String get eatPageCombineConfirm => 'Alle eintragen';
+
+  @override
+  String get eatPageCombineAmountAbove => 'Menge oben';
+
+  @override
+  String get eatPageCombinePickerTitle => 'Aus dem Vorrat';
+
+  @override
+  String get eatPageCombinePickerEmpty => 'Kein weiteres Lebensmittel mit Nährwerten im Vorrat.';
+
+  @override
+  String get eatPageCombineRemove => 'Aus der Liste nehmen';
+
+  @override
+  String get eatPageCombineSaved => 'Zusammen eingetragen.';
+
+  @override
   String eatPageWhen(String day, String meal) {
     return '$day · $meal';
   }

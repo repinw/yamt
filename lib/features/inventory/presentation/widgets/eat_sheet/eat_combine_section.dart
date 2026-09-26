@@ -1,0 +1,147 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/theme/app_fonts.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_picker_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_title.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_text_link.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+/// Hub section to log other stock items together with [hubItem].
+///
+/// Shows a link while nothing is picked, then the list of foods to log
+/// together.
+class EatCombineSection extends ConsumerWidget {
+  /// Creates the section.
+  const new({required this.hubItem, super.key});
+
+  /// Key of the link that adds a food.
+  static const addKey = Key('eat_combine_add');
+
+  /// The hub's item.
+  final InventoryItem hubItem;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final picks = ref.watch(inventoryItemCombineControllerProvider(hubItem.id));
+    final addLink = EatTextLink(
+      buttonKey: addKey,
+      label: picks.isEmpty ? l10n.eatPageCombineLink : l10n.eatPageCombineAdd,
+      onPressed: () => _add(context, ref),
+    );
+    if (picks.isEmpty) {
+      return addLink;
+    }
+    return EatFramedBox(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          EatLabelTitle(text: l10n.eatPageCombineTitle),
+          _FoodLine(name: hubItem.name, amount: l10n.eatPageCombineAmountAbove),
+          for (final pick in picks)
+            _FoodLine(
+              name: pick.item.name,
+              amount: pick.component.amountLabel,
+              kcal: l10n.eatPageKcal(pick.component.totalKcal.round()),
+              onRemove: () => ref
+                  .read(
+                    inventoryItemCombineControllerProvider(hubItem.id).notifier,
+                  )
+                  .remove(pick.item.id),
+            ),
+          addLink,
+        ],
+      ),
+    );
+  }
+
+  Future<void> _add(BuildContext context, WidgetRef ref) async {
+    final notifier = ref.read(
+      inventoryItemCombineControllerProvider(hubItem.id).notifier,
+    );
+    final items = ref.read(inventoryItemsControllerProvider).value;
+    final item = await showEatCombinePickerSheet(
+      context,
+      candidates: notifier.candidatesFrom(items ?? const <InventoryItem>[]),
+    );
+    if (item == null || !context.mounted) {
+      return;
+    }
+    final request = await showInventoryItemEatSheet(
+      context: context,
+      item: item,
+    );
+    if (request == null || !context.mounted) {
+      return;
+    }
+    if (!canDirectlySaveInventoryItemEatRequest(item, request)) {
+      ScaffoldMessenger.of(context).showAppSnackBar(
+        AppLocalizations.of(context)!.inventoryItemActionFailed,
+        tone: AppSnackBarTone.error,
+      );
+      return;
+    }
+    notifier.add(item, request);
+  }
+}
+
+class _FoodLine extends StatelessWidget {
+  const new({
+    required this.name,
+    required this.amount,
+    this.kcal,
+    this.onRemove,
+  });
+
+  final String name;
+  final String amount;
+  final String? kcal;
+  final VoidCallback? onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final colors = FoodLabelColors.of(context);
+    final style = Theme.of(context).textTheme.bodyMedium
+        ?.copyWith(fontFamily: AppFonts.mono, color: colors.ink);
+    final kcalText = kcal;
+    final remove = onRemove;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: colors.ink)),
+      ),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
+        child: Row(
+          spacing: AppSpacing.sm,
+          children: [
+            Expanded(
+              child: Text(
+                '$name · $amount',
+                style: style?.copyWith(fontWeight: FontWeight.w700),
+              ),
+            ),
+            if (kcalText != null) Text(kcalText, style: style),
+            if (remove != null)
+              IconButton(
+                tooltip: l10n.eatPageCombineRemove,
+                onPressed: remove,
+                icon: Icon(Icons.close_rounded, color: colors.muted),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}

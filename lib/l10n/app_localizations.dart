@@ -1289,6 +1289,60 @@ abstract class AppLocalizations {
   /// **'On the shopping list'**
   String get eatPageOnShoppingList;
 
+  /// No description provided for @eatPageCombineLink.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Combine with another food'**
+  String get eatPageCombineLink;
+
+  /// No description provided for @eatPageCombineTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log together'**
+  String get eatPageCombineTitle;
+
+  /// No description provided for @eatPageCombineAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Add food'**
+  String get eatPageCombineAdd;
+
+  /// No description provided for @eatPageCombineConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Log all'**
+  String get eatPageCombineConfirm;
+
+  /// No description provided for @eatPageCombineAmountAbove.
+  ///
+  /// In en, this message translates to:
+  /// **'amount above'**
+  String get eatPageCombineAmountAbove;
+
+  /// No description provided for @eatPageCombinePickerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'From your stock'**
+  String get eatPageCombinePickerTitle;
+
+  /// No description provided for @eatPageCombinePickerEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No other food with nutrition values in stock.'**
+  String get eatPageCombinePickerEmpty;
+
+  /// No description provided for @eatPageCombineRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from the list'**
+  String get eatPageCombineRemove;
+
+  /// No description provided for @eatPageCombineSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged together.'**
+  String get eatPageCombineSaved;
+
   /// No description provided for @eatPageWhen.
   ///
   /// In en, this message translates to:

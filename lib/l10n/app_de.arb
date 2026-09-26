@@ -356,6 +356,15 @@
   "eatPageItemTitle": "Artikel",
   "eatPageReplaceProduct": "Produkt ersetzen",
   "eatPageOnShoppingList": "Steht auf der Einkaufsliste",
+  "eatPageCombineLink": "+ mit anderem Lebensmittel kombinieren",
+  "eatPageCombineTitle": "Zusammen eintragen",
+  "eatPageCombineAdd": "+ Lebensmittel hinzufügen",
+  "eatPageCombineConfirm": "Alle eintragen",
+  "eatPageCombineAmountAbove": "Menge oben",
+  "eatPageCombinePickerTitle": "Aus dem Vorrat",
+  "eatPageCombinePickerEmpty": "Kein weiteres Lebensmittel mit Nährwerten im Vorrat.",
+  "eatPageCombineRemove": "Aus der Liste nehmen",
+  "eatPageCombineSaved": "Zusammen eingetragen.",
   "eatPageWhen": "{day} · {meal}",
   "@eatPageWhen": {
     "placeholders": {

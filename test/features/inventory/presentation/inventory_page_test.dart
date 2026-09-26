@@ -33,6 +33,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
@@ -190,6 +191,7 @@ class _RecordingOffProductSearchRepository
 
 class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   PendingInventoryConsumption? pendingConsumption;
+  List<PendingInventoryConsumption>? pendingConsumptions;
   CalorieEntry? entry;
 
   @override
@@ -211,7 +213,18 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   commitEntryAndInventoryItems({
     required CalorieEntry entry,
     required List<PendingInventoryConsumption> pendingConsumptions,
-  }) => throw UnimplementedError();
+  }) async {
+    this.entry = entry;
+    this.pendingConsumptions = pendingConsumptions;
+    return [
+      for (final pending in pendingConsumptions)
+        InventoryCalorieEntryCommitResult(
+          itemId: pending.itemId,
+          quantity: 1,
+          currentAmount: 1000 - pending.amount,
+        ),
+    ];
+  }
 }
 
 class _DelayedStageInventoryItemsController extends InventoryItemsController {
@@ -315,11 +328,12 @@ InventoryItem _itemWithNutrition(
   String id, {
   int initialAmount = 1000,
   int currentAmount = 1000,
+  String name = 'Milk',
 }) {
   return InventoryItem.create(
     id: id,
     globalFoodItemId: 'off-4061458029995',
-    name: 'Milk',
+    name: name,
     brand: 'Acme',
     barcode: '4061458029995',
     imageUrl: 'https://example.com/milk.png',
@@ -931,6 +945,66 @@ void main() {
     expect(commitStore.pendingConsumption?.amount, 120);
     expect(commitStore.entry?.consumedAmount, 120);
     expect(commitStore.entry?.mealType, expectedMealType);
+  });
+
+  testWidgets('item hub logs a second stock item together as one entry', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _itemWithNutrition('a'),
+        _itemWithNutrition('b', name: 'Oats'),
+      ],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final commitStore = _RecordingCommitStore();
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    addTearDown(repository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+    when(() => user.uid).thenReturn('user-1');
+    when(() => auth.currentUser).thenReturn(user);
+
+    await _pumpTestApp(
+      tester,
+      repository,
+      overrides: <Override>[
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
+        firebaseAuthProvider.overrideWithValue(auth),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')),
+      '200',
+    );
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(
+      tester,
+      find.byKey(const ValueKey<String>('eat_combine_candidate_b')),
+    );
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')).last,
+      '100',
+    );
+    await _tapAmountDialogConfirm(tester);
+
+    expect(find.text('Log together'), findsOneWidget);
+    expect(find.text('Oats · 100 g'), findsOneWidget);
+    expect(find.text('Log all'), findsOneWidget);
+
+    await _tapAmountDialogConfirm(tester);
+
+    expect(find.text('Logged together.'), findsOneWidget);
+    expect(commitStore.entry?.name, 'Milk + Oats');
+    expect(commitStore.entry?.isCombined, isTrue);
+    expect(commitStore.pendingConsumptions?.map((p) => (p.itemId, p.amount)), [
+      ('a', 200),
+      ('b', 100),
+    ]);
   });
 
   testWidgets('eat action quick select all direct-saves remaining amount', (

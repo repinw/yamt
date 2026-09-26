@@ -121,6 +121,23 @@ class InventoryCombinedEatService {
     return true;
   }
 
+  /// The diary component for eating [request] of [item], as the combine
+  /// list shows it before saving.
+  static CalorieEntryBundleComponent componentFor(
+    InventoryItem item,
+    InventoryItemEatRequest request,
+  ) {
+    return _component((
+      item: item,
+      request: request,
+      pending: PendingInventoryConsumption(
+        id: '',
+        itemId: item.id,
+        amount: request.inventoryAmount,
+      ),
+    )).component;
+  }
+
   static ({
     CalorieEntryBundleComponent component,
     CalorieNutrientDetails? details,

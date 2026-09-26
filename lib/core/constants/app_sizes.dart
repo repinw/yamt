@@ -54,6 +54,9 @@ abstract final class AppSizes {
   /// Minimum size of a tap target.
   static const double minTapTarget = 48;
 
+  /// Share of the screen height a picker sheet may fill.
+  static const double sheetMaxHeight = 0.7;
+
   /// Height of a full-width primary action button.
   static const double primaryActionHeight = 56;
 

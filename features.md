@@ -136,6 +136,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   list keeps it open. A used-up item shows only the card, and its main
   button adds it to the shopping list. Rows have no action buttons of their
   own.
+- The item hub can log other stock items together with its item: "+ Combine
+  with another food" picks a Vorrat item with nutrition values and its amount,
+  and "Log all" saves one combined diary entry named "A + B". The entry and
+  every stock change are written together. A combined entry cannot change its
+  amount or be eaten again; deleting it can return the stock of every food.
 - Amount parsing and unit handling for grams, milliliters, pieces, and custom
   serving data.
 - Receipt grouping and by-receipt inventory mode.

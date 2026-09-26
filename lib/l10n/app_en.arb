@@ -356,6 +356,15 @@
   "eatPageItemTitle": "Item",
   "eatPageReplaceProduct": "Replace product",
   "eatPageOnShoppingList": "On the shopping list",
+  "eatPageCombineLink": "+ Combine with another food",
+  "eatPageCombineTitle": "Log together",
+  "eatPageCombineAdd": "+ Add food",
+  "eatPageCombineConfirm": "Log all",
+  "eatPageCombineAmountAbove": "amount above",
+  "eatPageCombinePickerTitle": "From your stock",
+  "eatPageCombinePickerEmpty": "No other food with nutrition values in stock.",
+  "eatPageCombineRemove": "Remove from the list",
+  "eatPageCombineSaved": "Logged together.",
   "eatPageWhen": "{day} · {meal}",
   "@eatPageWhen": {
     "placeholders": {

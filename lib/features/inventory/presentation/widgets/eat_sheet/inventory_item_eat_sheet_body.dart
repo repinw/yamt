@@ -33,6 +33,8 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.hasOpenStock = false,
     this.footer,
     this.onSubmitted,
+    this.confirmLabel,
+    this.extraKcal = 0,
     super.key,
   });
 
@@ -69,6 +71,12 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
 
   /// Called with the entered result. Pops the page with it when null.
   final ValueChanged<InventoryItemEatSheetResult>? onSubmitted;
+
+  /// Text of the confirm button. Defaults to "Log".
+  final String? confirmLabel;
+
+  /// Calories logged together with this item, added to the confirm button.
+  final double extraKcal;
 
   @override
   ConsumerState<InventoryItemEatSheetBody> createState() =>
@@ -134,7 +142,11 @@ class _InventoryItemEatSheetBodyState
         onDayPicked: _controller.setLoggedDay,
         onMealTypeChanged: _controller.setMealType,
       ),
-      kcal: nutrition?.eaten.kcal,
+      kcal: switch (nutrition?.eaten.kcal) {
+        final kcal? => kcal + widget.extraKcal,
+        null => null,
+      },
+      confirmLabel: widget.confirmLabel,
       confirmButtonKey: const Key(
         'inventory_item_amount_dialog_confirm_button',
       ),
