@@ -63,12 +63,12 @@ class EatPageScaffold extends StatelessWidget {
     final secondary = secondaryLabel;
     final kcalValue = kcal;
 
-    // An own messenger keeps snack bars of earlier entries off this page,
-    // where they would cover the confirm button.
+    // An own messenger keeps snack bars of earlier entries off this page.
     return ScaffoldMessenger(
       child: Scaffold(
         backgroundColor: colors.paper,
         body: SafeArea(
+          bottom: false,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -108,6 +108,17 @@ class EatPageScaffold extends StatelessWidget {
                   ),
                 ),
               ),
+            ],
+          ),
+        ),
+        // Snack bars of this page float above the buttons instead of
+        // covering them.
+        bottomNavigationBar: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
               FoodLabelDashedLine(color: colors.ink),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -212,13 +223,23 @@ class _ConfirmButton extends StatelessWidget {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          spacing: AppSpacing.sm,
           children: [
-            Text(
-              label,
-              style: textTheme.titleLarge?.copyWith(
-                fontFamily: AppFonts.display,
-                fontWeight: FontWeight.w800,
-                color: colors.onAccent,
+            // A long label next to a second button shrinks instead of
+            // overflowing.
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  style: textTheme.titleLarge?.copyWith(
+                    fontFamily: AppFonts.display,
+                    fontWeight: FontWeight.w800,
+                    color: colors.onAccent,
+                  ),
+                ),
               ),
             ),
             if (trailingText != null)

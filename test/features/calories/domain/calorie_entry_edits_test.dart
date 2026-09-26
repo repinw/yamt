@@ -3,6 +3,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
+import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
 
 void main() {
   final loggedAt = DateTime(2026, 2, 25, 8);
@@ -99,6 +100,19 @@ void main() {
   test('bundles cannot be repeated', () {
     expect(canRepeatCalorieEntry(entry()), isTrue);
     expect(canRepeatCalorieEntry(bundle()), isFalse);
+    expect(canRepeatCalorieEntry(_combined()), isTrue);
+  });
+
+  test('a repeated combined entry keeps its foods without stock sources', () {
+    final repeated = repeatCalorieEntry(
+      _combined(),
+      id: 'copy',
+      now: DateTime(2026, 9, 27, 12),
+    );
+
+    expect(repeated.isCombined, isTrue);
+    expect(repeated.bundleComponents.map((c) => c.name), ['Bread', 'Gouda']);
+    expect(repeated.canReturnCombinedToInventory, isFalse);
   });
 
   test('nutrient details survive JSON and edits', () {
@@ -117,4 +131,25 @@ void main() {
     expect(decoded.nutrientDetails?.per100Fiber, isNull);
     expect(rescaled.nutrientDetails?.per100Salt, 0.1);
   });
+}
+
+CalorieEntry _combined() {
+  CalorieEntryBundleComponent food(String name) => CalorieEntryBundleComponent(
+    name: name,
+    amountLabel: '80 g',
+    totalKcal: 190,
+    totalProtein: 6,
+    totalCarbs: 36,
+    totalFat: 2,
+    sourceInventoryItemId: name.toLowerCase(),
+    sourceInventoryAmountToRestore: 80,
+  );
+  return buildCombinedCalorieEntry(
+    id: 'combined',
+    userId: 'user',
+    mealType: MealType.lunch,
+    loggedAt: DateTime(2026, 9, 27, 8),
+    now: DateTime(2026, 9, 27, 8),
+    components: [food('Bread'), food('Gouda')],
+  );
 }

@@ -69,6 +69,20 @@ class CalorieEntryBundleComponent {
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieEntryBundleComponentToJson(this);
 
+  /// The same food without the stock item it was eaten from.
+  CalorieEntryBundleComponent withoutStockSource() {
+    return CalorieEntryBundleComponent(
+      name: name,
+      amountLabel: amountLabel,
+      brand: brand,
+      imageUrl: imageUrl,
+      totalKcal: totalKcal,
+      totalProtein: totalProtein,
+      totalCarbs: totalCarbs,
+      totalFat: totalFat,
+    );
+  }
+
   /// Copy with.
   CalorieEntryBundleComponent copyWith({
     String? name,

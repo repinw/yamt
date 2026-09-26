@@ -26,7 +26,9 @@ class EatMealTable extends StatelessWidget {
       ..maximumFractionDigits = 1;
     final amounts = [
       for (final MapEntry(key: unit, value: amount) in meal.amounts.entries)
-        '${number.format(amount)} ${consumedUnitSymbol(l10n, unit)}',
+        // A no-break space keeps the amount and unit on one line when the
+        // header wraps under "total".
+        '${number.format(amount)}\u00A0${consumedUnitSymbol(l10n, unit)}',
     ].join(' + ');
     final singleUnit = meal.amounts.length == 1
         ? meal.amounts.keys.single

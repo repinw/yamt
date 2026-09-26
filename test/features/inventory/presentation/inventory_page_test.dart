@@ -1322,7 +1322,7 @@ void main() {
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
 
     expect(find.text('Milk + Oats'), findsOneWidget);
-    expect(find.text('total 300 g'), findsOneWidget);
+    expect(find.text('total 300\u00A0g'), findsOneWidget);
     expect(find.text('Log meal'), findsOneWidget);
 
     await _tapAmountDialogConfirm(tester);

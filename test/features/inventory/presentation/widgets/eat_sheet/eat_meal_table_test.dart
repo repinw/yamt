@@ -39,7 +39,7 @@ void main() {
     );
 
     expect(find.text('Per 100 g'), findsOneWidget);
-    expect(find.text('total 200 g'), findsOneWidget);
+    expect(find.text('total 200\u00A0g'), findsOneWidget);
     expect(find.text('3 g'), findsOneWidget);
     expect(find.text('6 g'), findsOneWidget);
   });
@@ -82,6 +82,6 @@ void main() {
     );
 
     expect(find.textContaining('Per 100'), findsNothing);
-    expect(find.text('total 200 ml + 50 g'), findsOneWidget);
+    expect(find.text('total 200\u00A0ml + 50\u00A0g'), findsOneWidget);
   });
 }

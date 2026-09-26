@@ -19,8 +19,11 @@ CalorieEntry rescaleCalorieEntry(
       .recalculateTotals(updatedAt: now);
 }
 
-/// Whether [entry] can be logged again from its details.
-bool canRepeatCalorieEntry(CalorieEntry entry) => !entry.isBundle;
+/// Whether [entry] can be logged again from its details. A prepared meal
+/// entry counts portions of a meal that may be gone; a combined entry can
+/// repeat like a single food.
+bool canRepeatCalorieEntry(CalorieEntry entry) =>
+    entry.isCombined || !entry.isBundle;
 
 /// A new entry with [id] for the same food and amount as [entry], logged at
 /// [now] in the meal that fits that time.
@@ -40,5 +43,9 @@ CalorieEntry repeatCalorieEntry(
     updatedAt: now,
     sourceInventoryItemId: null,
     sourceInventoryAmountToRestore: null,
+    bundleComponents: [
+      for (final component in entry.bundleComponents)
+        component.withoutStockSource(),
+    ],
   );
 }
