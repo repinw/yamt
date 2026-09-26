@@ -63,7 +63,10 @@ class PreparedMealCardHeader extends StatelessWidget {
             label: meal.name,
             imageBytes: imageBytes,
             imageUrl: meal.imageUrl,
-            borderRadius: BorderRadius.circular(AppRadius.pill),
+            componentImageUrls: [
+              for (final component in meal.components) component.imageUrl,
+            ],
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           badgeText: l10n.preparedMealIngredientsCount(ingredientCount),
           title: meal.name,

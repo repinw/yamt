@@ -2,10 +2,14 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
-/// Defines prepared meal cover.
+/// Cover image of a prepared meal.
+///
+/// Without an own image the cover shows the product images of the meal's
+/// foods: two side by side, three or four in a grid.
 class PreparedMealCover extends StatelessWidget {
   /// The prepared meal cover.
   const new({
@@ -13,6 +17,7 @@ class PreparedMealCover extends StatelessWidget {
     required this.imageBytes,
     super.key,
     this.imageUrl,
+    this.componentImageUrls = const <String?>[],
     this.size = 64,
     this.borderRadius,
   });
@@ -25,6 +30,9 @@ class PreparedMealCover extends StatelessWidget {
 
   /// The image url.
   final String? imageUrl;
+
+  /// Product images of the meal's foods, used without an own image.
+  final List<String?> componentImageUrls;
 
   /// The size.
   final double size;
@@ -70,12 +78,50 @@ class PreparedMealCover extends StatelessWidget {
                     return _PreparedMealCoverFallback(label: label);
                   },
                 )
-              : _PreparedMealCoverFallback(label: label),
+              : _componentCollage() ?? _PreparedMealCoverFallback(label: label),
         ),
       ),
     );
   }
+
+  Widget? _componentCollage() {
+    final urls = componentImageUrls
+        .map(normalizeProductImageUrl)
+        .nonNulls
+        .take(_maxCollageImages)
+        .toList(growable: false);
+    if (urls.isEmpty) {
+      return null;
+    }
+    Widget image(String url) => AppCachedNetworkImage(
+      imageUrl: url,
+      fit: BoxFit.cover,
+      errorBuilder: (_, _, _) => const SizedBox.shrink(),
+    );
+    Widget row(List<String> rowUrls) => Expanded(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: AppSizes.dividerThickness,
+        children: [for (final url in rowUrls) Expanded(child: image(url))],
+      ),
+    );
+    if (urls.length < 3) {
+      return Column(
+        key: const Key('prepared_meal_cover_collage'),
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [row(urls)],
+      );
+    }
+    return Column(
+      key: const Key('prepared_meal_cover_collage'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSizes.dividerThickness,
+      children: [row(urls.sublist(0, 2)), row(urls.sublist(2))],
+    );
+  }
 }
+
+const _maxCollageImages = 4;
 
 class _PreparedMealCoverFallback extends StatelessWidget {
   const new({required this.label});
