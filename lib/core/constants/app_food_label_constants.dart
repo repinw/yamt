@@ -11,9 +11,6 @@ abstract final class AppFoodLabel {
   /// tile edge.
   static const double imageFallbackIconShare = 40 / 76;
 
-  /// Edge length of a food image in a list row.
-  static const double rowImageTile = 40;
-
   /// Edge length of one food image in a meal header.
   static const double mealImageTile = 56;
 

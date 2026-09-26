@@ -24,7 +24,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Hub section to log other foods together with [hubItem].
 ///
 /// Shows a link while nothing is picked, then one row per food with its
-/// image, amount and calories. Tapping a row opens a ruler for its amount;
+/// amount and calories. Tapping a row opens a ruler for its amount;
 /// the hub item's row drives the hub's own amount.
 class EatCombineSection extends ConsumerStatefulWidget {
   /// Creates the section.
@@ -69,7 +69,6 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           EatCombineFoodRow(
-            imageUrl: hubItem.imageUrl,
             name: hubItem.name,
             amount: hubState.enteredAmountLabel(l10n),
             kcal: hubKcal == null ? null : l10n.eatPageKcal(hubKcal.round()),
@@ -88,7 +87,6 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
           for (final pick in picks)
             EatCombineFoodRow(
               key: ValueKey<String>(pick.item.id),
-              imageUrl: pick.item.imageUrl,
               name: pick.item.name,
               amount: pick.component.amountLabel,
               kcal: l10n.eatPageKcal(pick.component.totalKcal.round()),

@@ -1,14 +1,12 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_image_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// One food of a meal on the item hub: image, name, amount and calories.
+/// One food of a meal on the item hub: name, amount and calories.
 /// Tapping it opens [ruler] under the row.
 class EatCombineFoodRow extends StatelessWidget {
   /// Creates the row.
@@ -17,15 +15,11 @@ class EatCombineFoodRow extends StatelessWidget {
     required this.amount,
     required this.isOpen,
     required this.onTap,
-    this.imageUrl,
     this.kcal,
     this.ruler,
     this.onRemove,
     super.key,
   });
-
-  /// Food image.
-  final String? imageUrl;
 
   /// Food name.
   final String name;
@@ -80,11 +74,6 @@ class EatCombineFoodRow extends StatelessWidget {
                 child: Row(
                   spacing: AppSpacing.sm,
                   children: [
-                    EatImageTile(
-                      imageUrl: imageUrl,
-                      size: AppFoodLabel.rowImageTile,
-                      angle: 0,
-                    ),
                     Expanded(
                       child: Text(
                         name,

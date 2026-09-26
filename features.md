@@ -140,7 +140,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   with another food" opens the Vorrat list in selection mode (only items with
   nutrition values and stock, counted in grams or milliliters). Picked items
   join with 100 g or ml; tapping a food's row opens a ruler for its amount.
-  The hub then shows all foods' images side by side, the meal name, and one
+  The hub then shows all foods' images side by side in its header (the rows
+  carry no images), the meal name, and one
   nutrition label for the whole meal, per 100 g and in total ("–" when one
   food lacks a value; no per-100 column when grams and milliliters mix),
   and "Log meal" saves one combined diary entry named "A + B". The entry and
