@@ -28,7 +28,7 @@ class InventoryItemImageTile extends StatelessWidget {
     final backgroundColor = colors.surfaceContainerHigh.withValues(
       alpha: AppInventoryClosedTile.imageBackgroundAlpha,
     );
-    final borderRadius = BorderRadius.circular(AppRadius.pill);
+    final borderRadius = BorderRadius.circular(AppRadius.md);
 
     return ClipRRect(
       borderRadius: borderRadius,

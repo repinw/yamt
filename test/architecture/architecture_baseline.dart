@@ -396,8 +396,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/presentation/inventory_product_search_hub_completion_handler.dart':
         1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row_action_coordinator.dart':
-        1,
     'lib/features/kitchen_utensils/data/kitchen_utensil_image_store.dart': 1,
     'lib/features/kitchen_utensils/data/kitchen_utensil_repository_contract.dart':
         1,
@@ -506,12 +504,10 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/home/widgets/home_context_fab.dart': 1,
     'lib/features/inventory/presentation/constants/inventory_ui_constants.dart':
-        2,
+        1,
     'lib/features/inventory/presentation/widgets/inventory_action_picker_sheet.dart':
         1,
     'lib/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_discount_rows_field.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row.dart':
         1,
     'lib/features/inventory/presentation/widgets/shared/status_line.dart': 1,
     'lib/features/meal_templates/presentation/widgets/meal_template_recipe_template_sheet.dart':
@@ -581,8 +577,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/controllers/prepared_meal_templates_controller.dart':
         1,
     'lib/features/inventory/presentation/controllers/prepared_meals_controller.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row_action_coordinator.dart':
         1,
     'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_card_actions.dart':
         1,

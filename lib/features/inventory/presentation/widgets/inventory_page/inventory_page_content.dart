@@ -9,8 +9,6 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
-    'inventory_item_delete_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_edit_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_activity_timeline/inventory_activity_timeline.dart';
@@ -133,19 +131,6 @@ class InventoryPageContent extends ConsumerWidget {
           mealEditCoordinator.inventorySelectionFocusToken,
       topChromeActions: topChromeActions,
       emptyStateActionButton: emptyStateActionButton,
-      onDeleteItem: (itemId) => InventoryItemDeleteFlow.deleteWithUndo(
-        context: context,
-        ref: ref,
-        itemId: itemId,
-      ),
-      onEatItem: (itemId, request) => eatInventoryPageItem(
-        context: context,
-        ref: ref,
-        itemId: itemId,
-        request: request,
-        itemsSnapshot: items,
-      ),
-      onThrowAwayItem: controller.throwAwayItemDetailed,
       onThrowAwayPreparedMeal: (mealId, portions, reason) =>
           mealsController.throwAwayPreparedMeal(
             mealId: mealId,

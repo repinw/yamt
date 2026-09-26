@@ -2,10 +2,6 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -15,42 +11,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Callback used to delete an inventory item.
-typedef InventoryItemDeleteCallback = Future<bool> Function(String itemId);
-
-/// Callback used to eat an inventory item.
-typedef InventoryItemEatCallback = Future<bool> Function(
-  String itemId,
-  InventoryItemEatRequest request,
-);
-
-/// Callback used to throw away inventory item quantity.
-typedef InventoryItemThrowAwayCallback =
-    Future<InventoryItemDiscardResult?> Function(
-      String itemId,
-      int amount,
-      InventoryDiscardReason reason,
-    );
-
-/// Actions used by [ReceiptGroupTile] rows.
-class ReceiptGroupTileActions {
-  /// Creates receipt group tile actions.
-  const new({
-    required this.onDeleteItem,
-    required this.onEatItem,
-    required this.onThrowAwayItem,
-  });
-
-  /// The on delete item.
-  final InventoryItemDeleteCallback onDeleteItem;
-
-  /// The on eat item.
-  final InventoryItemEatCallback onEatItem;
-
-  /// The on throw away item.
-  final InventoryItemThrowAwayCallback onThrowAwayItem;
-}
 
 /// Selection options used by [ReceiptGroupTile] rows.
 class ReceiptGroupSelectionOptions {
@@ -82,7 +42,6 @@ class ReceiptGroupTile extends StatefulWidget {
     required this.group,
     required this.dateFormat,
     required this.activeShoppingListItemKeys,
-    required this.actions,
     super.key,
     this.selection = const ReceiptGroupSelectionOptions(),
   });
@@ -95,9 +54,6 @@ class ReceiptGroupTile extends StatefulWidget {
 
   /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
-
-  /// Inventory item row actions.
-  final ReceiptGroupTileActions actions;
 
   /// Inventory item selection options.
   final ReceiptGroupSelectionOptions selection;
@@ -195,12 +151,8 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                             item: item,
                             keyPrefix: 'receipt_item_row',
                             bottomSpacing: AppSpacing.xl,
-                            l10n: l10n,
                             activeShoppingListItemKeys:
                                 widget.activeShoppingListItemKeys,
-                            onDeleteItem: widget.actions.onDeleteItem,
-                            onEatItem: widget.actions.onEatItem,
-                            onThrowAwayItem: widget.actions.onThrowAwayItem,
                             isSelectionMode: widget.selection.isSelectionMode,
                             isSelected: widget.selection.selectedItemIds
                                 .contains(item.id),

@@ -93,10 +93,6 @@ Widget _buildInventoryListBody({
     items: items,
     preparedMeals: preparedMeals,
     emptyStateActionButton: const SizedBox.shrink(),
-    onDeleteItem: (itemId) async => true,
-    onEatItem: (itemId, request) async => true,
-    onThrowAwayItem: (itemId, amount, reason) async =>
-        (discardEventId: 'discard-$itemId', removedAmount: amount),
     onThrowAwayPreparedMeal: (mealId, portions, reason) async => true,
     onFillPendingPreparedMealIngredient: (
       mealId,

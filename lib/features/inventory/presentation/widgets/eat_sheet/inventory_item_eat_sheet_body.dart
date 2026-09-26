@@ -34,6 +34,8 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.initialMealType,
     this.addMoreActionText,
     this.hasOpenStock = false,
+    this.footer,
+    this.onSubmitted,
     super.key,
   });
 
@@ -64,6 +66,12 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
   /// Whether the stock does not limit the amount, as for a newly picked
   /// product.
   final bool hasOpenStock;
+
+  /// Content below the amount, such as the item hub's action card.
+  final Widget? footer;
+
+  /// Called with the entered result. Pops the page with it when null.
+  final ValueChanged<InventoryItemEatSheetResult>? onSubmitted;
 
   @override
   ConsumerState<InventoryItemEatSheetBody> createState() =>
@@ -119,6 +127,7 @@ class _InventoryItemEatSheetBodyState
     final amountField = state.usesPortionMode ? _pieceCount : _inventoryAmount;
     final units = calculator.availablePortionUnits;
     final selectedSize = state.selectedPieceSize;
+    final footer = widget.footer;
 
     return EatPageScaffold(
       whenControl: EatWhenMenu(
@@ -249,6 +258,7 @@ class _InventoryItemEatSheetBodyState
               ),
           ],
         ),
+        ?footer,
       ],
     );
   }
@@ -277,6 +287,11 @@ class _InventoryItemEatSheetBodyState
     switch (_controller.submit(intent)) {
       case InventoryItemEatSubmitted(:final result):
         FocusManager.instance.primaryFocus?.unfocus();
+        final onSubmitted = widget.onSubmitted;
+        if (onSubmitted != null) {
+          onSubmitted(result);
+          return;
+        }
         Navigator.of(context).pop(result);
       case InventoryItemEatRejected():
         return;

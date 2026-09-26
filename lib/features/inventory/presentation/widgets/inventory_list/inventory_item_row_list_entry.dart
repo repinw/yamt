@@ -1,27 +1,18 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines inventory item row list entry.
+/// Inventory item row with its list spacing and shopping list state.
 class InventoryItemRowListEntry extends StatelessWidget {
   /// The inventory item row list entry.
   const new({
     required this.item,
     required this.keyPrefix,
     required this.bottomSpacing,
-    required this.l10n,
     required this.activeShoppingListItemKeys,
-    required this.onDeleteItem,
-    required this.onEatItem,
-    required this.onThrowAwayItem,
     super.key,
     this.isSelectionMode = false,
     this.isSelected = false,
@@ -38,26 +29,8 @@ class InventoryItemRowListEntry extends StatelessWidget {
   /// The bottom spacing.
   final double bottomSpacing;
 
-  /// The l10n.
-  final AppLocalizations l10n;
-
   /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
-
-  /// The on delete item.
-  final Future<bool> Function(String itemId) onDeleteItem;
-
-  /// Documented member.
-  final Future<bool> Function(String itemId, InventoryItemEatRequest request)
-  onEatItem;
-
-  /// The on throw away item.
-  final Future<InventoryItemDiscardResult?> Function(
-    String itemId,
-    int amount,
-    InventoryDiscardReason reason,
-  )
-  onThrowAwayItem;
 
   /// Whether selection mode.
   final bool isSelectionMode;
@@ -91,13 +64,8 @@ class InventoryItemRowListEntry extends StatelessWidget {
       child: RepaintBoundary(
         child: InventoryItemRow(
           key: ValueKey<String>('${keyPrefix}_${item.id}'),
-          expansionStorageKey: '${keyPrefix}_${item.id}',
           item: item,
-          l10n: l10n,
           isAlreadyInShoppingList: isAlreadyInShoppingList,
-          onDeletePressed: onDeleteItem,
-          onEatPressed: onEatItem,
-          onThrowAwayPressed: onThrowAwayItem,
           isSelectionMode: isSelectionMode,
           isSelected: isSelected,
           onStartSelection: canStartSelection ? onItemLongPress : null,

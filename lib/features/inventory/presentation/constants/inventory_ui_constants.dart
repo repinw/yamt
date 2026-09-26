@@ -67,21 +67,6 @@ abstract final class AppInventoryEatAction {
   static const double iconAlpha = 0.8;
 }
 
-/// Defines app inventory buy again action.
-abstract final class AppInventoryBuyAgainAction {
-  /// The tint.
-  static const Color tint = Color(0xFF1565C0);
-
-  /// The background alpha.
-  static const double backgroundAlpha = 0.24;
-
-  /// The border alpha.
-  static const double borderAlpha = 0.45;
-
-  /// The icon alpha.
-  static const double iconAlpha = 0.8;
-}
-
 /// Defines app inventory item visuals.
 abstract final class AppInventoryItemVisuals {
   /// The fallback emoji.
@@ -94,7 +79,7 @@ abstract final class AppInventoryClosedTile {
   static const double radius = 20;
 
   /// The leading image size.
-  static const double imageSize = 44;
+  static const double imageSize = 64;
 
   /// Background opacity for closed-tile image wells.
   static const double imageBackgroundAlpha = 0.8;
@@ -161,53 +146,6 @@ class AppInventoryEatActionColors {
     );
 
     return AppInventoryEatActionColors(
-      backgroundColor: backgroundColor,
-      borderColor: borderColor,
-      iconColor: iconColor,
-    );
-  }
-
-  /// The background color.
-  final Color backgroundColor;
-
-  /// The border color.
-  final Color borderColor;
-
-  /// The icon color.
-  final Color iconColor;
-}
-
-/// Defines app inventory buy again action colors.
-class AppInventoryBuyAgainActionColors {
-  /// The app inventory buy again action colors.
-  const new({
-    required this.backgroundColor,
-    required this.borderColor,
-    required this.iconColor,
-  });
-
-  /// Creates a [AppInventoryBuyAgainActionColors] for from color scheme.
-  factory fromColorScheme(ColorScheme colors) {
-    final backgroundColor = Color.alphaBlend(
-      AppInventoryBuyAgainAction.tint.withValues(
-        alpha: AppInventoryBuyAgainAction.backgroundAlpha,
-      ),
-      colors.primaryContainer,
-    );
-    final borderColor = Color.alphaBlend(
-      AppInventoryBuyAgainAction.tint.withValues(
-        alpha: AppInventoryBuyAgainAction.borderAlpha,
-      ),
-      colors.outlineVariant,
-    );
-    final iconColor = Color.alphaBlend(
-      AppInventoryBuyAgainAction.tint.withValues(
-        alpha: AppInventoryBuyAgainAction.iconAlpha,
-      ),
-      colors.onPrimaryContainer,
-    );
-
-    return AppInventoryBuyAgainActionColors(
       backgroundColor: backgroundColor,
       borderColor: borderColor,
       iconColor: iconColor,

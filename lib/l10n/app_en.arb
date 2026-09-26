@@ -353,6 +353,9 @@
   "inventoryItemEatSheetConfirmAction": "Log",
   "inventoryItemEatSheetAddMoreAction": "+ More",
   "eatPageNutritionTitle": "Nutrition",
+  "eatPageItemTitle": "Item",
+  "eatPageReplaceProduct": "Replace product",
+  "eatPageOnShoppingList": "On the shopping list",
   "eatPageWhen": "{day} · {meal}",
   "@eatPageWhen": {
     "placeholders": {

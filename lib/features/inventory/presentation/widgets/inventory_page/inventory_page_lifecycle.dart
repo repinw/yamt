@@ -1,15 +1,10 @@
 import 'dart:developer' as developer;
 
-import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_selection_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_creation_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -56,28 +51,5 @@ void logInventoryPageLoadError(
     name: 'InventoryPage',
     error: nextError.error,
     stackTrace: nextError.stackTrace,
-  );
-}
-
-/// Starts an inventory item eat flow from the current page snapshot.
-Future<bool> eatInventoryPageItem({
-  required BuildContext context,
-  required WidgetRef ref,
-  required String itemId,
-  required InventoryItemEatRequest request,
-  required List<InventoryItem> itemsSnapshot,
-}) async {
-  final selectedItem = itemsSnapshot.firstWhereOrNull(
-    (item) => item.id == itemId,
-  );
-  if (selectedItem == null) {
-    return false;
-  }
-
-  return await InventoryItemEatFlow.stageAndComplete(
-    context: context,
-    container: ref.container,
-    item: selectedItem,
-    request: request,
   );
 }

@@ -63,7 +63,6 @@ class PreparedMealCardHeader extends StatelessWidget {
             label: meal.name,
             imageBytes: imageBytes,
             imageUrl: meal.imageUrl,
-            size: AppInventoryClosedTile.imageSize,
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
           badgeText: l10n.preparedMealIngredientsCount(ingredientCount),

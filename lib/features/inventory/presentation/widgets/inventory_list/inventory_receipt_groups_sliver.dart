@@ -19,7 +19,6 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
     required this.groups,
     required this.dateFormat,
     required this.activeShoppingListItemKeys,
-    required this.actions,
     required this.selection,
     super.key,
   });
@@ -32,9 +31,6 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
 
   /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
-
-  /// Inventory item row actions.
-  final ReceiptGroupTileActions actions;
 
   /// Inventory item selection options.
   final ReceiptGroupSelectionOptions selection;
@@ -59,7 +55,6 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
               group: group,
               dateFormat: dateFormat,
               activeShoppingListItemKeys: activeShoppingListItemKeys,
-              actions: actions,
               selection: selection,
             ),
           );

@@ -1,11 +1,6 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -18,9 +13,6 @@ class InventoryPageListContent extends StatelessWidget {
     required this.items,
     required this.preparedMeals,
     required this.emptyStateActionButton,
-    required this.onDeleteItem,
-    required this.onEatItem,
-    required this.onThrowAwayItem,
     required this.onThrowAwayPreparedMeal,
     required this.onFillPendingPreparedMealIngredient,
     required this.onIgnorePendingPreparedMealIngredient,
@@ -59,21 +51,6 @@ class InventoryPageListContent extends StatelessWidget {
 
   /// Empty-state action.
   final Widget? emptyStateActionButton;
-
-  /// Item delete callback.
-  final Future<bool> Function(String itemId) onDeleteItem;
-
-  /// Item eat callback.
-  final Future<bool> Function(String itemId, InventoryItemEatRequest request)
-  onEatItem;
-
-  /// Item discard callback.
-  final Future<InventoryItemDiscardResult?> Function(
-    String itemId,
-    int amount,
-    InventoryDiscardReason reason,
-  )
-  onThrowAwayItem;
 
   /// Prepared meal discard callback.
   final PreparedMealDiscardCallback onThrowAwayPreparedMeal;
@@ -120,9 +97,6 @@ class InventoryPageListContent extends StatelessWidget {
       inventorySelectionFocusToken: inventorySelectionFocusToken,
       topChromeActions: topChromeActions,
       emptyStateActionButton: emptyStateActionButton,
-      onDeleteItem: onDeleteItem,
-      onEatItem: onEatItem,
-      onThrowAwayItem: onThrowAwayItem,
       onThrowAwayPreparedMeal: onThrowAwayPreparedMeal,
       onFillPendingPreparedMealIngredient: onFillPendingPreparedMealIngredient,
       onIgnorePendingPreparedMealIngredient:

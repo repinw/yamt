@@ -1,37 +1,5 @@
-import 'package:yamt/core/constants/app_layout_constants.dart';
-
-/// Defines inventory item row constants.
+/// Sizes shared by inventory item rows and prepared meal cards.
 abstract final class InventoryItemRowConstants {
-  /// The expand panel duration.
-  static const expandPanelDuration = Duration(milliseconds: 220);
-
-  /// The action panel top spacing.
-  static const double actionPanelTopSpacing = AppSpacing.xs;
-
-  /// The nutrition strip height.
-  static const nutritionStripHeight = 72.0;
-
   /// The nutrition strip radius.
   static const nutritionStripRadius = 24.0;
-
-  /// The nutrition strip divider height.
-  static const nutritionStripDividerHeight = 28.0;
-
-  /// The action button height.
-  static const actionButtonHeight = 72.0;
-
-  /// The action button icon size.
-  static const actionButtonIconSize = 28.0;
-
-  /// The primary action width.
-  static const primaryActionWidth = 64.0;
-
-  /// The wide primary action width.
-  static const primaryActionWideWidth = 132.0;
-
-  /// The primary action height.
-  static const primaryActionHeight = 42.0;
-
-  /// The shopping list quick action size.
-  static const shoppingListQuickActionSize = 42.0;
 }

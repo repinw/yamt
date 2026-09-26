@@ -118,14 +118,14 @@ class InventoryTileHeaderLayout extends StatelessWidget {
           ),
           const SizedBox(width: AppSpacing.sm),
         ],
+        leading,
+        const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
-                  leading,
-                  const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: _InventoryTileHeaderInfo(
                       title: title,

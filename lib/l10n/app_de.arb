@@ -353,6 +353,9 @@
   "inventoryItemEatSheetConfirmAction": "Eintragen",
   "inventoryItemEatSheetAddMoreAction": "+ Mehr",
   "eatPageNutritionTitle": "Nährwerte",
+  "eatPageItemTitle": "Artikel",
+  "eatPageReplaceProduct": "Produkt ersetzen",
+  "eatPageOnShoppingList": "Steht auf der Einkaufsliste",
   "eatPageWhen": "{day} · {meal}",
   "@eatPageWhen": {
     "placeholders": {

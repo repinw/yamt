@@ -18,6 +18,7 @@ class EatPageScaffold extends StatelessWidget {
     required this.confirmButtonKey,
     required this.onConfirm,
     required this.cancelButtonKey,
+    this.confirmLabel,
     this.secondaryLabel,
     this.secondaryButtonKey,
     this.onSecondary,
@@ -37,8 +38,11 @@ class EatPageScaffold extends StatelessWidget {
   /// Key of the confirm button.
   final Key confirmButtonKey;
 
-  /// Called by the confirm button.
-  final VoidCallback onConfirm;
+  /// Called by the confirm button. The button is disabled when null.
+  final VoidCallback? onConfirm;
+
+  /// Text of the confirm button. Defaults to "Log".
+  final String? confirmLabel;
 
   /// Key of the close button.
   final Key cancelButtonKey;
@@ -143,7 +147,9 @@ class EatPageScaffold extends StatelessWidget {
                     Expanded(
                       child: _ConfirmButton(
                         buttonKey: confirmButtonKey,
-                        label: l10n.inventoryItemEatSheetConfirmAction,
+                        label:
+                            confirmLabel ??
+                            l10n.inventoryItemEatSheetConfirmAction,
                         trailing: kcalValue == null
                             ? null
                             : l10n.eatPageKcal(kcalValue.round()),
@@ -172,7 +178,7 @@ class _ConfirmButton extends StatelessWidget {
   final Key buttonKey;
   final String label;
   final String? trailing;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {

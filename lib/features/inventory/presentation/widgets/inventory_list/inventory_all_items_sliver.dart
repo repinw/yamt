@@ -1,13 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/constants/'
     'inventory_ui_constants.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -18,7 +14,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 const double _inventoryListBottomPadding =
     AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
@@ -28,7 +23,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
   /// The inventory all items sliver.
   const new({
     required this.items,
-    required this.l10n,
 
     /// Documented member.
     required this.activeShoppingListItemKeys,
@@ -36,15 +30,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
 
     /// Documented member.
     required this.sortMode,
-
-    /// Documented member.
-    required this.onDeleteItem,
-
-    /// Documented member.
-    required this.onEatItem,
-
-    /// Documented member.
-    required this.onThrowAwayItem,
 
     /// Documented member.
     required this.isSelectionMode,
@@ -59,9 +44,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
   /// The items.
   final List<InventoryItem> items;
 
-  /// The l10n.
-  final AppLocalizations l10n;
-
   /// The active shopping list item keys.
   final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
 
@@ -70,21 +52,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
 
   /// The sort mode.
   final InventoryItemSortMode sortMode;
-
-  /// The on delete item.
-  final Future<bool> Function(String itemId) onDeleteItem;
-
-  /// The on eat item.
-  final Future<bool> Function(String itemId, InventoryItemEatRequest request)
-  onEatItem;
-
-  /// The on throw away item.
-  final Future<InventoryItemDiscardResult?> Function(
-    String itemId,
-    int amount,
-    InventoryDiscardReason reason,
-  )
-  onThrowAwayItem;
 
   /// Whether selection mode.
   final bool isSelectionMode;
@@ -181,11 +148,7 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
       item: item,
       keyPrefix: 'inventory_item_row',
       bottomSpacing: bottomSpacing,
-      l10n: widget.l10n,
       activeShoppingListItemKeys: widget.activeShoppingListItemKeys,
-      onDeleteItem: widget.onDeleteItem,
-      onEatItem: widget.onEatItem,
-      onThrowAwayItem: widget.onThrowAwayItem,
       isSelectionMode: widget.isSelectionMode,
       isSelected: widget.selectedItemIds.contains(item.id),
       onItemLongPress: () => widget.onItemLongPress(item.id),

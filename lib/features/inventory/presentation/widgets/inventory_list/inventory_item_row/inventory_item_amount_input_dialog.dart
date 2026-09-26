@@ -1,4 +1,3 @@
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
@@ -137,7 +136,7 @@ class _InventoryItemAmountInputDialogState
       actions: [
         TextButton(
           key: const Key('inventory_item_amount_dialog_cancel_button'),
-          onPressed: context.pop,
+          onPressed: () => Navigator.of(context).pop(),
           child: Text(widget.cancelLabel),
         ),
         FilledButton(
@@ -173,7 +172,7 @@ class _InventoryItemAmountInputDialogState
     if (parsed == null) {
       return;
     }
-    context.pop(parsed);
+    Navigator.of(context).pop(parsed);
   }
 
   void _fillMaxAmount() {

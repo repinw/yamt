@@ -12,12 +12,8 @@ import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_search_service.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_consumption_filter.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -59,9 +55,6 @@ class InventoryList extends ConsumerStatefulWidget {
     required this.items,
     required this.preparedMeals,
     required this.emptyStateActionButton,
-    required this.onDeleteItem,
-    required this.onEatItem,
-    required this.onThrowAwayItem,
     required this.onThrowAwayPreparedMeal,
     required this.onFillPendingPreparedMealIngredient,
     required this.onIgnorePendingPreparedMealIngredient,
@@ -100,21 +93,6 @@ class InventoryList extends ConsumerStatefulWidget {
 
   /// The empty state action button.
   final Widget? emptyStateActionButton;
-
-  /// The on delete item.
-  final Future<bool> Function(String itemId) onDeleteItem;
-
-  /// The on eat item.
-  final Future<bool> Function(String itemId, InventoryItemEatRequest request)
-  onEatItem;
-
-  /// The on throw away item.
-  final Future<InventoryItemDiscardResult?> Function(
-    String itemId,
-    int amount,
-    InventoryDiscardReason reason,
-  )
-  onThrowAwayItem;
 
   /// The on throw away prepared meal.
   final PreparedMealDiscardCallback onThrowAwayPreparedMeal;
@@ -311,11 +289,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
             groups: groupInventoryItemsByReceipt(filteredItems),
             dateFormat: DateFormat.yMMMd(locale),
             activeShoppingListItemKeys: activeShoppingListItemKeys,
-            actions: ReceiptGroupTileActions(
-              onDeleteItem: widget.onDeleteItem,
-              onEatItem: widget.onEatItem,
-              onThrowAwayItem: widget.onThrowAwayItem,
-            ),
             selection: ReceiptGroupSelectionOptions(
               isSelectionMode: widget.isSelectionMode,
               selectedItemIds: widget.selectedItemIds,
@@ -326,13 +299,9 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         else if (hasFilteredItems && _isRecentItemsSectionExpanded)
           InventoryAllItemsSliver(
             items: filteredItems,
-            l10n: l10n,
             activeShoppingListItemKeys: activeShoppingListItemKeys,
             viewMode: _viewMode,
             sortMode: _inventoryItemSortMode,
-            onDeleteItem: widget.onDeleteItem,
-            onEatItem: widget.onEatItem,
-            onThrowAwayItem: widget.onThrowAwayItem,
             isSelectionMode: widget.isSelectionMode,
             selectedItemIds: widget.selectedItemIds,
             onItemLongPress: widget.onItemLongPress,

@@ -155,6 +155,9 @@ abstract final class AppOpacities {
 
   /// Tinted background of an icon badge.
   static const double iconBadgeBackground = 0.12;
+
+  /// Name of a used-up item in the inventory list.
+  static const double inventoryUsedUpName = 0.5;
 }
 
 /// Shared font-size scale for app typography.

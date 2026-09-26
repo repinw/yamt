@@ -7,11 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -78,29 +74,11 @@ Widget _buildHarness({
   PageStorageBucket? bucket,
   bool showTile = true,
   bool isSelectionMode = false,
-  Future<bool> Function(String itemId)? onDeleteItem,
-  Future<bool> Function(String itemId, InventoryItemEatRequest request)?
-  onEatItem,
-  Future<InventoryItemDiscardResult?> Function(
-    String itemId,
-    int amount,
-    InventoryDiscardReason reason,
-  )?
-  onThrowAwayItem,
 }) {
   final tile = ReceiptGroupTile(
     group: group,
     dateFormat: DateFormat.yMMMd(const Locale('en').toLanguageTag()),
     activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
-    actions: ReceiptGroupTileActions(
-      onDeleteItem: onDeleteItem ?? (_) async => true,
-      onEatItem: onEatItem ?? (itemId, request) async => true,
-      onThrowAwayItem:
-          onThrowAwayItem ??
-          (itemId, amount, reason) async {
-            return (discardEventId: 'discard-$itemId', removedAmount: amount);
-          },
-    ),
     selection: ReceiptGroupSelectionOptions(isSelectionMode: isSelectionMode),
   );
   final body = SingleChildScrollView(
@@ -324,119 +302,5 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(InventoryItemRowListEntry), findsNothing);
-  });
-
-  testWidgets('triggers onDeleteItem when remove dialog confirms delete', (
-    tester,
-  ) async {
-    String? deletedItemId;
-    await tester.pumpWidget(
-      _buildHarness(
-        theme: lightTheme,
-        group: _group(),
-        onDeleteItem: (itemId) async {
-          deletedItemId = itemId;
-          return true;
-        },
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Milk'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Remove').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Delete completely'));
-    await tester.pumpAndSettle();
-
-    expect(deletedItemId, 'a');
-  });
-
-  testWidgets('triggers onEatItem when eat action is confirmed', (
-    tester,
-  ) async {
-    String? eatenItemId;
-    int? eatenAmount;
-    InventoryItemEatRequest? eatRequest;
-    await tester.pumpWidget(
-      _buildHarness(
-        theme: lightTheme,
-        group: _group(),
-        onEatItem: (itemId, request) async {
-          eatenItemId = itemId;
-          eatenAmount = request.inventoryAmount;
-          eatRequest = request;
-          return true;
-        },
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byTooltip('Eat').first);
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(const Key('eat_page_amount_field')), '1');
-    await tester.ensureVisible(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-    );
-    await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-    );
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const Key('inventory_item_portion_amount_field')),
-      '25',
-    );
-    await tester.pump();
-    await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(eatenItemId, isNotNull);
-    expect(<String>['a', 'b'], contains(eatenItemId));
-    expect(eatenAmount, 1);
-    expect(eatRequest?.calorieAmount, 25);
-  });
-
-  testWidgets('triggers onThrowAwayItem when remove dialog picks discarded', (
-    tester,
-  ) async {
-    String? thrownAwayItemId;
-    int? thrownAwayAmount;
-    InventoryDiscardReason? thrownAwayReason;
-    await tester.pumpWidget(
-      _buildHarness(
-        theme: lightTheme,
-        group: _group(),
-        onThrowAwayItem: (itemId, amount, reason) async {
-          thrownAwayItemId = itemId;
-          thrownAwayAmount = amount;
-          thrownAwayReason = reason;
-          return (discardEventId: 'discard-$itemId', removedAmount: amount);
-        },
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Milk'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Remove').first);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Thrown away'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Expired'));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const Key('inventory_item_amount_dialog_field')),
-      '1',
-    );
-    await tester.tap(
-      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(thrownAwayItemId, 'a');
-    expect(thrownAwayAmount, 1);
-    expect(thrownAwayReason, InventoryDiscardReason.expired);
   });
 }

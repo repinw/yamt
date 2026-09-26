@@ -31,12 +31,10 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_list.dart';
+    'inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -431,9 +429,24 @@ Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _tapInventoryRowAction(WidgetTester tester, String tooltip) async {
-  await _tapVisible(tester, find.byTooltip(tooltip));
+Future<void> _tapInventoryRowAction(WidgetTester tester, String action) async {
+  final key = switch (action) {
+    'Remove' => 'eat_item_action_remove',
+    'Edit' => 'eat_item_action_edit',
+    'Swap candidate' => 'eat_item_action_replace',
+    'Shopping list' => 'eat_item_action_shopping_list',
+    _ => throw ArgumentError.value(action),
+  };
+  await _tapVisible(tester, find.byKey(Key(key)));
 }
+
+Future<void> _openItemHub(WidgetTester tester) async {
+  await _tapVisible(tester, find.byType(InventoryItemRow).first);
+}
+
+const _usedUpShoppingListButton = Key(
+  'inventory_item_hub_shopping_list_button',
+);
 
 Future<void> _openInventoryFilters(WidgetTester tester) async {
   await _tapVisible(tester, find.byTooltip('Filter items'));
@@ -924,7 +937,7 @@ void main() {
 
     expect(_stockLabel('1000g / 1000g'), findsOneWidget);
 
-    await _tapVisible(tester, find.byTooltip('Eat'));
+    await _openItemHub(tester);
 
     expect(find.text('Nutrition'), findsOneWidget);
     expect(find.text('Milk'), findsWidgets);
@@ -979,7 +992,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _scrollUntilVisible(tester, _stockLabel('1000g / 1000g'));
-    await _tapVisible(tester, find.byTooltip('Eat'));
+    await _openItemHub(tester);
     await _tapVisible(tester, find.text('All'));
 
     await _tapAmountDialogConfirm(tester);
@@ -1011,7 +1024,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await _tapVisible(tester, find.byTooltip('Eat'));
+      await _openItemHub(tester);
 
       final amountField = find.byKey(const Key('eat_page_amount_field'));
       expect(amountField, findsOneWidget);
@@ -1054,19 +1067,19 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final inventoryList = tester.widget<InventoryList>(
-      find.byType(InventoryList),
+    await _openItemHub(tester);
+    await tester.enterText(find.byKey(const Key('eat_page_amount_field')), '1');
+    await tester.enterText(
+      find.byKey(const Key('inventory_item_portion_amount_field')),
+      '100',
     );
-    unawaited(
-      inventoryList.onEatItem(
-        'a',
-        InventoryItemEatRequest(
-          inventoryAmount: 1,
-          loggedAt: DateTime.parse('2026-02-19T10:00:00Z'),
-          mealType: MealType.breakfast,
-        ),
-      ),
+    await tester.pump();
+    final confirmButton = find.byKey(
+      const Key('inventory_item_amount_dialog_confirm_button'),
     );
+    await tester.ensureVisible(confirmButton);
+    await tester.tap(confirmButton);
+    await tester.pumpAndSettle();
     await tester.pump();
     expect(stageStartedCompleter.isCompleted, isTrue);
 
@@ -1080,40 +1093,36 @@ void main() {
     expect(controller.discardedPendingIds, <String>['pending-delayed']);
   });
 
-  testWidgets(
-    'available item keeps eat and shopping list actions side by side',
-    (tester) async {
-      final repository = _FakeFridgeItemRepository(
-        onReadAll: () async => <InventoryItem>[
-          _item('a', name: 'Milk', brand: 'Acme', quantity: 1),
-        ],
-      );
-      final shoppingRepository = FakeShoppingListRepository();
-      addTearDown(repository.dispose);
-      addTearDown(shoppingRepository.dispose);
+  testWidgets('item hub puts an available item on the shopping list', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _item('a', name: 'Milk', brand: 'Acme', quantity: 1),
+      ],
+    );
+    final shoppingRepository = FakeShoppingListRepository();
+    addTearDown(repository.dispose);
+    addTearDown(shoppingRepository.dispose);
 
-      await _pumpTestApp(
-        tester,
-        repository,
-        overrides: <Override>[
-          shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
-        ],
-      );
-      await tester.pumpAndSettle();
+    await _pumpTestApp(
+      tester,
+      repository,
+      overrides: <Override>[
+        shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
+      ],
+    );
+    await tester.pumpAndSettle();
 
-      expect(find.byTooltip('Eat'), findsOneWidget);
-      expect(find.byTooltip('Add to shopping list'), findsOneWidget);
+    await _openItemHub(tester);
+    await _tapInventoryRowAction(tester, 'Shopping list');
 
-      await tester.tap(find.byTooltip('Add to shopping list'));
-      await tester.pumpAndSettle();
+    expect(find.text('Item added to shopping list.'), findsOneWidget);
+    expect(shoppingRepository.savedItems, hasLength(1));
+  });
 
-      expect(find.text('Item added to shopping list.'), findsOneWidget);
-      expect(shoppingRepository.savedItems, hasLength(1));
-    },
-  );
-
-  testWidgets('fully consumed item expands shopping list action and '
-      'shows success feedback', (tester) async {
+  testWidgets('fully consumed item hub adds the item to the shopping list '
+      'and shows success feedback', (tester) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[
         _item(
@@ -1139,11 +1148,13 @@ void main() {
     await tester.pumpAndSettle();
     await _toggleFullyConsumedFilter(tester);
 
-    expect(find.byTooltip('Add to shopping list'), findsOneWidget);
-    expect(find.byTooltip('Eat'), findsNothing);
+    await _openItemHub(tester);
+    expect(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+      findsNothing,
+    );
 
-    await tester.tap(find.byTooltip('Add to shopping list'));
-    await tester.pumpAndSettle();
+    await _tapVisible(tester, find.byKey(_usedUpShoppingListButton));
 
     expect(find.text('Item added to shopping list.'), findsOneWidget);
     expect(shoppingRepository.savedItems, hasLength(1));
@@ -1174,8 +1185,8 @@ void main() {
     await tester.pumpAndSettle();
     await _toggleFullyConsumedFilter(tester);
 
-    await tester.tap(find.byTooltip('Add to shopping list'));
-    await tester.pumpAndSettle();
+    await _openItemHub(tester);
+    await _tapVisible(tester, find.byKey(_usedUpShoppingListButton));
 
     expect(shoppingRepository.savedItems, hasLength(1));
     expect(shoppingRepository.savedItems.single.quantity, 1);
@@ -1204,8 +1215,8 @@ void main() {
       await tester.pumpAndSettle();
       await _toggleFullyConsumedFilter(tester);
 
-      await tester.tap(find.byTooltip('Add to shopping list'));
-      await tester.pumpAndSettle();
+      await _openItemHub(tester);
+      await _tapVisible(tester, find.byKey(_usedUpShoppingListButton));
 
       expect(find.text('Action failed. Please try again.'), findsOneWidget);
     },
@@ -1243,12 +1254,10 @@ void main() {
     await tester.pumpAndSettle();
     await _toggleFullyConsumedFilter(tester);
 
-    final buyAgainButton = find.ancestor(
-      of: find.byIcon(Icons.shopping_cart_outlined),
-      matching: find.byType(IconButton),
-    );
-    expect(buyAgainButton, findsOneWidget);
-    expect(tester.widget<IconButton>(buyAgainButton).onPressed, isNull);
+    await _openItemHub(tester);
+    final buyAgainButton = find.byKey(_usedUpShoppingListButton);
+    expect(tester.widget<FilledButton>(buyAgainButton).onPressed, isNull);
+    expect(find.text('On the shopping list'), findsOneWidget);
     expect(shoppingRepository.savedItems, isEmpty);
   });
 
@@ -1275,7 +1284,8 @@ void main() {
     await tester.pumpAndSettle();
     await _toggleFullyConsumedFilter(tester);
 
-    await tester.tap(find.byTooltip('Add to shopping list'));
+    await _openItemHub(tester);
+    await tester.tap(find.byKey(_usedUpShoppingListButton));
     await tester.pump();
 
     await tester.pumpWidget(const SizedBox.shrink());
@@ -1297,7 +1307,7 @@ void main() {
     await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
-    await _tapVisible(tester, find.byTooltip('Eat'));
+    await _openItemHub(tester);
 
     final amountField = find.byKey(const Key('eat_page_amount_field'));
     expect(amountField, findsOneWidget);
