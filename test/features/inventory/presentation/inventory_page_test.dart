@@ -31,6 +31,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
@@ -980,6 +981,78 @@ void main() {
 
     expect(find.text('Oats · 100 g'), findsOneWidget);
     expect(find.text('Rice · 150 g'), findsOneWidget);
+  });
+
+  testWidgets('item hub logs a searched food together as a new stock item', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final commitStore = _RecordingCommitStore();
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    addTearDown(repository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+    when(() => user.uid).thenReturn('user-1');
+    when(() => auth.currentUser).thenReturn(user);
+    final bread = _itemWithNutrition('draft-bread', name: 'Bread');
+
+    await _pumpTestApp(
+      tester,
+      repository,
+      calorieEntryRoute: GoRoute(
+        path: AppRoutes.homeFoodPick,
+        builder: (context, state) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.pop(
+              InventoryReceiptManualProductResult(
+                item: bread,
+                action: InventoryReceiptManualProductAction.eatNow,
+                requiresGlobalPersistence: false,
+                skipMissingBarcodePrompt: true,
+              ),
+            ),
+            child: const Text('pick bread'),
+          ),
+        ),
+      ),
+      overrides: <Override>[
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
+        firebaseAuthProvider.overrideWithValue(auth),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')),
+      '200',
+    );
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
+    await _tapVisible(tester, find.text('pick bread'));
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')).last,
+      '80',
+    );
+    await _tapAmountDialogConfirm(tester);
+
+    expect(find.text('Bread · 80 g'), findsOneWidget);
+
+    await _tapAmountDialogConfirm(tester);
+
+    expect(find.text('Logged together.'), findsOneWidget);
+    expect(commitStore.entry?.name, 'Milk + Bread');
+    final breadPending = commitStore.pendingConsumptions!.last;
+    expect(breadPending.itemId, isNot('draft-bread'));
+    expect(breadPending.amount, 80);
+    expect(
+      commitStore.entry?.bundleComponents.last.sourceInventoryItemId,
+      breadPending.itemId,
+    );
   });
 
   testWidgets('item hub logs a second stock item together as one entry', (

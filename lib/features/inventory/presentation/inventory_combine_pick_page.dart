@@ -1,17 +1,30 @@
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_list.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Foods picked on [InventoryCombinePickPage]: ticked stock items in list
+/// order, and a food found by search.
+typedef InventoryCombinePickResult = ({
+  List<InventoryItem> stock,
+  InventoryReceiptManualProductResult? searched,
+});
+
 /// Opens the inventory list to pick the foods to log together with the
-/// item hub's item. Returns the picked items in list order, or null.
-Future<List<InventoryItem>?> showInventoryCombinePickPage(
+/// item hub's item. Returns null when the user closes it.
+Future<InventoryCombinePickResult?> showInventoryCombinePickPage(
   BuildContext context, {
   required List<InventoryItem> candidates,
 }) {
-  return Navigator.of(context, rootNavigator: true).push<List<InventoryItem>>(
-    MaterialPageRoute<List<InventoryItem>>(
+  return Navigator.of(
+    context,
+    rootNavigator: true,
+  ).push<InventoryCombinePickResult>(
+    MaterialPageRoute<InventoryCombinePickResult>(
       fullscreenDialog: true,
       builder: (_) => InventoryCombinePickPage(candidates: candidates),
     ),
@@ -25,6 +38,9 @@ class InventoryCombinePickPage extends StatefulWidget {
 
   /// Key of the button that takes over the selection.
   static const confirmKey = Key('inventory_combine_pick_confirm');
+
+  /// Key of the button that searches for a food outside the stock.
+  static const searchKey = Key('inventory_combine_pick_search');
 
   /// Stock items that can be combined.
   final List<InventoryItem> candidates;
@@ -48,6 +64,12 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
               : l10n.preparedMealSelectionCount(_selected.length),
         ),
         actions: [
+          IconButton(
+            key: InventoryCombinePickPage.searchKey,
+            tooltip: l10n.eatPageCombineSearch,
+            onPressed: _search,
+            icon: const Icon(Icons.search_rounded),
+          ),
           TextButton(
             key: InventoryCombinePickPage.confirmKey,
             onPressed: _selected.isEmpty ? null : _confirm,
@@ -83,10 +105,22 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
     });
   }
 
+  List<InventoryItem> get _selectedItems => [
+    for (final item in widget.candidates)
+      if (_selected.contains(item.id)) item,
+  ];
+
   void _confirm() {
-    Navigator.of(context).pop([
-      for (final item in widget.candidates)
-        if (_selected.contains(item.id)) item,
-    ]);
+    Navigator.of(context).pop((stock: _selectedItems, searched: null));
+  }
+
+  Future<void> _search() async {
+    final result = await context.push<InventoryReceiptManualProductResult>(
+      AppRoutes.homeFoodPick,
+    );
+    if (result == null || !mounted) {
+      return;
+    }
+    Navigator.of(context).pop((stock: _selectedItems, searched: result));
   }
 }

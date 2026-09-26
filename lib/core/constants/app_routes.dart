@@ -27,6 +27,9 @@ abstract final class AppRoutes {
   /// Product search hub route.
   static const homeProductSearchHub = '/home/product-search-hub';
 
+  /// Product search that returns the picked food without saving it.
+  static const homeFoodPick = '/home/food-pick';
+
   /// Product-search child flow route.
   static const productSearchChildFlow = '/product-search/child-flow/:flow';
 

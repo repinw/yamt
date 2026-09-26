@@ -2,12 +2,18 @@ import 'package:meta/meta.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 
 /// A food picked to log together with the hub's item.
+///
+/// A food found by search carries its [InventoryReceiptManualProductResult];
+/// its item is a draft that becomes a stock item only when the foods are
+/// logged.
 typedef InventoryCombinePick = ({
   InventoryItem item,
   InventoryItemEatRequest request,
   CalorieEntryBundleComponent component,
+  InventoryReceiptManualProductResult? searchResult,
 });
 
 /// What the item hub closed with.

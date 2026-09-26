@@ -5,11 +5,16 @@ import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/domain/inventory_manual_add_amount_service.dart';
+import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
+import 'package:yamt/features/inventory/presentation/inventory_manual_add_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_title.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
@@ -76,26 +81,58 @@ class EatCombineSection extends ConsumerWidget {
       context,
       candidates: notifier.candidatesFrom(items ?? const <InventoryItem>[]),
     );
-    for (final item in picked ?? const <InventoryItem>[]) {
+    if (picked == null) {
+      return;
+    }
+    final searched = picked.searched;
+    for (final (item, searchResult) in [
+      for (final item in picked.stock) (item, null),
+      if (searched != null) (searched.item, searched),
+    ]) {
       if (!context.mounted) {
         return;
       }
-      final request = await showInventoryItemEatSheet(
-        context: context,
-        item: item,
-      );
+      final request = await _askAmount(context, item, searchResult);
       if (request == null || !context.mounted) {
         continue;
       }
-      if (!canDirectlySaveInventoryItemEatRequest(item, request)) {
+      if (!InventoryCombinedEatService.canCombine(item) ||
+          !canDirectlySaveInventoryItemEatRequest(item, request)) {
         ScaffoldMessenger.of(context).showAppSnackBar(
           AppLocalizations.of(context)!.inventoryItemActionFailed,
           tone: AppSnackBarTone.error,
         );
         continue;
       }
-      notifier.add(item, request);
+      notifier.add(item, request, searchResult: searchResult);
     }
+  }
+
+  /// A food found by search has no stock yet, so its amount is open.
+  static Future<InventoryItemEatRequest?> _askAmount(
+    BuildContext context,
+    InventoryItem item,
+    InventoryReceiptManualProductResult? searchResult,
+  ) async {
+    if (searchResult == null) {
+      return await showInventoryItemEatSheet(context: context, item: item);
+    }
+    final selected = inventoryManualAddEatRequestFromSelection(
+      searchResult.eatSelection,
+    );
+    if (selected != null) {
+      return selected;
+    }
+    final result = await showInventoryItemEatSheetResult(
+      context: context,
+      item: item,
+      initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
+        item: item,
+        rawWeight: item.weight,
+      ),
+      hasOpenStock: true,
+    );
+    return result?.request;
   }
 }
 

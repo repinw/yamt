@@ -26,6 +26,7 @@ import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_page.dart';
+import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'models/product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -82,6 +83,15 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       path: AppRoutes.homeProductSearchHub,
       builder: (context, state) => ProductSearchHubPage(
         args: resolveProductSearchHubRouteArgs(state.extra),
+      ),
+    ),
+    GoRoute(
+      path: AppRoutes.homeFoodPick,
+      builder: (context, state) => const ProductSearchHubPage(
+        args: ProductSearchHubRouteArgs(
+          mode: ProductSearchHubMode.selection,
+          initialIntent: ProductSearchHubInitialIntent.search,
+        ),
       ),
     ),
     GoRoute(

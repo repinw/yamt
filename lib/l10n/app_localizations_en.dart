@@ -662,6 +662,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageCombinePickConfirm => 'Add';
 
   @override
+  String get eatPageCombineSearch => 'Search for a food';
+
+  @override
   String get eatPageCombineConfirm => 'Log all';
 
   @override

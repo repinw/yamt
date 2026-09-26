@@ -3,6 +3,7 @@ import 'package:yamt/features/inventory/application/inventory_combined_eat_servi
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
 
 part 'inventory_item_combine_controller.g.dart';
@@ -30,14 +31,20 @@ class InventoryItemCombineController extends _$InventoryItemCombineController {
       ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   }
 
-  /// Adds [request] of [item] to the list.
-  void add(InventoryItem item, InventoryItemEatRequest request) {
+  /// Adds [request] of [item] to the list. A food found by search passes
+  /// its [searchResult], and [item] is its draft.
+  void add(
+    InventoryItem item,
+    InventoryItemEatRequest request, {
+    InventoryReceiptManualProductResult? searchResult,
+  }) {
     state = [
       ...state,
       (
         item: item,
         request: request,
         component: InventoryCombinedEatService.componentFor(item, request),
+        searchResult: searchResult,
       ),
     ];
   }

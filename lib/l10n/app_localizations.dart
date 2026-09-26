@@ -1313,6 +1313,12 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get eatPageCombinePickConfirm;
 
+  /// No description provided for @eatPageCombineSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search for a food'**
+  String get eatPageCombineSearch;
+
   /// No description provided for @eatPageCombineConfirm.
   ///
   /// In en, this message translates to:
