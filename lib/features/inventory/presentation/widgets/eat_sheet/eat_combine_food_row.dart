@@ -17,6 +17,7 @@ class EatCombineFoodRow extends StatelessWidget {
     required this.onTap,
     this.kcal,
     this.ruler,
+    this.errorText,
     this.onRemove,
     super.key,
   });
@@ -39,6 +40,9 @@ class EatCombineFoodRow extends StatelessWidget {
   /// Amount control, or null when the amount is set elsewhere.
   final Widget? ruler;
 
+  /// Why the amount is not valid, shown under the row.
+  final String? errorText;
+
   /// Removes the food from the meal, or null for the hub's own item.
   final VoidCallback? onRemove;
 
@@ -54,6 +58,7 @@ class EatCombineFoodRow extends StatelessWidget {
     final kcalText = kcal;
     final remove = onRemove;
     final ruler = this.ruler;
+    final errorText = this.errorText;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -111,6 +116,17 @@ class EatCombineFoodRow extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: ruler,
+            ),
+          if (errorText != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Text(
+                errorText,
+                style: textTheme.bodySmall?.copyWith(
+                  fontFamily: AppFonts.mono,
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
             ),
         ],
       ),

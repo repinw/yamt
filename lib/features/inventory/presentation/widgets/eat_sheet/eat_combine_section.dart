@@ -60,9 +60,7 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
     final hubProvider = inventoryItemEatSheetControllerProvider(item: hubItem);
     final hubState = ref.watch(hubProvider);
     final hubKcal = hubState.nutrition?.eaten.kcal;
-    final notifier = ref.read(
-      inventoryItemCombineControllerProvider(hubItem.id).notifier,
-    );
+    final combineProvider = inventoryItemCombineControllerProvider(hubItem.id);
 
     return EatFramedBox(
       child: Column(
@@ -74,13 +72,17 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
             kcal: hubKcal == null ? null : l10n.eatPageKcal(hubKcal.round()),
             isOpen: _openId == hubItem.id,
             onTap: () => _toggle(hubItem.id),
+            // The page's own ruler is hidden in a meal, so its error shows
+            // here.
+            errorText: hubState.amountError(l10n),
             ruler: inventoryItemUsesFixedCalorieUnit(hubItem)
                 ? EatRuler(
                     value: hubState.amountValue,
                     max: hubState.amountMax,
                     step: hubState.amountStep,
                     marks: const <EatRulerMark>[],
-                    onChanged: ref.read(hubProvider.notifier).pickAmount,
+                    onChanged: (value) =>
+                        ref.read(hubProvider.notifier).pickAmount(value),
                   )
                 : null,
           ),
@@ -92,7 +94,8 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
               kcal: l10n.eatPageKcal(pick.component.totalKcal.round()),
               isOpen: _openId == pick.item.id,
               onTap: () => _toggle(pick.item.id),
-              onRemove: () => notifier.remove(pick.item.id),
+              onRemove: () =>
+                  ref.read(combineProvider.notifier).remove(pick.item.id),
               ruler: defaultMealFoodAmount(pick.item) == null
                   ? null
                   : EatRuler(
@@ -103,8 +106,9 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
                       ).toDouble(),
                       step: _rulerStep,
                       marks: const <EatRulerMark>[],
-                      onChanged: (value) =>
-                          notifier.setAmount(pick.item.id, value.round()),
+                      onChanged: (value) => ref
+                          .read(combineProvider.notifier)
+                          .setAmount(pick.item.id, value.round()),
                     ),
             ),
           addLink,

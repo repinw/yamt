@@ -1219,6 +1219,34 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('a meal with an invalid hub amount shows the error in its row', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _itemWithNutrition('a'),
+        _itemWithNutrition('b', name: 'Oats'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(tester, repository);
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')),
+      '9999',
+    );
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.text('Oats'));
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    await _tapAmountDialogConfirm(tester);
+
+    expect(find.byType(EatMealTable), findsOneWidget);
+    expect(find.text('Please enter valid numbers.'), findsOneWidget);
+  });
+
   testWidgets('item hub keeps combined foods in stock as a prepared meal', (
     tester,
   ) async {

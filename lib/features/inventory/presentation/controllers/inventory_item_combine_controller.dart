@@ -12,6 +12,9 @@ import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_r
 part 'inventory_item_combine_controller.g.dart';
 
 /// Foods picked on the item hub of [hubItemId] to log together with it.
+///
+/// The hub item's own request decides day and meal; a pick's `loggedAt` and
+/// `mealType` are placeholders.
 @riverpod
 class InventoryItemCombineController extends _$InventoryItemCombineController {
   @override
@@ -80,7 +83,9 @@ class InventoryItemCombineController extends _$InventoryItemCombineController {
     return true;
   }
 
-  /// Sets the amount of the food of [itemId].
+  /// Sets the stock amount of the food of [itemId]. The ruler only exists for
+  /// foods counted in grams or milliliters, so the request keeps no portion
+  /// or inedible part.
   void setAmount(String itemId, int amount) {
     state = [
       for (final pick in state)
