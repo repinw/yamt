@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/nutrition_facts.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -128,32 +127,20 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     );
   }
 
-  /// Nutrients of the hub item's entered amount together with [picks].
+  /// Nutrients of the hub item's entered amount together with [picks]. An
+  /// empty hub amount counts as unknown, so the totals show "–".
   EatMealNutrition _meal(List<InventoryCombinePick> picks) {
     final hub = ref.watch(
       inventoryItemEatSheetControllerProvider(item: widget.item),
     );
     final nutrition = hub.nutrition;
-    final hubAmount = nutrition?.amount ?? 0;
     return EatMealNutrition.combine([
-      eatMealFoodOf(widget.item, hubAmount) ??
-          (
-            eaten: nutrition?.eaten ?? const NutritionFacts(),
-            amount: hubAmount,
-            unit: ConsumedUnit.grams,
-          ),
-      for (final pick in picks)
-        eatMealFoodOf(pick.item, pick.request.inventoryAmount.toDouble()) ??
-            (
-              eaten: NutritionFacts(
-                kcal: pick.component.totalKcal,
-                protein: pick.component.totalProtein,
-                carbs: pick.component.totalCarbs,
-                fat: pick.component.totalFat,
-              ),
-              amount: 0,
-              unit: ConsumedUnit.grams,
-            ),
+      (
+        eaten: nutrition?.eaten ?? const NutritionFacts(),
+        amount: nutrition?.amount ?? 0,
+        unit: hub.nutritionConsumedUnit,
+      ),
+      for (final pick in picks) ?eatMealFoodOfRequest(pick.item, pick.request),
     ]);
   }
 

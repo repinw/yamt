@@ -17,6 +17,7 @@ class DiaryMealEntryTile extends StatelessWidget {
     required this.entry,
     required this.onTap,
     this.count = 1,
+    this.countLabel,
     this.expanded,
     super.key,
   });
@@ -26,6 +27,9 @@ class DiaryMealEntryTile extends StatelessWidget {
 
   /// How many logged entries the row stands for.
   final int count;
+
+  /// What the count badge reads aloud; defaults to "N entries".
+  final String? countLabel;
 
   /// Expansion state of a merged group; `null` for a single entry.
   final bool? expanded;
@@ -59,6 +63,7 @@ class DiaryMealEntryTile extends StatelessWidget {
                 if (count > 1)
                   _CountBadge(
                     count: count,
+                    label: countLabel ?? l10n.diaryMealEntryCount(count),
                     child: MealThumb(entry: entry),
                   )
                 else
@@ -131,9 +136,10 @@ class DiaryMealEntryTile extends StatelessWidget {
 
 /// Shows how many entries a merged row stands for, on the food image.
 class _CountBadge extends StatelessWidget {
-  const new({required this.count, required this.child});
+  const new({required this.count, required this.label, required this.child});
 
   final int count;
+  final String label;
   final Widget child;
 
   @override
@@ -142,7 +148,7 @@ class _CountBadge extends StatelessWidget {
     final colors = theme.colorScheme;
 
     return Semantics(
-      label: AppLocalizations.of(context)!.diaryMealEntryCount(count),
+      label: label,
       child: Stack(
         clipBehavior: Clip.none,
         children: [

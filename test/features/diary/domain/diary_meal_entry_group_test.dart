@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/diary/domain/diary_meal_entry_group.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
@@ -52,6 +53,34 @@ void main() {
     expect(combined.totalProtein, closeTo(8.4, 0.001));
     expect(combined.consumedAmount, 60);
     expect(combined.consumedUnit, ConsumedUnit.grams);
+  });
+
+  test('two combined entries with the same name stay apart', () {
+    const food = CalorieEntryBundleComponent(
+      name: 'Bread',
+      amountLabel: '80 g',
+      totalKcal: 190,
+      totalProtein: 6,
+      totalCarbs: 36,
+      totalFat: 2,
+    );
+    DiaryMealEntry combined(String id) => DiaryMealEntry(
+      id: id,
+      mealType: MealType.lunch,
+      name: 'Bread + Gouda',
+      totalKcal: 407,
+      totalProtein: 21,
+      totalCarbs: 36,
+      totalFat: 19,
+      consumedAmount: 100,
+      consumedUnit: ConsumedUnit.grams,
+      combinedFoods: const [food, food],
+    );
+
+    final groups = groupDiaryMealEntries([combined('a'), combined('b')]);
+
+    expect(groups, hasLength(2));
+    expect(groups.every((group) => !group.isMerged), isTrue);
   });
 
   test('keeps foods apart when image or unit differ', () {

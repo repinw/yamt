@@ -135,10 +135,7 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
 
   /// Unit the nutrition table is calculated in.
   String nutritionUnit(AppLocalizations l10n) {
-    final unit = usesPortionMode
-        ? portionUnit
-        : calculator.fixedCalorieUnit ?? portionUnit;
-    return consumedUnitSymbol(l10n, unit);
+    return consumedUnitSymbol(l10n, nutritionConsumedUnit);
   }
 
   /// Text of the inedible part link.

@@ -143,6 +143,11 @@ class InventoryItemEatSheetState {
   /// unit need the weight of one piece to be logged.
   bool get usesPortionMode => calculator.requiresManualCaloriePortion;
 
+  /// Unit the nutrition is calculated in.
+  ConsumedUnit get nutritionConsumedUnit => usesPortionMode
+      ? portionUnit
+      : calculator.fixedCalorieUnit ?? portionUnit;
+
   /// Current portion input, or null outside portion mode.
   InventoryItemEatPortionInput? get portionInput {
     return calculator.parsePortionInput(

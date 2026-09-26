@@ -46,17 +46,23 @@ class DiaryMealEntryGroup {
 }
 
 /// Groups entries that show the same food: same name, image, unit, and
-/// portion size. Groups keep the order in which each food was first logged.
+/// portion size. Combined entries stay single. Groups keep the order in
+/// which each food was first logged.
 List<DiaryMealEntryGroup> groupDiaryMealEntries(List<DiaryMealEntry> entries) {
   final groups =
-      <(String, String?, String?, ConsumedUnit?, int?), List<DiaryMealEntry>>{};
+      <
+        (String, String?, String?, ConsumedUnit?, int?, String?),
+        List<DiaryMealEntry>
+      >{};
   for (final entry in entries) {
+    // A combined entry never merges: its foods are its own.
     final key = (
       entry.name,
       entry.imageUrl,
       entry.imageAssetId,
       entry.consumedUnit,
       entry.bundleTotalPortions,
+      entry.combinedFoods == null ? null : entry.id,
     );
     (groups[key] ??= <DiaryMealEntry>[]).add(entry);
   }

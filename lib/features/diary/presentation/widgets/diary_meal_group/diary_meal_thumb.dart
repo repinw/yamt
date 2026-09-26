@@ -17,14 +17,11 @@ class MealThumb extends ConsumerWidget {
   /// With [heroEnabled] the image flies into the entry details sheet on
   /// open. Only rows that open one entry enable it: a merged row stands for
   /// several entries and must not share a tag with its children.
-  new({
-    required DiaryMealEntry entry,
-    bool heroEnabled = false,
-    super.key,
-  }) : name = entry.name,
-       imageUrl = entry.imageUrl,
-       imageAssetId = entry.imageAssetId,
-       heroEntryId = heroEnabled ? entry.id : null;
+  new({required DiaryMealEntry entry, bool heroEnabled = false, super.key})
+    : name = entry.name,
+      imageUrl = entry.imageUrl,
+      imageAssetId = entry.imageAssetId,
+      heroEntryId = heroEnabled ? entry.id : null;
 
   /// Creates a thumbnail for one food of a combined entry.
   new food({required CalorieEntryBundleComponent food, super.key})

@@ -4,6 +4,7 @@ import 'package:yamt/features/diary/domain/diary_meal_entry_group.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_combined_food_row.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_entry_tile.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// One row per food. A merged group expands on tap to its single entries,
 /// and a combined entry to its foods; a single entry opens directly.
@@ -45,6 +46,10 @@ class _DiaryMealEntryGroupTileState extends State<DiaryMealEntryGroupTile> {
         DiaryMealEntryTile(
           entry: group.combined,
           count: combinedFoods?.length ?? group.entries.length,
+          countLabel: combinedFoods == null
+              ? null
+              : AppLocalizations.of(context)!
+                    .caloriesCombinedFoodCount(combinedFoods.length),
           expanded: _expanded,
           onTap: () => setState(() => _expanded = !_expanded),
         ),

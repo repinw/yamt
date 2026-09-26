@@ -7,6 +7,7 @@ import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 
 /// One food of a meal on the item hub: its eaten nutrients and amount.
 typedef EatMealFood = ({
@@ -65,9 +66,13 @@ class EatMealNutrition {
       );
     }
 
+    // A food without an amount adds nothing to the meal's weight, and the
+    // per-100 values need every food's weight.
     final amounts = <ConsumedUnit, double>{};
     for (final food in foods) {
-      amounts[food.unit] = (amounts[food.unit] ?? 0) + food.amount;
+      if (food.amount > 0) {
+        amounts[food.unit] = (amounts[food.unit] ?? 0) + food.amount;
+      }
     }
     final total = facts(sum);
     final hasAllAmounts = foods.every((food) => food.amount > 0);
@@ -96,15 +101,21 @@ class EatMealNutrition {
   final Map<ConsumedUnit, double> amounts;
 }
 
-/// The meal food for eating [amount] grams or milliliters of [item], or null
-/// when [item] has no nutrition values or does not count in grams or
-/// milliliters.
-EatMealFood? eatMealFoodOf(InventoryItem item, double amount) {
+/// The meal food for eating [request] of [item], in the unit the request
+/// counts calories in, or null when [item] has no nutrition values.
+///
+/// A request without its own calorie amount eats [item]'s stock unit, so
+/// [item] must count in grams or milliliters then.
+EatMealFood? eatMealFoodOfRequest(
+  InventoryItem item,
+  InventoryItemEatRequest request,
+) {
   final nutrition = item.nutrition;
-  final unit = inventoryItemConsumedUnit(item);
-  if (nutrition == null || unit == null || !item.usesAmountProgress) {
+  final unit = request.calorieUnit ?? inventoryItemConsumedUnit(item);
+  if (nutrition == null || unit == null) {
     return null;
   }
+  final amount = request.calorieAmount ?? request.inventoryAmount.toDouble();
   return (
     eaten: EatNutrition.fromPer100(nutrition, amount).eaten,
     amount: amount,
