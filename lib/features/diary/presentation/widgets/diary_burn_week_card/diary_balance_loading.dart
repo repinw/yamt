@@ -142,13 +142,12 @@ class _SkeletonBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    // The shimmer paints over this block, so only its shape matters. It is
+    // square like the food label bars.
+    return SizedBox(
       width: width,
       height: height,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(height / 2),
-      ),
+      child: ColoredBox(color: Theme.of(context).colorScheme.onSurface),
     );
   }
 }

@@ -502,8 +502,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/cooking_flow/presentation/cooking_flow_progress_indicator.dart':
         1,
     'lib/features/cooking_flow/presentation/cooking_flow_summary_page.dart': 2,
-    'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_loading.dart':
-        1,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
         1,
     'lib/features/home/widgets/home_context_fab.dart': 1,
