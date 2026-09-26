@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/food_label_icon_chip.dart';
 import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -16,11 +17,11 @@ class HomeShellMenuButton extends StatelessWidget {
     if (scope == null) {
       return const SizedBox.shrink();
     }
-    return IconButton(
+    return FoodLabelIconChip(
       key: buttonKey,
+      icon: Icons.menu_rounded,
       tooltip: AppLocalizations.of(context)!.homeMenuTooltip,
-      icon: const Icon(Icons.menu_rounded),
-      onPressed: scope.openMenu,
+      onTap: scope.openMenu,
     );
   }
 }

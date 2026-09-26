@@ -4318,24 +4318,6 @@ abstract class AppLocalizations {
   /// **'Pause day'**
   String get diaryDayTypePause;
 
-  /// No description provided for @diaryDayTypeTrainingShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Training'**
-  String get diaryDayTypeTrainingShort;
-
-  /// No description provided for @diaryDayTypeRestShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Rest'**
-  String get diaryDayTypeRestShort;
-
-  /// No description provided for @diaryDayTypePauseShort.
-  ///
-  /// In en, this message translates to:
-  /// **'Pause'**
-  String get diaryDayTypePauseShort;
-
   /// No description provided for @diaryDayTypeSheetTitle.
   ///
   /// In en, this message translates to:
@@ -4495,13 +4477,13 @@ abstract class AppLocalizations {
   /// No description provided for @diaryMacroLeftSuffix.
   ///
   /// In en, this message translates to:
-  /// **'g left'**
+  /// **'left'**
   String get diaryMacroLeftSuffix;
 
   /// No description provided for @diaryMacroOverSuffix.
   ///
   /// In en, this message translates to:
-  /// **'g over'**
+  /// **'over'**
   String get diaryMacroOverSuffix;
 
   /// No description provided for @diaryMacroEatenOfTarget.

@@ -1,3 +1,4 @@
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/diary/domain/diary_day_type.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -19,11 +20,11 @@ String diaryDayTypeLabel(DiaryDayType type, AppLocalizations l10n) {
   };
 }
 
-/// Short localized name of a diary day type, for the top bar chip.
-String diaryDayTypeShortLabel(DiaryDayType type, AppLocalizations l10n) {
+/// One-color icon of a diary day type, for the top bar chip.
+IconData diaryDayTypeIcon(DiaryDayType type) {
   return switch (type) {
-    DiaryDayType.training => l10n.diaryDayTypeTrainingShort,
-    DiaryDayType.rest => l10n.diaryDayTypeRestShort,
-    DiaryDayType.pause => l10n.diaryDayTypePauseShort,
+    DiaryDayType.training => Icons.fitness_center_rounded,
+    DiaryDayType.rest => Icons.weekend_outlined,
+    DiaryDayType.pause => Icons.pause_rounded,
   };
 }

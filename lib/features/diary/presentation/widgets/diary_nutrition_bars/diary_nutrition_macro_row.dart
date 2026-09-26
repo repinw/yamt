@@ -111,11 +111,18 @@ class DiaryNutritionMacroRow extends StatelessWidget {
                       ),
                     ),
                     Text(
+                      l10n.caloriesUnitGram,
+                      style: mono?.copyWith(
+                        color: valueColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
                       isOverTarget
                           ? l10n.diaryMacroOverSuffix
                           : l10n.diaryMacroLeftSuffix,
                       style: mono?.copyWith(
-                        color: valueColor,
+                        color: isOverTarget ? error : colors.ink,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

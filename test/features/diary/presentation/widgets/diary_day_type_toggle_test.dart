@@ -57,18 +57,18 @@ void main() {
     );
   }
 
-  final cases = <DateTime, String>{
-    DateTime(2026, 4, 27): 'TRAINING',
-    DateTime(2026, 4, 28): 'RUHE',
-    DateTime(2026, 4, 29): 'PAUSE',
+  final cases = <DateTime, IconData>{
+    DateTime(2026, 4, 27): Icons.fitness_center_rounded,
+    DateTime(2026, 4, 28): Icons.weekend_outlined,
+    DateTime(2026, 4, 29): Icons.pause_rounded,
   };
 
   for (final entry in cases.entries) {
-    testWidgets('shows only ${entry.value} for ${entry.key}', (tester) async {
+    testWidgets('shows only the icon for ${entry.key}', (tester) async {
       await pumpToggle(tester, entry.key);
       await tester.pump();
 
-      expect(find.text(entry.value), findsOneWidget);
+      expect(find.byIcon(entry.value), findsOneWidget);
       expect(find.text('Trainingstag'), findsNothing);
       expect(find.text('Ruhetag'), findsNothing);
       expect(find.text('Pausentag'), findsNothing);

@@ -1179,9 +1179,6 @@
   "diaryDayTypeTraining": "Training day",
   "diaryDayTypeRest": "Rest day",
   "diaryDayTypePause": "Pause day",
-  "diaryDayTypeTrainingShort": "Training",
-  "diaryDayTypeRestShort": "Rest",
-  "diaryDayTypePauseShort": "Pause",
   "diaryDayTypeSheetTitle": "Choose day type",
   "diaryDayTypeSheetBody": "Adjust your calorie target to your activity plan.",
   "diaryDayTypeTrainingOffsetSubtitle": "+{kcal} kcal higher calorie target",
@@ -1236,8 +1233,8 @@
       }
     }
   },
-  "diaryMacroLeftSuffix": "g left",
-  "diaryMacroOverSuffix": "g over",
+  "diaryMacroLeftSuffix": "left",
+  "diaryMacroOverSuffix": "over",
   "diaryMacroEatenOfTarget": "{eaten} / {target} g",
   "@diaryMacroEatenOfTarget": {
     "placeholders": {

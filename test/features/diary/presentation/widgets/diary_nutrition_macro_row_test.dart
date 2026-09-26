@@ -48,7 +48,7 @@ void main() {
 
       // 100 - 45 = 55g remaining
       expect(find.text('55'), findsOneWidget);
-      expect(find.text('g left'), findsOneWidget);
+      expect(find.text('left'), findsOneWidget);
       expect(find.text('Protein'), findsOneWidget);
       expect(
         find.textContaining('45 / 100 g', findRichText: true),
@@ -76,7 +76,7 @@ void main() {
 
       // 85 - 70 = +15g overage
       expect(find.text('+15'), findsOneWidget);
-      expect(find.text('g over'), findsOneWidget);
+      expect(find.text('over'), findsOneWidget);
       expect(find.text('Fat'), findsOneWidget);
       expect(
         find.textContaining('85 / 70 g', findRichText: true),

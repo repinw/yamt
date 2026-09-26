@@ -2451,15 +2451,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDayTypePause => 'Pause day';
 
   @override
-  String get diaryDayTypeTrainingShort => 'Training';
-
-  @override
-  String get diaryDayTypeRestShort => 'Rest';
-
-  @override
-  String get diaryDayTypePauseShort => 'Pause';
-
-  @override
   String get diaryDayTypeSheetTitle => 'Choose day type';
 
   @override
@@ -2550,10 +2541,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get diaryMacroLeftSuffix => 'g left';
+  String get diaryMacroLeftSuffix => 'left';
 
   @override
-  String get diaryMacroOverSuffix => 'g over';
+  String get diaryMacroOverSuffix => 'over';
 
   @override
   String diaryMacroEatenOfTarget(String eaten, String target) {
