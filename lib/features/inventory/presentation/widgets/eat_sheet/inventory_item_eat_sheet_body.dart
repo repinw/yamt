@@ -2,25 +2,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_submission.dart';
-import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inedible_line.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inline_amount_field.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_table.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_remember_portion.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_label_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Eat page content for an inventory item.
@@ -151,35 +148,7 @@ class _InventoryItemEatSheetBodyState
           ? null
           : () => _submit(InventoryItemEatSheetIntent.addMore),
       children: [
-        EatPageHeader(
-          title: item.name,
-          brand: item.brand,
-          caption: calculator.hasOpenStock
-              ? null
-              : l10n.eatPageInStock(state.stockLabel(l10n)),
-          imageUrl: item.imageUrl,
-          fallbackKey: const Key('inventory_item_eat_sheet_hero_fallback'),
-        ),
-        if (nutrition != null)
-          EatLabelTable(
-            key: const Key('inventory_item_nutrition_table'),
-            rows: nutritionFactsRows(
-              context,
-              eaten: nutrition.eaten,
-              per100: nutrition.per100,
-              unknownEaten: l10n.eatPageAmountUnknown,
-            ),
-            per100Header: l10n.caloriesEntryPer100Label(
-              state.nutritionUnit(l10n),
-            ),
-            eatenHeader: switch (nutrition.amount) {
-              final amount? => l10n.inventoryEatSheetAmountWithUnit(
-                formatInventoryNutritionValue(amount),
-                state.nutritionUnit(l10n),
-              ),
-              null => l10n.eatPageAmountUnknown,
-            },
-          ),
+        InventoryItemEatLabelSection(item: item, state: state),
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
