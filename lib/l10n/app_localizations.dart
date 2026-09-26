@@ -1361,6 +1361,12 @@ abstract class AppLocalizations {
   /// **'Meal logged.'**
   String get eatPageCombineSaved;
 
+  /// No description provided for @eatPageCombineFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not log the meal.'**
+  String get eatPageCombineFailed;
+
   /// No description provided for @eatPageWhen.
   ///
   /// In en, this message translates to:

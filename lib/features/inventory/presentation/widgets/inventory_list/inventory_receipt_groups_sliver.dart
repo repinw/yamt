@@ -6,8 +6,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
-import 'package:yamt/features/shoppinglist/application/'
-    'shopping_list_operations.dart';
 
 const double _inventoryReceiptGroupsBottomPadding =
     AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
@@ -18,7 +16,6 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
   const new({
     required this.groups,
     required this.dateFormat,
-    required this.activeShoppingListItemKeys,
     required this.selection,
     super.key,
   });
@@ -28,9 +25,6 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
 
   /// The date format.
   final DateFormat dateFormat;
-
-  /// The active shopping list item keys.
-  final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
 
   /// Inventory item selection options.
   final ReceiptGroupSelectionOptions selection;
@@ -54,7 +48,6 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
             child: ReceiptGroupTile(
               group: group,
               dateFormat: dateFormat,
-              activeShoppingListItemKeys: activeShoppingListItemKeys,
               selection: selection,
             ),
           );

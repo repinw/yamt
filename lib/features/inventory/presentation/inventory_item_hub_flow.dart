@@ -27,7 +27,6 @@ abstract final class InventoryItemHubFlow {
     required BuildContext context,
     required WidgetRef ref,
     required InventoryItem item,
-    required bool isOnShoppingList,
   }) async {
     final pageMessenger = ScaffoldMessenger.of(context);
     final result = await Navigator.of(context, rootNavigator: true)
@@ -36,7 +35,6 @@ abstract final class InventoryItemHubFlow {
             fullscreenDialog: true,
             builder: (_) => InventoryItemHubPage(
               item: item,
-              isOnShoppingList: isOnShoppingList,
               onAction: (hubContext, action) =>
                   _run(hubContext, ref, item, action, pageMessenger),
             ),

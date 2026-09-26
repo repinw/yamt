@@ -16,8 +16,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
-import 'package:yamt/features/shoppinglist/application/'
-    'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 InventoryItem _item(
@@ -78,7 +76,6 @@ Widget _buildHarness({
   final tile = ReceiptGroupTile(
     group: group,
     dateFormat: DateFormat.yMMMd(const Locale('en').toLanguageTag()),
-    activeShoppingListItemKeys: const <ShoppingListItemMatchKey>{},
     selection: ReceiptGroupSelectionOptions(isSelectionMode: isSelectionMode),
   );
   final body = SingleChildScrollView(

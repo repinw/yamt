@@ -688,6 +688,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageCombineSaved => 'Mahlzeit eingetragen.';
 
   @override
+  String get eatPageCombineFailed => 'Mahlzeit konnte nicht eingetragen werden.';
+
+  @override
   String eatPageWhen(String day, String meal) {
     return '$day · $meal';
   }

@@ -375,6 +375,7 @@
   "eatPageCombineConfirm": "Log meal",
   "eatPageCombineRemove": "Remove from the list",
   "eatPageCombineSaved": "Meal logged.",
+  "eatPageCombineFailed": "Could not log the meal.",
   "eatPageWhen": "{day} · {meal}",
   "@eatPageWhen": {
     "placeholders": {

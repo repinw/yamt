@@ -18,7 +18,6 @@ class InventoryItemRow extends ConsumerWidget {
   /// Creates the row.
   const new({
     required this.item,
-    required this.isAlreadyInShoppingList,
     super.key,
     this.isSelectionMode = false,
     this.isSelected = false,
@@ -28,9 +27,6 @@ class InventoryItemRow extends ConsumerWidget {
 
   /// The item.
   final InventoryItem item;
-
-  /// Whether the item is already on the shopping list.
-  final bool isAlreadyInShoppingList;
 
   /// Whether selection mode.
   final bool isSelectionMode;
@@ -67,7 +63,6 @@ class InventoryItemRow extends ConsumerWidget {
                       context: context,
                       ref: ref,
                       item: item,
-                      isOnShoppingList: isAlreadyInShoppingList,
                     ),
                   ),
             onLongPress: isSelectionMode ? null : onStartSelection,

@@ -688,6 +688,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageCombineSaved => 'Meal logged.';
 
   @override
+  String get eatPageCombineFailed => 'Could not log the meal.';
+
+  @override
   String eatPageWhen(String day, String meal) {
     return '$day · $meal';
   }

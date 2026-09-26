@@ -11,6 +11,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/models/'
@@ -35,6 +36,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/inventory_calorie_entry_delete_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
@@ -115,6 +117,8 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
+    _items = [...await _loadItems(), ...items];
+    _watchController.add(_items);
     return true;
   }
 
@@ -196,6 +200,10 @@ class _RecordingOffProductSearchRepository
 }
 
 class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
+  new({this.calorieLog});
+
+  /// Where committed entries land, so a later delete finds them.
+  final FakeCalorieLogRepository? calorieLog;
   PendingInventoryConsumption? pendingConsumption;
   List<PendingInventoryConsumption>? pendingConsumptions;
   CalorieEntry? entry;
@@ -222,6 +230,7 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   }) async {
     this.entry = entry;
     this.pendingConsumptions = pendingConsumptions;
+    await calorieLog?.saveEntry(entry);
     return [
       for (final pending in pendingConsumptions)
         InventoryCalorieEntryCommitResult(
@@ -448,6 +457,10 @@ Future<void> _pumpTestApp(
         inventoryItemRepositoryProvider.overrideWithValue(repository),
         inventoryDiscardEventRepositoryProvider.overrideWithValue(
           discardEventRepository ?? _FakeInventoryDiscardEventRepository(),
+        ),
+        // As in main.dart: deleting an entry returns its stock.
+        calorieEntryDeleteFlowProvider.overrideWith(
+          (ref) => ref.watch(inventoryCalorieEntryDeleteFlowProvider),
         ),
         ...overrides,
       ],
@@ -1012,7 +1025,7 @@ void main() {
       onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
     );
     final calorieLogRepository = FakeCalorieLogRepository();
-    final commitStore = _RecordingCommitStore();
+    final commitStore = _RecordingCommitStore(calorieLog: calorieLogRepository);
     final auth = _MockFirebaseAuth();
     final user = _MockUser();
     addTearDown(repository.dispose);
@@ -1070,6 +1083,140 @@ void main() {
       commitStore.entry?.bundleComponents.last.sourceInventoryItemId,
       breadPending.itemId,
     );
+    final stock = await repository.readAll();
+    expect(stock.map((item) => item.name), contains('Bread'));
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    final stockAfterUndo = await repository.readAll();
+    expect(stockAfterUndo.map((item) => item.name), isNot(contains('Bread')));
+  });
+
+  testWidgets('cancelling the barcode prompt drops the meal quietly', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
+    );
+    final calorieLogRepository = FakeCalorieLogRepository();
+    final commitStore = _RecordingCommitStore(calorieLog: calorieLogRepository);
+    final auth = _MockFirebaseAuth();
+    final user = _MockUser();
+    addTearDown(repository.dispose);
+    addTearDown(calorieLogRepository.dispose);
+    when(() => user.uid).thenReturn('user-1');
+    when(() => auth.currentUser).thenReturn(user);
+    final bread = InventoryItem.create(
+      id: 'draft-bread',
+      name: 'Bread',
+      nutrition: const GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+        per100Kcal: 250,
+        per100Protein: 8,
+        per100Carbs: 48,
+        per100Fat: 2,
+      ),
+      entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
+      storeName: 'Store',
+      quantity: 1,
+      weight: '500g',
+      initialAmount: 500,
+      currentAmount: 500,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+
+    await _pumpTestApp(
+      tester,
+      repository,
+      calorieEntryRoute: GoRoute(
+        path: AppRoutes.homeFoodPick,
+        builder: (context, state) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.pop(
+              InventoryReceiptManualProductResult(
+                item: bread,
+                action: InventoryReceiptManualProductAction.eatNow,
+                requiresGlobalPersistence: false,
+              ),
+            ),
+            child: const Text('pick bread'),
+          ),
+        ),
+      ),
+      overrides: <Override>[
+        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
+        firebaseAuthProvider.overrideWithValue(auth),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')),
+      '200',
+    );
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
+    await _tapVisible(tester, find.text('pick bread'));
+    await _tapAmountDialogConfirm(tester);
+
+    await _tapVisible(
+      tester,
+      find.byKey(
+        const Key('inventory_manual_add_missing_barcode_cancel_button'),
+      ),
+    );
+
+    expect(commitStore.entry, isNull);
+    expect(find.text('Could not log the meal.'), findsNothing);
+    final stock = await repository.readAll();
+    expect(stock.map((item) => item.name), isNot(contains('Bread')));
+  });
+
+  testWidgets('a found food without nutrition cannot join the meal', (
+    tester,
+  ) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_itemWithNutrition('a')],
+    );
+    addTearDown(repository.dispose);
+    final salt = _amountItemWithoutNutrition('draft-salt');
+
+    await _pumpTestApp(
+      tester,
+      repository,
+      calorieEntryRoute: GoRoute(
+        path: AppRoutes.homeFoodPick,
+        builder: (context, state) => Scaffold(
+          body: TextButton(
+            onPressed: () => context.pop(
+              InventoryReceiptManualProductResult(
+                item: salt,
+                action: InventoryReceiptManualProductAction.eatNow,
+                requiresGlobalPersistence: false,
+                skipMissingBarcodePrompt: true,
+              ),
+            ),
+            child: const Text('pick salt'),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
+    await _tapVisible(tester, find.text('pick salt'));
+
+    expect(
+      find.text('This food has no nutrition values to add up.'),
+      findsOneWidget,
+    );
+    expect(find.byKey(EatMealTable.tableKey), findsNothing);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('item hub keeps combined foods in stock as a prepared meal', (

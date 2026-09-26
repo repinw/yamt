@@ -1,3 +1,5 @@
+import 'dart:developer' as developer;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
@@ -12,12 +14,17 @@ import 'package:yamt/features/inventory/presentation/inventory_manual_product_sa
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Logs a stock item together with other foods as one diary entry.
+const _logName = 'InventoryCombinedEatFlow';
+
+/// Logs a stock item together with other foods as one diary entry, or keeps
+/// them in stock as one prepared meal.
+///
+/// Foods found by search are added to the inventory first, sized to their
+/// eaten amount. They are deleted again when the save fails, when the user
+/// cancels, and on undo.
 abstract final class InventoryCombinedEatFlow {
-  /// Adds foods found by search to the inventory, sized to their eaten
-  /// amount, stages the stock of [item] and every pick, and saves one
-  /// combined entry. Reports on [context]'s page with an undo. On failure
-  /// the added foods are deleted again.
+  /// Saves one combined entry for [item] and [picks] and reports on
+  /// [context]'s page with an undo.
   static Future<void> eat({
     required BuildContext context,
     required WidgetRef ref,
@@ -33,58 +40,65 @@ abstract final class InventoryCombinedEatFlow {
       inventoryCombinedEatServiceProvider,
       (_, _) {},
     );
-    final added = <InventoryItem>[];
     final foods = <InventoryCombinedFood>[];
+    final added = <InventoryItem>[];
     try {
-      final stockFoods = <(InventoryItem, InventoryItemEatRequest)>[
-        (item, request),
-      ];
-      for (final pick in picks) {
-        final stockItem = await _stockItemFor(context, container, pick);
-        if (stockItem == null) {
-          break;
-        }
-        if (pick.searchResult != null) {
-          added.add(stockItem);
-        }
-        stockFoods.add((stockItem, pick.request));
+      final prepared = await _prepare(
+        context,
+        container,
+        item,
+        request,
+        picks,
+        added,
+      );
+      if (prepared == null) {
+        return;
       }
-      for (final (item, request) in stockFoods) {
+      for (final (item, request) in prepared) {
         final pending = await inventory.stagePendingConsumption(
           item.id,
           request.inventoryAmount,
         );
         if (pending == null) {
-          break;
+          throw StateError('No stock to stage for ${item.id}.');
         }
         foods.add((item: item, request: request, pending: pending));
       }
-      final entry = foods.length == picks.length + 1
-          ? await serviceSubscription.read().save(
-              foods: foods,
-              loggedAt: request.loggedAt,
-              mealType: request.mealType,
-            )
-          : null;
+      final entry = await serviceSubscription.read().save(
+        foods: foods,
+        loggedAt: request.loggedAt,
+        mealType: request.mealType,
+      );
       if (entry == null) {
-        for (final food in foods) {
-          await inventory.discardPendingConsumption(food.pending.id);
-        }
-        for (final item in added) {
-          await inventory.deleteItem(item.id);
-        }
-        messenger.showAppSnackBar(
-          l10n.inventoryItemActionFailed,
-          tone: AppSnackBarTone.error,
-        );
-        return;
+        throw StateError('The combined entry was not saved.');
       }
       messenger.showAppSnackBar(
         l10n.eatPageCombineSaved,
-        onUndo: () => InventoryCalorieBridgeFlow.undoEat(
-          container: container,
-          entry: entry,
-        ),
+        onUndo: () async {
+          final undone = await InventoryCalorieBridgeFlow.undoEat(
+            container: container,
+            entry: entry,
+          );
+          if (undone) {
+            await _deleteAll(inventory, added);
+          }
+          return undone;
+        },
+      );
+    } on Object catch (error, stackTrace) {
+      developer.log(
+        'Logging the combined entry failed.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      for (final food in foods) {
+        await inventory.discardPendingConsumption(food.pending.id);
+      }
+      await _deleteAll(inventory, added);
+      messenger.showAppSnackBar(
+        l10n.eatPageCombineFailed,
+        tone: AppSnackBarTone.error,
       );
     } finally {
       serviceSubscription.close();
@@ -92,8 +106,7 @@ abstract final class InventoryCombinedEatFlow {
   }
 
   /// Keeps [item] and [picks] in stock as one prepared meal "A + B" with
-  /// one portion, made of the entered amounts. Foods found by search are
-  /// added to the inventory first and deleted again on failure.
+  /// one portion, made of the entered amounts.
   static Future<void> storeAsMeal({
     required BuildContext context,
     required WidgetRef ref,
@@ -105,76 +118,122 @@ abstract final class InventoryCombinedEatFlow {
     final messenger = ScaffoldMessenger.of(context);
     final container = ref.container;
     final inventory = container.read(inventoryItemsControllerProvider.notifier);
+    final mealsSubscription = container.listen(
+      preparedMealsControllerProvider,
+      (_, _) {},
+    );
     final meals = container.read(preparedMealsControllerProvider.notifier);
     final added = <InventoryItem>[];
-    final parts = <(InventoryItem, InventoryItemEatRequest)>[(item, request)];
-    for (final pick in picks) {
-      final stockItem = await _stockItemFor(context, container, pick);
-      if (stockItem == null) {
-        break;
+    try {
+      final prepared = await _prepare(
+        context,
+        container,
+        item,
+        request,
+        picks,
+        added,
+      );
+      if (prepared == null) {
+        return;
       }
-      if (pick.searchResult != null) {
-        added.add(stockItem);
+      final result = await meals.createPreparedMeal(
+        name: prepared.map((part) => part.$1.name).join(' + '),
+        totalPortions: 1,
+        items: [
+          for (final (item, request) in prepared)
+            PreparedMealItemInput(
+              itemId: item.id,
+              usedAmount: request.inventoryAmount,
+            ),
+        ],
+      );
+      final mealId = result.preparedMealId;
+      if (!result.isSuccess || mealId == null) {
+        throw StateError('The prepared meal was not saved.');
       }
-      parts.add((stockItem, pick.request));
-    }
-    final result = parts.length == picks.length + 1
-        ? await meals.createPreparedMeal(
-            name: parts.map((part) => part.$1.name).join(' + '),
-            totalPortions: 1,
-            items: [
-              for (final (item, request) in parts)
-                PreparedMealItemInput(
-                  itemId: item.id,
-                  usedAmount: request.inventoryAmount,
-                ),
-            ],
-          )
-        : null;
-    final mealId = result?.preparedMealId;
-    if (result == null || !result.isSuccess || mealId == null) {
-      for (final item in added) {
-        await inventory.deleteItem(item.id);
-      }
+      messenger.showAppSnackBar(
+        l10n.preparedMealCreatedMessage,
+        onUndo: () async {
+          final undone = await meals.unbundlePreparedMeal(mealId);
+          if (undone) {
+            await _deleteAll(inventory, added);
+          }
+          return undone;
+        },
+      );
+    } on Object catch (error, stackTrace) {
+      developer.log(
+        'Keeping the meal in stock failed.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      await _deleteAll(inventory, added);
       messenger.showAppSnackBar(
         l10n.preparedMealActionFailed,
         tone: AppSnackBarTone.error,
       );
-      return;
+    } finally {
+      mealsSubscription.close();
     }
-    messenger.showAppSnackBar(
-      l10n.preparedMealCreatedMessage,
-      onUndo: () => meals.unbundlePreparedMeal(mealId),
-    );
   }
 
-  /// The stock item of [pick]. A food found by search is added to the
-  /// inventory first, sized to the eaten amount. Returns null when that
-  /// fails or the user cancels it.
-  static Future<InventoryItem?> _stockItemFor(
+  /// The stock item and amount of every food, with search finds added to
+  /// the inventory and collected in [added]. Returns null when the user
+  /// cancels adding a find; the finds added so far are deleted again.
+  static Future<List<(InventoryItem, InventoryItemEatRequest)>?> _prepare(
     BuildContext context,
     ProviderContainer container,
-    InventoryCombinePick pick,
+    InventoryItem item,
+    InventoryItemEatRequest request,
+    List<InventoryCombinePick> picks,
+    List<InventoryItem> added,
   ) async {
-    final searchResult = pick.searchResult;
-    if (searchResult == null) {
-      return pick.item;
+    final parts = <(InventoryItem, InventoryItemEatRequest)>[(item, request)];
+    for (final pick in picks) {
+      final searchResult = pick.searchResult;
+      if (searchResult == null) {
+        parts.add((pick.item, pick.request));
+        continue;
+      }
+      if (!context.mounted) {
+        throw StateError('The page closed while adding a found food.');
+      }
+      final outcome = await saveManualProductResultToInventory(
+        context: context,
+        container: container,
+        l10n: AppLocalizations.of(context)!,
+        result: searchResult,
+        adjustItem: (item) => resizeInventoryManualAddItemToConsumedAmount(
+          item: item,
+          inventoryAmount: pick.request.inventoryAmount,
+        ),
+      );
+      final stockItem = outcome.item;
+      switch (outcome.status) {
+        case InventoryManualProductSaveStatus.canceled:
+          await _deleteAll(
+            container.read(inventoryItemsControllerProvider.notifier),
+            added,
+          );
+          return null;
+        case InventoryManualProductSaveStatus.saved when stockItem != null:
+          added.add(stockItem);
+          parts.add((stockItem, pick.request));
+        case InventoryManualProductSaveStatus.saved:
+        case InventoryManualProductSaveStatus.failed:
+          throw StateError('Adding ${pick.item.name} to the stock failed.');
+      }
     }
-    if (!context.mounted) {
-      return null;
+    return parts;
+  }
+
+  static Future<void> _deleteAll(
+    InventoryItemsController inventory,
+    List<InventoryItem> items,
+  ) async {
+    for (final item in items) {
+      await inventory.deleteItem(item.id);
     }
-    final outcome = await saveManualProductResultToInventory(
-      context: context,
-      container: container,
-      l10n: AppLocalizations.of(context)!,
-      result: searchResult,
-      adjustItem: (item) => resizeInventoryManualAddItemToConsumedAmount(
-        item: item,
-        inventoryAmount: pick.request.inventoryAmount,
-      ),
-    );
-    return outcome.status == InventoryManualProductSaveStatus.saved
-        ? outcome.item
-        : null;
   }
 }

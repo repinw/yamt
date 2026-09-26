@@ -12,8 +12,6 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_sorted_items_cache.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
-import 'package:yamt/features/shoppinglist/application/'
-    'shopping_list_operations.dart';
 
 const double _inventoryListBottomPadding =
     AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
@@ -25,7 +23,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
     required this.items,
 
     /// Documented member.
-    required this.activeShoppingListItemKeys,
     required this.viewMode,
 
     /// Documented member.
@@ -43,9 +40,6 @@ class InventoryAllItemsSliver extends StatefulWidget {
 
   /// The items.
   final List<InventoryItem> items;
-
-  /// The active shopping list item keys.
-  final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
 
   /// Card layout mode.
   final InventoryListViewMode viewMode;
@@ -148,7 +142,6 @@ class _InventoryAllItemsSliverState extends State<InventoryAllItemsSliver> {
       item: item,
       keyPrefix: 'inventory_item_row',
       bottomSpacing: bottomSpacing,
-      activeShoppingListItemKeys: widget.activeShoppingListItemKeys,
       isSelectionMode: widget.isSelectionMode,
       isSelected: widget.selectedItemIds.contains(item.id),
       onItemLongPress: () => widget.onItemLongPress(item.id),

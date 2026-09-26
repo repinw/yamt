@@ -42,8 +42,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_unified_filter_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
-import 'package:yamt/features/shoppinglist/application/'
-    'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _InventoryItemSortCriterion { added, eaten, alphabetical, quantity }
@@ -193,9 +191,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
-    final activeShoppingListItemKeys = ref.watch(
-      activeShoppingListItemKeysProvider,
-    );
     final filteredItems = _visibleItems;
     final filteredPreparedMeals = _visiblePreparedMeals;
     final hasItemSource = widget.items.isNotEmpty;
@@ -288,7 +283,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           InventoryReceiptGroupsSliver(
             groups: groupInventoryItemsByReceipt(filteredItems),
             dateFormat: DateFormat.yMMMd(locale),
-            activeShoppingListItemKeys: activeShoppingListItemKeys,
             selection: ReceiptGroupSelectionOptions(
               isSelectionMode: widget.isSelectionMode,
               selectedItemIds: widget.selectedItemIds,
@@ -299,7 +293,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         else if (hasFilteredItems && _isRecentItemsSectionExpanded)
           InventoryAllItemsSliver(
             items: filteredItems,
-            activeShoppingListItemKeys: activeShoppingListItemKeys,
             viewMode: _viewMode,
             sortMode: _inventoryItemSortMode,
             isSelectionMode: widget.isSelectionMode,

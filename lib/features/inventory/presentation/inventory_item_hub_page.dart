@@ -20,11 +20,12 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_sheet_body.dart';
+import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Runs a hub action on top of the hub. Returns whether it changed the item.
 /// A changed item closes the hub, except after adding it to the shopping
-/// list.
+/// list, where the hub follows the list itself.
 typedef InventoryItemHubActionRunner = Future<bool> Function(
   BuildContext hubContext,
   InventoryItemHubAction,
@@ -39,18 +40,10 @@ typedef InventoryItemHubActionRunner = Future<bool> Function(
 /// shopping list.
 class InventoryItemHubPage extends ConsumerStatefulWidget {
   /// Creates the hub for [item].
-  const new({
-    required this.item,
-    required this.isOnShoppingList,
-    required this.onAction,
-    super.key,
-  });
+  const new({required this.item, required this.onAction, super.key});
 
   /// The stock item.
   final InventoryItem item;
-
-  /// Whether the item is already on the shopping list.
-  final bool isOnShoppingList;
 
   /// Runs a picked action.
   final InventoryItemHubActionRunner onAction;
@@ -65,19 +58,27 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
   // shows action hints on the hub.
   final GlobalKey _cardKey = GlobalKey();
   var _isRunning = false;
-  late bool _isOnShoppingList = widget.isOnShoppingList;
 
   @override
   Widget build(BuildContext context) {
+    // Watched, so the line follows the list after an undo.
+    final isOnShoppingList = ref.watch(
+      sourceItemInActiveShoppingListProvider((
+        name: widget.item.name,
+        brand: widget.item.brand,
+        initialQuantity: widget.item.initialQuantity,
+        unitPrice: widget.item.unitPrice,
+      )),
+    );
     final actions = EatItemActionsCard(
       key: _cardKey,
-      isOnShoppingList: _isOnShoppingList,
+      isOnShoppingList: isOnShoppingList,
       onPicked: _run,
     );
     if (consumableInventoryAmount(widget.item) == null) {
       return _UsedUpHubBody(
         item: widget.item,
-        isOnShoppingList: _isOnShoppingList,
+        isOnShoppingList: isOnShoppingList,
         actions: actions,
         onAddToShoppingList: () =>
             _run(InventoryItemHubAction.addToShoppingList),
@@ -149,6 +150,9 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     List<InventoryCombinePick> picks,
   ) {
     final request = result.request;
+    if (_isRunning) {
+      return;
+    }
     if (picks.isEmpty) {
       Navigator.of(context).pop(InventoryItemHubEat(request));
       return;
@@ -178,11 +182,9 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     _isRunning = true;
     try {
       final changed = await widget.onAction(hubContext, action);
-      if (!changed || !mounted) {
-        return;
-      }
-      if (action == InventoryItemHubAction.addToShoppingList) {
-        setState(() => _isOnShoppingList = true);
+      if (!changed ||
+          !mounted ||
+          action == InventoryItemHubAction.addToShoppingList) {
         return;
       }
       Navigator.of(context).pop();

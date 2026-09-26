@@ -12,9 +12,12 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inve
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_primary_action_button.dart';
 import 'package:yamt/features/inventory/presentation/widgets/shared/remaining_progress_bar.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../../../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 const _confirmKey = Key('inventory_item_amount_dialog_confirm_button');
 const _usedUpConfirmKey = Key('inventory_item_hub_shopping_list_button');
@@ -79,15 +82,31 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
 Future<_RecordingInventoryItemsController> _pumpRow(
   WidgetTester tester, {
   InventoryItem? item,
-  bool isAlreadyInShoppingList = false,
+  bool onShoppingList = false,
   bool isSelectionMode = false,
   VoidCallback? onSelectionToggle,
 }) async {
   final controller = _RecordingInventoryItemsController();
+  final shoppingRepository = FakeShoppingListRepository(
+    initialItems: [
+      if (onShoppingList)
+        const ShoppingListItem(
+          id: 'milk-on-list',
+          name: 'Milk',
+          brand: 'Acme',
+          normalizedName: 'milk',
+          normalizedBrand: 'acme',
+          quantity: 1,
+          estimatedUnitPrice: 1,
+        ),
+    ],
+  );
+  addTearDown(shoppingRepository.dispose);
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         inventoryItemsControllerProvider.overrideWith(() => controller),
+        shoppingListRepositoryProvider.overrideWithValue(shoppingRepository),
       ],
       child: MaterialApp(
         locale: const Locale('en'),
@@ -96,7 +115,6 @@ Future<_RecordingInventoryItemsController> _pumpRow(
         home: Scaffold(
           body: InventoryItemRow(
             item: item ?? _milk(),
-            isAlreadyInShoppingList: isAlreadyInShoppingList,
             isSelectionMode: isSelectionMode,
             onSelectionToggle: onSelectionToggle,
           ),
@@ -187,14 +205,13 @@ void main() {
 
     expect(controller.boughtAgain, <String>['milk']);
     expect(find.byType(EatItemActionsCard), findsOneWidget);
-    expect(find.text('On the shopping list'), findsOneWidget);
     expect(find.text('Item added to shopping list.'), findsOneWidget);
   });
 
   testWidgets('an item on the shopping list disables the shopping action', (
     tester,
   ) async {
-    await _pumpRow(tester, isAlreadyInShoppingList: true);
+    await _pumpRow(tester, onShoppingList: true);
     await _openHub(tester);
 
     expect(find.text('On the shopping list'), findsOneWidget);

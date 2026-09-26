@@ -368,6 +368,7 @@
   "eatPageCombineConfirm": "Mahlzeit eintragen",
   "eatPageCombineRemove": "Aus der Liste nehmen",
   "eatPageCombineSaved": "Mahlzeit eingetragen.",
+  "eatPageCombineFailed": "Mahlzeit konnte nicht eingetragen werden.",
   "eatPageWhen": "{day} · {meal}",
   "@eatPageWhen": {
     "placeholders": {

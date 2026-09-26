@@ -8,8 +8,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
-import 'package:yamt/features/shoppinglist/application/'
-    'shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Selection options used by [ReceiptGroupTile] rows.
@@ -41,7 +39,6 @@ class ReceiptGroupTile extends StatefulWidget {
   const new({
     required this.group,
     required this.dateFormat,
-    required this.activeShoppingListItemKeys,
     super.key,
     this.selection = const ReceiptGroupSelectionOptions(),
   });
@@ -51,9 +48,6 @@ class ReceiptGroupTile extends StatefulWidget {
 
   /// The date format.
   final DateFormat dateFormat;
-
-  /// The active shopping list item keys.
-  final Set<ShoppingListItemMatchKey> activeShoppingListItemKeys;
 
   /// Inventory item selection options.
   final ReceiptGroupSelectionOptions selection;
@@ -151,8 +145,6 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
                             item: item,
                             keyPrefix: 'receipt_item_row',
                             bottomSpacing: AppSpacing.xl,
-                            activeShoppingListItemKeys:
-                                widget.activeShoppingListItemKeys,
                             isSelectionMode: widget.selection.isSelectionMode,
                             isSelected: widget.selection.selectedItemIds
                                 .contains(item.id),
