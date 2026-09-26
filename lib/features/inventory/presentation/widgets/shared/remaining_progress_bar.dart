@@ -90,12 +90,13 @@ class RemainingProgressBar extends StatelessWidget {
         );
     final labelRow = Row(
       children: [
-        _StockLabel(
-          stockLabel: stockLabel,
-          baseStyle: resolvedStockLabelStyle,
-          accentColor: resolvedFillColor,
+        Expanded(
+          child: _StockLabel(
+            stockLabel: stockLabel,
+            baseStyle: resolvedStockLabelStyle,
+            accentColor: resolvedFillColor,
+          ),
         ),
-        const Spacer(),
         Text('$percentage%', style: resolvedPercentageStyle),
       ],
     );
@@ -216,13 +217,20 @@ class _StockLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final slashIndex = stockLabel.indexOf('/');
     if (slashIndex <= 0) {
-      return Text(stockLabel, style: baseStyle);
+      return Text(
+        stockLabel,
+        style: baseStyle,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
     }
 
     final currentAmount = stockLabel.substring(0, slashIndex).trimRight();
     final remainingLabel = stockLabel.substring(slashIndex);
 
     return RichText(
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
       text: TextSpan(
         style: baseStyle,
         children: [
@@ -236,8 +244,6 @@ class _StockLabel extends StatelessWidget {
           TextSpan(text: remainingLabel),
         ],
       ),
-      maxLines: 1,
-      overflow: TextOverflow.ellipsis,
     );
   }
 }
