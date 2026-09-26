@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 
@@ -25,81 +26,6 @@ enum ConsumedUnit {
       'ml' => ConsumedUnit.milliliters,
       _ => ConsumedUnit.grams,
     };
-  }
-}
-
-/// Defines calorie entry bundle component.
-@JsonSerializable(fieldRename: FieldRename.snake)
-class CalorieEntryBundleComponent {
-  /// The calorie entry bundle component.
-  const new({
-    required this.name,
-    required this.amountLabel,
-    required this.totalKcal,
-    required this.totalProtein,
-    required this.totalCarbs,
-    required this.totalFat,
-    this.brand,
-    this.imageUrl,
-  });
-
-  /// Creates a [CalorieEntryBundleComponent] for from json.
-  factory fromJson(Map<String, dynamic> json) {
-    return _$CalorieEntryBundleComponentFromJson(json);
-  }
-
-  /// The name.
-  final String name;
-
-  /// The amount label.
-  final String amountLabel;
-
-  /// The brand.
-  final String? brand;
-
-  /// The image url.
-  final String? imageUrl;
-
-  /// The total kcal.
-  @FlexibleDoubleConverter()
-  final double totalKcal;
-
-  /// The total protein.
-  @FlexibleDoubleConverter()
-  final double totalProtein;
-
-  /// The total carbs.
-  @FlexibleDoubleConverter()
-  final double totalCarbs;
-
-  /// The total fat.
-  @FlexibleDoubleConverter()
-  final double totalFat;
-
-  /// To json.
-  Map<String, dynamic> toJson() => _$CalorieEntryBundleComponentToJson(this);
-
-  /// Copy with.
-  CalorieEntryBundleComponent copyWith({
-    String? name,
-    String? amountLabel,
-    String? brand,
-    String? imageUrl,
-    double? totalKcal,
-    double? totalProtein,
-    double? totalCarbs,
-    double? totalFat,
-  }) {
-    return CalorieEntryBundleComponent(
-      name: name ?? this.name,
-      amountLabel: amountLabel ?? this.amountLabel,
-      brand: brand ?? this.brand,
-      imageUrl: imageUrl ?? this.imageUrl,
-      totalKcal: totalKcal ?? this.totalKcal,
-      totalProtein: totalProtein ?? this.totalProtein,
-      totalCarbs: totalCarbs ?? this.totalCarbs,
-      totalFat: totalFat ?? this.totalFat,
-    );
   }
 }
 
