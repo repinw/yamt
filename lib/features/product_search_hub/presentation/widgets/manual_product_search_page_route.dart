@@ -5,12 +5,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_ai_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_page/manual_product_search_editor_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_route_args.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_ai_search_page/product_ai_search_page.dart';
 
 part 'manual_product_search_page_route.g.dart';
 
