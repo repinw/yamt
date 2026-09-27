@@ -53,8 +53,7 @@ class CookingFlowWizardSessionService {
       ),
       splitIntoPortions: storedSession.splitIntoPortions,
       portionCount: storedSession.portionCount,
-      finalPortionCount:
-          storedSession.finalPortionCount ?? storedSession.portionCount,
+      finalPortionCount: storedSession.finalPortionCount,
       didInitializePortionsFromTemplate: true,
       step: _pageStep(storedSession.step),
       introDraft: storedSession.introDraft,

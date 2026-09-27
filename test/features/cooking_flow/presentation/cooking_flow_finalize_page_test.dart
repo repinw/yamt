@@ -45,6 +45,7 @@ Widget _buildHarness({
             canRemove: false,
           ),
         ],
+        containerPortions: <int>[portionCount.round()],
         isWeightValid: isWeightValid,
         nutritionPreview: nutritionPreview,
         splitIntoPortions: splitIntoPortions,

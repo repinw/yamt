@@ -177,7 +177,7 @@ class CookingFlowWizardState {
       introResetSignal = 0,
       splitIntoPortions = false,
       portionCount = 3,
-      finalPortionCount = 3,
+      finalPortionCount = null,
       savedContainerCount = 0,
       introDraft = null,
       savedPreparedMealId = null,
@@ -234,8 +234,9 @@ class CookingFlowWizardState {
   /// Base recipe portions for this flow.
   final double portionCount;
 
-  /// User-selected final portion count.
-  final double finalPortionCount;
+  /// Final portion count the user picked in the finalize step, or null while
+  /// it still follows the base recipe portions.
+  final double? finalPortionCount;
 
   /// Restored/current intro draft.
   final CookingFlowIntroDraft? introDraft;
@@ -254,6 +255,10 @@ class CookingFlowWizardState {
     final roundedPortions = portionCount.round();
     return roundedPortions < 1 ? 1 : roundedPortions;
   }
+
+  /// Final portion count shown in the finalize step: the user's pick, else
+  /// the base recipe portions from the intro step.
+  double get effectiveFinalPortionCount => finalPortionCount ?? portionCount;
 
   /// Copy state.
   CookingFlowWizardState copyWith({
@@ -274,7 +279,7 @@ class CookingFlowWizardState {
     int? introResetSignal,
     bool? splitIntoPortions,
     double? portionCount,
-    double? finalPortionCount,
+    Object? finalPortionCount = _keepWizardValue,
     Object? introDraft = _keepWizardValue,
     Object? savedPreparedMealId = _keepWizardValue,
     Object? savedPreparedMealName = _keepWizardValue,
@@ -310,7 +315,9 @@ class CookingFlowWizardState {
       introResetSignal: introResetSignal ?? this.introResetSignal,
       splitIntoPortions: splitIntoPortions ?? this.splitIntoPortions,
       portionCount: portionCount ?? this.portionCount,
-      finalPortionCount: finalPortionCount ?? this.finalPortionCount,
+      finalPortionCount: finalPortionCount == _keepWizardValue
+          ? this.finalPortionCount
+          : (finalPortionCount as num?)?.toDouble(),
       introDraft: introDraft == _keepWizardValue
           ? this.introDraft
           : introDraft as CookingFlowIntroDraft?,

@@ -5,6 +5,8 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
+import 'package:yamt/features/cooking_flow/domain/'
+    'cooking_flow_portion_distribution.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_page_widgets.dart';
@@ -59,11 +61,18 @@ class CookingFlowStorageContainerController {
     return containers.map((container) => container.id).toList(growable: false);
   }
 
-  /// Inputs used by finalize save.
+  /// Inputs used by finalize save. [totalPortions] is split over the
+  /// containers by net weight.
   List<CookingFlowFinalizeStorageContainerInput> finalizeInputs({
     required int totalPortions,
     required String Function(int index) fallbackLabelForIndex,
   }) {
+    final portions = distributeCookingFlowPortions(
+      totalPortions: totalPortions,
+      netWeights: <int>[
+        for (final container in containers) container.finalNetWeight,
+      ],
+    );
     return [
       for (var index = 0; index < containers.length; index++)
         CookingFlowFinalizeStorageContainerInput(
@@ -78,7 +87,7 @@ class CookingFlowStorageContainerController {
           taraWeight: containers[index].taraWeight,
           grossWeight: containers[index].grossWeight,
           finalNetWeight: containers[index].finalNetWeight,
-          totalPortions: totalPortions,
+          totalPortions: portions[index],
         ),
     ];
   }

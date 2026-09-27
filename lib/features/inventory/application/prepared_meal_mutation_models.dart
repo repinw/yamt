@@ -134,6 +134,7 @@ class PreparedMealBuildResult {
     required this.nextItems,
     required this.preparedMeal,
     this.componentSourceKeys = const <String>[],
+    this.pendingIngredientSourceKeys = const <String>[],
   });
 
   /// Updated inventory items after consumption.
@@ -144,6 +145,9 @@ class PreparedMealBuildResult {
 
   /// Optional source row keys aligned by component index.
   final List<String> componentSourceKeys;
+
+  /// Optional source row keys aligned by pending recipe ingredient index.
+  final List<String> pendingIngredientSourceKeys;
 }
 
 /// Signals validation failure while building a prepared meal draft.

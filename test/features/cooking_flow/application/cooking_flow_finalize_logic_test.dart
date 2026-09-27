@@ -6,6 +6,8 @@ import 'package:yamt/features/cooking_flow/application/'
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_template_creation_support.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -129,6 +131,127 @@ void main() {
     });
     expect(plan.totalInputCount, 2);
   });
+
+  group('piece-tracked stock', () {
+    test('save plan stores extra pieces in thousandths of a piece', () {
+      final plan = buildCookingFlowFinalizeSavePlan(
+        template: _eggTemplate(),
+        inventoryItems: <InventoryItem>[_eggPack()],
+        summaryIngredients: const <CookingFlowSummaryIngredientDraft>[
+          CookingFlowSummaryIngredientDraft(
+            key: 'row-eggs',
+            name: 'Eier',
+            amount: '2',
+            unitCode: 'pc',
+            inventoryItemIds: <String>['eggs'],
+            kind: CookingFlowSummaryIngredientKind.additional,
+          ),
+        ],
+        introDraft: null,
+        targetPortions: 1,
+        finalPortions: 1,
+      );
+
+      expect(plan.additionalItems.single.usedAmount, 2000);
+    });
+
+    test('template pieces deduct only the used pieces', () {
+      final plan = buildCookingFlowFinalizeSavePlan(
+        template: _eggTemplate(),
+        inventoryItems: <InventoryItem>[_eggPack()],
+        summaryIngredients: _eggSummaryRows,
+        introDraft: null,
+        targetPortions: 1,
+        finalPortions: 1,
+      );
+      final result = buildPreparedMealCreationFromTemplateResult(
+        currentItems: <InventoryItem>[_eggPack()],
+        preparedMealId: 'meal-1',
+        now: DateTime.parse('2026-03-27T12:00:00Z'),
+        template: plan.template,
+        totalPortions: 1,
+        recipeIngredientAssignments: plan.recipeIngredientAssignments,
+        recipeIngredientAmountConversions:
+            plan.recipeIngredientAmountConversions,
+        ingredientParser: const TemplateIngredientParser(),
+        sourceKeysByIngredient: plan.sourceKeysByIngredient,
+      );
+
+      expect(
+        result.nextItems.single.currentAmount,
+        2 * inventoryPieceAmountScale,
+      );
+      expect(result.preparedMeal.pendingRecipeIngredients, isEmpty);
+    });
+
+    test('nutrition preview counts the used pieces', () {
+      final preview = buildCookingFlowFinalizeNutritionPreview(
+        template: _eggTemplate(),
+        inventoryItems: <InventoryItem>[_eggPack()],
+        summaryIngredients: _eggSummaryRows,
+        introDraft: null,
+        targetPortions: 1,
+        finalPortions: 1,
+        splitIntoPortions: false,
+        portionCount: 1,
+        ingredientParser: const TemplateIngredientParser(),
+      );
+
+      expect(preview.kcal, closeTo(800, 0.0001));
+    });
+  });
+}
+
+const _eggSummaryRows = <CookingFlowSummaryIngredientDraft>[
+  CookingFlowSummaryIngredientDraft(
+    key: 'row-eggs',
+    name: 'Eier',
+    amount: '8',
+    unitCode: 'pc',
+    inventoryItemIds: <String>['eggs'],
+    kind: CookingFlowSummaryIngredientKind.template,
+    sourceIngredient: '8 Eier',
+  ),
+];
+
+PreparedMeal _eggTemplate() {
+  final now = DateTime.parse('2026-03-27T12:00:00Z');
+  return PreparedMeal(
+    id: 'template-eggs',
+    name: 'Omelett',
+    recipeIngredients: const <String>['8 Eier'],
+    totalPortions: 1,
+    remainingPortions: 1,
+    totalKcal: 0,
+    totalProtein: 0,
+    totalCarbs: 0,
+    totalFat: 0,
+    createdAt: now,
+    updatedAt: now,
+    components: const <PreparedMealComponent>[],
+  );
+}
+
+InventoryItem _eggPack() {
+  const storedAmount = 10 * inventoryPieceAmountScale;
+  return InventoryItem.create(
+    id: 'eggs',
+    name: 'Eier',
+    entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 1,
+    initialAmount: storedAmount,
+    currentAmount: storedAmount,
+    amountScale: inventoryPieceAmountScale,
+    amountUnit: InventoryAmountUnit.piece,
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 100,
+      per100Protein: 10,
+      per100Carbs: 1,
+      per100Fat: 7,
+    ),
+  );
 }
 
 const _summaryRows = <CookingFlowSummaryIngredientDraft>[

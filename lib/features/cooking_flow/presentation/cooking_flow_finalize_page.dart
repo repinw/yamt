@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
@@ -18,6 +20,7 @@ class CookingFlowFinalizePage extends StatelessWidget {
   /// Creates finalize step.
   const new({
     required this.storageContainers,
+    required this.containerPortions,
     required this.isWeightValid,
     required this.nutritionPreview,
     required this.splitIntoPortions,
@@ -31,6 +34,9 @@ class CookingFlowFinalizePage extends StatelessWidget {
 
   /// Final storage containers.
   final List<CookingFlowStorageContainerView> storageContainers;
+
+  /// Portions saved per container, aligned with [storageContainers].
+  final List<int> containerPortions;
 
   /// Whether current entered weights are valid.
   final bool isWeightValid;
@@ -61,6 +67,8 @@ class CookingFlowFinalizePage extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final roundedPortions = portionCount.round();
+    // The default follows the intro target, which can exceed six portions.
+    final sliderMax = math.max(6, roundedPortions);
     final caloriesValue =
         '${nutritionPreview.kcal.toNutritionMetricValue()} kcal';
     final carbsValue = '${nutritionPreview.carbs.toNutritionMetricValue()}g';
@@ -74,6 +82,7 @@ class CookingFlowFinalizePage extends StatelessWidget {
       children: <Widget>[
         _FinalizeStorageContainersSection(
           containers: storageContainers,
+          containerPortions: containerPortions,
           validationMessage: validationMessage,
           isWeightValid: isWeightValid,
           onContainerChanged: onContainerChanged,
@@ -103,8 +112,8 @@ class CookingFlowFinalizePage extends StatelessWidget {
                     Switch(
                       value: splitIntoPortions,
                       onChanged: onSplitIntoPortionsChanged,
-                      activeThumbColor: Colors.white,
-                      activeTrackColor: const Color(0xFFE65100),
+                      activeThumbColor: colors.onPrimary,
+                      activeTrackColor: colors.primary,
                     ),
                   ],
                 ),
@@ -126,15 +135,15 @@ class CookingFlowFinalizePage extends StatelessWidget {
                       Expanded(
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: const Color(0xFFE65100),
+                            activeTrackColor: colors.primary,
                             inactiveTrackColor: colors.outlineVariant,
-                            thumbColor: Colors.grey.shade700,
+                            thumbColor: colors.onSurfaceVariant,
                           ),
                           child: Slider(
                             value: portionCount,
                             min: 1,
-                            max: 6,
-                            divisions: 5,
+                            max: sliderMax.toDouble(),
+                            divisions: sliderMax - 1,
                             onChanged: onPortionCountChanged,
                           ),
                         ),
@@ -183,12 +192,14 @@ class CookingFlowFinalizePage extends StatelessWidget {
 class _FinalizeStorageContainersSection extends StatelessWidget {
   const new({
     required this.containers,
+    required this.containerPortions,
     required this.validationMessage,
     required this.isWeightValid,
     required this.onContainerChanged,
   });
 
   final List<CookingFlowStorageContainerView> containers;
+  final List<int> containerPortions;
   final String? validationMessage;
   final bool isWeightValid;
   final ValueChanged<String> onContainerChanged;
@@ -223,6 +234,10 @@ class _FinalizeStorageContainersSection extends StatelessWidget {
               _FinalizeStorageContainerCard(
                 container: containers[index],
                 index: index,
+                portions:
+                    containers.length > 1 && index < containerPortions.length
+                    ? containerPortions[index]
+                    : null,
                 isWeightValid: isWeightValid,
                 onContainerChanged: onContainerChanged,
               ),
@@ -250,12 +265,16 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
   const new({
     required this.container,
     required this.index,
+    required this.portions,
     required this.isWeightValid,
     required this.onContainerChanged,
   });
 
   final CookingFlowStorageContainerView container;
   final int index;
+
+  /// Portions this container gets; null when there is only one container.
+  final int? portions;
   final bool isWeightValid;
   final ValueChanged<String> onContainerChanged;
 
@@ -303,6 +322,16 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
                         ?.copyWith(fontWeight: FontWeight.w800),
                   ),
                 ),
+                if (portions case final int count) ...<Widget>[
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    l10n.cookflowContainerPortionsLabel(count),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ],
             ),
             const SizedBox(height: AppSpacing.xxl),
@@ -351,9 +380,7 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
                   '${netWeight.toStringAsFixed(0)} g',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: isWeightValid
-                        ? const Color(0xFFE65100)
-                        : colors.error,
+                    color: isWeightValid ? colors.primary : colors.error,
                   ),
                 ),
               ],

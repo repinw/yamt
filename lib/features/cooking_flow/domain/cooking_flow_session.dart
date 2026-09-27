@@ -270,7 +270,8 @@ class CookingFlowSession {
   /// Saved portion slider value.
   final double portionCount;
 
-  /// Saved final serving portion slider value.
+  /// Saved final serving portion slider value, or null while it follows
+  /// [portionCount].
   final double? finalPortionCount;
 
   /// Saved intro row state.

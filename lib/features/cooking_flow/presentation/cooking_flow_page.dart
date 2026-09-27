@@ -125,6 +125,9 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
                 _introShoppingBaselineInventoryItemIds,
             introResetSignal: _introResetSignal,
             storageContainers: _storageContainerViews,
+            containerPortions: _finalizeStorageContainerInputs
+                .map((container) => container.totalPortions)
+                .toList(growable: false),
             adjustmentController: _adjustmentController,
             adjustments: _adjustments,
             summaryIngredients: _summaryIngredients,
@@ -205,7 +208,7 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
 
   double get _portionCount => _wizardState.portionCount;
 
-  double get _finalPortionCount => _wizardState.finalPortionCount;
+  double get _finalPortionCount => _wizardState.effectiveFinalPortionCount;
 
   List<String> get _introShoppingBaselineInventoryItemIds {
     return _wizardState.introShoppingBaselineInventoryItemIds;

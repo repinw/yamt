@@ -41,6 +41,7 @@ class CookingFlowPageBody extends StatelessWidget {
     required this.introShoppingBaselineInventoryItemIds,
     required this.introResetSignal,
     required this.storageContainers,
+    required this.containerPortions,
     required this.adjustmentController,
     required this.adjustments,
     required this.summaryIngredients,
@@ -101,6 +102,9 @@ class CookingFlowPageBody extends StatelessWidget {
 
   /// Current storage container views.
   final List<CookingFlowStorageContainerView> storageContainers;
+
+  /// Portions saved per storage container.
+  final List<int> containerPortions;
 
   /// Controller for on-the-fly input.
   final TextEditingController adjustmentController;
@@ -256,6 +260,7 @@ class CookingFlowPageBody extends StatelessWidget {
           CookingFlowStep.cooking => CookingFlowCookingPage(
             template: template,
             introDraft: introDraft,
+            targetPortions: wizardState.targetRecipePortions,
             adjustmentController: adjustmentController,
             adjustments: adjustments,
             onAddPressed: onAddAdjustmentPressed,
@@ -275,6 +280,7 @@ class CookingFlowPageBody extends StatelessWidget {
           ),
           CookingFlowStep.finalize => CookingFlowFinalizePage(
             storageContainers: storageContainers,
+            containerPortions: containerPortions,
             isWeightValid: isWeightValid,
             nutritionPreview: buildNutritionPreview(
               template: template,

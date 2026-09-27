@@ -41,12 +41,18 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
   final components = <PreparedMealComponent>[];
   final componentSourceKeys = <String>[];
   final pendingIngredients = <String>[];
+  final pendingIngredientSourceKeys = <String>[];
 
   for (final ingredient in activeIngredients) {
+    void addPending(String label) {
+      pendingIngredients.add(label);
+      pendingIngredientSourceKeys.add(sourceKeysByIngredient[ingredient] ?? '');
+    }
+
     final assignedItemIds =
         recipeIngredientAssignments[ingredient] ?? const <String>[];
     if (assignedItemIds.isEmpty) {
-      pendingIngredients.add(
+      addPending(
         ingredientParser.pendingIngredientLabel(
           originalIngredient: ingredient,
           requirement: ingredientParser.parseRequirement(
@@ -65,7 +71,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
       basePortions: template.totalPortions,
     );
     if (requirement == null) {
-      pendingIngredients.add(ingredient.trim());
+      addPending(ingredient.trim());
       continue;
     }
 
@@ -82,7 +88,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
       ),
     );
     if (effectiveRequirement == null) {
-      pendingIngredients.add(
+      addPending(
         ingredientParser.pendingIngredientLabel(
           originalIngredient: ingredient,
           requirement: requirement,
@@ -156,7 +162,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
     }
 
     if (!consumedAnyAmount) {
-      pendingIngredients.add(
+      addPending(
         ingredientParser.pendingIngredientLabel(
           originalIngredient: ingredient,
           requirement: requirement,
@@ -166,7 +172,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
     }
 
     if (remainingAmount > 0) {
-      pendingIngredients.add(
+      addPending(
         ingredientParser.formatPendingIngredient(
           amount: remainingAmount,
           unit: effectiveRequirement.unit.toTemplateIngredientUnit(),
@@ -180,6 +186,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
   return PreparedMealBuildResult(
     nextItems: nextItems,
     componentSourceKeys: componentSourceKeys,
+    pendingIngredientSourceKeys: pendingIngredientSourceKeys,
     preparedMeal: PreparedMeal(
       id: preparedMealId,
       name: template.name,

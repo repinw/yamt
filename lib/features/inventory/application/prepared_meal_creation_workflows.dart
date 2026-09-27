@@ -281,6 +281,7 @@ class PreparedMealCreationWorkflows {
         ...creationResult.componentSourceKeys,
         ...extraItemsResult.componentSourceKeys,
       ],
+      pendingIngredientSourceKeys: creationResult.pendingIngredientSourceKeys,
       preparedMeal: baseMeal.copyWith(
         totalKcal: baseMeal.totalKcal + extraMeal.totalKcal,
         totalProtein: baseMeal.totalProtein + extraMeal.totalProtein,
@@ -312,7 +313,9 @@ class PreparedMealCreationWorkflows {
   }) {
     final baseMeal = creationResult.preparedMeal;
     final sourceKeys = creationResult.componentSourceKeys;
-    if (sourceKeys.length != baseMeal.components.length) {
+    final pendingSourceKeys = creationResult.pendingIngredientSourceKeys;
+    if (sourceKeys.length != baseMeal.components.length ||
+        pendingSourceKeys.length != baseMeal.pendingRecipeIngredients.length) {
       return const <PreparedMeal>[];
     }
 
@@ -344,7 +347,14 @@ class PreparedMealCreationWorkflows {
           components.add(baseMeal.components[index]);
         }
       }
-      if (components.isEmpty) {
+      // Rows the stock could not cover stay visible as pending ingredients
+      // of their container instead of disappearing from the saved meal.
+      final pendingIngredients = <String>[
+        for (var index = 0; index < pendingSourceKeys.length; index++)
+          if (containerSourceKeys.contains(pendingSourceKeys[index].trim()))
+            baseMeal.pendingRecipeIngredients[index],
+      ];
+      if (components.isEmpty && pendingIngredients.isEmpty) {
         return const <PreparedMeal>[];
       }
 
@@ -372,7 +382,7 @@ class PreparedMealCreationWorkflows {
             recipeIngredientAmountConversions,
             recipeIngredients,
           ),
-          pendingRecipeIngredients: const <String>[],
+          pendingRecipeIngredients: pendingIngredients,
           totalPortions: container.totalPortions,
           remainingPortions: container.totalPortions,
           finalNetWeight: container.finalNetWeight,
