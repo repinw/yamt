@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yamt/features/product_nutrition/data/'
@@ -33,37 +32,16 @@ class _FakeImagePicker extends ImagePicker {
   }
 }
 
-class _FakeConfigClient {
-  new({this.error});
-
-  final Exception? error;
-  int callCount = 0;
-
-  Future<String> loadTemplateId() async {
-    callCount++;
-    final failure = error;
-    if (failure != null) {
-      throw failure;
-    }
-    return 'template-123';
-  }
-}
-
 class _FakeModelClient {
   new({this.responseText, this.error});
 
   final String? responseText;
   final Exception? error;
   int callCount = 0;
-  String? lastTemplateId;
   Map<String, Object?>? lastInputs;
 
-  Future<String?> generateContent({
-    required String templateId,
-    required Map<String, Object?> inputs,
-  }) async {
+  Future<String?> generateContent(Map<String, Object?> inputs) async {
     callCount++;
-    lastTemplateId = templateId;
     lastInputs = inputs;
     final failure = error;
     if (failure != null) {
@@ -73,6 +51,32 @@ class _FakeModelClient {
   }
 }
 
+const _barcode = '4006381333931';
+
+final _labelBytes = Uint8List.fromList(<int>[0xFF, 0xD8, 0xFF, 0xE0]);
+
+Map<String, Object?> _nutrition() => <String, Object?>{
+  'kj': 1650,
+  'kcal': 393,
+  'fat': 8.2,
+  'saturated_fat': 1.4,
+  'carbs': 63,
+  'sugar': 17,
+  'fiber': 7.5,
+  'protein': 10,
+  'salt': 0.45,
+};
+
+String _response({String status = 'ok', Map<String, Object?>? nutrition}) =>
+    jsonEncode(<String, Object?>{
+      'status': status,
+      'name': 'Knuspermüsli',
+      'brand': 'YAMT',
+      'quantity_label': '500 g',
+      'serving_size': '30 g',
+      'nutrition': nutrition ?? _nutrition(),
+    });
+
 void _setCameraPlatform(TargetPlatform platform) {
   debugDefaultTargetPlatformOverride = platform;
   addTearDown(() => debugDefaultTargetPlatformOverride = null);
@@ -80,27 +84,26 @@ void _setCameraPlatform(TargetPlatform platform) {
 
 NutritionLabelOcrRepository _repository({
   ImagePicker? imagePicker,
-  NutritionLabelTemplateConfigClient? configClient,
-  NutritionLabelTemplateModelClient? modelClient,
+  _FakeModelClient? modelClient,
 }) {
   return NutritionLabelOcrRepository(
-    imagePicker: imagePicker ?? _FakeImagePicker(),
-    configClient: configClient ?? _FakeConfigClient().loadTemplateId,
-    modelClient: modelClient ?? _FakeModelClient().generateContent,
+    imagePicker:
+        imagePicker ??
+        _FakeImagePicker(
+          onPickImage: (_) async =>
+              XFile.fromData(_labelBytes, name: 'label.jpg'),
+        ),
+    modelClient: (modelClient ?? _FakeModelClient()).generateContent,
   );
 }
 
+Future<NutritionLabelOcrResult> _scanWith(String? responseText) {
+  _setCameraPlatform(TargetPlatform.android);
+  return _repository(modelClient: _FakeModelClient(responseText: responseText))
+      .scanNutritionLabel(barcode: _barcode);
+}
+
 void main() {
-  test('template config client always returns nutrition-template-id', () async {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-
-    final client = container.read(nutritionLabelTemplateConfigClientProvider);
-    final templateId = await client();
-
-    expect(templateId, 'nutrition-template-id');
-  });
-
   test('scan returns not supported before opening camera on desktop', () async {
     _setCameraPlatform(TargetPlatform.linux);
     var cameraOpened = false;
@@ -113,9 +116,7 @@ void main() {
       ),
     );
 
-    final result = await repository.scanNutritionLabel(
-      barcode: '4006381333931',
-    );
+    final result = await repository.scanNutritionLabel(barcode: _barcode);
 
     expect(result.status, NutritionLabelOcrStatus.failed);
     expect(result.errorCode, NutritionLabelOcrErrorCodes.cameraNotSupported);
@@ -124,210 +125,130 @@ void main() {
 
   test('scan returns canceled when camera capture is canceled', () async {
     _setCameraPlatform(TargetPlatform.android);
-    final configClient = _FakeConfigClient();
     final modelClient = _FakeModelClient();
     final repository = _repository(
-      configClient: configClient.loadTemplateId,
-      modelClient: modelClient.generateContent,
+      imagePicker: _FakeImagePicker(),
+      modelClient: modelClient,
     );
 
-    final result = await repository.scanNutritionLabel(
-      barcode: '4006381333931',
-    );
+    final result = await repository.scanNutritionLabel(barcode: _barcode);
 
     expect(result.status, NutritionLabelOcrStatus.canceled);
-    expect(configClient.callCount, 0);
     expect(modelClient.callCount, 0);
   });
 
   test('scan returns ai failure when image picker throws', () async {
     _setCameraPlatform(TargetPlatform.android);
-    final configClient = _FakeConfigClient();
-    final modelClient = _FakeModelClient(responseText: '{"name":"Yogurt"}');
+    final modelClient = _FakeModelClient(responseText: _response());
     final repository = _repository(
       imagePicker: _FakeImagePicker(
         onPickImage: (source) async {
           throw PlatformException(code: 'camera_access_denied');
         },
       ),
-      configClient: configClient.loadTemplateId,
-      modelClient: modelClient.generateContent,
+      modelClient: modelClient,
     );
 
-    final result = await repository.scanNutritionLabel(
-      barcode: '4006381333931',
-    );
+    final result = await repository.scanNutritionLabel(barcode: _barcode);
 
     expect(result.status, NutritionLabelOcrStatus.failed);
     expect(result.errorCode, NutritionLabelOcrErrorCodes.aiRequestFailed);
-    expect(configClient.callCount, 0);
     expect(modelClient.callCount, 0);
   });
 
-  test('scan parses nested OCR response into draft', () async {
+  test('scan sends the photo and parses a complete label', () async {
     _setCameraPlatform(TargetPlatform.android);
-    final bytes = Uint8List.fromList(<int>[0xFF, 0xD8, 0xFF, 0xE0]);
-    final modelClient = _FakeModelClient(
-      responseText: '''
-```json
-{
-  "Product Name": "Greek Yogurt",
-  "Brand": "YAMT Dairy",
-  "quantity_label": "500 g",
-  "serving_size": "100 g",
-  "nutrition": {
-    "Energy kcal 100g": "123,5",
-    "proteins": 10,
-    "carbohydrates": "4.2",
-    "fat": "3",
-    "salt": "0.10",
-    "saturates": "2.1",
-    "polyunsaturated fat": "0.4",
-    "sugars": "3.5",
-    "fibre": "0.2"
-  }
-}
-```
-''',
-    );
-    final repository = _repository(
-      imagePicker: _FakeImagePicker(
-        onPickImage: (source) async {
-          expect(source, ImageSource.camera);
-          return XFile.fromData(bytes, name: 'label.jpg');
-        },
-      ),
-      modelClient: modelClient.generateContent,
-    );
+    final modelClient = _FakeModelClient(responseText: _response());
     Uint8List? capturedBytes;
 
-    final result = await repository.scanNutritionLabel(
-      barcode: '4006381333931',
-      onImageCaptured: (value) {
-        capturedBytes = value;
-      },
-    );
+    final result = await _repository(modelClient: modelClient)
+        .scanNutritionLabel(
+          barcode: _barcode,
+          onImageCaptured: (value) => capturedBytes = value,
+        );
 
     expect(result.status, NutritionLabelOcrStatus.succeeded);
-    expect(capturedBytes, bytes);
-    expect(modelClient.lastTemplateId, 'template-123');
+    expect(capturedBytes, _labelBytes);
     expect(modelClient.lastInputs, <String, Object?>{
       'mimeType': 'image/jpeg',
-      'imageData': base64Encode(bytes),
+      'imageData': base64Encode(_labelBytes),
     });
-    expect(result.draft?.barcode, '4006381333931');
-    expect(result.draft?.name, 'Greek Yogurt');
-    expect(result.draft?.brand, 'YAMT Dairy');
-    expect(result.draft?.quantityLabel, '500 g');
-    expect(result.draft?.servingSizeLabel, '100 g');
-    expect(result.draft?.per100Kcal, 123.5);
-    expect(result.draft?.per100Protein, 10);
-    expect(result.draft?.per100Carbs, 4.2);
-    expect(result.draft?.per100Fat, 3);
-    expect(result.draft?.per100Salt, 0.1);
-    expect(result.draft?.per100SaturatedFat, 2.1);
-    expect(result.draft?.per100PolyunsaturatedFat, 0.4);
-    expect(result.draft?.per100Sugar, 3.5);
-    expect(result.draft?.per100Fiber, 0.2);
+    final draft = result.draft!;
+    expect(draft.barcode, _barcode);
+    expect(draft.name, 'Knuspermüsli');
+    expect(draft.brand, 'YAMT');
+    expect(draft.quantityLabel, '500 g');
+    expect(draft.servingSizeLabel, '30 g');
+    expect(draft.per100Kj, 1650);
+    expect(draft.per100Kcal, 393);
+    expect(draft.per100Fat, 8.2);
+    expect(draft.per100SaturatedFat, 1.4);
+    expect(draft.per100Carbs, 63);
+    expect(draft.per100Sugar, 17);
+    expect(draft.per100Fiber, 7.5);
+    expect(draft.per100Protein, 10);
+    expect(draft.per100Salt, 0.45);
+    expect(draft.per100PolyunsaturatedFat, isNull);
   });
 
-  test('scan returns parse failure when OCR response has no values', () async {
-    _setCameraPlatform(TargetPlatform.android);
-    final repository = _repository(
-      imagePicker: _FakeImagePicker(
-        onPickImage: (source) async {
-          return XFile.fromData(
-            Uint8List.fromList(<int>[0x00]),
-            name: 'label.bin',
-          );
-        },
-      ),
-      modelClient: _FakeModelClient(responseText: '{}').generateContent,
+  for (final status in [
+    'no_label',
+    'incomplete',
+    'unreadable',
+    'no_per_100',
+    'implausible',
+  ]) {
+    test('scan asks for a new photo when the model reports $status', () async {
+      final result = await _scanWith(_response(status: status));
+
+      expect(result.status, NutritionLabelOcrStatus.failed);
+      expect(result.errorCode, NutritionLabelOcrErrorCodes.retakePhoto);
+    });
+  }
+
+  for (final key in [
+    'kj',
+    'kcal',
+    'fat',
+    'saturated_fat',
+    'carbs',
+    'sugar',
+    'protein',
+    'salt',
+  ]) {
+    test('scan asks for a new photo when mandatory $key is missing', () async {
+      final result = await _scanWith(
+        _response(nutrition: _nutrition()..remove(key)),
+      );
+
+      expect(result.status, NutritionLabelOcrStatus.failed);
+      expect(result.errorCode, NutritionLabelOcrErrorCodes.retakePhoto);
+    });
+  }
+
+  test('scan asks for a new photo when values are implausible', () async {
+    final result = await _scanWith(
+      _response(nutrition: _nutrition()..['saturated_fat'] = 9.5),
     );
 
-    final result = await repository.scanNutritionLabel(
-      barcode: '4006381333931',
-    );
+    expect(result.status, NutritionLabelOcrStatus.failed);
+    expect(result.errorCode, NutritionLabelOcrErrorCodes.retakePhoto);
+  });
+
+  test('scan returns parse failure when the response is not JSON', () async {
+    final result = await _scanWith('{ invalid: json');
 
     expect(result.status, NutritionLabelOcrStatus.failed);
     expect(result.errorCode, NutritionLabelOcrErrorCodes.parseFailed);
   });
 
-  test(
-    'scan returns parse failure when OCR response is malformed JSON',
-    () async {
-      _setCameraPlatform(TargetPlatform.android);
-      final repository = _repository(
-        imagePicker: _FakeImagePicker(
-          onPickImage: (source) async {
-            return XFile.fromData(
-              Uint8List.fromList(<int>[0x00]),
-              name: 'label.bin',
-            );
-          },
-        ),
-        modelClient: _FakeModelClient(
-          responseText: '''
-```json
-{ invalid: json,
-```
-''',
-        ).generateContent,
-      );
-
-      final result = await repository.scanNutritionLabel(
-        barcode: '4006381333931',
-      );
-
-      expect(result.status, NutritionLabelOcrStatus.failed);
-      expect(result.errorCode, NutritionLabelOcrErrorCodes.parseFailed);
-    },
-  );
-
-  test('scan returns template config failure when template id fails', () async {
-    _setCameraPlatform(TargetPlatform.android);
-    final modelClient = _FakeModelClient(responseText: '{"name":"Yogurt"}');
-    final repository = _repository(
-      imagePicker: _FakeImagePicker(
-        onPickImage: (source) async {
-          return XFile.fromData(
-            Uint8List.fromList(<int>[0x00]),
-            name: 'label.bin',
-          );
-        },
-      ),
-      configClient: _FakeConfigClient(error: Exception('missing template'))
-          .loadTemplateId,
-      modelClient: modelClient.generateContent,
-    );
-
-    final result = await repository.scanNutritionLabel(
-      barcode: '4006381333931',
-    );
-
-    expect(result.status, NutritionLabelOcrStatus.failed);
-    expect(result.errorCode, NutritionLabelOcrErrorCodes.templateConfigFailed);
-    expect(modelClient.callCount, 0);
-  });
-
   test('scan returns ai failure when model request throws', () async {
     _setCameraPlatform(TargetPlatform.android);
     final repository = _repository(
-      imagePicker: _FakeImagePicker(
-        onPickImage: (source) async {
-          return XFile.fromData(
-            Uint8List.fromList(<int>[0x00]),
-            name: 'label.bin',
-          );
-        },
-      ),
-      modelClient: _FakeModelClient(error: Exception('model failed'))
-          .generateContent,
+      modelClient: _FakeModelClient(error: Exception('model failed')),
     );
 
-    final result = await repository.scanNutritionLabel(
-      barcode: '4006381333931',
-    );
+    final result = await repository.scanNutritionLabel(barcode: _barcode);
 
     expect(result.status, NutritionLabelOcrStatus.failed);
     expect(result.errorCode, NutritionLabelOcrErrorCodes.aiRequestFailed);
@@ -338,26 +259,16 @@ void main() {
     () async {
       _setCameraPlatform(TargetPlatform.android);
       final repository = _repository(
-        imagePicker: _FakeImagePicker(
-          onPickImage: (source) async {
-            return XFile.fromData(
-              Uint8List.fromList(<int>[0x00]),
-              name: 'label.bin',
-            );
-          },
-        ),
         modelClient: _FakeModelClient(
           error: FirebaseException(
             plugin: 'firebase_app_check',
             code: 'unknown',
             message: 'Too many attempts.',
           ),
-        ).generateContent,
+        ),
       );
 
-      final result = await repository.scanNutritionLabel(
-        barcode: '4006381333931',
-      );
+      final result = await repository.scanNutritionLabel(barcode: _barcode);
 
       expect(result.status, NutritionLabelOcrStatus.failed);
       expect(result.errorCode, NutritionLabelOcrErrorCodes.appCheckThrottled);

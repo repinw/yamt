@@ -212,8 +212,13 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## Product Nutrition OCR
 
 - Nutrition label OCR draft/result models.
-- Firebase AI-backed OCR repository.
-- OCR response parsing and error mapping.
+- Firebase AI server prompt template `nutrition-label-template`, so the
+  prompt can change without an app release.
+- A scan succeeds only when every mandatory EU value per 100 g or 100 ml is
+  read (energy in kJ and kcal, fat, saturates, carbohydrate, sugars, protein,
+  salt) and the values are plausible. Otherwise the user is asked for a new
+  photo, with a "New photo" action; partial or guessed values are never
+  filled in.
 - Hand-off into manual product form state for review before saving.
 
 ## Prepared Meals

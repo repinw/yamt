@@ -512,7 +512,14 @@ void main() {
                 return NutritionLabelOcrResult.succeeded(
                   draft: NutritionLabelOcrDraft(
                     barcode: barcode,
+                    per100Kj: 368,
                     per100Kcal: 88,
+                    per100Fat: 1,
+                    per100SaturatedFat: 0.5,
+                    per100Carbs: 15,
+                    per100Sugar: 4,
+                    per100Protein: 4,
+                    per100Salt: 0.2,
                   ),
                 );
               },
@@ -965,9 +972,14 @@ void main() {
                     barcode: barcode,
                     quantityLabel: '500 ml',
                     servingSizeLabel: '15 ml',
+                    per100Kj: 502,
                     per100Kcal: 120,
-                    per100Carbs: 5,
                     per100Fat: 3,
+                    per100SaturatedFat: 0.4,
+                    per100Carbs: 5,
+                    per100Sugar: 0,
+                    per100Protein: 0.2,
+                    per100Salt: 0,
                   ),
                 );
               },
@@ -994,16 +1006,16 @@ void main() {
         InventoryReceiptManualProductNutritionScanOutcome.applied,
       );
       expect(state.kcalText, '120');
-      expect(state.saturatedFatText, isEmpty);
+      expect(state.saturatedFatText, '0.4');
       expect(state.polyunsaturatedFatText, isEmpty);
       expect(state.showPolyunsaturatedFatField, isFalse);
-      expect(state.proteinText, isEmpty);
+      expect(state.proteinText, '0.2');
       expect(state.carbsText, '5');
-      expect(state.sugarText, isEmpty);
+      expect(state.sugarText, '0');
       expect(state.fiberText, isEmpty);
       expect(state.showFiberField, isFalse);
       expect(state.fatText, '3');
-      expect(state.saltText, isEmpty);
+      expect(state.saltText, '0');
       expect(state.weightAmount, '500');
       expect(state.selectedWeightUnit, InventoryAmountUnit.milliliter);
       expect(state.nameText, 'Olivenoel');
@@ -1028,44 +1040,54 @@ void main() {
     },
   );
 
-  test('scanNutritionLabel maps App Check throttling outcome', () async {
-    final config = _config(
-      selectedProduct: const OffProductSearchResult(
-        code: '4061462542046',
-        name: 'Olivenoel',
-        score: 100,
-      ),
-    );
-    final container = ProviderContainer(
-      overrides: [
-        nutritionLabelOcrRepositoryProvider.overrideWithValue(
-          _FakeNutritionOcrRepository(
-            onScanNutritionLabel: (_) async {
-              return const NutritionLabelOcrResult.failed(
-                errorCode: NutritionLabelOcrErrorCodes.appCheckThrottled,
-              );
-            },
-          ),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    final provider = inventoryReceiptManualProductControllerProvider(config);
-    final subscription = container.listen(
-      provider,
-      (_, _) {},
-      fireImmediately: true,
-    );
-    addTearDown(subscription.close);
-
-    final outcome = await container
-        .read(provider.notifier)
-        .scanNutritionLabel();
-
-    expect(
-      outcome,
+  for (final (errorCode, expected) in [
+    (
+      NutritionLabelOcrErrorCodes.appCheckThrottled,
       InventoryReceiptManualProductNutritionScanOutcome.appCheckThrottled,
-    );
-  });
+    ),
+    (
+      NutritionLabelOcrErrorCodes.retakePhoto,
+      InventoryReceiptManualProductNutritionScanOutcome.retakePhoto,
+    ),
+    (
+      NutritionLabelOcrErrorCodes.aiRequestFailed,
+      InventoryReceiptManualProductNutritionScanOutcome.failed,
+    ),
+  ]) {
+    test('scanNutritionLabel maps $errorCode to ${expected.name}', () async {
+      final config = _config(
+        selectedProduct: const OffProductSearchResult(
+          code: '4061462542046',
+          name: 'Olivenoel',
+          score: 100,
+        ),
+      );
+      final container = ProviderContainer(
+        overrides: [
+          nutritionLabelOcrRepositoryProvider.overrideWithValue(
+            _FakeNutritionOcrRepository(
+              onScanNutritionLabel: (_) async {
+                return NutritionLabelOcrResult.failed(errorCode: errorCode);
+              },
+            ),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final provider = inventoryReceiptManualProductControllerProvider(config);
+      final subscription = container.listen(
+        provider,
+        (_, _) {},
+        fireImmediately: true,
+      );
+      addTearDown(subscription.close);
+
+      final outcome = await container
+          .read(provider.notifier)
+          .scanNutritionLabel();
+
+      expect(outcome, expected);
+    });
+  }
 }

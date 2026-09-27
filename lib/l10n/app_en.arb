@@ -832,6 +832,8 @@
   "caloriesOcrScanningSemantics": "Captured nutrition label is being scanned",
   "caloriesOcrFailed": "Nutrition label scan failed. Please try again.",
   "caloriesOcrAppCheckThrottled": "Nutrition scan is temporarily blocked. Please try again later.",
+  "caloriesOcrRetakePhoto": "Not every mandatory value of the nutrition table was clearly readable. Please take a sharp photo of the whole table without glare.",
+  "caloriesOcrRetakePhotoAction": "New photo",
   "caloriesLoadFailed": "Could not load calorie entries.",
   "caloriesRetryAction": "Retry",
   "caloriesAuthRequired": "Please sign in to manage calories.",

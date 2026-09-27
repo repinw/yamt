@@ -30,9 +30,16 @@ Other features may consume these public Product Nutrition entry points:
 - `NutritionLabelOcrStatus`
 - `NutritionLabelOcrErrorCodes`
 
-Tests may override `nutritionLabelImagePickerProvider`,
-`nutritionLabelTemplateConfigClientProvider`, and
+Tests may override `nutritionLabelImagePickerProvider` and
 `nutritionLabelTemplateModelClientProvider` to isolate camera and model calls.
+
+## Rules
+
+- A draft exists only when every mandatory EU value is present: energy in kJ
+  and kcal, fat, saturates, carbohydrate, sugars, protein, and salt.
+- The app rejects only values that no real label can have
+  (`NutritionLabelOcrDraft.isPlausible`). Whether kcal fits the macros is
+  checked by the model, because sugar alcohols and alcohol break that rule.
 
 ## Providers
 

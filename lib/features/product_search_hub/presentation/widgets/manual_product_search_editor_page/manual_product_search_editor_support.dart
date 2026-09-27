@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -146,7 +149,8 @@ Future<void> executeEditorSave({
 Future<void> scanEditorNutritionLabel({
   required InventoryReceiptManualProductController controller,
   required BuildContext context,
-  required void Function(String message) onShowSnackBar,
+  required void Function(String message, {AppSnackBarAction? action})
+  onShowSnackBar,
 }) async {
   final outcome = await controller.scanNutritionLabel();
   if (!context.mounted) {
@@ -162,5 +166,19 @@ Future<void> scanEditorNutritionLabel({
       onShowSnackBar(l10n.caloriesOcrFailed);
     case InventoryReceiptManualProductNutritionScanOutcome.appCheckThrottled:
       onShowSnackBar(l10n.caloriesOcrAppCheckThrottled);
+    case InventoryReceiptManualProductNutritionScanOutcome.retakePhoto:
+      onShowSnackBar(
+        l10n.caloriesOcrRetakePhoto,
+        action: (
+          label: l10n.caloriesOcrRetakePhotoAction,
+          onPressed: () => unawaited(
+            scanEditorNutritionLabel(
+              controller: controller,
+              context: context,
+              onShowSnackBar: onShowSnackBar,
+            ),
+          ),
+        ),
+      );
   }
 }

@@ -1646,6 +1646,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Nährwertscan ist vorübergehend blockiert. Bitte versuche es später erneut.';
 
   @override
+  String get caloriesOcrRetakePhoto =>
+      'Nicht alle Pflichtwerte der Nährwerttabelle waren sicher lesbar. Bitte fotografiere die ganze Tabelle scharf und ohne Spiegelung.';
+
+  @override
+  String get caloriesOcrRetakePhotoAction => 'Neues Foto';
+
+  @override
   String get caloriesLoadFailed =>
       'Kalorien-Einträge konnten nicht geladen werden.';
 

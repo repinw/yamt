@@ -1617,6 +1617,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'Nutrition scan is temporarily blocked. Please try again later.';
 
   @override
+  String get caloriesOcrRetakePhoto =>
+      'Not every mandatory value of the nutrition table was clearly readable. Please take a sharp photo of the whole table without glare.';
+
+  @override
+  String get caloriesOcrRetakePhotoAction => 'New photo';
+
+  @override
   String get caloriesLoadFailed => 'Could not load calorie entries.';
 
   @override

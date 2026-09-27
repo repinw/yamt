@@ -288,12 +288,14 @@ class InventoryReceiptManualProductController
         case NutritionLabelOcrStatus.canceled:
           return InventoryReceiptManualProductNutritionScanOutcome.canceled;
         case NutritionLabelOcrStatus.failed:
-          if (result.errorCode ==
-              NutritionLabelOcrErrorCodes.appCheckThrottled) {
-            return InventoryReceiptManualProductNutritionScanOutcome
-                .appCheckThrottled;
-          }
-          return InventoryReceiptManualProductNutritionScanOutcome.failed;
+          return switch (result.errorCode) {
+            NutritionLabelOcrErrorCodes.appCheckThrottled =>
+              InventoryReceiptManualProductNutritionScanOutcome
+                  .appCheckThrottled,
+            NutritionLabelOcrErrorCodes.retakePhoto =>
+              InventoryReceiptManualProductNutritionScanOutcome.retakePhoto,
+            _ => InventoryReceiptManualProductNutritionScanOutcome.failed,
+          };
       }
     } finally {
       if (ref.mounted) {

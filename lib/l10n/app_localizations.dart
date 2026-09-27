@@ -2866,6 +2866,18 @@ abstract class AppLocalizations {
   /// **'Nutrition scan is temporarily blocked. Please try again later.'**
   String get caloriesOcrAppCheckThrottled;
 
+  /// No description provided for @caloriesOcrRetakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Not every mandatory value of the nutrition table was clearly readable. Please take a sharp photo of the whole table without glare.'**
+  String get caloriesOcrRetakePhoto;
+
+  /// No description provided for @caloriesOcrRetakePhotoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'New photo'**
+  String get caloriesOcrRetakePhotoAction;
+
   /// No description provided for @caloriesLoadFailed.
   ///
   /// In en, this message translates to:

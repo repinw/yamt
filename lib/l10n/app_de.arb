@@ -818,6 +818,8 @@
   "caloriesOcrScanningSemantics": "Das aufgenommene Nährwertetikett wird gescannt",
   "caloriesOcrFailed": "Nährwertetikett konnte nicht erkannt werden.",
   "caloriesOcrAppCheckThrottled": "Nährwertscan ist vorübergehend blockiert. Bitte versuche es später erneut.",
+  "caloriesOcrRetakePhoto": "Nicht alle Pflichtwerte der Nährwerttabelle waren sicher lesbar. Bitte fotografiere die ganze Tabelle scharf und ohne Spiegelung.",
+  "caloriesOcrRetakePhotoAction": "Neues Foto",
   "caloriesLoadFailed": "Kalorien-Einträge konnten nicht geladen werden.",
   "caloriesRetryAction": "Erneut versuchen",
   "caloriesAuthRequired": "Bitte melde dich an, um Kalorien zu verwalten.",

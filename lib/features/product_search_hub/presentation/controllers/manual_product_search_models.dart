@@ -90,6 +90,9 @@ enum InventoryReceiptManualProductNutritionScanOutcome {
   /// Firebase App Check temporarily blocked the request.
   appCheckThrottled,
 
+  /// The photo missed mandatory values or gave implausible ones.
+  retakePhoto,
+
   /// Documented member.
   missingBarcode,
 }

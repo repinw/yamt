@@ -183,8 +183,13 @@ class _InventoryReceiptManualProductEditorPageState
     }
   }
 
-  void _showSnackBar(String message) =>
-      showEditorSnackBar(context, message, tone: AppSnackBarTone.error);
+  void _showSnackBar(String message, {AppSnackBarAction? action}) =>
+      showEditorSnackBar(
+        context,
+        message,
+        tone: AppSnackBarTone.error,
+        action: action,
+      );
 
   void _closePage<T extends Object?>([T? result]) =>
       popManualProductSearchPage(context, result);
