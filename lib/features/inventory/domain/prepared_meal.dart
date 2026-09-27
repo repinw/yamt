@@ -397,6 +397,29 @@ String formatPreparedMealPortions(num portions, {String? localeName}) {
   return NumberFormat.decimalPattern(localeName).format(portions);
 }
 
+/// Converts a raw amount of [component] (its [PreparedMealComponent.usedAmount]
+/// or a value derived from it, for example scaled by a portion ratio) into a
+/// value fit to display, undoing the fractional-piece storage scale of its
+/// source item. Unlike [inventoryAmountToDisplayValue], [rawAmount] may be
+/// fractional (a portion-scaled amount) without being rounded first, so
+/// gram and milliliter amounts keep their precision.
+double preparedMealComponentDisplayAmount(
+  PreparedMealComponent component, [
+  num? rawAmount,
+]) {
+  final amount = rawAmount ?? component.usedAmount;
+  final safeAmount = amount < 0 ? 0 : amount;
+  final scale = component.usedAmountScale;
+  if (!inventoryAmountAllowsFractionalInput(
+    unit: component.usedUnit,
+    scale: scale,
+  )) {
+    return safeAmount.toDouble();
+  }
+  final safeScale = scale < 1 ? 1 : scale;
+  return safeAmount / safeScale;
+}
+
 /// Defines prepared meal component.
 @immutable
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
@@ -462,6 +485,11 @@ class PreparedMealComponent {
 
   /// The source item snapshot.
   final InventoryItem sourceItemSnapshot;
+
+  /// The internal storage scale of [usedAmount], taken from the source
+  /// item. Piece-tracked items store fractional pieces multiplied by
+  /// [inventoryPieceAmountScale].
+  int get usedAmountScale => sourceItemSnapshot.amountScale;
 
   /// To json.
   Map<String, dynamic> toJson() => _$PreparedMealComponentToJson(this);

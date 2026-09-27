@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
 
@@ -103,4 +104,52 @@ void main() {
     expect(components.single.component.name, 'Rice');
     expect(components.single.amount, 50);
   });
+
+  test(
+    'scales a piece component down from its fractional-piece storage scale',
+    () {
+      final eggs = InventoryItem.create(
+        id: 'eggs',
+        name: 'Eggs',
+        entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+        storeName: 'Store',
+        quantity: 8,
+        initialAmount: 8000,
+        currentAmount: 8000,
+        amountScale: inventoryPieceAmountScale,
+        amountUnit: InventoryAmountUnit.piece,
+      );
+      final meal = PreparedMeal(
+        id: 'meal-eggs',
+        name: 'Omelette',
+        totalPortions: 2,
+        remainingPortions: 2,
+        totalKcal: 620,
+        totalProtein: 52,
+        totalCarbs: 4,
+        totalFat: 44,
+        createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+        updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+        components: [
+          PreparedMealComponent(
+            inventoryItemId: eggs.id,
+            name: eggs.name,
+            brand: eggs.brand,
+            imageUrl: eggs.imageUrl,
+            usedAmount: 8000,
+            usedUnit: InventoryAmountUnit.piece,
+            totalKcal: 620,
+            totalProtein: 52,
+            totalCarbs: 4,
+            totalFat: 44,
+            sourceItemSnapshot: eggs,
+          ),
+        ],
+      );
+
+      final components = PreparedMealEatCalculator(meal).scaledComponents(1);
+
+      expect(components.single.amount, 4);
+    },
+  );
 }

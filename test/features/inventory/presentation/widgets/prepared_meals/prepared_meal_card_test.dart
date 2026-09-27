@@ -117,6 +117,55 @@ PreparedMeal _meal() {
   );
 }
 
+PreparedMeal _pieceMeal() {
+  final sourceItem = InventoryItem.create(
+    id: 'item-eggs',
+    name: 'Eggs',
+    entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+    storeName: 'Store',
+    quantity: 8,
+    initialAmount: 8000,
+    currentAmount: 8000,
+    amountScale: inventoryPieceAmountScale,
+    amountUnit: InventoryAmountUnit.piece,
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 155,
+      per100Protein: 13,
+      per100Carbs: 1,
+      per100Fat: 11,
+    ),
+  );
+
+  return PreparedMeal(
+    id: 'meal-2',
+    name: 'Omelette',
+    totalPortions: 2,
+    remainingPortions: 2,
+    totalKcal: 620,
+    totalProtein: 52,
+    totalCarbs: 4,
+    totalFat: 44,
+    createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+    updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+    components: [
+      PreparedMealComponent(
+        inventoryItemId: sourceItem.id,
+        name: sourceItem.name,
+        brand: sourceItem.brand,
+        imageUrl: sourceItem.imageUrl,
+        usedAmount: 8000,
+        usedUnit: InventoryAmountUnit.piece,
+        totalKcal: 620,
+        totalProtein: 52,
+        totalCarbs: 4,
+        totalFat: 44,
+        sourceItemSnapshot: sourceItem,
+      ),
+    ],
+  );
+}
+
 PreparedMeal _incompleteMeal() {
   return _meal().copyWith(
     pendingRecipeIngredients: const <String>['Sour cream'],
@@ -188,6 +237,74 @@ void main() {
     expect(find.byKey(indicatorKey), findsNothing);
     expect(find.text('Rice'), findsOneWidget);
   });
+
+  testWidgets(
+    'PreparedMealCard shows a piece component amount in pieces, not '
+    'thousandths',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: _wrapCard(
+                PreparedMealCard(
+                  meal: _pieceMeal(),
+                  onThrowAwayPressed: (mealId, portions, reason) async => true,
+                  onUnbundlePressed: (mealId) async => true,
+                  onEditPressed: (mealId, result) async => true,
+                  onSaveTemplatePressed: (meal) async => true,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Omelette'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Eggs'), findsOneWidget);
+      expect(find.text('8 pc'), findsOneWidget);
+      expect(find.text('8000 pc'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'PreparedMealCard keeps a gram component amount unscaled',
+    (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: _wrapCard(
+                PreparedMealCard(
+                  meal: _meal(),
+                  onThrowAwayPressed: (mealId, portions, reason) async => true,
+                  onUnbundlePressed: (mealId) async => true,
+                  onEditPressed: (mealId, result) async => true,
+                  onSaveTemplatePressed: (meal) async => true,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Rice bowl'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Rice'), findsOneWidget);
+      expect(find.text('150 g'), findsOneWidget);
+    },
+  );
 
   testWidgets('PreparedMealCard shows eat action in the header', (
     tester,

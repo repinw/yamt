@@ -194,7 +194,10 @@ List<CalorieEntryBundleComponent> _buildBundleComponents({
           brand: component.brand,
           imageUrl: component.imageUrl,
           amountLabel: _formatMealComponentAmountLabel(
-            amount: (component.usedAmount * portionRatio).toStringAsFixed(1),
+            amount: preparedMealComponentDisplayAmount(
+              component,
+              component.usedAmount * portionRatio,
+            ).toStringAsFixed(1),
             unit: component.usedUnit,
           ),
           totalKcal: component.totalKcal * portionRatio,

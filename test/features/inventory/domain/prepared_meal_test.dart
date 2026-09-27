@@ -12,6 +12,7 @@ InventoryItem _sourceItem({
   double unitPrice = 1.0,
   int initialAmount = 0,
   int currentAmount = 0,
+  int amountScale = 1,
   InventoryAmountUnit? amountUnit,
 }) {
   return InventoryItem.create(
@@ -24,6 +25,7 @@ InventoryItem _sourceItem({
     unitPrice: unitPrice,
     initialAmount: initialAmount,
     currentAmount: currentAmount,
+    amountScale: amountScale,
     amountUnit: amountUnit,
   );
 }
@@ -329,6 +331,57 @@ void main() {
         remainingPortions: 4,
       );
       expect(meal.remainingNetWeight, 2253);
+    });
+  });
+
+  group('preparedMealComponentDisplayAmount', () {
+    test('divides a fractional-piece amount by the source item scale', () {
+      final component = _component(
+        sourceItem: _sourceItem(
+          amountUnit: InventoryAmountUnit.piece,
+          amountScale: inventoryPieceAmountScale,
+        ),
+        usedAmount: 8000,
+      );
+
+      expect(component.usedAmountScale, inventoryPieceAmountScale);
+      expect(preparedMealComponentDisplayAmount(component), 8);
+    });
+
+    test('leaves a gram amount unscaled', () {
+      final component = _component(
+        sourceItem: _sourceItem(amountUnit: InventoryAmountUnit.gram),
+        usedAmount: 150,
+        usedUnit: InventoryAmountUnit.gram,
+      );
+
+      expect(component.usedAmountScale, 1);
+      expect(preparedMealComponentDisplayAmount(component), 150);
+    });
+
+    test('keeps fractional precision for a scaled raw gram amount', () {
+      final component = _component(
+        sourceItem: _sourceItem(amountUnit: InventoryAmountUnit.gram),
+        usedAmount: 200,
+        usedUnit: InventoryAmountUnit.gram,
+      );
+
+      expect(
+        preparedMealComponentDisplayAmount(component, 200 / 3),
+        closeTo(66.6667, 0.0001),
+      );
+    });
+
+    test('scales a fractional-piece raw amount by portion ratio', () {
+      final component = _component(
+        sourceItem: _sourceItem(
+          amountUnit: InventoryAmountUnit.piece,
+          amountScale: inventoryPieceAmountScale,
+        ),
+        usedAmount: 8000,
+      );
+
+      expect(preparedMealComponentDisplayAmount(component, 8000 * 0.5), 4);
     });
   });
 }

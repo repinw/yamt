@@ -183,7 +183,7 @@ class PreparedMealCardExpandedContent extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
               child: PreparedMealComponentRow(
                 component: component,
-                amount: component.usedAmount.toDouble(),
+                amount: preparedMealComponentDisplayAmount(component),
               ),
             ),
           if (meal.hasPendingRecipeIngredients) ...[

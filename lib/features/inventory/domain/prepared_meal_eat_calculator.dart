@@ -130,7 +130,8 @@ class PreparedMealEatCalculator {
     return values;
   }
 
-  /// Bound ingredients with the amounts that [portions] contain.
+  /// Bound ingredients with the amounts that [portions] contain, ready to
+  /// display.
   List<({PreparedMealComponent component, double amount})> scaledComponents(
     num portions,
   ) {
@@ -140,7 +141,13 @@ class PreparedMealEatCalculator {
     final ratio = portions / meal.totalPortions;
     return [
       for (final component in meal.components)
-        (component: component, amount: component.usedAmount * ratio),
+        (
+          component: component,
+          amount: preparedMealComponentDisplayAmount(
+            component,
+            component.usedAmount * ratio,
+          ),
+        ),
     ];
   }
 
