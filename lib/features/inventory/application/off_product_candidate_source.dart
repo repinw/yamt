@@ -23,10 +23,9 @@ class OffProductCandidateSource {
       return const <OffProductSearchResult>[];
     }
 
-    final normalizedStoreName = normalizeStoreName(item.storeName);
-    final store = _resolveExternalStore(
-      normalizedStoreName: normalizedStoreName,
-      brandStore: _normalizeSupportedExternalStore(item.brand),
+    final store = offSearchStoreFor(
+      storeName: item.storeName,
+      brand: item.brand,
     );
     // The server cleans the line up itself (brand, weight, packaging words,
     // a brand that only names the store), so the journal and the search eval
@@ -73,36 +72,43 @@ class OffProductCandidateSource {
     ].where((value) => value.isNotEmpty).join('-');
     return 'off-${composite.isEmpty ? 'product' : composite}';
   }
+}
 
-  String? _resolveExternalStore({
-    required String? normalizedStoreName,
-    required String? brandStore,
-  }) {
-    final normalizedStore = _normalizeSupportedExternalStore(
-      normalizedStoreName,
-    );
-    if (normalizedStore != null) {
-      return normalizedStore;
-    }
-    if (_isGeneralFallbackStore(normalizedStoreName)) {
-      return normalizedStoreName;
-    }
-    return brandStore;
-  }
+/// The store sent to OFF search for a receipt line: Aldi or Netto when the
+/// store or the receipt brand names them, else the normalized store name.
+String? offSearchStoreFor({String? storeName, String? brand}) {
+  return _resolveExternalStore(
+    normalizedStoreName: normalizeStoreName(storeName),
+    brandStore: _normalizeSupportedExternalStore(brand),
+  );
+}
 
-  String? _normalizeSupportedExternalStore(String? rawValue) {
-    final normalized = normalizeStoreName(rawValue);
-    return switch (normalized) {
-      'Aldi' => 'Aldi',
-      'Netto' => 'Netto',
-      _ => null,
-    };
+String? _resolveExternalStore({
+  required String? normalizedStoreName,
+  required String? brandStore,
+}) {
+  final normalizedStore = _normalizeSupportedExternalStore(normalizedStoreName);
+  if (normalizedStore != null) {
+    return normalizedStore;
   }
+  if (_isGeneralFallbackStore(normalizedStoreName)) {
+    return normalizedStoreName;
+  }
+  return brandStore;
+}
 
-  bool _isGeneralFallbackStore(String? normalizedStoreName) {
-    if (normalizedStoreName == null || normalizedStoreName.isEmpty) {
-      return false;
-    }
-    return normalizedStoreName != 'Unknown';
+String? _normalizeSupportedExternalStore(String? rawValue) {
+  final normalized = normalizeStoreName(rawValue);
+  return switch (normalized) {
+    'Aldi' => 'Aldi',
+    'Netto' => 'Netto',
+    _ => null,
+  };
+}
+
+bool _isGeneralFallbackStore(String? normalizedStoreName) {
+  if (normalizedStoreName == null || normalizedStoreName.isEmpty) {
+    return false;
   }
+  return normalizedStoreName != 'Unknown';
 }

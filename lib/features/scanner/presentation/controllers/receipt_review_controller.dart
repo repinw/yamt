@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/inventory/application/off_product_candidate_source.dart';
+import 'package:yamt/features/inventory/data/off_selection_feedback_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -167,6 +171,11 @@ class ReceiptReviewController extends _$ReceiptReviewController {
       await gateway.saveReceipt(receipt: state.receipt, items: savable);
 
       if (!ref.mounted) return false;
+      unawaited(
+        ref
+            .read(offSelectionFeedbackRepositoryProvider)
+            .report(_selectionFeedback(savable)),
+      );
 
       state = state.copyWith(isSaving: false, saveSuccess: true);
       return true;
@@ -184,6 +193,34 @@ class ReceiptReviewController extends _$ReceiptReviewController {
   void clearError() {
     state = state.copyWith(errorMessage: null);
   }
+
+  /// The products picked for [items], as the search saw each line.
+  List<OffSelectionFeedback> _selectionFeedback(List<ReceiptLineItem> items) {
+    final storeName = state.receipt.storeName;
+    final feedback = <OffSelectionFeedback>[];
+    for (final item in items) {
+      final code = item.matchedProduct?.barcode?.trim() ?? '';
+      final line = item.rawName.trim();
+      if (!_isBarcode(code) || line.isEmpty) continue;
+      final rank = item.candidates.indexWhere(
+        (candidate) => candidate.barcode?.trim() == code,
+      );
+      feedback.add(
+        OffSelectionFeedback(
+          receiptLine: line,
+          code: code,
+          store: offSearchStoreFor(storeName: storeName, brand: item.rawBrand),
+          brand: item.rawBrand?.trim(),
+          weight: item.packageWeight?.trim(),
+          rank: rank < 0 ? null : rank,
+        ),
+      );
+    }
+    return feedback;
+  }
+
+  static bool _isBarcode(String code) =>
+      code.isNotEmpty && RegExp(r'^\d+$').hasMatch(code);
 
   ReceiptLineItem? _findItem(String itemId) {
     return state.receipt.items

@@ -63,7 +63,7 @@ final class ReceiptReviewControllerProvider
 }
 
 String _$receiptReviewControllerHash() =>
-    r'c5b7d5364e02574fe6bdad9bea4b999fdd5fca86';
+    r'71440ac5ffd95fdf5d6272ed9de61417167cd923';
 
 /// Controller managing the receipt review flow and modifications.
 

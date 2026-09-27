@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/data/off_selection_feedback_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -9,10 +10,21 @@ import 'package:yamt/features/scanner/presentation/controllers/receipt_review_co
 import '../../fakes/fake_receipt_product_resolver.dart';
 import '../../fakes/fake_receipt_storage_gateway.dart';
 
+class _FakeOffSelectionFeedbackRepository
+    implements OffSelectionFeedbackRepository {
+  final List<OffSelectionFeedback> reported = <OffSelectionFeedback>[];
+
+  @override
+  Future<void> report(List<OffSelectionFeedback> entries) async {
+    reported.addAll(entries);
+  }
+}
+
 void main() {
   group('ReceiptReviewController', () {
     late FakeReceiptProductResolver fakeResolver;
     late FakeReceiptStorageGateway fakeGateway;
+    late _FakeOffSelectionFeedbackRepository fakeFeedback;
 
     const testMilchCandidate = ProductCandidate(
       id: 'prod-milch-1',
@@ -61,11 +73,15 @@ void main() {
     ProviderContainer createContainer({ScannedReceipt receipt = baseReceipt}) {
       fakeResolver = FakeReceiptProductResolver();
       fakeGateway = FakeReceiptStorageGateway();
+      fakeFeedback = _FakeOffSelectionFeedbackRepository();
 
       final container = ProviderContainer(
         overrides: [
           receiptProductResolverProvider.overrideWithValue(fakeResolver),
           receiptStorageGatewayProvider.overrideWithValue(fakeGateway),
+          offSelectionFeedbackRepositoryProvider.overrideWithValue(
+            fakeFeedback,
+          ),
         ],
       );
 
@@ -338,6 +354,62 @@ void main() {
         expect(fakeGateway.learnedAliases, isEmpty);
       },
     );
+
+    test('saveReceipt meldet die gewählten Produkte an die Suche', () async {
+      const receipt = ScannedReceipt(
+        id: 'receipt-netto',
+        storeName: 'NETTO MARKEN-DISCOUNT',
+        items: [
+          ReceiptLineItem(
+            id: 'item-1',
+            rawName: 'GL Weidemilch 1,5% 1L',
+            rawBrand: 'GL',
+            packageWeight: '1L',
+            totalPrice: 1.19,
+            status: ReceiptItemStatus.suggested,
+            matchedProduct: testBrotCandidate,
+            candidates: [testMilchCandidate, testBrotCandidate],
+          ),
+          ReceiptLineItem(
+            id: 'item-2',
+            rawName: 'UNBEKANNT',
+            totalPrice: 2.50,
+            status: ReceiptItemStatus.suggested,
+            matchedProduct: ProductCandidate(id: 'local-1', name: 'Eigenes'),
+          ),
+        ],
+      );
+      final container = createContainer(receipt: receipt);
+      final controller = container.read(
+        receiptReviewControllerProvider(receipt).notifier,
+      )..confirmAllSuggestions();
+
+      expect(await controller.saveReceipt(), isTrue);
+
+      // Only the item with a barcode; the other one has no OFF product.
+      expect(fakeFeedback.reported, hasLength(1));
+      expect(fakeFeedback.reported.single.toJson(), <String, Object>{
+        'raw': 'GL Weidemilch 1,5% 1L',
+        'code': '4009876543210',
+        'store': 'Netto',
+        'brand': 'GL',
+        'weight': '1L',
+        'rank': 1,
+      });
+    });
+
+    test('saveReceipt meldet nichts, wenn das Speichern scheitert', () async {
+      final container = createContainer();
+      fakeGateway.errorToThrowOnSave = Exception('Firestore offline');
+      final controller =
+          container.read(receiptReviewControllerProvider(baseReceipt).notifier)
+            ..confirmAllSuggestions()
+            ..toggleIgnore('item-2');
+
+      await controller.saveReceipt();
+
+      expect(fakeFeedback.reported, isEmpty);
+    });
 
     test('saveReceipt fängt Speicherfehler sauber ab', () async {
       final container = createContainer();
