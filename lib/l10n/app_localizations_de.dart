@@ -31,11 +31,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeProgress => 'Fortschritt';
 
   @override
-  String get homeMenuTooltip => 'Menü';
+  String get homeMenuTool => 'Menü';
 
   @override
-  String get aiChefTooltip =>
-      'Lass dir von der KI ein zufälliges Rezept vorschlagen';
+  String get homeMoreTool => 'Mehr';
+
+  @override
+  String get aiChefIdeaDescription =>
+      'Die KI schlägt dir ein zufälliges Rezept vor';
+
+  @override
+  String get aiChefIdeaTitle => 'KI-Rezeptidee';
+
+  @override
+  String get aiChefIdeaToolLabel => 'KI-Idee';
 
   @override
   String get aiChefSetupTitle => 'Was soll die KI kochen?';
@@ -478,7 +487,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryViewStock => 'Vorrat';
 
   @override
-  String get inventoryViewHistory => 'Historie';
+  String get inventoryViewHistory => 'Verlauf';
 
   @override
   String get inventoryRecentSectionTitle => 'Lebensmittel';
@@ -1321,6 +1330,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateAddRecipeAction => 'Rezept hinzufügen';
 
   @override
+  String get preparedMealTemplateRecipeToolLabel => 'Rezept';
+
+  @override
+  String get preparedMealTemplateAddRecipeDescription =>
+      'Ein Rezept von einer Webseite übernehmen';
+
+  @override
   String get preparedMealTemplateCreateFromRecipeAction => 'Aus Rezept anlegen';
 
   @override
@@ -1398,6 +1414,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get kitchenUtensilsOpenAction => 'Küchenutensilien';
+
+  @override
+  String get kitchenUtensilsToolLabel => 'Geräte';
+
+  @override
+  String get kitchenUtensilsDescription => 'Deine Töpfe und Behälter verwalten';
 
   @override
   String get kitchenUtensilsEmptyState =>
@@ -2504,6 +2526,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryDayTypePause => 'Pausentag';
+
+  @override
+  String get diaryDayTypeTrainingShort => 'Training';
+
+  @override
+  String get diaryDayTypeRestShort => 'Ruhetag';
+
+  @override
+  String get diaryDayTypePauseShort => 'Pause';
 
   @override
   String get diaryDayTypeSheetTitle => 'Tages-Status wählen';

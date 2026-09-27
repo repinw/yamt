@@ -68,10 +68,10 @@ class DiaryDayNavigator extends StatefulWidget {
   /// Called when the day label is tapped.
   final VoidCallback onOpenCalendar;
 
-  /// Round top-bar actions aligned to the left edge.
+  /// Header tools aligned to the left edge.
   final List<Widget> leadingActions;
 
-  /// Round top-bar actions aligned to the right edge.
+  /// Header tools aligned to the right edge.
   final List<Widget> actions;
 
   @override
@@ -100,9 +100,12 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
           width: AppSizes.diaryTopBarSide,
           child: Align(
             alignment: Alignment.centerLeft,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: widget.leadingActions,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: widget.leadingActions,
+              ),
             ),
           ),
         ),

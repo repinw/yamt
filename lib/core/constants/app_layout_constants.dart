@@ -135,12 +135,6 @@ abstract final class AppOpacities {
   /// Compact search disabled control opacity.
   static const double compactSearchDisabled = 0.38;
 
-  /// Disabled home top bar icon background opacity.
-  static const double homeTopBarDisabledBackground = 0.6;
-
-  /// Disabled home top bar icon foreground opacity.
-  static const double homeTopBarDisabledForeground = 0.48;
-
   /// Inventory filter divider opacity.
   static const double inventoryFilterDivider = 0.45;
 

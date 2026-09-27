@@ -6,28 +6,26 @@ import 'package:yamt/core/widgets/home_top_bar.dart';
 /// Shared top chrome rendered inside a home tab scroll view.
 class HomeShellTabTopChrome extends StatelessWidget {
   /// The home tab top chrome.
-  const new({required this.title, super.key, this.actions = const <Widget>[]});
+  const new({required this.title, super.key, this.tools = const <Widget>[]});
 
   /// Top bar title.
   final String title;
 
-  /// Optional tab-owned actions.
-  final List<Widget> actions;
+  /// Labeled tools of the tab.
+  final List<Widget> tools;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
     final compact = shouldUseCompactHomeChrome(context);
     return HomeShellTopSliverChrome(
       child: HomeTopBar(
         title: title,
-        titleColor: colors.secondary,
         compact: compact,
         preferredHeight: HomeTopBar.preferredHeightFor(
           context,
           compact: compact,
         ),
-        actions: actions,
+        tools: tools,
       ),
     );
   }

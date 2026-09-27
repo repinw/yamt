@@ -1,9 +1,10 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/widgets/food_label_icon_chip.dart';
+import 'package:yamt/core/widgets/home_header_tool.dart';
 import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Opens the home side menu. Renders nothing outside the home shell.
+/// "Menü" header tool that opens the home side menu. Renders nothing outside
+/// the home shell.
 class HomeShellMenuButton extends StatelessWidget {
   /// Creates the menu button.
   const new({super.key});
@@ -17,11 +18,11 @@ class HomeShellMenuButton extends StatelessWidget {
     if (scope == null) {
       return const SizedBox.shrink();
     }
-    return FoodLabelIconChip(
+    return HomeHeaderTool(
       key: buttonKey,
-      icon: Icons.menu_rounded,
-      tooltip: AppLocalizations.of(context)!.homeMenuTooltip,
-      onTap: scope.openMenu,
+      symbol: const Icon(Icons.menu_rounded),
+      label: AppLocalizations.of(context)!.homeMenuTool,
+      onPressed: scope.openMenu,
     );
   }
 }

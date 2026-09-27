@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/widgets/home_header_tool.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -11,10 +12,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Home-shell top chrome for the inventory tab.
 class InventoryHomeShellTopChrome extends ConsumerWidget {
   /// Creates inventory top chrome.
-  const new({super.key, this.actions = const <Widget>[]});
+  const new({super.key, this.tools = const <Widget>[]});
 
-  /// Tab-owned actions.
-  final List<Widget> actions;
+  /// Tools of the current view, placed between Einkauf and Mehr.
+  final List<Widget> tools;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,11 +25,11 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
       title: selectionState.isSelectionMode
           ? l10n.preparedMealSelectionCount(selectionState.selectedCount)
           : l10n.inventoryPageTitle,
-      actions: _buildActions(context, ref, l10n, selectionState),
+      tools: _buildTools(context, ref, l10n, selectionState),
     );
   }
 
-  List<Widget> _buildActions(
+  List<Widget> _buildTools(
     BuildContext context,
     WidgetRef ref,
     AppLocalizations l10n,
@@ -44,12 +45,12 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
     }
 
     return [
-      ...actions,
-      IconButton(
-        tooltip: l10n.homeShopping,
+      HomeHeaderTool(
+        symbol: const Icon(Icons.shopping_cart_rounded),
+        label: l10n.homeShopping,
         onPressed: () => context.push(AppRoutes.homeShopping),
-        icon: const Icon(Icons.shopping_cart_rounded),
       ),
+      ...tools,
     ];
   }
 

@@ -2,20 +2,20 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/widgets/food_label_icon_chip.dart';
+import 'package:yamt/core/widgets/home_header_tool.dart';
 import 'package:yamt/features/diary/application/diary_day_type_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_labels.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Day type chip in the diary top bar: the day type's icon in a frame. A
-/// tap opens the day type sheet.
+/// Day type tool in the diary top bar: the day type's emoji over its short
+/// name. A tap opens the day type sheet.
 class DiaryDayTypeToggle extends ConsumerWidget {
   /// Creates the diary day type toggle.
   const new({super.key});
 
-  /// Key of the tappable chip.
+  /// Key of the tappable tool.
   static const buttonKey = ValueKey<String>('diary-day-type-toggle');
 
   @override
@@ -26,11 +26,11 @@ class DiaryDayTypeToggle extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return FoodLabelIconChip(
+    return HomeHeaderTool(
       key: buttonKey,
-      icon: diaryDayTypeIcon(status.type),
-      tooltip: diaryDayTypeLabel(status.type, AppLocalizations.of(context)!),
-      onTap: () => unawaited(
+      symbol: Text(diaryDayTypeEmoji(status.type)),
+      label: diaryDayTypeShortLabel(status.type, AppLocalizations.of(context)!),
+      onPressed: () => unawaited(
         showDiaryDayTypeSheet(context: context, selectedDay: selectedDay),
       ),
     );

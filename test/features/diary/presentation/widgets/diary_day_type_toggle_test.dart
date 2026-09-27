@@ -57,25 +57,25 @@ void main() {
     );
   }
 
-  final cases = <DateTime, IconData>{
-    DateTime(2026, 4, 27): Icons.fitness_center_rounded,
-    DateTime(2026, 4, 28): Icons.weekend_outlined,
-    DateTime(2026, 4, 29): Icons.pause_rounded,
+  final cases = <DateTime, (String, String)>{
+    DateTime(2026, 4, 27): ('🏋️', 'TRAINING'),
+    DateTime(2026, 4, 28): ('🛋️', 'RUHETAG'),
+    DateTime(2026, 4, 29): ('⏸️', 'PAUSE'),
   };
 
-  for (final entry in cases.entries) {
-    testWidgets('shows only the icon for ${entry.key}', (tester) async {
-      await pumpToggle(tester, entry.key);
+  for (final MapEntry(key: day, value: (emoji, word)) in cases.entries) {
+    testWidgets('shows the emoji over the short name for $day', (
+      tester,
+    ) async {
+      await pumpToggle(tester, day);
       await tester.pump();
 
-      expect(find.byIcon(entry.value), findsOneWidget);
-      expect(find.text('Trainingstag'), findsNothing);
-      expect(find.text('Ruhetag'), findsNothing);
-      expect(find.text('Pausentag'), findsNothing);
+      expect(find.text(emoji), findsOneWidget);
+      expect(find.text(word), findsOneWidget);
     });
   }
 
-  testWidgets('tapping the chip opens the day type sheet', (tester) async {
+  testWidgets('tapping the tool opens the day type sheet', (tester) async {
     await pumpToggle(tester, DateTime(2026, 4, 27));
     await tester.pump();
 

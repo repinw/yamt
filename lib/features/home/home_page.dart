@@ -1,15 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
+import 'package:yamt/core/widgets/home_more_sheet.dart';
 import 'package:yamt/core/widgets/home_nav_entry.dart';
 import 'package:yamt/core/widgets/home_nav_item.dart';
 import 'package:yamt/core/widgets/home_shell_bottom_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_floating_action_button_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
+import 'package:yamt/core/widgets/home_shell_more_scope.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_slide_menu.dart';
@@ -89,6 +93,16 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
 
   void _closeMenu() => setState(() => _isMenuOpen = false);
 
+  /// Opens the Mehr sheet with the actions of the current tab.
+  void _openMore(String title, List<HomeMoreEntry> entries) {
+    unawaited(
+      showHomeMoreSheet(
+        context,
+        sections: [HomeMoreSection(title: title, entries: entries)],
+      ),
+    );
+  }
+
   HomeTabType _currentTab() {
     return switch (widget.navigationShell.currentIndex) {
       _inventoryBranchIndex => HomeTabType.inventory,
@@ -167,37 +181,40 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         onNotification: _chromeVisibilityController.handleScrollNotification,
         child: HomeShellMenuScope(
           openMenu: _openMenu,
-          child: Stack(
-            children: [
-              ContentVisibility(
-                isVisible: !_isCovered,
-                child: widget.navigationShell,
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: ValueListenableBuilder<double>(
-                  valueListenable: _chromeVisibilityController,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // The dock sits on the navigation bar and hides with
-                      // it.
-                      if (currentTab == HomeTabType.diary)
-                        const DiaryQuickEatDock(),
-                      HomeBottomNavBar(entries: _navEntries(context, l10n)),
-                    ],
-                  ),
-                  builder: (context, visibility, bottomNavBar) {
-                    return HomeShellBottomChrome(
-                      visibility: visibility,
-                      child: bottomNavBar!,
-                    );
-                  },
+          child: HomeShellMoreScope(
+            openMore: _openMore,
+            child: Stack(
+              children: [
+                ContentVisibility(
+                  isVisible: !_isCovered,
+                  child: widget.navigationShell,
                 ),
-              ),
-            ],
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: ValueListenableBuilder<double>(
+                    valueListenable: _chromeVisibilityController,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // The dock sits on the navigation bar and hides with
+                        // it.
+                        if (currentTab == HomeTabType.diary)
+                          const DiaryQuickEatDock(),
+                        HomeBottomNavBar(entries: _navEntries(context, l10n)),
+                      ],
+                    ),
+                    builder: (context, visibility, bottomNavBar) {
+                      return HomeShellBottomChrome(
+                        visibility: visibility,
+                        child: bottomNavBar!,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

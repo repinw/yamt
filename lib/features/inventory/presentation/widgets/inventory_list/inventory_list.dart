@@ -210,7 +210,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
     return CustomScrollView(
       slivers: [
         if (widget.includeHomeShellChrome)
-          InventoryHomeShellTopChrome(actions: widget.topChromeActions),
+          InventoryHomeShellTopChrome(tools: widget.topChromeActions),
         InventoryListTopControlsSliver(
           showSearch: hasAnySourceItems,
           searchController: _searchController,

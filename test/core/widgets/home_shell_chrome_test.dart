@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/widgets/home_header_tool.dart';
 import 'package:yamt/core/widgets/home_shell_top_sliver_chrome.dart';
 import 'package:yamt/core/widgets/home_top_bar.dart';
 
@@ -29,65 +29,37 @@ void main() {
 
   group('HomeTopBar', () {
     test('returns preferred size for regular and compact layouts', () {
-      const regular = HomeTopBar(title: 'Diary', actions: <Widget>[]);
+      const regular = HomeTopBar(title: 'Diary', tools: <Widget>[]);
       const compact = HomeTopBar(
         title: 'Diary',
         compact: true,
-        actions: <Widget>[],
+        tools: <Widget>[],
       );
 
       expect(regular.preferredSize.height, 76);
       expect(compact.preferredSize.height, 88);
     });
 
-    testWidgets('wraps icon actions in circular app bar surfaces', (
-      tester,
-    ) async {
+    testWidgets('shows the title in ink next to labeled tools', (tester) async {
       await tester.pumpWidget(
         _homeTopBarHarness(
-          const HomeTopBar(
+          HomeTopBar(
             title: 'Today',
-            actions: <Widget>[
-              IconButton(onPressed: null, icon: Icon(Icons.more_horiz)),
+            tools: [
+              HomeHeaderTool(
+                symbol: const Icon(Icons.more_horiz),
+                label: 'More',
+                onPressed: () {},
+              ),
             ],
           ),
         ),
       );
 
       final context = tester.element(find.byType(HomeTopBar));
-      final colors = Theme.of(context).colorScheme;
-      final actionTheme = tester.widget<IconButtonTheme>(
-        find.ancestor(
-          of: find.byIcon(Icons.more_horiz),
-          matching: find.byType(IconButtonTheme),
-        ),
-      );
-      final style = actionTheme.data.style!;
-
-      expect(
-        style.fixedSize?.resolve(<WidgetState>{}),
-        const Size.square(AppSizes.homeTopBarIconButton),
-      );
-      expect(style.shape?.resolve(<WidgetState>{}), isA<CircleBorder>());
-      expect(
-        style.backgroundColor?.resolve(<WidgetState>{}),
-        colors.surfaceContainerHigh,
-      );
-    });
-
-    testWidgets('renders title with provided title color', (tester) async {
-      await tester.pumpWidget(
-        _homeTopBarHarness(
-          const HomeTopBar(
-            title: 'Today',
-            titleColor: Colors.red,
-            actions: <Widget>[],
-          ),
-        ),
-      );
-
       final title = tester.widget<Text>(find.text('Today'));
-      expect(title.style?.color, Colors.red);
+      expect(title.style?.color, Theme.of(context).colorScheme.onSurface);
+      expect(find.text('MORE'), findsOneWidget);
     });
 
     testWidgets('keeps a long title constrained to one line', (tester) async {
@@ -101,8 +73,12 @@ void main() {
         _homeTopBarHarness(
           const HomeTopBar(
             title: longTitle,
-            actions: <Widget>[
-              IconButton(onPressed: null, icon: Icon(Icons.more_horiz)),
+            tools: <Widget>[
+              HomeHeaderTool(
+                symbol: Icon(Icons.more_horiz),
+                label: 'More',
+                onPressed: null,
+              ),
             ],
           ),
         ),

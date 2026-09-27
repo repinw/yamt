@@ -25,6 +25,8 @@ import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_templates_page/meal_templates_error_state.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_templates_page/meal_templates_grid.dart';
+import 'package:yamt/features/meal_templates/presentation/widgets/'
+    'meal_templates_page/meal_templates_more_tool.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines meal templates page.
@@ -50,10 +52,11 @@ class MealTemplatesPage extends ConsumerWidget {
         : [
             HomeShellTabTopChrome(
               title: l10n.homeCookbook,
-              actions: const [
+              tools: const [
                 AiChefButton(),
                 KitchenUtensilsButton(),
                 MealTemplateRecipeImportButton(),
+                MealTemplatesMoreTool(),
               ],
             ),
           ];

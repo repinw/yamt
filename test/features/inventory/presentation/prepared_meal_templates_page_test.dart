@@ -306,7 +306,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byTooltip('Add recipe template'));
+    await tester.tap(find.text('RECIPE'));
     await tester.pumpAndSettle();
 
     await tester.enterText(

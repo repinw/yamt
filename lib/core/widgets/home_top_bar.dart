@@ -1,37 +1,36 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/widgets/home_top_bar_actions.dart';
 
 const _regularHomeTopBarHeight = 76.0;
 const _compactHomeTopBarHeight = 88.0;
 const double _homeTopBarTextVerticalPadding = AppSpacing.xxl;
 
-/// Top app bar used by the home shell pages.
+/// Largest share of the screen width that the tools may take.
+const _toolsMaxWidthShare = 0.75;
+
+/// Top app bar used by the home shell pages: the tab title in ink and the
+/// tab's labeled tools.
 class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// The home top bar.
   const new({
     required this.title,
-    required this.actions,
+    required this.tools,
     super.key,
     this.compact = false,
     this.preferredHeight,
-    this.titleColor,
   });
 
   /// The title.
   final String title;
 
-  /// The actions.
-  final List<Widget> actions;
+  /// Labeled tools at the end of the bar, usually `HomeHeaderTool`s.
+  final List<Widget> tools;
 
   /// Whether to use compact spacing for tight layouts.
   final bool compact;
 
   /// Optional precomputed preferred height for context-dependent layouts.
   final double? preferredHeight;
-
-  /// The title color.
-  final Color? titleColor;
 
   /// Computes a preferred height that accounts for accessibility text scaling.
   static double preferredHeightFor(
@@ -76,16 +75,24 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: _titleStyle(
-                    context,
-                    compact: compact,
-                    color: titleColor,
-                  ),
+                  style: _titleStyle(context, compact: compact),
                 ),
               ),
-              if (actions.isNotEmpty)
+              if (tools.isNotEmpty) ...[
                 SizedBox(width: compact ? AppSpacing.xs : AppSpacing.sm),
-              HomeTopBarActions(actions: actions),
+                // Large text scales the tools down instead of pushing the
+                // bar wider than the screen.
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth:
+                        MediaQuery.sizeOf(context).width * _toolsMaxWidthShare,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(mainAxisSize: MainAxisSize.min, children: tools),
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -94,16 +101,12 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
-TextStyle? _titleStyle(
-  BuildContext context, {
-  required bool compact,
-  Color? color,
-}) =>
+TextStyle? _titleStyle(BuildContext context, {required bool compact}) =>
     (compact
             ? Theme.of(context).textTheme.titleLarge
             : Theme.of(context).textTheme.headlineSmall)
         ?.copyWith(
-          color: color ?? Theme.of(context).colorScheme.onSurface,
+          color: Theme.of(context).colorScheme.onSurface,
           fontSize: compact
               ? AppFontSizes.homeTabTitleCompact
               : AppFontSizes.homeTabTitle,

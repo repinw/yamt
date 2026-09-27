@@ -67,9 +67,6 @@ abstract final class AppSizes {
   /// centered.
   static const double diaryTopBarSide = 88;
 
-  /// Diameter for circular home top bar icon buttons.
-  static const double homeTopBarIconButton = 36;
-
   /// Height for compact search fields and adjacent square controls.
   static const double compactSearchControlHeight = 52;
 
@@ -193,4 +190,16 @@ abstract final class AppSizes {
 
   /// Downward offset of the shadow under the scaled home page.
   static const double homeSlideMenuPageShadowOffset = 24;
+
+  /// Tap area of a labeled header tool.
+  static const double headerTool = 56;
+
+  /// Icon or emoji of a labeled header tool.
+  static const double headerToolSymbol = 20;
+
+  /// Gap between the symbol and the word of a labeled header tool.
+  static const double headerToolGap = 4;
+
+  /// Icon tile in front of a Mehr sheet entry.
+  static const double moreEntryIconTile = 40;
 }

@@ -6,7 +6,7 @@ wishes, generate a recipe, and save it as a prepared meal template.
 
 ## Owns
 
-- AI recipe generator button (`AiChefButton`).
+- AI recipe generator header tool (`AiChefButton`) and `openAiChef`.
 - Modal setup/result dialog (`AiChefDialog`).
 - Loading screen with culinary quotes and rotating star icon (`AiChefLoadingView`).
 - Recipe result view (`AiChefResultView`).
@@ -29,7 +29,8 @@ wishes, generate a recipe, and save it as a prepared meal template.
 
 Other features may consume these public entry points:
 
-- `AiChefButton`
+- `AiChefButton`, the cookbook header tool, and `openAiChef`, which opens
+  the generator from the cookbook's Mehr sheet.
 
 ## Providers
 

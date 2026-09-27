@@ -22,8 +22,8 @@ settings.
 ## Public Edge
 
 - `presentation/pages/settings_page.dart` is the main settings page. It is a
-  pushed page with its own app bar, opened from the Home side menu at
-  `AppRoutes.homeSettings`.
+  pushed page with its own app bar, opened from the Mehr sheet of every home
+  tab at `AppRoutes.homeSettings`.
 - `presentation/pages/account_page.dart` is the account management page.
 - `presentation/profile_page.dart` is the profile page. It is a pushed page
   with its own app bar, opened from the Home side menu at

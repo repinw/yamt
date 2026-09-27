@@ -31,10 +31,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeProgress => 'Progress';
 
   @override
-  String get homeMenuTooltip => 'Menu';
+  String get homeMenuTool => 'Menu';
 
   @override
-  String get aiChefTooltip => 'Let the AI suggest a random recipe';
+  String get homeMoreTool => 'More';
+
+  @override
+  String get aiChefIdeaDescription => 'The AI suggests a random recipe';
+
+  @override
+  String get aiChefIdeaTitle => 'AI recipe idea';
+
+  @override
+  String get aiChefIdeaToolLabel => 'AI idea';
 
   @override
   String get aiChefSetupTitle => 'What should the AI cook?';
@@ -1300,6 +1309,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealTemplateAddRecipeAction => 'Add recipe template';
 
   @override
+  String get preparedMealTemplateRecipeToolLabel => 'Recipe';
+
+  @override
+  String get preparedMealTemplateAddRecipeDescription =>
+      'Import a recipe from a web page';
+
+  @override
   String get preparedMealTemplateCreateFromRecipeAction => 'Create from recipe';
 
   @override
@@ -1377,6 +1393,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get kitchenUtensilsOpenAction => 'Kitchen utensils';
+
+  @override
+  String get kitchenUtensilsToolLabel => 'Tools';
+
+  @override
+  String get kitchenUtensilsDescription => 'Manage your pots and containers';
 
   @override
   String get kitchenUtensilsEmptyState => 'No kitchen utensils saved yet.';
@@ -2451,6 +2473,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryDayTypePause => 'Pause day';
+
+  @override
+  String get diaryDayTypeTrainingShort => 'Training';
+
+  @override
+  String get diaryDayTypeRestShort => 'Rest';
+
+  @override
+  String get diaryDayTypePauseShort => 'Pause';
 
   @override
   String get diaryDayTypeSheetTitle => 'Choose day type';

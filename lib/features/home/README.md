@@ -16,6 +16,11 @@ Home owns the tab shell, tab navigation, and shell-level composition.
   the Diary top bar opens the menu, through `HomeShellMenuButton` from
   `core/widgets` on its left side. Actions that belong to one tab do not go
   into the menu.
+- The Mehr sheet for the actions of one tab: `HomePage` provides
+  `HomeShellMoreScope`, and a tab's `HomeMoreTool` (from `core/widgets`)
+  opens the sheet with that tab's entries, each with a one-line description.
+  Only a tab with more than two actions of its own gets one; today that is
+  the Cookbook. App-wide destinations stay in the side menu.
 
 ## Does Not Own
 

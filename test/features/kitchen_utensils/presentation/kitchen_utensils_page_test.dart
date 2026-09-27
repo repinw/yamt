@@ -334,7 +334,7 @@ void main() {
 
     expect(find.text('Templates'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Kitchen utensils'));
+    await tester.tap(find.text('TOOLS'));
     await tester.pumpAndSettle();
 
     expect(find.text('Kitchen utensils'), findsOneWidget);

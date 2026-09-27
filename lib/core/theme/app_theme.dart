@@ -119,10 +119,7 @@ ThemeData _theme(ColorScheme colorScheme, FoodLabelColors labelColors) {
     textTheme: _textWeights,
     scaffoldBackgroundColor: colorScheme.surface,
     dividerColor: colorScheme.outlineVariant,
-    extensions: [
-      labelColors,
-      MetricAccentColors.fromColorScheme(colorScheme),
-    ],
+    extensions: [labelColors, MetricAccentColors.fromColorScheme(colorScheme)],
   );
   final buttonLabel = base.textTheme.labelLarge;
 
@@ -168,9 +165,7 @@ ThemeData _theme(ColorScheme colorScheme, FoodLabelColors labelColors) {
         foregroundColor: colorScheme.onSurface,
         minimumSize: _controlMinimumSize,
         shape: _controlShape,
-        textStyle: buttonLabel?.copyWith(
-          decoration: TextDecoration.underline,
-        ),
+        textStyle: buttonLabel?.copyWith(decoration: TextDecoration.underline),
       ),
     ),
     iconButtonTheme: IconButtonThemeData(
@@ -215,9 +210,7 @@ ThemeData _theme(ColorScheme colorScheme, FoodLabelColors labelColors) {
     bottomSheetTheme: BottomSheetThemeData(
       backgroundColor: colorScheme.surfaceContainerLow,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppRadius.xl),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.xl)),
       ),
     ),
     dialogTheme: DialogThemeData(

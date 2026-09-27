@@ -140,17 +140,35 @@ abstract class AppLocalizations {
   /// **'Progress'**
   String get homeProgress;
 
-  /// No description provided for @homeMenuTooltip.
+  /// No description provided for @homeMenuTool.
   ///
   /// In en, this message translates to:
   /// **'Menu'**
-  String get homeMenuTooltip;
+  String get homeMenuTool;
 
-  /// No description provided for @aiChefTooltip.
+  /// No description provided for @homeMoreTool.
   ///
   /// In en, this message translates to:
-  /// **'Let the AI suggest a random recipe'**
-  String get aiChefTooltip;
+  /// **'More'**
+  String get homeMoreTool;
+
+  /// No description provided for @aiChefIdeaDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The AI suggests a random recipe'**
+  String get aiChefIdeaDescription;
+
+  /// No description provided for @aiChefIdeaTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'AI recipe idea'**
+  String get aiChefIdeaTitle;
+
+  /// No description provided for @aiChefIdeaToolLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'AI idea'**
+  String get aiChefIdeaToolLabel;
 
   /// No description provided for @aiChefSetupTitle.
   ///
@@ -2320,6 +2338,18 @@ abstract class AppLocalizations {
   /// **'Add recipe template'**
   String get preparedMealTemplateAddRecipeAction;
 
+  /// No description provided for @preparedMealTemplateRecipeToolLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipe'**
+  String get preparedMealTemplateRecipeToolLabel;
+
+  /// No description provided for @preparedMealTemplateAddRecipeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Import a recipe from a web page'**
+  String get preparedMealTemplateAddRecipeDescription;
+
   /// No description provided for @preparedMealTemplateCreateFromRecipeAction.
   ///
   /// In en, this message translates to:
@@ -2451,6 +2481,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Kitchen utensils'**
   String get kitchenUtensilsOpenAction;
+
+  /// No description provided for @kitchenUtensilsToolLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Tools'**
+  String get kitchenUtensilsToolLabel;
+
+  /// No description provided for @kitchenUtensilsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage your pots and containers'**
+  String get kitchenUtensilsDescription;
 
   /// No description provided for @kitchenUtensilsEmptyState.
   ///
@@ -4335,6 +4377,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Pause day'**
   String get diaryDayTypePause;
+
+  /// No description provided for @diaryDayTypeTrainingShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get diaryDayTypeTrainingShort;
+
+  /// No description provided for @diaryDayTypeRestShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest'**
+  String get diaryDayTypeRestShort;
+
+  /// No description provided for @diaryDayTypePauseShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get diaryDayTypePauseShort;
 
   /// No description provided for @diaryDayTypeSheetTitle.
   ///
