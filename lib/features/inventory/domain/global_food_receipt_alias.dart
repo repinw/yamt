@@ -22,6 +22,8 @@ class GlobalFoodReceiptAlias {
     required this.globalFoodItem,
     required this.createdAt,
     required this.updatedAt,
+    this.uniqueUserCount = 1,
+    this.isOwnChoice = false,
   });
 
   /// Creates a [GlobalFoodReceiptAlias] for from json.
@@ -71,6 +73,8 @@ class GlobalFoodReceiptAlias {
             normalizedReceiptName: normalizedReceiptName,
           ),
       selectionCount: _readSelectionCount(json['selection_count']),
+      // Older aliases have no user count; one user created them.
+      uniqueUserCount: _readSelectionCount(json['unique_user_count']),
       globalFoodItem: globalFoodItem,
       createdAt: _readDateTime(json['created_at']) ?? DateTime.now(),
       updatedAt:
@@ -167,8 +171,15 @@ class GlobalFoodReceiptAlias {
   /// The lookup key.
   final String lookupKey;
 
-  /// The selection count.
+  /// How often the alias was saved, by any user.
   final int selectionCount;
+
+  /// How many different users saved the alias (one vote per user).
+  final int uniqueUserCount;
+
+  /// Whether the current user saved this alias before. Set when reading,
+  /// never stored.
+  final bool isOwnChoice;
 
   /// The global food item.
   final GlobalFoodItem globalFoodItem;
@@ -192,6 +203,7 @@ class GlobalFoodReceiptAlias {
       'receipt_search_tokens': receiptSearchTokens,
       'lookup_key': lookupKey,
       'selection_count': selectionCount,
+      'unique_user_count': uniqueUserCount,
       'global_food_item': globalFoodItem.toJson(),
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
@@ -213,6 +225,8 @@ class GlobalFoodReceiptAlias {
     GlobalFoodItem? globalFoodItem,
     DateTime? createdAt,
     DateTime? updatedAt,
+    int? uniqueUserCount,
+    bool? isOwnChoice,
   }) {
     return GlobalFoodReceiptAlias(
       id: id ?? this.id,
@@ -229,6 +243,8 @@ class GlobalFoodReceiptAlias {
       globalFoodItem: globalFoodItem ?? this.globalFoodItem,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      uniqueUserCount: uniqueUserCount ?? this.uniqueUserCount,
+      isOwnChoice: isOwnChoice ?? this.isOwnChoice,
     );
   }
 
@@ -248,7 +264,9 @@ class GlobalFoodReceiptAlias {
             other.selectionCount == selectionCount &&
             other.globalFoodItem == globalFoodItem &&
             other.createdAt == createdAt &&
-            other.updatedAt == updatedAt;
+            other.updatedAt == updatedAt &&
+            other.uniqueUserCount == uniqueUserCount &&
+            other.isOwnChoice == isOwnChoice;
   }
 
   @override
@@ -267,6 +285,8 @@ class GlobalFoodReceiptAlias {
       globalFoodItem,
       createdAt,
       updatedAt,
+      uniqueUserCount,
+      isOwnChoice,
     );
   }
 }

@@ -6,9 +6,16 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 
 class _FakeGlobalFoodReceiptAliasStore implements GlobalFoodReceiptAliasStore {
-  new({this.documents = const <GlobalFoodReceiptAliasDocument>[]});
+  new({
+    this.documents = const <GlobalFoodReceiptAliasDocument>[],
+    this.ownAliasIds = const <String>{},
+    this.currentUserId,
+  });
 
   List<GlobalFoodReceiptAliasDocument> documents;
+  Set<String> ownAliasIds;
+  @override
+  String? currentUserId;
   String? lastLookupKey;
   String? lastNormalizedStoreName;
   String? lastCompactReceiptName;
@@ -39,6 +46,37 @@ class _FakeGlobalFoodReceiptAliasStore implements GlobalFoodReceiptAliasStore {
     lastDocumentsById = documentsById;
     return true;
   }
+
+  @override
+  Future<Set<String>> readOwnAliasIds({required String lookupKey}) async {
+    return ownAliasIds;
+  }
+}
+
+GlobalFoodReceiptAliasDocument _aliasDocument(
+  String id,
+  String itemId, {
+  int selectionCount = 1,
+  int uniqueUserCount = 1,
+  String? createdBy,
+}) {
+  return GlobalFoodReceiptAliasDocument(
+    id: id,
+    data: <String, dynamic>{
+      ...GlobalFoodReceiptAlias.tryCreate(
+            storeName: 'Aldi',
+            receiptName: 'MILCH 3,5%',
+            globalFoodItem: _item(itemId),
+            now: DateTime.parse('2026-03-01T10:00:00Z'),
+          )!
+          .copyWith(
+            selectionCount: selectionCount,
+            uniqueUserCount: uniqueUserCount,
+          )
+          .toJson(),
+      'created_by_uid': ?createdBy,
+    },
+  );
 }
 
 GlobalFoodItem _item(String id) {
@@ -98,6 +136,64 @@ void main() {
         'milk-old',
       ]);
       expect(aliases.map((alias) => alias.selectionCount), <int>[7, 2]);
+    },
+  );
+
+  test('searchCandidates ranks more users above more saves', () async {
+    final store = _FakeGlobalFoodReceiptAliasStore(
+      documents: <GlobalFoodReceiptAliasDocument>[
+        _aliasDocument('alias-busy', 'milk-busy', selectionCount: 9),
+        _aliasDocument(
+          'alias-shared',
+          'milk-shared',
+          selectionCount: 2,
+          uniqueUserCount: 2,
+        ),
+      ],
+    );
+    final repository = FirestoreGlobalFoodReceiptAliasRepository(store: store);
+
+    final aliases = await repository.searchCandidates(
+      normalizedStoreName: 'aldi',
+      normalizedReceiptName: 'milch 3 5',
+    );
+
+    expect(aliases.map((alias) => alias.globalFoodItem.id), <String>[
+      'milk-shared',
+      'milk-busy',
+    ]);
+    expect(aliases.first.uniqueUserCount, 2);
+  });
+
+  test(
+    'searchCandidates marks aliases the user voted for or created',
+    () async {
+      final store = _FakeGlobalFoodReceiptAliasStore(
+        currentUserId: 'user-1',
+        // Vote ids are alias document ids.
+        ownAliasIds: <String>{'alias-voted'},
+        documents: <GlobalFoodReceiptAliasDocument>[
+          _aliasDocument('alias-voted', 'milk-voted', createdBy: 'user-2'),
+          _aliasDocument('alias-created', 'milk-created', createdBy: 'user-1'),
+          _aliasDocument('alias-other', 'milk-other', createdBy: 'user-2'),
+        ],
+      );
+      final repository = FirestoreGlobalFoodReceiptAliasRepository(
+        store: store,
+      );
+      final aliases = await repository.searchCandidates(
+        normalizedStoreName: 'aldi',
+        normalizedReceiptName: 'milch 3 5',
+      );
+
+      final ownById = <String, bool>{
+        for (final alias in aliases) alias.globalFoodItemId: alias.isOwnChoice,
+      };
+      expect(ownById, <String, bool>{
+        'milk-voted': true,
+        'milk-created': true,
+        'milk-other': false,
+      });
     },
   );
 

@@ -8,6 +8,10 @@ import 'package:yamt/features/inventory/domain/global_food_match_candidate.dart'
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+/// Users who must have saved the same receipt text with the same product
+/// before it is confirmed for others without review.
+const int minUsersForTrustedReceiptAlias = 2;
+
 /// Matches learned receipt aliases against an inventory item.
 class GlobalFoodReceiptAliasMatcher {
   /// Creates a receipt alias matcher.
@@ -90,18 +94,29 @@ class GlobalFoodReceiptAliasMatcher {
           if (aliasNameScore < 12) {
             return null;
           }
+          final isSameText =
+              alias.normalizedReceiptName == normalizedReceiptName ||
+              (compactReceiptName.isNotEmpty &&
+                  alias.compactReceiptName == compactReceiptName);
+          final isTrusted =
+              alias.isOwnChoice ||
+              alias.uniqueUserCount >= minUsersForTrustedReceiptAlias;
           return GlobalFoodMatchCandidate(
             item: product,
-            score:
-                120 +
-                genericScore +
-                alias.selectionCount.toDouble() +
-                aliasNameScore,
-            reason: GlobalFoodMatchReason.receiptAliasExact,
+            score: 120 + genericScore + _usageScore(alias) + aliasNameScore,
+            reason: isSameText && isTrusted
+                ? GlobalFoodMatchReason.receiptAliasExact
+                : GlobalFoodMatchReason.receiptAliasSuggestion,
           );
         })
         .whereType<GlobalFoodMatchCandidate>()
         .toList(growable: false);
+  }
+
+  /// Different users count much more than repeated saves by one user.
+  double _usageScore(GlobalFoodReceiptAlias alias) {
+    final saves = alias.selectionCount > 5 ? 5 : alias.selectionCount;
+    return alias.uniqueUserCount * 5.0 + saves;
   }
 
   double _scoreAliasReceiptName({

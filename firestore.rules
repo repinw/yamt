@@ -533,6 +533,7 @@ service cloud.firestore {
           'receipt_search_tokens',
           'lookup_key',
           'selection_count',
+          'unique_user_count',
           'global_food_item',
           'created_by_uid',
           'created_at',
@@ -567,11 +568,64 @@ service cloud.firestore {
         && isOptionalString(data, 'created_by_uid')
         && data.selection_count is int
         && data.selection_count > 0
+        && (!('unique_user_count' in data)
+          || (data.unique_user_count is int && data.unique_user_count > 0))
         && data.global_food_item is map
         && isValidGlobalFoodItem(
           data.global_food_item,
           data.global_food_item_id
         )
+        && data.created_at is string
+        && data.updated_at is string;
+    }
+
+    // Saving an alias again adds one save, and one user only when that
+    // user's first vote is written in the same batch. The author of an
+    // alias from before the votes already counts as its one user. Only the
+    // counters and the time change, so the rule stays cheap.
+    function isReceiptAliasSaveUpdate(aliasId, next, current) {
+      let votePath = /databases/$(database)/documents/users/$(request.auth.uid)/global_food_item_receipt_alias_votes/$(aliasId);
+      let currentUsers = current.get('unique_user_count', 1);
+      return next.diff(current).affectedKeys().hasOnly([
+          'selection_count',
+          'unique_user_count',
+          'updated_at',
+        ])
+        && next.selection_count == current.selection_count + 1
+        && next.updated_at is string
+        && next.unique_user_count is int
+        && (
+          next.unique_user_count == currentUsers
+          || (next.unique_user_count == currentUsers + 1
+            && !exists(votePath)
+            && existsAfter(votePath)
+            && current.get('created_by_uid', null) != request.auth.uid)
+        );
+    }
+
+    // [Legacy] App versions before the votes rewrite the whole alias. Allowed
+    // only on aliases that have no user count yet; remove once no supported
+    // app version writes aliases this way.
+    function isLegacyReceiptAliasSave(aliasId, next, current) {
+      return !('unique_user_count' in current)
+        && isValidGlobalFoodReceiptAlias(next, aliasId)
+        && next.id == current.id
+        && next.global_food_item_id == current.global_food_item_id
+        && next.lookup_key == current.lookup_key
+        && next.selection_count == current.selection_count + 1;
+    }
+
+    function isValidUserReceiptAliasVote(data, aliasId) {
+      return data.keys().hasOnly([
+          'alias_id',
+          'lookup_key',
+          'global_food_item_id',
+          'created_at',
+          'updated_at',
+        ])
+        && data.alias_id == aliasId
+        && data.lookup_key is string
+        && data.global_food_item_id is string
         && data.created_at is string
         && data.updated_at is string;
     }
@@ -772,10 +826,27 @@ service cloud.firestore {
       allow read: if isSignedIn();
       allow create: if isSignedIn()
         && isValidGlobalFoodReceiptAlias(request.resource.data, aliasId)
-        && isCreatedByCurrentUser(request.resource.data);
+        && isCreatedByCurrentUser(request.resource.data)
+        && request.resource.data.selection_count == 1
+        && request.resource.data.get('unique_user_count', 1) == 1;
       allow update: if isSignedIn()
-        && isValidGlobalFoodReceiptAlias(request.resource.data, aliasId)
-        && keepsAuthor(request.resource.data, resource.data);
+        && keepsAuthor(request.resource.data, resource.data)
+        // Pick the path first: evaluating both on a full product document
+        // exceeds the limit of 1000 expressions per request.
+        && (
+          ('unique_user_count' in request.resource.data
+            && isReceiptAliasSaveUpdate(
+              aliasId,
+              request.resource.data,
+              resource.data
+            ))
+          || (!('unique_user_count' in request.resource.data)
+            && isLegacyReceiptAliasSave(
+              aliasId,
+              request.resource.data,
+              resource.data
+            ))
+        );
       allow delete: if false;
     }
 
@@ -985,6 +1056,21 @@ service cloud.firestore {
         && request.resource.data.candidate_id == resource.data.candidate_id
         && request.resource.data.created_at == resource.data.created_at;
       allow delete: if isOwner(uid);
+    }
+
+    // One vote per user and alias. No delete: a deleted vote could be
+    // written again and count the same user twice.
+    match /users/{uid}/global_food_item_receipt_alias_votes/{aliasId} {
+      allow read: if isOwner(uid);
+      allow create: if isOwner(uid)
+        && isValidUserReceiptAliasVote(request.resource.data, aliasId);
+      allow update: if isOwner(uid)
+        && isValidUserReceiptAliasVote(request.resource.data, aliasId)
+        && request.resource.data.lookup_key == resource.data.lookup_key
+        && request.resource.data.global_food_item_id
+          == resource.data.global_food_item_id
+        && request.resource.data.created_at == resource.data.created_at;
+      allow delete: if false;
     }
 
     // TODO: Replace this generic owner-based rule once all collection

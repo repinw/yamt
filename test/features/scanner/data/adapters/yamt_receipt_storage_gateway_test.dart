@@ -215,6 +215,35 @@ void main() {
       expect(alias.globalFoodItemId, 'g_milch_1');
     });
 
+    test(
+      'saveReceipt learns no alias from a trusted alias it applied',
+      () async {
+        final receipt = ScannedReceipt(
+          id: 'rec_101',
+          storeName: 'REWE',
+          dateTime: DateTime(2026, 9, 13, 14, 30),
+        );
+
+        await gateway.saveReceipt(
+          receipt: receipt,
+          items: [
+            ReceiptLineItem(
+              id: 'line_1',
+              rawName: 'JA! VOLLM. 1L',
+              totalPrice: 1.19,
+              status: ReceiptItemStatus.confirmed,
+              matchedProduct: testMilchCandidate.copyWith(
+                source: CandidateSource.aliasExact,
+              ),
+            ),
+          ],
+        );
+
+        expect(invRepo.appendedItems, hasLength(1));
+        expect(aliasRepo.appendedAliases, isEmpty);
+      },
+    );
+
     test('saveReceipt keeps full nutrition and quality status on inventory '
         'and global item', () async {
       const receipt = ScannedReceipt(

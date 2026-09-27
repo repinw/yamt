@@ -89,13 +89,42 @@ GlobalFoodReceiptAlias _receiptAlias({
   required String receiptName,
   required GlobalFoodItem item,
   required int selectionCount,
+  int uniqueUserCount = 1,
+  bool isOwnChoice = false,
 }) {
   return GlobalFoodReceiptAlias.tryCreate(
     storeName: item.storeName ?? 'Aldi',
     receiptName: receiptName,
     globalFoodItem: item,
     now: DateTime.parse('2026-03-01T11:00:00Z'),
-  )!.copyWith(id: id, selectionCount: selectionCount);
+  )!.copyWith(
+    id: id,
+    selectionCount: selectionCount,
+    uniqueUserCount: uniqueUserCount,
+    isOwnChoice: isOwnChoice,
+  );
+}
+
+Future<List<GlobalFoodMatchCandidate>> _matchAliasFor({
+  required String receiptLine,
+  required GlobalFoodReceiptAlias alias,
+}) {
+  final item = _inventoryItem(
+    id: 'item-1',
+    name: receiptLine,
+    ocrName: receiptLine,
+    storeName: 'Aldi',
+  );
+  return GlobalFoodReceiptAliasMatcher(
+    repository: _FakeGlobalFoodReceiptAliasRepository(
+      fallbackResults: <GlobalFoodReceiptAlias>[alias],
+    ),
+  ).findMatches(
+    item: item,
+    localInput: const GlobalFoodLocalCandidateMatcher().buildLocalMatchInput(
+      item,
+    ),
+  );
 }
 
 void main() {
@@ -145,6 +174,7 @@ void main() {
             receiptName: 'MLK 3.5%',
             item: milkProduct,
             selectionCount: 4,
+            uniqueUserCount: 2,
           ),
         ],
       );
@@ -172,4 +202,63 @@ void main() {
       expect(matches.single.reason, GlobalFoodMatchReason.receiptAliasExact);
     },
   );
+
+  group('confirmation trust', () {
+    final oatDrink = _globalItem(
+      id: 'oat-choc',
+      name: 'Bio Hafer Drink Schoko',
+      storeName: 'Aldi',
+    );
+
+    test('one other user only suggests the product', () async {
+      final matches = await _matchAliasFor(
+        receiptLine: 'Bio Hafer Drink Schoko',
+        alias: _receiptAlias(
+          id: 'alias-1',
+          receiptName: 'Bio Hafer Drink Schoko',
+          item: oatDrink,
+          selectionCount: 9,
+        ),
+      );
+
+      expect(
+        matches.single.reason,
+        GlobalFoodMatchReason.receiptAliasSuggestion,
+      );
+    });
+
+    test("the user's own earlier choice is confirmed", () async {
+      final matches = await _matchAliasFor(
+        receiptLine: 'Bio Hafer Drink Schoko',
+        alias: _receiptAlias(
+          id: 'alias-1',
+          receiptName: 'Bio Hafer Drink Schoko',
+          item: oatDrink,
+          selectionCount: 1,
+          isOwnChoice: true,
+        ),
+      );
+
+      expect(matches.single.reason, GlobalFoodMatchReason.receiptAliasExact);
+    });
+
+    test('a similar receipt text is never confirmed', () async {
+      final matches = await _matchAliasFor(
+        receiptLine: 'Bio Hafer Drink Vanille',
+        alias: _receiptAlias(
+          id: 'alias-1',
+          receiptName: 'Bio Hafer Drink Schoko',
+          item: oatDrink,
+          selectionCount: 12,
+          uniqueUserCount: 6,
+          isOwnChoice: true,
+        ),
+      );
+
+      expect(
+        matches.single.reason,
+        GlobalFoodMatchReason.receiptAliasSuggestion,
+      );
+    });
+  });
 }

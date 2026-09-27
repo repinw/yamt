@@ -60,4 +60,12 @@ class _UnavailableGlobalFoodReceiptAliasStore
   }) async {
     return false;
   }
+
+  @override
+  Future<Set<String>> readOwnAliasIds({required String lookupKey}) async {
+    return const <String>{};
+  }
+
+  @override
+  String? get currentUserId => null;
 }

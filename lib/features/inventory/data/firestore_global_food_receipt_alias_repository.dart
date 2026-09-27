@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:yamt/core/utils/store_name_normalizer.dart';
+import 'package:yamt/features/inventory/data/global_catalog_created_by_field.dart';
 import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
 import 'package:yamt/features/inventory/data/global_food_receipt_alias_store.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
@@ -31,19 +32,21 @@ class FirestoreGlobalFoodReceiptAliasRepository
       final receiptSearchTokens = buildGlobalFoodReceiptAliasSearchTokens(
         normalizedReceiptName,
       );
-      final documents = await _store.searchCandidates(
+      final lookupKey = buildGlobalFoodReceiptAliasLookupKey(
         normalizedStoreName: normalizedStoreName,
-        lookupKey: buildGlobalFoodReceiptAliasLookupKey(
-          normalizedStoreName: normalizedStoreName,
-          normalizedReceiptName: normalizedReceiptName,
-        ),
+        normalizedReceiptName: normalizedReceiptName,
+      );
+      final documentsFuture = _store.searchCandidates(
+        normalizedStoreName: normalizedStoreName,
+        lookupKey: lookupKey,
         compactReceiptName: compactGlobalFoodReceiptAliasText(
           normalizedReceiptName,
         ),
         receiptSearchTokens: receiptSearchTokens,
         limit: limit,
       );
-      return _decodeDocuments(documents);
+      final ownAliasIds = await _store.readOwnAliasIds(lookupKey: lookupKey);
+      return _decodeDocuments(await documentsFuture, ownAliasIds);
     } on Object catch (error, stackTrace) {
       log(
         'Failed to search global food receipt aliases.',
@@ -71,15 +74,25 @@ class FirestoreGlobalFoodReceiptAliasRepository
 
   List<GlobalFoodReceiptAlias> _decodeDocuments(
     List<GlobalFoodReceiptAliasDocument> documents,
+    Set<String> ownAliasIds,
   ) {
+    final currentUserId = _store.currentUserId;
     final aliases = <GlobalFoodReceiptAlias>[];
     for (var index = 0; index < documents.length; index++) {
       final json = Map<String, dynamic>.from(documents[index].data);
       if ((json['id'] as String?)?.trim().isEmpty ?? true) {
         json['id'] = documents[index].id;
       }
+      // Aliases from before the votes know their author only.
+      final isOwnChoice =
+          ownAliasIds.contains(documents[index].id) ||
+          (currentUserId != null &&
+              json[globalCatalogCreatedByField] == currentUserId);
       try {
-        aliases.add(_normalizeAlias(GlobalFoodReceiptAlias.fromJson(json)));
+        aliases.add(
+          _normalizeAlias(GlobalFoodReceiptAlias.fromJson(json))
+              .copyWith(isOwnChoice: isOwnChoice),
+        );
       } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted global food receipt alias at index $index.',
@@ -91,6 +104,10 @@ class FirestoreGlobalFoodReceiptAliasRepository
     }
 
     aliases.sort((left, right) {
+      final byUsers = right.uniqueUserCount.compareTo(left.uniqueUserCount);
+      if (byUsers != 0) {
+        return byUsers;
+      }
       final byCount = right.selectionCount.compareTo(left.selectionCount);
       if (byCount != 0) {
         return byCount;

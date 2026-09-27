@@ -174,6 +174,7 @@ class YamtReceiptProductResolver implements ReceiptProductResolver {
     return switch (reason) {
       GlobalFoodMatchReason.receiptAliasExact => CandidateSource.aliasExact,
       GlobalFoodMatchReason.externalSearch => CandidateSource.catalogFuzzy,
+      GlobalFoodMatchReason.receiptAliasSuggestion ||
       GlobalFoodMatchReason.fingerprintExact ||
       GlobalFoodMatchReason.nameExact ||
       GlobalFoodMatchReason.nameBrandStrong ||

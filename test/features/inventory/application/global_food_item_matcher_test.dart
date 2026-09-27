@@ -240,6 +240,7 @@ GlobalFoodReceiptAlias _receiptAlias({
   required String receiptName,
   required GlobalFoodItem item,
   required int selectionCount,
+  int uniqueUserCount = 1,
 }) {
   return GlobalFoodReceiptAlias.tryCreate(
     storeName: item.storeName ?? 'Aldi',
@@ -249,6 +250,7 @@ GlobalFoodReceiptAlias _receiptAlias({
   )!.copyWith(
     id: id,
     selectionCount: selectionCount,
+    uniqueUserCount: uniqueUserCount,
     updatedAt: DateTime.parse('2026-03-01T11:00:00Z'),
   );
 }
@@ -448,6 +450,7 @@ void main() {
             receiptName: 'MLK 3.5%',
             item: aliasMilk,
             selectionCount: 5,
+            uniqueUserCount: 2,
           ),
         ],
       );
@@ -538,42 +541,49 @@ void main() {
     ]);
   });
 
-  test('findCandidates allows similar OCR names for learned aliases', () async {
-    final learnedItem = _globalItem(
-      id: 'cheese',
-      name: 'Gouda Scheiben',
-      storeName: 'Aldi',
-      brand: 'Milsani',
-    );
-    final aliasRepository = _FakeGlobalFoodReceiptAliasRepository(
-      fallbackResults: <GlobalFoodReceiptAlias>[
-        _receiptAlias(
-          id: 'alias-cheese',
-          receiptName: 'KAESE SCHEIBEN 150G',
-          item: learnedItem,
-          selectionCount: 4,
-        ),
-      ],
-    );
-    final matcher = GlobalFoodItemMatcher(
-      globalFoodReceiptAliasRepository: aliasRepository,
-      offProductSearchRepository: _FakeOffProductSearchRepository(),
-    );
-
-    final candidates = await matcher.findCandidates(
-      _inventoryItem(
-        id: 'item-1',
-        name: 'Kaese Scheiben',
-        ocrName: 'KAESE SCHEIBEN',
-        brand: 'Milsani',
+  test(
+    'findCandidates suggests learned aliases for similar OCR names',
+    () async {
+      final learnedItem = _globalItem(
+        id: 'cheese',
+        name: 'Gouda Scheiben',
         storeName: 'Aldi',
-      ),
-    );
+        brand: 'Milsani',
+      );
+      final aliasRepository = _FakeGlobalFoodReceiptAliasRepository(
+        fallbackResults: <GlobalFoodReceiptAlias>[
+          _receiptAlias(
+            id: 'alias-cheese',
+            receiptName: 'KAESE SCHEIBEN 150G',
+            item: learnedItem,
+            selectionCount: 4,
+          ),
+        ],
+      );
+      final matcher = GlobalFoodItemMatcher(
+        globalFoodReceiptAliasRepository: aliasRepository,
+        offProductSearchRepository: _FakeOffProductSearchRepository(),
+      );
 
-    expect(candidates, isNotEmpty);
-    expect(candidates.first.item.id, 'cheese');
-    expect(candidates.first.reason, GlobalFoodMatchReason.receiptAliasExact);
-  });
+      final candidates = await matcher.findCandidates(
+        _inventoryItem(
+          id: 'item-1',
+          name: 'Kaese Scheiben',
+          ocrName: 'KAESE SCHEIBEN',
+          brand: 'Milsani',
+          storeName: 'Aldi',
+        ),
+      );
+
+      expect(candidates, isNotEmpty);
+      expect(candidates.first.item.id, 'cheese');
+      // Similar, not the same text: suggested first, but not confirmed.
+      expect(
+        candidates.first.reason,
+        GlobalFoodMatchReason.receiptAliasSuggestion,
+      );
+    },
+  );
 
   test(
     'findCandidates does not match unrelated items sharing only tax code B',

@@ -121,6 +121,9 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
     for (final item in items) {
       final product = item.matchedProduct;
       if (product == null) continue;
+      // Confirmed by a trusted alias without review: saving it again is no
+      // new evidence, and counting it would let one choice reinforce itself.
+      if (product.source == CandidateSource.aliasExact) continue;
 
       final globalItem = _buildGlobalItem(product, storeName, item, now);
       final alias = GlobalFoodReceiptAlias.tryCreate(

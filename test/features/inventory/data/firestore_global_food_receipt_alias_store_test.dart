@@ -123,51 +123,50 @@ void main() {
     },
   );
 
-  test(
-    'upsertAll increments the selection counter for a duplicate id',
-    () async {
-      final firestore = FakeFirebaseFirestore();
-      final store = FirestoreGlobalFoodReceiptAliasStore(
-        firestore: firestore,
-        currentUserId: 'user-1',
-      );
+  test('upsertAll adds one save per call and keeps the alias text', () async {
+    final firestore = FakeFirebaseFirestore();
+    final store = FirestoreGlobalFoodReceiptAliasStore(
+      firestore: firestore,
+      currentUserId: 'user-1',
+    );
 
-      final firstData = _aliasData(
-        id: 'alias-1',
-        storeName: 'Aldi',
-        normalizedStoreName: 'aldi',
-        receiptName: 'MILCH 3,5%',
-        normalizedReceiptName: 'milch 3 5',
-        globalFoodItemId: 'milk',
-      );
-      final secondData = _aliasData(
-        id: 'alias-1',
-        storeName: 'Aldi',
-        normalizedStoreName: 'aldi',
-        receiptName: 'OVERRIDDEN',
-        normalizedReceiptName: 'overridden',
-        globalFoodItemId: 'milk',
-        selectionCount: 2,
-        updatedAt: '2026-03-01T11:00:00.000Z',
-      );
+    final firstData = _aliasData(
+      id: 'alias-1',
+      storeName: 'Aldi',
+      normalizedStoreName: 'aldi',
+      receiptName: 'MILCH 3,5%',
+      normalizedReceiptName: 'milch 3 5',
+      globalFoodItemId: 'milk',
+    );
+    final secondData = _aliasData(
+      id: 'alias-1',
+      storeName: 'Aldi',
+      normalizedStoreName: 'aldi',
+      receiptName: 'OVERRIDDEN',
+      normalizedReceiptName: 'overridden',
+      globalFoodItemId: 'milk',
+      selectionCount: 2,
+      updatedAt: '2026-03-01T11:00:00.000Z',
+    );
 
-      await store.upsertAll(
-        documentsById: <String, Map<String, dynamic>>{'alias-1': firstData},
-      );
-      await store.upsertAll(
-        documentsById: <String, Map<String, dynamic>>{'alias-1': secondData},
-      );
+    await store.upsertAll(
+      documentsById: <String, Map<String, dynamic>>{'alias-1': firstData},
+    );
+    await store.upsertAll(
+      documentsById: <String, Map<String, dynamic>>{'alias-1': secondData},
+    );
 
-      final snapshot = await _aliasCollection(firestore: firestore)
-          .doc('alias-1')
-          .get();
+    final snapshot = await _aliasCollection(firestore: firestore)
+        .doc('alias-1')
+        .get();
 
-      expect(snapshot.data()!['receipt_name'], 'OVERRIDDEN');
-      expect(snapshot.data()!['selection_count'], 3);
-      expect(snapshot.data()!['created_at'], '2026-03-01T10:00:00.000Z');
-      expect(snapshot.data()!['updated_at'], '2026-03-01T11:00:00.000Z');
-    },
-  );
+    // Only counters, the product and the time change on a later save.
+    expect(snapshot.data()!['receipt_name'], 'MILCH 3,5%');
+    expect(snapshot.data()!['selection_count'], 2);
+    expect(snapshot.data()!['unique_user_count'], 1);
+    expect(snapshot.data()!['created_at'], '2026-03-01T10:00:00.000Z');
+    expect(snapshot.data()!['updated_at'], '2026-03-01T11:00:00.000Z');
+  });
 
   test('upsertAll records the creator and keeps it on updates', () async {
     final firestore = FakeFirebaseFirestore();
@@ -194,5 +193,112 @@ void main() {
         .get();
     expect(snapshot.data()!['created_by_uid'], 'creator');
     expect(snapshot.data()!['selection_count'], 2);
+  });
+
+  group('user votes', () {
+    Map<String, dynamic> milkAlias() => _aliasData(
+      id: 'alias-1',
+      storeName: 'Aldi',
+      normalizedStoreName: 'aldi',
+      receiptName: 'MILCH 3,5%',
+      normalizedReceiptName: 'milch 3 5',
+      globalFoodItemId: 'milk',
+    );
+
+    Future<void> saveAs(FakeFirebaseFirestore firestore, String userId) {
+      return FirestoreGlobalFoodReceiptAliasStore(
+        firestore: firestore,
+        currentUserId: userId,
+      ).upsertAll(
+        documentsById: <String, Map<String, dynamic>>{'alias-1': milkAlias()},
+      );
+    }
+
+    Future<Map<String, dynamic>> aliasData(
+      FakeFirebaseFirestore firestore,
+    ) async {
+      final snapshot = await _aliasCollection(firestore: firestore)
+          .doc('alias-1')
+          .get();
+      return snapshot.data()!;
+    }
+
+    test('count each user once', () async {
+      final firestore = FakeFirebaseFirestore();
+
+      await saveAs(firestore, 'user-1');
+      await saveAs(firestore, 'user-1');
+      expect((await aliasData(firestore))['unique_user_count'], 1);
+
+      await saveAs(firestore, 'user-2');
+      final data = await aliasData(firestore);
+      expect(data['unique_user_count'], 2);
+      expect(data['selection_count'], 3);
+
+      final vote = await firestore
+          .collection('users')
+          .doc('user-2')
+          .collection('global_food_item_receipt_alias_votes')
+          .doc('alias-1')
+          .get();
+      expect(vote.data(), <String, dynamic>{
+        'alias_id': 'alias-1',
+        'lookup_key': 'aldi|milch 3 5',
+        'global_food_item_id': 'milk',
+        'created_at': '2026-03-01T10:00:00.000Z',
+        'updated_at': '2026-03-01T10:00:00.000Z',
+      });
+    });
+
+    test('an older alias counts its author as its one user', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _aliasCollection(firestore: firestore)
+          .doc('alias-1')
+          .set(<String, dynamic>{
+            ...milkAlias(),
+            'selection_count': 5,
+            'created_by_uid': 'author',
+          });
+
+      await saveAs(firestore, 'author');
+      expect((await aliasData(firestore))['unique_user_count'], 1);
+
+      await saveAs(firestore, 'user-2');
+      final data = await aliasData(firestore);
+      expect(data['unique_user_count'], 2);
+      expect(data['selection_count'], 7);
+    });
+
+    test('readOwnAliasIds returns the aliases the user voted for', () async {
+      final firestore = FakeFirebaseFirestore();
+      await saveAs(firestore, 'user-1');
+
+      final ownIds = await FirestoreGlobalFoodReceiptAliasStore(
+        firestore: firestore,
+        currentUserId: 'user-1',
+      ).readOwnAliasIds(lookupKey: 'aldi|milch 3 5');
+      final otherIds = await FirestoreGlobalFoodReceiptAliasStore(
+        firestore: firestore,
+        currentUserId: 'user-2',
+      ).readOwnAliasIds(lookupKey: 'aldi|milch 3 5');
+
+      expect(ownIds, <String>{'alias-1'});
+      expect(otherIds, isEmpty);
+    });
+
+    test('upsertAll fails without a signed-in user', () async {
+      final firestore = FakeFirebaseFirestore();
+      final saved =
+          await FirestoreGlobalFoodReceiptAliasStore(
+            firestore: firestore,
+            currentUserId: null,
+          ).upsertAll(
+            documentsById: <String, Map<String, dynamic>>{
+              'alias-1': milkAlias(),
+            },
+          );
+
+      expect(saved, isFalse);
+    });
   });
 }

@@ -83,6 +83,7 @@ class GlobalFoodLocalCandidateMatcher {
         _hasConfidentLead(candidates) ? best.item.id : null,
       GlobalFoodMatchReason.nameExact =>
         candidates.length == 1 ? best.item.id : null,
+      GlobalFoodMatchReason.receiptAliasSuggestion ||
       GlobalFoodMatchReason.nameTokenMatch ||
       GlobalFoodMatchReason.externalSearch => null,
     };

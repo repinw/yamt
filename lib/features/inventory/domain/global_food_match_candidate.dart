@@ -3,8 +3,13 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 
 /// Defines global food match reason.
 enum GlobalFoodMatchReason {
-  /// Documented member.
+  /// The same receipt text was saved with this product by at least two
+  /// users, or by the current user before. Safe to confirm without review.
   receiptAliasExact,
+
+  /// A saved receipt text points to this product, but the text is only
+  /// similar or only one other user chose it. Suggest, do not confirm.
+  receiptAliasSuggestion,
 
   /// Documented member.
   fingerprintExact,

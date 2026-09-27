@@ -2,12 +2,13 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/features/inventory/data/global_catalog_created_by_field.dart';
-import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
+import 'package:yamt/features/inventory/data/global_food_receipt_alias_store_values.dart';
 
 const String _storeLogName = 'FirestoreGlobalFoodReceiptAliasStore';
 const String _globalFoodReceiptAliasesCollection =
     'global_food_item_receipt_aliases';
-const int _maxAliasDocumentsPerTransaction = 200;
+const String _usersCollection = 'users';
+const String _aliasVotesCollection = 'global_food_item_receipt_alias_votes';
 
 /// Defines global food receipt alias document.
 class GlobalFoodReceiptAliasDocument {
@@ -32,10 +33,17 @@ abstract interface class GlobalFoodReceiptAliasStore {
     int limit = 5,
   });
 
-  /// Upsert all.
+  /// Records that the current user saved each alias: creates missing
+  /// aliases and adds the user's vote (one per user and alias).
   Future<bool> upsertAll({
     required Map<String, Map<String, dynamic>> documentsById,
   });
+
+  /// Ids of the aliases with [lookupKey] that the current user saved before.
+  Future<Set<String>> readOwnAliasIds({required String lookupKey});
+
+  /// The signed-in user, if any.
+  String? get currentUserId;
 }
 
 /// Defines firestore global food receipt alias store.
@@ -50,6 +58,32 @@ class FirestoreGlobalFoodReceiptAliasStore
   final String? _currentUserId;
 
   @override
+  String? get currentUserId => _currentUserId;
+
+  @override
+  Future<Set<String>> readOwnAliasIds({required String lookupKey}) async {
+    final userId = _currentUserId?.trim();
+    final safeLookupKey = lookupKey.trim();
+    if (userId == null || userId.isEmpty || safeLookupKey.isEmpty) {
+      return const <String>{};
+    }
+    try {
+      final snapshot = await _voteCollection(userId)
+          .where('lookup_key', isEqualTo: safeLookupKey)
+          .get();
+      return snapshot.docs.map((document) => document.id).toSet();
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to read own receipt alias votes.',
+        name: _storeLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return const <String>{};
+    }
+  }
+
+  @override
   Future<List<GlobalFoodReceiptAliasDocument>> searchCandidates({
     required String normalizedStoreName,
     required String lookupKey,
@@ -60,7 +94,9 @@ class FirestoreGlobalFoodReceiptAliasStore
     final safeStoreName = normalizedStoreName.trim();
     final safeLookupKey = lookupKey.trim();
     final safeCompactReceiptName = compactReceiptName.trim();
-    final safeReceiptSearchTokens = _normalizeSearchTokens(receiptSearchTokens);
+    final safeReceiptSearchTokens = normalizeReceiptAliasQueryTokens(
+      receiptSearchTokens,
+    );
     if (safeStoreName.isEmpty ||
         (safeLookupKey.isEmpty &&
             safeCompactReceiptName.isEmpty &&
@@ -132,64 +168,83 @@ class FirestoreGlobalFoodReceiptAliasStore
     return _firestore.collection(_globalFoodReceiptAliasesCollection);
   }
 
+  CollectionReference<Map<String, dynamic>> _voteCollection(String userId) {
+    return _firestore
+        .collection(_usersCollection)
+        .doc(userId)
+        .collection(_aliasVotesCollection);
+  }
+
   Future<void> _createMissingDocuments(
     Map<String, Map<String, dynamic>> documentsById,
   ) async {
+    final userId = _currentUserId?.trim();
+    if (userId == null || userId.isEmpty) {
+      throw StateError('Saving receipt aliases needs a signed-in user.');
+    }
     final entries = documentsById.entries.toList(growable: false);
-    for (final chunk in _chunkEntries(entries)) {
+    for (final chunk in chunkReceiptAliasEntries(entries)) {
       await _firestore.runTransaction((transaction) async {
-        final snapshotsById =
+        final aliasSnapshots =
             <String, DocumentSnapshot<Map<String, dynamic>>>{};
-
+        final voteSnapshots =
+            <String, DocumentSnapshot<Map<String, dynamic>>>{};
         for (final entry in chunk) {
-          final reference = _collection().doc(entry.key);
-          snapshotsById[entry.key] = await transaction.get(reference);
+          aliasSnapshots[entry.key] = await transaction.get(
+            _collection().doc(entry.key),
+          );
+          voteSnapshots[entry.key] = await transaction.get(
+            _voteCollection(userId).doc(entry.key),
+          );
         }
 
         for (final entry in chunk) {
-          final reference = _collection().doc(entry.key);
-          final snapshot = snapshotsById[entry.key]!;
-          if (!snapshot.exists) {
-            transaction.set(reference, <String, dynamic>{
+          final aliasRef = _collection().doc(entry.key);
+          final aliasSnapshot = aliasSnapshots[entry.key]!;
+          final voteSnapshot = voteSnapshots[entry.key]!;
+          final updatedAt = entry.value['updated_at'];
+          if (!aliasSnapshot.exists) {
+            transaction.set(aliasRef, <String, dynamic>{
               ...entry.value,
-              ...globalCatalogCreatedBy(_currentUserId),
+              'selection_count': 1,
+              'unique_user_count': 1,
+              ...globalCatalogCreatedBy(userId),
             });
-            continue;
-          }
-
-          final currentData = snapshot.data() ?? const <String, dynamic>{};
-          final currentCount = _readSelectionCount(
-            currentData['selection_count'],
-          );
-          final nextCount = _readSelectionCount(entry.value['selection_count']);
-          final merged = Map<String, dynamic>.from(entry.value)
-            ..['created_at'] =
-                currentData['created_at'] ?? entry.value['created_at']
-            ..['selection_count'] = currentCount + nextCount
-            ..addAll(
-              globalCatalogCreatedBy(currentData[globalCatalogCreatedByField]),
+          } else {
+            final currentData =
+                aliasSnapshot.data() ?? const <String, dynamic>{};
+            // Older aliases have no user count and no votes; their author
+            // counts as their one user.
+            final currentUserCount = readReceiptAliasCount(
+              currentData['unique_user_count'],
             );
-          transaction.set(reference, merged);
+            final alreadyCounted =
+                voteSnapshot.exists ||
+                currentData[globalCatalogCreatedByField] == userId;
+            // Only the counters and the time: the rules keep a saved
+            // alias's product and text fixed.
+            transaction.update(aliasRef, <String, dynamic>{
+              'selection_count':
+                  readReceiptAliasCount(currentData['selection_count']) + 1,
+              'unique_user_count': currentUserCount + (alreadyCounted ? 0 : 1),
+              'updated_at': updatedAt,
+            });
+          }
+          transaction.set(
+            _voteCollection(userId).doc(entry.key),
+            <String, dynamic>{
+              'alias_id': entry.key,
+              'lookup_key': entry.value['lookup_key'],
+              'global_food_item_id': entry.value['global_food_item_id'],
+              'created_at':
+                  voteSnapshot.data()?['created_at'] ??
+                  entry.value['created_at'],
+              'updated_at': updatedAt,
+            },
+          );
         }
       });
     }
-  }
-
-  List<List<MapEntry<String, Map<String, dynamic>>>> _chunkEntries(
-    List<MapEntry<String, Map<String, dynamic>>> entries,
-  ) {
-    final chunks = <List<MapEntry<String, Map<String, dynamic>>>>[];
-    for (
-      var start = 0;
-      start < entries.length;
-      start += _maxAliasDocumentsPerTransaction
-    ) {
-      final end = start + _maxAliasDocumentsPerTransaction;
-      chunks.add(
-        entries.sublist(start, end > entries.length ? entries.length : end),
-      );
-    }
-    return chunks;
   }
 
   List<GlobalFoodReceiptAliasDocument> _mapSnapshot(
@@ -203,33 +258,5 @@ class FirestoreGlobalFoodReceiptAliasStore
           ),
         )
         .toList(growable: false);
-  }
-
-  int _readSelectionCount(Object? value) {
-    if (value is int) {
-      return value < 1 ? 1 : value;
-    }
-    if (value is num) {
-      final safeValue = value.toInt();
-      return safeValue < 1 ? 1 : safeValue;
-    }
-    return 1;
-  }
-
-  List<String> _normalizeSearchTokens(List<String> tokens) {
-    final normalized = <String>{};
-    for (final token in tokens) {
-      final trimmed = token.trim();
-      if (trimmed.length < 3 ||
-          RegExp(r'^\d+$').hasMatch(trimmed) ||
-          isReceiptAliasNoise(trimmed)) {
-        continue;
-      }
-      normalized.add(trimmed);
-      if (normalized.length == 10) {
-        break;
-      }
-    }
-    return normalized.toList(growable: false);
   }
 }
