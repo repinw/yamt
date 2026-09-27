@@ -468,8 +468,6 @@ const architectureBaseline = <String, Map<String, int>>{
         2,
     'lib/features/scanner/presentation/widgets/receipt_item_matched_product_card.dart':
         3,
-    'lib/features/scanner/presentation/widgets/receipt_product_search_dialog.dart':
-        1,
     'lib/features/scanner/presentation/widgets/receipt_review_badges_row.dart':
         10,
     'lib/features/scanner/presentation/widgets/receipt_review_bottom_bar.dart':
