@@ -39,10 +39,17 @@ void main() {
   });
 
   test('ingredients keep their weight and scale their energy', () {
-    final lean = _estimate.ingredientsAt(FoodEstimateLevel.lean);
+    final lean = _estimate.ingredientsAt(FoodEstimateLevel.lean, grams: 400);
 
     expect(lean.map((i) => i.grams), [150, 250]);
     expect(lean.map((i) => i.kcal), [360, 360]);
+  });
+
+  test('ingredients follow the eaten amount', () {
+    final half = _estimate.ingredientsAt(FoodEstimateLevel.normal, grams: 200);
+
+    expect(half.map((i) => i.grams), [75, 125]);
+    expect(half.map((i) => i.kcal), [200, 200]);
   });
 
   test('the item holds the amount and the estimated portion', () {

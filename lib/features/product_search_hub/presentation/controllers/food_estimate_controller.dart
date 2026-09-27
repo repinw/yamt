@@ -37,8 +37,12 @@ class FoodEstimateController extends _$FoodEstimateController {
   @override
   FoodEstimateState build() => const FoodEstimateState();
 
-  /// Adds [photos] after the existing ones.
-  void addPhotos(List<FoodEstimatePhoto> photos) {
+  /// Adds a camera photo or gallery photos after the existing ones.
+  Future<void> addPhotos({required bool fromCamera}) async {
+    final photos = await ref
+        .read(foodEstimateRepositoryProvider)
+        .loadPhotos(fromCamera: fromCamera);
+    if (!ref.mounted || photos.isEmpty) return;
     state = state.copyWith(photos: [...state.photos, ...photos]);
   }
 

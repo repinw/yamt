@@ -1,10 +1,7 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:mime/mime.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -19,8 +16,6 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_chip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
-import 'package:yamt/features/product_search_hub/data/'
-    'food_estimate_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_exceptions.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -77,12 +72,8 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
 
 class _ManualProductAiSearchPageState
     extends ConsumerState<ManualProductAiSearchPage> {
-  static const _maxPhotoWidth = 1600.0;
-  static const _photoQuality = 80;
-
   late final _description = TextEditingController(text: widget.initialPrompt)
     ..addListener(() => setState(() {}));
-  final _picker = ImagePicker();
   final _voice = TextVoiceSearchController();
   late final VoiceSearchService _voiceService;
 
@@ -120,7 +111,7 @@ class _ManualProductAiSearchPageState
       onConfirm: hasInput && !isLoading ? () => unawaited(_analyze()) : null,
       cancelButtonKey: const Key('food_estimate_close_button'),
       secondaryLabel: l10n.foodEstimateCamera,
-      onSecondary: isLoading ? null : () => unawaited(_takePhoto()),
+      onSecondary: isLoading ? null : () => _addPhotos(fromCamera: true),
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -142,10 +133,10 @@ class _ManualProductAiSearchPageState
         ),
         FoodEstimatePhotoStrip(
           photos: [for (final photo in state.photos) photo.bytes],
-          onAdd: isLoading ? null : () => unawaited(_pickPhotos()),
-          onRemove: ref
+          onAdd: isLoading ? null : () => _addPhotos(fromCamera: false),
+          onRemove: (index) => ref
               .read(foodEstimateControllerProvider.notifier)
-              .removePhoto,
+              .removePhoto(index),
         ),
         TextVoiceSearchBar(
           controller: _description,
@@ -194,32 +185,12 @@ class _ManualProductAiSearchPageState
     _description.text = text.isEmpty ? phrase : '$text, $phrase';
   }
 
-  Future<void> _takePhoto() async {
-    final file = await _picker.pickImage(
-      source: ImageSource.camera,
-      maxWidth: _maxPhotoWidth,
-      imageQuality: _photoQuality,
+  void _addPhotos({required bool fromCamera}) {
+    unawaited(
+      ref
+          .read(foodEstimateControllerProvider.notifier)
+          .addPhotos(fromCamera: fromCamera),
     );
-    await _addFiles([?file]);
-  }
-
-  Future<void> _pickPhotos() async {
-    final files = await _picker.pickMultiImage(
-      maxWidth: _maxPhotoWidth,
-      imageQuality: _photoQuality,
-    );
-    await _addFiles(files);
-  }
-
-  Future<void> _addFiles(List<XFile> files) async {
-    if (files.isEmpty) return;
-    final photos = <FoodEstimatePhoto>[];
-    for (final file in files) {
-      final bytes = await file.readAsBytes();
-      photos.add((mimeType: _mimeType(file.name, bytes), bytes: bytes));
-    }
-    if (!mounted) return;
-    ref.read(foodEstimateControllerProvider.notifier).addPhotos(photos);
   }
 
   Future<void> _analyze() async {
@@ -258,7 +229,4 @@ class _ManualProductAiSearchPageState
     if (result == null || !mounted) return;
     popManualProductSearchPage(context, result);
   }
-
-  static String _mimeType(String name, Uint8List bytes) =>
-      lookupMimeType(name, headerBytes: bytes) ?? 'image/jpeg';
 }

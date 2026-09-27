@@ -33,76 +33,105 @@ class FoodEstimatePhotoStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = FoodLabelColors.of(context);
-    final l10n = AppLocalizations.of(context)!;
     return SizedBox(
       height: _tile + AppSpacing.md,
-      child: ListView(
+      child: ListView.separated(
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
         padding: const EdgeInsets.only(top: AppSpacing.md),
-        children: [
-          for (final (index, bytes) in photos.indexed)
-            Padding(
-              padding: const EdgeInsets.only(right: AppSpacing.lg),
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: colors.ink,
-                        width: AppFoodLabel.outline,
-                      ),
-                    ),
-                    child: Image.memory(
-                      bytes,
-                      width: _tile,
-                      height: _tile,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                  Positioned(
-                    top: -AppSpacing.lg,
-                    right: -AppSpacing.lg,
-                    child: IconButton.filled(
-                      tooltip: l10n.foodEstimateRemovePhoto(index + 1),
-                      onPressed: () => onRemove(index),
-                      style: IconButton.styleFrom(
-                        backgroundColor: colors.ink,
-                        foregroundColor: colors.paper,
-                      ),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          SizedBox.square(
-            dimension: _tile,
-            child: OutlinedButton(
-              key: addKey,
-              onPressed: onAdd,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: colors.muted,
-                side: BorderSide(
-                  color: colors.rule,
-                  width: AppFoodLabel.outline,
-                ),
-                shape: const RoundedRectangleBorder(),
-                padding: EdgeInsets.zero,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: AppSpacing.xs,
-                children: [
-                  const Icon(Icons.add_photo_alternate_outlined),
-                  Text(l10n.foodEstimateAddPhoto),
-                ],
-              ),
-            ),
+        itemCount: photos.length + 1,
+        separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.lg),
+        itemBuilder: (context, index) => index < photos.length
+            ? _PhotoTile(
+                bytes: photos[index],
+                number: index + 1,
+                onRemove: () => onRemove(index),
+              )
+            : _AddTile(onAdd: onAdd),
+      ),
+    );
+  }
+}
+
+class _PhotoTile extends StatelessWidget {
+  const new({
+    required this.bytes,
+    required this.number,
+    required this.onRemove,
+  });
+
+  final Uint8List bytes;
+  final int number;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = FoodLabelColors.of(context);
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border.all(color: colors.ink, width: AppFoodLabel.outline),
           ),
-        ],
+          child: Image.memory(
+            bytes,
+            width: FoodEstimatePhotoStrip._tile,
+            height: FoodEstimatePhotoStrip._tile,
+            fit: BoxFit.cover,
+          ),
+        ),
+        Positioned(
+          top: -AppSpacing.lg,
+          right: -AppSpacing.lg,
+          child: IconButton.filled(
+            tooltip: AppLocalizations.of(context)!
+                .foodEstimateRemovePhoto(number),
+            onPressed: onRemove,
+            style: IconButton.styleFrom(
+              backgroundColor: colors.ink,
+              foregroundColor: colors.paper,
+            ),
+            icon: const Icon(Icons.close_rounded),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AddTile extends StatelessWidget {
+  const new({required this.onAdd});
+
+  final VoidCallback? onAdd;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = FoodLabelColors.of(context);
+    return SizedBox.square(
+      dimension: FoodEstimatePhotoStrip._tile,
+      child: OutlinedButton(
+        key: FoodEstimatePhotoStrip.addKey,
+        onPressed: onAdd,
+        style: OutlinedButton.styleFrom(
+          foregroundColor: colors.muted,
+          side: BorderSide(color: colors.rule, width: AppFoodLabel.outline),
+          shape: const RoundedRectangleBorder(),
+          padding: const EdgeInsets.all(AppSpacing.xs),
+        ),
+        // Scales the label down under large text instead of overflowing
+        // the fixed tile.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: AppSpacing.xs,
+            children: [
+              const Icon(Icons.add_photo_alternate_outlined),
+              Text(AppLocalizations.of(context)!.foodEstimateAddPhoto),
+            ],
+          ),
+        ),
       ),
     );
   }

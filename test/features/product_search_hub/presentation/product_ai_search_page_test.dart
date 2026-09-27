@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,6 +23,8 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_ai_search_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_ai_search_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'food_estimate_photo_strip.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -58,18 +61,30 @@ class _FakeVoiceSearchService implements VoiceSearchService {
   );
 }
 
+final Uint8List _pixel = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8'
+  'AAAAASUVORK5CYII=',
+);
+
 class _FakeFoodEstimateRepository implements FoodEstimateRepository {
   new(this._onLoad);
 
   final Future<FoodEstimate> Function(String description) _onLoad;
   final List<String> descriptions = <String>[];
+  final List<int> sentPhotoCounts = <int>[];
+
+  @override
+  Future<List<FoodEstimatePhoto>> loadPhotos({
+    required bool fromCamera,
+  }) async => [(mimeType: 'image/png', bytes: _pixel)];
 
   @override
   Future<FoodEstimate> loadEstimate({
     required String description,
-    required List<({String mimeType, Uint8List bytes})> photos,
+    required List<FoodEstimatePhoto> photos,
   }) {
     descriptions.add(description);
+    sentPhotoCounts.add(photos.length);
     return _onLoad(description);
   }
 }
@@ -200,6 +215,19 @@ void main() {
     await tester.pump();
 
     expect(_analyzeButton(tester).onPressed, isNotNull);
+  });
+
+  testWidgets('a gallery photo is enough to analyze', (tester) async {
+    final repository = _FakeFoodEstimateRepository((_) async => _doener);
+    await _pumpPage(tester, repository: repository, onResult: (_) {});
+
+    await tester.tap(find.byKey(FoodEstimatePhotoStrip.addKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Remove photo 1'), findsOneWidget);
+    expect(_analyzeButton(tester).onPressed, isNotNull);
+    await _analyze(tester);
+    expect(repository.sentPhotoCounts, [1]);
   });
 
   testWidgets('dictation fills the description', (tester) async {

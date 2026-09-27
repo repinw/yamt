@@ -1,5 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:meta/meta.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+
+/// A photo of the food, sent with a food estimate request.
+typedef FoodEstimatePhoto = ({String mimeType, Uint8List bytes});
 
 /// How rich the preparation of an estimated food is assumed to be.
 enum FoodEstimateLevel {
@@ -88,15 +93,20 @@ class FoodEstimate {
     );
   }
 
-  /// Ingredients at [level], with their energy scaled like [per100At].
-  List<FoodEstimateIngredient> ingredientsAt(FoodEstimateLevel level) {
+  /// Ingredients of [grams] of the food at [level], with their energy
+  /// scaled like [per100At].
+  List<FoodEstimateIngredient> ingredientsAt(
+    FoodEstimateLevel level, {
+    required double grams,
+  }) {
     final factor = _factor(level);
+    final share = portionGrams <= 0 ? 0.0 : grams / portionGrams;
     return [
       for (final ingredient in ingredients)
         FoodEstimateIngredient(
           name: ingredient.name,
-          grams: ingredient.grams,
-          kcal: ingredient.kcal * factor,
+          grams: ingredient.grams * share,
+          kcal: ingredient.kcal * factor * share,
         ),
     ];
   }

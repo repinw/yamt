@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
@@ -17,20 +18,21 @@ part 'food_estimate_repository.g.dart';
 const foodEstimateTemplateId = 'food-estimate-template';
 
 const _requestTimeout = Duration(seconds: 90);
-
-/// A photo sent with a food estimate request.
-typedef FoodEstimatePhoto = ({String mimeType, Uint8List bytes});
+const _maxPhotoWidth = 1600.0;
+const _photoQuality = 80;
 
 /// Runs [foodEstimateTemplateId] with template [inputs] and returns the
 /// response text.
-typedef FoodEstimateTemplateClient =
-    Future<String?> Function(Map<String, Object?> inputs);
+typedef FoodEstimateTemplateClient = Future<String?> Function(
+  Map<String, Object?> inputs,
+);
 
 /// Food estimate repository.
 @riverpod
 FoodEstimateRepository foodEstimateRepository(Ref ref) {
   final model = FirebaseAI.googleAI().templateGenerativeModel();
   return FoodEstimateRepository(
+    imagePicker: ImagePicker(),
     templateClient: (inputs) async {
       final response = await model
           .generateContent(foodEstimateTemplateId, inputs: inputs)
@@ -43,9 +45,29 @@ FoodEstimateRepository foodEstimateRepository(Ref ref) {
 /// Estimates the nutrition of food from photos and a description.
 class FoodEstimateRepository {
   /// Creates a food estimate repository.
-  new({required this._templateClient});
+  new({required this._imagePicker, required this._templateClient});
 
+  final ImagePicker _imagePicker;
   final FoodEstimateTemplateClient _templateClient;
+
+  /// Takes a photo with the camera, or picks photos from the gallery.
+  ///
+  /// Returns no photo when the user cancels.
+  Future<List<FoodEstimatePhoto>> loadPhotos({required bool fromCamera}) async {
+    final files = fromCamera
+        ? [
+            ?await _imagePicker.pickImage(
+              source: ImageSource.camera,
+              maxWidth: _maxPhotoWidth,
+              imageQuality: _photoQuality,
+            ),
+          ]
+        : await _imagePicker.pickMultiImage(
+            maxWidth: _maxPhotoWidth,
+            imageQuality: _photoQuality,
+          );
+    return [for (final file in files) await _photoOf(file)];
+  }
 
   /// Estimates the food shown in [photos] and described in [description].
   ///
@@ -71,6 +93,12 @@ class FoodEstimateRepository {
       throw const FormatException('Empty food estimate response');
     }
     return _parseEstimate(jsonDecode(text) as Map<String, dynamic>);
+  }
+
+  static Future<FoodEstimatePhoto> _photoOf(XFile file) async {
+    final bytes = await file.readAsBytes();
+    final mimeType = lookupMimeType(file.name, headerBytes: bytes);
+    return (mimeType: mimeType ?? 'image/jpeg', bytes: bytes);
   }
 
   FoodEstimate _parseEstimate(Map<String, dynamic> json) {

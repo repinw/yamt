@@ -78,7 +78,6 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
     final l10n = AppLocalizations.of(context)!;
     final estimate = widget.estimate;
     final description = widget.description.trim();
-    final share = (_grams ?? 0) / estimate.portionGrams;
     return InventoryItemEatSheetBody(
       key: ValueKey(_generation),
       item: _item(estimate.portionGrams.round()),
@@ -116,12 +115,15 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
           EatComponentsList(
             initiallyExpanded: true,
             components: [
-              for (final ingredient in estimate.ingredientsAt(_level))
+              for (final ingredient in estimate.ingredientsAt(
+                _level,
+                grams: (_grams ?? 0).toDouble(),
+              ))
                 (
                   name: ingredient.name,
-                  amount: (ingredient.grams * share).roundToDouble(),
+                  amount: ingredient.grams.roundToDouble(),
                   unit: InventoryAmountUnit.gram,
-                  kcal: ingredient.kcal * share,
+                  kcal: ingredient.kcal,
                 ),
             ],
           ),

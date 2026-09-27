@@ -15,7 +15,15 @@ class _FakeFoodEstimateRepository implements FoodEstimateRepository {
   new(this._onLoad);
 
   final Future<FoodEstimate> Function() _onLoad;
+  List<FoodEstimatePhoto> nextPhotos = const [];
+  final List<bool> photoSources = <bool>[];
   List<FoodEstimatePhoto>? lastPhotos;
+
+  @override
+  Future<List<FoodEstimatePhoto>> loadPhotos({required bool fromCamera}) async {
+    photoSources.add(fromCamera);
+    return nextPhotos;
+  }
 
   @override
   Future<FoodEstimate> loadEstimate({
@@ -52,14 +60,18 @@ ProviderContainer _container(FoodEstimateRepository repository) {
 }
 
 void main() {
-  test('adds and removes photos', () {
-    final container = _container(
-      _FakeFoodEstimateRepository(() async => _estimate),
-    );
-    container.read(foodEstimateControllerProvider.notifier)
-      ..addPhotos([_photo(1), _photo(2)])
-      ..addPhotos([_photo(3)])
-      ..removePhoto(1);
+  test('adds and removes photos', () async {
+    final repository = _FakeFoodEstimateRepository(() async => _estimate)
+      ..nextPhotos = [_photo(1), _photo(2)];
+    final container = _container(repository);
+    final notifier = container.read(foodEstimateControllerProvider.notifier);
+
+    await notifier.addPhotos(fromCamera: false);
+    repository.nextPhotos = [_photo(3)];
+    await notifier.addPhotos(fromCamera: true);
+    notifier.removePhoto(1);
+
+    expect(repository.photoSources, [false, true]);
 
     expect(
       container
@@ -71,15 +83,16 @@ void main() {
   });
 
   test('analyze sends the photos and goes through loading', () async {
-    final repository = _FakeFoodEstimateRepository(() async => _estimate);
+    final repository = _FakeFoodEstimateRepository(() async => _estimate)
+      ..nextPhotos = [_photo(7)];
     final container = _container(repository);
     final states = <AsyncValue<FoodEstimate?>>[];
     container.listen(
       foodEstimateControllerProvider.select((state) => state.estimate),
       (_, next) => states.add(next),
     );
-    final notifier = container.read(foodEstimateControllerProvider.notifier)
-      ..addPhotos([_photo(7)]);
+    final notifier = container.read(foodEstimateControllerProvider.notifier);
+    await notifier.addPhotos(fromCamera: false);
 
     final estimate = await notifier.analyze('Apfel');
 

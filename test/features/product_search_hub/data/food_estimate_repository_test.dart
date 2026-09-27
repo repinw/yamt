@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'food_estimate_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -27,6 +28,7 @@ void main() {
   test('sends the description and every photo', () async {
     Map<String, Object?>? sent;
     final repository = FoodEstimateRepository(
+      imagePicker: ImagePicker(),
       templateClient: (inputs) async {
         sent = inputs;
         return _response;
@@ -53,6 +55,7 @@ void main() {
 
   test('parses the estimate', () async {
     final repository = FoodEstimateRepository(
+      imagePicker: ImagePicker(),
       templateClient: (_) async => _response,
     );
 
@@ -76,6 +79,7 @@ void main() {
 
   test('throws when the input shows no food', () async {
     final repository = FoodEstimateRepository(
+      imagePicker: ImagePicker(),
       templateClient: (_) async => '{"status": "not_food"}',
     );
 
@@ -87,6 +91,7 @@ void main() {
 
   test('throws when nothing can be identified', () async {
     final repository = FoodEstimateRepository(
+      imagePicker: ImagePicker(),
       templateClient: (_) async => '{"status": "unclear"}',
     );
 
@@ -98,6 +103,7 @@ void main() {
 
   test('throws on an empty answer', () async {
     final repository = FoodEstimateRepository(
+      imagePicker: ImagePicker(),
       templateClient: (_) async => null,
     );
 
