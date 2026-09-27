@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 const _imageLogName = 'AiChefImageGenerator';
-const _location = 'global';
 const _imageTimeout = Duration(seconds: 60);
 
 /// Generates image bytes from a text prompt.
@@ -124,7 +123,7 @@ class AiChefImageGenerator {
       return await imageBytesClient(imagePrompt).timeout(_imageTimeout);
     }
 
-    final model = FirebaseAI.agentPlatform(location: _location).generativeModel(
+    final model = FirebaseAI.googleAI().generativeModel(
       model: 'gemini-3.1-flash-image',
       generationConfig: GenerationConfig(
         responseModalities: [ResponseModalities.text, ResponseModalities.image],

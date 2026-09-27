@@ -257,7 +257,9 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## AI Chef
 
 - Inventory-aware recipe generation with optional free-form preferences.
-- Firebase AI-backed structured recipe and cover-image generation.
+- Firebase AI-backed structured recipe and cover-image generation. The
+  recipe comes from the server prompt template `ai-chef-recipe-template`,
+  which can change without an app release.
 - Generated recipe review before saving as an editable meal template.
 
 ## Cooking Flow

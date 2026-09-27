@@ -15,8 +15,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 part 'ai_chef_repository.g.dart';
 
 const _logName = 'AiChefRepository';
-const _templateId = 'ai-chef-template';
-const _location = 'global';
+const _templateId = 'ai-chef-recipe-template';
 const _timeout = Duration(seconds: 30);
 
 /// Calls the Firebase AI Chef template model.
@@ -33,7 +32,8 @@ FirebaseAiChefRepository aiChefRepository(Ref ref) {
   return FirebaseAiChefRepository(storage: storage, auth: auth);
 }
 
-/// Repository managing recipe generation using Firebase Vertex AI templates.
+/// Repository managing recipe generation using a Firebase AI server prompt
+/// template.
 class FirebaseAiChefRepository {
   /// Creates an instance.
   new({
@@ -52,7 +52,7 @@ class FirebaseAiChefRepository {
   final AiChefTemplateModelClient _templateModelClient;
   static const _uuid = Uuid();
 
-  /// Generates a recipe using the configured Firebase Vertex AI template.
+  /// Generates a recipe using the configured Firebase AI template.
   /// Returns null if generation, parsing, or server connection fails.
   Future<PreparedMeal?> generateAiRecipe({
     required String languageCode,
@@ -134,8 +134,7 @@ Future<String?> _firebaseAiChefTemplateClient({
   required String templateId,
   required Map<String, Object?> inputs,
 }) async {
-  final model = FirebaseAI.agentPlatform(location: _location)
-      .templateGenerativeModel();
+  final model = FirebaseAI.googleAI().templateGenerativeModel();
   final response = await model.generateContent(templateId, inputs: inputs);
   return response.text;
 }

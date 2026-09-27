@@ -21,7 +21,7 @@ class AiChefController extends _$AiChefController {
     return null;
   }
 
-  /// Generates a random recipe using Firebase Vertex AI.
+  /// Generates a random recipe using Firebase AI.
   Future<void> generateRecipe({
     required bool isGerman,
     required bool includeInventory,
