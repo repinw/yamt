@@ -167,6 +167,12 @@ abstract final class AppOpacities {
 
   /// Shadow under the home page while the side menu is open.
   static const double homeSlideMenuPageShadow = 0.35;
+
+  /// Background of a disabled button or control.
+  static const double disabledContainer = 0.12;
+
+  /// Label and icon of a disabled button or control.
+  static const double disabledContent = 0.38;
 }
 
 /// Shared font-size scale for app typography.

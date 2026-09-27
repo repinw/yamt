@@ -101,7 +101,6 @@ class EatAmountRuler extends StatelessWidget {
                 textInputAction: TextInputAction.done,
                 cursorColor: colors.ink,
                 style: textTheme.displaySmall?.copyWith(
-                  fontFamily: AppFonts.display,
                   fontWeight: FontWeight.w800,
                   color: colors.ink,
                 ),

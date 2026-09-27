@@ -85,7 +85,6 @@ class EatPageHeader extends StatelessWidget {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: textTheme.displaySmall?.copyWith(
-                  fontFamily: AppFonts.display,
                   fontWeight: FontWeight.w800,
                   color: colors.ink,
                   height: 1,

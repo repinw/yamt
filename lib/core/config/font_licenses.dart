@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 const _fontLicenses = [
-  ('Bricolage Grotesque', 'assets/fonts/BricolageGrotesque-OFL.txt'),
+  ('Plus Jakarta Sans', 'assets/fonts/PlusJakartaSans-OFL.txt'),
   ('JetBrains Mono', 'assets/fonts/JetBrainsMono-OFL.txt'),
 ];
 

@@ -6,7 +6,6 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -125,7 +124,6 @@ class _ManualProductAiSearchPageState
             Text(
               l10n.foodEstimateHeadline,
               style: textTheme.displaySmall?.copyWith(
-                fontFamily: AppFonts.display,
                 fontWeight: FontWeight.w800,
                 color: colors.ink,
               ),

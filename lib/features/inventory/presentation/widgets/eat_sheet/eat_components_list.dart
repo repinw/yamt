@@ -70,7 +70,6 @@ class _EatComponentsListState extends State<EatComponentsList> {
                     child: Text(
                       l10n.preparedMealIngredientsTitle,
                       style: textTheme.titleMedium?.copyWith(
-                        fontFamily: AppFonts.display,
                         fontWeight: FontWeight.w800,
                         color: colors.ink,
                       ),

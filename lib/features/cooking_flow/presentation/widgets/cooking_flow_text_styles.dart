@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 
 /// Text styles of the cooking flow in the Graphit language.
@@ -24,7 +23,6 @@ extension CookingFlowTextStyles on BuildContext {
   TextStyle? cookingFlowDisplayStyle(TextStyle? base, {Color? color}) {
     final colors = FoodLabelColors.of(this);
     return base?.copyWith(
-      fontFamily: AppFonts.display,
       fontWeight: FontWeight.w800,
       color: color ?? colors.ink,
       height: AppGraphit.displayLineHeight,

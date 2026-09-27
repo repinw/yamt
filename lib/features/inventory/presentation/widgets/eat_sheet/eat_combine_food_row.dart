@@ -94,7 +94,6 @@ class EatCombineFoodRow extends StatelessWidget {
                     Text(
                       amount,
                       style: textTheme.titleMedium?.copyWith(
-                        fontFamily: AppFonts.display,
                         fontWeight: FontWeight.w800,
                         color: colors.ink,
                         decoration: ruler == null

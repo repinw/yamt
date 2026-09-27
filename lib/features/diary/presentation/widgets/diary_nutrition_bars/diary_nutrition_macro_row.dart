@@ -72,7 +72,6 @@ class DiaryNutritionMacroRow extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: textTheme.titleMedium?.copyWith(
-              fontFamily: AppFonts.display,
               fontWeight: FontWeight.w800,
               color: colors.ink,
             ),
@@ -105,7 +104,6 @@ class DiaryNutritionMacroRow extends StatelessWidget {
                     Text(
                       isOverTarget ? '+$amount' : amount,
                       style: textTheme.titleLarge?.copyWith(
-                        fontFamily: AppFonts.display,
                         fontWeight: FontWeight.w800,
                         color: valueColor,
                       ),

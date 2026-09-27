@@ -207,7 +207,6 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
                       maxLines: 1,
                       softWrap: false,
                       style: textTheme.headlineMedium?.copyWith(
-                        fontFamily: AppFonts.display,
                         fontWeight: FontWeight.w800,
                         color: colors.ink,
                         height: 1,

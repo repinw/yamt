@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_image_tile.dart';
 
@@ -54,7 +53,6 @@ class EatMealHeader extends StatelessWidget {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontFamily: AppFonts.display,
               fontWeight: FontWeight.w800,
               color: FoodLabelColors.of(context).ink,
               height: 1.05,

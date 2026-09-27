@@ -6,7 +6,6 @@ import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/food_label_dashed_line.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -135,7 +134,6 @@ class _BarcodeButton extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: textTheme.titleMedium?.copyWith(
-            fontFamily: AppFonts.display,
             fontWeight: FontWeight.w800,
             color: colors.onAccent,
           ),
