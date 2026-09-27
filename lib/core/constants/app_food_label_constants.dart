@@ -68,6 +68,9 @@ abstract final class AppFoodLabel {
   /// Space above and below a chip so its tap target reaches 48.
   static const double chipTapPadding = 7;
 
+  /// Width of a value field in an editable nutrition label.
+  static const double labelValueField = 112;
+
   /// Letter spacing of the brand line.
   static const double brandTracking = 1.6;
 

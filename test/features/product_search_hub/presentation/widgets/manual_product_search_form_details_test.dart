@@ -1,476 +1,261 @@
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_search_state.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'manual_product_form_field.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_preview.dart';
+    'manual_product_search_form/manual_product_editor_header.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_search_input.dart';
+    'manual_product_search_form/manual_product_nutrition_editor.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form_details.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-Widget _wrapDetailsForm({
-  required ScrollController scrollController,
-  required VoidCallback? onScanNutritionLabel,
-  String nameText = 'Banane',
-  String brandText = 'Ja!',
-  String barcodeText = '',
-  VoidCallback? onScanBarcode,
-  bool hasNoBarcode = false,
-  ValueChanged<bool>? onNoBarcodeChanged,
-  ValueChanged<String>? onBarcodeChanged,
-  String weightAmount = '200',
-  InventoryAmountUnit selectedWeightUnit = InventoryAmountUnit.gram,
-  String kcalText = '89',
-  String saturatedFatText = '0.1',
-  String polyunsaturatedFatText = '',
-  bool showPolyunsaturatedFatField = false,
-  String fatText = '0.2',
-  String carbsText = '20',
-  String sugarText = '18',
-  String fiberText = '',
-  bool showFiberField = false,
-  String proteinText = '1',
-  String saltText = '0',
-  bool canAddOptionalNutrition = false,
-  bool isAddingOptionalNutrition = false,
-  String optionalNutritionValueText = '',
-  InventoryAmountUnit optionalNutritionUnit = InventoryAmountUnit.gram,
-  InventoryReceiptOptionalNutritionType? optionalNutritionType,
+const _complete = InventoryReceiptManualProductState(
+  nameText: 'Haferflocken zart',
+  brandText: 'Rewe Bio',
+  weightAmount: '500',
+  selectedWeightUnit: InventoryAmountUnit.gram,
+  kcalText: '372',
+  fatText: '7',
+  saturatedFatText: '1.3',
+  carbsText: '58.7',
+  sugarText: '0.7',
+  proteinText: '13.5',
+  saltText: '0.01',
+);
+
+class _Calls {
+  final fields = <(ManualProductFormField, String)>[];
+  final units = <InventoryAmountUnit>[];
+  final noBarcode = <bool>[];
+  final optional = <InventoryReceiptOptionalNutritionType>[];
+  final actions = <InventoryReceiptManualProductAction>[];
+  int scans = 0;
+  int saves = 0;
+}
+
+Widget _editor(
+  _Calls calls, {
+  InventoryReceiptManualProductState state = _complete,
+  bool canSave = true,
+  bool showActionSelector = false,
 }) {
   return MaterialApp(
+    locale: const Locale('en'),
     localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
-    home: Scaffold(
-      body: Center(
-        child: SizedBox(
-          width: 360,
-          height: 220,
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: ManualProductDetailsForm(
-                preview: const InventoryReceiptManualProductPreviewData(
-                  imageUrl: null,
-                  name: 'Banane',
-                  brand: 'Ja!',
-                  weight: '200 g',
-                ),
-                nameText: nameText,
-                brandText: brandText,
-                barcodeText: barcodeText,
-                hasNoBarcode: hasNoBarcode,
-                weightAmount: weightAmount,
-                selectedWeightUnit: selectedWeightUnit,
-                kcalText: kcalText,
-                saturatedFatText: saturatedFatText,
-                polyunsaturatedFatText: polyunsaturatedFatText,
-                showPolyunsaturatedFatField: showPolyunsaturatedFatField,
-                fatText: fatText,
-                carbsText: carbsText,
-                sugarText: sugarText,
-                fiberText: fiberText,
-                showFiberField: showFiberField,
-                proteinText: proteinText,
-                saltText: saltText,
-                canAddOptionalNutrition: canAddOptionalNutrition,
-                isAddingOptionalNutrition: isAddingOptionalNutrition,
-                optionalNutritionValueText: optionalNutritionValueText,
-                optionalNutritionUnit: optionalNutritionUnit,
-                optionalNutritionType: optionalNutritionType,
-                availableOptionalNutritionTypes:
-                    const <InventoryReceiptOptionalNutritionType>[
-                      InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
-                      InventoryReceiptOptionalNutritionType.fiber,
-                    ],
-                errorText: null,
-                showActionSelector: false,
-                selectedAction:
-                    InventoryReceiptManualProductAction.addToInventory,
-                canSave: true,
-                isRunningNutritionOcr: false,
-                onNameChanged: (_) {},
-                onBrandChanged: (_) {},
-                onBarcodeChanged: onBarcodeChanged ?? (_) {},
-                onScanBarcode: onScanBarcode ?? () {},
-                onNoBarcodeChanged: onNoBarcodeChanged ?? (_) {},
-                onWeightAmountChanged: (_) {},
-                onWeightUnitChanged: (_) {},
-                onScanNutritionLabel: onScanNutritionLabel,
-                onKcalChanged: (_) {},
-                onFatChanged: (_) {},
-                onSaturatedFatChanged: (_) {},
-                onCarbsChanged: (_) {},
-                onSugarChanged: (_) {},
-                onProteinChanged: (_) {},
-                onSaltChanged: (_) {},
-                onPolyunsaturatedFatChanged: (_) {},
-                onFiberChanged: (_) {},
-                onStartAddingOptionalNutrition: () {},
-                onOptionalNutritionValueChanged: (_) {},
-                onOptionalNutritionUnitChanged: (_) {},
-                onOptionalNutritionTypeChanged: (_) {},
-                onApplyOptionalNutrition: () {},
-                onCancelOptionalNutrition: () {},
-                onCancel: () {},
-                onSave: () {},
-              ),
-            ),
-          ),
-        ),
-      ),
+    home: ManualProductDetailsForm(
+      state: state,
+      imageUrl: null,
+      canSave: canSave,
+      errorText: null,
+      showActionSelector: showActionSelector,
+      selectedAction: InventoryReceiptManualProductAction.addToInventory,
+      onFieldChanged: (field, text) => calls.fields.add((field, text)),
+      onWeightUnitChanged: calls.units.add,
+      onNoBarcodeChanged: calls.noBarcode.add,
+      onScanBarcode: () => calls.scans++,
+      onScanNutritionLabel: null,
+      onAddOptionalNutrition: calls.optional.add,
+      onActionChanged: calls.actions.add,
+      onSave: () => calls.saves++,
     ),
   );
 }
 
-Future<void> _settleScrollAnimation(WidgetTester tester) async {
-  await tester.pump();
-  await tester.pump(const Duration(milliseconds: 240));
-}
-
-Set<String> _registeredFieldNames(WidgetTester tester) {
-  final state = tester.state<FormBuilderState>(find.byType(FormBuilder));
-  return state.fields.keys.toSet();
-}
-
-Object? _fieldValue(WidgetTester tester, String fieldName) {
-  final state = tester.state<FormBuilderState>(find.byType(FormBuilder));
-  return state.fields[fieldName]?.value;
+bool _hasFocus(WidgetTester tester, ManualProductFormField field) {
+  final text = tester.widget<EditableText>(
+    find.descendant(
+      of: find.byKey(field.key),
+      matching: find.byType(EditableText),
+    ),
+  );
+  return text.focusNode.hasFocus;
 }
 
 void main() {
-  testWidgets('registered field names match the full details form', (
+  testWidgets('shows the product on a food label and saves it', (tester) async {
+    final calls = _Calls();
+    await tester.pumpWidget(_editor(calls));
+
+    expect(find.text('Haferflocken zart'), findsOneWidget);
+    expect(find.text('Rewe Bio'), findsOneWidget);
+    expect(find.text('372'), findsOneWidget);
+    expect(find.text('Per 100 g'), findsOneWidget);
+    expect(
+      find.text(
+        'Required values are missing. Every EU nutrition label lists '
+        'them.',
+      ),
+      findsNothing,
+    );
+
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    expect(calls.saves, 1);
+  });
+
+  testWidgets('a missing mandatory value blocks saving and shows a hint', (
     tester,
   ) async {
-    final scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-
+    final calls = _Calls();
     await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-        showPolyunsaturatedFatField: true,
-        showFiberField: true,
-        isAddingOptionalNutrition: true,
-        optionalNutritionType:
-            InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
-      ),
+      _editor(calls, state: _complete.copyWith(sugarText: ''), canSave: false),
     );
 
     expect(
-      _registeredFieldNames(tester),
-      ManualProductSearchFormFieldName.registeredNames.toSet(),
+      find.text(
+        'Required values are missing. Every EU nutrition label lists '
+        'them.',
+      ),
+      findsOneWidget,
     );
+    final save = tester.widget<FilledButton>(
+      find.byKey(ManualProductDetailsForm.saveKey),
+    );
+    expect(save.onPressed, isNull);
   });
 
-  testWidgets('barcode field forwards typing and opens the scanner', (
-    tester,
-  ) async {
-    final scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-    final barcodes = <String>[];
-    var scanTapped = 0;
+  testWidgets('typing reports the field', (tester) async {
+    final calls = _Calls();
+    await tester.pumpWidget(_editor(calls));
 
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-        onBarcodeChanged: barcodes.add,
-        onScanBarcode: () => scanTapped += 1,
-      ),
+    await tester.enterText(find.byKey(ManualProductFormField.kcal.key), '380');
+    await tester.enterText(
+      find.byKey(ManualProductFormField.name.key),
+      'Hafer',
     );
 
-    final field = find.byKey(const Key('receipt_review_manual_barcode_field'));
-    await tester.ensureVisible(field);
-    await tester.enterText(field, '40a06');
-    await tester.pump();
-    expect(barcodes.last, '4006');
-
-    final scanButton = find.byKey(
-      const Key('receipt_review_manual_barcode_scan_button'),
-    );
-    await tester.ensureVisible(scanButton);
-    await tester.pumpAndSettle();
-    await tester.tap(scanButton);
-    await tester.pump();
-    expect(scanTapped, 1);
+    expect(calls.fields, [
+      (ManualProductFormField.kcal, '380'),
+      (ManualProductFormField.name, 'Hafer'),
+    ]);
   });
 
-  testWidgets('no barcode mark reports changes and locks the barcode', (
-    tester,
-  ) async {
-    final scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-    final marks = <bool>[];
+  testWidgets('values from a scan replace the inputs', (tester) async {
+    final calls = _Calls();
+    await tester.pumpWidget(
+      _editor(calls, state: _complete.copyWith(fatText: '')),
+    );
 
     await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-        onNoBarcodeChanged: marks.add,
-      ),
+      _editor(calls, state: _complete.copyWith(fatText: '6.5')),
     );
 
-    final checkbox = find.byKey(
-      const Key('receipt_review_manual_no_barcode_checkbox'),
-    );
-    await tester.ensureVisible(checkbox);
-    await tester.pumpAndSettle();
-    await tester.tap(checkbox);
-    await tester.pump();
-    expect(marks, [true]);
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: () {},
-        hasNoBarcode: true,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final field = tester.widget<FormBuilderTextField>(
-      find.byKey(const Key('receipt_review_manual_barcode_field')),
-    );
-    expect(field.enabled, isFalse);
-    final scanButton = tester.widget<IconButton>(
-      find.byKey(const Key('receipt_review_manual_barcode_scan_button')),
-    );
-    expect(scanButton.onPressed, isNull);
+    expect(find.text('6.5'), findsOneWidget);
+    expect(calls.fields, isEmpty);
   });
 
-  testWidgets('keyboard confirm jumps to the next empty required field', (
-    tester,
-  ) async {
-    final scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-
+  testWidgets('the unit button switches through the units', (tester) async {
+    final calls = _Calls();
     await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-        nameText: '',
-        kcalText: '',
-        carbsText: '',
+      _editor(
+        calls,
+        state: const InventoryReceiptManualProductState(weightAmount: '500'),
+        canSave: false,
       ),
     );
 
-    bool hasFocus(String key) {
-      final field = tester.widget<EditableText>(
-        find.descendant(
-          of: find.byKey(Key(key)),
-          matching: find.byType(EditableText),
-        ),
-      );
-      return field.focusNode.hasFocus;
-    }
+    await tester.tap(find.byKey(ManualProductEditorHeader.weightUnitKey));
+    expect(calls.units, [InventoryAmountUnit.gram]);
 
-    await tester.showKeyboard(
-      find.byKey(const Key('receipt_review_manual_name_field')),
+    await tester.pumpWidget(_editor(calls));
+    await tester.tap(find.byKey(ManualProductEditorHeader.weightUnitKey));
+    expect(calls.units.last, InventoryAmountUnit.milliliter);
+  });
+
+  testWidgets('no barcode locks the barcode input and the scanner', (
+    tester,
+  ) async {
+    final calls = _Calls();
+    await tester.pumpWidget(_editor(calls));
+
+    await tester.tap(find.byKey(ManualProductDetailsForm.scanBarcodeKey));
+    await tester.tap(find.byKey(ManualProductEditorHeader.noBarcodeKey));
+    expect(calls.scans, 1);
+    expect(calls.noBarcode, [true]);
+
+    await tester.pumpWidget(
+      _editor(calls, state: _complete.copyWith(hasNoBarcode: true)),
     );
+    final barcode = tester.widget<TextField>(
+      find.byKey(ManualProductFormField.barcode.key),
+    );
+    final scan = tester.widget<IconButton>(
+      find.byKey(ManualProductDetailsForm.scanBarcodeKey),
+    );
+    expect(barcode.enabled, isFalse);
+    expect(scan.onPressed, isNull);
+  });
+
+  testWidgets('keyboard confirm jumps to the next empty required value', (
+    tester,
+  ) async {
+    final calls = _Calls();
+    await tester.pumpWidget(
+      _editor(
+        calls,
+        state: _complete.copyWith(nameText: '', kcalText: '', sugarText: ''),
+        canSave: false,
+      ),
+    );
+
+    await tester.showKeyboard(find.byKey(ManualProductFormField.name.key));
     await tester.testTextInput.receiveAction(TextInputAction.next);
-    await tester.pumpAndSettle();
-    expect(hasFocus('receipt_review_manual_kcal_field'), isTrue);
+    await tester.pump();
+    expect(_hasFocus(tester, ManualProductFormField.kcal), isTrue);
 
     await tester.testTextInput.receiveAction(TextInputAction.next);
-    await tester.pumpAndSettle();
-    expect(hasFocus('receipt_review_manual_fat_field'), isFalse);
-    expect(hasFocus('receipt_review_manual_carbs_field'), isTrue);
+    await tester.pump();
+    expect(_hasFocus(tester, ManualProductFormField.sugar), isTrue);
 
     await tester.testTextInput.receiveAction(TextInputAction.next);
-    await tester.pumpAndSettle();
-    expect(hasFocus('receipt_review_manual_carbs_field'), isFalse);
-    expect(hasFocus('receipt_review_manual_protein_field'), isFalse);
-  });
-
-  testWidgets('patches every registered field from updated props', (
-    tester,
-  ) async {
-    final scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-        showPolyunsaturatedFatField: true,
-        showFiberField: true,
-        isAddingOptionalNutrition: true,
-        optionalNutritionType:
-            InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
-      ),
-    );
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-        nameText: 'Apfel',
-        brandText: 'Biohof',
-        barcodeText: '4006381333931',
-        weightAmount: '250',
-        selectedWeightUnit: InventoryAmountUnit.milliliter,
-        kcalText: '52',
-        saturatedFatText: '0.0',
-        polyunsaturatedFatText: '0.2',
-        showPolyunsaturatedFatField: true,
-        fatText: '0.4',
-        carbsText: '14',
-        sugarText: '10',
-        fiberText: '2.4',
-        showFiberField: true,
-        proteinText: '0.3',
-        saltText: '0.01',
-        isAddingOptionalNutrition: true,
-        optionalNutritionValueText: '2.4',
-        optionalNutritionUnit: InventoryAmountUnit.milliliter,
-        optionalNutritionType: InventoryReceiptOptionalNutritionType.fiber,
-      ),
-    );
-
-    expect(tester.takeException(), isNull);
-    expect(_fieldValue(tester, ManualProductSearchFormFieldName.name), 'Apfel');
-    expect(
-      _fieldValue(tester, ManualProductSearchFormFieldName.brand),
-      'Biohof',
-    );
-    expect(
-      _fieldValue(tester, ManualProductSearchFormFieldName.barcode),
-      '4006381333931',
-    );
-    expect(
-      _fieldValue(tester, ManualProductSearchFormFieldName.weightAmount),
-      '250',
-    );
-    expect(
-      _fieldValue(tester, ManualProductSearchFormFieldName.weightUnit),
-      InventoryAmountUnit.milliliter,
-    );
-    expect(_fieldValue(tester, ManualProductSearchFormFieldName.kcal), '52');
-    expect(_fieldValue(tester, ManualProductSearchFormFieldName.fat), '0.4');
-    expect(
-      _fieldValue(tester, ManualProductSearchFormFieldName.saturatedFat),
-      '0.0',
-    );
-    expect(_fieldValue(tester, ManualProductSearchFormFieldName.carbs), '14');
-    expect(_fieldValue(tester, ManualProductSearchFormFieldName.sugar), '10');
-    expect(
-      _fieldValue(tester, ManualProductSearchFormFieldName.protein),
-      '0.3',
-    );
-    expect(_fieldValue(tester, ManualProductSearchFormFieldName.salt), '0.01');
-    expect(
-      _fieldValue(tester, ManualProductSearchFormFieldName.polyunsaturatedFat),
-      '0.2',
-    );
-    expect(_fieldValue(tester, ManualProductSearchFormFieldName.fiber), '2.4');
-    expect(
-      _fieldValue(
-        tester,
-        ManualProductSearchFormFieldName.optionalNutritionValue,
-      ),
-      '2.4',
-    );
-    expect(
-      _fieldValue(
-        tester,
-        ManualProductSearchFormFieldName.optionalNutritionUnit,
-      ),
-      InventoryAmountUnit.milliliter,
-    );
-    expect(
-      _fieldValue(
-        tester,
-        ManualProductSearchFormFieldName.optionalNutritionType,
-      ),
-      InventoryReceiptOptionalNutritionType.fiber,
-    );
-  });
-
-  testWidgets('scrolls when nutrition OCR button becomes enabled', (
-    tester,
-  ) async {
-    final scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-      ),
-    );
-
-    expect(scrollController.offset, 0);
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: () {},
-      ),
-    );
-    await _settleScrollAnimation(tester);
-
-    expect(scrollController.offset, greaterThan(0));
-  });
-
-  testWidgets('does not scroll when unrelated details props change', (
-    tester,
-  ) async {
-    final scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-      ),
-    );
-
-    expect(scrollController.offset, 0);
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-        nameText: 'Banane Bio',
-      ),
-    );
-    await _settleScrollAnimation(tester);
-
-    expect(scrollController.offset, 0);
-  });
-
-  testWidgets('stays crash-free when widget unmounts after scroll trigger', (
-    tester,
-  ) async {
-    final scrollController = ScrollController();
-    addTearDown(scrollController.dispose);
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: null,
-      ),
-    );
-
-    await tester.pumpWidget(
-      _wrapDetailsForm(
-        scrollController: scrollController,
-        onScanNutritionLabel: () {},
-      ),
-    );
     await tester.pump();
+    expect(_hasFocus(tester, ManualProductFormField.sugar), isFalse);
+  });
 
-    await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: SizedBox.shrink())),
-    );
+  testWidgets('adds an optional nutrient from the menu', (tester) async {
+    final calls = _Calls();
+    await tester.pumpWidget(_editor(calls));
+
+    await tester.ensureVisible(find.byKey(ManualProductNutritionEditor.addKey));
+    await tester.tap(find.byKey(ManualProductNutritionEditor.addKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Fibre').last);
     await tester.pumpAndSettle();
 
-    expect(tester.takeException(), isNull);
+    expect(calls.optional, [InventoryReceiptOptionalNutritionType.fiber]);
+  });
+
+  testWidgets('shown optional nutrients get an input', (tester) async {
+    final calls = _Calls();
+    await tester.pumpWidget(
+      _editor(calls, state: _complete.copyWith(showFiberField: true)),
+    );
+
+    expect(find.byKey(ManualProductFormField.fiber.key), findsOneWidget);
+    expect(
+      find.byKey(ManualProductFormField.polyunsaturatedFat.key),
+      findsNothing,
+    );
+  });
+
+  testWidgets('the action chips choose eating', (tester) async {
+    final calls = _Calls();
+    await tester.pumpWidget(_editor(calls, showActionSelector: true));
+
+    await tester.ensureVisible(
+      find.byKey(const Key('receipt_review_manual_eat_action_button')),
+    );
+    await tester.tap(
+      find.byKey(const Key('receipt_review_manual_eat_action_button')),
+    );
+
+    expect(calls.actions, [InventoryReceiptManualProductAction.eatNow]);
   });
 }

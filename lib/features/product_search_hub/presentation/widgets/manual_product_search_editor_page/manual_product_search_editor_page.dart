@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -121,12 +122,14 @@ class _InventoryReceiptManualProductEditorPageState
 
     return ManualProductSearchEditorFormView(
       state: state,
-      controller: _controller,
+      controller: ref.watch(_provider.notifier),
       quickEatConfig: widget.quickEatConfig,
       selectedAction: _selectedAction,
       showActionSelector: _showActionSelector,
       showEatImmediatelyOption: widget.showEatImmediatelyOption,
-      preview: buildEditorPreviewData(_controller),
+      imageUrl: normalizeProductImageUrl(
+        widget.config.item.imageUrl ?? state.matchedProduct?.imageUrl,
+      ),
       canSave: canSave,
       onScanBarcode: () => unawaited(_openBarcodeScanner()),
       onScanNutritionLabel: state.canScanNutritionLabel
@@ -135,7 +138,6 @@ class _InventoryReceiptManualProductEditorPageState
       onNoBarcodeChanged: (value) =>
           _controller.updateHasNoBarcode(value: value),
       onActionChanged: (action) => setState(() => _selectedAction = action),
-      onCancel: _closePage,
       onSave: _onSave,
     );
   }

@@ -14,8 +14,6 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_preview.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -100,22 +98,6 @@ InventoryReceiptManualProductResult? tryBuildDirectEatResultFromInventoryItem({
     selectedGlobalFoodItemId: selectedGlobalFoodItemId,
     requiresGlobalPersistence: false,
     globalPackageWeight: globalPackageWeight,
-  );
-}
-
-/// Builds preview data from [controller].
-InventoryReceiptManualProductPreviewData? buildEditorPreviewData(
-  InventoryReceiptManualProductController controller,
-) {
-  final preview = controller.buildPreviewData();
-  if (preview == null) {
-    return null;
-  }
-  return InventoryReceiptManualProductPreviewData(
-    imageUrl: preview.imageUrl,
-    name: preview.name,
-    brand: preview.brand,
-    weight: preview.weight,
   );
 }
 

@@ -84,16 +84,9 @@
   "productSearchHubSearchLoadFailed": "Produktsuche fehlgeschlagen.",
   "productSearchHubSearchRetryAction": "Erneut versuchen",
   "productSearchHubSearchEmptyState": "Keine passenden Produkte gefunden.",
-  "productSearchHubRequiredFieldLabel": "{label} *",
-  "@productSearchHubRequiredFieldLabel": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "eatPageAmountUnknown": "–",
   "productSearchHubNoBarcodeAction": "Kein Barcode",
+  "productSearchHubMissingNutritionHint": "Pflichtwerte fehlen noch. Jedes EU-Nährwertetikett nennt sie.",
   "productSearchHubCreateProductAction": "Produkt erstellen",
   "productSearchHubCartTitle": "Ausgewählte Produkte",
   "productSearchHubCartAddAction": "Eintragen",
@@ -1125,15 +1118,7 @@
   "caloriesPer100ProteinLabel": "Eiweiß (g)",
   "caloriesPer100CarbsLabel": "Kohlenhydrate (g)",
   "caloriesPer100FatLabel": "Fett (g)",
-  "caloriesPer100SaturatedFatLabel": "Davon gesättigte Fettsäuren (g)",
-  "caloriesPer100PolyunsaturatedFatLabel": "Davon mehrfach ungesättigte Fettsäuren (g)",
-  "caloriesPer100SugarLabel": "Davon Zucker (g)",
-  "caloriesPer100FiberLabel": "Ballaststoffe (g)",
-  "caloriesPer100SaltLabel": "Salz (g)",
   "inventoryReceiptReviewManualAddNutritionAction": "Weitere Nährwerte eintragen",
-  "inventoryReceiptReviewManualNutritionValueLabel": "Wert",
-  "inventoryReceiptReviewManualNutritionUnitLabel": "Einheit",
-  "inventoryReceiptReviewManualNutritionTypeLabel": "Nährwert",
   "caloriesEntryDateTimeLabel": "Datum und Uhrzeit",
   "caloriesSaveEntryAction": "Speichern",
   "caloriesSaveFailed": "Eintrag konnte nicht gespeichert werden.",

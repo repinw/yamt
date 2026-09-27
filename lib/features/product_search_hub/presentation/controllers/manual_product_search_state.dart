@@ -29,11 +29,6 @@ class InventoryReceiptManualProductState {
     this.saltText = '',
     this.showPolyunsaturatedFatField = false,
     this.showFiberField = false,
-    this.isAddingOptionalNutrition = false,
-    this.optionalNutritionValueText = '',
-    this.optionalNutritionUnit = InventoryAmountUnit.gram,
-    this.optionalNutritionType =
-        InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
     this.selectedProduct,
     this.ocrDraft,
     this.isRunningNutritionOcr = false,
@@ -92,18 +87,6 @@ class InventoryReceiptManualProductState {
   /// The show fiber field.
   final bool showFiberField;
 
-  /// Whether adding optional nutrition.
-  final bool isAddingOptionalNutrition;
-
-  /// The optional nutrition value text.
-  final String optionalNutritionValueText;
-
-  /// The optional nutrition unit.
-  final InventoryAmountUnit optionalNutritionUnit;
-
-  /// The optional nutrition type.
-  final InventoryReceiptOptionalNutritionType optionalNutritionType;
-
   /// The selected product.
   final InventoryReceiptManualProductSelection? selectedProduct;
 
@@ -122,19 +105,45 @@ class InventoryReceiptManualProductState {
   /// Whether barcode.
   bool get hasBarcode => normalizeBarcode(barcode).isNotEmpty;
 
+  /// The selected product, unless the barcode was changed to another one.
+  InventoryReceiptManualProductSelection? get matchedProduct {
+    final product = selectedProduct;
+    if (product == null) {
+      return null;
+    }
+    final normalizedBarcode = normalizeBarcode(barcode);
+    if (normalizedBarcode.isNotEmpty &&
+        normalizedBarcode != normalizeBarcode(product.barcode)) {
+      return null;
+    }
+    return product;
+  }
+
   /// Whether package weight input.
   bool get hasPackageWeightInput {
     return parseManualProductDouble(weightAmount) != null;
   }
 
-  /// Whether name, unit, kcal, carbs, protein and fat are filled in.
+  /// Whether the name, the unit, and every value of the EU nutrition label
+  /// are filled in.
   bool get hasRequiredFields {
     return normalizeManualProductText(nameText) != null &&
         selectedWeightUnit != null &&
-        parseManualProductDouble(kcalText) != null &&
-        parseManualProductDouble(carbsText) != null &&
-        parseManualProductDouble(proteinText) != null &&
-        parseManualProductDouble(fatText) != null;
+        hasMandatoryNutrition;
+  }
+
+  /// Whether the seven values of the EU nutrition label are filled in:
+  /// energy, fat, saturates, carbohydrate, sugars, protein, and salt.
+  bool get hasMandatoryNutrition {
+    return [
+      kcalText,
+      fatText,
+      saturatedFatText,
+      carbsText,
+      sugarText,
+      proteinText,
+      saltText,
+    ].every((text) => parseManualProductDouble(text) != null);
   }
 
   /// Whether scan nutrition label.
@@ -153,23 +162,6 @@ class InventoryReceiptManualProductState {
       types.add(InventoryReceiptOptionalNutritionType.fiber);
     }
     return types;
-  }
-
-  /// Whether add optional nutrition.
-  bool get canAddOptionalNutrition {
-    return availableOptionalNutritionTypes.isNotEmpty;
-  }
-
-  /// The resolved optional nutrition type.
-  InventoryReceiptOptionalNutritionType? get resolvedOptionalNutritionType {
-    final availableTypes = availableOptionalNutritionTypes;
-    if (availableTypes.isEmpty) {
-      return null;
-    }
-    if (availableTypes.contains(optionalNutritionType)) {
-      return optionalNutritionType;
-    }
-    return availableTypes.first;
   }
 
   /// Copy with.
@@ -191,10 +183,6 @@ class InventoryReceiptManualProductState {
     String? saltText,
     bool? showPolyunsaturatedFatField,
     bool? showFiberField,
-    bool? isAddingOptionalNutrition,
-    String? optionalNutritionValueText,
-    InventoryAmountUnit? optionalNutritionUnit,
-    InventoryReceiptOptionalNutritionType? optionalNutritionType,
     Object? selectedProduct = _keepValue,
     Object? ocrDraft = _keepValue,
     bool? isRunningNutritionOcr,
@@ -221,14 +209,6 @@ class InventoryReceiptManualProductState {
       showPolyunsaturatedFatField:
           showPolyunsaturatedFatField ?? this.showPolyunsaturatedFatField,
       showFiberField: showFiberField ?? this.showFiberField,
-      isAddingOptionalNutrition:
-          isAddingOptionalNutrition ?? this.isAddingOptionalNutrition,
-      optionalNutritionValueText:
-          optionalNutritionValueText ?? this.optionalNutritionValueText,
-      optionalNutritionUnit:
-          optionalNutritionUnit ?? this.optionalNutritionUnit,
-      optionalNutritionType:
-          optionalNutritionType ?? this.optionalNutritionType,
       selectedProduct: selectedProduct == _keepValue
           ? this.selectedProduct
           : selectedProduct as InventoryReceiptManualProductSelection?,

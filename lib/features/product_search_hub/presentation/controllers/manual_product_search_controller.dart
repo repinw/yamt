@@ -145,71 +145,16 @@ class InventoryReceiptManualProductController
     state = state.copyWith(fiberText: value, error: null);
   }
 
-  /// Start adding optional nutrition.
-  void startAddingOptionalNutrition() {
-    final nutritionType = state.resolvedOptionalNutritionType;
-    if (nutritionType == null) {
-      return;
-    }
-    state = state.copyWith(
-      isAddingOptionalNutrition: true,
-      optionalNutritionValueText: '',
-      optionalNutritionType: nutritionType,
-      optionalNutritionUnit: InventoryAmountUnit.gram,
-      error: null,
-    );
-  }
-
-  /// Cancel adding optional nutrition.
-  void cancelAddingOptionalNutrition() {
-    state = state.copyWith(
-      isAddingOptionalNutrition: false,
-      optionalNutritionValueText: '',
-      error: null,
-    );
-  }
-
-  /// Update optional nutrition value text.
-  void updateOptionalNutritionValueText(String value) {
-    state = state.copyWith(optionalNutritionValueText: value, error: null);
-  }
-
-  /// Update optional nutrition unit.
-  void updateOptionalNutritionUnit(InventoryAmountUnit unit) {
-    state = state.copyWith(optionalNutritionUnit: unit, error: null);
-  }
-
-  /// Update optional nutrition type.
-  void updateOptionalNutritionType(InventoryReceiptOptionalNutritionType type) {
-    state = state.copyWith(optionalNutritionType: type, error: null);
-  }
-
-  /// Apply optional nutrition.
-  void applyOptionalNutrition() {
-    final nutritionType = state.resolvedOptionalNutritionType;
-    final valueText = state.optionalNutritionValueText;
-    if (nutritionType == null || parseManualProductDouble(valueText) == null) {
-      return;
-    }
-
-    switch (nutritionType) {
-      case InventoryReceiptOptionalNutritionType.polyunsaturatedFat:
-        state = state.copyWith(
-          showPolyunsaturatedFatField: true,
-          polyunsaturatedFatText: valueText,
-          isAddingOptionalNutrition: false,
-          optionalNutritionValueText: '',
-          error: null,
-        );
-      case InventoryReceiptOptionalNutritionType.fiber:
-        state = state.copyWith(
-          showFiberField: true,
-          fiberText: valueText,
-          isAddingOptionalNutrition: false,
-          optionalNutritionValueText: '',
-          error: null,
-        );
-    }
+  /// Shows the input row of the optional nutrient [type], empty.
+  void showOptionalNutrition(InventoryReceiptOptionalNutritionType type) {
+    state = switch (type) {
+      InventoryReceiptOptionalNutritionType.polyunsaturatedFat =>
+        state.copyWith(showPolyunsaturatedFatField: true, error: null),
+      InventoryReceiptOptionalNutritionType.fiber => state.copyWith(
+        showFiberField: true,
+        error: null,
+      ),
+    };
   }
 
   /// Update fat text.
@@ -316,22 +261,6 @@ class InventoryReceiptManualProductController
 
   InventoryReceiptManualProductConfig get _config => config;
 
-  /// Builds preview data.
-  ({String? imageUrl, String name, String? brand, String? weight})?
-  buildPreviewData() {
-    final matchedProduct = _currentMatchedProduct();
-    return (
-      imageUrl: normalizeProductImageUrl(
-        _config.item.imageUrl ?? matchedProduct?.imageUrl,
-      ),
-      name: _resolvedManualName(
-        fallbackName: matchedProduct?.name ?? _config.item.name,
-      ),
-      brand: _resolvedManualBrand(),
-      weight: _resolvedWeight,
-    );
-  }
-
   String? get _resolvedWeight {
     return _resolvedManualWeightInput.normalizedWeight;
   }
@@ -385,7 +314,7 @@ class InventoryReceiptManualProductController
       return null;
     }
 
-    final matchedProduct = _currentMatchedProduct();
+    final matchedProduct = state.matchedProduct;
     final selectedProduct = state.selectedProduct;
     final resolvedWeightInput = _resolvedManualWeightInput;
     final globalPackageWeight = _resolvedGlobalPackageWeight(
@@ -590,8 +519,6 @@ class InventoryReceiptManualProductController
       saltText: formatManualProductDouble(nutrition?.per100Salt),
       showPolyunsaturatedFatField: nutrition?.per100PolyunsaturatedFat != null,
       showFiberField: nutrition?.per100Fiber != null,
-      isAddingOptionalNutrition: false,
-      optionalNutritionValueText: '',
       selectedProduct: product,
       ocrDraft: null,
       error: null,
@@ -626,8 +553,6 @@ class InventoryReceiptManualProductController
           state.showPolyunsaturatedFatField ||
           draft.per100PolyunsaturatedFat != null,
       showFiberField: state.showFiberField || draft.per100Fiber != null,
-      isAddingOptionalNutrition: false,
-      optionalNutritionValueText: '',
       error: null,
     );
   }
@@ -694,22 +619,6 @@ class InventoryReceiptManualProductController
 
   String? _resolvedManualBrand() {
     return normalizeManualProductText(state.brandText);
-  }
-
-  InventoryReceiptManualProductSelection? _currentMatchedProduct() {
-    final selectedProduct = state.selectedProduct;
-    if (selectedProduct == null) {
-      return null;
-    }
-
-    final normalizedBarcode = normalizeBarcode(state.barcode);
-    if (normalizedBarcode.isEmpty) {
-      return selectedProduct;
-    }
-    if (normalizedBarcode != normalizeBarcode(selectedProduct.barcode)) {
-      return null;
-    }
-    return selectedProduct;
   }
 
   bool _requiresGlobalPersistenceForSelection({

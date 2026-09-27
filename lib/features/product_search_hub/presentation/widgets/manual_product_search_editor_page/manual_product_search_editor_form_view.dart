@@ -7,18 +7,18 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'manual_product_form_field.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_page/'
     'manual_product_search_editor_support.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_preview.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_search_form.dart';
+    'manual_product_search_form_details.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Form view displaying product details and save actions.
+/// Editor page for the product in [state], wired to [controller].
 class ManualProductSearchEditorFormView extends StatelessWidget {
-  /// Creates the editor form view.
+  /// Creates the editor view.
   const new({
     required this.state,
     required this.controller,
@@ -26,13 +26,12 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
     required this.selectedAction,
     required this.showActionSelector,
     required this.showEatImmediatelyOption,
-    required this.preview,
+    required this.imageUrl,
     required this.canSave,
     required this.onScanBarcode,
     required this.onScanNutritionLabel,
     required this.onNoBarcodeChanged,
     required this.onActionChanged,
-    required this.onCancel,
     required this.onSave,
     super.key,
   });
@@ -55,8 +54,8 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
   /// Whether the immediate eat action is supported.
   final bool showEatImmediatelyOption;
 
-  /// Preview data for the selected product.
-  final InventoryReceiptManualProductPreviewData? preview;
+  /// Product image address.
+  final String? imageUrl;
 
   /// Whether the product can currently be saved.
   final bool canSave;
@@ -73,9 +72,6 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
   /// Action change callback.
   final ValueChanged<InventoryReceiptManualProductAction> onActionChanged;
 
-  /// Cancel callback.
-  final VoidCallback onCancel;
-
   /// Save callback.
   final VoidCallback onSave;
 
@@ -83,70 +79,44 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: InventoryReceiptManualProductForm(
-        preview: preview,
-        canSave: canSave,
-        isRunningNutritionOcr: state.isRunningNutritionOcr,
-        nutritionOcrImageBytes: state.nutritionOcrImageBytes,
-        nameText: state.nameText,
-        brandText: state.brandText,
-        barcodeText: state.barcode,
-        hasNoBarcode: state.hasNoBarcode,
-        weightAmount: state.weightAmount,
-        selectedWeightUnit: state.selectedWeightUnit,
-        kcalText: state.kcalText,
-        saturatedFatText: state.saturatedFatText,
-        polyunsaturatedFatText: state.polyunsaturatedFatText,
-        showPolyunsaturatedFatField: state.showPolyunsaturatedFatField,
-        fatText: state.fatText,
-        carbsText: state.carbsText,
-        sugarText: state.sugarText,
-        fiberText: state.fiberText,
-        showFiberField: state.showFiberField,
-        proteinText: state.proteinText,
-        saltText: state.saltText,
-        canAddOptionalNutrition: state.canAddOptionalNutrition,
-        isAddingOptionalNutrition: state.isAddingOptionalNutrition,
-        optionalNutritionValueText: state.optionalNutritionValueText,
-        optionalNutritionUnit: state.optionalNutritionUnit,
-        optionalNutritionType: state.resolvedOptionalNutritionType,
-        availableOptionalNutritionTypes: state.availableOptionalNutritionTypes,
-        errorText: resolveManualProductErrorText(l10n, state.error),
-        showActionSelector:
-            showEatImmediatelyOption &&
-            showActionSelector &&
-            !quickEatConfig.quickEatOnly,
-        selectedAction: selectedAction,
-        onScanBarcode: onScanBarcode,
-        onNameChanged: controller.updateNameText,
-        onBrandChanged: controller.updateBrandText,
-        onBarcodeChanged: controller.updateBarcode,
-        onNoBarcodeChanged: onNoBarcodeChanged,
-        onWeightAmountChanged: controller.updateWeightAmount,
-        onWeightUnitChanged: controller.updateWeightUnit,
-        onKcalChanged: controller.updateKcalText,
-        onFatChanged: controller.updateFatText,
-        onSaturatedFatChanged: controller.updateSaturatedFatText,
-        onCarbsChanged: controller.updateCarbsText,
-        onSugarChanged: controller.updateSugarText,
-        onProteinChanged: controller.updateProteinText,
-        onSaltChanged: controller.updateSaltText,
-        onPolyunsaturatedFatChanged: controller.updatePolyunsaturatedFatText,
-        onFiberChanged: controller.updateFiberText,
-        onScanNutritionLabel: onScanNutritionLabel,
-        onStartAddingOptionalNutrition: controller.startAddingOptionalNutrition,
-        onOptionalNutritionValueChanged:
-            controller.updateOptionalNutritionValueText,
-        onOptionalNutritionUnitChanged: controller.updateOptionalNutritionUnit,
-        onOptionalNutritionTypeChanged: controller.updateOptionalNutritionType,
-        onApplyOptionalNutrition: controller.applyOptionalNutrition,
-        onCancelOptionalNutrition: controller.cancelAddingOptionalNutrition,
-        onActionChanged: onActionChanged,
-        onCancel: onCancel,
-        onSave: onSave,
-      ),
+    return ManualProductDetailsForm(
+      state: state,
+      imageUrl: imageUrl,
+      canSave: canSave,
+      errorText: resolveManualProductErrorText(l10n, state.error),
+      showActionSelector:
+          showEatImmediatelyOption &&
+          showActionSelector &&
+          !quickEatConfig.quickEatOnly,
+      selectedAction: selectedAction,
+      onFieldChanged: _updateField,
+      onWeightUnitChanged: controller.updateWeightUnit,
+      onNoBarcodeChanged: onNoBarcodeChanged,
+      onScanBarcode: onScanBarcode,
+      onScanNutritionLabel: onScanNutritionLabel,
+      onAddOptionalNutrition: controller.showOptionalNutrition,
+      onActionChanged: onActionChanged,
+      onSave: onSave,
     );
+  }
+
+  void _updateField(ManualProductFormField field, String text) {
+    final update = switch (field) {
+      ManualProductFormField.brand => controller.updateBrandText,
+      ManualProductFormField.name => controller.updateNameText,
+      ManualProductFormField.weightAmount => controller.updateWeightAmount,
+      ManualProductFormField.barcode => controller.updateBarcode,
+      ManualProductFormField.kcal => controller.updateKcalText,
+      ManualProductFormField.fat => controller.updateFatText,
+      ManualProductFormField.saturatedFat => controller.updateSaturatedFatText,
+      ManualProductFormField.polyunsaturatedFat =>
+        controller.updatePolyunsaturatedFatText,
+      ManualProductFormField.carbs => controller.updateCarbsText,
+      ManualProductFormField.sugar => controller.updateSugarText,
+      ManualProductFormField.fiber => controller.updateFiberText,
+      ManualProductFormField.protein => controller.updateProteinText,
+      ManualProductFormField.salt => controller.updateSaltText,
+    };
+    update(text);
   }
 }

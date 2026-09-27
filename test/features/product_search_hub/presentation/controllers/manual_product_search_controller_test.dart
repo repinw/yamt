@@ -112,8 +112,6 @@ void main() {
     );
 
     expect(state.availableOptionalNutritionTypes, isEmpty);
-    expect(state.canAddOptionalNutrition, isFalse);
-    expect(state.resolvedOptionalNutritionType, isNull);
 
     final cleared = state.copyWith(selectedProduct: null, error: null);
     expect(cleared.selectedProduct, isNull);
@@ -470,7 +468,7 @@ void main() {
     expect(payload, isNull);
   });
 
-  test('buildPreviewData uses manual text with matched product media', () {
+  test('the selected product matches until the barcode changes', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
@@ -487,16 +485,16 @@ void main() {
       selectedProduct: selectedProduct,
     );
     final provider = inventoryReceiptManualProductControllerProvider(config);
-    final controller = container.read(provider.notifier)
-      ..updateNameText('  Custom Zero  ')
-      ..updateBrandText('  Custom Brand  ');
+    final controller = container.read(provider.notifier);
 
-    final preview = controller.buildPreviewData();
+    expect(
+      container.read(provider).matchedProduct?.imageUrl,
+      'https://example.com/image.png',
+    );
 
-    expect(preview?.name, 'Custom Zero');
-    expect(preview?.brand, 'Custom Brand');
-    expect(preview?.weight, '330 ml');
-    expect(preview?.imageUrl, 'https://example.com/image.png');
+    controller.updateBarcode('4006381333931');
+
+    expect(container.read(provider).matchedProduct, isNull);
   });
 
   test(
@@ -938,16 +936,20 @@ void main() {
     );
     addTearDown(subscription.close);
 
-    container.read(provider.notifier).startAddingOptionalNutrition();
-    final state = container.read(provider);
-
-    expect(state.availableOptionalNutritionTypes, const [
+    expect(container.read(provider).availableOptionalNutritionTypes, const [
       InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
     ]);
-    expect(
-      state.resolvedOptionalNutritionType,
-      InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
-    );
+
+    container
+        .read(provider.notifier)
+        .showOptionalNutrition(
+          InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
+        );
+    final state = container.read(provider);
+
+    expect(state.showPolyunsaturatedFatField, isTrue);
+    expect(state.polyunsaturatedFatText, isEmpty);
+    expect(state.availableOptionalNutritionTypes, isEmpty);
   });
 
   test(
@@ -1022,18 +1024,18 @@ void main() {
       expect(state.brandText, 'Gut Bio');
 
       notifier
-        ..startAddingOptionalNutrition()
-        ..updateOptionalNutritionValueText('0')
-        ..applyOptionalNutrition();
+        ..showOptionalNutrition(
+          InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
+        )
+        ..updatePolyunsaturatedFatText('0');
       final polyState = container.read(provider);
       expect(polyState.showPolyunsaturatedFatField, isTrue);
       expect(polyState.polyunsaturatedFatText, '0');
       expect(polyState.showFiberField, isFalse);
 
       notifier
-        ..startAddingOptionalNutrition()
-        ..updateOptionalNutritionValueText('1')
-        ..applyOptionalNutrition();
+        ..showOptionalNutrition(InventoryReceiptOptionalNutritionType.fiber)
+        ..updateFiberText('1');
       final fiberState = container.read(provider);
       expect(fiberState.showFiberField, isTrue);
       expect(fiberState.fiberText, '1');

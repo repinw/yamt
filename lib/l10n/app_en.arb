@@ -84,16 +84,9 @@
   "productSearchHubSearchLoadFailed": "Product search failed.",
   "productSearchHubSearchRetryAction": "Retry",
   "productSearchHubSearchEmptyState": "No matching products found.",
-  "productSearchHubRequiredFieldLabel": "{label} *",
-  "@productSearchHubRequiredFieldLabel": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "eatPageAmountUnknown": "–",
   "productSearchHubNoBarcodeAction": "No barcode",
+  "productSearchHubMissingNutritionHint": "Required values are missing. Every EU nutrition label lists them.",
   "productSearchHubCreateProductAction": "Create product",
   "productSearchHubCartTitle": "Selected products",
   "productSearchHubCartAddAction": "Add",
@@ -1151,15 +1144,7 @@
   "caloriesPer100ProteinLabel": "Protein (g)",
   "caloriesPer100CarbsLabel": "Carbs (g)",
   "caloriesPer100FatLabel": "Fat (g)",
-  "caloriesPer100SaturatedFatLabel": "Saturated fat (g)",
-  "caloriesPer100PolyunsaturatedFatLabel": "Polyunsaturated fat (g)",
-  "caloriesPer100SugarLabel": "Sugar (g)",
-  "caloriesPer100FiberLabel": "Fiber (g)",
-  "caloriesPer100SaltLabel": "Salt (g)",
   "inventoryReceiptReviewManualAddNutritionAction": "Add more nutrients",
-  "inventoryReceiptReviewManualNutritionValueLabel": "Value",
-  "inventoryReceiptReviewManualNutritionUnitLabel": "Unit",
-  "inventoryReceiptReviewManualNutritionTypeLabel": "Nutrient",
   "caloriesEntryDateTimeLabel": "Date and time",
   "caloriesSaveEntryAction": "Save",
   "caloriesSaveFailed": "Could not save entry.",

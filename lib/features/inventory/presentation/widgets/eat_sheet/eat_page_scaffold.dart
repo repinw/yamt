@@ -18,6 +18,7 @@ class EatPageScaffold extends StatelessWidget {
     this.secondaryLabel,
     this.secondaryButtonKey,
     this.onSecondary,
+    this.hasOwnMessenger = true,
     super.key,
   });
 
@@ -52,6 +53,11 @@ class EatPageScaffold extends StatelessWidget {
   /// Called by the second button.
   final VoidCallback? onSecondary;
 
+  /// Whether the page shows only its own snack bars. Without an own
+  /// messenger, snack bars that the caller shows through the route's
+  /// context appear on this page.
+  final bool hasOwnMessenger;
+
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
@@ -59,97 +65,95 @@ class EatPageScaffold extends StatelessWidget {
     final secondary = secondaryLabel;
     final kcalValue = kcal;
 
-    // An own messenger keeps snack bars of earlier entries off this page.
-    return ScaffoldMessenger(
-      child: Scaffold(
-        backgroundColor: colors.paper,
-        body: SafeArea(
-          bottom: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xs,
-                  AppSpacing.sm,
-                  AppSpacing.md,
-                  0,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    IconButton(
-                      key: cancelButtonKey,
-                      tooltip: MaterialLocalizations.of(context)
-                          .closeButtonTooltip,
-                      onPressed: () => Navigator.of(context).pop(),
-                      icon: Icon(Icons.close_rounded, color: colors.ink),
-                    ),
-                    whenControl,
-                  ],
-                ),
-              ),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(
-                    AppSpacing.xxl,
-                    AppSpacing.xs,
-                    AppSpacing.xxl,
-                    AppSpacing.xl,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: AppSpacing.xxl,
-                    children: children,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Snack bars of this page float above the buttons instead of
-        // covering them.
-        bottomNavigationBar: SafeArea(
-          top: false,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              border: Border(top: BorderSide(color: colors.rule)),
-            ),
-            child: Padding(
+    final scaffold = Scaffold(
+      backgroundColor: colors.paper,
+      body: SafeArea(
+        bottom: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
+                AppSpacing.xs,
+                AppSpacing.sm,
                 AppSpacing.md,
-                AppSpacing.xl,
-                AppSpacing.xl,
+                0,
               ),
               child: Row(
-                spacing: AppSpacing.xs,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  if (secondary != null)
-                    FilledButton.tonal(
-                      key: secondaryButtonKey,
-                      onPressed: onSecondary,
-                      child: Text(secondary),
-                    ),
-                  Expanded(
-                    child: _ConfirmButton(
-                      buttonKey: confirmButtonKey,
-                      label:
-                          confirmLabel ??
-                          l10n.inventoryItemEatSheetConfirmAction,
-                      trailing: kcalValue == null
-                          ? null
-                          : l10n.eatPageKcal(kcalValue.round()),
-                      onPressed: onConfirm,
-                    ),
+                  IconButton(
+                    key: cancelButtonKey,
+                    tooltip: MaterialLocalizations.of(context)
+                        .closeButtonTooltip,
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: Icon(Icons.close_rounded, color: colors.ink),
                   ),
+                  whenControl,
                 ],
               ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.xxl,
+                  AppSpacing.xs,
+                  AppSpacing.xxl,
+                  AppSpacing.xl,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: AppSpacing.xxl,
+                  children: children,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Snack bars of this page float above the buttons instead of
+      // covering them.
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(top: BorderSide(color: colors.rule)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.xl,
+              AppSpacing.md,
+              AppSpacing.xl,
+              AppSpacing.xl,
+            ),
+            child: Row(
+              spacing: AppSpacing.xs,
+              children: [
+                if (secondary != null)
+                  FilledButton.tonal(
+                    key: secondaryButtonKey,
+                    onPressed: onSecondary,
+                    child: Text(secondary),
+                  ),
+                Expanded(
+                  child: _ConfirmButton(
+                    buttonKey: confirmButtonKey,
+                    label:
+                        confirmLabel ?? l10n.inventoryItemEatSheetConfirmAction,
+                    trailing: kcalValue == null
+                        ? null
+                        : l10n.eatPageKcal(kcalValue.round()),
+                    onPressed: onConfirm,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+    // An own messenger keeps snack bars of earlier entries off this page.
+    return hasOwnMessenger ? ScaffoldMessenger(child: scaffold) : scaffold;
   }
 }
 

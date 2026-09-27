@@ -183,15 +183,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Keine passenden Produkte gefunden.';
 
   @override
-  String productSearchHubRequiredFieldLabel(String label) {
-    return '$label *';
-  }
-
-  @override
   String get eatPageAmountUnknown => '–';
 
   @override
   String get productSearchHubNoBarcodeAction => 'Kein Barcode';
+
+  @override
+  String get productSearchHubMissingNutritionHint =>
+      'Pflichtwerte fehlen noch. Jedes EU-Nährwertetikett nennt sie.';
 
   @override
   String get productSearchHubCreateProductAction => 'Produkt erstellen';
@@ -2443,34 +2442,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesPer100FatLabel => 'Fett (g)';
 
   @override
-  String get caloriesPer100SaturatedFatLabel =>
-      'Davon gesättigte Fettsäuren (g)';
-
-  @override
-  String get caloriesPer100PolyunsaturatedFatLabel =>
-      'Davon mehrfach ungesättigte Fettsäuren (g)';
-
-  @override
-  String get caloriesPer100SugarLabel => 'Davon Zucker (g)';
-
-  @override
-  String get caloriesPer100FiberLabel => 'Ballaststoffe (g)';
-
-  @override
-  String get caloriesPer100SaltLabel => 'Salz (g)';
-
-  @override
   String get inventoryReceiptReviewManualAddNutritionAction =>
       'Weitere Nährwerte eintragen';
-
-  @override
-  String get inventoryReceiptReviewManualNutritionValueLabel => 'Wert';
-
-  @override
-  String get inventoryReceiptReviewManualNutritionUnitLabel => 'Einheit';
-
-  @override
-  String get inventoryReceiptReviewManualNutritionTypeLabel => 'Nährwert';
 
   @override
   String get caloriesEntryDateTimeLabel => 'Datum und Uhrzeit';

@@ -229,7 +229,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   lean / normal / rich chips that shift the energy. Confirm logs the food
   when opened from the diary and adds it to the Vorrat otherwise; "Analyze
   again" returns to the input.
-- Manual nutrition entry and extended nutrient fields.
+- The product editor looks like the eat page: image, brand and name as
+  inputs, package size with a unit switch, barcode or "no barcode", and the
+  nutrition label with an input per 100 g. All seven values of the EU label
+  (energy, fat, saturates, carbohydrate, sugars, protein, salt) are required;
+  a missing one is framed. Polyunsaturates and fibre come from the "+" row,
+  and the scan button in the label head reads a nutrition label photo.
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.
 - "Create" opens an empty product form. Name, unit, kcal, carbs, protein,

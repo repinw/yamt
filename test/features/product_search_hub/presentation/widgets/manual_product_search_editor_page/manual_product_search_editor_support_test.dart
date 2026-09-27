@@ -16,10 +16,13 @@ const _complete = InventoryReceiptManualProductState(
   carbsText: '4',
   proteinText: '11',
   fatText: '0.2',
+  saturatedFatText: '0.1',
+  sugarText: '4',
+  saltText: '0.1',
 );
 
 void main() {
-  test('saving needs name, unit, kcal, carbs, protein and fat', () {
+  test('saving needs name, unit, and every EU label value', () {
     expect(
       canSaveManualProduct(
         state: _complete,
@@ -36,11 +39,17 @@ void main() {
         carbsText: _complete.carbsText,
         proteinText: _complete.proteinText,
         fatText: _complete.fatText,
+        saturatedFatText: _complete.saturatedFatText,
+        sugarText: _complete.sugarText,
+        saltText: _complete.saltText,
       ),
       _complete.copyWith(kcalText: ''),
       _complete.copyWith(carbsText: ''),
       _complete.copyWith(proteinText: ''),
       _complete.copyWith(fatText: ''),
+      _complete.copyWith(saturatedFatText: ''),
+      _complete.copyWith(sugarText: ''),
+      _complete.copyWith(saltText: ''),
     ]) {
       expect(
         canSaveManualProduct(

@@ -180,15 +180,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productSearchHubSearchEmptyState => 'No matching products found.';
 
   @override
-  String productSearchHubRequiredFieldLabel(String label) {
-    return '$label *';
-  }
-
-  @override
   String get eatPageAmountUnknown => '–';
 
   @override
   String get productSearchHubNoBarcodeAction => 'No barcode';
+
+  @override
+  String get productSearchHubMissingNutritionHint =>
+      'Required values are missing. Every EU nutrition label lists them.';
 
   @override
   String get productSearchHubCreateProductAction => 'Create product';
@@ -2392,32 +2391,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesPer100FatLabel => 'Fat (g)';
 
   @override
-  String get caloriesPer100SaturatedFatLabel => 'Saturated fat (g)';
-
-  @override
-  String get caloriesPer100PolyunsaturatedFatLabel => 'Polyunsaturated fat (g)';
-
-  @override
-  String get caloriesPer100SugarLabel => 'Sugar (g)';
-
-  @override
-  String get caloriesPer100FiberLabel => 'Fiber (g)';
-
-  @override
-  String get caloriesPer100SaltLabel => 'Salt (g)';
-
-  @override
   String get inventoryReceiptReviewManualAddNutritionAction =>
       'Add more nutrients';
-
-  @override
-  String get inventoryReceiptReviewManualNutritionValueLabel => 'Value';
-
-  @override
-  String get inventoryReceiptReviewManualNutritionUnitLabel => 'Unit';
-
-  @override
-  String get inventoryReceiptReviewManualNutritionTypeLabel => 'Nutrient';
 
   @override
   String get caloriesEntryDateTimeLabel => 'Date and time';
