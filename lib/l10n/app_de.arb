@@ -1741,11 +1741,11 @@
   "cookflowLoadFailed": "Cookflow konnte nicht geladen werden.",
   "cookflowStartButton": "Flow starten",
   "cookflowLaterButton": "Später",
-  "cookflowShoppingListContinueButton": "Zur Einkaufsliste hinzufügen und später fortsetzen",
+  "cookflowShoppingListContinueButton": "Einkaufsliste",
   "cookflowShoppingListAddSucceeded": "Zutaten zur Einkaufsliste hinzugefügt.",
   "cookflowShoppingListAddFailed": "Einkaufsliste konnte nicht aktualisiert werden.",
   "cookflowSessionSaveFailed": "Cookflow konnte nicht gespeichert werden.",
-  "cookflowResolveConflictsButton": "Bitte Konflikte lösen",
+  "cookflowResolveConflictsButton": "Konflikte lösen",
   "cookflowContinueButton": "Weiter",
   "cookflowPhaseChip": "Phase {currentPhase} / {totalPhases}",
   "@cookflowPhaseChip": {
@@ -1809,7 +1809,14 @@
       "inventoryUnit": {}
     }
   },
-  "cookflowInventoryUnitConversionPrefix": "1 Stück ≈",
+  "cookflowInventoryUnitConversionPrefix": "1 {unit} ≈",
+  "@cookflowInventoryUnitConversionPrefix": {
+    "placeholders": {
+      "unit": {}
+    }
+  },
+  "cookflowInventoryUnitTablespoon": "EL",
+  "cookflowInventoryUnitTeaspoon": "TL",
   "cookflowInventoryUnitConvertAction": "Umrechnen",
   "cookflowInventoryUnitWeighLaterAction": "Später beim Kochen wiegen",
   "cookflowEditIngredientTooltip": "Zutat bearbeiten",
@@ -1883,6 +1890,14 @@
   "cookflowGrossWeightTitle": "Bruttogewicht (Topf + Essen)",
   "cookflowGrossWeightHint": "z.B. 2500",
   "cookflowNetWeightLabel": "Netto-Endgewicht",
+  "cookflowContainerPortionsLabel": "{count, plural, =1{1 Portion} other{{count} Portionen}}",
+  "@cookflowContainerPortionsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "cookflowSplitIntoPortionsLabel": "Portionen nachjustieren?",
   "cookflowHowManyPortions": "Wie viele Portionen sind das?",
   "cookflowCaloriesShortLabel": "KALORIEN",

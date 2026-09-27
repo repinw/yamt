@@ -94,6 +94,15 @@ RecipeIngredientEffectiveRequirement? resolveEffectiveRequirementForItems({
       );
     }
 
+    if (sharedAmountUnit == InventoryAmountUnit.piece &&
+        requirement.allowsDirectPieceInventoryMatch) {
+      return RecipeIngredientEffectiveRequirement(
+        amount: requirement.amount,
+        unit: requiredUnit,
+        name: requirement.name,
+      );
+    }
+
     if (amountConversion == null ||
         amountConversion.amountPerPiece < 1 ||
         amountConversion.unit != sharedAmountUnit) {

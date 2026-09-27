@@ -185,7 +185,7 @@ CookingFlowSummaryIngredientDraft _summaryIngredientDraftForItem({
           adjustment: adjustment,
           localeCode: localeCode,
         ) ??
-        defaultCookingFlowSummaryAmountForItem(item).toString(),
+        defaultCookingFlowSummaryAmountForItem(item),
     unitCode: cookingFlowSummaryUnitCodeForItem(item),
     inventoryItemIds: <String>[item.id],
     kind: CookingFlowSummaryIngredientKind.additional,

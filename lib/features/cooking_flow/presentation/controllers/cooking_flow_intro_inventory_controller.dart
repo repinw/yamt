@@ -613,12 +613,14 @@ class CookingFlowIntroInventoryController
   ) {
     final basePortions = input.template.totalPortions;
     final selectedPortions = input.targetPortions;
-    if (basePortions < 1 || selectedPortions < 1) {
-      return '${component.usedAmount}${component.usedUnit.code}';
-    }
-    final scaledAmount =
-        (component.usedAmount * selectedPortions / basePortions).round();
-    return '$scaledAmount${component.usedUnit.code}';
+    final scaledAmount = basePortions < 1 || selectedPortions < 1
+        ? component.usedAmount
+        : (component.usedAmount * selectedPortions / basePortions).round();
+    final amount = cookingFlowComponentAmountValue(
+      component,
+      amount: scaledAmount,
+    );
+    return '$amount${component.usedUnit.code}';
   }
 
   String _cookflowIntroRequirementAmountLabel(

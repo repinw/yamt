@@ -1,9 +1,12 @@
 import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_amount_utils.dart';
+import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_inventory_requirement.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_parser_locale.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 export 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_inventory_requirement.dart'
@@ -92,10 +95,32 @@ class CookingFlowInventoryCheckRowData {
 
 /// Formats inventory item amount for assignment UI.
 String cookingFlowInventoryAmountLabel(InventoryItem item) {
-  if (item.usesAmountProgress && item.amountUnit != null) {
-    return '${item.currentAmount} ${item.amountUnit!.code}';
+  final amountUnit = item.amountUnit;
+  if (item.usesAmountProgress && amountUnit != null) {
+    final amount = formatInventoryAmountValue(
+      amount: item.currentAmount,
+      unit: amountUnit,
+      scale: item.amountScale,
+    );
+    return '$amount ${amountUnit.code}';
   }
   return '${item.quantity}x';
+}
+
+/// Formats a stored prepared-meal component [amount] in display units, for
+/// example 8000 thousandths of a piece as `8`.
+String cookingFlowComponentAmountValue(
+  PreparedMealComponent component, {
+  required int amount,
+}) {
+  final sourceItem = component.sourceItemSnapshot;
+  return formatCookingFlowDecimal(
+    inventoryAmountToDisplayValue(
+      amount: amount,
+      unit: component.usedUnit,
+      scale: sourceItem.usesAmountProgress ? sourceItem.amountScale : 1,
+    ),
+  );
 }
 
 /// Maps persisted selection draft into UI/application selection.

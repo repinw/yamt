@@ -3824,8 +3824,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookflowLaterButton => 'Later';
 
   @override
-  String get cookflowShoppingListContinueButton =>
-      'Add to shopping list and continue later';
+  String get cookflowShoppingListContinueButton => 'Shopping list';
 
   @override
   String get cookflowShoppingListAddSucceeded =>
@@ -3949,7 +3948,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get cookflowInventoryUnitConversionPrefix => '1 piece ≈';
+  String cookflowInventoryUnitConversionPrefix(Object unit) {
+    return '1 $unit ≈';
+  }
+
+  @override
+  String get cookflowInventoryUnitTablespoon => 'tbsp';
+
+  @override
+  String get cookflowInventoryUnitTeaspoon => 'tsp';
 
   @override
   String get cookflowInventoryUnitConvertAction => 'Convert';
@@ -4148,6 +4155,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cookflowNetWeightLabel => 'Net final weight';
+
+  @override
+  String cookflowContainerPortionsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count portions',
+      one: '1 portion',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get cookflowSplitIntoPortionsLabel => 'Adjust portions?';

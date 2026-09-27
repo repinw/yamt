@@ -16,10 +16,6 @@ import 'package:yamt/features/cooking_flow/presentation/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-const Color cookingFlowConflictBorderColor = Color(0xFFFFA24A);
-const Color _conflictTextColor = Color(0xFFB95B00);
-const Color _conflictBackgroundColor = Color(0xFFFFE7D6);
-
 class CookingFlowInventoryConflictPanel extends StatelessWidget {
   const new({
     required this.conflict,
@@ -57,12 +53,12 @@ class CookingFlowInventoryConflictPanel extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.only(top: 2),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
               child: Icon(
                 Icons.warning_amber_rounded,
                 size: 18,
-                color: cookingFlowConflictBorderColor,
+                color: colors.error,
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
@@ -74,7 +70,7 @@ class CookingFlowInventoryConflictPanel extends StatelessWidget {
                   missingLabel: conflict.missingAmountLabel,
                 ),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: _conflictTextColor,
+                  color: colors.error,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -102,8 +98,8 @@ class CookingFlowInventoryConflictPanel extends StatelessWidget {
                 isActive:
                     selectedResolution ==
                     CookingFlowInventoryConflictResolution.adjustTemplate,
-                backgroundColor: _conflictBackgroundColor,
-                foregroundColor: _conflictTextColor,
+                backgroundColor: colors.errorContainer,
+                foregroundColor: colors.onErrorContainer,
                 onPressed: onAdjustTemplatePressed,
               ),
             ),
@@ -133,49 +129,52 @@ class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(color: colors.primary.withValues(alpha: 0.24)),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Icon(Icons.inventory_2_rounded, size: 18),
-          const SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Row(
-              children: <Widget>[
-                CookingFlowInventoryAssignmentPreview(
-                  label: item.name,
-                  imageUrl: item.imageUrl,
-                  size: 28,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Text(
-                        l10n.cookflowInventoryReturnSuggestion,
-                        style: Theme.of(context).textTheme.labelLarge
-                            ?.copyWith(fontWeight: FontWeight.w700),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              const Icon(Icons.inventory_2_rounded, size: 18),
+              const SizedBox(width: AppSpacing.sm),
+              CookingFlowInventoryAssignmentPreview(
+                label: item.name,
+                imageUrl: item.imageUrl,
+                size: 28,
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      l10n.cookflowInventoryReturnSuggestion,
+                      style: Theme.of(context).textTheme.labelLarge
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      '${item.name} · $amountLabel',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: colors.onSurfaceVariant,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        '${item.name} · $amountLabel',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colors.onSurfaceVariant,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const SizedBox(width: AppSpacing.sm),
-          FilledButton.tonal(
-            onPressed: onPressed,
-            child: Text(l10n.cookflowInventoryReturnSuggestionButton),
+          const SizedBox(height: AppSpacing.sm),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton.tonal(
+              onPressed: onPressed,
+              child: Text(l10n.cookflowInventoryReturnSuggestionButton),
+            ),
           ),
         ],
       ),
@@ -251,7 +250,17 @@ class _CookingFlowInventoryUnitConflictPanelState
   @override
   void initState() {
     super.initState();
-    _amountController = TextEditingController(text: '100');
+    _amountController = TextEditingController(
+      text: formatCookingFlowDecimal(_defaultConversionAmount),
+    );
+  }
+
+  double get _defaultConversionAmount {
+    return switch (widget.conflict.requiredUnitCode) {
+      cookingFlowTablespoonUnitCode => cookingFlowDefaultGramsPerTablespoon,
+      cookingFlowTeaspoonUnitCode => cookingFlowDefaultGramsPerTeaspoon,
+      _ => 100,
+    };
   }
 
   @override
@@ -272,12 +281,12 @@ class _CookingFlowInventoryUnitConflictPanelState
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Padding(
-              padding: EdgeInsets.only(top: 2),
+            Padding(
+              padding: const EdgeInsets.only(top: 2),
               child: Icon(
                 Icons.balance_rounded,
                 size: 18,
-                color: cookingFlowConflictBorderColor,
+                color: colors.error,
               ),
             ),
             const SizedBox(width: AppSpacing.xs),
@@ -288,7 +297,7 @@ class _CookingFlowInventoryUnitConflictPanelState
                   selectedUnit,
                 ),
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: _conflictTextColor,
+                  color: colors.error,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -299,7 +308,9 @@ class _CookingFlowInventoryUnitConflictPanelState
         Row(
           children: <Widget>[
             Text(
-              l10n.cookflowInventoryUnitConversionPrefix,
+              l10n.cookflowInventoryUnitConversionPrefix(
+                _requiredUnitLabel(l10n),
+              ),
               style: Theme.of(context).textTheme.bodyMedium
                   ?.copyWith(color: colors.onSurfaceVariant),
             ),
@@ -349,6 +360,14 @@ class _CookingFlowInventoryUnitConflictPanelState
       return;
     }
     widget.onConvertUnitPressed(amount);
+  }
+
+  String _requiredUnitLabel(AppLocalizations l10n) {
+    return switch (widget.conflict.requiredUnitCode) {
+      cookingFlowTablespoonUnitCode => l10n.cookflowInventoryUnitTablespoon,
+      cookingFlowTeaspoonUnitCode => l10n.cookflowInventoryUnitTeaspoon,
+      _ => l10n.inventoryItemEatSheetUnitPiece,
+    };
   }
 }
 

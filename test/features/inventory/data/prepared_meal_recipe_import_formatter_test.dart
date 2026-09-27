@@ -52,6 +52,45 @@ void main() {
 
       expect(formatter.formatIngredientLine(ingredient), '2');
     });
+
+    test('invents no quantity for a line with no numeric amount', () {
+      const ingredient = Ingredient(
+        name: 'etwas Schnittlauch (frisch oder TK)',
+        quantity: null,
+      );
+
+      expect(
+        formatter.formatIngredientLine(ingredient),
+        'etwas Schnittlauch (frisch oder TK)',
+      );
+    });
+  });
+
+  group('fromIngredientString', () {
+    test('parses a numeric amount, unit, and name', () {
+      final ingredient = Ingredient.fromIngredientString('500 g Mehl');
+
+      expect(ingredient.quantity, 500);
+      expect(ingredient.unit, 'g');
+      expect(ingredient.name, 'Mehl');
+    });
+
+    test('keeps a vague-amount line intact with no invented quantity', () {
+      final ingredient = Ingredient.fromIngredientString(
+        'etwas Schnittlauch (frisch oder TK)',
+      );
+
+      expect(ingredient.quantity, isNull);
+      expect(ingredient.unit, isNull);
+      expect(ingredient.name, 'etwas Schnittlauch (frisch oder TK)');
+    });
+
+    test('keeps a "Prise" line intact with no invented quantity', () {
+      final ingredient = Ingredient.fromIngredientString('Prise Salz');
+
+      expect(ingredient.quantity, isNull);
+      expect(ingredient.name, 'Prise Salz');
+    });
   });
 
   group('normalizeRecipeImageUrl', () {

@@ -56,8 +56,9 @@ class Ingredient {
   /// The name of the ingredient.
   final String name;
 
-  /// The numeric quantity.
-  final num quantity;
+  /// The numeric quantity. `null` when the line names no amount (for
+  /// example "etwas Schnittlauch" or "Prise Salz"): no quantity is invented.
+  final num? quantity;
 
   /// The unit of measurement (optional).
   final String? unit;
@@ -66,12 +67,12 @@ class Ingredient {
 Ingredient _calculateIngredient(String rawIngredientString) {
   var ingredientString = _replaceFractions(rawIngredientString.trim());
   if (ingredientString.isEmpty) {
-    return const Ingredient(name: '', quantity: 1);
+    return const Ingredient(name: '', quantity: null);
   }
 
   final ingredientParts = ingredientString.split(RegExp(r'\s+'));
   if (ingredientParts.isEmpty) {
-    return const Ingredient(name: '', quantity: 1);
+    return const Ingredient(name: '', quantity: null);
   }
 
   // Handle cases like "100g" -> "100 g"
@@ -115,7 +116,7 @@ Ingredient _calculateIngredient(String rawIngredientString) {
   }
   name = name.replaceAll(RegExp(r'\s+'), ' ').trim();
 
-  return Ingredient(name: name, quantity: amount ?? 1, unit: unitMatch);
+  return Ingredient(name: name, quantity: amount, unit: unitMatch);
 }
 
 String _replaceFractions(String ingredientString) {
@@ -146,10 +147,10 @@ class PreparedMealRecipeImportFormatter {
   /// Format ingredient line.
   String formatIngredientLine(Ingredient ingredient, {String? localeName}) {
     final parts = <String>[];
-    final quantity = formatQuantity(
-      ingredient.quantity,
-      localeName: localeName,
-    );
+    final rawQuantity = ingredient.quantity;
+    final quantity = rawQuantity == null
+        ? ''
+        : formatQuantity(rawQuantity, localeName: localeName);
     if (quantity.isNotEmpty) {
       parts.add(quantity);
     }

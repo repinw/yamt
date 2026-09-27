@@ -18,7 +18,11 @@ PreparedMealComponent buildPreparedMealComponent({
   required InventoryAmountUnit usedUnit,
   required GlobalFoodNutrition nutrition,
 }) {
-  final multiplier = _nutritionMultiplier(amount: usedAmount, unit: usedUnit);
+  final multiplier = _nutritionMultiplier(
+    amount: usedAmount,
+    unit: usedUnit,
+    scale: item.usesAmountProgress ? item.amountScale : 1,
+  );
   return PreparedMealComponent(
     inventoryItemId: item.id,
     name: item.name,
@@ -128,7 +132,11 @@ int consumableAmountForRequirement({
   }
 
   if (requiredUnit == InventoryAmountUnit.piece && item.usesAmountProgress) {
-    return available;
+    if (item.amountUnit != InventoryAmountUnit.piece) {
+      return available;
+    }
+    final requestedAmount = remainingAmount * item.amountScale;
+    return requestedAmount < available ? requestedAmount : available;
   }
   if (requiredUnit != InventoryAmountUnit.piece &&
       item.amountUnit != requiredUnit) {
@@ -156,7 +164,10 @@ int remainingRequirementAfterConsumption({
   required int consumedAmount,
 }) {
   if (requiredUnit == InventoryAmountUnit.piece && item.usesAmountProgress) {
-    return remainingAmount - 1;
+    if (item.amountUnit != InventoryAmountUnit.piece) {
+      return remainingAmount - 1;
+    }
+    return remainingAmount - consumedAmount ~/ item.amountScale;
   }
   return remainingAmount - consumedAmount;
 }
@@ -236,9 +247,14 @@ int remainingPreparedMealShareAmount({
 double _nutritionMultiplier({
   required int amount,
   required InventoryAmountUnit unit,
+  required int scale,
 }) {
   if (unit == InventoryAmountUnit.piece) {
-    return amount.toDouble();
+    return inventoryAmountToDisplayValue(
+      amount: amount,
+      unit: unit,
+      scale: scale,
+    );
   }
   return amount / 100;
 }

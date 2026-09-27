@@ -4,6 +4,10 @@ import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
 import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_intro_inventory_models.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_inventory_conflict_resolver.dart';
+import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_step_layout.dart';
@@ -120,7 +124,7 @@ class CookingFlowSummaryPage extends StatelessWidget {
           const SizedBox(height: AppSpacing.xxxxl),
           Row(
             children: <Widget>[
-              const Icon(Icons.warning_amber_rounded, color: Color(0xFFE65100)),
+              Icon(Icons.warning_amber_rounded, color: colors.error),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 l10n.cookflowSummaryAdjustmentsTitle,
@@ -427,7 +431,7 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
                                     ),
                                     title: Text(item.name),
                                     subtitle: Text(
-                                      _summaryInventoryPickerAmountLabel(item),
+                                      cookingFlowInventoryAmountLabel(item),
                                     ),
                                     onTap: () {
                                       Navigator.of(context).pop(item);
@@ -446,13 +450,6 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
       ),
     );
   }
-}
-
-String _summaryInventoryPickerAmountLabel(InventoryItem item) {
-  if (item.usesAmountProgress && item.amountUnit != null) {
-    return '${item.currentAmount} ${item.amountUnit!.code}';
-  }
-  return '${item.quantity}x';
 }
 
 class _SummaryIngredientsTable extends StatelessWidget {
@@ -844,33 +841,18 @@ String? _summaryUsagePreviewLabel({
     return null;
   }
   final selectedIds = ingredient.inventoryItemIds.toSet();
-  final selectedItems = inventoryItems
-      .where((item) => selectedIds.contains(item.id))
-      .toList(growable: false);
-  if (selectedItems.isEmpty ||
-      !_hasSummaryCompatibleSelection(
-        selectedItems: selectedItems,
-        requirement: requirement,
-      )) {
+  final usagePreview = cookingFlowInventoryUsagePreviewForItems(
+    requirement: requirement,
+    selectedItems: inventoryItems
+        .where((item) => selectedIds.contains(item.id))
+        .toList(growable: false),
+  );
+  if (usagePreview == null) {
     return null;
   }
-  final availableAmount = _availableSummaryInventoryAmount(
-    selectedItems: selectedItems,
-    requirement: requirement,
-  );
-  final usedAmount = availableAmount < requirement.amount
-      ? availableAmount
-      : requirement.amount;
-  final remainingAmount = availableAmount - usedAmount;
   return l10n.cookflowInventoryUsagePreview(
-    _formatSummaryInventoryAmount(
-      amount: usedAmount,
-      unitCode: requirement.unitCode,
-    ),
-    _formatSummaryInventoryAmount(
-      amount: remainingAmount,
-      unitCode: requirement.unitCode,
-    ),
+    usagePreview.usedAmountLabel,
+    usagePreview.remainingAmountLabel,
   );
 }
 
@@ -890,77 +872,19 @@ InventoryItem? _summaryPrimaryInventoryItem({
   return null;
 }
 
-_SummaryInventoryRequirement? _summaryInventoryRequirement(
+CookingFlowInventoryRequirement? _summaryInventoryRequirement(
   CookingFlowSummaryIngredientDraft ingredient,
 ) {
-  final amount = parseCookingFlowQuantity(ingredient.amount)?.round();
-  if (amount == null || amount < 1) {
+  final amount = parseCookingFlowQuantity(ingredient.amount);
+  if (amount == null || amount <= 0) {
     return null;
   }
   final unitCode = ingredient.unitCode.trim().toLowerCase();
-  return _SummaryInventoryRequirement(
+  return CookingFlowInventoryRequirement(
     amount: amount,
-    unitCode: unitCode.isEmpty ? _summaryPieceUnitCode : unitCode,
+    unitCode: unitCode.isEmpty ? cookingFlowPieceUnitCode : unitCode,
   );
 }
-
-int _availableSummaryInventoryAmount({
-  required List<InventoryItem> selectedItems,
-  required _SummaryInventoryRequirement requirement,
-}) {
-  var total = 0;
-  for (final item in selectedItems) {
-    if (requirement.unitCode == _summaryPieceUnitCode) {
-      if (item.usesAmountProgress && item.amountUnit?.code == 'pc') {
-        total += item.currentAmount;
-        continue;
-      }
-      total += item.quantity;
-      continue;
-    }
-    if (!item.usesAmountProgress ||
-        item.amountUnit?.code != requirement.unitCode) {
-      continue;
-    }
-    total += item.currentAmount;
-  }
-  return total;
-}
-
-bool _hasSummaryCompatibleSelection({
-  required List<InventoryItem> selectedItems,
-  required _SummaryInventoryRequirement requirement,
-}) {
-  for (final item in selectedItems) {
-    if (requirement.unitCode == _summaryPieceUnitCode) {
-      return true;
-    }
-    if (item.usesAmountProgress &&
-        item.amountUnit?.code == requirement.unitCode) {
-      return true;
-    }
-  }
-  return false;
-}
-
-String _formatSummaryInventoryAmount({
-  required int amount,
-  required String unitCode,
-}) {
-  if (unitCode == _summaryPieceUnitCode) {
-    return amount.toString();
-  }
-  return '$amount$unitCode';
-}
-
-class _SummaryInventoryRequirement {
-  const new({required this.amount, required this.unitCode});
-
-  final int amount;
-  final String unitCode;
-}
-
-const String _summaryPieceUnitCode = 'pc';
 
 class _UnresolvedAdjustmentCard extends StatelessWidget {
   const new({required this.adjustment, required this.onSourceSelected});
@@ -977,7 +901,7 @@ class _UnresolvedAdjustmentCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: const Color(0xFFFFC38E)),
+        border: Border.all(color: colors.error),
       ),
       child: Padding(
         padding: AppInsets.card,

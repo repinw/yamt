@@ -218,7 +218,7 @@ buildCookingFlowSummaryIngredientsFromIntro({
         CookingFlowSummaryIngredientDraft(
           key: 'additional:$rawIngredient:${extraItem.id}',
           name: extraItem.name,
-          amount: defaultCookingFlowSummaryAmountForItem(extraItem).toString(),
+          amount: defaultCookingFlowSummaryAmountForItem(extraItem),
           unitCode: cookingFlowSummaryUnitCodeForItem(extraItem),
           inventoryItemIds: <String>[extraItem.id],
           kind: CookingFlowSummaryIngredientKind.additional,
@@ -238,12 +238,10 @@ String cookingFlowSummaryUnitCodeForItem(InventoryItem item) {
   return cookingFlowPieceUnitCode;
 }
 
-/// Default summary amount for inventory item.
-int defaultCookingFlowSummaryAmountForItem(InventoryItem item) {
-  if (item.usesAmountProgress && item.amountUnit != null) {
-    return item.currentAmount;
-  }
-  return item.quantity;
+/// Default summary amount for inventory item: its whole stock in display
+/// units, for example `10` for a pack of ten pieces.
+String defaultCookingFlowSummaryAmountForItem(InventoryItem item) {
+  return formatCookingFlowDecimal(cookingFlowInventoryItemDisplayAmount(item));
 }
 
 /// Formats summary row back into template ingredient text.

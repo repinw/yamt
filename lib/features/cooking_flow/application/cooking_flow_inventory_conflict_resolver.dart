@@ -138,10 +138,20 @@ CookingFlowInventoryUsagePreview? cookingFlowInventoryUsagePreview({
   if (requirement == null) {
     return null;
   }
-  final selectedItems = cookingFlowResolveSelectedInventoryItems(
-    selectedSelections: _countedSelections(selectedSelections),
-    inventoryItems: inventoryItems,
+  return cookingFlowInventoryUsagePreviewForItems(
+    requirement: requirement,
+    selectedItems: cookingFlowResolveSelectedInventoryItems(
+      selectedSelections: _countedSelections(selectedSelections),
+      inventoryItems: inventoryItems,
+    ),
   );
+}
+
+/// Returns usage preview labels when [selectedItems] cover [requirement].
+CookingFlowInventoryUsagePreview? cookingFlowInventoryUsagePreviewForItems({
+  required CookingFlowInventoryRequirement requirement,
+  required List<InventoryItem> selectedItems,
+}) {
   if (selectedItems.isEmpty ||
       !cookingFlowHasInventoryAmountCompatibleSelection(
         selectedItems: selectedItems,
@@ -224,12 +234,22 @@ CookingFlowInventoryCheckConflict? cookingFlowInventoryConflictForRow({
   );
 }
 
+/// Requirement unit codes that count discrete units (pieces, spoons) rather
+/// than a continuous weight or volume. Selecting an inventory item tracked in
+/// a different unit is a conflict that needs a manual conversion, the same
+/// way a piece-counted recipe requirement conflicts with a gram-tracked item.
+const Set<String> _countLikeRequirementUnitCodes = <String>{
+  cookingFlowPieceUnitCode,
+  cookingFlowTablespoonUnitCode,
+  cookingFlowTeaspoonUnitCode,
+};
+
 /// Returns incompatible selected unit code, if present.
 String? cookingFlowSelectedUnitConflictCode({
   required List<InventoryItem> selectedItems,
   required CookingFlowInventoryRequirement requirement,
 }) {
-  if (requirement.unitCode != cookingFlowPieceUnitCode) {
+  if (!_countLikeRequirementUnitCodes.contains(requirement.unitCode)) {
     return null;
   }
   for (final item in selectedItems) {
@@ -237,7 +257,7 @@ String? cookingFlowSelectedUnitConflictCode({
       continue;
     }
     final unitCode = item.amountUnit!.code;
-    if (unitCode != cookingFlowPieceUnitCode) {
+    if (unitCode != requirement.unitCode) {
       return unitCode;
     }
   }

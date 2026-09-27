@@ -3888,8 +3888,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookflowLaterButton => 'Später';
 
   @override
-  String get cookflowShoppingListContinueButton =>
-      'Zur Einkaufsliste hinzufügen und später fortsetzen';
+  String get cookflowShoppingListContinueButton => 'Einkaufsliste';
 
   @override
   String get cookflowShoppingListAddSucceeded =>
@@ -3904,7 +3903,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Cookflow konnte nicht gespeichert werden.';
 
   @override
-  String get cookflowResolveConflictsButton => 'Bitte Konflikte lösen';
+  String get cookflowResolveConflictsButton => 'Konflikte lösen';
 
   @override
   String get cookflowContinueButton => 'Weiter';
@@ -4015,7 +4014,15 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get cookflowInventoryUnitConversionPrefix => '1 Stück ≈';
+  String cookflowInventoryUnitConversionPrefix(Object unit) {
+    return '1 $unit ≈';
+  }
+
+  @override
+  String get cookflowInventoryUnitTablespoon => 'EL';
+
+  @override
+  String get cookflowInventoryUnitTeaspoon => 'TL';
 
   @override
   String get cookflowInventoryUnitConvertAction => 'Umrechnen';
@@ -4215,6 +4222,17 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get cookflowNetWeightLabel => 'Netto-Endgewicht';
+
+  @override
+  String cookflowContainerPortionsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Portionen',
+      one: '1 Portion',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get cookflowSplitIntoPortionsLabel => 'Portionen nachjustieren?';

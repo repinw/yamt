@@ -403,7 +403,109 @@ void main() {
 
       expect(share, 25);
     });
+
+    test('buildPreparedMealCreationFromTemplateResult deducts recipe pieces '
+        'from piece-tracked stock', () {
+      final result = buildPreparedMealCreationFromTemplateResult(
+        currentItems: <InventoryItem>[_eggPack()],
+        preparedMealId: 'meal-1',
+        now: now,
+        template: _eggTemplate('8 pc Eier'),
+        totalPortions: 1,
+        recipeIngredientAssignments: const <String, List<String>>{
+          '8 pc Eier': <String>['eggs'],
+        },
+        recipeIngredientAmountConversions:
+            const <String, RecipeIngredientAmountConversion>{},
+        ingredientParser: parser,
+      );
+
+      final component = result.preparedMeal.components.single;
+      expect(result.nextItems.single.currentAmount, 2000);
+      expect(component.usedAmount, 8000);
+      expect(component.usedUnit, InventoryAmountUnit.piece);
+      expect(component.totalKcal, 80);
+      expect(result.preparedMeal.pendingRecipeIngredients, isEmpty);
+    });
+
+    test('buildPreparedMealCreationFromTemplateResult keeps missing pieces '
+        'pending', () {
+      final result = buildPreparedMealCreationFromTemplateResult(
+        currentItems: <InventoryItem>[_eggPack()],
+        preparedMealId: 'meal-1',
+        now: now,
+        template: _eggTemplate('12 pc Eier'),
+        totalPortions: 1,
+        recipeIngredientAssignments: const <String, List<String>>{
+          '12 pc Eier': <String>['eggs'],
+        },
+        recipeIngredientAmountConversions:
+            const <String, RecipeIngredientAmountConversion>{},
+        ingredientParser: parser,
+      );
+
+      expect(result.nextItems.single.currentAmount, 0);
+      expect(result.preparedMeal.components.single.usedAmount, 10000);
+      expect(result.preparedMeal.pendingRecipeIngredients, <String>[
+        '2 pc Eier',
+      ]);
+    });
+
+    test('buildPreparedMealPendingIngredientFillResult takes only the '
+        'pending pieces from piece-tracked stock', () {
+      final result = buildPreparedMealPendingIngredientFillResult(
+        currentItems: <InventoryItem>[_eggPack()],
+        ingredient: '2 pc Eier',
+        inventoryItemIds: const <String>['eggs'],
+        ingredientParser: parser,
+      );
+
+      expect(result, isNotNull);
+      expect(result!.nextItems.single.currentAmount, 8000);
+      expect(result.components.single.usedAmount, 2000);
+      expect(result.components.single.totalKcal, 20);
+      expect(result.remainingIngredient, isNull);
+    });
   });
+}
+
+InventoryItem _eggPack() {
+  const storedAmount = 10 * inventoryPieceAmountScale;
+  return InventoryItem.create(
+    id: 'eggs',
+    name: 'Eier',
+    entryDate: DateTime(2026, 4, 19),
+    storeName: 'Store',
+    quantity: 1,
+    initialAmount: storedAmount,
+    currentAmount: storedAmount,
+    amountScale: inventoryPieceAmountScale,
+    amountUnit: InventoryAmountUnit.piece,
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 10,
+      per100Protein: 1,
+      per100Carbs: 0,
+      per100Fat: 1,
+    ),
+  );
+}
+
+PreparedMeal _eggTemplate(String ingredient) {
+  return PreparedMeal(
+    id: 'template-eggs',
+    name: 'Omelett',
+    totalPortions: 1,
+    remainingPortions: 1,
+    totalKcal: 0,
+    totalProtein: 0,
+    totalCarbs: 0,
+    totalFat: 0,
+    createdAt: DateTime(2026, 4, 19),
+    updatedAt: DateTime(2026, 4, 19),
+    components: const <PreparedMealComponent>[],
+    recipeIngredients: <String>[ingredient],
+  );
 }
 
 InventoryItem _pieceItem({

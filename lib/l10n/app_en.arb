@@ -1864,7 +1864,7 @@
   "cookflowLoadFailed": "Cookflow could not be loaded.",
   "cookflowStartButton": "Start flow",
   "cookflowLaterButton": "Later",
-  "cookflowShoppingListContinueButton": "Add to shopping list and continue later",
+  "cookflowShoppingListContinueButton": "Shopping list",
   "cookflowShoppingListAddSucceeded": "Ingredients added to shopping list.",
   "cookflowShoppingListAddFailed": "Shopping list could not be updated.",
   "cookflowSessionSaveFailed": "Cookflow could not be saved.",
@@ -1932,7 +1932,14 @@
       "inventoryUnit": {}
     }
   },
-  "cookflowInventoryUnitConversionPrefix": "1 piece ≈",
+  "cookflowInventoryUnitConversionPrefix": "1 {unit} ≈",
+  "@cookflowInventoryUnitConversionPrefix": {
+    "placeholders": {
+      "unit": {}
+    }
+  },
+  "cookflowInventoryUnitTablespoon": "tbsp",
+  "cookflowInventoryUnitTeaspoon": "tsp",
   "cookflowInventoryUnitConvertAction": "Convert",
   "cookflowInventoryUnitWeighLaterAction": "Weigh later while cooking",
   "cookflowEditIngredientTooltip": "Edit ingredient",
@@ -2006,6 +2013,14 @@
   "cookflowGrossWeightTitle": "Gross weight (pot + food)",
   "cookflowGrossWeightHint": "e.g. 2500",
   "cookflowNetWeightLabel": "Net final weight",
+  "cookflowContainerPortionsLabel": "{count, plural, =1{1 portion} other{{count} portions}}",
+  "@cookflowContainerPortionsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "cookflowSplitIntoPortionsLabel": "Adjust portions?",
   "cookflowHowManyPortions": "How many portions is that?",
   "cookflowCaloriesShortLabel": "CALORIES",

@@ -6669,7 +6669,7 @@ abstract class AppLocalizations {
   /// No description provided for @cookflowShoppingListContinueButton.
   ///
   /// In en, this message translates to:
-  /// **'Add to shopping list and continue later'**
+  /// **'Shopping list'**
   String get cookflowShoppingListContinueButton;
 
   /// No description provided for @cookflowShoppingListAddSucceeded.
@@ -6876,8 +6876,20 @@ abstract class AppLocalizations {
   /// No description provided for @cookflowInventoryUnitConversionPrefix.
   ///
   /// In en, this message translates to:
-  /// **'1 piece ≈'**
-  String get cookflowInventoryUnitConversionPrefix;
+  /// **'1 {unit} ≈'**
+  String cookflowInventoryUnitConversionPrefix(Object unit);
+
+  /// No description provided for @cookflowInventoryUnitTablespoon.
+  ///
+  /// In en, this message translates to:
+  /// **'tbsp'**
+  String get cookflowInventoryUnitTablespoon;
+
+  /// No description provided for @cookflowInventoryUnitTeaspoon.
+  ///
+  /// In en, this message translates to:
+  /// **'tsp'**
+  String get cookflowInventoryUnitTeaspoon;
 
   /// No description provided for @cookflowInventoryUnitConvertAction.
   ///
@@ -7232,6 +7244,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Net final weight'**
   String get cookflowNetWeightLabel;
+
+  /// No description provided for @cookflowContainerPortionsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 portion} other{{count} portions}}'**
+  String cookflowContainerPortionsLabel(int count);
 
   /// No description provided for @cookflowSplitIntoPortionsLabel.
   ///

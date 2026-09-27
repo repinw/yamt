@@ -113,6 +113,10 @@ String _requirementAmountLabel(TemplateIngredientRequirement requirement) {
       requirement.unit.code != cookingFlowPieceUnitCode) {
     return '$packageCountLabel ${requirement.amount}${requirement.unit.code}';
   }
+  final countMeasureLabel = requirement.countMeasureLabel?.trim();
+  if (countMeasureLabel?.isNotEmpty == true) {
+    return '${requirement.amount} $countMeasureLabel';
+  }
   if (requirement.unit.code == cookingFlowPieceUnitCode) {
     return requirement.amount.toString();
   }

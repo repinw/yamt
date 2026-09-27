@@ -5,6 +5,8 @@ import 'package:yamt/features/cooking_flow/application/'
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_instruction_parser.dart';
 import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_intro_inventory_models.dart';
+import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_parser_locale.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -81,6 +83,7 @@ List<CookingIngredientReference> buildCookingIngredientReferences({
   required List<InventoryItem> inventoryItems,
   required CookingFlowInstructionText text,
   required String localeCode,
+  required int targetPortions,
 }) {
   final parserLocale = CookingFlowParserLocale.forLocaleCode(localeCode);
   final pieceUnitLabel = text.pieceUnit.trim().isNotEmpty
@@ -91,14 +94,22 @@ List<CookingIngredientReference> buildCookingIngredientReferences({
         in introDraft?.rowStates ?? const <CookingFlowIntroRowDraft>[])
       row.rawIngredient: row,
   };
+  final basePortions = template.totalPortions < 1 ? 1 : template.totalPortions;
 
   final rows = template.components.isNotEmpty
-      ? _componentsToIngredientRows(template.components, pieceUnitLabel)
+      ? _componentsToIngredientRows(
+          template.components,
+          pieceUnitLabel,
+          targetPortions: targetPortions,
+          basePortions: basePortions,
+        )
       : _recipeIngredientsToIngredientRows(
           template.recipeIngredients,
           text,
           parserLocale,
           pieceUnitLabel,
+          targetPortions: targetPortions,
+          basePortions: basePortions,
         );
 
   return rows
@@ -126,20 +137,29 @@ List<CookingIngredientReference> buildCookingIngredientReferences({
 
 List<CookingIngredientRowData> _componentsToIngredientRows(
   List<PreparedMealComponent> components,
-  String pieceUnitLabel,
-) {
+  String pieceUnitLabel, {
+  required int targetPortions,
+  required int basePortions,
+}) {
   return components
-      .map(
-        (component) => CookingIngredientRowData(
+      .map((component) {
+        final scaledAmount = basePortions == targetPortions
+            ? component.usedAmount
+            : (component.usedAmount * targetPortions / basePortions).round();
+        final amount = cookingFlowComponentAmountValue(
+          component,
+          amount: scaledAmount,
+        );
+        return CookingIngredientRowData(
           rawIngredient:
               '${component.usedAmount}${component.usedUnit.code} '
               '${component.name}',
           name: component.name,
           amountLabel: component.usedUnit == InventoryAmountUnit.piece
-              ? '${component.usedAmount} $pieceUnitLabel'
-              : '${component.usedAmount}${component.usedUnit.code}',
-        ),
-      )
+              ? '$amount $pieceUnitLabel'
+              : '$amount${component.usedUnit.code}',
+        );
+      })
       .toList(growable: false);
 }
 
@@ -147,8 +167,10 @@ List<CookingIngredientRowData> _recipeIngredientsToIngredientRows(
   List<String> ingredients,
   CookingFlowInstructionText text,
   CookingFlowParserLocale parserLocale,
-  String pieceUnitLabel,
-) {
+  String pieceUnitLabel, {
+  required int targetPortions,
+  required int basePortions,
+}) {
   return ingredients
       .map(
         (ingredient) => parseRecipeIngredientRow(
@@ -156,6 +178,8 @@ List<CookingIngredientRowData> _recipeIngredientsToIngredientRows(
           text: text,
           parserLocale: parserLocale,
           pieceUnitLabel: pieceUnitLabel,
+          targetPortions: targetPortions,
+          basePortions: basePortions,
         ),
       )
       .toList(growable: false);
@@ -173,7 +197,8 @@ String _resolveCookingIngredientAmountLabel({
   }
 
   if (rowDraft == null ||
-      rowDraft.action != CookingFlowIntroRowAction.assigned) {
+      rowDraft.action != CookingFlowIntroRowAction.assigned ||
+      row.isQualitativeAmount) {
     return row.amountLabel;
   }
 

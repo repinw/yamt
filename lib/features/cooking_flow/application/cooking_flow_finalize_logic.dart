@@ -1,7 +1,11 @@
 import 'dart:developer' as developer;
 
 import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_amount_utils.dart';
+import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_inventory_requirement.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_builder.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -132,6 +136,9 @@ CookingFlowFinalizeMealSavePlan buildCookingFlowFinalizeSavePlan({
       };
   final additionalItems = <PreparedMealItemInput>[];
   final sourceKeysByIngredient = <String, String>{};
+  final inventoryById = <String, InventoryItem>{
+    for (final item in inventoryItems) item.id: item,
+  };
   var totalInputCount = 0;
 
   for (final row in summaryRows) {
@@ -161,10 +168,17 @@ CookingFlowFinalizeMealSavePlan buildCookingFlowFinalizeSavePlan({
         if (row.inventoryItemIds.isEmpty) {
           continue;
         }
+        final itemId = row.inventoryItemIds.first;
+        final item = inventoryById[itemId];
         additionalItems.add(
           PreparedMealItemInput(
-            itemId: row.inventoryItemIds.first,
-            usedAmount: usedAmount,
+            itemId: itemId,
+            usedAmount: item == null
+                ? usedAmount
+                : cookingFlowInventoryItemStoredAmount(
+                    item: item,
+                    displayAmount: parseCookingFlowQuantity(row.amount) ?? 0,
+                  ),
             sourceKey: row.key,
           ),
         );

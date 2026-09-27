@@ -9,6 +9,38 @@ export 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_parser_locale.dart'
     show cookingFlowPieceUnitCode;
 
+/// Canonical unit code for tablespoon-measured amounts (EL, tbsp).
+const String cookingFlowTablespoonUnitCode = 'el';
+
+/// Canonical unit code for teaspoon-measured amounts (TL, tsp).
+const String cookingFlowTeaspoonUnitCode = 'tl';
+
+/// Default grams per tablespoon used to seed the unit-conflict conversion
+/// input.
+const double cookingFlowDefaultGramsPerTablespoon = 15;
+
+/// Default grams per teaspoon used to seed the unit-conflict conversion
+/// input.
+const double cookingFlowDefaultGramsPerTeaspoon = 5;
+
+const Set<String> _tablespoonUnitTokens = <String>{
+  'el',
+  'essloeffel',
+  'esslöffel',
+  'tbsp',
+  'tablespoon',
+  'tablespoons',
+};
+
+const Set<String> _teaspoonUnitTokens = <String>{
+  'tl',
+  'teeloeffel',
+  'teelöffel',
+  'tsp',
+  'teaspoon',
+  'teaspoons',
+};
+
 /// Normalized inventory requirement with amount and unit.
 @immutable
 class CookingFlowInventoryRequirement {
@@ -84,6 +116,16 @@ CookingFlowInventoryRequirement? cookingFlowParseInventoryRequirement(
       amount: rawAmount,
       unitCode: cookingFlowPieceUnitCode,
     ),
+    final String unit when _tablespoonUnitTokens.contains(unit) =>
+      CookingFlowInventoryRequirement(
+        amount: rawAmount,
+        unitCode: cookingFlowTablespoonUnitCode,
+      ),
+    final String unit when _teaspoonUnitTokens.contains(unit) =>
+      CookingFlowInventoryRequirement(
+        amount: rawAmount,
+        unitCode: cookingFlowTeaspoonUnitCode,
+      ),
     'g' => CookingFlowInventoryRequirement(amount: rawAmount, unitCode: 'g'),
     'kg' => CookingFlowInventoryRequirement(
       amount: rawAmount * 1000,
@@ -111,28 +153,62 @@ CookingFlowInventoryRequirement? cookingFlowParseInventoryRequirement(
 }
 
 /// Returns available selected inventory amount in requirement unit.
+///
+/// Piece-tracked stock is stored in thousandths of a piece, so it is
+/// converted to whole pieces before it is compared with a requirement.
 double cookingFlowAvailableInventoryAmount({
   required List<InventoryItem> selectedItems,
   required CookingFlowInventoryRequirement requirement,
 }) {
   var total = 0.0;
   for (final item in selectedItems) {
+    final amountUnit = item.usesAmountProgress ? item.amountUnit : null;
     if (requirement.unitCode == cookingFlowPieceUnitCode) {
-      if (item.usesAmountProgress && item.amountUnit?.code == 'pc') {
-        total += item.currentAmount;
+      if (amountUnit == InventoryAmountUnit.piece) {
+        total += cookingFlowInventoryItemDisplayAmount(item);
         continue;
       }
       total += item.quantity;
       continue;
     }
 
-    if (!item.usesAmountProgress ||
-        item.amountUnit?.code != requirement.unitCode) {
+    if (amountUnit?.code != requirement.unitCode) {
       continue;
     }
-    total += item.currentAmount;
+    total += cookingFlowInventoryItemDisplayAmount(item);
   }
   return total;
+}
+
+/// Current stock of [item] in display units: pieces, grams, or milliliters
+/// for amount-tracked items, otherwise the package count.
+double cookingFlowInventoryItemDisplayAmount(InventoryItem item) {
+  final amountUnit = item.amountUnit;
+  if (!item.usesAmountProgress || amountUnit == null) {
+    return item.quantity.toDouble();
+  }
+  return inventoryAmountToDisplayValue(
+    amount: item.currentAmount,
+    unit: amountUnit,
+    scale: item.amountScale,
+  );
+}
+
+/// Converts a display amount of [item] into its stored inventory amount, for
+/// example 8 pieces into 8000 thousandths of a piece.
+int cookingFlowInventoryItemStoredAmount({
+  required InventoryItem item,
+  required num displayAmount,
+}) {
+  final amountUnit = item.amountUnit;
+  final usesScale =
+      item.usesAmountProgress &&
+      amountUnit != null &&
+      inventoryAmountAllowsFractionalInput(
+        unit: amountUnit,
+        scale: item.amountScale,
+      );
+  return (displayAmount * (usesScale ? item.amountScale : 1)).round();
 }
 
 /// Whether selected inventory can cover or compare with requirement unit.
@@ -164,6 +240,10 @@ String cookingFlowFormatInventoryRequirementAmount({
       return '$displayAmount $pieceUnitLabel';
     }
     return displayAmount;
+  }
+  if (unitCode == cookingFlowTablespoonUnitCode ||
+      unitCode == cookingFlowTeaspoonUnitCode) {
+    return '$displayAmount $unitCode';
   }
   return '$displayAmount$unitCode';
 }

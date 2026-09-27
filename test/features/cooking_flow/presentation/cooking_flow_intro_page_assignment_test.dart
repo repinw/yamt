@@ -27,6 +27,46 @@ void main() {
     expect(cookingFlowInventoryAmountLabel(quantityItem), '3x');
   });
 
+  testWidgets('assignment sheet lists piece-tracked stock in pieces', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _harness(
+        Builder(
+          builder: (context) {
+            return ElevatedButton(
+              onPressed: () async {
+                await showCookingFlowInventoryAssignmentSheet(
+                  context: context,
+                  ingredient: 'Eier',
+                  inventoryItems: <InventoryItem>[
+                    _item(
+                      id: 'eggs',
+                      name: 'Eier',
+                      currentAmount: 10 * inventoryPieceAmountScale,
+                      amountScale: inventoryPieceAmountScale,
+                      amountUnit: InventoryAmountUnit.piece,
+                    ),
+                  ],
+                  localeCode: 'de',
+                  initialSelections:
+                      const <CookingFlowInventoryAssignmentSelection>[],
+                );
+              },
+              child: const Text('open'),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('10 pc'), findsOneWidget);
+    expect(find.text('10000 pc'), findsNothing);
+  });
+
   test('maps inventory assignment selections to session drafts', () {
     const selection = CookingFlowInventoryAssignmentSelection(
       itemId: 'item-1',
@@ -522,6 +562,7 @@ InventoryItem _item({
   required String name,
   int quantity = 1,
   int currentAmount = 0,
+  int amountScale = 1,
   InventoryAmountUnit? amountUnit,
 }) {
   return InventoryItem.create(
@@ -532,6 +573,7 @@ InventoryItem _item({
     quantity: quantity,
     initialAmount: currentAmount,
     currentAmount: currentAmount,
+    amountScale: amountScale,
     amountUnit: amountUnit,
   );
 }

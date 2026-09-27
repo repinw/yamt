@@ -191,6 +191,41 @@ void main() {
     expect(find.text('Abzug 800g · übrig 200g'), findsOneWidget);
   });
 
+  testWidgets('shows piece-tracked subtract and remaining pieces', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        adjustments: const <String>[],
+        ingredients: const <CookingFlowSummaryIngredientDraft>[
+          CookingFlowSummaryIngredientDraft(
+            key: 'template:8 Eier',
+            name: 'Eier',
+            amount: '8',
+            unitCode: 'pc',
+            inventoryItemIds: <String>['eggs'],
+            kind: CookingFlowSummaryIngredientKind.template,
+          ),
+        ],
+        inventoryItems: <InventoryItem>[
+          InventoryItem.create(
+            id: 'eggs',
+            name: 'Eier',
+            entryDate: DateTime.parse('2026-03-27T12:00:00Z'),
+            storeName: 'Test',
+            quantity: 1,
+            initialAmount: 10 * inventoryPieceAmountScale,
+            currentAmount: 10 * inventoryPieceAmountScale,
+            amountScale: inventoryPieceAmountScale,
+            amountUnit: InventoryAmountUnit.piece,
+          ),
+        ],
+      ),
+    );
+
+    expect(find.text('Abzug 8 · übrig 2'), findsOneWidget);
+  });
+
   testWidgets('renders add ingredient action as final ingredient row', (
     tester,
   ) async {
