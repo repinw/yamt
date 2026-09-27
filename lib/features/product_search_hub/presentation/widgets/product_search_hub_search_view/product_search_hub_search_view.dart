@@ -139,14 +139,14 @@ class _ProductSearchHubSearchViewState
 
   Future<void> _startInitialIntent() async {
     switch (widget.args.initialIntent) {
-      case ProductSearchHubInitialIntent.launcher:
+      // The page shows the AI page itself for the AI intent.
+      case ProductSearchHubInitialIntent.launcher ||
+          ProductSearchHubInitialIntent.ai:
         return;
       case ProductSearchHubInitialIntent.search:
         if (widget.args.autofocusSearchField) await _showKeyboardAfterRoute();
       case ProductSearchHubInitialIntent.barcode:
         await _scanBarcodeIntoSearch(cancelClosesPage: true);
-      case ProductSearchHubInitialIntent.ai:
-        _openEditedEntry(_openAiEntry, cancelClosesPage: true);
     }
   }
 
@@ -247,10 +247,7 @@ class _ProductSearchHubSearchViewState
     );
   }
 
-  void _openEditedEntry(
-    ProductSearchHubSearchEditedEntryOpener openEntry, {
-    bool cancelClosesPage = false,
-  }) {
+  void _openEditedEntry(ProductSearchHubSearchEditedEntryOpener openEntry) {
     if (widget.isBusy) return;
     unawaited(
       openProductSearchHubSearchEditedEntry(
@@ -258,9 +255,7 @@ class _ProductSearchHubSearchViewState
         isOpeningEntry: _isOpeningEntry,
         setOpeningEntry: (value) => setState(() => _isOpeningEntry = value),
         hideKeyboard: _hideSearchKeyboard,
-        onCancelled: cancelClosesPage
-            ? widget.onInitialIntentCancelled
-            : _requestSearchKeyboard,
+        onCancelled: _requestSearchKeyboard,
         onResult: widget.onEntryResult,
         openEntry: openEntry,
       ),

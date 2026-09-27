@@ -30,9 +30,13 @@ Future<InventoryReceiptManualProductResult?> openProductSearchHubAiFlow({
       quickEatConfig: productSearchHubQuickEatConfig(args),
     ),
   );
-  if (result == null) {
-    return null;
-  }
+  return result == null ? null : productSearchHubAiResult(result);
+}
+
+/// Turns the result of the AI page into a product search hub result.
+InventoryReceiptManualProductResult productSearchHubAiResult(
+  ManualProductAiSearchResult result,
+) {
   return InventoryReceiptManualProductResult(
     item: result.item,
     action: result.action,

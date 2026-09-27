@@ -42,6 +42,7 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
     this.initialPrompt = '',
     this.quickEatConfig = InventoryManualAddQuickEatConfig.standard,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
+    this.onResult,
   });
 
   /// Key of the analyze button.
@@ -64,6 +65,10 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
 
   /// Whether the result is logged or goes to the Vorrat.
   final InventoryReceiptManualProductAction initialAction;
+
+  /// Receives the chosen food in place of popping the page's route, when the
+  /// page is the content of another route.
+  final ValueChanged<ManualProductAiSearchResult>? onResult;
 
   @override
   ConsumerState<ManualProductAiSearchPage> createState() =>
@@ -227,6 +232,11 @@ class _ManualProductAiSearchPageState
           ),
         );
     if (result == null || !mounted) return;
+    final onResult = widget.onResult;
+    if (onResult != null) {
+      onResult(result);
+      return;
+    }
     popManualProductSearchPage(context, result);
   }
 }

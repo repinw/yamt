@@ -14,13 +14,21 @@ import 'package:yamt/features/product_search_hub/domain/'
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
+    'manual_product_ai_search_result.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_ai_search_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_editor_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_entry_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_navigation.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_result_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -63,8 +71,34 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   var _selectionState = const ProductSearchHubSelectionState.empty();
   var _isMutatingSelection = false;
 
+  // Opened for AI, the page shows the AI page itself, so back leaves straight
+  // to the caller instead of passing the search page.
+  late var _showsAiPage =
+      widget.args.initialIntent == ProductSearchHubInitialIntent.ai;
+  InventoryItem? _aiDraftItem;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_showsAiPage) {
+      _aiDraftItem ??= buildProductSearchHubDraftItem(
+        l10n: AppLocalizations.of(context)!,
+        sourceItem: widget.args.item,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final aiDraftItem = _aiDraftItem;
+    if (_showsAiPage && aiDraftItem != null) {
+      return ManualProductAiSearchPage(
+        item: aiDraftItem,
+        quickEatConfig: productSearchHubQuickEatConfig(widget.args),
+        initialAction: widget.args.initialManualProductAction,
+        onResult: (result) => _runWhenIdle(() => _completeAiResult(result)),
+      );
+    }
     final selections = _selectionState.selections;
 
     return ProductSearchHubSearchView(
@@ -119,6 +153,14 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
 
   bool _isSourceBlocked(String sourceKey) {
     return _selectionState.containsSourceKey(sourceKey) || _isMutatingSelection;
+  }
+
+  /// Completes the food from the AI page. When the page stays open, for
+  /// example to add more to the Vorrat, it continues with the search.
+  Future<void> _completeAiResult(ManualProductAiSearchResult result) async {
+    await _completeCreatedEntry(productSearchHubAiEntryResult(result));
+    if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    setState(() => _showsAiPage = false);
   }
 
   /// Completes a created product. Canceling the eat or save dialog that

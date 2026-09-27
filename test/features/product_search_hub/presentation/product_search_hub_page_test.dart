@@ -32,12 +32,17 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'product_search_hub_completion_providers.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'food_estimate_repository.dart';
+import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_gateway.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_ai_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -46,6 +51,29 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/manual_pro
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _searchFieldKey = Key('product_search_hub_search_field');
+
+class _FakeFoodEstimateRepository implements FoodEstimateRepository {
+  @override
+  Future<List<FoodEstimatePhoto>> loadPhotos({
+    required bool fromCamera,
+  }) async => const [];
+
+  @override
+  Future<FoodEstimate> loadEstimate({
+    required String description,
+    required List<FoodEstimatePhoto> photos,
+  }) async => const FoodEstimate(
+    name: 'Apfel',
+    portionGrams: 160,
+    kcalLean: 80,
+    kcalRich: 90,
+    per100: GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+      per100Kcal: 52,
+    ),
+    ingredients: [],
+  );
+}
 
 Future<void> _pumpHarness(
   WidgetTester tester, {
@@ -85,6 +113,7 @@ Future<void> _pumpRouteHarness(
   InventoryCalorieEntryCommitStore? commitStore,
   ValueChanged<ManualProductSearchRouteArgs>? onChildRouteArgs,
   ValueChanged<Object?>? onPagePopped,
+  FoodEstimateRepository? foodEstimateRepository,
 }) async {
   var childRouteResultIndex = 0;
 
@@ -155,6 +184,10 @@ Future<void> _pumpRouteHarness(
         if (commitStore != null)
           inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
             commitStore,
+          ),
+        if (foodEstimateRepository != null)
+          foodEstimateRepositoryProvider.overrideWithValue(
+            foodEstimateRepository,
           ),
         productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
           final container = ref.container;
@@ -575,20 +608,51 @@ void main() {
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
   });
 
-  testWidgets('AI initial intent opens AI child route', (tester) async {
-    ManualProductSearchRouteArgs? childArgs;
-
+  testWidgets('AI initial intent shows the AI page without the search', (
+    tester,
+  ) async {
     await _pumpRouteHarness(
       tester,
       args: const ProductSearchHubRouteArgs.inventory(
         initialIntent: ProductSearchHubInitialIntent.ai,
       ),
-      onChildRouteArgs: (args) => childArgs = args,
     );
 
-    expect(find.text('product search child route'), findsOneWidget);
-    expect(childArgs?.flow, ManualProductSearchChildFlow.aiSearch);
-    expect(childArgs?.showEatImmediatelyOption, isFalse);
+    expect(find.byType(ManualProductAiSearchPage), findsOneWidget);
+    expect(find.byKey(_searchFieldKey), findsNothing);
+    expect(find.text('product search child route'), findsNothing);
+  });
+
+  testWidgets('the food from the AI intent goes back to the caller', (
+    tester,
+  ) async {
+    Object? poppedResult;
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs(
+        mode: ProductSearchHubMode.selection,
+        initialIntent: ProductSearchHubInitialIntent.ai,
+      ),
+      foodEstimateRepository: _FakeFoodEstimateRepository(),
+      onPagePopped: (result) => poppedResult = result,
+    );
+
+    await tester.enterText(
+      find.byKey(ManualProductAiSearchPage.descriptionKey),
+      'Apfel',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(ManualProductAiSearchPage.analyzeKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add to stock'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('caller'), findsOneWidget);
+    expect(poppedResult, isA<InventoryReceiptManualProductResult>());
+    expect(
+      (poppedResult! as InventoryReceiptManualProductResult).item.name,
+      'Apfel',
+    );
   });
 
   testWidgets('cancelled AI initial intent returns to the caller', (

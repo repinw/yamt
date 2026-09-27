@@ -4,6 +4,8 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
 import 'package:yamt/features/product_search_hub/presentation/models/'
+    'manual_product_ai_search_result.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_ai_flow.dart';
@@ -40,6 +42,17 @@ Future<ProductSearchHubEditedResult?> openProductSearchHubAiEntry({
     initialPrompt: initialPrompt,
   );
   return _editedResult(result);
+}
+
+/// Edited result for a food picked on the AI page that the hub shows itself.
+ProductSearchHubEditedResult productSearchHubAiEntryResult(
+  ManualProductAiSearchResult result,
+) {
+  final edited = productSearchHubAiResult(result);
+  return ProductSearchHubEditedResult(
+    sourceKey: productSearchHubSourceKeyForResult(edited),
+    result: edited,
+  );
 }
 
 /// Opens custom product entry flow with an empty form.
