@@ -23,39 +23,21 @@ class OffProductCandidateSource {
       return const <OffProductSearchResult>[];
     }
 
-    final rawBrand = item.brand?.trim();
     final normalizedStoreName = normalizeStoreName(item.storeName);
-    final normalizedBrandName = normalizeStoreName(rawBrand);
-    final normalizedBrandStore = _normalizeSupportedExternalStore(rawBrand);
     final store = _resolveExternalStore(
       normalizedStoreName: normalizedStoreName,
-      brandStore: normalizedBrandStore,
+      brandStore: _normalizeSupportedExternalStore(item.brand),
     );
-    final isNettoSearch = store == 'Netto';
-    final isGeneralCollectionSearch =
-        store == null || (store != 'Aldi' && store != 'Netto');
-    final brandRepeatsStore =
-        normalizedStoreName != null &&
-        normalizedBrandName != null &&
-        normalizedStoreName == normalizedBrandName;
-    final effectiveBrand =
-        brandRepeatsStore || (isNettoSearch && normalizedBrandStore == store)
-        ? null
-        : rawBrand;
-    final effectiveWeight = item.weight?.trim();
-    final query = _stripReceiptQueryHints(
-      rawQuery,
-      brand: effectiveBrand,
-      weight: effectiveWeight,
-    );
+    // The server cleans the line up itself (brand, weight, packaging words,
+    // a brand that only names the store), so the journal and the search eval
+    // see what the receipt really says.
     return await repository.search(
-      query: query,
+      query: rawQuery,
       store: store,
-      brand: isNettoSearch || isGeneralCollectionSearch ? effectiveBrand : null,
-      weight: isNettoSearch || isGeneralCollectionSearch
-          ? effectiveWeight
-          : null,
+      brand: item.brand?.trim(),
+      weight: item.weight?.trim(),
       limit: globalFoodReviewCandidateLimitPerSource,
+      isReceiptLine: true,
     );
   }
 
@@ -122,41 +104,5 @@ class OffProductCandidateSource {
       return false;
     }
     return normalizedStoreName != 'Unknown';
-  }
-
-  String _stripReceiptQueryHints(
-    String query, {
-    String? brand,
-    String? weight,
-  }) {
-    var cleaned = query.trim();
-    final brandHint = brand?.trim() ?? '';
-    if (brandHint.isNotEmpty &&
-        cleaned.toLowerCase().startsWith(brandHint.toLowerCase())) {
-      final remainder = cleaned
-          .substring(brandHint.length)
-          .replaceFirst(RegExp(r'^[\s._\-/]+'), '');
-      if (remainder.isNotEmpty) cleaned = remainder;
-    }
-
-    final weightHint = weight?.trim() ?? '';
-    if (weightHint.isNotEmpty) {
-      final weightIndex = cleaned.toLowerCase().lastIndexOf(
-        weightHint.toLowerCase(),
-      );
-      if (weightIndex >= 0) {
-        final remainder =
-            (cleaned.substring(0, weightIndex) +
-                    cleaned.substring(weightIndex + weightHint.length))
-                .replaceAll(RegExp(r'^[\s._\-/]+|[\s._\-/]+$'), '');
-        if (remainder.isNotEmpty) cleaned = remainder;
-      }
-    }
-
-    cleaned = cleaned
-        .replaceAll(RegExp(r'\b(?:ggn|qs|vlog)\b', caseSensitive: false), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
-    return cleaned.isEmpty ? query.trim() : cleaned;
   }
 }

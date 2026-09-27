@@ -24,6 +24,7 @@ class _FakeOffRepository implements OffProductSearchRepository {
     String? store,
     String? brand,
     String? weight,
+    bool isReceiptLine = false,
   }) async {
     recordedStore = store;
     recordedBrand = brand;

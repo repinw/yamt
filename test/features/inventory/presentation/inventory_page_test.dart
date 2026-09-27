@@ -187,6 +187,7 @@ class _RecordingOffProductSearchRepository
     String? brand,
     String? weight,
     int limit = 15,
+    bool isReceiptLine = false,
   }) async {
     lastQuery = query;
     return results.take(limit).toList(growable: false);

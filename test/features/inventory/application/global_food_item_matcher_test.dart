@@ -19,6 +19,7 @@ class _SearchCall {
     required this.brand,
     required this.weight,
     required this.limit,
+    required this.isReceiptLine,
   });
 
   final String query;
@@ -26,6 +27,7 @@ class _SearchCall {
   final String? brand;
   final String? weight;
   final int limit;
+  final bool isReceiptLine;
 }
 
 class _GlobalSearchCall {
@@ -75,6 +77,7 @@ class _FakeOffProductSearchRepository implements OffProductSearchRepository {
     String? brand,
     String? weight,
     int limit = 15,
+    bool isReceiptLine = false,
   }) async {
     calls.add(
       _SearchCall(
@@ -83,6 +86,7 @@ class _FakeOffProductSearchRepository implements OffProductSearchRepository {
         brand: brand,
         weight: weight,
         limit: limit,
+        isReceiptLine: isReceiptLine,
       ),
     );
     final results = _resultsByQuery[query] ?? fallbackResults;
@@ -892,11 +896,12 @@ void main() {
       expect(repository.calls.single.brand, 'Cucina');
       expect(repository.calls.single.weight, '1000 g');
       expect(repository.calls.single.limit, 5);
+      expect(repository.calls.single.isReceiptLine, isTrue);
     },
   );
 
   test(
-    'findCandidates removes duplicated receipt brand and weight from query',
+    'findCandidates sends the receipt line with brand and weight unchanged',
     () async {
       final repository = _FakeOffProductSearchRepository();
       final matcher = GlobalFoodItemMatcher(
@@ -913,7 +918,7 @@ void main() {
         ),
       );
 
-      expect(repository.calls.single.query, 'Raeucherlachs');
+      expect(repository.calls.single.query, 'SG GGN Raeucherlachs 200g');
       expect(repository.calls.single.store, 'Netto');
       expect(repository.calls.single.brand, 'SG GGN');
       expect(repository.calls.single.weight, '200g');
@@ -936,12 +941,13 @@ void main() {
     );
 
     expect(repository.calls.single.store, 'Aldi');
-    expect(repository.calls.single.brand, isNull);
+    // The server ignores a brand that only names the store.
+    expect(repository.calls.single.brand, 'Aldi Süd');
     expect(repository.calls.single.weight, isNull);
   });
 
   test(
-    'findCandidates drops the Netto brand when it only repeats the store',
+    'findCandidates leaves a Netto brand that repeats the store to the server',
     () async {
       final repository = _FakeOffProductSearchRepository();
       final matcher = GlobalFoodItemMatcher(
@@ -959,7 +965,7 @@ void main() {
       );
 
       expect(repository.calls.single.store, 'Netto');
-      expect(repository.calls.single.brand, isNull);
+      expect(repository.calls.single.brand, 'Netto Marken-Discount');
       expect(repository.calls.single.weight, '800g');
     },
   );
@@ -1009,7 +1015,7 @@ void main() {
   );
 
   test(
-    'findCandidates drops fallback brand when it only repeats the store',
+    'findCandidates leaves a brand that repeats the store to the server',
     () async {
       final repository = _FakeOffProductSearchRepository();
       final matcher = GlobalFoodItemMatcher(
@@ -1026,7 +1032,7 @@ void main() {
       );
 
       expect(repository.calls.single.store, 'Kaufland');
-      expect(repository.calls.single.brand, isNull);
+      expect(repository.calls.single.brand, 'Kaufland');
       expect(repository.calls.single.weight, isNull);
     },
   );

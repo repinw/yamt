@@ -15,12 +15,16 @@ const _offProductSearchLogName = 'OffProductSearchRepository';
 /// Defines off product search repository.
 abstract interface class OffProductSearchRepository {
   /// Search.
+  ///
+  /// With [isReceiptLine], [query] is a receipt line as printed. It is sent
+  /// as `raw`, and the server strips brand, weight and packaging words.
   Future<List<OffProductSearchResult>> search({
     required String query,
     String? store,
     String? brand,
     String? weight,
     int limit = 15,
+    bool isReceiptLine = false,
   });
 
   /// Lookup candidates by barcode.
@@ -59,6 +63,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
     String? brand,
     String? weight,
     int limit = 15,
+    bool isReceiptLine = false,
   }) async {
     final normalizedQuery = query.trim();
     if (normalizedQuery.isEmpty) {
@@ -71,6 +76,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       brand: brand?.trim(),
       weight: weight?.trim(),
       limit: limit,
+      isReceiptLine: isReceiptLine,
     );
     _debugLogRequest(action: 'search', uri: uri);
     return await _fetchResults(uri: uri, action: 'search');
@@ -115,10 +121,11 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
     required String? brand,
     required String? weight,
     required int limit,
+    bool isReceiptLine = false,
   }) {
     final queryParameters = <String, String>{
       ..._searchUri.queryParameters,
-      'q': query,
+      isReceiptLine ? 'raw' : 'q': query,
       'limit': '$limit',
     };
     if (store != null && store.isNotEmpty) {
@@ -200,6 +207,7 @@ class _UnavailableOffProductSearchRepository
     String? brand,
     String? weight,
     int limit = 15,
+    bool isReceiptLine = false,
   }) async {
     return const <OffProductSearchResult>[];
   }

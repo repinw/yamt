@@ -40,6 +40,27 @@ Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
     expect(results.first.score, 34);
   });
 
+  test('search sends a receipt line as raw instead of q', () async {
+    late Uri capturedUri;
+    final repository = HttpOffProductSearchRepository(
+      client: MockClient((request) async {
+        capturedUri = request.url;
+        return http.Response('{"results": []}', 200);
+      }),
+      searchUri: Uri.parse('https://example.com/search'),
+    );
+
+    await repository.search(
+      query: 'SG GGN Raeucherlachs 200g',
+      store: 'Netto',
+      isReceiptLine: true,
+    );
+
+    expect(capturedUri.queryParameters['raw'], 'SG GGN Raeucherlachs 200g');
+    expect(capturedUri.queryParameters.containsKey('q'), isFalse);
+    expect(capturedUri.queryParameters['store'], 'Netto');
+  });
+
   test('search parses json payload', () async {
     final repository = HttpOffProductSearchRepository(
       client: MockClient((request) async {
