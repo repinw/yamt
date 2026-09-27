@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -11,6 +13,13 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_amount_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_label_section.dart';
+
+/// Amount and log time chosen on the eat page so far.
+typedef InventoryItemEatSelection = ({
+  int? inventoryAmount,
+  DateTime loggedAt,
+  MealType mealType,
+});
 
 /// Eat page content for an inventory item.
 class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
@@ -28,6 +37,11 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.confirmLabel,
     this.mealKcal,
     this.secondaryIntent = InventoryItemEatSheetIntent.addMore,
+    this.onSecondary,
+    this.headerBrand,
+    this.headerCaption,
+    this.headerImageBytes,
+    this.onSelectionChanged,
     this.header,
     this.showAmount = true,
     super.key,
@@ -76,6 +90,21 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
 
   /// Intent of the second button.
   final InventoryItemEatSheetIntent secondaryIntent;
+
+  /// Runs in place of submitting [secondaryIntent].
+  final VoidCallback? onSecondary;
+
+  /// Line above the name in place of the item's brand.
+  final String? headerBrand;
+
+  /// Line under the name in place of the stock.
+  final String? headerCaption;
+
+  /// Local image in place of the item's image.
+  final Uint8List? headerImageBytes;
+
+  /// Called when the amount, the day, or the meal changes.
+  final ValueChanged<InventoryItemEatSelection>? onSelectionChanged;
 
   /// Head in place of the item's header and nutrition label.
   final Widget? header;
@@ -127,7 +156,14 @@ class _InventoryItemEatSheetBodyState
 
   @override
   Widget build(BuildContext context) {
-    ref.listen(_provider, (_, next) => _syncText(next));
+    ref.listen(_provider, (_, next) {
+      _syncText(next);
+      widget.onSelectionChanged?.call((
+        inventoryAmount: next.enteredInventoryAmount,
+        loggedAt: next.loggedAt,
+        mealType: next.mealType,
+      ));
+    });
     final state = ref.watch(_provider);
     final item = widget.item;
     final nutrition = state.nutrition;
@@ -156,9 +192,16 @@ class _InventoryItemEatSheetBodyState
       ),
       onSecondary: addMoreText == null
           ? null
-          : () => _submit(widget.secondaryIntent),
+          : widget.onSecondary ?? () => _submit(widget.secondaryIntent),
       children: [
-        widget.header ?? InventoryItemEatLabelSection(item: item, state: state),
+        widget.header ??
+            InventoryItemEatLabelSection(
+              item: item,
+              state: state,
+              brand: widget.headerBrand,
+              caption: widget.headerCaption,
+              imageBytes: widget.headerImageBytes,
+            ),
         if (widget.showAmount)
           InventoryItemEatAmountSection(
             state: state,

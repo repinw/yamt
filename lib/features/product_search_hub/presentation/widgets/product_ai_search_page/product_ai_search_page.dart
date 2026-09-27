@@ -1,38 +1,42 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:mime/mime.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/core/utils/date_utils.dart';
-import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
+import 'package:yamt/core/theme/app_fonts.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search_hub/application/'
-    'product_ai_nutrition_selection.dart';
-import 'package:yamt/features/product_search_hub/application/'
-    'product_ai_search_service.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_chip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_page_scaffold.dart';
+import 'package:yamt/features/product_search_hub/data/'
+    'food_estimate_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/'
-    'manual_product_search_value_utils.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_ai_search_models.dart';
+    'product_search_hub_exceptions.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'food_estimate_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'food_estimate_result_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'manual_product_ai_search_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_search_shell.dart';
+    'food_estimate_photo_strip.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_ai_search_page/product_ai_prompt_bar.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_ai_search_page/product_ai_search_body.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_ai_search_page/product_ai_search_support.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Read-only AI food creation page with limited user adjustments.
+/// AI food creation: photos and/or a description go to the AI, and the
+/// estimate opens on the eat page.
 class ManualProductAiSearchPage extends ConsumerStatefulWidget {
   /// Creates the page.
   const new({
@@ -40,9 +44,14 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
     super.key,
     this.initialPrompt = '',
     this.quickEatConfig = InventoryManualAddQuickEatConfig.standard,
-    this.showEatImmediatelyOption = false,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
   });
+
+  /// Key of the analyze button.
+  static const analyzeKey = Key('food_estimate_analyze_button');
+
+  /// Key of the description field.
+  static const descriptionKey = Key('food_estimate_description_field');
 
   /// Base item to build from.
   final InventoryItem item;
@@ -50,13 +59,10 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
   /// Quick-eat settings.
   final InventoryManualAddQuickEatConfig quickEatConfig;
 
-  /// Initial prompt text.
+  /// Initial description.
   final String initialPrompt;
 
-  /// Whether eat-now action is available.
-  final bool showEatImmediatelyOption;
-
-  /// Initially selected action.
+  /// Whether the result is logged or goes to the Vorrat.
   final InventoryReceiptManualProductAction initialAction;
 
   @override
@@ -66,199 +72,179 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
 
 class _ManualProductAiSearchPageState
     extends ConsumerState<ManualProductAiSearchPage> {
-  late final VoiceSearchService _voiceSearchService;
-  final _voiceSearchController = TextVoiceSearchController();
-  late final TextEditingController _promptController;
-  late final TextEditingController _weightController;
-  late InventoryReceiptManualProductAction _selectedAction =
-      widget.initialAction;
-  ProductAiSearchDraft? _draft;
-  bool _isLoading = false;
-  bool _hasWeightError = false;
-  String? _errorText;
-  double? _weightGrams;
-  double? _selectedPer100Kcal;
-  late DateTime _selectedLoggedAt;
-  late MealType _selectedMealType;
+  static const _maxPhotoWidth = 1600.0;
+  static const _photoQuality = 80;
 
-  @override
-  void initState() {
-    super.initState();
-    _voiceSearchService = ref.read(voiceSearchServiceProvider);
-    final quickEatConfig = widget.quickEatConfig;
-    if (quickEatConfig.quickEatOnly) {
-      _selectedAction = InventoryReceiptManualProductAction.eatNow;
-    }
-    _promptController = TextEditingController(text: widget.initialPrompt);
-    _weightController = TextEditingController();
-    _selectedLoggedAt =
-        quickEatConfig.preselectedLoggedAt ?? ref.read(clockProvider)();
-    _selectedMealType =
-        quickEatConfig.preselectedMealType ??
-        MealType.defaultForDateTime(_selectedLoggedAt);
-  }
+  late final _description = TextEditingController(text: widget.initialPrompt)
+    ..addListener(() => setState(() {}));
+  final _picker = ImagePicker();
 
   @override
   void dispose() {
-    _voiceSearchController.dispose();
-    _promptController.dispose();
-    _weightController.dispose();
+    _description.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final selection = _resolvedSelection;
-    final weightErrorText = _hasWeightError
-        ? l10n.inventoryManualAddAiSearchWeightRequired
-        : null;
-    final now = ref.watch(clockProvider)();
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final state = ref.watch(foodEstimateControllerProvider);
+    final isLoading = state.estimate.isLoading;
+    final hasInput =
+        state.photos.isNotEmpty || _description.text.trim().isNotEmpty;
+    final error = state.estimate.error;
 
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      body: ManualProductSearchShell(
-        title: l10n.inventoryManualAddAiSearchTitle,
-        onClose: _closePage,
-        searchBar: ProductAiPromptBar(
-          promptController: _promptController,
-          voiceSearchController: _voiceSearchController,
-          voiceSearchService: _voiceSearchService,
-          isLoading: _isLoading,
-          autofocus: widget.initialPrompt.trim().isEmpty,
-          onGenerate: () => unawaited(_generate()),
+    return EatPageScaffold(
+      whenControl: const SizedBox.shrink(),
+      kcal: null,
+      confirmLabel: isLoading
+          ? l10n.foodEstimateAnalyzing
+          : l10n.foodEstimateAnalyze,
+      confirmButtonKey: ManualProductAiSearchPage.analyzeKey,
+      onConfirm: hasInput && !isLoading ? () => unawaited(_analyze()) : null,
+      cancelButtonKey: const Key('food_estimate_close_button'),
+      secondaryLabel: l10n.foodEstimateCamera,
+      onSecondary: isLoading ? null : () => unawaited(_takePhoto()),
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          spacing: AppSpacing.xs,
+          children: [
+            Text(
+              l10n.foodEstimateHeadline,
+              style: textTheme.displaySmall?.copyWith(
+                fontFamily: AppFonts.display,
+                fontWeight: FontWeight.w800,
+                color: colors.ink,
+              ),
+            ),
+            Text(
+              l10n.foodEstimateHint,
+              style: textTheme.bodyMedium?.copyWith(color: colors.muted),
+            ),
+          ],
         ),
-        body: ManualProductAiSearchBody(
-          draft: _draft,
-          selection: selection,
-          errorText: _errorText,
-          weightController: _weightController,
-          weightErrorText: weightErrorText,
-          quickEatConfig: widget.quickEatConfig,
-          selectedAction: _selectedAction,
-          showEatImmediatelyOption: widget.showEatImmediatelyOption,
-          loggedAt: _selectedLoggedAt,
-          today: now,
-          selectedMealType: _selectedMealType,
-          onActionChanged: (action) {
-            setState(() {
-              _selectedAction = action;
-            });
-          },
-          onDayPicked: _selectLoggedDay,
-          onMealTypeSelected: _selectMealType,
-          onWeightChanged: _handleWeightChanged,
-          onPer100KcalChanged: (value) {
-            setState(() {
-              _selectedPer100Kcal = value;
-            });
-          },
-          onSave: _draft != null && !_hasWeightError && selection != null
-              ? _saveDraft
-              : null,
+        FoodEstimatePhotoStrip(
+          photos: [for (final photo in state.photos) photo.bytes],
+          onAdd: isLoading ? null : () => unawaited(_pickPhotos()),
+          onRemove: ref
+              .read(foodEstimateControllerProvider.notifier)
+              .removePhoto,
         ),
-      ),
+        TextField(
+          key: ManualProductAiSearchPage.descriptionKey,
+          controller: _description,
+          enabled: !isLoading,
+          minLines: 2,
+          maxLines: 5,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            labelText: l10n.foodEstimateDescriptionLabel,
+            hintText: l10n.foodEstimateDescriptionHint,
+          ),
+        ),
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
+          children: [
+            for (final phrase in [
+              l10n.foodEstimateChipLargePortion,
+              l10n.foodEstimateChipRestaurant,
+              l10n.foodEstimateChipHomemade,
+              l10n.foodEstimateChipHalfEaten,
+            ])
+              EatChip(
+                label: phrase,
+                isSelected: false,
+                onPressed: () => _appendPhrase(phrase),
+              ),
+          ],
+        ),
+        if (error != null)
+          Text(
+            switch (error) {
+              FoodEstimateNotFoodException() => l10n.foodEstimateNotFood,
+              FoodEstimateUnclearException() => l10n.foodEstimateUnclear,
+              _ => l10n.foodEstimateFailed,
+            },
+            style: textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.error,
+            ),
+          ),
+      ],
     );
   }
 
-  ProductAiNutritionSelection? get _resolvedSelection =>
-      resolveProductAiNutritionSelection(
-        draft: _draft,
-        weightGrams: _weightGrams,
-        selectedPer100Kcal: _selectedPer100Kcal,
-      );
-
-  Future<void> _generate() async {
-    await _voiceSearchController.stopVoiceSearchIfNeeded();
-    if (!mounted) {
-      return;
-    }
-    final l10n = AppLocalizations.of(context)!;
-    final prompt = normalizeManualProductText(_promptController.text);
-    if (prompt == null) {
-      setState(() {
-        _errorText = l10n.inventoryManualAddAiSearchPromptRequired;
-      });
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-      _errorText = null;
-    });
-
-    final service = ref.read(productAiSearchServiceProvider);
-    final draft = await service.generateDraft(prompt);
-    if (!mounted) {
-      return;
-    }
-
-    if (draft == null) {
-      setState(() {
-        _isLoading = false;
-        _draft = null;
-        _errorText = l10n.inventoryManualAddAiSearchFailed;
-      });
-      return;
-    }
-
-    final basePer100Kcal = resolveProductAiBasePer100Kcal(draft);
-    setState(() {
-      _isLoading = false;
-      _draft = draft;
-      _errorText = null;
-      _hasWeightError = false;
-      _weightGrams = draft.totalWeightGrams;
-      _selectedPer100Kcal = basePer100Kcal;
-      _weightController.text = formatManualProductDouble(
-        draft.totalWeightGrams,
-      );
-    });
+  void _appendPhrase(String phrase) {
+    final text = _description.text.trim();
+    _description.text = text.isEmpty ? phrase : '$text, $phrase';
   }
 
-  void _handleWeightChanged(String value) {
-    final parsedValue = parseProductAiWeightInput(value);
-    setState(() {
-      _hasWeightError = parsedValue == null;
-      if (parsedValue != null) {
-        _weightGrams = parsedValue;
-      }
-    });
-  }
-
-  void _saveDraft() {
-    final selection = _resolvedSelection;
-    if (selection == null) {
-      return;
-    }
-
-    final result = buildManualProductAiSearchResult(
-      baseItem: widget.item,
-      selection: selection,
-      action: _selectedAction,
-      loggedAt: _selectedLoggedAt,
-      mealType: _selectedMealType,
+  Future<void> _takePhoto() async {
+    final file = await _picker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: _maxPhotoWidth,
+      imageQuality: _photoQuality,
     );
-    _closePage(result);
+    await _addFiles([?file]);
   }
 
-  void _selectLoggedDay(DateTime day) {
-    setState(() {
-      _selectedLoggedAt = loggedAtOnDay(day, now: ref.read(clockProvider)());
-    });
+  Future<void> _pickPhotos() async {
+    final files = await _picker.pickMultiImage(
+      maxWidth: _maxPhotoWidth,
+      imageQuality: _photoQuality,
+    );
+    await _addFiles(files);
   }
 
-  void _selectMealType(MealType mealType) {
-    setState(() {
-      _selectedMealType = mealType;
-    });
-  }
-
-  void _closePage<T extends Object?>([T? result]) {
-    if (!mounted) {
-      return;
+  Future<void> _addFiles(List<XFile> files) async {
+    if (files.isEmpty) return;
+    final photos = <FoodEstimatePhoto>[];
+    for (final file in files) {
+      final bytes = await file.readAsBytes();
+      photos.add((mimeType: _mimeType(file.name, bytes), bytes: bytes));
     }
+    if (!mounted) return;
+    ref.read(foodEstimateControllerProvider.notifier).addPhotos(photos);
+  }
 
+  Future<void> _analyze() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final description = _description.text;
+    final estimate = await ref
+        .read(foodEstimateControllerProvider.notifier)
+        .analyze(description);
+    if (estimate == null || !mounted) return;
+
+    final quickEat = widget.quickEatConfig;
+    final loggedAt = quickEat.preselectedLoggedAt ?? ref.read(clockProvider)();
+    final photos = ref.read(foodEstimateControllerProvider).photos;
+    final result = await Navigator.of(context, rootNavigator: true)
+        .push<ManualProductAiSearchResult>(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (_) => FoodEstimateResultPage(
+              estimate: estimate,
+              baseItem: widget.item,
+              eatsNow:
+                  quickEat.quickEatOnly ||
+                  widget.initialAction ==
+                      InventoryReceiptManualProductAction.eatNow,
+              description: description,
+              initialLoggedAt: loggedAt,
+              initialMealType:
+                  quickEat.preselectedMealType ??
+                  MealType.defaultForDateTime(loggedAt),
+              imageBytes: photos.isEmpty ? null : photos.first.bytes,
+            ),
+          ),
+        );
+    if (result == null || !mounted) return;
     popManualProductSearchPage(context, result);
   }
+
+  static String _mimeType(String name, Uint8List bytes) =>
+      lookupMimeType(name, headerBytes: bytes) ?? 'image/jpeg';
 }

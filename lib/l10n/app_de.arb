@@ -560,40 +560,7 @@
   "inventoryManualAddVoiceSearchUnavailable": "Sprachsuche wird auf diesem Gerät aktuell nicht unterstützt.",
   "inventoryManualAddVoiceSearchPermissionDenied": "Bitte erlaube Mikrofonzugriff, um die Sprachsuche zu verwenden.",
   "inventoryManualAddVoiceSearchFailed": "Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.",
-  "inventoryManualAddAiSearchTitle": "Lebensmittel mit KI erstellen",
-  "inventoryManualAddAiSearchPromptLabel": "Lebensmittelbeschreibung",
-  "inventoryManualAddAiSearchPromptHint": "Zum Beispiel: Döner Hähnchen",
-  "inventoryManualAddAiSearchGenerateAction": "Schätzung erstellen",
-  "inventoryManualAddAiSearchPromptRequired": "Bitte gib eine Lebensmittelbeschreibung ein.",
-  "inventoryManualAddAiSearchFailed": "Die Lebensmittelschätzung konnte nicht erstellt werden. Bitte versuche es erneut.",
-  "inventoryManualAddAiSearchReadOnlyHint": "Passe Gewicht oder kcal pro 100 g an, wenn sich die Schätzung falsch anfühlt.",
-  "inventoryManualAddAiSearchIngredientsTitle": "Zutaten für diese Portion",
-  "inventoryManualAddAiSearchAmountColumn": "Menge",
-  "inventoryManualAddAiSearchTotalLabel": "Gesamt",
   "inventoryManualAddAiSearchPer100CardTitle": "PRO 100 G",
-  "inventoryManualAddAiSearchPortionCardTitle": "DEINE PORTION",
-  "inventoryManualAddAiSearchWeightLabel": "Gewicht",
-  "inventoryManualAddAiSearchWeightRequired": "Bitte gib ein gültiges Gewicht ein.",
-  "inventoryManualAddAiSearchDensityTitle": "Kaloriendichte anpassen (pro 100 g)",
-  "inventoryManualAddAiSearchDensityHint": "War das Gericht eher leichter oder gehaltvoller als erwartet? Skaliere die Kalorien pro 100 g. Die Gesamtwerte passen sich automatisch an.",
-  "inventoryManualAddAiSearchDensityMinLabel": "{kcal} kcal/100g (Leichter)",
-  "@inventoryManualAddAiSearchDensityMinLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
-  "inventoryManualAddAiSearchDensityBaseLabel": "Basis: {kcal}",
-  "@inventoryManualAddAiSearchDensityBaseLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
-  "inventoryManualAddAiSearchDensityMaxLabel": "{kcal} kcal/100g (Gehaltvoller)",
-  "@inventoryManualAddAiSearchDensityMaxLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
   "inventoryManualAddStoreName": "Manuell hinzugefügt",
   "inventoryBarcodePortionDialogTitle": "Verzehrte Menge eingeben",
   "inventoryBarcodePortionDialogConfirmAction": "Weiter",
@@ -2102,5 +2069,34 @@
   "dataKeyLoadFailed": "Dein Datenschlüssel konnte nicht geladen werden. Prüfe deine Verbindung.",
   "dataKeyRetryAction": "Erneut versuchen",
   "dataKeyPickFromPasswordManagerAction": "Aus Passwortmanager einfügen",
-  "dataKeyPickFailed": "Passwortmanager konnte nicht geöffnet werden."
+  "dataKeyPickFailed": "Passwortmanager konnte nicht geöffnet werden.",
+  "foodEstimateHeadline": "Was isst du?",
+  "foodEstimateHint": "Foto, Text oder beides. Eins reicht.",
+  "foodEstimateAddPhoto": "Foto",
+  "foodEstimateDescriptionLabel": "Beschreibung",
+  "foodEstimateDescriptionHint": "z. B. ohne Zwiebeln, extra Soße, großer Teller",
+  "foodEstimateChipLargePortion": "große Portion",
+  "foodEstimateChipRestaurant": "Restaurant",
+  "foodEstimateChipHomemade": "selbst gekocht",
+  "foodEstimateChipHalfEaten": "halb gegessen",
+  "foodEstimateCamera": "Kamera",
+  "foodEstimateAnalyze": "Analysieren",
+  "foodEstimateAnalyzing": "Analysiere …",
+  "foodEstimateNotFood": "Auf den Fotos ist kein Essen zu erkennen.",
+  "foodEstimateUnclear": "Das Essen ist nicht zu erkennen. Nimm ein helleres Foto oder beschreibe es.",
+  "foodEstimateFailed": "Die Schätzung hat nicht geklappt. Bitte versuche es erneut.",
+  "foodEstimateOverline": "KI-Schätzung",
+  "foodEstimateReanalyze": "Neu analysieren",
+  "foodEstimateAddToStock": "In Vorrat",
+  "foodEstimateLevelLean": "mager",
+  "foodEstimateLevelNormal": "normal",
+  "foodEstimateLevelRich": "reichhaltig",
+  "foodEstimateRemovePhoto": "Foto {index} entfernen",
+  "@foodEstimateRemovePhoto": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  }
 }

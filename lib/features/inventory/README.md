@@ -76,6 +76,10 @@ already documented as a reusable presentation surface.
   the eat sheet for a prepared meal and logs the eaten portions as one bundle
   entry.
 - `PreparedMealCover` and the receipt review sheets listed above.
+- `presentation/widgets/eat_sheet/`: `InventoryItemEatSheetBody` (the eat
+  page for one item, with header overrides, a custom second action, and a
+  selection callback), `EatPageScaffold`, `EatChip`, and `EatComponentsList`,
+  so later features can show foods on the same eat page.
 
 ## Providers
 

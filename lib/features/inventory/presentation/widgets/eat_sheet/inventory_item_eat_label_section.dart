@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
@@ -12,13 +14,29 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Head of the item eat page: the item header and its nutrition label.
 class InventoryItemEatLabelSection extends StatelessWidget {
   /// Creates the section for [item] in [state].
-  const new({required this.item, required this.state, super.key});
+  const new({
+    required this.item,
+    required this.state,
+    this.brand,
+    this.caption,
+    this.imageBytes,
+    super.key,
+  });
 
   /// The eaten item.
   final InventoryItem item;
 
   /// The eat page state.
   final InventoryItemEatSheetState state;
+
+  /// Line above the name in place of the item's brand.
+  final String? brand;
+
+  /// Line under the name in place of the stock.
+  final String? caption;
+
+  /// Local image in place of the item's image.
+  final Uint8List? imageBytes;
 
   @override
   Widget build(BuildContext context) {
@@ -31,11 +49,14 @@ class InventoryItemEatLabelSection extends StatelessWidget {
       children: [
         EatPageHeader(
           title: item.name,
-          brand: item.brand,
-          caption: calculator.hasOpenStock
-              ? null
-              : l10n.eatPageInStock(state.stockLabel(l10n)),
+          brand: brand ?? item.brand,
+          caption:
+              caption ??
+              (calculator.hasOpenStock
+                  ? null
+                  : l10n.eatPageInStock(state.stockLabel(l10n))),
           imageUrl: item.imageUrl,
+          imageBytes: imageBytes,
           fallbackKey: const Key('inventory_item_eat_sheet_hero_fallback'),
         ),
         if (nutrition != null)

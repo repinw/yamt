@@ -1044,76 +1044,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Sprachsuche konnte nicht gestartet werden. Bitte versuche es erneut.';
 
   @override
-  String get inventoryManualAddAiSearchTitle => 'Lebensmittel mit KI erstellen';
-
-  @override
-  String get inventoryManualAddAiSearchPromptLabel =>
-      'Lebensmittelbeschreibung';
-
-  @override
-  String get inventoryManualAddAiSearchPromptHint =>
-      'Zum Beispiel: Döner Hähnchen';
-
-  @override
-  String get inventoryManualAddAiSearchGenerateAction => 'Schätzung erstellen';
-
-  @override
-  String get inventoryManualAddAiSearchPromptRequired =>
-      'Bitte gib eine Lebensmittelbeschreibung ein.';
-
-  @override
-  String get inventoryManualAddAiSearchFailed =>
-      'Die Lebensmittelschätzung konnte nicht erstellt werden. Bitte versuche es erneut.';
-
-  @override
-  String get inventoryManualAddAiSearchReadOnlyHint =>
-      'Passe Gewicht oder kcal pro 100 g an, wenn sich die Schätzung falsch anfühlt.';
-
-  @override
-  String get inventoryManualAddAiSearchIngredientsTitle =>
-      'Zutaten für diese Portion';
-
-  @override
-  String get inventoryManualAddAiSearchAmountColumn => 'Menge';
-
-  @override
-  String get inventoryManualAddAiSearchTotalLabel => 'Gesamt';
-
-  @override
   String get inventoryManualAddAiSearchPer100CardTitle => 'PRO 100 G';
-
-  @override
-  String get inventoryManualAddAiSearchPortionCardTitle => 'DEINE PORTION';
-
-  @override
-  String get inventoryManualAddAiSearchWeightLabel => 'Gewicht';
-
-  @override
-  String get inventoryManualAddAiSearchWeightRequired =>
-      'Bitte gib ein gültiges Gewicht ein.';
-
-  @override
-  String get inventoryManualAddAiSearchDensityTitle =>
-      'Kaloriendichte anpassen (pro 100 g)';
-
-  @override
-  String get inventoryManualAddAiSearchDensityHint =>
-      'War das Gericht eher leichter oder gehaltvoller als erwartet? Skaliere die Kalorien pro 100 g. Die Gesamtwerte passen sich automatisch an.';
-
-  @override
-  String inventoryManualAddAiSearchDensityMinLabel(Object kcal) {
-    return '$kcal kcal/100g (Leichter)';
-  }
-
-  @override
-  String inventoryManualAddAiSearchDensityBaseLabel(Object kcal) {
-    return 'Basis: $kcal';
-  }
-
-  @override
-  String inventoryManualAddAiSearchDensityMaxLabel(Object kcal) {
-    return '$kcal kcal/100g (Gehaltvoller)';
-  }
 
   @override
   String get inventoryManualAddStoreName => 'Manuell hinzugefügt';
@@ -4633,4 +4564,75 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get dataKeyPickFailed =>
       'Passwortmanager konnte nicht geöffnet werden.';
+
+  @override
+  String get foodEstimateHeadline => 'Was isst du?';
+
+  @override
+  String get foodEstimateHint => 'Foto, Text oder beides. Eins reicht.';
+
+  @override
+  String get foodEstimateAddPhoto => 'Foto';
+
+  @override
+  String get foodEstimateDescriptionLabel => 'Beschreibung';
+
+  @override
+  String get foodEstimateDescriptionHint =>
+      'z. B. ohne Zwiebeln, extra Soße, großer Teller';
+
+  @override
+  String get foodEstimateChipLargePortion => 'große Portion';
+
+  @override
+  String get foodEstimateChipRestaurant => 'Restaurant';
+
+  @override
+  String get foodEstimateChipHomemade => 'selbst gekocht';
+
+  @override
+  String get foodEstimateChipHalfEaten => 'halb gegessen';
+
+  @override
+  String get foodEstimateCamera => 'Kamera';
+
+  @override
+  String get foodEstimateAnalyze => 'Analysieren';
+
+  @override
+  String get foodEstimateAnalyzing => 'Analysiere …';
+
+  @override
+  String get foodEstimateNotFood => 'Auf den Fotos ist kein Essen zu erkennen.';
+
+  @override
+  String get foodEstimateUnclear =>
+      'Das Essen ist nicht zu erkennen. Nimm ein helleres Foto oder beschreibe es.';
+
+  @override
+  String get foodEstimateFailed =>
+      'Die Schätzung hat nicht geklappt. Bitte versuche es erneut.';
+
+  @override
+  String get foodEstimateOverline => 'KI-Schätzung';
+
+  @override
+  String get foodEstimateReanalyze => 'Neu analysieren';
+
+  @override
+  String get foodEstimateAddToStock => 'In Vorrat';
+
+  @override
+  String get foodEstimateLevelLean => 'mager';
+
+  @override
+  String get foodEstimateLevelNormal => 'normal';
+
+  @override
+  String get foodEstimateLevelRich => 'reichhaltig';
+
+  @override
+  String foodEstimateRemovePhoto(int index) {
+    return 'Foto $index entfernen';
+  }
 }

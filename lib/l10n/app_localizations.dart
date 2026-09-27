@@ -1840,119 +1840,11 @@ abstract class AppLocalizations {
   /// **'Voice search could not be started. Please try again.'**
   String get inventoryManualAddVoiceSearchFailed;
 
-  /// No description provided for @inventoryManualAddAiSearchTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Create food with AI'**
-  String get inventoryManualAddAiSearchTitle;
-
-  /// No description provided for @inventoryManualAddAiSearchPromptLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Food description'**
-  String get inventoryManualAddAiSearchPromptLabel;
-
-  /// No description provided for @inventoryManualAddAiSearchPromptHint.
-  ///
-  /// In en, this message translates to:
-  /// **'For example: Chicken kebab'**
-  String get inventoryManualAddAiSearchPromptHint;
-
-  /// No description provided for @inventoryManualAddAiSearchGenerateAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Generate estimate'**
-  String get inventoryManualAddAiSearchGenerateAction;
-
-  /// No description provided for @inventoryManualAddAiSearchPromptRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a food description.'**
-  String get inventoryManualAddAiSearchPromptRequired;
-
-  /// No description provided for @inventoryManualAddAiSearchFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not generate a food estimate. Please try again.'**
-  String get inventoryManualAddAiSearchFailed;
-
-  /// No description provided for @inventoryManualAddAiSearchReadOnlyHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Adjust weight or kcal per 100 g if the estimate feels off.'**
-  String get inventoryManualAddAiSearchReadOnlyHint;
-
-  /// No description provided for @inventoryManualAddAiSearchIngredientsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Ingredients for this portion'**
-  String get inventoryManualAddAiSearchIngredientsTitle;
-
-  /// No description provided for @inventoryManualAddAiSearchAmountColumn.
-  ///
-  /// In en, this message translates to:
-  /// **'Amount'**
-  String get inventoryManualAddAiSearchAmountColumn;
-
-  /// No description provided for @inventoryManualAddAiSearchTotalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Total'**
-  String get inventoryManualAddAiSearchTotalLabel;
-
   /// No description provided for @inventoryManualAddAiSearchPer100CardTitle.
   ///
   /// In en, this message translates to:
   /// **'PER 100 G'**
   String get inventoryManualAddAiSearchPer100CardTitle;
-
-  /// No description provided for @inventoryManualAddAiSearchPortionCardTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'YOUR PORTION'**
-  String get inventoryManualAddAiSearchPortionCardTitle;
-
-  /// No description provided for @inventoryManualAddAiSearchWeightLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Weight'**
-  String get inventoryManualAddAiSearchWeightLabel;
-
-  /// No description provided for @inventoryManualAddAiSearchWeightRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter a valid weight.'**
-  String get inventoryManualAddAiSearchWeightRequired;
-
-  /// No description provided for @inventoryManualAddAiSearchDensityTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Adjust kcal density (per 100 g)'**
-  String get inventoryManualAddAiSearchDensityTitle;
-
-  /// No description provided for @inventoryManualAddAiSearchDensityHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Was the dish lighter or richer than expected? Scale calories per 100 g. Total nutrition updates automatically.'**
-  String get inventoryManualAddAiSearchDensityHint;
-
-  /// No description provided for @inventoryManualAddAiSearchDensityMinLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal/100g (lighter)'**
-  String inventoryManualAddAiSearchDensityMinLabel(Object kcal);
-
-  /// No description provided for @inventoryManualAddAiSearchDensityBaseLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Base: {kcal}'**
-  String inventoryManualAddAiSearchDensityBaseLabel(Object kcal);
-
-  /// No description provided for @inventoryManualAddAiSearchDensityMaxLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal/100g (richer)'**
-  String inventoryManualAddAiSearchDensityMaxLabel(Object kcal);
 
   /// No description provided for @inventoryManualAddStoreName.
   ///
@@ -7982,6 +7874,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open the password manager.'**
   String get dataKeyPickFailed;
+
+  /// No description provided for @foodEstimateHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'What are you eating?'**
+  String get foodEstimateHeadline;
+
+  /// No description provided for @foodEstimateHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo, text, or both. One is enough.'**
+  String get foodEstimateHint;
+
+  /// No description provided for @foodEstimateAddPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get foodEstimateAddPhoto;
+
+  /// No description provided for @foodEstimateDescriptionLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get foodEstimateDescriptionLabel;
+
+  /// No description provided for @foodEstimateDescriptionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. no onions, extra sauce, large plate'**
+  String get foodEstimateDescriptionHint;
+
+  /// No description provided for @foodEstimateChipLargePortion.
+  ///
+  /// In en, this message translates to:
+  /// **'large portion'**
+  String get foodEstimateChipLargePortion;
+
+  /// No description provided for @foodEstimateChipRestaurant.
+  ///
+  /// In en, this message translates to:
+  /// **'restaurant'**
+  String get foodEstimateChipRestaurant;
+
+  /// No description provided for @foodEstimateChipHomemade.
+  ///
+  /// In en, this message translates to:
+  /// **'homemade'**
+  String get foodEstimateChipHomemade;
+
+  /// No description provided for @foodEstimateChipHalfEaten.
+  ///
+  /// In en, this message translates to:
+  /// **'half eaten'**
+  String get foodEstimateChipHalfEaten;
+
+  /// No description provided for @foodEstimateCamera.
+  ///
+  /// In en, this message translates to:
+  /// **'Camera'**
+  String get foodEstimateCamera;
+
+  /// No description provided for @foodEstimateAnalyze.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze'**
+  String get foodEstimateAnalyze;
+
+  /// No description provided for @foodEstimateAnalyzing.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing …'**
+  String get foodEstimateAnalyzing;
+
+  /// No description provided for @foodEstimateNotFood.
+  ///
+  /// In en, this message translates to:
+  /// **'The photos show no food.'**
+  String get foodEstimateNotFood;
+
+  /// No description provided for @foodEstimateUnclear.
+  ///
+  /// In en, this message translates to:
+  /// **'The food cannot be recognized. Take a brighter photo or describe it.'**
+  String get foodEstimateUnclear;
+
+  /// No description provided for @foodEstimateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The estimate did not work. Please try again.'**
+  String get foodEstimateFailed;
+
+  /// No description provided for @foodEstimateOverline.
+  ///
+  /// In en, this message translates to:
+  /// **'AI estimate'**
+  String get foodEstimateOverline;
+
+  /// No description provided for @foodEstimateReanalyze.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze again'**
+  String get foodEstimateReanalyze;
+
+  /// No description provided for @foodEstimateAddToStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to stock'**
+  String get foodEstimateAddToStock;
+
+  /// No description provided for @foodEstimateLevelLean.
+  ///
+  /// In en, this message translates to:
+  /// **'lean'**
+  String get foodEstimateLevelLean;
+
+  /// No description provided for @foodEstimateLevelNormal.
+  ///
+  /// In en, this message translates to:
+  /// **'normal'**
+  String get foodEstimateLevelNormal;
+
+  /// No description provided for @foodEstimateLevelRich.
+  ///
+  /// In en, this message translates to:
+  /// **'rich'**
+  String get foodEstimateLevelRich;
+
+  /// No description provided for @foodEstimateRemovePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove photo {index}'**
+  String foodEstimateRemovePhoto(int index);
 }
 
 class _AppLocalizationsDelegate

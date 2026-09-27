@@ -6,7 +6,7 @@ Einheitliche Produktsuche, Produkteditor, KI-Drafterstellung und Barcode-Assiste
 
 - Eine Produktsuche-Seite (`ProductSearchHubPage`) mit Suchfeld, Barcode-, KI- und Eigenes-Produkt-Aktionen, zuletzt ausgewählten Produkten und Auswahl-Overlay.
 - Manueller Produkteditor (`InventoryReceiptManualProductEditorPage`), Formulare und Nährwertvalidierung.
-- KI-gestützte Produktdrafterstellung (`ManualProductAiSearchPage`, `ProductAiSearchService`, `FirebaseProductAiSearchRepository`).
+- KI-Schätzung von Essen aus Fotos und/oder Beschreibung (`ManualProductAiSearchPage`, `FoodEstimateController`, `FoodEstimateRepository` mit dem Firebase-AI-Server-Template `food-estimate-template`). Das Ergebnis öffnet im Eat-Dialog aus `inventory` (`FoodEstimateResultPage`).
 - Koordination der Kontext-Modi (`inventory`, `diary`, `selection`).
 - Aussteuerungsregeln für Barcode-Scan, zuletzt ausgewählte Artikel und eigene Artikeleingabe.
 - Barcode-Kandidaten-Scanner, Kandidaten-Karten und Aktionen für Suchergebnisse.

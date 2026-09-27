@@ -191,8 +191,14 @@ and feature description docs. This is product-facing; architecture rules stay in
 - One product search page with barcode, AI, and own-product actions, and the product editor.
 - Barcode scan lookup with multiple-candidate picker and not-found handling.
 - Voice search for manual product text where supported.
-- AI food creation from free text, with review draft instead of direct save.
-- AI ingredient breakdown, total weight, kcal range, and kcal slider.
+- AI food creation from photos and/or a description (one of both is
+  enough), with quick phrases such as "large portion". The server prompt
+  template `food-estimate-template` can change without an app release.
+- The AI result opens on the eat page: photo, name, nutrition label, amount
+  ruler with the estimated portion, the ingredients with grams and kcal, and
+  lean / normal / rich chips that shift the energy. Confirm logs the food
+  when opened from the diary and adds it to the Vorrat otherwise; "Analyze
+  again" returns to the input.
 - Manual nutrition entry and extended nutrient fields.
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.

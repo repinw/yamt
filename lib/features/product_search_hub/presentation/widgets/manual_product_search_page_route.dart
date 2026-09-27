@@ -66,7 +66,6 @@ Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
       item: args.item,
       quickEatConfig: args.quickEatConfig,
       initialPrompt: args.initialPrompt ?? '',
-      showEatImmediatelyOption: args.showEatImmediatelyOption,
       initialAction: args.initialAction,
     ),
   };

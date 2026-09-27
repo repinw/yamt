@@ -140,7 +140,17 @@ class _PreparedMealEatSheetBodyState
               : null,
         ),
         if (state.components.isNotEmpty)
-          EatComponentsList(components: state.components),
+          EatComponentsList(
+            components: [
+              for (final (:component, :amount) in state.components)
+                (
+                  name: component.name,
+                  amount: amount,
+                  unit: component.usedUnit,
+                  kcal: null,
+                ),
+            ],
+          ),
       ],
     );
   }

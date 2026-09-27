@@ -119,8 +119,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart':
         1,
-    'lib/features/product_search_hub/presentation/widgets/product_ai_search_page/product_ai_search_body.dart':
-        1,
     'lib/features/product_search_hub/presentation/widgets/product_ai_search_page/product_ai_search_page.dart':
         1,
     'lib/features/product_search_hub/presentation/widgets/product_search_barcode_candidate_picker_sheet.dart':
@@ -412,8 +410,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_support.dart':
         1,
-    'lib/features/product_search_hub/presentation/widgets/product_ai_search_page/product_ai_search_support.dart':
-        1,
     'lib/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart':
         1,
     'lib/features/shoppinglist/data/shopping_list_item_store.dart': 1,
@@ -661,7 +657,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/diary/domain/diary_macro_targets.dart': 1,
     'lib/features/inventory/domain/inventory_parsing_utils.dart': 1,
     'lib/features/inventory/domain/prepared_meal.dart': 1,
-    'lib/features/product_search_hub/domain/product_ai_search_models.dart': 1,
     'lib/features/product_search_hub/domain/product_search_hub_completion_handler.dart':
         1,
     'lib/features/scanner/domain/contracts/receipt_manual_product_picker.dart':

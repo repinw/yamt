@@ -1,20 +1,20 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/device/voice_search_service.dart';
-import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/core/widgets/meal_log_time_row.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/data/'
-    'product_ai_search_repository.dart';
+    'food_estimate_repository.dart';
+import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
 import 'package:yamt/features/product_search_hub/domain/'
-    'product_ai_search_models.dart';
+    'product_search_hub_exceptions.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -27,99 +27,45 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_ai_search_page/product_ai_search_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class _FakeProductAiSearchRepository extends FirebaseProductAiSearchRepository {
-  new({required this.onGenerateFoodFromText});
+class _FakeFoodEstimateRepository implements FoodEstimateRepository {
+  new(this._onLoad);
 
-  final Future<ProductAiSearchDraft?> Function(String prompt)
-  onGenerateFoodFromText;
+  final Future<FoodEstimate> Function(String description) _onLoad;
+  final List<String> descriptions = <String>[];
 
   @override
-  Future<ProductAiSearchDraft?> generateFoodFromText({required String prompt}) {
-    return onGenerateFoodFromText(prompt);
+  Future<FoodEstimate> loadEstimate({
+    required String description,
+    required List<({String mimeType, Uint8List bytes})> photos,
+  }) {
+    descriptions.add(description);
+    return _onLoad(description);
   }
 }
 
-class _FakeAiSpeechService implements VoiceSearchService {
-  int startCallCount = 0;
-  bool _isListening = false;
-  ValueChanged<VoiceSearchRecognition>? _onResult;
-  ValueChanged<bool>? _onListeningStateChanged;
-
-  @override
-  bool get isListening => _isListening;
-
-  @override
-  Future<VoiceSearchFailure?> startListening({
-    required ValueChanged<VoiceSearchRecognition> onResult,
-    required ValueChanged<bool> onListeningStateChanged,
-    required ValueChanged<VoiceSearchFailure> onError,
-  }) async {
-    startCallCount++;
-    _onResult = onResult;
-    _onListeningStateChanged = onListeningStateChanged;
-    _isListening = true;
-    onListeningStateChanged(true);
-    return null;
-  }
-
-  @override
-  Future<void> stopListening() async {
-    _isListening = false;
-    _onListeningStateChanged?.call(false);
-  }
-
-  @override
-  Future<void> cancelListening() async {
-    _isListening = false;
-    _onListeningStateChanged?.call(false);
-  }
-
-  void emitTranscript(String transcript, {bool isFinal = false}) {
-    _onResult?.call(
-      VoiceSearchRecognition(transcript: transcript, isFinal: isFinal),
-    );
-  }
-}
-
-ProductAiSearchDraft _doenerDraft() {
-  return const ProductAiSearchDraft(
-    name: 'Doener Haehnchen',
-    ingredients: <ProductAiSearchIngredientRow>[
-      ProductAiSearchIngredientRow(
-        label: 'Fladenbrot',
-        amountText: '100 g',
-        amountGrams: 100,
-        kcalMin: 250,
-        kcalMax: 300,
-      ),
-      ProductAiSearchIngredientRow(
-        label: 'Haehnchen',
-        amountText: '150 g',
-        amountGrams: 150,
-        kcalMin: 250,
-        kcalMax: 320,
-      ),
-      ProductAiSearchIngredientRow(
-        label: 'Cocktailsauce',
-        amountText: '40 g',
-        amountGrams: 40,
-        kcalMin: 180,
-        kcalMax: 220,
-      ),
-    ],
-    totalWeightGrams: 380,
-    totalKcalMin: 800,
-    totalKcalMax: 950,
-    defaultKcal: 880,
-    portionNutrition: ProductAiSearchNutritionEstimate(
-      kcal: 880,
-      protein: 42,
-      carbs: 68,
-      fat: 38,
-      salt: 2.8,
-    ),
-  );
-}
+const _doener = FoodEstimate(
+  name: 'Döner Kebab',
+  portionGrams: 400,
+  kcalLean: 720,
+  kcalRich: 960,
+  per100: GlobalFoodNutrition(
+    qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+    per100Kcal: 200,
+    per100Fat: 9,
+    per100SaturatedFat: 3,
+    per100Carbs: 19,
+    per100Sugar: 3,
+    per100Fiber: 1.5,
+    per100Protein: 10,
+    per100Salt: 1.4,
+  ),
+  ingredients: [
+    FoodEstimateIngredient(name: 'Fladenbrot', grams: 120, kcal: 300),
+    FoodEstimateIngredient(name: 'Kalbfleisch', grams: 150, kcal: 330),
+    FoodEstimateIngredient(name: 'Knoblauchsoße', grams: 60, kcal: 150),
+    FoodEstimateIngredient(name: 'Salat', grams: 70, kcal: 20),
+  ],
+);
 
 InventoryItem _placeholderItem() {
   return InventoryItem.create(
@@ -131,93 +77,43 @@ InventoryItem _placeholderItem() {
   );
 }
 
-DateTime _targetLoggedAtDate() {
-  final today = DateUtils.dateOnly(DateTime.now());
-  if (today.day > 1) {
-    return today.subtract(const Duration(days: 1));
-  }
-  return today.subtract(const Duration(days: 2));
-}
-
-Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {
-  final loggedAtButton = find.byKey(MealLogTimeRow.dayButtonKey);
-  await tester.ensureVisible(loggedAtButton);
-  await tester.tap(loggedAtButton);
-  await tester.pumpAndSettle();
-
-  final today = DateUtils.dateOnly(DateTime.now());
-  if (targetDate.year != today.year || targetDate.month != today.month) {
-    final previousMonthButton = find.byTooltip('Previous month');
-    await tester.ensureVisible(previousMonthButton);
-    await tester.tap(previousMonthButton);
-    await tester.pumpAndSettle();
-  }
-
-  final dayButton = find.text('${targetDate.day}').last;
-  await tester.ensureVisible(dayButton);
-  await tester.tap(dayButton);
-  await tester.pumpAndSettle();
-
-  final okButton = find.text('OK');
-  if (okButton.evaluate().isNotEmpty) {
-    await tester.ensureVisible(okButton.last);
-    await tester.tap(okButton.last);
-    await tester.pumpAndSettle();
-  }
-}
-
-Future<void> _cancelLoggedAtDateChange(
-  WidgetTester tester,
-  DateTime targetDate,
-) async {
-  final loggedAtButton = find.byKey(MealLogTimeRow.dayButtonKey);
-  await tester.ensureVisible(loggedAtButton);
-  await tester.tap(loggedAtButton);
-  await tester.pumpAndSettle();
-
-  final today = DateUtils.dateOnly(DateTime.now());
-  if (targetDate.year != today.year || targetDate.month != today.month) {
-    final previousMonthButton = find.byTooltip('Previous month');
-    await tester.ensureVisible(previousMonthButton);
-    await tester.tap(previousMonthButton);
-    await tester.pumpAndSettle();
-  }
-
-  final dayButton = find.text('${targetDate.day}').last;
-  await tester.ensureVisible(dayButton);
-  await tester.tap(dayButton);
-  await tester.pumpAndSettle();
-
-  final cancelButton = find.text('Cancel');
-  await tester.ensureVisible(cancelButton.last);
-  await tester.tap(cancelButton.last);
-  await tester.pumpAndSettle();
-}
-
-GoRouter _buildAiPageRouter({
-  required ManualProductSearchRouteArgs args,
+Future<void> _pumpPage(
+  WidgetTester tester, {
+  required FoodEstimateRepository repository,
   required ValueChanged<ManualProductAiSearchResult?> onResult,
-}) {
-  return GoRouter(
+  bool fromDiary = true,
+  String initialPrompt = '',
+}) async {
+  final router = GoRouter(
     routes: [
       GoRoute(
         path: '/',
-        builder: (context, state) {
-          return Scaffold(
-            body: Center(
-              child: FilledButton(
-                onPressed: () async {
-                  final result =
-                      await pushManualProductSearchPage<
-                        ManualProductAiSearchResult
-                      >(context: context, args: args);
-                  onResult(result);
-                },
-                child: const Text('open'),
-              ),
+        builder: (context, state) => Scaffold(
+          body: Center(
+            child: FilledButton(
+              onPressed: () async {
+                onResult(
+                  await pushManualProductSearchPage<
+                    ManualProductAiSearchResult
+                  >(
+                    context: context,
+                    args: ManualProductSearchRouteArgs.aiSearch(
+                      item: _placeholderItem(),
+                      initialPrompt: initialPrompt,
+                      showEatImmediatelyOption: fromDiary,
+                      initialAction:
+                          InventoryReceiptManualProductAction.addToInventory,
+                      quickEatConfig: InventoryManualAddQuickEatConfig(
+                        quickEatOnly: fromDiary,
+                      ),
+                    ),
+                  ),
+                );
+              },
+              child: const Text('open'),
             ),
-          );
-        },
+          ),
+        ),
       ),
       GoRoute(
         path: AppRoutes.productSearchChildFlow,
@@ -225,492 +121,158 @@ GoRouter _buildAiPageRouter({
       ),
     ],
   );
+  addTearDown(router.dispose);
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [foodEstimateRepositoryProvider.overrideWithValue(repository)],
+      child: MaterialApp.router(
+        locale: const Locale('en'),
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        routerConfig: router,
+      ),
+    ),
+  );
+  await tester.tap(find.text('open'));
+  await tester.pumpAndSettle();
 }
 
+Future<void> _analyze(WidgetTester tester) async {
+  await tester.tap(find.byKey(ManualProductAiSearchPage.analyzeKey));
+  await tester.pumpAndSettle();
+}
+
+ButtonStyleButton _analyzeButton(WidgetTester tester) =>
+    tester.widget(find.byKey(ManualProductAiSearchPage.analyzeKey));
+
 void main() {
-  testWidgets('ai page shows error when generation fails', (tester) async {
-    final repository = _FakeProductAiSearchRepository(
-      onGenerateFoodFromText: (_) async => null,
+  testWidgets('analyze needs a photo or a description', (tester) async {
+    await _pumpPage(
+      tester,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
+      onResult: (_) {},
     );
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          productAiSearchRepositoryProvider.overrideWithValue(repository),
-        ],
-        child: MaterialApp(
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: ManualProductAiSearchPage(
-            item: InventoryItem.create(
-              id: 'item-1',
-              name: 'Placeholder',
-              entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
-              storeName: 'Rewe',
-              quantity: 1,
-            ),
-            quickEatConfig: const InventoryManualAddQuickEatConfig(
-              quickEatOnly: true,
-            ),
-            initialPrompt: 'pelmeni',
-          ),
-        ),
-      ),
-    );
-
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const Key('manual_product_ai_generate_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.text('Could not generate a food estimate. Please try again.'),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('ai page voice search fills prompt field', (tester) async {
-    final repository = _FakeProductAiSearchRepository(
-      onGenerateFoodFromText: (_) async => null,
-    );
-    final speechService = _FakeAiSpeechService();
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          productAiSearchRepositoryProvider.overrideWithValue(repository),
-          voiceSearchServiceProvider.overrideWithValue(speechService),
-        ],
-        child: MaterialApp(
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: ManualProductAiSearchPage(
-            item: InventoryItem.create(
-              id: 'item-1',
-              name: 'Placeholder',
-              entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
-              storeName: 'Rewe',
-              quantity: 1,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.byKey(const Key('manual_product_ai_voice_search_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(speechService.startCallCount, 1);
-
-    speechService.emitTranscript('doener haehnchen');
-    await tester.pump();
-
-    final promptField = tester.widget<TextField>(
-      find.byKey(const Key('manual_product_ai_prompt_field')),
-    );
-    expect(promptField.controller?.text, 'doener haehnchen');
-  });
-
-  testWidgets('quick-eat AI page shows eat action without inventory action', (
-    tester,
-  ) async {
-    final repository = _FakeProductAiSearchRepository(
-      onGenerateFoodFromText: (_) async => _doenerDraft(),
-    );
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          productAiSearchRepositoryProvider.overrideWithValue(repository),
-        ],
-        child: MaterialApp(
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: ManualProductAiSearchPage(
-            item: _placeholderItem(),
-            initialPrompt: 'doener',
-            quickEatConfig: const InventoryManualAddQuickEatConfig(
-              quickEatOnly: true,
-            ),
-            showEatImmediatelyOption: true,
-            initialAction: InventoryReceiptManualProductAction.eatNow,
-          ),
-        ),
-      ),
-    );
-
-    await tester.pumpAndSettle();
-    await tester.tap(
-      find.byKey(const Key('manual_product_ai_generate_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byIcon(Icons.restaurant_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.inventory_2_outlined), findsNothing);
-    expect(find.text('Eat'), findsWidgets);
-    expect(find.text('Inventory'), findsNothing);
-  });
-
-  testWidgets('ai page adjusts per-100 kcal and weight before save', (
-    tester,
-  ) async {
-    String? capturedPrompt;
-    ManualProductAiSearchResult? pageResult;
-    final repository = _FakeProductAiSearchRepository(
-      onGenerateFoodFromText: (prompt) async {
-        capturedPrompt = prompt;
-        return const ProductAiSearchDraft(
-          name: 'Pelmeni mit Schweinefleisch',
-          ingredients: <ProductAiSearchIngredientRow>[
-            ProductAiSearchIngredientRow(
-              label: 'Teighuelle',
-              amountText: 'ca. 186 g',
-              amountGrams: 186,
-              kcalMin: 420,
-              kcalMax: 420,
-              protein: 14,
-              carbs: 78,
-              fat: 4,
-            ),
-            ProductAiSearchIngredientRow(
-              label: 'Schweinefleischfuellung',
-              amountText: 'ca. 99 g',
-              amountGrams: 99,
-              kcalMin: 306,
-              kcalMax: 306,
-              protein: 16,
-              carbs: 2,
-              fat: 30,
-            ),
-            ProductAiSearchIngredientRow(
-              label: 'Zwiebeln und Gewuerze',
-              amountText: 'ca. 15 g',
-              amountGrams: 15,
-              kcalMin: 18,
-              kcalMax: 18,
-              protein: 1,
-              carbs: 3,
-              fat: 0,
-            ),
-          ],
-          totalWeightGrams: 400,
-          totalKcalMin: 720,
-          totalKcalMax: 960,
-          defaultKcal: 820,
-          portionNutrition: ProductAiSearchNutritionEstimate(
-            kcal: 820,
-            protein: 40,
-            carbs: 72,
-            fat: 40,
-            salt: 1.5,
-          ),
-        );
-      },
-    );
-
-    final router = _buildAiPageRouter(
-      onResult: (result) => pageResult = result,
-      args: ManualProductSearchRouteArgs.aiSearch(
-        item: InventoryItem.create(
-          id: 'item-1',
-          name: 'Placeholder',
-          entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
-          storeName: 'Rewe',
-          quantity: 1,
-        ),
-        initialPrompt: 'pelmeni mit Schweinefleisch',
-        showEatImmediatelyOption: false,
-        initialAction: InventoryReceiptManualProductAction.addToInventory,
-      ),
-    );
-    addTearDown(router.dispose);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          productAiSearchRepositoryProvider.overrideWithValue(repository),
-        ],
-        child: MaterialApp.router(
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          routerConfig: router,
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('open'));
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.byKey(const Key('manual_product_ai_generate_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(capturedPrompt, 'pelmeni mit Schweinefleisch');
-    expect(
-      find.byKey(const Key('manual_product_ai_density_slider')),
-      findsOneWidget,
-    );
-    expect(
-      find.byKey(const Key('manual_product_ai_weight_field')),
-      findsOneWidget,
-    );
+    expect(find.text('What are you eating?'), findsOneWidget);
+    expect(_analyzeButton(tester).onPressed, isNull);
 
     await tester.enterText(
-      find.byKey(const Key('manual_product_ai_weight_field')),
-      '250',
+      find.byKey(ManualProductAiSearchPage.descriptionKey),
+      'Döner',
     );
     await tester.pump();
 
-    final slider = tester.widget<Slider>(
-      find.byKey(const Key('manual_product_ai_density_slider')),
-    );
-    slider.onChanged!(slider.max);
-    await tester.pump();
-
-    final saveButton = find.byKey(const Key('manual_product_ai_save_button'));
-    await tester.ensureVisible(saveButton);
-    await tester.pumpAndSettle();
-    await tester.tap(saveButton);
-    await tester.pumpAndSettle();
-
-    expect(pageResult, isNotNull);
-    expect(pageResult!.globalPackageWeight, '250 g');
-    expect(pageResult!.item.name, 'Pelmeni mit Schweinefleisch');
-    expect(pageResult!.item.weight, '250 g');
-    expect(pageResult!.item.servingSize, '250 g');
-    expect(pageResult!.item.servingQuantity, 250);
-    expect(
-      pageResult!.item.nutrition?.qualityStatus,
-      GlobalFoodNutritionQualityStatus.unverified,
-    );
-    expect(pageResult!.item.nutrition?.per100Kcal, closeTo(240, 0.01));
+    expect(_analyzeButton(tester).onPressed, isNotNull);
   });
 
-  testWidgets('ai eat now returns inline date and meal request', (
+  testWidgets('quick chips extend the description', (tester) async {
+    final repository = _FakeFoodEstimateRepository((_) async => _doener);
+    await _pumpPage(
+      tester,
+      repository: repository,
+      onResult: (_) {},
+      initialPrompt: 'Döner',
+    );
+
+    await tester.tap(find.text('large portion'));
+    await tester.pump();
+    await _analyze(tester);
+
+    expect(repository.descriptions, ['Döner, large portion']);
+  });
+
+  testWidgets('estimate opens on the eat page and logs from the diary', (
     tester,
   ) async {
     ManualProductAiSearchResult? pageResult;
-    final repository = _FakeProductAiSearchRepository(
-      onGenerateFoodFromText: (_) async => _doenerDraft(),
-    );
-
-    final router = _buildAiPageRouter(
+    await _pumpPage(
+      tester,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
       onResult: (result) => pageResult = result,
-      args: ManualProductSearchRouteArgs.aiSearch(
-        item: _placeholderItem(),
-        initialPrompt: 'doener haehnchen',
-        showEatImmediatelyOption: true,
-        initialAction: InventoryReceiptManualProductAction.addToInventory,
-      ),
-    );
-    addTearDown(router.dispose);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          productAiSearchRepositoryProvider.overrideWithValue(repository),
-        ],
-        child: MaterialApp.router(
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          routerConfig: router,
-        ),
-      ),
+      initialPrompt: 'Döner ohne Zwiebeln',
     );
 
-    await tester.tap(find.text('open'));
+    await _analyze(tester);
+
+    expect(find.text('Döner Kebab'), findsOneWidget);
+    expect(find.text('AI ESTIMATE'), findsOneWidget);
+    expect(find.text('Döner ohne Zwiebeln'), findsOneWidget);
+    expect(find.text('Kalbfleisch'), findsOneWidget);
+    expect(find.text('800 kcal'), findsWidgets);
+
+    await tester.tap(find.text('Log'));
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.byKey(const Key('manual_product_ai_generate_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(MealLogTimeRow.dayButtonKey), findsNothing);
-
-    await tester.ensureVisible(
-      find.byKey(const Key('receipt_review_manual_eat_action_button')),
-    );
-    await tester.tap(
-      find.byKey(const Key('receipt_review_manual_eat_action_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(MealLogTimeRow.dayButtonKey), findsOneWidget);
-
-    await tester.tap(
-      find.byKey(const Key('receipt_review_manual_inventory_action_button')),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(MealLogTimeRow.dayButtonKey), findsNothing);
-
-    await tester.tap(
-      find.byKey(const Key('receipt_review_manual_eat_action_button')),
-    );
-    await tester.pumpAndSettle();
-
-    final targetDate = _targetLoggedAtDate();
-    await _pickLoggedAtDate(tester, targetDate);
-
-    expect(find.byKey(MealLogTimeRow.dayLabeledKey), findsOneWidget);
-
-    final mealTypeDropdown = find.byType(DropdownButton<MealType>);
-    await tester.ensureVisible(mealTypeDropdown);
-    await tester.tap(mealTypeDropdown);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Dinner').last);
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(
-      find.byKey(const Key('manual_product_ai_save_button')),
-    );
-    await tester.tap(find.byKey(const Key('manual_product_ai_save_button')));
-    await tester.pumpAndSettle();
-
-    expect(pageResult, isNotNull);
     expect(pageResult?.action, InventoryReceiptManualProductAction.eatNow);
-    expect(pageResult?.eatSelection, isNotNull);
-    expect(pageResult?.eatSelection?.inventoryAmount, 380);
-    expect(pageResult?.eatSelection?.mealType, MealType.dinner);
-    expect(DateUtils.dateOnly(pageResult!.eatSelection!.loggedAt), targetDate);
+    expect(pageResult?.item.name, 'Döner Kebab');
+    expect(pageResult?.eatSelection?.inventoryAmount, 400);
   });
 
-  testWidgets('ai date picker cancel keeps logged day unchanged', (
-    tester,
-  ) async {
+  testWidgets('a rich preparation raises the energy', (tester) async {
+    await _pumpPage(
+      tester,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
+      onResult: (_) {},
+      initialPrompt: 'Döner',
+    );
+    await _analyze(tester);
+
+    await tester.ensureVisible(find.text('rich'));
+    await tester.tap(find.text('rich'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('960 kcal'), findsWidgets);
+  });
+
+  testWidgets('from the Vorrat the estimate goes to stock', (tester) async {
     ManualProductAiSearchResult? pageResult;
-    final repository = _FakeProductAiSearchRepository(
-      onGenerateFoodFromText: (_) async => _doenerDraft(),
-    );
-
-    final router = _buildAiPageRouter(
+    await _pumpPage(
+      tester,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
       onResult: (result) => pageResult = result,
-      args: ManualProductSearchRouteArgs.aiSearch(
-        item: _placeholderItem(),
-        initialPrompt: 'doener haehnchen',
-        showEatImmediatelyOption: true,
-        initialAction: InventoryReceiptManualProductAction.addToInventory,
-      ),
+      fromDiary: false,
+      initialPrompt: 'Döner',
     );
-    addTearDown(router.dispose);
+    await _analyze(tester);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          productAiSearchRepositoryProvider.overrideWithValue(repository),
-        ],
-        child: MaterialApp.router(
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          routerConfig: router,
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('open'));
+    await tester.tap(find.text('Add to stock'));
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.byKey(const Key('manual_product_ai_generate_button')),
+    expect(
+      pageResult?.action,
+      InventoryReceiptManualProductAction.addToInventory,
     );
-    await tester.pumpAndSettle();
-
-    await tester.ensureVisible(
-      find.byKey(const Key('receipt_review_manual_eat_action_button')),
-    );
-    await tester.tap(
-      find.byKey(const Key('receipt_review_manual_eat_action_button')),
-    );
-    await tester.pumpAndSettle();
-
-    final today = DateUtils.dateOnly(DateTime.now());
-    await _cancelLoggedAtDateChange(tester, _targetLoggedAtDate());
-
-    expect(find.byKey(MealLogTimeRow.dayCompactKey), findsOneWidget);
-    expect(find.byKey(MealLogTimeRow.dayLabeledKey), findsNothing);
-
-    await tester.ensureVisible(
-      find.byKey(const Key('manual_product_ai_save_button')),
-    );
-    await tester.tap(find.byKey(const Key('manual_product_ai_save_button')));
-    await tester.pumpAndSettle();
-
-    expect(pageResult, isNotNull);
-    expect(DateUtils.dateOnly(pageResult!.eatSelection!.loggedAt), today);
+    expect(pageResult?.eatSelection, isNull);
   });
 
-  testWidgets(
-    'ai page keeps slider value in range when portion kcal is inconsistent',
-    (tester) async {
-      final repository = _FakeProductAiSearchRepository(
-        onGenerateFoodFromText: (_) async {
-          return const ProductAiSearchDraft(
-            name: 'Doener',
-            ingredients: <ProductAiSearchIngredientRow>[
-              ProductAiSearchIngredientRow(
-                label: 'Bread',
-                amountText: '100 g',
-                amountGrams: 100,
-                kcalMin: 250,
-                kcalMax: 250,
-              ),
-            ],
-            totalWeightGrams: 350,
-            totalKcalMin: 900,
-            totalKcalMax: 975,
-            defaultKcal: 950,
-            portionNutrition: ProductAiSearchNutritionEstimate(
-              kcal: 233,
-              protein: 12,
-              carbs: 18,
-              fat: 9,
-            ),
-          );
-        },
-      );
+  testWidgets('analyze again returns to the input', (tester) async {
+    await _pumpPage(
+      tester,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
+      onResult: (_) {},
+      initialPrompt: 'Döner',
+    );
+    await _analyze(tester);
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            productAiSearchRepositoryProvider.overrideWithValue(repository),
-          ],
-          child: MaterialApp(
-            localizationsDelegates: appLocalizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: ManualProductAiSearchPage(
-              item: InventoryItem.create(
-                id: 'item-1',
-                name: 'Placeholder',
-                entryDate: DateTime.parse('2026-04-20T12:00:00Z'),
-                storeName: 'Rewe',
-                quantity: 1,
-              ),
-              initialPrompt: 'doener',
-            ),
-          ),
-        ),
-      );
+    await tester.tap(find.text('Analyze again'));
+    await tester.pumpAndSettle();
 
-      await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(const Key('manual_product_ai_generate_button')),
-      );
-      await tester.pumpAndSettle();
+    expect(find.text('What are you eating?'), findsOneWidget);
+    expect(find.text('Döner'), findsOneWidget);
+  });
 
-      final slider = tester.widget<Slider>(
-        find.byKey(const Key('manual_product_ai_density_slider')),
-      );
+  testWidgets('no food shows a message', (tester) async {
+    await _pumpPage(
+      tester,
+      repository: _FakeFoodEstimateRepository(
+        (_) async => throw const FoodEstimateNotFoodException(),
+      ),
+      onResult: (_) {},
+      initialPrompt: 'Tisch',
+    );
+    await _analyze(tester);
 
-      expect(slider.value, 271);
-      expect(slider.value, greaterThanOrEqualTo(slider.min));
-      expect(slider.value, lessThanOrEqualTo(slider.max));
-    },
-  );
+    expect(find.text('The photos show no food.'), findsOneWidget);
+    expect(find.text('What are you eating?'), findsOneWidget);
+  });
 }

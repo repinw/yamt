@@ -574,40 +574,7 @@
   "inventoryManualAddVoiceSearchUnavailable": "Voice search is not currently supported on this device.",
   "inventoryManualAddVoiceSearchPermissionDenied": "Please allow microphone access to use voice search.",
   "inventoryManualAddVoiceSearchFailed": "Voice search could not be started. Please try again.",
-  "inventoryManualAddAiSearchTitle": "Create food with AI",
-  "inventoryManualAddAiSearchPromptLabel": "Food description",
-  "inventoryManualAddAiSearchPromptHint": "For example: Chicken kebab",
-  "inventoryManualAddAiSearchGenerateAction": "Generate estimate",
-  "inventoryManualAddAiSearchPromptRequired": "Please enter a food description.",
-  "inventoryManualAddAiSearchFailed": "Could not generate a food estimate. Please try again.",
-  "inventoryManualAddAiSearchReadOnlyHint": "Adjust weight or kcal per 100 g if the estimate feels off.",
-  "inventoryManualAddAiSearchIngredientsTitle": "Ingredients for this portion",
-  "inventoryManualAddAiSearchAmountColumn": "Amount",
-  "inventoryManualAddAiSearchTotalLabel": "Total",
   "inventoryManualAddAiSearchPer100CardTitle": "PER 100 G",
-  "inventoryManualAddAiSearchPortionCardTitle": "YOUR PORTION",
-  "inventoryManualAddAiSearchWeightLabel": "Weight",
-  "inventoryManualAddAiSearchWeightRequired": "Enter a valid weight.",
-  "inventoryManualAddAiSearchDensityTitle": "Adjust kcal density (per 100 g)",
-  "inventoryManualAddAiSearchDensityHint": "Was the dish lighter or richer than expected? Scale calories per 100 g. Total nutrition updates automatically.",
-  "inventoryManualAddAiSearchDensityMinLabel": "{kcal} kcal/100g (lighter)",
-  "@inventoryManualAddAiSearchDensityMinLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
-  "inventoryManualAddAiSearchDensityBaseLabel": "Base: {kcal}",
-  "@inventoryManualAddAiSearchDensityBaseLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
-  "inventoryManualAddAiSearchDensityMaxLabel": "{kcal} kcal/100g (richer)",
-  "@inventoryManualAddAiSearchDensityMaxLabel": {
-    "placeholders": {
-      "kcal": {}
-    }
-  },
   "inventoryManualAddStoreName": "Added manually",
   "inventoryBarcodePortionDialogTitle": "Enter consumed amount",
   "inventoryBarcodePortionDialogConfirmAction": "Continue",
@@ -2190,5 +2157,34 @@
   "dataKeyLoadFailed": "Could not load your data key. Check your connection.",
   "dataKeyRetryAction": "Try again",
   "dataKeyPickFromPasswordManagerAction": "Paste from password manager",
-  "dataKeyPickFailed": "Could not open the password manager."
+  "dataKeyPickFailed": "Could not open the password manager.",
+  "foodEstimateHeadline": "What are you eating?",
+  "foodEstimateHint": "Photo, text, or both. One is enough.",
+  "foodEstimateAddPhoto": "Photo",
+  "foodEstimateDescriptionLabel": "Description",
+  "foodEstimateDescriptionHint": "e.g. no onions, extra sauce, large plate",
+  "foodEstimateChipLargePortion": "large portion",
+  "foodEstimateChipRestaurant": "restaurant",
+  "foodEstimateChipHomemade": "homemade",
+  "foodEstimateChipHalfEaten": "half eaten",
+  "foodEstimateCamera": "Camera",
+  "foodEstimateAnalyze": "Analyze",
+  "foodEstimateAnalyzing": "Analyzing …",
+  "foodEstimateNotFood": "The photos show no food.",
+  "foodEstimateUnclear": "The food cannot be recognized. Take a brighter photo or describe it.",
+  "foodEstimateFailed": "The estimate did not work. Please try again.",
+  "foodEstimateOverline": "AI estimate",
+  "foodEstimateReanalyze": "Analyze again",
+  "foodEstimateAddToStock": "Add to stock",
+  "foodEstimateLevelLean": "lean",
+  "foodEstimateLevelNormal": "normal",
+  "foodEstimateLevelRich": "rich",
+  "foodEstimateRemovePhoto": "Remove photo {index}",
+  "@foodEstimateRemovePhoto": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  }
 }
