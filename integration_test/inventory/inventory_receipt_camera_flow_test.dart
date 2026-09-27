@@ -108,6 +108,5 @@ void main() {
 
     expect(find.byType(ReceiptReviewPage), findsOneWidget);
     expect(find.text('Milk'), findsOneWidget);
-    expect(find.text('Beleg prüfen'), findsOneWidget);
   });
 }

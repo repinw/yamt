@@ -64,10 +64,13 @@ void main() {
 
     await tester.tap(find.byKey(InventoryDock.addKey));
     await _pumpVisibleStep(tester);
-    await tester.tap(find.text('Manual search'));
+    await tester.tap(find.byKey(InventoryDock.manualSearchKey));
     await _pumpVisibleStep(tester);
 
     expect(find.byType(ProductSearchHubPage), findsOneWidget);
-    expect(find.text('Add product'), findsOneWidget);
+    expect(
+      find.byKey(const Key('product_search_hub_search_field')),
+      findsOneWidget,
+    );
   });
 }

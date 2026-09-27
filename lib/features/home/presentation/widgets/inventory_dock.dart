@@ -29,6 +29,11 @@ class InventoryDock extends ConsumerWidget {
   /// Key of the receipt tool.
   static const receiptKey = ValueKey<String>('inventory-dock-receipt');
 
+  /// Key of the add sheet entry that opens the product search.
+  static const manualSearchKey = ValueKey<String>(
+    'inventory-add-manual-search',
+  );
+
   /// Key of the receipt sheet entry that takes a photo.
   static const receiptPhotoKey = ValueKey<String>('inventory-receipt-photo');
 
@@ -100,6 +105,7 @@ class InventoryDock extends ConsumerWidget {
             title: l10n.inventoryDockAddAction,
             entries: [
               HomeMoreEntry(
+                key: manualSearchKey,
                 icon: Icons.search_rounded,
                 title: l10n.inventoryActionManualSearch,
                 description: l10n.inventoryAddManualSearchDescription,
