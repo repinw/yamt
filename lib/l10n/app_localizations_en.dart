@@ -715,6 +715,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageCombinePickConfirm => 'Add';
 
   @override
+  String get eatPageCombineNoMoreStock =>
+      'Every fitting food from your stock is already in the meal. Use the search to add another one.';
+
+  @override
   String get eatPageCombineSearch => 'Search for a food';
 
   @override

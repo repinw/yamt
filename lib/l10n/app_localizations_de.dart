@@ -726,6 +726,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageCombinePickConfirm => 'Übernehmen';
 
   @override
+  String get eatPageCombineNoMoreStock =>
+      'Alle passenden Lebensmittel aus deinem Vorrat sind schon in der Mahlzeit. Über die Suche kannst du weitere hinzufügen.';
+
+  @override
   String get eatPageCombineSearch => 'Lebensmittel suchen';
 
   @override

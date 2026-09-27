@@ -1330,6 +1330,12 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get eatPageCombinePickConfirm;
 
+  /// No description provided for @eatPageCombineNoMoreStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Every fitting food from your stock is already in the meal. Use the search to add another one.'**
+  String get eatPageCombineNoMoreStock;
+
   /// No description provided for @eatPageCombineSearch.
   ///
   /// In en, this message translates to:

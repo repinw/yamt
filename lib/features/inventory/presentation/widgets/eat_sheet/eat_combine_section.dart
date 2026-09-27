@@ -149,7 +149,10 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
     final items = ref.read(inventoryItemsControllerProvider).value;
     final picked = await showInventoryCombinePickPage(
       context,
-      candidates: notifier.candidatesFrom(items ?? const <InventoryItem>[]),
+      candidates: notifier.candidatesFrom(
+        items ?? const <InventoryItem>[],
+        includesHub: widget.includesHubItem,
+      ),
     );
     if (picked == null) {
       return;

@@ -359,6 +359,7 @@
   "eatPageCombineLink": "+ Combine with another food",
   "eatPageCombineAdd": "+ Add food",
   "eatPageCombinePickConfirm": "Add",
+  "eatPageCombineNoMoreStock": "Every fitting food from your stock is already in the meal. Use the search to add another one.",
   "eatPageCombineSearch": "Search for a food",
   "eatPageCombineNeedsNutrition": "This food has no nutrition values to add up.",
   "eatPageCombineAddFood": "Add",

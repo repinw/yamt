@@ -63,6 +63,15 @@ void main() {
     expect(candidates.map((item) => item.id), ['apple', 'rice']);
   });
 
+  test('offers the hub item once it left the meal', () {
+    final candidates = container.read(_provider.notifier).candidatesFrom([
+      _item('hub'),
+      _item('rice'),
+    ], includesHub: false);
+
+    expect(candidates.map((item) => item.id), ['hub', 'rice']);
+  });
+
   test('adds a food with its calories and hides it from the offer', () {
     final notifier = container.read(_provider.notifier)
       ..add(_item('rice'), _request(150));

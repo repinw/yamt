@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
@@ -42,6 +43,9 @@ class InventoryCombinePickPage extends StatefulWidget {
   /// Key of the button that searches for a food outside the stock.
   static const searchKey = Key('inventory_combine_pick_search');
 
+  /// Key of the hint shown when no stock item is left to pick.
+  static const emptyKey = Key('inventory_combine_pick_empty');
+
   /// Stock items that can be combined.
   final List<InventoryItem> candidates;
 
@@ -77,23 +81,35 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
           ),
         ],
       ),
-      body: InventoryList(
-        items: widget.candidates,
-        preparedMeals: const <PreparedMeal>[],
-        emptyStateActionButton: null,
-        // Prepared meals are not listed here, so their actions never run.
-        onThrowAwayPreparedMeal: (_, _, _) async => false,
-        onFillPendingPreparedMealIngredient: (_, _, _) async => false,
-        onIgnorePendingPreparedMealIngredient: (_, _) async => false,
-        onUnbundlePreparedMeal: (_) async => false,
-        onEditPreparedMeal: (_, _) async => false,
-        onSelectPreparedMealEditIngredients: (_, _) async => false,
-        onSavePreparedMealTemplate: (_) async => false,
-        isSelectionMode: true,
-        selectedItemIds: _selected,
-        onItemLongPress: _toggle,
-        onSelectionToggle: _toggle,
-      ),
+      body: widget.candidates.isEmpty
+          ? Padding(
+              padding: const EdgeInsets.all(AppSpacing.xl),
+              child: Center(
+                child: Text(
+                  l10n.eatPageCombineNoMoreStock,
+                  key: InventoryCombinePickPage.emptyKey,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+            )
+          : InventoryList(
+              items: widget.candidates,
+              preparedMeals: const <PreparedMeal>[],
+              emptyStateActionButton: null,
+              // Prepared meals are not listed here, so their actions never run.
+              onThrowAwayPreparedMeal: (_, _, _) async => false,
+              onFillPendingPreparedMealIngredient: (_, _, _) async => false,
+              onIgnorePendingPreparedMealIngredient: (_, _) async => false,
+              onUnbundlePreparedMeal: (_) async => false,
+              onEditPreparedMeal: (_, _) async => false,
+              onSelectPreparedMealEditIngredients: (_, _) async => false,
+              onSavePreparedMealTemplate: (_) async => false,
+              isSelectionMode: true,
+              selectedItemIds: _selected,
+              onItemLongPress: _toggle,
+              onSelectionToggle: _toggle,
+            ),
     );
   }
 

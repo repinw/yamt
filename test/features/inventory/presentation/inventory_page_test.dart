@@ -1315,6 +1315,17 @@ void main() {
     expect(find.text('total 100\u00A0g'), findsOneWidget);
     expect(find.byKey(EatCombineSection.removeHubItemKey), findsNothing);
 
+    // The hub's item is offered again; nothing else is left in stock.
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    expect(find.text('Milk'), findsOneWidget);
+    await _tapVisible(tester, find.text('Milk'));
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    expect(find.text('Oats + Milk'), findsOneWidget);
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    expect(find.byKey(InventoryCombinePickPage.emptyKey), findsOneWidget);
+    await tester.tap(find.byIcon(Icons.close));
+    await tester.pumpAndSettle();
+
     // Without other foods the hub's item is back.
     await _tapVisible(tester, find.byIcon(Icons.close_rounded));
     expect(find.byType(EatMealTable), findsNothing);

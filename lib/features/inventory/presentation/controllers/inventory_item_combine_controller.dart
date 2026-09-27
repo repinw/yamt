@@ -23,10 +23,17 @@ class InventoryItemCombineController extends _$InventoryItemCombineController {
   }
 
   /// Stock items that can join the list: counted in grams or milliliters,
-  /// with nutrition values and stock, and neither the hub's item nor
-  /// already picked. Sorted by name.
-  List<InventoryItem> candidatesFrom(List<InventoryItem> items) {
-    final taken = {hubItemId, ...state.map((pick) => pick.item.id)};
+  /// with nutrition values and stock, and not already picked. The hub's
+  /// item is left out while it is part of the meal ([includesHub]).
+  /// Sorted by name.
+  List<InventoryItem> candidatesFrom(
+    List<InventoryItem> items, {
+    bool includesHub = true,
+  }) {
+    final taken = {
+      if (includesHub) hubItemId,
+      ...state.map((pick) => pick.item.id),
+    };
     return items
         .where(
           (item) =>
