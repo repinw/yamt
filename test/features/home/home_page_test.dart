@@ -39,7 +39,6 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/inventory_dock.dart';
-import 'package:yamt/features/home/widgets/home_context_fab.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -500,21 +499,6 @@ Widget _buildHarness({
 }
 
 void main() {
-  testWidgets('diary tab does not show the context fab', (tester) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        branchBody: _diaryTopChromeBranchBody(),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byType(HomeContextFab), findsNothing);
-  });
-
   testWidgets('a page over the shell marks the tab content as covered', (
     tester,
   ) async {
@@ -1322,7 +1306,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(InventoryDock), findsOneWidget);
-    expect(find.byType(HomeContextFab), findsNothing);
   });
 
   testWidgets('inventory top bar actions show shopping route', (tester) async {
@@ -1451,7 +1434,6 @@ void main() {
     await tester.pump();
 
     expect(find.byType(InventoryDock), findsOneWidget);
-    expect(find.byType(HomeContextFab), findsNothing);
   });
 
   testWidgets('inventory tab shows the dock when inventory and meals exist', (
@@ -1486,7 +1468,6 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byType(HomeContextFab), findsNothing);
     final scaffoldFinder = find.ancestor(
       of: find.byType(InventoryDock),
       matching: find.byType(Scaffold),
@@ -1594,7 +1575,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(InventoryDock), findsOneWidget);
-    expect(find.byType(HomeContextFab), findsNothing);
   });
 
   testWidgets('inventory snackbar lays out with the inventory dock', (
@@ -1834,7 +1814,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(InventoryDock), findsOneWidget);
-    expect(find.byType(HomeContextFab), findsNothing);
   });
 
   testWidgets('inventory selection chrome compacts on small zoomed layouts', (

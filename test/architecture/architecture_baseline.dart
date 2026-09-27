@@ -144,7 +144,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/provider/daily_learned_tdee_provider.dart': 1,
     'lib/features/calories/provider/macro_goal_settings_controller.dart': 1,
     'lib/features/home/home_page.dart': 1,
-    'lib/features/home/widgets/home_context_fab.dart': 1,
     'lib/features/home/widgets/home_shell_chrome_visibility_controller.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,
     'lib/features/kitchen_utensils/provider/kitchen_utensil_image_url_provider.dart':
@@ -447,7 +446,6 @@ const architectureBaseline = <String, Map<String, int>>{
         2,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
         1,
-    'lib/features/home/widgets/home_context_fab.dart': 1,
     'lib/features/inventory/presentation/constants/inventory_ui_constants.dart':
         1,
     'lib/features/inventory/presentation/widgets/inventory_action_picker_sheet.dart':
