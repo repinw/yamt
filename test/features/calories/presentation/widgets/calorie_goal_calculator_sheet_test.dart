@@ -12,6 +12,8 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_body_summary.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_reset_sheet.dart';
@@ -90,12 +92,15 @@ Future<void> _tapBack(WidgetTester tester) async {
 }
 
 Future<void> _goToResultsWithDefaults(WidgetTester tester) async {
-  await _tapNext(tester); // sex -> weight
-  await _tapNext(tester); // weight -> height
-  await _tapNext(tester); // height -> age
-  await _tapNext(tester); // age -> activity
-  await _tapNext(tester); // activity -> goal mode
-  await _tapNext(tester); // goal mode -> results (maintain default)
+  // Without a profile the flow asks sex, weight, height, and age; with one it
+  // lists the body data in one step. Both end in activity, goal mode, and the
+  // results (maintain default).
+  while (find
+      .byKey(CalorieGoalCalculatorSheetKeys.nextButton)
+      .evaluate()
+      .isNotEmpty) {
+    await _tapNext(tester);
+  }
 }
 
 CalorieGoalSettings _learnedTdeeSettings() {
@@ -573,5 +578,39 @@ void main() {
         futureGoalStart.day,
       ),
     );
+  });
+
+  testWidgets('lists known body data instead of asking it again', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2136,
+          calculatorProfile: const CalorieCalculatorProfile.defaults(),
+          effectiveDate: DateTime(2026, 4, 10),
+          source: CalorieGoalSource.calculator,
+        ),
+      ),
+    );
+    await _openSheet(tester);
+
+    expect(find.text('Your body data'), findsOneWidget);
+    expect(find.text('180 cm'), findsOneWidget);
+    expect(find.byKey(CalorieGoalBodySummary.editInProfileKey), findsOneWidget);
+
+    await _tapNext(tester);
+
+    expect(find.byKey(CalorieGoalCalculatorSheetKeys.weightField), findsOne);
+    await _tapNext(tester);
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.heightField),
+      findsNothing,
+    );
+    expect(find.byKey(CalorieGoalCalculatorSheetKeys.ageField), findsNothing);
   });
 }

@@ -4948,4 +4948,25 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get caloriesGoalBodyStepTitle => 'Deine Körperdaten';
+
+  @override
+  String get caloriesGoalBodyEditInProfile => 'Im Profil bearbeiten';
+
+  @override
+  String caloriesGoalBodyHeightValue(String height) {
+    return '$height cm';
+  }
+
+  @override
+  String caloriesGoalBodyAgeValue(int age) {
+    return '$age Jahre';
+  }
+
+  @override
+  String caloriesGoalBodyAgeWithBirthday(int age, String birthday) {
+    return '$age Jahre · $birthday';
+  }
 }

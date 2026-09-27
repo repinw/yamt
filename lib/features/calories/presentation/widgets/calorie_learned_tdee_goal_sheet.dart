@@ -11,6 +11,8 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_body_summary.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
@@ -219,6 +221,18 @@ class _CalorieLearnedTdeeGoalSheetState
                         '${numberFormat.format(_learnedTdeeKcal.round())} '
                         '${l10n.caloriesUnitKcal}',
                   ),
+                  if (widget.initialSettings.calculatorProfile
+                      case final profile?) ...<Widget>[
+                    const SizedBox(height: AppSpacing.lg),
+                    Text(
+                      l10n.caloriesGoalBodyStepTitle,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    CalorieGoalBodySummary(
+                      profile: profile,
+                      today: DateTime.now(),
+                    ),
+                  ],
                   const SizedBox(height: AppSpacing.lg),
                   if (widget.startsNewGoal)
                     CalorieTargetWeightSelector(

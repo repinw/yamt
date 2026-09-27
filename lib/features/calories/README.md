@@ -217,6 +217,15 @@ A calculated goal entry supplies its profile weight as the start weight. A
 check-in without any weigh-in keeps the previous weight. The smoothed trend
 weight is right here because the macros need a calm level, not a slope.
 
+### Body Data in New Goals
+
+When a calculator profile exists, the calculator flow shows one "Your body
+data" step (`CalorieGoalBodySummary`) instead of the sex, height, and age
+steps, and the learned TDEE goal sheet shows the same list. Its "Edit in
+profile" link closes the goal sheet and opens `AppRoutes.homeProfile`, where
+the body data is edited. Weight, activity level, and the goal stay in the
+flow, because a new goal asks them anew.
+
 ### Body Data Edits
 
 `applyBodyEdit` (`domain/calorie_goal_body_edits.dart`) changes height, sex,

@@ -119,7 +119,10 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Nutrition label scan handoff when barcode products are missing nutrition.
 - Calorie goal setup, manual goal edits, and goal-start shifting.
 - Calorie calculator using sex, weight, height, age, activity level, goal mode,
-  and goal speed.
+  and goal speed. Once the body data is known, setting a new goal lists sex,
+  height, and age as a plain list with "Edit in profile" instead of asking
+  them again; the link closes the goal sheet and opens the profile page. The
+  learned TDEE goal sheet shows the same list.
 - Learned TDEE recalculation from tracked data.
 - Weekly check-in with weight trend, learned TDEE, target refresh, and blocking
   reasons for missing intake or weight data.

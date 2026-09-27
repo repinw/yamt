@@ -2174,5 +2174,10 @@
   "profileTrainingNote": "Gilt nur für diesen Run, wie ein Tagestyp im Tagebuch. Die Summe des Runs bleibt; was vergangene Tage anders bekommen, gibt der Übertrag an die restlichen Tage weiter.",
   "profileTrainingPauseDay": "Pausentag",
   "profileTrainingOtherRestDays": "{count, plural, =1{Übriger Ruhetag} other{{count} übrige Ruhetage}}",
-  "profileTrainingOtherTrainingDays": "{count, plural, =1{Übriger Trainingstag} other{{count} übrige Trainingstage}}"
+  "profileTrainingOtherTrainingDays": "{count, plural, =1{Übriger Trainingstag} other{{count} übrige Trainingstage}}",
+  "caloriesGoalBodyStepTitle": "Deine Körperdaten",
+  "caloriesGoalBodyEditInProfile": "Im Profil bearbeiten",
+  "caloriesGoalBodyHeightValue": "{height} cm",
+  "caloriesGoalBodyAgeValue": "{age} Jahre",
+  "caloriesGoalBodyAgeWithBirthday": "{age} Jahre · {birthday}"
 }

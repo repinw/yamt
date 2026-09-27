@@ -2465,5 +2465,34 @@
         "type": "int"
       }
     }
+  },
+  "caloriesGoalBodyStepTitle": "Your body data",
+  "caloriesGoalBodyEditInProfile": "Edit in profile",
+  "caloriesGoalBodyHeightValue": "{height} cm",
+  "@caloriesGoalBodyHeightValue": {
+    "placeholders": {
+      "height": {
+        "type": "String"
+      }
+    }
+  },
+  "caloriesGoalBodyAgeValue": "{age} years",
+  "@caloriesGoalBodyAgeValue": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      }
+    }
+  },
+  "caloriesGoalBodyAgeWithBirthday": "{age} years · {birthday}",
+  "@caloriesGoalBodyAgeWithBirthday": {
+    "placeholders": {
+      "age": {
+        "type": "int"
+      },
+      "birthday": {
+        "type": "String"
+      }
+    }
   }
 }

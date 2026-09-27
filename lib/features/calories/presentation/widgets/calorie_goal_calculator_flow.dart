@@ -12,6 +12,8 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_body_summary.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_activity_level_selector.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_input_controls.dart';
@@ -34,6 +36,7 @@ import 'package:yamt/features/calories/provider/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _CalculatorStep {
+  body,
   sex,
   weight,
   height,
@@ -73,7 +76,13 @@ class _CalorieGoalCalculatorFlowState
   late final TextEditingController _targetWeightController;
   late DateTime _goalStartDate;
   DateTime? _maintainUntil;
-  _CalculatorStep _currentStep = _CalculatorStep.sex;
+  late _CalculatorStep _currentStep = _hasBodyData
+      ? _CalculatorStep.body
+      : _CalculatorStep.sex;
+
+  /// Whether the body data is known already. Then the flow lists it for the
+  /// profile page to change instead of asking it again.
+  bool get _hasBodyData => widget.initialSettings.calculatorProfile != null;
 
   @override
   void initState() {
@@ -381,7 +390,7 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
     required CalorieGoalCalculatorFormState state,
     required _CalculatorStep currentStep,
   }) {
-    if (currentStep != _CalculatorStep.sex) {
+    if (currentStep != _visibleSteps(state.goalMode).first) {
       return TextButton(
         key: CalorieGoalCalculatorSheetKeys.backButton,
         onPressed: state.isSaving
@@ -410,6 +419,11 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
     );
 
     switch (step) {
+      case _CalculatorStep.body:
+        return CalorieGoalBodySummary(
+          profile: widget.initialSettings.calculatorProfile!,
+          today: DateTime.now(),
+        );
       case _CalculatorStep.sex:
         return CalorieGoalCalculatorSexSegmentedControl(
           selectedSex: state.sex ?? CalorieCalculatorSex.male,
@@ -534,7 +548,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
     CalorieGoalCalculatorFormState state,
   ) {
     return switch (step) {
-      _CalculatorStep.sex => true,
+      _CalculatorStep.body || _CalculatorStep.sex => true,
       _CalculatorStep.weight => state.weightError == null,
       _CalculatorStep.height => state.heightError == null,
       _CalculatorStep.age => state.ageError == null,
@@ -576,10 +590,15 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
 
   List<_CalculatorStep> _visibleSteps(CalorieGoalMode goalMode) {
     return <_CalculatorStep>[
-      _CalculatorStep.sex,
-      _CalculatorStep.weight,
-      _CalculatorStep.height,
-      _CalculatorStep.age,
+      if (_hasBodyData) ...[
+        _CalculatorStep.body,
+        _CalculatorStep.weight,
+      ] else ...[
+        _CalculatorStep.sex,
+        _CalculatorStep.weight,
+        _CalculatorStep.height,
+        _CalculatorStep.age,
+      ],
       _CalculatorStep.activityLevel,
       _CalculatorStep.goalMode,
       if (goalMode != CalorieGoalMode.maintain) _CalculatorStep.goalSpeed,
@@ -589,6 +608,7 @@ extension _CalorieGoalCalculatorFlowSteps on _CalorieGoalCalculatorFlowState {
 
   String _titleForStep(_CalculatorStep step, AppLocalizations l10n) {
     return switch (step) {
+      _CalculatorStep.body => l10n.caloriesGoalBodyStepTitle,
       _CalculatorStep.sex => l10n.caloriesCalculatorSexLabel,
       _CalculatorStep.weight => l10n.caloriesCalculatorWeightLabel,
       _CalculatorStep.height => l10n.caloriesCalculatorHeightLabel,

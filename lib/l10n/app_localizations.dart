@@ -8462,6 +8462,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Other training day} other{{count} other training days}}'**
   String profileTrainingOtherTrainingDays(int count);
+
+  /// No description provided for @caloriesGoalBodyStepTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your body data'**
+  String get caloriesGoalBodyStepTitle;
+
+  /// No description provided for @caloriesGoalBodyEditInProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit in profile'**
+  String get caloriesGoalBodyEditInProfile;
+
+  /// No description provided for @caloriesGoalBodyHeightValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{height} cm'**
+  String caloriesGoalBodyHeightValue(String height);
+
+  /// No description provided for @caloriesGoalBodyAgeValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{age} years'**
+  String caloriesGoalBodyAgeValue(int age);
+
+  /// No description provided for @caloriesGoalBodyAgeWithBirthday.
+  ///
+  /// In en, this message translates to:
+  /// **'{age} years · {birthday}'**
+  String caloriesGoalBodyAgeWithBirthday(int age, String birthday);
 }
 
 class _AppLocalizationsDelegate
