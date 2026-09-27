@@ -1,11 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 
-/// Small framed choice of the eat page, such as a ruler mark or a piece
-/// size. The tap target reaches 48 pixels around the visible frame.
+/// Small round choice of the eat page, such as a ruler mark or a piece
+/// size: a pill on the tile surface, filled with ink when selected. The tap
+/// target reaches 48 pixels around the visible pill.
 class EatChip extends StatelessWidget {
   /// Creates the chip.
   const new({
@@ -31,28 +31,29 @@ class EatChip extends StatelessWidget {
       onPressed: onPressed,
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(
-          vertical: AppFoodLabel.rulerMarkTapPadding,
+          vertical: AppFoodLabel.chipTapPadding,
         ),
         minimumSize: const Size.square(kMinInteractiveDimension),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        shape: const RoundedRectangleBorder(),
+        shape: const StadiumBorder(),
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: isSelected ? colors.ink : colors.card,
-          border: Border.all(color: colors.ink, width: AppFoodLabel.outline),
+          color: isSelected ? colors.ink : colors.tile,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: AppFoodLabel.rulerMark),
+          constraints: const BoxConstraints(minHeight: AppFoodLabel.chip),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             child: Center(
               widthFactor: 1,
               heightFactor: 1,
               child: Text(
                 label,
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  fontFamily: AppFonts.mono,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  decoration: TextDecoration.none,
                   color: isSelected ? colors.paper : colors.ink,
                 ),
               ),

@@ -79,8 +79,8 @@ class EatRuler extends StatelessWidget {
                 top: 0,
                 height: AppFoodLabel.rulerTicks,
                 child: FoodLabelRulerTicks(
-                  tickColor: colors.ink,
-                  markColor: colors.accentText,
+                  tickColor: colors.muted,
+                  markColor: colors.ink,
                   markFractions: [
                     if (max > 0)
                       for (final mark in sorted) mark.value / max,
@@ -91,11 +91,11 @@ class EatRuler extends StatelessWidget {
                 child: SliderTheme(
                   data: SliderThemeData(
                     padding: EdgeInsets.zero,
-                    trackHeight: AppFoodLabel.outline,
-                    activeTrackColor: colors.accent,
+                    trackHeight: AppFoodLabel.sliderTrack,
+                    activeTrackColor: colors.ink,
                     inactiveTrackColor: colors.rule,
-                    thumbColor: colors.accent,
-                    overlayColor: colors.accent.withValues(
+                    thumbColor: colors.ink,
+                    overlayColor: colors.ink.withValues(
                       alpha: AppFoodLabel.sliderOverlayAlpha,
                     ),
                   ),

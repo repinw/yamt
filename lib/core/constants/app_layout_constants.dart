@@ -162,6 +162,10 @@ abstract final class AppOpacities {
   /// Shadow under the home page while the side menu is open.
   static const double homeSlideMenuPageShadow = 0.35;
 
+  /// Background of a small tag inside a filled button, such as the calories
+  /// on the eat page's confirm button.
+  static const double buttonTag = 0.12;
+
   /// Background of a disabled button or control.
   static const double disabledContainer = 0.12;
 

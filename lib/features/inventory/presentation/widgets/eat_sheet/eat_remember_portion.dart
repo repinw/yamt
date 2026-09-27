@@ -1,8 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_text_link.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -59,7 +56,6 @@ class _EatRememberPortionState extends State<EatRememberPortion> {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
-    final mono = textTheme.bodyMedium?.copyWith(fontFamily: AppFonts.mono);
 
     if (!_isOpen) {
       return EatTextLink(
@@ -69,9 +65,11 @@ class _EatRememberPortionState extends State<EatRememberPortion> {
       );
     }
 
+    // A rounded field on the tile surface; the only lime stays on the
+    // page's confirm button, so saving the portion is a tonal action.
     final border = OutlineInputBorder(
-      borderRadius: BorderRadius.zero,
-      borderSide: BorderSide(color: colors.ink, width: AppFoodLabel.outline),
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      borderSide: BorderSide.none,
     );
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -83,36 +81,22 @@ class _EatRememberPortionState extends State<EatRememberPortion> {
             controller: _name,
             autofocus: true,
             textInputAction: TextInputAction.done,
-            style: mono?.copyWith(color: colors.ink),
+            style: textTheme.bodyMedium?.copyWith(color: colors.ink),
             decoration: InputDecoration(
               labelText: l10n.eatPagePortionNameLabel(widget.amountLabel),
               hintText: widget.nameHint ?? l10n.eatPagePortionNameHint,
               filled: true,
-              fillColor: colors.card,
+              fillColor: colors.tile,
               enabledBorder: border,
               focusedBorder: border,
             ),
             onSubmitted: (_) => _save(),
           ),
         ),
-        FilledButton(
+        FilledButton.tonal(
           key: EatRememberPortion.saveKey,
           onPressed: _save,
-          style: FilledButton.styleFrom(
-            minimumSize: const Size(0, AppSizes.minTapTarget),
-            backgroundColor: colors.accent,
-            foregroundColor: colors.onAccent,
-            shape: RoundedRectangleBorder(
-              side: BorderSide(color: colors.ink, width: AppFoodLabel.outline),
-            ),
-          ),
-          child: Text(
-            l10n.eatPageSavePortion,
-            style: mono?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: colors.onAccent,
-            ),
-          ),
+          child: Text(l10n.eatPageSavePortion),
         ),
       ],
     );

@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 
 /// Underlined text button of the eat page, such as "+ remember as portion".
@@ -23,13 +22,13 @@ class EatTextLink extends StatelessWidget {
   /// Called when the link is tapped.
   final VoidCallback onPressed;
 
-  /// Uses the muted text color instead of the accent.
+  /// Uses the muted text color instead of ink.
   final bool isMuted;
 
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
-    final color = isMuted ? colors.muted : colors.accentText;
+    final color = isMuted ? colors.muted : colors.ink;
     return Align(
       alignment: Alignment.centerLeft,
       child: TextButton(
@@ -42,7 +41,7 @@ class EatTextLink extends StatelessWidget {
         child: Text(
           label,
           style: Theme.of(context).textTheme.labelMedium?.copyWith(
-            fontFamily: AppFonts.mono,
+            fontWeight: FontWeight.w600,
             color: color,
             decoration: TextDecoration.underline,
           ),

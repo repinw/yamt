@@ -1,10 +1,6 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/core/widgets/food_label_dashed_line.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Full-screen frame of the eat page: a top bar with close and time, the
@@ -115,62 +111,41 @@ class EatPageScaffold extends StatelessWidget {
         // covering them.
         bottomNavigationBar: SafeArea(
           top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              FoodLabelDashedLine(color: colors.ink),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.xl,
-                  AppSpacing.md,
-                  AppSpacing.xl + AppFoodLabel.buttonShadow,
-                  AppSpacing.xl,
-                ),
-                child: Row(
-                  spacing: AppSpacing.md,
-                  children: [
-                    if (secondary != null)
-                      OutlinedButton(
-                        key: secondaryButtonKey,
-                        onPressed: onSecondary,
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(
-                            0,
-                            AppSizes.primaryActionHeight,
-                          ),
-                          foregroundColor: colors.ink,
-                          side: BorderSide(
-                            color: colors.ink,
-                            width: AppFoodLabel.outline,
-                          ),
-                          shape: const RoundedRectangleBorder(),
-                        ),
-                        child: Text(
-                          secondary,
-                          style: Theme.of(context).textTheme.labelLarge
-                              ?.copyWith(
-                                fontFamily: AppFonts.mono,
-                                color: colors.ink,
-                              ),
-                        ),
-                      ),
-                    Expanded(
-                      child: _ConfirmButton(
-                        buttonKey: confirmButtonKey,
-                        label:
-                            confirmLabel ??
-                            l10n.inventoryItemEatSheetConfirmAction,
-                        trailing: kcalValue == null
-                            ? null
-                            : l10n.eatPageKcal(kcalValue.round()),
-                        onPressed: onConfirm,
-                      ),
-                    ),
-                  ],
-                ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: colors.rule)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(
+                AppSpacing.xl,
+                AppSpacing.md,
+                AppSpacing.xl,
+                AppSpacing.xl,
               ),
-            ],
+              child: Row(
+                spacing: AppSpacing.xs,
+                children: [
+                  if (secondary != null)
+                    FilledButton.tonal(
+                      key: secondaryButtonKey,
+                      onPressed: onSecondary,
+                      child: Text(secondary),
+                    ),
+                  Expanded(
+                    child: _ConfirmButton(
+                      buttonKey: confirmButtonKey,
+                      label:
+                          confirmLabel ??
+                          l10n.inventoryItemEatSheetConfirmAction,
+                      trailing: kcalValue == null
+                          ? null
+                          : l10n.eatPageKcal(kcalValue.round()),
+                      onPressed: onConfirm,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
@@ -178,6 +153,8 @@ class EatPageScaffold extends StatelessWidget {
   }
 }
 
+/// The one lime action of the page: the label, and the calories of the
+/// entered amount in a small tag.
 class _ConfirmButton extends StatelessWidget {
   const new({
     required this.buttonKey,
@@ -194,64 +171,50 @@ class _ConfirmButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
-    final textTheme = Theme.of(context).textTheme;
     final trailingText = trailing;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        boxShadow: [
-          BoxShadow(
-            color: colors.ink,
-            offset: const Offset(
-              AppFoodLabel.buttonShadow,
-              AppFoodLabel.buttonShadow,
+    return FilledButton(
+      key: buttonKey,
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xs, 0),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: AppSpacing.sm,
+        children: [
+          // A long label next to a second button shrinks instead of
+          // overflowing.
+          Flexible(
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(label, maxLines: 1),
             ),
           ),
-        ],
-      ),
-      child: FilledButton(
-        key: buttonKey,
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          minimumSize: const Size.fromHeight(AppSizes.primaryActionHeight),
-          backgroundColor: colors.accent,
-          foregroundColor: colors.onAccent,
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-          shape: RoundedRectangleBorder(
-            side: BorderSide(color: colors.ink, width: AppFoodLabel.outline),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          spacing: AppSpacing.sm,
-          children: [
-            // A long label next to a second button shrinks instead of
-            // overflowing.
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
+          if (trailingText != null)
+            DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.onAccent.withValues(
+                  alpha: AppOpacities.buttonTag,
+                ),
+                borderRadius: BorderRadius.circular(AppRadius.pill),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.sm,
+                  vertical: AppSpacing.xxs,
+                ),
                 child: Text(
-                  label,
-                  maxLines: 1,
-                  style: textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
+                  trailingText,
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
                     color: colors.onAccent,
                   ),
                 ),
               ),
             ),
-            if (trailingText != null)
-              Text(
-                trailingText,
-                style: textTheme.bodyMedium?.copyWith(
-                  fontFamily: AppFonts.mono,
-                  fontWeight: FontWeight.w700,
-                  color: colors.onAccent,
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }

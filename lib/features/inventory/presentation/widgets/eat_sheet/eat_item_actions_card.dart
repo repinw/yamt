@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
@@ -115,7 +114,7 @@ class _ActionLine extends StatelessWidget {
                 child: Text(
                   label,
                   style: Theme.of(context).textTheme.bodyMedium
-                      ?.copyWith(fontFamily: AppFonts.mono, color: foreground),
+                      ?.copyWith(color: foreground),
                 ),
               ),
               if (onPressed != null)

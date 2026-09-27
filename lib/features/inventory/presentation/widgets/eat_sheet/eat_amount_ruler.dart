@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 
@@ -78,7 +77,7 @@ class EatAmountRuler extends StatelessWidget {
     final hintText = hint;
     final error = errorText;
     final unitStyle = textTheme.bodyMedium?.copyWith(
-      fontFamily: AppFonts.mono,
+      fontWeight: FontWeight.w600,
       color: colors.ink,
     );
     final onUnit = onUnitPressed;
@@ -109,7 +108,7 @@ class EatAmountRuler extends StatelessWidget {
                   contentPadding: EdgeInsets.zero,
                   enabledBorder: UnderlineInputBorder(
                     borderSide: BorderSide(
-                      color: colors.muted,
+                      color: colors.ink,
                       width: AppFoodLabel.outline,
                     ),
                   ),
@@ -147,9 +146,8 @@ class EatAmountRuler extends StatelessWidget {
                   hintText,
                   textAlign: TextAlign.end,
                   style: textTheme.labelMedium?.copyWith(
-                    fontFamily: AppFonts.mono,
                     fontWeight: FontWeight.w700,
-                    color: colors.accentText,
+                    color: colors.ink,
                   ),
                 ),
               ),
@@ -159,7 +157,6 @@ class EatAmountRuler extends StatelessWidget {
           Text(
             error,
             style: textTheme.bodySmall?.copyWith(
-              fontFamily: AppFonts.mono,
               color: Theme.of(context).colorScheme.error,
             ),
           ),

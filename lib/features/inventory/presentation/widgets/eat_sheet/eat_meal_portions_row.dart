@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -35,10 +34,7 @@ class EatMealPortionsRow extends StatelessWidget {
         Expanded(
           child: Text(
             l10n.eatPageMealPortions,
-            style: textTheme.bodySmall?.copyWith(
-              fontFamily: AppFonts.mono,
-              color: colors.ink,
-            ),
+            style: textTheme.bodySmall?.copyWith(color: colors.ink),
           ),
         ),
         Tooltip(
@@ -54,7 +50,6 @@ class EatMealPortionsRow extends StatelessWidget {
           '$portions',
           key: const Key('eat_meal_portions_value'),
           style: textTheme.titleMedium?.copyWith(
-            fontFamily: AppFonts.mono,
             fontWeight: FontWeight.w700,
             color: colors.ink,
           ),

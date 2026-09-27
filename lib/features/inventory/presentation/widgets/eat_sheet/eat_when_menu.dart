@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -82,19 +82,41 @@ class EatWhenMenu extends StatelessWidget {
           child: Text(l10n.eatPagePickDay),
         ),
       ],
+      // A round pill on the tile surface, inside a 48 pixel tap target.
       child: ConstrainedBox(
         constraints: const BoxConstraints(minHeight: kMinInteractiveDimension),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: AppSpacing.xs,
-          children: [
-            Text(
-              label.toUpperCase(),
-              style: Theme.of(context).textTheme.labelMedium
-                  ?.copyWith(fontFamily: AppFonts.mono, color: colors.muted),
+        child: Center(
+          widthFactor: 1,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.tile,
+              borderRadius: BorderRadius.circular(AppRadius.pill),
             ),
-            Icon(Icons.expand_more_rounded, color: colors.muted),
-          ],
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: AppFoodLabel.chip),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: AppSpacing.md,
+                  right: AppSpacing.xs,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: AppSpacing.xxs,
+                  children: [
+                    Text(
+                      label.toUpperCase(),
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: AppFoodLabel.navLabelTracking,
+                        color: colors.ink,
+                      ),
+                    ),
+                    Icon(Icons.expand_more_rounded, color: colors.ink),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );

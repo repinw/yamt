@@ -34,10 +34,11 @@ class EatLabelTable extends StatelessWidget {
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final per100 = per100Header;
+    // Values and their column headers stay in mono so the digits line up.
     final headerStyle = textTheme.labelSmall?.copyWith(
       fontFamily: AppFonts.mono,
-      fontWeight: FontWeight.w700,
-      color: colors.ink,
+      fontWeight: FontWeight.w500,
+      color: colors.muted,
     );
 
     return EatFramedBox(
@@ -109,8 +110,15 @@ class _LabelRow extends StatelessWidget {
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final color = row.accent ?? (row.isPart ? colors.muted : colors.ink);
-    final base = (row.isPart ? textTheme.labelMedium : textTheme.bodySmall)
-        ?.copyWith(fontFamily: AppFonts.mono, color: color);
+    // Names in the app font, values in mono.
+    final nameStyle = (row.isPart ? textTheme.bodySmall : textTheme.bodyMedium)
+        ?.copyWith(color: color);
+    final base = (row.isPart ? textTheme.labelSmall : textTheme.bodySmall)
+        ?.copyWith(
+          fontFamily: AppFonts.mono,
+          fontWeight: FontWeight.w400,
+          color: color,
+        );
     final per100 = row.per100;
 
     return DecoratedBox(
@@ -126,7 +134,7 @@ class _LabelRow extends StatelessWidget {
             Expanded(
               child: Text(
                 row.label,
-                style: base?.copyWith(
+                style: nameStyle?.copyWith(
                   fontWeight: row.isPart
                       ? FontWeight.w400
                       : row.accent == null

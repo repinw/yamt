@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_image_tile.dart';
 
@@ -75,7 +74,6 @@ class EatPageHeader extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: textTheme.labelSmall?.copyWith(
-                    fontFamily: AppFonts.mono,
                     color: colors.muted,
                     letterSpacing: AppFoodLabel.brandTracking,
                   ),
@@ -93,10 +91,7 @@ class EatPageHeader extends StatelessWidget {
               if (captionText != null)
                 Text(
                   captionText,
-                  style: textTheme.labelMedium?.copyWith(
-                    fontFamily: AppFonts.mono,
-                    color: colors.muted,
-                  ),
+                  style: textTheme.bodySmall?.copyWith(color: colors.muted),
                 ),
             ],
           ),

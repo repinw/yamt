@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -55,10 +54,7 @@ class EatCombineFoodRow extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
-    final style = textTheme.bodyMedium?.copyWith(
-      fontFamily: AppFonts.mono,
-      color: colors.ink,
-    );
+    final style = textTheme.bodyMedium?.copyWith(color: colors.ink);
     final kcalText = kcal;
     final remove = onRemove;
     final ruler = this.ruler;
@@ -127,7 +123,6 @@ class EatCombineFoodRow extends StatelessWidget {
               child: Text(
                 errorText,
                 style: textTheme.bodySmall?.copyWith(
-                  fontFamily: AppFonts.mono,
                   color: Theme.of(context).colorScheme.error,
                 ),
               ),

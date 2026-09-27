@@ -35,9 +35,6 @@ abstract final class AppFoodLabel {
   /// Line under the energy row.
   static const double labelEnergyRule = 3;
 
-  /// Offset of the hard button shadow.
-  static const double buttonShadow = 4;
-
   /// Width of the per-100 column of the nutrition label.
   static const double per100Column = 68;
 
@@ -59,8 +56,8 @@ abstract final class AppFoodLabel {
   /// Width of the notch that shows a mark on the ruler.
   static const double rulerMarkTick = 3;
 
-  /// Height of a mark chip on the ruler.
-  static const double rulerMark = 26;
+  /// Height of a round choice chip, such as a ruler mark.
+  static const double chip = 34;
 
   /// Width of the amount field.
   static const double amountField = 128;
@@ -68,8 +65,8 @@ abstract final class AppFoodLabel {
   /// Width of a small number field inside a line of text.
   static const double inlineAmountField = 72;
 
-  /// Space above and below a mark chip so its tap target reaches 48.
-  static const double rulerMarkTapPadding = 11;
+  /// Space above and below a chip so its tap target reaches 48.
+  static const double chipTapPadding = 7;
 
   /// Letter spacing of the brand line.
   static const double brandTracking = 1.6;
@@ -79,6 +76,9 @@ abstract final class AppFoodLabel {
 
   /// Opacity of the slider's touch halo.
   static const double sliderOverlayAlpha = 0.24;
+
+  /// Height of the slider track.
+  static const double sliderTrack = 4;
 
   /// Length of one dash of a dashed line.
   static const double dash = 6;

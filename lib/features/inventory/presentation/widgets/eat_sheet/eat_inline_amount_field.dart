@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 
 /// One line with a small number field, such as "1 piece = [50] g".
@@ -51,7 +50,7 @@ class EatInlineAmountField extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
     final style = Theme.of(context).textTheme.bodyMedium
-        ?.copyWith(fontFamily: AppFonts.mono, color: colors.ink);
+        ?.copyWith(color: colors.ink);
     final onUnit = onUnitPressed;
     const textPadding = EdgeInsets.only(top: AppSpacing.sm);
 

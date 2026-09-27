@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
@@ -48,10 +47,7 @@ class _EatComponentsListState extends State<EatComponentsList> {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
-    final mono = textTheme.bodySmall?.copyWith(
-      fontFamily: AppFonts.mono,
-      color: colors.ink,
-    );
+    final rowStyle = textTheme.bodySmall?.copyWith(color: colors.ink);
 
     return EatFramedBox(
       child: Column(
@@ -77,7 +73,7 @@ class _EatComponentsListState extends State<EatComponentsList> {
                   ),
                   Text(
                     l10n.preparedMealIngredientsCount(widget.components.length),
-                    style: mono?.copyWith(color: colors.muted),
+                    style: rowStyle?.copyWith(color: colors.muted),
                   ),
                   Icon(
                     _isExpanded
@@ -100,13 +96,13 @@ class _EatComponentsListState extends State<EatComponentsList> {
                   child: Row(
                     spacing: AppSpacing.md,
                     children: [
-                      Expanded(child: Text(name, style: mono)),
+                      Expanded(child: Text(name, style: rowStyle)),
                       Text(
                         l10n.inventoryEatSheetAmountWithUnit(
                           formatInventoryNutritionValue(amount),
                           unit.localizedName(l10n),
                         ),
-                        style: mono?.copyWith(
+                        style: rowStyle?.copyWith(
                           fontWeight: kcal == null ? FontWeight.w700 : null,
                           color: kcal == null ? null : colors.muted,
                         ),
@@ -114,7 +110,9 @@ class _EatComponentsListState extends State<EatComponentsList> {
                       if (kcal != null)
                         Text(
                           l10n.eatPageKcal(kcal.round()),
-                          style: mono?.copyWith(fontWeight: FontWeight.w700),
+                          style: rowStyle?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                     ],
                   ),
