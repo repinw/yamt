@@ -1,4 +1,5 @@
 import 'dart:developer' show log;
+import 'dart:ui' show Locale, PlatformDispatcher;
 
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -49,10 +50,20 @@ OffProductSearchRepository offProductSearchRepository(Ref ref) {
 /// Defines http off product search repository.
 class HttpOffProductSearchRepository implements OffProductSearchRepository {
   /// The http off product search repository.
-  new({required this._client, required this._searchUri})
-    : _responseParser = const OffProductSearchResponseParser();
+  new({
+    required this._client,
+    required this._searchUri,
+    Locale Function()? deviceLocale,
+  }) : _responseParser = const OffProductSearchResponseParser(),
+       _deviceLocale = deviceLocale ?? _platformLocale;
 
   final http.Client _client;
+
+  /// Tells the server the user's country and language, so it can pick the
+  /// country's products and name them in the language (roadmap 8.1).
+  final Locale Function() _deviceLocale;
+
+  static Locale _platformLocale() => PlatformDispatcher.instance.locale;
   final Uri _searchUri;
   final OffProductSearchResponseParser _responseParser;
 
@@ -137,6 +148,12 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
     if (weight != null && weight.isNotEmpty) {
       queryParameters['weight'] = weight;
     }
+    final locale = _deviceLocale();
+    final country = locale.countryCode?.toLowerCase() ?? '';
+    if (country.isNotEmpty) {
+      queryParameters['country'] = country;
+    }
+    queryParameters['lang'] = locale.languageCode.toLowerCase();
 
     return _searchUri.replace(queryParameters: queryParameters);
   }

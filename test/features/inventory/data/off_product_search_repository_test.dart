@@ -1,3 +1,5 @@
+import 'dart:ui' show Locale;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -39,6 +41,43 @@ Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
     expect(results.first.imageUrl, '/i.jpg');
     expect(results.first.score, 34);
   });
+
+  test('search sends the device country and language', () async {
+    late Uri capturedUri;
+    final repository = HttpOffProductSearchRepository(
+      client: MockClient((request) async {
+        capturedUri = request.url;
+        return http.Response('{"results": []}', 200);
+      }),
+      searchUri: Uri.parse('https://example.com/search'),
+      deviceLocale: () => const Locale('de', 'AT'),
+    );
+
+    await repository.search(query: 'Milch');
+
+    expect(capturedUri.queryParameters['country'], 'at');
+    expect(capturedUri.queryParameters['lang'], 'de');
+  });
+
+  test(
+    'search sends only the language when the locale has no country',
+    () async {
+      late Uri capturedUri;
+      final repository = HttpOffProductSearchRepository(
+        client: MockClient((request) async {
+          capturedUri = request.url;
+          return http.Response('{"results": []}', 200);
+        }),
+        searchUri: Uri.parse('https://example.com/search'),
+        deviceLocale: () => const Locale('en'),
+      );
+
+      await repository.search(query: 'Milk');
+
+      expect(capturedUri.queryParameters.containsKey('country'), isFalse);
+      expect(capturedUri.queryParameters['lang'], 'en');
+    },
+  );
 
   test('search sends a receipt line as raw instead of q', () async {
     late Uri capturedUri;
