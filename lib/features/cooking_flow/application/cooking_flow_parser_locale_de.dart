@@ -48,6 +48,7 @@ const Set<String> germanFuzzyInstructionStopWords = <String>{
   'auch',
   'in',
   'mit',
+  'oder',
   'und',
   'zu',
 };

@@ -98,10 +98,31 @@ void main() {
 
     final afterBaseChange = container.read(cookingFlowWizardControllerProvider);
     expect(afterBaseChange.portionCount, 7);
-    expect(afterBaseChange.finalPortionCount, 7);
+    expect(afterBaseChange.finalPortionCount, isNull);
+    expect(afterBaseChange.effectiveFinalPortionCount, 7);
     expect(afterBaseChange.summaryIngredients, isEmpty);
     expect(afterBaseChange.summarySourceSignature, isEmpty);
     expect(afterBaseChange.ingredientContainerAssignments, isEmpty);
+  });
+
+  test('finalize portions follow the intro target until the user picks', () {
+    final container = _container();
+    final controller = container.read(
+      cookingFlowWizardControllerProvider.notifier,
+    );
+    CookingFlowWizardState read() {
+      return container.read(cookingFlowWizardControllerProvider);
+    }
+
+    controller.initializePortionsFromTemplate(_template());
+    expect(read().effectiveFinalPortionCount, 4);
+
+    controller.updatePortionCount(8);
+    expect(read().effectiveFinalPortionCount, 8);
+
+    controller.updateFinalizePortionCount(3);
+    expect(read().effectiveFinalPortionCount, 3);
+    expect(read().portionCount, 8);
   });
 
   test('intro selection update clears stale summary ingredients', () async {
@@ -269,6 +290,80 @@ void main() {
 
     expect(result, CookingFlowShoppingListActionResult.success);
     expect(shoppingRepository.savedItems.single.name, 'Mehl');
+  });
+
+  test('restored introShoppingHandled survives the first unchanged '
+      'selection-state update', () async {
+    final store = _FakeCookingFlowSessionLocalStore(
+      session: const CookingFlowSession(
+        templateId: 'template-1',
+        step: CookingFlowSessionStep.start,
+        taraText: '',
+        adjustmentInputText: '',
+        adjustments: <String>[],
+        summaryIngredients: <CookingFlowSummaryIngredientSessionDraft>[],
+        grossWeightText: '',
+        splitIntoPortions: false,
+        portionCount: 4,
+        introDraft: CookingFlowIntroDraft(
+          rowStates: <CookingFlowIntroRowDraft>[
+            CookingFlowIntroRowDraft(
+              rawIngredient: '400g Tomaten',
+              action: CookingFlowIntroRowAction.shoppingCart,
+            ),
+          ],
+        ),
+        introShoppingHandled: true,
+        introShoppingBaselineInventoryItemIds: <String>['tomaten'],
+      ),
+    );
+    final container = _container(store: store);
+    final subscription = container.listen(
+      cookingFlowWizardControllerProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+    final controller = container.read(
+      cookingFlowWizardControllerProvider.notifier,
+    );
+
+    await controller.restoreSession('template-1');
+    // The session store never persists introShoppingListLabels, only
+    // introShoppingHandled, so right after restore the labels baseline is
+    // still empty even though the flag came back true.
+    expect(
+      container.read(cookingFlowWizardControllerProvider).introShoppingHandled,
+      isTrue,
+    );
+    expect(
+      container
+          .read(cookingFlowWizardControllerProvider)
+          .introShoppingListLabels,
+      isEmpty,
+    );
+
+    // The intro inventory controller re-syncs after restore and reports
+    // the same labels that were originally submitted to the shopping list.
+    controller.updateIntroSelectionState(
+      const CookingFlowIntroSelectionState(
+        allItemsSelected: true,
+        hasShoppingSelections: true,
+        hasUnresolvedConflicts: false,
+        shoppingListLabels: <String>['400g Tomaten'],
+        draft: CookingFlowIntroDraft(
+          rowStates: <CookingFlowIntroRowDraft>[
+            CookingFlowIntroRowDraft(
+              rawIngredient: '400g Tomaten',
+              action: CookingFlowIntroRowAction.shoppingCart,
+            ),
+          ],
+        ),
+      ),
+    );
+
+    final state = container.read(cookingFlowWizardControllerProvider);
+    expect(state.introShoppingHandled, isTrue);
+    expect(state.introShoppingListLabels, <String>['400g Tomaten']);
   });
 
   test('goBackOneStep walks backward through wizard states', () {

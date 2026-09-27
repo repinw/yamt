@@ -13,6 +13,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(steps, hasLength(2));
@@ -44,6 +45,7 @@ void main() {
         ],
         text: _text,
         localeCode: 'de',
+        targetPortions: 4,
       );
 
       expect(
@@ -66,6 +68,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(
@@ -84,6 +87,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(
@@ -102,6 +106,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(
@@ -128,6 +133,7 @@ void main() {
         inventoryItems: const <InventoryItem>[],
         text: _text,
         localeCode: 'de',
+        targetPortions: 4,
       );
       final highlights = steps.single.segments
           .where((segment) => segment.isHighlight)
@@ -157,6 +163,7 @@ void main() {
         inventoryItems: const <InventoryItem>[],
         text: _text,
         localeCode: 'de',
+        targetPortions: 4,
       );
 
       expect(
@@ -179,6 +186,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(
@@ -197,6 +205,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'en',
+      targetPortions: 4,
     );
 
     expect(
@@ -215,6 +224,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(
@@ -237,6 +247,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(
@@ -257,6 +268,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(
@@ -277,6 +289,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(
@@ -296,6 +309,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     expect(
@@ -323,6 +337,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     final highlights = steps.single.segments
@@ -351,6 +366,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     final plain = _plainText(steps.single);
@@ -379,6 +395,7 @@ void main() {
       inventoryItems: const <InventoryItem>[],
       text: _text,
       localeCode: 'de',
+      targetPortions: 4,
     );
 
     final highlights = steps.single.segments
@@ -411,6 +428,7 @@ void main() {
         inventoryItems: const <InventoryItem>[],
         text: _text,
         localeCode: 'de',
+        targetPortions: 4,
       );
 
       expect(
@@ -420,6 +438,85 @@ void main() {
             .text,
         'Schalotten (3 Stück)',
       );
+    },
+  );
+
+  test('scales piece amounts to the currently selected target portions', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>['4 Eier'],
+        recipeInstructions: const <String>['Eier verruehren.'],
+        totalPortions: 2,
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+      targetPortions: 4,
+    );
+
+    expect(
+      steps.single.segments.where((segment) => segment.isHighlight).single.text,
+      'Eier (8 Stück)',
+    );
+  });
+
+  test('keeps the qualitative amount when an inventory piece item is assigned '
+      'to an ingredient without a numeric amount', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>['etwas Schnittlauch'],
+        recipeInstructions: const <String>['Schnittlauch darueberstreuen.'],
+      ),
+      introDraft: const CookingFlowIntroDraft(
+        rowStates: <CookingFlowIntroRowDraft>[
+          CookingFlowIntroRowDraft(
+            rawIngredient: 'etwas Schnittlauch',
+            action: CookingFlowIntroRowAction.assigned,
+            selections: <CookingFlowIntroSelectionDraft>[
+              CookingFlowIntroSelectionDraft(itemId: 'chives'),
+            ],
+          ),
+        ],
+      ),
+      inventoryItems: <InventoryItem>[
+        _quantityInventoryItem(id: 'chives', name: 'Schnittlauch', quantity: 1),
+      ],
+      text: _text,
+      localeCode: 'de',
+      targetPortions: 4,
+    );
+
+    expect(
+      steps.single.segments.where((segment) => segment.isHighlight).single.text,
+      'Schnittlauch (etwas)',
+    );
+  });
+
+  test(
+    'does not highlight the conjunction "oder" as a stray ingredient match',
+    () {
+      final steps = buildCookingFlowInstructionSteps(
+        template: _template(
+          recipeIngredients: const <String>['1 Kartoffel'],
+          recipeInstructions: const <String>[
+            'Kartoffel halbieren oder vierteln.',
+          ],
+        ),
+        introDraft: null,
+        inventoryItems: const <InventoryItem>[],
+        text: _text,
+        localeCode: 'de',
+        targetPortions: 4,
+      );
+
+      final highlights = steps.single.segments
+          .where((segment) => segment.isHighlight)
+          .map((segment) => segment.text)
+          .toList();
+
+      expect(highlights, <String>['Kartoffel (1 Stück)']);
+      expect(_plainText(steps.single), contains('oder vierteln'));
     },
   );
 }
@@ -438,6 +535,7 @@ const _text = CookingFlowInstructionText(
 PreparedMeal _template({
   List<String> recipeIngredients = const <String>[],
   List<String> recipeInstructions = const <String>[],
+  int totalPortions = 4,
 }) {
   final now = DateTime.parse('2026-03-27T12:00:00Z');
   return PreparedMeal(
@@ -445,8 +543,8 @@ PreparedMeal _template({
     name: 'Testgericht',
     recipeIngredients: recipeIngredients,
     recipeInstructions: recipeInstructions,
-    totalPortions: 4,
-    remainingPortions: 4,
+    totalPortions: totalPortions,
+    remainingPortions: totalPortions,
     totalKcal: 0,
     totalProtein: 0,
     totalCarbs: 0,
@@ -471,5 +569,19 @@ InventoryItem _inventoryItem({
     initialAmount: currentAmount,
     currentAmount: currentAmount,
     amountUnit: InventoryAmountUnit.gram,
+  );
+}
+
+InventoryItem _quantityInventoryItem({
+  required String id,
+  required String name,
+  required int quantity,
+}) {
+  return InventoryItem.create(
+    id: id,
+    name: name,
+    entryDate: DateTime.parse('2026-03-27T12:00:00Z'),
+    storeName: 'Test',
+    quantity: quantity,
   );
 }

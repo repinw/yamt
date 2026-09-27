@@ -10,6 +10,10 @@ void main() {
     expect(unitPattern.hasMatch('stück'), isTrue);
     expect(parserLocale.isPieceUnit('stueck'), isTrue);
     expect(parserLocale.fuzzyInstructionStopWords, contains('die'));
+    // "oder" (or) must never be treated as a fuzzy ingredient candidate;
+    // otherwise short conjunctions get highlighted with an invented amount,
+    // e.g. "oder (1 Stück)" inside "halbieren oder vierteln".
+    expect(parserLocale.fuzzyInstructionStopWords, contains('oder'));
   });
 
   test('resolves English parser data', () {
@@ -19,5 +23,6 @@ void main() {
     expect(unitPattern.hasMatch('pieces'), isTrue);
     expect(parserLocale.isPieceUnit('piece'), isTrue);
     expect(parserLocale.fuzzyInstructionStopWords, contains('the'));
+    expect(parserLocale.fuzzyInstructionStopWords, contains('or'));
   });
 }

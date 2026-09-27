@@ -14,6 +14,7 @@ class CookingIngredientRowData {
     required this.rawIngredient,
     required this.name,
     required this.amountLabel,
+    this.isQualitativeAmount = false,
   });
 
   /// The raw ingredient text from recipe.
@@ -24,6 +25,12 @@ class CookingIngredientRowData {
 
   /// Parsed amount label for the ingredient.
   final String amountLabel;
+
+  /// Whether [amountLabel] is a qualitative amount ("etwas", "nach
+  /// Geschmack") rather than a real numeric amount. Cooking instructions
+  /// must never replace this with an inventory piece count: there is no
+  /// requirement to compare the assigned inventory item against.
+  final bool isQualitativeAmount;
 }
 
 /// Parses a recipe ingredient line into structured [CookingIngredientRowData].
@@ -32,6 +39,8 @@ CookingIngredientRowData parseRecipeIngredientRow({
   required CookingFlowInstructionText text,
   required CookingFlowParserLocale parserLocale,
   required String pieceUnitLabel,
+  required int targetPortions,
+  required int basePortions,
 }) {
   final normalized = normalizeCookingFractions(ingredient.trim());
   final cleaned = stripCookingPrefixQualifiers(normalized);
@@ -39,7 +48,13 @@ CookingIngredientRowData parseRecipeIngredientRow({
   return _tryParsePrefixQualitative(ingredient, cleaned) ??
       _tryParseSuffixQualitative(ingredient, cleaned) ??
       _tryParseRangeAmount(ingredient, cleaned, parserLocale, pieceUnitLabel) ??
-      _tryParseStructuredRequirement(ingredient, cleaned, pieceUnitLabel) ??
+      _tryParseStructuredRequirement(
+        ingredient,
+        cleaned,
+        pieceUnitLabel,
+        targetPortions: targetPortions,
+        basePortions: basePortions,
+      ) ??
       _tryParseAmountWithUnit(ingredient, cleaned, parserLocale) ??
       _tryParseAmountOnly(ingredient, cleaned, pieceUnitLabel) ??
       CookingIngredientRowData(
@@ -64,6 +79,7 @@ CookingIngredientRowData? _tryParsePrefixQualitative(
     rawIngredient: raw,
     name: match.group(2)!.trim(),
     amountLabel: match.group(1)!.trim(),
+    isQualitativeAmount: true,
   );
 }
 
@@ -82,6 +98,7 @@ CookingIngredientRowData? _tryParseSuffixQualitative(
     rawIngredient: raw,
     name: match.group(1)!.trim(),
     amountLabel: match.group(2)!.trim(),
+    isQualitativeAmount: true,
   );
 }
 
@@ -123,12 +140,14 @@ CookingIngredientRowData? _tryParseRangeAmount(
 CookingIngredientRowData? _tryParseStructuredRequirement(
   String raw,
   String cleaned,
-  String pieceUnitLabel,
-) {
+  String pieceUnitLabel, {
+  required int targetPortions,
+  required int basePortions,
+}) {
   final requirement = const TemplateIngredientParser().parseRequirement(
     ingredient: cleaned,
-    selectedPortions: 1,
-    basePortions: 1,
+    selectedPortions: targetPortions,
+    basePortions: basePortions,
   );
   if (requirement == null) {
     return null;

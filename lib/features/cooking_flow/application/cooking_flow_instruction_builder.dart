@@ -21,6 +21,7 @@ List<CookingFlowInstructionStep> buildCookingFlowInstructionSteps({
   required List<InventoryItem> inventoryItems,
   required CookingFlowInstructionText text,
   required String localeCode,
+  required int targetPortions,
 }) {
   final ingredientReferences = buildCookingIngredientReferences(
     template: template,
@@ -28,6 +29,7 @@ List<CookingFlowInstructionStep> buildCookingFlowInstructionSteps({
     inventoryItems: inventoryItems,
     text: text,
     localeCode: localeCode,
+    targetPortions: targetPortions,
   );
   final parserLocale = CookingFlowParserLocale.forLocaleCode(localeCode);
   final sourceInstructions = template.recipeInstructions
@@ -65,6 +67,7 @@ buildCookingFlowInstructionStepsOffMain({
   required List<InventoryItem> inventoryItems,
   required CookingFlowInstructionText text,
   required String localeCode,
+  required int targetPortions,
 }) {
   return Isolate.run(
     () => buildCookingFlowInstructionSteps(
@@ -73,6 +76,7 @@ buildCookingFlowInstructionStepsOffMain({
       inventoryItems: inventoryItems,
       text: text,
       localeCode: localeCode,
+      targetPortions: targetPortions,
     ),
     debugName: 'CookingFlowInstructionBuilder',
   );

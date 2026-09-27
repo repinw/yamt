@@ -51,6 +51,7 @@ Future<void> _pumpHarness(
   CookingFlowIntroDraft? introDraft,
   List<InventoryItem> inventoryItems = const <InventoryItem>[],
   Locale locale = const Locale('de'),
+  int targetPortions = 4,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -67,6 +68,7 @@ Future<void> _pumpHarness(
           body: CookingFlowCookingPage(
             template: template,
             introDraft: introDraft,
+            targetPortions: targetPortions,
             adjustmentController: adjustmentController,
             adjustments: const <String>[],
             onAddPressed: () {},

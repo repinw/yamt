@@ -65,17 +65,23 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
     state = state.copyWith(
       didInitializePortionsFromTemplate: true,
       portionCount: portions,
-      finalPortionCount: portions,
     );
     return true;
   }
 
   /// Updates intro CTA/session state.
   void updateIntroSelectionState(CookingFlowIntroSelectionState selection) {
-    final shoppingLabelsChanged = !_textListEquality.equals(
-      state.introShoppingListLabels,
-      selection.shoppingListLabels,
-    );
+    // A restored session persists introShoppingHandled but not
+    // introShoppingListLabels, so state.introShoppingListLabels starts empty
+    // right after restoreSession. Treat "no known baseline yet" as
+    // "unchanged" so the first post-restore notification establishes the
+    // baseline instead of tripping introShoppingHandled back to false.
+    final shoppingLabelsChanged =
+        state.introShoppingListLabels.isNotEmpty &&
+        !_textListEquality.equals(
+          state.introShoppingListLabels,
+          selection.shoppingListLabels,
+        );
     final nextSignature = buildCookingFlowSummarySourceSignature(
       selection.draft,
       targetPortions: state.targetRecipePortions,
@@ -316,11 +322,12 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
     state = state.copyWith(finalPortionCount: value.roundToDouble());
   }
 
-  /// Updates base recipe portion count.
+  /// Updates base recipe portion count. The finalize portion count follows
+  /// it again until the user picks one in the finalize step.
   void updatePortionCount(double value) {
     state = state.copyWith(
       portionCount: value.roundToDouble(),
-      finalPortionCount: value.roundToDouble(),
+      finalPortionCount: null,
       summaryIngredients: const <CookingFlowSummaryIngredientDraft>[],
       summarySourceSignature: '',
       ingredientContainerAssignments: const <String, String>{},

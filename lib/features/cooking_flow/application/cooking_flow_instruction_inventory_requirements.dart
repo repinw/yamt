@@ -77,19 +77,19 @@ CookingInventoryRequirement? parseCookingInventoryRequirement(
 }
 
 /// Calculates total available quantity or amount for [requirement].
-int availableCookingInventoryAmount({
+double availableCookingInventoryAmount({
   required List<InventoryItem> selectedItems,
   required CookingInventoryRequirement requirement,
 }) {
   return cookingFlowAvailableInventoryAmount(
     selectedItems: selectedItems,
     requirement: requirement,
-  ).round();
+  );
 }
 
 /// Formats inventory requirement amount with its unit code.
 String formatCookingInventoryRequirementAmount({
-  required int amount,
+  required num amount,
   required String unitCode,
   required String pieceUnitLabel,
 }) {

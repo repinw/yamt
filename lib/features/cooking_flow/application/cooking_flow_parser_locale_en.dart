@@ -40,6 +40,7 @@ const Set<String> englishFuzzyInstructionStopWords = <String>{
   'for',
   'in',
   'of',
+  'or',
   'the',
   'to',
   'with',

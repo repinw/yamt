@@ -42,6 +42,7 @@ Future<List<CookingFlowInstructionStep>> cookingInstructionSteps(
         inventoryItems: inventoryItems,
         text: request.text,
         localeCode: request.localeCode,
+        targetPortions: request.targetPortions,
       ),
     );
   }
@@ -51,6 +52,7 @@ Future<List<CookingFlowInstructionStep>> cookingInstructionSteps(
     inventoryItems: inventoryItems,
     text: request.text,
     localeCode: request.localeCode,
+    targetPortions: request.targetPortions,
   );
 }
 
@@ -83,6 +85,7 @@ class CookingFlowCookingPage extends ConsumerWidget {
   const new({
     required this.template,
     required this.introDraft,
+    required this.targetPortions,
     required this.adjustmentController,
     required this.adjustments,
     required this.onAddPressed,
@@ -95,6 +98,9 @@ class CookingFlowCookingPage extends ConsumerWidget {
 
   /// Intro draft with assignment and adjustment choices.
   final CookingFlowIntroDraft? introDraft;
+
+  /// Selected target recipe portions.
+  final int targetPortions;
 
   /// Controller for on-the-fly input.
   final TextEditingController adjustmentController;
@@ -118,6 +124,7 @@ class CookingFlowCookingPage extends ConsumerWidget {
             CookingInstructionStepsRequest(
               template: template,
               introDraft: introDraft,
+              targetPortions: targetPortions,
               text: CookingFlowInstructionText(
                 unknownAmount: l10n.cookflowUnknownAmount,
                 fallbackNoIngredients:
@@ -176,6 +183,7 @@ class CookingInstructionStepsRequest {
   const new({
     required this.template,
     required this.introDraft,
+    required this.targetPortions,
     required this.text,
     required this.localeCode,
   });
@@ -185,6 +193,9 @@ class CookingInstructionStepsRequest {
 
   /// Current intro inventory draft.
   final CookingFlowIntroDraft? introDraft;
+
+  /// Selected target recipe portions.
+  final int targetPortions;
 
   /// Localized instruction labels.
   final CookingFlowInstructionText text;
@@ -198,12 +209,14 @@ class CookingInstructionStepsRequest {
         other is CookingInstructionStepsRequest &&
             other.template == template &&
             other.introDraft == introDraft &&
+            other.targetPortions == targetPortions &&
             other.text == text &&
             other.localeCode == localeCode;
   }
 
   @override
-  int get hashCode => Object.hash(template, introDraft, text, localeCode);
+  int get hashCode =>
+      Object.hash(template, introDraft, targetPortions, text, localeCode);
 }
 
 class _CookingInstructionCard extends StatelessWidget {
@@ -252,10 +265,10 @@ class _CookingInstructionCard extends StatelessWidget {
                       TextSpan(
                         text: segment.text,
                         style: segment.isHighlight
-                            ? const TextStyle(
-                                color: Color(0xFFE65100),
+                            ? TextStyle(
+                                color: colors.onPrimaryContainer,
                                 fontWeight: FontWeight.w800,
-                                backgroundColor: Color(0xFFFFE7D6),
+                                backgroundColor: colors.primaryContainer,
                               )
                             : null,
                       ),
