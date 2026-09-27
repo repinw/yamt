@@ -149,8 +149,8 @@ class ReceiptReviewItemCard extends StatelessWidget {
     bool isIgnored,
   ) {
     final l10n = AppLocalizations.of(context);
-    final title = item.matchedProduct?.name ?? item.rawName;
-    final subtitle = item.matchedProduct != null ? item.rawName : null;
+    final title = item.displayName;
+    final subtitle = title != item.rawName ? item.rawName : null;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

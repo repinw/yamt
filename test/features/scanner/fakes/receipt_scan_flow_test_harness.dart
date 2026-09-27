@@ -3,19 +3,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
 
+import 'fake_receipt_ai_repository.dart';
 import 'fake_receipt_product_resolver.dart';
 import 'fake_receipt_storage_gateway.dart';
-import 'fake_receipt_structured_parser.dart';
-import 'fake_receipt_text_extractor.dart';
 
 class ReceiptScanFlowTestHarness {
-  final FakeReceiptStructuredParser fakeParser = FakeReceiptStructuredParser();
-  final FakeReceiptTextExtractor fakeExtractor = FakeReceiptTextExtractor();
+  final FakeReceiptAiRepository fakeReceiptAi = FakeReceiptAiRepository();
   final FakeReceiptProductResolver fakeResolver = FakeReceiptProductResolver();
   final FakeReceiptStorageGateway fakeGateway = FakeReceiptStorageGateway();
 
@@ -25,8 +24,7 @@ class ReceiptScanFlowTestHarness {
     ReceiptReviewLauncher? reviewLauncher,
   }) {
     return ReceiptScanFlowCoordinator(
-      parser: fakeParser,
-      extractor: fakeExtractor,
+      receiptAi: fakeReceiptAi,
       resolver: fakeResolver,
       cameraPicker: cameraPicker,
       filesPicker: filesPicker,
@@ -60,8 +58,7 @@ class ReceiptScanFlowTestHarness {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          receiptStructuredParserProvider.overrideWithValue(fakeParser),
-          receiptTextExtractorProvider.overrideWithValue(fakeExtractor),
+          receiptAiRepositoryProvider.overrideWithValue(fakeReceiptAi),
           receiptProductResolverProvider.overrideWithValue(fakeResolver),
           receiptStorageGatewayProvider.overrideWithValue(fakeGateway),
         ],

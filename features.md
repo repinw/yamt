@@ -171,7 +171,13 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Shared receipt intake from platform share intents.
 - Batch receipt processing with queued, processing, done, failed, and reviewed
   states.
-- AI receipt analysis and parser pipeline.
+- AI receipt analysis: photos and PDFs go straight to a Firebase AI server
+  prompt template (`receipt-parse-template`), so the prompt can change
+  without an app release. Overlapping photos of one long receipt are merged.
+- Lines that are clearly not food (bags, drugstore and cleaning products, pet
+  food) start deselected in the review; the user can select them again.
+- Unmatched lines show a readable product name; the printed receipt text
+  stays visible and is used to learn product matches.
 - Receipt review page with detected items, prices, receipt date, store, and
   original receipt preview.
 - Item review editing for name, brand, category, quantity, unit price, weight,

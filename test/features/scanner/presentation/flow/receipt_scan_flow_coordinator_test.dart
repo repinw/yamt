@@ -33,13 +33,13 @@ void main() {
       await tester.tap(find.text('Camera'));
       await tester.pumpAndSettle();
       expect(flowResult, isFalse);
-      expect(harness.fakeExtractor.extractedPathsHistory, isEmpty);
+      expect(harness.fakeReceiptAi.parsedPathsHistory, isEmpty);
     });
 
     testWidgets('startCameraFlow processes image and navigates to review', (
       tester,
     ) async {
-      harness.fakeParser.nextReceipt = const ScannedReceipt(
+      harness.fakeReceiptAi.nextReceipt = const ScannedReceipt(
         id: 'img-receipt',
         storeName: 'ALDI',
         items: [ReceiptLineItem(id: '1', rawName: 'MILCH', totalPrice: 1.19)],
@@ -59,7 +59,7 @@ void main() {
 
       await tester.tap(find.text('Camera'));
       await tester.pumpAndSettle();
-      expect(harness.fakeExtractor.extractedPathsHistory, [
+      expect(harness.fakeReceiptAi.parsedPathsHistory, [
         ['/tmp/photo.jpg'],
       ]);
       expect(find.text('Beleg prüfen'), findsOneWidget);
@@ -86,13 +86,13 @@ void main() {
       await tester.tap(find.text('Pick'));
       await tester.pumpAndSettle();
       expect(flowResult, isFalse);
-      expect(harness.fakeParser.parsedPdfPathsHistory, isEmpty);
+      expect(harness.fakeReceiptAi.parsedPathsHistory, isEmpty);
     });
 
-    testWidgets('startFilePickerFlow processes PDF directly via parser', (
+    testWidgets('startFilePickerFlow sends the picked PDF to the AI', (
       tester,
     ) async {
-      harness.fakeParser.nextReceipt = const ScannedReceipt(
+      harness.fakeReceiptAi.nextReceipt = const ScannedReceipt(
         id: 'pdf-receipt',
         storeName: 'LIDL',
         items: [ReceiptLineItem(id: '1', rawName: 'SAFT', totalPrice: 1.49)],
@@ -114,13 +114,14 @@ void main() {
 
       await tester.tap(find.text('Pick PDF'));
       await tester.pumpAndSettle();
-      expect(harness.fakeExtractor.extractedPathsHistory, isEmpty);
-      expect(harness.fakeParser.parsedPdfPathsHistory, ['/documents/lidl.pdf']);
+      expect(harness.fakeReceiptAi.parsedPathsHistory, [
+        ['/documents/lidl.pdf'],
+      ]);
       expect(find.text('Beleg prüfen'), findsOneWidget);
     });
 
-    testWidgets('shows snackbar when extraction fails', (tester) async {
-      harness.fakeExtractor.shouldFail = true;
+    testWidgets('shows snackbar when parsing fails', (tester) async {
+      harness.fakeReceiptAi.shouldFail = true;
 
       await harness.pump(
         tester,

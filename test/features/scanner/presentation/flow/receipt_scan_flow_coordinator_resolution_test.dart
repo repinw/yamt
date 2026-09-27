@@ -28,7 +28,7 @@ void main() {
         ..registerCandidatesForText('VOLLMILCH', [exactCandidate])
         ..registerCandidatesForText('BANANEN', [fuzzyCandidate]);
 
-      harness.fakeParser.nextReceipt = const ScannedReceipt(
+      harness.fakeReceiptAi.nextReceipt = const ScannedReceipt(
         id: 'match-receipt',
         storeName: 'REWE',
         items: [
@@ -57,9 +57,48 @@ void main() {
       expect(find.text('Bananen Bio'), findsOneWidget);
     });
 
+    testWidgets('keeps ignored non-food lines out of product resolution', (
+      tester,
+    ) async {
+      harness.fakeResolver.registerCandidatesForText('TRAGETASCHE', [
+        const ProductCandidate(id: 'p-bag', name: 'Tragetasche Bio'),
+      ]);
+      harness.fakeReceiptAi.nextReceipt = const ScannedReceipt(
+        id: 'bag-receipt',
+        storeName: 'REWE',
+        items: [
+          ReceiptLineItem(
+            id: '1',
+            rawName: 'TRAGETASCHE',
+            totalPrice: 0.30,
+            status: ReceiptItemStatus.ignored,
+          ),
+        ],
+      );
+
+      await harness.pump(
+        tester,
+        builder: (context, ref) => ElevatedButton(
+          onPressed: () async {
+            await harness.createCoordinator().processFilePaths(context, [
+              '/tmp/rewe.png',
+            ]);
+          },
+          child: const Text('Scan'),
+        ),
+      );
+
+      await tester.tap(find.text('Scan'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Beleg prüfen'), findsOneWidget);
+      expect(find.text('TRAGETASCHE'), findsOneWidget);
+      expect(find.text('Tragetasche Bio'), findsNothing);
+    });
+
     testWidgets('handles resolver failure gracefully', (tester) async {
       harness.fakeResolver.shouldFail = true;
-      harness.fakeParser.nextReceipt = const ScannedReceipt(
+      harness.fakeReceiptAi.nextReceipt = const ScannedReceipt(
         id: 'fail-receipt',
         storeName: 'EDEKA',
         items: [ReceiptLineItem(id: '1', rawName: 'BUTTER', totalPrice: 2.29)],

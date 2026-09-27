@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_router.dart';
+import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
@@ -14,9 +15,8 @@ import 'package:yamt/features/scanner/presentation/shared/shared_receipt_listene
 import 'package:yamt/features/scanner/presentation/shared/shared_receipt_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../fakes/fake_receipt_ai_repository.dart';
 import '../../fakes/fake_receipt_product_resolver.dart';
-import '../../fakes/fake_receipt_structured_parser.dart';
-import '../../fakes/fake_receipt_text_extractor.dart';
 
 class _FakeSharedReceiptService extends SharedReceiptService {
   @override
@@ -24,13 +24,11 @@ class _FakeSharedReceiptService extends SharedReceiptService {
 }
 
 void main() {
-  late FakeReceiptStructuredParser fakeParser;
-  late FakeReceiptTextExtractor fakeExtractor;
+  late FakeReceiptAiRepository fakeReceiptAi;
   late FakeReceiptProductResolver fakeResolver;
 
   setUp(() {
-    fakeParser = FakeReceiptStructuredParser();
-    fakeExtractor = FakeReceiptTextExtractor();
+    fakeReceiptAi = FakeReceiptAiRepository();
     fakeResolver = FakeReceiptProductResolver();
   });
 
@@ -72,8 +70,7 @@ void main() {
             sharedReceiptServiceProvider.overrideWith(
               _FakeSharedReceiptService.new,
             ),
-            receiptStructuredParserProvider.overrideWithValue(fakeParser),
-            receiptTextExtractorProvider.overrideWithValue(fakeExtractor),
+            receiptAiRepositoryProvider.overrideWithValue(fakeReceiptAi),
             receiptProductResolverProvider.overrideWithValue(fakeResolver),
           ],
           child: MaterialApp.router(
@@ -121,7 +118,7 @@ void main() {
     );
 
     testWidgets('confirms dialog and launches scan flow', (tester) async {
-      fakeParser.nextReceipt = const ScannedReceipt(
+      fakeReceiptAi.nextReceipt = const ScannedReceipt(
         id: 'shared-1',
         storeName: 'KAUFLAND',
         items: [ReceiptLineItem(id: '1', rawName: 'TEE', totalPrice: 0.99)],

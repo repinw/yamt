@@ -667,10 +667,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/scanner/domain/contracts/receipt_manual_product_picker.dart':
         1,
   },
-  'second-ai-sdk': {
-    'lib/features/scanner/data/google_ai_receipt_parser.dart': 1,
-    'lib/features/scanner/data/google_ai_receipt_schema.dart': 1,
-  },
   'session-interface': {
     'lib/features/inventory/data/inventory_user_session.dart': 1,
     'lib/features/shoppinglist/data/shopping_list_user_session.dart': 1,

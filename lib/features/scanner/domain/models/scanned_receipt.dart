@@ -30,9 +30,6 @@ abstract class ScannedReceipt with _$ScannedReceipt {
     /// Overall OCR / parsing confidence score (0.0 to 1.0).
     @Default(1.0) double confidenceScore,
 
-    /// Unprocessed raw text of the receipt (for debugging and transparency).
-    String? rawText,
-
     /// Currency (default: 'EUR').
     @Default('EUR') String currency,
 

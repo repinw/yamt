@@ -34,6 +34,9 @@ abstract class ReceiptLineItem with _$ReceiptLineItem {
     /// Printed total price on receipt before discounts.
     required double totalPrice,
 
+    /// Readable product name derived from [rawName] (e.g. "Vollmilch 3,8%").
+    String? productName,
+
     /// Line discount (e.g. 0.50 coupon or promotion).
     @Default(0.0) double discount,
 
@@ -92,8 +95,11 @@ abstract class ReceiptLineItem with _$ReceiptLineItem {
     return discount;
   }
 
-  /// Display name in the UI: product name or raw receipt name.
-  String get displayName => matchedProduct?.name ?? rawName;
+  /// Display name in the UI: matched product, readable name, or raw text.
+  String get displayName => matchedProduct?.name ?? productName ?? rawName;
+
+  /// Query for a manual product search: readable name or raw text.
+  String get searchQuery => productName ?? rawName;
 
   /// Whether this item should be persisted into inventory.
   bool get shouldPersist =>

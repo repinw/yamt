@@ -7,10 +7,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_product_resolver.dart';
-import 'package:yamt/features/scanner/domain/contracts/receipt_structured_parser.dart';
-import 'package:yamt/features/scanner/domain/contracts/receipt_text_extractor.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
@@ -34,19 +33,17 @@ typedef ReceiptReviewLauncher = Future<bool?> Function(
 @riverpod
 ReceiptScanFlowCoordinator receiptScanFlowCoordinator(Ref ref) {
   return ReceiptScanFlowCoordinator(
-    parser: ref.watch(receiptStructuredParserProvider),
-    extractor: ref.watch(receiptTextExtractorProvider),
+    receiptAi: ref.watch(receiptAiRepositoryProvider),
     resolver: ref.watch(receiptProductResolverProvider),
   );
 }
 
-/// Orchestrates receipt capturing, text extraction, structured AI parsing,
+/// Orchestrates receipt capturing, AI parsing,
 /// product pre-resolution, and the review screen flow.
 class ReceiptScanFlowCoordinator {
   /// Creates a [ReceiptScanFlowCoordinator].
   new({
-    required this._parser,
-    required this._extractor,
+    required this._receiptAi,
     required this._resolver,
     ReceiptCameraPicker? cameraPicker,
     ReceiptFilesPicker? filesPicker,
@@ -55,8 +52,7 @@ class ReceiptScanFlowCoordinator {
        _filesPicker = filesPicker ?? _defaultFilesPicker,
        _reviewLauncher = reviewLauncher ?? _defaultReviewLauncher;
 
-  final ReceiptStructuredParser _parser;
-  final ReceiptTextExtractor _extractor;
+  final ReceiptAiRepository _receiptAi;
   final ReceiptProductResolver _resolver;
   final ReceiptCameraPicker _cameraPicker;
   final ReceiptFilesPicker _filesPicker;
@@ -124,7 +120,7 @@ class ReceiptScanFlowCoordinator {
     );
 
     try {
-      final receipt = await _extractAndParse(validPaths);
+      final receipt = await _receiptAi.parseReceipt(validPaths);
       final enriched = await _preResolveProducts(receipt);
 
       if (dialogOpen && navigator.mounted) {
@@ -153,30 +149,16 @@ class ReceiptScanFlowCoordinator {
     }
   }
 
-  Future<ScannedReceipt> _extractAndParse(List<String> validPaths) async {
-    final isPdf = validPaths.any((p) => p.toLowerCase().endsWith('.pdf'));
-
-    if (isPdf) {
-      final pdfPath = validPaths.firstWhere(
-        (p) => p.toLowerCase().endsWith('.pdf'),
-      );
-      return await _parser.parsePdf(pdfFilePath: pdfPath);
-    }
-
-    final rawText = await _extractor.extractText(validPaths);
-    return await _parser.parseRawText(
-      rawText: rawText,
-      sourceFilePaths: validPaths,
-    );
-  }
-
   Future<ScannedReceipt> _preResolveProducts(ScannedReceipt receipt) async {
-    if (receipt.items.isEmpty) return receipt;
+    final openItems = receipt.items
+        .where((item) => item.status == ReceiptItemStatus.unmatched)
+        .toList(growable: false);
+    if (openItems.isEmpty) return receipt;
 
     Map<String, List<ProductCandidate>> candidateMap;
     try {
       candidateMap = await _resolver.resolveBatch(
-        items: receipt.items,
+        items: openItems,
         storeName: receipt.storeName,
       );
     } on Object {

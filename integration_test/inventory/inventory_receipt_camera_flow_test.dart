@@ -7,6 +7,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/features/home/widgets/inventory_action_fab.dart';
+import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
@@ -15,12 +16,11 @@ import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordi
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/features/scanner/fakes/fake_receipt_ai_repository.dart';
 import '../../test/features/scanner/fakes/fake_receipt_product_resolver.dart';
 import '../../test/features/scanner/fakes/fake_receipt_storage_gateway.dart';
-import '../../test/features/scanner/fakes/fake_receipt_structured_parser.dart';
-import '../../test/features/scanner/fakes/fake_receipt_text_extractor.dart';
 
-Widget _buildHarness({required FakeReceiptStructuredParser fakeParser}) {
+Widget _buildHarness({required FakeReceiptAiRepository fakeReceiptAi}) {
   final routeObserver = RouteObserver<ModalRoute<void>>();
   final router = GoRouter(
     observers: [routeObserver],
@@ -41,7 +41,6 @@ Widget _buildHarness({required FakeReceiptStructuredParser fakeParser}) {
   );
   addTearDown(router.dispose);
 
-  final fakeExtractor = FakeReceiptTextExtractor();
   final fakeResolver = FakeReceiptProductResolver();
   final fakeGateway = FakeReceiptStorageGateway();
 
@@ -49,14 +48,12 @@ Widget _buildHarness({required FakeReceiptStructuredParser fakeParser}) {
     overrides: [
       appRouteObserverProvider.overrideWithValue(routeObserver),
       receiptCameraSupportedProvider.overrideWithValue(true),
-      receiptStructuredParserProvider.overrideWithValue(fakeParser),
-      receiptTextExtractorProvider.overrideWithValue(fakeExtractor),
+      receiptAiRepositoryProvider.overrideWithValue(fakeReceiptAi),
       receiptProductResolverProvider.overrideWithValue(fakeResolver),
       receiptStorageGatewayProvider.overrideWithValue(fakeGateway),
       receiptScanFlowCoordinatorProvider.overrideWith(
         (ref) => ReceiptScanFlowCoordinator(
-          parser: fakeParser,
-          extractor: fakeExtractor,
+          receiptAi: fakeReceiptAi,
           resolver: fakeResolver,
           cameraPicker: () async => '/tmp/camera_photo.jpg',
         ),
@@ -92,7 +89,7 @@ void main() {
   testWidgets('camera receipt flow from expanded FAB opens review page', (
     tester,
   ) async {
-    final fakeParser = FakeReceiptStructuredParser()
+    final fakeReceiptAi = FakeReceiptAiRepository()
       ..nextReceipt = const ScannedReceipt(
         id: 'camera-receipt-1',
         storeName: 'Store',
@@ -101,7 +98,7 @@ void main() {
         ],
       );
 
-    await tester.pumpWidget(_buildHarness(fakeParser: fakeParser));
+    await tester.pumpWidget(_buildHarness(fakeReceiptAi: fakeReceiptAi));
     await _pumpVisibleStep(tester);
 
     await tester.tap(find.byKey(const Key('inventory_action_fab_button')));

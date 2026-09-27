@@ -68,6 +68,26 @@ void main() {
       expect(item.rawCategory, 'Molkereiprodukte');
     });
 
+    test('readable product name is shown and searched before raw text', () {
+      const item = ReceiptLineItem(
+        id: 'line-2',
+        rawName: 'JA! VOLLM. 3.8% 1L',
+        productName: 'Vollmilch 3,8%',
+        totalPrice: 1.19,
+      );
+
+      expect(item.displayName, 'Vollmilch 3,8%');
+      expect(item.searchQuery, 'Vollmilch 3,8%');
+      expect(
+        item
+            .withSelectedProduct(
+              const ProductCandidate(id: 'milk', name: 'Frische Vollmilch'),
+            )
+            .displayName,
+        'Frische Vollmilch',
+      );
+    });
+
     test('Rabatt reduziert den effektiven Preis korrekt', () {
       const discountedItem = ReceiptLineItem(
         id: 'line-rabatt',
@@ -184,7 +204,6 @@ void main() {
         sourceFilePaths: ['/path/to/part1.jpg', '/path/to/part2.jpg'],
         sourceMimeType: 'image/jpeg',
         confidenceScore: 0.98,
-        rawText: 'LIDL FILIALE BERLIN\nMILCH 1.19\nBROT 2.50\nSUMME 3.69',
         printedTotal: 2.44, // 1.19 + 2.00 + 0.25 - 1.00 = 2.44
         items: [itemNormal, itemRabatt, itemDeposit, itemCoupon],
       );
@@ -192,10 +211,6 @@ void main() {
       expect(receipt.sourceFilePaths.length, 2);
       expect(receipt.primarySourceFilePath, '/path/to/part1.jpg');
       expect(receipt.confidenceScore, 0.98);
-      expect(
-        receipt.rawText,
-        'LIDL FILIALE BERLIN\nMILCH 1.19\nBROT 2.50\nSUMME 3.69',
-      );
       expect(receipt.calculatedTotal, closeTo(2.44, 0.001));
       expect(receipt.hasDiscrepancy, isFalse);
       expect(receipt.totalSavings, closeTo(1.50, 0.001)); // 0.50 + 1.00

@@ -158,7 +158,7 @@ class _ReceiptReviewPageState extends ConsumerState<ReceiptReviewPage> {
       context,
       initialQuery: barcode.trim(),
       barcode: barcode.trim(),
-      rawName: item.rawName,
+      rawName: item.searchQuery,
       storeName: ref
           .read(receiptReviewControllerProvider(widget.initialReceipt))
           .receipt
@@ -178,9 +178,9 @@ class _ReceiptReviewPageState extends ConsumerState<ReceiptReviewPage> {
     final picker = ref.read(receiptManualProductPickerProvider);
     final candidate = await picker.pickOrEditProduct(
       context,
-      initialQuery: item.rawName,
+      initialQuery: item.searchQuery,
       barcode: item.matchedProduct?.barcode,
-      rawName: item.rawName,
+      rawName: item.searchQuery,
       storeName: ref
           .read(receiptReviewControllerProvider(widget.initialReceipt))
           .receipt

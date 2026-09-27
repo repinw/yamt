@@ -52,12 +52,10 @@ import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
+import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_product_resolver.dart';
-import 'package:yamt/features/scanner/domain/contracts/receipt_structured_parser.dart';
-import 'package:yamt/features/scanner/domain/contracts/receipt_text_extractor.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
-import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -151,27 +149,6 @@ class _TestDiaryCalendarController extends DiaryCalendarController {
   }
 }
 
-class _DummyReceiptParser implements ReceiptStructuredParser {
-  const new();
-  @override
-  Future<ScannedReceipt> parsePdf({required String pdfFilePath}) =>
-      throw UnimplementedError();
-  @override
-  Future<ScannedReceipt> parseRawText({
-    required String rawText,
-    List<String> sourceFilePaths = const <String>[],
-  }) => throw UnimplementedError();
-}
-
-class _DummyReceiptExtractor implements ReceiptTextExtractor {
-  const new();
-  @override
-  Future<String> extractText(List<String> imageFilePaths) =>
-      throw UnimplementedError();
-  @override
-  Future<void> dispose() async {}
-}
-
 class _DummyReceiptResolver implements ReceiptProductResolver {
   const new();
   @override
@@ -204,8 +181,9 @@ class _DummyReceiptResolver implements ReceiptProductResolver {
 class _RecordingReceiptScanFlowCoordinator extends ReceiptScanFlowCoordinator {
   new()
     : super(
-        parser: const _DummyReceiptParser(),
-        extractor: const _DummyReceiptExtractor(),
+        receiptAi: ReceiptAiRepository(
+          templateClient: (_) => throw UnimplementedError(),
+        ),
         resolver: const _DummyReceiptResolver(),
       );
 

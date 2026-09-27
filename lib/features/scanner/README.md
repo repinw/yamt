@@ -1,13 +1,12 @@
 # Scanner Feature
 
-Scanner owns receipt capture, text extraction, receipt structuring,
+Scanner owns receipt capture, AI receipt structuring,
 and the interactive receipt review flow.
 
 ## Owns
 
 - Receipt input selection for camera, gallery, files (PDF/images), and platform share intents.
-- Local text extraction (on-device ML Kit OCR and direct vector text extraction from PDF).
-- Parsing raw text into structured receipt models (`ScannedReceipt`, `ReceiptLineItem`) via Google Generative AI (Gemini Flash).
+- Parsing receipt photos and PDFs into structured receipt models (`ScannedReceipt`, `ReceiptLineItem`) with the Firebase AI server prompt template `receipt-parse-template` (`ReceiptAiRepository`).
 - Interactive receipt review flow, item editing, status management, price adjustments, and review state (`ReceiptReviewController`).
 - Flow coordination and UI transitions (`ReceiptScanFlowCoordinator`).
 
@@ -24,7 +23,7 @@ and the interactive receipt review flow.
 Other features may consume these scanner entry points:
 
 - Domain models: `ScannedReceipt`, `ReceiptLineItem`, `ProductCandidate`.
-- Decoupled contracts: `ReceiptProductResolver`, `ReceiptManualProductPicker`, `ReceiptStorageGateway`, `ReceiptTextExtractor`, `ReceiptStructuredParser`.
+- Decoupled contracts: `ReceiptProductResolver`, `ReceiptManualProductPicker`, `ReceiptStorageGateway`.
 - Presentation flow & UI:
   - `ReceiptScanFlowCoordinator` (entry point for camera scan and file upload flows)
   - `ReceiptReviewPage` (primary review screen)
@@ -37,8 +36,7 @@ Other features may consume these scanner entry points:
   - `receiptProductResolverProvider` (host adapter)
   - `receiptManualProductPickerProvider` (host adapter)
   - `receiptStorageGatewayProvider` (host adapter)
-  - `receiptTextExtractorProvider` (defaults to `MlKitReceiptTextExtractor`)
-  - `receiptStructuredParserProvider` (defaults to `GoogleAiReceiptParser`)
+  - `receiptAiRepositoryProvider` (`data/receipt_ai_repository.dart`)
 - **Presentation Layer**:
   - `receiptReviewControllerProvider` (`presentation/controllers/receipt_review_controller.dart`)
   - `receiptScanFlowCoordinatorProvider` (`presentation/flow/receipt_scan_flow_coordinator.dart`)

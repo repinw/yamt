@@ -23,8 +23,7 @@ mixin _$ScannedReceipt {
 /// (e.g. multiple photos for long receipts).
  List<String> get sourceFilePaths;/// MIME type of the original receipts (e.g. 'image/jpeg' or 'application/pdf').
  String? get sourceMimeType;/// Overall OCR / parsing confidence score (0.0 to 1.0).
- double get confidenceScore;/// Unprocessed raw text of the receipt (for debugging and transparency).
- String? get rawText;/// Currency (default: 'EUR').
+ double get confidenceScore;/// Currency (default: 'EUR').
  String get currency;/// All line items extracted from the receipt.
  List<ReceiptLineItem> get items;
 /// Create a copy of ScannedReceipt
@@ -38,20 +37,20 @@ $ScannedReceiptCopyWith<ScannedReceipt> get copyWith => _$ScannedReceiptCopyWith
 @override
 bool operator ==(Object other) {
   final _this = this as ScannedReceipt;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScannedReceipt&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.storeName, _this.storeName) || other.storeName == _this.storeName)&&(identical(other.dateTime, _this.dateTime) || other.dateTime == _this.dateTime)&&(identical(other.printedTotal, _this.printedTotal) || other.printedTotal == _this.printedTotal)&&const DeepCollectionEquality().equals(other.sourceFilePaths, _this.sourceFilePaths)&&(identical(other.sourceMimeType, _this.sourceMimeType) || other.sourceMimeType == _this.sourceMimeType)&&(identical(other.confidenceScore, _this.confidenceScore) || other.confidenceScore == _this.confidenceScore)&&(identical(other.rawText, _this.rawText) || other.rawText == _this.rawText)&&(identical(other.currency, _this.currency) || other.currency == _this.currency)&&const DeepCollectionEquality().equals(other.items, _this.items));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ScannedReceipt&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.storeName, _this.storeName) || other.storeName == _this.storeName)&&(identical(other.dateTime, _this.dateTime) || other.dateTime == _this.dateTime)&&(identical(other.printedTotal, _this.printedTotal) || other.printedTotal == _this.printedTotal)&&const DeepCollectionEquality().equals(other.sourceFilePaths, _this.sourceFilePaths)&&(identical(other.sourceMimeType, _this.sourceMimeType) || other.sourceMimeType == _this.sourceMimeType)&&(identical(other.confidenceScore, _this.confidenceScore) || other.confidenceScore == _this.confidenceScore)&&(identical(other.currency, _this.currency) || other.currency == _this.currency)&&const DeepCollectionEquality().equals(other.items, _this.items));
 }
 
 
 @override
 int get hashCode {
   final _this = this as ScannedReceipt;
-  return Object.hash(runtimeType,_this.id,_this.storeName,_this.dateTime,_this.printedTotal,const DeepCollectionEquality().hash(_this.sourceFilePaths),_this.sourceMimeType,_this.confidenceScore,_this.rawText,_this.currency,const DeepCollectionEquality().hash(_this.items));
+  return Object.hash(runtimeType,_this.id,_this.storeName,_this.dateTime,_this.printedTotal,const DeepCollectionEquality().hash(_this.sourceFilePaths),_this.sourceMimeType,_this.confidenceScore,_this.currency,const DeepCollectionEquality().hash(_this.items));
 }
 
 @override
 String toString() {
   final _this = this as ScannedReceipt;
-  return 'ScannedReceipt(id: ${_this.id}, storeName: ${_this.storeName}, dateTime: ${_this.dateTime}, printedTotal: ${_this.printedTotal}, sourceFilePaths: ${_this.sourceFilePaths}, sourceMimeType: ${_this.sourceMimeType}, confidenceScore: ${_this.confidenceScore}, rawText: ${_this.rawText}, currency: ${_this.currency}, items: ${_this.items})';
+  return 'ScannedReceipt(id: ${_this.id}, storeName: ${_this.storeName}, dateTime: ${_this.dateTime}, printedTotal: ${_this.printedTotal}, sourceFilePaths: ${_this.sourceFilePaths}, sourceMimeType: ${_this.sourceMimeType}, confidenceScore: ${_this.confidenceScore}, currency: ${_this.currency}, items: ${_this.items})';
 }
 
 
@@ -62,7 +61,7 @@ abstract mixin class $ScannedReceiptCopyWith<$Res>  {
   factory $ScannedReceiptCopyWith(ScannedReceipt value, $Res Function(ScannedReceipt) _then) = _$ScannedReceiptCopyWithImpl;
 @useResult
 $Res call({
- String id, String? storeName, DateTime? dateTime, double? printedTotal, List<String> sourceFilePaths, String? sourceMimeType, double confidenceScore, String? rawText, String currency, List<ReceiptLineItem> items
+ String id, String? storeName, DateTime? dateTime, double? printedTotal, List<String> sourceFilePaths, String? sourceMimeType, double confidenceScore, String currency, List<ReceiptLineItem> items
 });
 
 
@@ -79,7 +78,7 @@ class _$ScannedReceiptCopyWithImpl<$Res>
 
 /// Create a copy of ScannedReceipt
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? storeName = freezed,Object? dateTime = freezed,Object? printedTotal = freezed,Object? sourceFilePaths = null,Object? sourceMimeType = freezed,Object? confidenceScore = null,Object? rawText = freezed,Object? currency = null,Object? items = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? storeName = freezed,Object? dateTime = freezed,Object? printedTotal = freezed,Object? sourceFilePaths = null,Object? sourceMimeType = freezed,Object? confidenceScore = null,Object? currency = null,Object? items = null,}) {
   return _then(ScannedReceipt(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,storeName: freezed == storeName ? _self.storeName : storeName // ignore: cast_nullable_to_non_nullable
@@ -88,8 +87,7 @@ as DateTime?,printedTotal: freezed == printedTotal ? _self.printedTotal : printe
 as double?,sourceFilePaths: null == sourceFilePaths ? _self.sourceFilePaths : sourceFilePaths // ignore: cast_nullable_to_non_nullable
 as List<String>,sourceMimeType: freezed == sourceMimeType ? _self.sourceMimeType : sourceMimeType // ignore: cast_nullable_to_non_nullable
 as String?,confidenceScore: null == confidenceScore ? _self.confidenceScore : confidenceScore // ignore: cast_nullable_to_non_nullable
-as double,rawText: freezed == rawText ? _self.rawText : rawText // ignore: cast_nullable_to_non_nullable
-as String?,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as double,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
 as String,items: null == items ? _self.items : items // ignore: cast_nullable_to_non_nullable
 as List<ReceiptLineItem>,
   ));
@@ -176,10 +174,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? storeName,  DateTime? dateTime,  double? printedTotal,  List<String> sourceFilePaths,  String? sourceMimeType,  double confidenceScore,  String? rawText,  String currency,  List<ReceiptLineItem> items)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String? storeName,  DateTime? dateTime,  double? printedTotal,  List<String> sourceFilePaths,  String? sourceMimeType,  double confidenceScore,  String currency,  List<ReceiptLineItem> items)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ScannedReceipt() when $default != null:
-return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that.sourceFilePaths,_that.sourceMimeType,_that.confidenceScore,_that.rawText,_that.currency,_that.items);case _:
+return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that.sourceFilePaths,_that.sourceMimeType,_that.confidenceScore,_that.currency,_that.items);case _:
   return orElse();
 
 }
@@ -197,10 +195,10 @@ return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? storeName,  DateTime? dateTime,  double? printedTotal,  List<String> sourceFilePaths,  String? sourceMimeType,  double confidenceScore,  String? rawText,  String currency,  List<ReceiptLineItem> items)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String? storeName,  DateTime? dateTime,  double? printedTotal,  List<String> sourceFilePaths,  String? sourceMimeType,  double confidenceScore,  String currency,  List<ReceiptLineItem> items)  $default,) {final _that = this;
 switch (_that) {
 case _ScannedReceipt():
-return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that.sourceFilePaths,_that.sourceMimeType,_that.confidenceScore,_that.rawText,_that.currency,_that.items);case _:
+return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that.sourceFilePaths,_that.sourceMimeType,_that.confidenceScore,_that.currency,_that.items);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -217,10 +215,10 @@ return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? storeName,  DateTime? dateTime,  double? printedTotal,  List<String> sourceFilePaths,  String? sourceMimeType,  double confidenceScore,  String? rawText,  String currency,  List<ReceiptLineItem> items)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String? storeName,  DateTime? dateTime,  double? printedTotal,  List<String> sourceFilePaths,  String? sourceMimeType,  double confidenceScore,  String currency,  List<ReceiptLineItem> items)?  $default,) {final _that = this;
 switch (_that) {
 case _ScannedReceipt() when $default != null:
-return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that.sourceFilePaths,_that.sourceMimeType,_that.confidenceScore,_that.rawText,_that.currency,_that.items);case _:
+return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that.sourceFilePaths,_that.sourceMimeType,_that.confidenceScore,_that.currency,_that.items);case _:
   return null;
 
 }
@@ -232,7 +230,7 @@ return $default(_that.id,_that.storeName,_that.dateTime,_that.printedTotal,_that
 
 
 class _ScannedReceipt extends ScannedReceipt {
-  const _ScannedReceipt({required this.id, this.storeName, this.dateTime, this.printedTotal,  List<String> sourceFilePaths = const <String>[], this.sourceMimeType, this.confidenceScore = 1.0, this.rawText, this.currency = 'EUR',  List<ReceiptLineItem> items = const <ReceiptLineItem>[]}): _sourceFilePaths = sourceFilePaths,_items = items,super._();
+  const _ScannedReceipt({required this.id, this.storeName, this.dateTime, this.printedTotal,  List<String> sourceFilePaths = const <String>[], this.sourceMimeType, this.confidenceScore = 1.0, this.currency = 'EUR',  List<ReceiptLineItem> items = const <ReceiptLineItem>[]}): _sourceFilePaths = sourceFilePaths,_items = items,super._();
   
 
 /// Unique ID for this scan session.
@@ -258,8 +256,6 @@ class _ScannedReceipt extends ScannedReceipt {
 @override final  String? sourceMimeType;
 /// Overall OCR / parsing confidence score (0.0 to 1.0).
 @override@JsonKey() final  double confidenceScore;
-/// Unprocessed raw text of the receipt (for debugging and transparency).
-@override final  String? rawText;
 /// Currency (default: 'EUR').
 @override@JsonKey() final  String currency;
 /// All line items extracted from the receipt.
@@ -282,18 +278,18 @@ _$ScannedReceiptCopyWith<_ScannedReceipt> get copyWith => __$ScannedReceiptCopyW
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScannedReceipt&&(identical(other.id, id) || other.id == id)&&(identical(other.storeName, storeName) || other.storeName == storeName)&&(identical(other.dateTime, dateTime) || other.dateTime == dateTime)&&(identical(other.printedTotal, printedTotal) || other.printedTotal == printedTotal)&&const DeepCollectionEquality().equals(other.sourceFilePaths, _sourceFilePaths)&&(identical(other.sourceMimeType, sourceMimeType) || other.sourceMimeType == sourceMimeType)&&(identical(other.confidenceScore, confidenceScore) || other.confidenceScore == confidenceScore)&&(identical(other.rawText, rawText) || other.rawText == rawText)&&(identical(other.currency, currency) || other.currency == currency)&&const DeepCollectionEquality().equals(other.items, _items));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ScannedReceipt&&(identical(other.id, id) || other.id == id)&&(identical(other.storeName, storeName) || other.storeName == storeName)&&(identical(other.dateTime, dateTime) || other.dateTime == dateTime)&&(identical(other.printedTotal, printedTotal) || other.printedTotal == printedTotal)&&const DeepCollectionEquality().equals(other.sourceFilePaths, _sourceFilePaths)&&(identical(other.sourceMimeType, sourceMimeType) || other.sourceMimeType == sourceMimeType)&&(identical(other.confidenceScore, confidenceScore) || other.confidenceScore == confidenceScore)&&(identical(other.currency, currency) || other.currency == currency)&&const DeepCollectionEquality().equals(other.items, _items));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,storeName,dateTime,printedTotal,const DeepCollectionEquality().hash(_sourceFilePaths),sourceMimeType,confidenceScore,rawText,currency,const DeepCollectionEquality().hash(_items));
+    return Object.hash(runtimeType,id,storeName,dateTime,printedTotal,const DeepCollectionEquality().hash(_sourceFilePaths),sourceMimeType,confidenceScore,currency,const DeepCollectionEquality().hash(_items));
 }
 
 @override
 String toString() {
-    return 'ScannedReceipt(id: $id, storeName: $storeName, dateTime: $dateTime, printedTotal: $printedTotal, sourceFilePaths: $sourceFilePaths, sourceMimeType: $sourceMimeType, confidenceScore: $confidenceScore, rawText: $rawText, currency: $currency, items: $items)';
+    return 'ScannedReceipt(id: $id, storeName: $storeName, dateTime: $dateTime, printedTotal: $printedTotal, sourceFilePaths: $sourceFilePaths, sourceMimeType: $sourceMimeType, confidenceScore: $confidenceScore, currency: $currency, items: $items)';
 }
 
 
@@ -304,7 +300,7 @@ abstract mixin class _$ScannedReceiptCopyWith<$Res> implements $ScannedReceiptCo
   factory _$ScannedReceiptCopyWith(_ScannedReceipt value, $Res Function(_ScannedReceipt) _then) = __$ScannedReceiptCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String? storeName, DateTime? dateTime, double? printedTotal, List<String> sourceFilePaths, String? sourceMimeType, double confidenceScore, String? rawText, String currency, List<ReceiptLineItem> items
+ String id, String? storeName, DateTime? dateTime, double? printedTotal, List<String> sourceFilePaths, String? sourceMimeType, double confidenceScore, String currency, List<ReceiptLineItem> items
 });
 
 
@@ -321,7 +317,7 @@ class __$ScannedReceiptCopyWithImpl<$Res>
 
 /// Create a copy of ScannedReceipt
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? storeName = freezed,Object? dateTime = freezed,Object? printedTotal = freezed,Object? sourceFilePaths = null,Object? sourceMimeType = freezed,Object? confidenceScore = null,Object? rawText = freezed,Object? currency = null,Object? items = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? storeName = freezed,Object? dateTime = freezed,Object? printedTotal = freezed,Object? sourceFilePaths = null,Object? sourceMimeType = freezed,Object? confidenceScore = null,Object? currency = null,Object? items = null,}) {
   return _then(_ScannedReceipt(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,storeName: freezed == storeName ? _self.storeName : storeName // ignore: cast_nullable_to_non_nullable
@@ -330,8 +326,7 @@ as DateTime?,printedTotal: freezed == printedTotal ? _self.printedTotal : printe
 as double?,sourceFilePaths: null == sourceFilePaths ? _self._sourceFilePaths : sourceFilePaths // ignore: cast_nullable_to_non_nullable
 as List<String>,sourceMimeType: freezed == sourceMimeType ? _self.sourceMimeType : sourceMimeType // ignore: cast_nullable_to_non_nullable
 as String?,confidenceScore: null == confidenceScore ? _self.confidenceScore : confidenceScore // ignore: cast_nullable_to_non_nullable
-as double,rawText: freezed == rawText ? _self.rawText : rawText // ignore: cast_nullable_to_non_nullable
-as String?,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
+as double,currency: null == currency ? _self.currency : currency // ignore: cast_nullable_to_non_nullable
 as String,items: null == items ? _self._items : items // ignore: cast_nullable_to_non_nullable
 as List<ReceiptLineItem>,
   ));
