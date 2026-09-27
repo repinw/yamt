@@ -38,6 +38,10 @@ List<CookingFlowInstructionSegment> buildInstructionSegments({
       patternCache: patternCache,
       text: text,
     );
+  }
+  // Fuzzy matching runs after every exact match is placed, so a fuzzy span of
+  // one ingredient cannot take the words that name another one exactly.
+  for (final reference in sortedReferences) {
     _collectFuzzyMatches(
       instruction: instruction,
       reference: reference,
@@ -105,7 +109,6 @@ void _collectFuzzyMatches({
     final candidate = findBestFuzzyInstructionCandidate(
       instruction: instruction,
       reference: reference,
-      existingMatches: matches,
       parserLocale: parserLocale,
       overlapsWithExisting: (start, end) => cookingInstructionMatchOverlaps(
         matches: matches,

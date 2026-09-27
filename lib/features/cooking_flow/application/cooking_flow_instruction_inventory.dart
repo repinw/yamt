@@ -38,33 +38,23 @@ class CookingIngredientReference {
 
   /// Candidate search patterns and variants for this ingredient.
   List<String> get matchTexts {
-    final seen = <String>{};
-    final variants = <String>[];
-
-    void addCandidate(String? text) {
-      if (text == null) return;
-      final trimmed = text.trim();
-      if (trimmed.isEmpty) return;
-      if (seen.add(trimmed.toLowerCase())) {
-        variants.add(trimmed);
-      }
-    }
-
     final startsWithAmount = RegExp(r'^\d').hasMatch(rawIngredient.trim());
-    if (!startsWithAmount) {
-      addCandidate(rawIngredient);
-    }
-    addCandidate(name);
+    return _distinctMatchTexts(<String>[
+      if (!startsWithAmount) rawIngredient,
+      ...nameMatchTexts,
+    ]);
+  }
 
+  /// The name, the cleaned name, and their morphological variants, without
+  /// the amounts and qualifiers of the raw ingredient line.
+  List<String> get nameMatchTexts {
     final cleanedName = cleanIngredientReferenceName(name);
-    addCandidate(cleanedName);
-
-    parserLocale.resolveIngredientVariants(cleanedName).forEach(addCandidate);
-    if (cleanedName != name) {
-      parserLocale.resolveIngredientVariants(name).forEach(addCandidate);
-    }
-
-    return variants;
+    return _distinctMatchTexts(<String>[
+      name,
+      cleanedName,
+      ...parserLocale.resolveIngredientVariants(cleanedName),
+      if (cleanedName != name) ...parserLocale.resolveIngredientVariants(name),
+    ]);
   }
 
   /// Longest character length among [matchTexts].
@@ -73,6 +63,14 @@ class CookingIngredientReference {
       return text.length > longest ? text.length : longest;
     });
   }
+}
+
+List<String> _distinctMatchTexts(Iterable<String> texts) {
+  final seen = <String>{};
+  return texts
+      .map((text) => text.trim())
+      .where((text) => text.isNotEmpty && seen.add(text.toLowerCase()))
+      .toList(growable: false);
 }
 
 /// Builds ingredient references by combining template components, ingredients,

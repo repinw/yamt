@@ -519,10 +519,137 @@ void main() {
       expect(_plainText(steps.single), contains('oder vierteln'));
     },
   );
+
+  group('recipe "Rührei mit Tomaten" scaled from 2 to 4 portions', () {
+    const tomatoLine = '20 kleine Tomaten';
+    const chivesLine = 'etwas Schnittlauch (frisch oder TK)';
+    const olderChivesLine = '1 etwas Schnittlauch (frisch oder TK)';
+
+    List<String> ingredientLines(String chives) => <String>[
+      '4 Eier (möglichst Bio)',
+      tomatoLine,
+      '4 EL Milch (oder Sahne)',
+      '20 g Butter',
+      '2 Prisen Salz',
+      '1 Prise Pfeffer',
+      chives,
+    ];
+
+    List<String> highlightsFor({
+      required String chives,
+      required String instruction,
+    }) {
+      final steps = buildCookingFlowInstructionSteps(
+        template: _template(
+          recipeIngredients: ingredientLines(chives),
+          recipeInstructions: <String>[instruction],
+          totalPortions: 2,
+        ),
+        introDraft: const CookingFlowIntroDraft(
+          rowStates: <CookingFlowIntroRowDraft>[
+            CookingFlowIntroRowDraft(
+              rawIngredient: tomatoLine,
+              editedAmountLabel: '400 g',
+            ),
+          ],
+        ),
+        inventoryItems: const <InventoryItem>[],
+        text: _text,
+        localeCode: 'de',
+        targetPortions: 4,
+      );
+      return _highlights(steps.single);
+    }
+
+    const cutInstruction =
+        'Kleine Tomaten halbieren oder vierteln. '
+        'Frischen Schnittlauch in Ringe schneiden.';
+
+    test('highlights tomatoes and chives, never "halbieren oder"', () {
+      expect(
+        highlightsFor(chives: chivesLine, instruction: cutInstruction),
+        <String>['Kleine Tomaten (400 g)', 'Schnittlauch (etwas)'],
+      );
+    });
+
+    test('never highlights "halbieren oder" for the older chives import', () {
+      final highlights = highlightsFor(
+        chives: olderChivesLine,
+        instruction: cutInstruction,
+      );
+
+      expect(highlights, hasLength(2));
+      expect(highlights.first, 'Kleine Tomaten (400 g)');
+      expect(highlights.last, startsWith('Schnittlauch ('));
+      expect(
+        highlights.where(
+          (highlight) =>
+              highlight.contains('halbieren') || highlight.contains('oder'),
+        ),
+        isEmpty,
+      );
+    });
+
+    test('highlights only Eier, Milch, Salz and Pfeffer', () {
+      final highlights = highlightsFor(
+        chives: chivesLine,
+        instruction:
+            'Eier in eine Schüssel schlagen. '
+            'Milch, Salz und Pfeffer zugeben.',
+      );
+
+      expect(
+        highlights.map((highlight) => highlight.split(' (').first),
+        <String>['Eier', 'Milch', 'Salz', 'Pfeffer'],
+      );
+      expect(highlights.first, 'Eier (8 Stück)');
+      expect(highlights[1], 'Milch (8 EL)');
+    });
+  });
+
+  test('matches the last word of a multi-word ingredient name', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>['20 kleine Tomaten'],
+        recipeInstructions: const <String>['Die Tomaten waschen.'],
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+      targetPortions: 4,
+    );
+
+    expect(_highlights(steps.single), <String>['Tomaten (20 Stück)']);
+  });
+
+  test('keeps a trailing note in parentheses that is not an amount', () {
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>['4 EL Milch'],
+        recipeInstructions: const <String>['Milch (lauwarm) zugeben.'],
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+      targetPortions: 4,
+    );
+
+    expect(_highlights(steps.single), <String>['Milch (4 EL)']);
+    expect(_plainText(steps.single), 'Milch (4 EL) (lauwarm) zugeben.');
+  });
 }
 
 String _plainText(CookingFlowInstructionStep step) {
   return step.segments.map((segment) => segment.text).join();
+}
+
+List<String> _highlights(CookingFlowInstructionStep step) {
+  return step.segments
+      .where((segment) => segment.isHighlight)
+      .map((segment) => segment.text)
+      .toList();
 }
 
 const _text = CookingFlowInstructionText(

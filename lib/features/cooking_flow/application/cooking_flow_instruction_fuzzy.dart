@@ -1,9 +1,8 @@
 import 'package:fuzzywuzzy/fuzzywuzzy.dart' as fuzzywuzzy;
-import 'package:meta/meta.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_instruction_inventory.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_instruction_models.dart';
+    'cooking_flow_instruction_parser.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_parser_locale.dart';
 
@@ -23,30 +22,6 @@ class CookingInstructionToken {
 
   /// Token end offset in text.
   final int end;
-}
-
-/// Tokenized normalized fuzzy query.
-@immutable
-class CookingFuzzyQuery {
-  /// Creates a fuzzy query.
-  const new({required this.text, required this.tokenCount});
-
-  /// Normalized query text.
-  final String text;
-
-  /// Number of tokens in the query.
-  final int tokenCount;
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        other is CookingFuzzyQuery &&
-            other.text == text &&
-            other.tokenCount == tokenCount;
-  }
-
-  @override
-  int get hashCode => Object.hash(text, tokenCount);
 }
 
 /// Candidate match found by fuzzy comparison.
@@ -95,24 +70,20 @@ class FuzzyInstructionCandidate {
 }
 
 /// Finds the best fuzzy candidate matching [reference] in [instruction].
+///
+/// A candidate is a span of up to [maxCookingFuzzyInstructionSpanTokens]
+/// tokens that starts and ends with a word that is not a stop word. Stop words
+/// inside the span are ignored, and every other word must match a word of the
+/// query, so a shared stop word such as "oder" earns no credit.
 FuzzyInstructionCandidate? findBestFuzzyInstructionCandidate({
   required String instruction,
   required CookingIngredientReference reference,
-  required List<CookingInstructionMatch> existingMatches,
   required CookingFlowParserLocale parserLocale,
   required bool Function(int start, int end) overlapsWithExisting,
 }) {
   final tokens = cookingInstructionTokens(instruction);
-  if (tokens.isEmpty) {
-    return null;
-  }
-
-  final queries = reference.matchTexts
-      .map(toCookingFuzzyQuery)
-      .where((query) => query.text.isNotEmpty)
-      .toSet()
-      .toList(growable: false);
-  if (queries.isEmpty) {
+  final queries = _cookingFuzzyQueries(reference, parserLocale);
+  if (tokens.isEmpty || queries.isEmpty) {
     return null;
   }
 
@@ -133,15 +104,15 @@ FuzzyInstructionCandidate? findBestFuzzyInstructionCandidate({
         continue;
       }
       final candidateText = instruction.substring(start, end);
-      final normalizedCandidate = normalizeCookingFuzzyText(candidateText);
-      if (!_isViableCookingFuzzyCandidate(normalizedCandidate, parserLocale)) {
+      final candidateWords = _cookingFuzzySpanWords(
+        candidateText,
+        parserLocale,
+      );
+      if (candidateWords == null) {
         continue;
       }
       for (final query in queries) {
-        if (tokenCount > query.tokenCount) {
-          continue;
-        }
-        final score = _cookingFuzzyMatchScore(query.text, normalizedCandidate);
+        final score = _cookingFuzzyMatchScore(query, candidateWords);
         if (score < cookingFuzzyInstructionMatchThreshold) {
           continue;
         }
@@ -153,7 +124,7 @@ FuzzyInstructionCandidate? findBestFuzzyInstructionCandidate({
           textLength: end - start,
           candidateText: candidateText,
         );
-        if (bestCandidate == null || candidate.isBetterThan(bestCandidate)) {
+        if (candidate.isBetterThan(bestCandidate)) {
           bestCandidate = candidate;
         }
       }
@@ -162,25 +133,99 @@ FuzzyInstructionCandidate? findBestFuzzyInstructionCandidate({
   return bestCandidate;
 }
 
-int _cookingFuzzyMatchScore(String query, String candidate) {
-  if (!query.contains(' ') && !candidate.contains(' ')) {
-    if (_isSingleTokenCookingTypo(query: query, candidate: candidate)) {
-      return 100;
-    }
-    return fuzzywuzzy.ratio(query, candidate);
+/// Query alternatives for [reference], one word list each.
+///
+/// Every name variant loses its parenthesised qualifiers, comma details, stop
+/// words, and short fragments. A name with several words also adds its last
+/// word, so "kleine Tomaten" still finds a plain "Tomaten".
+List<List<String>> _cookingFuzzyQueries(
+  CookingIngredientReference reference,
+  CookingFlowParserLocale parserLocale,
+) {
+  final queries = <String, List<String>>{};
+  void addQuery(List<String> words) {
+    queries.putIfAbsent(words.join(' '), () => words);
   }
-  final partialScore = fuzzywuzzy.partialRatio(query, candidate);
-  final tokenScore = fuzzywuzzy.tokenSetPartialRatio(query, candidate);
-  return partialScore > tokenScore ? partialScore : tokenScore;
+
+  for (final matchText in reference.nameMatchTexts) {
+    final words = _cookingFuzzyWords(cleanIngredientReferenceName(matchText))
+        .where((word) => _isCookingFuzzyQueryWord(word, parserLocale))
+        .toList(growable: false);
+    if (words.isEmpty) {
+      continue;
+    }
+    addQuery(words);
+    final lastWord = words.last;
+    if (words.length > 1 &&
+        (lastWord.length >= 4 ||
+            parserLocale.fuzzyShortIngredientTokens.contains(lastWord))) {
+      addQuery(<String>[lastWord]);
+    }
+  }
+  return queries.values.toList(growable: false);
 }
 
-bool _isSingleTokenCookingTypo({
-  required String query,
-  required String candidate,
-}) {
-  return !query.contains(' ') &&
-      !candidate.contains(' ') &&
-      query.length >= 4 &&
+bool _isCookingFuzzyQueryWord(
+  String word,
+  CookingFlowParserLocale parserLocale,
+) {
+  return !_isCookingFuzzyStopWord(word, parserLocale) &&
+      (word.length >= 3 ||
+          parserLocale.fuzzyShortIngredientTokens.contains(word));
+}
+
+/// Words of a candidate span without stop words, or `null` when the span
+/// starts or ends with a stop word.
+List<String>? _cookingFuzzySpanWords(
+  String candidateText,
+  CookingFlowParserLocale parserLocale,
+) {
+  final words = _cookingFuzzyWords(candidateText);
+  if (words.isEmpty ||
+      _isCookingFuzzyStopWord(words.first, parserLocale) ||
+      _isCookingFuzzyStopWord(words.last, parserLocale)) {
+    return null;
+  }
+  return words
+      .where((word) => !_isCookingFuzzyStopWord(word, parserLocale))
+      .toList(growable: false);
+}
+
+bool _isCookingFuzzyStopWord(
+  String word,
+  CookingFlowParserLocale parserLocale,
+) {
+  return parserLocale.fuzzyInstructionStopWords.contains(word) ||
+      CookingFlowParserLocale.allSupported.fuzzyInstructionStopWords.contains(
+        word,
+      );
+}
+
+int _cookingFuzzyMatchScore(List<String> query, List<String> candidate) {
+  if (candidate.length > query.length ||
+      !candidate.every(
+        (word) =>
+            query.any((queryWord) => _cookingFuzzyWordsMatch(queryWord, word)),
+      )) {
+    return 0;
+  }
+  if (query.length == 1) {
+    return _isCookingTypo(query.single, candidate.single)
+        ? 100
+        : fuzzywuzzy.ratio(query.single, candidate.single);
+  }
+  return fuzzywuzzy.tokenSortRatio(query.join(' '), candidate.join(' '));
+}
+
+bool _cookingFuzzyWordsMatch(String queryWord, String candidateWord) {
+  return queryWord == candidateWord ||
+      _isCookingTypo(queryWord, candidateWord) ||
+      fuzzywuzzy.ratio(queryWord, candidateWord) >=
+          cookingFuzzyInstructionMatchThreshold;
+}
+
+bool _isCookingTypo(String query, String candidate) {
+  return query.length >= 4 &&
       candidate.length >= 4 &&
       _cookingEditDistanceAtMostOne(query, candidate);
 }
@@ -217,29 +262,11 @@ bool _cookingEditDistanceAtMostOne(String left, String right) {
   return edits <= 1;
 }
 
-/// Normalizes and counts tokens in [value] to build a [CookingFuzzyQuery].
-CookingFuzzyQuery toCookingFuzzyQuery(String value) {
-  final text = normalizeCookingFuzzyText(value);
-  final tokenCount = text.split(RegExp(r'\s+')).where((token) {
-    return token.isNotEmpty;
-  }).length;
-  return CookingFuzzyQuery(text: text, tokenCount: tokenCount);
-}
-
-bool _isViableCookingFuzzyCandidate(
-  String value,
-  CookingFlowParserLocale parserLocale,
-) {
-  final tokens = value.split(RegExp(r'\s+')).where((token) {
-    return token.isNotEmpty &&
-        !parserLocale.fuzzyInstructionStopWords.contains(token) &&
-        !CookingFlowParserLocale.allSupported.fuzzyInstructionStopWords
-            .contains(token);
-  });
-  return tokens.any((token) {
-    return token.length >= 3 ||
-        parserLocale.fuzzyShortIngredientTokens.contains(token);
-  });
+List<String> _cookingFuzzyWords(String value) {
+  return normalizeCookingFuzzyText(value)
+      .split(' ')
+      .where((word) => word.isNotEmpty)
+      .toList(growable: false);
 }
 
 /// Normalizes text for fuzzy matching.
@@ -247,7 +274,7 @@ String normalizeCookingFuzzyText(String value) {
   return value
       .toLowerCase()
       .replaceAll('ß', 'ss')
-      .replaceAll(RegExp('[^0-9a-zäöü]+'), ' ')
+      .replaceAll(RegExp('[^0-9a-zà-öø-ÿ]+'), ' ')
       .trim()
       .replaceAll(RegExp(r'\s+'), ' ');
 }

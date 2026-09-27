@@ -25,8 +25,10 @@ bool isCookingInstructionBoundaryAt(
   return index >= text.length || !_isWordLike(text[index]);
 }
 
+const String _wordCharacters = '0-9A-Za-zÀ-ÖØ-öø-ÿ';
+
 bool _isWordLike(String value) {
-  return RegExp(r'^[0-9A-Za-zÀ-ÖØ-öø-ÿ]$').hasMatch(value);
+  return RegExp('^[$_wordCharacters]\$').hasMatch(value);
 }
 
 /// Expands [start] backwards if a preceding quantity or adjective exists.
@@ -61,6 +63,9 @@ int expandMatchStartToIncludePrecedingAmount({
 }
 
 /// Expands [end] forward if a parenthesized quantity immediately follows.
+///
+/// The parentheses count as a quantity when they hold a digit or a whole unit
+/// word, so a note like "(lauwarm)" stays in the instruction.
 int expandMatchEndToIncludeTrailingParentheses({
   required String instruction,
   required int end,
@@ -72,7 +77,9 @@ int expandMatchEndToIncludeTrailingParentheses({
   final suffix = instruction.substring(end);
   final unitPattern = parserLocale.amountUnitPattern;
   final parenPattern = RegExp(
-    '^\\s*\\([^)]*(?:$unitPattern|\\d|stk|stück)[^)]*\\)',
+    r'^\s*\([^)]*(?:\d|'
+    '(?<![$_wordCharacters])(?:$unitPattern|stk|stück)(?![$_wordCharacters])'
+    r')[^)]*\)',
     caseSensitive: false,
   );
   final match = parenPattern.firstMatch(suffix);
