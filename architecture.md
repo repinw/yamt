@@ -387,6 +387,14 @@ NEVER move a feature type into `lib/core` to avoid an ownership decision.
   `Stream`s. NEVER override presentation or application providers with
   synchronous values: that hides auto-dispose bugs that appear when sheets and
   dialogs close.
+- A UI change (a page, a widget, the theme, the router, or ARB strings) needs
+  an integration test in `integration_test/<feature>/` that drives the changed
+  page. If none exists, write one. A change to the look only gets a smoke test
+  that opens the page and fails on any exception. Use the fakes of UI flow
+  tests, and find widgets by key, not by text.
+- Run integration tests only on the Android emulator:
+  `TARGET=<file> tool/android_integration_emulator.sh run`. NEVER run them on
+  a physical device without the user's explicit yes.
 - Test Firestore repositories with `fake_cloud_firestore`. Prefer fakes over
   `mocktail`.
 - Widget tests with localized text use `appLocalizationsDelegates` and
@@ -488,9 +496,14 @@ Run this review before you push to `master`.
 2. Run the tests of the affected features. They MUST pass before you refactor.
 3. Review every changed file in `lib/` and `test/` as the checklist says.
    Fix what fails.
-4. A refactor MUST NOT change behavior. Commit it separately from behavior
+4. Delete the code that the change leaves unused: files that no import chain
+   from `lib/main.dart` reaches, and symbols without a user in `lib/`. A use in
+   tests alone does not count. Delete the tests that test only the removed
+   code. Dead code that the change does not touch stays for a refactoring
+   task.
+5. A refactor MUST NOT change behavior. Commit it separately from behavior
    changes, with the `refactor:` type.
-5. Run the gates.
+6. Run the gates.
 
 ### Checklist
 
@@ -510,3 +523,6 @@ strings. Report existing compatibility code in changed files to the user.
 5. Tests of the affected features pass.
 6. `npx jscpd lib` lists no clone in a file that you changed. The project
    baseline still has clones, so the command itself fails.
+7. The change leaves no unreachable file and no unused symbol (step 4).
+8. After a UI change, the integration tests of the affected features pass on
+   the emulator.
