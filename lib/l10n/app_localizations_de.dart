@@ -2914,7 +2914,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get settingsProfileSummaryNoProfile => 'Noch keine Körperdaten. Der Kalorienrechner speichert sie.';
+  String get settingsProfileSummaryNoProfile =>
+      'Noch keine Körperdaten. Der Kalorienrechner speichert sie.';
 
   @override
   String get settingsProfileSummaryGoalsTitle => 'Ziele';
@@ -2949,7 +2950,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsProfileSummaryEditMacrosAction => 'Makros bearbeiten';
 
   @override
-  String get settingsProfileSummaryLoadFailed => 'Profil konnte nicht geladen werden.';
+  String get settingsProfileSummaryLoadFailed =>
+      'Profil konnte nicht geladen werden.';
 
   @override
   String get settingsAccountHouseholdSectionTitle => 'Haushalt';

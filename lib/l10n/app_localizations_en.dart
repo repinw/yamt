@@ -2858,7 +2858,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsProfileSummaryNoProfile => 'No body data yet. The calorie calculator saves it.';
+  String get settingsProfileSummaryNoProfile =>
+      'No body data yet. The calorie calculator saves it.';
 
   @override
   String get settingsProfileSummaryGoalsTitle => 'Goals';
