@@ -72,7 +72,7 @@ final class CookingInstructionStepsProvider
 }
 
 String _$cookingInstructionStepsHash() =>
-    r'c53ffeec6f81deb0113ed3af209d6ee211cd1a3c';
+    r'd269433fbfb1bbc43ca3e312c865bfdc57ef741e';
 
 /// Builds cooking instruction steps for the current recipe and inventory.
 
