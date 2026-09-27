@@ -34,7 +34,6 @@ class InventoryPageContent extends ConsumerWidget {
     required this.onFocusRequested,
     this.expandedPreparedMealId,
     this.includeHomeShellChrome = false,
-    this.emptyStateActionButton,
     super.key,
   });
 
@@ -55,9 +54,6 @@ class InventoryPageContent extends ConsumerWidget {
 
   /// Whether to render home-shell chrome.
   final bool includeHomeShellChrome;
-
-  /// Optional empty-state action.
-  final Widget? emptyStateActionButton;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -130,7 +126,6 @@ class InventoryPageContent extends ConsumerWidget {
       inventorySelectionFocusToken:
           mealEditCoordinator.inventorySelectionFocusToken,
       topChromeActions: topChromeActions,
-      emptyStateActionButton: emptyStateActionButton,
       onThrowAwayPreparedMeal: (mealId, portions, reason) =>
           mealsController.throwAwayPreparedMeal(
             mealId: mealId,

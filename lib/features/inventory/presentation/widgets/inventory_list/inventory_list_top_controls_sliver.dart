@@ -73,7 +73,7 @@ class InventoryListTopControlsSliver extends StatelessWidget {
           trailingActions: [
             _InventorySearchSettingsButton(
               enabled: enabled,
-              tooltip: l10n.inventoryFilterAction,
+              label: l10n.inventoryFilterSectionTitle,
               onPressed: onShowFilters,
             ),
           ],
@@ -83,48 +83,34 @@ class InventoryListTopControlsSliver extends StatelessWidget {
   }
 }
 
+/// Tonal "Filter" button next to the search field: its word says that it
+/// opens the view, sort and filter settings.
 class _InventorySearchSettingsButton extends StatelessWidget {
   const new({
     required this.enabled,
-    required this.tooltip,
+    required this.label,
     required this.onPressed,
   });
 
   final bool enabled;
-  final String tooltip;
+  final String label;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-
-    return SizedBox.square(
-      dimension: AppSizes.compactSearchControlHeight,
-      child: IconButton(
+    return SizedBox(
+      height: AppSizes.compactSearchControlHeight,
+      child: FilledButton.tonalIcon(
         key: const Key('inventory_list_search_settings_button'),
         onPressed: enabled ? onPressed : null,
-        tooltip: tooltip,
-        style: IconButton.styleFrom(
-          backgroundColor: colors.surfaceContainerHigh.withValues(
-            alpha: AppOpacities.compactSearchSurface,
-          ),
-          foregroundColor: colors.onSurfaceVariant.withValues(
-            alpha: AppOpacities.compactSearchSettingsForeground,
-          ),
-          disabledBackgroundColor: colors.surfaceContainerHigh.withValues(
-            alpha: AppOpacities.compactSearchDisabled,
-          ),
-          disabledForegroundColor: colors.onSurfaceVariant.withValues(
-            alpha: AppOpacities.compactSearchDisabled,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.lg),
-          ),
+        style: FilledButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
         ),
         icon: const Icon(
           Icons.tune_rounded,
           size: AppSizes.compactSearchSettingsIcon,
         ),
+        label: Text(label),
       ),
     );
   }

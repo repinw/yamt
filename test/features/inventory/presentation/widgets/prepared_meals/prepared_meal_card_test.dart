@@ -552,7 +552,7 @@ void main() {
     expect(find.text('1 INGREDIENT'), findsOneWidget);
   });
 
-  testWidgets('PreparedMealCard uses theme primary color for eat button', (
+  testWidgets('PreparedMealCard uses the tonal surface for the eat button', (
     tester,
   ) async {
     final theme = ThemeData(
@@ -585,7 +585,7 @@ void main() {
       find.byType(InventoryPrimaryActionButton),
     );
 
-    expect(button.enabledBackgroundColor, theme.colorScheme.primary);
+    expect(button.enabledBackgroundColor, theme.colorScheme.secondaryContainer);
     expect(button.useGradientWhenShowText, isFalse);
   });
 

@@ -22,10 +22,12 @@ class ReceiptScanFlowTestHarness {
     ReceiptCameraPicker? cameraPicker,
     ReceiptFilesPicker? filesPicker,
     ReceiptReviewLauncher? reviewLauncher,
+    bool isCameraSupported = true,
   }) {
     return ReceiptScanFlowCoordinator(
       receiptAi: fakeReceiptAi,
       resolver: fakeResolver,
+      isCameraSupported: isCameraSupported,
       cameraPicker: cameraPicker,
       filesPicker: filesPicker,
       reviewLauncher: reviewLauncher,

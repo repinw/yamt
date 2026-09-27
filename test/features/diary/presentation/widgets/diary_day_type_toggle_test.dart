@@ -64,9 +64,7 @@ void main() {
   };
 
   for (final MapEntry(key: day, value: (emoji, word)) in cases.entries) {
-    testWidgets('shows the emoji over the short name for $day', (
-      tester,
-    ) async {
+    testWidgets('shows the emoji over the short name for $day', (tester) async {
       await pumpToggle(tester, day);
       await tester.pump();
 

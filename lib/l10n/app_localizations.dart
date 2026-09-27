@@ -320,12 +320,6 @@ abstract class AppLocalizations {
   /// **'Quick action'**
   String get homeQuickActionTooltip;
 
-  /// No description provided for @inventoryFabTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Add product'**
-  String get inventoryFabTooltip;
-
   /// No description provided for @productSearchHubTitle.
   ///
   /// In en, this message translates to:
@@ -476,12 +470,6 @@ abstract class AppLocalizations {
   /// **'My inventory'**
   String get inventoryPageTitle;
 
-  /// No description provided for @inventoryActionCameraUnsupported.
-  ///
-  /// In en, this message translates to:
-  /// **'Camera is not supported on this platform.'**
-  String get inventoryActionCameraUnsupported;
-
   /// No description provided for @inventoryActionManualSearch.
   ///
   /// In en, this message translates to:
@@ -500,11 +488,47 @@ abstract class AppLocalizations {
   /// **'Upload image/PDF'**
   String get inventoryActionUploadImagePdf;
 
-  /// No description provided for @inventoryActionCamera.
+  /// No description provided for @inventoryDockAddAction.
   ///
   /// In en, this message translates to:
-  /// **'Camera'**
-  String get inventoryActionCamera;
+  /// **'Add'**
+  String get inventoryDockAddAction;
+
+  /// No description provided for @inventoryDockReceiptTool.
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get inventoryDockReceiptTool;
+
+  /// No description provided for @inventoryAddManualSearchDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a food by name or brand'**
+  String get inventoryAddManualSearchDescription;
+
+  /// No description provided for @inventoryAddAiDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe a food and the AI estimates its nutrition'**
+  String get inventoryAddAiDescription;
+
+  /// No description provided for @inventoryAddUploadDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Read a receipt from an image or PDF'**
+  String get inventoryAddUploadDescription;
+
+  /// No description provided for @inventoryReceiptPhotoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Photograph receipt'**
+  String get inventoryReceiptPhotoAction;
+
+  /// No description provided for @inventoryReceiptPhotoDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo of the receipt with the camera'**
+  String get inventoryReceiptPhotoDescription;
 
   /// No description provided for @inventorySharedReceiptConfirmTitle.
   ///
@@ -1059,12 +1083,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear search'**
   String get inventorySearchClearAction;
-
-  /// No description provided for @inventoryFilterAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter items'**
-  String get inventoryFilterAction;
 
   /// No description provided for @inventoryFiltersTitle.
   ///
@@ -4531,7 +4549,7 @@ abstract class AppLocalizations {
   /// No description provided for @diaryMealsEmptyHint.
   ///
   /// In en, this message translates to:
-  /// **'Log food below with the barcode, inventory, search, or AI.'**
+  /// **'Log food below from the inventory, search, AI, or barcode.'**
   String get diaryMealsEmptyHint;
 
   /// No description provided for @diaryBalanceEatenAmount.

@@ -47,8 +47,12 @@ class InventoryActionSheetFlow {
     );
   }
 
-  /// Scan receipt with camera using the rebuilt scanner flow.
-  static Future<void> scanCamera({
+  /// Whether the platform can take a photo of a receipt.
+  static bool canPhotographReceipt(WidgetRef ref) =>
+      ref.read(receiptScanFlowCoordinatorProvider).isCameraSupported;
+
+  /// Takes a photo of a receipt and reads it.
+  static Future<void> photographReceipt({
     required BuildContext context,
     required WidgetRef ref,
     required AppLocalizations l10n,

@@ -16,8 +16,6 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
-import 'package:yamt/features/home/widgets/'
-    'inventory_action_fab.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
@@ -429,7 +427,6 @@ Future<void> _pumpTestApp(
       builder: (context, state) {
         final page = InventoryPage(
           includeHomeShellChrome: includeHomeShellChrome,
-          emptyStateActionButton: const InventoryActionFab.embedded(),
         );
         if (shellBuilder == null) {
           return Scaffold(body: page);
@@ -499,7 +496,10 @@ const _usedUpShoppingListButton = Key(
 );
 
 Future<void> _openInventoryFilters(WidgetTester tester) async {
-  await _tapVisible(tester, find.byTooltip('Filter items'));
+  await _tapVisible(
+    tester,
+    find.byKey(const Key('inventory_list_search_settings_button')),
+  );
 }
 
 Future<void> _showInventoryFilterResults(WidgetTester tester) async {
@@ -550,19 +550,6 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.byType(InventoryActionFab), findsOneWidget);
-    expect(
-      find.byKey(const Key('inventory_empty_state_fab_highlight')),
-      findsOneWidget,
-    );
-    final highlightCenter = tester.getCenter(
-      find.byKey(const Key('inventory_empty_state_fab_highlight')),
-    );
-    final fabCenter = tester.getCenter(
-      find.byKey(const Key('inventory_action_fab_button')),
-    );
-    expect(fabCenter.dx, moreOrLessEquals(highlightCenter.dx));
-    expect(fabCenter.dy, moreOrLessEquals(highlightCenter.dy));
   });
 
   testWidgets('top bar history action opens the inventory timeline', (

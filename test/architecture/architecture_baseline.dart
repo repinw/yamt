@@ -65,8 +65,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/diary/presentation/widgets/diary_meal_group/diary_meal_portion_formatter.dart':
         1,
-    'lib/features/home/home_page.dart': 2,
-    'lib/features/home/widgets/inventory_action_fab.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 2,
     'lib/features/home_widget/presentation/controllers/home_widget_sync_controller.dart':
         1,
@@ -150,11 +148,7 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/home/home_page.dart': 1,
     'lib/features/home/widgets/home_context_fab.dart': 1,
     'lib/features/home/widgets/home_shell_chrome_visibility_controller.dart': 1,
-    'lib/features/home/widgets/inventory_action_fab.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,
-    'lib/features/home/widgets/inventory_expanded_fab_actions.dart': 1,
-    'lib/features/home/widgets/inventory_expanded_fab_menu.dart': 1,
-    'lib/features/home/widgets/inventory_fab_action_sheet_launcher.dart': 1,
     'lib/features/kitchen_utensils/provider/kitchen_utensil_image_url_provider.dart':
         1,
     'lib/features/onboarding/provider/calorie_goal_onboarding_completed_provider.dart':

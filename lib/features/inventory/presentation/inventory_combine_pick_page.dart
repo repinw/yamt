@@ -96,7 +96,6 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
           : InventoryList(
               items: widget.candidates,
               preparedMeals: const <PreparedMeal>[],
-              emptyStateActionButton: null,
               // Prepared meals are not listed here, so their actions never run.
               onThrowAwayPreparedMeal: (_, _, _) async => false,
               onFillPendingPreparedMealIngredient: (_, _, _) async => false,

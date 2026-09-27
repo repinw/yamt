@@ -17,11 +17,8 @@ import 'package:yamt/core/widgets/home_shell_more_scope.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_slide_menu.dart';
+import 'package:yamt/features/home/presentation/widgets/inventory_dock.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome_visibility_controller.dart';
-import 'package:yamt/features/home/widgets/'
-    'inventory_action_fab.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -155,9 +152,9 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final currentTab = _currentTab();
+    // Keeps floating snack bars above the tab's dock.
     final floatingActionButton = switch (currentTab) {
-      HomeTabType.inventory => _buildInventoryFab(ref),
-      // Keeps floating snack bars above the diary's quick-eat dock.
+      HomeTabType.inventory => const SizedBox(height: inventoryDockHeight),
       HomeTabType.diary => const SizedBox(height: diaryQuickEatDockHeight),
       HomeTabType.cookbook || HomeTabType.progress => null,
     };
@@ -202,6 +199,8 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
                         // it.
                         if (currentTab == HomeTabType.diary)
                           const DiaryQuickEatDock(),
+                        if (currentTab == HomeTabType.inventory)
+                          const InventoryDock(),
                         HomeBottomNavBar(entries: _navEntries(context, l10n)),
                       ],
                     ),
@@ -233,17 +232,5 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         },
       ),
     );
-  }
-
-  Widget? _buildInventoryFab(WidgetRef ref) {
-    final items = ref.watch(inventoryItemsControllerProvider).asData?.value;
-    final meals = ref.watch(preparedMealsControllerProvider).asData?.value;
-    if (items == null || meals == null) {
-      return null;
-    }
-    if (items.isEmpty && meals.isEmpty) {
-      return null;
-    }
-    return const InventoryActionFab();
   }
 }

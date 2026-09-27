@@ -92,7 +92,6 @@ Widget _buildInventoryListBody({
   return InventoryList(
     items: items,
     preparedMeals: preparedMeals,
-    emptyStateActionButton: const SizedBox.shrink(),
     onThrowAwayPreparedMeal: (mealId, portions, reason) async => true,
     onFillPendingPreparedMealIngredient: (
       mealId,

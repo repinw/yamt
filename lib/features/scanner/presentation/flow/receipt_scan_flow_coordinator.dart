@@ -13,6 +13,7 @@ import 'package:yamt/features/scanner/domain/contracts/receipt_product_resolver.
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
+import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 part 'receipt_scan_flow_coordinator.g.dart';
@@ -35,6 +36,7 @@ ReceiptScanFlowCoordinator receiptScanFlowCoordinator(Ref ref) {
   return ReceiptScanFlowCoordinator(
     receiptAi: ref.watch(receiptAiRepositoryProvider),
     resolver: ref.watch(receiptProductResolverProvider),
+    isCameraSupported: ref.watch(receiptCameraSupportedProvider),
   );
 }
 
@@ -45,6 +47,7 @@ class ReceiptScanFlowCoordinator {
   new({
     required this._receiptAi,
     required this._resolver,
+    this.isCameraSupported = true,
     ReceiptCameraPicker? cameraPicker,
     ReceiptFilesPicker? filesPicker,
     ReceiptReviewLauncher? reviewLauncher,
@@ -57,6 +60,9 @@ class ReceiptScanFlowCoordinator {
   final ReceiptCameraPicker _cameraPicker;
   final ReceiptFilesPicker _filesPicker;
   final ReceiptReviewLauncher _reviewLauncher;
+
+  /// Whether the platform can take a photo of a receipt.
+  final bool isCameraSupported;
 
   /// Starts the camera flow to take a photo of a receipt.
   ///

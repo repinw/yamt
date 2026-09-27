@@ -6,7 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
-import 'package:yamt/features/home/widgets/inventory_action_fab.dart';
+import 'package:yamt/features/home/presentation/widgets/inventory_dock.dart';
 import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -28,7 +28,7 @@ Widget _buildHarness({required FakeReceiptAiRepository fakeReceiptAi}) {
       GoRoute(
         path: AppRoutes.root,
         builder: (context, state) =>
-            const Scaffold(floatingActionButton: InventoryActionFab()),
+            const Scaffold(bottomNavigationBar: InventoryDock()),
       ),
       GoRoute(
         path: AppRoutes.homeInventoryReceiptReview,
@@ -86,7 +86,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
-  testWidgets('camera receipt flow from expanded FAB opens review page', (
+  testWidgets('camera receipt flow from the dock opens review page', (
     tester,
   ) async {
     final fakeReceiptAi = FakeReceiptAiRepository()
@@ -101,13 +101,9 @@ void main() {
     await tester.pumpWidget(_buildHarness(fakeReceiptAi: fakeReceiptAi));
     await _pumpVisibleStep(tester);
 
-    await tester.tap(find.byKey(const Key('inventory_action_fab_button')));
-    await _pumpVisibleStep(tester);
-
-    final cameraAction = find.byKey(const Key('inventory_action_camera_fab'));
-    expect(cameraAction, findsOneWidget);
-
-    await tester.tap(cameraAction);
+    await tester.tap(find.byKey(InventoryDock.receiptKey));
+    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+    await tester.tap(find.byKey(InventoryDock.receiptPhotoKey));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
 
     expect(find.byType(ReceiptReviewPage), findsOneWidget);

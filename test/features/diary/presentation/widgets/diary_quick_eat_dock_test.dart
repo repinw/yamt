@@ -35,9 +35,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('shows a titled barcode button and three icon buttons', (
-    tester,
-  ) async {
+  testWidgets('shows four equal tools, each with its word', (tester) async {
     await pumpDock(tester, theme: AppTheme.dark());
 
     for (final source in DiaryQuickEatSource.values) {
@@ -46,28 +44,16 @@ void main() {
         findsOneWidget,
       );
     }
-    expect(find.text('Barcode'), findsOneWidget);
-    expect(find.byTooltip('Vorrat'), findsOneWidget);
-    expect(find.byTooltip('Suche'), findsOneWidget);
-    expect(find.byTooltip('KI'), findsOneWidget);
-    expect(
-      tester
-          .getSize(
-            find.byKey(
-              DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.barcode),
-            ),
-          )
-          .width,
-      greaterThan(
+    for (final word in ['VORRAT', 'SUCHE', 'KI', 'BARCODE']) {
+      expect(find.text(word), findsOneWidget);
+    }
+    final widths = {
+      for (final source in DiaryQuickEatSource.values)
         tester
-            .getSize(
-              find.byKey(
-                DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.ai),
-              ),
-            )
+            .getSize(find.byKey(DiaryMealsSectionKeys.quickEatSource(source)))
             .width,
-      ),
-    );
+    };
+    expect(widths, hasLength(1));
   });
 
   testWidgets('fits its declared height in light mode', (tester) async {

@@ -37,9 +37,8 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
+import 'package:yamt/features/home/presentation/widgets/inventory_dock.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
-import 'package:yamt/features/home/widgets/'
-    'inventory_action_fab.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -182,7 +181,7 @@ class _DummyReceiptResolver implements ReceiptProductResolver {
 }
 
 class _RecordingReceiptScanFlowCoordinator extends ReceiptScanFlowCoordinator {
-  new()
+  new({super.isCameraSupported})
     : super(
         receiptAi: ReceiptAiRepository(
           templateClient: (_) => throw UnimplementedError(),
@@ -1306,7 +1305,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('inventory tab hides shell fab when inventory is empty', (
+  testWidgets('inventory tab shows the dock when inventory is empty', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1321,7 +1320,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryActionFab), findsNothing);
+    expect(find.byType(InventoryDock), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
@@ -1417,7 +1416,13 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Add ingredient'), findsOneWidget);
-    expect(find.byIcon(Icons.add_rounded), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(HomeShellTabTopChrome),
+        matching: find.byIcon(Icons.add_rounded),
+      ),
+      findsOneWidget,
+    );
 
     await tester.tap(find.text('Add ingredient'));
     await tester.pumpAndSettle();
@@ -1428,7 +1433,7 @@ void main() {
     );
   });
 
-  testWidgets('inventory tab hides shell fab while inventory is loading', (
+  testWidgets('inventory tab shows the dock while inventory is loading', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1444,11 +1449,11 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(InventoryActionFab), findsNothing);
+    expect(find.byType(InventoryDock), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets('inventory tab shows shell fab when inventory and meals exist', (
+  testWidgets('inventory tab shows the dock when inventory and meals exist', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1468,10 +1473,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryActionFab), findsOneWidget);
+    expect(find.byType(InventoryDock), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
     final scaffoldFinder = find.ancestor(
-      of: find.byType(InventoryActionFab),
+      of: find.byType(InventoryDock),
       matching: find.byType(Scaffold),
     );
     final scaffold = tester.widget<Scaffold>(scaffoldFinder.first);
@@ -1481,7 +1486,7 @@ void main() {
     );
   });
 
-  testWidgets('inventory fab follows the bottom chrome while scrolling', (
+  testWidgets('inventory dock follows the bottom chrome while scrolling', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
@@ -1512,33 +1517,29 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final initialFabTop = tester.getTopLeft(find.byType(InventoryActionFab)).dy;
+    final initialDockTop = tester.getTopLeft(find.byType(InventoryDock)).dy;
 
     await tester.drag(find.text('Row 5'), const Offset(0, -220));
     await tester.pump();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 120));
 
-    final collapsedFabTop = tester
-        .getTopLeft(find.byType(InventoryActionFab))
-        .dy;
+    final collapsedDockTop = tester.getTopLeft(find.byType(InventoryDock)).dy;
 
-    expect(collapsedFabTop, greaterThan(initialFabTop));
+    expect(collapsedDockTop, greaterThan(initialDockTop));
 
     await tester.drag(find.text('Row 8'), const Offset(0, 240));
     await tester.pump();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 120));
 
-    final revealedFabTop = tester
-        .getTopLeft(find.byType(InventoryActionFab))
-        .dy;
+    final revealedDockTop = tester.getTopLeft(find.byType(InventoryDock)).dy;
 
-    expect(revealedFabTop, lessThan(collapsedFabTop));
+    expect(revealedDockTop, lessThan(collapsedDockTop));
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('inventory fab disappears immediately after leaving inventory', (
+  testWidgets('inventory dock disappears immediately after leaving inventory', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1555,15 +1556,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryActionFab), findsOneWidget);
+    expect(find.byType(InventoryDock), findsOneWidget);
 
     await tester.tap(find.text('DIARY'));
     await tester.pump();
 
-    expect(find.byType(InventoryActionFab), findsNothing);
+    expect(find.byType(InventoryDock), findsNothing);
   });
 
-  testWidgets('inventory tab shows shell fab when only inventory items exist', (
+  testWidgets('inventory tab shows the dock when only inventory items exist', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1580,11 +1581,13 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryActionFab), findsOneWidget);
+    expect(find.byType(InventoryDock), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
   });
 
-  testWidgets('inventory snackbar lays out with inventory fab', (tester) async {
+  testWidgets('inventory snackbar lays out with the inventory dock', (
+    tester,
+  ) async {
     await tester.binding.setSurfaceSize(const Size(384, 832));
     addTearDown(() => tester.binding.setSurfaceSize(null));
 
@@ -1622,9 +1625,9 @@ void main() {
   });
 
   for (final (label, location, inventoryItems) in [
-    ('diary tab without fab', AppRoutes.homeDiary, <InventoryItem>[]),
+    ('diary tab with dock', AppRoutes.homeDiary, <InventoryItem>[]),
     (
-      'inventory tab with fab',
+      'inventory tab with dock',
       AppRoutes.homeInventory,
       <InventoryItem>[_inventoryItem('item-1')],
     ),
@@ -1654,7 +1657,7 @@ void main() {
     });
   }
 
-  testWidgets('inventory shell fab opens requested add actions', (
+  testWidgets('inventory dock opens the add sheet and shows its tools', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1673,14 +1676,15 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    expect(find.text('BARCODE'), findsOneWidget);
+    expect(find.text('RECEIPT'), findsOneWidget);
+
     await tester.tap(find.byIcon(Icons.add_rounded));
     await tester.pumpAndSettle();
 
     expect(find.text('Manual search'), findsOneWidget);
-    expect(find.text('Barcode'), findsOneWidget);
     expect(find.text('AI suggestion'), findsOneWidget);
-    expect(find.text('Upload image/PDF'), findsOneWidget);
-    expect(find.text('Camera'), findsOneWidget);
+    expect(find.text('Upload image/PDF'), findsNothing);
 
     await tester.tap(find.text('Manual search'));
     await tester.pumpAndSettle();
@@ -1690,7 +1694,7 @@ void main() {
     expect(args.initialIntent, ProductSearchHubInitialIntent.search);
   });
 
-  testWidgets('inventory shell fab opens ai suggestion route', (tester) async {
+  testWidgets('inventory add sheet opens ai suggestion route', (tester) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     Object? hubRouteExtra;
@@ -1717,7 +1721,7 @@ void main() {
     expect(args.initialIntent, ProductSearchHubInitialIntent.ai);
   });
 
-  testWidgets('inventory shell fab starts upload flow', (tester) async {
+  testWidgets('inventory receipt sheet starts upload flow', (tester) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     final coordinator = _RecordingReceiptScanFlowCoordinator();
@@ -1734,15 +1738,16 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.text('RECEIPT'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Upload image/PDF'));
     await tester.pumpAndSettle();
 
+    expect(coordinator.cameraFlowCallCount, 0);
     expect(coordinator.filePickerFlowCallCount, 1);
   });
 
-  testWidgets('inventory shell fab starts camera flow when enabled', (
+  testWidgets('inventory receipt sheet takes a photo with a camera', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1762,20 +1767,22 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.text('RECEIPT'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Camera'));
+    await tester.tap(find.text('Photograph receipt'));
     await tester.pumpAndSettle();
 
     expect(coordinator.cameraFlowCallCount, 1);
   });
 
-  testWidgets('inventory shell fab disables camera when unsupported', (
+  testWidgets('inventory receipt tool picks a file without a camera', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
-    final coordinator = _RecordingReceiptScanFlowCoordinator();
+    final coordinator = _RecordingReceiptScanFlowCoordinator(
+      isCameraSupported: false,
+    );
 
     await tester.pumpWidget(
       _buildHarness(
@@ -1790,15 +1797,14 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Camera'));
+    await tester.tap(find.text('RECEIPT'));
     await tester.pumpAndSettle();
 
     expect(coordinator.cameraFlowCallCount, 0);
+    expect(coordinator.filePickerFlowCallCount, 1);
   });
 
-  testWidgets('inventory tab shows shell fab when only prepared meals exist', (
+  testWidgets('inventory tab shows the dock when only prepared meals exist', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1815,7 +1821,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryActionFab), findsOneWidget);
+    expect(find.byType(InventoryDock), findsOneWidget);
     expect(find.byType(HomeContextFab), findsNothing);
   });
 

@@ -12,7 +12,6 @@ class InventoryPageListContent extends StatelessWidget {
   const new({
     required this.items,
     required this.preparedMeals,
-    required this.emptyStateActionButton,
     required this.onThrowAwayPreparedMeal,
     required this.onFillPendingPreparedMealIngredient,
     required this.onIgnorePendingPreparedMealIngredient,
@@ -48,9 +47,6 @@ class InventoryPageListContent extends StatelessWidget {
 
   /// Home-shell actions.
   final List<Widget> topChromeActions;
-
-  /// Empty-state action.
-  final Widget? emptyStateActionButton;
 
   /// Prepared meal discard callback.
   final PreparedMealDiscardCallback onThrowAwayPreparedMeal;
@@ -96,7 +92,6 @@ class InventoryPageListContent extends StatelessWidget {
       includeHomeShellChrome: includeHomeShellChrome,
       inventorySelectionFocusToken: inventorySelectionFocusToken,
       topChromeActions: topChromeActions,
-      emptyStateActionButton: emptyStateActionButton,
       onThrowAwayPreparedMeal: onThrowAwayPreparedMeal,
       onFillPendingPreparedMealIngredient: onFillPendingPreparedMealIngredient,
       onIgnorePendingPreparedMealIngredient:

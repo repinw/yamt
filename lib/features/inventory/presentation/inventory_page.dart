@@ -14,7 +14,6 @@ class InventoryPage extends ConsumerStatefulWidget {
     super.key,
     this.expandedPreparedMealId,
     this.includeHomeShellChrome = false,
-    this.emptyStateActionButton,
   });
 
   /// The expanded prepared meal id.
@@ -22,9 +21,6 @@ class InventoryPage extends ConsumerStatefulWidget {
 
   /// Whether to render the shared home shell app bar as a sliver.
   final bool includeHomeShellChrome;
-
-  /// Optional action button rendered by the embedding shell.
-  final Widget? emptyStateActionButton;
 
   @override
   ConsumerState<InventoryPage> createState() => _InventoryPageState();
@@ -43,7 +39,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       onFocusRequested: () => setState(() {}),
       expandedPreparedMealId: widget.expandedPreparedMealId,
       includeHomeShellChrome: widget.includeHomeShellChrome,
-      emptyStateActionButton: widget.emptyStateActionButton,
     );
   }
 

@@ -74,14 +74,16 @@ class PreparedMealPrimaryActionButton extends StatelessWidget {
       label: label,
       width: AppInventoryClosedTile.actionWidth,
       height: AppInventoryClosedTile.actionHeight,
-      enabledBackgroundColor: colors.primary,
+      // Tonal like every secondary action: the Vorrat's one lime button is
+      // "Hinzufügen" in the dock.
+      enabledBackgroundColor: colors.secondaryContainer,
       disabledBackgroundColor: colors.surfaceContainerLow,
-      enabledBorderColor: colors.primary,
+      enabledBorderColor: colors.secondaryContainer,
       disabledBorderColor: colors.outlineVariant,
-      enabledForegroundColor: colors.onPrimary,
+      enabledForegroundColor: colors.onSecondaryContainer,
       disabledForegroundColor: colors.onSurfaceVariant,
       useGradientWhenShowText: false,
-      borderRadius: AppRadius.lg,
+      borderRadius: AppRadius.md,
     );
   }
 }

@@ -146,9 +146,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeQuickActionTooltip => 'Schnellaktion';
 
   @override
-  String get inventoryFabTooltip => 'Produkt hinzufügen';
-
-  @override
   String get productSearchHubTitle => 'Produkt hinzufügen';
 
   @override
@@ -230,10 +227,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryPageTitle => 'Mein Vorrat';
 
   @override
-  String get inventoryActionCameraUnsupported =>
-      'Kamera wird auf dieser Plattform nicht unterstützt.';
-
-  @override
   String get inventoryActionManualSearch => 'Manuelle Suche';
 
   @override
@@ -243,7 +236,29 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryActionUploadImagePdf => 'Bild/PDF hochladen';
 
   @override
-  String get inventoryActionCamera => 'Kamera';
+  String get inventoryDockAddAction => 'Hinzufügen';
+
+  @override
+  String get inventoryDockReceiptTool => 'Bon';
+
+  @override
+  String get inventoryAddManualSearchDescription =>
+      'Lebensmittel nach Name oder Marke finden';
+
+  @override
+  String get inventoryAddAiDescription =>
+      'Beschreib ein Lebensmittel, die KI schätzt die Nährwerte';
+
+  @override
+  String get inventoryAddUploadDescription =>
+      'Einen Bon als Bild oder PDF einlesen';
+
+  @override
+  String get inventoryReceiptPhotoAction => 'Bon fotografieren';
+
+  @override
+  String get inventoryReceiptPhotoDescription =>
+      'Den Kassenbon mit der Kamera aufnehmen';
 
   @override
   String get inventorySharedReceiptConfirmTitle => 'Geteilten Beleg scannen?';
@@ -580,9 +595,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventorySearchClearAction => 'Suche leeren';
-
-  @override
-  String get inventoryFilterAction => 'Artikel filtern';
 
   @override
   String get inventoryFiltersTitle => 'Ansicht anpassen';
@@ -2611,7 +2623,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryMealsEmptyHint =>
-      'Unten per Barcode, Vorrat, Suche oder KI eintragen.';
+      'Unten per Vorrat, Suche, KI oder Barcode eintragen.';
 
   @override
   String diaryBalanceEatenAmount(String kcal) {

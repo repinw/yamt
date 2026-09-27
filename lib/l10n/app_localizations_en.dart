@@ -144,9 +144,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeQuickActionTooltip => 'Quick action';
 
   @override
-  String get inventoryFabTooltip => 'Add product';
-
-  @override
   String get productSearchHubTitle => 'Add product';
 
   @override
@@ -227,10 +224,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryPageTitle => 'My inventory';
 
   @override
-  String get inventoryActionCameraUnsupported =>
-      'Camera is not supported on this platform.';
-
-  @override
   String get inventoryActionManualSearch => 'Manual search';
 
   @override
@@ -240,7 +233,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryActionUploadImagePdf => 'Upload image/PDF';
 
   @override
-  String get inventoryActionCamera => 'Camera';
+  String get inventoryDockAddAction => 'Add';
+
+  @override
+  String get inventoryDockReceiptTool => 'Receipt';
+
+  @override
+  String get inventoryAddManualSearchDescription =>
+      'Find a food by name or brand';
+
+  @override
+  String get inventoryAddAiDescription =>
+      'Describe a food and the AI estimates its nutrition';
+
+  @override
+  String get inventoryAddUploadDescription =>
+      'Read a receipt from an image or PDF';
+
+  @override
+  String get inventoryReceiptPhotoAction => 'Photograph receipt';
+
+  @override
+  String get inventoryReceiptPhotoDescription =>
+      'Take a photo of the receipt with the camera';
 
   @override
   String get inventorySharedReceiptConfirmTitle => 'Scan shared receipt?';
@@ -572,9 +587,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventorySearchClearAction => 'Clear search';
-
-  @override
-  String get inventoryFilterAction => 'Filter items';
 
   @override
   String get inventoryFiltersTitle => 'Adjust view';
@@ -2556,7 +2568,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryMealsEmptyHint =>
-      'Log food below with the barcode, inventory, search, or AI.';
+      'Log food below from the inventory, search, AI, or barcode.';
 
   @override
   String diaryBalanceEatenAmount(String kcal) {

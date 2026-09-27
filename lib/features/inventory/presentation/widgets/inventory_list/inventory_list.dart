@@ -52,7 +52,6 @@ class InventoryList extends ConsumerStatefulWidget {
   const new({
     required this.items,
     required this.preparedMeals,
-    required this.emptyStateActionButton,
     required this.onThrowAwayPreparedMeal,
     required this.onFillPendingPreparedMealIngredient,
     required this.onIgnorePendingPreparedMealIngredient,
@@ -88,9 +87,6 @@ class InventoryList extends ConsumerStatefulWidget {
 
   /// Actions rendered in home shell chrome.
   final List<Widget> topChromeActions;
-
-  /// The empty state action button.
-  final Widget? emptyStateActionButton;
 
   /// The on throw away prepared meal.
   final PreparedMealDiscardCallback onThrowAwayPreparedMeal;
@@ -518,10 +514,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
         padding: AppInsets.pageLarge,
         child: Align(
           alignment: Alignment.topCenter,
-          child: InventoryEmptyState(
-            message: message,
-            actionButton: widget.emptyStateActionButton,
-          ),
+          child: InventoryEmptyState(message: message),
         ),
       ),
     );

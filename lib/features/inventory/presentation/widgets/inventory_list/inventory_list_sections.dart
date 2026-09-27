@@ -548,10 +548,7 @@ class InventorySectionExpandButton extends StatelessWidget {
 /// Defines inventory empty state.
 class InventoryEmptyState extends StatelessWidget {
   /// The inventory empty state.
-  const new({super.key, this.actionButton, this.message});
-
-  /// The action button.
-  final Widget? actionButton;
+  const new({super.key, this.message});
 
   /// The message.
   final String? message;
@@ -574,56 +571,11 @@ class InventoryEmptyState extends StatelessWidget {
           horizontal: AppSpacing.xxxl,
           vertical: AppSpacing.xxxxl,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (actionButton != null) ...[
-              _InventoryEmptyStateHighlightedAction(child: actionButton!),
-              const SizedBox(height: AppSpacing.xxl),
-            ],
-            Text(
-              emptyStateMessage,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
+        child: Text(
+          emptyStateMessage,
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
-      ),
-    );
-  }
-}
-
-class _InventoryEmptyStateHighlightedAction extends StatelessWidget {
-  const new({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final isLightTheme = Theme.of(context).brightness == Brightness.light;
-    final haloColor = isLightTheme
-        ? colors.shadow.withValues(alpha: 0.08)
-        : colors.primary.withValues(alpha: 0.12);
-    final haloShadowColor = isLightTheme
-        ? colors.shadow.withValues(alpha: 0.18)
-        : colors.primary.withValues(alpha: 0.28);
-
-    return SizedBox.square(
-      key: const Key('inventory_empty_state_fab_highlight'),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          DecoratedBox(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: haloColor,
-              boxShadow: [BoxShadow(color: haloShadowColor)],
-            ),
-            child: const SizedBox.square(),
-          ),
-          child,
-        ],
       ),
     );
   }

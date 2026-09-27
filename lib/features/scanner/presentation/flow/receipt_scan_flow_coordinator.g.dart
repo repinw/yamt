@@ -60,4 +60,4 @@ final class ReceiptScanFlowCoordinatorProvider
 }
 
 String _$receiptScanFlowCoordinatorHash() =>
-    r'ab7b084ab68e910445f5ec6c13ab600addf30b94';
+    r'578014ca4215b734e2720b05c6e6c3cb7e06edcf';
