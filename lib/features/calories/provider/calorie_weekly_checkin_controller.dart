@@ -121,6 +121,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       calculation: calculation,
       lowConfidence: checkInData.lowConfidence,
       inputHash: checkInData.inputHash,
+      macroWeightKg: checkInData.macroWeightKg,
     );
     final settings = await ref
         .read(calorieSettingsRepositoryProvider)
@@ -238,6 +239,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       calculation: calculation,
       lowConfidence: checkInData.lowConfidence,
       inputHash: checkInData.inputHash,
+      macroWeightKg: checkInData.macroWeightKg,
     ).copyWith(isRejected: true);
 
     final savedGoal = await goalController.saveWeeklyCheckInGoal(
@@ -355,6 +357,10 @@ bool _hasMatchingWeeklyCheckInSnapshot({
           snapshot.baseGoalKcal,
           weeklyCheckInSnapshot.baseGoalKcal,
         ) &&
+        _sameDouble(
+          snapshot.macroWeightKg,
+          weeklyCheckInSnapshot.macroWeightKg,
+        ) &&
         snapshot.inputHash == weeklyCheckInSnapshot.inputHash &&
         snapshot.invalidatedAt == weeklyCheckInSnapshot.invalidatedAt;
     if (!matches) {
@@ -384,6 +390,7 @@ CalorieGoalWeeklyCheckInSnapshot _weeklyCheckInSnapshot({
   required CalorieWeeklyCheckInCalculation calculation,
   required bool lowConfidence,
   required String? inputHash,
+  required double? macroWeightKg,
 }) {
   return CalorieGoalWeeklyCheckInSnapshot(
     windowStartDate: weeklyCheckIn.windowStartDate,
@@ -394,5 +401,6 @@ CalorieGoalWeeklyCheckInSnapshot _weeklyCheckInSnapshot({
     baseGoalKcal: calculation.newBaseGoalKcal,
     lowConfidence: lowConfidence,
     inputHash: inputHash,
+    macroWeightKg: macroWeightKg,
   );
 }

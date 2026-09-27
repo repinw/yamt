@@ -106,6 +106,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   realistic targets. Those users see the adjusted weight and a medical
   disclaimer on the onboarding summary and in the macro settings. No training
   days are preset.
+- The body weight for the protein and fat targets follows the user week by
+  week. Each 7-day check-in saves the trend weight of its last day, also when
+  the user keeps the old calorie goal, and a new calculated goal saves its
+  start weight. A day uses the latest of these on or before it, so the macros
+  stay fixed within a week and past days keep their targets.
 - Inventory-backed delete/restore behavior for entries created from stock.
 
 ## Activity And Weight

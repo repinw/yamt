@@ -88,6 +88,7 @@ class CalorieWeeklyCheckInData {
     required this.lowConfidence,
     this.cacheWeeklyCheckIn,
     this.inputHash,
+    this.macroWeightKg,
   });
 
   /// The pending weekly check in.
@@ -125,6 +126,10 @@ class CalorieWeeklyCheckInData {
 
   /// Stable hash for inputs used by [calculation].
   final String? inputHash;
+
+  /// Trend weight at the end of the window, saved with the check-in for the
+  /// macro targets.
+  final double? macroWeightKg;
 
   /// Whether pending.
   bool get hasPending => pendingWeeklyCheckIn != null;

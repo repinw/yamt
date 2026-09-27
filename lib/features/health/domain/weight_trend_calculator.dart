@@ -32,6 +32,18 @@ class DailyWeightSeries {
   /// Trend weight for [day], when it lies between two weigh-ins.
   double? trendFor(DateTime day) => trendByDay[localDayKey(day)];
 
+  /// Trend weight on [day], or on the last weigh-in before [day].
+  ///
+  /// Returns `null` when no weigh-in lies on or before [day].
+  double? trendOnOrBefore(DateTime day) {
+    final last = lastDay;
+    if (last == null) {
+      return null;
+    }
+    final normalizedDay = normalizeLocalDay(day);
+    return trendFor(normalizedDay.isAfter(last) ? last : normalizedDay);
+  }
+
   /// Trend slope in kg per day over the [windowDays] days up to [endDay].
   ///
   /// [endDay] defaults to the last weigh-in. Days before [notBefore] are left

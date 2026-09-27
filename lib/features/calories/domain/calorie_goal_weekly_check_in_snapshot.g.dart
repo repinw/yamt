@@ -33,6 +33,7 @@ CalorieGoalWeeklyCheckInSnapshot _$CalorieGoalWeeklyCheckInSnapshotFromJson(
     json['invalidated_at'],
   ),
   isRejected: json['is_rejected'] as bool? ?? false,
+  macroWeightKg: (json['macro_weight_kg'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$CalorieGoalWeeklyCheckInSnapshotToJson(
@@ -62,4 +63,5 @@ Map<String, dynamic> _$CalorieGoalWeeklyCheckInSnapshotToJson(
     instance.invalidatedAt,
   ),
   'is_rejected': instance.isRejected,
+  'macro_weight_kg': instance.macroWeightKg,
 };

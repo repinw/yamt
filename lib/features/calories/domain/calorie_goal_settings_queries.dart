@@ -84,6 +84,27 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
     return resolvedEntry;
   }
 
+  /// Body weight that the macro targets of [day] use.
+  ///
+  /// The weight changes only at two moments: a weekly check-in saves the trend
+  /// weight at the end of its window, and a new calculated goal saves its start
+  /// weight. The latest of these on or before [day] wins. Without one, the
+  /// current calculator profile weight applies.
+  double? macroWeightKgForDay(DateTime day) {
+    final normalizedDay = normalizeDiaryDay(day);
+    double? weightKg;
+    for (final entry in sortedGoalHistory) {
+      if (entry.effectiveDate.isAfter(normalizedDay)) {
+        break;
+      }
+      weightKg =
+          entry.weeklyCheckInSnapshot?.macroWeightKg ??
+          entry.calculatorProfile?.weightKg ??
+          weightKg;
+    }
+    return weightKg ?? calculatorProfile?.weightKg;
+  }
+
   /// Active goal entry for day.
   CalorieGoalHistoryEntry? activeGoalEntryForDay(DateTime day) {
     final entry = goalEntryForDay(day);

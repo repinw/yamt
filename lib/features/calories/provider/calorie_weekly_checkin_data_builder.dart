@@ -117,6 +117,7 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(Ref ref) async {
     latestLearnedTdeeAt: settings.latestLearnedTdeeChangedAt,
     lowConfidence: dayData.lowConfidence,
     inputHash: dayData.inputHash,
+    macroWeightKg: dayData.macroWeightKg,
   );
 }
 
@@ -284,5 +285,8 @@ Future<CalorieWeeklyCheckInDayData> _loadWindowDayData({
     missingWeightDays: const <DateTime>[],
     lowConfidence: weightData.weightPoints.length <= 2,
     inputHash: inputHash,
+    macroWeightKg: weightSeries.trendOnOrBefore(
+      pendingWeeklyCheckIn.windowEndDate,
+    ),
   );
 }

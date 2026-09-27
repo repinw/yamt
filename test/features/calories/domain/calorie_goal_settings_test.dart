@@ -1,11 +1,13 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 
 void main() {
   test('empty settings have no goal', () {
@@ -407,4 +409,83 @@ void main() {
       expect(archived.goalHistory, hasLength(2));
     },
   );
+
+  group('macroWeightKgForDay', () {
+    const profile = CalorieCalculatorProfile(
+      sex: CalorieCalculatorSex.male,
+      weightKg: 90,
+      heightCm: 185,
+      ageYears: 30,
+      activityLevel: 1.375,
+      goalMode: CalorieGoalMode.lose,
+      goalSpeedKgPerWeek: 0.5,
+    );
+
+    CalorieGoalHistoryEntry checkIn(DateTime day, double? macroWeightKg) {
+      return CalorieGoalHistoryEntry(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: day,
+        changedAt: day,
+        source: CalorieGoalSource.weeklyCheckIn,
+        weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+          windowStartDate: day.subtract(const Duration(days: 7)),
+          windowEndDate: day.subtract(const Duration(days: 1)),
+          trendWeightChangePerDay: -0.07,
+          lowConfidence: false,
+          macroWeightKg: macroWeightKg,
+        ),
+      );
+    }
+
+    final settings = const CalorieGoalSettings.empty().copyWith(
+      calculatorProfile: profile.copyWith(weightKg: 86),
+      goalHistory: [
+        CalorieGoalHistoryEntry(
+          dailyKcalGoal: 2300,
+          calculatorProfile: profile,
+          effectiveDate: DateTime(2026, 9),
+          changedAt: DateTime(2026, 9),
+          source: CalorieGoalSource.calculator,
+        ),
+        checkIn(DateTime(2026, 9, 8), 89.2),
+        CalorieGoalHistoryEntry(
+          dailyKcalGoal: 2100,
+          calculatorProfile: null,
+          effectiveDate: DateTime(2026, 9, 10),
+          changedAt: DateTime(2026, 9, 10),
+        ),
+        checkIn(DateTime(2026, 9, 15), null),
+        CalorieGoalHistoryEntry(
+          dailyKcalGoal: 2250,
+          calculatorProfile: profile.copyWith(weightKg: 86),
+          effectiveDate: DateTime(2026, 9, 20),
+          changedAt: DateTime(2026, 9, 20),
+          source: CalorieGoalSource.calculator,
+        ),
+      ],
+    );
+
+    test('uses the start weight of a calculated goal', () {
+      expect(settings.macroWeightKgForDay(DateTime(2026, 9, 7)), 90);
+    });
+
+    test('moves to the weight of each weekly check-in', () {
+      expect(settings.macroWeightKgForDay(DateTime(2026, 9, 8)), 89.2);
+    });
+
+    test('keeps the weight through manual goals and check-ins without '
+        'one', () {
+      expect(settings.macroWeightKgForDay(DateTime(2026, 9, 12)), 89.2);
+      expect(settings.macroWeightKgForDay(DateTime(2026, 9, 16)), 89.2);
+    });
+
+    test('resets to the start weight of a new goal', () {
+      expect(settings.macroWeightKgForDay(DateTime(2026, 9, 21)), 86);
+    });
+
+    test('falls back to the profile weight before any entry', () {
+      expect(settings.macroWeightKgForDay(DateTime(2026, 8, 20)), 86);
+    });
+  });
 }

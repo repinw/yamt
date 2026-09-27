@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/calories/domain/macro_reference_weight.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
@@ -75,18 +77,6 @@ class _SettingsMacroGoalsSheetState
     return (sex ?? CalorieCalculatorSex.male) == CalorieCalculatorSex.male;
   }
 
-  double _resolveWeightKg(bool isMale) {
-    final goalSettings = ref.read(calorieGoalControllerProvider).value;
-    final profile = goalSettings?.calculatorProfile;
-    if (profile == null) {
-      return isMale ? 80.0 : 65.0;
-    }
-    return macroReferenceWeightKg(
-      weightKg: profile.weightKg,
-      heightCm: profile.heightCm,
-    );
-  }
-
   double _resolveGoalKcal() {
     final goalSettings = ref.read(calorieGoalControllerProvider).value;
     final dailyKcal = goalSettings?.dailyKcalGoal;
@@ -151,16 +141,27 @@ class _SettingsMacroGoalsSheetState
     final colors = Theme.of(context).colorScheme;
     final accents = MetricAccentColors.of(context);
     final isMale = _resolveIsMale();
-    final weightKg = _resolveWeightKg(isMale);
+    final today = ref.watch(clockProvider)();
     final profile = ref.watch(
       calorieGoalControllerProvider.select(
         (state) => state.value?.calculatorProfile,
       ),
     );
-    final adjustedWeightKg = profile == null
+    final macroWeightKg = ref.watch(
+      calorieGoalControllerProvider.select(
+        (state) => state.value?.macroWeightKgForDay(today),
+      ),
+    );
+    final weightKg = profile == null || macroWeightKg == null
+        ? (isMale ? 80.0 : 65.0)
+        : macroReferenceWeightKg(
+            weightKg: macroWeightKg,
+            heightCm: profile.heightCm,
+          );
+    final adjustedWeightKg = profile == null || macroWeightKg == null
         ? null
         : macroAdjustedWeightKg(
-            weightKg: profile.weightKg,
+            weightKg: macroWeightKg,
             heightCm: profile.heightCm,
           );
     final goalKcal = _resolveGoalKcal();

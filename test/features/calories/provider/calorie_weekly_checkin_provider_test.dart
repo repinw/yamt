@@ -171,6 +171,8 @@ void main() {
     );
     expect(checkInData.lowConfidence, isTrue);
     expect(checkInData.calculation?.newGoalKcal, greaterThan(0));
+    // Trend weight on the window end: 82 kg easing towards 81.4 kg.
+    expect(checkInData.macroWeightKg, closeTo(81.8217, 0.0001));
   });
 
   test(

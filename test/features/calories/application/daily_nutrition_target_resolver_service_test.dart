@@ -1,7 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 
 void main() {
@@ -33,6 +36,64 @@ void main() {
       // Reference weight: 81 kg at BMI 25 + 0.4 * 49 kg = 100.6 kg.
       expect(target.proteinGrams, closeTo(100.6 * 1.6, 0.001));
       expect(target.fatGrams, closeTo(100.6 * 0.8, 0.001));
+    });
+
+    test('measures protein and fat against the weight of the latest '
+        'check-in', () {
+      const profile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 95,
+        heightCm: 200,
+        ageYears: 35,
+        activityLevel: 1.375,
+        goalMode: CalorieGoalMode.lose,
+        goalSpeedKgPerWeek: 0.5,
+        trainingWeekdays: [1, 4],
+      );
+      final service = DailyNutritionTargetResolverService(
+        macroSettings: const MacroGoalSettings(),
+        goalSettings: const CalorieGoalSettings.empty().copyWith(
+          dailyKcalGoal: 2600,
+          calculatorProfile: profile,
+          goalHistory: [
+            CalorieGoalHistoryEntry(
+              dailyKcalGoal: 2600,
+              calculatorProfile: profile,
+              effectiveDate: DateTime(2026, 9),
+              changedAt: DateTime(2026, 9),
+              source: CalorieGoalSource.calculator,
+            ),
+            CalorieGoalHistoryEntry(
+              dailyKcalGoal: 2600,
+              calculatorProfile: null,
+              effectiveDate: DateTime(2026, 9, 8),
+              changedAt: DateTime(2026, 9, 8),
+              source: CalorieGoalSource.weeklyCheckIn,
+              weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+                windowStartDate: DateTime(2026, 9),
+                windowEndDate: DateTime(2026, 9, 7),
+                trendWeightChangePerDay: -0.1,
+                lowConfidence: false,
+                macroWeightKg: 93,
+              ),
+            ),
+          ],
+        ),
+      );
+
+      final beforeCheckIn = service.resolveTarget(
+        day: DateTime(2026, 9, 7),
+        goalKcal: 2600,
+      );
+      final afterCheckIn = service.resolveTarget(
+        day: DateTime(2026, 9, 14),
+        goalKcal: 2600,
+      );
+
+      // Below BMI 25 at 2 m, so the weights count in full.
+      expect(beforeCheckIn.proteinGrams, closeTo(95 * 1.6, 0.001));
+      expect(afterCheckIn.proteinGrams, closeTo(93 * 1.6, 0.001));
+      expect(afterCheckIn.fatGrams, closeTo(93 * 0.8, 0.001));
     });
 
     test('resolves 1526 kcal profile guaranteeing 100g carbs floor', () {

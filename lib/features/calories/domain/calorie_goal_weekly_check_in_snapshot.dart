@@ -20,6 +20,7 @@ class CalorieGoalWeeklyCheckInSnapshot {
     this.inputHash,
     this.invalidatedAt,
     this.isRejected = false,
+    this.macroWeightKg,
   });
 
   /// Creates a [CalorieGoalWeeklyCheckInSnapshot] from json.
@@ -67,6 +68,10 @@ class CalorieGoalWeeklyCheckInSnapshot {
   @JsonKey(defaultValue: false)
   final bool isRejected;
 
+  /// Trend weight at the end of the window, which the macro targets use
+  /// until the next check-in. `null` without any weigh-in up to that day.
+  final double? macroWeightKg;
+
   /// Whether inputs changed after this snapshot was saved.
   bool get isInputDirty => invalidatedAt != null;
 
@@ -96,6 +101,7 @@ class CalorieGoalWeeklyCheckInSnapshot {
       isRejected: isRejected == _keepValue
           ? this.isRejected
           : (isRejected as bool?) ?? false,
+      macroWeightKg: macroWeightKg,
     );
   }
 

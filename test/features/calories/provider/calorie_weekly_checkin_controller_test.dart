@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
@@ -290,6 +291,9 @@ void main() {
     final snapshot = settings.latestLearnedTdeeEntry?.weeklyCheckInSnapshot;
     expect(snapshot?.windowStartDate, goalStart);
     expect(snapshot?.windowEndDate, DateTime(2026, 4, 14));
+    expect(snapshot?.macroWeightKg, 82.4);
+    expect(settings.macroWeightKgForDay(DateTime(2026, 4, 14)), 84);
+    expect(settings.macroWeightKgForDay(dueDate), 82.4);
   });
 
   test('rejectWeeklyCheckIn preserves previous goal, marks snapshot rejected, '
@@ -354,6 +358,9 @@ void main() {
     final checkInEntry = history.firstWhere((e) => e.isWeeklyCheckIn);
     expect(checkInEntry.weeklyCheckInSnapshot?.isRejected, isTrue);
     expect(checkInEntry.hasLearnedTdee, isFalse);
+    // A rejected goal change still moves the macros to the new weight.
+    expect(checkInEntry.weeklyCheckInSnapshot?.macroWeightKg, 82.4);
+    expect(settings.macroWeightKgForDay(dueDate), 82.4);
   });
 
   test(
@@ -572,6 +579,7 @@ void main() {
                   _defaultWeeklyCheckInCalculation.calculatedTdeeKcal,
               baseGoalKcal: _defaultWeeklyCheckInCalculation.newGoalKcal,
               lowConfidence: false,
+              macroWeightKg: 82.4,
             ),
           ),
     )..saveShouldFail = true;
@@ -709,6 +717,7 @@ CalorieWeeklyCheckInData _weeklyCheckInData({
   bool withoutCalculation = false,
   CalorieWeeklyCheckInCalculation? calculation,
   CalorieWeeklyCheckInBlockedReason? blockedReason,
+  double? macroWeightKg = 82.4,
 }) {
   assert(
     pendingWeeklyCheckIn != null || cacheWeeklyCheckIn != null,
@@ -728,6 +737,7 @@ CalorieWeeklyCheckInData _weeklyCheckInData({
     freshness: CalorieLearnedTdeeFreshness.none,
     latestLearnedTdeeAt: null,
     lowConfidence: false,
+    macroWeightKg: macroWeightKg,
   );
 }
 

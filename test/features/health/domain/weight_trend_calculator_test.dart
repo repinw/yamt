@@ -7,6 +7,31 @@ import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 void main() {
   final start = DateTime(2026, 3);
 
+  group('DailyWeightSeries.trendOnOrBefore', () {
+    final series = WeightTrendCalculator.fromDailyWeights({
+      start: 80,
+      addLocalDays(start, 4): 78,
+    });
+
+    test('returns the trend of a day between two weigh-ins', () {
+      final day = addLocalDays(start, 2);
+
+      expect(series.trendOnOrBefore(day), series.trendFor(day));
+    });
+
+    test('holds the trend of the last weigh-in after it', () {
+      expect(
+        series.trendOnOrBefore(addLocalDays(start, 10)),
+        series.trendFor(addLocalDays(start, 4)),
+      );
+    });
+
+    test('returns null before the first weigh-in', () {
+      expect(series.trendOnOrBefore(addLocalDays(start, -1)), isNull);
+      expect(DailyWeightSeries.empty.trendOnOrBefore(start), isNull);
+    });
+  });
+
   group('WeightTrendCalculator.fromDailyWeights', () {
     test('a single 3 kg spike moves the trend by 0.3 kg', () {
       final series = WeightTrendCalculator.fromDailyWeights({

@@ -18,6 +18,7 @@ class CalorieWeeklyCheckInDayData {
     required this.missingWeightDays,
     required this.lowConfidence,
     required this.inputHash,
+    this.macroWeightKg,
   });
 
   final List<CalorieWeeklyCheckInWindowDay> days;
@@ -27,6 +28,9 @@ class CalorieWeeklyCheckInDayData {
   final List<DateTime> missingWeightDays;
   final bool lowConfidence;
   final String? inputHash;
+
+  /// Trend weight at the end of the window for the macro targets.
+  final double? macroWeightKg;
 }
 
 class CalorieWeeklyCheckInWindowDates {

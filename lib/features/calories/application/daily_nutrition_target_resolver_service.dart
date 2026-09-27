@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.dart';
 import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
@@ -35,10 +36,11 @@ class DailyNutritionTargetResolverService
     final isMale =
         (profile?.sex ?? CalorieCalculatorSex.male) ==
         CalorieCalculatorSex.male;
-    final weightKg = profile == null
+    final macroWeightKg = goalSettings?.macroWeightKgForDay(day);
+    final weightKg = profile == null || macroWeightKg == null
         ? (isMale ? 80.0 : 65.0)
         : macroReferenceWeightKg(
-            weightKg: profile.weightKg,
+            weightKg: macroWeightKg,
             heightCm: profile.heightCm,
           );
 

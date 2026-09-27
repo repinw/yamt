@@ -199,6 +199,16 @@ that pre-smoothed weights delay the learned TDEE by one to two weeks without
 making it calmer. The TDEE analytics page shows the smoothed trend weight as
 its weight line, weight numbers, and goal projection.
 
+### Macro Weight
+
+The protein and fat targets of a day use the macro weight from the goal
+history (`macroWeightKgForDay`), not the current calculator profile weight.
+A weekly check-in snapshot stores the trend weight on its window end, or on the
+last weigh-in before it, as `macroWeightKg`; a rejected check-in stores it too.
+A calculated goal entry supplies its profile weight as the start weight. A
+check-in without any weigh-in keeps the previous weight. The smoothed trend
+weight is right here because the macros need a calm level, not a slope.
+
 ## Accepted Dependencies
 
 - `core` for routing, theme tokens, shared widgets, and local day helpers.
