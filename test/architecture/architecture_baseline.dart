@@ -158,7 +158,6 @@ const architectureBaseline = <String, Map<String, int>>{
   'presentation-folders': {
     'lib/features/auth/presentation/auth_error_message_mapper.dart': 1,
     'lib/features/calories/presentation/calorie_goal_reach_coordinator.dart': 1,
-    'lib/features/calories/presentation/calorie_page_actions.dart': 1,
     'lib/features/calories/presentation/consumed_unit_l10n.dart': 1,
     'lib/features/calories/presentation/pages/calorie_goal_archive_page.dart':
         1,
