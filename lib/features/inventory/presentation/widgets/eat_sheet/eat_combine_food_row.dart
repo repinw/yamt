@@ -19,6 +19,7 @@ class EatCombineFoodRow extends StatelessWidget {
     this.ruler,
     this.errorText,
     this.onRemove,
+    this.removeKey,
     super.key,
   });
 
@@ -45,6 +46,9 @@ class EatCombineFoodRow extends StatelessWidget {
 
   /// Removes the food from the meal, or null for the hub's own item.
   final VoidCallback? onRemove;
+
+  /// Key of the remove button.
+  final Key? removeKey;
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +107,7 @@ class EatCombineFoodRow extends StatelessWidget {
                     if (kcalText != null) Text(kcalText, style: style),
                     if (remove != null)
                       IconButton(
+                        key: removeKey,
                         tooltip: l10n.eatPageCombineRemove,
                         onPressed: remove,
                         icon: Icon(Icons.close_rounded, color: colors.muted),

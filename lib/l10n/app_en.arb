@@ -371,6 +371,15 @@
       }
     }
   },
+  "eatPageMealPortions": "Portions",
+  "eatPageMealPerPortion": "per portion {amount}",
+  "@eatPageMealPerPortion": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "eatPageMealUnknownValue": "–",
   "eatPageCombineConfirm": "Log meal",
   "eatPageCombineRemove": "Remove from the list",

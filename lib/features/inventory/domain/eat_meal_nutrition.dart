@@ -87,6 +87,24 @@ class EatMealNutrition {
     );
   }
 
+  /// The meal split into [portions]: nutrients and amounts per portion.
+  /// The per-100 values do not change.
+  EatMealNutrition perPortion(int portions) {
+    if (portions < 2) {
+      return this;
+    }
+    final share = 1 / portions;
+    return EatMealNutrition._(
+      total: total.scaled(share),
+      listed: listed.scaled(share),
+      per100: per100,
+      amounts: Map.unmodifiable({
+        for (final MapEntry(key: unit, value: amount) in amounts.entries)
+          unit: amount * share,
+      }),
+    );
+  }
+
   /// Nutrients of all foods, or null per nutrient when one food lacks it.
   final NutritionFacts total;
 

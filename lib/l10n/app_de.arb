@@ -364,6 +364,8 @@
   "eatPageCombineAddFood": "Hinzufügen",
   "eatPageCombineStore": "In Vorrat",
   "eatPageMealTotal": "gesamt {amount}",
+  "eatPageMealPortions": "Portionen",
+  "eatPageMealPerPortion": "pro Portion {amount}",
   "eatPageMealUnknownValue": "–",
   "eatPageCombineConfirm": "Mahlzeit eintragen",
   "eatPageCombineRemove": "Aus der Liste nehmen",

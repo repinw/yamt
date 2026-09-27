@@ -24,16 +24,31 @@ import 'package:yamt/l10n/app_localizations.dart';
 ///
 /// Shows a link while nothing is picked, then one row per food with its
 /// amount and calories. Tapping a row opens a ruler for its amount;
-/// the hub item's row drives the hub's own amount.
+/// the hub item's row drives the hub's own amount. With other foods picked
+/// the hub item can leave the meal like any other food.
 class EatCombineSection extends ConsumerStatefulWidget {
   /// Creates the section.
-  const new({required this.hubItem, super.key});
+  const new({
+    required this.hubItem,
+    required this.onRemoveHubItem,
+    this.includesHubItem = true,
+    super.key,
+  });
+
+  /// Key of the hub item's remove button.
+  static const removeHubItemKey = Key('eat_combine_remove_hub_item');
 
   /// Key of the link that adds a food.
   static const addKey = Key('eat_combine_add');
 
   /// The hub's item.
   final InventoryItem hubItem;
+
+  /// Whether the hub's item is part of the meal.
+  final bool includesHubItem;
+
+  /// Called when the user takes the hub's item out of the meal.
+  final VoidCallback onRemoveHubItem;
 
   @override
   ConsumerState<EatCombineSection> createState() => _EatCombineSectionState();
@@ -65,26 +80,29 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          EatCombineFoodRow(
-            name: hubItem.name,
-            amount: hubState.enteredAmountLabel(l10n),
-            kcal: hubKcal == null ? null : l10n.eatPageKcal(hubKcal.round()),
-            isOpen: _openId == hubItem.id,
-            onTap: () => _toggle(hubItem.id),
-            // The page's own ruler is hidden in a meal, so its error shows
-            // here.
-            errorText: hubState.amountError(l10n),
-            ruler: inventoryItemUsesFixedCalorieUnit(hubItem)
-                ? EatRuler(
-                    value: hubState.amountValue,
-                    max: hubState.amountMax,
-                    step: hubState.amountStep,
-                    marks: const <EatRulerMark>[],
-                    onChanged: (value) =>
-                        ref.read(hubProvider.notifier).pickAmount(value),
-                  )
-                : null,
-          ),
+          if (widget.includesHubItem)
+            EatCombineFoodRow(
+              name: hubItem.name,
+              amount: hubState.enteredAmountLabel(l10n),
+              kcal: hubKcal == null ? null : l10n.eatPageKcal(hubKcal.round()),
+              isOpen: _openId == hubItem.id,
+              onTap: () => _toggle(hubItem.id),
+              removeKey: EatCombineSection.removeHubItemKey,
+              onRemove: widget.onRemoveHubItem,
+              // The page's own ruler is hidden in a meal, so its error shows
+              // here.
+              errorText: hubState.amountError(l10n),
+              ruler: inventoryItemUsesFixedCalorieUnit(hubItem)
+                  ? EatRuler(
+                      value: hubState.amountValue,
+                      max: hubState.amountMax,
+                      step: hubState.amountStep,
+                      marks: const <EatRulerMark>[],
+                      onChanged: (value) =>
+                          ref.read(hubProvider.notifier).pickAmount(value),
+                    )
+                  : null,
+            ),
           for (final pick in picks)
             EatCombineFoodRow(
               key: ValueKey<String>(pick.item.id),

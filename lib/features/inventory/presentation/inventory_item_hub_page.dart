@@ -17,6 +17,7 @@ import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_r
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_header.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
@@ -59,6 +60,10 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
   // shows action hints on the hub.
   final GlobalKey _cardKey = GlobalKey();
   var _isRunning = false;
+  var _portions = 1;
+  // The hub's item can leave the meal while other foods are picked. It is
+  // back as soon as the meal is empty again.
+  var _hubRemoved = false;
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +93,16 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     final picks = ref.watch(
       inventoryItemCombineControllerProvider(widget.item.id),
     );
-    final meal = picks.isEmpty ? null : _meal(picks);
+    ref.listen(inventoryItemCombineControllerProvider(widget.item.id), (
+      _,
+      next,
+    ) {
+      if (next.isEmpty && _hubRemoved) {
+        setState(() => _hubRemoved = false);
+      }
+    });
+    final includesHub = !_hubRemoved || picks.isEmpty;
+    final meal = picks.isEmpty ? null : _meal(picks, includesHub: includesHub);
     final hasMealRuler = inventoryItemUsesFixedCalorieUnit(widget.item);
     return InventoryItemEatSheetBody(
       item: widget.item,
@@ -96,7 +110,7 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       confirmLabel: picks.isEmpty
           ? null
           : AppLocalizations.of(context)!.eatPageCombineConfirm,
-      extraKcal: picks.fold(0, (sum, pick) => sum + pick.component.totalKcal),
+      mealKcal: meal?.total.kcal,
       addMoreActionText: picks.isEmpty
           ? null
           : AppLocalizations.of(context)!.eatPageCombineStore,
@@ -105,51 +119,67 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
           ? null
           : EatMealHeader(
               title: combinedFoodName([
-                widget.item.name,
+                if (includesHub) widget.item.name,
                 for (final pick in picks) pick.item.name,
               ]),
               imageUrls: [
-                widget.item.imageUrl,
+                if (includesHub) widget.item.imageUrl,
                 for (final pick in picks) pick.item.imageUrl,
               ],
             ),
       // In a meal the hub item's row carries its ruler.
-      showAmount: meal == null || !hasMealRuler,
+      showAmount: meal == null || (includesHub && !hasMealRuler),
       footer: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpacing.xxl,
         children: [
           if (InventoryCombinedEatService.canCombine(widget.item))
-            EatCombineSection(hubItem: widget.item),
-          ?meal == null ? null : EatMealTable(meal: meal),
+            EatCombineSection(
+              hubItem: widget.item,
+              includesHubItem: includesHub,
+              onRemoveHubItem: () => setState(() => _hubRemoved = true),
+            ),
+          if (meal != null) ...[
+            EatMealPortionsRow(
+              portions: _portions,
+              onChanged: (portions) => setState(() => _portions = portions),
+            ),
+            EatMealTable(meal: meal, portions: _portions),
+          ],
           actions,
         ],
       ),
-      onSubmitted: (result) => _submit(result, picks),
+      onSubmitted: (result) => _submit(result, picks, includesHub: includesHub),
     );
   }
 
-  /// Nutrients of the hub item's entered amount together with [picks]. An
-  /// empty hub amount counts as unknown, so the totals show "–".
-  EatMealNutrition _meal(List<InventoryCombinePick> picks) {
+  /// Nutrients of [picks], with the hub item's entered amount when
+  /// [includesHub]. An empty hub amount counts as unknown, so the totals
+  /// show "–".
+  EatMealNutrition _meal(
+    List<InventoryCombinePick> picks, {
+    required bool includesHub,
+  }) {
     final hub = ref.watch(
       inventoryItemEatSheetControllerProvider(item: widget.item),
     );
     final nutrition = hub.nutrition;
     return EatMealNutrition.combine([
-      (
-        eaten: nutrition?.eaten ?? const NutritionFacts(),
-        amount: nutrition?.amount ?? 0,
-        unit: hub.nutritionConsumedUnit,
-      ),
+      if (includesHub)
+        (
+          eaten: nutrition?.eaten ?? const NutritionFacts(),
+          amount: nutrition?.amount ?? 0,
+          unit: hub.nutritionConsumedUnit,
+        ),
       for (final pick in picks) ?eatMealFoodOfRequest(pick.item, pick.request),
     ]);
   }
 
   void _submit(
     InventoryItemEatSheetResult result,
-    List<InventoryCombinePick> picks,
-  ) {
+    List<InventoryCombinePick> picks, {
+    required bool includesHub,
+  }) {
     final request = result.request;
     if (_isRunning) {
       return;
@@ -159,7 +189,8 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       return;
     }
     final hubContext = _cardKey.currentContext;
-    if (!canDirectlySaveInventoryItemEatRequest(widget.item, request)) {
+    if (includesHub &&
+        !canDirectlySaveInventoryItemEatRequest(widget.item, request)) {
       if (hubContext != null) {
         ScaffoldMessenger.of(hubContext).showAppSnackBar(
           AppLocalizations.of(context)!.inventoryItemActionFailed,
@@ -173,6 +204,8 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
         request: request,
         picks: picks,
         keepInStock: result.intent == InventoryItemEatSheetIntent.storeAsMeal,
+        portions: _portions,
+        includesItem: includesHub,
       ),
     );
   }

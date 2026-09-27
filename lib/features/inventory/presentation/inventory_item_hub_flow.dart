@@ -60,16 +60,29 @@ abstract final class InventoryItemHubFlow {
         :final request,
         :final picks,
         :final keepInStock,
+        :final portions,
+        :final includesItem,
       ):
-        await (keepInStock
-            ? InventoryCombinedEatFlow.storeAsMeal
-            : InventoryCombinedEatFlow.eat)(
-          context: context,
-          ref: ref,
-          item: item,
-          request: request,
-          picks: picks,
-        );
+        if (keepInStock) {
+          await InventoryCombinedEatFlow.storeAsMeal(
+            context: context,
+            ref: ref,
+            item: item,
+            request: request,
+            picks: picks,
+            portions: portions,
+            includesItem: includesItem,
+          );
+        } else {
+          await InventoryCombinedEatFlow.eat(
+            context: context,
+            ref: ref,
+            item: item,
+            request: request,
+            picks: picks,
+            includesItem: includesItem,
+          );
+        }
     }
   }
 

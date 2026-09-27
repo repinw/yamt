@@ -24,14 +24,16 @@ const _logName = 'InventoryCombinedEatFlow';
 /// eaten amount. They are deleted again when the save fails, when the user
 /// cancels, and on undo.
 abstract final class InventoryCombinedEatFlow {
-  /// Saves one combined entry for [item] and [picks] and reports on
-  /// [context]'s page with an undo.
+  /// Saves one combined entry for [picks], with [item] unless it left the
+  /// meal, and reports on [context]'s page with an undo. [request] carries
+  /// [item]'s amount and the log time and meal of the entry.
   static Future<void> eat({
     required BuildContext context,
     required WidgetRef ref,
     required InventoryItem item,
     required InventoryItemEatRequest request,
     required List<InventoryCombinePick> picks,
+    bool includesItem = true,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
@@ -47,8 +49,7 @@ abstract final class InventoryCombinedEatFlow {
       final prepared = await _prepare(
         context,
         container,
-        item,
-        request,
+        includesItem ? (item, request) : null,
         picks,
         added,
       );
@@ -106,14 +107,16 @@ abstract final class InventoryCombinedEatFlow {
     }
   }
 
-  /// Keeps [item] and [picks] in stock as one prepared meal with one
-  /// portion, made of the entered amounts.
+  /// Keeps [item] and [picks] in stock as one prepared meal of [portions]
+  /// portions, made of the entered amounts.
   static Future<void> storeAsMeal({
     required BuildContext context,
     required WidgetRef ref,
     required InventoryItem item,
     required InventoryItemEatRequest request,
     required List<InventoryCombinePick> picks,
+    required int portions,
+    bool includesItem = true,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
@@ -129,8 +132,7 @@ abstract final class InventoryCombinedEatFlow {
       final prepared = await _prepare(
         context,
         container,
-        item,
-        request,
+        includesItem ? (item, request) : null,
         picks,
         added,
       );
@@ -139,7 +141,7 @@ abstract final class InventoryCombinedEatFlow {
       }
       final result = await meals.createPreparedMeal(
         name: combinedFoodName(prepared.map((part) => part.$1.name)),
-        totalPortions: 1,
+        totalPortions: portions,
         items: [
           for (final (item, request) in prepared)
             PreparedMealItemInput(
@@ -179,18 +181,18 @@ abstract final class InventoryCombinedEatFlow {
     }
   }
 
-  /// The stock item and amount of every food, with search finds added to
-  /// the inventory and collected in [added]. Returns null when the user
-  /// cancels adding a find; the finds added so far are deleted again.
+  /// The stock item and amount of every food, starting with [hubFood] when
+  /// the hub's item is part of the meal. Search finds are added to the
+  /// inventory and collected in [added]. Returns null when the user cancels
+  /// adding a find; the finds added so far are deleted again.
   static Future<List<(InventoryItem, InventoryItemEatRequest)>?> _prepare(
     BuildContext context,
     ProviderContainer container,
-    InventoryItem item,
-    InventoryItemEatRequest request,
+    (InventoryItem, InventoryItemEatRequest)? hubFood,
     List<InventoryCombinePick> picks,
     List<InventoryItem> added,
   ) async {
-    final parts = <(InventoryItem, InventoryItemEatRequest)>[(item, request)];
+    final parts = <(InventoryItem, InventoryItemEatRequest)>[?hubFood];
     for (final pick in picks) {
       final searchResult = pick.searchResult;
       if (searchResult == null) {

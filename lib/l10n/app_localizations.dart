@@ -1360,6 +1360,18 @@ abstract class AppLocalizations {
   /// **'total {amount}'**
   String eatPageMealTotal(String amount);
 
+  /// No description provided for @eatPageMealPortions.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions'**
+  String get eatPageMealPortions;
+
+  /// No description provided for @eatPageMealPerPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'per portion {amount}'**
+  String eatPageMealPerPortion(String amount);
+
   /// No description provided for @eatPageMealUnknownValue.
   ///
   /// In en, this message translates to:

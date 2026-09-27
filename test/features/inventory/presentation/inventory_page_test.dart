@@ -41,6 +41,7 @@ import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -1270,6 +1271,11 @@ void main() {
     await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
     await _tapVisible(tester, find.text('Oats'));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    expect(find.text('total 300\u00A0g'), findsOneWidget);
+    for (var i = 0; i < 3; i++) {
+      await _tapVisible(tester, find.byKey(EatMealPortionsRow.increaseKey));
+    }
+    expect(find.text('per portion 75\u00A0g'), findsOneWidget);
 
     await _tapVisible(
       tester,
@@ -1278,7 +1284,41 @@ void main() {
 
     final meal = mealRepository.saved.single;
     expect(meal.name, 'Milk + Oats');
-    expect(meal.totalPortions, 1);
+    expect(meal.totalPortions, 4);
+  });
+
+  testWidgets('item hub lets its own item leave the meal', (tester) async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[
+        _itemWithNutrition('a'),
+        _itemWithNutrition('b', name: 'Oats'),
+      ],
+    );
+    addTearDown(repository.dispose);
+
+    await _pumpTestApp(tester, repository);
+    await tester.pumpAndSettle();
+
+    await _tapVisible(tester, find.text('Milk'));
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')),
+      '200',
+    );
+    await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
+    await _tapVisible(tester, find.text('Oats'));
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    expect(find.text('Milk + Oats'), findsOneWidget);
+
+    await _tapVisible(tester, find.byKey(EatCombineSection.removeHubItemKey));
+
+    expect(find.text('Milk + Oats'), findsNothing);
+    expect(find.text('total 100\u00A0g'), findsOneWidget);
+    expect(find.byKey(EatCombineSection.removeHubItemKey), findsNothing);
+
+    // Without other foods the hub's item is back.
+    await _tapVisible(tester, find.byIcon(Icons.close_rounded));
+    expect(find.byType(EatMealTable), findsNothing);
+    expect(find.text('Milk'), findsOneWidget);
   });
 
   testWidgets('item hub logs a second stock item together as one entry', (

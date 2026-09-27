@@ -74,6 +74,26 @@ void main() {
     expect(meal.listed.kcal, 200);
   });
 
+  test('per portion splits the totals and amounts, not per 100', () {
+    final meal = EatMealNutrition.combine(const [
+      (
+        eaten: NutritionFacts(kcal: 500, protein: 20),
+        amount: 200,
+        unit: ConsumedUnit.grams,
+      ),
+      (eaten: NutritionFacts(kcal: 600), amount: 150, unit: ConsumedUnit.grams),
+    ]);
+
+    final portion = meal.perPortion(4);
+
+    expect(portion.total.kcal, 275);
+    expect(portion.total.protein, isNull);
+    expect(portion.listed.protein, 5);
+    expect(portion.amounts, {ConsumedUnit.grams: 87.5});
+    expect(portion.per100?.kcal, meal.per100?.kcal);
+    expect(meal.perPortion(1), same(meal));
+  });
+
   test('a request with its own calorie amount counts in that unit', () {
     final item = InventoryItem.create(
       id: 'eggs',

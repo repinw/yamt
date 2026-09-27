@@ -733,6 +733,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get eatPageMealPortions => 'Portions';
+
+  @override
+  String eatPageMealPerPortion(String amount) {
+    return 'per portion $amount';
+  }
+
+  @override
   String get eatPageMealUnknownValue => '–';
 
   @override

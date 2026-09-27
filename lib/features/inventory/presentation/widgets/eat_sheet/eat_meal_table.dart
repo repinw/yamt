@@ -8,10 +8,11 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Nutrition label of a whole meal: per 100 g or ml of the meal, and the
-/// total of all foods. A total that one food does not list shows "–".
+/// total of all foods, or one portion of it when the meal makes several.
+/// A total that one food does not list shows "–".
 class EatMealTable extends StatelessWidget {
   /// Creates the table.
-  const new({required this.meal, super.key});
+  const new({required this.meal, this.portions = 1, super.key});
 
   /// Key of the table.
   static const tableKey = Key('eat_meal_nutrition_table');
@@ -19,11 +20,15 @@ class EatMealTable extends StatelessWidget {
   /// The meal's nutrients.
   final EatMealNutrition meal;
 
+  /// Portions the meal makes; above one the label shows one portion.
+  final int portions;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final number = NumberFormat.decimalPattern(l10n.localeName)
       ..maximumFractionDigits = 1;
+    final meal = this.meal.perPortion(portions);
     final amounts = [
       for (final MapEntry(key: unit, value: amount) in meal.amounts.entries)
         // A no-break space keeps the amount and unit on one line when the
@@ -46,7 +51,9 @@ class EatMealTable extends StatelessWidget {
       per100Header: meal.per100 == null
           ? null
           : l10n.caloriesEntryPer100Label(consumedUnitSymbol(l10n, singleUnit)),
-      eatenHeader: l10n.eatPageMealTotal(amounts),
+      eatenHeader: portions > 1
+          ? l10n.eatPageMealPerPortion(amounts)
+          : l10n.eatPageMealTotal(amounts),
     );
   }
 }
