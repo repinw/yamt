@@ -559,7 +559,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
   },
   'export': {
-    'lib/core/debug/debug_log_environment.dart': 1,
     'lib/core/widgets/text_voice_search_bar/text_voice_search_bar.dart': 1,
     'lib/features/cooking_flow/application/cooking_flow_instruction_builder.dart':
         1,
