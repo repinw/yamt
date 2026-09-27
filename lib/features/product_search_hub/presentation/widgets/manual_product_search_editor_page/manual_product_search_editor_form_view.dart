@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/inventory/presentation/'
+import 'package:yamt/features/inventory/presentation/models/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';

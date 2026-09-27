@@ -107,20 +107,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/onboarding/presentation/widgets/intro/pages/intro_target_page.dart':
         1,
-    'lib/features/product_search_hub/presentation/product_search_hub_quick_eat_config.dart':
-        1,
-    'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_actions.dart':
-        1,
-    'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_barcode_coordinator.dart':
-        1,
-    'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_form_view.dart':
-        1,
-    'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_page.dart':
-        1,
-    'lib/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart':
-        1,
-    'lib/features/product_search_hub/presentation/widgets/product_ai_search_page/product_ai_search_page.dart':
-        1,
     'lib/features/product_search_hub/presentation/widgets/product_search_barcode_candidate_picker_sheet.dart':
         1,
     'lib/features/product_search_hub/presentation/widgets/product_search_hub_search_results/product_search_hub_search_results.dart':
@@ -254,8 +240,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/inventory_calorie_stock_adjuster.dart':
         1,
     'lib/features/inventory/presentation/inventory_controller_access.dart': 1,
-    'lib/features/inventory/presentation/inventory_manual_add_quick_eat_config.dart':
-        1,
     'lib/features/inventory/presentation/inventory_manual_product_eat_coordinator.dart':
         1,
     'lib/features/inventory/presentation/inventory_manual_product_search_launcher.dart':
