@@ -4,9 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_action_button.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_on_the_fly_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// On-the-fly cookflow note input.
@@ -59,22 +60,16 @@ class _CookingFlowOnTheFlyAdjustmentCardState
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final colors = FoodLabelColors.of(context);
     final recentAdjustments = widget.adjustments.length <= 2
         ? widget.adjustments
         : widget.adjustments.sublist(widget.adjustments.length - 2);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: const Color(0xFF263147),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x22000000),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        color: colors.card,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: colors.rule),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
@@ -85,17 +80,17 @@ class _CookingFlowOnTheFlyAdjustmentCardState
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _CookingFlowOnTheFlyHeader(l10n: l10n),
-            const SizedBox(height: AppSpacing.sm),
-            _CookingFlowOnTheFlyInputRow(
+            const CookingFlowOnTheFlyHeader(),
+            const SizedBox(height: AppSpacing.xs),
+            CookingFlowOnTheFlyInputRow(
               controller: widget.adjustmentController,
               isListeningToSpeech: _isListeningToSpeech,
               onVoicePressed: _handleVoiceButtonPressed,
               onAddPressed: _handleAddPressed,
             ),
             if (widget.adjustments.isNotEmpty) ...<Widget>[
-              const SizedBox(height: AppSpacing.sm),
-              _CookingFlowOnTheFlyRecentAdjustments(
+              const SizedBox(height: AppSpacing.xs),
+              CookingFlowOnTheFlyRecentAdjustments(
                 adjustments: recentAdjustments,
                 startIndex:
                     widget.adjustments.length - recentAdjustments.length,
@@ -217,207 +212,5 @@ class _CookingFlowOnTheFlyAdjustmentCardState
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(context)
         .showAppSnackBar(message, tone: AppSnackBarTone.error);
-  }
-}
-
-class _CookingFlowOnTheFlyHeader extends StatelessWidget {
-  const new({required this.l10n});
-
-  final AppLocalizations l10n;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: <Widget>[
-        const Icon(Icons.add, color: Color(0xFFE65100), size: 18),
-        const SizedBox(width: AppSpacing.sm),
-        Text(
-          l10n.cookflowOnTheFlyTitle,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 14,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _CookingFlowOnTheFlyInputRow extends StatelessWidget {
-  const new({
-    required this.controller,
-    required this.isListeningToSpeech,
-    required this.onVoicePressed,
-    required this.onAddPressed,
-  });
-
-  final TextEditingController controller;
-  final bool isListeningToSpeech;
-  final VoidCallback onVoicePressed;
-  final VoidCallback onAddPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Row(
-      children: <Widget>[
-        Expanded(
-          child: TextField(
-            key: const Key('cookflow_on_the_fly_field'),
-            controller: controller,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
-              hintText: l10n.cookflowOnTheFlyHint,
-              hintStyle: const TextStyle(color: Color(0xFF9EACC6)),
-              isDense: true,
-              filled: true,
-              fillColor: const Color(0xFF39455D),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.md,
-              ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                borderSide: BorderSide.none,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        _CookingFlowVoiceInputButton(
-          isListeningToSpeech: isListeningToSpeech,
-          onPressed: onVoicePressed,
-        ),
-        const SizedBox(width: AppSpacing.sm),
-        CookingFlowActionIconButton(
-          key: const Key('cookflow_on_the_fly_add_button'),
-          icon: Icons.check_circle_outline_rounded,
-          onPressed: onAddPressed,
-        ),
-      ],
-    );
-  }
-}
-
-class _CookingFlowVoiceInputButton extends StatelessWidget {
-  const new({required this.isListeningToSpeech, required this.onPressed});
-
-  final bool isListeningToSpeech;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return SizedBox.square(
-      dimension: 48,
-      child: IconButton.filledTonal(
-        key: const Key('cookflow_on_the_fly_voice_button'),
-        onPressed: onPressed,
-        tooltip: isListeningToSpeech
-            ? l10n.cookflowVoiceInputStopTooltip
-            : l10n.cookflowVoiceInputStartTooltip,
-        style: IconButton.styleFrom(
-          backgroundColor: isListeningToSpeech
-              ? const Color(0xFFE65100)
-              : const Color(0xFF39455D),
-          foregroundColor: Colors.white,
-        ),
-        icon: Icon(isListeningToSpeech ? Icons.mic : Icons.mic_none),
-      ),
-    );
-  }
-}
-
-class _CookingFlowOnTheFlyRecentAdjustments extends StatelessWidget {
-  const new({
-    required this.adjustments,
-    required this.startIndex,
-    required this.onRemovePressed,
-  });
-
-  final List<String> adjustments;
-  final int startIndex;
-  final void Function(int index) onRemovePressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxHeight: 56),
-      child: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            for (var index = 0; index < adjustments.length; index++) ...[
-              _CookingFlowOnTheFlyAdjustmentChip(
-                adjustment: adjustments[index],
-                onRemovePressed: () => onRemovePressed(startIndex + index),
-              ),
-              if (index != adjustments.length - 1)
-                const SizedBox(height: AppSpacing.xs),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CookingFlowOnTheFlyAdjustmentChip extends StatelessWidget {
-  const new({required this.adjustment, required this.onRemovePressed});
-
-  final String adjustment;
-  final VoidCallback onRemovePressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.only(left: AppSpacing.md),
-      decoration: BoxDecoration(
-        color: const Color(0xFF313D54),
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Row(
-        children: <Widget>[
-          const SizedBox(
-            width: 8,
-            height: 8,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: Color(0xFFE65100),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              adjustment,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-            ),
-          ),
-          SizedBox.square(
-            dimension: 32,
-            child: IconButton(
-              key: const Key('cookflow_on_the_fly_remove_button'),
-              onPressed: onRemovePressed,
-              tooltip: l10n.cookflowOnTheFlyRemoveTooltip,
-              iconSize: 16,
-              padding: EdgeInsets.zero,
-              visualDensity: VisualDensity.compact,
-              color: const Color(0xFFCAD3E4),
-              icon: const Icon(Icons.close_rounded),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }

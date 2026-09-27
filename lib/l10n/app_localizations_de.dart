@@ -4135,6 +4135,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookflowOnTheFlyRemoveTooltip => 'Anpassung entfernen';
 
   @override
+  String get cookflowOnTheFlyAddButton => 'Hinzufügen';
+
+  @override
   String get cookflowVoiceInputStartTooltip => 'Spracheingabe starten';
 
   @override

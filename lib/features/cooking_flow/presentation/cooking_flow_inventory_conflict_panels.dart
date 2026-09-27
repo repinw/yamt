@@ -2,13 +2,17 @@
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_inventory_conflict_resolver.dart';
+import 'package:yamt/features/cooking_flow/presentation/'
+    'cooking_flow_action_button.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_intro_page_assignment.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -86,8 +90,6 @@ class CookingFlowInventoryConflictPanel extends StatelessWidget {
                 isActive:
                     selectedResolution ==
                     CookingFlowInventoryConflictResolution.buyRemaining,
-                backgroundColor: colors.primaryContainer.withValues(alpha: 0.8),
-                foregroundColor: colors.primary,
                 onPressed: onBuyRemainingPressed,
               ),
             ),
@@ -98,8 +100,6 @@ class CookingFlowInventoryConflictPanel extends StatelessWidget {
                 isActive:
                     selectedResolution ==
                     CookingFlowInventoryConflictResolution.adjustTemplate,
-                backgroundColor: colors.errorContainer,
-                foregroundColor: colors.onErrorContainer,
                 onPressed: onAdjustTemplatePressed,
               ),
             ),
@@ -118,16 +118,16 @@ class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
     final amountLabel = cookingFlowInventoryAmountLabel(item);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
+        color: colors.tile,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: colors.primary.withValues(alpha: 0.24)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,8 +135,6 @@ class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Icon(Icons.inventory_2_rounded, size: 18),
-              const SizedBox(width: AppSpacing.sm),
               CookingFlowInventoryAssignmentPreview(
                 label: item.name,
                 imageUrl: item.imageUrl,
@@ -150,18 +148,17 @@ class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
                   children: <Widget>[
                     Text(
                       l10n.cookflowInventoryReturnSuggestion,
-                      style: Theme.of(context).textTheme.labelLarge
-                          ?.copyWith(fontWeight: FontWeight.w700),
+                      style: textTheme.labelLarge?.copyWith(
+                        color: colors.ink,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
                       '${item.name} · $amountLabel',
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: textTheme.bodySmall?.copyWith(color: colors.muted),
                     ),
                   ],
                 ),
@@ -169,11 +166,11 @@ class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: AppSpacing.sm),
-          Align(
-            alignment: Alignment.centerRight,
-            child: FilledButton.tonal(
+          SizedBox(
+            width: double.infinity,
+            child: CookingFlowSecondaryActionButton(
+              label: l10n.cookflowInventoryReturnSuggestionButton,
               onPressed: onPressed,
-              child: Text(l10n.cookflowInventoryReturnSuggestionButton),
             ),
           ),
         ],
@@ -182,44 +179,40 @@ class CookingFlowInventoryReturnSuggestionPanel extends StatelessWidget {
   }
 }
 
+/// One way out of a conflict, as a chip. The chosen one is filled with ink.
 class _ConflictResolutionButton extends StatelessWidget {
   const new({
     required this.label,
     required this.isActive,
-    required this.backgroundColor,
-    required this.foregroundColor,
     required this.onPressed,
   });
 
   final String label;
   final bool isActive;
-  final Color backgroundColor;
-  final Color foregroundColor;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
+    final colors = FoodLabelColors.of(context);
+    final foreground = isActive ? colors.paper : colors.ink;
+
+    return TextButton(
       onPressed: onPressed,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: backgroundColor,
-        foregroundColor: foregroundColor,
-        side: BorderSide(
-          color: isActive
-              ? foregroundColor.withValues(alpha: 0.7)
-              : Colors.transparent,
-          width: 1.2,
+      style: TextButton.styleFrom(
+        foregroundColor: foreground,
+        backgroundColor: isActive ? colors.ink : colors.tile,
+        minimumSize: const Size(AppGraphit.chipHeight, AppGraphit.chipHeight),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md,
+          vertical: AppSpacing.xs,
         ),
-        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.md),
-        ),
+        shape: const StadiumBorder(),
       ),
       child: Text(
         label,
         textAlign: TextAlign.center,
-        style: Theme.of(context).textTheme.labelLarge
-            ?.copyWith(fontWeight: FontWeight.w800),
+        style: Theme.of(context).textTheme.labelMedium
+            ?.copyWith(color: foreground, fontWeight: FontWeight.w700),
       ),
     );
   }
@@ -283,11 +276,7 @@ class _CookingFlowInventoryUnitConflictPanelState
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 2),
-              child: Icon(
-                Icons.balance_rounded,
-                size: 18,
-                color: colors.error,
-              ),
+              child: Icon(Icons.balance_rounded, size: 18, color: colors.error),
             ),
             const SizedBox(width: AppSpacing.xs),
             Expanded(
@@ -312,7 +301,7 @@ class _CookingFlowInventoryUnitConflictPanelState
                 _requiredUnitLabel(l10n),
               ),
               style: Theme.of(context).textTheme.bodyMedium
-                  ?.copyWith(color: colors.onSurfaceVariant),
+                  ?.copyWith(color: FoodLabelColors.of(context).muted),
             ),
             const SizedBox(width: AppSpacing.sm),
             SizedBox(
@@ -335,19 +324,18 @@ class _CookingFlowInventoryUnitConflictPanelState
             const SizedBox(width: AppSpacing.sm),
             Text(selectedUnit),
             const Spacer(),
-            FilledButton.tonal(
+            CookingFlowSecondaryActionButton(
+              label: l10n.cookflowInventoryUnitConvertAction,
               onPressed: _convert,
-              child: Text(l10n.cookflowInventoryUnitConvertAction),
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.sm),
+        const SizedBox(height: AppSpacing.xs),
         Align(
           alignment: Alignment.centerRight,
-          child: TextButton.icon(
+          child: CookingFlowQuietButton(
+            label: l10n.cookflowInventoryUnitWeighLaterAction,
             onPressed: widget.onWeighLaterPressed,
-            icon: const Icon(Icons.schedule_rounded),
-            label: Text(l10n.cookflowInventoryUnitWeighLaterAction),
           ),
         ),
       ],

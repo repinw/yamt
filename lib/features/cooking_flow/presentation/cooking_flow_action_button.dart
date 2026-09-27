@@ -1,10 +1,15 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 
-/// Primary accent button used across Cookflow screens.
+/// Main button of a cooking flow screen: filled lime with dark text.
+///
+/// Lime marks one thing per screen, so every other action uses
+/// [CookingFlowSecondaryActionButton] or [CookingFlowQuietButton].
 class CookingFlowActionButton extends StatelessWidget {
-  /// Creates primary Cookflow action button.
+  /// Creates the main button.
   const new({
     required this.label,
     required this.onPressed,
@@ -31,101 +36,27 @@ class CookingFlowActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     final isEnabled = onPressed != null;
 
-    return _CookingFlowAccentSurface(
+    return _CookingFlowButtonSurface(
       onPressed: onPressed,
-      shadowBlurRadius: 24,
-      shadowOffset: const Offset(0, 12),
-      child: Padding(
-        padding:
-            padding ??
-            const EdgeInsets.symmetric(
-              horizontal: AppSpacing.xl,
-              vertical: AppSpacing.xl,
-            ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            if (leadingIcon != null) ...<Widget>[
-              Icon(
-                leadingIcon,
-                color: isEnabled ? colors.onPrimary : colors.onSurfaceVariant,
-              ),
-              const SizedBox(width: AppSpacing.sm),
-            ],
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 2,
-                overflow: TextOverflow.visible,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: isEnabled ? colors.onPrimary : colors.onSurfaceVariant,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-            if (icon != null) ...<Widget>[
-              const SizedBox(width: AppSpacing.sm),
-              Icon(
-                icon,
-                color: isEnabled ? colors.onPrimary : colors.onSurfaceVariant,
-              ),
-            ],
-          ],
-        ),
+      fill: isEnabled ? colors.accent : colors.tile,
+      foreground: isEnabled ? colors.onAccent : colors.muted,
+      padding: padding,
+      child: _CookingFlowButtonLabel(
+        label: label,
+        leadingIcon: leadingIcon,
+        trailingIcon: icon,
+        color: isEnabled ? colors.onAccent : colors.muted,
       ),
     );
   }
 }
 
-class _CookingFlowAccentSurface extends StatelessWidget {
-  const new({
-    required this.child,
-    required this.onPressed,
-    required this.shadowBlurRadius,
-    required this.shadowOffset,
-  });
-
-  final Widget child;
-  final VoidCallback? onPressed;
-  final double shadowBlurRadius;
-  final Offset shadowOffset;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(AppRadius.lg);
-    final isEnabled = onPressed != null;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        gradient: isEnabled
-            ? LinearGradient(colors: [colors.primary, colors.primary])
-            : LinearGradient(
-                colors: <Color>[
-                  colors.surfaceContainerHighest,
-                  colors.surfaceContainerHighest,
-                ],
-              ),
-        borderRadius: radius,
-        boxShadow: isEnabled
-            ? <BoxShadow>[const BoxShadow(color: Colors.transparent)]
-            : null,
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: AppInkWell(onTap: onPressed, borderRadius: radius, child: child),
-      ),
-    );
-  }
-}
-
-/// Secondary Cookflow action button for lower-priority actions.
+/// Secondary button of a cooking flow screen: ink text on a soft tile.
 class CookingFlowSecondaryActionButton extends StatelessWidget {
-  /// Creates secondary Cookflow action button.
+  /// Creates the secondary button.
   const new({
     required this.label,
     required this.onPressed,
@@ -148,61 +79,114 @@ class CookingFlowSecondaryActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(AppRadius.lg);
+    final colors = FoodLabelColors.of(context);
     final isEnabled = onPressed != null;
+    final foreground = isEnabled ? colors.ink : colors.muted;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: isEnabled
-            ? colors.surfaceContainerLowest.withValues(alpha: 0.9)
-            : colors.surfaceContainerHighest,
-        borderRadius: radius,
-        border: Border.all(
-          color: isEnabled
-              ? colors.outlineVariant.withValues(alpha: 0.5)
-              : colors.outlineVariant.withValues(alpha: 0.24),
+    return _CookingFlowButtonSurface(
+      onPressed: onPressed,
+      fill: colors.tile,
+      foreground: foreground,
+      padding: padding,
+      child: _CookingFlowButtonLabel(
+        label: label,
+        trailingIcon: icon,
+        color: foreground,
+      ),
+    );
+  }
+}
+
+/// Quiet button for "Später" or "Zurücksetzen": underlined ink text, no fill.
+class CookingFlowQuietButton extends StatelessWidget {
+  /// Creates the quiet button.
+  const new({required this.label, required this.onPressed, super.key});
+
+  /// Button label.
+  final String label;
+
+  /// Press callback.
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = FoodLabelColors.of(context);
+    final isEnabled = onPressed != null;
+    final foreground = isEnabled ? colors.ink : colors.muted;
+
+    return TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor: foreground,
+        minimumSize: const Size(
+          AppGraphit.buttonHeight,
+          AppGraphit.buttonHeight,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
         ),
       ),
+      child: Text(
+        label,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: foreground,
+          fontWeight: FontWeight.w700,
+          decoration: TextDecoration.underline,
+          decorationColor: foreground,
+        ),
+      ),
+    );
+  }
+}
+
+class _CookingFlowButtonSurface extends StatelessWidget {
+  const new({
+    required this.child,
+    required this.onPressed,
+    required this.fill,
+    required this.foreground,
+    required this.padding,
+  });
+
+  final Widget child;
+  final VoidCallback? onPressed;
+  final Color fill;
+  final Color foreground;
+  final EdgeInsetsGeometry? padding;
+
+  @override
+  Widget build(BuildContext context) {
+    final radius = BorderRadius.circular(AppRadius.md);
+    final isEnabled = onPressed != null;
+
+    return Opacity(
+      opacity: isEnabled ? 1 : AppGraphit.disabledOpacity,
       child: Material(
-        color: Colors.transparent,
+        color: fill,
+        borderRadius: radius,
         child: AppInkWell(
           onTap: onPressed,
           borderRadius: radius,
-          child: Padding(
-            padding:
-                padding ??
-                const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xl,
-                  vertical: AppSpacing.xl,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minHeight: AppGraphit.buttonHeight,
+            ),
+            child: Padding(
+              padding:
+                  padding ??
+                  const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              // Fills the width it is given and no more height than the
+              // label needs.
+              child: Align(
+                heightFactor: 1,
+                child: IconTheme.merge(
+                  data: IconThemeData(color: foreground),
+                  child: child,
                 ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Flexible(
-                  child: Text(
-                    label,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: isEnabled
-                          ? colors.onSurface
-                          : colors.onSurfaceVariant,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                if (icon != null) ...<Widget>[
-                  const SizedBox(width: AppSpacing.sm),
-                  Icon(
-                    icon,
-                    color: isEnabled
-                        ? colors.onSurface
-                        : colors.onSurfaceVariant,
-                  ),
-                ],
-              ],
+              ),
             ),
           ),
         ),
@@ -211,36 +195,44 @@ class CookingFlowSecondaryActionButton extends StatelessWidget {
   }
 }
 
-/// Compact accent icon button for Cookflow inline actions.
-class CookingFlowActionIconButton extends StatelessWidget {
-  /// Creates compact Cookflow accent icon button.
-  const new({required this.icon, required this.onPressed, super.key});
+class _CookingFlowButtonLabel extends StatelessWidget {
+  const new({
+    required this.label,
+    required this.color,
+    this.leadingIcon,
+    this.trailingIcon,
+  });
 
-  /// Button icon.
-  final IconData icon;
-
-  /// Press callback.
-  final VoidCallback? onPressed;
+  final String label;
+  final Color color;
+  final IconData? leadingIcon;
+  final IconData? trailingIcon;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final isEnabled = onPressed != null;
-
-    return _CookingFlowAccentSurface(
-      onPressed: onPressed,
-      shadowBlurRadius: 18,
-      shadowOffset: const Offset(0, 10),
-      child: SizedBox(
-        width: 48,
-        height: 48,
-        child: Center(
-          child: Icon(
-            icon,
-            color: isEnabled ? colors.onPrimary : colors.onSurfaceVariant,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        if (leadingIcon != null) ...<Widget>[
+          Icon(leadingIcon, size: AppGraphit.toolIcon),
+          const SizedBox(width: AppSpacing.xs),
+        ],
+        Flexible(
+          child: Text(
+            label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.labelLarge
+                ?.copyWith(color: color, fontWeight: FontWeight.w700),
           ),
         ),
-      ),
+        if (trailingIcon != null) ...<Widget>[
+          const SizedBox(width: AppSpacing.xs),
+          Icon(trailingIcon, size: AppGraphit.toolIcon),
+        ],
+      ],
     );
   }
 }

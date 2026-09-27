@@ -1,5 +1,8 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
@@ -13,6 +16,8 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_step_layout.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_storage_container_models.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_text_styles.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
@@ -70,49 +75,30 @@ class CookingFlowSummaryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final schemeColors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
+    final sectionTitleStyle = textTheme.titleMedium?.copyWith(
+      color: colors.ink,
+      fontWeight: FontWeight.w800,
+    );
 
     return CookingFlowStepLayout(
       title: l10n.cookflowSummaryTitle,
       subtitle: l10n.cookflowSummaryBody,
       children: <Widget>[
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(color: colors.outlineVariant),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Padding(
-                padding: AppInsets.card,
-                child: Text(
-                  l10n.cookflowSummaryIngredientsTitle,
-                  style: Theme.of(context).textTheme.titleLarge
-                      ?.copyWith(fontWeight: FontWeight.w800),
-                ),
-              ),
-              Divider(
-                height: 1,
-                color: colors.outlineVariant.withValues(alpha: 0.45),
-              ),
-              Padding(
-                padding: AppInsets.card,
-                child: _SummaryIngredientsTable(
-                  ingredients: ingredients,
-                  inventoryItems: inventoryItems,
-                  onAmountChanged: onAmountChanged,
-                  onRemoveIngredient: onRemoveIngredient,
-                  onAddIngredientSourceSelected: onAddIngredientSourceSelected,
-                ),
-              ),
-            ],
-          ),
+        Text(l10n.cookflowSummaryIngredientsTitle, style: sectionTitleStyle),
+        const SizedBox(height: AppSpacing.lg),
+        _SummaryIngredientsTable(
+          ingredients: ingredients,
+          inventoryItems: inventoryItems,
+          onAmountChanged: onAmountChanged,
+          onRemoveIngredient: onRemoveIngredient,
+          onAddIngredientSourceSelected: onAddIngredientSourceSelected,
         ),
         if (storageContainers.isNotEmpty && ingredients.isNotEmpty) ...<Widget>[
-          const SizedBox(height: AppSpacing.xxxxl),
+          const SizedBox(height: AppSpacing.xxxl),
           _SummaryIngredientContainerSection(
             ingredients: ingredients,
             containers: storageContainers,
@@ -121,19 +107,18 @@ class CookingFlowSummaryPage extends StatelessWidget {
           ),
         ],
         if (adjustments.isNotEmpty) ...<Widget>[
-          const SizedBox(height: AppSpacing.xxxxl),
+          const SizedBox(height: AppSpacing.xxxl),
           Row(
             children: <Widget>[
-              Icon(Icons.warning_amber_rounded, color: colors.error),
+              Icon(Icons.warning_amber_rounded, color: schemeColors.error),
               const SizedBox(width: AppSpacing.sm),
               Text(
                 l10n.cookflowSummaryAdjustmentsTitle,
-                style: Theme.of(context).textTheme.titleLarge
-                    ?.copyWith(fontWeight: FontWeight.w800),
+                style: sectionTitleStyle,
               ),
             ],
           ),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.lg),
           for (var index = 0; index < adjustments.length; index++) ...<Widget>[
             _UnresolvedAdjustmentCard(
               adjustment: adjustments[index],
@@ -264,7 +249,7 @@ class _SummaryIngredientAddMenuRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -274,25 +259,24 @@ class _SummaryIngredientAddMenuRow extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: colors.primaryContainer.withValues(alpha: 0.75),
-              shape: BoxShape.circle,
+            width: AppGraphit.badge,
+            height: AppGraphit.badge,
+            color: colors.tile,
+            child: Icon(
+              Icons.add_rounded,
+              color: colors.ink,
+              size: AppGraphit.toolIcon,
             ),
-            child: Icon(Icons.add_rounded, color: colors.primary),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                color: colors.primary,
-                fontWeight: FontWeight.w800,
-              ),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: colors.ink, fontWeight: FontWeight.w700),
             ),
           ),
-          Icon(Icons.expand_more_rounded, color: colors.primary),
+          Icon(Icons.expand_more_rounded, color: colors.muted),
         ],
       ),
     );
@@ -306,44 +290,47 @@ class _SummaryIngredientAddMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.primary,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
+        color: colors.tile,
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.lg,
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Icon(Icons.add_rounded, color: colors.onPrimary),
-            const SizedBox(width: AppSpacing.sm),
-            Flexible(
-              child: Text(
-                label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                  color: colors.onPrimary,
-                  fontWeight: FontWeight.w800,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: AppGraphit.buttonHeight),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: colors.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Icon(Icons.expand_more_rounded, color: colors.onPrimary),
-          ],
+              const SizedBox(width: AppSpacing.xs),
+              Icon(
+                Icons.expand_more_rounded,
+                color: colors.ink,
+                size: AppGraphit.toolIcon,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+/// Sheet that lists the Vorrat, sorted by name, to pick one item.
 class _SummaryInventoryIngredientPicker extends StatelessWidget {
   const new({required this.inventoryItems});
 
@@ -352,7 +339,8 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
     final sortedItems = List<InventoryItem>.from(inventoryItems)
       ..sort(
         (left, right) =>
@@ -365,7 +353,7 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 520),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: colors.surface,
+            color: colors.paper,
             borderRadius: const BorderRadius.vertical(
               top: Radius.circular(AppRadius.xl),
             ),
@@ -383,12 +371,16 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
                       Expanded(
                         child: Text(
                           l10n.cookflowInventorySelectionTitle,
-                          style: Theme.of(context).textTheme.titleLarge
-                              ?.copyWith(fontWeight: FontWeight.w800),
+                          style: context.cookingFlowDisplayStyle(
+                            textTheme.titleLarge,
+                          ),
                         ),
                       ),
                       IconButton(
                         onPressed: () => Navigator.of(context).pop(),
+                        tooltip: MaterialLocalizations.of(context)
+                            .closeButtonTooltip,
+                        color: colors.ink,
                         icon: const Icon(Icons.close_rounded),
                       ),
                     ],
@@ -405,39 +397,19 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
                                 padding: AppInsets.card,
                                 child: Text(
                                   l10n.cookflowInventorySelectionEmpty,
+                                  style: textTheme.bodyMedium?.copyWith(
+                                    color: colors.muted,
+                                  ),
                                 ),
                               ),
                             )
-                          : ListView.builder(
+                          : ListView.separated(
                               itemCount: sortedItems.length,
+                              separatorBuilder: (_, _) =>
+                                  const _SummaryIngredientDivider(),
                               itemBuilder: (context, index) {
                                 final item = sortedItems[index];
-                                return Material(
-                                  type: MaterialType.transparency,
-                                  child: ListTile(
-                                    key: Key(
-                                      'cookflow_summary_inventory_item_'
-                                      '${item.id}',
-                                    ),
-                                    contentPadding: EdgeInsets.zero,
-                                    leading: PreparedMealCover(
-                                      label: item.name,
-                                      imageBytes: null,
-                                      imageUrl: item.imageUrl,
-                                      size: 40,
-                                      borderRadius: BorderRadius.circular(
-                                        AppRadius.md,
-                                      ),
-                                    ),
-                                    title: Text(item.name),
-                                    subtitle: Text(
-                                      cookingFlowInventoryAmountLabel(item),
-                                    ),
-                                    onTap: () {
-                                      Navigator.of(context).pop(item);
-                                    },
-                                  ),
-                                );
+                                return _SummaryInventoryPickerRow(item: item);
                               },
                             ),
                     ),
@@ -447,6 +419,45 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SummaryInventoryPickerRow extends StatelessWidget {
+  const new({required this.item});
+
+  final InventoryItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
+
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        key: Key('cookflow_summary_inventory_item_${item.id}'),
+        contentPadding: EdgeInsets.zero,
+        leading: PreparedMealCover(
+          label: item.name,
+          imageBytes: null,
+          imageUrl: item.imageUrl,
+          size: AppGraphit.rowTile,
+          borderRadius: BorderRadius.zero,
+        ),
+        title: Text(
+          item.name,
+          style: textTheme.titleSmall?.copyWith(
+            color: colors.ink,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        subtitle: Text(
+          cookingFlowInventoryAmountLabel(item),
+          style: textTheme.bodySmall?.copyWith(color: colors.muted),
+        ),
+        onTap: () => Navigator.of(context).pop(item),
       ),
     );
   }
@@ -470,41 +481,35 @@ class _SummaryIngredientsTable extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     final l10n = AppLocalizations.of(context)!;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(AppRadius.xl),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: colors.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(color: colors.outlineVariant),
-        ),
-        child: Column(
-          children: <Widget>[
-            if (ingredients.isEmpty)
-              _SummaryIngredientsEmptyRow(
-                message: l10n.cookflowEmptyIngredients,
-              )
-            else
-              for (var index = 0; index < ingredients.length; index++) ...[
-                if (index > 0) _SummaryIngredientDivider(colors: colors),
-                _SummaryIngredientRow(
-                  key: ValueKey(ingredients[index].key),
-                  ingredient: ingredients[index],
-                  inventoryItems: inventoryItems,
-                  onChanged: (value) => onAmountChanged(index, value),
-                  onDeletePressed: () => onRemoveIngredient(index),
-                ),
-              ],
-            _SummaryIngredientDivider(colors: colors),
-            _SummaryIngredientAddMenu.row(
-              key: const Key('cookflow_summary_add_ingredient_button'),
-              onSelected: onAddIngredientSourceSelected,
-            ),
-          ],
-        ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.card,
+        border: Border.all(color: colors.rule),
+      ),
+      child: Column(
+        children: <Widget>[
+          if (ingredients.isEmpty)
+            _SummaryIngredientsEmptyRow(message: l10n.cookflowEmptyIngredients)
+          else
+            for (var index = 0; index < ingredients.length; index++) ...[
+              if (index > 0) const _SummaryIngredientDivider(),
+              _SummaryIngredientRow(
+                key: ValueKey(ingredients[index].key),
+                ingredient: ingredients[index],
+                inventoryItems: inventoryItems,
+                onChanged: (value) => onAmountChanged(index, value),
+                onDeletePressed: () => onRemoveIngredient(index),
+              ),
+            ],
+          const _SummaryIngredientDivider(),
+          _SummaryIngredientAddMenu.row(
+            key: const Key('cookflow_summary_add_ingredient_button'),
+            onSelected: onAddIngredientSourceSelected,
+          ),
+        ],
       ),
     );
   }
@@ -517,7 +522,7 @@ class _SummaryIngredientsEmptyRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(
@@ -528,8 +533,8 @@ class _SummaryIngredientsEmptyRow extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: Text(
           message,
-          style: Theme.of(context).textTheme.bodyLarge
-              ?.copyWith(color: colors.onSurfaceVariant),
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: colors.muted),
         ),
       ),
     );
@@ -537,16 +542,14 @@ class _SummaryIngredientsEmptyRow extends StatelessWidget {
 }
 
 class _SummaryIngredientDivider extends StatelessWidget {
-  const new({required this.colors});
-
-  final ColorScheme colors;
+  const new();
 
   @override
   Widget build(BuildContext context) {
     return Divider(
-      height: 1,
-      thickness: 1,
-      color: colors.outlineVariant.withValues(alpha: 0.9),
+      height: AppSizes.dividerThickness,
+      thickness: AppSizes.dividerThickness,
+      color: FoodLabelColors.of(context).rule,
     );
   }
 }
@@ -566,7 +569,7 @@ class _SummaryIngredientContainerSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     final l10n = AppLocalizations.of(context)!;
     final assignableIngredients = ingredients
         .where((ingredient) => ingredient.inventoryItemIds.isNotEmpty)
@@ -574,9 +577,8 @@ class _SummaryIngredientContainerSection extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: colors.outlineVariant),
+        color: colors.card,
+        border: Border.all(color: colors.rule),
       ),
       child: Padding(
         padding: AppInsets.card,
@@ -586,14 +588,14 @@ class _SummaryIngredientContainerSection extends StatelessWidget {
             Text(
               l10n.cookflowIngredientContainerTitle,
               style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w700),
+                  ?.copyWith(color: colors.ink, fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: AppSpacing.lg),
             if (assignableIngredients.isEmpty)
               Text(
                 l10n.cookflowIngredientContainerEmpty,
                 style: Theme.of(context).textTheme.bodyMedium
-                    ?.copyWith(color: colors.onSurfaceVariant),
+                    ?.copyWith(color: colors.muted),
               )
             else
               for (final ingredient in assignableIngredients) ...<Widget>[
@@ -643,10 +645,16 @@ class _SummaryIngredientContainerRow extends StatelessWidget {
             children: <Widget>[
               Text(
                 ingredient.name,
-                style: Theme.of(context).textTheme.titleSmall
-                    ?.copyWith(fontWeight: FontWeight.w700),
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  color: FoodLabelColors.of(context).ink,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
-              Text('${ingredient.amount} ${ingredient.unitCode}'),
+              Text(
+                '${ingredient.amount} ${ingredient.unitCode}',
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(color: FoodLabelColors.of(context).muted),
+              ),
             ],
           ),
         ),
@@ -707,7 +715,12 @@ class _SummaryIngredientRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final fieldBorder = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      borderSide: BorderSide.none,
+    );
     final l10n = AppLocalizations.of(context)!;
     final usagePreview = _summaryUsagePreviewLabel(
       l10n: l10n,
@@ -730,8 +743,8 @@ class _SummaryIngredientRow extends StatelessWidget {
             label: previewItem?.name ?? ingredient.name,
             imageBytes: null,
             imageUrl: previewItem?.imageUrl,
-            size: 36,
-            borderRadius: BorderRadius.circular(999),
+            size: AppGraphit.badge,
+            borderRadius: BorderRadius.zero,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -745,18 +758,21 @@ class _SummaryIngredientRow extends StatelessWidget {
                         ingredient.name,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyLarge
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: textTheme.titleSmall?.copyWith(
+                          color: colors.ink,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     SizedBox(
-                      width: 64,
+                      width: AppGraphit.numberField,
                       child: TextFormField(
                         initialValue: ingredient.amount,
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.end,
                         onChanged: onChanged,
+                        cursorColor: colors.ink,
                         decoration: InputDecoration(
                           isDense: true,
                           contentPadding: const EdgeInsets.symmetric(
@@ -764,34 +780,22 @@ class _SummaryIngredientRow extends StatelessWidget {
                             vertical: AppSpacing.xs,
                           ),
                           filled: true,
-                          fillColor: colors.surfaceContainerLowest,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            borderSide: BorderSide(
-                              color: colors.outlineVariant.withValues(
-                                alpha: 0.45,
-                              ),
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(AppRadius.md),
-                            borderSide: BorderSide(
-                              color: colors.outlineVariant.withValues(
-                                alpha: 0.45,
-                              ),
-                            ),
-                          ),
+                          fillColor: colors.tile,
+                          border: fieldBorder,
+                          enabledBorder: fieldBorder,
+                          focusedBorder: fieldBorder,
                         ),
-                        style: Theme.of(context).textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: context.cookingFlowDisplayStyle(
+                          textTheme.titleMedium,
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
                     Text(
                       ingredient.unitCode,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: colors.onSurfaceVariant,
-                        fontWeight: FontWeight.w700,
+                      style: textTheme.labelLarge?.copyWith(
+                        color: colors.muted,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const SizedBox(width: AppSpacing.xs),
@@ -799,7 +803,7 @@ class _SummaryIngredientRow extends StatelessWidget {
                       onPressed: onDeletePressed,
                       icon: Icon(
                         Icons.delete_outline_rounded,
-                        color: colors.onSurfaceVariant,
+                        color: colors.muted,
                       ),
                       visualDensity: VisualDensity.compact,
                       padding: EdgeInsets.zero,
@@ -816,8 +820,8 @@ class _SummaryIngredientRow extends StatelessWidget {
                     usagePreview,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: colors.primary,
+                    style: textTheme.labelMedium?.copyWith(
+                      color: colors.ink,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
@@ -894,14 +898,14 @@ class _UnresolvedAdjustmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final schemeColors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.error),
+        color: colors.card,
+        border: Border.all(color: schemeColors.error),
       ),
       child: Padding(
         padding: AppInsets.card,
@@ -910,10 +914,10 @@ class _UnresolvedAdjustmentCard extends StatelessWidget {
           children: <Widget>[
             Text(
               '"$adjustment"',
-              style: Theme.of(context).textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.w500),
+              style: Theme.of(context).textTheme.titleLarge
+                  ?.copyWith(color: colors.ink, fontWeight: FontWeight.w500),
             ),
-            const SizedBox(height: AppSpacing.xl),
+            const SizedBox(height: AppSpacing.lg),
             SizedBox(
               width: double.infinity,
               child: _SummaryIngredientAddMenu.button(

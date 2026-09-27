@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/cooking_flow/presentation/'
+    'cooking_flow_action_button.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Header displaying the inventory check title and optional reset action.
@@ -21,26 +23,24 @@ class CookingFlowInventoryCheckHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     final l10n = AppLocalizations.of(context)!;
 
     return Row(
       children: <Widget>[
-        Icon(Icons.shopping_cart_outlined, color: colors.onSurfaceVariant),
-        const SizedBox(width: AppSpacing.sm),
-        Text(
-          l10n.cookflowInventoryCheckTitle,
-          style: Theme.of(context).textTheme.titleMedium
-              ?.copyWith(fontWeight: FontWeight.w800),
+        Expanded(
+          child: Text(
+            l10n.cookflowInventoryCheckTitle,
+            style: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(color: colors.ink, fontWeight: FontWeight.w800),
+          ),
         ),
-        const Spacer(),
         if (hasSelections)
-          TextButton.icon(
+          CookingFlowQuietButton(
+            label: l10n.cookflowResetButton,
             onPressed: () {
               unawaited(onRestartPressed());
             },
-            icon: const Icon(Icons.restart_alt_rounded),
-            label: Text(l10n.cookflowResetButton),
           ),
       ],
     );

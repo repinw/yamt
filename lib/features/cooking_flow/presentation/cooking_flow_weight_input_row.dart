@@ -1,7 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_text_styles.dart';
 
-/// Shared weight input row for cookflow measurement fields.
+/// Shared weight input row for cookflow measurement fields: a large number
+/// on a soft tile with the unit after it.
 class CookingFlowWeightInputRow extends StatelessWidget {
   /// Creates weight input row.
   const new({
@@ -26,7 +30,12 @@ class CookingFlowWeightInputRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final border = OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      borderSide: BorderSide.none,
+    );
 
     return Row(
       children: <Widget>[
@@ -35,30 +44,31 @@ class CookingFlowWeightInputRow extends StatelessWidget {
             controller: controller,
             keyboardType: TextInputType.number,
             onChanged: onChanged,
+            cursorColor: colors.ink,
             decoration: InputDecoration(
               hintText: hintText,
+              hintStyle: context.cookingFlowDisplayStyle(
+                textTheme.headlineSmall,
+                color: colors.muted,
+              ),
               filled: true,
-              fillColor: colors.surface,
+              fillColor: colors.tile,
               contentPadding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.xxl,
-                vertical: AppSpacing.xxl,
+                horizontal: AppSpacing.xl,
+                vertical: AppSpacing.lg,
               ),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppRadius.lg),
-                borderSide: BorderSide(color: colors.outlineVariant),
-              ),
+              border: border,
+              enabledBorder: border,
+              focusedBorder: border,
             ),
-            style: Theme.of(context).textTheme.titleLarge,
+            style: context.cookingFlowDisplayStyle(textTheme.headlineSmall),
           ),
         ),
         const SizedBox(width: AppSpacing.md),
         Text(
           unitLabel,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            color: colors.onSurfaceVariant,
+          style: textTheme.titleMedium?.copyWith(
+            color: colors.muted,
             fontWeight: FontWeight.w600,
           ),
         ),

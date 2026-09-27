@@ -82,8 +82,6 @@ class CookingFlowPageBottomNavigation extends StatelessWidget {
         onSecondaryPressed: onLaterPressed,
         primaryLabel: _introPrimaryButtonLabel(l10n),
         onPrimaryPressed: _introPrimaryButtonPressed,
-        primaryLeadingIcon: _introPrimaryButtonLeadingIcon,
-        primaryTrailingIcon: _introPrimaryButtonTrailingIcon,
       ),
       CookingFlowStep.preparation => CookingFlowPhaseBottomAction(
         label: l10n.cookflowContinueButton,
@@ -104,7 +102,6 @@ class CookingFlowPageBottomNavigation extends StatelessWidget {
         onPressed: isFinalizingMeal || !hasValidFinalizeWeight
             ? null
             : onFinalizePressed,
-        icon: Icons.check_circle_outline_rounded,
       ),
       CookingFlowStep.success => const SizedBox.shrink(),
     };
@@ -133,29 +130,5 @@ class CookingFlowPageBottomNavigation extends StatelessWidget {
       return l10n.cookflowShoppingListContinueButton;
     }
     return l10n.cookflowStartButton;
-  }
-
-  IconData? get _introPrimaryButtonLeadingIcon {
-    if (introHasUnresolvedConflicts) {
-      return Icons.warning_amber_rounded;
-    }
-    if (introHasShoppingSelections &&
-        introAllItemsSelected &&
-        !introShoppingHandled) {
-      return Icons.shopping_cart_outlined;
-    }
-    return null;
-  }
-
-  IconData? get _introPrimaryButtonTrailingIcon {
-    if (introHasUnresolvedConflicts) {
-      return null;
-    }
-    if (introHasShoppingSelections &&
-        introAllItemsSelected &&
-        !introShoppingHandled) {
-      return null;
-    }
-    return Icons.play_arrow_rounded;
   }
 }

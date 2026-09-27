@@ -4,99 +4,90 @@
 import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/utils/product_image_url.dart';
-import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_text_styles.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_cover.dart';
 
+/// Head of the intro step: a tilted framed picture, a small caption, the
+/// recipe name and one line under it, like the head of the eat page.
 class CookingFlowIntroMealHero extends StatelessWidget {
   const new({
     required this.label,
+    required this.kicker,
+    required this.caption,
     required this.imageBytes,
     required this.imageUrl,
   });
 
   final String label;
+  final String kicker;
+  final String caption;
   final Uint8List? imageBytes;
   final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(AppRadius.xl);
-    final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
 
-    return ClipRRect(
-      borderRadius: radius,
-      child: AspectRatio(
-        aspectRatio: 16 / 10,
-        child: Stack(
-          fit: StackFit.expand,
-          children: <Widget>[
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: <Color>[
-                    colors.primary.withValues(alpha: 0.14),
-                    colors.surfaceContainerLow,
-                  ],
-                ),
-              ),
-              child: imageBytes != null
-                  ? Image.memory(
-                      imageBytes!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) {
-                        return _IntroMealHeroFallback(label: label);
-                      },
-                    )
-                  : normalizedImageUrl != null
-                  ? AppCachedNetworkImage(
-                      imageUrl: normalizedImageUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (_, _, _) {
-                        return _IntroMealHeroFallback(label: label);
-                      },
-                    )
-                  : _IntroMealHeroFallback(label: label),
-            ),
-            DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: <Color>[
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.08),
-                  ],
-                ),
+    return Row(
+      spacing: AppSpacing.xl,
+      children: <Widget>[
+        Transform.rotate(
+          angle: AppFoodLabel.imageTilt,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: colors.tile,
+              border: Border.all(
+                color: colors.ink,
+                width: AppFoodLabel.outline,
               ),
             ),
-          ],
+            child: Padding(
+              padding: const EdgeInsets.all(AppFoodLabel.outline),
+              // The picture sits inside the frame and its inset, so the
+              // frame stays visible on every side.
+              child: PreparedMealCover(
+                label: label,
+                imageBytes: imageBytes,
+                imageUrl: imageUrl,
+                size: AppFoodLabel.imageTile - 4 * AppFoodLabel.outline,
+                borderRadius: BorderRadius.zero,
+              ),
+            ),
+          ),
         ),
-      ),
-    );
-  }
-}
-
-class _IntroMealHeroFallback extends StatelessWidget {
-  const new({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final trimmed = label.trim();
-    final initial = trimmed.isEmpty ? '?' : trimmed.substring(0, 1);
-
-    return Center(
-      child: Text(
-        initial.toUpperCase(),
-        style: Theme.of(context).textTheme.displaySmall
-            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
-      ),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.xs,
+            children: <Widget>[
+              Text(
+                kicker.toUpperCase(),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: context.cookingFlowKickerStyle,
+              ),
+              Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: context.cookingFlowDisplayStyle(textTheme.headlineSmall),
+              ),
+              Text(
+                caption,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: textTheme.bodySmall?.copyWith(color: colors.muted),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

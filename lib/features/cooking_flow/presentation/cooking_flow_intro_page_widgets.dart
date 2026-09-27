@@ -1,25 +1,28 @@
 // Internal split widgets/helpers are public only for sibling imports.
-// ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
+// ignore_for_file: public_member_api_docs
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_inventory_conflict_resolver.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_intro_page_assignment.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_inventory_conflict_panels.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_inventory_row_actions.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_intro_row_text.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/constants/'
-    'inventory_ui_constants.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
+/// One ingredient of the intro step: a framed picture, the name and amount,
+/// the three choices as chips, and the conflict or suggestion panel under it.
+/// Rows are flat and separated by a rule, like the Vorrat list.
 class CookingFlowInventoryCheckRow extends StatelessWidget {
   const new({
     required this.row,
@@ -62,12 +65,7 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final successColors = AppInventoryEatActionColors.fromColorScheme(colors);
-    final hasUnresolvedConflict =
-        conflict != null && conflictResolution == null;
-    final hasSuggestion = suggestedItem != null;
-    final isCompleted = selectedAction != null;
+    final colors = FoodLabelColors.of(context);
     final selectedItems = cookingFlowResolveSelectedInventoryItems(
       selectedSelections: selectedSelections,
       inventoryItems: inventoryItems,
@@ -86,52 +84,21 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
       localeCode: localeCode,
     );
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 180),
-      curve: Curves.easeOutCubic,
-      decoration: hasUnresolvedConflict
-          ? BoxDecoration(
-              color: colors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(color: colors.error, width: 1.4),
-            )
-          : hasSuggestion
-          ? BoxDecoration(
-              color: colors.primaryContainer.withValues(alpha: 0.28),
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(
-                color: colors.primary.withValues(alpha: 0.4),
-                width: 1.4,
-              ),
-            )
-          : isCompleted
-          ? BoxDecoration(
-              color: colors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(color: successColors.borderColor, width: 1.4),
-            )
-          : BoxDecoration(
-              color: colors.surfaceContainerLow,
-              borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(color: colors.outlineVariant),
-            ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: colors.rule)),
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg,
-          vertical: AppSpacing.lg,
-        ),
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                PreparedMealCover(
+                _CookingFlowRowTile(
                   label: primarySelectedItem?.name ?? row.name,
-                  imageBytes: null,
                   imageUrl: primarySelectedItem?.imageUrl ?? row.imageUrl,
-                  size: 52,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 const SizedBox(width: AppSpacing.lg),
                 Expanded(
@@ -145,23 +112,16 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
                     onEditPressed: onEditPressed,
                   ),
                 ),
-                const SizedBox(width: AppSpacing.sm),
-                CookingFlowInventoryRowActions(
-                  selectedAction: selectedAction,
-                  onAssignPressed: onAssignPressed,
-                  onShoppingPressed: onShoppingPressed,
-                  onIgnorePressed: onIgnorePressed,
-                ),
               ],
             ),
+            const SizedBox(height: AppSpacing.sm),
+            CookingFlowInventoryRowActions(
+              selectedAction: selectedAction,
+              onAssignPressed: onAssignPressed,
+              onShoppingPressed: onShoppingPressed,
+              onIgnorePressed: onIgnorePressed,
+            ),
             if (conflict != null) ...<Widget>[
-              const SizedBox(height: AppSpacing.md),
-              Divider(
-                height: 1,
-                color: hasUnresolvedConflict
-                    ? colors.error.withValues(alpha: 0.28)
-                    : colors.outlineVariant.withValues(alpha: 0.22),
-              ),
               const SizedBox(height: AppSpacing.md),
               CookingFlowInventoryConflictPanel(
                 conflict: conflict!,
@@ -187,170 +147,31 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
   }
 }
 
-class CookingFlowInventoryCheckRowText extends StatelessWidget {
-  const new({
-    required this.row,
-    required this.amountLabel,
-    required this.selectedAction,
-    required this.selectedSelections,
-    required this.inventoryItems,
-    required this.localeCode,
-    required this.onEditPressed,
-  });
+/// Square framed picture of a row. Square, because it shows something.
+class _CookingFlowRowTile extends StatelessWidget {
+  const new({required this.label, required this.imageUrl});
 
-  final CookingFlowInventoryCheckRowData row;
-  final String amountLabel;
-  final CookingFlowInventoryRowAction? selectedAction;
-  final List<CookingFlowInventoryAssignmentSelection> selectedSelections;
-  final List<InventoryItem> inventoryItems;
-  final String localeCode;
-  final VoidCallback onEditPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final selectedItems = cookingFlowResolveSelectedInventoryItems(
-      selectedSelections: selectedSelections,
-      inventoryItems: inventoryItems,
-    );
-    final showsAssignedTitle =
-        selectedAction == CookingFlowInventoryRowAction.assigned &&
-        selectedItems.isNotEmpty;
-    final titleText = showsAssignedTitle
-        ? cookingFlowSelectedInventoryTitle(selectedItems)
-        : row.name;
-    final additionalItems = selectedItems.length > 1
-        ? selectedItems.skip(1).toList(growable: false)
-        : const <InventoryItem>[];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Text(
-          titleText,
-          maxLines: 3,
-          overflow: TextOverflow.visible,
-          style: Theme.of(context).textTheme.titleMedium
-              ?.copyWith(fontWeight: FontWeight.w700),
-        ),
-        const SizedBox(height: AppSpacing.xs),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Flexible(
-              child: Text(
-                amountLabel.isEmpty ? l10n.cookflowUnknownAmount : amountLabel,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.xxs),
-            IconButton(
-              tooltip: l10n.cookflowEditIngredientTooltip,
-              onPressed: onEditPressed,
-              icon: const Icon(Icons.edit_outlined),
-              iconSize: 14,
-              padding: EdgeInsets.zero,
-              visualDensity: VisualDensity.compact,
-              constraints: const BoxConstraints.tightFor(width: 24, height: 24),
-            ),
-          ],
-        ),
-        if (cookingFlowInventoryUsagePreview(
-              amountLabel: amountLabel,
-              selectedAction: selectedAction,
-              selectedSelections: selectedSelections,
-              inventoryItems: inventoryItems,
-              localeCode: localeCode,
-            )
-            case final usagePreview?) ...<Widget>[
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            l10n.cookflowInventoryUsagePreview(
-              usagePreview.usedAmountLabel,
-              usagePreview.remainingAmountLabel,
-            ),
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
-        if (additionalItems.isNotEmpty) ...<Widget>[
-          const SizedBox(height: AppSpacing.sm),
-          Wrap(
-            spacing: AppSpacing.xs,
-            runSpacing: AppSpacing.xs,
-            children: additionalItems
-                .map((item) {
-                  final amountLabel = cookingFlowInventoryAmountLabel(item);
-                  return _AdditionalAssignedInventoryPill(
-                    imageLabel: item.name,
-                    imageUrl: item.imageUrl,
-                    label: '+ ${item.name} $amountLabel',
-                  );
-                })
-                .toList(growable: false),
-          ),
-        ],
-      ],
-    );
-  }
-}
-
-String cookingFlowSelectedInventoryTitle(List<InventoryItem> selectedItems) {
-  if (selectedItems.isEmpty) {
-    return '';
-  }
-  return selectedItems.first.name;
-}
-
-class _AdditionalAssignedInventoryPill extends StatelessWidget {
-  const new({
-    required this.imageLabel,
-    required this.imageUrl,
-    required this.label,
-  });
-
-  final String imageLabel;
-  final String? imageUrl;
   final String label;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.xs,
-      ),
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLowest,
-        borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: colors.outlineVariant.withValues(alpha: 0.2)),
+        color: colors.tile,
+        border: Border.all(color: colors.ink, width: AppFoodLabel.chipOutline),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          CookingFlowInventoryAssignmentPreview(
-            label: imageLabel,
-            imageUrl: imageUrl,
-            size: 22,
-          ),
-          const SizedBox(width: AppSpacing.xs),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: colors.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(AppFoodLabel.chipOutline),
+        child: PreparedMealCover(
+          label: label,
+          imageBytes: null,
+          imageUrl: imageUrl,
+          size: AppGraphit.rowTile - 4 * AppFoodLabel.chipOutline,
+          borderRadius: BorderRadius.zero,
+        ),
       ),
     );
   }

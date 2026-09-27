@@ -4,7 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/cooking_flow/presentation/'
+    'cooking_flow_action_button.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_text_styles.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
     'kitchen_utensils_controller.dart';
@@ -58,9 +63,7 @@ class CookingFlowTareUtensilPicker extends ConsumerWidget {
         utensilsAsync.when(
           data: (utensils) {
             if (utensils.isEmpty) {
-              return _CookingFlowTareUtensilEmptyState(
-                onOpenKitchenUtensilsPressed: onOpenKitchenUtensilsPressed,
-              );
+              return const _CookingFlowTareUtensilEmptyState();
             }
             return _CookingFlowTareUtensilList(
               utensils: utensils,
@@ -93,56 +96,39 @@ class _CookingFlowTareUtensilHeader extends StatelessWidget {
       children: <Widget>[
         Expanded(
           child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleSmall
-                ?.copyWith(fontWeight: FontWeight.w800),
+            title.toUpperCase(),
+            style: context.cookingFlowKickerStyle,
           ),
         ),
-        TextButton.icon(
+        CookingFlowQuietButton(
+          label: l10n.kitchenUtensilAddAction,
           onPressed: onOpenKitchenUtensilsPressed,
-          icon: const Icon(Icons.kitchen_rounded),
-          label: Text(l10n.kitchenUtensilAddAction),
         ),
       ],
     );
   }
 }
 
+/// Shown without saved utensils. The header above already offers
+/// "Utensil hinzufügen", so this is text only.
 class _CookingFlowTareUtensilEmptyState extends StatelessWidget {
-  const new({required this.onOpenKitchenUtensilsPressed});
-
-  final VoidCallback onOpenKitchenUtensilsPressed;
+  const new();
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     final l10n = AppLocalizations.of(context)!;
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.outlineVariant),
+        color: colors.tile,
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Padding(
         padding: AppInsets.card,
-        child: Row(
-          children: <Widget>[
-            Icon(Icons.kitchen_rounded, color: colors.onSurfaceVariant),
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                l10n.kitchenUtensilsEmptyState,
-                style: Theme.of(context).textTheme.bodyMedium
-                    ?.copyWith(color: colors.onSurfaceVariant),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.md),
-            IconButton.filledTonal(
-              tooltip: l10n.kitchenUtensilAddAction,
-              onPressed: onOpenKitchenUtensilsPressed,
-              icon: const Icon(Icons.add_rounded),
-            ),
-          ],
+        child: Text(
+          l10n.kitchenUtensilsEmptyState,
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: colors.muted),
         ),
       ),
     );
@@ -197,7 +183,9 @@ class _CookingFlowTareUtensilTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
+    final foreground = isSelected ? colors.paper : colors.ink;
     final l10n = AppLocalizations.of(context)!;
     final imagePath = utensil.imageStoragePath;
     final imageUrl = imagePath == null
@@ -205,7 +193,7 @@ class _CookingFlowTareUtensilTile extends ConsumerWidget {
         : ref.watch(kitchenUtensilImageUrlProvider(imagePath)).asData?.value;
     final displayName = utensil.name ?? l10n.kitchenUtensilUnnamedLabel;
     final weightLabel = l10n.kitchenUtensilWeightValue(utensil.weightGrams);
-    final radius = BorderRadius.circular(AppRadius.lg);
+    final radius = BorderRadius.circular(AppRadius.md);
 
     return Semantics(
       key: Key('cookflow_tare_utensil_${utensil.id}'),
@@ -213,9 +201,7 @@ class _CookingFlowTareUtensilTile extends ConsumerWidget {
       selected: isSelected,
       label: '$displayName, $weightLabel',
       child: Material(
-        color: isSelected
-            ? colors.primaryContainer
-            : colors.surfaceContainerLow,
+        color: isSelected ? colors.ink : colors.tile,
         borderRadius: radius,
         child: AppInkWell(
           borderRadius: radius,
@@ -240,20 +226,22 @@ class _CookingFlowTareUtensilTile extends ConsumerWidget {
                         displayName,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall
-                            ?.copyWith(fontWeight: FontWeight.w800),
+                        style: textTheme.titleSmall?.copyWith(
+                          color: foreground,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: AppSpacing.xxs),
                       Text(
                         weightLabel,
-                        style: Theme.of(context).textTheme.bodyMedium
-                            ?.copyWith(color: colors.onSurfaceVariant),
+                        style: textTheme.bodyMedium?.copyWith(
+                          color: isSelected ? colors.paper : colors.muted,
+                        ),
                       ),
                     ],
                   ),
                 ),
-                if (isSelected)
-                  Icon(Icons.check_circle_rounded, color: colors.primary),
+                if (isSelected) Icon(Icons.check_rounded, color: foreground),
               ],
             ),
           ),

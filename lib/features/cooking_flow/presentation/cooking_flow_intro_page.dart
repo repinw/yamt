@@ -64,7 +64,6 @@ class CookingFlowIntroPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final colors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
     final imageRef = maybeLocalImageAssetRef(template.imageAssetId);
     final storedImageBytes = imageRef == null
@@ -89,47 +88,25 @@ class CookingFlowIntroPage extends ConsumerWidget {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 560),
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    const SizedBox(height: AppSpacing.xxxxl),
+                    const SizedBox(height: AppSpacing.xl),
                     CookingFlowIntroMealHero(
                       label: template.name,
+                      kicker: l10n.cookflowIntroHeadline,
+                      caption: l10n.cookflowOriginalPortionsLabel(
+                        template.totalPortions < 1 ? 1 : template.totalPortions,
+                      ),
                       imageBytes: storedImageBytes,
                       imageUrl: template.imageUrl,
                     ),
-                    const SizedBox(height: AppSpacing.xxxxl),
-                    Text(
-                      l10n.cookflowIntroHeadline,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineSmall
-                          ?.copyWith(fontWeight: FontWeight.w800),
-                    ),
-                    const SizedBox(height: AppSpacing.lg),
-                    Text.rich(
-                      TextSpan(
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(color: colors.onSurfaceVariant),
-                        children: <InlineSpan>[
-                          TextSpan(text: l10n.cookflowRecipeLabel),
-                          TextSpan(
-                            text: template.name,
-                            style: TextStyle(
-                              color: colors.onSurface,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: AppSpacing.xxxxl),
+                    const SizedBox(height: AppSpacing.xxxl),
                     CookingFlowIntroPortionScaler(
                       originalPortions: template.totalPortions,
                       targetPortions: targetPortions.round(),
                       onChanged: onTargetPortionsChanged,
                     ),
-                    const SizedBox(height: AppSpacing.xxxxl),
+                    const SizedBox(height: AppSpacing.xxxl),
                     CookingFlowInventoryCheckCard(
                       template: template,
                       targetPortions: targetPortions.round(),

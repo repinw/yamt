@@ -1,7 +1,10 @@
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
@@ -13,6 +16,8 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_storage_container_models.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_weight_input_row.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_text_styles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Finalize step for cookflow.
@@ -64,7 +69,9 @@ class CookingFlowFinalizePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final schemeColors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
     final roundedPortions = portionCount.round();
     // The default follows the intro target, which can exceed six portions.
@@ -87,12 +94,11 @@ class CookingFlowFinalizePage extends StatelessWidget {
           isWeightValid: isWeightValid,
           onContainerChanged: onContainerChanged,
         ),
-        const SizedBox(height: AppSpacing.xxxxl),
+        const SizedBox(height: AppSpacing.xxxl),
         DecoratedBox(
           decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(color: colors.outlineVariant),
+            color: colors.card,
+            border: Border.all(color: colors.rule),
           ),
           child: Padding(
             padding: AppInsets.card,
@@ -104,40 +110,46 @@ class CookingFlowFinalizePage extends StatelessWidget {
                     Expanded(
                       child: Text(
                         l10n.cookflowSplitIntoPortionsLabel,
-                        style: Theme.of(context).textTheme.titleLarge
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: textTheme.titleMedium?.copyWith(
+                          color: colors.ink,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.md),
                     Switch(
                       value: splitIntoPortions,
                       onChanged: onSplitIntoPortionsChanged,
-                      activeThumbColor: colors.onPrimary,
-                      activeTrackColor: colors.primary,
+                      activeThumbColor: colors.paper,
+                      activeTrackColor: colors.ink,
+                      inactiveThumbColor: colors.muted,
+                      inactiveTrackColor: colors.tile,
+                      trackOutlineColor: WidgetStatePropertyAll<Color>(
+                        colors.rule,
+                      ),
                     ),
                   ],
                 ),
                 if (splitIntoPortions) ...<Widget>[
                   const SizedBox(height: AppSpacing.lg),
-                  Divider(
-                    height: 1,
-                    color: colors.outlineVariant.withValues(alpha: 0.45),
-                  ),
-                  const SizedBox(height: AppSpacing.xxl),
+                  Divider(height: 1, color: colors.rule),
+                  const SizedBox(height: AppSpacing.xl),
                   Text(
-                    l10n.cookflowHowManyPortions,
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(color: colors.onSurfaceVariant),
+                    l10n.cookflowHowManyPortions.toUpperCase(),
+                    style: context.cookingFlowKickerStyle,
                   ),
-                  const SizedBox(height: AppSpacing.md),
+                  const SizedBox(height: AppSpacing.xs),
                   Row(
                     children: <Widget>[
                       Expanded(
                         child: SliderTheme(
                           data: SliderTheme.of(context).copyWith(
-                            activeTrackColor: colors.primary,
-                            inactiveTrackColor: colors.outlineVariant,
-                            thumbColor: colors.onSurfaceVariant,
+                            activeTrackColor: colors.ink,
+                            inactiveTrackColor: colors.rule,
+                            thumbColor: colors.ink,
+                            overlayColor: colors.ink.withValues(
+                              alpha: AppFoodLabel.sliderOverlayAlpha,
+                            ),
                           ),
                           child: Slider(
                             value: portionCount,
@@ -151,12 +163,13 @@ class CookingFlowFinalizePage extends StatelessWidget {
                       const SizedBox(width: AppSpacing.lg),
                       Text(
                         '$roundedPortions',
-                        style: Theme.of(context).textTheme.headlineSmall
-                            ?.copyWith(fontWeight: FontWeight.w700),
+                        style: context.cookingFlowDisplayStyle(
+                          textTheme.headlineMedium,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: AppSpacing.xl),
                   NutritionMetricsStrip(
                     metrics: <NutritionMetric>[
                       NutritionMetric(
@@ -176,7 +189,7 @@ class CookingFlowFinalizePage extends StatelessWidget {
                         value: fatValue,
                       ),
                     ],
-                    colorScheme: colors,
+                    colorScheme: schemeColors,
                     highlightedMetricIndex: 0,
                   ),
                 ],
@@ -206,61 +219,49 @@ class _FinalizeStorageContainersSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final schemeColors = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context)!;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: colors.outlineVariant),
-      ),
-      child: Padding(
-        padding: AppInsets.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Text(
-                  l10n.cookflowStorageContainersTitle,
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.lg),
-            for (var index = 0; index < containers.length; index++) ...[
-              _FinalizeStorageContainerCard(
-                container: containers[index],
-                index: index,
-                portions:
-                    containers.length > 1 && index < containerPortions.length
-                    ? containerPortions[index]
-                    : null,
-                isWeightValid: isWeightValid,
-                onContainerChanged: onContainerChanged,
-              ),
-              if (index < containers.length - 1)
-                const SizedBox(height: AppSpacing.xxl),
-            ],
-            if (validationMessage case final String message) ...<Widget>[
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                message,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: colors.error,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(
+          l10n.cookflowStorageContainersTitle,
+          style: Theme.of(context).textTheme.titleMedium
+              ?.copyWith(color: colors.ink, fontWeight: FontWeight.w800),
         ),
-      ),
+        const SizedBox(height: AppSpacing.lg),
+        for (var index = 0; index < containers.length; index++) ...[
+          _FinalizeStorageContainerCard(
+            container: containers[index],
+            index: index,
+            portions: containers.length > 1 && index < containerPortions.length
+                ? containerPortions[index]
+                : null,
+            isWeightValid: isWeightValid,
+            onContainerChanged: onContainerChanged,
+          ),
+          if (index < containers.length - 1)
+            const SizedBox(height: AppSpacing.lg),
+        ],
+        if (validationMessage case final String message) ...<Widget>[
+          const SizedBox(height: AppSpacing.lg),
+          Text(
+            message,
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: schemeColors.error,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
 
+/// One container to weigh: name, tare, the gross weight field and the net
+/// weight as the large number. Square box with a thin rule.
 class _FinalizeStorageContainerCard extends StatelessWidget {
   const new({
     required this.container,
@@ -280,7 +281,9 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final schemeColors = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
     final taraWeight = _parseWeight(container.taraController.text);
     final grossWeight = _parseWeight(container.grossWeightController.text);
@@ -288,9 +291,8 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.outlineVariant),
+        color: colors.card,
+        border: Border.all(color: colors.rule),
       ),
       child: Padding(
         padding: AppInsets.card,
@@ -300,16 +302,13 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
             Row(
               children: <Widget>[
                 Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: colors.primaryContainer.withValues(alpha: 0.72),
-                    borderRadius: BorderRadius.circular(AppRadius.md),
-                  ),
+                  width: AppGraphit.badge,
+                  height: AppGraphit.badge,
+                  color: colors.tile,
                   child: Icon(
                     Icons.kitchen_rounded,
-                    color: colors.primary,
-                    size: 20,
+                    color: colors.ink,
+                    size: AppGraphit.toolIcon,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -318,69 +317,69 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
                     _containerLabel(l10n, container, index),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w800),
+                    style: context.cookingFlowDisplayStyle(
+                      textTheme.titleLarge,
+                    ),
                   ),
                 ),
                 if (portions case final int count) ...<Widget>[
                   const SizedBox(width: AppSpacing.sm),
                   Text(
                     l10n.cookflowContainerPortionsLabel(count),
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      color: colors.onSurfaceVariant,
+                    style: textTheme.labelLarge?.copyWith(
+                      color: colors.muted,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                 ],
               ],
             ),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xl),
             Row(
               children: <Widget>[
                 Text(
                   l10n.cookflowContainerTaraLabel,
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.copyWith(color: colors.onSurfaceVariant),
+                  style: textTheme.bodyMedium?.copyWith(color: colors.muted),
                 ),
                 const Spacer(),
                 Text(
                   '${taraWeight.toStringAsFixed(0)} g',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: colors.onSurfaceVariant,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colors.muted,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xl),
             Text(
-              l10n.cookflowGrossWeightTitle,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
+              l10n.cookflowGrossWeightTitle.toUpperCase(),
+              style: context.cookingFlowKickerStyle,
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.xs),
             CookingFlowWeightInputRow(
               controller: container.grossWeightController,
               unitLabel: l10n.cookflowGramUnit,
               hintText: l10n.cookflowGrossWeightHint,
               onChanged: onContainerChanged,
             ),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xl),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
                 Text(
                   l10n.cookflowNetWeightLabel,
-                  style: Theme.of(context).textTheme.titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700),
+                  style: textTheme.titleMedium?.copyWith(
+                    color: colors.ink,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const Spacer(),
                 Text(
                   '${netWeight.toStringAsFixed(0)} g',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: isWeightValid ? colors.primary : colors.error,
+                  style: context.cookingFlowDisplayStyle(
+                    textTheme.headlineMedium,
+                    color: isWeightValid ? colors.ink : schemeColors.error,
                   ),
                 ),
               ],

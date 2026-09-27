@@ -474,10 +474,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Einkaufsliste'),
-      findsOneWidget,
-    );
+    expect(find.text('Einkaufsliste'), findsOneWidget);
     expect(find.text('Später'), findsOneWidget);
   });
 
@@ -507,9 +504,7 @@ void main() {
     await tester.tap(secondCartAction);
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.text('Einkaufsliste'),
-    );
+    await tester.tap(find.text('Einkaufsliste'));
     await tester.pumpAndSettle();
 
     expect(shoppingListRepository.savedItems.map((item) => item.name), [
@@ -528,7 +523,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('1. Vorbereitung'), findsNothing);
-    expect(find.text('Kochsession starten'), findsOneWidget);
+    expect(find.text('KOCHSESSION STARTEN'), findsOneWidget);
   });
 
   testWidgets('shopping redirect does not wait for session save', (
@@ -554,9 +549,7 @@ void main() {
     await tester.tap(cartAction);
     await tester.pumpAndSettle();
 
-    await tester.tap(
-      find.text('Einkaufsliste'),
-    );
+    await tester.tap(find.text('Einkaufsliste'));
     await tester.pumpAndSettle();
 
     expect(shoppingListRepository.savedItems.single.name, '300 g Linsen');
@@ -684,7 +677,7 @@ void main() {
       findsNothing,
     );
 
-    await tester.tap(find.byTooltip('Behälter hinzufügen'));
+    await tester.tap(find.text('Behälter hinzufügen'));
     await tester.pumpAndSettle();
 
     final secondPot = find.byKey(const Key('cookflow_tare_utensil_pot-2')).last;
@@ -783,7 +776,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Gespeicherte Utensilien'), findsOneWidget);
+    expect(find.text('GESPEICHERTE UTENSILIEN'), findsOneWidget);
     expect(find.text('Suppentopf'), findsOneWidget);
 
     final secondPot = find.byKey(const Key('cookflow_tare_utensil_pot-2'));
@@ -1513,7 +1506,7 @@ void main() {
     await tester.tap(find.text('Mahlzeit speichern'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Mahlzeit gespeichert'), findsOneWidget);
+    expect(find.text('MAHLZEIT GESPEICHERT'), findsOneWidget);
     expect(find.text('Herzhafter Linseneintopf'), findsOneWidget);
     expect(sessionStore.clearCallCount, 1);
     expect(preparedMealsController._capturedFinalNetWeight, 1500);

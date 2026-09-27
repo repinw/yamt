@@ -1857,6 +1857,7 @@
   "cookflowOnTheFlyTitle": "On-the-fly Anpassung",
   "cookflowOnTheFlyHint": "z.B. 150g extra Erbsen...",
   "cookflowOnTheFlyRemoveTooltip": "Anpassung entfernen",
+  "cookflowOnTheFlyAddButton": "Hinzufügen",
   "cookflowVoiceInputStartTooltip": "Spracheingabe starten",
   "cookflowVoiceInputStopTooltip": "Spracheingabe beenden",
   "cookflowVoiceInputUnavailable": "Spracheingabe wird auf diesem Gerät aktuell nicht unterstützt.",

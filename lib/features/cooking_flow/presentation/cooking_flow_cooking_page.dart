@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_instruction_builder.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
@@ -9,6 +11,8 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_on_the_fly_adjustment_card.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_step_layout.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_text_styles.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -152,10 +156,12 @@ class CookingFlowCookingPage extends ConsumerWidget {
       ),
       children: <Widget>[
         if (instructionSteps == null)
-          const Center(
+          Center(
             child: Padding(
               padding: AppInsets.card,
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: FoodLabelColors.of(context).ink,
+              ),
             ),
           )
         else
@@ -164,7 +170,7 @@ class CookingFlowCookingPage extends ConsumerWidget {
               padding: EdgeInsets.only(
                 bottom: index == instructionSteps.length - 1
                     ? AppSpacing.xxxxl
-                    : AppSpacing.xxxl,
+                    : AppSpacing.lg,
               ),
               child: _CookingInstructionCard(
                 stepNumber: index + 1,
@@ -219,6 +225,8 @@ class CookingInstructionStepsRequest {
       Object.hash(template, introDraft, targetPortions, text, localeCode);
 }
 
+/// One instruction: a square number badge and the text, with every amount
+/// of the recipe in bold and underlined. Square box, because it is read.
 class _CookingInstructionCard extends StatelessWidget {
   const new({required this.stepNumber, required this.instruction});
 
@@ -227,13 +235,13 @@ class _CookingInstructionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: colors.outlineVariant),
+        color: colors.card,
+        border: Border.all(color: colors.rule),
       ),
       child: Padding(
         padding: AppInsets.card,
@@ -241,19 +249,13 @@ class _CookingInstructionCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
-              width: 34,
-              height: 34,
+              width: AppGraphit.badge,
+              height: AppGraphit.badge,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: colors.primary.withValues(alpha: 0.12),
-                shape: BoxShape.circle,
-              ),
+              color: colors.tile,
               child: Text(
                 '$stepNumber',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: colors.primary,
-                ),
+                style: context.cookingFlowDisplayStyle(textTheme.titleMedium),
               ),
             ),
             const SizedBox(width: AppSpacing.md),
@@ -265,17 +267,23 @@ class _CookingInstructionCard extends StatelessWidget {
                       TextSpan(
                         text: segment.text,
                         style: segment.isHighlight
-                            ? TextStyle(
-                                color: colors.onPrimaryContainer,
+                            ? textTheme.titleLarge?.copyWith(
+                                color: colors.ink,
                                 fontWeight: FontWeight.w800,
-                                backgroundColor: colors.primaryContainer,
+                                decoration: TextDecoration.underline,
+                                decorationColor: colors.ink,
+                                decorationThickness:
+                                    AppGraphit.highlightUnderline,
                               )
                             : null,
                       ),
                   ],
                 ),
-                style: Theme.of(context).textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.w500, height: 1.45),
+                style: textTheme.titleLarge?.copyWith(
+                  color: colors.ink,
+                  fontWeight: FontWeight.w400,
+                  height: 1.45,
+                ),
               ),
             ),
           ],

@@ -2,13 +2,15 @@
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
-import 'package:yamt/features/inventory/presentation/constants/'
-    'inventory_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// The three choices of an ingredient row as chips with a word each:
+/// take it from the Vorrat, put it on the shopping list, or leave it out.
 class CookingFlowInventoryRowActions extends StatelessWidget {
   const new({
     required this.selectedAction,
@@ -25,8 +27,9 @@ class CookingFlowInventoryRowActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Wrap(
+      spacing: AppSpacing.xs,
+      runSpacing: AppSpacing.xs,
       children: <Widget>[
         CookingFlowInventoryActionButton(
           icon: Icons.inventory_2_outlined,
@@ -34,7 +37,6 @@ class CookingFlowInventoryRowActions extends StatelessWidget {
           isActive: selectedAction == CookingFlowInventoryRowAction.assigned,
           onPressed: onAssignPressed,
         ),
-        const SizedBox(width: AppSpacing.xxs),
         CookingFlowInventoryActionButton(
           icon: Icons.shopping_cart_outlined,
           tooltip: l10n.cookflowShoppingCartTooltip,
@@ -42,7 +44,6 @@ class CookingFlowInventoryRowActions extends StatelessWidget {
               selectedAction == CookingFlowInventoryRowAction.shoppingCart,
           onPressed: onShoppingPressed,
         ),
-        const SizedBox(width: AppSpacing.xxs),
         CookingFlowInventoryActionButton(
           icon: Icons.not_interested_rounded,
           tooltip: l10n.cookflowIgnoreTooltip,
@@ -54,6 +55,8 @@ class CookingFlowInventoryRowActions extends StatelessWidget {
   }
 }
 
+/// One choice chip: a small icon and its word. The selected chip is filled
+/// with ink; lime stays reserved for the screen's main button.
 class CookingFlowInventoryActionButton extends StatelessWidget {
   const new({
     required this.icon,
@@ -63,41 +66,34 @@ class CookingFlowInventoryActionButton extends StatelessWidget {
   });
 
   final IconData icon;
+
+  /// Word shown on the chip; also the tooltip, so tests can find it.
   final String tooltip;
   final bool isActive;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final successColors = AppInventoryEatActionColors.fromColorScheme(colors);
+    final colors = FoodLabelColors.of(context);
+    final foreground = isActive ? colors.paper : colors.ink;
 
     return Tooltip(
       message: tooltip,
-      child: OutlinedButton(
+      child: TextButton.icon(
         onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          foregroundColor: isActive
-              ? successColors.iconColor
-              : colors.onSurfaceVariant.withValues(alpha: 0.75),
-          backgroundColor: isActive
-              ? successColors.backgroundColor
-              : colors.surfaceContainerLowest,
-          side: BorderSide(
-            color: isActive
-                ? successColors.borderColor
-                : colors.outlineVariant.withValues(alpha: 0.16),
-          ),
-          minimumSize: const Size(28, 28),
-          fixedSize: const Size(28, 28),
-          padding: EdgeInsets.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          visualDensity: VisualDensity.compact,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppRadius.md),
-          ),
+        style: TextButton.styleFrom(
+          foregroundColor: foreground,
+          backgroundColor: isActive ? colors.ink : colors.tile,
+          minimumSize: const Size(AppGraphit.chipHeight, AppGraphit.chipHeight),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+          shape: const StadiumBorder(),
         ),
-        child: Icon(icon, size: 16),
+        icon: Icon(icon, size: AppGraphit.chipIcon),
+        label: Text(
+          tooltip,
+          style: Theme.of(context).textTheme.labelMedium
+              ?.copyWith(color: foreground, fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }

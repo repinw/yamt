@@ -2,9 +2,15 @@
 // ignore_for_file: public_member_api_docs, use_key_in_widget_constructors
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_text_styles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+/// Portion stepper of the intro step: a caption, the count as a large
+/// number field and a minus and a plus button on soft tiles.
 class CookingFlowIntroPortionScaler extends StatefulWidget {
   const new({
     required this.originalPortions,
@@ -54,103 +60,125 @@ class _CookingFlowIntroPortionScalerState
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     final l10n = AppLocalizations.of(context)!;
-    final resolvedOriginalPortions = widget.originalPortions < 1
-        ? 1
-        : widget.originalPortions;
+    final textTheme = Theme.of(context).textTheme;
     final resolvedTargetPortions = widget.targetPortions < 1
         ? 1
         : widget.targetPortions;
     final canDecrease = resolvedTargetPortions > 1;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(AppRadius.xl),
-        border: Border.all(color: colors.outlineVariant),
-      ),
-      child: Padding(
-        padding: AppInsets.card,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              l10n.cookflowPortionScalerTitle,
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Text(
-              l10n.cookflowOriginalPortionsLabel(resolvedOriginalPortions),
-              style: Theme.of(context).textTheme.bodyMedium
-                  ?.copyWith(color: colors.onSurfaceVariant),
-            ),
-            const SizedBox(height: AppSpacing.xl),
-            Row(
-              children: <Widget>[
-                IconButton.outlined(
-                  tooltip: l10n.inventoryItemEatSheetDecreasePortionCountAction,
-                  onPressed: canDecrease
-                      ? () => widget.onChanged(
-                          (resolvedTargetPortions - 1).toDouble(),
-                        )
-                      : null,
-                  icon: const Icon(Icons.remove_rounded),
+    return Row(
+      children: <Widget>[
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.xs,
+            children: <Widget>[
+              Text(
+                l10n.cookflowPortionScalerTitle.toUpperCase(),
+                style: context.cookingFlowKickerStyle,
+              ),
+              Text(
+                l10n.cookflowTargetPortionsFieldLabel,
+                style: textTheme.titleMedium?.copyWith(
+                  color: colors.ink,
+                  fontWeight: FontWeight.w800,
                 ),
-                const SizedBox(width: AppSpacing.md),
-                Expanded(
-                  child: TextFormField(
-                    controller: _controller,
-                    keyboardType: TextInputType.number,
-                    textAlign: TextAlign.center,
-                    onChanged: (value) {
-                      final portions = int.tryParse(value.trim());
-                      if (portions == null || portions < 1) {
-                        return;
-                      }
-                      widget.onChanged(portions.toDouble());
-                    },
-                    decoration: InputDecoration(
-                      labelText: l10n.cookflowTargetPortionsFieldLabel,
-                      isDense: true,
-                      filled: true,
-                      fillColor: colors.surfaceContainerLowest,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                        borderSide: BorderSide(
-                          color: colors.outlineVariant.withValues(alpha: 0.45),
-                        ),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(AppRadius.md),
-                        borderSide: BorderSide(color: colors.primary, width: 2),
-                      ),
-                    ),
-                    style: Theme.of(context).textTheme.titleLarge
-                        ?.copyWith(fontWeight: FontWeight.w800),
-                  ),
-                ),
-                const SizedBox(width: AppSpacing.md),
-                IconButton.outlined(
-                  tooltip: l10n.inventoryItemEatSheetIncreasePortionCountAction,
-                  onPressed: () =>
-                      widget.onChanged((resolvedTargetPortions + 1).toDouble()),
-                  icon: const Icon(Icons.add_rounded),
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
-      ),
+        const SizedBox(width: AppSpacing.md),
+        _PortionStepButton(
+          tooltip: l10n.inventoryItemEatSheetDecreasePortionCountAction,
+          icon: Icons.remove_rounded,
+          onPressed: canDecrease
+              ? () => widget.onChanged((resolvedTargetPortions - 1).toDouble())
+              : null,
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        SizedBox(
+          width: AppGraphit.numberField,
+          child: TextFormField(
+            controller: _controller,
+            keyboardType: TextInputType.number,
+            textAlign: TextAlign.center,
+            cursorColor: colors.ink,
+            onChanged: (value) {
+              final portions = int.tryParse(value.trim());
+              if (portions == null || portions < 1) {
+                return;
+              }
+              widget.onChanged(portions.toDouble());
+            },
+            decoration: InputDecoration(
+              isDense: true,
+              filled: true,
+              fillColor: colors.tile,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.sm,
+                vertical: AppSpacing.md,
+              ),
+              border: _fieldBorder,
+              enabledBorder: _fieldBorder,
+              focusedBorder: _fieldBorder,
+            ),
+            style: context.cookingFlowDisplayStyle(textTheme.headlineSmall),
+          ),
+        ),
+        const SizedBox(width: AppSpacing.xs),
+        _PortionStepButton(
+          tooltip: l10n.inventoryItemEatSheetIncreasePortionCountAction,
+          icon: Icons.add_rounded,
+          onPressed: () =>
+              widget.onChanged((resolvedTargetPortions + 1).toDouble()),
+        ),
+      ],
     );
   }
+
+  OutlineInputBorder get _fieldBorder => OutlineInputBorder(
+    borderRadius: BorderRadius.circular(AppRadius.md),
+    borderSide: BorderSide.none,
+  );
 
   String _portionText(int value) {
     final resolvedValue = value < 1 ? 1 : value;
     return resolvedValue.toString();
+  }
+}
+
+/// Minus or plus of the stepper: an icon on a soft tile. Like prev and next,
+/// it is one of the few actions that needs no word.
+class _PortionStepButton extends StatelessWidget {
+  const new({
+    required this.tooltip,
+    required this.icon,
+    required this.onPressed,
+  });
+
+  final String tooltip;
+  final IconData icon;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = FoodLabelColors.of(context);
+    final isEnabled = onPressed != null;
+
+    return IconButton(
+      tooltip: tooltip,
+      onPressed: onPressed,
+      style: IconButton.styleFrom(
+        backgroundColor: colors.tile,
+        foregroundColor: isEnabled ? colors.ink : colors.muted,
+        minimumSize: const Size.square(AppGraphit.buttonHeight),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+      ),
+      icon: Icon(icon, size: AppGraphit.toolIcon),
+    );
   }
 }

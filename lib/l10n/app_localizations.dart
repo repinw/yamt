@@ -7089,6 +7089,12 @@ abstract class AppLocalizations {
   /// **'Remove adjustment'**
   String get cookflowOnTheFlyRemoveTooltip;
 
+  /// No description provided for @cookflowOnTheFlyAddButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get cookflowOnTheFlyAddButton;
+
   /// No description provided for @cookflowVoiceInputStartTooltip.
   ///
   /// In en, this message translates to:

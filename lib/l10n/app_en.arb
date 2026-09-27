@@ -1980,6 +1980,7 @@
   "cookflowOnTheFlyTitle": "On-the-fly adjustment",
   "cookflowOnTheFlyHint": "e.g. 150g extra peas...",
   "cookflowOnTheFlyRemoveTooltip": "Remove adjustment",
+  "cookflowOnTheFlyAddButton": "Add",
   "cookflowVoiceInputStartTooltip": "Start voice input",
   "cookflowVoiceInputStopTooltip": "Stop voice input",
   "cookflowVoiceInputUnavailable": "Voice input is not currently supported on this device.",

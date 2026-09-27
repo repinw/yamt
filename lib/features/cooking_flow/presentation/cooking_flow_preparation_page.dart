@@ -1,7 +1,10 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
+import 'package:yamt/features/cooking_flow/presentation/'
+    'cooking_flow_action_button.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_step_layout.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
@@ -10,6 +13,8 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_tare_utensil_picker.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_weight_input_row.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_text_styles.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -47,102 +52,55 @@ class CookingFlowPreparationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     final l10n = AppLocalizations.of(context)!;
 
     return CookingFlowStepLayout(
       title: l10n.cookflowPreparationTitle,
       subtitle: l10n.cookflowPreparationBody,
       children: <Widget>[
-        DecoratedBox(
-          decoration: BoxDecoration(
-            color: colors.surfaceContainerLow,
-            borderRadius: BorderRadius.circular(AppRadius.xl),
-            border: Border.all(color: colors.outlineVariant),
-          ),
-          child: Padding(
-            padding: AppInsets.card,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    const Icon(Icons.balance_outlined, size: 18),
-                    const SizedBox(width: AppSpacing.sm),
-                    Expanded(
-                      child: Text(
-                        l10n.cookflowStorageContainersTitle,
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                    IconButton.filledTonal(
-                      tooltip: l10n.cookflowAddStorageContainerButton,
-                      onPressed: onAddContainerPressed,
-                      icon: const Icon(Icons.add_rounded),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                for (
-                  var index = 0;
-                  index < storageContainers.length;
-                  index++
-                ) ...<Widget>[
-                  _PreparationStorageContainerCard(
-                    container: storageContainers[index],
-                    index: index,
-                    onContainerChanged: onContainerChanged,
-                    onContainerTaraUtensilSelected:
-                        onContainerTaraUtensilSelected,
-                    onRemoveContainerPressed: onRemoveContainerPressed,
-                    onOpenKitchenUtensilsPressed: onOpenKitchenUtensilsPressed,
-                  ),
-                  if (index < storageContainers.length - 1)
-                    const SizedBox(height: AppSpacing.xxl),
-                ],
-                const SizedBox(height: AppSpacing.xxl),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(AppSpacing.xxl),
-                  decoration: BoxDecoration(
-                    color: colors.tertiaryContainer,
-                    borderRadius: BorderRadius.circular(AppRadius.lg),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 2),
-                        child: Icon(
-                          Icons.info_outline_rounded,
-                          size: 18,
-                          color: colors.onTertiaryContainer,
-                        ),
-                      ),
-                      const SizedBox(width: AppSpacing.md),
-                      Expanded(
-                        child: Text(
-                          l10n.cookflowPreparationHint,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(
-                                color: colors.onTertiaryContainer,
-                                height: 1.4,
-                              ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                l10n.cookflowStorageContainersTitle,
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(color: colors.ink, fontWeight: FontWeight.w800),
+              ),
             ),
+            const SizedBox(width: AppSpacing.md),
+            CookingFlowSecondaryActionButton(
+              label: l10n.cookflowAddStorageContainerButton,
+              onPressed: onAddContainerPressed,
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.lg),
+        for (var index = 0; index < storageContainers.length; index++) ...[
+          _PreparationStorageContainerCard(
+            container: storageContainers[index],
+            index: index,
+            onContainerChanged: onContainerChanged,
+            onContainerTaraUtensilSelected: onContainerTaraUtensilSelected,
+            onRemoveContainerPressed: onRemoveContainerPressed,
+            onOpenKitchenUtensilsPressed: onOpenKitchenUtensilsPressed,
           ),
+          if (index < storageContainers.length - 1)
+            const SizedBox(height: AppSpacing.lg),
+        ],
+        const SizedBox(height: AppSpacing.xl),
+        Text(
+          l10n.cookflowPreparationHint,
+          style: Theme.of(context).textTheme.bodyMedium
+              ?.copyWith(color: colors.muted),
         ),
       ],
     );
   }
 }
 
+/// One container to fill: its name, the tare and the saved utensils. The box
+/// is square with a thin rule, because it shows a thing and is not tapped.
 class _PreparationStorageContainerCard extends StatelessWidget {
   const new({
     required this.container,
@@ -163,15 +121,15 @@ class _PreparationStorageContainerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
+    final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
     final taraWeight = _parseWeight(container.taraController.text).round();
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: colors.outlineVariant),
+        color: colors.card,
+        border: Border.all(color: colors.rule),
       ),
       child: Padding(
         padding: AppInsets.card,
@@ -183,35 +141,34 @@ class _PreparationStorageContainerCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     _containerTitle(l10n, container, index),
-                    style: Theme.of(context).textTheme.titleSmall
-                        ?.copyWith(fontWeight: FontWeight.w800),
+                    style: context.cookingFlowDisplayStyle(
+                      textTheme.titleLarge,
+                    ),
                   ),
                 ),
                 if (container.canRemove) ...<Widget>[
                   const SizedBox(width: AppSpacing.md),
-                  IconButton(
-                    tooltip: l10n.cookflowRemoveContainerTooltip,
+                  TextButton.icon(
                     onPressed: () => onRemoveContainerPressed(container.id),
+                    style: TextButton.styleFrom(foregroundColor: colors.muted),
                     icon: const Icon(Icons.delete_outline_rounded),
+                    label: Text(l10n.cookflowRemoveContainerTooltip),
                   ),
                 ],
               ],
             ),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xl),
             Text(
-              l10n.cookflowContainerTaraLabel,
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: colors.onSurfaceVariant,
-                fontWeight: FontWeight.w700,
-              ),
+              l10n.cookflowContainerTaraLabel.toUpperCase(),
+              style: context.cookingFlowKickerStyle,
             ),
-            const SizedBox(height: AppSpacing.md),
+            const SizedBox(height: AppSpacing.xs),
             CookingFlowWeightInputRow(
               controller: container.taraController,
               unitLabel: l10n.cookflowGramUnit,
               onChanged: onContainerChanged,
             ),
-            const SizedBox(height: AppSpacing.xxl),
+            const SizedBox(height: AppSpacing.xl),
             CookingFlowTareUtensilPicker(
               selectedTaraWeightGrams: taraWeight,
               selectedUtensilId: container.selectedTaraUtensilId,

@@ -1,12 +1,16 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 
 /// Stable finder key for cookflow phase progress.
 const Key cookingFlowProgressIndicatorKey = ValueKey<String>(
   'cookflow_progress_indicator',
 );
 
-/// Dot progress indicator for cookflow phases.
+/// Step progress of the cooking flow: one square segment per phase.
+///
+/// Finished and current segments are ink, the rest use the rule color. The
+/// segments are square because they show state; nothing here is tapped.
 class CookingFlowProgressIndicator extends StatelessWidget {
   /// Creates progress indicator.
   const new({
@@ -19,7 +23,7 @@ class CookingFlowProgressIndicator extends StatelessWidget {
   /// Active zero-based phase index.
   final int activeIndex;
 
-  /// Total indicator dots.
+  /// Total segments.
   final int count;
 
   /// Localized accessibility label.
@@ -27,24 +31,23 @@ class CookingFlowProgressIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
 
     return Semantics(
       label: semanticLabel,
-      child: AnimatedSmoothIndicator(
-        activeIndex: activeIndex,
-        count: count,
-        duration: const Duration(milliseconds: 240),
-        curve: Curves.easeOutCubic,
-        effect: ExpandingDotsEffect(
-          expansionFactor: 3.2,
-          dotWidth: 7,
-          dotHeight: 7,
-          spacing: 5,
-          radius: 7,
-          activeDotColor: colors.primary,
-          dotColor: colors.outlineVariant,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: AppGraphit.progressSegmentGap,
+        children: <Widget>[
+          for (var index = 0; index < count; index++)
+            AnimatedContainer(
+              duration: AppGraphit.stateChange,
+              curve: Curves.easeOutCubic,
+              width: AppGraphit.progressSegmentWidth,
+              height: AppGraphit.progressSegmentHeight,
+              color: index <= activeIndex ? colors.ink : colors.rule,
+            ),
+        ],
       ),
     );
   }

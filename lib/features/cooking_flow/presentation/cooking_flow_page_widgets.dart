@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_builder.dart';
@@ -7,6 +8,8 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_action_button.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_progress_indicator.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_text_styles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Bottom action used by phase pages.
@@ -15,7 +18,7 @@ class CookingFlowPhaseBottomAction extends StatelessWidget {
   const new({
     required this.label,
     required this.onPressed,
-    this.icon = Icons.arrow_forward_rounded,
+    this.icon,
     super.key,
   });
 
@@ -37,10 +40,6 @@ class CookingFlowPhaseBottomAction extends StatelessWidget {
           label: label,
           onPressed: onPressed,
           icon: icon,
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.xl,
-            vertical: AppSpacing.xl,
-          ),
         ),
       ),
     );
@@ -83,16 +82,9 @@ class CookingFlowPhaseBottomDualAction extends StatelessWidget {
     return _CookingFlowPhaseBottomSurface(
       child: Row(
         children: <Widget>[
-          Expanded(
-            child: CookingFlowSecondaryActionButton(
-              label: secondaryLabel,
-              onPressed: onSecondaryPressed,
-              icon: Icons.schedule_rounded,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.xl,
-              ),
-            ),
+          CookingFlowQuietButton(
+            label: secondaryLabel,
+            onPressed: onSecondaryPressed,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
@@ -101,10 +93,6 @@ class CookingFlowPhaseBottomDualAction extends StatelessWidget {
               onPressed: onPrimaryPressed,
               leadingIcon: primaryLeadingIcon,
               icon: primaryTrailingIcon,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.lg,
-                vertical: AppSpacing.xl,
-              ),
             ),
           ),
         ],
@@ -120,39 +108,32 @@ class _CookingFlowPhaseBottomSurface extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     final horizontalInset = responsivePageHorizontalPadding(context);
-    final radius = BorderRadius.circular(AppRadius.xl);
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          horizontalInset,
-          AppSpacing.md,
-          horizontalInset,
-          AppSpacing.xl,
-        ),
-        child: ClipRRect(
-          borderRadius: radius,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: colors.surfaceContainerLow,
-              borderRadius: radius,
-              border: Border.all(color: colors.outlineVariant),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(AppSpacing.sm),
-              child: child,
-            ),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.paper,
+        border: Border(top: BorderSide(color: colors.rule)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalInset,
+            AppSpacing.md,
+            horizontalInset,
+            AppSpacing.md,
           ),
+          child: child,
         ),
       ),
     );
   }
 }
 
-/// Cookflow top app bar.
+/// Cookflow top app bar: back, the phase as a small caption over the title,
+/// and the step progress on the right.
 class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Creates top bar.
   const new({
@@ -167,48 +148,70 @@ class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
   /// Optional zero-based phase progress index.
   final int? progressIndex;
 
+  static const int _phaseCount = 4;
+
   @override
-  Size get preferredSize => const Size.fromHeight(76);
+  Size get preferredSize => const Size.fromHeight(72);
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final colors = FoodLabelColors.of(context);
     final horizontalInset = responsivePageHorizontalPadding(context);
     final l10n = AppLocalizations.of(context)!;
+    final textTheme = Theme.of(context).textTheme;
+    final phaseLabel = progressIndex == null
+        ? null
+        : l10n.cookflowPhaseChip(progressIndex! + 1, _phaseCount);
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: colors.surfaceContainerLow,
-        border: Border(
-          bottom: BorderSide(
-            color: colors.outlineVariant.withValues(alpha: 0.2),
-          ),
-        ),
+        color: colors.paper,
+        border: Border(bottom: BorderSide(color: colors.rule)),
       ),
       child: SafeArea(
         bottom: false,
         child: SizedBox(
           height: preferredSize.height,
           child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: horizontalInset),
+            padding: EdgeInsets.only(
+              left: onBackPressed == null ? horizontalInset : AppSpacing.xs,
+              right: horizontalInset,
+            ),
             child: Row(
               children: <Widget>[
                 if (onBackPressed != null) ...<Widget>[
                   IconButton(
                     onPressed: onBackPressed,
+                    tooltip: MaterialLocalizations.of(context)
+                        .backButtonTooltip,
+                    color: colors.ink,
                     icon: const Icon(Icons.arrow_back_rounded),
                   ),
                   const SizedBox(width: AppSpacing.xs),
                 ],
-                Icon(Icons.soup_kitchen_outlined, color: colors.primary),
-                const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Text(
-                    l10n.cookflowPrepflowTitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.headlineSmall
-                        ?.copyWith(fontWeight: FontWeight.w800),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      if (phaseLabel != null) ...<Widget>[
+                        Text(
+                          phaseLabel.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: context.cookingFlowKickerStyle,
+                        ),
+                        const SizedBox(height: AppSpacing.xxs),
+                      ],
+                      Text(
+                        l10n.cookflowPrepflowTitle,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: context.cookingFlowDisplayStyle(
+                          textTheme.titleLarge,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
                 if (progressIndex != null)
@@ -216,7 +219,7 @@ class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
                     activeIndex: progressIndex!,
                     semanticLabel: l10n.cookflowPhaseChip(
                       progressIndex! + 1,
-                      4,
+                      _phaseCount,
                     ),
                   ),
               ],
