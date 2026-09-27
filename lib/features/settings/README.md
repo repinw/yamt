@@ -8,7 +8,7 @@ settings.
 
 - Settings and account pages under `presentation/pages/`, and the profile
   page `presentation/profile_page.dart`.
-- Settings tiles, account cards, the profile summary card, and account
+- Settings tiles, account cards, the profile page sections, and account
   dialogs under `presentation/widgets/<widget_name>/`.
 - Account page flow and account controller state under `presentation/controllers/`.
 
@@ -27,17 +27,12 @@ settings.
 - `presentation/pages/account_page.dart` is the account management page.
 - `presentation/profile_page.dart` is the profile page. It is a pushed page
   with its own app bar, opened from the Home side menu at
-  `AppRoutes.homeProfile`, and shows the profile summary card.
+  `AppRoutes.homeProfile`. It shows who the user is, the weight (trend
+  weight, last weigh-in, start weight, weekly trend, a 14-day chart, and a
+  weigh-in button), the body data as tiles, and the current goal.
 - `presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart` is the settings-owned tile that
   delegates Health connection actions to the Health feature.
 - Reusable settings tile components under `presentation/widgets/settings_tiles/`.
-- `presentation/widgets/settings_profile_summary_card/settings_profile_summary_card.dart`
-  is the card of the profile page: optional name, height, current
-  weight, sex, birthday with age, daily expenditure (TDEE), and the current
-  goals (calories, target weight, goal mode, protein, carbs, fat). Its button
-  opens the macro goals sheet. Body data and goals come from the calorie
-  calculator profile; the macros come from the Calories nutrition target
-  resolver, like the diary's.
 
 Other features should compose the page or complete settings widgets instead of
 wiring Settings provider internals directly.
@@ -57,15 +52,15 @@ Current providers:
 
 - `core` for routes, theme controllers, app version, shared layout, and common
   widgets.
-- `features/activity` for the current weight on the profile summary card,
-  read from the diary weight data of today.
+- `features/activity` for the weigh-in dialog of the profile page
+  (`DiaryWeightTrackingFlow`).
 - `features/auth` for account data, auth actions, and auth error mapping.
-- `features/calories` for the profile summary card's body data and goals
+- `features/calories` for the profile page's body data, macro weight, and goals
   (settings repository and nutrition target resolver), and calorie goal
   settings surfaces, including the complete goal archive page that the goal
   archive row opens through app routing (`AppRoutes.homeSettingsGoalArchive`).
-- `features/health` for Health connection status, actions, and domain result
-  models.
+- `features/health` for Health connection status, actions, domain result
+  models, and the recent weights of the profile page.
 - `features/home_widget` for the home-screen widget's silent/verbose choice,
   rendered in the App section through its public
   `HomeWidgetVerboseModeBuilder`.

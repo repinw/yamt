@@ -91,18 +91,29 @@ extension CalorieGoalSettingsQueries on CalorieGoalSettings {
   /// weight. The latest of these on or before [day] wins. Without one, the
   /// current calculator profile weight applies.
   double? macroWeightKgForDay(DateTime day) {
+    final entry = macroWeightEntryForDay(day);
+    if (entry == null) {
+      return calculatorProfile?.weightKg;
+    }
+    return entry.weeklyCheckInSnapshot?.macroWeightKg ??
+        entry.calculatorProfile?.weightKg;
+  }
+
+  /// The goal history entry that set the macro weight of [day], or `null`
+  /// when the calculator profile weight applies.
+  CalorieGoalHistoryEntry? macroWeightEntryForDay(DateTime day) {
     final normalizedDay = normalizeDiaryDay(day);
-    double? weightKg;
+    CalorieGoalHistoryEntry? source;
     for (final entry in sortedGoalHistory) {
       if (entry.effectiveDate.isAfter(normalizedDay)) {
         break;
       }
-      weightKg =
-          entry.weeklyCheckInSnapshot?.macroWeightKg ??
-          entry.calculatorProfile?.weightKg ??
-          weightKg;
+      if (entry.weeklyCheckInSnapshot?.macroWeightKg != null ||
+          entry.calculatorProfile != null) {
+        source = entry;
+      }
     }
-    return weightKg ?? calculatorProfile?.weightKg;
+    return source;
   }
 
   /// Active goal entry for day.

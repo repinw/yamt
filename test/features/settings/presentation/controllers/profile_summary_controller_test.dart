@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
@@ -63,7 +64,7 @@ Future<ProfileSummaryState> _settledSummary(ProviderContainer container) async {
 }
 
 void main() {
-  test('combines name, body data, and macro goals of the profile', () async {
+  test('combines account, body data, weights, and macro goals', () async {
     final repository = FakeCalorieSettingsRepository(
       initialSettings: _settingsWithGoal(),
     );
@@ -79,10 +80,18 @@ void main() {
 
     final summary = await _settledSummary(container);
 
-    expect(summary.name, 'Alex');
+    expect(summary.account, (name: 'Alex', email: null, isGuest: false));
     expect(summary.profile, same(_profile));
     expect(summary.ageYears, 35);
-    expect(summary.currentWeightKg, 61.2);
+    expect(summary.weight?.latestWeighInKg, 61.2);
+    expect(summary.weight?.latestWeighInDay, DateTime(2026, 9, 22));
+    // 61.6 kg eases towards 61.2 kg by a tenth per day.
+    expect(summary.weight?.trendWeightKg, closeTo(61.542, 0.0001));
+    expect(summary.currentWeightKg, closeTo(61.542, 0.0001));
+    expect(summary.kgToTarget, closeTo(6.542, 0.0001));
+    expect(summary.goalProgress, 0);
+    expect(summary.macroWeightKg, 60);
+    expect(summary.macroWeightSince, DateTime(2026, 9));
     expect(summary.tdee, (
       kcal: CalorieGoalCalculator.calculate(_profile).tdeeKcal,
       isLearned: false,
@@ -94,21 +103,51 @@ void main() {
     expect(summary.macroTarget?.carbsGrams, closeTo(256.5, 0.001));
   });
 
-  test('uses the profile weight without a weigh-in this week', () async {
+  test('has no current weight without weigh-ins', () async {
     final repository = FakeCalorieSettingsRepository(
       initialSettings: _settingsWithGoal(),
     );
     addTearDown(repository.dispose);
-    final container = _createContainer(
-      repository: repository,
-      weighIns: [
-        ManualHealthWeightEntry(day: DateTime(2026, 9, 10), weightKg: 62),
-      ],
-    );
+    final container = _createContainer(repository: repository);
 
     final summary = await _settledSummary(container);
 
-    expect(summary.currentWeightKg, 60);
+    expect(summary.weight?.latestWeighInKg, isNull);
+    expect(summary.weight?.trendWeightKg, isNull);
+    expect(summary.currentWeightKg, isNull);
+    expect(summary.kgToTarget, isNull);
+    expect(summary.goalProgress, isNull);
+  });
+
+  test('shows the macro weight of the latest weekly check-in', () async {
+    final repository = FakeCalorieSettingsRepository(
+      initialSettings: _settingsWithGoal().copyWith(
+        goalHistory: [
+          ..._settingsWithGoal().goalHistory,
+          CalorieGoalHistoryEntry(
+            dailyKcalGoal: 1780,
+            calculatorProfile: null,
+            effectiveDate: DateTime(2026, 9, 22),
+            changedAt: DateTime(2026, 9, 22),
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: DateTime(2026, 9, 15),
+              windowEndDate: DateTime(2026, 9, 21),
+              trendWeightChangePerDay: -0.05,
+              lowConfidence: false,
+              macroWeightKg: 58.9,
+            ),
+          ),
+        ],
+      ),
+    );
+    addTearDown(repository.dispose);
+    final container = _createContainer(repository: repository);
+
+    final summary = await _settledSummary(container);
+
+    expect(summary.macroWeightKg, 58.9);
+    expect(summary.macroWeightSince, DateTime(2026, 9, 22));
   });
 
   test('prefers the TDEE learned in the weekly check-in', () async {
@@ -142,12 +181,11 @@ void main() {
 
     final summary = await _settledSummary(container);
 
-    expect(summary.name, isNull);
+    expect(summary.account.name, isNull);
     expect(summary.profile, isNull);
     expect(summary.ageYears, isNull);
-    expect(summary.currentWeightKg, isNull);
+    expect(summary.macroWeightKg, isNull);
     expect(summary.tdee, isNull);
-    expect(summary.hasBodyData, isFalse);
     expect(summary.dailyKcalGoal, isNull);
     expect(summary.macroTarget, isNull);
   });

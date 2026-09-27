@@ -6,7 +6,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
 import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_menu_section.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_debug_menu_section.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -14,7 +14,7 @@ import 'package:yamt/features/health/data/'
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../support/fake_calories_repositories.dart';
+import '../../support/fake_calories_repositories.dart';
 
 void main() {
   testWidgets('lists debug actions and downloads calorie dump', (tester) async {

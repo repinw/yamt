@@ -104,6 +104,9 @@ abstract final class AppDurations {
 
   /// Slide to the neighbouring diary day after an arrow tap.
   static const Duration diaryDayPageSlide = Duration(milliseconds: 300);
+
+  /// Opening and closing of the home side menu.
+  static const Duration homeSlideMenu = Duration(milliseconds: 320);
 }
 
 /// Shared opacity values.
@@ -158,6 +161,12 @@ abstract final class AppOpacities {
 
   /// Name of a used-up item in the inventory list.
   static const double inventoryUsedUpName = 0.5;
+
+  /// Faded card behind the home page while the side menu is open.
+  static const double homeSlideMenuGhost = 0.55;
+
+  /// Shadow under the home page while the side menu is open.
+  static const double homeSlideMenuPageShadow = 0.35;
 }
 
 /// Shared font-size scale for app typography.

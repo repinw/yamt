@@ -139,6 +139,58 @@ abstract final class AppSizes {
   /// Most product images in a collage of several foods.
   static const int collageImages = 4;
 
-  /// Radius of the avatar on the profile summary card.
-  static const double profileAvatarRadius = 22;
+  /// Thickness of a thin divider line.
+  static const double hairline = 1;
+
+  /// Edge length of the tilted initial tile on the profile and in the menu.
+  static const double profileInitialTile = 44;
+
+  /// Edge length of the icon tile of a side menu entry.
+  static const double homeMenuIconTile = 34;
+
+  /// Icon inside a side menu icon tile.
+  static const double homeMenuIcon = 18;
+
+  /// Height of the recent weight chart on the profile.
+  static const double profileWeightChart = 64;
+
+  /// Smallest weight range in kg the profile chart spans, so small swings
+  /// do not look steep.
+  static const double profileWeightChartMinRangeKg = 1;
+
+  /// Height of one goal progress segment on the profile.
+  static const double profileGoalSegment = 8;
+
+  /// Edge length of a macro color square on the profile.
+  static const double profileMacroSquare = 8;
+
+  /// Scale of the home page while the side menu is open.
+  static const double homeSlideMenuPageScale = 0.7;
+
+  /// Left edge of the scaled home page, as a share of the screen width.
+  static const double homeSlideMenuPageLeft = 0.66;
+
+  /// Top edge of the scaled home page, as a share of the screen height.
+  static const double homeSlideMenuPageTop = 0.15;
+
+  /// Scale of the faded card behind the home page.
+  static const double homeSlideMenuGhostScale = 0.62;
+
+  /// Left edge of the faded card, as a share of the screen width.
+  static const double homeSlideMenuGhostLeft = 0.615;
+
+  /// Top edge of the faded card, as a share of the screen height.
+  static const double homeSlideMenuGhostTop = 0.2;
+
+  /// Width of the side menu entries, as a share of the screen width.
+  static const double homeSlideMenuContentWidth = 0.62;
+
+  /// Corner radius of the scaled home page, before scaling.
+  static const double homeSlideMenuPageRadius = 36;
+
+  /// Blur of the shadow under the scaled home page.
+  static const double homeSlideMenuPageShadowBlur = 60;
+
+  /// Downward offset of the shadow under the scaled home page.
+  static const double homeSlideMenuPageShadowOffset = 24;
 }

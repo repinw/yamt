@@ -81,15 +81,23 @@ and feature description docs. This is product-facing; architecture rules stay in
   stripes the overage share at the end of its bar.
 - Burn Week balance cards with daily and weekly progress.
 - Weekly check-in prompts and success/hint cards.
-- Side menu from the diary top bar with Profile and Settings entries.
-- Profile page from the side menu: name (when set), height, current weight,
-  sex, birthday with age, daily expenditure (TDEE), and the current goals
-  (daily calories, target weight, goal mode with pace, protein, carbs, fat).
-  A button opens the macro settings; the page updates when they are saved.
-- The profile's current weight is the latest weigh-in of the last seven days,
-  else the profile weight. Its TDEE is the one learned in the latest weekly
-  check-in, marked "learned", else the calculator's estimate from the
-  profile, marked "estimated".
+- Side menu from the diary top bar. The page slides to the right as a
+  shrunken card and the menu shows behind it: the user, then Profile, goal
+  archive, household (You), kitchen utensils, shopping list (Kitchen),
+  settings, about (App), and "Link account" for guests at the bottom.
+  Tapping the card or back closes it.
+- Profile page from the side menu:
+  - who the user is (name or email, guest mode);
+  - the trend weight as the main number, a 14-day chart with weigh-ins as
+    dots and the trend as a line, the last weigh-in with its day ("today",
+    "yesterday", "3 days ago"), the start weight of the goal, the weekly
+    trend, and a button to weigh in;
+  - tiles for height, age with birthday, sex, training days with the extra
+    kcal, the macro weight with the day since it applies, and the daily
+    expenditure (learned or estimated);
+  - the goal ("Lose weight to 78 kg"), a four-part bar of the way from the
+    start weight to the target by trend weight, the kg to go and the pace,
+    and the daily calories with protein, carbs, and fat.
 
 ## Calories And Burn Week
 

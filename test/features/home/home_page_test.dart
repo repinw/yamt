@@ -33,8 +33,8 @@ import 'package:yamt/features/diary/presentation/widgets/diary_day_navigator.dar
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
 import 'package:yamt/features/home/home_page.dart';
+import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/widgets/home_context_fab.dart';
-import 'package:yamt/features/home/widgets/home_menu_drawer.dart';
 import 'package:yamt/features/home/widgets/'
     'inventory_action_fab.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
@@ -656,18 +656,27 @@ void main() {
       tester.getCenter(menuButton).dx,
       lessThan(tester.getCenter(find.byKey(DiaryDayNavigatorKeys.label)).dx),
     );
+    expect(
+      find.byKey(HomeMenuPanel.closeButtonKey).hitTestable(),
+      findsNothing,
+    );
 
     await tester.tap(menuButton);
     await tester.pumpAndSettle();
-    expect(find.byType(HomeMenuDrawer), findsOneWidget);
+    expect(
+      find.byKey(HomeMenuPanel.closeButtonKey).hitTestable(),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.byKey(HomeMenuDrawer.settingsTileKey));
+    await tester.tap(find.byKey(HomeMenuPanel.settingsTileKey));
     await tester.pumpAndSettle();
 
     expect(find.text('Settings route'), findsOneWidget);
   });
 
-  testWidgets('diary menu opens the profile', (tester) async {
+  testWidgets('diary menu lists the profile first and opens it', (
+    tester,
+  ) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
 
@@ -681,19 +690,75 @@ void main() {
 
     await tester.tap(find.byKey(HomeShellMenuButton.buttonKey));
     await tester.pumpAndSettle();
-    final profileTile = find.byKey(HomeMenuDrawer.profileTileKey);
+    final profileTile = find.byKey(HomeMenuPanel.profileTileKey);
     expect(
       tester.getTopLeft(profileTile).dy,
-      lessThan(
-        tester.getTopLeft(find.byKey(HomeMenuDrawer.settingsTileKey)).dy,
-      ),
+      lessThan(tester.getTopLeft(find.byKey(HomeMenuPanel.settingsTileKey)).dy),
     );
 
     await tester.tap(profileTile);
     await tester.pumpAndSettle();
 
-    expect(find.byType(HomeMenuDrawer), findsNothing);
     expect(find.text('Profile route'), findsOneWidget);
+    expect(
+      find.byKey(HomeMenuPanel.closeButtonKey).hitTestable(),
+      findsNothing,
+    );
+  });
+
+  testWidgets('tapping the moved page closes the menu', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: _diaryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(HomeShellMenuButton.buttonKey));
+    await tester.pumpAndSettle();
+
+    final size = tester.view.physicalSize / tester.view.devicePixelRatio;
+    await tester.tapAt(Offset(size.width * 0.9, size.height * 0.5));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(HomeMenuPanel.closeButtonKey).hitTestable(),
+      findsNothing,
+    );
+    expect(
+      find.byKey(HomeShellMenuButton.buttonKey).hitTestable(),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('back closes the menu and stays on the tab', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: _diaryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(HomeShellMenuButton.buttonKey));
+    await tester.pumpAndSettle();
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(HomeMenuPanel.closeButtonKey).hitTestable(),
+      findsNothing,
+    );
+    expect(
+      find.byKey(HomeShellMenuButton.buttonKey).hitTestable(),
+      findsOneWidget,
+    );
   });
 
   testWidgets('tabs other than diary have no menu button', (tester) async {

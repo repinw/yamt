@@ -11,7 +11,8 @@ import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_floating_action_button_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
-import 'package:yamt/features/home/widgets/home_menu_drawer.dart';
+import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
+import 'package:yamt/features/home/presentation/widgets/home_slide_menu.dart';
 import 'package:yamt/features/home/widgets/home_shell_chrome_visibility_controller.dart';
 import 'package:yamt/features/home/widgets/'
     'inventory_action_fab.dart';
@@ -38,8 +39,10 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   late final HomeShellChromeVisibilityController _chromeVisibilityController;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   RouteObserver<ModalRoute<void>>? _routeObserver;
+
+  /// Whether the side menu is open.
+  var _isMenuOpen = false;
 
   /// Whether a sheet, dialog, or page covers the shell.
   var _isCovered = false;
@@ -82,9 +85,9 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     );
   }
 
-  void _openMenu() {
-    _scaffoldKey.currentState?.openDrawer();
-  }
+  void _openMenu() => setState(() => _isMenuOpen = true);
+
+  void _closeMenu() => setState(() => _isMenuOpen = false);
 
   HomeTabType _currentTab() {
     return switch (widget.navigationShell.currentIndex) {
@@ -145,10 +148,21 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       HomeTabType.cookbook || HomeTabType.progress => null,
     };
 
+    return HomeSlideMenu(
+      isOpen: _isMenuOpen,
+      onClose: _closeMenu,
+      menu: HomeMenuPanel(onClose: _closeMenu),
+      child: _buildShell(l10n, currentTab, floatingActionButton),
+    );
+  }
+
+  Widget _buildShell(
+    AppLocalizations l10n,
+    HomeTabType currentTab,
+    Widget? floatingActionButton,
+  ) {
     return Scaffold(
-      key: _scaffoldKey,
       extendBody: true,
-      drawer: const HomeMenuDrawer(),
       body: NotificationListener<ScrollNotification>(
         onNotification: _chromeVisibilityController.handleScrollNotification,
         child: HomeShellMenuScope(

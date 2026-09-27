@@ -1428,25 +1428,12 @@
   "homeSettingsActionContextPlaceholder": "Settings action coming soon.",
   "settingsManagePreferencesSubtitle": "Manage your preferences",
   "settingsProfileGuestSubtitle": "Guest mode",
-  "settingsProfileSummaryFallbackTitle": "Your profile",
   "settingsProfileSummaryHeightLabel": "Height",
   "settingsProfileSummaryHeightValue": "{height} cm",
   "@settingsProfileSummaryHeightValue": {
     "placeholders": {
       "height": {
         "type": "String"
-      }
-    }
-  },
-  "settingsProfileSummaryBirthdayLabel": "Birthday",
-  "settingsProfileSummaryBirthdayValue": "{date} ({age, plural, =1{1 year} other{{age} years}})",
-  "@settingsProfileSummaryBirthdayValue": {
-    "placeholders": {
-      "date": {
-        "type": "String"
-      },
-      "age": {
-        "type": "int"
       }
     }
   },
@@ -1459,27 +1446,7 @@
       }
     }
   },
-  "settingsProfileSummaryCurrentWeightLabel": "Current weight",
-  "settingsProfileSummaryTdeeLabel": "Expenditure (TDEE)",
-  "settingsProfileSummaryTdeeLearnedValue": "{kcal} kcal/day (learned)",
-  "@settingsProfileSummaryTdeeLearnedValue": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
-  "settingsProfileSummaryTdeeEstimatedValue": "{kcal} kcal/day (estimated)",
-  "@settingsProfileSummaryTdeeEstimatedValue": {
-    "placeholders": {
-      "kcal": {
-        "type": "String"
-      }
-    }
-  },
   "settingsProfileSummaryNoProfile": "No body data yet. The calorie calculator saves it.",
-  "settingsProfileSummaryGoalsTitle": "Goals",
-  "settingsProfileSummaryCaloriesLabel": "Calories",
   "settingsProfileSummaryCaloriesValue": "{kcal} kcal/day",
   "@settingsProfileSummaryCaloriesValue": {
     "placeholders": {
@@ -1488,22 +1455,10 @@
       }
     }
   },
-  "settingsProfileSummaryTargetWeightLabel": "Target weight",
   "settingsProfileSummaryWeightValue": "{weight} kg",
   "@settingsProfileSummaryWeightValue": {
     "placeholders": {
       "weight": {
-        "type": "String"
-      }
-    }
-  },
-  "settingsProfileSummaryPaceValue": "{mode} · {pace} kg/week",
-  "@settingsProfileSummaryPaceValue": {
-    "placeholders": {
-      "mode": {
-        "type": "String"
-      },
-      "pace": {
         "type": "String"
       }
     }
@@ -1516,7 +1471,6 @@
       }
     }
   },
-  "settingsProfileSummaryEditMacrosAction": "Edit macros",
   "settingsProfileSummaryLoadFailed": "Could not load profile.",
   "settingsAccountHouseholdSectionTitle": "Household",
   "settingsHealthGoalsSectionTitle": "Health & Goals",
@@ -2277,5 +2231,95 @@
         "type": "int"
       }
     }
-  }
+  },
+  "homeMenuClose": "Close menu",
+  "homeMenuSectionYou": "You",
+  "homeMenuSectionKitchen": "Kitchen",
+  "homeMenuSectionApp": "App",
+  "homeMenuLinkAccount": "Link account",
+  "homeMenuGuest": "Guest mode",
+  "appName": "YAMT",
+  "profileNoValue": "–",
+  "profileWeightChartDays": "{days} days",
+  "@profileWeightChartDays": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileWeightMeasuredLabel": "Measured",
+  "profileWeighInDay": "{days, plural, =0{today} =1{yesterday} other{{days} days ago}}",
+  "@profileWeighInDay": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "profileWeightStartLabel": "Start",
+  "profileWeightStartNote": "at goal start",
+  "profileWeightTrendLabel": "Trend",
+  "profileWeightPerWeek": "per week",
+  "profileBodySection": "Body",
+  "profileGoalSection": "Goal",
+  "profileTrainingLabel": "Training",
+  "profileTrainingNone": "None",
+  "profileTrainingOffset": "+{kcal} kcal on training days",
+  "@profileTrainingOffset": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "profileMacroWeightLabel": "Macro weight",
+  "profileMacroWeightSince": "since {date}",
+  "@profileMacroWeightSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTdeeLabel": "Expenditure",
+  "profileTdeeLearned": "learned",
+  "profileTdeeEstimated": "estimated",
+  "profileGoalLose": "Lose weight to {weight} kg",
+  "@profileGoalLose": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "profileGoalGain": "Gain weight to {weight} kg",
+  "@profileGoalGain": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "profileGoalMaintain": "Maintain weight",
+  "profileGoalStart": "Start {weight} kg",
+  "@profileGoalStart": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "profileGoalRemaining": "{weight} kg to go · {pace} kg/week",
+  "@profileGoalRemaining": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      },
+      "pace": {
+        "type": "String"
+      }
+    }
+  },
+  "profileGoalNone": "No goal set yet."
 }

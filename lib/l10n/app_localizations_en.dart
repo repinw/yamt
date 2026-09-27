@@ -2803,28 +2803,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsProfileGuestSubtitle => 'Guest mode';
 
   @override
-  String get settingsProfileSummaryFallbackTitle => 'Your profile';
-
-  @override
   String get settingsProfileSummaryHeightLabel => 'Height';
 
   @override
   String settingsProfileSummaryHeightValue(String height) {
     return '$height cm';
-  }
-
-  @override
-  String get settingsProfileSummaryBirthdayLabel => 'Birthday';
-
-  @override
-  String settingsProfileSummaryBirthdayValue(String date, int age) {
-    String _temp0 = intl.Intl.pluralLogic(
-      age,
-      locale: localeName,
-      other: '$age years',
-      one: '1 year',
-    );
-    return '$date ($_temp0)';
   }
 
   @override
@@ -2842,30 +2825,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsProfileSummaryCurrentWeightLabel => 'Current weight';
-
-  @override
-  String get settingsProfileSummaryTdeeLabel => 'Expenditure (TDEE)';
-
-  @override
-  String settingsProfileSummaryTdeeLearnedValue(String kcal) {
-    return '$kcal kcal/day (learned)';
-  }
-
-  @override
-  String settingsProfileSummaryTdeeEstimatedValue(String kcal) {
-    return '$kcal kcal/day (estimated)';
-  }
-
-  @override
   String get settingsProfileSummaryNoProfile =>
       'No body data yet. The calorie calculator saves it.';
-
-  @override
-  String get settingsProfileSummaryGoalsTitle => 'Goals';
-
-  @override
-  String get settingsProfileSummaryCaloriesLabel => 'Calories';
 
   @override
   String settingsProfileSummaryCaloriesValue(String kcal) {
@@ -2873,25 +2834,14 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get settingsProfileSummaryTargetWeightLabel => 'Target weight';
-
-  @override
   String settingsProfileSummaryWeightValue(String weight) {
     return '$weight kg';
-  }
-
-  @override
-  String settingsProfileSummaryPaceValue(String mode, String pace) {
-    return '$mode · $pace kg/week';
   }
 
   @override
   String settingsProfileSummaryGramsValue(String grams) {
     return '$grams g';
   }
-
-  @override
-  String get settingsProfileSummaryEditMacrosAction => 'Edit macros';
 
   @override
   String get settingsProfileSummaryLoadFailed => 'Could not load profile.';
@@ -4659,4 +4609,120 @@ class AppLocalizationsEn extends AppLocalizations {
   String foodEstimateRemovePhoto(int index) {
     return 'Remove photo $index';
   }
+
+  @override
+  String get homeMenuClose => 'Close menu';
+
+  @override
+  String get homeMenuSectionYou => 'You';
+
+  @override
+  String get homeMenuSectionKitchen => 'Kitchen';
+
+  @override
+  String get homeMenuSectionApp => 'App';
+
+  @override
+  String get homeMenuLinkAccount => 'Link account';
+
+  @override
+  String get homeMenuGuest => 'Guest mode';
+
+  @override
+  String get appName => 'YAMT';
+
+  @override
+  String get profileNoValue => '–';
+
+  @override
+  String profileWeightChartDays(int days) {
+    return '$days days';
+  }
+
+  @override
+  String get profileWeightMeasuredLabel => 'Measured';
+
+  @override
+  String profileWeighInDay(int days) {
+    String _temp0 = intl.Intl.pluralLogic(
+      days,
+      locale: localeName,
+      other: '$days days ago',
+      one: 'yesterday',
+      zero: 'today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get profileWeightStartLabel => 'Start';
+
+  @override
+  String get profileWeightStartNote => 'at goal start';
+
+  @override
+  String get profileWeightTrendLabel => 'Trend';
+
+  @override
+  String get profileWeightPerWeek => 'per week';
+
+  @override
+  String get profileBodySection => 'Body';
+
+  @override
+  String get profileGoalSection => 'Goal';
+
+  @override
+  String get profileTrainingLabel => 'Training';
+
+  @override
+  String get profileTrainingNone => 'None';
+
+  @override
+  String profileTrainingOffset(String kcal) {
+    return '+$kcal kcal on training days';
+  }
+
+  @override
+  String get profileMacroWeightLabel => 'Macro weight';
+
+  @override
+  String profileMacroWeightSince(String date) {
+    return 'since $date';
+  }
+
+  @override
+  String get profileTdeeLabel => 'Expenditure';
+
+  @override
+  String get profileTdeeLearned => 'learned';
+
+  @override
+  String get profileTdeeEstimated => 'estimated';
+
+  @override
+  String profileGoalLose(String weight) {
+    return 'Lose weight to $weight kg';
+  }
+
+  @override
+  String profileGoalGain(String weight) {
+    return 'Gain weight to $weight kg';
+  }
+
+  @override
+  String get profileGoalMaintain => 'Maintain weight';
+
+  @override
+  String profileGoalStart(String weight) {
+    return 'Start $weight kg';
+  }
+
+  @override
+  String profileGoalRemaining(String weight, String pace) {
+    return '$weight kg to go · $pace kg/week';
+  }
+
+  @override
+  String get profileGoalNone => 'No goal set yet.';
 }

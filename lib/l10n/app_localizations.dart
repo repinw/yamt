@@ -4890,12 +4890,6 @@ abstract class AppLocalizations {
   /// **'Guest mode'**
   String get settingsProfileGuestSubtitle;
 
-  /// No description provided for @settingsProfileSummaryFallbackTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Your profile'**
-  String get settingsProfileSummaryFallbackTitle;
-
   /// No description provided for @settingsProfileSummaryHeightLabel.
   ///
   /// In en, this message translates to:
@@ -4907,18 +4901,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{height} cm'**
   String settingsProfileSummaryHeightValue(String height);
-
-  /// No description provided for @settingsProfileSummaryBirthdayLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Birthday'**
-  String get settingsProfileSummaryBirthdayLabel;
-
-  /// No description provided for @settingsProfileSummaryBirthdayValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{date} ({age, plural, =1{1 year} other{{age} years}})'**
-  String settingsProfileSummaryBirthdayValue(String date, int age);
 
   /// No description provided for @settingsProfileSummaryAgeLabel.
   ///
@@ -4932,47 +4914,11 @@ abstract class AppLocalizations {
   /// **'{age, plural, =1{1 year} other{{age} years}}'**
   String settingsProfileSummaryAgeValue(int age);
 
-  /// No description provided for @settingsProfileSummaryCurrentWeightLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Current weight'**
-  String get settingsProfileSummaryCurrentWeightLabel;
-
-  /// No description provided for @settingsProfileSummaryTdeeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Expenditure (TDEE)'**
-  String get settingsProfileSummaryTdeeLabel;
-
-  /// No description provided for @settingsProfileSummaryTdeeLearnedValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal/day (learned)'**
-  String settingsProfileSummaryTdeeLearnedValue(String kcal);
-
-  /// No description provided for @settingsProfileSummaryTdeeEstimatedValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{kcal} kcal/day (estimated)'**
-  String settingsProfileSummaryTdeeEstimatedValue(String kcal);
-
   /// No description provided for @settingsProfileSummaryNoProfile.
   ///
   /// In en, this message translates to:
   /// **'No body data yet. The calorie calculator saves it.'**
   String get settingsProfileSummaryNoProfile;
-
-  /// No description provided for @settingsProfileSummaryGoalsTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Goals'**
-  String get settingsProfileSummaryGoalsTitle;
-
-  /// No description provided for @settingsProfileSummaryCaloriesLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Calories'**
-  String get settingsProfileSummaryCaloriesLabel;
 
   /// No description provided for @settingsProfileSummaryCaloriesValue.
   ///
@@ -4980,35 +4926,17 @@ abstract class AppLocalizations {
   /// **'{kcal} kcal/day'**
   String settingsProfileSummaryCaloriesValue(String kcal);
 
-  /// No description provided for @settingsProfileSummaryTargetWeightLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Target weight'**
-  String get settingsProfileSummaryTargetWeightLabel;
-
   /// No description provided for @settingsProfileSummaryWeightValue.
   ///
   /// In en, this message translates to:
   /// **'{weight} kg'**
   String settingsProfileSummaryWeightValue(String weight);
 
-  /// No description provided for @settingsProfileSummaryPaceValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{mode} · {pace} kg/week'**
-  String settingsProfileSummaryPaceValue(String mode, String pace);
-
   /// No description provided for @settingsProfileSummaryGramsValue.
   ///
   /// In en, this message translates to:
   /// **'{grams} g'**
   String settingsProfileSummaryGramsValue(String grams);
-
-  /// No description provided for @settingsProfileSummaryEditMacrosAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit macros'**
-  String get settingsProfileSummaryEditMacrosAction;
 
   /// No description provided for @settingsProfileSummaryLoadFailed.
   ///
@@ -8138,6 +8066,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove photo {index}'**
   String foodEstimateRemovePhoto(int index);
+
+  /// No description provided for @homeMenuClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close menu'**
+  String get homeMenuClose;
+
+  /// No description provided for @homeMenuSectionYou.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get homeMenuSectionYou;
+
+  /// No description provided for @homeMenuSectionKitchen.
+  ///
+  /// In en, this message translates to:
+  /// **'Kitchen'**
+  String get homeMenuSectionKitchen;
+
+  /// No description provided for @homeMenuSectionApp.
+  ///
+  /// In en, this message translates to:
+  /// **'App'**
+  String get homeMenuSectionApp;
+
+  /// No description provided for @homeMenuLinkAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Link account'**
+  String get homeMenuLinkAccount;
+
+  /// No description provided for @homeMenuGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'Guest mode'**
+  String get homeMenuGuest;
+
+  /// No description provided for @appName.
+  ///
+  /// In en, this message translates to:
+  /// **'YAMT'**
+  String get appName;
+
+  /// No description provided for @profileNoValue.
+  ///
+  /// In en, this message translates to:
+  /// **'–'**
+  String get profileNoValue;
+
+  /// No description provided for @profileWeightChartDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{days} days'**
+  String profileWeightChartDays(int days);
+
+  /// No description provided for @profileWeightMeasuredLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Measured'**
+  String get profileWeightMeasuredLabel;
+
+  /// No description provided for @profileWeighInDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{days, plural, =0{today} =1{yesterday} other{{days} days ago}}'**
+  String profileWeighInDay(int days);
+
+  /// No description provided for @profileWeightStartLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get profileWeightStartLabel;
+
+  /// No description provided for @profileWeightStartNote.
+  ///
+  /// In en, this message translates to:
+  /// **'at goal start'**
+  String get profileWeightStartNote;
+
+  /// No description provided for @profileWeightTrendLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get profileWeightTrendLabel;
+
+  /// No description provided for @profileWeightPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'per week'**
+  String get profileWeightPerWeek;
+
+  /// No description provided for @profileBodySection.
+  ///
+  /// In en, this message translates to:
+  /// **'Body'**
+  String get profileBodySection;
+
+  /// No description provided for @profileGoalSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get profileGoalSection;
+
+  /// No description provided for @profileTrainingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get profileTrainingLabel;
+
+  /// No description provided for @profileTrainingNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get profileTrainingNone;
+
+  /// No description provided for @profileTrainingOffset.
+  ///
+  /// In en, this message translates to:
+  /// **'+{kcal} kcal on training days'**
+  String profileTrainingOffset(String kcal);
+
+  /// No description provided for @profileMacroWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Macro weight'**
+  String get profileMacroWeightLabel;
+
+  /// No description provided for @profileMacroWeightSince.
+  ///
+  /// In en, this message translates to:
+  /// **'since {date}'**
+  String profileMacroWeightSince(String date);
+
+  /// No description provided for @profileTdeeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenditure'**
+  String get profileTdeeLabel;
+
+  /// No description provided for @profileTdeeLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'learned'**
+  String get profileTdeeLearned;
+
+  /// No description provided for @profileTdeeEstimated.
+  ///
+  /// In en, this message translates to:
+  /// **'estimated'**
+  String get profileTdeeEstimated;
+
+  /// No description provided for @profileGoalLose.
+  ///
+  /// In en, this message translates to:
+  /// **'Lose weight to {weight} kg'**
+  String profileGoalLose(String weight);
+
+  /// No description provided for @profileGoalGain.
+  ///
+  /// In en, this message translates to:
+  /// **'Gain weight to {weight} kg'**
+  String profileGoalGain(String weight);
+
+  /// No description provided for @profileGoalMaintain.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintain weight'**
+  String get profileGoalMaintain;
+
+  /// No description provided for @profileGoalStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start {weight} kg'**
+  String profileGoalStart(String weight);
+
+  /// No description provided for @profileGoalRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{weight} kg to go · {pace} kg/week'**
+  String profileGoalRemaining(String weight, String pace);
+
+  /// No description provided for @profileGoalNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No goal set yet.'**
+  String get profileGoalNone;
 }
 
 class _AppLocalizationsDelegate

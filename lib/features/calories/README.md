@@ -87,8 +87,8 @@ state, and calorie-owned side effects from health or weight changes.
   manual targets, check-in updates, and schedule changes.
 - `application/calorie_goal_seed_weight_flow.dart` resolves seed weight directly
   from health repositories without unlistened provider future reads.
-- `debug/calorie_debug_menu_section.dart`, a debug-only list of dump actions
-  that the Home side menu shows only in debug builds.
+- `presentation/widgets/calorie_debug_menu_section.dart`, a debug-only list
+  of dump actions that the Home side menu shows only in debug builds.
 
 Other features should depend on domain types or complete widgets instead of
 reassembling Calories internals. New calorie-owned side effects should live in

@@ -23,6 +23,9 @@ weight samples, and manual fallback weight entries. It reads only weight.
 
 - `application/health_connection_actions.dart` for connection status and
   permission actions used by integrating features.
+- `application/recent_weight_trend_provider.dart` for the weights of the last
+  14 days: weigh-ins, trend weight, and weekly trend. It reads the data layer
+  directly; the manual weight controller refreshes it after a save or delete.
 - `presentation/controllers/health_connection_controller.dart`
 - `presentation/controllers/manual_health_weight_entries_controller.dart`
 - Service providers in `data/` for health connection, health weight samples,

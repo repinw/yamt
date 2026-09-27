@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/features/health/application/recent_weight_trend_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
@@ -43,22 +44,27 @@ class ManualHealthWeightEntriesController
     final normalizedDay = normalizeLocalDay(day);
     final connectionStatus = await healthConnectionService.loadStatus();
 
-    if (connectionStatus.accessState == HealthDataAccessState.ready) {
-      return await _saveToHealth(
-        repository: repository,
-        healthWeightService: healthWeightService,
-        previousEntries: previousEntries,
-        normalizedDay: normalizedDay,
-        now: now,
-        weightKg: weightKg,
-      );
+    final saved = connectionStatus.accessState == HealthDataAccessState.ready
+        ? await _saveToHealth(
+            repository: repository,
+            healthWeightService: healthWeightService,
+            previousEntries: previousEntries,
+            normalizedDay: normalizedDay,
+            now: now,
+            weightKg: weightKg,
+          )
+        : await _saveToRepository(
+            repository: repository,
+            previousEntries: previousEntries,
+            entry: ManualHealthWeightEntry(
+              day: normalizedDay,
+              weightKg: weightKg,
+            ),
+          );
+    if (saved && ref.mounted) {
+      ref.invalidate(recentWeightTrendProvider);
     }
-
-    return await _saveToRepository(
-      repository: repository,
-      previousEntries: previousEntries,
-      entry: ManualHealthWeightEntry(day: normalizedDay, weightKg: weightKg),
-    );
+    return saved;
   }
 
   /// Delete entry for day.
@@ -82,6 +88,9 @@ class ManualHealthWeightEntriesController
       }
       if (!deleted) {
         return false;
+      }
+      if (ref.mounted) {
+        ref.invalidate(recentWeightTrendProvider);
       }
       return deleted;
     } on Object catch (error, stackTrace) {

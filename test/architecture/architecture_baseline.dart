@@ -70,7 +70,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/diary/presentation/widgets/diary_meal_group/diary_meal_portion_formatter.dart':
         1,
     'lib/features/home/home_page.dart': 2,
-    'lib/features/home/widgets/home_menu_drawer.dart': 1,
     'lib/features/home/widgets/inventory_action_fab.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 2,
     'lib/features/home_widget/presentation/controllers/home_widget_sync_controller.dart':
@@ -130,7 +129,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/debug/calorie_debug_dump_service.dart': 1,
     'lib/features/calories/debug/calorie_debug_file_exporter.dart': 1,
     'lib/features/calories/debug/calorie_debug_keys.dart': 1,
-    'lib/features/calories/debug/calorie_debug_menu_section.dart': 1,
     'lib/features/calories/debug/calorie_debug_weekly_checkin_rows.dart': 1,
     'lib/features/calories/provider/burn_week_run_controller.dart': 1,
     'lib/features/calories/provider/calorie_balance_now_provider.dart': 1,
@@ -155,7 +153,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/provider/macro_goal_settings_controller.dart': 1,
     'lib/features/home/home_page.dart': 1,
     'lib/features/home/widgets/home_context_fab.dart': 1,
-    'lib/features/home/widgets/home_menu_drawer.dart': 1,
     'lib/features/home/widgets/home_shell_chrome_visibility_controller.dart': 1,
     'lib/features/home/widgets/inventory_action_fab.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,
