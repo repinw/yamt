@@ -25,6 +25,16 @@ const Set<String> germanAmountUnitTokens = <String>{
   'tassen',
 };
 
+/// German amount unit words that change form between singular and plural,
+/// keyed by their normalized singular form.
+const Map<String, String> germanUnitWordPluralForms = <String, String>{
+  'prise': 'prisen',
+  'zehe': 'zehen',
+  'dose': 'dosen',
+  'packung': 'packungen',
+  'tasse': 'tassen',
+};
+
 /// German piece unit tokens.
 const Set<String> germanPieceUnitTokens = <String>{
   ...commonPieceUnitTokens,

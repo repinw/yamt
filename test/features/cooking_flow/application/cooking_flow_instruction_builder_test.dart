@@ -351,6 +351,38 @@ void main() {
     expect(highlights, contains('Salz (1/4 TL)'));
   });
 
+  test('scales pinch, clove range, and pinch-unit amounts by portions', () {
+    const instruction =
+        'Salz, Pfeffer, Knoblauch und Schnittlauch dazugeben.';
+    final steps = buildCookingFlowInstructionSteps(
+      template: _template(
+        recipeIngredients: const <String>[
+          '2 Prisen Salz',
+          '1 Prise Pfeffer',
+          '1-2 Zehen Knoblauch',
+          'etwas Schnittlauch',
+        ],
+        recipeInstructions: const <String>[instruction],
+        totalPortions: 2,
+      ),
+      introDraft: null,
+      inventoryItems: const <InventoryItem>[],
+      text: _text,
+      localeCode: 'de',
+      targetPortions: 4,
+    );
+
+    final highlights = steps.single.segments
+        .where((segment) => segment.isHighlight)
+        .map((segment) => segment.text)
+        .toList();
+
+    expect(highlights, contains('Salz (4 Prisen)'));
+    expect(highlights, contains('Pfeffer (2 Prisen)'));
+    expect(highlights, contains('Knoblauch (2-4 Zehen)'));
+    expect(highlights, contains('Schnittlauch (etwas)'));
+  });
+
   test('handles qualitative amounts without showing unknown amount', () {
     final steps = buildCookingFlowInstructionSteps(
       template: _template(

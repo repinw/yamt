@@ -36,6 +36,7 @@ class CookingFlowParserLocale {
     required this.fuzzyShortIngredientTokens,
     this.defaultPieceUnitLabel = 'Stück',
     this.irregularIngredientVariants = const <String, List<String>>{},
+    this.unitWordPluralForms = const <String, String>{},
   });
 
   /// Resolves parser data for a locale code.
@@ -67,6 +68,10 @@ class CookingFlowParserLocale {
   /// Irregular ingredient noun forms mapping base/plural/compound forms.
   final Map<String, List<String>> irregularIngredientVariants;
 
+  /// Known singular/plural pairs for amount unit words (normalized singular
+  /// form mapped to its normalized plural form).
+  final Map<String, String> unitWordPluralForms;
+
   /// Regex alternation for [amountUnitTokens].
   String get amountUnitPattern {
     return amountUnitTokens.map(RegExp.escape).join('|');
@@ -76,6 +81,20 @@ class CookingFlowParserLocale {
   bool isPieceUnit(String? unit) {
     final normalized = unit?.trim().toLowerCase();
     return normalized != null && pieceUnitTokens.contains(normalized);
+  }
+
+  /// Returns [word] adjusted to its singular or plural form to match
+  /// [isPlural], preserving the original capitalization. Returns [word]
+  /// unchanged when no known singular/plural pairing exists for it.
+  String pluralizeUnitWord(String word, {required bool isPlural}) {
+    final normalized = word.trim().toLowerCase();
+    for (final entry in unitWordPluralForms.entries) {
+      if (entry.key == normalized || entry.value == normalized) {
+        final resolved = isPlural ? entry.value : entry.key;
+        return _matchCase(reference: word, value: resolved);
+      }
+    }
+    return word;
   }
 
   /// Resolves morphological variants (singular, plural, irregular forms)
@@ -164,6 +183,7 @@ class CookingFlowParserLocale {
     fuzzyInstructionStopWords: germanFuzzyInstructionStopWords,
     fuzzyShortIngredientTokens: germanFuzzyShortIngredientTokens,
     irregularIngredientVariants: germanIrregularIngredientVariants,
+    unitWordPluralForms: germanUnitWordPluralForms,
   );
 
   /// English parser data.
@@ -174,6 +194,7 @@ class CookingFlowParserLocale {
     fuzzyShortIngredientTokens: englishFuzzyShortIngredientTokens,
     defaultPieceUnitLabel: 'pieces',
     irregularIngredientVariants: englishIrregularIngredientVariants,
+    unitWordPluralForms: englishUnitWordPluralForms,
   );
 
   /// Combined parser data for non-UI application paths without locale context.
@@ -197,6 +218,10 @@ class CookingFlowParserLocale {
     irregularIngredientVariants: Map.unmodifiable(<String, List<String>>{
       ...german.irregularIngredientVariants,
       ...english.irregularIngredientVariants,
+    }),
+    unitWordPluralForms: Map.unmodifiable(<String, String>{
+      ...german.unitWordPluralForms,
+      ...english.unitWordPluralForms,
     }),
   );
 }

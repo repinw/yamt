@@ -25,6 +25,19 @@ const Set<String> englishAmountUnitTokens = <String>{
   'cups',
 };
 
+/// English amount unit words that change form between singular and plural,
+/// keyed by their normalized singular form.
+const Map<String, String> englishUnitWordPluralForms = <String, String>{
+  'piece': 'pieces',
+  'tablespoon': 'tablespoons',
+  'teaspoon': 'teaspoons',
+  'pinch': 'pinches',
+  'clove': 'cloves',
+  'can': 'cans',
+  'package': 'packages',
+  'cup': 'cups',
+};
+
 /// English piece unit tokens.
 const Set<String> englishPieceUnitTokens = <String>{
   ...commonPieceUnitTokens,

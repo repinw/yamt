@@ -1,8 +1,8 @@
 import 'package:fuzzywuzzy/fuzzywuzzy.dart' as fuzzywuzzy;
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_instruction_inventory.dart';
+    'cooking_flow_amount_utils.dart';
 import 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_instruction_parser.dart';
+    'cooking_flow_instruction_inventory.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_parser_locale.dart';
 
