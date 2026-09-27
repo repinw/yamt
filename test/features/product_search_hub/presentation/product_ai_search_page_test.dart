@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -26,6 +27,36 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_ai_search_page/product_ai_search_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+class _FakeVoiceSearchService implements VoiceSearchService {
+  ValueChanged<VoiceSearchRecognition>? _onResult;
+  var _isListening = false;
+
+  @override
+  bool get isListening => _isListening;
+
+  @override
+  Future<VoiceSearchFailure?> startListening({
+    required ValueChanged<VoiceSearchRecognition> onResult,
+    required ValueChanged<bool> onListeningStateChanged,
+    required ValueChanged<VoiceSearchFailure> onError,
+  }) async {
+    _onResult = onResult;
+    _isListening = true;
+    onListeningStateChanged(true);
+    return null;
+  }
+
+  @override
+  Future<void> stopListening() async => _isListening = false;
+
+  @override
+  Future<void> cancelListening() async => _isListening = false;
+
+  void say(String transcript) => _onResult?.call(
+    VoiceSearchRecognition(transcript: transcript, isFinal: true),
+  );
+}
 
 class _FakeFoodEstimateRepository implements FoodEstimateRepository {
   new(this._onLoad);
@@ -83,6 +114,7 @@ Future<void> _pumpPage(
   required ValueChanged<ManualProductAiSearchResult?> onResult,
   bool fromDiary = true,
   String initialPrompt = '',
+  VoiceSearchService? voice,
 }) async {
   final router = GoRouter(
     routes: [
@@ -124,7 +156,12 @@ Future<void> _pumpPage(
   addTearDown(router.dispose);
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [foodEstimateRepositoryProvider.overrideWithValue(repository)],
+      overrides: [
+        foodEstimateRepositoryProvider.overrideWithValue(repository),
+        voiceSearchServiceProvider.overrideWithValue(
+          voice ?? _FakeVoiceSearchService(),
+        ),
+      ],
       child: MaterialApp.router(
         locale: const Locale('en'),
         localizationsDelegates: appLocalizationsDelegates,
@@ -163,6 +200,26 @@ void main() {
     await tester.pump();
 
     expect(_analyzeButton(tester).onPressed, isNotNull);
+  });
+
+  testWidgets('dictation fills the description', (tester) async {
+    final voice = _FakeVoiceSearchService();
+    final repository = _FakeFoodEstimateRepository((_) async => _doener);
+    await _pumpPage(
+      tester,
+      repository: repository,
+      onResult: (_) {},
+      voice: voice,
+    );
+
+    await tester.tap(find.byKey(ManualProductAiSearchPage.voiceKey));
+    await tester.pump();
+    voice.say('Döner mit extra Soße');
+    await tester.pump();
+
+    expect(find.text('Döner mit extra Soße'), findsOneWidget);
+    await _analyze(tester);
+    expect(repository.descriptions, ['Döner mit extra Soße']);
   });
 
   testWidgets('quick chips extend the description', (tester) async {

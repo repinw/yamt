@@ -6,10 +6,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mime/mime.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_quick_eat_config.dart';
@@ -53,6 +55,9 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
   /// Key of the description field.
   static const descriptionKey = Key('food_estimate_description_field');
 
+  /// Key of the button that dictates the description.
+  static const voiceKey = Key('food_estimate_voice_button');
+
   /// Base item to build from.
   final InventoryItem item;
 
@@ -78,9 +83,18 @@ class _ManualProductAiSearchPageState
   late final _description = TextEditingController(text: widget.initialPrompt)
     ..addListener(() => setState(() {}));
   final _picker = ImagePicker();
+  final _voice = TextVoiceSearchController();
+  late final VoiceSearchService _voiceService;
+
+  @override
+  void initState() {
+    super.initState();
+    _voiceService = ref.read(voiceSearchServiceProvider);
+  }
 
   @override
   void dispose() {
+    _voice.dispose();
     _description.dispose();
     super.dispose();
   }
@@ -133,17 +147,15 @@ class _ManualProductAiSearchPageState
               .read(foodEstimateControllerProvider.notifier)
               .removePhoto,
         ),
-        TextField(
-          key: ManualProductAiSearchPage.descriptionKey,
+        TextVoiceSearchBar(
           controller: _description,
+          fieldKey: ManualProductAiSearchPage.descriptionKey,
+          voiceButtonKey: ManualProductAiSearchPage.voiceKey,
+          label: l10n.foodEstimateDescriptionLabel,
+          hintText: l10n.foodEstimateDescriptionHint,
           enabled: !isLoading,
-          minLines: 2,
-          maxLines: 5,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(
-            labelText: l10n.foodEstimateDescriptionLabel,
-            hintText: l10n.foodEstimateDescriptionHint,
-          ),
+          voiceSearchService: _voiceService,
+          voiceSearchController: _voice,
         ),
         Wrap(
           spacing: AppSpacing.sm,
@@ -212,6 +224,8 @@ class _ManualProductAiSearchPageState
 
   Future<void> _analyze() async {
     FocusManager.instance.primaryFocus?.unfocus();
+    await _voice.stopVoiceSearchIfNeeded();
+    if (!mounted) return;
     final description = _description.text;
     final estimate = await ref
         .read(foodEstimateControllerProvider.notifier)
