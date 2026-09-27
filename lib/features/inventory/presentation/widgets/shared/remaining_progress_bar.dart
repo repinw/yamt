@@ -72,6 +72,10 @@ class RemainingProgressBar extends StatelessWidget {
     final isLowStock = safeRatio < 0.1;
     final resolvedFillColor =
         fillColor ?? (isLowStock ? colorScheme.error : colorScheme.primary);
+    // Lime is a fill color; text in the accent uses the readable secondary.
+    final resolvedTextColor = resolvedFillColor == colorScheme.primary
+        ? colorScheme.secondary
+        : resolvedFillColor;
     final percentage = (safeRatio * 100).round();
     final useSegmentedBar = segmentedByUnits && totalUnits <= _maxSegmentCount;
     final resolvedStockLabelStyle =
@@ -85,7 +89,7 @@ class RemainingProgressBar extends StatelessWidget {
         Theme.of(context).textTheme.labelSmall?.copyWith(
           fontWeight: FontWeight.w700,
           color: labelLayout == RemainingProgressBarLabelLayout.aboveBar
-              ? resolvedFillColor
+              ? resolvedTextColor
               : colorScheme.onSurfaceVariant,
         );
     final labelRow = Row(
@@ -94,7 +98,7 @@ class RemainingProgressBar extends StatelessWidget {
           child: _StockLabel(
             stockLabel: stockLabel,
             baseStyle: resolvedStockLabelStyle,
-            accentColor: resolvedFillColor,
+            accentColor: resolvedTextColor,
           ),
         ),
         Text('$percentage%', style: resolvedPercentageStyle),

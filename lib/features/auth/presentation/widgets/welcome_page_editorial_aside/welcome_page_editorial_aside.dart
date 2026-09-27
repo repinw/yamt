@@ -26,7 +26,7 @@ class EditorialAside extends StatelessWidget {
           children: [
             Text(
               l10n.authBrandSubtitle.toUpperCase(),
-              style: textTheme.labelSmall?.copyWith(color: colors.primary),
+              style: textTheme.labelSmall?.copyWith(color: colors.secondary),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(

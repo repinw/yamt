@@ -103,7 +103,7 @@ class _IngredientBullet extends StatelessWidget {
     return Text(
       '-',
       style: theme.textTheme.bodyMedium?.copyWith(
-        color: isFromInventory ? Colors.green.shade600 : colors.primary,
+        color: isFromInventory ? Colors.green.shade600 : colors.secondary,
         fontWeight: FontWeight.bold,
       ),
     );

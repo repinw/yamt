@@ -128,7 +128,7 @@ class ReceiptReviewItemCard extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: colors.primary,
+              color: colors.secondary,
             ),
           ),
         ],

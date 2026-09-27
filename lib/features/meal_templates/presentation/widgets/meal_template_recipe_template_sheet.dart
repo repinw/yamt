@@ -497,7 +497,7 @@ class _ClipboardPasteCard extends StatelessWidget {
                   ),
                   child: Icon(
                     Icons.assignment_turned_in_rounded,
-                    color: colors.primary,
+                    color: colors.secondary,
                     size: 20,
                   ),
                 ),
@@ -527,7 +527,7 @@ class _ClipboardPasteCard extends StatelessWidget {
                 ),
                 Icon(
                   Icons.arrow_forward_rounded,
-                  color: colors.primary,
+                  color: colors.secondary,
                   size: 18,
                 ),
               ],

@@ -91,7 +91,7 @@ class _SettingsAvatar extends StatelessWidget {
       child: Text(
         initial,
         style: Theme.of(context).textTheme.titleLarge
-            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w900),
+            ?.copyWith(color: colors.secondary, fontWeight: FontWeight.w900),
       ),
     );
   }

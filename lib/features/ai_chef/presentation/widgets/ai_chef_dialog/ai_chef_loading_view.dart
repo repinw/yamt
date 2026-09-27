@@ -84,7 +84,7 @@ class _AiChefLoadingViewState extends State<AiChefLoadingView>
             textAlign: TextAlign.center,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w900,
-              color: colors.primary,
+              color: colors.secondary,
             ),
           ),
           const SizedBox(height: AppSpacing.md),

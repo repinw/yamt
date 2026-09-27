@@ -160,7 +160,7 @@ class _GlowingHalo extends StatelessWidget {
             shape: BoxShape.circle,
             color: colors.primaryContainer.withValues(alpha: 0.8),
           ),
-          child: Icon(icon, size: 32, color: colors.primary),
+          child: Icon(icon, size: 32, color: colors.secondary),
         ),
       ),
     );

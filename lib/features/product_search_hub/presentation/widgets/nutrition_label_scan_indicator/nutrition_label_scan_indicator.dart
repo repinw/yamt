@@ -219,7 +219,10 @@ class _ScanStatus extends StatelessWidget {
     final theme = Theme.of(context);
     return Row(
       children: [
-        Icon(Icons.document_scanner_outlined, color: theme.colorScheme.primary),
+        Icon(
+          Icons.document_scanner_outlined,
+          color: theme.colorScheme.secondary,
+        ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
       ],

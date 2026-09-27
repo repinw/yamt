@@ -23,7 +23,11 @@ class AppIconBadge extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.sm),
-        child: Icon(icon, color: colors.primary, size: AppSizes.iconBadgeIcon),
+        child: Icon(
+          icon,
+          color: colors.secondary,
+          size: AppSizes.iconBadgeIcon,
+        ),
       ),
     );
   }

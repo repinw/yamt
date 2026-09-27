@@ -169,7 +169,7 @@ class _CompactMetricItem extends StatelessWidget {
                 children: [
                   Icon(
                     icon,
-                    color: colors.primary,
+                    color: colors.secondary,
                     size: AppSizes.compactMetricIcon,
                   ),
                   const SizedBox(width: AppSizes.compactMetricIconLabelGap),

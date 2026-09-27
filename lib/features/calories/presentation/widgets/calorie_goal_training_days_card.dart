@@ -63,7 +63,7 @@ class CalorieGoalTrainingDaysCard extends StatelessWidget {
                 Icon(
                   Icons.fitness_center_rounded,
                   size: 20,
-                  color: colors.primary,
+                  color: colors.secondary,
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 Expanded(

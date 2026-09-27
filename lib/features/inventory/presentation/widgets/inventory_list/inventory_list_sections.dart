@@ -416,7 +416,7 @@ class InventorySortOptionCard extends StatelessWidget {
                               directionLabel!,
                               style: Theme.of(context).textTheme.labelMedium
                                   ?.copyWith(
-                                    color: colors.primary,
+                                    color: colors.secondary,
                                     fontWeight: FontWeight.w700,
                                   ),
                             ),
@@ -438,7 +438,7 @@ class InventorySortOptionCard extends StatelessWidget {
                                   ? Icons.arrow_upward_rounded
                                   : Icons.arrow_downward_rounded,
                               size: 16,
-                              color: colors.primary,
+                              color: colors.secondary,
                             ),
                           ),
                         ),

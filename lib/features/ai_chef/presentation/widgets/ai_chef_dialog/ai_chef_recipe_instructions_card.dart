@@ -83,7 +83,7 @@ class _StepNumberBadge extends StatelessWidget {
         '$index',
         style: theme.textTheme.bodySmall?.copyWith(
           fontWeight: FontWeight.bold,
-          color: colors.primary,
+          color: colors.secondary,
         ),
       ),
     );

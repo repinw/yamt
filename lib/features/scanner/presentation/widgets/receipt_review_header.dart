@@ -98,7 +98,7 @@ class ReceiptReviewHeader extends StatelessWidget {
                   Icon(
                     Icons.storefront_outlined,
                     size: 20,
-                    color: colors.primary,
+                    color: colors.secondary,
                   ),
                   const SizedBox(width: AppSpacing.xs),
                   Expanded(
@@ -195,7 +195,7 @@ class ReceiptReviewHeader extends StatelessWidget {
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                color: receipt.hasDiscrepancy ? colors.error : colors.primary,
+                color: receipt.hasDiscrepancy ? colors.error : colors.secondary,
               ),
             ),
           ],

@@ -92,7 +92,7 @@ class _MealThumbFallback extends StatelessWidget {
         child: Text(
           initial.toUpperCase(),
           style: theme.textTheme.titleLarge?.copyWith(
-            color: colors.primary,
+            color: colors.secondary,
             fontWeight: FontWeight.w900,
           ),
         ),

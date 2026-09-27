@@ -68,8 +68,10 @@ class _PreparedMealComponentAvatarFallback extends StatelessWidget {
         child: Center(
           child: Text(
             initial.toUpperCase(),
-            style: Theme.of(context).textTheme.labelSmall
-                ?.copyWith(color: colors.primary, fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: colors.secondary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ),

@@ -228,7 +228,7 @@ class _CandidatePickerTile extends StatelessWidget {
               ),
               if (isSelected) ...[
                 const SizedBox(width: AppSpacing.sm),
-                Icon(Icons.check_circle, color: colors.primary),
+                Icon(Icons.check_circle, color: colors.secondary),
               ],
             ],
           ),

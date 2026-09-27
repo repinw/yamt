@@ -78,14 +78,14 @@ class _KitchenUtensilCoverFallback extends StatelessWidget {
     final trimmed = label.trim();
     final colors = Theme.of(context).colorScheme;
     if (trimmed.isEmpty) {
-      return Icon(Icons.kitchen_rounded, color: colors.primary);
+      return Icon(Icons.kitchen_rounded, color: colors.secondary);
     }
 
     return Center(
       child: Text(
         trimmed.substring(0, 1).toUpperCase(),
         style: Theme.of(context).textTheme.titleMedium
-            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
+            ?.copyWith(color: colors.secondary, fontWeight: FontWeight.w800),
       ),
     );
   }

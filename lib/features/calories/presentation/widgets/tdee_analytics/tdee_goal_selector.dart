@@ -70,7 +70,7 @@ class TdeeGoalSelector extends StatelessWidget {
                   Icon(
                     Icons.check_rounded,
                     size: 18,
-                    color: colorScheme.primary,
+                    color: colorScheme.secondary,
                   ),
               ],
             ),
@@ -96,7 +96,7 @@ class TdeeGoalSelector extends StatelessWidget {
                   ? Icons.public_rounded
                   : Icons.track_changes_rounded,
               size: 16,
-              color: colorScheme.primary,
+              color: colorScheme.secondary,
             ),
             const SizedBox(width: 6),
             ConstrainedBox(

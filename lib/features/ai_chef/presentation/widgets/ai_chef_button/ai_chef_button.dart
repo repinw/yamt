@@ -32,7 +32,7 @@ class AiChefButton extends StatelessWidget {
           ),
         );
       },
-      icon: Icon(Icons.auto_awesome_rounded, color: colors.primary),
+      icon: Icon(Icons.auto_awesome_rounded, color: colors.secondary),
     );
   }
 }

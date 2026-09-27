@@ -155,7 +155,7 @@ class TdeeInsightsCard extends StatelessWidget {
       content = Text(
         l10n.tdeeGoalAchieved(targetStr),
         style: theme.textTheme.bodyMedium?.copyWith(
-          color: colorScheme.primary,
+          color: colorScheme.secondary,
           fontWeight: FontWeight.bold,
         ),
       );

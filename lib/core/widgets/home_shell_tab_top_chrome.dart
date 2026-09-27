@@ -21,7 +21,7 @@ class HomeShellTabTopChrome extends StatelessWidget {
     return HomeShellTopSliverChrome(
       child: HomeTopBar(
         title: title,
-        titleColor: colors.primary,
+        titleColor: colors.secondary,
         compact: compact,
         preferredHeight: HomeTopBar.preferredHeightFor(
           context,

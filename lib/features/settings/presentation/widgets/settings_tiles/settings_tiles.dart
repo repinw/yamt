@@ -35,7 +35,7 @@ class SettingsSection extends StatelessWidget {
             child: Text(
               title,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: colors.primary,
+                color: colors.secondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 0.8,
@@ -130,7 +130,7 @@ class SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final resolvedIconColor = iconColor ?? colors.primary;
+    final resolvedIconColor = iconColor ?? colors.secondary;
     final effectiveOnTap = enabled ? onTap : null;
     final opacity = enabled ? 1.0 : 0.45;
 
@@ -209,7 +209,7 @@ class SettingsChevron extends StatelessWidget {
   Widget build(BuildContext context) {
     return Icon(
       Icons.chevron_right_rounded,
-      color: Theme.of(context).colorScheme.primary,
+      color: Theme.of(context).colorScheme.secondary,
       size: 22,
     );
   }
@@ -248,7 +248,7 @@ class SettingsTrailingValue extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: Theme.of(context).textTheme.labelMedium
-              ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
+              ?.copyWith(color: colors.secondary, fontWeight: FontWeight.w800),
         ),
       ],
     );

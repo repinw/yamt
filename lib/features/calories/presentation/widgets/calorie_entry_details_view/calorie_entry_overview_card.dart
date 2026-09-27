@@ -124,7 +124,7 @@ class _EntryTitle extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: theme.textTheme.labelMedium?.copyWith(
-              color: colors.primary,
+              color: colors.secondary,
               fontWeight: FontWeight.w800,
               letterSpacing: 1.1,
             ),
@@ -192,7 +192,7 @@ class _AmountButton extends StatelessWidget {
               Icon(
                 Icons.edit_outlined,
                 size: AppSizes.compactMetricIcon,
-                color: colors.primary,
+                color: colors.secondary,
               ),
             ],
           ),

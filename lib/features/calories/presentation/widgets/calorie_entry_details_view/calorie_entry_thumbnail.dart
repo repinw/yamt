@@ -97,7 +97,7 @@ class _EntryImageFallback extends StatelessWidget {
       child: Text(
         initial.toUpperCase(),
         style: Theme.of(context).textTheme.headlineMedium
-            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
+            ?.copyWith(color: colors.secondary, fontWeight: FontWeight.w800),
       ),
     );
   }

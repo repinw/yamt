@@ -111,7 +111,7 @@ class _PreparedMealCoverFallback extends StatelessWidget {
       child: Text(
         initial.toUpperCase(),
         style: Theme.of(context).textTheme.titleMedium
-            ?.copyWith(color: colors.primary, fontWeight: FontWeight.w800),
+            ?.copyWith(color: colors.secondary, fontWeight: FontWeight.w800),
       ),
     );
   }
