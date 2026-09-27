@@ -460,21 +460,12 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/calories/presentation/widgets/tdee_analytics/tdee_weight_chart_builder.dart':
         2,
-    'lib/features/cooking_flow/presentation/cooking_flow_cooking_page.dart': 3,
-    'lib/features/cooking_flow/presentation/cooking_flow_finalize_page.dart': 5,
+    'lib/features/cooking_flow/presentation/cooking_flow_cooking_page.dart': 1,
     'lib/features/cooking_flow/presentation/cooking_flow_intro_page.dart': 1,
     'lib/features/cooking_flow/presentation/cooking_flow_intro_page_hero.dart':
         1,
-    'lib/features/cooking_flow/presentation/cooking_flow_inventory_conflict_panels.dart':
-        3,
     'lib/features/cooking_flow/presentation/cooking_flow_on_the_fly_adjustment_card.dart':
         15,
-    'lib/features/cooking_flow/presentation/cooking_flow_page_widgets.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_preparation_page.dart':
-        3,
-    'lib/features/cooking_flow/presentation/cooking_flow_progress_indicator.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_summary_page.dart': 2,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
         1,
     'lib/features/home/widgets/home_context_fab.dart': 1,

@@ -475,7 +475,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Zur Einkaufsliste hinzufügen und später fortsetzen'),
+      find.text('Einkaufsliste'),
       findsOneWidget,
     );
     expect(find.text('Später'), findsOneWidget);
@@ -508,7 +508,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(
-      find.text('Zur Einkaufsliste hinzufügen und später fortsetzen'),
+      find.text('Einkaufsliste'),
     );
     await tester.pumpAndSettle();
 
@@ -555,7 +555,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.tap(
-      find.text('Zur Einkaufsliste hinzufügen und später fortsetzen'),
+      find.text('Einkaufsliste'),
     );
     await tester.pumpAndSettle();
 

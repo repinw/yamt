@@ -42,7 +42,7 @@ class CookingFlowProgressIndicator extends StatelessWidget {
           dotHeight: 7,
           spacing: 5,
           radius: 7,
-          activeDotColor: const Color(0xFFE65100),
+          activeDotColor: colors.primary,
           dotColor: colors.outlineVariant,
         ),
       ),

@@ -58,8 +58,8 @@ class CookingFlowActionButton extends StatelessWidget {
             Flexible(
               child: Text(
                 label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+                maxLines: 2,
+                overflow: TextOverflow.visible,
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
                   color: isEnabled ? colors.onPrimary : colors.onSurfaceVariant,

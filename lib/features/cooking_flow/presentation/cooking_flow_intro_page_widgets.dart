@@ -93,10 +93,7 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
           ? BoxDecoration(
               color: colors.surfaceContainerLow,
               borderRadius: BorderRadius.circular(AppRadius.lg),
-              border: Border.all(
-                color: cookingFlowConflictBorderColor,
-                width: 1.4,
-              ),
+              border: Border.all(color: colors.error, width: 1.4),
             )
           : hasSuggestion
           ? BoxDecoration(
@@ -162,7 +159,7 @@ class CookingFlowInventoryCheckRow extends StatelessWidget {
               Divider(
                 height: 1,
                 color: hasUnresolvedConflict
-                    ? cookingFlowConflictBorderColor.withValues(alpha: 0.28)
+                    ? colors.error.withValues(alpha: 0.28)
                     : colors.outlineVariant.withValues(alpha: 0.22),
               ),
               const SizedBox(height: AppSpacing.md),

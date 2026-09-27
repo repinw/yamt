@@ -106,18 +106,18 @@ class CookingFlowPreparationPage extends StatelessWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(AppSpacing.xxl),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFE8F0FF),
+                    color: colors.tertiaryContainer,
                     borderRadius: BorderRadius.circular(AppRadius.lg),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      const Padding(
-                        padding: EdgeInsets.only(top: 2),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
                         child: Icon(
                           Icons.info_outline_rounded,
                           size: 18,
-                          color: Color(0xFF2450C5),
+                          color: colors.onTertiaryContainer,
                         ),
                       ),
                       const SizedBox(width: AppSpacing.md),
@@ -126,7 +126,7 @@ class CookingFlowPreparationPage extends StatelessWidget {
                           l10n.cookflowPreparationHint,
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(
-                                color: const Color(0xFF2450C5),
+                                color: colors.onTertiaryContainer,
                                 height: 1.4,
                               ),
                         ),

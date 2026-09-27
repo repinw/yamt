@@ -200,10 +200,7 @@ class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                   const SizedBox(width: AppSpacing.xs),
                 ],
-                const Icon(
-                  Icons.soup_kitchen_outlined,
-                  color: Color(0xFFE65100),
-                ),
+                Icon(Icons.soup_kitchen_outlined, color: colors.primary),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: Text(
