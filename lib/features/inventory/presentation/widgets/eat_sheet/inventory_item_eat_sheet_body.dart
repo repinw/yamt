@@ -1,24 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_submission.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inedible_line.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inline_amount_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_remember_portion.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_amount_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_label_section.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 /// Eat page content for an inventory item.
 class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
@@ -136,15 +128,11 @@ class _InventoryItemEatSheetBodyState
   @override
   Widget build(BuildContext context) {
     ref.listen(_provider, (_, next) => _syncText(next));
-    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(_provider);
-    final calculator = state.calculator;
     final item = widget.item;
     final nutrition = state.nutrition;
     final addMoreText = widget.addMoreActionText;
     final amountField = state.usesPortionMode ? _pieceCount : _inventoryAmount;
-    final units = calculator.availablePortionUnits;
-    final selectedSize = state.selectedPieceSize;
     final footer = widget.footer;
 
     return EatPageScaffold(
@@ -172,85 +160,13 @@ class _InventoryItemEatSheetBodyState
       children: [
         widget.header ?? InventoryItemEatLabelSection(item: item, state: state),
         if (widget.showAmount)
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              EatAmountRuler(
-                controller: amountField.controller,
-                focusNode: amountField.focusNode,
-                unitLabel: state.amountUnit(l10n),
-                value: state.amountValue,
-                max: state.amountMax,
-                step: state.amountStep,
-                marks: [
-                  for (final marker in state.markers)
-                    EatRulerMark(
-                      label: state.markLabel(l10n, marker),
-                      value: marker.value,
-                      isSelected: state.amountValue == marker.value,
-                      onPressed: () => _controller.pickAmount(marker.value),
-                    ),
-                ],
-                allowFractionalInput:
-                    state.usesPortionMode ||
-                    calculator.allowsFractionalInventoryAmount,
-                hint: state.amountHint(l10n),
-                errorText: state.amountError(l10n),
-                onTextChanged: (text) => _controller.setAmountText(text),
-                onSliderChanged: (value) => _controller.pickAmount(value),
-              ),
-              if (state.usesPortionMode) ...[
-                EatInlineAmountField(
-                  fieldKey: InventoryItemEatSheetBody.pieceWeightKey,
-                  label: l10n.eatPagePieceWeight(
-                    state.defaultPortionLabel(l10n),
-                  ),
-                  unitLabel: consumedUnitSymbol(l10n, state.portionUnit),
-                  controller: _pieceWeight.controller,
-                  focusNode: _pieceWeight.focusNode,
-                  errorText: state.portionAmountError(l10n),
-                  onChanged: _controller.setPortionAmountText,
-                  unitKey: InventoryItemEatSheetBody.pieceWeightUnitKey,
-                  onUnitPressed: units.length < 2
-                      ? null
-                      : _controller.switchPortionUnit,
-                ),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  children: [
-                    for (final size in state.pieceSizes)
-                      EatChip(
-                        label: state.pieceSizeLabel(l10n, size),
-                        isSelected: size == selectedSize,
-                        onPressed: () => _controller.pickPieceSize(size),
-                      ),
-                  ],
-                ),
-                if (state.pieceWeightLabel(l10n) case final weight?
-                    when selectedSize?.label == null)
-                  EatRememberPortion(
-                    amountLabel: weight,
-                    linkLabel: l10n.eatPageRememberPieceSize,
-                    nameHint: l10n.eatPagePieceSizeNameHint,
-                    onSave: _controller.rememberPortion,
-                  ),
-              ] else
-                EatRememberPortion(
-                  amountLabel: state.enteredAmountLabel(l10n),
-                  onSave: _controller.rememberPortion,
-                ),
-              if (calculator.supportsInedibleAmountAdjustment)
-                EatInedibleLine(
-                  controller: _inedibleAmount.controller,
-                  focusNode: _inedibleAmount.focusNode,
-                  errorText: state.inedibleError(l10n),
-                  unitLabel: state.amountUnit(l10n),
-                  summaryText: state.inedibleSummary(l10n),
-                  isExpanded: state.isInedibleExpanded,
-                  onChanged: (text) => _controller.setInedibleAmountText(text),
-                  onToggleExpanded: _toggleInedible,
-                ),
-            ],
+          InventoryItemEatAmountSection(
+            state: state,
+            controller: _controller,
+            amountField: amountField,
+            pieceWeight: _pieceWeight,
+            inedibleAmount: _inedibleAmount,
+            onToggleInedible: _toggleInedible,
           ),
         ?footer,
       ],
