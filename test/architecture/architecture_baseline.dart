@@ -551,7 +551,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/core/widgets/app_ink_well.dart': 1,
     'lib/core/widgets/app_selection_list_tiles.dart': 1,
     'lib/core/widgets/app_switch_list_tile.dart': 1,
-    'lib/features/ai_chef/data/ai_chef_repository.dart': 1,
     'lib/features/calories/application/calorie_weekly_checkin_build_models.dart':
         1,
     'lib/features/calories/application/calorie_weekly_checkin_health_loader.dart':
@@ -586,9 +585,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/kitchen_utensils/presentation/controllers/kitchen_utensils_controller.dart':
         1,
-    'lib/features/product_nutrition/data/nutrition_label_ocr_repository.dart':
-        1,
-    'lib/features/product_search_hub/data/product_ai_search_repository.dart': 1,
     'lib/features/product_search_hub/presentation/widgets/manual_product_search_form_details.dart':
         1,
     'lib/features/shared/widgets/auth_form_components.dart': 1,

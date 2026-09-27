@@ -1,6 +1,3 @@
-// Firebase AI template APIs are still marked experimental in current package.
-// ignore_for_file: experimental_member_use
-
 import 'dart:convert';
 import 'dart:developer' show log;
 

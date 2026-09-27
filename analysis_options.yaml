@@ -6,6 +6,10 @@ plugins:
     path: tools/architecture_lints
 
 analyzer:
+  errors:
+    # Firebase AI server prompt templates are marked experimental in
+    # firebase_ai, and the app relies on them for every AI feature.
+    experimental_member_use: ignore
   exclude:
     - '**/*.g.dart'
     - 'lib/l10n/*.dart'
