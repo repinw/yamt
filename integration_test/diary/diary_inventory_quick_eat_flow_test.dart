@@ -27,6 +27,7 @@ import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart'
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -111,7 +112,11 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       GoRoute(
         path: AppRoutes.homeCalories,
         builder: (context, state) {
-          return const Scaffold(body: DiaryPage());
+          // The quick-eat tools sit in the home dock under the diary.
+          return const Scaffold(
+            body: DiaryPage(),
+            bottomNavigationBar: DiaryQuickEatDock(),
+          );
         },
       ),
     ],
