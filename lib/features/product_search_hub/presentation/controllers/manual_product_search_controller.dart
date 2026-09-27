@@ -1,8 +1,4 @@
-import 'dart:async';
-import 'dart:typed_data';
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
@@ -11,8 +7,6 @@ import 'package:yamt/features/inventory/domain/'
     'global_food_item_edit_policy.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_nutrition/data/'
-    'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -20,6 +14,7 @@ import 'package:yamt/features/product_search_hub/domain/'
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_weight_input.dart';
+import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -88,7 +83,7 @@ class InventoryReceiptManualProductController
 
   /// Update barcode.
   void updateBarcode(String value) {
-    state = state.copyWith(barcode: value, error: null);
+    state = state.copyWith(barcode: value, barcodeOrigin: null, error: null);
   }
 
   /// Marks the product as having no barcode and clears the barcode.
@@ -96,6 +91,7 @@ class InventoryReceiptManualProductController
     state = state.copyWith(
       hasNoBarcode: value,
       barcode: value ? '' : state.barcode,
+      barcodeOrigin: value ? null : state.barcodeOrigin,
       error: null,
     );
   }
@@ -185,78 +181,51 @@ class InventoryReceiptManualProductController
   void applyScannedBarcodeOnly(String barcode) {
     state = state.copyWith(
       barcode: barcode,
+      barcodeOrigin: null,
       hasNoBarcode: false,
       selectedProduct: null,
       error: null,
     );
   }
 
-  /// Scans the nutrition label.
-  Future<InventoryReceiptManualProductNutritionScanOutcome>
-  scanNutritionLabel() async {
-    final barcode = normalizeBarcode(state.barcode);
-    final isMissingBarcode = barcode.isEmpty && !state.hasNoBarcode;
-    if (isMissingBarcode || state.isRunningNutritionOcr) {
-      if (isMissingBarcode) {
-        state = state.copyWith(
-          error: InventoryReceiptManualProductError.requiredProductOrNutrition,
-        );
-      }
-      return InventoryReceiptManualProductNutritionScanOutcome.missingBarcode;
-    }
-
+  /// Fills name, brand, and package size from the front of the package.
+  ///
+  /// The barcode the AI read counts only while no other barcode is set.
+  void applyFrontDetails(ProductFrontDetails details) {
+    final weightInput = resolveManualProductOcrWeightInput(
+      details.quantityLabel,
+      fallbackUnit: state.selectedWeightUnit ?? InventoryAmountUnit.gram,
+    );
+    final aiBarcode = details.barcode;
+    final takesAiBarcode =
+        aiBarcode != null && !state.hasBarcode && !state.hasNoBarcode;
     state = state.copyWith(
-      isRunningNutritionOcr: true,
-      nutritionOcrImageBytes: null,
+      nameText: details.name,
+      brandText: details.brand ?? state.brandText,
+      weightAmount: weightInput?.amount ?? state.weightAmount,
+      selectedWeightUnit: weightInput?.unit ?? state.selectedWeightUnit,
+      barcode: takesAiBarcode ? aiBarcode : null,
+      barcodeOrigin: takesAiBarcode
+          ? ManualProductBarcodeOrigin.ai
+          : state.barcodeOrigin,
       error: null,
     );
-
-    try {
-      final result = await ref
-          .read(nutritionLabelOcrRepositoryProvider)
-          .scanNutritionLabel(
-            barcode: barcode,
-            onImageCaptured: _showNutritionOcrImage,
-          );
-      if (!ref.mounted) {
-        return InventoryReceiptManualProductNutritionScanOutcome.canceled;
-      }
-
-      switch (result.status) {
-        case NutritionLabelOcrStatus.succeeded:
-          final draft = result.draft;
-          if (draft == null) {
-            return InventoryReceiptManualProductNutritionScanOutcome.canceled;
-          }
-          _applyOcrDraft(draft);
-          return InventoryReceiptManualProductNutritionScanOutcome.applied;
-        case NutritionLabelOcrStatus.canceled:
-          return InventoryReceiptManualProductNutritionScanOutcome.canceled;
-        case NutritionLabelOcrStatus.failed:
-          return switch (result.errorCode) {
-            NutritionLabelOcrErrorCodes.appCheckThrottled =>
-              InventoryReceiptManualProductNutritionScanOutcome
-                  .appCheckThrottled,
-            NutritionLabelOcrErrorCodes.retakePhoto =>
-              InventoryReceiptManualProductNutritionScanOutcome.retakePhoto,
-            _ => InventoryReceiptManualProductNutritionScanOutcome.failed,
-          };
-      }
-    } finally {
-      if (ref.mounted) {
-        state = state.copyWith(
-          isRunningNutritionOcr: false,
-          nutritionOcrImageBytes: null,
-        );
-      }
-    }
   }
 
-  void _showNutritionOcrImage(Uint8List imageBytes) {
-    if (!ref.mounted) {
+  /// Takes [barcode] that the scanner found on a package photo, unless the
+  /// user already entered or scanned one.
+  void applyPhotoBarcode(String barcode) {
+    final hasOwnBarcode =
+        state.hasBarcode &&
+        state.barcodeOrigin != ManualProductBarcodeOrigin.ai;
+    if (hasOwnBarcode || state.hasNoBarcode) {
       return;
     }
-    state = state.copyWith(nutritionOcrImageBytes: imageBytes);
+    state = state.copyWith(
+      barcode: barcode,
+      barcodeOrigin: ManualProductBarcodeOrigin.photo,
+      error: null,
+    );
   }
 
   InventoryReceiptManualProductConfig get _config => config;
@@ -273,9 +242,13 @@ class InventoryReceiptManualProductController
   }
 
   /// Builds the save payload.
+  ///
+  /// [photoImageUrl] is the stored front photo; it is the product image when
+  /// the product has none.
   InventoryReceiptManualProductSavePayload? buildSavePayload({
     InventoryReceiptManualProductAction action =
         InventoryReceiptManualProductAction.addToInventory,
+    String? photoImageUrl,
   }) {
     final barcode = normalizeManualProductText(state.barcode);
     final kcal = parseManualProductDouble(state.kcalText);
@@ -329,7 +302,10 @@ class InventoryReceiptManualProductController
           ),
           brand: _resolvedManualBrand(),
           barcode: barcode,
-          imageUrl: _config.item.imageUrl ?? matchedProduct?.imageUrl,
+          imageUrl:
+              _config.item.imageUrl ??
+              matchedProduct?.imageUrl ??
+              photoImageUrl,
           weight: inventoryWeight,
           servingSize:
               matchedProduct?.servingSize ??
@@ -520,12 +496,15 @@ class InventoryReceiptManualProductController
       showPolyunsaturatedFatField: nutrition?.per100PolyunsaturatedFat != null,
       showFiberField: nutrition?.per100Fiber != null,
       selectedProduct: product,
+      barcodeOrigin: null,
       ocrDraft: null,
       error: null,
     );
   }
 
-  void _applyOcrDraft(NutritionLabelOcrDraft draft) {
+  /// Fills the nutrition values, and name, brand, and package size when
+  /// printed, from a read nutrition table.
+  void applyNutritionLabelDraft(NutritionLabelOcrDraft draft) {
     final ocrWeightInput = resolveManualProductOcrWeightInput(
       draft.quantityLabel,
       fallbackUnit: state.selectedWeightUnit ?? InventoryAmountUnit.gram,

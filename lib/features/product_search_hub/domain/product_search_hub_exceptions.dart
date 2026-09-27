@@ -20,3 +20,27 @@ final class FoodEstimateUnclearException extends FoodEstimateException {
   /// Creates the exception.
   const new();
 }
+
+/// Failures of reading the front of a package.
+sealed class ProductFrontException extends ProductSearchHubException {
+  const new();
+}
+
+/// The photo shows no food package.
+final class ProductFrontNotProductException extends ProductFrontException {
+  /// Creates the exception.
+  const new();
+}
+
+/// The product name on the photo cannot be read.
+final class ProductFrontUnreadableException extends ProductFrontException {
+  /// Creates the exception.
+  const new();
+}
+
+/// This device cannot take photos.
+final class ProductPhotoCameraUnsupportedException
+    extends ProductSearchHubException {
+  /// Creates the exception.
+  const new();
+}

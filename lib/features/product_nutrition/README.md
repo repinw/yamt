@@ -1,13 +1,14 @@
 # Product Nutrition Feature
 
-Product Nutrition owns nutrition-label OCR capture, model request wiring, and
-OCR draft/result domain types used to fill product nutrition fields.
+Product Nutrition reads a photo of a nutrition table with Firebase AI and
+owns the OCR draft/result domain types used to fill product nutrition fields.
+The caller takes the photo.
 
 ## Owns
 
 - Nutrition label OCR draft/result domain models.
-- OCR repository and repository provider for camera capture and Firebase AI
-  template calls.
+- OCR repository and repository provider for the Firebase AI template call
+  (`nutrition-label-template`).
 - OCR response parsing and OCR-specific error codes.
 
 ## Does Not Own
@@ -16,8 +17,7 @@ OCR draft/result domain types used to fill product nutrition fields.
 - Inventory item models, global food nutrition models, or persistence of parsed
   nutrition values.
 - Scanner receipt capture and review flows.
-- Firebase AI app setup or platform-level camera permissions outside the OCR
-  request boundary.
+- Taking the photo (the caller does it) and Firebase AI app setup.
 
 ## Public Edge
 
@@ -30,8 +30,8 @@ Other features may consume these public Product Nutrition entry points:
 - `NutritionLabelOcrStatus`
 - `NutritionLabelOcrErrorCodes`
 
-Tests may override `nutritionLabelImagePickerProvider` and
-`nutritionLabelTemplateModelClientProvider` to isolate camera and model calls.
+Tests may override `nutritionLabelTemplateModelClientProvider` to isolate
+model calls.
 
 ## Rules
 
@@ -51,8 +51,7 @@ Tests may override `nutritionLabelImagePickerProvider` and
 
 ## Accepted Dependencies
 
-Product Nutrition depends on Firebase AI, `image_picker`, and `mime` for OCR
-capture, request, and MIME detection.
+Product Nutrition depends on Firebase AI for the OCR request.
 
 Current accepted cross-feature use:
 

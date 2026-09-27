@@ -71,6 +71,9 @@ abstract final class AppFoodLabel {
   /// Width of a value field in an editable nutrition label.
   static const double labelValueField = 112;
 
+  /// Height of a package photo tile in the product editor.
+  static const double photoTile = 104;
+
   /// Letter spacing of the brand line.
   static const double brandTracking = 1.6;
 

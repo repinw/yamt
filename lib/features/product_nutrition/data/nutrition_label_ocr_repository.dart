@@ -4,8 +4,6 @@ import 'dart:developer' show log;
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/product_nutrition/domain/'
     'nutrition_label_ocr_models.dart';
@@ -20,13 +18,8 @@ const _ocrLogName = 'NutritionLabelOcrRepository';
 /// change without an app release.
 const nutritionLabelTemplateId = 'nutrition-label-template';
 
-const _defaultMimeType = 'application/octet-stream';
-
 /// Defines nutrition label OCR error codes.
 abstract final class NutritionLabelOcrErrorCodes {
-  /// The camera not supported.
-  static const cameraNotSupported = 'ocr_camera_not_supported';
-
   /// The AI request failed.
   static const aiRequestFailed = 'ocr_ai_request_failed';
 
@@ -47,23 +40,12 @@ typedef NutritionLabelTemplateModelClient = Future<String?> Function(
   Map<String, Object?> inputs,
 );
 
-/// Receives captured nutrition label image bytes before model processing.
-typedef NutritionLabelImageCaptured = void Function(Uint8List imageBytes);
-
 /// Nutrition label OCR repository.
 @riverpod
 NutritionLabelOcrRepository nutritionLabelOcrRepository(Ref ref) {
-  final imagePicker = ref.watch(nutritionLabelImagePickerProvider);
   return NutritionLabelOcrRepository(
-    imagePicker: imagePicker,
     modelClient: ref.watch(nutritionLabelTemplateModelClientProvider),
   );
-}
-
-/// Nutrition label image picker.
-@riverpod
-ImagePicker nutritionLabelImagePicker(Ref ref) {
-  return ImagePicker();
 }
 
 /// Nutrition label template model client.
@@ -82,49 +64,26 @@ NutritionLabelTemplateModelClient nutritionLabelTemplateModelClient(Ref ref) {
 /// Scans nutrition labels with Firebase AI.
 class NutritionLabelOcrRepository {
   /// Creates nutrition label OCR repository.
-  new({required this._imagePicker, required this._modelClient});
+  new({required this._modelClient});
 
-  final ImagePicker _imagePicker;
   final NutritionLabelTemplateModelClient _modelClient;
 
-  /// Scan nutrition label.
-  Future<NutritionLabelOcrResult> scanNutritionLabel({
+  /// Reads the nutrition label in the photo [imageBytes] of type
+  /// [mimeType].
+  Future<NutritionLabelOcrResult> readNutritionLabel({
+    required Uint8List imageBytes,
+    required String mimeType,
     required String barcode,
-    NutritionLabelImageCaptured? onImageCaptured,
   }) async {
     log(
-      'Starting nutrition label OCR for barcode $barcode.',
+      'Reading nutrition label for barcode $barcode. '
+      'mimeType=$mimeType bytes=${imageBytes.length}',
       name: _ocrLogName,
     );
-    if (!_isCameraSupported()) {
-      log('Nutrition label OCR not supported on platform.', name: _ocrLogName);
-      return const NutritionLabelOcrResult.failed(
-        errorCode: NutritionLabelOcrErrorCodes.cameraNotSupported,
-      );
-    }
-
     try {
-      final image = await _imagePicker.pickImage(source: ImageSource.camera);
-      if (image == null) {
-        log(
-          'Nutrition label OCR canceled before image capture.',
-          name: _ocrLogName,
-        );
-        return const NutritionLabelOcrResult.canceled();
-      }
-
-      final bytes = await image.readAsBytes();
-      onImageCaptured?.call(bytes);
-      final mimeType = _detectMimeType(fileName: image.name, bytes: bytes);
-      log(
-        'Captured nutrition label image. '
-        'mimeType=$mimeType bytes=${bytes.length}',
-        name: _ocrLogName,
-      );
-
       final responseText = await _modelClient(<String, Object?>{
         'mimeType': mimeType,
-        'imageData': base64Encode(bytes),
+        'imageData': base64Encode(imageBytes),
       });
       if (kDebugMode) {
         log(
@@ -240,17 +199,5 @@ class NutritionLabelOcrRepository {
     final message = (error.message ?? error.toString()).toLowerCase();
     return error.plugin == 'firebase_app_check' &&
         message.contains('too many attempts');
-  }
-
-  bool _isCameraSupported() {
-    if (kIsWeb) {
-      return false;
-    }
-    return defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS;
-  }
-
-  String _detectMimeType({required String fileName, required Uint8List bytes}) {
-    return lookupMimeType(fileName, headerBytes: bytes) ?? _defaultMimeType;
   }
 }

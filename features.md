@@ -230,19 +230,27 @@ and feature description docs. This is product-facing; architecture rules stay in
   when opened from the diary and adds it to the Vorrat otherwise; "Analyze
   again" returns to the input.
 - The product editor looks like the eat page: image, brand and name as
-  inputs, package size with a unit switch, barcode or "no barcode", and the
-  nutrition label with an input per 100 g. All seven values of the EU label
-  (energy, fat, saturates, carbohydrate, sugars, protein, salt) are required;
-  a missing one is framed. Polyunsaturates and fibre come from the "+" row,
-  and the scan button in the label head reads a nutrition label photo.
+  inputs, package size with a unit switch, and the nutrition label with an
+  input per 100 g. All seven values of the EU label (energy, fat, saturates,
+  carbohydrate, sugars, protein, salt) are required; a missing one is
+  framed. Polyunsaturates and fibre come from the "+" row.
+- Two photo tiles fill the editor: the package front (server template
+  `product-front-template` reads name, brand, and package size) and the
+  nutrition table (`nutrition-label-template`). The barcode scanner looks at
+  both photos first; only without a result does the barcode the AI read on
+  the front count, marked "please check". Otherwise the user scans the
+  barcode or marks "has none". Saving needs a barcode or that mark.
+- On save both photos go to Firebase Storage under
+  `product_images/{uid}/{photoId}/`, readable by every signed-in user. The
+  front photo becomes the product image when the product has none. A failed
+  upload saves the product without photos and says so.
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.
-- "Create" opens an empty product form. Name, unit, kcal, carbs, protein,
-  and fat are required; confirming a required field on the keyboard jumps
-  to the next empty one.
-- The form has a barcode field with a scan button and a "no barcode" mark.
-  The nutrition label scan needs a barcode or that mark. Scanning an unknown
-  barcode keeps the entered values.
+- "Create" opens an empty product form. Name, unit, and the seven EU label
+  values are required; confirming a required field on the keyboard jumps to
+  the next empty one.
+- The barcode row has a scan button and a "has none" mark. Scanning an
+  unknown barcode keeps the entered values.
 - Going back from the eat dialog after "Create" reopens the product form.
 - Eating a newly picked product has no stock limit: the stock is set to the
   eaten amount. A product with g or ml but no package size is eaten in that

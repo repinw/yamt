@@ -19,10 +19,11 @@ const _complete = InventoryReceiptManualProductState(
   saturatedFatText: '0.1',
   sugarText: '4',
   saltText: '0.1',
+  barcode: '4006381333931',
 );
 
 void main() {
-  test('saving needs name, unit, and every EU label value', () {
+  test('saving needs name, unit, barcode, and every EU label value', () {
     expect(
       canSaveManualProduct(
         state: _complete,
@@ -50,6 +51,7 @@ void main() {
       _complete.copyWith(saturatedFatText: ''),
       _complete.copyWith(sugarText: ''),
       _complete.copyWith(saltText: ''),
+      _complete.copyWith(barcode: ''),
     ]) {
       expect(
         canSaveManualProduct(

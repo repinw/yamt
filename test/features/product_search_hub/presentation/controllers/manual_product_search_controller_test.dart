@@ -3,31 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/product_nutrition/data/'
-    'nutrition_label_ocr_repository.dart';
-import 'package:yamt/features/product_nutrition/domain/'
-    'nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
-
-class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
-  new({required this.onScanNutritionLabel});
-
-  final Future<NutritionLabelOcrResult> Function(String barcode)
-  onScanNutritionLabel;
-
-  @override
-  Future<NutritionLabelOcrResult> scanNutritionLabel({
-    required String barcode,
-    NutritionLabelImageCaptured? onImageCaptured,
-  }) {
-    return onScanNutritionLabel(barcode);
-  }
-}
 
 InventoryItem _item({
   String name = 'Unknown',
@@ -497,60 +478,6 @@ void main() {
     expect(container.read(provider).matchedProduct, isNull);
   });
 
-  test(
-    'no barcode mark clears the barcode and allows the label scan',
-    () async {
-      String? scannedBarcode;
-      final container = ProviderContainer(
-        overrides: [
-          nutritionLabelOcrRepositoryProvider.overrideWithValue(
-            _FakeNutritionOcrRepository(
-              onScanNutritionLabel: (barcode) async {
-                scannedBarcode = barcode;
-                return NutritionLabelOcrResult.succeeded(
-                  draft: NutritionLabelOcrDraft(
-                    barcode: barcode,
-                    per100Kj: 368,
-                    per100Kcal: 88,
-                    per100Fat: 1,
-                    per100SaturatedFat: 0.5,
-                    per100Carbs: 15,
-                    per100Sugar: 4,
-                    per100Protein: 4,
-                    per100Salt: 0.2,
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final provider = inventoryReceiptManualProductControllerProvider(
-        InventoryReceiptManualProductConfig(
-          item: _item().copyWith(barcode: '4006381333931'),
-        ),
-      );
-      final subscription = container.listen(provider, (_, _) {});
-      addTearDown(subscription.close);
-      final notifier = container.read(provider.notifier)
-        ..updateHasNoBarcode(value: true);
-
-      expect(container.read(provider).barcode, isEmpty);
-      expect(container.read(provider).canScanNutritionLabel, isTrue);
-
-      final outcome = await notifier.scanNutritionLabel();
-
-      expect(
-        outcome,
-        InventoryReceiptManualProductNutritionScanOutcome.applied,
-      );
-      expect(scannedBarcode, isEmpty);
-      expect(container.read(provider).kcalText, '88');
-    },
-  );
-
   test('an empty draft starts without a unit until the user picks one', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
@@ -596,7 +523,7 @@ void main() {
     expect(payload?.item.usesAmountProgress, isFalse);
   });
 
-  test('updateBarcode enables the nutrition label scan', () {
+  test('the barcode is settled when entered or marked as missing', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
 
@@ -605,13 +532,37 @@ void main() {
     );
     final subscription = container.listen(provider, (_, _) {});
     addTearDown(subscription.close);
-    expect(container.read(provider).canScanNutritionLabel, isFalse);
+    expect(container.read(provider).hasBarcodeDecision, isFalse);
 
     container.read(provider.notifier).updateBarcode('4006381333931');
+    expect(container.read(provider).hasBarcodeDecision, isTrue);
 
+    container.read(provider.notifier).updateHasNoBarcode(value: true);
     final state = container.read(provider);
-    expect(state.barcode, '4006381333931');
-    expect(state.canScanNutritionLabel, isTrue);
+    expect(state.barcode, isEmpty);
+    expect(state.hasBarcodeDecision, isTrue);
+  });
+
+  test('a stored package photo becomes the image of a product without one', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: _item(name: '')),
+    );
+    final subscription = container.listen(provider, (_, _) {});
+    addTearDown(subscription.close);
+    final notifier = container.read(provider.notifier)
+      ..updateNameText('Haferflocken')
+      ..updateBarcode('4006381333931')
+      ..updateWeightAmount('500')
+      ..updateWeightUnit(InventoryAmountUnit.gram)
+      ..updateKcalText('372');
+
+    final payload = notifier.buildSavePayload(
+      photoImageUrl: 'https://example.com/front.jpg',
+    );
+
+    expect(payload?.item.imageUrl, 'https://example.com/front.jpg');
   });
 
   test(
@@ -951,145 +902,4 @@ void main() {
     expect(state.polyunsaturatedFatText, isEmpty);
     expect(state.availableOptionalNutritionTypes, isEmpty);
   });
-
-  test(
-    'scanNutritionLabel applies partial OCR and keeps missing blank',
-    () async {
-      final config = _config(
-        selectedProduct: const OffProductSearchResult(
-          code: '4061462542046',
-          name: 'Olivenoel',
-          score: 100,
-          brand: 'Gut Bio',
-          imageUrl: 'https://example.com/olive-oil.png',
-        ),
-      );
-      final container = ProviderContainer(
-        overrides: [
-          nutritionLabelOcrRepositoryProvider.overrideWithValue(
-            _FakeNutritionOcrRepository(
-              onScanNutritionLabel: (barcode) async {
-                return NutritionLabelOcrResult.succeeded(
-                  draft: NutritionLabelOcrDraft(
-                    barcode: barcode,
-                    quantityLabel: '500 ml',
-                    servingSizeLabel: '15 ml',
-                    per100Kj: 502,
-                    per100Kcal: 120,
-                    per100Fat: 3,
-                    per100SaturatedFat: 0.4,
-                    per100Carbs: 5,
-                    per100Sugar: 0,
-                    per100Protein: 0.2,
-                    per100Salt: 0,
-                  ),
-                );
-              },
-            ),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final provider = inventoryReceiptManualProductControllerProvider(config);
-      final subscription = container.listen(
-        provider,
-        (_, _) {},
-        fireImmediately: true,
-      );
-      addTearDown(subscription.close);
-
-      final notifier = container.read(provider.notifier);
-      final outcome = await notifier.scanNutritionLabel();
-      final state = container.read(provider);
-
-      expect(
-        outcome,
-        InventoryReceiptManualProductNutritionScanOutcome.applied,
-      );
-      expect(state.kcalText, '120');
-      expect(state.saturatedFatText, '0.4');
-      expect(state.polyunsaturatedFatText, isEmpty);
-      expect(state.showPolyunsaturatedFatField, isFalse);
-      expect(state.proteinText, '0.2');
-      expect(state.carbsText, '5');
-      expect(state.sugarText, '0');
-      expect(state.fiberText, isEmpty);
-      expect(state.showFiberField, isFalse);
-      expect(state.fatText, '3');
-      expect(state.saltText, '0');
-      expect(state.weightAmount, '500');
-      expect(state.selectedWeightUnit, InventoryAmountUnit.milliliter);
-      expect(state.nameText, 'Olivenoel');
-      expect(state.brandText, 'Gut Bio');
-
-      notifier
-        ..showOptionalNutrition(
-          InventoryReceiptOptionalNutritionType.polyunsaturatedFat,
-        )
-        ..updatePolyunsaturatedFatText('0');
-      final polyState = container.read(provider);
-      expect(polyState.showPolyunsaturatedFatField, isTrue);
-      expect(polyState.polyunsaturatedFatText, '0');
-      expect(polyState.showFiberField, isFalse);
-
-      notifier
-        ..showOptionalNutrition(InventoryReceiptOptionalNutritionType.fiber)
-        ..updateFiberText('1');
-      final fiberState = container.read(provider);
-      expect(fiberState.showFiberField, isTrue);
-      expect(fiberState.fiberText, '1');
-    },
-  );
-
-  for (final (errorCode, expected) in [
-    (
-      NutritionLabelOcrErrorCodes.appCheckThrottled,
-      InventoryReceiptManualProductNutritionScanOutcome.appCheckThrottled,
-    ),
-    (
-      NutritionLabelOcrErrorCodes.retakePhoto,
-      InventoryReceiptManualProductNutritionScanOutcome.retakePhoto,
-    ),
-    (
-      NutritionLabelOcrErrorCodes.aiRequestFailed,
-      InventoryReceiptManualProductNutritionScanOutcome.failed,
-    ),
-  ]) {
-    test('scanNutritionLabel maps $errorCode to ${expected.name}', () async {
-      final config = _config(
-        selectedProduct: const OffProductSearchResult(
-          code: '4061462542046',
-          name: 'Olivenoel',
-          score: 100,
-        ),
-      );
-      final container = ProviderContainer(
-        overrides: [
-          nutritionLabelOcrRepositoryProvider.overrideWithValue(
-            _FakeNutritionOcrRepository(
-              onScanNutritionLabel: (_) async {
-                return NutritionLabelOcrResult.failed(errorCode: errorCode);
-              },
-            ),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final provider = inventoryReceiptManualProductControllerProvider(config);
-      final subscription = container.listen(
-        provider,
-        (_, _) {},
-        fireImmediately: true,
-      );
-      addTearDown(subscription.close);
-
-      final outcome = await container
-          .read(provider.notifier)
-          .scanNutritionLabel();
-
-      expect(outcome, expected);
-    });
-  }
 }

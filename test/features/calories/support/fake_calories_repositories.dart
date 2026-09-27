@@ -15,10 +15,6 @@ import 'package:yamt/features/health/data/manual_health_weight_repository.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/product_nutrition/data/'
-    'nutrition_label_ocr_repository.dart';
-import 'package:yamt/features/product_nutrition/domain/'
-    'nutrition_label_ocr_models.dart';
 
 class FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   new({List<CalorieEntry>? initialEntries})
@@ -442,20 +438,5 @@ class FakeCalorieProductCacheRepository
     overrides[profile.barcode] = profile;
     savedOverrideReasons.add(reason);
     return true;
-  }
-}
-
-class FakeNutritionLabelOcrRepository implements NutritionLabelOcrRepository {
-  new({required this.onScanNutritionLabel});
-
-  final Future<NutritionLabelOcrResult> Function(String barcode)
-  onScanNutritionLabel;
-
-  @override
-  Future<NutritionLabelOcrResult> scanNutritionLabel({
-    required String barcode,
-    NutritionLabelImageCaptured? onImageCaptured,
-  }) {
-    return onScanNutritionLabel(barcode);
   }
 }

@@ -56,18 +56,15 @@ void showEditorSnackBar(
       .showAppSnackBar(message, tone: tone, action: action);
 }
 
-/// Builds the optional initial info action (e.g. nutrition label OCR scan).
-AppSnackBarAction? buildEditorInitialInfoAction({
+/// Builds the action of the initial info message: a photo of the
+/// nutrition table.
+AppSnackBarAction buildEditorInitialInfoAction({
   required BuildContext context,
-  required bool canScanNutritionLabel,
-  required VoidCallback onScanNutritionLabel,
+  required VoidCallback onTakeNutritionTablePhoto,
 }) {
-  if (!canScanNutritionLabel) {
-    return null;
-  }
   return (
-    label: AppLocalizations.of(context)!.caloriesBarcodeNotFoundOcrAction,
-    onPressed: onScanNutritionLabel,
+    label: AppLocalizations.of(context)!.productEditorTakeNutritionTablePhoto,
+    onPressed: onTakeNutritionTablePhoto,
   );
 }
 

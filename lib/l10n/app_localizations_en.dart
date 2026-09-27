@@ -183,11 +183,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageAmountUnknown => '–';
 
   @override
-  String get productSearchHubNoBarcodeAction => 'No barcode';
-
-  @override
   String get productSearchHubMissingNutritionHint =>
       'Required values are missing. Every EU nutrition label lists them.';
+
+  @override
+  String get productEditorPhotosHint =>
+      'Two photos fill in the product. You only check it.';
+
+  @override
+  String get productEditorFrontPhoto => 'Front';
+
+  @override
+  String get productEditorFrontPhotoHint => 'Name, brand, size';
+
+  @override
+  String get productEditorNutritionTablePhoto => 'Nutrition table';
+
+  @override
+  String get productEditorNutritionTablePhotoHint => 'Nutrition values';
+
+  @override
+  String get productEditorPhotoReading => 'Reading …';
+
+  @override
+  String get productEditorPhotoRead => 'Read';
+
+  @override
+  String get productEditorPhotoRetake => 'Retake';
+
+  @override
+  String get productEditorScanBarcode => 'Scan';
+
+  @override
+  String get productEditorNoBarcode => 'Has none';
+
+  @override
+  String get productEditorBarcodeFromPhoto => 'Found on the photo';
+
+  @override
+  String get productEditorBarcodeFromAi => 'Read by the AI, please check';
+
+  @override
+  String get productEditorBarcodeMissing => 'No barcode on the photos';
+
+  @override
+  String get productEditorFrontUnreadable =>
+      'The name is not readable. Take a sharper photo of the front.';
+
+  @override
+  String get productEditorFrontNotProduct => 'The photo shows no package.';
+
+  @override
+  String get productEditorFrontFailed => 'Could not read the front.';
+
+  @override
+  String get productEditorCameraUnsupported =>
+      'This device cannot take photos.';
+
+  @override
+  String get productEditorPhotosNotSaved =>
+      'The photos could not be stored. The product is saved without them.';
+
+  @override
+  String get productEditorTakeNutritionTablePhoto =>
+      'Photograph the nutrition table';
 
   @override
   String get productSearchHubCreateProductAction => 'Create product';
@@ -1565,16 +1624,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingListClearCrossedOffConfirmAction => 'Clear';
-
-  @override
-  String get caloriesBarcodeNotFoundOcrAction => 'Scan nutrition label';
-
-  @override
-  String get caloriesOcrScanning => 'Reading nutrition label…';
-
-  @override
-  String get caloriesOcrScanningSemantics =>
-      'Captured nutrition label is being scanned';
 
   @override
   String get caloriesOcrFailed =>

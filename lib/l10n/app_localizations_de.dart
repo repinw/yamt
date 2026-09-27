@@ -186,11 +186,72 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageAmountUnknown => '–';
 
   @override
-  String get productSearchHubNoBarcodeAction => 'Kein Barcode';
-
-  @override
   String get productSearchHubMissingNutritionHint =>
       'Pflichtwerte fehlen noch. Jedes EU-Nährwertetikett nennt sie.';
+
+  @override
+  String get productEditorPhotosHint =>
+      'Zwei Fotos füllen das Produkt aus. Du prüfst nur noch.';
+
+  @override
+  String get productEditorFrontPhoto => 'Vorderseite';
+
+  @override
+  String get productEditorFrontPhotoHint => 'Name, Marke, Packung';
+
+  @override
+  String get productEditorNutritionTablePhoto => 'Nährwerttabelle';
+
+  @override
+  String get productEditorNutritionTablePhotoHint => 'Nährwerte';
+
+  @override
+  String get productEditorPhotoReading => 'Liest …';
+
+  @override
+  String get productEditorPhotoRead => 'Erkannt';
+
+  @override
+  String get productEditorPhotoRetake => 'Nochmal';
+
+  @override
+  String get productEditorScanBarcode => 'Scannen';
+
+  @override
+  String get productEditorNoBarcode => 'Hat keinen';
+
+  @override
+  String get productEditorBarcodeFromPhoto => 'Vom Foto erkannt';
+
+  @override
+  String get productEditorBarcodeFromAi => 'Von der KI gelesen, bitte prüfen';
+
+  @override
+  String get productEditorBarcodeMissing => 'Kein Barcode auf den Fotos';
+
+  @override
+  String get productEditorFrontUnreadable =>
+      'Der Name ist nicht lesbar. Mach ein schärferes Foto der Vorderseite.';
+
+  @override
+  String get productEditorFrontNotProduct =>
+      'Auf dem Foto ist keine Verpackung zu sehen.';
+
+  @override
+  String get productEditorFrontFailed =>
+      'Die Vorderseite konnte nicht gelesen werden.';
+
+  @override
+  String get productEditorCameraUnsupported =>
+      'Auf diesem Gerät gehen keine Fotos.';
+
+  @override
+  String get productEditorPhotosNotSaved =>
+      'Die Fotos konnten nicht gespeichert werden. Das Produkt wird ohne sie gespeichert.';
+
+  @override
+  String get productEditorTakeNutritionTablePhoto =>
+      'Nährwerttabelle fotografieren';
 
   @override
   String get productSearchHubCreateProductAction => 'Produkt erstellen';
@@ -1593,16 +1654,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get shoppingListClearCrossedOffConfirmAction => 'Löschen';
-
-  @override
-  String get caloriesBarcodeNotFoundOcrAction => 'Nährwertetikett scannen';
-
-  @override
-  String get caloriesOcrScanning => 'Nährwertetikett wird gelesen…';
-
-  @override
-  String get caloriesOcrScanningSemantics =>
-      'Das aufgenommene Nährwertetikett wird gescannt';
 
   @override
   String get caloriesOcrFailed =>

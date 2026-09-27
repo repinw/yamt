@@ -126,9 +126,6 @@ enum NutritionLabelOcrStatus {
   /// Succeeded.
   succeeded,
 
-  /// Canceled.
-  canceled,
-
   /// Failed.
   failed,
 }
@@ -138,9 +135,6 @@ class NutritionLabelOcrResult {
   /// Creates a succeeded result.
   const new succeeded({required NutritionLabelOcrDraft draft})
     : this._(status: NutritionLabelOcrStatus.succeeded, draft: draft);
-
-  /// Creates a canceled result.
-  const new canceled() : this._(status: NutritionLabelOcrStatus.canceled);
 
   /// Creates a failed result.
   const new failed({required String errorCode})

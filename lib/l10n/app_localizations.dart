@@ -398,17 +398,125 @@ abstract class AppLocalizations {
   /// **'–'**
   String get eatPageAmountUnknown;
 
-  /// No description provided for @productSearchHubNoBarcodeAction.
-  ///
-  /// In en, this message translates to:
-  /// **'No barcode'**
-  String get productSearchHubNoBarcodeAction;
-
   /// No description provided for @productSearchHubMissingNutritionHint.
   ///
   /// In en, this message translates to:
   /// **'Required values are missing. Every EU nutrition label lists them.'**
   String get productSearchHubMissingNutritionHint;
+
+  /// No description provided for @productEditorPhotosHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Two photos fill in the product. You only check it.'**
+  String get productEditorPhotosHint;
+
+  /// No description provided for @productEditorFrontPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Front'**
+  String get productEditorFrontPhoto;
+
+  /// No description provided for @productEditorFrontPhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name, brand, size'**
+  String get productEditorFrontPhotoHint;
+
+  /// No description provided for @productEditorNutritionTablePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition table'**
+  String get productEditorNutritionTablePhoto;
+
+  /// No description provided for @productEditorNutritionTablePhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition values'**
+  String get productEditorNutritionTablePhotoHint;
+
+  /// No description provided for @productEditorPhotoReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading …'**
+  String get productEditorPhotoReading;
+
+  /// No description provided for @productEditorPhotoRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get productEditorPhotoRead;
+
+  /// No description provided for @productEditorPhotoRetake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get productEditorPhotoRetake;
+
+  /// No description provided for @productEditorScanBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan'**
+  String get productEditorScanBarcode;
+
+  /// No description provided for @productEditorNoBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Has none'**
+  String get productEditorNoBarcode;
+
+  /// No description provided for @productEditorBarcodeFromPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Found on the photo'**
+  String get productEditorBarcodeFromPhoto;
+
+  /// No description provided for @productEditorBarcodeFromAi.
+  ///
+  /// In en, this message translates to:
+  /// **'Read by the AI, please check'**
+  String get productEditorBarcodeFromAi;
+
+  /// No description provided for @productEditorBarcodeMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'No barcode on the photos'**
+  String get productEditorBarcodeMissing;
+
+  /// No description provided for @productEditorFrontUnreadable.
+  ///
+  /// In en, this message translates to:
+  /// **'The name is not readable. Take a sharper photo of the front.'**
+  String get productEditorFrontUnreadable;
+
+  /// No description provided for @productEditorFrontNotProduct.
+  ///
+  /// In en, this message translates to:
+  /// **'The photo shows no package.'**
+  String get productEditorFrontNotProduct;
+
+  /// No description provided for @productEditorFrontFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the front.'**
+  String get productEditorFrontFailed;
+
+  /// No description provided for @productEditorCameraUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This device cannot take photos.'**
+  String get productEditorCameraUnsupported;
+
+  /// No description provided for @productEditorPhotosNotSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'The photos could not be stored. The product is saved without them.'**
+  String get productEditorPhotosNotSaved;
+
+  /// No description provided for @productEditorTakeNutritionTablePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Photograph the nutrition table'**
+  String get productEditorTakeNutritionTablePhoto;
 
   /// No description provided for @productSearchHubCreateProductAction.
   ///
@@ -2793,24 +2901,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get shoppingListClearCrossedOffConfirmAction;
-
-  /// No description provided for @caloriesBarcodeNotFoundOcrAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Scan nutrition label'**
-  String get caloriesBarcodeNotFoundOcrAction;
-
-  /// No description provided for @caloriesOcrScanning.
-  ///
-  /// In en, this message translates to:
-  /// **'Reading nutrition label…'**
-  String get caloriesOcrScanning;
-
-  /// No description provided for @caloriesOcrScanningSemantics.
-  ///
-  /// In en, this message translates to:
-  /// **'Captured nutrition label is being scanned'**
-  String get caloriesOcrScanningSemantics;
 
   /// No description provided for @caloriesOcrFailed.
   ///

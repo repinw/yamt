@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_photo_controller.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
@@ -27,9 +29,11 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
     required this.showActionSelector,
     required this.showEatImmediatelyOption,
     required this.imageUrl,
+    required this.photoState,
     required this.canSave,
     required this.onScanBarcode,
-    required this.onScanNutritionLabel,
+    required this.onTakeFrontPhoto,
+    required this.onTakeNutritionTablePhoto,
     required this.onNoBarcodeChanged,
     required this.onActionChanged,
     required this.onSave,
@@ -57,14 +61,20 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
   /// Product image address.
   final String? imageUrl;
 
+  /// The package photos.
+  final ManualProductPhotoState photoState;
+
   /// Whether the product can currently be saved.
   final bool canSave;
 
   /// Barcode scanning callback.
   final VoidCallback onScanBarcode;
 
-  /// Nutrition label scan callback.
-  final VoidCallback? onScanNutritionLabel;
+  /// Takes a photo of the package front.
+  final VoidCallback onTakeFrontPhoto;
+
+  /// Takes a photo of the nutrition table.
+  final VoidCallback onTakeNutritionTablePhoto;
 
   /// Called when the "no barcode" mark changes.
   final ValueChanged<bool> onNoBarcodeChanged;
@@ -82,6 +92,7 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
     return ManualProductDetailsForm(
       state: state,
       imageUrl: imageUrl,
+      photoState: photoState,
       canSave: canSave,
       errorText: resolveManualProductErrorText(l10n, state.error),
       showActionSelector:
@@ -93,7 +104,8 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
       onWeightUnitChanged: controller.updateWeightUnit,
       onNoBarcodeChanged: onNoBarcodeChanged,
       onScanBarcode: onScanBarcode,
-      onScanNutritionLabel: onScanNutritionLabel,
+      onTakeFrontPhoto: onTakeFrontPhoto,
+      onTakeNutritionTablePhoto: onTakeNutritionTablePhoto,
       onAddOptionalNutrition: controller.showOptionalNutrition,
       onActionChanged: onActionChanged,
       onSave: onSave,

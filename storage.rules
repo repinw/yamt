@@ -65,5 +65,22 @@ service firebase.storage {
       allow create, update: if canAccessHouseholdOwnedData(uid)
         && isRecipeImage();
     }
+
+    function isProductImage() {
+      return request.resource.size < 2 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    // Package photos from the product editor. Every signed-in user sees
+    // them as shared product images. Only the uploader writes into their
+    // own folder, and nobody changes or deletes a photo from the app, so a
+    // later review can rely on them.
+    match /product_images/{uid}/{photoId}/{fileName} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && isProductImage();
+      allow update, delete: if false;
+    }
   }
 }

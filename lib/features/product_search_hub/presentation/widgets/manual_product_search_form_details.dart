@@ -4,6 +4,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_photo_controller.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
@@ -16,7 +18,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_nutrition_editor.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'nutrition_label_scan_indicator/nutrition_label_scan_indicator.dart';
+    'manual_product_search_form/manual_product_photo_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Product editor drawn like the eat page: the product head, the nutrition
@@ -26,6 +28,7 @@ class ManualProductDetailsForm extends StatefulWidget {
   const new({
     required this.state,
     required this.imageUrl,
+    required this.photoState,
     required this.canSave,
     required this.errorText,
     required this.showActionSelector,
@@ -34,7 +37,8 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.onWeightUnitChanged,
     required this.onNoBarcodeChanged,
     required this.onScanBarcode,
-    required this.onScanNutritionLabel,
+    required this.onTakeFrontPhoto,
+    required this.onTakeNutritionTablePhoto,
     required this.onAddOptionalNutrition,
     required this.onActionChanged,
     required this.onSave,
@@ -44,16 +48,14 @@ class ManualProductDetailsForm extends StatefulWidget {
   /// Key of the confirm button.
   static const saveKey = Key('receipt_review_manual_save_button');
 
-  /// Key of the button that scans a barcode.
-  static const scanBarcodeKey = Key(
-    'receipt_review_manual_barcode_scan_button',
-  );
-
   /// The entered product.
   final InventoryReceiptManualProductState state;
 
   /// Product image address.
   final String? imageUrl;
+
+  /// The package photos.
+  final ManualProductPhotoState photoState;
 
   /// Whether the product can be saved.
   final bool canSave;
@@ -79,8 +81,11 @@ class ManualProductDetailsForm extends StatefulWidget {
   /// Scans a barcode.
   final VoidCallback onScanBarcode;
 
-  /// Scans the nutrition label. The button is disabled when null.
-  final VoidCallback? onScanNutritionLabel;
+  /// Takes a photo of the package front.
+  final VoidCallback onTakeFrontPhoto;
+
+  /// Takes a photo of the nutrition table.
+  final VoidCallback onTakeNutritionTablePhoto;
 
   /// Shows the row of an optional nutrient.
   final ValueChanged<InventoryReceiptOptionalNutritionType>
@@ -148,25 +153,16 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final state = widget.state;
-    final scanImage = state.nutritionOcrImageBytes;
     final error = widget.errorText;
 
     return EatPageScaffold(
       // Snack bars of the editor come through the route's context.
       hasOwnMessenger: false,
-      whenControl: IconButton(
-        key: ManualProductDetailsForm.scanBarcodeKey,
-        tooltip: l10n.inventoryManualAddScanBarcodeAction,
-        onPressed: state.hasNoBarcode ? null : widget.onScanBarcode,
-        color: colors.ink,
-        icon: const Icon(Icons.qr_code_scanner_rounded),
-      ),
+      whenControl: const SizedBox.shrink(),
       kcal: null,
       confirmButtonKey: ManualProductDetailsForm.saveKey,
       confirmLabel: l10n.inventoryReceiptReviewManualDataSaveAction,
-      onConfirm: state.isRunningNutritionOcr || !widget.canSave
-          ? null
-          : widget.onSave,
+      onConfirm: widget.canSave ? widget.onSave : null,
       cancelButtonKey: const Key('receipt_review_manual_close_button'),
       children: [
         ManualProductEditorHeader(
@@ -174,18 +170,23 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
           texts: _texts,
           focusNodes: _focusNodes,
           weightUnit: state.selectedWeightUnit,
-          hasNoBarcode: state.hasNoBarcode,
           onFieldChanged: widget.onFieldChanged,
           onFieldSubmitted: _focusNextRequired,
           onWeightUnitChanged: widget.onWeightUnitChanged,
+        ),
+        ManualProductPhotoSection(
+          photoState: widget.photoState,
+          barcode: _texts[ManualProductFormField.barcode]!,
+          barcodeFocusNode: _focusNodes[ManualProductFormField.barcode]!,
+          barcodeOrigin: state.barcodeOrigin,
+          hasNoBarcode: state.hasNoBarcode,
+          onTakeFrontPhoto: widget.onTakeFrontPhoto,
+          onTakeNutritionTablePhoto: widget.onTakeNutritionTablePhoto,
+          onBarcodeChanged: (text) =>
+              widget.onFieldChanged(ManualProductFormField.barcode, text),
+          onScanBarcode: widget.onScanBarcode,
           onNoBarcodeChanged: widget.onNoBarcodeChanged,
         ),
-        if (state.isRunningNutritionOcr && scanImage != null)
-          NutritionLabelScanIndicator(
-            imageBytes: scanImage,
-            statusLabel: l10n.caloriesOcrScanning,
-            semanticLabel: l10n.caloriesOcrScanningSemantics,
-          ),
         ManualProductNutritionEditor(
           texts: _texts,
           focusNodes: _focusNodes,
@@ -198,7 +199,6 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
           showFiber: state.showFiberField,
           onFieldChanged: widget.onFieldChanged,
           onFieldSubmitted: _focusNextRequired,
-          onScanLabel: widget.onScanNutritionLabel,
           onAddOptionalNutrition: widget.onAddOptionalNutrition,
         ),
         if (!state.hasMandatoryNutrition)

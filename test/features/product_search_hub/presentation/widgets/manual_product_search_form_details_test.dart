@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_photo_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -13,8 +19,15 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_nutrition_editor.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_form/manual_product_photo_section.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form_details.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+final List<int> _pixel = base64Decode(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8'
+  'AAAAASUVORK5CYII=',
+);
 
 const _complete = InventoryReceiptManualProductState(
   nameText: 'Haferflocken zart',
@@ -37,12 +50,15 @@ class _Calls {
   final optional = <InventoryReceiptOptionalNutritionType>[];
   final actions = <InventoryReceiptManualProductAction>[];
   int scans = 0;
+  int frontPhotos = 0;
+  int tablePhotos = 0;
   int saves = 0;
 }
 
 Widget _editor(
   _Calls calls, {
   InventoryReceiptManualProductState state = _complete,
+  ManualProductPhotoState photoState = const ManualProductPhotoState(),
   bool canSave = true,
   bool showActionSelector = false,
 }) {
@@ -53,6 +69,7 @@ Widget _editor(
     home: ManualProductDetailsForm(
       state: state,
       imageUrl: null,
+      photoState: photoState,
       canSave: canSave,
       errorText: null,
       showActionSelector: showActionSelector,
@@ -61,7 +78,8 @@ Widget _editor(
       onWeightUnitChanged: calls.units.add,
       onNoBarcodeChanged: calls.noBarcode.add,
       onScanBarcode: () => calls.scans++,
-      onScanNutritionLabel: null,
+      onTakeFrontPhoto: () => calls.frontPhotos++,
+      onTakeNutritionTablePhoto: () => calls.tablePhotos++,
       onAddOptionalNutrition: calls.optional.add,
       onActionChanged: calls.actions.add,
       onSave: () => calls.saves++,
@@ -175,8 +193,11 @@ void main() {
     final calls = _Calls();
     await tester.pumpWidget(_editor(calls));
 
-    await tester.tap(find.byKey(ManualProductDetailsForm.scanBarcodeKey));
-    await tester.tap(find.byKey(ManualProductEditorHeader.noBarcodeKey));
+    await tester.ensureVisible(
+      find.byKey(ManualProductPhotoSection.scanBarcodeKey),
+    );
+    await tester.tap(find.byKey(ManualProductPhotoSection.scanBarcodeKey));
+    await tester.tap(find.byKey(ManualProductPhotoSection.noBarcodeKey));
     expect(calls.scans, 1);
     expect(calls.noBarcode, [true]);
 
@@ -186,8 +207,8 @@ void main() {
     final barcode = tester.widget<TextField>(
       find.byKey(ManualProductFormField.barcode.key),
     );
-    final scan = tester.widget<IconButton>(
-      find.byKey(ManualProductDetailsForm.scanBarcodeKey),
+    final scan = tester.widget<ButtonStyleButton>(
+      find.byKey(ManualProductPhotoSection.scanBarcodeKey),
     );
     expect(barcode.enabled, isFalse);
     expect(scan.onPressed, isNull);
@@ -257,5 +278,55 @@ void main() {
     );
 
     expect(calls.actions, [InventoryReceiptManualProductAction.eatNow]);
+  });
+
+  testWidgets('the photo tiles take the front and the nutrition table', (
+    tester,
+  ) async {
+    final calls = _Calls();
+    await tester.pumpWidget(_editor(calls));
+
+    await tester.tap(find.byKey(ManualProductPhotoSection.frontKey));
+    await tester.tap(find.byKey(ManualProductPhotoSection.nutritionTableKey));
+
+    expect(calls.frontPhotos, 1);
+    expect(calls.tablePhotos, 1);
+    expect(find.text('Front'), findsOneWidget);
+    expect(find.text('Nutrition table'), findsOneWidget);
+  });
+
+  testWidgets('says where a barcode from a photo came from', (tester) async {
+    final calls = _Calls();
+    await tester.pumpWidget(
+      _editor(
+        calls,
+        state: _complete.copyWith(
+          barcode: '4006381333931',
+          barcodeOrigin: ManualProductBarcodeOrigin.ai,
+        ),
+      ),
+    );
+
+    expect(find.text('Read by the AI, please check'), findsOneWidget);
+  });
+
+  testWidgets('says when the photos show no barcode', (tester) async {
+    final calls = _Calls();
+    await tester.pumpWidget(
+      _editor(
+        calls,
+        photoState: ManualProductPhotoState(
+          front: ProductPhoto(
+            path: 'front',
+            bytes: Uint8List.fromList(_pixel),
+            mimeType: 'image/png',
+          ),
+          hasReadFront: true,
+        ),
+      ),
+    );
+
+    expect(find.text('No barcode on the photos'), findsOneWidget);
+    expect(find.text('Read'), findsOneWidget);
   });
 }

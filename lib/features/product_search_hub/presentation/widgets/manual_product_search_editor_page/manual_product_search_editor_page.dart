@@ -8,6 +8,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_manual_add_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_photo_controller.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
@@ -22,6 +24,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_support.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Full manual product editor for product details and nutrition input.
 class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
@@ -74,6 +77,9 @@ class _InventoryReceiptManualProductEditorPageState
   InventoryReceiptManualProductControllerProvider get _provider =>
       inventoryReceiptManualProductControllerProvider(widget.config);
 
+  ManualProductPhotoControllerProvider get _photoProvider =>
+      manualProductPhotoControllerProvider(widget.config);
+
   InventoryReceiptManualProductController get _controller =>
       ref.read(_provider.notifier);
 
@@ -89,8 +95,7 @@ class _InventoryReceiptManualProductEditorPageState
       context: context,
       actionBuilder: () => buildEditorInitialInfoAction(
         context: context,
-        canScanNutritionLabel: ref.read(_provider).canScanNutritionLabel,
-        onScanNutritionLabel: _onScanNutritionLabel,
+        onTakeNutritionTablePhoto: _onTakeNutritionTablePhoto,
       ),
     );
   }
@@ -115,10 +120,10 @@ class _InventoryReceiptManualProductEditorPageState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(_provider);
-    final canSave = canSaveManualProduct(
-      state: state,
-      selectedAction: _selectedAction,
-    );
+    final photoState = ref.watch(_photoProvider);
+    final canSave =
+        !photoState.isBusy &&
+        canSaveManualProduct(state: state, selectedAction: _selectedAction);
 
     return ManualProductSearchEditorFormView(
       state: state,
@@ -130,11 +135,11 @@ class _InventoryReceiptManualProductEditorPageState
       imageUrl: normalizeProductImageUrl(
         widget.config.item.imageUrl ?? state.matchedProduct?.imageUrl,
       ),
+      photoState: photoState,
       canSave: canSave,
       onScanBarcode: () => unawaited(_openBarcodeScanner()),
-      onScanNutritionLabel: state.canScanNutritionLabel
-          ? _onScanNutritionLabel
-          : null,
+      onTakeFrontPhoto: _onTakeFrontPhoto,
+      onTakeNutritionTablePhoto: _onTakeNutritionTablePhoto,
       onNoBarcodeChanged: (value) =>
           _controller.updateHasNoBarcode(value: value),
       onActionChanged: (action) => setState(() => _selectedAction = action),
@@ -142,10 +147,20 @@ class _InventoryReceiptManualProductEditorPageState
     );
   }
 
-  void _onScanNutritionLabel() {
+  void _onTakeFrontPhoto() {
     unawaited(
-      scanEditorNutritionLabel(
-        controller: _controller,
+      takeEditorFrontPhoto(
+        photos: ref.read(_photoProvider.notifier),
+        context: context,
+        onShowSnackBar: _showSnackBar,
+      ),
+    );
+  }
+
+  void _onTakeNutritionTablePhoto() {
+    unawaited(
+      takeEditorNutritionTablePhoto(
+        photos: ref.read(_photoProvider.notifier),
         context: context,
         onShowSnackBar: _showSnackBar,
       ),
@@ -159,6 +174,10 @@ class _InventoryReceiptManualProductEditorPageState
         config: widget.config,
         controller: _controller,
         selectedAction: _selectedAction,
+        isMounted: () => mounted,
+        onPhotosNotSaved: () => _showSnackBar(
+          AppLocalizations.of(context)!.productEditorPhotosNotSaved,
+        ),
         onClosePage: _closePage,
       ),
     );

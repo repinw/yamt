@@ -18,8 +18,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The nutrition label of the product editor: the rows of a printed food
-/// label with an input per 100 g, a button that scans the label, and a row
-/// that adds the optional nutrients.
+/// label with an input per 100 g, and a row that adds the optional
+/// nutrients.
 class ManualProductNutritionEditor extends StatelessWidget {
   /// Creates the label.
   const new({
@@ -30,13 +30,9 @@ class ManualProductNutritionEditor extends StatelessWidget {
     required this.showFiber,
     required this.onFieldChanged,
     required this.onFieldSubmitted,
-    required this.onScanLabel,
     required this.onAddOptionalNutrition,
     super.key,
   });
-
-  /// Key of the button that scans the nutrition label.
-  static const scanKey = Key('receipt_review_manual_nutrition_ocr_button');
 
   /// Key of the button that adds an optional nutrient.
   static const addKey = Key(
@@ -63,9 +59,6 @@ class ManualProductNutritionEditor extends StatelessWidget {
 
   /// Called when an input is confirmed on the keyboard.
   final ValueChanged<ManualProductFormField> onFieldSubmitted;
-
-  /// Scans the nutrition label. The button is disabled when null.
-  final VoidCallback? onScanLabel;
 
   /// Shows the row of an optional nutrient.
   final ValueChanged<InventoryReceiptOptionalNutritionType>
@@ -122,18 +115,7 @@ class ManualProductNutritionEditor extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          EatLabelTitle(
-            text: l10n.eatPageNutritionTitle,
-            trailing: [
-              IconButton(
-                key: scanKey,
-                tooltip: l10n.caloriesBarcodeNotFoundOcrAction,
-                onPressed: onScanLabel,
-                color: colors.ink,
-                icon: const Icon(Icons.document_scanner_outlined),
-              ),
-            ],
-          ),
+          EatLabelTitle(text: l10n.eatPageNutritionTitle),
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.xs),
             child: Text(

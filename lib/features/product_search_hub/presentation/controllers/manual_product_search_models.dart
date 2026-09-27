@@ -76,25 +76,13 @@ enum InventoryReceiptManualProductError {
 typedef InventoryReceiptManualProductAction =
     inventory_models.InventoryReceiptManualProductAction;
 
-/// Defines inventory receipt manual product nutrition scan outcome.
-enum InventoryReceiptManualProductNutritionScanOutcome {
-  /// Documented member.
-  applied,
+/// Where a barcode on a package photo came from.
+enum ManualProductBarcodeOrigin {
+  /// The barcode scanner found it on a photo.
+  photo,
 
-  /// Documented member.
-  canceled,
-
-  /// Documented member.
-  failed,
-
-  /// Firebase App Check temporarily blocked the request.
-  appCheckThrottled,
-
-  /// The photo missed mandatory values or gave implausible ones.
-  retakePhoto,
-
-  /// Documented member.
-  missingBarcode,
+  /// The AI read its digits on the front photo.
+  ai,
 }
 
 /// Defines inventory receipt manual product selection source.

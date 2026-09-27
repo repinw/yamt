@@ -464,8 +464,6 @@ const architectureBaseline = <String, Map<String, int>>{
         3,
     'lib/features/meal_templates/presentation/widgets/prepared_meal_template_card/prepared_meal_template_card.dart':
         2,
-    'lib/features/product_search_hub/presentation/widgets/nutrition_label_scan_indicator/nutrition_label_scan_indicator.dart':
-        1,
     'lib/features/product_search_hub/presentation/widgets/product_search_barcode_scanner_page/product_search_barcode_scanner_resolving_indicator.dart':
         1,
     'lib/features/scanner/presentation/widgets/product_nutrition_summary.dart':

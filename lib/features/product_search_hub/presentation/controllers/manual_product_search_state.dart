@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_nutrition/domain/nutrition_label_ocr_models.dart';
@@ -31,8 +29,7 @@ class InventoryReceiptManualProductState {
     this.showFiberField = false,
     this.selectedProduct,
     this.ocrDraft,
-    this.isRunningNutritionOcr = false,
-    this.nutritionOcrImageBytes,
+    this.barcodeOrigin,
     this.error,
   });
 
@@ -93,11 +90,9 @@ class InventoryReceiptManualProductState {
   /// The ocr draft.
   final NutritionLabelOcrDraft? ocrDraft;
 
-  /// Whether running nutrition ocr.
-  final bool isRunningNutritionOcr;
-
-  /// Captured image shown while nutrition OCR is running.
-  final Uint8List? nutritionOcrImageBytes;
+  /// Where the barcode came from when a photo delivered it, or null when
+  /// the user typed or scanned it.
+  final ManualProductBarcodeOrigin? barcodeOrigin;
 
   /// The error.
   final InventoryReceiptManualProductError? error;
@@ -146,10 +141,8 @@ class InventoryReceiptManualProductState {
     ].every((text) => parseManualProductDouble(text) != null);
   }
 
-  /// Whether scan nutrition label.
-  bool get canScanNutritionLabel {
-    return !isRunningNutritionOcr && (hasBarcode || hasNoBarcode);
-  }
+  /// Whether the barcode is settled: entered, or marked as missing.
+  bool get hasBarcodeDecision => hasBarcode || hasNoBarcode;
 
   /// The available optional nutrition types.
   List<InventoryReceiptOptionalNutritionType>
@@ -185,8 +178,7 @@ class InventoryReceiptManualProductState {
     bool? showFiberField,
     Object? selectedProduct = _keepValue,
     Object? ocrDraft = _keepValue,
-    bool? isRunningNutritionOcr,
-    Object? nutritionOcrImageBytes = _keepValue,
+    Object? barcodeOrigin = _keepValue,
     Object? error = _keepValue,
   }) {
     return InventoryReceiptManualProductState(
@@ -215,11 +207,9 @@ class InventoryReceiptManualProductState {
       ocrDraft: ocrDraft == _keepValue
           ? this.ocrDraft
           : ocrDraft as NutritionLabelOcrDraft?,
-      isRunningNutritionOcr:
-          isRunningNutritionOcr ?? this.isRunningNutritionOcr,
-      nutritionOcrImageBytes: nutritionOcrImageBytes == _keepValue
-          ? this.nutritionOcrImageBytes
-          : nutritionOcrImageBytes as Uint8List?,
+      barcodeOrigin: barcodeOrigin == _keepValue
+          ? this.barcodeOrigin
+          : barcodeOrigin as ManualProductBarcodeOrigin?,
       error: error == _keepValue
           ? this.error
           : error as InventoryReceiptManualProductError?,
