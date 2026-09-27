@@ -1,3 +1,4 @@
+import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
@@ -12,6 +13,12 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
     if (trainingDayOverrides.containsKey(dayKey)) {
       return trainingDayOverrides[dayKey]!;
     }
+    return isScheduledTrainingDay(day);
+  }
+
+  /// Whether the weekly training schedule makes [day] a training day,
+  /// without the per-day overrides.
+  bool isScheduledTrainingDay(DateTime day) {
     final activeProfile =
         goalEntryForDay(day)?.calculatorProfile ?? calculatorProfile;
     final weekdays = activeProfile?.trainingWeekdays ?? trainingWeekdays;
@@ -25,6 +32,13 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
 
   /// Effective goal kcal for day taking training days / rest day cycling into
   /// account.
+  ///
+  /// Training days get the configured offset, and the rest days of the same
+  /// 7-day run give it up in equal parts, so the run total stays the base
+  /// goal times seven. The training days are counted in the run with the
+  /// per-day overrides, so a changed day type moves calories between the days
+  /// of its run; the carryover passes on what past days of the run got
+  /// differently.
   double goalKcalForDay(DateTime day) {
     final base = baseGoalKcalForDay(day);
     if (base <= 0) {
@@ -35,40 +49,40 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
     final configuredOffset =
         activeProfile?.trainingDayKcalOffset ?? trainingDayKcalOffset;
     final weekdays = activeProfile?.trainingWeekdays ?? trainingWeekdays;
-    final isTraining = isTrainingDay(day);
-
-    final resolvedKcal = _resolveCyclingKcal(
-      base: base,
-      configuredOffset: configuredOffset,
-      trainingDaysCount: weekdays.length,
-      isTraining: isTraining,
-    );
+    final offset = configuredOffset > 0
+        ? configuredOffset
+        : (weekdays.isEmpty ? defaultTrainingDayKcalOffset : 0.0);
+    final trainingDaysCount = _trainingDaysInRun(day);
+    final isCycling =
+        offset > 0 &&
+        trainingDaysCount > 0 &&
+        trainingDaysCount < calorieGoalRunLengthDays;
+    final resolvedKcal = !isCycling
+        ? base
+        : isTrainingDay(day)
+        ? base + offset
+        : base -
+              (trainingDaysCount * offset) /
+                  (calorieGoalRunLengthDays - trainingDaysCount);
     return resolvedKcal.clamp(minimumDailyCalorieBudgetKcal, double.infinity);
   }
 
-  double _resolveCyclingKcal({
-    required double base,
-    required double configuredOffset,
-    required int trainingDaysCount,
-    required bool isTraining,
-  }) {
-    if (trainingDaysCount <= 0) {
-      if (!isTraining) return base;
-      final offset = configuredOffset > 0
-          ? configuredOffset
-          : defaultTrainingDayKcalOffset;
-      return base + offset;
+  /// Number of training days in the 7-day run of [day]. Before a goal starts
+  /// counting there is no run, and the weekly schedule counts instead.
+  int _trainingDaysInRun(DateTime day) {
+    if (countingGoalEntryForDay(day) == null) {
+      final activeProfile =
+          goalEntryForDay(day)?.calculatorProfile ?? calculatorProfile;
+      return (activeProfile?.trainingWeekdays ?? trainingWeekdays).length;
     }
-    if (configuredOffset <= 0 || trainingDaysCount >= 7) {
-      return isTraining && configuredOffset > 0
-          ? base + configuredOffset
-          : base;
+    final runStart = resolveCalorieGoalRunStartDate(settings: this, day: day);
+    var count = 0;
+    for (var offset = 0; offset < calorieGoalRunLengthDays; offset++) {
+      if (isTrainingDay(addDiaryDays(runStart, offset))) {
+        count++;
+      }
     }
-    if (isTraining) return base + configuredOffset;
-    final restDaysCount = 7 - trainingDaysCount;
-    final restDayReduction =
-        (trainingDaysCount * configuredOffset) / restDaysCount;
-    return base - restDayReduction;
+    return count;
   }
 
   /// Toggles training day status for [day].

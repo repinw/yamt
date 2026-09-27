@@ -7,9 +7,12 @@ import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
 import 'package:yamt/features/health/domain/recent_weight_trend.dart';
+import 'package:yamt/features/settings/presentation/controllers/profile_body_edit_controller.dart';
 import 'package:yamt/features/settings/presentation/controllers/profile_summary_controller.dart';
+import 'package:yamt/features/settings/presentation/widgets/profile/profile_body_edit_sheet.dart';
 import 'package:yamt/features/settings/presentation/widgets/profile/profile_formatters.dart';
 import 'package:yamt/features/settings/presentation/widgets/profile/profile_kicker.dart';
 import 'package:yamt/features/settings/presentation/widgets/profile/profile_weight_chart.dart';
@@ -26,6 +29,9 @@ class ProfileWeightCard extends ConsumerWidget {
 
   /// Stable key of the weigh-in button.
   static const addWeightButtonKey = ValueKey<String>('profile-add-weight');
+
+  /// Stable key of the start weight fact.
+  static const startWeightKey = ValueKey<String>('profile-start-weight');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,9 +86,11 @@ class ProfileWeightCard extends ConsumerWidget {
               Expanded(child: _measuredFact(context, today)),
               Expanded(
                 child: _WeightFact(
+                  key: startWeightKey,
                   label: l10n.profileWeightStartLabel,
                   value: _kg(context, state.profile?.weightKg),
                   note: l10n.profileWeightStartNote,
+                  onTap: _startWeightEditor(context),
                 ),
               ),
               Expanded(
@@ -123,6 +131,20 @@ class ProfileWeightCard extends ConsumerWidget {
     );
   }
 
+  VoidCallback? _startWeightEditor(BuildContext context) {
+    final profile = state.profile;
+    if (profile == null || !state.canEditStartWeight) {
+      return null;
+    }
+    return () => unawaited(
+      showProfileBodyEditSheet(
+        context,
+        field: ProfileBodyField.startWeight,
+        profile: profile,
+      ),
+    );
+  }
+
   Widget _measuredFact(BuildContext context, DateTime today) {
     final l10n = AppLocalizations.of(context)!;
     final day = state.weight?.latestWeighInDay;
@@ -149,30 +171,58 @@ class ProfileWeightCard extends ConsumerWidget {
 }
 
 class _WeightFact extends StatelessWidget {
-  const new({required this.label, required this.value, this.note});
+  const new({
+    required this.label,
+    required this.value,
+    this.note,
+    this.onTap,
+    super.key,
+  });
 
   final String label;
   final String value;
   final String? note;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final muted = FoodLabelColors.of(context).muted;
     final note = this.note;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: theme.textTheme.bodySmall?.copyWith(color: muted)),
-        Text(
-          value,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.w700,
+    return AppInkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            spacing: AppSpacing.xxs,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.bodySmall?.copyWith(color: muted),
+              ),
+              if (onTap != null)
+                Icon(
+                  Icons.edit_outlined,
+                  size: AppFontSizes.bodySmall,
+                  color: muted,
+                ),
+            ],
           ),
-        ),
-        if (note != null)
-          Text(note, style: theme.textTheme.bodySmall?.copyWith(color: muted)),
-      ],
+          Text(
+            value,
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          if (note != null)
+            Text(
+              note,
+              style: theme.textTheme.bodySmall?.copyWith(color: muted),
+            ),
+        ],
+      ),
     );
   }
 }

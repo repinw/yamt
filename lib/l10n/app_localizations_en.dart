@@ -4725,4 +4725,152 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileGoalNone => 'No goal set yet.';
+
+  @override
+  String get profileHeightTitle => 'Height';
+
+  @override
+  String get profileBirthDateTitle => 'Birthday';
+
+  @override
+  String get profileSexTitle => 'Sex';
+
+  @override
+  String get profileStartWeightTitle => 'Start weight';
+
+  @override
+  String get profileWeightSection => 'Weight';
+
+  @override
+  String get profileUnitCm => 'cm';
+
+  @override
+  String get profileUnitKg => 'kg';
+
+  @override
+  String profileHeightRange(String min, String max) {
+    return 'Between $min and $max cm';
+  }
+
+  @override
+  String profileStartWeightRange(String min, String max) {
+    return 'Between $min and $max kg';
+  }
+
+  @override
+  String profileBirthDateRange(String min, String max) {
+    return 'Age between $min and $max years';
+  }
+
+  @override
+  String get profileEditCancel => 'Cancel';
+
+  @override
+  String get profileEditApply => 'Apply';
+
+  @override
+  String get profileEditSaveFailed => 'Could not save the change.';
+
+  @override
+  String get profileEditEffectToday => 'What changes from today';
+
+  @override
+  String profileEditEffectFromGoalStart(String date) {
+    return 'What changes from the goal start on $date';
+  }
+
+  @override
+  String get profileEditKcalLabel => 'Calorie goal';
+
+  @override
+  String profileEditKcalStays(String kcal) {
+    return 'stays $kcal kcal';
+  }
+
+  @override
+  String profileEditKcalChange(String before, String after) {
+    return '$before → $after kcal';
+  }
+
+  @override
+  String profileEditGramsChange(String before, String after) {
+    return '$before → $after g';
+  }
+
+  @override
+  String get profileEditMacrosLabel => 'Macros';
+
+  @override
+  String get profileEditMacrosStay => 'stay the same';
+
+  @override
+  String get profileEditNoteLearned =>
+      'Your expenditure is learned. So only the macro split changes.';
+
+  @override
+  String get profileEditNoteManual =>
+      'You set your calorie goal by hand. So only the macro split changes.';
+
+  @override
+  String get profileEditNoteCorrection =>
+      'No expenditure is learned yet. So the app works out your calorie goal again from the goal start.';
+
+  @override
+  String get profileEditNoteNoGoal =>
+      'You have no goal right now. The change counts from your next goal.';
+
+  @override
+  String profileTrainingRunRange(String start, String end) {
+    return 'Run $start – $end';
+  }
+
+  @override
+  String profileTrainingRunNote(String date) {
+    return 'this run until $date';
+  }
+
+  @override
+  String get profileTrainingEffectTitle => 'What changes in this run';
+
+  @override
+  String profileTrainingBecomesTraining(String date) {
+    return '$date becomes a training day';
+  }
+
+  @override
+  String profileTrainingBecomesRest(String date) {
+    return '$date becomes a rest day';
+  }
+
+  @override
+  String get profileTrainingRunSum => 'Run total';
+
+  @override
+  String get profileTrainingNote =>
+      'Counts for this run only, like a day type in the diary. The run total stays; the carryover passes what past days got differently on to the days left.';
+
+  @override
+  String get profileTrainingPauseDay => 'Pause day';
+
+  @override
+  String profileTrainingOtherRestDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count other rest days',
+      one: 'Other rest day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String profileTrainingOtherTrainingDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count other training days',
+      one: 'Other training day',
+    );
+    return '$_temp0';
+  }
 }

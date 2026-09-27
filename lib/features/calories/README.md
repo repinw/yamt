@@ -152,6 +152,14 @@ trainingGoal = baseGoal + offset_training
 restGoal = max(1200, baseGoal - offset_rest)
 ```
 
+`N_training` counts the training days of the 7-day run of the day, with the
+per-day overrides, so every run keeps the base goal times seven. A day type
+change in the diary or a run training edit on the profile page moves calories
+only between the days of that run; earlier runs keep their goals. When past
+days of the run get a new goal, the carryover passes the difference on to the
+days left. Before a goal starts counting there is no run, and the weekly
+schedule counts instead.
+
 The diary header includes a toggle (`🏋️ Trainingstag`, `🛋️ Ruhetag`, `⏸️ Pausentag`).
 
 ### Learning Windows & Interpolation
@@ -208,6 +216,28 @@ last weigh-in before it, as `macroWeightKg`; a rejected check-in stores it too.
 A calculated goal entry supplies its profile weight as the start weight. A
 check-in without any weigh-in keeps the previous weight. The smoothed trend
 weight is right here because the macros need a calm level, not a slope.
+
+### Body Data Edits
+
+`applyBodyEdit` (`domain/calorie_goal_body_edits.dart`) changes height, sex,
+birthday, or start weight after onboarding. The calculator profile always
+takes the edit, so the macros follow it: the height caps the macro reference
+weight and the sex sets the fat factor. With a learned TDEE the calorie goal
+and the goal history stay. Without one, the edit corrects the active
+calculated goal from its start: its profile and calorie goal are calculated
+again, and weekly check-ins that kept the old goal take the new one. The start
+weight is fixed once a TDEE is learned. `CalorieBodyEditService` shows today's
+calorie goal and macros before and after an edit and saves it.
+
+### Run Training Days
+
+`withRunTrainingDays` (`domain/calorie_run_training_plan.dart`) sets the
+training days of the current 7-day run. It writes the same per-day overrides
+as a day type change in the diary, only for the days of that run; pause days
+keep their type, and later runs follow the weekly schedule again.
+`CalorieRunTrainingService` shows each changed day's calorie goal and the run
+total before and after, and the other days whose goal changes, and saves the
+days.
 
 ## Accepted Dependencies
 

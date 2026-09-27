@@ -8252,6 +8252,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No goal set yet.'**
   String get profileGoalNone;
+
+  /// No description provided for @profileHeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Height'**
+  String get profileHeightTitle;
+
+  /// No description provided for @profileBirthDateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Birthday'**
+  String get profileBirthDateTitle;
+
+  /// No description provided for @profileSexTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sex'**
+  String get profileSexTitle;
+
+  /// No description provided for @profileStartWeightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start weight'**
+  String get profileStartWeightTitle;
+
+  /// No description provided for @profileWeightSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get profileWeightSection;
+
+  /// No description provided for @profileUnitCm.
+  ///
+  /// In en, this message translates to:
+  /// **'cm'**
+  String get profileUnitCm;
+
+  /// No description provided for @profileUnitKg.
+  ///
+  /// In en, this message translates to:
+  /// **'kg'**
+  String get profileUnitKg;
+
+  /// No description provided for @profileHeightRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Between {min} and {max} cm'**
+  String profileHeightRange(String min, String max);
+
+  /// No description provided for @profileStartWeightRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Between {min} and {max} kg'**
+  String profileStartWeightRange(String min, String max);
+
+  /// No description provided for @profileBirthDateRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Age between {min} and {max} years'**
+  String profileBirthDateRange(String min, String max);
+
+  /// No description provided for @profileEditCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get profileEditCancel;
+
+  /// No description provided for @profileEditApply.
+  ///
+  /// In en, this message translates to:
+  /// **'Apply'**
+  String get profileEditApply;
+
+  /// No description provided for @profileEditSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the change.'**
+  String get profileEditSaveFailed;
+
+  /// No description provided for @profileEditEffectToday.
+  ///
+  /// In en, this message translates to:
+  /// **'What changes from today'**
+  String get profileEditEffectToday;
+
+  /// No description provided for @profileEditEffectFromGoalStart.
+  ///
+  /// In en, this message translates to:
+  /// **'What changes from the goal start on {date}'**
+  String profileEditEffectFromGoalStart(String date);
+
+  /// No description provided for @profileEditKcalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie goal'**
+  String get profileEditKcalLabel;
+
+  /// No description provided for @profileEditKcalStays.
+  ///
+  /// In en, this message translates to:
+  /// **'stays {kcal} kcal'**
+  String profileEditKcalStays(String kcal);
+
+  /// No description provided for @profileEditKcalChange.
+  ///
+  /// In en, this message translates to:
+  /// **'{before} → {after} kcal'**
+  String profileEditKcalChange(String before, String after);
+
+  /// No description provided for @profileEditGramsChange.
+  ///
+  /// In en, this message translates to:
+  /// **'{before} → {after} g'**
+  String profileEditGramsChange(String before, String after);
+
+  /// No description provided for @profileEditMacrosLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Macros'**
+  String get profileEditMacrosLabel;
+
+  /// No description provided for @profileEditMacrosStay.
+  ///
+  /// In en, this message translates to:
+  /// **'stay the same'**
+  String get profileEditMacrosStay;
+
+  /// No description provided for @profileEditNoteLearned.
+  ///
+  /// In en, this message translates to:
+  /// **'Your expenditure is learned. So only the macro split changes.'**
+  String get profileEditNoteLearned;
+
+  /// No description provided for @profileEditNoteManual.
+  ///
+  /// In en, this message translates to:
+  /// **'You set your calorie goal by hand. So only the macro split changes.'**
+  String get profileEditNoteManual;
+
+  /// No description provided for @profileEditNoteCorrection.
+  ///
+  /// In en, this message translates to:
+  /// **'No expenditure is learned yet. So the app works out your calorie goal again from the goal start.'**
+  String get profileEditNoteCorrection;
+
+  /// No description provided for @profileEditNoteNoGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no goal right now. The change counts from your next goal.'**
+  String get profileEditNoteNoGoal;
+
+  /// No description provided for @profileTrainingRunRange.
+  ///
+  /// In en, this message translates to:
+  /// **'Run {start} – {end}'**
+  String profileTrainingRunRange(String start, String end);
+
+  /// No description provided for @profileTrainingRunNote.
+  ///
+  /// In en, this message translates to:
+  /// **'this run until {date}'**
+  String profileTrainingRunNote(String date);
+
+  /// No description provided for @profileTrainingEffectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What changes in this run'**
+  String get profileTrainingEffectTitle;
+
+  /// No description provided for @profileTrainingBecomesTraining.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} becomes a training day'**
+  String profileTrainingBecomesTraining(String date);
+
+  /// No description provided for @profileTrainingBecomesRest.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} becomes a rest day'**
+  String profileTrainingBecomesRest(String date);
+
+  /// No description provided for @profileTrainingRunSum.
+  ///
+  /// In en, this message translates to:
+  /// **'Run total'**
+  String get profileTrainingRunSum;
+
+  /// No description provided for @profileTrainingNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts for this run only, like a day type in the diary. The run total stays; the carryover passes what past days got differently on to the days left.'**
+  String get profileTrainingNote;
+
+  /// No description provided for @profileTrainingPauseDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause day'**
+  String get profileTrainingPauseDay;
+
+  /// No description provided for @profileTrainingOtherRestDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Other rest day} other{{count} other rest days}}'**
+  String profileTrainingOtherRestDays(int count);
+
+  /// No description provided for @profileTrainingOtherTrainingDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Other training day} other{{count} other training days}}'**
+  String profileTrainingOtherTrainingDays(int count);
 }
 
 class _AppLocalizationsDelegate

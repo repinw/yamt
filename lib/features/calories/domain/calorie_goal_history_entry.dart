@@ -111,10 +111,13 @@ class CalorieGoalHistoryEntry {
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieGoalHistoryEntryToJson(this);
 
-  /// Returns a copy with the given snapshot and goal-lifecycle fields set.
+  /// Returns a copy with the given goal, snapshot, and goal-lifecycle fields
+  /// set.
   ///
   /// Only non-null arguments replace the current value.
   CalorieGoalHistoryEntry copyWith({
+    double? dailyKcalGoal,
+    CalorieCalculatorProfile? calculatorProfile,
     CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot,
     DateTime? reachedAt,
     double? reachedWeightKg,
@@ -123,8 +126,8 @@ class CalorieGoalHistoryEntry {
     double? endedWeightKg,
   }) {
     return CalorieGoalHistoryEntry(
-      dailyKcalGoal: dailyKcalGoal,
-      calculatorProfile: calculatorProfile,
+      dailyKcalGoal: dailyKcalGoal ?? this.dailyKcalGoal,
+      calculatorProfile: calculatorProfile ?? this.calculatorProfile,
       effectiveDate: effectiveDate,
       changedAt: changedAt,
       countingStartDate: countingStartDate,

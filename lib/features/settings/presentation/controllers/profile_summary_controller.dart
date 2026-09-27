@@ -6,9 +6,11 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_body_edits.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.dart';
 import 'package:yamt/features/health/application/recent_weight_trend_provider.dart';
@@ -36,6 +38,8 @@ class ProfileSummaryState {
     required this.tdee,
     required this.dailyKcalGoal,
     required this.macroTarget,
+    required this.canEditStartWeight,
+    required this.runTraining,
   });
 
   /// Name, email, and guest state of the signed-in user.
@@ -66,6 +70,14 @@ class ProfileSummaryState {
 
   /// Protein, carbs, and fat for [dailyKcalGoal], or `null` without a goal.
   final DailyNutritionTarget? macroTarget;
+
+  /// Whether the start weight may still change, which holds until an
+  /// expenditure is learned.
+  final bool canEditStartWeight;
+
+  /// Training and pause days of the current 7-day run, or `null` without a
+  /// goal.
+  final CalorieRunTrainingPlan? runTraining;
 
   /// The weight that counts now: the trend weight, else the last weigh-in.
   double? get currentWeightKg =>
@@ -137,7 +149,7 @@ class ProfileSummaryController extends _$ProfileSummaryController {
     required DateTime now,
   }) {
     final profile = settings.calculatorProfile;
-    final goalKcal = settings.dailyKcalGoal;
+    final goalKcal = settings.hasGoal ? settings.baseGoalKcalForDay(now) : null;
     return ProfileSummaryState(
       account: account,
       profile: profile,
@@ -150,6 +162,8 @@ class ProfileSummaryController extends _$ProfileSummaryController {
       macroTarget: goalKcal == null
           ? null
           : resolver.resolveBaseTarget(day: now, goalKcal: goalKcal),
+      canEditStartWeight: settings.canEditStartWeight,
+      runTraining: settings.hasGoal ? settings.runTrainingPlan(now) : null,
     );
   }
 

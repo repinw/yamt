@@ -41,7 +41,7 @@ final class ProfileSummaryControllerProvider
 }
 
 String _$profileSummaryControllerHash() =>
-    r'6c997a970281ca71e30521e66c9e51bc5c7fea5b';
+    r'b0174b488ee285f84dec743069359d3ef4815656';
 
 /// Combines the user's account, calculator profile, recent weigh-ins, and
 /// macro targets for the profile page.

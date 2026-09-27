@@ -98,6 +98,16 @@ and feature description docs. This is product-facing; architecture rules stay in
   - the goal ("Lose weight to 78 kg"), a four-part bar of the way from the
     start weight to the target by trend weight, the kg to go and the pace,
     and the daily calories with protein, carbs, and fat.
+  - tapping height, birthday, or sex, or the start weight while no TDEE is
+    learned, opens an editor. It shows what changes before it saves: with a
+    learned TDEE the calorie goal stays and only the macros follow; without
+    one the edit corrects the goal from its start and the calorie goal is
+    calculated again.
+  - the training tile shows the training days of the current 7-day run.
+    Tapping it picks them for this run only, like a day type in the diary;
+    the editor shows each changed day's calorie goal, the other days that
+    give or take calories, and the run total, which stays the same, before it
+    saves.
 
 ## Calories And Burn Week
 

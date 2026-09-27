@@ -30,6 +30,13 @@ settings.
   `AppRoutes.homeProfile`. It shows who the user is, the weight (trend
   weight, last weigh-in, start weight, weekly trend, a 14-day chart, and a
   weigh-in button), the body data as tiles, and the current goal.
+  Height, birthday, and sex tiles, and the start weight until a TDEE is
+  learned, open `ProfileBodyEditSheet`. The sheet shows what the edit changes
+  on today's calorie goal and macros before "Apply" saves it
+  (`ProfileBodyEditController`, calories `CalorieBodyEditService`). The
+  training tile shows the training days of the current 7-day run and opens
+  `ProfileTrainingEditSheet`, which sets them for this run only
+  (`ProfileTrainingEditController`, calories `CalorieRunTrainingService`).
 - `presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart` is the settings-owned tile that
   delegates Health connection actions to the Health feature.
 - Reusable settings tile components under `presentation/widgets/settings_tiles/`.

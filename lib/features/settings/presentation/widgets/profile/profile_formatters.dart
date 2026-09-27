@@ -34,6 +34,12 @@ class ProfileFormatters {
   /// A short date, such as "21. Sep.".
   String shortDate(DateTime day) => DateFormat.MMMd(_locale).format(day);
 
+  /// A short date with its weekday, such as "Mi., 24. Sep.".
+  String weekdayDate(DateTime day) => DateFormat.MMMEd(_locale).format(day);
+
+  /// The day of the month, such as "24".
+  String dayOfMonth(DateTime day) => DateFormat.d(_locale).format(day);
+
   /// A date with the year, such as "14.03.1994".
   String longDate(DateTime day) => DateFormat.yMd(_locale).format(day);
 

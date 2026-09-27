@@ -2321,5 +2321,149 @@
       }
     }
   },
-  "profileGoalNone": "No goal set yet."
+  "profileGoalNone": "No goal set yet.",
+  "profileHeightTitle": "Height",
+  "profileBirthDateTitle": "Birthday",
+  "profileSexTitle": "Sex",
+  "profileStartWeightTitle": "Start weight",
+  "profileWeightSection": "Weight",
+  "profileUnitCm": "cm",
+  "profileUnitKg": "kg",
+  "profileHeightRange": "Between {min} and {max} cm",
+  "@profileHeightRange": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "profileStartWeightRange": "Between {min} and {max} kg",
+  "@profileStartWeightRange": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "profileBirthDateRange": "Age between {min} and {max} years",
+  "@profileBirthDateRange": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEditCancel": "Cancel",
+  "profileEditApply": "Apply",
+  "profileEditSaveFailed": "Could not save the change.",
+  "profileEditEffectToday": "What changes from today",
+  "profileEditEffectFromGoalStart": "What changes from the goal start on {date}",
+  "@profileEditEffectFromGoalStart": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEditKcalLabel": "Calorie goal",
+  "profileEditKcalStays": "stays {kcal} kcal",
+  "@profileEditKcalStays": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEditKcalChange": "{before} → {after} kcal",
+  "@profileEditKcalChange": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEditGramsChange": "{before} → {after} g",
+  "@profileEditGramsChange": {
+    "placeholders": {
+      "before": {
+        "type": "String"
+      },
+      "after": {
+        "type": "String"
+      }
+    }
+  },
+  "profileEditMacrosLabel": "Macros",
+  "profileEditMacrosStay": "stay the same",
+  "profileEditNoteLearned": "Your expenditure is learned. So only the macro split changes.",
+  "profileEditNoteManual": "You set your calorie goal by hand. So only the macro split changes.",
+  "profileEditNoteCorrection": "No expenditure is learned yet. So the app works out your calorie goal again from the goal start.",
+  "profileEditNoteNoGoal": "You have no goal right now. The change counts from your next goal.",
+  "profileTrainingRunRange": "Run {start} – {end}",
+  "@profileTrainingRunRange": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTrainingRunNote": "this run until {date}",
+  "@profileTrainingRunNote": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTrainingEffectTitle": "What changes in this run",
+  "profileTrainingBecomesTraining": "{date} becomes a training day",
+  "@profileTrainingBecomesTraining": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTrainingBecomesRest": "{date} becomes a rest day",
+  "@profileTrainingBecomesRest": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "profileTrainingRunSum": "Run total",
+  "profileTrainingNote": "Counts for this run only, like a day type in the diary. The run total stays; the carryover passes what past days got differently on to the days left.",
+  "profileTrainingPauseDay": "Pause day",
+  "profileTrainingOtherRestDays": "{count, plural, =1{Other rest day} other{{count} other rest days}}",
+  "@profileTrainingOtherRestDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "profileTrainingOtherTrainingDays": "{count, plural, =1{Other training day} other{{count} other training days}}",
+  "@profileTrainingOtherTrainingDays": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
