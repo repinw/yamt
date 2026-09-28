@@ -1,9 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/presentation/controllers/auth_form_controller.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
-import 'package:yamt/features/auth/presentation/controllers/guest_auth_controller.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_action_button/auth_action_button.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_divider/auth_divider.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_footer_prompt/auth_footer_prompt.dart';
@@ -43,7 +44,6 @@ class AuthCard extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final isAuthLoading = ref.watch(authFormControllerProvider).isLoading;
     final isGoogleLoading = ref.watch(googleAuthControllerProvider).isLoading;
-    final isGuestLoading = ref.watch(guestAuthControllerProvider).isLoading;
 
     return DecoratedBox(
       decoration: CredentialFormSurfaces.panel(colors),
@@ -63,7 +63,7 @@ class AuthCard extends ConsumerWidget {
                   : l10n.registerWithGoogle,
               icon: const FaIcon(FontAwesomeIcons.google, size: 18),
               minimumHeight: metrics.socialButtonHeight,
-              onPressed: isGoogleLoading || isAuthLoading || isGuestLoading
+              onPressed: isGoogleLoading || isAuthLoading
                   ? null
                   : () => ref
                         .read(googleAuthControllerProvider.notifier)
@@ -76,12 +76,10 @@ class AuthCard extends ConsumerWidget {
                 buttonKey: const Key('auth_guest_button'),
                 label: l10n.authContinueAsGuest,
                 minimumHeight: metrics.socialButtonHeight,
-                onPressed: isGuestLoading || isGoogleLoading || isAuthLoading
+                // The guest account is created when onboarding finishes.
+                onPressed: isGoogleLoading || isAuthLoading
                     ? null
-                    : () => ref
-                          .read(guestAuthControllerProvider.notifier)
-                          .signInAnonymously(),
-                isLoading: isGuestLoading,
+                    : () => context.go(AppRoutes.calorieGoalSetup),
               ),
             ] else ...[
               SizedBox(height: metrics.footerSpacing),

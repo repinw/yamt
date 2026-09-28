@@ -57,11 +57,11 @@ import '../../helpers/memory_app_preferences.dart';
 
 class _MockUser extends Mock implements User;
 
-class _MockUserCredential extends Mock implements UserCredential;
-
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 const _routerTransitionDuration = Duration(milliseconds: 350);
+
+class _MockUserCredential extends Mock implements UserCredential;
 
 class _MockUserMetadata extends Mock implements UserMetadata;
 
@@ -292,8 +292,11 @@ void main() {
     await tester.pump(const Duration(milliseconds: 60));
     await _pumpRouterTransition(tester);
 
-    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
-    expect(find.text('Yet Another Meal Tracker'), findsOneWidget);
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
+    expect(find.text('Welcome to YAMT'), findsOneWidget);
   });
 
   testWidgets('keeps redirecting to splash while auth stream has not emitted', (
@@ -321,13 +324,18 @@ void main() {
     await tester.pump();
     await _pumpRouterTransition(tester);
 
-    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
     container.dispose();
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pumpAndSettle();
   });
 
-  testWidgets('redirects root path to welcome', (tester) async {
+  testWidgets('redirects root path to onboarding without an account', (
+    tester,
+  ) async {
     final container = _createContainerWithAuth(Stream<User?>.value(null));
 
     await tester.pumpWidget(
@@ -338,8 +346,11 @@ void main() {
     container.read(appRouterProvider).go(AppRoutes.root);
     await _pumpRouterTransition(tester);
 
-    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
-    expect(find.text('Yet Another Meal Tracker'), findsOneWidget);
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
+    expect(find.text('Welcome to YAMT'), findsOneWidget);
   });
 
   testWidgets('redirects unauthenticated user away from home', (tester) async {
@@ -535,6 +546,49 @@ void main() {
     await _pumpRouterTransition(tester);
     await _pumpRouterTransition(tester);
 
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.homeCalories,
+    );
+  });
+
+  testWidgets('finishing onboarding without an account creates a guest and '
+      'opens home', (tester) async {
+    final authController = StreamController<User?>();
+    addTearDown(() {
+      unawaited(authController.close());
+    });
+    var guestSignIns = 0;
+    final container = _createContainerWithAuth(
+      authController.stream,
+      onSignInAnonymously: () async {
+        guestSignIns++;
+        final guestUser = _guestUser();
+        authController.add(guestUser);
+        final credential = _MockUserCredential();
+        when(() => credential.user).thenReturn(guestUser);
+        return credential;
+      },
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    authController.add(null);
+    await tester.pump();
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
+
+    await _completeCalorieOnboarding(tester);
+    await tester.pump();
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(guestSignIns, 1);
     expect(
       container.read(appRouterProvider).state.uri.path,
       AppRoutes.homeCalories,
@@ -1116,13 +1170,16 @@ void main() {
     );
   });
 
-  testWidgets('cold start with unauthenticated state triggers auto guest login '
-      'and routes to onboarding', (tester) async {
-    final guestSignInCompleter = Completer<UserCredential>();
+  testWidgets('cold start without an account opens onboarding without '
+      'signing in', (tester) async {
+    var guestSignIns = 0;
     final authController = StreamController<User?>();
     final container = _createContainerWithAuth(
       authController.stream,
-      onSignInAnonymously: () => guestSignInCompleter.future,
+      onSignInAnonymously: () {
+        guestSignIns++;
+        return Completer<UserCredential>().future;
+      },
     );
     addTearDown(() {
       unawaited(authController.close());
@@ -1137,17 +1194,6 @@ void main() {
 
     authController.add(null);
     await tester.pump();
-
-    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.splash);
-
-    final credential = _MockUserCredential();
-    final guestUser = _guestUser();
-    when(() => credential.user).thenReturn(guestUser);
-    guestSignInCompleter.complete(credential);
-    authController.add(guestUser);
-
-    await tester.pump();
-    await _pumpRouterTransition(tester);
     await _pumpRouterTransition(tester);
 
     expect(
@@ -1155,6 +1201,7 @@ void main() {
       AppRoutes.calorieGoalSetup,
     );
     expect(find.text('Welcome to YAMT'), findsOneWidget);
+    expect(guestSignIns, 0);
   });
 
   testWidgets('asks for the recovery key on a new device', (tester) async {
@@ -1205,7 +1252,7 @@ void main() {
     );
   });
 
-  testWidgets('guest sign-in on welcome page routes to onboarding', (
+  testWidgets('a new guest stays on onboarding until it is complete', (
     tester,
   ) async {
     final authController = StreamController<User?>();
@@ -1223,10 +1270,17 @@ void main() {
     await tester.pump();
     await _pumpRouterTransition(tester);
 
-    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.welcome);
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
 
     authController.add(_guestUser());
     await tester.pump();
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
     await _pumpRouterTransition(tester);
     await _pumpRouterTransition(tester);
 
@@ -1238,7 +1292,6 @@ void main() {
   });
 }
 
-/// Follows the auth state like the real session, without key storage.
 class _AuthUserDataKeySession extends UserDataKeySession {
   @override
   Future<UserDataKeyState> build() async {

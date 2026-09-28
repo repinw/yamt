@@ -5,8 +5,8 @@
 Auth owns:
 
 - Firebase authentication access and auth-state providers.
-- Account sign-in, registration, guest sign-in, Google sign-in, and guest setup
-  controllers.
+- Account sign-in, registration, Google sign-in, and guest setup controllers.
+  The guest account itself is created when onboarding finishes, not here.
 - Persisted user profile model and Firestore profile document normalization.
 - Auth entry pages and auth-specific presentation widgets.
 - Local profile-setup completion status.
@@ -51,8 +51,6 @@ Other features may import these concrete files directly:
 - `presentation/data_key_page.dart` and `presentation/recovery_key_page.dart`
   for app routing.
 - `presentation/widgets/recovery_key_tile.dart` for the account settings.
-- `application/initial_guest_auth_controller.dart` for initial app routing and
-  cold-start guest auth.
 
 Widgets under `presentation/widgets/` are auth presentation internals unless a
 test imports them directly.
@@ -69,14 +67,10 @@ test imports them directly.
   - `googleSignInProvider`
 - `application/auth_profile_setup_status_provider.dart`
   - `authProfileSetupCompletedProvider`
-- `application/initial_guest_auth_controller.dart`
-  - `initialGuestAuthControllerProvider`
 - `presentation/auth_error_message_mapper.dart`
   - `authErrorMessageMapperProvider`
 - `presentation/controllers/auth_form_controller.dart`
   - `authFormControllerProvider`
-- `presentation/controllers/guest_auth_controller.dart`
-  - `guestAuthControllerProvider`
 - `presentation/controllers/google_auth_controller.dart`
   - `googleAuthControllerProvider`
 - `presentation/controllers/guest_name_setup_controller.dart`

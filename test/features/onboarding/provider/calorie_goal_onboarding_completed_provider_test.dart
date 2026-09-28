@@ -21,10 +21,6 @@ import '../../../helpers/memory_app_preferences.dart';
 
 class _MockUser extends Mock implements User;
 
-final _markCompletionProvider = FutureProvider<void>(
-  markCalorieGoalOnboardingCompleted,
-);
-
 final _markExplicitCompletionProvider = FutureProvider<void>((ref) {
   return markCalorieGoalOnboardingCompleted(ref, userId: 'explicit-user');
 });
@@ -105,27 +101,7 @@ void main() {
       );
     });
 
-    test('mark helper writes the current user marker', () async {
-      final preferences = MemoryAppPreferences();
-      final container = _container(
-        preferences: preferences,
-        user: _user('user-4'),
-        settingsRepository: const _StaticCalorieSettingsRepository(
-          CalorieGoalSettings.empty(),
-        ),
-      );
-      addTearDown(container.dispose);
-      await _seedAuthState(container);
-
-      await container.read(_markCompletionProvider.future);
-
-      expect(
-        preferences.getStringSync(calorieGoalOnboardingKeyForUser('user-4')),
-        calorieGoalOnboardingCompletedValue,
-      );
-    });
-
-    test('mark helper writes an explicit user marker without auth', () async {
+    test('mark helper writes the marker of the given user', () async {
       final preferences = MemoryAppPreferences();
       final container = _container(
         preferences: preferences,
@@ -147,11 +123,11 @@ void main() {
       );
     });
 
-    test('mark helper is a no-op without current or explicit user', () async {
+    test('mark helper refreshes the completion state', () async {
       final preferences = MemoryAppPreferences();
       final container = _container(
         preferences: preferences,
-        user: null,
+        user: _user('explicit-user'),
         settingsRepository: const _StaticCalorieSettingsRepository(
           CalorieGoalSettings.empty(),
         ),
@@ -159,65 +135,10 @@ void main() {
       addTearDown(container.dispose);
       await _seedAuthState(container);
 
-      await container.read(_markCompletionProvider.future);
-
-      expect(
-        preferences.getStringSync(calorieGoalOnboardingKeyForUser('')),
-        isNull,
-      );
       await expectLater(_completion(container), completion(isFalse));
-    });
+      await container.read(_markExplicitCompletionProvider.future);
 
-    test(
-      'container helper writes marker and refreshes completion state',
-      () async {
-        final preferences = MemoryAppPreferences();
-        final container = _container(
-          preferences: preferences,
-          user: _user('container-user'),
-          settingsRepository: const _StaticCalorieSettingsRepository(
-            CalorieGoalSettings.empty(),
-          ),
-        );
-        addTearDown(container.dispose);
-        await _seedAuthState(container);
-
-        await expectLater(_completion(container), completion(isFalse));
-        await markCalorieGoalOnboardingCompletedFromContainer(container);
-
-        await expectLater(_completion(container), completion(isTrue));
-        expect(
-          preferences.getStringSync(
-            calorieGoalOnboardingKeyForUser('container-user'),
-          ),
-          calorieGoalOnboardingCompletedValue,
-        );
-      },
-    );
-
-    test('container helper surfaces disposed container errors', () async {
-      final preferences = MemoryAppPreferences();
-      final container = _container(
-        preferences: preferences,
-        user: _user('disposed-container-user'),
-        settingsRepository: const _StaticCalorieSettingsRepository(
-          CalorieGoalSettings.empty(),
-        ),
-      );
-      await _seedAuthState(container);
-      container.dispose();
-
-      await expectLater(
-        markCalorieGoalOnboardingCompletedFromContainer(container),
-        throwsStateError,
-      );
-
-      expect(
-        preferences.getStringSync(
-          calorieGoalOnboardingKeyForUser('disposed-container-user'),
-        ),
-        isNull,
-      );
+      await expectLater(_completion(container), completion(isTrue));
     });
 
     test('reads settings only with the data key of the current user', () async {

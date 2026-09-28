@@ -45,6 +45,9 @@ widgets live in `lib/features/calories`.
   another day up to two weeks ahead. Before noon it proposes today, from noon on
   tomorrow, so an evening sign-up does not spoil the first week. The finish
   action names the choice.
+- Keeps every answer in memory until the finish action. A visitor without an
+  account gets a guest account only then, and the goal is saved once that
+  account's data key is ready, so it is stored encrypted.
 - Saves the calculated calorie goal through the calorie goal controller,
   counting from the chosen start day.
 - Bootstraps Burn Week when the user starts today. A later start leaves the days
@@ -60,7 +63,8 @@ widgets live in `lib/features/calories`.
 
 - The calorie calculator itself, the goal controller, Burn Week state, or the
   calorie log. Those stay in `lib/features/calories`.
-- Authentication and the guest account. Onboarding only links to `/welcome`.
+- Authentication. Onboarding only starts the anonymous sign-in when it
+  finishes, and links to `/welcome` for existing accounts.
 - Any calorie goal change after the first one. Later edits happen in the calorie
   settings and the weekly check-in.
 
@@ -69,9 +73,7 @@ widgets live in `lib/features/calories`.
 - `presentation/calorie_goal_onboarding_page.dart`, mounted by
   `lib/core/router` at `AppRoutes.calorieGoalSetup`.
 - `provider/calorie_goal_onboarding_completed_provider.dart` with
-  `calorieGoalOnboardingCompletedProvider`,
-  `markCalorieGoalOnboardingCompleted`, and
-  `markCalorieGoalOnboardingCompletedFromContainer`, used by the router gate.
+  `calorieGoalOnboardingCompletedProvider`, used by the router gate.
 - `domain/calorie_goal_onboarding_preferences.dart` for the completion marker
   key, used by test helpers and the router tests.
 
@@ -84,7 +86,9 @@ internal. No other feature assembles the intro pages.
   user finished onboarding.
 - `calorieGoalOnboardingFinishFlowProvider`: the finish workflow.
 - `calorieIntroControllerProvider` (auto-dispose): page index, start day,
-  validation-error visibility, saving state, and route-exit flag.
+  validation-error visibility, saving state, and route-exit flag. Its `finish`
+  action signs in the guest, waits for the data key, saves, and marks the
+  intro completed.
 
 ## Folder Structure
 
@@ -114,16 +118,15 @@ Contains pure onboarding-specific logic:
 
 `provider/`
 
-Connects router state, auth state, preferences, and existing calorie settings:
+Connects router state, the data key session, preferences, and existing calorie
+settings:
 
 - `calorie_goal_onboarding_completed_provider.dart`: Returns whether the
   current user has completed calorie onboarding. It first checks the
   user-scoped preference marker, then falls back to saved calorie settings. If a
   saved goal already exists, it writes the marker and returns completed.
-- `markCalorieGoalOnboardingCompleted`: Marks onboarding complete from provider
-  logic.
-- `markCalorieGoalOnboardingCompletedFromContainer`: Marks onboarding complete
-  from widget/router contexts where a `ProviderContainer` is available.
+- `markCalorieGoalOnboardingCompleted`: Marks onboarding of a user complete
+  and refreshes the provider. The intro controller calls it when it finishes.
 
 `presentation/`
 
@@ -147,8 +150,8 @@ Contains the page, the intro flow, and its pages:
   order of `CalorieIntroPage` and wraps every page in its chapter theme.
 - `widgets/intro/intro_chapter_labels.dart`: Localized chapter name, kicker,
   counter, section, and next-action label per page.
-- `widgets/intro/calorie_intro_finish_handler.dart`: Saves the goal, shows
-  localized save failures, marks onboarding complete, and exits the setup route.
+- `widgets/intro/calorie_intro_finish_handler.dart`: Calls the finish action,
+  shows localized save failures, and exits the setup route.
 - `widgets/intro/pages/`: One widget per page. `intro_story_page.dart` is the
   shared layout of the six explaining pages.
 - `widgets/intro/fields/`: Building blocks shared by the pages.
@@ -179,18 +182,21 @@ Generated Riverpod files. They should not be edited manually.
 
 1. `appRouterProvider` watches auth, profile setup completion, and
    `calorieGoalOnboardingCompletedProvider`.
-2. Unauthenticated users go to welcome.
+2. Without an account, a cold start opens onboarding; other routes go to
+   welcome. Welcome and onboarding stay open while a new guest's data key
+   loads.
 3. Authenticated users without profile setup go to guest name setup.
 4. Authenticated users with profile setup but without calorie onboarding go to
    `AppRoutes.calorieGoalSetup`.
-5. While onboarding completion is loading, startup/setup routes stay blocked on
-   splash to avoid route flicker.
+5. While onboarding completion is loading, startup routes stay on splash, and
+   the setup route stays open.
 6. Once onboarding is complete, visiting calorie setup redirects to the diary
    home route.
 
 ### Completing Existing Users
 
-1. `calorieGoalOnboardingCompletedProvider` reads the current auth user.
+1. `calorieGoalOnboardingCompletedProvider` reads the user from the data key
+   session.
 2. It checks `calorie_goal_onboarding_completed:{userId}` in app preferences.
 3. If no marker exists, it reads calorie settings.
 4. If settings already contain a goal, the provider writes the marker and
@@ -217,19 +223,23 @@ Generated Riverpod files. They should not be edited manually.
 ### Saving The Goal
 
 1. The summary page calls the finish callback.
-2. `CalorieIntroFinishHandler` reads the calculated profile from the form state.
-3. `CalorieGoalOnboardingFinishFlow.saveGoal` receives a
+2. `CalorieIntroFinishHandler` reads the calculated profile from the form state
+   and calls `CalorieIntroController.finish`.
+3. Without an account, the controller signs in a guest and waits until the
+   data key of that guest is ready. Nothing reaches Firebase before this step.
+4. `CalorieGoalOnboardingFinishFlow.saveGoal` receives a
    `CalorieGoalOnboardingFinishRequest` with the profile, today, and the chosen
    start day from `CalorieIntroController`.
-4. The goal controller saves the calculated goal counting from the start day.
+5. The goal controller saves the calculated goal counting from the start day.
    The start day counts for learning, because the user chose it knowing that the
    whole day has to be tracked. A later start is saved with
    `allowFutureGoalStart`.
-5. A start today bootstraps Burn Week from today. A later start leaves the run
+6. A start today bootstraps Burn Week from today. A later start leaves the run
    to Burn Week live sync, and the diary shows practice days until the start.
-6. On success, onboarding writes the completion marker.
-7. The flow allows route exit and returns to the previous route or diary home.
-8. On failure, saving state is reset and a localized failure snackbar is shown.
+7. On success, onboarding writes the completion marker.
+8. The flow allows route exit and returns to the previous route or diary home.
+9. On failure, saving state is reset and a localized failure snackbar is shown.
+   The answers stay in memory, so the user can try again.
 
 ### Birthday And Age
 
@@ -246,7 +256,8 @@ Generated Riverpod files. They should not be edited manually.
 
 - `core/router`: Redirects users into or out of onboarding based on completion
   state.
-- `features/auth`: Supplies the current user ID for completion markers.
+- `features/auth`: The data key session supplies the user ID for completion
+  markers; the auth repository signs in the guest when onboarding finishes.
 - `core/preferences`: Stores the user-scoped onboarding completion marker.
 - `features/calories`: Only through its public edge. Domain types
   (`CalorieCalculatorProfile`, `CalorieGoalSettings`,
@@ -278,7 +289,8 @@ Generated Riverpod files. They should not be edited manually.
 - `domain/` tests preference keys, the target-date estimator, the proposed start
   day, and the training-week split.
 - `presentation/controllers/` tests page navigation, per-page gating, the
-  maintain-mode pace skip, and the saving flags.
+  maintain-mode pace skip, and the finish action: the guest is created only
+  at the end, a signed-in account is kept, and failures keep the intro open.
 - `presentation/models/` tests chapter numbering and page order;
   `presentation/widgets/intro/intro_chapter_labels_test.dart` tests the
   counter, kicker, section, and next-action labels.

@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -51,39 +49,15 @@ FutureOr<bool> calorieGoalOnboardingCompleted(Ref ref) async {
   return true;
 }
 
-/// Mark calorie goal onboarding completed.
+/// Marks calorie goal onboarding of [userId] as completed.
 Future<void> markCalorieGoalOnboardingCompleted(
   Ref ref, {
-  String? userId,
-  bool invalidate = true,
+  required String userId,
 }) async {
-  final resolvedUserId = userId ?? _currentUserId(ref);
-  if (resolvedUserId == null || resolvedUserId.isEmpty) {
-    return;
-  }
-
   final preferences = ref.read(appPreferencesProvider);
-  await _writeCompletionMarker(preferences, resolvedUserId);
-  if (invalidate && ref.mounted) {
+  await _writeCompletionMarker(preferences, userId);
+  if (ref.mounted) {
     ref.invalidate(calorieGoalOnboardingCompletedProvider);
-  }
-}
-
-/// Mark calorie goal onboarding completed from a provider container.
-Future<void> markCalorieGoalOnboardingCompletedFromContainer(
-  ProviderContainer container, {
-  String? userId,
-  bool invalidate = true,
-}) async {
-  final resolvedUserId = userId ?? _currentUserIdFromContainer(container);
-  if (resolvedUserId == null || resolvedUserId.isEmpty) {
-    return;
-  }
-
-  final preferences = container.read(appPreferencesProvider);
-  await _writeCompletionMarker(preferences, resolvedUserId);
-  if (invalidate) {
-    container.invalidate(calorieGoalOnboardingCompletedProvider);
   }
 }
 
@@ -97,23 +71,4 @@ Future<void> _writeCompletionMarker(AppPreferences preferences, String userId) {
     calorieGoalOnboardingKeyForUser(userId),
     calorieGoalOnboardingCompletedValue,
   );
-}
-
-String? _currentUserId(Ref ref) {
-  if (!ref.mounted) {
-    return null;
-  }
-  return _userIdFromAuthState(ref.read(authStateChangesProvider));
-}
-
-String? _currentUserIdFromContainer(ProviderContainer container) {
-  return _userIdFromAuthState(container.read(authStateChangesProvider));
-}
-
-String? _userIdFromAuthState(AsyncValue<User?> authState) {
-  final userId = authState.asData?.value?.uid;
-  if (userId == null || userId.isEmpty) {
-    return null;
-  }
-  return userId;
 }

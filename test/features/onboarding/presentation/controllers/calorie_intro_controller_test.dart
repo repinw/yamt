@@ -1,16 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_state.dart';
+import 'package:yamt/features/onboarding/application/'
+    'calorie_goal_onboarding_finish_flow.dart';
+import 'package:yamt/features/onboarding/domain/'
+    'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/onboarding/presentation/controllers/'
     'calorie_intro_controller.dart';
 import 'package:yamt/features/onboarding/presentation/models/'
     'calorie_intro_page.dart';
 import 'package:yamt/features/onboarding/presentation/models/'
     'calorie_intro_state.dart';
+
+import '../../../../helpers/fake_guest_account.dart';
+import '../../../../helpers/memory_app_preferences.dart';
 
 CalorieGoalCalculatorFormState _formState({
   String weight = '80',
@@ -121,15 +129,117 @@ void main() {
     expect(state().startDate, DateTime(2026, 9, 26));
   });
 
-  test('tracks saving and route exit flags', () {
-    controller().startSaving();
-    expect(state().isSaving, isTrue);
-    expect(state().showsBackAction, isFalse);
+  group('finish', () {
+    late FakeGuestAccount account;
+    late MemoryAppPreferences preferences;
+    late _RecordingFinishFlow finishFlow;
 
-    controller().stopSavingAfterFailure();
-    expect(state().isSaving, isFalse);
+    ProviderContainer finishContainer({bool saves = true}) {
+      preferences = MemoryAppPreferences();
+      finishFlow = _RecordingFinishFlow(saves: saves);
+      final container = ProviderContainer(
+        overrides: [
+          clockProvider.overrideWithValue(() => _now),
+          appPreferencesProvider.overrideWithValue(preferences),
+          calorieGoalOnboardingFinishFlowProvider.overrideWithValue(finishFlow),
+          ...account.overrides,
+        ],
+      );
+      addTearDown(container.dispose);
+      addTearDown(account.dispose);
+      return container;
+    }
 
-    controller().markRouteExitAllowed();
-    expect(state().allowRouteExit, isTrue);
+    Future<bool> finish(ProviderContainer container) {
+      final subscription = container.listen(
+        calorieIntroControllerProvider,
+        (previous, next) {},
+      );
+      addTearDown(subscription.close);
+      return container
+          .read(calorieIntroControllerProvider.notifier)
+          .finish(_formState().profile!);
+    }
+
+    test('creates the guest account only when the intro finishes', () async {
+      account = FakeGuestAccount();
+      final container = finishContainer()..read(calorieIntroControllerProvider);
+
+      expect(account.repository.guestCalls, 0);
+
+      final finished = await finish(container);
+
+      expect(finished, isTrue);
+      expect(account.repository.guestCalls, 1);
+      expect(finishFlow.requests.single.startDate, DateTime(2026, 9, 24));
+      expect(
+        preferences.getStringSync(
+          calorieGoalOnboardingKeyForUser(FakeGuestAccount.guestUserId),
+        ),
+        calorieGoalOnboardingCompletedValue,
+      );
+      final state = container.read(calorieIntroControllerProvider);
+      expect(state.allowRouteExit, isTrue);
+    });
+
+    test('keeps a signed-in account', () async {
+      account = FakeGuestAccount(userId: 'signed-in-user');
+      final container = finishContainer();
+
+      final finished = await finish(container);
+
+      expect(finished, isTrue);
+      expect(account.repository.guestCalls, 0);
+      expect(
+        preferences.getStringSync(
+          calorieGoalOnboardingKeyForUser('signed-in-user'),
+        ),
+        calorieGoalOnboardingCompletedValue,
+      );
+    });
+
+    test('stays on the intro when the guest sign-in fails', () async {
+      account = FakeGuestAccount(shouldFailGuest: true);
+      final container = finishContainer();
+
+      final finished = await finish(container);
+
+      expect(finished, isFalse);
+      expect(finishFlow.requests, isEmpty);
+      final state = container.read(calorieIntroControllerProvider);
+      expect(state.isSaving, isFalse);
+      expect(state.allowRouteExit, isFalse);
+    });
+
+    test('stays on the intro when the goal is not saved', () async {
+      account = FakeGuestAccount();
+      final container = finishContainer(saves: false);
+
+      final finished = await finish(container);
+
+      expect(finished, isFalse);
+      expect(
+        preferences.getStringSync(
+          calorieGoalOnboardingKeyForUser(FakeGuestAccount.guestUserId),
+        ),
+        isNull,
+      );
+      final state = container.read(calorieIntroControllerProvider);
+      expect(state.isSaving, isFalse);
+      expect(state.allowRouteExit, isFalse);
+    });
   });
+}
+
+class _RecordingFinishFlow implements CalorieGoalOnboardingFinishFlow {
+  new({required this.saves});
+
+  final bool saves;
+  final requests = <CalorieGoalOnboardingFinishRequest>[];
+
+  @override
+  Future<bool> saveGoal(CalorieGoalOnboardingFinishRequest request) async {
+    requests.add(request);
+    return saves;
+  }
 }

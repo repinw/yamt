@@ -1,8 +1,7 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 
-/// Text-only auth action button with loading state.
+/// Text-only auth action button.
 class AuthGhostTextButton extends StatelessWidget {
   /// Creates a ghost auth text button.
   const new({
@@ -10,7 +9,6 @@ class AuthGhostTextButton extends StatelessWidget {
     required this.label,
     required this.minimumHeight,
     required this.onPressed,
-    required this.isLoading,
     super.key,
   });
 
@@ -26,9 +24,6 @@ class AuthGhostTextButton extends StatelessWidget {
   /// Tap callback.
   final VoidCallback? onPressed;
 
-  /// Whether loading indicator is shown.
-  final bool isLoading;
-
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -42,20 +37,11 @@ class AuthGhostTextButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(CredentialFormUi.buttonRadius),
         ),
       ),
-      child: isLoading
-          ? SizedBox(
-              width: AppSizes.inlineProgressIndicator,
-              height: AppSizes.inlineProgressIndicator,
-              child: CircularProgressIndicator(
-                strokeWidth: AppSizes.progressStrokeWidth,
-                color: colors.primary,
-              ),
-            )
-          : Text(
-              label,
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(color: colors.onSurfaceVariant),
-            ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.titleMedium
+            ?.copyWith(color: colors.onSurfaceVariant),
+      ),
     );
   }
 }

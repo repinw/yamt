@@ -114,7 +114,7 @@ final class AppRouterRefreshListenableProvider
 }
 
 String _$appRouterRefreshListenableHash() =>
-    r'cff3f0e4ba291a4f2894b4c4e18a082048cc42e9';
+    r'39b87aba05b56f6c2724962c1efcc368adf58925';
 
 /// Provides application `GoRouter` instance.
 

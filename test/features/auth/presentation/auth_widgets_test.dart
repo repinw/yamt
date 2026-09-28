@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -19,7 +21,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/fake_auth_repository.dart';
 
-class _FirebaseGuestErrorRepository implements AuthRepository {
+class _FirebaseSignInErrorRepository implements AuthRepository {
   const new(this.error);
 
   final FirebaseAuthException error;
@@ -37,12 +39,12 @@ class _FirebaseGuestErrorRepository implements AuthRepository {
   Future<void> signInWithEmailAndPassword({
     required String email,
     required String password,
-  }) async {}
-
-  @override
-  Future<void> signInAnonymously() {
+  }) {
     throw error;
   }
+
+  @override
+  Future<void> signInAnonymously() async {}
 
   @override
   Future<void> updateCurrentUserDisplayName({
@@ -254,10 +256,24 @@ void main() {
     expect(fakeRepository.lastGuestDisplayName, 'Julianne Vane');
   });
 
-  testWidgets('WelcomePage guest button triggers guest sign in', (
+  testWidgets('WelcomePage guest button opens onboarding without signing in', (
     tester,
   ) async {
     final fakeRepository = FakeAuthRepository();
+    final router = GoRouter(
+      initialLocation: AppRoutes.welcome,
+      routes: [
+        GoRoute(
+          path: AppRoutes.welcome,
+          builder: (context, state) => const WelcomePage(),
+        ),
+        GoRoute(
+          path: AppRoutes.calorieGoalSetup,
+          builder: (context, state) => const SizedBox.shrink(),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
 
     await tester.pumpWidget(
       ProviderScope(
@@ -267,44 +283,18 @@ void main() {
             (ref) => const Stream<User?>.empty(),
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp.router(
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: WelcomePage(),
+          routerConfig: router,
         ),
       ),
     );
 
     await _tapVisible(tester, find.byKey(const Key('auth_guest_button')));
 
-    expect(fakeRepository.guestCalls, 1);
-  });
-
-  testWidgets('WelcomePage shows fallback snackbar when guest sign-in fails', (
-    tester,
-  ) async {
-    final fakeRepository = FakeAuthRepository(shouldFailGuest: true);
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          authRepositoryProvider.overrideWithValue(fakeRepository),
-          authStateChangesProvider.overrideWith(
-            (ref) => const Stream<User?>.empty(),
-          ),
-        ],
-        child: const MaterialApp(
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: WelcomePage(),
-        ),
-      ),
-    );
-
-    await _tapVisible(tester, find.byKey(const Key('auth_guest_button')));
-
-    expect(fakeRepository.guestCalls, 1);
-    expect(find.text('Authentication failed'), findsOneWidget);
+    expect(router.state.uri.path, AppRoutes.calorieGoalSetup);
+    expect(fakeRepository.guestCalls, 0);
   });
 
   testWidgets('WelcomePage toggles between register and login modes', (
@@ -463,7 +453,7 @@ void main() {
   testWidgets('WelcomePage localizes FirebaseAuthException code in snackbar', (
     tester,
   ) async {
-    final repository = _FirebaseGuestErrorRepository(
+    final repository = _FirebaseSignInErrorRepository(
       FirebaseAuthException(
         code: 'operation-not-allowed',
         message: 'backend message should not be shown',
@@ -486,7 +476,17 @@ void main() {
       ),
     );
 
-    await _tapVisible(tester, find.byKey(const Key('auth_guest_button')));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('auth_email_field')),
+      'user@example.com',
+    );
+    await tester.enterText(
+      find.byKey(const Key('auth_password_field')),
+      'secret123',
+    );
+    await tester.tap(find.byKey(const Key('auth_login_submit_button')));
+    await tester.pumpAndSettle();
 
     expect(find.text('This sign-in method is not enabled.'), findsOneWidget);
   });

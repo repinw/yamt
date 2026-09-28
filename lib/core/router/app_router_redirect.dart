@@ -3,8 +3,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/auth/application/'
     'auth_profile_setup_status_provider.dart';
-import 'package:yamt/features/auth/application/'
-    'initial_guest_auth_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
@@ -23,13 +21,13 @@ String? appRouterRedirect(Ref ref, GoRouterState state) {
     ref.read(pendingHouseholdInviteProvider.notifier).invite = invite;
   }
   final authState = ref.read(authStateChangesProvider);
-  final guestState = ref.read(initialGuestAuthControllerProvider);
-  final isAuthLoading = authState.isLoading || guestState.isLoading;
-  if (isAuthLoading) return path == AppRoutes.splash ? null : AppRoutes.splash;
+  if (authState.isLoading) {
+    return path == AppRoutes.splash ? null : AppRoutes.splash;
+  }
 
   final currentUser = authState.asData?.value;
   if (currentUser == null) {
-    return path == AppRoutes.welcome ? null : AppRoutes.welcome;
+    return _redirectSignedOut(path);
   }
 
   final dataKeyRoute = _forcedDataKeyRoute(ref, path);
@@ -45,6 +43,17 @@ String? appRouterRedirect(Ref ref, GoRouterState state) {
   return _redirectForOnboarding(ref, path, isAnonymous: isAnon);
 }
 
+/// Without an account, the app starts with onboarding. The guest account is
+/// created only when onboarding finishes. After a sign-out, the user lands on
+/// the welcome page.
+String? _redirectSignedOut(String path) {
+  if (path == AppRoutes.welcome || path == AppRoutes.calorieGoalSetup) {
+    return null;
+  }
+  final isStartup = path == AppRoutes.root || path == AppRoutes.splash;
+  return isStartup ? AppRoutes.calorieGoalSetup : AppRoutes.welcome;
+}
+
 /// Returns the route that the data key forces, or `null` once it is ready.
 ///
 /// The private data stays unreadable until the key is ready, so the app waits
@@ -53,10 +62,16 @@ String? _forcedDataKeyRoute(Ref ref, String path) {
   final session = ref.read(userDataKeySessionProvider);
   if (session.hasError) return AppRoutes.dataKey;
   return switch (session.value) {
-    null => path == AppRoutes.welcome ? null : AppRoutes.splash,
+    null => _waitsOnCurrentRoute(path) ? null : AppRoutes.splash,
     UserDataKeyRecoveryRequired() => AppRoutes.dataKey,
     UserDataKeyReady() || UserDataKeySignedOut() => null,
   };
+}
+
+/// Finishing onboarding signs in a new guest. The intro stays open while the
+/// data key and the completion state of that account load.
+bool _waitsOnCurrentRoute(String path) {
+  return path == AppRoutes.welcome || path == AppRoutes.calorieGoalSetup;
 }
 
 String? _redirectFromWelcome(
@@ -103,9 +118,7 @@ String? _redirectForCalorieGoal(
 }) {
   final isStartup = path == AppRoutes.root || path == AppRoutes.splash;
   if (calorieState.isLoading) {
-    return (isStartup || path == AppRoutes.calorieGoalSetup)
-        ? AppRoutes.splash
-        : null;
+    return isStartup ? AppRoutes.splash : null;
   }
   if (!(calorieState.asData?.value ?? false)) {
     return path == AppRoutes.calorieGoalSetup

@@ -9,17 +9,32 @@ part of 'calorie_goal_onboarding_completed_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Calorie goal onboarding completed.
+///
+/// The user id comes from the data key session, not from the auth state. The
+/// settings repository depends on the same session, so after an account
+/// switch the provider rebuilds once and never reads the settings of the new
+/// user with the data key of the previous one.
 
 @ProviderFor(calorieGoalOnboardingCompleted)
 final calorieGoalOnboardingCompletedProvider =
     CalorieGoalOnboardingCompletedProvider._();
 
 /// Calorie goal onboarding completed.
+///
+/// The user id comes from the data key session, not from the auth state. The
+/// settings repository depends on the same session, so after an account
+/// switch the provider rebuilds once and never reads the settings of the new
+/// user with the data key of the previous one.
 
 final class CalorieGoalOnboardingCompletedProvider
     extends $FunctionalProvider<AsyncValue<bool>, bool, FutureOr<bool>>
     with $FutureModifier<bool>, $FutureProvider<bool> {
   /// Calorie goal onboarding completed.
+  ///
+  /// The user id comes from the data key session, not from the auth state. The
+  /// settings repository depends on the same session, so after an account
+  /// switch the provider rebuilds once and never reads the settings of the new
+  /// user with the data key of the previous one.
   CalorieGoalOnboardingCompletedProvider._()
     : super(
         from: null,
@@ -46,4 +61,4 @@ final class CalorieGoalOnboardingCompletedProvider
 }
 
 String _$calorieGoalOnboardingCompletedHash() =>
-    r'2e8ba19f66a8e13c16c5a5c93deb50d67a1b892d';
+    r'ee25b511462ab935c9582156ee29d1bed57be000';

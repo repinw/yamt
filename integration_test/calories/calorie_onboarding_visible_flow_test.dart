@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cryptography/cryptography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -7,10 +8,13 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -35,6 +39,25 @@ class _MockUser extends Mock implements User;
 
 class _MockUserMetadata extends Mock implements UserMetadata;
 
+class _MockUserCredential extends Mock implements UserCredential;
+
+/// Follows the auth state like the real session, without key storage.
+class _AuthUserDataKeySession extends UserDataKeySession {
+  @override
+  Future<UserDataKeyState> build() async {
+    final user = await ref.watch(authStateChangesProvider.future);
+    if (user == null) {
+      return const UserDataKeySignedOut();
+    }
+    return UserDataKeyReady(
+      uid: user.uid,
+      cipher: PayloadCipher(SecretKey(List<int>.filled(32, 1))),
+      recoveryKey: null,
+      recoveryKeyConfirmed: true,
+    );
+  }
+}
+
 class _CalorieOnboardingIntegrationHarness {
   const new({
     required this.container,
@@ -42,6 +65,7 @@ class _CalorieOnboardingIntegrationHarness {
     required this.settingsRepository,
     required this.logRepository,
     required this.runStateRepository,
+    required this.guestSignIns,
   });
 
   final ProviderContainer container;
@@ -49,6 +73,7 @@ class _CalorieOnboardingIntegrationHarness {
   final _FakeCalorieSettingsRepository settingsRepository;
   final _FakeCalorieLogRepository logRepository;
   final _FakeBurnWeekRunStateRepository runStateRepository;
+  final List<String> guestSignIns;
 }
 
 class _FakeCalorieSettingsRepository implements CalorieSettingsRepository {
@@ -218,6 +243,7 @@ class _RouterHarness extends ConsumerWidget {
 const _routerTransitionDuration = Duration(milliseconds: 350);
 const _visibleStepDuration = Duration(milliseconds: 400);
 const _userId = 'uid-visible-onboarding';
+const _guestUserId = 'uid-visible-guest';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
@@ -233,7 +259,23 @@ void main() {
 
     _expectHomeDiary(harness);
     await _expectGoalStartedToday(harness);
-    _expectOnboardingCompleted(harness);
+    _expectOnboardingCompleted(harness, _userId);
+    expect(harness.guestSignIns, isEmpty);
+  });
+
+  testWidgets('calorie intro creates the guest account only when it finishes', (
+    tester,
+  ) async {
+    final harness = await _pumpOnboardingApp(tester, signedIn: false);
+
+    await _completeIntro(tester);
+    expect(harness.guestSignIns, isEmpty);
+    await _finishIntro(tester);
+
+    expect(harness.guestSignIns, [_guestUserId]);
+    _expectHomeDiary(harness);
+    await _expectGoalStartedToday(harness);
+    _expectOnboardingCompleted(harness, _guestUserId);
   });
 
   testWidgets('calorie intro blocks the identity page without a birthday', (
@@ -265,9 +307,10 @@ void main() {
 }
 
 Future<_CalorieOnboardingIntegrationHarness> _pumpOnboardingApp(
-  WidgetTester tester,
-) async {
-  final harness = _buildHarness();
+  WidgetTester tester, {
+  bool signedIn = true,
+}) async {
+  final harness = _buildHarness(signedIn: signedIn);
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: harness.container,
@@ -282,12 +325,14 @@ Future<_CalorieOnboardingIntegrationHarness> _pumpOnboardingApp(
   return harness;
 }
 
-_CalorieOnboardingIntegrationHarness _buildHarness({String userId = _userId}) {
-  final user = _authenticatedUser(uid: userId);
-  final authStream = Stream<User?>.value(user).asBroadcastStream();
+_CalorieOnboardingIntegrationHarness _buildHarness({required bool signedIn}) {
+  User? currentUser = signedIn ? _authenticatedUser(uid: _userId) : null;
+  final authController = StreamController<User?>.broadcast(onListen: () {});
+  addTearDown(authController.close);
   final firebaseAuth = _MockFirebaseAuth();
+  final guestSignIns = <String>[];
   final preferences = MemoryAppPreferences(
-    completedProfileSetupUserIds: {userId},
+    completedProfileSetupUserIds: {_userId},
   );
   final settingsRepository = _FakeCalorieSettingsRepository();
   final logRepository = _FakeCalorieLogRepository();
@@ -295,12 +340,25 @@ _CalorieOnboardingIntegrationHarness _buildHarness({String userId = _userId}) {
     const BurnWeekRunState.initial(),
   );
 
-  when(() => firebaseAuth.currentUser).thenReturn(user);
+  when(() => firebaseAuth.currentUser).thenAnswer((_) => currentUser);
+  when(firebaseAuth.signInAnonymously).thenAnswer((_) async {
+    final guest = _guestUser(uid: _guestUserId);
+    guestSignIns.add(_guestUserId);
+    currentUser = guest;
+    authController.add(guest);
+    final credential = _MockUserCredential();
+    when(() => credential.user).thenReturn(guest);
+    return credential;
+  });
 
   final container = ProviderContainer(
     overrides: [
       appPreferencesProvider.overrideWithValue(preferences),
-      authStateChangesProvider.overrideWith((ref) => authStream),
+      authStateChangesProvider.overrideWith((ref) async* {
+        yield currentUser;
+        yield* authController.stream;
+      }),
+      userDataKeySessionProvider.overrideWith(_AuthUserDataKeySession.new),
       firebaseAuthProvider.overrideWithValue(firebaseAuth),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
@@ -317,7 +375,22 @@ _CalorieOnboardingIntegrationHarness _buildHarness({String userId = _userId}) {
     settingsRepository: settingsRepository,
     logRepository: logRepository,
     runStateRepository: runStateRepository,
+    guestSignIns: guestSignIns,
   );
+}
+
+_MockUser _guestUser({required String uid}) {
+  final user = _MockUser();
+  final metadata = _MockUserMetadata();
+  final createdAt = DateTime.utc(2026, 1, 1, 9);
+  when(() => metadata.creationTime).thenReturn(createdAt);
+  when(() => metadata.lastSignInTime).thenReturn(createdAt);
+  when(() => user.uid).thenReturn(uid);
+  when(() => user.isAnonymous).thenReturn(true);
+  when(() => user.displayName).thenReturn(null);
+  when(() => user.email).thenReturn(null);
+  when(() => user.metadata).thenReturn(metadata);
+  return user;
 }
 
 _MockUser _authenticatedUser({
@@ -351,10 +424,7 @@ Future<void> _openIdentityPage(WidgetTester tester) async {
   for (var storyPage = 0; storyPage < 6; storyPage++) {
     await _tapIntroNext(tester);
   }
-  expect(
-    find.text('First we need a rough picture of you.'),
-    findsOneWidget,
-  );
+  expect(find.text('First we need a rough picture of you.'), findsOneWidget);
 }
 
 Future<void> _completeIdentity(WidgetTester tester) async {
@@ -422,9 +492,12 @@ Future<void> _expectGoalStartedToday(
   expect(harness.logRepository.entries, isEmpty);
 }
 
-void _expectOnboardingCompleted(_CalorieOnboardingIntegrationHarness harness) {
+void _expectOnboardingCompleted(
+  _CalorieOnboardingIntegrationHarness harness,
+  String userId,
+) {
   expect(
-    harness.preferences.getStringSync(calorieGoalOnboardingKeyForUser(_userId)),
+    harness.preferences.getStringSync(calorieGoalOnboardingKeyForUser(userId)),
     calorieGoalOnboardingCompletedValue,
   );
 }

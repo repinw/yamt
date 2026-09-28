@@ -13,8 +13,6 @@ import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_controller.dart';
-import 'package:yamt/features/onboarding/application/'
-    'calorie_goal_onboarding_finish_flow.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/presentation/controllers/'
@@ -114,15 +112,10 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
     unawaited(context.push('${AppRoutes.welcome}?from=onboarding'));
   }
 
-  Future<void> _handleFinish(CalorieGoalOnboardingFinishFlow finishFlow) async {
-    await CalorieIntroFinishHandler(
-      finishFlow: finishFlow,
-      introController: _introController,
-      now: () => _now,
-    ).finish(
+  Future<void> _handleFinish() async {
+    await CalorieIntroFinishHandler(introController: _introController).finish(
       context: context,
       formState: ref.read(_formProvider),
-      startDate: ref.read(calorieIntroControllerProvider).startDate,
       isMounted: () => mounted,
     );
   }
@@ -133,7 +126,6 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
     final formState = ref.watch(_formProvider);
-    final finishFlow = ref.watch(calorieGoalOnboardingFinishFlowProvider);
     final introState = ref.watch(calorieIntroControllerProvider);
     final isSaving = introState.isSaving || formState.isSaving;
 
@@ -177,9 +169,7 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
                 backgroundColor: accent,
                 minimumSize: const Size.fromHeight(AppSizes.minTapTarget),
               ),
-              onPressed: isSaving
-                  ? null
-                  : () => unawaited(_handleFinish(finishFlow)),
+              onPressed: isSaving ? null : () => unawaited(_handleFinish()),
               child: isSaving
                   ? SizedBox.square(
                       dimension: AppSizes.inlineProgressIndicator,

@@ -13,7 +13,6 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/google_sign_in_provider.dart';
 import 'package:yamt/features/auth/presentation/controllers/auth_form_controller.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
-import 'package:yamt/features/auth/presentation/controllers/guest_auth_controller.dart';
 import 'package:yamt/features/auth/presentation/controllers/guest_name_setup_controller.dart';
 
 import '../../../../helpers/fake_auth_repository.dart';
@@ -56,39 +55,6 @@ class _DelayedGuestNameRepository implements AuthRepository {
 
   @override
   Future<void> signInAnonymously() async {}
-
-  @override
-  Future<void> signInWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {}
-}
-
-class _DelayedGuestSignInRepository implements AuthRepository {
-  new(this._completer);
-
-  final Completer<void> _completer;
-  int signInCalls = 0;
-
-  @override
-  String? get currentUserId => 'test-user-id';
-
-  @override
-  Future<void> signInAnonymously() async {
-    signInCalls++;
-    await _completer.future;
-  }
-
-  @override
-  Future<void> updateCurrentUserDisplayName({
-    required String displayName,
-  }) async {}
-
-  @override
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {}
 
   @override
   Future<void> signInWithEmailAndPassword({
@@ -361,65 +327,6 @@ void main() {
 
       await future;
       expect(repository.registerCalls, 1);
-    });
-  });
-
-  group('GuestAuthController', () {
-    test('guest sign in success calls repository', () async {
-      final fakeRepository = FakeAuthRepository();
-      final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
-      );
-      addTearDown(container.dispose);
-
-      await container
-          .read(guestAuthControllerProvider.notifier)
-          .signInAnonymously();
-
-      expect(fakeRepository.guestCalls, 1);
-      expect(container.read(guestAuthControllerProvider).hasError, isFalse);
-    });
-
-    test('guest sign in failure sets error state', () async {
-      final fakeRepository = FakeAuthRepository(shouldFailGuest: true);
-      final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
-      );
-      addTearDown(container.dispose);
-
-      await container
-          .read(guestAuthControllerProvider.notifier)
-          .signInAnonymously();
-
-      expect(fakeRepository.guestCalls, 1);
-      expect(container.read(guestAuthControllerProvider).hasError, isTrue);
-    });
-
-    test('guest sign in does not crash when provider is disposed', () async {
-      final completer = Completer<void>();
-      final repository = _DelayedGuestSignInRepository(completer);
-      final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
-      );
-      var disposed = false;
-      void disposeContainer() {
-        if (disposed) {
-          return;
-        }
-        disposed = true;
-        container.dispose();
-      }
-
-      addTearDown(disposeContainer);
-
-      final future = container
-          .read(guestAuthControllerProvider.notifier)
-          .signInAnonymously();
-      disposeContainer();
-      completer.complete();
-
-      await future;
-      expect(repository.signInCalls, 1);
     });
   });
 

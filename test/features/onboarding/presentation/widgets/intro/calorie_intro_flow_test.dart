@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -19,6 +20,8 @@ import 'package:yamt/features/onboarding/presentation/widgets/intro/'
     'calorie_intro_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../../helpers/fake_guest_account.dart';
+import '../../../../../helpers/memory_app_preferences.dart';
 import '../../../../calories/support/fake_calories_repositories.dart';
 
 final _today = DateTime(2026, 9, 17, 10);
@@ -39,8 +42,10 @@ void main() {
 
     await _completeIntro(tester);
     expect(find.text('Start today'), findsOneWidget);
+    expect(harness.guestAccount.repository.guestCalls, 0);
     await _tapFinish(tester);
 
+    expect(harness.guestAccount.repository.guestCalls, 1);
     final settings = await harness.settingsRepository.readSettings();
     expect(
       settings.goalHistory.single.effectiveDate,
@@ -260,11 +265,13 @@ void main() {
 
 class _IntroHarness {
   new({
+    required this.guestAccount,
     required this.settingsRepository,
     required this.runStateRepository,
     required this.router,
   });
 
+  final FakeGuestAccount guestAccount;
   final FakeCalorieSettingsRepository settingsRepository;
   final _FakeBurnWeekRunStateRepository runStateRepository;
   final GoRouter router;
@@ -281,6 +288,8 @@ Future<_IntroHarness> _pumpIntro(WidgetTester tester, {DateTime? now}) async {
   );
   addTearDown(settingsRepository.dispose);
   addTearDown(logRepository.dispose);
+  final guestAccount = FakeGuestAccount();
+  addTearDown(guestAccount.dispose);
 
   final router = GoRouter(
     initialLocation: '/',
@@ -307,6 +316,8 @@ Future<_IntroHarness> _pumpIntro(WidgetTester tester, {DateTime? now}) async {
     ProviderScope(
       overrides: [
         clockProvider.overrideWithValue(() => now ?? _today),
+        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        ...guestAccount.overrides,
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         burnWeekRunStateRepositoryProvider.overrideWithValue(
@@ -325,6 +336,7 @@ Future<_IntroHarness> _pumpIntro(WidgetTester tester, {DateTime? now}) async {
   await tester.pumpAndSettle();
 
   return _IntroHarness(
+    guestAccount: guestAccount,
     settingsRepository: settingsRepository,
     runStateRepository: runStateRepository,
     router: router,

@@ -4,7 +4,6 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/presentation/auth_error_message_mapper.dart';
 import 'package:yamt/features/auth/presentation/controllers/auth_form_controller.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
-import 'package:yamt/features/auth/presentation/controllers/guest_auth_controller.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_layout_metrics/auth_layout_metrics.dart';
 import 'package:yamt/features/auth/presentation/widgets/welcome_page_desktop_layout/welcome_page_desktop_layout.dart';
 import 'package:yamt/features/auth/presentation/widgets/welcome_page_mobile_layout/welcome_page_mobile_layout.dart';
@@ -53,9 +52,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   void _listenForAuthErrors(BuildContext context, AppLocalizations l10n) {
     ref
       ..listen<AsyncValue<void>>(authFormControllerProvider, (previous, next) {
-        _handleAsyncError(next, context, l10n);
-      })
-      ..listen<AsyncValue<void>>(guestAuthControllerProvider, (previous, next) {
         _handleAsyncError(next, context, l10n);
       })
       ..listen<AsyncValue<void>>(googleAuthControllerProvider, (

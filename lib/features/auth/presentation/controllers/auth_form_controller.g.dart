@@ -37,7 +37,7 @@ final class AuthFormControllerProvider
 }
 
 String _$authFormControllerHash() =>
-    r'4f1533a466f5eaa5576e84ca24a57fc078ebb90a';
+    r'65abf0740e2d524c6a230b56c2dac372fb8b56bd';
 
 /// Defines auth form controller.
 
