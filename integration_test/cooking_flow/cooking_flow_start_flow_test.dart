@@ -413,7 +413,7 @@ void main() {
     await tester.tap(find.text('One-pan pasta'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Start cooking session'), findsOneWidget);
+    expect(find.text('START COOKING SESSION'), findsOneWidget);
     expect(find.text('Inventory check'), findsOneWidget);
 
     await _assignInventoryIngredient(
@@ -436,7 +436,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('1. Preparation'), findsOneWidget);
-    expect(find.text('Start cooking session'), findsNothing);
+    expect(find.text('START COOKING SESSION'), findsNothing);
     expect(
       harness.sessionStore.savedSession?.step,
       CookingFlowSessionStep.preparation,
