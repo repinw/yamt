@@ -4570,6 +4570,12 @@ abstract class AppLocalizations {
   /// **'Neutral day (vacation, illness). Doesn\'t break your streak.'**
   String get diaryDayTypePauseSubtitle;
 
+  /// No description provided for @diaryEntryDetailsCardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry'**
+  String get diaryEntryDetailsCardTitle;
+
   /// No description provided for @diaryMealsLoadFailed.
   ///
   /// In en, this message translates to:

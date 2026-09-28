@@ -26,7 +26,16 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   selected day. Identical foods in one meal are
   merged into one row (`domain/diary_meal_entry_group.dart`) that expands to
   its single entries. Rows that open one entry tag their image with
-  `HeroTags.loggedEntryImage`, so it flies into the Calories details sheet.
+  `HeroTags.loggedEntryImage`, so it flies into the entry details page.
+- `presentation/diary_entry_details_page.dart` (`DiaryEntryDetailsPage`,
+  routed at `AppRoutes.homeCaloriesEntryDetailsPath`) shows one logged entry
+  in the food label look of the Inventory eat page: header, nutrition label
+  for the eaten amount, and the amount ruler. The confirm button saves a
+  changed amount and closes the page; a move to another meal or day, "log
+  again", and remove save at once. All changes run through the Calories
+  `CalorieEntryDetailsFlow`, so inventory stock follows and every change has
+  an undo. Bundles (prepared meals and combined foods) show their foods
+  instead of the ruler.
 - `presentation/widgets/diary_macro_strip/` owns the compact kcal and macro
   strip pinned under the top bar. `diary_macro_strip_trigger.dart` reveals it
   in stages as the daily card's kcal bar and macro bars scroll away; each day
@@ -104,12 +113,13 @@ Main application adapters and mappers:
   weekly check-in behavior through Diary application adapters. The weekly
   check-in dialog opens the public new-goal sheet
   (`presentation/widgets/calorie_new_goal_flow.dart`) when the active goal was
-  reached.
+  reached. The entry details page saves its changes through
+  `presentation/calorie_entry_details_flow.dart`.
 - `features/health` for connection status and connection actions through
   `health_connection_actions.dart`.
-- `features/inventory` for repository-backed quick-eat data and the public
+- `features/inventory` for repository-backed quick-eat data, the public
   Inventory presentation flows used to complete inventory and manual-product
-  entries.
+  entries, and the public eat page widgets of the entry details page.
 - `core/widgets` for optional shell chrome when the diary page is embedded.
 
 Keep these dependencies at page, application adapter, or complete-section

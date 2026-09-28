@@ -2658,6 +2658,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Neutraler Tag (Urlaub, Krankheit). Kein Streak-Bruch.';
 
   @override
+  String get diaryEntryDetailsCardTitle => 'Eintrag';
+
+  @override
   String get diaryMealsLoadFailed => 'Mahlzeiten konnten nicht geladen werden';
 
   @override

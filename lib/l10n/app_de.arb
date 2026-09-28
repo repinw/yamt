@@ -1177,6 +1177,7 @@
   "diaryDayTypeTrainingSubtitle": "Trainingstag (Kalorienziel aktiv)",
   "diaryDayTypeRestSubtitle": "Ausgleichendes Kalorienziel für die Regeneration",
   "diaryDayTypePauseSubtitle": "Neutraler Tag (Urlaub, Krankheit). Kein Streak-Bruch.",
+  "diaryEntryDetailsCardTitle": "Eintrag",
   "diaryMealsLoadFailed": "Mahlzeiten konnten nicht geladen werden",
   "diaryQuickEatSourceInventory": "Vorrat",
   "diaryQuickEatSourceBarcode": "Barcode",

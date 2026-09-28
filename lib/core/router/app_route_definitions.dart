@@ -16,6 +16,7 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/calories/presentation/pages/calorie_goal_archive_page.dart';
 import 'package:yamt/features/calories/presentation/pages/tdee_analytics_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
+import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_shopping_list_page.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/'
@@ -128,7 +129,9 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       path: AppRoutes.homeCaloriesEntryDetails,
       pageBuilder: (context, state) => HeroSheetPage<void>(
         key: state.pageKey,
-        child: CalorieEntryEditorPage(entryId: state.pathParameters['entryId']),
+        child: DiaryEntryDetailsPage(
+          entryId: state.pathParameters['entryId'] ?? '',
+        ),
       ),
     ),
     GoRoute(
