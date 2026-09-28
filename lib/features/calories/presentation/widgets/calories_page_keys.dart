@@ -1,23 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-/// Defines shared calorie feature keys.
-abstract final class CaloriesPageKeys {
-  /// Summary macro card.
-  static Key summaryMacroCard(String macro) {
-    return Key('calories_summary_macro_card_$macro');
-  }
-
-  /// Summary macro value.
-  static Key summaryMacroValue(String macro) {
-    return Key('calories_summary_macro_value_$macro');
-  }
-
-  /// Summary macro bar.
-  static Key summaryMacroBar(String macro) {
-    return Key('calories_summary_macro_bar_$macro');
-  }
-}
-
 /// Defines calorie goal start dialog keys.
 abstract final class CalorieGoalStartDialogKeys {
   /// The change date button.
