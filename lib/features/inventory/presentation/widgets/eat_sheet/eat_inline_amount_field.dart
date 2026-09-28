@@ -16,6 +16,8 @@ class EatInlineAmountField extends StatelessWidget {
     this.errorText,
     this.unitKey,
     this.onUnitPressed,
+    this.isAmountMissing = false,
+    this.isUnitMissing = false,
     super.key,
   });
 
@@ -45,6 +47,14 @@ class EatInlineAmountField extends StatelessWidget {
 
   /// Makes the unit tappable, for example to switch between g and ml.
   final VoidCallback? onUnitPressed;
+
+  /// Frames the number field in the accent color while a required amount is
+  /// still empty.
+  final bool isAmountMissing;
+
+  /// Frames the unit button in the accent color while a required unit is
+  /// still unset.
+  final bool isUnitMissing;
 
   @override
   Widget build(BuildContext context) {
@@ -78,18 +88,37 @@ class EatInlineAmountField extends StatelessWidget {
               isDense: true,
               errorText: errorText,
               errorMaxLines: 2,
-              enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: colors.muted,
-                  width: AppFoodLabel.outline,
-                ),
-              ),
-              focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(
-                  color: colors.ink,
-                  width: AppFoodLabel.outline,
-                ),
-              ),
+              contentPadding: isAmountMissing
+                  ? const EdgeInsets.all(AppSpacing.sm)
+                  : null,
+              enabledBorder: isAmountMissing
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.zero,
+                      borderSide: BorderSide(
+                        color: colors.accent,
+                        width: AppFoodLabel.outline,
+                      ),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: colors.muted,
+                        width: AppFoodLabel.outline,
+                      ),
+                    ),
+              focusedBorder: isAmountMissing
+                  ? OutlineInputBorder(
+                      borderRadius: BorderRadius.zero,
+                      borderSide: BorderSide(
+                        color: colors.ink,
+                        width: AppFoodLabel.outline,
+                      ),
+                    )
+                  : UnderlineInputBorder(
+                      borderSide: BorderSide(
+                        color: colors.ink,
+                        width: AppFoodLabel.outline,
+                      ),
+                    ),
             ),
             onChanged: onChanged,
             onSubmitted: (_) => FocusManager.instance.primaryFocus?.unfocus(),
@@ -104,7 +133,16 @@ class EatInlineAmountField extends StatelessWidget {
           TextButton(
             key: unitKey,
             onPressed: onUnit,
-            style: TextButton.styleFrom(foregroundColor: colors.ink),
+            style: TextButton.styleFrom(
+              foregroundColor: colors.ink,
+              shape: const RoundedRectangleBorder(),
+              side: isUnitMissing
+                  ? BorderSide(
+                      color: colors.accent,
+                      width: AppFoodLabel.outline,
+                    )
+                  : null,
+            ),
             child: Text(
               unitLabel,
               style: style?.copyWith(decoration: TextDecoration.underline),

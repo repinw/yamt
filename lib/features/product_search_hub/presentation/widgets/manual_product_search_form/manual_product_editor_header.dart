@@ -105,6 +105,10 @@ class ManualProductEditorHeader extends StatelessWidget {
               onFieldChanged(ManualProductFormField.weightAmount, text),
           unitKey: weightUnitKey,
           onUnitPressed: () => onWeightUnitChanged(_nextUnit(unit)),
+          isAmountMissing: texts[ManualProductFormField.weightAmount]!.text
+              .trim()
+              .isEmpty,
+          isUnitMissing: unit == null,
         ),
       ],
     );
