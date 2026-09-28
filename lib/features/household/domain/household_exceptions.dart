@@ -39,13 +39,6 @@ final class HouseholdMemberNotFoundException extends HouseholdException {
   const new();
 }
 
-/// Thrown when no unique invite code could be generated.
-final class HouseholdInviteCodeGenerationFailedException
-    extends HouseholdException {
-  /// Creates the exception.
-  const new();
-}
-
 /// Thrown when the user must leave the shared household before joining
 /// another one.
 final class HouseholdLeaveRequiredException extends HouseholdException {

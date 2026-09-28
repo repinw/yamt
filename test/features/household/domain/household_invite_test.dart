@@ -5,11 +5,14 @@ import 'package:yamt/features/household/domain/household_invite.dart';
 void main() {
   test('the link parses back into the same invite', () {
     final invite = HouseholdInvite(
-      code: '012345',
+      code: 'AbCdEfGhIjKlMnOpQrSt',
       secret: RecoveryKey.generate(),
     );
 
-    expect(invite.link, startsWith('yamt://household/join?code=012345&'));
+    expect(
+      invite.link,
+      startsWith('yamt://household/join?code=AbCdEfGhIjKlMnOpQrSt&'),
+    );
     expect(HouseholdInvite.parse('  ${invite.link} '), invite);
   });
 
@@ -17,11 +20,11 @@ void main() {
     final secret = RecoveryKey.generate().formatted;
     for (final text in <String>[
       '123456',
-      'https://household/join?code=123456&secret=$secret',
-      'yamt://household/leave?code=123456&secret=$secret',
-      'yamt://household/join?code=12345&secret=$secret',
-      'yamt://household/join?code=123456',
-      'yamt://household/join?code=123456&secret=nope',
+      'https://household/join?code=AbCdEfGhIjKlMnOpQrSt&secret=$secret',
+      'yamt://household/leave?code=AbCdEfGhIjKlMnOpQrSt&secret=$secret',
+      'yamt://household/join?code=123456&secret=$secret',
+      'yamt://household/join?code=AbCdEfGhIjKlMnOpQrSt',
+      'yamt://household/join?code=AbCdEfGhIjKlMnOpQrSt&secret=nope',
     ]) {
       expect(HouseholdInvite.tryParse(text), isNull, reason: text);
       expect(() => HouseholdInvite.parse(text), throwsFormatException);
@@ -30,7 +33,7 @@ void main() {
 
   test('a deep link is read with or without scheme and host', () {
     final invite = HouseholdInvite(
-      code: '123456',
+      code: 'AbCdEfGhIjKlMnOpQrSt',
       secret: RecoveryKey.generate(),
     );
     final link = Uri.parse(invite.link);
@@ -41,12 +44,14 @@ void main() {
       invite,
     );
     expect(
-      HouseholdInvite.fromDeepLink(Uri.parse('/join?code=123456')),
+      HouseholdInvite.fromDeepLink(
+        Uri.parse('/join?code=AbCdEfGhIjKlMnOpQrSt'),
+      ),
       isNull,
     );
     expect(
       HouseholdInvite.fromDeepLink(
-        Uri.parse('/home/diary?code=123456&secret=x'),
+        Uri.parse('/home/diary?code=AbCdEfGhIjKlMnOpQrSt&secret=x'),
       ),
       isNull,
     );

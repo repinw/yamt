@@ -6,7 +6,7 @@ const _linkHost = 'household';
 const _linkPath = '/join';
 const _codeParameter = 'code';
 const _secretParameter = 'secret';
-final _codePattern = RegExp(r'^\d{6}$');
+final _codePattern = RegExp(r'^[A-Za-z0-9]{20}$');
 
 /// An invitation into a household.
 ///
@@ -19,7 +19,7 @@ class HouseholdInvite {
   const new({required this.code, required this.secret});
 
   /// Parses a shared invite link, for example
-  /// `yamt://household/join?code=123456&secret=XXXX-…`.
+  /// `yamt://household/join?code=<20 characters>&secret=XXXX-…`.
   ///
   /// Throws [FormatException] for anything else.
   factory parse(String text) {
@@ -33,7 +33,7 @@ class HouseholdInvite {
     final code = uri.queryParameters[_codeParameter] ?? '';
     final secret = uri.queryParameters[_secretParameter] ?? '';
     if (!_codePattern.hasMatch(code)) {
-      throw const FormatException('Invite code must have six digits.');
+      throw const FormatException('Invite code must have 20 characters.');
     }
     return HouseholdInvite(code: code, secret: RecoveryKey.parse(secret));
   }
@@ -63,7 +63,8 @@ class HouseholdInvite {
     );
   }
 
-  /// The six-digit code of the invite document.
+  /// The random id of the invite document. It is too long to guess, so
+  /// only someone with the QR code or link can join.
   final String code;
 
   /// The secret that opens the household key.

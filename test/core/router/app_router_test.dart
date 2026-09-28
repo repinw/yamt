@@ -839,7 +839,7 @@ void main() {
       completedCalorieGoalOnboardingUserIds: {'uid-123'},
     );
     final invite = HouseholdInvite(
-      code: '123456',
+      code: 'AbCdEfGhIjKlMnOpQrSt',
       secret: RecoveryKey.generate(),
     );
 

@@ -19,7 +19,10 @@ class _FakeInviteRepository extends Fake implements HouseholdInviteRepository {
       throw failure;
     }
     households.add(householdId);
-    return HouseholdInvite(code: '123456', secret: RecoveryKey.generate());
+    return HouseholdInvite(
+      code: 'AbCdEfGhIjKlMnOpQrSt',
+      secret: RecoveryKey.generate(),
+    );
   }
 }
 
@@ -54,7 +57,7 @@ void main() {
 
     expect(repository.households, <String>['own']);
     expect(states.first.isLoading, isTrue);
-    expect(states.last.value?.code, '123456');
+    expect(states.last.value?.code, 'AbCdEfGhIjKlMnOpQrSt');
 
     container.read(householdInviteCodeControllerProvider.notifier).clear();
     expect(container.read(householdInviteCodeControllerProvider).value, isNull);

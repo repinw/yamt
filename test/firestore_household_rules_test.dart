@@ -151,7 +151,8 @@ void main() {
         contains(
           'match /household_invites/{code} { '
           'allow get: if isSignedIn(); '
-          'allow create: if isVerifiedAccount()',
+          'allow create: if isVerifiedAccount() '
+          r"&& code.matches('^[A-Za-z0-9]{20}$')",
         ),
       );
       expect(

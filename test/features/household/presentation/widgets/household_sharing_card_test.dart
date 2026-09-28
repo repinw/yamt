@@ -366,8 +366,11 @@ void main() {
         householdId: 'own-me',
         ownHouseholdId: 'own-me',
       );
-      invite = HouseholdInvite(code: '123456', secret: RecoveryKey.generate());
-      await backend.firestore.doc('household_invites/123456').set(
+      invite = HouseholdInvite(
+        code: 'AbCdEfGhIjKlMnOpQrSt',
+        secret: RecoveryKey.generate(),
+      );
+      await backend.firestore.doc('household_invites/AbCdEfGhIjKlMnOpQrSt').set(
         <String, dynamic>{
           'householdId': 'shared',
           'expiresAt': Timestamp.fromDate(
@@ -375,7 +378,7 @@ void main() {
           ),
           'wrapped_household_key': await invite.secret.wrapDataKey(
             backend.householdKeys['shared']!,
-            uid: 'household_invites/123456',
+            uid: 'household_invites/AbCdEfGhIjKlMnOpQrSt',
           ),
         },
       );
@@ -423,7 +426,7 @@ void main() {
     await pumpCard(tester, 'me');
     await tester.enterText(
       find.byKey(HouseholdJoinSection.linkFieldKey),
-      '123456',
+      'AbCdEfGhIjKlMnOpQrSt',
     );
     await tester.pump();
 

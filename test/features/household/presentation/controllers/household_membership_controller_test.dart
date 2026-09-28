@@ -70,7 +70,7 @@ class _FakeMemberRepository extends Fake implements HouseholdMemberRepository {
 class _TestInviteCodeController extends HouseholdInviteCodeController {
   @override
   AsyncValue<HouseholdInvite?> build() {
-    return AsyncData<HouseholdInvite?>(_invite('654321'));
+    return AsyncData<HouseholdInvite?>(_invite('ZyXwVuTsRqPoNmLkJiHg'));
   }
 }
 
@@ -136,9 +136,11 @@ void main() {
 
     await container
         .read(householdMembershipControllerProvider.notifier)
-        .joinHousehold(_invite('123456'));
+        .joinHousehold(_invite('AbCdEfGhIjKlMnOpQrSt'));
 
-    expect(invites.joins, <(String, String, String)>[('123456', 'own', 'own')]);
+    expect(invites.joins, <(String, String, String)>[
+      ('AbCdEfGhIjKlMnOpQrSt', 'own', 'own'),
+    ]);
     expect(states.map((state) => state.isLoading), <bool>[true, false]);
     expect(states.last.hasError, isFalse);
     expect(container.read(householdDataOwnerRecoveryProvider), isNull);
@@ -156,7 +158,10 @@ void main() {
 
     await container
         .read(householdMembershipControllerProvider.notifier)
-        .joinHousehold(_invite('123456'), displayName: '  Alex  ');
+        .joinHousehold(
+          _invite('AbCdEfGhIjKlMnOpQrSt'),
+          displayName: '  Alex  ',
+        );
 
     expect(authRepository.guestNameUpdateCalls, 1);
     expect(authRepository.lastGuestDisplayName, 'Alex');
@@ -170,7 +175,7 @@ void main() {
     await expectLater(
       container
           .read(householdMembershipControllerProvider.notifier)
-          .joinHousehold(_invite('123456')),
+          .joinHousehold(_invite('AbCdEfGhIjKlMnOpQrSt')),
       throwsA(isA<ExpiredHouseholdInviteCodeException>()),
     );
 

@@ -15,7 +15,7 @@ void main() {
       'uid': 'member-1',
       'role': 'admin',
       'joined_at': DateTime(2026, 9, 28),
-      'invite_code': '123456',
+      'invite_code': 'AbCdEfGhIjKlMnOpQrSt',
     });
 
     expect(member.uid, 'member-1');

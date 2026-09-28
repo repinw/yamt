@@ -18,7 +18,5 @@ String householdErrorMessage(AppLocalizations l10n, Object error) {
     HouseholdKeyUnavailableException() => l10n.householdKeyUnavailable,
     InvalidHouseholdRestoreCodeException() =>
       l10n.householdKeyRestoreInvalidCode,
-    HouseholdInviteCodeGenerationFailedException() =>
-      l10n.householdActionFailed,
   };
 }

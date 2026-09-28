@@ -884,9 +884,12 @@ service cloud.firestore {
     // Only the admin invites. The invite holds the household key wrapped
     // with a secret that only the QR code or link carries. Nobody lists the
     // invites: a joining user reads one by its code.
+    // The id is random and too long to guess: only the QR code or link
+    // carries it.
     match /household_invites/{code} {
       allow get: if isSignedIn();
       allow create: if isVerifiedAccount()
+        && code.matches('^[A-Za-z0-9]{20}$')
         && request.resource.data.keys().hasOnly([
           'householdId',
           'expiresAt',

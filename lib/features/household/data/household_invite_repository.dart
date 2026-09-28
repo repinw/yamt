@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -22,7 +20,6 @@ const _householdIdField = 'householdId';
 const _expiresAtField = 'expiresAt';
 const _wrappedHouseholdKeyField = 'wrapped_household_key';
 const _inviteCodeLifetime = Duration(days: 1);
-const _maxInviteCodeGenerationAttempts = 10;
 
 /// Invites people into a household and lets them join.
 ///
@@ -38,8 +35,7 @@ class HouseholdInviteRepository {
     required this._isAnonymous,
     required this._dataCipher,
     required this._now,
-    Random? random,
-  }) : _random = random ?? Random.secure();
+  });
 
   final FirebaseFirestore _firestore;
   final HouseholdKeyRepository _keys;
@@ -48,7 +44,6 @@ class HouseholdInviteRepository {
   final bool _isAnonymous;
   final UserDataCipher? _dataCipher;
   final DateTime Function() _now;
-  final Random _random;
 
   /// Creates an invite into [householdId]. Only a verified admin may invite.
   Future<HouseholdInvite> generateInvite(String householdId) async {
@@ -68,24 +63,21 @@ class HouseholdInviteRepository {
       throw const HouseholdKeyUnavailableException();
     }
 
-    for (
-      var attempt = 0;
-      attempt < _maxInviteCodeGenerationAttempts;
-      attempt += 1
-    ) {
-      final invite = HouseholdInvite(
-        code: _generateRandomCode(),
-        secret: RecoveryKey.generate(),
-      );
-      final wrappedKey = await invite.secret.wrapDataKey(
+    // A Firestore id is random and too long to guess.
+    final inviteDocument = _firestore.collection(_invitesCollection).doc();
+    final invite = HouseholdInvite(
+      code: inviteDocument.id,
+      secret: RecoveryKey.generate(),
+    );
+    await inviteDocument.set(<String, dynamic>{
+      _householdIdField: householdId,
+      _expiresAtField: Timestamp.fromDate(_now().add(_inviteCodeLifetime)),
+      _wrappedHouseholdKeyField: await invite.secret.wrapDataKey(
         householdKey,
-        uid: _inviteDocument(invite.code).path,
-      );
-      if (await _tryCreateInvite(invite.code, householdId, wrappedKey)) {
-        return invite;
-      }
-    }
-    throw const HouseholdInviteCodeGenerationFailedException();
+        uid: inviteDocument.path,
+      ),
+    });
+    return invite;
   }
 
   /// Joins the household behind [invite] and makes it the active household.
@@ -158,30 +150,6 @@ class HouseholdInviteRepository {
 
   DocumentReference<Map<String, dynamic>> _inviteDocument(String code) {
     return _firestore.collection(_invitesCollection).doc(code);
-  }
-
-  Future<bool> _tryCreateInvite(
-    String code,
-    String householdId,
-    String wrappedKey,
-  ) {
-    final inviteDocument = _inviteDocument(code);
-    return _firestore.runTransaction((transaction) async {
-      final snapshot = await transaction.get(inviteDocument);
-      if (snapshot.exists) {
-        return false;
-      }
-      transaction.set(inviteDocument, <String, dynamic>{
-        _householdIdField: householdId,
-        _expiresAtField: Timestamp.fromDate(_now().add(_inviteCodeLifetime)),
-        _wrappedHouseholdKeyField: wrappedKey,
-      });
-      return true;
-    });
-  }
-
-  String _generateRandomCode() {
-    return _random.nextInt(1000000).toString().padLeft(6, '0');
   }
 }
 

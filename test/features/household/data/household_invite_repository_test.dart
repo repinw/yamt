@@ -1,11 +1,8 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
@@ -14,8 +11,6 @@ import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/data/household_member_repository.dart';
 import 'package:yamt/features/household/domain/household_exceptions.dart';
 import 'package:yamt/features/household/domain/household_invite.dart';
-
-class _MockRandom extends Mock implements Random;
 
 final _now = DateTime(2026, 9, 28, 12);
 
@@ -35,7 +30,6 @@ void main() {
   Future<HouseholdInviteRepository> repositoryFor(
     String uid, {
     bool isAnonymous = false,
-    Random? random,
   }) async {
     return HouseholdInviteRepository(
       firestore: firestore,
@@ -49,7 +43,6 @@ void main() {
       isAnonymous: isAnonymous,
       dataCipher: await dataCipherFor(uid),
       now: () => _now,
-      random: random,
     );
   }
 
@@ -113,7 +106,7 @@ void main() {
       final stored =
           (await firestore.doc('household_invites/${invite.code}').get())
               .data()!;
-      expect(invite.code, hasLength(6));
+      expect(invite.code, hasLength(20));
       expect(stored['householdId'], 'shared');
       expect(
         (stored['expiresAt'] as Timestamp).toDate(),
@@ -141,32 +134,14 @@ void main() {
       );
     });
 
-    test('retries a code that exists and gives up after ten', () async {
-      await firestore.doc('household_invites/123456').set(<String, dynamic>{
-        'householdId': 'other',
-      });
-      final random = _MockRandom();
-      final sequence = <int>[123456, 654321];
-      when(() => random.nextInt(1000000))
-          .thenAnswer((_) => sequence.removeAt(0));
+    test('every invite gets a new id that is too long to guess', () async {
+      final repository = await repositoryFor('admin');
 
-      final invite = await (await repositoryFor(
-        'admin',
-        random: random,
-      )).generateInvite('shared');
-      expect(invite.code, '654321');
+      final first = await repository.generateInvite('shared');
+      final second = await repository.generateInvite('shared');
 
-      final stuck = _MockRandom();
-      when(() => stuck.nextInt(1000000)).thenReturn(123456);
-      await expectLater(
-        (await repositoryFor('admin', random: stuck)).generateInvite('shared'),
-        throwsA(isA<HouseholdInviteCodeGenerationFailedException>()),
-      );
-      expect(
-        (await firestore.doc('household_invites/123456').get())
-            .data()?['householdId'],
-        'other',
-      );
+      expect(first.code, matches(RegExp(r'^[A-Za-z0-9]{20}$')));
+      expect(second.code, isNot(first.code));
     });
   });
 
@@ -174,7 +149,7 @@ void main() {
     test('writes the member entry, the key entry and the active household '
         'together', () async {
       final invite = await storeInvite(
-        code: '123456',
+        code: 'AbCdEfGhIjKlMnOpQrSt',
         householdId: 'shared',
         expiresIn: const Duration(hours: 1),
       );
@@ -190,7 +165,7 @@ void main() {
               .data()!;
       expect(member['uid'], 'joiner');
       expect(member['role'], 'member');
-      expect(member['invite_code'], '123456');
+      expect(member['invite_code'], 'AbCdEfGhIjKlMnOpQrSt');
       expect(member['joined_at'], isA<Timestamp>());
       final key = await keys.loadKey(
         householdId: 'shared',
@@ -210,12 +185,12 @@ void main() {
     test('rejects a wrong secret, an unknown and an expired invite', () async {
       final repository = await repositoryFor('joiner');
       final valid = await storeInvite(
-        code: '123456',
+        code: 'AbCdEfGhIjKlMnOpQrSt',
         householdId: 'shared',
         expiresIn: const Duration(hours: 1),
       );
       final expired = await storeInvite(
-        code: '111111',
+        code: 'ZyXwVuTsRqPoNmLkJiHg',
         householdId: 'shared',
         expiresIn: const Duration(minutes: -1),
       );
@@ -231,7 +206,12 @@ void main() {
         throwsA(isA<InvalidHouseholdInviteCodeException>()),
       );
       await expectLater(
-        join(HouseholdInvite(code: '333333', secret: RecoveryKey.generate())),
+        join(
+          HouseholdInvite(
+            code: 'Q1w2E3r4T5y6U7i8O9p0',
+            secret: RecoveryKey.generate(),
+          ),
+        ),
         throwsA(isA<InvalidHouseholdInviteCodeException>()),
       );
       await expectLater(
@@ -246,7 +226,7 @@ void main() {
 
     test('rejects the household the user is in already', () async {
       final invite = await storeInvite(
-        code: '123456',
+        code: 'AbCdEfGhIjKlMnOpQrSt',
         householdId: 'shared',
         expiresIn: const Duration(hours: 1),
       );
@@ -263,7 +243,7 @@ void main() {
 
     test('asks to leave a shared household first', () async {
       final invite = await storeInvite(
-        code: '123456',
+        code: 'AbCdEfGhIjKlMnOpQrSt',
         householdId: 'shared',
         expiresIn: const Duration(hours: 1),
       );
