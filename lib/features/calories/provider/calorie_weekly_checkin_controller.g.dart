@@ -9,23 +9,32 @@ part of 'calorie_weekly_checkin_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Defines calorie weekly check in controller.
+///
+/// Diary dialog callbacks capture this notifier without watching it, so it
+/// lives for the whole session.
 
 @ProviderFor(CalorieWeeklyCheckInController)
 final calorieWeeklyCheckInControllerProvider =
     CalorieWeeklyCheckInControllerProvider._();
 
 /// Defines calorie weekly check in controller.
+///
+/// Diary dialog callbacks capture this notifier without watching it, so it
+/// lives for the whole session.
 final class CalorieWeeklyCheckInControllerProvider
     extends
         $NotifierProvider<CalorieWeeklyCheckInController, AsyncValue<void>> {
   /// Defines calorie weekly check in controller.
+  ///
+  /// Diary dialog callbacks capture this notifier without watching it, so it
+  /// lives for the whole session.
   CalorieWeeklyCheckInControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'calorieWeeklyCheckInControllerProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -47,9 +56,12 @@ final class CalorieWeeklyCheckInControllerProvider
 }
 
 String _$calorieWeeklyCheckInControllerHash() =>
-    r'f44999c1c466769df96915af6855c06bee1c7c0a';
+    r'f5dfcba4784d87230505b429c68b3b2247a7ec27';
 
 /// Defines calorie weekly check in controller.
+///
+/// Diary dialog callbacks capture this notifier without watching it, so it
+/// lives for the whole session.
 
 abstract class _$CalorieWeeklyCheckInController
     extends $Notifier<AsyncValue<void>> {

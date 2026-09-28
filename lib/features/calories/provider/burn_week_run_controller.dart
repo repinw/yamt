@@ -9,7 +9,7 @@ part 'burn_week_run_controller.g.dart';
 const int _maxWeekSyncAdvances = 1000;
 
 /// Real Burn Week run controller.
-@riverpod
+@Riverpod(keepAlive: true)
 class BurnWeekRunController extends _$BurnWeekRunController {
   int _saveGeneration = 0;
 
@@ -19,7 +19,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
 
   @override
   Future<BurnWeekRunState> build() {
-    ref.keepAlive();
     final repository = ref.watch(burnWeekRunStateRepositoryProvider);
     return repository.readState();
   }

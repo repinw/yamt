@@ -9,22 +9,31 @@ part of 'calorie_page_action_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Handles calorie page actions that need providers.
+///
+/// Diary callbacks capture this notifier without watching it, so it lives
+/// for the whole session.
 
 @ProviderFor(CaloriePageActionController)
 final caloriePageActionControllerProvider =
     CaloriePageActionControllerProvider._();
 
 /// Handles calorie page actions that need providers.
+///
+/// Diary callbacks capture this notifier without watching it, so it lives
+/// for the whole session.
 final class CaloriePageActionControllerProvider
     extends $AsyncNotifierProvider<CaloriePageActionController, void> {
   /// Handles calorie page actions that need providers.
+  ///
+  /// Diary callbacks capture this notifier without watching it, so it lives
+  /// for the whole session.
   CaloriePageActionControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'caloriePageActionControllerProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -38,9 +47,12 @@ final class CaloriePageActionControllerProvider
 }
 
 String _$caloriePageActionControllerHash() =>
-    r'8fd3fc67017834c3580322f149855391323adece';
+    r'ae86f36a00752b3ca4562091cacc771e287f2043';
 
 /// Handles calorie page actions that need providers.
+///
+/// Diary callbacks capture this notifier without watching it, so it lives
+/// for the whole session.
 
 abstract class _$CaloriePageActionController extends $AsyncNotifier<void> {
   FutureOr<void> build();

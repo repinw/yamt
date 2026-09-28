@@ -45,7 +45,7 @@ final class CalorieDayControllerProvider
 }
 
 String _$calorieDayControllerHash() =>
-    r'ce329aa683c63be4a8a34a64fd9b2d51ddfc663f';
+    r'7b2dadc9bbc5be46cedc0634103d4055bd68012e';
 
 /// Defines calorie day controller.
 

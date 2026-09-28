@@ -530,9 +530,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/debug/calorie_debug_action_controller.dart': 1,
     'lib/features/calories/presentation/controllers/calorie_entry_editor_controller.dart':
         1,
-    'lib/features/calories/provider/burn_week_run_controller.dart': 1,
-    'lib/features/calories/provider/calorie_page_action_controller.dart': 1,
-    'lib/features/calories/provider/calorie_weekly_checkin_controller.dart': 1,
     'lib/features/inventory/application/inventory_backed_calorie_entry_save_flow.dart':
         1,
     'lib/features/inventory/application/inventory_calorie_entry_post_persist_hook.dart':

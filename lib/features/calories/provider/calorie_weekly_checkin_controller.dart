@@ -11,14 +11,13 @@ import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 part 'calorie_weekly_checkin_controller.g.dart';
 
 /// Defines calorie weekly check in controller.
-@riverpod
+///
+/// Diary dialog callbacks capture this notifier without watching it, so it
+/// lives for the whole session.
+@Riverpod(keepAlive: true)
 class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
   @override
   AsyncValue<void> build() {
-    // This controller is read from dialog callbacks without being watched.
-    // Keep the instance alive after first creation so a captured notifier
-    // does not get disposed before the user presses Apply/Later.
-    ref.keepAlive();
     return const AsyncData(null);
   }
 

@@ -23,7 +23,7 @@ final class BurnWeekRunControllerProvider
         argument: null,
         retry: null,
         name: r'burnWeekRunControllerProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -37,7 +37,7 @@ final class BurnWeekRunControllerProvider
 }
 
 String _$burnWeekRunControllerHash() =>
-    r'c502197f44daba49ca2df25879c5374777d3bccb';
+    r'41700984a1fea425a3b4660698f59e612e01571e';
 
 /// Real Burn Week run controller.
 

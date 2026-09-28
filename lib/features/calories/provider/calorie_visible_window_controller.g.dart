@@ -46,7 +46,7 @@ final class CalorieVisibleWindowControllerProvider
 }
 
 String _$calorieVisibleWindowControllerHash() =>
-    r'7079a54d9164464d711cf2476013548787b19769';
+    r'54ac036884a5cd8f7217e0c02bacdd3c0a9fd859';
 
 /// Defines calorie visible window controller.
 

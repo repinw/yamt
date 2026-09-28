@@ -7,11 +7,13 @@ import 'package:yamt/features/calories/provider/'
 part 'calorie_page_action_controller.g.dart';
 
 /// Handles calorie page actions that need providers.
-@riverpod
+///
+/// Diary callbacks capture this notifier without watching it, so it lives
+/// for the whole session.
+@Riverpod(keepAlive: true)
 class CaloriePageActionController extends _$CaloriePageActionController {
   @override
   FutureOr<void> build() {
-    ref.keepAlive();
     return null;
   }
 
