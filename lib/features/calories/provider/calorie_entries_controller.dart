@@ -597,21 +597,6 @@ DateTime _earliestDiaryDay(DateTime day, DateTime? otherDay) {
   return normalizedOtherDay;
 }
 
-/// Calorie entry by id.
-///
-/// Returns the repository's cached copy synchronously when there is one, so
-/// the details sheet renders on its first frame and the hero image has a
-/// place to land. Otherwise it loads the entry.
-@riverpod
-FutureOr<CalorieEntry?> calorieEntryById(Ref ref, String entryId) {
-  final repository = ref.read(calorieLogRepositoryProvider);
-  final cached = repository.cachedById(entryId);
-  if (cached != null) {
-    return cached;
-  }
-  return repository.getById(entryId);
-}
-
 /// Calorie day view data.
 @riverpod
 AsyncValue<CalorieDayViewData> calorieDayViewData(Ref ref) {

@@ -1388,9 +1388,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealUnbundleAction => 'Return to inventory';
 
   @override
-  String get preparedMealDiaryDayLabel => 'Diary day';
-
-  @override
   String get preparedMealThrowAwayTitle => 'Throw away portions';
 
   @override
@@ -2443,17 +2440,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesEatAgainAction => 'Log again';
 
   @override
-  String caloriesEntryGoalShare(int percent) {
-    return '$percent% of your daily goal';
-  }
-
-  @override
   String caloriesEntryPer100Label(String unit) {
     return 'Per 100 $unit';
   }
-
-  @override
-  String get caloriesEntryAmountDialogTitle => 'Change amount';
 
   @override
   String get caloriesEntryAmountStockExhaustedMessage =>
@@ -2462,9 +2451,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get caloriesEntryAmountSourceMissingMessage =>
       'Amount changed. The product is no longer in your inventory.';
-
-  @override
-  String get caloriesEditAmountTooltip => 'Change amount';
 
   @override
   String get caloriesEntryNotFound => 'Entry not found.';

@@ -1410,9 +1410,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealUnbundleAction => 'Auflösen';
 
   @override
-  String get preparedMealDiaryDayLabel => 'Tagebuchtag';
-
-  @override
   String get preparedMealThrowAwayTitle => 'Portionen wegwerfen';
 
   @override
@@ -2497,17 +2494,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesEatAgainAction => 'Nochmal essen';
 
   @override
-  String caloriesEntryGoalShare(int percent) {
-    return '$percent % deines Tagesziels';
-  }
-
-  @override
   String caloriesEntryPer100Label(String unit) {
     return 'Je 100 $unit';
   }
-
-  @override
-  String get caloriesEntryAmountDialogTitle => 'Menge ändern';
 
   @override
   String get caloriesEntryAmountStockExhaustedMessage =>
@@ -2516,9 +2505,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get caloriesEntryAmountSourceMissingMessage =>
       'Menge geändert. Das Produkt ist nicht mehr in deinem Vorrat.';
-
-  @override
-  String get caloriesEditAmountTooltip => 'Menge ändern';
 
   @override
   String get caloriesEntryNotFound => 'Eintrag wurde nicht gefunden.';

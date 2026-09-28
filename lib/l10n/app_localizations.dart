@@ -2440,12 +2440,6 @@ abstract class AppLocalizations {
   /// **'Return to inventory'**
   String get preparedMealUnbundleAction;
 
-  /// No description provided for @preparedMealDiaryDayLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Diary day'**
-  String get preparedMealDiaryDayLabel;
-
   /// No description provided for @preparedMealThrowAwayTitle.
   ///
   /// In en, this message translates to:
@@ -4282,23 +4276,11 @@ abstract class AppLocalizations {
   /// **'Log again'**
   String get caloriesEatAgainAction;
 
-  /// No description provided for @caloriesEntryGoalShare.
-  ///
-  /// In en, this message translates to:
-  /// **'{percent}% of your daily goal'**
-  String caloriesEntryGoalShare(int percent);
-
   /// No description provided for @caloriesEntryPer100Label.
   ///
   /// In en, this message translates to:
   /// **'Per 100 {unit}'**
   String caloriesEntryPer100Label(String unit);
-
-  /// No description provided for @caloriesEntryAmountDialogTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Change amount'**
-  String get caloriesEntryAmountDialogTitle;
 
   /// No description provided for @caloriesEntryAmountStockExhaustedMessage.
   ///
@@ -4311,12 +4293,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Amount changed. The product is no longer in your inventory.'**
   String get caloriesEntryAmountSourceMissingMessage;
-
-  /// No description provided for @caloriesEditAmountTooltip.
-  ///
-  /// In en, this message translates to:
-  /// **'Change amount'**
-  String get caloriesEditAmountTooltip;
 
   /// No description provided for @caloriesEntryNotFound.
   ///

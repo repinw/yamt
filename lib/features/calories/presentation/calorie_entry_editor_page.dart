@@ -7,8 +7,6 @@ import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_entry_details_content.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_editor_content.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -17,16 +15,12 @@ class CalorieEntryEditorPage extends ConsumerStatefulWidget {
   /// The calorie entry editor page.
   const new({
     super.key,
-    this.entryId,
     this.prefilledProfile,
     this.scannedSourceRef,
     this.inventoryContext,
     this.preselectedMealType,
     this.preselectedLoggedAt,
   });
-
-  /// The entry id.
-  final String? entryId;
 
   /// The prefilled profile.
   final CalorieProductProfile? prefilledProfile;
@@ -75,11 +69,6 @@ class _CalorieEntryEditorPageState
         appBar: AppBar(title: Text(l10n.homeCalories)),
         body: Center(child: Text(l10n.caloriesAuthRequired)),
       );
-    }
-
-    final entryId = widget.entryId;
-    if (entryId != null) {
-      return CalorieEntryDetailsContent(entryId: entryId);
     }
 
     return CalorieEntryEditorContent(

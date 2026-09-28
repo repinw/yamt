@@ -2,11 +2,6 @@ import 'package:flutter/widgets.dart';
 
 /// Defines shared calorie feature keys.
 abstract final class CaloriesPageKeys {
-  /// Entry image.
-  static Key entryImage(String entryId) {
-    return Key('calories_entry_image_$entryId');
-  }
-
   /// Summary macro card.
   static Key summaryMacroCard(String macro) {
     return Key('calories_summary_macro_card_$macro');
@@ -78,59 +73,4 @@ abstract final class CalorieEntryEditorKeys {
 
   /// The save button.
   static const saveButton = Key('calorie_entry_save_button');
-}
-
-/// Defines calorie entry detail keys.
-abstract final class CalorieEntryDetailKeys {
-  /// The logged day button.
-  static const loggedDayButton = Key('calorie_entry_detail_logged_day_button');
-
-  /// The selected meal dropdown.
-  static const mealSelector = Key('calorie_entry_detail_meal_selector');
-
-  /// The nutrition strip.
-  static const nutritionStrip = Key('calorie_entry_detail_nutrition_strip');
-
-  /// The amount value.
-  static const amountValue = Key('calorie_entry_detail_amount_value');
-
-  /// The brand value.
-  static const brandValue = Key('calorie_entry_detail_brand_value');
-
-  /// The amount field in the change-amount dialog.
-  static const amountField = Key('calorie_entry_detail_amount_field');
-
-  /// The save button in the change-amount dialog.
-  static const amountSaveButton = Key(
-    'calorie_entry_detail_amount_save_button',
-  );
-
-  /// The goal share and per-100 summary below the nutrition strip.
-  static const nutritionContext = Key('calorie_entry_detail_nutrition_context');
-
-  /// The log again button.
-  static const eatAgainButton = Key('calorie_entry_detail_eat_again_button');
-
-  /// The return to inventory button.
-  static const returnToInventoryButton = Key(
-    'calorie_entry_detail_return_to_inventory_button',
-  );
-
-  /// The ingredients table.
-  static const ingredientsTable = Key('calorie_entry_detail_ingredients_table');
-
-  /// Ingredient name cell.
-  static Key ingredientNameCell(int index) {
-    return Key('calorie_entry_detail_ingredient_name_$index');
-  }
-
-  /// Ingredient amount cell.
-  static Key ingredientAmountCell(int index) {
-    return Key('calorie_entry_detail_ingredient_amount_$index');
-  }
-
-  /// Ingredient kcal cell.
-  static Key ingredientKcalCell(int index) {
-    return Key('calorie_entry_detail_ingredient_kcal_$index');
-  }
 }

@@ -42,14 +42,15 @@ state, and calorie-owned side effects from health or weight changes.
   `ageYearsText` in sync with `clockProvider`.
 - Complete presentation surfaces such as calorie entry editors, goal dialogs,
   calculator sheets, and diary health card parts.
-- The entry details sheet (`AppRoutes.homeCaloriesEntryDetailsPath`,
-  `presentation/widgets/calorie_entry_details_content.dart`). It opens on a
-  `HeroSheetPage`; the entry image uses `HeroTags.loggedEntryImage(entryId)`,
-  so a caller that shows the same image can fly it into the sheet. Meal, day,
-  and amount changes save at once with an undo
-  (`calorie_entry_details_actions.dart`). The nutrition table follows the food
-  label layout and shows `CalorieEntry.nutrientDetails` when the entry has
-  them.
+- `presentation/calorie_entry_details_flow.dart` (`CalorieEntryDetailsFlow`)
+  is public UI for the entry details page, which Diary owns. It saves a
+  meal or day change, changes the amount, logs an entry again, and removes
+  it, each at once with an undo snack bar. It reads the keep-alive editor
+  controller from the caller's container, so inventory stock follows as in
+  the editor, and removing an entry with stock asks whether it goes back.
+- `domain/calorie_entry_nutrition_facts.dart` gives the label nutrients of an
+  entry per 100 g or ml and for the eaten amount, including
+  `CalorieEntry.nutrientDetails`.
 - `domain/calorie_nutrient_details.dart` holds label nutrients beyond the
   macros (saturated and polyunsaturated fat, sugar, fiber, salt).
   `CalorieProductProfile` and `CalorieEntry` carry them; integrating features
@@ -104,8 +105,8 @@ the legacy `provider/` surface or exposing action wrappers to sibling features.
 - New use-case providers live in `application/`.
 - Repository providers live with repository implementations in `data/`.
   `CalorieLogRepositoryContract.cachedById` returns the last entry the
-  repository read or wrote without a backend call; `calorieEntryById` uses it
-  so the details sheet renders on its first frame.
+  repository read or wrote without a backend call, so the Diary entry details
+  page renders on its first frame.
 - Saving an entry is optimistic. The repository and the inventory commit
   stores write through the Firestore local cache and do not wait for the
   server, so a save works offline and Firestore sends it later. Follow-up

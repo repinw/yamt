@@ -14,7 +14,7 @@ const _thumbSize = 44.0;
 class MealThumb extends ConsumerWidget {
   /// Creates a meal thumbnail for [entry].
   ///
-  /// With [heroEnabled] the image flies into the entry details sheet on
+  /// With [heroEnabled] the image flies into the entry details page on
   /// open. Only rows that open one entry enable it: a merged row stands for
   /// several entries and must not share a tag with its children.
   new({required DiaryMealEntry entry, bool heroEnabled = false, super.key})
@@ -39,7 +39,7 @@ class MealThumb extends ConsumerWidget {
   /// Local image asset id.
   final String? imageAssetId;
 
-  /// Entry whose image flies into its details sheet, or null.
+  /// Entry whose image flies into its details page, or null.
   final String? heroEntryId;
 
   @override
