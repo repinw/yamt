@@ -47,11 +47,32 @@ class InventoryItemProgressCalculator {
     final remainingAmount = item.currentAmount.clamp(0, initialAmount);
     final remainingUnits = item.quantity.clamp(0, totalUnits);
 
+    String format(int value) =>
+        _formatAmount(value, unit, scale: item.amountScale);
+    // Several equal packages read as "2 × 500g + 250g / 3 × 500g".
+    // Pieces already count, so they keep "1.5pc / 2pc".
+    final package =
+        unit != InventoryAmountUnit.piece &&
+            totalUnits > 1 &&
+            initialAmount % totalUnits == 0
+        ? initialAmount ~/ totalUnits
+        : null;
+    String packages(int value) {
+      if (package == null) {
+        return format(value);
+      }
+      final full = value ~/ package;
+      final rest = value % package;
+      return [
+        if (full > 0) '$full × ${format(package)}',
+        if (rest > 0 || full == 0) format(rest),
+      ].join(' + ');
+    }
+
     return InventoryItemProgress(
       remainingRatio: remainingAmount / initialAmount,
       remainingLabel:
-          '${_formatAmount(remainingAmount, unit, scale: item.amountScale)} / '
-          '${_formatAmount(initialAmount, unit, scale: item.amountScale)}',
+          '${packages(remainingAmount)} / ${packages(initialAmount)}',
       segmentedByUnits: totalUnits > 1,
       totalUnits: totalUnits,
       remainingUnits: remainingUnits,

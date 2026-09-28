@@ -44,7 +44,7 @@ void main() {
     final progress = calculator.fromItem(item);
 
     expect(progress.remainingRatio, closeTo(0.25, 0.0001));
-    expect(progress.remainingLabel, '250g / 1000g');
+    expect(progress.remainingLabel, '1 × 250g / 4 × 250g');
     expect(progress.segmentedByUnits, isTrue);
     expect(progress.totalUnits, 4);
     expect(progress.remainingUnits, 3);
@@ -62,7 +62,7 @@ void main() {
     final progress = calculator.fromItem(item);
 
     expect(progress.remainingRatio, 1.0);
-    expect(progress.remainingLabel, '1000ml / 1000ml');
+    expect(progress.remainingLabel, '5 × 200ml / 5 × 200ml');
     expect(progress.segmentedByUnits, isTrue);
     expect(progress.totalUnits, 5);
     expect(progress.remainingUnits, 5);
@@ -121,5 +121,31 @@ void main() {
     expect(progress.segmentedByUnits, isFalse);
     expect(progress.totalUnits, 1);
     expect(progress.remainingUnits, 0);
+  });
+
+  test('equal packages show the count and the rest of an opened one', () {
+    final item = _item(
+      initialQuantity: 3,
+      quantity: 3,
+      initialAmount: 1500,
+      currentAmount: 1250,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+
+    expect(
+      calculator.fromItem(item).remainingLabel,
+      '2 × 500g + 250g / 3 × 500g',
+    );
+  });
+
+  test('a last opened package shows only its rest', () {
+    final item = _item(
+      initialQuantity: 3,
+      initialAmount: 1500,
+      currentAmount: 200,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+
+    expect(calculator.fromItem(item).remainingLabel, '200g / 3 × 500g');
   });
 }

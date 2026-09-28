@@ -741,9 +741,9 @@ void main() {
     await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(tester, _stockLabel('500g / 1000g'));
+    await _scrollUntilVisible(tester, _stockLabel('1 × 500g / 2 × 500g'));
 
-    expect(_stockLabel('500g / 1000g'), findsOneWidget);
+    expect(_stockLabel('1 × 500g / 2 × 500g'), findsOneWidget);
   });
 
   testWidgets('swap candidate opens picker and persists the selected item', (
