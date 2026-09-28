@@ -6,15 +6,14 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar_field.dart';
+import 'package:yamt/core/widgets/voice_input_state_mixin.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// State for [TextVoiceSearchBar]. Public so the widget's `createState` can
 /// live in its own file without exceeding the file size limit.
-class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
-  var _isListeningToSpeech = false;
-  var _isStartingVoiceSearch = false;
+class TextVoiceSearchBarState extends State<TextVoiceSearchBar>
+    with VoiceInputStateMixin<TextVoiceSearchBar> {
   var _didTriggerInitialVoiceSearch = false;
-  var _isDisposing = false;
 
   bool get _usesInternalVoiceSearch {
     return widget.voiceSearchService != null &&
@@ -46,7 +45,7 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
 
   @override
   void dispose() {
-    _isDisposing = true;
+    isDisposingVoiceInput = true;
     widget.voiceSearchController?.detach();
     final voiceSearchService = widget.voiceSearchService;
     if (voiceSearchService != null) {
@@ -61,7 +60,7 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
     if (voiceSearchService == null) {
       return;
     }
-    if (!_isListeningToSpeech && !voiceSearchService.isListening) {
+    if (!isListeningToSpeech && !voiceSearchService.isListening) {
       return;
     }
 
@@ -71,8 +70,8 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
     }
 
     setState(() {
-      _isListeningToSpeech = false;
-      _isStartingVoiceSearch = false;
+      isListeningToSpeech = false;
+      isStartingVoiceSearch = false;
     });
   }
 
@@ -88,8 +87,8 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
     }
 
     setState(() {
-      _isListeningToSpeech = false;
-      _isStartingVoiceSearch = false;
+      isListeningToSpeech = false;
+      isStartingVoiceSearch = false;
     });
   }
 
@@ -114,7 +113,7 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
             useCompactSurface: widget.useCompactSurface,
             clearTooltip: widget.clearTooltip,
             voiceButtonKey: widget.voiceButtonKey,
-            isVoiceListening: _usesInternalVoiceSearch && _isListeningToSpeech,
+            isVoiceListening: _usesInternalVoiceSearch && isListeningToSpeech,
             voiceTooltip: _resolveVoiceTooltip(context),
             onVoiceButtonPressed: _handleVoiceButtonPressed,
             onTap: widget.onTap,
@@ -136,10 +135,10 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
       return;
     }
 
-    if (_isStartingVoiceSearch) {
+    if (isStartingVoiceSearch) {
       return;
     }
-    if (_isListeningToSpeech) {
+    if (isListeningToSpeech) {
       await stopVoiceSearchIfNeeded();
       return;
     }
@@ -150,21 +149,20 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
     }
 
     setState(() {
-      _isStartingVoiceSearch = true;
+      isStartingVoiceSearch = true;
     });
 
-    final failure = await voiceSearchService.startListening(
+    final failure = await startVoiceInput(
+      voiceSearchService,
       onResult: _handleSpeechResult,
-      onListeningStateChanged: _handleSpeechListeningChanged,
-      onError: _handleSpeechError,
     );
     if (!mounted) {
       return;
     }
 
     setState(() {
-      _isStartingVoiceSearch = false;
-      _isListeningToSpeech = failure == null;
+      isStartingVoiceSearch = false;
+      isListeningToSpeech = failure == null;
     });
 
     if (failure != null) {
@@ -185,7 +183,7 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
   }
 
   void _handleSpeechResult(VoiceSearchRecognition result) {
-    if (_isDisposing || !mounted) {
+    if (isDisposingVoiceInput || !mounted) {
       return;
     }
     if (widget.controller.text == result.transcript) {
@@ -197,37 +195,6 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
       selection: TextSelection.collapsed(offset: result.transcript.length),
     );
     widget.onChanged?.call(result.transcript);
-  }
-
-  void _handleSpeechListeningChanged(bool isListening) {
-    if (_isDisposing || !mounted) {
-      return;
-    }
-    if (_isListeningToSpeech == isListening &&
-        (isListening || !_isStartingVoiceSearch)) {
-      return;
-    }
-
-    setState(() {
-      _isListeningToSpeech = isListening;
-      if (!isListening) {
-        _isStartingVoiceSearch = false;
-      }
-    });
-  }
-
-  void _handleSpeechError(VoiceSearchFailure failure) {
-    if (_isDisposing || !mounted) {
-      return;
-    }
-
-    if (_isListeningToSpeech || _isStartingVoiceSearch) {
-      setState(() {
-        _isListeningToSpeech = false;
-        _isStartingVoiceSearch = false;
-      });
-    }
-    _showSnackBar(_resolveSpeechErrorText(context, failure));
   }
 
   void _maybeStartVoiceSearchOnMount() {
@@ -249,7 +216,7 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
 
   String _resolveVoiceTooltip(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    return _usesInternalVoiceSearch && _isListeningToSpeech
+    return _usesInternalVoiceSearch && isListeningToSpeech
         ? l10n.inventoryManualAddVoiceSearchStopTooltip
         : l10n.inventoryManualAddVoiceSearchStartTooltip;
   }
@@ -266,6 +233,11 @@ class TextVoiceSearchBarState extends State<TextVoiceSearchBar> {
         l10n.inventoryManualAddVoiceSearchPermissionDenied,
       VoiceSearchFailure.error => l10n.inventoryManualAddVoiceSearchFailed,
     };
+  }
+
+  @override
+  void showVoiceInputFailure(VoiceSearchFailure failure) {
+    _showSnackBar(_resolveSpeechErrorText(context, failure));
   }
 
   void _showSnackBar(String message) {

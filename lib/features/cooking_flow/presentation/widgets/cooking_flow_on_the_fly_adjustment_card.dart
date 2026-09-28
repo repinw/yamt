@@ -6,6 +6,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/core/widgets/voice_input_state_mixin.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_on_the_fly_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -39,11 +40,9 @@ class CookingFlowOnTheFlyAdjustmentCard extends ConsumerStatefulWidget {
 }
 
 class _CookingFlowOnTheFlyAdjustmentCardState
-    extends ConsumerState<CookingFlowOnTheFlyAdjustmentCard> {
+    extends ConsumerState<CookingFlowOnTheFlyAdjustmentCard>
+    with VoiceInputStateMixin<CookingFlowOnTheFlyAdjustmentCard> {
   late final VoiceSearchService _voiceSearchService;
-  var _isListeningToSpeech = false;
-  var _isStartingVoiceSearch = false;
-  var _isDisposing = false;
 
   @override
   void initState() {
@@ -53,7 +52,7 @@ class _CookingFlowOnTheFlyAdjustmentCardState
 
   @override
   void dispose() {
-    _isDisposing = true;
+    isDisposingVoiceInput = true;
     unawaited(_voiceSearchService.cancelListening());
     super.dispose();
   }
@@ -84,7 +83,7 @@ class _CookingFlowOnTheFlyAdjustmentCardState
             const SizedBox(height: AppSpacing.xs),
             CookingFlowOnTheFlyInputRow(
               controller: widget.adjustmentController,
-              isListeningToSpeech: _isListeningToSpeech,
+              isListeningToSpeech: isListeningToSpeech,
               onVoicePressed: _handleVoiceButtonPressed,
               onAddPressed: _handleAddPressed,
             ),
@@ -104,30 +103,29 @@ class _CookingFlowOnTheFlyAdjustmentCardState
   }
 
   Future<void> _handleVoiceButtonPressed() async {
-    if (_isStartingVoiceSearch) {
+    if (isStartingVoiceSearch) {
       return;
     }
-    if (_isListeningToSpeech || _voiceSearchService.isListening) {
+    if (isListeningToSpeech || _voiceSearchService.isListening) {
       await _stopVoiceSearchIfNeeded();
       return;
     }
 
     setState(() {
-      _isStartingVoiceSearch = true;
+      isStartingVoiceSearch = true;
     });
 
-    final failure = await _voiceSearchService.startListening(
+    final failure = await startVoiceInput(
+      _voiceSearchService,
       onResult: _handleSpeechResult,
-      onListeningStateChanged: _handleSpeechListeningChanged,
-      onError: _handleSpeechError,
     );
     if (!mounted) {
       return;
     }
 
     setState(() {
-      _isStartingVoiceSearch = false;
-      _isListeningToSpeech = failure == null;
+      isStartingVoiceSearch = false;
+      isListeningToSpeech = failure == null;
     });
 
     if (failure != null) {
@@ -141,7 +139,7 @@ class _CookingFlowOnTheFlyAdjustmentCardState
   }
 
   Future<void> _stopVoiceSearchIfNeeded() async {
-    if (!_isListeningToSpeech && !_voiceSearchService.isListening) {
+    if (!isListeningToSpeech && !_voiceSearchService.isListening) {
       return;
     }
     await _voiceSearchService.stopListening();
@@ -149,13 +147,13 @@ class _CookingFlowOnTheFlyAdjustmentCardState
       return;
     }
     setState(() {
-      _isListeningToSpeech = false;
-      _isStartingVoiceSearch = false;
+      isListeningToSpeech = false;
+      isStartingVoiceSearch = false;
     });
   }
 
   void _handleSpeechResult(VoiceSearchRecognition result) {
-    if (_isDisposing || !mounted) {
+    if (isDisposingVoiceInput || !mounted) {
       return;
     }
     final transcript = result.transcript.trim();
@@ -169,36 +167,6 @@ class _CookingFlowOnTheFlyAdjustmentCardState
     );
   }
 
-  void _handleSpeechListeningChanged(bool isListening) {
-    if (_isDisposing || !mounted) {
-      return;
-    }
-    if (_isListeningToSpeech == isListening &&
-        (isListening || !_isStartingVoiceSearch)) {
-      return;
-    }
-
-    setState(() {
-      _isListeningToSpeech = isListening;
-      if (!isListening) {
-        _isStartingVoiceSearch = false;
-      }
-    });
-  }
-
-  void _handleSpeechError(VoiceSearchFailure failure) {
-    if (_isDisposing || !mounted) {
-      return;
-    }
-    if (_isListeningToSpeech || _isStartingVoiceSearch) {
-      setState(() {
-        _isListeningToSpeech = false;
-        _isStartingVoiceSearch = false;
-      });
-    }
-    _showSnackBar(_resolveSpeechErrorText(failure));
-  }
-
   String _resolveSpeechErrorText(VoiceSearchFailure failure) {
     final l10n = AppLocalizations.of(context)!;
     return switch (failure) {
@@ -207,6 +175,11 @@ class _CookingFlowOnTheFlyAdjustmentCardState
         l10n.cookflowVoiceInputPermissionDenied,
       VoiceSearchFailure.error => l10n.cookflowVoiceInputFailed,
     };
+  }
+
+  @override
+  void showVoiceInputFailure(VoiceSearchFailure failure) {
+    _showSnackBar(_resolveSpeechErrorText(failure));
   }
 
   void _showSnackBar(String message) {
