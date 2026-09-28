@@ -143,7 +143,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/settings/presentation/pages/settings_page_keys.dart': 1,
   },
   'file-roles': {
-    'lib/features/auth/data/user_profile_document_codec.dart': 1,
     'lib/features/calories/application/burn_week_live_mutation_coordinator.dart':
         1,
     'lib/features/calories/application/burn_week_live_overview_logic.dart': 1,

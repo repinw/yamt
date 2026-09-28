@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/auth/data/user_profile_document_codec.dart';
+import 'package:yamt/features/auth/data/user_profile_dto.dart';
 
 void main() {
   test(

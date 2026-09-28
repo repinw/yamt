@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/auth/data/user_profile_document_codec.dart';
+import 'package:yamt/features/auth/data/user_profile_dto.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 
 part 'auth_service.g.dart';

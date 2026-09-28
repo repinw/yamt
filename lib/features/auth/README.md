@@ -35,7 +35,7 @@ Other features may import these concrete files directly:
 - `data/auth_service.dart` for `firebaseAuthProvider`,
   `authStateChangesProvider`, and `userProfileProvider`.
 - `data/auth_repository.dart` for tests and auth-owned controller overrides.
-- `data/user_profile_document_codec.dart` for features that read user profile
+- `data/user_profile_dto.dart` for features that read user profile
   documents from Firestore.
 - `domain/user_profile.dart` for profile-aware UI and household member lists.
 - `presentation/controllers/google_auth_controller.dart` for account-linking

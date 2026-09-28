@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/auth/data/user_profile_document_codec.dart';
+import 'package:yamt/features/auth/data/user_profile_dto.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/domain/household_exceptions.dart';
 import 'package:yamt/features/household/domain/household_member.dart';

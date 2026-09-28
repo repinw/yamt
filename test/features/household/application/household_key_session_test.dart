@@ -12,7 +12,7 @@ import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/auth/data/user_profile_document_codec.dart';
+import 'package:yamt/features/auth/data/user_profile_dto.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/data/household_data_repository.dart';
