@@ -30,6 +30,9 @@ const _logName = 'HouseholdKeySession';
 class HouseholdKeySession extends _$HouseholdKeySession {
   @override
   Future<HouseholdKeyState> build() async {
+    // A rebuild hands `ref` to the next build. This build checks its own ref,
+    // so that it stops once it is replaced.
+    final buildRef = ref;
     final dataCipher = ref.watch(userDataCipherProvider);
     final keys = ref.watch(householdKeyRepositoryProvider);
     final members = ref.watch(householdMemberRepositoryProvider);
@@ -52,7 +55,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     }
 
     final ownHousehold = await ownHouseholdFuture;
-    if (ownHousehold == null) {
+    if (!buildRef.mounted || ownHousehold == null) {
       return const HouseholdKeyUnavailable();
     }
     final ownHouseholdId = ownHousehold.id;
@@ -74,11 +77,20 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     final uid = dataCipher.uid;
     if (await userKeys.loadFreshStartPending(uid)) {
       for (final id in <String>{ownHouseholdId, householdId}) {
-        await _cleanUpAfterFreshStart(keys, members, data, id, uid);
+        if (!buildRef.mounted) return const HouseholdKeyUnavailable();
+        await _cleanUpAfterFreshStart(buildRef, keys, members, data, id, uid);
       }
+      if (!buildRef.mounted) return const HouseholdKeyUnavailable();
       await userKeys.saveFreshStartPending(uid, pending: false);
     }
-    return await _resolve(keys, members, data, householdId, dataCipher);
+    return await _resolve(
+      buildRef,
+      keys,
+      members,
+      data,
+      householdId,
+      dataCipher,
+    );
   }
 
   /// Opens the household key that another member left with the unlock
@@ -125,6 +137,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
   /// A user who waits for the key while nobody else is left to hand it
   /// back starts over: the data is wiped and a new key follows.
   Future<HouseholdKeyState> _resolve(
+    Ref buildRef,
     HouseholdKeyRepository keys,
     HouseholdMemberRepository members,
     HouseholdDataRepository data,
@@ -139,6 +152,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
       if (await members.loadHasOtherMembers(householdId)) {
         return HouseholdKeyRestoreRequired(householdId: householdId);
       }
+      if (!buildRef.mounted) return const HouseholdKeyUnavailable();
       await data.wipeHouseholdData(householdId);
       await keys.deleteKey(householdId: householdId, memberUid: uid);
       await keys.deleteKeyRestore(householdId: householdId, memberUid: uid);
@@ -165,6 +179,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
   /// still hold the key, so the data stays and the user asks them for it.
   /// Alone, nobody can open the data any more, so it is deleted.
   Future<void> _cleanUpAfterFreshStart(
+    Ref buildRef,
     HouseholdKeyRepository keys,
     HouseholdMemberRepository members,
     HouseholdDataRepository data,
@@ -172,7 +187,11 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     String uid,
   ) async {
     await keys.deleteKey(householdId: householdId, memberUid: uid);
-    if (await members.loadHasOtherMembers(householdId)) {
+    final hasOtherMembers = await members.loadHasOtherMembers(householdId);
+    if (!buildRef.mounted) {
+      return;
+    }
+    if (hasOtherMembers) {
       await keys.requestKeyRestore(householdId: householdId, memberUid: uid);
     } else {
       await data.wipeHouseholdData(householdId);

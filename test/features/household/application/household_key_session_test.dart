@@ -53,7 +53,11 @@ void main() {
     );
   });
 
-  ProviderContainer createContainer() {
+  /// The session runs with [sessionMembers] instead of the real member
+  /// repository when given.
+  ProviderContainer createContainer({
+    HouseholdMemberRepository? sessionMembers,
+  }) {
     final members = HouseholdMemberRepository(
       firestore: firestore,
       keys: keys,
@@ -81,7 +85,9 @@ void main() {
         ),
         userDataCipherProvider.overrideWithValue(dataCipher),
         householdKeyRepositoryProvider.overrideWithValue(keys),
-        householdMemberRepositoryProvider.overrideWithValue(members),
+        householdMemberRepositoryProvider.overrideWithValue(
+          sessionMembers ?? members,
+        ),
         householdDataRepositoryProvider.overrideWithValue(data),
         householdRepositoryProvider.overrideWithValue(
           HouseholdRepository(
@@ -235,6 +241,41 @@ void main() {
     );
   });
 
+  test(
+    'a build replaced while it waited does not watch the membership',
+    () async {
+      await setProfile(active: 'shared', own: 'own');
+      await addMember('shared', 'admin', admin: true);
+      await addMember('shared', _uid);
+      await storeKey('shared', dataCipher.cipher);
+      final members = _ObservedMembers(
+        HouseholdMemberRepository(
+          firestore: firestore,
+          keys: keys,
+          currentUserId: _uid,
+        ),
+      );
+      final container = createContainer(sessionMembers: members);
+      final profileLoaded = Completer<void>();
+      container.listen(userProfileProvider, (_, next) {
+        if (next.hasValue && !profileLoaded.isCompleted) {
+          profileLoaded.complete();
+        }
+      }, fireImmediately: true);
+      await profileLoaded.future;
+
+      // The first build waits for the own household when the second starts.
+      container
+        ..listen(householdKeySessionProvider, (_, _) {})
+        ..invalidate(householdKeySessionProvider)
+        ..read(householdKeySessionProvider);
+      await settle<HouseholdKeyReady>(container);
+      await pumpEventQueue();
+
+      expect(members.watchedHouseholds, <String>['shared']);
+    },
+  );
+
   test('a member without a key entry asks the others for it', () async {
     await setProfile(active: 'shared', own: 'own');
     await addMember('shared', 'admin', admin: true);
@@ -379,5 +420,61 @@ void main() {
       expect(await exists('households/own/keys/$_uid'), isFalse);
       expect(await exists('households/own/inventory_items/i1'), isFalse);
     });
+
+    test('a replaced build stops cleaning up', () async {
+      await setProfile(active: 'own', own: 'own');
+      await storeKey('own', lostCipher);
+      final members = _ObservedMembers(
+        HouseholdMemberRepository(
+          firestore: firestore,
+          keys: keys,
+          currentUserId: _uid,
+        ),
+      );
+      final container = createContainer(sessionMembers: members)
+        ..listen(householdKeySessionProvider, (_, _) {});
+      await members.reached.future;
+
+      container.invalidate(householdKeySessionProvider);
+      await settle<HouseholdKeyReady>(container);
+      final item = firestore.doc('households/own/inventory_items/new');
+      await item.set(<String, dynamic>{'payload': 'new'});
+      members.release.complete();
+      await pumpEventQueue(times: 100);
+
+      expect((await item.get()).exists, isTrue);
+    });
   });
+}
+
+/// Records which households the session watches, and holds its first check
+/// for other members until [release] completes.
+class _ObservedMembers extends Fake implements HouseholdMemberRepository {
+  new(this._members);
+
+  final HouseholdMemberRepository _members;
+
+  /// The households whose membership the session watches, in order.
+  final watchedHouseholds = <String>[];
+
+  /// Completes when the first check for other members starts.
+  final reached = Completer<void>();
+
+  /// Lets the first check for other members go on.
+  final release = Completer<void>();
+
+  @override
+  Stream<void> watchMembershipEnded(String householdId) {
+    watchedHouseholds.add(householdId);
+    return _members.watchMembershipEnded(householdId);
+  }
+
+  @override
+  Future<bool> loadHasOtherMembers(String householdId) async {
+    if (!reached.isCompleted) {
+      reached.complete();
+      await release.future;
+    }
+    return await _members.loadHasOtherMembers(householdId);
+  }
 }
