@@ -85,6 +85,17 @@ class UserDataKeyRepository {
     return _saveFlag(_plaintextMigratedName(uid), value: true);
   }
 
+  /// Whether this device started fresh for [uid] and the household data
+  /// still waits for its clean-up.
+  Future<bool> loadFreshStartPending(String uid) {
+    return _loadFlag(_freshStartPendingName(uid));
+  }
+
+  /// Saves whether the household clean-up after a fresh start is pending.
+  Future<void> saveFreshStartPending(String uid, {required bool pending}) {
+    return _saveFlag(_freshStartPendingName(uid), value: pending);
+  }
+
   /// Deletes everything this device and the platform backup store for [uid].
   Future<void> deleteLocalKeys(String uid) async {
     for (final name in <String>[
@@ -271,6 +282,8 @@ String _recoveryKeyName(String uid) => 'recovery_key_$uid';
 String _recoveryKeyConfirmedName(String uid) => 'recovery_key_confirmed_$uid';
 
 String _plaintextMigratedName(String uid) => 'private_data_encrypted_$uid';
+
+String _freshStartPendingName(String uid) => 'fresh_start_pending_$uid';
 
 /// User data key repository, or `null` while Firestore is unavailable.
 @Riverpod(keepAlive: true)

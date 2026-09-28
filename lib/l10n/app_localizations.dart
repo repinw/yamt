@@ -5790,6 +5790,66 @@ abstract class AppLocalizations {
   /// **'Your key is still loading. Please try again in a moment.'**
   String get householdKeyUnavailable;
 
+  /// No description provided for @householdKeyRestoreHostMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You started fresh, so your pantry is locked. A member of your household can unlock it: ask them for an unlock code and enter it here.'**
+  String get householdKeyRestoreHostMessage;
+
+  /// No description provided for @householdKeyRestoreMemberMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'The owner of this household started fresh and can no longer read the shared pantry. Create an unlock code and give it to them.'**
+  String get householdKeyRestoreMemberMessage;
+
+  /// No description provided for @householdKeyRestoreCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock code'**
+  String get householdKeyRestoreCodeLabel;
+
+  /// No description provided for @householdKeyRestoreAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock pantry'**
+  String get householdKeyRestoreAction;
+
+  /// No description provided for @householdKeyRestoreSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Pantry unlocked.'**
+  String get householdKeyRestoreSuccess;
+
+  /// No description provided for @householdKeyRestoreInvalidCode.
+  ///
+  /// In en, this message translates to:
+  /// **'This unlock code does not work.'**
+  String get householdKeyRestoreInvalidCode;
+
+  /// No description provided for @householdKeyRestoreCreateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create unlock code'**
+  String get householdKeyRestoreCreateAction;
+
+  /// No description provided for @householdKeyRestoreCodeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Give this code to the household owner. It works until they use it or you create a new one.'**
+  String get householdKeyRestoreCodeHint;
+
+  /// No description provided for @householdKeyRestoreCopyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy code'**
+  String get householdKeyRestoreCopyAction;
+
+  /// No description provided for @householdKeyRestoreCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Code copied.'**
+  String get householdKeyRestoreCopied;
+
   /// No description provided for @householdHostVerificationHint.
   ///
   /// In en, this message translates to:
@@ -8154,7 +8214,7 @@ abstract class AppLocalizations {
   /// No description provided for @dataKeyStartFreshDialogMessage.
   ///
   /// In en, this message translates to:
-  /// **'Without the recovery key, your diary, weight, and goals cannot be read. They will be deleted.'**
+  /// **'Without the recovery key, your diary, weight, and goals cannot be read. They will be deleted. Your pantry is deleted too, unless other members share your household: then a member can unlock it for you again.'**
   String get dataKeyStartFreshDialogMessage;
 
   /// No description provided for @dataKeyStartFreshConfirmAction.

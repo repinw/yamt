@@ -73,7 +73,25 @@ void main() {
           'allow update: if canAccessHouseholdOwnedData(uid) '
           "&& !('payload' in resource.data) "
           "&& isEncryptedDocument(request.resource.data, ['happened_at']); "
-          'allow delete: if false; }',
+          'allow delete: if isOwner(uid); }',
+        ),
+      );
+    });
+
+    test('only the host asks for the key, only members answer', () {
+      expect(
+        compactRules,
+        contains(
+          'match /household_key_restores/{hostUid} { '
+          'allow read: if isOwner(hostUid) '
+          '|| (isSignedIn() && userHouseholdId(request.auth.uid) == hostUid); '
+          'allow create, update: if isOwner(hostUid) '
+          '&& request.resource.data.keys().size() == 0; '
+          'allow update: if isSignedIn() '
+          '&& userHouseholdId(request.auth.uid) == hostUid '
+          "&& request.resource.data.keys().hasOnly(['wrapped_household_key']) "
+          '&& request.resource.data.wrapped_household_key is string; '
+          'allow delete: if isOwner(hostUid); }',
         ),
       );
     });

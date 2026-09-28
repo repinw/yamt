@@ -1,30 +1,50 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cryptography/cryptography.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/plaintext_document_encryption.dart';
+import 'package:yamt/core/data/recovery_key.dart';
+import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
+import 'package:yamt/features/household/data/household_reset_repository.dart';
 import 'package:yamt/features/household/domain/household_key_state.dart';
+import 'package:yamt/features/household/domain/household_sharing_exceptions.dart';
 import 'package:yamt/features/inventory/data/inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_store.dart';
 
+import '../../../helpers/fake_firebase_storage.dart';
+import '../../../helpers/fake_key_backup.dart';
+
 void main() {
   late FakeFirebaseFirestore firestore;
+  late FakeFirebaseStorage storage;
   late HouseholdKeyRepository keys;
+  late HouseholdResetRepository resets;
+  late UserDataKeyRepository userKeys;
   late UserDataCipher memberCipher;
 
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
     firestore = FakeFirebaseFirestore();
+    storage = FakeFirebaseStorage();
     keys = HouseholdKeyRepository(
       firestore: firestore,
       storage: const FlutterSecureStorage(),
+    );
+    resets = HouseholdResetRepository(firestore: firestore, storage: storage);
+    userKeys = UserDataKeyRepository(
+      storage: const FlutterSecureStorage(),
+      firestore: firestore,
+      keyBackup: FakeKeyBackup(),
     );
     memberCipher = (
       uid: 'member-1',
@@ -38,6 +58,8 @@ void main() {
         effectiveHouseholdDataOwnerUserIdProvider.overrideWithValue(ownerUid),
         userDataCipherProvider.overrideWithValue(memberCipher),
         householdKeyRepositoryProvider.overrideWithValue(keys),
+        householdResetRepositoryProvider.overrideWithValue(resets),
+        userDataKeyRepositoryProvider.overrideWithValue(userKeys),
       ],
     );
     addTearDown(container.dispose);
@@ -187,5 +209,151 @@ void main() {
       currentUserId: 'member-1',
     ).watchRecent().first;
     expect(activity.single.itemName, 'Milch');
+  });
+
+  group('after a fresh start', () {
+    late SecretKey oldHouseholdKey;
+
+    setUp(() async {
+      oldHouseholdKey = await PayloadCipher.newDataKey();
+      final oldCipher = PayloadCipher(await PayloadCipher.newDataKey());
+      await keys.saveKey(
+        ownerUid: 'member-1',
+        memberUid: 'member-1',
+        householdKey: oldHouseholdKey,
+        dataCipher: oldCipher,
+      );
+      await firestore.doc('users/member-1/inventory_items/i1').set(
+        <String, dynamic>{'payload': 'old'},
+      );
+      await firestore.doc('users/member-1/inventory_activity_events/a1').set(
+        <String, dynamic>{'payload': 'old'},
+      );
+      storage.files.addAll(<String>[
+        'users/member-1/kitchen_utensils/pot/images/one.jpg',
+        'users/member-1/recipes/meal/images/cover.jpg',
+        'users/other/recipes/meal/images/cover.jpg',
+      ]);
+      await userKeys.saveFreshStartPending('member-1', pending: true);
+    });
+
+    test('a user alone loses the household data and gets a new key', () async {
+      final state = await createContainer(ownerUid: 'member-1')
+          .read(householdKeySessionProvider.future);
+
+      final newKey = (state as HouseholdKeyReady).key;
+      expect(
+        await newKey.extractBytes(),
+        isNot(await oldHouseholdKey.extractBytes()),
+      );
+      expect(
+        (await firestore.collection('users/member-1/inventory_items').get())
+            .docs,
+        isEmpty,
+      );
+      expect(
+        (await firestore
+                .collection('users/member-1/inventory_activity_events')
+                .get())
+            .docs,
+        isEmpty,
+      );
+      expect(storage.files, <String>{
+        'users/other/recipes/meal/images/cover.jpg',
+      });
+      expect(await userKeys.loadFreshStartPending('member-1'), isFalse);
+    });
+
+    test('a host with members keeps the data and takes the key back '
+        'with a code from a member', () async {
+      await firestore.doc('users/member-2').set(<String, dynamic>{
+        'uid': 'member-2',
+        'householdId': 'member-1',
+      });
+      final container = createContainer(ownerUid: 'member-1');
+
+      final state = await container.read(householdKeySessionProvider.future);
+
+      expect(state, isA<HouseholdKeyRestoreRequired>());
+      expect(container.read(householdCipherProvider), isNull);
+      expect(
+        (await firestore.collection('users/member-1/inventory_items').get())
+            .docs,
+        hasLength(1),
+      );
+      expect(storage.files, hasLength(3));
+
+      final code = await resets.saveRestoreCode(
+        ownerUid: 'member-1',
+        householdKey: oldHouseholdKey,
+      );
+      await container
+          .read(householdKeySessionProvider.notifier)
+          .restoreKey(code.formatted);
+
+      final restored = await container.read(householdKeySessionProvider.future);
+      expect(
+        await (restored as HouseholdKeyReady).key.extractBytes(),
+        await oldHouseholdKey.extractBytes(),
+      );
+      expect(await resets.loadKeyRestoreRequested('member-1'), isFalse);
+    });
+
+    test('a wrong restore code is rejected', () async {
+      await firestore.doc('users/member-2').set(<String, dynamic>{
+        'uid': 'member-2',
+        'householdId': 'member-1',
+      });
+      final container = createContainer(ownerUid: 'member-1');
+      await container.read(householdKeySessionProvider.future);
+      await resets.saveRestoreCode(
+        ownerUid: 'member-1',
+        householdKey: oldHouseholdKey,
+      );
+
+      await expectLater(
+        container
+            .read(householdKeySessionProvider.notifier)
+            .restoreKey(RecoveryKey.generate().formatted),
+        throwsA(isA<InvalidHouseholdRestoreCodeException>()),
+      );
+    });
+
+    test('a member drops the key entry of the host household', () async {
+      await keys.saveKey(
+        ownerUid: 'host-1',
+        memberUid: 'member-1',
+        householdKey: await PayloadCipher.newDataKey(),
+        dataCipher: PayloadCipher(await PayloadCipher.newDataKey()),
+      );
+
+      final state = await createContainer(ownerUid: 'host-1')
+          .read(householdKeySessionProvider.future);
+
+      expect(state, isA<HouseholdKeyInviteRequired>());
+      expect(
+        (await firestore.doc('users/host-1/household_keys/member-1').get())
+            .exists,
+        isFalse,
+      );
+    });
+  });
+
+  test('a member sees the restore request of the host', () async {
+    await resets.requestKeyRestore('host-1');
+    final container = createContainer(ownerUid: 'host-1');
+    final requested = Completer<bool>();
+    final subscription = container.listen(
+      householdKeyRestoreRequestedProvider,
+      (_, next) {
+        if (next.hasValue && !requested.isCompleted) {
+          requested.complete(next.value);
+        }
+      },
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+
+    expect(await requested.future, isTrue);
   });
 }

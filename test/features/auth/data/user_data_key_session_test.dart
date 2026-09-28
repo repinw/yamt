@@ -11,6 +11,7 @@ import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/device/key_backup.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
@@ -269,6 +270,12 @@ void main() {
         expect(
           (await firestore.doc('users/u1').get()).data(),
           <String, dynamic>{'uid': 'u1'},
+        );
+        expect(
+          await container
+              .read(userDataKeyRepositoryProvider)!
+              .loadFreshStartPending('u1'),
+          isTrue,
         );
         final newBackup = (await firestore.doc(_backupPath).get()).data()!;
         expect(newBackup, isNot(oldBackup));

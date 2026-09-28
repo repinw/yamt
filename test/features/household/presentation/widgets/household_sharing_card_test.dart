@@ -18,6 +18,8 @@ import 'package:yamt/features/household/presentation/controllers/'
 import 'package:yamt/features/household/presentation/controllers/'
     'household_membership_controller.dart';
 import 'package:yamt/features/household/presentation/widgets/'
+    'household_key_restore_section.dart';
+import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -44,9 +46,10 @@ String _inviteLink(String code) {
 }
 
 class _FakeHouseholdMembershipController extends HouseholdMembershipController {
-  new({this.onRemoveMember, this.onJoinHousehold});
+  new({this.onRemoveMember, this.onJoinHousehold, this.onRestoreKey});
 
   final Future<void> Function(String userId)? onRemoveMember;
+  final void Function(String code)? onRestoreKey;
   final Future<void> Function(HouseholdInvite invite, String? displayName)?
   onJoinHousehold;
 
@@ -72,7 +75,19 @@ class _FakeHouseholdMembershipController extends HouseholdMembershipController {
   Future<void> leaveHousehold() async {
     state = const AsyncData<void>(null);
   }
+
+  @override
+  Future<void> restoreHouseholdKey(String code) async {
+    onRestoreKey?.call(code);
+  }
+
+  @override
+  Future<RecoveryKey> createKeyRestoreCode() async {
+    return RecoveryKey.parse(_restoreCode);
+  }
 }
+
+const _restoreCode = '0123-4567-89AB-CDEF-GHJK-MNPQ-RS';
 
 void main() {
   User buildUser({required String uid, required bool isAnonymous}) {
@@ -89,6 +104,7 @@ void main() {
     HouseholdInviteCodeController? inviteController,
     HouseholdMembershipController? membershipController,
     HouseholdKeyState keyState = const HouseholdKeyUnavailable(),
+    bool restoreRequested = false,
   }) {
     final container = ProviderContainer(
       overrides: [
@@ -103,6 +119,9 @@ void main() {
         ),
         householdKeySessionProvider.overrideWith(
           () => _FakeHouseholdKeySession(keyState),
+        ),
+        householdKeyRestoreRequestedProvider.overrideWith(
+          (ref) => Stream.value(restoreRequested),
         ),
       ],
     );
@@ -426,5 +445,98 @@ void main() {
       find.widgetWithText(FilledButton, 'Join'),
     );
     expect(button.onPressed, isNull);
+  });
+
+  testWidgets('a host who started fresh enters the restore code', (
+    tester,
+  ) async {
+    final user = buildUser(uid: 'host-1', isAnonymous: false);
+    const host = UserProfile(uid: 'host-1', displayName: 'Host');
+    const guest = UserProfile(
+      uid: 'guest-1',
+      householdId: 'host-1',
+      displayName: 'Guest',
+    );
+    String? restoredWith;
+
+    await tester.pumpWidget(
+      buildApp(
+        user: user,
+        profile: host,
+        members: [host, guest],
+        keyState: const HouseholdKeyRestoreRequired(ownerUid: 'host-1'),
+        membershipController: _FakeHouseholdMembershipController(
+          onRestoreKey: (code) => restoredWith = code,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(HouseholdKeyRestoreSection.codeFieldKey),
+      _restoreCode,
+    );
+    await tester.tap(find.byKey(HouseholdKeyRestoreSection.restoreButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(restoredWith, _restoreCode);
+    expect(find.text('Pantry unlocked.'), findsOneWidget);
+  });
+
+  testWidgets('a member creates a restore code for the host', (tester) async {
+    final user = buildUser(uid: 'guest-1', isAnonymous: false);
+    const host = UserProfile(uid: 'host-1', displayName: 'Host');
+    const guest = UserProfile(
+      uid: 'guest-1',
+      householdId: 'host-1',
+      displayName: 'Guest',
+    );
+
+    await tester.pumpWidget(
+      buildApp(
+        user: user,
+        profile: guest,
+        members: [host, guest],
+        restoreRequested: true,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(HouseholdKeyRestoreSection.codeFieldKey), findsNothing);
+    await tester.tap(
+      find.byKey(HouseholdKeyRestoreSection.createCodeButtonKey),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(HouseholdKeyRestoreSection.createdCodeKey),
+      findsOneWidget,
+    );
+    expect(
+      find.text(RecoveryKey.parse(_restoreCode).formatted),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a member without a restore request sees no restore section', (
+    tester,
+  ) async {
+    final user = buildUser(uid: 'guest-1', isAnonymous: false);
+    const host = UserProfile(uid: 'host-1', displayName: 'Host');
+    const guest = UserProfile(
+      uid: 'guest-1',
+      householdId: 'host-1',
+      displayName: 'Guest',
+    );
+
+    await tester.pumpWidget(
+      buildApp(user: user, profile: guest, members: [host, guest]),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(HouseholdKeyRestoreSection.createCodeButtonKey),
+      findsNothing,
+    );
   });
 }

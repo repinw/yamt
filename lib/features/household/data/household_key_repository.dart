@@ -44,6 +44,9 @@ const householdEncryptedCollections = <String, List<String>>{
   'inventory_activity_events': inventoryActivityEventPlaintextFields,
 };
 
+/// Storage folders under `users/{uid}` that hold household images.
+const householdImageFolders = <String>['kitchen_utensils', 'recipes'];
+
 /// Stores the household key of a data owner, wrapped separately for every
 /// member with that member's own data key.
 class HouseholdKeyRepository {

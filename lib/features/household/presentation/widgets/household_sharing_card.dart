@@ -19,6 +19,8 @@ import 'package:yamt/features/household/presentation/widgets/'
 import 'package:yamt/features/household/presentation/widgets/'
     'household_join_section.dart';
 import 'package:yamt/features/household/presentation/widgets/'
+    'household_key_restore_section.dart';
+import 'package:yamt/features/household/presentation/widgets/'
     'household_members_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -74,12 +76,28 @@ class HouseholdSharingCard extends ConsumerWidget {
         isGuestMember &&
         ref.watch(householdKeySessionProvider).value
             is HouseholdKeyInviteRequired;
+    final hostNeedsRestore =
+        !isGuestMember &&
+        ref.watch(householdKeySessionProvider).value
+            is HouseholdKeyRestoreRequired;
+    final hostWaitsForRestore =
+        isGuestMember &&
+        (ref.watch(householdKeyRestoreRequestedProvider).value ?? false);
 
     return _HouseholdCardShell(
       title: l10n.householdTitle,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (hostNeedsRestore || hostWaitsForRestore) ...[
+            HouseholdKeyRestoreSection(
+              isHost: hostNeedsRestore,
+              isBusy: isBusy,
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            const Divider(),
+            const SizedBox(height: AppSpacing.lg),
+          ],
           if (needsRejoin) ...[
             _HouseholdInfoBanner(message: l10n.householdRejoinRequired),
             const SizedBox(height: AppSpacing.lg),

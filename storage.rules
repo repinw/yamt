@@ -52,6 +52,14 @@ service firebase.storage {
         && isKitchenUtensilImage();
     }
 
+    // The owner lists the household images to delete them after a fresh
+    // start.
+    match /users/{uid}/{folder}/{allPaths=**} {
+      allow list: if isSignedIn()
+        && request.auth.uid == uid
+        && folder in ['kitchen_utensils', 'recipes'];
+    }
+
     function isRecipeImage() {
       return request.resource == null
         || (

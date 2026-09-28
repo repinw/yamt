@@ -52,7 +52,7 @@ final class HouseholdKeySessionProvider
 }
 
 String _$householdKeySessionHash() =>
-    r'9fff63572782fe2789e6f3b3a90639ddb9f62772';
+    r'2ee0987f99feee0147fe8eda3779d728f1add2b8';
 
 /// Resolves the household key of the current household data owner.
 ///
@@ -79,6 +79,49 @@ abstract class _$HouseholdKeySession extends $AsyncNotifier<HouseholdKeyState> {
     return element.handleCreate(ref, build);
   }
 }
+
+/// Whether the host of the household that the user is a member of lost the
+/// household key and waits for a restore code. Always `false` for a host.
+
+@ProviderFor(householdKeyRestoreRequested)
+final householdKeyRestoreRequestedProvider =
+    HouseholdKeyRestoreRequestedProvider._();
+
+/// Whether the host of the household that the user is a member of lost the
+/// household key and waits for a restore code. Always `false` for a host.
+
+final class HouseholdKeyRestoreRequestedProvider
+    extends $FunctionalProvider<AsyncValue<bool>, bool, Stream<bool>>
+    with $FutureModifier<bool>, $StreamProvider<bool> {
+  /// Whether the host of the household that the user is a member of lost the
+  /// household key and waits for a restore code. Always `false` for a host.
+  HouseholdKeyRestoreRequestedProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'householdKeyRestoreRequestedProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$householdKeyRestoreRequestedHash();
+
+  @$internal
+  @override
+  $StreamProviderElement<bool> $createElement($ProviderPointer pointer) =>
+      $StreamProviderElement(pointer);
+
+  @override
+  Stream<bool> create(Ref ref) {
+    return householdKeyRestoreRequested(ref);
+  }
+}
+
+String _$householdKeyRestoreRequestedHash() =>
+    r'62a011d068800efd8fe00c1bcc64c0bc58b87f2f';
 
 /// The cipher for the current household data, or `null` while the household
 /// key is not ready.

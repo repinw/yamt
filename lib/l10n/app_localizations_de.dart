@@ -3397,6 +3397,40 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dein Schlüssel wird noch geladen. Versuche es gleich noch einmal.';
 
   @override
+  String get householdKeyRestoreHostMessage =>
+      'Du hast neu gestartet, darum ist dein Vorrat gesperrt. Ein Mitglied deines Haushalts kann ihn freigeben: Lass dir einen Freigabe-Code geben und gib ihn hier ein.';
+
+  @override
+  String get householdKeyRestoreMemberMessage =>
+      'Die Person, der dieser Haushalt gehört, hat neu gestartet und kann den gemeinsamen Vorrat nicht mehr lesen. Erstelle einen Freigabe-Code und gib ihn ihr.';
+
+  @override
+  String get householdKeyRestoreCodeLabel => 'Freigabe-Code';
+
+  @override
+  String get householdKeyRestoreAction => 'Vorrat freigeben';
+
+  @override
+  String get householdKeyRestoreSuccess => 'Vorrat freigegeben.';
+
+  @override
+  String get householdKeyRestoreInvalidCode =>
+      'Dieser Freigabe-Code passt nicht.';
+
+  @override
+  String get householdKeyRestoreCreateAction => 'Freigabe-Code erstellen';
+
+  @override
+  String get householdKeyRestoreCodeHint =>
+      'Gib diesen Code der Person, der der Haushalt gehört. Er gilt, bis sie ihn benutzt oder du einen neuen erstellst.';
+
+  @override
+  String get householdKeyRestoreCopyAction => 'Code kopieren';
+
+  @override
+  String get householdKeyRestoreCopied => 'Code kopiert.';
+
+  @override
   String get householdHostVerificationHint =>
       'Um andere Personen in deinen Haushalt einzuladen, verknüpfe dein Gastkonto mit Google oder E-Mail & Passwort.';
 
@@ -4757,7 +4791,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dataKeyStartFreshDialogMessage =>
-      'Ohne den Wiederherstellungsschlüssel können dein Tagebuch, dein Gewicht und deine Ziele nicht gelesen werden. Sie werden gelöscht.';
+      'Ohne den Wiederherstellungsschlüssel können dein Tagebuch, dein Gewicht und deine Ziele nicht gelesen werden. Sie werden gelöscht. Dein Vorrat wird auch gelöscht, außer andere Mitglieder teilen deinen Haushalt: Dann kann ein Mitglied ihn dir wieder freigeben.';
 
   @override
   String get dataKeyStartFreshConfirmAction => 'Löschen und neu starten';

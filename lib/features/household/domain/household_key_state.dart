@@ -22,6 +22,16 @@ final class HouseholdKeyInviteRequired extends HouseholdKeyState {
   final String ownerUid;
 }
 
+/// The user owns the household of [ownerUid] but started fresh and lost the
+/// household key. A member must hand it back with a restore code.
+final class HouseholdKeyRestoreRequired extends HouseholdKeyState {
+  /// Creates the state.
+  const new({required this.ownerUid});
+
+  /// The household data owner.
+  final String ownerUid;
+}
+
 /// The household key of [ownerUid] is available.
 final class HouseholdKeyReady extends HouseholdKeyState {
   /// Creates the state.

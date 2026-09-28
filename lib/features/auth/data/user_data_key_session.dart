@@ -112,7 +112,8 @@ class UserDataKeySession extends _$UserDataKeySession {
   /// Deletes the private data and starts over with a new data key.
   ///
   /// For a user who lost the recovery key: the old data cannot be read
-  /// without it.
+  /// without it. The household data follows once the new key is ready (see
+  /// [UserDataKeyRepository.loadFreshStartPending]).
   Future<void> startFresh() async {
     final (uid, isAnonymous) = switch (state.value) {
       UserDataKeyRecoveryRequired(:final uid) => (uid, false),
@@ -123,6 +124,7 @@ class UserDataKeySession extends _$UserDataKeySession {
       UserDataKeySignedOut() || null => throw StateError('No user signed in.'),
     };
     final repository = _requireRepository();
+    await repository.saveFreshStartPending(uid, pending: true);
     await repository.deletePrivateData(uid);
     final dataKey = await PayloadCipher.newDataKey();
     await repository.deleteLocalKeys(uid);

@@ -36,7 +36,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   Google Block Store on Android, iCloud Keychain on iPhone. Only when that
   fails (platform switch, no backup) the app asks for the recovery key before
   anything else; without it the user can start fresh, which deletes the old
-  private data.
+  private data. It also deletes the own household data and images, unless
+  members share the household: then they still hold its key and one of them
+  unlocks it again for the owner (see Household).
 
 ## Onboarding
 
@@ -371,6 +373,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   household key. Each member holds the key wrapped with their own data key.
   A member whose join stopped before the key was saved is asked to join
   again.
+- Unlock after a fresh start: an owner who started fresh with members keeps
+  the household data but not its key. Members see a hint and create a
+  one-time unlock code; the owner enters it on the household page and gets
+  the key back. A member who started fresh joins again with a new invite.
 - Household members list with leader and current-user badges.
 - Remove member, leave household, and leader-only action handling.
 - Shared household scope for inventory, shopping lists, utensils, prepared

@@ -3336,6 +3336,40 @@ class AppLocalizationsEn extends AppLocalizations {
       'Your key is still loading. Please try again in a moment.';
 
   @override
+  String get householdKeyRestoreHostMessage =>
+      'You started fresh, so your pantry is locked. A member of your household can unlock it: ask them for an unlock code and enter it here.';
+
+  @override
+  String get householdKeyRestoreMemberMessage =>
+      'The owner of this household started fresh and can no longer read the shared pantry. Create an unlock code and give it to them.';
+
+  @override
+  String get householdKeyRestoreCodeLabel => 'Unlock code';
+
+  @override
+  String get householdKeyRestoreAction => 'Unlock pantry';
+
+  @override
+  String get householdKeyRestoreSuccess => 'Pantry unlocked.';
+
+  @override
+  String get householdKeyRestoreInvalidCode =>
+      'This unlock code does not work.';
+
+  @override
+  String get householdKeyRestoreCreateAction => 'Create unlock code';
+
+  @override
+  String get householdKeyRestoreCodeHint =>
+      'Give this code to the household owner. It works until they use it or you create a new one.';
+
+  @override
+  String get householdKeyRestoreCopyAction => 'Copy code';
+
+  @override
+  String get householdKeyRestoreCopied => 'Code copied.';
+
+  @override
   String get householdHostVerificationHint =>
       'To invite other people into your household, link your guest account with Google or email & password.';
 
@@ -4683,7 +4717,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataKeyStartFreshDialogMessage =>
-      'Without the recovery key, your diary, weight, and goals cannot be read. They will be deleted.';
+      'Without the recovery key, your diary, weight, and goals cannot be read. They will be deleted. Your pantry is deleted too, unless other members share your household: then a member can unlock it for you again.';
 
   @override
   String get dataKeyStartFreshConfirmAction => 'Delete and start fresh';

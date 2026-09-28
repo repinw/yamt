@@ -58,3 +58,10 @@ class HouseholdKeyUnavailableException implements Exception {
   /// The household key unavailable exception.
   const new();
 }
+
+/// Thrown when a restore code does not open the household key that a member
+/// left, or no member left one yet.
+class InvalidHouseholdRestoreCodeException implements Exception {
+  /// The invalid household restore code exception.
+  const new();
+}
