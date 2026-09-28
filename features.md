@@ -25,6 +25,14 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Guest account linking with Google or email/password.
 - Credential conflict handling when a sign-in method is already used.
 - Account details, sign out, and account deletion.
+- When a Firebase account is deleted (account deletion, or an account dropped
+  in a sign-in conflict), a Cloud Function removes its data: the profile with
+  all private data (diary, weight, goals, keys), its Storage files, its member
+  and key entries in every household, and each household it was the last
+  member of, with that household's images and invites. A shared household
+  stays for the others; when the admin leaves, the member who joined first
+  becomes admin. Contributions to the global food catalog (foods, votes,
+  serving sizes, product photos) stay.
 - Persisted user profile data for profile-aware UI and household membership.
 - End-to-end encryption of private health data (diary entries, weight, calorie
   goals and body data, Burn Week state, own product corrections) with a
