@@ -118,6 +118,25 @@ class HouseholdRepository {
     });
   }
 
+  /// Gives the user a new, empty own household when the membership in the
+  /// own household [lostHouseholdId] ended, for example after the member who
+  /// took over its lead removed the user. Does nothing while the membership
+  /// stands or once the profile names another own household.
+  Future<void> replaceOwnHousehold(String lostHouseholdId) async {
+    final household = await _prepareHousehold();
+    await _firestore.runTransaction((transaction) async {
+      final profile = await transaction.get(_userDocument);
+      final membership = await transaction.get(
+        _members.memberDocument(lostHouseholdId, _currentUserId),
+      );
+      if (profile.data()?[_ownHouseholdIdField] != lostHouseholdId ||
+          membership.exists) {
+        return;
+      }
+      _writeHousehold(transaction, household, profileExists: true);
+    });
+  }
+
   /// Makes [ownHouseholdId] the active household again, for example after
   /// the admin of the shared household removed the user.
   Future<void> returnToOwnHousehold(String ownHouseholdId) {

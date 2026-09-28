@@ -296,6 +296,55 @@ void main() {
     });
   });
 
+  group('replaceOwnHousehold', () {
+    setUp(() async {
+      await addMember('own-alex', 'bo', joinedAt: DateTime(2026), admin: true);
+      await firestore.doc('users/alex').set(<String, dynamic>{
+        'uid': 'alex',
+        'householdId': 'own-alex',
+        'ownHouseholdId': 'own-alex',
+      });
+    });
+
+    test('a user removed from the own household gets a new one', () async {
+      await (await repositoryFor('alex')).replaceOwnHousehold('own-alex');
+
+      final profile = (await data('users/alex'))!;
+      final newId = profile['ownHouseholdId'] as String;
+      expect(newId, isNot('own-alex'));
+      expect(profile['householdId'], newId);
+      expect((await data('households/$newId/members/alex'))!['role'], 'admin');
+      expect(await data('households/$newId/keys/alex'), isNotNull);
+    });
+
+    test('keeps the own household while the user is still a member', () async {
+      await addMember('own-alex', 'alex', joinedAt: DateTime(2026, 2));
+
+      await (await repositoryFor('alex')).replaceOwnHousehold('own-alex');
+
+      expect((await data('users/alex'))!['ownHouseholdId'], 'own-alex');
+      expect(
+        (await firestore.collection('households').get()).docs,
+        hasLength(1),
+      );
+    });
+
+    test('keeps a newer own household', () async {
+      await firestore.doc('users/alex').update(<String, dynamic>{
+        'householdId': 'own-new',
+        'ownHouseholdId': 'own-new',
+      });
+
+      await (await repositoryFor('alex')).replaceOwnHousehold('own-alex');
+
+      expect((await data('users/alex'))!['ownHouseholdId'], 'own-new');
+      expect(
+        (await firestore.collection('households').get()).docs,
+        hasLength(1),
+      );
+    });
+  });
+
   test('returnToOwnHousehold makes the own household active', () async {
     await firestore.doc('users/late').set(<String, dynamic>{
       'uid': 'late',

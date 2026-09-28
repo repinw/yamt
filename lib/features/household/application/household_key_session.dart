@@ -61,14 +61,12 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     if (householdId == null) {
       return const HouseholdKeyUnavailable();
     }
-    if (householdId != ownHouseholdId) {
-      _returnHomeWhenMembershipEnds(
-        members,
-        households,
-        householdId: householdId,
-        ownHouseholdId: ownHouseholdId,
-      );
-    }
+    _leaveWhenMembershipEnds(
+      members,
+      households,
+      householdId: householdId,
+      ownHouseholdId: ownHouseholdId,
+    );
 
     final uid = dataCipher.uid;
     if (await userKeys.loadFreshStartPending(uid)) {
@@ -197,9 +195,10 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     return stored;
   }
 
-  /// Goes back to the own household when an admin removes the user from the
-  /// shared one, or deletes it.
-  void _returnHomeWhenMembershipEnds(
+  /// Leaves the active household [householdId] when an admin removes the
+  /// user or deletes it: from a shared household the user goes back to the
+  /// own one, from the own household into a new, empty one.
+  void _leaveWhenMembershipEnds(
     HouseholdMemberRepository members,
     HouseholdRepository households, {
     required String householdId,
@@ -208,7 +207,13 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     final subscription = members
         .watchMembershipEnded(householdId)
         .listen(
-          (_) => unawaited(_returnHome(households, ownHouseholdId)),
+          (_) => unawaited(
+            _leaveEndedHousehold(
+              households,
+              householdId: householdId,
+              ownHouseholdId: ownHouseholdId,
+            ),
+          ),
           onError: (Object error, StackTrace stackTrace) => log(
             'Failed to watch the membership in $householdId.',
             name: _logName,
@@ -219,15 +224,20 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     ref.onDispose(() => unawaited(subscription.cancel()));
   }
 
-  Future<void> _returnHome(
-    HouseholdRepository households,
-    String ownHouseholdId,
-  ) async {
+  Future<void> _leaveEndedHousehold(
+    HouseholdRepository households, {
+    required String householdId,
+    required String ownHouseholdId,
+  }) async {
     try {
-      await households.returnToOwnHousehold(ownHouseholdId);
+      if (householdId == ownHouseholdId) {
+        await households.replaceOwnHousehold(ownHouseholdId);
+      } else {
+        await households.returnToOwnHousehold(ownHouseholdId);
+      }
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to return to the own household.',
+        'Failed to leave $householdId after the membership ended.',
         name: _logName,
         error: error,
         stackTrace: stackTrace,

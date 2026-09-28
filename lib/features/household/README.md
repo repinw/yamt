@@ -29,7 +29,8 @@ shared data.
 ## Rules
 
 - Every user always has an own household. Joining another one pauses it,
-  leaving goes back to it.
+  leaving goes back to it. A user removed from the own household gets a new,
+  empty one.
 - A household has exactly one admin. Whoever becomes admin replaces the admin
   in the same write.
 - The last member who leaves deletes the household.

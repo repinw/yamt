@@ -94,17 +94,19 @@ void main() {
     return container;
   }
 
-  /// Waits until the session settles on a state of type [T].
+  /// Waits until the session settles on a state of type [T] that matches
+  /// [where].
   Future<T> settle<T extends HouseholdKeyState>(
-    ProviderContainer container,
-  ) async {
+    ProviderContainer container, {
+    bool Function(T state)? where,
+  }) async {
     final settled = Completer<T>();
     final subscription = container.listen(householdKeySessionProvider, (
       _,
       next,
     ) {
       final value = next.isLoading ? null : next.value;
-      if (value is T && !settled.isCompleted) {
+      if (value is T && (where?.call(value) ?? true) && !settled.isCompleted) {
         settled.complete(value);
       }
       if (next.hasError && !settled.isCompleted) {
@@ -197,6 +199,33 @@ void main() {
     expect(
       (await firestore.doc('users/$_uid').get()).data()!['householdId'],
       'own',
+    );
+  });
+
+  test('a user removed from the own household gets a new one', () async {
+    await setProfile(active: 'own', own: 'own');
+    await addMember('own', 'new-admin', admin: true);
+    await addMember('own', _uid);
+    await storeKey('own', dataCipher.cipher);
+    final container = createContainer();
+    await settle<HouseholdKeyReady>(container);
+
+    await firestore.doc('households/own/members/$_uid').delete();
+    await firestore.doc('households/own/keys/$_uid').delete();
+    final state = await settle<HouseholdKeyReady>(
+      container,
+      where: (state) => state.householdId != 'own',
+    );
+
+    final profile = (await firestore.doc('users/$_uid').get()).data()!;
+    expect(profile['ownHouseholdId'], state.householdId);
+    expect(profile['householdId'], state.householdId);
+    expect(
+      (await firestore
+              .doc('households/${state.householdId}/members/$_uid')
+              .get())
+          .data()!['role'],
+      'admin',
     );
   });
 

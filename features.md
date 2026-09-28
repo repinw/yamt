@@ -392,7 +392,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   household gets a new, empty one. The last member who leaves deletes the
   household with all its data and images.
 - The admin removes members to stop sharing and keeps everything. A removed
-  member's app notices it and goes back to the own household.
+  member's app notices it and goes back to the own household. A member
+  removed from the household that was their own gets a new, empty one.
 - End-to-end encryption of household data with a household key. Each member
   holds the key wrapped with their own data key.
 - Unlock after a fresh start: a member who started fresh lost their key
