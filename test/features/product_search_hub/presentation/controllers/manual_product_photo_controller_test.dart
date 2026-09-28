@@ -16,6 +16,8 @@ import 'package:yamt/features/product_search_hub/domain/'
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_photo_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_photo_state.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';

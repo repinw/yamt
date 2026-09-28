@@ -3,8 +3,7 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
-import 'package:yamt/features/product_search_hub/presentation/controllers/'
-    'manual_product_photo_controller.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/manual_product_photo_state.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'

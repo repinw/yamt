@@ -81,7 +81,8 @@ class FoodEstimatePhotoInput extends StatelessWidget {
               icon: const Icon(Icons.photo_library_outlined),
               label: Text(
                 l10n.foodEstimateFromGallery,
-                style: const TextStyle(decoration: TextDecoration.underline),
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(decoration: TextDecoration.underline),
               ),
             ),
           ),
