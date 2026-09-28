@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:yamt/features/shoppinglist/data/shopping_list_repository_contract.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 class FakeShoppingListRepository implements ShoppingListRepository {

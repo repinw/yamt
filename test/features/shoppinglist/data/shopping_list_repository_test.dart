@@ -1,344 +1,230 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/shoppinglist/data/'
-    'firestore_shopping_list_repository.dart';
-import 'package:yamt/features/shoppinglist/data/shopping_list_item_store.dart';
-import 'package:yamt/features/shoppinglist/data/shopping_list_user_session.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/sealed_collection.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
-class _FakeShoppingListUserSession implements ShoppingListUserSession {
-  new({this.householdId});
+class _HookedFakeFirebaseFirestore extends FakeFirebaseFirestore {
+  new({this.transactionDelay = Duration.zero, this.transactionError});
+
+  final Duration transactionDelay;
+  final FirebaseException? transactionError;
+  int _activeTransactions = 0;
+  int maxConcurrentTransactions = 0;
 
   @override
-  final String? householdId;
-}
-
-class _FakeShoppingListItemStore implements ShoppingListItemStore {
-  new({
-    Map<String, List<ShoppingListItemDocument>>? initialDocumentsByHousehold,
-  }) : _documentsByHousehold =
-           initialDocumentsByHousehold ??
-           <String, List<ShoppingListItemDocument>>{};
-
-  final Map<String, List<ShoppingListItemDocument>> _documentsByHousehold;
-  final Map<String, StreamController<List<ShoppingListItemDocument>>>
-  _controllersByHousehold =
-      <String, StreamController<List<ShoppingListItemDocument>>>{};
-
-  bool replaceAllShouldFail = false;
-  Duration replaceDelay = Duration.zero;
-
-  int _activeReplaces = 0;
-  int maxConcurrentReplaces = 0;
-
-  @override
-  Future<List<ShoppingListItemDocument>> readAll({
-    required String householdId,
-  }) {
-    return Future<List<ShoppingListItemDocument>>.value(
-      _copyDocuments(householdId),
-    );
-  }
-
-  @override
-  Stream<List<ShoppingListItemDocument>> watchAll({
-    required String householdId,
-  }) {
-    return Stream<List<ShoppingListItemDocument>>.multi((controller) {
-      controller.add(_copyDocuments(householdId));
-      final sub = _controllerFor(householdId).stream.listen(
-        controller.add,
-        onError: controller.addError,
-        onDone: controller.close,
-      );
-      controller.onCancel = () {
-        unawaited(sub.cancel());
-      };
-    });
-  }
-
-  @override
-  Future<bool> replaceAll({
-    required String householdId,
-    required Map<String, Map<String, dynamic>> documentsById,
+  Future<T> runTransaction<T>(
+    TransactionHandler<T> transactionHandler, {
+    Duration timeout = const Duration(seconds: 30),
+    int maxAttempts = 5,
   }) async {
-    if (replaceAllShouldFail) {
-      return false;
+    if (transactionError case final error?) {
+      throw error;
     }
-
-    _activeReplaces++;
-    if (_activeReplaces > maxConcurrentReplaces) {
-      maxConcurrentReplaces = _activeReplaces;
-    }
-
-    try {
-      if (replaceDelay > Duration.zero) {
-        await Future<void>.delayed(replaceDelay);
-      }
-      _documentsByHousehold[householdId] = documentsById.entries
-          .map(
-            (entry) => ShoppingListItemDocument(
-              id: entry.key,
-              data: Map<String, dynamic>.from(entry.value),
-            ),
-          )
-          .toList(growable: false);
-      _emit(householdId);
-      return true;
-    } finally {
-      _activeReplaces--;
-    }
-  }
-
-  void emitDocuments(
-    String householdId,
-    List<ShoppingListItemDocument> documents,
-  ) {
-    _documentsByHousehold[householdId] = documents
-        .map(
-          (doc) => ShoppingListItemDocument(
-            id: doc.id,
-            data: Map<String, dynamic>.from(doc.data),
-          ),
-        )
-        .toList(growable: false);
-    _emit(householdId);
-  }
-
-  void emitError(String householdId, Object error) {
-    final controller = _controllersByHousehold[householdId];
-    if (controller == null || controller.isClosed) {
-      return;
-    }
-    controller.addError(error);
-  }
-
-  Future<void> dispose() async {
-    for (final controller in _controllersByHousehold.values) {
-      await controller.close();
-    }
-    _controllersByHousehold.clear();
-  }
-
-  List<ShoppingListItemDocument> _copyDocuments(String householdId) {
-    final docs =
-        _documentsByHousehold[householdId] ??
-        const <ShoppingListItemDocument>[];
-    return docs
-        .map(
-          (doc) => ShoppingListItemDocument(
-            id: doc.id,
-            data: Map<String, dynamic>.from(doc.data),
-          ),
-        )
-        .toList(growable: false);
-  }
-
-  StreamController<List<ShoppingListItemDocument>> _controllerFor(
-    String householdId,
-  ) {
-    return _controllersByHousehold.putIfAbsent(
-      householdId,
-      StreamController<List<ShoppingListItemDocument>>.broadcast,
+    _activeTransactions += 1;
+    maxConcurrentTransactions = max(
+      maxConcurrentTransactions,
+      _activeTransactions,
     );
-  }
-
-  void _emit(String householdId) {
-    final controller = _controllersByHousehold[householdId];
-    if (controller == null || controller.isClosed) {
-      return;
+    try {
+      await Future<void>.delayed(transactionDelay);
+      return await super.runTransaction(
+        transactionHandler,
+        timeout: timeout,
+        maxAttempts: maxAttempts,
+      );
+    } finally {
+      _activeTransactions -= 1;
     }
-    controller.add(_copyDocuments(householdId));
   }
 }
 
-ShoppingListItem _item(
-  String id, {
-  String name = 'Milk',
-  String? brand,
-  int quantity = 1,
-  double estimatedUnitPrice = 0,
-}) {
+ShoppingListItem _item(String id, {String name = 'Milk'}) {
   return ShoppingListItem(
     id: id,
     name: name,
-    brand: brand,
-    normalizedName: name.trim().toLowerCase(),
-    normalizedBrand: (brand ?? '').trim().toLowerCase(),
-    quantity: quantity,
-    estimatedUnitPrice: estimatedUnitPrice,
+    normalizedName: name.toLowerCase(),
+    normalizedBrand: '',
+    quantity: 1,
+    estimatedUnitPrice: 0,
   );
 }
 
+Future<void> _waitForEmissions(List<Object> emitted, int count) {
+  return Future.doWhile(() async {
+    if (emitted.length >= count) {
+      return false;
+    }
+    await Future<void>.delayed(const Duration(milliseconds: 5));
+    return true;
+  }).timeout(const Duration(seconds: 5));
+}
+
 void main() {
-  test('repository readAll returns empty list without a household', () async {
-    final store = _FakeShoppingListItemStore();
-    addTearDown(store.dispose);
-    final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(),
-      store: store,
-    );
+  late HouseholdCipher householdCipher;
 
-    final items = await repository.readAll();
+  setUp(() async {
+    final key = await PayloadCipher.newDataKey();
+    householdCipher = (
+      householdId: 'household-1',
+      key: key,
+      cipher: PayloadCipher(key),
+    );
+  });
+
+  CollectionReference<Map<String, dynamic>> collectionOf(
+    FirebaseFirestore firestore,
+  ) {
+    return firestore
+        .collection('households')
+        .doc('household-1')
+        .collection('shopping_list_items');
+  }
+
+  Future<void> put(
+    FirebaseFirestore firestore,
+    String id,
+    Map<String, dynamic> data,
+  ) async {
+    final collection = collectionOf(firestore);
+    final sealed = SealedCollection(collection, cipher: householdCipher.cipher);
+    await collection.doc(id).set(await sealed.seal(id, data));
+  }
+
+  ShoppingListRepository repository(
+    FirebaseFirestore? firestore, {
+    bool withCipher = true,
+  }) {
+    return ShoppingListRepository(
+      firestore: firestore,
+      householdCipher: withCipher ? householdCipher : null,
+    );
+  }
+
+  test('readAll returns no items without a household cipher', () async {
+    final items = await repository(
+      FakeFirebaseFirestore(),
+      withCipher: false,
+    ).readAll();
 
     expect(items, isEmpty);
   });
 
-  test('repository watchAll emits empty list without a household', () async {
-    final store = _FakeShoppingListItemStore();
-    addTearDown(store.dispose);
-    final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(householdId: ''),
-      store: store,
-    );
-
-    final items = await repository.watchAll().first;
+  test('watchAll emits no items without Firestore', () async {
+    final items = await repository(null).watchAll().first;
 
     expect(items, isEmpty);
   });
 
-  test('repository saveAll fails without a household', () async {
-    final store = _FakeShoppingListItemStore();
-    addTearDown(store.dispose);
-    final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(householdId: ''),
-      store: store,
-    );
-
-    final saved = await repository.saveAll(<ShoppingListItem>[_item('a')]);
+  test('saveAll fails without a household cipher', () async {
+    final saved = await repository(
+      FakeFirebaseFirestore(),
+      withCipher: false,
+    ).saveAll(<ShoppingListItem>[_item('a')]);
 
     expect(saved, isFalse);
   });
 
-  test('repository skips corrupted document payload', () async {
-    final payload = Map<String, dynamic>.from(_item('doc-a').toJson())
-      ..remove('id');
-    final store = _FakeShoppingListItemStore(
-      initialDocumentsByHousehold: <String, List<ShoppingListItemDocument>>{
-        'household-1': <ShoppingListItemDocument>[
-          ShoppingListItemDocument(id: 'doc-a', data: payload),
-        ],
-      },
-    );
-    addTearDown(store.dispose);
-    final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(householdId: 'household-1'),
-      store: store,
-    );
+  test('readAll skips a corrupted document', () async {
+    final firestore = FakeFirebaseFirestore();
+    await put(firestore, 'a', _item('a').toJson()..remove('id'));
+    await put(firestore, 'b', _item('b').toJson());
 
-    final items = await repository.readAll();
+    final items = await repository(firestore).readAll();
 
-    expect(items, isEmpty);
+    expect(items.map((item) => item.id), <String>['b']);
   });
 
-  test('repository watchAll emits updates after remote writes', () async {
-    final store = _FakeShoppingListItemStore(
-      initialDocumentsByHousehold: <String, List<ShoppingListItemDocument>>{
-        'household-1': <ShoppingListItemDocument>[
-          ShoppingListItemDocument(id: 'a', data: _item('a').toJson()),
-        ],
-      },
-    );
-    addTearDown(store.dispose);
-    final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(householdId: 'household-1'),
-      store: store,
-    );
-
+  test('watchAll emits updates after remote writes', () async {
+    final firestore = FakeFirebaseFirestore();
+    await put(firestore, 'a', _item('a').toJson());
     final emitted = <List<ShoppingListItem>>[];
-    final sub = repository.watchAll().listen(emitted.add);
-    addTearDown(() {
-      unawaited(sub.cancel());
-    });
+    final subscription = repository(firestore).watchAll().listen(emitted.add);
+    addTearDown(() => unawaited(subscription.cancel()));
 
-    await Future<void>.delayed(const Duration(milliseconds: 1));
-    store.emitDocuments('household-1', <ShoppingListItemDocument>[
-      ShoppingListItemDocument(id: 'a', data: _item('a').toJson()),
-      ShoppingListItemDocument(id: 'b', data: _item('b').toJson()),
-    ]);
-    await Future<void>.delayed(const Duration(milliseconds: 1));
+    await _waitForEmissions(emitted, 1);
+    await put(firestore, 'b', _item('b').toJson());
+    await _waitForEmissions(emitted, 2);
 
-    expect(emitted.length, greaterThanOrEqualTo(2));
-    expect(emitted.first.map((item) => item.id), contains('a'));
+    expect(emitted.first.map((item) => item.id), <String>['a']);
     expect(
       emitted.last.map((item) => item.id),
-      containsAll(<String>['a', 'b']),
+      unorderedEquals(<String>['a', 'b']),
     );
   });
 
-  test(
-    'repository watchAll emits empty list when realtime watch is denied',
-    () async {
-      final store = _FakeShoppingListItemStore(
-        initialDocumentsByHousehold: <String, List<ShoppingListItemDocument>>{
-          'household-1': <ShoppingListItemDocument>[
-            ShoppingListItemDocument(id: 'a', data: _item('a').toJson()),
-          ],
-        },
-      );
-      addTearDown(store.dispose);
-      final repository = FirestoreShoppingListRepository(
-        session: _FakeShoppingListUserSession(householdId: 'household-1'),
-        store: store,
-      );
+  test('saveAll replaces the stored items and removes stale ones', () async {
+    final firestore = FakeFirebaseFirestore();
+    await put(firestore, 'a', _item('a').toJson());
+    await put(firestore, 'b', _item('b').toJson());
+    final target = repository(firestore);
 
-      final emitted = <List<ShoppingListItem>>[];
-      final errors = <Object>[];
-      final sub = repository.watchAll().listen(
-        emitted.add,
-        onError: errors.add,
-      );
-      addTearDown(() {
-        unawaited(sub.cancel());
-      });
+    final saved = await target.saveAll(<ShoppingListItem>[
+      _item('b', name: 'Bread'),
+      _item('c'),
+    ]);
 
-      await Future<void>.delayed(const Duration(milliseconds: 1));
-      store.emitError(
-        'household-1',
-        FirebaseException(
-          plugin: 'cloud_firestore',
-          code: 'permission-denied',
-          message: 'The caller does not have permission.',
-        ),
-      );
-      await Future<void>.delayed(const Duration(milliseconds: 1));
-
-      expect(errors, isEmpty);
-      expect(emitted, isNotEmpty);
-      expect(emitted.last, isEmpty);
-    },
-  );
-
-  test('repository serializes concurrent saveAll writes', () async {
-    final store = _FakeShoppingListItemStore()
-      ..replaceDelay = const Duration(milliseconds: 25);
-    addTearDown(store.dispose);
-    final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(householdId: 'household-1'),
-      store: store,
+    final documents = (await collectionOf(firestore).get()).docs;
+    expect(saved, isTrue);
+    expect(
+      documents.map((document) => document.id),
+      unorderedEquals(<String>['b', 'c']),
     );
+    expect(
+      documents.map((document) => document.data().containsKey('name')),
+      everyElement(isFalse),
+    );
+    expect(
+      (await target.readAll()).map((item) => (item.id, item.name)),
+      unorderedEquals(<(String, String)>[('b', 'Bread'), ('c', 'Milk')]),
+    );
+  });
 
-    final first = repository.saveAll(<ShoppingListItem>[_item('a')]);
-    final second = repository.saveAll(<ShoppingListItem>[_item('b')]);
-    final saved = await Future.wait<bool>(<Future<bool>>[first, second]);
+  test('saveAll writes more than 500 items', () async {
+    final firestore = FakeFirebaseFirestore();
+    final items = <ShoppingListItem>[
+      for (var index = 0; index < 501; index++) _item('item-$index'),
+    ];
+
+    final saved = await repository(firestore).saveAll(items);
+
+    expect(saved, isTrue);
+    expect((await collectionOf(firestore).get()).docs, hasLength(501));
+  });
+
+  test('saveAll runs writes one after another', () async {
+    final firestore = _HookedFakeFirebaseFirestore(
+      transactionDelay: const Duration(milliseconds: 25),
+    );
+    final target = repository(firestore);
+
+    final saved = await Future.wait<bool>(<Future<bool>>[
+      target.saveAll(<ShoppingListItem>[_item('a')]),
+      target.saveAll(<ShoppingListItem>[_item('b')]),
+    ]);
 
     expect(saved, everyElement(isTrue));
-    expect(store.maxConcurrentReplaces, 1);
-    final items = await repository.readAll();
-    expect(items.single.id, 'b');
+    expect(firestore.maxConcurrentTransactions, 1);
+    expect((await target.readAll()).single.id, 'b');
   });
 
-  test('repository saveAll returns false when store replace fails', () async {
-    final store = _FakeShoppingListItemStore()..replaceAllShouldFail = true;
-    addTearDown(store.dispose);
-    final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(householdId: 'household-1'),
-      store: store,
+  test('saveAll fails when the Firestore write fails', () async {
+    final firestore = _HookedFakeFirebaseFirestore(
+      transactionError: FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'aborted',
+        message: 'transaction failed',
+      ),
     );
 
-    final saved = await repository.saveAll(<ShoppingListItem>[_item('a')]);
+    final saved = await repository(firestore)
+        .saveAll(<ShoppingListItem>[_item('a')]);
 
     expect(saved, isFalse);
   });

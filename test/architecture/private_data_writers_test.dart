@@ -34,7 +34,7 @@ const _allowedFiles = <String>{
   'lib/features/inventory/data/prepared_meal_store.dart',
   'lib/features/inventory/data/prepared_meal_template_store.dart',
   'lib/features/kitchen_utensils/data/kitchen_utensil_store.dart',
-  'lib/features/shoppinglist/data/shopping_list_item_store.dart',
+  'lib/features/shoppinglist/data/shopping_list_repository.dart',
   'lib/features/inventory/data/firestore_inventory_calorie_entry_commit_store.dart',
   'lib/features/inventory/data/prepared_meal_calorie_entry_commit_store.dart',
 };

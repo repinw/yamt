@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:yamt/features/shoppinglist/data/shopping_list_repository_contract.dart';
+import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 /// Manages the initial snapshot and subsequent realtime notifications.

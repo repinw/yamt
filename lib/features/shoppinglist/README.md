@@ -1,83 +1,44 @@
-# Shopping List Feature
+# Shopping List
 
-Shopping List owns user grocery-list storage, list mutations, and the shopping
-list page.
+## Purpose
+
+Shopping List keeps the household's grocery list: what to buy and how many,
+saved favorites, and products that come back on a schedule.
 
 ## Owns
 
-- Shopping-list items, favorites and recurring-item settings.
-- Firestore/local repository implementations under `data/`.
-- Pure mutation, normalization and calendar recurrence rules under `domain/`.
-- Recommendation filtering and visible list sections under `application/`.
-- Shopping-list page, widgets, and controller under `presentation/`.
+- Shopping list items with their favorite and recurrence settings, stored
+  encrypted with the household key.
+- List mutations: adding and merging products, quantities, crossing off,
+  reverting an addition, and the calendar recurrence rules.
+- Suggestion filtering and the visible list sections.
+- The shopping list page, its widgets, and its controller.
 
 ## Does Not Own
 
-- Inventory stock persistence.
-- Recipe or cookflow ingredient parsing.
-- Household membership workflows.
+- Inventory stock and the purchase interpretation of a list entry.
+- Recipe and cooking ingredient parsing.
+- Household membership and the household key.
 
-## Public Edge
+## Public UI
 
-- `presentation/shopping_list_page.dart` for routing.
-- `presentation/controllers/shopping_list_controller.dart` for existing feature
-  integrations that add or resolve shopping-list items.
-- `application/shopping_list_operations.dart` for value normalization helpers.
-- `domain/shopping_list_item.dart` for list item data.
+- `ShoppingListPage` with its `suggestionsSection` slot. Inventory fills the
+  slot with its own suggestions and composes the finished page.
+- `ShoppingListSuggestions` renders `ShoppingSuggestion` values and hides
+  products that are already on the list.
 
-## Providers
+## Rules
 
-- Repository providers live in `data/`.
-- Controller providers live in `presentation/controllers/`.
-- Application providers use `riverpod_annotation` and generated parts.
-
-## Recommendations and Saved Products
-
-- `domain/shopping_suggestion.dart` is the public, inventory-independent input
-  model. `presentation/widgets/shopping_list_suggestions.dart` renders suggestions
-  and filters out already-listed products.
-- `ShoppingListPage` exposes a `suggestionsSection` slot.
-- Inventory owns stock/purchase interpretation and composes the finished
-  `InventoryShoppingListPage` by passing `ShoppingListSuggestions` into that slot.
-  Dependency direction remains `inventory -> shoppinglist`.
-- Favorites and schedules are stored on existing `shopping_list_items` documents.
-  Missing fields in older documents default to an ordinary list entry.
-- Removing or clearing a saved product archives its list entry, retaining the
-  favorite/schedule. Re-adding reuses the same document and does not duplicate
-  an already active item.
-- Recurrence uses a local calendar interval (1–365 days), quantity (1–999), and
-  first due date. Due records reactivate once at load/resume or the page's
-  minute tick. Missed intervals advance to the next future date without adding
-  a backlog. Existing active quantities remain unchanged.
-- Reactivation and due-date advancement share the same serialized persistence
-  operation. A failed save rolls both back for a later retry. This is an app
-  feature, not a background delivery/order service while the app is closed.
-
-## Accepted Dependencies
-
-- `core` for mutation queue and app primitives.
-- `features/auth` and `features/household` for user/household data ownership.
-
-Current accepted consumers:
-
-- `inventory` may add items from inventory rows.
-- `cooking_flow` may add shortage labels and resolve used shopping-list items.
-
-## Tests
-
-Shopping-list tests live under `test/features/shoppinglist/`, including legacy
-JSON, schedule advancement, save rollback, favorite reuse, form validation,
-recommendation insertion, and narrow-screen rendering. Purchase/stock rules and
-the inventory integration are tested under `test/features/inventory/`.
-
-### Schedule configuration and UI composition
-
-`ShoppingListController.setSchedule` configures the schedule and applies it when
-already due in a single serialized save. Widgets only submit the settings;
-activation does not depend on the widget remaining mounted. Failed persistence
-rolls back both the settings and activation together.
-
-The content and schedule dialog use component folders under
-`presentation/widgets/shopping_list_content/` and
-`presentation/widgets/shopping_list_schedule_dialog/`. Their section, empty-state,
-and form helpers remain alongside the owning widget; imports target concrete files.
+- Removing or clearing a saved product archives its entry and keeps the
+  favorite and the schedule. Re-adding reuses the same entry and never
+  duplicates an active item.
+- Recurrence uses a local calendar interval of 1 to 365 days, a quantity of 1
+  to 999, and a first due date. Due entries reactivate once at load, on
+  resume, or on the page's minute tick. Missed intervals advance to the next
+  future date without a backlog. Active quantities stay unchanged.
+- Configuring a schedule and applying it when already due is one serialized
+  save. A failed save rolls both back for a later retry. Widgets only submit
+  the settings; activation does not depend on the widget staying mounted.
+- Every save replaces the whole list in one serialized write. While the user
+  is signed out or the household key is not ready, reads return no items and
+  writes fail.

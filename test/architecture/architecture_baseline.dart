@@ -245,8 +245,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart':
         1,
-    'lib/features/shoppinglist/data/shopping_list_item_store.dart': 1,
-    'lib/features/shoppinglist/data/shopping_list_repository_contract.dart': 1,
   },
   'flow-placement': {
     'lib/features/calories/application/calorie_entry_amount_edit_flow.dart': 1,
@@ -438,6 +436,5 @@ const architectureBaseline = <String, Map<String, int>>{
   },
   'session-interface': {
     'lib/features/inventory/data/inventory_user_session.dart': 1,
-    'lib/features/shoppinglist/data/shopping_list_user_session.dart': 1,
   },
 };
