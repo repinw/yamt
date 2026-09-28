@@ -29,7 +29,6 @@ ProviderContainer _createContainer({
   final container = ProviderContainer(
     overrides: [
       clockProvider.overrideWithValue(() => _now),
-      manualHealthWeightNowProvider.overrideWithValue(() => _now),
       manualHealthWeightRepositoryProvider.overrideWith(
         (ref) => FakeManualHealthWeightRepository(manualEntries),
       ),

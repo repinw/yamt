@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/health/application/recent_weight_trend_provider.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
@@ -15,12 +16,6 @@ import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 part 'manual_health_weight_entries_controller.g.dart';
 
 const _logName = 'ManualHealthWeightEntriesController';
-
-/// Provides the current clock for manual weight timestamps.
-@riverpod
-DateTime Function() manualHealthWeightNow(Ref ref) {
-  return DateTime.now;
-}
 
 /// Defines manual health weight entries controller.
 @riverpod
@@ -39,7 +34,7 @@ class ManualHealthWeightEntriesController
     final repository = ref.read(manualHealthWeightRepositoryProvider);
     final healthWeightService = ref.read(healthWeightServiceProvider);
     final healthConnectionService = ref.read(healthConnectionServiceProvider);
-    final now = ref.read(manualHealthWeightNowProvider)();
+    final now = ref.read(clockProvider)();
     final previousEntries = await _loadCurrentEntries(repository);
     final normalizedDay = normalizeLocalDay(day);
     final connectionStatus = await healthConnectionService.loadStatus();

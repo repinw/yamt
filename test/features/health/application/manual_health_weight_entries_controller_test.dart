@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/health/application/health_connection_controller.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
@@ -182,7 +183,7 @@ void main() {
   }) {
     return ProviderContainer(
       overrides: [
-        manualHealthWeightNowProvider.overrideWithValue(
+        clockProvider.overrideWithValue(
           now ?? () => DateTime(2026, 4, 1, 12),
         ),
         manualHealthWeightRepositoryProvider.overrideWith((ref) => repository),
