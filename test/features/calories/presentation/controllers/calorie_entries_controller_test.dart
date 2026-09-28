@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/application/calorie_entry_mutations.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -10,10 +12,8 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_mutation.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
-import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_entry_mutations.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_day_controller.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
 
 class _FakeCalorieLogRepository implements CalorieLogRepositoryContract {
   new({List<CalorieEntry>? initialEntries})
@@ -322,12 +322,6 @@ ProviderSubscription<AsyncValue<CalorieGoalSettings>> _keepGoalAlive(
   return container.listen(calorieGoalControllerProvider, (_, _) {});
 }
 
-ProviderSubscription<AsyncValue<CalorieDayViewData>> _keepDayViewAlive(
-  ProviderContainer container,
-) {
-  return container.listen(calorieDayViewDataProvider, (_, _) {});
-}
-
 Future<void> _waitForCondition({
   required bool Function() condition,
   Duration timeout = const Duration(seconds: 1),
@@ -475,190 +469,6 @@ void main() {
     expect(repository.lastWatchedDay, DateTime(2026, 2, 26));
     expect(dayTwoEntries, hasLength(1));
     expect(dayTwoEntries.single.id, 'day-2');
-  });
-
-  test('calorieDayViewData aggregates summary and sections', () async {
-    final repository = _FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry(
-          'b1',
-          loggedAt: DateTime(2026, 2, 25, 8),
-          mealType: MealType.breakfast,
-        ),
-        _entry(
-          'l1',
-          loggedAt: DateTime(2026, 2, 25, 12),
-          mealType: MealType.lunch,
-          consumedAmount: 200,
-          per100Kcal: 150,
-          per100Protein: 8,
-          per100Carbs: 12,
-          per100Fat: 6,
-        ),
-      ],
-    );
-    final settingsRepository = _FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2200,
-        calculatorProfile: null,
-        effectiveDate: DateTime(2026, 2, 25, 10),
-      ),
-    );
-    addTearDown(repository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(repository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
-    );
-    addTearDown(container.dispose);
-    final entriesSubscription = _keepEntriesAlive(container);
-    final goalSubscription = _keepGoalAlive(container);
-    final viewDataSubscription = _keepDayViewAlive(container);
-    addTearDown(entriesSubscription.close);
-    addTearDown(goalSubscription.close);
-    addTearDown(viewDataSubscription.close);
-
-    container
-        .read(calorieDayControllerProvider.notifier)
-        .setDay(DateTime(2026, 2, 25));
-    await container.read(calorieEntriesControllerProvider.future);
-    await container.read(calorieGoalControllerProvider.future);
-    await _waitForCondition(
-      condition: () => container.read(calorieDayViewDataProvider).hasValue,
-    );
-
-    final viewDataState = container.read(calorieDayViewDataProvider);
-    final viewData = viewDataState.requireValue;
-
-    expect(viewDataState.hasValue, isTrue);
-    expect(viewData.summary.entryCount, 2);
-    expect(viewData.summary.totalKcal, closeTo(400, 0.001));
-    expect(viewData.goalKcal, 2200);
-    expect(viewData.remainingKcal, closeTo(1800, 0.001));
-
-    final breakfastSection = viewData.sections.firstWhere(
-      (section) => section.mealType == MealType.breakfast,
-    );
-    final lunchSection = viewData.sections.firstWhere(
-      (section) => section.mealType == MealType.lunch,
-    );
-
-    expect(breakfastSection.entries, hasLength(1));
-    expect(breakfastSection.totalKcal, closeTo(100, 0.001));
-    expect(lunchSection.entries, hasLength(1));
-    expect(lunchSection.totalKcal, closeTo(300, 0.001));
-  });
-
-  test('calorieDayViewData uses the goal active on the selected day', () async {
-    final selectedDay = DateTime(2026, 2, 24);
-    final repository = _FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry(
-          'b1',
-          loggedAt: DateTime(2026, 2, 24, 8),
-          mealType: MealType.breakfast,
-        ),
-      ],
-    );
-    final settingsRepository = _FakeCalorieSettingsRepository(
-      initialSettings: const CalorieGoalSettings.empty()
-          .applyGoalChange(
-            changedAt: DateTime(2026, 2, 20, 10),
-            dailyKcalGoal: 2200,
-            calculatorProfile: null,
-          )
-          .applyGoalChange(
-            changedAt: DateTime(2026, 2, 25, 10),
-            dailyKcalGoal: 1800,
-            calculatorProfile: null,
-          ),
-    );
-    addTearDown(repository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(repository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
-    );
-    addTearDown(container.dispose);
-    final entriesSubscription = _keepEntriesAlive(container);
-    final goalSubscription = _keepGoalAlive(container);
-    final viewDataSubscription = _keepDayViewAlive(container);
-    addTearDown(entriesSubscription.close);
-    addTearDown(goalSubscription.close);
-    addTearDown(viewDataSubscription.close);
-
-    container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
-    await container.read(calorieEntriesControllerProvider.future);
-    await container.read(calorieGoalControllerProvider.future);
-    await _waitForCondition(
-      condition: () => container.read(calorieDayViewDataProvider).hasValue,
-    );
-
-    final viewData = container.read(calorieDayViewDataProvider).requireValue;
-
-    expect(viewData.goalKcal, 2200);
-    expect(viewData.remainingKcal, closeTo(2100, 0.001));
-  });
-
-  test('calorieDayViewData stays loading while entries are loading', () {
-    final repository = _FakeCalorieLogRepository()
-      ..initialEmissionDelay = const Duration(seconds: 1);
-    final settingsRepository = _FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(repository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
-    );
-    addTearDown(container.dispose);
-    final entriesSubscription = _keepEntriesAlive(container);
-    addTearDown(entriesSubscription.close);
-
-    container
-        .read(calorieDayControllerProvider.notifier)
-        .setDay(DateTime(2026, 2, 25));
-
-    final viewDataState = container.read(calorieDayViewDataProvider);
-
-    expect(viewDataState.isLoading, isTrue);
-    expect(viewDataState.hasValue, isFalse);
-  });
-
-  test('calorieDayViewData returns AsyncError when entries fail', () async {
-    final repository = _FakeCalorieLogRepository()
-      ..watchError = StateError('permission denied');
-    final settingsRepository = _FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(repository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
-    );
-    addTearDown(container.dispose);
-    final entriesSubscription = _keepEntriesAlive(container);
-    addTearDown(entriesSubscription.close);
-
-    await expectLater(
-      container.read(calorieEntriesControllerProvider.future),
-      throwsA(isA<StateError>()),
-    );
-
-    final viewDataState = container.read(calorieDayViewDataProvider);
-
-    expect(viewDataState.hasError, isTrue);
-    expect(viewDataState.asError?.error, isA<StateError>());
   });
 
   test(

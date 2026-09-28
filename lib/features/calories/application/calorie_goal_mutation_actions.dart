@@ -1,3 +1,4 @@
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
@@ -5,7 +6,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 /// Sets a manual daily calorie goal.
 Future<bool> setManualCalorieGoal({

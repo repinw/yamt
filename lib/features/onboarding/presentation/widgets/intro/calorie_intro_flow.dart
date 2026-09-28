@@ -13,8 +13,7 @@ import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_calculator_form_controller.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/presentation/controllers/'

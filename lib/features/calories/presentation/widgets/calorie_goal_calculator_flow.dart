@@ -11,6 +11,9 @@ import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_goal_calculator_form_controller.dart';
+import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_fields.dart';
+import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_body_summary.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -29,10 +32,6 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_training_days_card.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_calculator_form_controller.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_calculator_form_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _CalculatorStep {

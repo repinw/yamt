@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/calories/application/macro_goal_settings_controller.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
-import 'package:yamt/features/calories/provider/macro_goal_settings_controller.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 

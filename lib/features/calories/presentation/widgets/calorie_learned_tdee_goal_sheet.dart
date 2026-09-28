@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -30,8 +32,6 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_target_weight_selector.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
-import 'package:yamt/features/calories/provider/burn_week_run_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Show calorie learned tdee goal sheet.

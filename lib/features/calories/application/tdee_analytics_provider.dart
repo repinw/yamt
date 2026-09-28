@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/daily_learned_tdee_models.dart';
+import 'package:yamt/features/calories/application/daily_learned_tdee_provider.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
@@ -12,8 +14,6 @@ import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/calories/provider/daily_learned_tdee_provider.dart';
 import 'package:yamt/features/health/application/health_connection_controller.dart';
 import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';

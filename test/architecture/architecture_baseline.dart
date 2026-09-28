@@ -13,8 +13,6 @@ const architectureBaseline = <String, Map<String, int>>{
         3,
   },
   'foreign-presentation': {
-    'lib/features/activity/application/diary_activity_weight_data_provider.dart':
-        1,
     'lib/features/activity/presentation/diary_weight_tracking_flow.dart': 1,
     'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_dialog.dart':
         1,
@@ -46,50 +44,22 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/cooking_flow/presentation/cooking_flow_tare_utensil_picker.dart':
         2,
-    'lib/features/diary/application/diary_balance_provider.dart': 3,
-    'lib/features/diary/application/diary_day_dashboard_live_data_provider.dart':
-        2,
-    'lib/features/diary/application/diary_day_type_provider.dart': 1,
-    'lib/features/diary/application/diary_entries_provider.dart': 1,
-    'lib/features/diary/application/diary_weekly_checkin_provider.dart': 5,
-    'lib/features/diary/presentation/controllers/diary_day_dashboard_controller.dart':
-        1,
-    'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_weekly_balance_summary.dart':
-        1,
     'lib/features/diary/presentation/widgets/diary_meal_group/diary_meal_portion_formatter.dart':
         1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 2,
     'lib/features/home_widget/presentation/controllers/home_widget_sync_controller.dart':
         1,
-    'lib/features/inventory/application/inventory_calorie_entry_post_persist_hook.dart':
-        1,
     'lib/features/inventory/presentation/controllers/inventory_items_controller.dart':
-        1,
-    'lib/features/inventory/presentation/inventory_calorie_entry_delete_flow.dart':
         1,
     'lib/features/inventory/presentation/inventory_shopping_list_page.dart': 1,
     'lib/features/meal_templates/presentation/meal_template_import_review_page.dart':
         1,
     'lib/features/meal_templates/presentation/widgets/meal_templates_page/meal_templates_page.dart':
         1,
-    'lib/features/onboarding/application/calorie_goal_onboarding_finish_flow.dart':
-        2,
-    'lib/features/onboarding/presentation/calorie_goal_onboarding_page.dart': 1,
-    'lib/features/onboarding/presentation/controllers/calorie_intro_controller.dart':
-        1,
-    'lib/features/onboarding/presentation/models/calorie_intro_state.dart': 1,
-    'lib/features/onboarding/presentation/models/intro_input_page_args.dart': 2,
+    'lib/features/onboarding/presentation/models/intro_input_page_args.dart': 1,
     'lib/features/onboarding/presentation/widgets/intro/calorie_intro_flow.dart':
         1,
     'lib/features/onboarding/presentation/widgets/intro/calorie_intro_pages.dart':
-        2,
-    'lib/features/onboarding/presentation/widgets/intro/pages/intro_body_page.dart':
-        1,
-    'lib/features/onboarding/presentation/widgets/intro/pages/intro_identity_page.dart':
-        1,
-    'lib/features/onboarding/presentation/widgets/intro/pages/intro_pace_page.dart':
-        1,
-    'lib/features/onboarding/presentation/widgets/intro/pages/intro_target_page.dart':
         1,
     'lib/features/product_search_hub/presentation/widgets/product_search_barcode_candidate_picker_sheet.dart':
         1,
@@ -97,11 +67,8 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/settings/presentation/controllers/account_controller.dart': 1,
     'lib/features/settings/presentation/pages/account_page.dart': 1,
-    'lib/features/settings/presentation/pages/settings_page.dart': 1,
     'lib/features/settings/presentation/widgets/link_email_password_dialog/link_email_password_dialog.dart':
         1,
-    'lib/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart':
-        2,
   },
   'feature-folders': {
     'lib/features/calories/debug/calorie_debug_action_controller.dart': 1,
@@ -113,27 +80,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/debug/calorie_debug_file_exporter.dart': 1,
     'lib/features/calories/debug/calorie_debug_keys.dart': 1,
     'lib/features/calories/debug/calorie_debug_weekly_checkin_rows.dart': 1,
-    'lib/features/calories/provider/burn_week_run_controller.dart': 1,
-    'lib/features/calories/provider/calorie_balance_now_provider.dart': 1,
-    'lib/features/calories/provider/calorie_day_controller.dart': 1,
-    'lib/features/calories/provider/calorie_entries_controller.dart': 1,
-    'lib/features/calories/provider/calorie_entry_mutations.dart': 1,
-    'lib/features/calories/provider/calorie_entry_post_persist_hook.dart': 1,
-    'lib/features/calories/provider/calorie_goal_calculator_form_controller.dart':
-        1,
-    'lib/features/calories/provider/calorie_goal_calculator_form_state.dart': 1,
-    'lib/features/calories/provider/calorie_goal_controller.dart': 1,
-    'lib/features/calories/provider/calorie_overview_revision_provider.dart': 1,
-    'lib/features/calories/provider/calorie_page_action_controller.dart': 1,
-    'lib/features/calories/provider/calorie_resolved_goal_provider.dart': 1,
-    'lib/features/calories/provider/calorie_visible_window_controller.dart': 1,
-    'lib/features/calories/provider/calorie_week_overview_provider.dart': 1,
-    'lib/features/calories/provider/calorie_weekly_checkin_controller.dart': 1,
-    'lib/features/calories/provider/calorie_weekly_checkin_data_builder.dart':
-        1,
-    'lib/features/calories/provider/calorie_weekly_checkin_provider.dart': 1,
-    'lib/features/calories/provider/daily_learned_tdee_provider.dart': 1,
-    'lib/features/calories/provider/macro_goal_settings_controller.dart': 1,
     'lib/features/home/home_page.dart': 1,
     'lib/features/home/widgets/home_shell_chrome_visibility_controller.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,

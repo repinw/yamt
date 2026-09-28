@@ -1,6 +1,16 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart'
+    as goal_controller;
+import 'package:yamt/features/calories/application/calorie_page_action_controller.dart'
+    as page_actions;
+import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart'
+    as week_overview;
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart'
+    as checkin_controller;
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart'
     as checkin_models;
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart'
+    as checkin_provider;
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart'
     as goal_settings;
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart'
@@ -10,16 +20,6 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart'
     as checkin_domain;
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart'
     as goal_settings;
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart'
-    as goal_controller;
-import 'package:yamt/features/calories/provider/calorie_page_action_controller.dart'
-    as page_actions;
-import 'package:yamt/features/calories/provider/calorie_week_overview_provider.dart'
-    as week_overview;
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_controller.dart'
-    as checkin_controller;
-import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.dart'
-    as checkin_provider;
 
 part 'diary_weekly_checkin_provider.g.dart';
 

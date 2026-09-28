@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_calculator_form_state.dart';
+import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/onboarding/presentation/models/'
     'calorie_intro_page.dart';
 

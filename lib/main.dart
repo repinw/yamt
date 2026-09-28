@@ -12,10 +12,9 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_entry_amount_edit_flow.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/application/calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_inventory_entry_save_handler.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/application/'

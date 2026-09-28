@@ -1,15 +1,7 @@
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
-
-/// Defines calorie calculator field error.
-enum CalorieCalculatorFieldError {
-  /// Empty.
-  empty,
-
-  /// Invalid.
-  invalid,
-}
+import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_fields.dart';
 
 /// Defines calorie goal calculator form state.
 class CalorieGoalCalculatorFormState {
@@ -46,18 +38,22 @@ class CalorieGoalCalculatorFormState {
     final shouldUseEmptyFields = initialProfile == null && useEmptyDefaults;
     final normalizedGoalSpeedText = profile.goalMode == CalorieGoalMode.maintain
         ? '0'
-        : _formatDouble(profile.goalSpeedKgPerWeek);
+        : formatCalculatorNumber(profile.goalSpeedKgPerWeek);
     final preservedGoalSpeedText = profile.goalSpeedKgPerWeek > 0
-        ? _formatDouble(profile.goalSpeedKgPerWeek)
+        ? formatCalculatorNumber(profile.goalSpeedKgPerWeek)
         : '0.5';
 
     return CalorieGoalCalculatorFormState._create(
       sex: shouldUseEmptyFields ? null : profile.sex,
-      weightKgText: shouldUseEmptyFields ? '' : _formatDouble(profile.weightKg),
+      weightKgText: shouldUseEmptyFields
+          ? ''
+          : formatCalculatorNumber(profile.weightKg),
       targetWeightKgText: shouldUseEmptyFields || profile.targetWeightKg == null
           ? ''
-          : _formatDouble(profile.targetWeightKg!),
-      heightCmText: shouldUseEmptyFields ? '' : _formatDouble(profile.heightCm),
+          : formatCalculatorNumber(profile.targetWeightKg!),
+      heightCmText: shouldUseEmptyFields
+          ? ''
+          : formatCalculatorNumber(profile.heightCm),
       ageYearsText: shouldUseEmptyFields ? '' : profile.ageYears.toString(),
       activityLevelOption: CalorieActivityLevelOption.fromActivityLevel(
         profile.activityLevel,
@@ -86,15 +82,15 @@ class CalorieGoalCalculatorFormState {
     DateTime? birthDate,
     bool isSaving = false,
   }) {
-    final weightError = _validateWeight(weightKgText);
+    final weightError = validateCalculatorWeight(weightKgText);
     final targetWeightError = goalMode == CalorieGoalMode.maintain
         ? null
-        : _validateWeight(targetWeightKgText);
-    final heightError = _validateHeight(heightCmText);
-    final ageError = _validateAge(ageYearsText);
+        : validateCalculatorWeight(targetWeightKgText);
+    final heightError = validateCalculatorHeight(heightCmText);
+    final ageError = validateCalculatorAge(ageYearsText);
     final goalSpeedError = goalMode == CalorieGoalMode.maintain
         ? null
-        : _validatePositiveDouble(goalSpeedKgPerWeekText);
+        : validatePositiveCalculatorDouble(goalSpeedKgPerWeekText);
     final sexError = sex == null ? CalorieCalculatorFieldError.empty : null;
     final profile =
         sexError == null &&
@@ -105,18 +101,18 @@ class CalorieGoalCalculatorFormState {
             goalSpeedError == null
         ? CalorieCalculatorProfile(
             sex: sex!,
-            weightKg: _parsePositiveDouble(weightKgText)!,
-            heightCm: _parsePositiveDouble(heightCmText)!,
-            ageYears: _parsePositiveInt(ageYearsText)!,
+            weightKg: parsePositiveCalculatorDouble(weightKgText)!,
+            heightCm: parsePositiveCalculatorDouble(heightCmText)!,
+            ageYears: parsePositiveCalculatorInt(ageYearsText)!,
             birthDate: birthDate,
             activityLevel: activityLevelOption.palValue,
             goalMode: goalMode,
             goalSpeedKgPerWeek: goalMode == CalorieGoalMode.maintain
                 ? 0
-                : _parsePositiveDouble(goalSpeedKgPerWeekText)!,
+                : parsePositiveCalculatorDouble(goalSpeedKgPerWeekText)!,
             targetWeightKg: goalMode == CalorieGoalMode.maintain
                 ? null
-                : _parsePositiveDouble(targetWeightKgText),
+                : parsePositiveCalculatorDouble(targetWeightKgText),
             trainingWeekdays: trainingWeekdays,
             trainingDayKcalOffset: trainingDayKcalOffset,
           )
@@ -216,15 +212,15 @@ class CalorieGoalCalculatorFormState {
 
   /// The profile.
   CalorieCalculatorProfile? get profile {
-    final weightKg = _parsePositiveDouble(weightKgText);
-    final heightCm = _parsePositiveDouble(heightCmText);
-    final ageYears = _parsePositiveInt(ageYearsText);
+    final weightKg = parsePositiveCalculatorDouble(weightKgText);
+    final heightCm = parsePositiveCalculatorDouble(heightCmText);
+    final ageYears = parsePositiveCalculatorInt(ageYearsText);
     final goalSpeedKgPerWeek = isMaintainMode
         ? 0.0
-        : _parsePositiveDouble(goalSpeedKgPerWeekText);
+        : parsePositiveCalculatorDouble(goalSpeedKgPerWeekText);
     final targetWeightKg = isMaintainMode
         ? null
-        : _parsePositiveDouble(targetWeightKgText);
+        : parsePositiveCalculatorDouble(targetWeightKgText);
 
     if (sex == null ||
         weightKg == null ||
@@ -284,81 +280,5 @@ class CalorieGoalCalculatorFormState {
           trainingDayKcalOffset ?? this.trainingDayKcalOffset,
       isSaving: isSaving ?? this.isSaving,
     );
-  }
-
-  static String _formatDouble(double value) {
-    final fixed = value.toStringAsFixed(
-      value.truncateToDouble() == value ? 0 : 2,
-    );
-    if (!fixed.contains('.')) {
-      return fixed;
-    }
-    return fixed.replaceFirst(RegExp(r'\.?0+$'), '');
-  }
-
-  static double? _parsePositiveDouble(String rawValue) {
-    final normalizedValue = rawValue.trim().replaceAll(',', '.');
-    if (normalizedValue.isEmpty) {
-      return null;
-    }
-    final parsedValue = double.tryParse(normalizedValue);
-    if (parsedValue == null || parsedValue <= 0) {
-      return null;
-    }
-    return parsedValue;
-  }
-
-  static int? _parsePositiveInt(String rawValue) {
-    final normalizedValue = rawValue.trim();
-    if (normalizedValue.isEmpty) {
-      return null;
-    }
-    final parsedValue = int.tryParse(normalizedValue);
-    if (parsedValue == null || parsedValue <= 0) {
-      return null;
-    }
-    return parsedValue;
-  }
-
-  static CalorieCalculatorFieldError? _validatePositiveDouble(String rawValue) {
-    if (rawValue.trim().isEmpty) {
-      return CalorieCalculatorFieldError.empty;
-    }
-    return _parsePositiveDouble(rawValue) == null
-        ? CalorieCalculatorFieldError.invalid
-        : null;
-  }
-
-  static CalorieCalculatorFieldError? _validateWeight(String rawValue) {
-    if (rawValue.trim().isEmpty) {
-      return CalorieCalculatorFieldError.empty;
-    }
-    final val = _parsePositiveDouble(rawValue);
-    if (val == null || val < 1 || val > 700) {
-      return CalorieCalculatorFieldError.invalid;
-    }
-    return null;
-  }
-
-  static CalorieCalculatorFieldError? _validateHeight(String rawValue) {
-    if (rawValue.trim().isEmpty) {
-      return CalorieCalculatorFieldError.empty;
-    }
-    final val = _parsePositiveDouble(rawValue);
-    if (val == null || val < 50 || val > 272) {
-      return CalorieCalculatorFieldError.invalid;
-    }
-    return null;
-  }
-
-  static CalorieCalculatorFieldError? _validateAge(String rawValue) {
-    if (rawValue.trim().isEmpty) {
-      return CalorieCalculatorFieldError.empty;
-    }
-    final val = _parsePositiveInt(rawValue);
-    if (val == null || val < 16 || val > 100) {
-      return CalorieCalculatorFieldError.invalid;
-    }
-    return null;
   }
 }

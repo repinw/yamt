@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_intro_layout_constants.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_calculator_form_state.dart';
+import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_fields.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/presentation/models/'

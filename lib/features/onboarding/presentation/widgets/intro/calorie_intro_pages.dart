@@ -1,9 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/macro_reference_weight.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_calculator_form_controller.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_calculator_form_state.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_goal_calculator_form_controller.dart';
+import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_state.dart';
 import 'package:yamt/features/onboarding/presentation/models/'
     'calorie_intro_page.dart';
 import 'package:yamt/features/onboarding/presentation/models/'

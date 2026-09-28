@@ -1,10 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_goal_seed_weight_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculated_transitions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_learned_transitions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 /// Coordinates saving a calculated calorie goal.
 Future<bool> saveCalculatedCalorieGoal({

@@ -1,9 +1,9 @@
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 part 'calorie_run_training_service.g.dart';
 

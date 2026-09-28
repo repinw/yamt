@@ -1,14 +1,14 @@
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
+import 'package:yamt/features/calories/application/macro_goal_settings_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_body_edit.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_body_edits.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/calories/provider/macro_goal_settings_controller.dart';
 
 part 'calorie_body_edit_service.g.dart';
 

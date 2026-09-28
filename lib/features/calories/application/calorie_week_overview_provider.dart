@@ -1,4 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
+import 'package:yamt/features/calories/application/calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_consumption_snapshot_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_cycle_totals.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_log_loader.dart';
@@ -12,13 +16,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_resolved_goal_provider.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_visible_window_controller.dart';
 
 part 'calorie_week_overview_provider.g.dart';
 

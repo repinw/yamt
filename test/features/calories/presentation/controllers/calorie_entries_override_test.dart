@@ -7,10 +7,10 @@ import 'package:yamt/features/calories/data/'
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/provider/calorie_day_controller.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_day_controller.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
 
-import '../support/fake_calories_repositories.dart';
+import '../../support/fake_calories_repositories.dart';
 
 CalorieEntry _entry({
   required String id,

@@ -13,7 +13,7 @@ import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/provider/calorie_entries_controller.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/data/'

@@ -1,8 +1,6 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_calculator_form_controller.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_goal_calculator_form_state.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_goal_calculator_form_controller.dart';
+import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_state.dart';
 
 /// Everything the intro input pages share: chapter styling and the form.
 @immutable

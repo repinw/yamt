@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 part 'calorie_goal_archive_provider.g.dart';
 

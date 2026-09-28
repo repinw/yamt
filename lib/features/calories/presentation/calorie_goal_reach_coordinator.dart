@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_reached_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_new_goal_flow.dart';
-import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 
 part 'calorie_goal_reach_coordinator.g.dart';
 

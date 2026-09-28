@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/provider/'
-    'calorie_weekly_checkin_controller.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart';
 
 part 'calorie_page_action_controller.g.dart';
 
