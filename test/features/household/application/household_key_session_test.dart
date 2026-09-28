@@ -55,7 +55,7 @@ void main() {
   ProviderContainer createContainer({required String ownerUid}) {
     final container = ProviderContainer(
       overrides: [
-        effectiveHouseholdDataOwnerUserIdProvider.overrideWithValue(ownerUid),
+        activeHouseholdIdProvider.overrideWithValue(ownerUid),
         userDataCipherProvider.overrideWithValue(memberCipher),
         householdKeyRepositoryProvider.overrideWithValue(keys),
         householdResetRepositoryProvider.overrideWithValue(resets),
@@ -112,7 +112,7 @@ void main() {
       await (state as HouseholdKeyReady).key.extractBytes(),
       await hostKey.extractBytes(),
     );
-    expect(container.read(householdCipherProvider)?.ownerUid, 'host-1');
+    expect(container.read(householdCipherProvider)?.householdId, 'host-1');
   });
 
   test('the owner encrypts their plaintext household data once', () async {

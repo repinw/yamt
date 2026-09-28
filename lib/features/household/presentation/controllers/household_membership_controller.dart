@@ -88,7 +88,7 @@ class HouseholdMembershipController extends _$HouseholdMembershipController {
         throw const HouseholdKeyUnavailableException();
       }
       code = await resets.saveRestoreCode(
-        ownerUid: householdCipher.ownerUid,
+        ownerUid: householdCipher.householdId,
         householdKey: householdCipher.key,
       );
     });

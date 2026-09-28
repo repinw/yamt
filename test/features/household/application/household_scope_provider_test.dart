@@ -3,7 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 
 void main() {
-  test('effectiveHouseholdDataOwnerUserIdProvider falls back to '
+  test('activeHouseholdIdProvider falls back to '
       'the personal uid during recovery', () {
     var actualDataOwnerUserId = 'host-1';
     final container = ProviderContainer(
@@ -15,7 +15,7 @@ void main() {
     );
     addTearDown(container.dispose);
 
-    expect(container.read(effectiveHouseholdDataOwnerUserIdProvider), 'host-1');
+    expect(container.read(activeHouseholdIdProvider), 'host-1');
 
     container
         .read(householdDataOwnerRecoveryProvider.notifier)
@@ -24,17 +24,11 @@ void main() {
           personalUserId: 'member-1',
         );
 
-    expect(
-      container.read(effectiveHouseholdDataOwnerUserIdProvider),
-      'member-1',
-    );
+    expect(container.read(activeHouseholdIdProvider), 'member-1');
 
     actualDataOwnerUserId = 'member-1';
     container.invalidate(householdDataOwnerUserIdProvider);
 
-    expect(
-      container.read(effectiveHouseholdDataOwnerUserIdProvider),
-      'member-1',
-    );
+    expect(container.read(activeHouseholdIdProvider), 'member-1');
   });
 }

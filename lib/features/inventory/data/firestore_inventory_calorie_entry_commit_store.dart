@@ -66,7 +66,7 @@ class FirestoreInventoryCalorieEntryCommitStore
       log(
         'Cannot commit calorie entry ${entry.id}: no data key or household '
         'key (currentUserId=${cipher?.uid}, '
-        'inventoryOwnerUserId=${household?.ownerUid}).',
+        'inventoryOwnerUserId=${household?.householdId}).',
         name: _commitStoreLogName,
       );
       return null;
@@ -86,7 +86,7 @@ class FirestoreInventoryCalorieEntryCommitStore
     log(
       'Committing calorie entry ${entry.id} with inventory items '
       '${pendingConsumptions.map(_describe).join(', ')} for inventory owner '
-      '${household.ownerUid}.',
+      '${household.householdId}.',
       name: _commitStoreLogName,
     );
 
@@ -229,7 +229,7 @@ class FirestoreInventoryCalorieEntryCommitStore
     return SealedCollection(
       firestore
           .collection(_usersCollection)
-          .doc(household.ownerUid)
+          .doc(household.householdId)
           .collection(_inventoryItemsCollection),
       cipher: household.cipher,
       plaintextFields: inventoryItemPlaintextFields,
@@ -249,7 +249,7 @@ class FirestoreInventoryCalorieEntryCommitStore
     return SealedCollection(
       firestore
           .collection(_usersCollection)
-          .doc(household.ownerUid)
+          .doc(household.householdId)
           .collection(_inventoryActivityEventsCollection),
       cipher: household.cipher,
       plaintextFields: inventoryActivityEventPlaintextFields,

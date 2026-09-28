@@ -79,9 +79,9 @@ CalorieEntry _entry({num consumedPortions = 2}) {
 late PayloadCipher _cipher;
 late PayloadCipher _householdCipher;
 
-HouseholdCipher _household(String ownerUid) {
+HouseholdCipher _household(String householdId) {
   return (
-    ownerUid: ownerUid,
+    householdId: householdId,
     key: _householdCipherKey,
     cipher: _householdCipher,
   );

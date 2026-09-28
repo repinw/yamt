@@ -45,9 +45,7 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
       ..onDispose(() {
         unawaited(_disposeSubscription());
       });
-    _currentDataOwnerUserId = ref.watch(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
+    _currentDataOwnerUserId = ref.watch(activeHouseholdIdProvider);
     return _restartSubscription();
   }
 
@@ -185,9 +183,7 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
 
   Future<List<KitchenUtensil>> _restartSubscription() async {
     final initialUtensils = Completer<List<KitchenUtensil>>();
-    _currentDataOwnerUserId = ref.read(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
+    _currentDataOwnerUserId = ref.read(activeHouseholdIdProvider);
     final repository = ref.read(kitchenUtensilRepositoryProvider);
     final generation = ++_subscriptionGeneration;
     await _disposeSubscription();

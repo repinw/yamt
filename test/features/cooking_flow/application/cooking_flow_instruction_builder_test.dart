@@ -352,8 +352,7 @@ void main() {
   });
 
   test('scales pinch, clove range, and pinch-unit amounts by portions', () {
-    const instruction =
-        'Salz, Pfeffer, Knoblauch und Schnittlauch dazugeben.';
+    const instruction = 'Salz, Pfeffer, Knoblauch und Schnittlauch dazugeben.';
     final steps = buildCookingFlowInstructionSteps(
       template: _template(
         recipeIngredients: const <String>[

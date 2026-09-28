@@ -139,13 +139,17 @@ void main() {
 
     test('parses tbsp and tsp into the same canonical unit codes', () {
       expect(
-        cookingFlowParseInventoryRequirement('1 tbsp', localeCode: 'en')
-            ?.unitCode,
+        cookingFlowParseInventoryRequirement(
+          '1 tbsp',
+          localeCode: 'en',
+        )?.unitCode,
         cookingFlowTablespoonUnitCode,
       );
       expect(
-        cookingFlowParseInventoryRequirement('1 tsp', localeCode: 'en')
-            ?.unitCode,
+        cookingFlowParseInventoryRequirement(
+          '1 tsp',
+          localeCode: 'en',
+        )?.unitCode,
         cookingFlowTeaspoonUnitCode,
       );
     });

@@ -22,7 +22,7 @@ part 'prepared_meal_template_repository.g.dart';
 PreparedMealTemplateRepository preparedMealTemplateRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
   final householdCipher = ref.watch(householdCipherProvider);
-  final currentUserId = householdCipher?.ownerUid;
+  final currentUserId = householdCipher?.householdId;
   final store = _resolveStore(ref, householdCipher);
   return FirestorePreparedMealTemplateRepository(
     session: _CurrentPreparedMealTemplateUserSession(

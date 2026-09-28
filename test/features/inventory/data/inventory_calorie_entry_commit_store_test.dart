@@ -88,9 +88,9 @@ CalorieEntry _entry() {
 late PayloadCipher _cipher;
 late SecretKey _householdKey;
 
-HouseholdCipher _household(String ownerUid) {
+HouseholdCipher _household(String householdId) {
   return (
-    ownerUid: ownerUid,
+    householdId: householdId,
     key: _householdKey,
     cipher: PayloadCipher(_householdKey),
   );

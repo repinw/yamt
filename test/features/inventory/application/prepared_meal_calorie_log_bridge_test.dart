@@ -164,61 +164,58 @@ void main() {
     expect(entry.imageUrl, rice.imageUrl);
   });
 
-  test(
-    'buildConsumedPreparedMealCalorieEntry shows a piece amount label in '
-    'pieces, not thousandths',
-    () {
-      final eggs = InventoryItem.create(
-        id: 'eggs',
-        name: 'Eggs',
-        entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
-        storeName: 'Store',
-        quantity: 8,
-        initialAmount: 8000,
-        currentAmount: 8000,
-        amountScale: inventoryPieceAmountScale,
-        amountUnit: InventoryAmountUnit.piece,
-      );
-      final meal = PreparedMeal(
-        id: 'meal-eggs',
-        name: 'Omelette',
-        totalPortions: 1,
-        remainingPortions: 1,
-        totalKcal: 620,
-        totalProtein: 52,
-        totalCarbs: 4,
-        totalFat: 44,
-        createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
-        updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
-        components: [
-          PreparedMealComponent(
-            inventoryItemId: eggs.id,
-            name: eggs.name,
-            brand: eggs.brand,
-            imageUrl: eggs.imageUrl,
-            usedAmount: 8000,
-            usedUnit: InventoryAmountUnit.piece,
-            totalKcal: 620,
-            totalProtein: 52,
-            totalCarbs: 4,
-            totalFat: 44,
-            sourceItemSnapshot: eggs,
-          ),
-        ],
-      );
+  test('buildConsumedPreparedMealCalorieEntry shows a piece amount label in '
+      'pieces, not thousandths', () {
+    final eggs = InventoryItem.create(
+      id: 'eggs',
+      name: 'Eggs',
+      entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
+      storeName: 'Store',
+      quantity: 8,
+      initialAmount: 8000,
+      currentAmount: 8000,
+      amountScale: inventoryPieceAmountScale,
+      amountUnit: InventoryAmountUnit.piece,
+    );
+    final meal = PreparedMeal(
+      id: 'meal-eggs',
+      name: 'Omelette',
+      totalPortions: 1,
+      remainingPortions: 1,
+      totalKcal: 620,
+      totalProtein: 52,
+      totalCarbs: 4,
+      totalFat: 44,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: [
+        PreparedMealComponent(
+          inventoryItemId: eggs.id,
+          name: eggs.name,
+          brand: eggs.brand,
+          imageUrl: eggs.imageUrl,
+          usedAmount: 8000,
+          usedUnit: InventoryAmountUnit.piece,
+          totalKcal: 620,
+          totalProtein: 52,
+          totalCarbs: 4,
+          totalFat: 44,
+          sourceItemSnapshot: eggs,
+        ),
+      ],
+    );
 
-      final entry = buildConsumedPreparedMealCalorieEntry(
-        meal: meal,
-        consumedPortions: 0.5,
-        mealType: MealType.lunch,
-        now: () => DateTime(2026, 3, 27, 13),
-        nextEntryId: () => 'entry-eggs',
-      );
+    final entry = buildConsumedPreparedMealCalorieEntry(
+      meal: meal,
+      consumedPortions: 0.5,
+      mealType: MealType.lunch,
+      now: () => DateTime(2026, 3, 27, 13),
+      nextEntryId: () => 'entry-eggs',
+    );
 
-      expect(entry, isNotNull);
-      expect(entry!.bundleComponents.single.amountLabel, '4 pc');
-    },
-  );
+    expect(entry, isNotNull);
+    expect(entry!.bundleComponents.single.amountLabel, '4 pc');
+  });
 
   test('bridge still saves after provider invalidation', () async {
     final calorieLogRepository = FakeCalorieLogRepository();

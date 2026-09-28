@@ -195,7 +195,7 @@ InventoryActivityEventRepository inventoryActivityEventRepository(Ref ref) {
   return FirestoreInventoryActivityEventRepository(
     firestore: firestore,
     cipher: householdCipher.cipher,
-    currentUserId: householdCipher.ownerUid,
+    currentUserId: householdCipher.householdId,
   );
 }
 

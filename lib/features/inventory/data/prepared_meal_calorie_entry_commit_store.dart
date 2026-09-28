@@ -188,7 +188,7 @@ class FirestorePreparedMealCalorieEntryCommitStore
     return SealedCollection(
       _firestore
           .collection(_usersCollection)
-          .doc(household.ownerUid)
+          .doc(household.householdId)
           .collection(_preparedMealsCollection),
       cipher: household.cipher,
     );

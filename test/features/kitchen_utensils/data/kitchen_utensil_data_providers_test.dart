@@ -90,7 +90,7 @@ void main() {
           (ref) => const Stream<User?>.empty(),
         ),
         householdCipherProvider.overrideWithValue((
-          ownerUid: 'owner-1',
+          householdId: 'owner-1',
           key: key,
           cipher: PayloadCipher(key),
         )),

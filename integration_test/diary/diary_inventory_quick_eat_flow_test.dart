@@ -165,13 +165,13 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       ),
       inventoryItemRepositoryProvider.overrideWith(
         (ref) => _OwnerScopedInventoryItemRepository(
-          ownerId: ref.watch(effectiveHouseholdDataOwnerUserIdProvider),
+          ownerId: ref.watch(activeHouseholdIdProvider),
           itemsByOwnerId: inventoryItemsByOwnerId,
         ),
       ),
       preparedMealRepositoryProvider.overrideWith(
         (ref) => _OwnerScopedPreparedMealRepository(
-          ownerId: ref.watch(effectiveHouseholdDataOwnerUserIdProvider),
+          ownerId: ref.watch(activeHouseholdIdProvider),
           mealsByOwnerId: preparedMealsByOwnerId,
           saveShouldFail: preparedMealSaveShouldFail,
         ),

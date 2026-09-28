@@ -52,7 +52,7 @@ final class HouseholdKeySessionProvider
 }
 
 String _$householdKeySessionHash() =>
-    r'2ee0987f99feee0147fe8eda3779d728f1add2b8';
+    r'738a72802b53edc811ef85741acec1cd05e6c1a6';
 
 /// Resolves the household key of the current household data owner.
 ///
@@ -121,7 +121,7 @@ final class HouseholdKeyRestoreRequestedProvider
 }
 
 String _$householdKeyRestoreRequestedHash() =>
-    r'62a011d068800efd8fe00c1bcc64c0bc58b87f2f';
+    r'784c5b9d048bdb818e435aa0b6a12d27aa63be03';
 
 /// The cipher for the current household data, or `null` while the household
 /// key is not ready.
@@ -175,4 +175,4 @@ final class HouseholdCipherProvider
   }
 }
 
-String _$householdCipherHash() => r'54b2a646e8446aae376a0782b1b155a3a1a6e241';
+String _$householdCipherHash() => r'c0e624a2e7827eb90c6903d8a95b1d6caffe9463';

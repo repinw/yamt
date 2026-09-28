@@ -130,32 +130,30 @@ abstract class _$HouseholdDataOwnerRecovery
   }
 }
 
-/// Effective household data owner user id.
+/// The id of the household whose data the user sees now.
 
-@ProviderFor(effectiveHouseholdDataOwnerUserId)
-final effectiveHouseholdDataOwnerUserIdProvider =
-    EffectiveHouseholdDataOwnerUserIdProvider._();
+@ProviderFor(activeHouseholdId)
+final activeHouseholdIdProvider = ActiveHouseholdIdProvider._();
 
-/// Effective household data owner user id.
+/// The id of the household whose data the user sees now.
 
-final class EffectiveHouseholdDataOwnerUserIdProvider
+final class ActiveHouseholdIdProvider
     extends $FunctionalProvider<String?, String?, String?>
     with $Provider<String?> {
-  /// Effective household data owner user id.
-  EffectiveHouseholdDataOwnerUserIdProvider._()
+  /// The id of the household whose data the user sees now.
+  ActiveHouseholdIdProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'effectiveHouseholdDataOwnerUserIdProvider',
+        name: r'activeHouseholdIdProvider',
         isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() =>
-      _$effectiveHouseholdDataOwnerUserIdHash();
+  String debugGetCreateSourceHash() => _$activeHouseholdIdHash();
 
   @$internal
   @override
@@ -164,7 +162,7 @@ final class EffectiveHouseholdDataOwnerUserIdProvider
 
   @override
   String? create(Ref ref) {
-    return effectiveHouseholdDataOwnerUserId(ref);
+    return activeHouseholdId(ref);
   }
 
   /// {@macro riverpod.override_with_value}
@@ -176,8 +174,7 @@ final class EffectiveHouseholdDataOwnerUserIdProvider
   }
 }
 
-String _$effectiveHouseholdDataOwnerUserIdHash() =>
-    r'abb1ed887bdc6e85b69b06c90674e86e1e25447f';
+String _$activeHouseholdIdHash() => r'71226b8a5d77b7d918d114c70c33c66e11117af5';
 
 /// Household has additional members.
 

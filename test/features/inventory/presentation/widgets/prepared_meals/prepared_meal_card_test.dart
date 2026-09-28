@@ -238,73 +238,69 @@ void main() {
     expect(find.text('Rice'), findsOneWidget);
   });
 
-  testWidgets(
-    'PreparedMealCard shows a piece component amount in pieces, not '
-    'thousandths',
-    (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            locale: const Locale('en'),
-            localizationsDelegates: appLocalizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(
-              body: _wrapCard(
-                PreparedMealCard(
-                  meal: _pieceMeal(),
-                  onThrowAwayPressed: (mealId, portions, reason) async => true,
-                  onUnbundlePressed: (mealId) async => true,
-                  onEditPressed: (mealId, result) async => true,
-                  onSaveTemplatePressed: (meal) async => true,
-                ),
+  testWidgets('PreparedMealCard shows a piece component amount in pieces, not '
+      'thousandths', (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _pieceMeal(),
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, result) async => true,
+                onSaveTemplatePressed: (meal) async => true,
               ),
             ),
           ),
         ),
-      );
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Omelette'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Omelette'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Eggs'), findsOneWidget);
-      expect(find.text('8 pc'), findsOneWidget);
-      expect(find.text('8000 pc'), findsNothing);
-    },
-  );
+    expect(find.text('Eggs'), findsOneWidget);
+    expect(find.text('8 pc'), findsOneWidget);
+    expect(find.text('8000 pc'), findsNothing);
+  });
 
-  testWidgets(
-    'PreparedMealCard keeps a gram component amount unscaled',
-    (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp(
-            locale: const Locale('en'),
-            localizationsDelegates: appLocalizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(
-              body: _wrapCard(
-                PreparedMealCard(
-                  meal: _meal(),
-                  onThrowAwayPressed: (mealId, portions, reason) async => true,
-                  onUnbundlePressed: (mealId) async => true,
-                  onEditPressed: (mealId, result) async => true,
-                  onSaveTemplatePressed: (meal) async => true,
-                ),
+  testWidgets('PreparedMealCard keeps a gram component amount unscaled', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: _wrapCard(
+              PreparedMealCard(
+                meal: _meal(),
+                onThrowAwayPressed: (mealId, portions, reason) async => true,
+                onUnbundlePressed: (mealId) async => true,
+                onEditPressed: (mealId, result) async => true,
+                onSaveTemplatePressed: (meal) async => true,
               ),
             ),
           ),
         ),
-      );
-      await tester.pumpAndSettle();
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Rice bowl'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.text('Rice bowl'));
+    await tester.pumpAndSettle();
 
-      expect(find.text('Rice'), findsOneWidget);
-      expect(find.text('150 g'), findsOneWidget);
-    },
-  );
+    expect(find.text('Rice'), findsOneWidget);
+    expect(find.text('150 g'), findsOneWidget);
+  });
 
   testWidgets('PreparedMealCard shows eat action in the header', (
     tester,

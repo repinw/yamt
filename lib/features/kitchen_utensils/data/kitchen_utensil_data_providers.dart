@@ -16,7 +16,7 @@ const _dataProviderLogName = 'KitchenUtensilDataProviders';
 /// Current household-scoped user session for kitchen utensils.
 final kitchenUtensilUserSessionProvider = Provider<InventoryUserSession>((ref) {
   ref.watch(authStateChangesProvider);
-  final currentUserId = ref.watch(householdCipherProvider)?.ownerUid;
+  final currentUserId = ref.watch(householdCipherProvider)?.householdId;
   return _CurrentKitchenUtensilUserSession(currentUserId: currentUserId);
 });
 

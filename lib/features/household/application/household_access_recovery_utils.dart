@@ -14,9 +14,7 @@ bool shouldRecoverControllerHouseholdAccess({
 }) {
   final profile = ref.read(userProfileProvider).asData?.value;
   final actualDataOwnerUserId = ref.read(householdDataOwnerUserIdProvider);
-  final effectiveDataOwnerUserId = ref.read(
-    effectiveHouseholdDataOwnerUserIdProvider,
-  );
+  final effectiveDataOwnerUserId = ref.read(activeHouseholdIdProvider);
   return shouldRecoverFromHouseholdPermissionDenied(
     error: error,
     isRecoveringHouseholdAccess: isRecoveringHouseholdAccess,

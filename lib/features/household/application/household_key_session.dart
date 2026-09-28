@@ -22,7 +22,7 @@ part 'household_key_session.g.dart';
 class HouseholdKeySession extends _$HouseholdKeySession {
   @override
   Future<HouseholdKeyState> build() async {
-    final ownerUid = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+    final ownerUid = ref.watch(activeHouseholdIdProvider);
     final dataCipher = ref.watch(userDataCipherProvider);
     final repository = ref.watch(householdKeyRepositoryProvider);
     final resets = ref.watch(householdResetRepositoryProvider);
@@ -171,7 +171,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
 /// household key and waits for a restore code. Always `false` for a host.
 @riverpod
 Stream<bool> householdKeyRestoreRequested(Ref ref) {
-  final ownerUid = ref.watch(effectiveHouseholdDataOwnerUserIdProvider);
+  final ownerUid = ref.watch(activeHouseholdIdProvider);
   final uid = ref.watch(userDataCipherProvider)?.uid;
   final resets = ref.watch(householdResetRepositoryProvider);
   if (ownerUid == null || uid == null || ownerUid == uid || resets == null) {
@@ -180,9 +180,9 @@ Stream<bool> householdKeyRestoreRequested(Ref ref) {
   return resets.watchKeyRestoreRequested(ownerUid);
 }
 
-/// The owner of the household data and the cipher for it.
+/// The household whose data the user sees and the cipher for it.
 typedef HouseholdCipher = ({
-  String ownerUid,
+  String householdId,
   SecretKey key,
   PayloadCipher cipher,
 });
@@ -195,7 +195,7 @@ HouseholdCipher? householdCipher(Ref ref) {
   final state = session.isLoading ? null : session.value;
   return state is HouseholdKeyReady
       ? (
-          ownerUid: state.ownerUid,
+          householdId: state.ownerUid,
           key: state.key,
           cipher: PayloadCipher(state.key),
         )

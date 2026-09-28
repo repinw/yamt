@@ -264,9 +264,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     if (!ref.mounted) {
       return const <InventoryItem>[];
     }
-    _currentDataOwnerUserId = ref.watch(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
+    _currentDataOwnerUserId = ref.watch(activeHouseholdIdProvider);
     return await _restartRealtimeSubscription();
   }
 
@@ -282,9 +280,7 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   Future<List<InventoryItem>> _restartRealtimeSubscription() async {
     final initialItems = Completer<List<InventoryItem>>();
-    _currentDataOwnerUserId = ref.read(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
+    _currentDataOwnerUserId = ref.read(activeHouseholdIdProvider);
     final repository = ref.read(inventoryItemRepositoryProvider);
     final generation = ++_subscriptionGeneration;
     await _disposeRealtimeSubscription();
@@ -388,9 +384,7 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
     final actualDataOwnerUserId = ref.read(householdDataOwnerUserIdProvider);
-    final effectiveDataOwnerUserId = ref.read(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
+    final effectiveDataOwnerUserId = ref.read(activeHouseholdIdProvider);
     final shouldRecover = shouldRecoverControllerHouseholdAccess(
       ref: ref,
       error: error,
@@ -448,9 +442,7 @@ class InventoryItemsController extends _$InventoryItemsController {
   void onSkippedHouseholdAccessRecovery() {
     final scopeDetails = _buildScopeDebugDetails(
       actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider),
-      effectiveDataOwnerUserId: ref.read(
-        effectiveHouseholdDataOwnerUserIdProvider,
-      ),
+      effectiveDataOwnerUserId: ref.read(activeHouseholdIdProvider),
     );
     log(
       'Inventory access recovery had no owner swap candidate. '

@@ -189,6 +189,6 @@ InventoryDiscardEventRepository inventoryDiscardEventRepository(Ref ref) {
   return FirestoreInventoryDiscardEventRepository(
     firestore: firestore,
     cipher: householdCipher.cipher,
-    currentUserId: householdCipher.ownerUid,
+    currentUserId: householdCipher.householdId,
   );
 }

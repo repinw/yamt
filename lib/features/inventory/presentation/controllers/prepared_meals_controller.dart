@@ -75,9 +75,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     if (!ref.mounted) {
       return const <PreparedMeal>[];
     }
-    _currentDataOwnerUserId = ref.watch(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
+    _currentDataOwnerUserId = ref.watch(activeHouseholdIdProvider);
     return await _restartSubscription();
   }
 
@@ -306,9 +304,7 @@ class PreparedMealsController extends _$PreparedMealsController {
 
   Future<List<PreparedMeal>> _restartSubscription() async {
     final initialMeals = Completer<List<PreparedMeal>>();
-    _currentDataOwnerUserId = ref.read(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
+    _currentDataOwnerUserId = ref.read(activeHouseholdIdProvider);
     final repository = ref.read(preparedMealRepositoryProvider);
     final generation = ++_subscriptionGeneration;
     await _disposeSubscription();

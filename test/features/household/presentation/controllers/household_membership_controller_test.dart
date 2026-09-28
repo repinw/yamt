@@ -147,7 +147,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         householdCipherProvider.overrideWithValue((
-          ownerUid: 'host-1',
+          householdId: 'host-1',
           key: householdKey,
           cipher: PayloadCipher(householdKey),
         )),

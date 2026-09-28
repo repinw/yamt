@@ -28,7 +28,7 @@ InventoryItemRepository inventoryItemRepository(Ref ref) {
   final store = _resolveStore(ref, householdCipher);
   return FirestoreInventoryItemRepository(
     session: _CurrentInventoryUserSession(
-      currentUserId: householdCipher?.ownerUid,
+      currentUserId: householdCipher?.householdId,
     ),
     sessionShutdownSignal: ref.watch(sessionShutdownSignalProvider),
     store: store,

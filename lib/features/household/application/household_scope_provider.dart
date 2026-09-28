@@ -64,9 +64,9 @@ class HouseholdDataOwnerRecovery extends _$HouseholdDataOwnerRecovery {
   }
 }
 
-/// Effective household data owner user id.
+/// The id of the household whose data the user sees now.
 @riverpod
-String? effectiveHouseholdDataOwnerUserId(Ref ref) {
+String? activeHouseholdId(Ref ref) {
   final actualDataOwnerUserId = ref.watch(householdDataOwnerUserIdProvider);
   final normalizedActualDataOwnerUserId = actualDataOwnerUserId?.trim();
   if (normalizedActualDataOwnerUserId == null ||

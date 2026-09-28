@@ -79,9 +79,7 @@ class PreparedMealTemplatesController
       ..onDispose(() {
         unawaited(_disposeSubscription());
       });
-    _currentDataOwnerUserId = ref.watch(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
+    _currentDataOwnerUserId = ref.watch(activeHouseholdIdProvider);
     return _restartSubscription();
   }
 
@@ -549,9 +547,7 @@ class PreparedMealTemplatesController
 
   Future<List<PreparedMeal>> _restartSubscription() async {
     final initialTemplates = Completer<List<PreparedMeal>>();
-    _currentDataOwnerUserId = ref.read(
-      effectiveHouseholdDataOwnerUserIdProvider,
-    );
+    _currentDataOwnerUserId = ref.read(activeHouseholdIdProvider);
     final repository = ref.read(preparedMealTemplateRepositoryProvider);
     final generation = ++_subscriptionGeneration;
     await _disposeSubscription();

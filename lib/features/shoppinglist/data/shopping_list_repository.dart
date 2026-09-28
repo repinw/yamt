@@ -21,7 +21,7 @@ ShoppingListRepository shoppingListRepository(Ref ref) {
   }
   return FirestoreShoppingListRepository(
     session: _CurrentShoppingListUserSession(
-      currentUserId: householdCipher.ownerUid,
+      currentUserId: householdCipher.householdId,
     ),
     store: FirestoreShoppingListItemStore(
       firestore: firestore,
