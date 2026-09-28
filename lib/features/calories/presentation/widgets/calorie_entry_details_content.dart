@@ -2,15 +2,13 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:uuid/uuid.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
+import 'package:yamt/features/calories/presentation/calorie_entry_details_flow.dart';
 import 'package:yamt/features/calories/presentation/controllers/'
     'calorie_entry_editor_controller.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_entry_details_actions.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_details_view/calorie_entry_amount_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
@@ -43,9 +41,6 @@ class _CalorieEntryDetailsContentState
     extends ConsumerState<CalorieEntryDetailsContent> {
   /// Entry shown while a change is saving.
   CalorieEntry? _pending;
-
-  CalorieEntryEditorController get _controller =>
-      ref.read(calorieEntryEditorControllerProvider.notifier);
 
   @override
   Widget build(BuildContext context) {
@@ -81,22 +76,10 @@ class _CalorieEntryDetailsContentState
                     ? () => unawaited(_pickAmount(entry))
                     : null,
                 onEatAgain: () => unawaited(
-                  CalorieEntryDetailsActions.eatAgain(
-                    context,
-                    controller: _controller,
-                    repeated: repeatCalorieEntry(
-                      entry,
-                      id: const Uuid().v4(),
-                      now: ref.read(clockProvider)(),
-                    ),
-                  ),
+                  CalorieEntryDetailsFlow.eatAgain(context, entry: entry),
                 ),
                 onReturnToInventory: () => unawaited(
-                  CalorieEntryDetailsActions.remove(
-                    context,
-                    controller: _controller,
-                    entry: entry,
-                  ),
+                  CalorieEntryDetailsFlow.remove(context, entry: entry),
                 ),
               ),
             );
@@ -131,9 +114,8 @@ class _CalorieEntryDetailsContentState
     final next = updated.copyWith(updatedAt: ref.read(clockProvider)());
     return _runChange(
       optimistic: next,
-      save: (onUndone) => CalorieEntryDetailsActions.saveChange(
+      save: (onUndone) => CalorieEntryDetailsFlow.saveChange(
         context,
-        controller: _controller,
         previous: previous,
         updated: next,
         onUndone: onUndone,
@@ -190,9 +172,8 @@ class _CalorieEntryDetailsContentState
     final now = ref.read(clockProvider)();
     await _runChange(
       optimistic: rescaleCalorieEntry(entry, amount: amount, now: now),
-      save: (onUndone) => CalorieEntryDetailsActions.changeAmount(
+      save: (onUndone) => CalorieEntryDetailsFlow.changeAmount(
         context,
-        controller: _controller,
         entry: entry,
         amount: amount,
         onUndone: onUndone,

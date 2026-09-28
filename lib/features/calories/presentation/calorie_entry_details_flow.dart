@@ -1,8 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:uuid/uuid.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_stock_adjustment.dart';
 import 'package:yamt/features/calories/presentation/controllers/'
@@ -11,21 +15,24 @@ import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_editor_flow_handler.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Actions of the entry details sheet that save at once and offer an undo.
+/// Changes of a logged entry from its details page. Each one saves at once
+/// and offers an undo in a snack bar.
 ///
-/// Undo callbacks may run after the sheet closed, so they only use the
-/// keep-alive editor controller, never the sheet's `ref` or `context`.
-abstract final class CalorieEntryDetailsActions {
+/// The flow uses the keep-alive editor controller of the page's container.
+/// Undo callbacks may run after the page closed, so they never use the
+/// page's `ref` or `context`. Entries logged from the inventory move or
+/// return their stock the same way the entry editor does.
+abstract final class CalorieEntryDetailsFlow {
   /// Saves [updated] in place of [previous]. Returns whether it saved.
   ///
   /// [onUndone] runs after the undo restored [previous].
   static Future<bool> saveChange(
     BuildContext context, {
-    required CalorieEntryEditorController controller,
     required CalorieEntry previous,
     required CalorieEntry updated,
     required VoidCallback onUndone,
   }) async {
+    final controller = _controller(context);
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     final saved = await controller.saveEntry(entry: updated, isEditing: true);
@@ -58,11 +65,11 @@ abstract final class CalorieEntryDetailsActions {
   /// undo puts both the entry and the stock back.
   static Future<bool> changeAmount(
     BuildContext context, {
-    required CalorieEntryEditorController controller,
     required CalorieEntry entry,
     required double amount,
     required VoidCallback onUndone,
   }) async {
+    final controller = _controller(context);
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     final result = await controller.changeAmount(entry: entry, amount: amount);
@@ -88,12 +95,19 @@ abstract final class CalorieEntryDetailsActions {
     return result.saved;
   }
 
-  /// Logs [repeated] as a new entry and closes the sheet.
+  /// Logs the food of [entry] again as a new entry at the current time and
+  /// closes the page.
   static Future<void> eatAgain(
     BuildContext context, {
-    required CalorieEntryEditorController controller,
-    required CalorieEntry repeated,
+    required CalorieEntry entry,
   }) async {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final controller = _controller(context);
+    final repeated = repeatCalorieEntry(
+      entry,
+      id: const Uuid().v4(),
+      now: container.read(clockProvider)(),
+    );
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     final saved = await controller.saveEntry(entry: repeated);
@@ -121,13 +135,13 @@ abstract final class CalorieEntryDetailsActions {
     );
   }
 
-  /// Removes [entry] and closes the sheet. Entries with stock to return ask
+  /// Removes [entry] and closes the page. Entries with stock to return ask
   /// first whether the stock goes back to the inventory.
   static Future<void> remove(
     BuildContext context, {
-    required CalorieEntryEditorController controller,
     required CalorieEntry entry,
   }) async {
+    final controller = _controller(context);
     if (entry.canRestoreToInventory ||
         entry.canReturnPreparedMealToInventory ||
         entry.canReturnCombinedToInventory) {
@@ -165,6 +179,13 @@ abstract final class CalorieEntryDetailsActions {
       failureMessage: l10n.caloriesDeleteFailed,
       onUndo: () => controller.saveEntry(entry: entry),
     );
+  }
+
+  static CalorieEntryEditorController _controller(BuildContext context) {
+    return ProviderScope.containerOf(
+      context,
+      listen: false,
+    ).read(calorieEntryEditorControllerProvider.notifier);
   }
 
   static String _amountChangeMessage(
