@@ -62,4 +62,4 @@ final class HouseholdRepositoryProvider
 }
 
 String _$householdRepositoryHash() =>
-    r'9592c8b2ad309d73396adceb54688f914fac2045';
+    r'5df9faba0de24b0ed79cd37aed18aff83bb19dae';
