@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
@@ -87,6 +88,29 @@ void main() {
         () => (sections[0].entries as dynamic).add(sections[0].entries.first),
         throwsUnsupportedError,
       );
+    });
+
+    test('a quick entry shows its totals without an amount', () {
+      final loggedAt = DateTime(2026, 4, 27, 12);
+      final quick = buildQuickCalorieEntry(
+        id: 'quick',
+        userId: 'user-1',
+        name: 'Kantine',
+        mealType: MealType.lunch,
+        loggedAt: loggedAt,
+        now: loggedAt,
+        kcal: 650,
+        protein: 30,
+      );
+
+      final sections = buildDiaryDashboardMealSections([quick]);
+      final entry = sections[1].entries.single;
+
+      expect(entry.totalKcal, 650);
+      expect(entry.totalProtein, 30);
+      expect(entry.consumedAmount, isNull);
+      expect(entry.consumedUnit, isNull);
+      expect(sections[1].totalKcal, 650);
     });
   });
 

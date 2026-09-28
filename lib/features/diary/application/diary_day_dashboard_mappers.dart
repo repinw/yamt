@@ -58,6 +58,8 @@ DiaryNutritionBarsData buildDiaryDashboardNutritionBars(
 }
 
 DiaryMealEntry _mealEntryFrom(CalorieEntry entry) {
+  // A quick entry counts as 100 g of itself; the row shows no amount for it.
+  final hasAmount = !entry.isQuickEntry;
   return DiaryMealEntry(
     id: entry.id,
     mealType: entry.mealType,
@@ -68,8 +70,8 @@ DiaryMealEntry _mealEntryFrom(CalorieEntry entry) {
     totalProtein: entry.totalProtein,
     totalCarbs: entry.totalCarbs,
     totalFat: entry.totalFat,
-    consumedAmount: entry.consumedAmount,
-    consumedUnit: entry.consumedUnit,
+    consumedAmount: hasAmount ? entry.consumedAmount : null,
+    consumedUnit: hasAmount ? entry.consumedUnit : null,
     bundleConsumedPortions: entry.bundleConsumedPortions,
     bundleTotalPortions: entry.bundleTotalPortions,
     combinedFoods: entry.isCombined ? entry.bundleComponents : null,
