@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,6 +46,7 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   final photos = <ProductPhoto?>[];
   final barcodes = <String, String?>{};
   Exception? frontError;
+  Completer<void>? frontGate;
   final saved =
       <({ProductPhoto? front, ProductPhoto? table, String barcode})>[];
 
@@ -56,6 +58,7 @@ class _FakePhotoRepository implements ProductPhotoRepository {
 
   @override
   Future<ProductFrontDetails> loadFrontDetails(ProductPhoto photo) async {
+    await frontGate?.future;
     final error = frontError;
     if (error != null) throw error;
     return _front;
@@ -290,5 +293,31 @@ void main() {
 
     expect(await photos.savePhotos(barcode: '', name: 'Brot'), isNull);
     expect(repository.saved, isEmpty);
+  });
+
+  test('the nutrition table photo is taken while the front is read', () async {
+    final gate = Completer<void>();
+    final repository = _FakePhotoRepository()
+      ..photos.addAll([_photo('front'), _photo('table')])
+      ..frontGate = gate;
+    final (:container, :photos, product: _) = _setUp(repository);
+
+    final front = photos.takeFrontPhoto();
+    await pumpEventQueue();
+    expect(
+      container
+          .read(manualProductPhotoControllerProvider(_config))
+          .isReadingFront,
+      isTrue,
+    );
+
+    final table = await photos.takeNutritionTablePhoto();
+    gate.complete();
+
+    expect(table, ManualProductPhotoOutcome.read);
+    expect(await front, ManualProductPhotoOutcome.read);
+    final state = container.read(manualProductPhotoControllerProvider(_config));
+    expect(state.hasReadFront, isTrue);
+    expect(state.hasReadNutritionTable, isTrue);
   });
 }

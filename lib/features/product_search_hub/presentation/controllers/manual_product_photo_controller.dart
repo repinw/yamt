@@ -55,6 +55,8 @@ class ManualProductPhotoState {
     this.hasReadFront = false,
     this.hasReadNutritionTable = false,
     this.isSaving = false,
+    this.frontDetails,
+    this.nutritionValueCount = 0,
   });
 
   /// Photo of the package front.
@@ -78,6 +80,12 @@ class ManualProductPhotoState {
   /// Whether the photos are being stored.
   final bool isSaving;
 
+  /// What the AI read on the front photo.
+  final ProductFrontDetails? frontDetails;
+
+  /// Number of nutrition values read from the nutrition table photo.
+  final int nutritionValueCount;
+
   /// Whether a photo is being read or stored.
   bool get isBusy => isReadingFront || isReadingNutritionTable || isSaving;
 
@@ -93,6 +101,8 @@ class ManualProductPhotoState {
     bool? hasReadFront,
     bool? hasReadNutritionTable,
     bool? isSaving,
+    ProductFrontDetails? frontDetails,
+    int? nutritionValueCount,
   }) {
     return ManualProductPhotoState(
       front: front ?? this.front,
@@ -104,6 +114,8 @@ class ManualProductPhotoState {
       hasReadNutritionTable:
           hasReadNutritionTable ?? this.hasReadNutritionTable,
       isSaving: isSaving ?? this.isSaving,
+      frontDetails: frontDetails ?? this.frontDetails,
+      nutritionValueCount: nutritionValueCount ?? this.nutritionValueCount,
     );
   }
 }
@@ -127,7 +139,10 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
   /// Takes a photo of the package front and fills name, brand, package
   /// size, and barcode from it.
   Future<ManualProductPhotoOutcome> takeFrontPhoto() async {
-    if (state.isBusy) return ManualProductPhotoOutcome.canceled;
+    // The other photo may still be read; only this one waits.
+    if (state.isReadingFront || state.isSaving) {
+      return ManualProductPhotoOutcome.canceled;
+    }
     final repository = ref.read(productPhotoRepositoryProvider);
     final taken = await _takePhoto(repository);
     final photo = taken.photo;
@@ -144,7 +159,7 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
       final details = await repository.loadFrontDetails(photo);
       if (!ref.mounted) return ManualProductPhotoOutcome.canceled;
       _product.applyFrontDetails(details);
-      state = state.copyWith(hasReadFront: true);
+      state = state.copyWith(hasReadFront: true, frontDetails: details);
       return ManualProductPhotoOutcome.read;
     } on ProductFrontNotProductException {
       return ManualProductPhotoOutcome.notProduct;
@@ -165,7 +180,9 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
 
   /// Takes a photo of the nutrition table and fills the values from it.
   Future<ManualProductPhotoOutcome> takeNutritionTablePhoto() async {
-    if (state.isBusy) return ManualProductPhotoOutcome.canceled;
+    if (state.isReadingNutritionTable || state.isSaving) {
+      return ManualProductPhotoOutcome.canceled;
+    }
     final repository = ref.read(productPhotoRepositoryProvider);
     final taken = await _takePhoto(repository);
     final photo = taken.photo;
@@ -192,7 +209,16 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
       final draft = result.draft;
       if (result.status == NutritionLabelOcrStatus.succeeded && draft != null) {
         _product.applyNutritionLabelDraft(draft);
-        state = state.copyWith(hasReadNutritionTable: true);
+        state = state.copyWith(
+          hasReadNutritionTable: true,
+          // The seven EU values always come with a read label.
+          nutritionValueCount:
+              7 +
+              [
+                draft.per100PolyunsaturatedFat,
+                draft.per100Fiber,
+              ].nonNulls.length,
+        );
         return ManualProductPhotoOutcome.read;
       }
       return switch (result.errorCode) {

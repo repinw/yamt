@@ -6,6 +6,7 @@ import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_chip.dart';
+import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_photo_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -105,7 +106,10 @@ class ManualProductPhotoSection extends StatelessWidget {
                 photo: photos.front?.bytes,
                 isReading: photos.isReadingFront,
                 hasRead: photos.hasReadFront,
-                onPressed: photos.isBusy ? null : onTakeFrontPhoto,
+                readLabel: _frontReadLabel(l10n, photos.frontDetails),
+                onPressed: photos.isReadingFront || photos.isSaving
+                    ? null
+                    : onTakeFrontPhoto,
               ),
             ),
             Expanded(
@@ -116,7 +120,12 @@ class ManualProductPhotoSection extends StatelessWidget {
                 photo: photos.nutritionTable?.bytes,
                 isReading: photos.isReadingNutritionTable,
                 hasRead: photos.hasReadNutritionTable,
-                onPressed: photos.isBusy ? null : onTakeNutritionTablePhoto,
+                readLabel: l10n.productEditorPhotoReadValues(
+                  photos.nutritionValueCount,
+                ),
+                onPressed: photos.isReadingNutritionTable || photos.isSaving
+                    ? null
+                    : onTakeNutritionTablePhoto,
               ),
             ),
           ],
@@ -212,4 +221,17 @@ class ManualProductPhotoSection extends StatelessWidget {
       null => null,
     };
   }
+}
+
+/// What the front photo filled in, such as "Name · 500 g".
+String? _frontReadLabel(AppLocalizations l10n, ProductFrontDetails? details) {
+  if (details == null) {
+    return null;
+  }
+  final quantity = details.quantityLabel?.trim() ?? '';
+  final parts = [
+    if (details.name.trim().isNotEmpty) l10n.productEditorPhotoReadName,
+    if (quantity.isNotEmpty) quantity,
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
 }

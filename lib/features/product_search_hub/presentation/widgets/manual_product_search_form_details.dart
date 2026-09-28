@@ -11,10 +11,12 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_form_field.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_support.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_action_selector.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_editor_header.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_form/manual_product_missing_hint.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_nutrition_editor.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -161,8 +163,17 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
       whenControl: const SizedBox.shrink(),
       kcal: null,
       confirmButtonKey: ManualProductDetailsForm.saveKey,
-      confirmLabel: l10n.inventoryReceiptReviewManualDataSaveAction,
+      confirmLabel: l10n.productEditorCreateAction,
       onConfirm: widget.canSave ? widget.onSave : null,
+      confirmHint: widget.canSave
+          ? null
+          : manualProductMissingHint(
+              l10n,
+              manualProductMissingFields(
+                state: state,
+                selectedAction: widget.selectedAction,
+              ),
+            ),
       cancelButtonKey: const Key('receipt_review_manual_close_button'),
       children: [
         ManualProductEditorHeader(

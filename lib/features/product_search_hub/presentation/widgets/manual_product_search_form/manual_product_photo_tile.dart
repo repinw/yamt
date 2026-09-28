@@ -20,6 +20,7 @@ class ManualProductPhotoTile extends StatelessWidget {
     required this.isReading,
     required this.hasRead,
     required this.onPressed,
+    this.readLabel,
     super.key,
   });
 
@@ -40,6 +41,9 @@ class ManualProductPhotoTile extends StatelessWidget {
 
   /// Takes the photo. The tile is disabled when null.
   final VoidCallback? onPressed;
+
+  /// What the photo filled in, such as "Name · 500 g", shown once read.
+  final String? readLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -66,6 +70,7 @@ class ManualProductPhotoTile extends StatelessWidget {
                     image: image,
                     isReading: isReading,
                     hasRead: hasRead,
+                    readLabel: readLabel,
                   ),
           ),
         ),
@@ -118,12 +123,14 @@ class _Photo extends StatelessWidget {
     required this.image,
     required this.isReading,
     required this.hasRead,
+    required this.readLabel,
   });
 
   final String title;
   final Uint8List image;
   final bool isReading;
   final bool hasRead;
+  final String? readLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -154,7 +161,7 @@ class _Photo extends StatelessWidget {
                 )
               : hasRead
               ? _Tag(
-                  text: l10n.productEditorPhotoRead,
+                  text: readLabel ?? l10n.productEditorPhotoRead,
                   background: colors.accent,
                   foreground: colors.onAccent,
                   icon: Icons.check_rounded,

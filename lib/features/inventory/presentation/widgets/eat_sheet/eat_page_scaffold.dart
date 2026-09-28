@@ -19,6 +19,7 @@ class EatPageScaffold extends StatelessWidget {
     this.secondaryButtonKey,
     this.onSecondary,
     this.hasOwnMessenger = true,
+    this.confirmHint,
     super.key,
   });
 
@@ -57,6 +58,9 @@ class EatPageScaffold extends StatelessWidget {
   /// messenger, snack bars that the caller shows through the route's
   /// context appear on this page.
   final bool hasOwnMessenger;
+
+  /// Small grey line above the buttons, such as what is still missing.
+  final String? confirmHint;
 
   @override
   Widget build(BuildContext context) {
@@ -126,25 +130,41 @@ class EatPageScaffold extends StatelessWidget {
               AppSpacing.xl,
               AppSpacing.xl,
             ),
-            child: Row(
-              spacing: AppSpacing.xs,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: AppSpacing.sm,
               children: [
-                if (secondary != null)
-                  FilledButton.tonal(
-                    key: secondaryButtonKey,
-                    onPressed: onSecondary,
-                    child: Text(secondary),
+                if (confirmHint case final hint?)
+                  Text(
+                    hint,
+                    key: const Key('eat_page_confirm_hint'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall
+                        ?.copyWith(color: colors.muted),
                   ),
-                Expanded(
-                  child: _ConfirmButton(
-                    buttonKey: confirmButtonKey,
-                    label:
-                        confirmLabel ?? l10n.inventoryItemEatSheetConfirmAction,
-                    trailing: kcalValue == null
-                        ? null
-                        : l10n.eatPageKcal(kcalValue.round()),
-                    onPressed: onConfirm,
-                  ),
+                Row(
+                  spacing: AppSpacing.xs,
+                  children: [
+                    if (secondary != null)
+                      FilledButton.tonal(
+                        key: secondaryButtonKey,
+                        onPressed: onSecondary,
+                        child: Text(secondary),
+                      ),
+                    Expanded(
+                      child: _ConfirmButton(
+                        buttonKey: confirmButtonKey,
+                        label:
+                            confirmLabel ??
+                            l10n.inventoryItemEatSheetConfirmAction,
+                        trailing: kcalValue == null
+                            ? null
+                            : l10n.eatPageKcal(kcalValue.round()),
+                        onPressed: onConfirm,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),

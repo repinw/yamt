@@ -137,6 +137,18 @@ void main() {
       find.byKey(ManualProductDetailsForm.saveKey),
     );
     expect(save.onPressed, isNull);
+    final hint = tester.widget<Text>(
+      find.byKey(const Key('eat_page_confirm_hint')),
+    );
+    expect(hint.data, startsWith('Still missing: '));
+    expect(hint.data, contains('Barcode'));
+    expect(hint.data, isNot(contains('Name')));
+  });
+
+  testWidgets('a savable product shows no missing hint', (tester) async {
+    await tester.pumpWidget(_editor(_Calls()));
+
+    expect(find.byKey(const Key('eat_page_confirm_hint')), findsNothing);
   });
 
   testWidgets('typing reports the field', (tester) async {
@@ -328,5 +340,32 @@ void main() {
 
     expect(find.text('No barcode on the photos'), findsOneWidget);
     expect(find.text('Read'), findsOneWidget);
+  });
+
+  testWidgets('the photo tags say what each photo filled in', (tester) async {
+    final photo = ProductPhoto(
+      path: 'photo',
+      bytes: Uint8List.fromList(_pixel),
+      mimeType: 'image/png',
+    );
+    await tester.pumpWidget(
+      _editor(
+        _Calls(),
+        photoState: ManualProductPhotoState(
+          front: photo,
+          nutritionTable: photo,
+          hasReadFront: true,
+          hasReadNutritionTable: true,
+          frontDetails: const ProductFrontDetails(
+            name: 'Haferflocken zart',
+            quantityLabel: '500 g',
+          ),
+          nutritionValueCount: 9,
+        ),
+      ),
+    );
+
+    expect(find.text('Name · 500 g'), findsOneWidget);
+    expect(find.text('9 values'), findsOneWidget);
   });
 }

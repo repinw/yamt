@@ -8,6 +8,7 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_eat_now_nutrition.dart';
+import 'package:yamt/features/product_search_hub/domain/manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_photo_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
@@ -16,6 +17,7 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_state.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/manual_product_missing_field.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -25,13 +27,36 @@ bool canSaveManualProduct({
   required InventoryReceiptManualProductState state,
   required InventoryReceiptManualProductAction selectedAction,
 }) {
-  if (!state.hasRequiredFields || !state.hasBarcodeDecision) {
-    return false;
-  }
-  if (selectedAction == InventoryReceiptManualProductAction.eatNow) {
-    return true;
-  }
-  return state.hasPackageWeightInput;
+  return manualProductMissingFields(
+    state: state,
+    selectedAction: selectedAction,
+  ).isEmpty;
+}
+
+/// Inputs the form still needs before it can be saved, in form order. The
+/// package size is optional when the product is eaten right away.
+List<ManualProductMissingField> manualProductMissingFields({
+  required InventoryReceiptManualProductState state,
+  required InventoryReceiptManualProductAction selectedAction,
+}) {
+  bool empty(String text) => parseManualProductDouble(text) == null;
+  final needsPackage =
+      selectedAction != InventoryReceiptManualProductAction.eatNow;
+  return [
+    if (normalizeManualProductText(state.nameText) == null)
+      ManualProductMissingField.name,
+    if (state.selectedWeightUnit == null ||
+        (needsPackage && !state.hasPackageWeightInput))
+      ManualProductMissingField.packageSize,
+    if (!state.hasBarcodeDecision) ManualProductMissingField.barcode,
+    if (empty(state.kcalText)) ManualProductMissingField.energy,
+    if (empty(state.fatText)) ManualProductMissingField.fat,
+    if (empty(state.saturatedFatText)) ManualProductMissingField.saturatedFat,
+    if (empty(state.carbsText)) ManualProductMissingField.carbs,
+    if (empty(state.sugarText)) ManualProductMissingField.sugar,
+    if (empty(state.proteinText)) ManualProductMissingField.protein,
+    if (empty(state.saltText)) ManualProductMissingField.salt,
+  ];
 }
 
 /// Builds an [InventoryReceiptManualProductResult] from a save [payload].
