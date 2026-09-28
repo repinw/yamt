@@ -55,8 +55,12 @@ service cloud.firestore {
       return isOwner(uid) || (isSignedIn() && isActiveCoMember(uid));
     }
 
+    function invitePath(code) {
+      return /databases/$(database)/documents/household_invites/$(code);
+    }
+
     function isValidInvite(code, householdId) {
-      let invite = get(/databases/$(database)/documents/household_invites/$(code));
+      let invite = get(invitePath(code));
       return invite.data.keys().hasOnly([
           'householdId',
           'expiresAt',
@@ -908,6 +912,11 @@ service cloud.firestore {
         && request.resource.data.wrapped_household_key is string;
       allow delete: if isVerifiedAccount()
         && isHouseholdAdmin(resource.data.householdId);
+      // The user who joins with the invite uses it up in the same write.
+      allow delete: if isSignedIn()
+        && !exists(memberPath(resource.data.householdId, request.auth.uid))
+        && getAfter(memberPath(resource.data.householdId, request.auth.uid))
+          .data.get('invite_code', null) == code;
     }
 
     match /households/{householdId} {
@@ -917,8 +926,10 @@ service cloud.firestore {
         && request.resource.data.keys().hasOnly(['created_at'])
         && request.resource.data.created_at == request.time
         && getAfter(memberPath(householdId, request.auth.uid)).data.role == 'admin';
-      // The last member, always the admin, deletes the household.
-      allow delete: if isHouseholdAdmin(householdId);
+      // Rules cannot count the members, so no client deletes a household.
+      // The Cloud Function repairHouseholdOnMemberChange deletes it once the
+      // last member left, and names a new admin when none is left.
+      allow delete: if false;
 
       match /members/{uid} {
         allow read: if isHouseholdMember(householdId) || isOwner(uid);
@@ -930,7 +941,8 @@ service cloud.firestore {
           && request.resource.data.joined_at == request.time
           && !exists(householdPath(householdId))
           && existsAfter(householdPath(householdId));
-        // Everybody else joins as a member with a valid invite.
+        // Everybody else joins as a member with a valid invite, which the
+        // join uses up: a removed member cannot come back with it.
         allow create: if isOwner(uid)
           && request.resource.data.keys().hasOnly([
             'uid',
@@ -943,6 +955,7 @@ service cloud.firestore {
           && request.resource.data.joined_at == request.time
           && request.resource.data.invite_code is string
           && isValidInvite(request.resource.data.invite_code, householdId)
+          && !existsAfter(invitePath(request.resource.data.invite_code))
           && exists(householdPath(householdId));
         // Only the admin changes roles. Whoever becomes admin replaces the
         // admin in the same write: the admin turns member or leaves.

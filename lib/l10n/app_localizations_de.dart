@@ -3363,7 +3363,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdInviteCreate => 'Mitglieder einladen';
 
   @override
-  String get householdInviteValidFor => 'Einladung 24 Stunden gültig';
+  String get householdInviteValidFor => 'Für eine Person, 24 Stunden gültig';
 
   @override
   String get householdInviteCopyLink => 'Link kopieren';

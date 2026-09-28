@@ -5,7 +5,6 @@ import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/household/data/household_data_repository.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/data/household_member_repository.dart';
 import 'package:yamt/features/household/domain/household_exceptions.dart';
@@ -38,7 +37,6 @@ class HouseholdRepository {
   /// Creates the repository.
   const new({
     required this._firestore,
-    required this._data,
     required this._keys,
     required this._members,
     required this._currentUserId,
@@ -46,7 +44,6 @@ class HouseholdRepository {
   });
 
   final FirebaseFirestore _firestore;
-  final HouseholdDataRepository _data;
   final HouseholdKeyRepository _keys;
   final HouseholdMemberRepository _members;
   final String _currentUserId;
@@ -69,7 +66,7 @@ class HouseholdRepository {
   /// [ownHouseholdId].
   ///
   /// The admin hands the lead to [successorUid], or to the member who joined
-  /// first. The last member deletes the household with all its data. A user
+  /// first. After the last member the household goes with all its data. A user
   /// who leaves the own household gets a new, empty one; the others keep
   /// everything. The transaction reads the members again, so a member who
   /// leaves or takes the lead at the same time changes the decision.
@@ -90,7 +87,7 @@ class HouseholdRepository {
       if (isOwn) {
         throw StateError('Nobody else is in the own household.');
       }
-      await _deleteHousehold(householdId, ownHouseholdId);
+      await _leaveAlone(householdId, ownHouseholdId);
       return;
     }
 
@@ -145,17 +142,11 @@ class HouseholdRepository {
     }, SetOptions(merge: true));
   }
 
-  /// The last member deletes the household with everything in it.
-  ///
-  /// Deleting the household document closes the household: the rules let
-  /// nobody join one without it. A member who joined before that stops the
-  /// deletion: the household document comes back, the wiped data does not.
-  Future<void> _deleteHousehold(
-    String householdId,
-    String ownHouseholdId,
-  ) async {
-    await _data.wipeHouseholdData(householdId);
-    await _firestore.runTransaction((transaction) async {
+  /// The last member leaves. The Cloud Function repairHouseholdOnMemberChange
+  /// then deletes the household with everything in it; a member who joined
+  /// meanwhile keeps it and becomes admin.
+  Future<void> _leaveAlone(String householdId, String ownHouseholdId) {
+    return _firestore.runTransaction((transaction) async {
       final current = await _members.loadMember(
         transaction,
         householdId,
@@ -164,16 +155,6 @@ class HouseholdRepository {
       if (current == null) {
         throw const HouseholdMemberNotFoundException();
       }
-      transaction.delete(_household(householdId));
-    });
-    final members = await _members.loadMembers(householdId);
-    if (members.any((member) => member.uid != _currentUserId)) {
-      await _household(
-        householdId,
-      ).set(<String, dynamic>{_createdAtField: FieldValue.serverTimestamp()});
-      throw const HouseholdChangedException();
-    }
-    await _firestore.runTransaction((transaction) async {
       _writeDeparture(transaction, householdId);
       _writeActiveHousehold(transaction, ownHouseholdId);
     });
@@ -239,10 +220,6 @@ class HouseholdRepository {
     });
   }
 
-  DocumentReference<Map<String, dynamic>> _household(String householdId) {
-    return _firestore.collection(_householdsCollection).doc(householdId);
-  }
-
   DocumentReference<Map<String, dynamic>> get _userDocument {
     return _firestore.collection(_usersCollection).doc(_currentUserId);
   }
@@ -256,19 +233,13 @@ HouseholdRepository? householdRepository(Ref ref) {
     authStateChangesProvider.select((user) => user.asData?.value?.uid),
   );
   final firestore = ref.watch(firebaseFirestoreProvider);
-  final data = ref.watch(householdDataRepositoryProvider);
   final keys = ref.watch(householdKeyRepositoryProvider);
   final members = ref.watch(householdMemberRepositoryProvider);
-  if (uid == null ||
-      firestore == null ||
-      data == null ||
-      keys == null ||
-      members == null) {
+  if (uid == null || firestore == null || keys == null || members == null) {
     return null;
   }
   return HouseholdRepository(
     firestore: firestore,
-    data: data,
     keys: keys,
     members: members,
     currentUserId: uid,

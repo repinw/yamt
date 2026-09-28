@@ -4,17 +4,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/household/data/household_data_repository.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/data/household_member_repository.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
 import 'package:yamt/features/household/domain/household_exceptions.dart';
 
-import '../../../helpers/fake_firebase_storage.dart';
-
 void main() {
   late FakeFirebaseFirestore firestore;
-  late FakeFirebaseStorage storage;
   late HouseholdKeyRepository keys;
   late Map<String, UserDataCipher> dataCiphers;
 
@@ -26,22 +22,14 @@ void main() {
   }
 
   /// The repository of [uid]. [race] runs right before its first
-  /// transaction, or right after it with [afterTransaction], like another
-  /// member who changes the household at the same time.
+  /// transaction, like another member who changes the household at the same
+  /// time.
   Future<HouseholdRepository> repositoryFor(
     String uid, {
     Future<void> Function()? race,
-    bool afterTransaction = false,
   }) async {
     return HouseholdRepository(
-      firestore: race == null
-          ? firestore
-          : _RacingFirestore(
-              firestore,
-              race,
-              afterTransaction: afterTransaction,
-            ),
-      data: HouseholdDataRepository(firestore: firestore, storage: storage),
+      firestore: race == null ? firestore : _RacingFirestore(firestore, race),
       keys: keys,
       members: HouseholdMemberRepository(
         firestore: firestore,
@@ -96,7 +84,6 @@ void main() {
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
     firestore = FakeFirebaseFirestore();
-    storage = FakeFirebaseStorage();
     keys = HouseholdKeyRepository(
       firestore: firestore,
       storage: const FlutterSecureStorage(),
@@ -147,7 +134,6 @@ void main() {
     test('needs the data key', () async {
       final repository = HouseholdRepository(
         firestore: firestore,
-        data: HouseholdDataRepository(firestore: firestore, storage: storage),
         keys: keys,
         members: HouseholdMemberRepository(
           firestore: firestore,
@@ -245,34 +231,20 @@ void main() {
       expect(await data('households/shared/inventory_items/i1'), isNotNull);
     });
 
-    test('the last member deletes the household with its data', () async {
+    test('the last member leaves and leaves the household to the '
+        'Cloud Function', () async {
       await addMember('last', 'solo', joinedAt: DateTime(2026), admin: true);
       await firestore.doc('households/last/inventory_items/i1').set(
         <String, dynamic>{'payload': 'p'},
       );
-      await firestore.doc('households/last/inventory_activity_events/a1').set(
-        <String, dynamic>{'payload': 'p'},
-      );
-      storage.files.addAll(<String>[
-        'households/last/kitchen_utensils/pot/images/one.jpg',
-        'households/last/recipes/meal/images/cover.jpg',
-        'households/shared/recipes/meal/images/cover.jpg',
-      ]);
 
       await (await repositoryFor('solo'))
           .leaveHousehold(householdId: 'last', ownHouseholdId: 'own-solo');
 
-      expect(await data('households/last'), isNull);
       expect(await data('households/last/members/solo'), isNull);
       expect(await data('households/last/keys/solo'), isNull);
-      expect(await data('households/last/inventory_items/i1'), isNull);
-      expect(
-        await data('households/last/inventory_activity_events/a1'),
-        isNull,
-      );
-      expect(storage.files, <String>{
-        'households/shared/recipes/meal/images/cover.jpg',
-      });
+      expect(await data('households/last'), isNotNull);
+      expect(await data('households/last/inventory_items/i1'), isNotNull);
       expect((await data('users/solo'))!['householdId'], 'own-solo');
     });
 
@@ -340,26 +312,6 @@ void main() {
       expect((await data('households/pair/members/late'))!['role'], 'admin');
       expect(await data('households/pair'), isNotNull);
     });
-
-    test('a member who joined meanwhile stops the deletion', () async {
-      await addMember('last', 'solo', joinedAt: DateTime(2026), admin: true);
-      // The fake hides the members once the household document is gone, so
-      // the member shows up only after the household closed.
-      final solo = await repositoryFor(
-        'solo',
-        race: () => addMember('last', 'joiner', joinedAt: DateTime(2026, 2)),
-        afterTransaction: true,
-      );
-
-      await expectLater(
-        solo.leaveHousehold(householdId: 'last', ownHouseholdId: 'own-solo'),
-        throwsA(isA<HouseholdChangedException>()),
-      );
-      expect(await data('households/last'), isNotNull);
-      expect((await data('households/last/members/solo'))!['role'], 'admin');
-      expect(await data('households/last/members/joiner'), isNotNull);
-      expect((await data('users/solo'))!['householdId'], 'shared');
-    });
   });
 
   group('replaceOwnHousehold', () {
@@ -424,13 +376,12 @@ void main() {
   });
 }
 
-/// Runs a race once, right before or after the first transaction, and
-/// otherwise works like the Firestore it wraps.
+/// Runs a race once, right before the first transaction, and otherwise works
+/// like the Firestore it wraps.
 class _RacingFirestore extends Fake implements FirebaseFirestore {
-  new(this._firestore, this._race, {required this._afterTransaction});
+  new(this._firestore, this._race);
 
   final FakeFirebaseFirestore _firestore;
-  final bool _afterTransaction;
   Future<void> Function()? _race;
 
   @override
@@ -449,19 +400,11 @@ class _RacingFirestore extends Fake implements FirebaseFirestore {
   }) async {
     final race = _race;
     _race = null;
-    if (!_afterTransaction) {
-      await race?.call();
-    }
-    final result = await _firestore.runTransaction(
+    await race?.call();
+    return await _firestore.runTransaction(
       transactionHandler,
       timeout: timeout,
       maxAttempts: maxAttempts,
     );
-    if (_afterTransaction && race != null) {
-      // The fake applies the writes of a transaction without waiting.
-      await pumpEventQueue();
-      await race();
-    }
-    return result;
   }
 }

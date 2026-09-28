@@ -25,6 +25,7 @@ const _inviteCodeLifetime = Duration(days: 1);
 ///
 /// The invite document `household_invites/{code}` holds the household key
 /// wrapped with the invite secret, which only the QR code or link carries.
+/// Each invite lets one person in.
 class HouseholdInviteRepository {
   /// Creates the repository.
   new({
@@ -81,6 +82,7 @@ class HouseholdInviteRepository {
   }
 
   /// Joins the household behind [invite] and makes it the active household.
+  /// The join uses the invite up, so every invite lets one person in.
   ///
   /// Only a user who is alone in the own household may join; the own
   /// household [ownHouseholdId] pauses until the user leaves again.
@@ -133,6 +135,7 @@ class HouseholdInviteRepository {
           _members.newMemberData(HouseholdRole.member, inviteCode: invite.code),
         )
         ..set(keyDocument, keyData)
+        ..delete(inviteDocument)
         ..update(
           _firestore.collection(_usersCollection).doc(_currentUserId),
           <String, dynamic>{_householdIdField: householdId},

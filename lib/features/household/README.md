@@ -33,6 +33,10 @@ shared data.
   empty one.
 - A household has exactly one admin. Whoever becomes admin replaces the admin
   in the same write.
-- The last member who leaves deletes the household.
+- When the last member leaves, the Cloud Function `repairHouseholdOnMemberChange`
+  deletes the household with its data. No client deletes a household: the
+  rules cannot count its members. The same function names the member who
+  joined first as admin when no admin is left.
+- An invite lets one person in: the join deletes it in the same write.
 - Switching the active household runs in a transaction, so the profile never
   names a household before the membership there exists.

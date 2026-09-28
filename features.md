@@ -379,8 +379,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Exactly one admin per household. The admin invites and removes members and
   hands the lead to another member ("Make admin"). The members list shows the
   admin badge and marks the current user.
-- Invite with a QR code or a link (`yamt://household/join`), valid for 24
-  hours. The link carries a secret that the server never sees. Only a
+- Invite with a QR code or a link (`yamt://household/join`), for one person
+  and valid for 24 hours. Joining uses the invite up. The link carries a secret that the server never sees. Only a
   verified admin invites; a guest admin sees a hint to link the account.
 - Join by scanning the QR code, pasting the link, or opening the link, while
   alone in the own household. Joining switches to the shared household; the
@@ -389,8 +389,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Leave: the shared items stay in the household. An admin who leaves while
   others remain hands the lead on first: the dialog proposes the member who
   joined first and lets the admin pick another. An admin who leaves the own
-  household gets a new, empty one. The last member who leaves deletes the
-  household with all its data and images. When the household changes while
+  household gets a new, empty one. After the last member leaves, a Cloud
+  Function deletes the household with all its data and images. When the household changes while
   the user leaves (another member leaves, joins, or hands over the lead at
   the same time), leaving stops with a message to check the household again.
 - The admin removes members to stop sharing and keeps everything. A removed

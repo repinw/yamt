@@ -34,7 +34,8 @@ void main() {
       );
     });
 
-    test('a user creates a household only with their admin entry', () {
+    test('a user creates a household only with their admin entry, '
+        'and no client deletes one', () {
       expect(
         compactRules,
         contains(
@@ -55,8 +56,7 @@ void main() {
       expect(
         compactRules,
         contains(
-          'deletes the household. '
-          'allow delete: if isHouseholdAdmin(householdId);',
+          'names a new admin when none is left. allow delete: if false;',
         ),
       );
       expect(
@@ -70,7 +70,7 @@ void main() {
       );
     });
 
-    test('everybody else joins as a member with a valid invite', () {
+    test('everybody else joins as a member with an invite and uses it up', () {
       expect(
         compactRules,
         contains(
@@ -78,7 +78,18 @@ void main() {
           '&& request.resource.data.joined_at == request.time '
           '&& request.resource.data.invite_code is string '
           '&& isValidInvite(request.resource.data.invite_code, householdId) '
+          '&& !existsAfter(invitePath(request.resource.data.invite_code)) '
           '&& exists(householdPath(householdId));',
+        ),
+      );
+      expect(
+        compactRules,
+        contains(
+          'The user who joins with the invite uses it up in the same write. '
+          'allow delete: if isSignedIn() '
+          '&& !exists(memberPath(resource.data.householdId, request.auth.uid)) '
+          '&& getAfter(memberPath(resource.data.householdId, request.auth.uid)) '
+          ".data.get('invite_code', null) == code;",
         ),
       );
       expect(

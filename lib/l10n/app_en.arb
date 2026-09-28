@@ -1637,7 +1637,7 @@
   "householdJoinNameDialogRequiredError": "Please enter a name.",
   "householdJoinNameDialogAction": "Save & Join",
   "householdInviteCreate": "Invite members",
-  "householdInviteValidFor": "Invite valid for 24 hours",
+  "householdInviteValidFor": "For one person, valid for 24 hours",
   "householdInviteCopyLink": "Copy link",
   "householdInviteLinkCopied": "Link copied.",
   "householdInviteRefresh": "Create new invite",

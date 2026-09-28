@@ -147,7 +147,7 @@ void main() {
 
   group('joinHousehold', () {
     test('writes the member entry, the key entry and the active household '
-        'together', () async {
+        'together and uses the invite up', () async {
       final invite = await storeInvite(
         code: 'AbCdEfGhIjKlMnOpQrSt',
         householdId: 'shared',
@@ -179,6 +179,10 @@ void main() {
         (await firestore.doc('households/own-joiner/members/joiner').get())
             .exists,
         isTrue,
+      );
+      expect(
+        (await firestore.doc('household_invites/${invite.code}').get()).exists,
+        isFalse,
       );
     });
 

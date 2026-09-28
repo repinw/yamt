@@ -92,7 +92,6 @@ void main() {
         householdRepositoryProvider.overrideWithValue(
           HouseholdRepository(
             firestore: firestore,
-            data: data,
             keys: keys,
             members: members,
             currentUserId: _uid,

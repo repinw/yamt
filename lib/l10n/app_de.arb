@@ -1487,7 +1487,7 @@
   "householdJoinNameDialogRequiredError": "Bitte gib einen Namen ein.",
   "householdJoinNameDialogAction": "Speichern & Beitreten",
   "householdInviteCreate": "Mitglieder einladen",
-  "householdInviteValidFor": "Einladung 24 Stunden gültig",
+  "householdInviteValidFor": "Für eine Person, 24 Stunden gültig",
   "householdInviteCopyLink": "Link kopieren",
   "householdInviteLinkCopied": "Link kopiert.",
   "householdInviteRefresh": "Neue Einladung erstellen",

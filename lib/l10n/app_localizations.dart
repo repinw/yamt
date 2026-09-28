@@ -5733,7 +5733,7 @@ abstract class AppLocalizations {
   /// No description provided for @householdInviteValidFor.
   ///
   /// In en, this message translates to:
-  /// **'Invite valid for 24 hours'**
+  /// **'For one person, valid for 24 hours'**
   String get householdInviteValidFor;
 
   /// No description provided for @householdInviteCopyLink.
