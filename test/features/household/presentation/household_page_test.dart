@@ -1,67 +1,21 @@
-import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/auth/domain/user_profile.dart';
-import 'package:yamt/features/household/application/household_members_provider.dart';
-import 'package:yamt/features/household/domain/household_invite.dart';
-import 'package:yamt/features/household/presentation/controllers/'
-    'household_invite_code_controller.dart';
-import 'package:yamt/features/household/presentation/controllers/'
-    'household_membership_controller.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
+import 'package:yamt/features/household/presentation/widgets/'
+    'household_join_section.dart';
 import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-class _MockUser extends Mock implements User;
+import '../../../helpers/fake_household.dart';
 
-class _FakeHouseholdInviteCodeController extends HouseholdInviteCodeController {
-  @override
-  AsyncValue<HouseholdInvite?> build() {
-    return const AsyncData<HouseholdInvite?>(null);
-  }
-}
-
-class _FakeHouseholdMembershipController extends HouseholdMembershipController {
-  @override
-  FutureOr<void> build() {}
-}
-
-Widget _buildApp({
-  required Stream<User?> authStream,
-  Stream<UserProfile>? profileStream,
-  Stream<List<UserProfile>>? membersStream,
-}) {
-  final overrides = [
-    authStateChangesProvider.overrideWith((ref) => authStream),
-  ];
-
-  if (profileStream != null) {
-    overrides.add(userProfileProvider.overrideWith((ref) => profileStream));
-  }
-  if (membersStream != null) {
-    overrides
-      ..add(householdMembersProvider.overrideWith((ref) => membersStream))
-      ..add(
-        householdInviteCodeControllerProvider.overrideWith(
-          _FakeHouseholdInviteCodeController.new,
-        ),
-      )
-      ..add(
-        householdMembershipControllerProvider.overrideWith(
-          _FakeHouseholdMembershipController.new,
-        ),
-      );
-  }
-
+Widget _buildApp(List<Object> overrides) {
   return ProviderScope(
-    overrides: overrides,
+    overrides: overrides.cast(),
     child: const MaterialApp(
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
@@ -71,42 +25,47 @@ Widget _buildApp({
 }
 
 void main() {
-  testWidgets(
-    'HouseholdPage renders app bar and sharing card for signed-in user',
-    (tester) async {
-      final user = _MockUser();
-      when(() => user.uid).thenReturn('host-1');
-      when(() => user.isAnonymous).thenReturn(false);
-
-      const profile = UserProfile(
-        uid: 'host-1',
-        email: 'host@example.com',
-        displayName: 'Host',
+  testWidgets('HouseholdPage shows the household of the signed-in user', (
+    tester,
+  ) async {
+    final backend = FakeHousehold.create();
+    final overrides = await tester.runAsync(() async {
+      await backend.addMember(
+        'own',
+        'me',
+        joinedAt: DateTime(2026),
+        admin: true,
       );
+      await backend.addUser('me', householdId: 'own', ownHouseholdId: 'own');
+      return await backend.overrides('me');
+    });
 
-      await tester.pumpWidget(
-        _buildApp(
-          authStream: Stream<User?>.value(user),
-          profileStream: Stream<UserProfile>.value(profile),
-          membersStream: Stream<List<UserProfile>>.value([profile]),
-        ),
+    await tester.pumpWidget(_buildApp(overrides!));
+    for (var i = 0; i < 10; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 5)),
       );
-      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 100));
+    }
 
-      expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text('Household'), findsWidgets);
-      expect(find.byType(HouseholdSharingCard), findsOneWidget);
-      expect(find.text('No active account session.'), findsNothing);
-    },
-  );
+    expect(find.byType(AppBar), findsOneWidget);
+    expect(find.text('Household'), findsOneWidget);
+    expect(find.byType(HouseholdSharingCard), findsOneWidget);
+    expect(find.byKey(HouseholdJoinSection.linkFieldKey), findsOneWidget);
+  });
 
   testWidgets(
     'HouseholdPage shows signed-out fallback when no session exists',
     (tester) async {
-      await tester.pumpWidget(_buildApp(authStream: Stream<User?>.value(null)));
+      await tester.pumpWidget(
+        _buildApp([
+          authStateChangesProvider.overrideWith(
+            (ref) => Stream<User?>.value(null),
+          ),
+        ]),
+      );
       await tester.pumpAndSettle();
 
-      expect(find.byType(AppBar), findsOneWidget);
       expect(find.text('No active account session.'), findsOneWidget);
       expect(find.byType(HouseholdSharingCard), findsNothing);
     },

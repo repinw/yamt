@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/pending_household_invite.dart';
@@ -14,12 +15,18 @@ import 'package:yamt/features/household/presentation/widgets/'
     'household_join_name_dialog/household_join_name_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines household join section.
+/// Joins a household with an invite link or its QR code.
 class HouseholdJoinSection extends ConsumerStatefulWidget {
-  /// The household join section.
+  /// Creates the section.
   const new({required this.isBusy, super.key});
 
-  /// Whether busy.
+  /// Key of the invite link field.
+  static const linkFieldKey = Key('household_join_link_field');
+
+  /// Key of the join button.
+  static const joinKey = Key('household_join_button');
+
+  /// Whether a household action runs.
   final bool isBusy;
 
   @override
@@ -57,56 +64,49 @@ class _HouseholdJoinSectionState extends ConsumerState<HouseholdJoinSection> {
     final l10n = AppLocalizations.of(context)!;
     final membershipState = ref.watch(householdMembershipControllerProvider);
 
-    return Column(
+    return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.householdJoinTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: TextField(
-                controller: _linkController,
-                decoration: InputDecoration(
-                  labelText: l10n.householdJoinLinkLabel,
-                  hintText: l10n.householdJoinLinkHint,
-                  border: const OutlineInputBorder(),
-                  suffixIcon: IconButton(
-                    onPressed: widget.isBusy
-                        ? null
-                        : () => _scanInvite(context, l10n),
-                    icon: const Icon(Icons.qr_code_scanner),
-                    tooltip: l10n.householdJoinScanQr,
-                  ),
-                ),
-                keyboardType: TextInputType.url,
-                autocorrect: false,
+        Expanded(
+          child: TextField(
+            key: HouseholdJoinSection.linkFieldKey,
+            controller: _linkController,
+            decoration: InputDecoration(
+              labelText: l10n.householdJoinLinkLabel,
+              hintText: l10n.householdJoinLinkHint,
+              border: const OutlineInputBorder(),
+              suffixIcon: IconButton(
+                onPressed: widget.isBusy
+                    ? null
+                    : () => _scanInvite(context, l10n),
+                icon: const Icon(Icons.qr_code_scanner),
+                tooltip: l10n.householdJoinScanQr,
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            ValueListenableBuilder<TextEditingValue>(
-              valueListenable: _linkController,
-              builder: (context, value, _) {
-                final invite = HouseholdInvite.tryParse(value.text);
-                return FilledButton(
-                  onPressed: widget.isBusy || invite == null
-                      ? null
-                      : () => _joinHousehold(context, l10n, invite),
-                  child: membershipState.isLoading
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Text(l10n.householdJoinAction),
-                );
-              },
-            ),
-          ],
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+          ),
+        ),
+        const SizedBox(width: AppSpacing.sm),
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: _linkController,
+          builder: (context, value, _) {
+            final invite = HouseholdInvite.tryParse(value.text);
+            return FilledButton(
+              key: HouseholdJoinSection.joinKey,
+              onPressed: widget.isBusy || invite == null
+                  ? null
+                  : () => _joinHousehold(context, l10n, invite),
+              child: membershipState.isLoading
+                  ? const SizedBox.square(
+                      dimension: AppSizes.inlineProgressIndicator,
+                      child: CircularProgressIndicator(
+                        strokeWidth: AppSizes.progressStrokeWidth,
+                      ),
+                    )
+                  : Text(l10n.householdJoinAction),
+            );
+          },
         ),
       ],
     );

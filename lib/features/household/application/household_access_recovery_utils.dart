@@ -1,32 +1,37 @@
 import 'dart:developer' show log;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/household_permission_recovery.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 
-/// Should recover controller household access.
+/// Whether a controller that watched [currentHouseholdDataOwnerUserId] should
+/// switch to the own household after [error].
+///
+/// Only a denied read in another household than the own one switches: the
+/// user left it or an admin removed them.
 bool shouldRecoverControllerHouseholdAccess({
   required Ref ref,
   required Object error,
   required bool isRecoveringHouseholdAccess,
   required String? currentHouseholdDataOwnerUserId,
 }) {
-  final profile = ref.read(userProfileProvider).asData?.value;
-  final actualDataOwnerUserId = ref.read(householdDataOwnerUserIdProvider);
-  final effectiveDataOwnerUserId = ref.read(activeHouseholdIdProvider);
-  return shouldRecoverFromHouseholdPermissionDenied(
-    error: error,
-    isRecoveringHouseholdAccess: isRecoveringHouseholdAccess,
-    currentUserId: signedInHouseholdRecoveryUserId(ref) ?? profile?.uid,
-    actualDataOwnerUserId: actualDataOwnerUserId,
-    effectiveDataOwnerUserId:
-        currentHouseholdDataOwnerUserId ?? effectiveDataOwnerUserId,
-    profileHouseholdId: profile?.householdId,
+  if (isRecoveringHouseholdAccess ||
+      error is! FirebaseException ||
+      error.code != 'permission-denied') {
+    return false;
+  }
+  final ownHouseholdId = ref.read(ownHouseholdIdProvider);
+  final watchedHouseholdId = normalizeHouseholdScopeValue(
+    currentHouseholdDataOwnerUserId ?? ref.read(activeHouseholdIdProvider),
   );
+  return ownHouseholdId != null &&
+      watchedHouseholdId != null &&
+      watchedHouseholdId != ownHouseholdId;
 }
 
-/// Documented member.
+/// Switches a controller to the own household and restarts its
+/// subscription.
 Future<void> recoverControllerHouseholdAccess<T>({
   required Ref ref,
   required bool isRecoveringHouseholdAccess,
@@ -67,7 +72,8 @@ Future<void> recoverControllerHouseholdAccess<T>({
   }
 }
 
-/// Documented member.
+/// Points household scoped data at the own household instead of
+/// [currentHouseholdDataOwnerUserId], then restarts the subscription.
 Future<List<T>> performControllerHouseholdAccessRecovery<T>({
   required Ref ref,
   required Future<List<T>> Function() restartHouseholdScopedSubscription,
@@ -76,19 +82,19 @@ Future<List<T>> performControllerHouseholdAccessRecovery<T>({
   required String householdAccessRecoveryMessage,
   void Function()? onSkippedHouseholdAccessRecovery,
 }) async {
-  final personalUserId = signedInHouseholdRecoveryUserId(ref);
-  final staleOwnerUserId = normalizeHouseholdScopeValue(
+  final ownHouseholdId = ref.read(ownHouseholdIdProvider);
+  final staleHouseholdId = normalizeHouseholdScopeValue(
     currentHouseholdDataOwnerUserId,
   );
-  if (personalUserId != null &&
-      staleOwnerUserId != null &&
-      staleOwnerUserId != personalUserId) {
+  if (ownHouseholdId != null &&
+      staleHouseholdId != null &&
+      staleHouseholdId != ownHouseholdId) {
     log(householdAccessRecoveryMessage, name: householdAccessRecoveryLogName);
     ref
         .read(householdDataOwnerRecoveryProvider.notifier)
         .recoverToPersonalScope(
-          staleOwnerUserId: staleOwnerUserId,
-          personalUserId: personalUserId,
+          staleOwnerUserId: staleHouseholdId,
+          personalUserId: ownHouseholdId,
         );
   } else {
     onSkippedHouseholdAccessRecovery?.call();

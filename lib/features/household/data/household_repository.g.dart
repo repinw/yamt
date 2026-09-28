@@ -8,22 +8,25 @@ part of 'household_repository.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Household repository.
+/// Household repository, or `null` while signed out or Firebase is
+/// unavailable.
 
 @ProviderFor(householdRepository)
 final householdRepositoryProvider = HouseholdRepositoryProvider._();
 
-/// Household repository.
+/// Household repository, or `null` while signed out or Firebase is
+/// unavailable.
 
 final class HouseholdRepositoryProvider
     extends
         $FunctionalProvider<
-          HouseholdRepository,
-          HouseholdRepository,
-          HouseholdRepository
+          HouseholdRepository?,
+          HouseholdRepository?,
+          HouseholdRepository?
         >
-    with $Provider<HouseholdRepository> {
-  /// Household repository.
+    with $Provider<HouseholdRepository?> {
+  /// Household repository, or `null` while signed out or Firebase is
+  /// unavailable.
   HouseholdRepositoryProvider._()
     : super(
         from: null,
@@ -40,23 +43,23 @@ final class HouseholdRepositoryProvider
 
   @$internal
   @override
-  $ProviderElement<HouseholdRepository> $createElement(
+  $ProviderElement<HouseholdRepository?> $createElement(
     $ProviderPointer pointer,
   ) => $ProviderElement(pointer);
 
   @override
-  HouseholdRepository create(Ref ref) {
+  HouseholdRepository? create(Ref ref) {
     return householdRepository(ref);
   }
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(HouseholdRepository value) {
+  Override overrideWithValue(HouseholdRepository? value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<HouseholdRepository>(value),
+      providerOverride: $SyncValueProvider<HouseholdRepository?>(value),
     );
   }
 }
 
 String _$householdRepositoryHash() =>
-    r'693a46ea69c427107e39b777d540c503f215ffc6';
+    r'dd906082427376fd978759e69f1d6f48f8a6e55e';

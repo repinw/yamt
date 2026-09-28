@@ -1624,45 +1624,48 @@
   "accountPageUserId": "User ID",
   "accountPageNotSet": "Not set",
   "householdTitle": "Household",
-  "householdJoinTitle": "Join household",
   "householdJoinLinkLabel": "Invite link",
   "householdJoinLinkHint": "Paste link or scan QR code",
   "householdJoinAction": "Join",
   "householdJoinSuccess": "Household joined.",
   "householdJoinInvalidCode": "Invalid invite.",
   "householdJoinExpiredCode": "This invite has expired.",
-  "householdJoinOwnCode": "You cannot join your own household.",
+  "householdJoinOwnCode": "You are already in this household.",
   "householdJoinNameDialogTitle": "Enter your name",
   "householdJoinNameDialogMessage": "Please enter your name so other household members can recognize you.",
   "householdJoinNameDialogFieldLabel": "Your name",
   "householdJoinNameDialogRequiredError": "Please enter a name.",
   "householdJoinNameDialogAction": "Save & Join",
-  "householdInviteTitle": "Invite members",
-  "householdInviteCreate": "Create invite",
+  "householdInviteCreate": "Invite members",
   "householdInviteValidFor": "Invite valid for 24 hours",
   "householdInviteCopyLink": "Copy link",
   "householdInviteLinkCopied": "Link copied.",
   "householdInviteRefresh": "Create new invite",
-  "householdInviteVerificationRequired": "Verify your account with Google or email before you lead a household.",
+  "householdInviteVerificationRequired": "Verify your account with Google or email before you invite people.",
   "householdJoinScanQr": "Scan QR code",
-  "householdRejoinRequired": "Please join the household again with a QR code to read the shared data.",
   "householdKeyUnavailable": "Your key is still loading. Please try again in a moment.",
-  "householdKeyRestoreHostMessage": "You started fresh, so your pantry is locked. A member of your household can unlock it: ask them for an unlock code and enter it here.",
-  "householdKeyRestoreMemberMessage": "The owner of this household started fresh and can no longer read the shared pantry. Create an unlock code and give it to them.",
+  "householdKeyRestoreMemberMessage": "{name} started fresh and can no longer read the shared pantry. Create an unlock code and give it to them.",
+  "@householdKeyRestoreMemberMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "householdKeyRestoreCodeLabel": "Unlock code",
   "householdKeyRestoreAction": "Unlock pantry",
   "householdKeyRestoreSuccess": "Pantry unlocked.",
   "householdKeyRestoreInvalidCode": "This unlock code does not work.",
   "householdKeyRestoreCreateAction": "Create unlock code",
-  "householdKeyRestoreCodeHint": "Give this code to the household owner. It works until they use it or you create a new one.",
+  "householdKeyRestoreCodeHint": "Give this code to {name}. It works until it is used or you create a new one.",
+  "@householdKeyRestoreCodeHint": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "householdKeyRestoreCopyAction": "Copy code",
   "householdKeyRestoreCopied": "Code copied.",
   "householdHostVerificationHint": "To invite other people into your household, link your guest account with Google or email & password.",
-  "householdMembersTitle": "Members",
-  "householdLeaderBadge": "Leader",
-  "householdYouBadge": "You",
   "householdRemoveMemberTitle": "Remove member?",
-  "householdRemoveMemberMessage": "Remove {name} from this household?",
+  "householdRemoveMemberMessage": "Remove {name} from this household? The shared items stay here.",
   "@householdRemoveMemberMessage": {
     "placeholders": {
       "name": {}
@@ -1670,13 +1673,48 @@
   },
   "householdRemoveMemberAction": "Remove",
   "householdRemoveMemberSuccess": "Member removed.",
-  "householdRemoveMemberFailed": "This member cannot be removed.",
   "householdLeaveTitle": "Leave household?",
-  "householdLeaveMessage": "You will lose access to the shared household until you join again.",
+  "householdLeaveMessage": "You go back to your own household. The shared items stay here.",
   "householdLeaveAction": "Leave household",
   "householdLeaveSuccess": "Household left.",
-  "householdLeaderOnly": "Only the household leader can do that.",
   "householdActionFailed": "Household action failed. Please try again.",
+  "householdKeyRestoreSelfMessage": "You started fresh, so the pantry of this household is locked. Ask another member for an unlock code and enter it here.",
+  "householdAdminBadge": "Admin",
+  "householdMemberSelf": "{name} (you)",
+  "@householdMemberSelf": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "householdMemberNoName": "No name",
+  "householdMemberActions": "Member actions",
+  "householdMakeAdminAction": "Make admin",
+  "householdMakeAdminTitle": "Make {name} admin?",
+  "@householdMakeAdminTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "householdMakeAdminMessage": "{name} will invite and remove members. You stay in the household as a member.",
+  "@householdMakeAdminMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "householdMakeAdminSuccess": "{name} is now the admin.",
+  "@householdMakeAdminSuccess": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "householdMemberNotFound": "This person is no longer in the household.",
+  "householdAdminOnly": "Only the admin can do that.",
+  "householdJoinLeaveFirst": "Leave your shared household before you join another one.",
+  "householdLeaveOwnMessage": "You get a new, empty household. The others keep everything here.",
+  "householdLeaveSuccessorLabel": "Who leads the household after you?",
+  "householdDeleteTitle": "Delete household?",
+  "householdDeleteMessage": "You are the last member. Leaving deletes this household with all its items.",
+  "householdDeleteAction": "Leave and delete",
   "settingsAboutTitle": "About",
   "settingsAboutSubtitle": "App version and information",
   "settingsHomeWidgetVerboseModeTitle": "Detailed home screen widget",

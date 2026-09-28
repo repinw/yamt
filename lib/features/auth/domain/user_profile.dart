@@ -7,9 +7,14 @@ part 'user_profile.g.dart';
 @freezed
 abstract class UserProfile with _$UserProfile {
   /// Creates persisted user profile model.
+  ///
+  /// [householdId] names the active household and [ownHouseholdId] the
+  /// user's own household. Both are `null` only until the own household
+  /// exists.
   const factory({
     required String uid,
     String? householdId,
+    String? ownHouseholdId,
     String? email,
     String? displayName,
     @Default(false) bool isAnonymous,

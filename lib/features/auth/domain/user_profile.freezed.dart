@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$UserProfile {
 
- String get uid; String? get householdId; String? get email; String? get displayName; bool get isAnonymous;
+ String get uid; String? get householdId; String? get ownHouseholdId; String? get email; String? get displayName; bool get isAnonymous;
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $UserProfileCopyWith<UserProfile> get copyWith => _$UserProfileCopyWithImpl<User
 @override
 bool operator ==(Object other) {
   final _this = this as UserProfile;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfile&&(identical(other.uid, _this.uid) || other.uid == _this.uid)&&(identical(other.householdId, _this.householdId) || other.householdId == _this.householdId)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.displayName, _this.displayName) || other.displayName == _this.displayName)&&(identical(other.isAnonymous, _this.isAnonymous) || other.isAnonymous == _this.isAnonymous));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is UserProfile&&(identical(other.uid, _this.uid) || other.uid == _this.uid)&&(identical(other.householdId, _this.householdId) || other.householdId == _this.householdId)&&(identical(other.ownHouseholdId, _this.ownHouseholdId) || other.ownHouseholdId == _this.ownHouseholdId)&&(identical(other.email, _this.email) || other.email == _this.email)&&(identical(other.displayName, _this.displayName) || other.displayName == _this.displayName)&&(identical(other.isAnonymous, _this.isAnonymous) || other.isAnonymous == _this.isAnonymous));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as UserProfile;
-  return Object.hash(runtimeType,_this.uid,_this.householdId,_this.email,_this.displayName,_this.isAnonymous);
+  return Object.hash(runtimeType,_this.uid,_this.householdId,_this.ownHouseholdId,_this.email,_this.displayName,_this.isAnonymous);
 }
 
 @override
 String toString() {
   final _this = this as UserProfile;
-  return 'UserProfile(uid: ${_this.uid}, householdId: ${_this.householdId}, email: ${_this.email}, displayName: ${_this.displayName}, isAnonymous: ${_this.isAnonymous})';
+  return 'UserProfile(uid: ${_this.uid}, householdId: ${_this.householdId}, ownHouseholdId: ${_this.ownHouseholdId}, email: ${_this.email}, displayName: ${_this.displayName}, isAnonymous: ${_this.isAnonymous})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $UserProfileCopyWith<$Res>  {
   factory $UserProfileCopyWith(UserProfile value, $Res Function(UserProfile) _then) = _$UserProfileCopyWithImpl;
 @useResult
 $Res call({
- String uid, String? householdId, String? email, String? displayName, bool isAnonymous
+ String uid, String? householdId, String? ownHouseholdId, String? email, String? displayName, bool isAnonymous
 });
 
 
@@ -71,10 +71,11 @@ class _$UserProfileCopyWithImpl<$Res>
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? householdId = freezed,Object? email = freezed,Object? displayName = freezed,Object? isAnonymous = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? uid = null,Object? householdId = freezed,Object? ownHouseholdId = freezed,Object? email = freezed,Object? displayName = freezed,Object? isAnonymous = null,}) {
   return _then(UserProfile(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,householdId: freezed == householdId ? _self.householdId : householdId // ignore: cast_nullable_to_non_nullable
+as String?,ownHouseholdId: freezed == ownHouseholdId ? _self.ownHouseholdId : ownHouseholdId // ignore: cast_nullable_to_non_nullable
 as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,displayName: freezed == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String?,isAnonymous: null == isAnonymous ? _self.isAnonymous : isAnonymous // ignore: cast_nullable_to_non_nullable
@@ -163,10 +164,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String? householdId,  String? email,  String? displayName,  bool isAnonymous)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String uid,  String? householdId,  String? ownHouseholdId,  String? email,  String? displayName,  bool isAnonymous)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _UserProfile() when $default != null:
-return $default(_that.uid,_that.householdId,_that.email,_that.displayName,_that.isAnonymous);case _:
+return $default(_that.uid,_that.householdId,_that.ownHouseholdId,_that.email,_that.displayName,_that.isAnonymous);case _:
   return orElse();
 
 }
@@ -184,10 +185,10 @@ return $default(_that.uid,_that.householdId,_that.email,_that.displayName,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String? householdId,  String? email,  String? displayName,  bool isAnonymous)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String uid,  String? householdId,  String? ownHouseholdId,  String? email,  String? displayName,  bool isAnonymous)  $default,) {final _that = this;
 switch (_that) {
 case _UserProfile():
-return $default(_that.uid,_that.householdId,_that.email,_that.displayName,_that.isAnonymous);case _:
+return $default(_that.uid,_that.householdId,_that.ownHouseholdId,_that.email,_that.displayName,_that.isAnonymous);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -204,10 +205,10 @@ return $default(_that.uid,_that.householdId,_that.email,_that.displayName,_that.
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String? householdId,  String? email,  String? displayName,  bool isAnonymous)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String uid,  String? householdId,  String? ownHouseholdId,  String? email,  String? displayName,  bool isAnonymous)?  $default,) {final _that = this;
 switch (_that) {
 case _UserProfile() when $default != null:
-return $default(_that.uid,_that.householdId,_that.email,_that.displayName,_that.isAnonymous);case _:
+return $default(_that.uid,_that.householdId,_that.ownHouseholdId,_that.email,_that.displayName,_that.isAnonymous);case _:
   return null;
 
 }
@@ -219,11 +220,12 @@ return $default(_that.uid,_that.householdId,_that.email,_that.displayName,_that.
 @JsonSerializable()
 
 class _UserProfile implements UserProfile {
-  const _UserProfile({required this.uid, this.householdId, this.email, this.displayName, this.isAnonymous = false});
+  const _UserProfile({required this.uid, this.householdId, this.ownHouseholdId, this.email, this.displayName, this.isAnonymous = false});
   factory _UserProfile.fromJson(Map<String, dynamic> json) => _$UserProfileFromJson(json);
 
 @override final  String uid;
 @override final  String? householdId;
+@override final  String? ownHouseholdId;
 @override final  String? email;
 @override final  String? displayName;
 @override@JsonKey() final  bool isAnonymous;
@@ -241,18 +243,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfile&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.householdId, householdId) || other.householdId == householdId)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _UserProfile&&(identical(other.uid, uid) || other.uid == uid)&&(identical(other.householdId, householdId) || other.householdId == householdId)&&(identical(other.ownHouseholdId, ownHouseholdId) || other.ownHouseholdId == ownHouseholdId)&&(identical(other.email, email) || other.email == email)&&(identical(other.displayName, displayName) || other.displayName == displayName)&&(identical(other.isAnonymous, isAnonymous) || other.isAnonymous == isAnonymous));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,uid,householdId,email,displayName,isAnonymous);
+    return Object.hash(runtimeType,uid,householdId,ownHouseholdId,email,displayName,isAnonymous);
 }
 
 @override
 String toString() {
-    return 'UserProfile(uid: $uid, householdId: $householdId, email: $email, displayName: $displayName, isAnonymous: $isAnonymous)';
+    return 'UserProfile(uid: $uid, householdId: $householdId, ownHouseholdId: $ownHouseholdId, email: $email, displayName: $displayName, isAnonymous: $isAnonymous)';
 }
 
 
@@ -263,7 +265,7 @@ abstract mixin class _$UserProfileCopyWith<$Res> implements $UserProfileCopyWith
   factory _$UserProfileCopyWith(_UserProfile value, $Res Function(_UserProfile) _then) = __$UserProfileCopyWithImpl;
 @override @useResult
 $Res call({
- String uid, String? householdId, String? email, String? displayName, bool isAnonymous
+ String uid, String? householdId, String? ownHouseholdId, String? email, String? displayName, bool isAnonymous
 });
 
 
@@ -280,10 +282,11 @@ class __$UserProfileCopyWithImpl<$Res>
 
 /// Create a copy of UserProfile
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? householdId = freezed,Object? email = freezed,Object? displayName = freezed,Object? isAnonymous = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? uid = null,Object? householdId = freezed,Object? ownHouseholdId = freezed,Object? email = freezed,Object? displayName = freezed,Object? isAnonymous = null,}) {
   return _then(_UserProfile(
 uid: null == uid ? _self.uid : uid // ignore: cast_nullable_to_non_nullable
 as String,householdId: freezed == householdId ? _self.householdId : householdId // ignore: cast_nullable_to_non_nullable
+as String?,ownHouseholdId: freezed == ownHouseholdId ? _self.ownHouseholdId : ownHouseholdId // ignore: cast_nullable_to_non_nullable
 as String?,email: freezed == email ? _self.email : email // ignore: cast_nullable_to_non_nullable
 as String?,displayName: freezed == displayName ? _self.displayName : displayName // ignore: cast_nullable_to_non_nullable
 as String?,isAnonymous: null == isAnonymous ? _self.isAnonymous : isAnonymous // ignore: cast_nullable_to_non_nullable

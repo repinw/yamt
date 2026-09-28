@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/household/data/household_repository.dart';
+import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/data/household_invite_repository.dart';
+import 'package:yamt/features/household/domain/household_exceptions.dart';
 import 'package:yamt/features/household/domain/household_invite.dart';
 
 part 'household_invite_code_controller.g.dart';
 
-/// Defines household invite code controller.
+/// Holds the invite that the admin created for the active household.
 @riverpod
 class HouseholdInviteCodeController extends _$HouseholdInviteCodeController {
   @override
@@ -14,13 +16,16 @@ class HouseholdInviteCodeController extends _$HouseholdInviteCodeController {
     return const AsyncData<HouseholdInvite?>(null);
   }
 
-  /// Generate invite code.
+  /// Creates a new invite into the active household.
   Future<void> generateInviteCode() async {
     state = const AsyncLoading<HouseholdInvite?>();
     try {
-      final invite = await ref
-          .read(householdRepositoryProvider)
-          .generateInviteCode();
+      final repository = ref.read(householdInviteRepositoryProvider);
+      final householdId = ref.read(activeHouseholdIdProvider);
+      if (repository == null || householdId == null) {
+        throw const HouseholdKeyUnavailableException();
+      }
+      final invite = await repository.generateInvite(householdId);
       if (!ref.mounted) {
         return;
       }
@@ -33,7 +38,7 @@ class HouseholdInviteCodeController extends _$HouseholdInviteCodeController {
     }
   }
 
-  /// Clear.
+  /// Forgets the invite.
   void clear() {
     state = const AsyncData<HouseholdInvite?>(null);
   }

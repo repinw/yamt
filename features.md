@@ -36,9 +36,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   Google Block Store on Android, iCloud Keychain on iPhone. Only when that
   fails (platform switch, no backup) the app asks for the recovery key before
   anything else; without it the user can start fresh, which deletes the old
-  private data. It also deletes the own household data and images, unless
-  members share the household: then they still hold its key and one of them
-  unlocks it again for the owner (see Household).
+  private data. It also drops the user's household keys: a household where
+  the user is alone loses its data and images and gets a new key; in a
+  household with other members the data stays and one of them unlocks it
+  again (see Household).
 
 ## Onboarding
 
@@ -364,21 +365,31 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## Household
 
 - Household page from settings.
+- Household data (inventory, shopping list, prepared meals, recipes, kitchen
+  utensils, discard and activity events, and their images) belongs to the
+  household, not to one person. Every user always has an own household.
+- Exactly one admin per household. The admin invites and removes members and
+  hands the lead to another member ("Make admin"). The members list shows the
+  admin badge and marks the current user.
 - Invite with a QR code or a link (`yamt://household/join`), valid for 24
-  hours. The link carries a secret that the server never sees.
-- Join by scanning the QR code, pasting the link, or opening the link.
+  hours. The link carries a secret that the server never sees. Only a
+  verified admin invites; a guest admin sees a hint to link the account.
+- Join by scanning the QR code, pasting the link, or opening the link, while
+  alone in the own household. Joining switches to the shared household; the
+  own household pauses untouched and comes back when the user leaves.
 - Invite expiry and validation handling.
-- End-to-end encryption of household data (inventory, shopping list, prepared
-  meals, recipes, kitchen utensils, discard and activity events) with a
-  household key. Each member holds the key wrapped with their own data key.
-  A member whose join stopped before the key was saved is asked to join
-  again.
-- Unlock after a fresh start: an owner who started fresh with members keeps
-  the household data but not its key. Members see a hint and create a
-  one-time unlock code; the owner enters it on the household page and gets
-  the key back. A member who started fresh joins again with a new invite.
-- Household members list with leader and current-user badges.
-- Remove member, leave household, and leader-only action handling.
+- Leave: the shared items stay in the household. An admin who leaves while
+  others remain hands the lead on first: the dialog proposes the member who
+  joined first and lets the admin pick another. An admin who leaves the own
+  household gets a new, empty one. The last member who leaves deletes the
+  household with all its data and images.
+- The admin removes members to stop sharing and keeps everything. A removed
+  member's app notices it and goes back to the own household.
+- End-to-end encryption of household data with a household key. Each member
+  holds the key wrapped with their own data key.
+- Unlock after a fresh start: a member who started fresh lost their key
+  entry. The other members see a hint and create a one-time unlock code; the
+  member enters it on the household page and gets the key back.
 - Shared household scope for inventory, shopping lists, utensils, prepared
   meals, and related household-owned data.
 

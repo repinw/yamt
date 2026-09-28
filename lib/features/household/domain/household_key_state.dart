@@ -1,44 +1,33 @@
 import 'package:cryptography/cryptography.dart';
 
-/// State of the household key for the current household data owner.
+/// State of the household key for the active household.
 sealed class HouseholdKeyState {
   const new();
 }
 
-/// No data key yet, no user, or Firestore is unavailable.
+/// No data key yet, no user, no household yet, or Firestore is unavailable.
 final class HouseholdKeyUnavailable extends HouseholdKeyState {
   /// Creates the state.
   const new();
 }
 
-/// The user is a member of [ownerUid]'s household but holds no key for it,
-/// for example because the join stopped before the key entry was saved. The
-/// user must join again with a QR code or link.
-final class HouseholdKeyInviteRequired extends HouseholdKeyState {
-  /// Creates the state.
-  const new({required this.ownerUid});
-
-  /// The household data owner.
-  final String ownerUid;
-}
-
-/// The user owns the household of [ownerUid] but started fresh and lost the
-/// household key. A member must hand it back with a restore code.
+/// The user started fresh and lost the key of [householdId]. Another member
+/// must hand it back with an unlock code.
 final class HouseholdKeyRestoreRequired extends HouseholdKeyState {
   /// Creates the state.
-  const new({required this.ownerUid});
+  const new({required this.householdId});
 
-  /// The household data owner.
-  final String ownerUid;
+  /// The household whose key is missing.
+  final String householdId;
 }
 
-/// The household key of [ownerUid] is available.
+/// The household key of [householdId] is available.
 final class HouseholdKeyReady extends HouseholdKeyState {
   /// Creates the state.
-  const new({required this.ownerUid, required this.key});
+  const new({required this.householdId, required this.key});
 
-  /// The household data owner.
-  final String ownerUid;
+  /// The active household.
+  final String householdId;
 
   /// The household key.
   final SecretKey key;

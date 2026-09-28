@@ -869,7 +869,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(HouseholdPage), findsOneWidget);
-    expect(find.text('Invite members'), findsOneWidget);
+    expect(find.text('Invite link'), findsOneWidget);
   });
 
   testWidgets('Goal archive tile opens the goal archive', (tester) async {

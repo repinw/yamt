@@ -5652,12 +5652,6 @@ abstract class AppLocalizations {
   /// **'Household'**
   String get householdTitle;
 
-  /// No description provided for @householdJoinTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Join household'**
-  String get householdJoinTitle;
-
   /// No description provided for @householdJoinLinkLabel.
   ///
   /// In en, this message translates to:
@@ -5697,7 +5691,7 @@ abstract class AppLocalizations {
   /// No description provided for @householdJoinOwnCode.
   ///
   /// In en, this message translates to:
-  /// **'You cannot join your own household.'**
+  /// **'You are already in this household.'**
   String get householdJoinOwnCode;
 
   /// No description provided for @householdJoinNameDialogTitle.
@@ -5730,16 +5724,10 @@ abstract class AppLocalizations {
   /// **'Save & Join'**
   String get householdJoinNameDialogAction;
 
-  /// No description provided for @householdInviteTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Invite members'**
-  String get householdInviteTitle;
-
   /// No description provided for @householdInviteCreate.
   ///
   /// In en, this message translates to:
-  /// **'Create invite'**
+  /// **'Invite members'**
   String get householdInviteCreate;
 
   /// No description provided for @householdInviteValidFor.
@@ -5769,7 +5757,7 @@ abstract class AppLocalizations {
   /// No description provided for @householdInviteVerificationRequired.
   ///
   /// In en, this message translates to:
-  /// **'Verify your account with Google or email before you lead a household.'**
+  /// **'Verify your account with Google or email before you invite people.'**
   String get householdInviteVerificationRequired;
 
   /// No description provided for @householdJoinScanQr.
@@ -5778,29 +5766,17 @@ abstract class AppLocalizations {
   /// **'Scan QR code'**
   String get householdJoinScanQr;
 
-  /// No description provided for @householdRejoinRequired.
-  ///
-  /// In en, this message translates to:
-  /// **'Please join the household again with a QR code to read the shared data.'**
-  String get householdRejoinRequired;
-
   /// No description provided for @householdKeyUnavailable.
   ///
   /// In en, this message translates to:
   /// **'Your key is still loading. Please try again in a moment.'**
   String get householdKeyUnavailable;
 
-  /// No description provided for @householdKeyRestoreHostMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'You started fresh, so your pantry is locked. A member of your household can unlock it: ask them for an unlock code and enter it here.'**
-  String get householdKeyRestoreHostMessage;
-
   /// No description provided for @householdKeyRestoreMemberMessage.
   ///
   /// In en, this message translates to:
-  /// **'The owner of this household started fresh and can no longer read the shared pantry. Create an unlock code and give it to them.'**
-  String get householdKeyRestoreMemberMessage;
+  /// **'{name} started fresh and can no longer read the shared pantry. Create an unlock code and give it to them.'**
+  String householdKeyRestoreMemberMessage(Object name);
 
   /// No description provided for @householdKeyRestoreCodeLabel.
   ///
@@ -5835,8 +5811,8 @@ abstract class AppLocalizations {
   /// No description provided for @householdKeyRestoreCodeHint.
   ///
   /// In en, this message translates to:
-  /// **'Give this code to the household owner. It works until they use it or you create a new one.'**
-  String get householdKeyRestoreCodeHint;
+  /// **'Give this code to {name}. It works until it is used or you create a new one.'**
+  String householdKeyRestoreCodeHint(Object name);
 
   /// No description provided for @householdKeyRestoreCopyAction.
   ///
@@ -5856,24 +5832,6 @@ abstract class AppLocalizations {
   /// **'To invite other people into your household, link your guest account with Google or email & password.'**
   String get householdHostVerificationHint;
 
-  /// No description provided for @householdMembersTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Members'**
-  String get householdMembersTitle;
-
-  /// No description provided for @householdLeaderBadge.
-  ///
-  /// In en, this message translates to:
-  /// **'Leader'**
-  String get householdLeaderBadge;
-
-  /// No description provided for @householdYouBadge.
-  ///
-  /// In en, this message translates to:
-  /// **'You'**
-  String get householdYouBadge;
-
   /// No description provided for @householdRemoveMemberTitle.
   ///
   /// In en, this message translates to:
@@ -5883,7 +5841,7 @@ abstract class AppLocalizations {
   /// No description provided for @householdRemoveMemberMessage.
   ///
   /// In en, this message translates to:
-  /// **'Remove {name} from this household?'**
+  /// **'Remove {name} from this household? The shared items stay here.'**
   String householdRemoveMemberMessage(Object name);
 
   /// No description provided for @householdRemoveMemberAction.
@@ -5898,12 +5856,6 @@ abstract class AppLocalizations {
   /// **'Member removed.'**
   String get householdRemoveMemberSuccess;
 
-  /// No description provided for @householdRemoveMemberFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'This member cannot be removed.'**
-  String get householdRemoveMemberFailed;
-
   /// No description provided for @householdLeaveTitle.
   ///
   /// In en, this message translates to:
@@ -5913,7 +5865,7 @@ abstract class AppLocalizations {
   /// No description provided for @householdLeaveMessage.
   ///
   /// In en, this message translates to:
-  /// **'You will lose access to the shared household until you join again.'**
+  /// **'You go back to your own household. The shared items stay here.'**
   String get householdLeaveMessage;
 
   /// No description provided for @householdLeaveAction.
@@ -5928,17 +5880,113 @@ abstract class AppLocalizations {
   /// **'Household left.'**
   String get householdLeaveSuccess;
 
-  /// No description provided for @householdLeaderOnly.
-  ///
-  /// In en, this message translates to:
-  /// **'Only the household leader can do that.'**
-  String get householdLeaderOnly;
-
   /// No description provided for @householdActionFailed.
   ///
   /// In en, this message translates to:
   /// **'Household action failed. Please try again.'**
   String get householdActionFailed;
+
+  /// No description provided for @householdKeyRestoreSelfMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You started fresh, so the pantry of this household is locked. Ask another member for an unlock code and enter it here.'**
+  String get householdKeyRestoreSelfMessage;
+
+  /// No description provided for @householdAdminBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Admin'**
+  String get householdAdminBadge;
+
+  /// No description provided for @householdMemberSelf.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} (you)'**
+  String householdMemberSelf(Object name);
+
+  /// No description provided for @householdMemberNoName.
+  ///
+  /// In en, this message translates to:
+  /// **'No name'**
+  String get householdMemberNoName;
+
+  /// No description provided for @householdMemberActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Member actions'**
+  String get householdMemberActions;
+
+  /// No description provided for @householdMakeAdminAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Make admin'**
+  String get householdMakeAdminAction;
+
+  /// No description provided for @householdMakeAdminTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Make {name} admin?'**
+  String householdMakeAdminTitle(Object name);
+
+  /// No description provided for @householdMakeAdminMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} will invite and remove members. You stay in the household as a member.'**
+  String householdMakeAdminMessage(Object name);
+
+  /// No description provided for @householdMakeAdminSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is now the admin.'**
+  String householdMakeAdminSuccess(Object name);
+
+  /// No description provided for @householdMemberNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This person is no longer in the household.'**
+  String get householdMemberNotFound;
+
+  /// No description provided for @householdAdminOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Only the admin can do that.'**
+  String get householdAdminOnly;
+
+  /// No description provided for @householdJoinLeaveFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave your shared household before you join another one.'**
+  String get householdJoinLeaveFirst;
+
+  /// No description provided for @householdLeaveOwnMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You get a new, empty household. The others keep everything here.'**
+  String get householdLeaveOwnMessage;
+
+  /// No description provided for @householdLeaveSuccessorLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Who leads the household after you?'**
+  String get householdLeaveSuccessorLabel;
+
+  /// No description provided for @householdDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete household?'**
+  String get householdDeleteTitle;
+
+  /// No description provided for @householdDeleteMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'You are the last member. Leaving deletes this household with all its items.'**
+  String get householdDeleteMessage;
+
+  /// No description provided for @householdDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave and delete'**
+  String get householdDeleteAction;
 
   /// No description provided for @settingsAboutTitle.
   ///

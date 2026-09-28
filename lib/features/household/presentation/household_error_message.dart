@@ -1,19 +1,24 @@
-import 'package:yamt/features/household/domain/household_sharing_exceptions.dart';
+import 'package:yamt/features/household/domain/household_exceptions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Household error message.
+/// The message for a failed household action.
 String householdErrorMessage(AppLocalizations l10n, Object error) {
+  if (error is! HouseholdException) {
+    return l10n.householdActionFailed;
+  }
   return switch (error) {
     InvalidHouseholdInviteCodeException() => l10n.householdJoinInvalidCode,
     ExpiredHouseholdInviteCodeException() => l10n.householdJoinExpiredCode,
     OwnHouseholdInviteCodeException() => l10n.householdJoinOwnCode,
     HouseholdVerificationRequiredException() =>
       l10n.householdInviteVerificationRequired,
-    HouseholdLeaderRequiredException() => l10n.householdLeaderOnly,
-    HouseholdMemberRemovalDeniedException() => l10n.householdRemoveMemberFailed,
+    HouseholdAdminRequiredException() => l10n.householdAdminOnly,
+    HouseholdMemberNotFoundException() => l10n.householdMemberNotFound,
+    HouseholdLeaveRequiredException() => l10n.householdJoinLeaveFirst,
     HouseholdKeyUnavailableException() => l10n.householdKeyUnavailable,
     InvalidHouseholdRestoreCodeException() =>
       l10n.householdKeyRestoreInvalidCode,
-    _ => l10n.householdActionFailed,
+    HouseholdInviteCodeGenerationFailedException() =>
+      l10n.householdActionFailed,
   };
 }

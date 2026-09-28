@@ -3263,9 +3263,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get householdTitle => 'Household';
 
   @override
-  String get householdJoinTitle => 'Join household';
-
-  @override
   String get householdJoinLinkLabel => 'Invite link';
 
   @override
@@ -3284,7 +3281,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get householdJoinExpiredCode => 'This invite has expired.';
 
   @override
-  String get householdJoinOwnCode => 'You cannot join your own household.';
+  String get householdJoinOwnCode => 'You are already in this household.';
 
   @override
   String get householdJoinNameDialogTitle => 'Enter your name';
@@ -3303,10 +3300,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get householdJoinNameDialogAction => 'Save & Join';
 
   @override
-  String get householdInviteTitle => 'Invite members';
-
-  @override
-  String get householdInviteCreate => 'Create invite';
+  String get householdInviteCreate => 'Invite members';
 
   @override
   String get householdInviteValidFor => 'Invite valid for 24 hours';
@@ -3322,26 +3316,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get householdInviteVerificationRequired =>
-      'Verify your account with Google or email before you lead a household.';
+      'Verify your account with Google or email before you invite people.';
 
   @override
   String get householdJoinScanQr => 'Scan QR code';
-
-  @override
-  String get householdRejoinRequired =>
-      'Please join the household again with a QR code to read the shared data.';
 
   @override
   String get householdKeyUnavailable =>
       'Your key is still loading. Please try again in a moment.';
 
   @override
-  String get householdKeyRestoreHostMessage =>
-      'You started fresh, so your pantry is locked. A member of your household can unlock it: ask them for an unlock code and enter it here.';
-
-  @override
-  String get householdKeyRestoreMemberMessage =>
-      'The owner of this household started fresh and can no longer read the shared pantry. Create an unlock code and give it to them.';
+  String householdKeyRestoreMemberMessage(Object name) {
+    return '$name started fresh and can no longer read the shared pantry. Create an unlock code and give it to them.';
+  }
 
   @override
   String get householdKeyRestoreCodeLabel => 'Unlock code';
@@ -3360,8 +3347,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get householdKeyRestoreCreateAction => 'Create unlock code';
 
   @override
-  String get householdKeyRestoreCodeHint =>
-      'Give this code to the household owner. It works until they use it or you create a new one.';
+  String householdKeyRestoreCodeHint(Object name) {
+    return 'Give this code to $name. It works until it is used or you create a new one.';
+  }
 
   @override
   String get householdKeyRestoreCopyAction => 'Copy code';
@@ -3374,20 +3362,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'To invite other people into your household, link your guest account with Google or email & password.';
 
   @override
-  String get householdMembersTitle => 'Members';
-
-  @override
-  String get householdLeaderBadge => 'Leader';
-
-  @override
-  String get householdYouBadge => 'You';
-
-  @override
   String get householdRemoveMemberTitle => 'Remove member?';
 
   @override
   String householdRemoveMemberMessage(Object name) {
-    return 'Remove $name from this household?';
+    return 'Remove $name from this household? The shared items stay here.';
   }
 
   @override
@@ -3397,14 +3376,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get householdRemoveMemberSuccess => 'Member removed.';
 
   @override
-  String get householdRemoveMemberFailed => 'This member cannot be removed.';
-
-  @override
   String get householdLeaveTitle => 'Leave household?';
 
   @override
   String get householdLeaveMessage =>
-      'You will lose access to the shared household until you join again.';
+      'You go back to your own household. The shared items stay here.';
 
   @override
   String get householdLeaveAction => 'Leave household';
@@ -3413,11 +3389,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String get householdLeaveSuccess => 'Household left.';
 
   @override
-  String get householdLeaderOnly => 'Only the household leader can do that.';
-
-  @override
   String get householdActionFailed =>
       'Household action failed. Please try again.';
+
+  @override
+  String get householdKeyRestoreSelfMessage =>
+      'You started fresh, so the pantry of this household is locked. Ask another member for an unlock code and enter it here.';
+
+  @override
+  String get householdAdminBadge => 'Admin';
+
+  @override
+  String householdMemberSelf(Object name) {
+    return '$name (you)';
+  }
+
+  @override
+  String get householdMemberNoName => 'No name';
+
+  @override
+  String get householdMemberActions => 'Member actions';
+
+  @override
+  String get householdMakeAdminAction => 'Make admin';
+
+  @override
+  String householdMakeAdminTitle(Object name) {
+    return 'Make $name admin?';
+  }
+
+  @override
+  String householdMakeAdminMessage(Object name) {
+    return '$name will invite and remove members. You stay in the household as a member.';
+  }
+
+  @override
+  String householdMakeAdminSuccess(Object name) {
+    return '$name is now the admin.';
+  }
+
+  @override
+  String get householdMemberNotFound =>
+      'This person is no longer in the household.';
+
+  @override
+  String get householdAdminOnly => 'Only the admin can do that.';
+
+  @override
+  String get householdJoinLeaveFirst =>
+      'Leave your shared household before you join another one.';
+
+  @override
+  String get householdLeaveOwnMessage =>
+      'You get a new, empty household. The others keep everything here.';
+
+  @override
+  String get householdLeaveSuccessorLabel =>
+      'Who leads the household after you?';
+
+  @override
+  String get householdDeleteTitle => 'Delete household?';
+
+  @override
+  String get householdDeleteMessage =>
+      'You are the last member. Leaving deletes this household with all its items.';
+
+  @override
+  String get householdDeleteAction => 'Leave and delete';
 
   @override
   String get settingsAboutTitle => 'About';

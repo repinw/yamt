@@ -1,257 +1,284 @@
-import 'dart:math';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cryptography/cryptography.dart';
+import 'package:collection/collection.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/recovery_key.dart';
+import 'package:yamt/core/data/firestore_batch_write.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
+import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
-import 'package:yamt/features/household/domain/household_invite.dart';
-import 'package:yamt/features/household/domain/household_sharing_exceptions.dart';
+import 'package:yamt/features/household/data/household_member_repository.dart';
+import 'package:yamt/features/household/domain/household_exceptions.dart';
+import 'package:yamt/features/household/domain/household_member.dart';
 
 part 'household_repository.g.dart';
 
+const _householdsCollection = 'households';
 const _usersCollection = 'users';
-const _invitesCollection = 'household_invites';
-const _inviteCodeLifetime = Duration(days: 1);
-const _maxInviteCodeGenerationAttempts = 10;
+const _createdAtField = 'created_at';
+const _roleField = 'role';
+const _uidField = 'uid';
+const _householdIdField = 'householdId';
+const _ownHouseholdIdField = 'ownHouseholdId';
+const _maxBatchSize = 400;
 
-/// Household repository.
-@riverpod
-HouseholdRepository householdRepository(Ref ref) {
-  final user = ref.watch(authStateChangesProvider).asData?.value;
-  final profile = ref.watch(userProfileProvider).asData?.value;
-  final firestore = ref.watch(firebaseFirestoreProvider);
-  final keys = ref.watch(householdKeyRepositoryProvider);
+typedef _NewHousehold = ({
+  DocumentReference<Map<String, dynamic>> household,
+  DocumentReference<Map<String, dynamic>> keyDocument,
+  Map<String, dynamic> keyData,
+});
 
-  if (user == null || firestore == null || keys == null) {
-    throw StateError('Household sharing requires an authenticated user.');
-  }
-
-  return HouseholdRepository(
-    firestore: firestore,
-    keys: keys,
-    dataCipher: ref.watch(userDataCipherProvider),
-    currentUserId: user.uid,
-    isAnonymous: user.isAnonymous,
-    currentHouseholdId: profile?.householdId,
-  );
-}
-
-/// Defines household repository.
+/// Creates, leaves and wipes households, and switches the active household
+/// of the current user.
+///
+/// Every user has an own household. Joining another one pauses it, leaving
+/// goes back to it. A switch runs in a transaction, which writes nothing
+/// locally before the server accepts it. So the profile never names a
+/// household before the membership there exists.
 class HouseholdRepository {
-  /// Creates an instance.
-  new({
+  /// Creates the repository.
+  const new({
     required this._firestore,
+    required this._storage,
     required this._keys,
-    required this._dataCipher,
+    required this._members,
     required this._currentUserId,
-    required this._isAnonymous,
-    required String? currentHouseholdId,
-    Random? random,
-  }) : _currentHouseholdId = _normalizeOptional(currentHouseholdId),
-       _random = random ?? Random.secure();
-
-  static const _fieldUid = 'uid';
-  static const _fieldHouseholdId = 'householdId';
-  static const _fieldHostUid = 'hostUid';
-  static const _fieldExpiresAt = 'expiresAt';
-  static const _fieldWrappedHouseholdKey = 'wrapped_household_key';
+    required this._dataCipher,
+  });
 
   final FirebaseFirestore _firestore;
+  final FirebaseStorage _storage;
   final HouseholdKeyRepository _keys;
-  final UserDataCipher? _dataCipher;
+  final HouseholdMemberRepository _members;
   final String _currentUserId;
-  final bool _isAnonymous;
-  final String? _currentHouseholdId;
-  final Random _random;
+  final UserDataCipher? _dataCipher;
 
-  /// Creates an invite into the current user's household.
-  ///
-  /// The invite document holds the household key wrapped with the invite
-  /// secret, which only the returned [HouseholdInvite] carries.
-  Future<HouseholdInvite> generateInviteCode() async {
-    _assertVerifiedLeader();
-    final dataCipher = _requireDataCipher();
-    final householdKey = await _keys.loadKey(
-      ownerUid: _currentUserId,
-      memberUid: _currentUserId,
-      dataCipher: dataCipher.cipher,
-    );
-    if (householdKey == null) {
-      throw const HouseholdKeyUnavailableException();
-    }
-
-    for (
-      var attempt = 0;
-      attempt < _maxInviteCodeGenerationAttempts;
-      attempt += 1
-    ) {
-      final invite = HouseholdInvite(
-        code: _generateRandomCode(),
-        secret: RecoveryKey.generate(),
-      );
-      final wrappedKey = await invite.secret.wrapDataKey(
-        householdKey,
-        uid: _inviteDocument(invite.code).path,
-      );
-      final created = await _tryCreateInviteCode(invite.code, wrappedKey);
-      if (created) {
-        return invite;
+  /// Creates the own household of the current user, with the user as admin
+  /// and a new household key, unless the profile names one already.
+  Future<void> createOwnHousehold() async {
+    final household = await _prepareHousehold();
+    await _firestore.runTransaction((transaction) async {
+      final profile = await transaction.get(_userDocument);
+      if (profile.data()?[_ownHouseholdIdField] is String) {
+        return;
       }
-    }
-
-    throw const HouseholdInviteCodeGenerationFailedException();
+      _writeHousehold(transaction, household, profileExists: profile.exists);
+    });
   }
 
-  /// Joins the household behind [invite] and stores its household key for
-  /// the current user.
+  /// Leaves [householdId] and goes back to the own household
+  /// [ownHouseholdId].
   ///
-  /// A member of the same household may join again, which restores a missing
-  /// key entry.
-  Future<void> joinHousehold(HouseholdInvite invite) async {
-    final dataCipher = _requireDataCipher();
-    final inviteDocument = _inviteDocument(invite.code);
-    final snapshot = await inviteDocument.get();
-    if (!snapshot.exists) {
-      throw const InvalidHouseholdInviteCodeException();
+  /// The admin hands the lead to [successorUid], or to the member who joined
+  /// first. The last member deletes the household with all its data. A user
+  /// who leaves the own household gets a new, empty one; the others keep
+  /// everything.
+  Future<void> leaveHousehold({
+    required String householdId,
+    required String ownHouseholdId,
+    String? successorUid,
+  }) async {
+    final members = await _members.loadMembers(householdId);
+    final current = members.firstWhereOrNull(
+      (member) => member.uid == _currentUserId,
+    );
+    if (current == null) {
+      throw const HouseholdMemberNotFoundException();
+    }
+    final others = members
+        .where((member) => member.uid != _currentUserId)
+        .toList(growable: false);
+    final isOwn = householdId == ownHouseholdId;
+    if (others.isEmpty) {
+      if (isOwn) {
+        throw StateError('Nobody else is in the own household.');
+      }
+      await _deleteHousehold(householdId, ownHouseholdId);
+      return;
     }
 
-    final data = snapshot.data() ?? const <String, dynamic>{};
-    final expiresAt = data[_fieldExpiresAt];
-    final hostUid = _normalizeOptional(data[_fieldHostUid] as String?);
-    final wrappedKey = data[_fieldWrappedHouseholdKey];
+    final successor = current.isAdmin ? _successor(others, successorUid) : null;
+    final newHousehold = isOwn ? await _prepareHousehold() : null;
+    await _firestore.runTransaction((transaction) async {
+      if (successor != null) {
+        transaction.update(
+          _members.memberDocument(householdId, successor.uid),
+          <String, dynamic>{_roleField: HouseholdRole.admin.name},
+        );
+      }
+      _writeDeparture(transaction, householdId);
+      if (newHousehold == null) {
+        _writeActiveHousehold(transaction, ownHouseholdId);
+      } else {
+        _writeHousehold(transaction, newHousehold, profileExists: true);
+      }
+    });
+  }
 
-    if (expiresAt is! Timestamp || hostUid == null || wrappedKey is! String) {
-      throw const InvalidHouseholdInviteCodeException();
-    }
-    if (!DateTime.now().isBefore(expiresAt.toDate())) {
-      throw const ExpiredHouseholdInviteCodeException();
-    }
-    if (hostUid == _currentUserId) {
-      throw const OwnHouseholdInviteCodeException();
-    }
-    if (_currentHouseholdId != null && _currentHouseholdId != hostUid) {
-      throw const HouseholdLeaveRequiredException();
-    }
+  /// Makes [ownHouseholdId] the active household again, for example after
+  /// the admin of the shared household removed the user.
+  Future<void> returnToOwnHousehold(String ownHouseholdId) {
+    return _userDocument.set(<String, dynamic>{
+      _uidField: _currentUserId,
+      _householdIdField: ownHouseholdId,
+    }, SetOptions(merge: true));
+  }
 
-    final SecretKey householdKey;
-    try {
-      householdKey = await invite.secret.unwrapDataKey(
-        wrappedKey,
-        uid: inviteDocument.path,
+  /// Deletes the documents and images of [householdId]. The household, its
+  /// members and their key entries stay.
+  Future<void> wipeHouseholdData(String householdId) async {
+    final references = <DocumentReference<Map<String, dynamic>>>[];
+    for (final collection in householdEncryptedCollections.keys) {
+      final snapshot = await _household(householdId)
+          .collection(collection)
+          .get();
+      references.addAll(snapshot.docs.map((document) => document.reference));
+    }
+    for (final chunk in FirestoreBatchChunker.chunk(
+      operations: references,
+      maxChunkSize: _maxBatchSize,
+    )) {
+      final batch = _firestore.batch();
+      chunk.forEach(batch.delete);
+      await batch.commit();
+    }
+    for (final folder in householdImageFolders) {
+      await _deleteFolder(
+        _storage.ref('$_householdsCollection/$householdId/$folder'),
       );
-    } on SecretBoxAuthenticationError {
-      throw const InvalidHouseholdInviteCodeException();
     }
-
-    // The rules grant access to the host's key entries only to members, so
-    // the membership must exist before the key entry is written.
-    await _userDocument(_currentUserId).set(<String, dynamic>{
-      _fieldUid: _currentUserId,
-      _fieldHouseholdId: hostUid,
-    }, SetOptions(merge: true));
-    await _keys.saveKey(
-      ownerUid: hostUid,
-      memberUid: _currentUserId,
-      householdKey: householdKey,
-      dataCipher: dataCipher.cipher,
-    );
   }
 
-  /// Leave household.
-  Future<void> leaveHousehold() async {
-    final householdId = _currentHouseholdId;
-    if (householdId == null) {
-      throw const HouseholdMembershipRequiredException();
-    }
-
-    await _keys.deleteKey(ownerUid: householdId, memberUid: _currentUserId);
-    await _userDocument(_currentUserId).set(<String, dynamic>{
-      _fieldUid: _currentUserId,
-      _fieldHouseholdId: FieldValue.delete(),
-    }, SetOptions(merge: true));
+  /// The last member deletes the household with everything in it.
+  Future<void> _deleteHousehold(
+    String householdId,
+    String ownHouseholdId,
+  ) async {
+    await wipeHouseholdData(householdId);
+    await _firestore.runTransaction((transaction) async {
+      _writeDeparture(transaction, householdId);
+      transaction.delete(_household(householdId));
+      _writeActiveHousehold(transaction, ownHouseholdId);
+    });
   }
 
-  /// Remove member.
-  Future<void> removeMember(String userId) async {
-    _assertVerifiedLeader();
-    final normalizedUserId = userId.trim();
-    if (normalizedUserId.isEmpty || normalizedUserId == _currentUserId) {
-      throw const HouseholdMemberRemovalDeniedException();
+  HouseholdMember _successor(
+    List<HouseholdMember> others,
+    String? successorUid,
+  ) {
+    if (successorUid == null) {
+      return proposeSuccessor(others, _currentUserId)!;
     }
-
-    final snapshot = await _userDocument(normalizedUserId).get();
-    final data = snapshot.data() ?? const <String, dynamic>{};
-    final householdId = _normalizeOptional(data[_fieldHouseholdId] as String?);
-    if (!snapshot.exists || householdId != _currentUserId) {
-      throw const HouseholdMemberRemovalDeniedException();
-    }
-
-    await _keys.deleteKey(
-      ownerUid: _currentUserId,
-      memberUid: normalizedUserId,
-    );
-    await _userDocument(normalizedUserId).set(<String, dynamic>{
-      _fieldHouseholdId: FieldValue.delete(),
-    }, SetOptions(merge: true));
+    return others.firstWhereOrNull((member) => member.uid == successorUid) ??
+        (throw const HouseholdMemberNotFoundException());
   }
 
-  UserDataCipher _requireDataCipher() {
+  Future<_NewHousehold> _prepareHousehold() async {
     final dataCipher = _dataCipher;
     if (dataCipher == null || dataCipher.uid != _currentUserId) {
       throw const HouseholdKeyUnavailableException();
     }
-    return dataCipher;
+    final household = _firestore.collection(_householdsCollection).doc();
+    final keyDocument = _keys.keyDocument(household.id, _currentUserId);
+    return (
+      household: household,
+      keyDocument: keyDocument,
+      keyData: await _keys.wrapKey(
+        keyDocument,
+        await PayloadCipher.newDataKey(),
+        dataCipher.cipher,
+      ),
+    );
   }
 
-  void _assertVerifiedLeader() {
-    if (_isAnonymous) {
-      throw const HouseholdVerificationRequiredException();
-    }
-    if (_currentHouseholdId != null) {
-      throw const HouseholdLeaderRequiredException();
-    }
-  }
-
-  DocumentReference<Map<String, dynamic>> _inviteDocument(String code) {
-    return _firestore.collection(_invitesCollection).doc(code);
-  }
-
-  Future<bool> _tryCreateInviteCode(String code, String wrappedKey) {
-    final inviteDocument = _inviteDocument(code);
-    final expiresAt = DateTime.now().add(_inviteCodeLifetime);
-    return _firestore.runTransaction((transaction) async {
-      final snapshot = await transaction.get(inviteDocument);
-      if (snapshot.exists) {
-        return false;
-      }
-
-      transaction.set(inviteDocument, <String, dynamic>{
-        _fieldHostUid: _currentUserId,
-        _fieldExpiresAt: Timestamp.fromDate(expiresAt),
-        _fieldWrappedHouseholdKey: wrappedKey,
+  void _writeHousehold(
+    Transaction transaction,
+    _NewHousehold household, {
+    required bool profileExists,
+  }) {
+    final householdId = household.household.id;
+    final profile = <String, dynamic>{
+      _householdIdField: householdId,
+      _ownHouseholdIdField: householdId,
+    };
+    transaction
+      ..set(household.household, <String, dynamic>{
+        _createdAtField: FieldValue.serverTimestamp(),
+      })
+      ..set(
+        _members.memberDocument(householdId, _currentUserId),
+        _members.newMemberData(HouseholdRole.admin),
+      )
+      ..set(household.keyDocument, household.keyData);
+    if (profileExists) {
+      transaction.update(_userDocument, profile);
+    } else {
+      transaction.set(_userDocument, <String, dynamic>{
+        _uidField: _currentUserId,
+        ...profile,
       });
-      return true;
+    }
+  }
+
+  void _writeDeparture(Transaction transaction, String householdId) {
+    transaction
+      ..delete(_keys.keyDocument(householdId, _currentUserId))
+      ..delete(_keys.restoreDocument(householdId, _currentUserId))
+      ..delete(_members.memberDocument(householdId, _currentUserId));
+  }
+
+  void _writeActiveHousehold(Transaction transaction, String householdId) {
+    transaction.update(_userDocument, <String, dynamic>{
+      _householdIdField: householdId,
     });
   }
 
-  DocumentReference<Map<String, dynamic>> _userDocument(String userId) {
-    return _firestore.collection(_usersCollection).doc(userId);
+  Future<void> _deleteFolder(Reference folder) async {
+    final result = await folder.listAll();
+    for (final item in result.items) {
+      await item.delete();
+    }
+    for (final prefix in result.prefixes) {
+      await _deleteFolder(prefix);
+    }
   }
 
-  String _generateRandomCode() {
-    final value = _random.nextInt(1000000);
-    return value.toString().padLeft(6, '0');
+  DocumentReference<Map<String, dynamic>> _household(String householdId) {
+    return _firestore.collection(_householdsCollection).doc(householdId);
+  }
+
+  DocumentReference<Map<String, dynamic>> get _userDocument {
+    return _firestore.collection(_usersCollection).doc(_currentUserId);
   }
 }
 
-String? _normalizeOptional(String? value) {
-  final normalized = value?.trim();
-  if (normalized == null || normalized.isEmpty) {
+/// Household repository, or `null` while signed out or Firebase is
+/// unavailable.
+@riverpod
+HouseholdRepository? householdRepository(Ref ref) {
+  final uid = ref.watch(
+    authStateChangesProvider.select((user) => user.asData?.value?.uid),
+  );
+  final firestore = ref.watch(firebaseFirestoreProvider);
+  final storage = ref.watch(firebaseStorageProvider);
+  final keys = ref.watch(householdKeyRepositoryProvider);
+  final members = ref.watch(householdMemberRepositoryProvider);
+  if (uid == null ||
+      firestore == null ||
+      storage == null ||
+      keys == null ||
+      members == null) {
     return null;
   }
-  return normalized;
+  return HouseholdRepository(
+    firestore: firestore,
+    storage: storage,
+    keys: keys,
+    members: members,
+    currentUserId: uid,
+    dataCipher: ref.watch(userDataCipherProvider),
+  );
 }

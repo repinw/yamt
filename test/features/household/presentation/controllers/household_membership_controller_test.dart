@@ -1,190 +1,264 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/data/household_invite_repository.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
+import 'package:yamt/features/household/data/household_member_repository.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
-import 'package:yamt/features/household/data/household_reset_repository.dart';
+import 'package:yamt/features/household/domain/household_exceptions.dart';
 import 'package:yamt/features/household/domain/household_invite.dart';
-import 'package:yamt/features/household/domain/household_sharing_exceptions.dart';
-import 'package:yamt/features/household/presentation/controllers/household_invite_code_controller.dart';
+import 'package:yamt/features/household/presentation/controllers/'
+    'household_invite_code_controller.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_membership_controller.dart';
 
 import '../../../../helpers/fake_auth_repository.dart';
-import '../../../../helpers/fake_firebase_storage.dart';
 import '../../../../helpers/memory_app_preferences.dart';
 
-class _TestHouseholdInviteCodeController extends HouseholdInviteCodeController {
-  new({required this.initialInvite});
-
-  final HouseholdInvite? initialInvite;
+class _FakeInviteRepository extends Fake implements HouseholdInviteRepository {
+  final joins = <(String, String, String)>[];
+  Exception? error;
 
   @override
-  AsyncValue<HouseholdInvite?> build() {
-    return AsyncData<HouseholdInvite?>(initialInvite);
+  Future<void> joinHousehold(
+    HouseholdInvite invite, {
+    required String activeHouseholdId,
+    required String ownHouseholdId,
+  }) async {
+    final failure = error;
+    if (failure != null) {
+      throw failure;
+    }
+    joins.add((invite.code, activeHouseholdId, ownHouseholdId));
   }
 }
 
-class _MockHouseholdRepository extends Mock implements HouseholdRepository;
+class _FakeHouseholdRepository extends Fake implements HouseholdRepository {
+  final leaves = <(String, String, String?)>[];
+
+  @override
+  Future<void> leaveHousehold({
+    required String householdId,
+    required String ownHouseholdId,
+    String? successorUid,
+  }) async {
+    leaves.add((householdId, ownHouseholdId, successorUid));
+  }
+}
+
+class _FakeMemberRepository extends Fake implements HouseholdMemberRepository {
+  final calls = <String>[];
+
+  @override
+  Future<void> removeMember(String householdId, String memberUid) async {
+    calls.add('remove $householdId $memberUid');
+  }
+
+  @override
+  Future<void> makeAdmin(String householdId, String memberUid) async {
+    calls.add('admin $householdId $memberUid');
+  }
+}
+
+class _TestInviteCodeController extends HouseholdInviteCodeController {
+  @override
+  AsyncValue<HouseholdInvite?> build() {
+    return AsyncData<HouseholdInvite?>(_invite('654321'));
+  }
+}
 
 HouseholdInvite _invite(String code) {
   return HouseholdInvite(code: code, secret: RecoveryKey.generate());
 }
 
 void main() {
-  late _MockHouseholdRepository repository;
-
-  setUpAll(() {
-    registerFallbackValue(_invite('000000'));
-  });
+  late _FakeInviteRepository invites;
+  late _FakeHouseholdRepository households;
+  late _FakeMemberRepository members;
 
   setUp(() {
-    repository = _MockHouseholdRepository();
-    when(() => repository.joinHousehold(any())).thenAnswer((_) async {});
-    when(repository.leaveHousehold).thenAnswer((_) async {});
+    invites = _FakeInviteRepository();
+    households = _FakeHouseholdRepository();
+    members = _FakeMemberRepository();
   });
 
-  test('joinHousehold clears recovery state and invite code', () async {
-    final inviteCodeController = _TestHouseholdInviteCodeController(
-      initialInvite: _invite('123456'),
-    );
+  ProviderContainer createContainer({
+    String? activeHouseholdId = 'shared',
+    String? ownHouseholdId = 'own',
+    List<Object> overrides = const <Object>[],
+  }) {
     final container = ProviderContainer(
       overrides: [
-        householdRepositoryProvider.overrideWithValue(repository),
+        householdDataOwnerUserIdProvider.overrideWithValue(activeHouseholdId),
+        ownHouseholdIdProvider.overrideWithValue(ownHouseholdId),
+        householdInviteRepositoryProvider.overrideWithValue(invites),
+        householdRepositoryProvider.overrideWithValue(households),
+        householdMemberRepositoryProvider.overrideWithValue(members),
         householdInviteCodeControllerProvider.overrideWith(
-          () => inviteCodeController,
+          _TestInviteCodeController.new,
         ),
+        ...overrides.cast(),
       ],
     );
     addTearDown(container.dispose);
+    return container;
+  }
 
+  List<AsyncValue<void>> recordStates(ProviderContainer container) {
+    final states = <AsyncValue<void>>[];
+    final subscription = container.listen(
+      householdMembershipControllerProvider,
+      (_, next) => states.add(next),
+    );
+    addTearDown(subscription.close);
+    return states;
+  }
+
+  test('joinHousehold joins from the own household and forgets the previous '
+      'one', () async {
+    final container = createContainer(activeHouseholdId: 'own');
+    final states = recordStates(container);
     container
         .read(householdDataOwnerRecoveryProvider.notifier)
-        .recoverToPersonalScope(
-          staleOwnerUserId: 'host-1',
-          personalUserId: 'member-1',
-        );
+        .recoverToPersonalScope(staleOwnerUserId: 'old', personalUserId: 'own');
+    final recovery = container.listen(
+      householdDataOwnerRecoveryProvider,
+      (_, _) {},
+    );
+    addTearDown(recovery.close);
 
     await container
         .read(householdMembershipControllerProvider.notifier)
         .joinHousehold(_invite('123456'));
 
+    expect(invites.joins, <(String, String, String)>[('123456', 'own', 'own')]);
+    expect(states.map((state) => state.isLoading), <bool>[true, false]);
+    expect(states.last.hasError, isFalse);
     expect(container.read(householdDataOwnerRecoveryProvider), isNull);
-    expect(
-      container.read(householdInviteCodeControllerProvider).asData?.value,
-      isNull,
-    );
+    expect(container.read(householdInviteCodeControllerProvider).value, isNull);
   });
 
-  test('joinHousehold updates displayName when provided', () async {
-    final fakeAuthRepository = FakeAuthRepository();
-    final memoryPreferences = MemoryAppPreferences();
-    final container = ProviderContainer(
+  test('joinHousehold sets the display name first', () async {
+    final authRepository = FakeAuthRepository();
+    final container = createContainer(
       overrides: [
-        householdRepositoryProvider.overrideWithValue(repository),
-        householdInviteCodeControllerProvider.overrideWith(
-          () => _TestHouseholdInviteCodeController(initialInvite: null),
-        ),
-        authRepositoryProvider.overrideWithValue(fakeAuthRepository),
-        appPreferencesProvider.overrideWithValue(memoryPreferences),
+        authRepositoryProvider.overrideWithValue(authRepository),
+        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
       ],
     );
-    addTearDown(container.dispose);
 
     await container
         .read(householdMembershipControllerProvider.notifier)
         .joinHousehold(_invite('123456'), displayName: '  Alex  ');
 
-    expect(fakeAuthRepository.guestNameUpdateCalls, 1);
-    expect(fakeAuthRepository.lastGuestDisplayName, 'Alex');
+    expect(authRepository.guestNameUpdateCalls, 1);
+    expect(authRepository.lastGuestDisplayName, 'Alex');
   });
 
-  test('leaveHousehold clears recovery state and invite code', () async {
-    final inviteCodeController = _TestHouseholdInviteCodeController(
-      initialInvite: _invite('654321'),
-    );
-    final container = ProviderContainer(
-      overrides: [
-        householdRepositoryProvider.overrideWithValue(repository),
-        householdInviteCodeControllerProvider.overrideWith(
-          () => inviteCodeController,
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    container
-        .read(householdDataOwnerRecoveryProvider.notifier)
-        .recoverToPersonalScope(
-          staleOwnerUserId: 'host-1',
-          personalUserId: 'member-1',
-        );
-
-    await container
-        .read(householdMembershipControllerProvider.notifier)
-        .leaveHousehold();
-
-    expect(container.read(householdDataOwnerRecoveryProvider), isNull);
-    expect(
-      container.read(householdInviteCodeControllerProvider).asData?.value,
-      isNull,
-    );
-  });
-
-  test('createKeyRestoreCode wraps the household key for the host', () async {
-    final householdKey = await PayloadCipher.newDataKey();
-    final firestore = FakeFirebaseFirestore();
-    final resets = HouseholdResetRepository(
-      firestore: firestore,
-      storage: FakeFirebaseStorage(),
-    );
-    final container = ProviderContainer(
-      overrides: [
-        householdCipherProvider.overrideWithValue((
-          householdId: 'host-1',
-          key: householdKey,
-          cipher: PayloadCipher(householdKey),
-        )),
-        householdResetRepositoryProvider.overrideWithValue(resets),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    final code = await container
-        .read(householdMembershipControllerProvider.notifier)
-        .createKeyRestoreCode();
-
-    final restored = await resets.loadRestoredKey(
-      ownerUid: 'host-1',
-      code: code,
-    );
-    expect(await restored.extractBytes(), await householdKey.extractBytes());
-  });
-
-  test('createKeyRestoreCode fails without the household key', () async {
-    final container = ProviderContainer(
-      overrides: [
-        householdCipherProvider.overrideWithValue(null),
-        householdResetRepositoryProvider.overrideWithValue(
-          HouseholdResetRepository(
-            firestore: FakeFirebaseFirestore(),
-            storage: FakeFirebaseStorage(),
-          ),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
+  test('a failed join ends in an error state', () async {
+    invites.error = const ExpiredHouseholdInviteCodeException();
+    final container = createContainer();
+    final states = recordStates(container);
 
     await expectLater(
       container
           .read(householdMembershipControllerProvider.notifier)
-          .createKeyRestoreCode(),
+          .joinHousehold(_invite('123456')),
+      throwsA(isA<ExpiredHouseholdInviteCodeException>()),
+    );
+
+    expect(states.map((state) => state.isLoading), <bool>[true, false]);
+    expect(states.last.error, isA<ExpiredHouseholdInviteCodeException>());
+  });
+
+  test('leaveHousehold names the successor', () async {
+    final container = createContainer();
+
+    await container
+        .read(householdMembershipControllerProvider.notifier)
+        .leaveHousehold(successorUid: 'member-2');
+
+    expect(households.leaves, <(String, String, String?)>[
+      ('shared', 'own', 'member-2'),
+    ]);
+  });
+
+  test('removeMember and makeAdmin act on the active household', () async {
+    final container = createContainer();
+    final controller = container.read(
+      householdMembershipControllerProvider.notifier,
+    );
+
+    await controller.removeMember('member-2');
+    await controller.makeAdmin('member-3');
+
+    expect(members.calls, <String>[
+      'remove shared member-2',
+      'admin shared member-3',
+    ]);
+  });
+
+  test('actions wait for the household ids', () async {
+    final container = createContainer(ownHouseholdId: null);
+
+    await expectLater(
+      container
+          .read(householdMembershipControllerProvider.notifier)
+          .leaveHousehold(),
+      throwsA(isA<HouseholdKeyUnavailableException>()),
+    );
+    expect(households.leaves, isEmpty);
+  });
+
+  test(
+    'createKeyRestoreCode wraps the key for the member who lost it',
+    () async {
+      FlutterSecureStorage.setMockInitialValues(<String, String>{});
+      final keys = HouseholdKeyRepository(
+        firestore: FakeFirebaseFirestore(),
+        storage: const FlutterSecureStorage(),
+      );
+      final householdKey = await PayloadCipher.newDataKey();
+      final container = createContainer(
+        overrides: [
+          householdKeyRepositoryProvider.overrideWithValue(keys),
+          householdCipherProvider.overrideWithValue((
+            householdId: 'shared',
+            key: householdKey,
+            cipher: PayloadCipher(householdKey),
+          )),
+        ],
+      );
+
+      final code = await container
+          .read(householdMembershipControllerProvider.notifier)
+          .createKeyRestoreCode('member-2');
+
+      final restored = await keys.loadRestoredKey(
+        householdId: 'shared',
+        memberUid: 'member-2',
+        code: code,
+      );
+      expect(await restored.extractBytes(), await householdKey.extractBytes());
+    },
+  );
+
+  test('createKeyRestoreCode fails without the household key', () async {
+    final container = createContainer(
+      overrides: [householdCipherProvider.overrideWithValue(null)],
+    );
+
+    await expectLater(
+      container
+          .read(householdMembershipControllerProvider.notifier)
+          .createKeyRestoreCode('member-2'),
       throwsA(isA<HouseholdKeyUnavailableException>()),
     );
     expect(

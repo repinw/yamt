@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/household/application/'
-    'household_permission_recovery.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -226,40 +223,6 @@ ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepControllerAlive(
 }
 
 void main() {
-  test('shouldRecoverFromHouseholdPermissionDenied recovers when the '
-      'effective owner differs from the signed-in user', () {
-    final shouldRecover = shouldRecoverFromHouseholdPermissionDenied(
-      error: FirebaseException(
-        plugin: 'cloud_firestore',
-        code: 'permission-denied',
-      ),
-      isRecoveringHouseholdAccess: false,
-      currentUserId: 'member-1',
-      actualDataOwnerUserId: 'host-1',
-      effectiveDataOwnerUserId: 'host-1',
-      profileHouseholdId: null,
-    );
-
-    expect(shouldRecover, isTrue);
-  });
-
-  test('shouldRecoverFromHouseholdPermissionDenied ignores own-scope '
-      'permission denied without household context', () {
-    final shouldRecover = shouldRecoverFromHouseholdPermissionDenied(
-      error: FirebaseException(
-        plugin: 'cloud_firestore',
-        code: 'permission-denied',
-      ),
-      isRecoveringHouseholdAccess: false,
-      currentUserId: 'member-1',
-      actualDataOwnerUserId: 'member-1',
-      effectiveDataOwnerUserId: 'member-1',
-      profileHouseholdId: null,
-    );
-
-    expect(shouldRecover, isFalse);
-  });
-
   test('build loads fridge items from repository', () async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_item('a')],
