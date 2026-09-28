@@ -6,35 +6,11 @@ service firebase.storage {
       return request.auth != null;
     }
 
-    function userExists(uid) {
-      return firestore.exists(
-        /databases/(default)/documents/users/$(uid)
-      );
-    }
-
-    function userHouseholdId(uid) {
-      return userExists(uid)
-        && firestore.get(/databases/(default)/documents/users/$(uid))
-          .data.householdId is string
-        ? firestore.get(/databases/(default)/documents/users/$(uid))
-            .data.householdId
-        : null;
-    }
-
-    function householdOwnerId(uid) {
-      let householdId = userHouseholdId(uid);
-      return householdId == null ? uid : householdId;
-    }
-
-    function currentHouseholdOwnerId() {
-      return householdOwnerId(request.auth.uid);
-    }
-
-    function canAccessHouseholdOwnedData(uid) {
+    // Membership: the member entry of the user exists in the household.
+    function isHouseholdMember(householdId) {
       return isSignedIn()
-        && (
-          request.auth.uid == uid
-          || currentHouseholdOwnerId() == uid
+        && firestore.exists(
+          /databases/(default)/documents/households/$(householdId)/members/$(request.auth.uid)
         );
     }
 
@@ -46,17 +22,16 @@ service firebase.storage {
         );
     }
 
-    match /users/{uid}/kitchen_utensils/{utensilId}/images/{imageId} {
-      allow read, delete: if canAccessHouseholdOwnedData(uid);
-      allow create, update: if canAccessHouseholdOwnedData(uid)
+    match /households/{householdId}/kitchen_utensils/{utensilId}/images/{imageId} {
+      allow read, delete: if isHouseholdMember(householdId);
+      allow create, update: if isHouseholdMember(householdId)
         && isKitchenUtensilImage();
     }
 
-    // The owner lists the household images to delete them after a fresh
-    // start.
-    match /users/{uid}/{folder}/{allPaths=**} {
-      allow list: if isSignedIn()
-        && request.auth.uid == uid
+    // A member lists the household images to delete them with the household
+    // or after a fresh start.
+    match /households/{householdId}/{folder}/{allPaths=**} {
+      allow list: if isHouseholdMember(householdId)
         && folder in ['kitchen_utensils', 'recipes'];
     }
 
@@ -68,9 +43,9 @@ service firebase.storage {
         );
     }
 
-    match /users/{uid}/recipes/{mealId}/images/{imageId} {
-      allow read, delete: if canAccessHouseholdOwnedData(uid);
-      allow create, update: if canAccessHouseholdOwnedData(uid)
+    match /households/{householdId}/recipes/{mealId}/images/{imageId} {
+      allow read, delete: if isHouseholdMember(householdId);
+      allow create, update: if isHouseholdMember(householdId)
         && isRecipeImage();
     }
 

@@ -15,61 +15,56 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
 
-    function userExists(uid) {
-      return exists(/databases/$(database)/documents/users/$(uid));
+    function householdPath(householdId) {
+      return /databases/$(database)/documents/households/$(householdId);
     }
 
-    function userHouseholdId(uid) {
-      return userExists(uid)
-        && get(/databases/$(database)/documents/users/$(uid))
-          .data.householdId is string
-        ? get(/databases/$(database)/documents/users/$(uid))
-            .data.householdId
-        : null;
+    function memberPath(householdId, uid) {
+      return /databases/$(database)/documents/households/$(householdId)/members/$(uid);
     }
 
-    function householdOwnerId(uid) {
-      let householdId = userHouseholdId(uid);
-      return householdId == null ? uid : householdId;
-    }
-
-    function currentHouseholdOwnerId() {
-      return householdOwnerId(request.auth.uid);
-    }
-
-    function resourceHouseholdId() {
-      return resource != null
-        && resource.data.householdId is string
-        ? resource.data.householdId
-        : null;
-    }
-
-    function canAccessHouseholdOwnedData(uid) {
+    // Membership: the member entry of the user exists in the household.
+    function isHouseholdMember(householdId) {
       return isSignedIn()
-        && (
-          request.auth.uid == uid
-          || currentHouseholdOwnerId() == uid
-        );
+        && exists(/databases/$(database)/documents/households/$(householdId)/members/$(request.auth.uid));
+    }
+
+    // The user is a member once this request is written, for example when
+    // joining writes the member entry and the key entry together.
+    function isHouseholdMemberAfter(householdId) {
+      return isSignedIn()
+        && existsAfter(memberPath(householdId, request.auth.uid));
+    }
+
+    function isHouseholdAdmin(householdId) {
+      return isHouseholdMember(householdId)
+        && get(memberPath(householdId, request.auth.uid)).data.role == 'admin';
+    }
+
+    // The reader and [uid] are both members of the household that the
+    // reader's profile names as active.
+    function isActiveCoMember(uid) {
+      let householdId = get(/databases/$(database)/documents/users/$(request.auth.uid))
+        .data.get('householdId', null);
+      return householdId is string
+        && isHouseholdMember(householdId)
+        && exists(memberPath(householdId, uid));
     }
 
     function canReadUserDocument(uid) {
-      let householdOwnerId = currentHouseholdOwnerId();
-      return isSignedIn()
-        && (
-          uid == request.auth.uid
-          || uid == householdOwnerId
-          || resourceHouseholdId() == householdOwnerId
-        );
+      return isOwner(uid) || (isSignedIn() && isActiveCoMember(uid));
     }
 
-    function canRemoveHouseholdMember(uid) {
-      return isVerifiedAccount()
-        && uid != request.auth.uid
-        && resource.data.householdId == request.auth.uid
-        && request.resource.data.diff(resource.data)
-          .affectedKeys()
-          .hasOnly(['householdId'])
-        && !('householdId' in request.resource.data);
+    function isValidInvite(code, householdId) {
+      let invite = get(/databases/$(database)/documents/household_invites/$(code));
+      return invite.data.householdId == householdId
+        && invite.data.expiresAt > request.time;
+    }
+
+    // The households subtree has its own rules. The generic rule at the end
+    // must not open it for a document that only carries a userId field.
+    function isOutsideHouseholds(path) {
+      return path[0] != 'households';
     }
 
     function isOptionalString(data, key) {
@@ -886,33 +881,148 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Only the admin invites. The invite holds the household key wrapped
+    // with a secret that only the QR code or link carries. Nobody lists the
+    // invites: a joining user reads one by its code.
     match /household_invites/{code} {
-      allow read: if isSignedIn();
-      allow create, update: if isVerifiedAccount()
+      allow get: if isSignedIn();
+      allow create: if isVerifiedAccount()
         && request.resource.data.keys().hasOnly([
-          'hostUid',
+          'householdId',
           'expiresAt',
           'wrapped_household_key',
         ])
-        && request.resource.data.hostUid == request.auth.uid
+        && request.resource.data.householdId is string
+        && isHouseholdAdmin(request.resource.data.householdId)
         && request.resource.data.expiresAt is timestamp
+        && request.resource.data.expiresAt < request.time + duration.value(25, 'h')
         && request.resource.data.wrapped_household_key is string;
       allow delete: if isVerifiedAccount()
-        && resource.data.hostUid == request.auth.uid;
+        && isHouseholdAdmin(resource.data.householdId);
     }
 
-    // A host who started fresh asks the members for the household key. A
-    // member answers with the key wrapped by a one-time code.
-    match /household_key_restores/{hostUid} {
-      allow read: if isOwner(hostUid)
-        || (isSignedIn() && userHouseholdId(request.auth.uid) == hostUid);
-      allow create, update: if isOwner(hostUid)
-        && request.resource.data.keys().size() == 0;
-      allow update: if isSignedIn()
-        && userHouseholdId(request.auth.uid) == hostUid
-        && request.resource.data.keys().hasOnly(['wrapped_household_key'])
-        && request.resource.data.wrapped_household_key is string;
-      allow delete: if isOwner(hostUid);
+    match /households/{householdId} {
+      allow read: if isHouseholdMember(householdId);
+      // A user creates a household together with their admin entry.
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasOnly(['created_at'])
+        && request.resource.data.created_at == request.time
+        && getAfter(memberPath(householdId, request.auth.uid)).data.role == 'admin';
+      // The last member, always the admin, deletes the household.
+      allow delete: if isHouseholdAdmin(householdId);
+
+      match /members/{uid} {
+        allow read: if isHouseholdMember(householdId) || isOwner(uid);
+        // The creator of a new household becomes its admin.
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['uid', 'role', 'joined_at'])
+          && request.resource.data.uid == uid
+          && request.resource.data.role == 'admin'
+          && request.resource.data.joined_at == request.time
+          && !exists(householdPath(householdId))
+          && existsAfter(householdPath(householdId));
+        // Everybody else joins as a member with a valid invite.
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly([
+            'uid',
+            'role',
+            'joined_at',
+            'invite_code',
+          ])
+          && request.resource.data.uid == uid
+          && request.resource.data.role == 'member'
+          && request.resource.data.joined_at == request.time
+          && request.resource.data.invite_code is string
+          && isValidInvite(request.resource.data.invite_code, householdId);
+        // Only the admin changes roles. Whoever becomes admin replaces the
+        // admin in the same write: the admin turns member or leaves.
+        allow update: if isHouseholdAdmin(householdId)
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['role'])
+          && request.resource.data.role in ['admin', 'member']
+          && (
+            request.resource.data.role == 'member'
+            || !existsAfter(memberPath(householdId, request.auth.uid))
+            || getAfter(memberPath(householdId, request.auth.uid)).data.role
+              == 'member'
+          );
+        // A member leaves, the admin removes members.
+        allow delete: if isOwner(uid) || isHouseholdAdmin(householdId);
+      }
+
+      // The household key, wrapped with the data key of one member. Only
+      // that member opens it. The admin deletes it to remove the member.
+      match /keys/{uid} {
+        allow read: if isOwner(uid) && isHouseholdMember(householdId);
+        allow create, update: if isOwner(uid)
+          && isHouseholdMemberAfter(householdId)
+          && request.resource.data.keys().hasOnly(['wrapped_key'])
+          && request.resource.data.wrapped_key is string;
+        allow delete: if isOwner(uid) || isHouseholdAdmin(householdId);
+      }
+
+      // A member who started fresh asks the others for the household key.
+      // Another member answers with the key wrapped by a one-time code.
+      match /key_restores/{uid} {
+        allow read: if isHouseholdMember(householdId);
+        allow create, update: if isOwner(uid)
+          && isHouseholdMember(householdId)
+          && request.resource.data.keys().size() == 0;
+        allow update: if isHouseholdMember(householdId)
+          && !isOwner(uid)
+          && request.resource.data.keys().hasOnly(['wrapped_household_key'])
+          && request.resource.data.wrapped_household_key is string;
+        allow delete: if isOwner(uid) || isHouseholdAdmin(householdId);
+      }
+
+      match /inventory_items/{itemId} {
+        allow read, delete: if isHouseholdMember(householdId);
+        allow create, update: if isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, ['entry_date', 'origin', 'is_deposit', 'is_discount']);
+      }
+
+      match /shopping_list_items/{itemId} {
+        allow read, delete: if isHouseholdMember(householdId);
+        allow create, update: if isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, []);
+      }
+
+      match /prepared_meals/{mealId} {
+        allow read, delete: if isHouseholdMember(householdId);
+        allow create, update: if isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, []);
+      }
+
+      match /prepared_meal_templates/{templateId} {
+        allow read, delete: if isHouseholdMember(householdId);
+        allow create, update: if isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, []);
+      }
+
+      match /kitchen_utensils/{utensilId} {
+        allow read, delete: if isHouseholdMember(householdId);
+        allow create, update: if isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, []);
+      }
+
+      match /inventory_discard_events/{eventId} {
+        allow read, delete: if isHouseholdMember(householdId);
+        allow create, update: if isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, ['discarded_at']);
+      }
+
+      // Events are append-only; the admin deletes them with the household.
+      // The update rule is temporary: the plaintext migration encrypts
+      // existing events in place. Remove it with the migration.
+      match /inventory_activity_events/{eventId} {
+        allow read: if isHouseholdMember(householdId);
+        allow create: if isHouseholdMember(householdId)
+          && isEncryptedDocument(request.resource.data, ['happened_at']);
+        allow update: if isHouseholdMember(householdId)
+          && !('payload' in resource.data)
+          && isEncryptedDocument(request.resource.data, ['happened_at']);
+        allow delete: if isHouseholdAdmin(householdId);
+      }
     }
 
     match /users/{uid} {
@@ -925,73 +1035,11 @@ service cloud.firestore {
       allow update: if (isOwner(uid)
           && request.resource.data.uid == uid
           && hasEncryptedRunState(request.resource.data))
-        || canRemoveHouseholdMember(uid)
         || (isOwner(uid)
           && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['burn_week_run_state'])
           && hasEncryptedRunState(request.resource.data));
       allow delete: if isOwner(uid);
-    }
-
-    match /users/{uid}/inventory_items/{itemId} {
-      allow read, delete: if canAccessHouseholdOwnedData(uid);
-      allow create, update: if canAccessHouseholdOwnedData(uid)
-        && isEncryptedDocument(request.resource.data, ['entry_date', 'origin', 'is_deposit', 'is_discount']);
-    }
-
-    match /users/{uid}/shopping_list_items/{itemId} {
-      allow read, delete: if canAccessHouseholdOwnedData(uid);
-      allow create, update: if canAccessHouseholdOwnedData(uid)
-        && isEncryptedDocument(request.resource.data, []);
-    }
-
-    match /users/{uid}/prepared_meals/{mealId} {
-      allow read, delete: if canAccessHouseholdOwnedData(uid);
-      allow create, update: if canAccessHouseholdOwnedData(uid)
-        && isEncryptedDocument(request.resource.data, []);
-    }
-
-    match /users/{uid}/prepared_meal_templates/{templateId} {
-      allow read, delete: if canAccessHouseholdOwnedData(uid);
-      allow create, update: if canAccessHouseholdOwnedData(uid)
-        && isEncryptedDocument(request.resource.data, []);
-    }
-
-    match /users/{uid}/kitchen_utensils/{utensilId} {
-      allow read, delete: if canAccessHouseholdOwnedData(uid);
-      allow create, update: if canAccessHouseholdOwnedData(uid)
-        && isEncryptedDocument(request.resource.data, []);
-    }
-
-    match /users/{uid}/inventory_discard_events/{eventId} {
-      allow read, delete: if canAccessHouseholdOwnedData(uid);
-      allow create, update: if canAccessHouseholdOwnedData(uid)
-        && isEncryptedDocument(request.resource.data, ['discarded_at']);
-    }
-
-    // Events are append-only. The update rule is temporary: the plaintext
-    // migration encrypts existing events in place. Remove it with the
-    // migration.
-    match /users/{uid}/inventory_activity_events/{eventId} {
-      allow read: if canAccessHouseholdOwnedData(uid);
-      allow create: if canAccessHouseholdOwnedData(uid)
-        && isEncryptedDocument(request.resource.data, ['happened_at']);
-      allow update: if canAccessHouseholdOwnedData(uid)
-        && !('payload' in resource.data)
-        && isEncryptedDocument(request.resource.data, ['happened_at']);
-      allow delete: if isOwner(uid);
-    }
-
-    // The household key of the data owner uid, wrapped with the data key of
-    // one member. Only that member can open it. The owner may delete it to
-    // remove the member.
-    match /users/{uid}/household_keys/{memberUid} {
-      allow read: if isOwner(memberUid) && canAccessHouseholdOwnedData(uid);
-      allow create, update: if isOwner(memberUid)
-        && canAccessHouseholdOwnedData(uid)
-        && request.resource.data.keys().hasOnly(['wrapped_key'])
-        && request.resource.data.wrapped_key is string;
-      allow delete: if isOwner(memberUid) || isOwner(uid);
     }
 
     // Backup of the data key, wrapped with the recovery key of the user.
@@ -1091,9 +1139,11 @@ service cloud.firestore {
     // schemas are stable and covered with explicit rules.
     match /{document=**} {
       allow create: if isSignedIn()
+        && isOutsideHouseholds(document)
         && 'userId' in request.resource.data
         && request.resource.data.userId == request.auth.uid;
       allow read, update, delete: if isSignedIn()
+        && isOutsideHouseholds(document)
         && 'userId' in resource.data
         && resource.data.userId == request.auth.uid;
     }
