@@ -224,29 +224,3 @@ bool cookingInstructionMatchOverlaps({
 }) {
   return matches.any((entry) => start < entry.end && end > entry.start);
 }
-
-/// Returns all safe ingredient mention matches inside one instruction line.
-Iterable<RegExpMatch> findCookflowIngredientMentionMatches({
-  required String instruction,
-  required String ingredientName,
-}) sync* {
-  final trimmedIngredient = ingredientName.trim();
-  if (instruction.isEmpty || trimmedIngredient.isEmpty) {
-    return;
-  }
-
-  final pattern = RegExp(
-    RegExp.escape(trimmedIngredient),
-    caseSensitive: false,
-    unicode: true,
-  );
-  for (final match in pattern.allMatches(instruction)) {
-    if (hasCookingInstructionMatchBoundaries(
-      instruction: instruction,
-      start: match.start,
-      end: match.end,
-    )) {
-      yield match;
-    }
-  }
-}

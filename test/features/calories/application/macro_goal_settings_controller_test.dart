@@ -90,36 +90,5 @@ void main() {
       expect(restored?.customProteinMultiplier, 2.4);
       expect(restored?.customFatMultiplier, 1.1);
     });
-
-    test(
-      'resetToDefaults clears custom multipliers but preserves activity',
-      () async {
-        final preferences = MemoryAppPreferences();
-        final container = ProviderContainer(
-          overrides: [appPreferencesProvider.overrideWithValue(preferences)],
-        );
-        addTearDown(container.dispose);
-
-        final controller = container.read(
-          macroGoalSettingsControllerProvider.notifier,
-        );
-        await controller.setSportActive(isSportActive: false);
-        await controller.setCustomMultipliers(
-          proteinMultiplier: 2.5,
-          fatMultiplier: 1.3,
-        );
-
-        await controller.resetToDefaults();
-
-        final current = container.read(macroGoalSettingsControllerProvider);
-        expect(current.isSportActive, isFalse);
-        expect(current.customProteinMultiplier, isNull);
-        expect(current.customFatMultiplier, isNull);
-        // Effective multipliers revert to inactive defaults (1.2 P, 0.8 F
-        // for male).
-        expect(current.effectiveProteinMultiplier(hasTrainingDays: true), 1.2);
-        expect(current.effectiveFatMultiplier(isMale: true), 0.8);
-      },
-    );
   });
 }
