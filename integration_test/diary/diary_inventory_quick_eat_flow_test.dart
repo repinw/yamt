@@ -26,6 +26,8 @@ import 'package:yamt/features/calories/provider/calorie_weekly_checkin_provider.
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_inventory_food_picker/diary_inventory_food_picker_status.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -312,7 +314,12 @@ void main() {
   testWidgets('diary quick eat waits for household inventory', (tester) async {
     final harness = await _pumpAndOpenInventoryQuickEat(tester);
 
-    expect(find.text('Aus Vorrat essen'), findsNothing);
+    await _pumpUntilFound(
+      tester,
+      find.byType(DiaryInventoryFoodPickerLoading),
+      description: 'inventory picker loading state',
+    );
+    expect(find.text('Aus Vorrat essen'), findsOneWidget);
     expect(find.text('Brötchen'), findsNothing);
 
     harness.publishHouseholdProfile();
@@ -336,9 +343,14 @@ void main() {
       find.byKey(_inventoryItemAmountFieldKey),
       description: 'inventory item eat sheet',
     );
+    await _pumpUntil(
+      tester,
+      () => find.text('Aus Vorrat essen').evaluate().isEmpty,
+      description: 'inventory picker to close',
+    );
 
     expect(find.text('Brötchen'), findsOneWidget);
-    expect(find.text(_currentMealName()), findsWidgets);
+    expect(find.textContaining(_currentMealName().toUpperCase()), findsWidgets);
     expect(find.byKey(_inventoryItemAmountFieldKey), findsOneWidget);
     expect(find.byKey(_inventoryItemAmountConfirmButtonKey), findsOneWidget);
   });
@@ -352,7 +364,12 @@ void main() {
       preparedMeals: [_preparedMeal(id: 'meal-1', name: 'Chili sin Carne')],
     );
 
-    expect(find.text('Aus Vorrat essen'), findsNothing);
+    await _pumpUntilFound(
+      tester,
+      find.byType(DiaryInventoryFoodPickerLoading),
+      description: 'inventory picker loading state',
+    );
+    expect(find.text('Aus Vorrat essen'), findsOneWidget);
     expect(find.text('Chili sin Carne'), findsNothing);
 
     harness.publishHouseholdProfile();
@@ -376,9 +393,14 @@ void main() {
       find.byKey(_preparedMealPortionsFieldKey),
       description: 'prepared meal eat sheet',
     );
+    await _pumpUntil(
+      tester,
+      () => find.text('Aus Vorrat essen').evaluate().isEmpty,
+      description: 'inventory picker to close',
+    );
 
     expect(find.text('Chili sin Carne'), findsOneWidget);
-    expect(find.text(_currentMealName()), findsWidgets);
+    expect(find.textContaining(_currentMealName().toUpperCase()), findsWidgets);
     expect(find.byKey(_preparedMealPortionsFieldKey), findsOneWidget);
 
     final confirmButton = find.byKey(_preparedMealConfirmButtonKey);
@@ -416,7 +438,12 @@ void main() {
           ),
         ],
       );
-      expect(find.text('Aus Vorrat essen'), findsNothing);
+      await _pumpUntilFound(
+        tester,
+        find.byType(DiaryInventoryFoodPickerLoading),
+        description: 'inventory picker loading state',
+      );
+      expect(find.text('Aus Vorrat essen'), findsOneWidget);
       expect(find.text('Leeres Brötchen'), findsNothing);
 
       harness.publishHouseholdProfile();
