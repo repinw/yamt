@@ -89,6 +89,10 @@ class AiChefImageGenerator {
     required String imagePrompt,
   }) async {
     if (!_imageStorageClient.canUpload) {
+      log(
+        'Skipping the cover image: no household key or storage is ready.',
+        name: _imageLogName,
+      );
       return null;
     }
 
