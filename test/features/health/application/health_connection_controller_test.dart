@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/health/application/health_connection_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
 
 const _installRequiredStatus = HealthConnectionStatus(
   platform: HealthPlatform.android,

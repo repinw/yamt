@@ -2,9 +2,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/activity/application/diary_activity_weight_data_provider.dart';
 import 'package:yamt/features/calories/application/calorie_weight_state_refresh.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
-import 'package:yamt/features/health/presentation/controllers/manual_health_weight_entries_controller.dart';
 
 part 'diary_weight_actions.g.dart';
 

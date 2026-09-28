@@ -30,14 +30,13 @@ import 'package:yamt/features/calories/provider/calorie_balance_now_provider.dar
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_overview_revision_provider.dart';
+import 'package:yamt/features/health/application/health_connection_controller.dart';
+import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_weight_service.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
-import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
-import 'package:yamt/features/health/presentation/controllers/'
-    'manual_health_weight_entries_controller.dart';
 
 const _weeklyCheckInProviderLogName = 'CalorieWeeklyCheckInProvider';
 

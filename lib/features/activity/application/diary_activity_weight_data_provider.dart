@@ -3,10 +3,9 @@ import 'package:yamt/features/activity/application/diary_activity_weight_service
 import 'package:yamt/features/activity/domain/diary_activity_weight_models.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
+import 'package:yamt/features/health/application/health_connection_controller.dart';
+import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
-import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
-import 'package:yamt/features/health/presentation/controllers/'
-    'manual_health_weight_entries_controller.dart';
 
 part 'diary_activity_weight_data_provider.g.dart';
 

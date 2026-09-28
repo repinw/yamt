@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/health/application/health_connection_controller.dart';
+import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
@@ -13,9 +15,6 @@ import 'package:yamt/features/health/data/'
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
-import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
-import 'package:yamt/features/health/presentation/controllers/'
-    'manual_health_weight_entries_controller.dart';
 
 const _readyStatus = HealthConnectionStatus(
   platform: HealthPlatform.android,

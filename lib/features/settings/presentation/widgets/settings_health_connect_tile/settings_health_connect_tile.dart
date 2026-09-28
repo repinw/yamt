@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/health/application/health_connection_controller.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
-import 'package:yamt/features/health/presentation/controllers/'
-    'health_connection_controller.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';

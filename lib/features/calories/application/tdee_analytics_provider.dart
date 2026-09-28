@@ -14,12 +14,12 @@ import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
 import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/daily_learned_tdee_provider.dart';
+import 'package:yamt/features/health/application/health_connection_controller.dart';
+import 'package:yamt/features/health/application/manual_health_weight_entries_controller.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
-import 'package:yamt/features/health/presentation/controllers/health_connection_controller.dart';
-import 'package:yamt/features/health/presentation/controllers/manual_health_weight_entries_controller.dart';
 
 part 'tdee_analytics_provider.g.dart';
 

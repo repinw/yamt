@@ -1,5 +1,7 @@
 # Health Feature
 
+## Purpose
+
 Health owns platform health access, Health Connect permission state, health
 weight samples, and manual fallback weight entries. It reads only weight.
 
@@ -10,8 +12,12 @@ weight samples, and manual fallback weight entries. It reads only weight.
 - The trend weight: one daily weight from manual entries and Health samples,
   interpolated between weigh-ins and smoothed, so water swings do not show as
   weight changes.
-- Health connection and manual weight controllers under
-  `presentation/controllers/`.
+- The health connection state and the manual weight entries under
+  `application/`. Both are state-holding controllers that later features read
+  and mutate: the connection state carries the connect, install, permission
+  settings, and disconnect actions; the manual weight entries carry save and
+  delete, which fall back to manual storage when Health is not ready and
+  refresh the recent weight trend.
 
 ## Does Not Own
 
@@ -19,48 +25,12 @@ weight samples, and manual fallback weight entries. It reads only weight.
 - Diary page composition.
 - App authentication flows.
 
-## Public Edge
+## Rules
 
-- `application/health_connection_actions.dart` for connection status and
-  permission actions used by integrating features.
-- `application/recent_weight_trend_provider.dart` for the weights of the last
-  14 days: weigh-ins, trend weight, and weekly trend. It reads the data layer
-  directly; the manual weight controller refreshes it after a save or delete.
-- `presentation/controllers/health_connection_controller.dart`
-- `presentation/controllers/manual_health_weight_entries_controller.dart`
-- Service providers in `data/` for health connection, health weight samples,
-  and manual weight fallback storage.
-- Domain models in `domain/` used by Activity, Calories, Diary, and Settings.
-
-Other features should use the application connection facade instead of wiring
-the Health connection controller directly. Calorie-owned side effects from
-health changes belong in the consuming calorie or activity application layer.
-
-## Providers
-
-- Repository and service providers live in `data/`.
-- Controllers live in `presentation/controllers/`.
-- Providers use Riverpod code generation.
-
-Main providers:
-
-- `data/health_connection_service_provider.dart`
-- `data/health_weight_service_provider.dart`
-- `data/manual_health_weight_repository_provider.dart`
-- `presentation/controllers/health_connection_controller.dart`
-- `presentation/controllers/manual_health_weight_entries_controller.dart`
-
-## Accepted Dependencies
-
-- `core` for preferences, Firestore infrastructure, and local day helpers.
-- `features/auth` for scoping Firestore manual weight entries to the current
-  user.
-
-Health must not depend on Calories. Calories and Activity own calorie-specific
-refresh or weekly check-in side effects caused by health and weight changes.
-
-## Tests
-
-- `test/features/health/data/`
-- `test/features/health/domain/`
-- `test/features/health/presentation/controllers/`
+- Health has no presentation layer. Later features render the connection
+  state and the weights themselves.
+- Health must not depend on Calories. Calories and Activity own the calorie
+  refresh and weekly check-in side effects of weight changes.
+- Saving a manual weight writes to Health when access is ready and clears the
+  fallback entry of that day; otherwise the entry stays in the fallback
+  repository. A save or delete refreshes the recent weight trend.

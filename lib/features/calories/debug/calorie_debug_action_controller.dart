@@ -11,11 +11,10 @@ import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
 import 'package:yamt/features/calories/provider/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/health/application/health_connection_controller.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
     'manual_health_weight_repository_provider.dart';
-import 'package:yamt/features/health/presentation/controllers/'
-    'health_connection_controller.dart';
 
 part 'calorie_debug_action_controller.g.dart';
 

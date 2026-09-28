@@ -14,8 +14,7 @@ const architectureBaseline = <String, Map<String, int>>{
   },
   'foreign-presentation': {
     'lib/features/activity/application/diary_activity_weight_data_provider.dart':
-        3,
-    'lib/features/activity/application/diary_weight_actions.dart': 1,
+        1,
     'lib/features/activity/presentation/diary_weight_tracking_flow.dart': 1,
     'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_dialog.dart':
         1,
@@ -36,12 +35,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/auth/presentation/widgets/welcome_page_editorial_aside/welcome_page_editorial_aside.dart':
         1,
-    'lib/features/calories/application/calorie_goal_seed_weight_flow.dart': 1,
-    'lib/features/calories/application/tdee_analytics_provider.dart': 2,
-    'lib/features/calories/debug/calorie_debug_action_controller.dart': 1,
-    'lib/features/calories/provider/calorie_weekly_checkin_data_builder.dart':
-        2,
-    'lib/features/calories/provider/daily_learned_tdee_provider.dart': 2,
     'lib/features/cooking_flow/presentation/controllers/cooking_flow_controller.dart':
         1,
     'lib/features/cooking_flow/presentation/controllers/cooking_flow_shopping_controller.dart':
@@ -106,8 +99,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/settings/presentation/pages/account_page.dart': 1,
     'lib/features/settings/presentation/pages/settings_page.dart': 1,
     'lib/features/settings/presentation/widgets/link_email_password_dialog/link_email_password_dialog.dart':
-        1,
-    'lib/features/settings/presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart':
         1,
     'lib/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart':
         2,
