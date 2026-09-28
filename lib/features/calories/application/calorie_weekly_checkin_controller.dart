@@ -148,8 +148,12 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         );
   }
 
-  /// Apply weekly check in.
-  Future<bool> applyWeeklyCheckIn(CalorieWeeklyCheckInData checkInData) async {
+  /// Syncs the pending check-in before the user's decision is applied.
+  ///
+  /// Returns `false` when there is nothing to decide or the sync failed.
+  Future<bool> _syncPendingBeforeDecision(
+    CalorieWeeklyCheckInData checkInData,
+  ) async {
     final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn;
     final calculation = checkInData.calculation;
     if (pendingWeeklyCheckIn == null ||
@@ -168,6 +172,14 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         StateError('Failed to persist pending weekly check-in.'),
         StackTrace.empty,
       );
+      return false;
+    }
+    return true;
+  }
+
+  /// Apply weekly check in.
+  Future<bool> applyWeeklyCheckIn(CalorieWeeklyCheckInData checkInData) async {
+    if (!await _syncPendingBeforeDecision(checkInData)) {
       return false;
     }
 
@@ -196,26 +208,11 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
 
   /// Reject weekly check in.
   Future<bool> rejectWeeklyCheckIn(CalorieWeeklyCheckInData checkInData) async {
-    final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn;
-    final calculation = checkInData.calculation;
-    if (pendingWeeklyCheckIn == null ||
-        calculation == null ||
-        checkInData.isBlocked) {
+    if (!await _syncPendingBeforeDecision(checkInData)) {
       return false;
     }
-
-    state = const AsyncLoading();
-    final synced = await syncPendingWeeklyCheckIn(pendingWeeklyCheckIn);
-    if (!ref.mounted) {
-      return false;
-    }
-    if (!synced) {
-      state = AsyncError(
-        StateError('Failed to persist pending weekly check-in.'),
-        StackTrace.empty,
-      );
-      return false;
-    }
+    final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn!;
+    final calculation = checkInData.calculation!;
 
     final goalController = ref.read(calorieGoalControllerProvider.notifier);
     final settings = await ref

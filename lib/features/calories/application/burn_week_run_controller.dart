@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -37,7 +38,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     final currentWeekStartDayKey = _normalizeBurnWeekDayKey(
       current.currentWeekStartDayKey,
     );
-    final currentWeekStartDate = _parseBurnWeekDayKey(currentWeekStartDayKey);
+    final currentWeekStartDate = tryParseBurnWeekDayKey(currentWeekStartDayKey);
     final closedWeekCount = missedTrackingForClosedWeeks?.length ?? 0;
     var next = current;
 
@@ -119,7 +120,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     var advancedWeekCount = 0;
     while (_normalizeBurnWeekDayKey(next.currentWeekStartDayKey) !=
         weekStartDayKey) {
-      final currentLoopWeekStartDate = _parseBurnWeekDayKey(
+      final currentLoopWeekStartDate = tryParseBurnWeekDayKey(
         _normalizeBurnWeekDayKey(next.currentWeekStartDayKey),
       );
       if (currentLoopWeekStartDate == null ||
@@ -216,7 +217,7 @@ class BurnWeekRunController extends _$BurnWeekRunController {
   }
 
   String _resolveNextWeekStartDayKey(String currentWeekStartDayKey) {
-    final currentWeekStartDate = _parseBurnWeekDayKey(currentWeekStartDayKey);
+    final currentWeekStartDate = tryParseBurnWeekDayKey(currentWeekStartDayKey);
     if (currentWeekStartDate == null) {
       return currentWeekStartDayKey;
     }
@@ -270,27 +271,9 @@ class BurnWeekRunController extends _$BurnWeekRunController {
 }
 
 String? _normalizeBurnWeekDayKey(String? dayKey) {
-  final parsedDayKey = _parseBurnWeekDayKey(dayKey);
+  final parsedDayKey = tryParseBurnWeekDayKey(dayKey);
   if (parsedDayKey == null) {
     return null;
   }
   return diaryDayKey(parsedDayKey);
-}
-
-DateTime? _parseBurnWeekDayKey(String? dayKey) {
-  final normalizedDayKey = dayKey?.trim();
-  if (normalizedDayKey == null || normalizedDayKey.isEmpty) {
-    return null;
-  }
-  final parts = normalizedDayKey.split('-');
-  if (parts.length != 3) {
-    return null;
-  }
-  final year = int.tryParse(parts[0]);
-  final month = int.tryParse(parts[1]);
-  final day = int.tryParse(parts[2]);
-  if (year == null || month == null || day == null) {
-    return null;
-  }
-  return normalizeDiaryDay(DateTime(year, month, day));
 }
