@@ -88,10 +88,37 @@
   "productSearchHubMissingNutritionHint": "Required values are missing. Every EU nutrition label lists them.",
   "productEditorPhotosHint": "Two photos fill in the product. You only check it.",
   "productEditorFrontPhoto": "Front",
+  "productEditorCreateAction": "Create",
   "productEditorFrontPhotoHint": "Name, brand, size",
   "productEditorNutritionTablePhoto": "Nutrition table",
   "productEditorNutritionTablePhotoHint": "Nutrition values",
   "productEditorPhotoReading": "Reading …",
+  "productEditorMissing": "Still missing: {fields}",
+  "@productEditorMissing": {
+    "placeholders": {
+      "fields": {
+        "type": "String"
+      }
+    }
+  },
+  "productEditorMissingValues": "{count} nutrition values",
+  "@productEditorMissingValues": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "productEditorMissingBarcode": "Barcode – scan or “Has none”",
+  "productEditorPhotoReadName": "Name",
+  "productEditorPhotoReadValues": "{count, plural, =1{1 value} other{{count} values}}",
+  "@productEditorPhotoReadValues": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "productEditorPhotoRead": "Read",
   "productEditorPhotoRetake": "Retake",
   "productEditorScanBarcode": "Scan",
@@ -122,6 +149,7 @@
   "inventoryDockReceiptTool": "Receipt",
   "inventoryAddManualSearchDescription": "Find a food by name or brand",
   "inventoryAddAiDescription": "Describe a food and the AI estimates its nutrition",
+  "inventoryAddCreateDescription": "Add your own product, from photos or by hand",
   "inventoryAddUploadDescription": "Read a receipt from an image or PDF",
   "inventoryReceiptPhotoAction": "Photograph receipt",
   "inventoryReceiptPhotoDescription": "Take a photo of the receipt with the camera",
@@ -390,6 +418,19 @@
       }
     }
   },
+  "eatPageRemovePortion": "One portion less",
+  "eatPageAddPortion": "One portion more",
+  "inventoryStockAddConfirm": "{count, plural, =1{Add to stock (1 package)} other{Add to stock ({count} packages)}}",
+  "@inventoryStockAddConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "eatPagePackages": "Packages",
+  "eatPageRemovePackage": "One package less",
+  "eatPageAddPackage": "One package more",
   "eatPageMealPortions": "Portions",
   "eatPageMealPerPortion": "per portion {amount}",
   "@eatPageMealPerPortion": {

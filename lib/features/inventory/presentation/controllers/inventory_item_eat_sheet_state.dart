@@ -82,6 +82,7 @@ class InventoryItemEatSheetState {
     required this.errors,
     required this.didEditInventoryAmount,
     required this.didEditPortion,
+    this.countedPortion,
   });
 
   /// Amount rules of the item.
@@ -139,6 +140,10 @@ class InventoryItemEatSheetState {
   /// Whether the user changed the portion.
   final bool didEditPortion;
 
+  /// Portion mark the user picked under the ruler, counted with the portion
+  /// count until the amount is typed or dragged.
+  final InventoryItemEatMarker? countedPortion;
+
   /// Whether the amount field holds a piece count. Items without a weight
   /// unit need the weight of one piece to be logged.
   bool get usesPortionMode => calculator.requiresManualCaloriePortion;
@@ -163,6 +168,35 @@ class InventoryItemEatSheetState {
   double get amountMax {
     final max = calculator.rulerMax.toDouble();
     return usesPortionMode ? max / calculator.inventoryAmountScale : max;
+  }
+
+  /// Number of picked portions in the entered amount, or null when no
+  /// portion mark is counted.
+  int? get portionCount {
+    final size = countedPortion?.value.round();
+    if (size == null || size < 1 || usesPortionMode) {
+      return null;
+    }
+    return (enteredInventoryAmount ?? 0) ~/ size;
+  }
+
+  /// Whether [marker] is the counted portion or matches the entered amount.
+  bool isMarkerSelected(InventoryItemEatMarker marker) {
+    final counted = countedPortion;
+    if (counted != null) {
+      return counted.value == marker.value && counted.label == marker.label;
+    }
+    return amountValue == marker.value;
+  }
+
+  /// Number of whole packages in the entered amount, or null when the item
+  /// has no package to count.
+  int? get packageCount {
+    final package = calculator.packageAmount;
+    if (package == null || usesPortionMode) {
+      return null;
+    }
+    return (enteredInventoryAmount ?? 0) ~/ package;
   }
 
   /// Value of the amount field on the ruler, or 0 when it cannot be parsed.
@@ -230,6 +264,7 @@ class InventoryItemEatSheetState {
     Set<InventoryItemEatSheetError>? errors,
     bool? didEditInventoryAmount,
     bool? didEditPortion,
+    InventoryItemEatMarker? Function()? countedPortion,
   }) {
     return InventoryItemEatSheetState(
       calculator: calculator,
@@ -251,6 +286,9 @@ class InventoryItemEatSheetState {
       didEditInventoryAmount:
           didEditInventoryAmount ?? this.didEditInventoryAmount,
       didEditPortion: didEditPortion ?? this.didEditPortion,
+      countedPortion: countedPortion == null
+          ? this.countedPortion
+          : countedPortion(),
     );
   }
 }

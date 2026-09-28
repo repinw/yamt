@@ -194,6 +194,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productEditorFrontPhoto => 'Front';
 
   @override
+  String get productEditorCreateAction => 'Create';
+
+  @override
   String get productEditorFrontPhotoHint => 'Name, brand, size';
 
   @override
@@ -204,6 +207,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get productEditorPhotoReading => 'Reading …';
+
+  @override
+  String productEditorMissing(String fields) {
+    return 'Still missing: $fields';
+  }
+
+  @override
+  String productEditorMissingValues(int count) {
+    return '$count nutrition values';
+  }
+
+  @override
+  String get productEditorMissingBarcode => 'Barcode – scan or “Has none”';
+
+  @override
+  String get productEditorPhotoReadName => 'Name';
+
+  @override
+  String productEditorPhotoReadValues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count values',
+      one: '1 value',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get productEditorPhotoRead => 'Read';
@@ -303,6 +333,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get inventoryAddAiDescription =>
       'Describe a food and the AI estimates its nutrition';
+
+  @override
+  String get inventoryAddCreateDescription =>
+      'Add your own product, from photos or by hand';
 
   @override
   String get inventoryAddUploadDescription =>
@@ -817,6 +851,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String eatPageMealTotal(String amount) {
     return 'total $amount';
   }
+
+  @override
+  String get eatPageRemovePortion => 'One portion less';
+
+  @override
+  String get eatPageAddPortion => 'One portion more';
+
+  @override
+  String inventoryStockAddConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add to stock ($count packages)',
+      one: 'Add to stock (1 package)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get eatPagePackages => 'Packages';
+
+  @override
+  String get eatPageRemovePackage => 'One package less';
+
+  @override
+  String get eatPageAddPackage => 'One package more';
 
   @override
   String get eatPageMealPortions => 'Portions';

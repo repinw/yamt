@@ -34,7 +34,14 @@ class InventoryItemEatCalculator {
   ///
   /// [rulerMaxAmount] sets the range of the amount ruler when it differs
   /// from [maxAmount], which marks a stock without a real limit.
-  const new({required this.item, required this.maxAmount, this.rulerMaxAmount});
+  /// [packageAmount] is the size of one package when whole packages can be
+  /// picked.
+  const new({
+    required this.item,
+    required this.maxAmount,
+    this.rulerMaxAmount,
+    this.packageAmount,
+  });
 
   /// Item being eaten.
   final InventoryItem item;
@@ -44,6 +51,10 @@ class InventoryItemEatCalculator {
 
   /// Range of the amount ruler for a stock without a real limit.
   final int? rulerMaxAmount;
+
+  /// Size of one package in inventory units, or null when whole packages
+  /// cannot be picked.
+  final int? packageAmount;
 
   /// Whether the stock does not limit the amount, as for a newly picked
   /// product whose stock is set to the eaten amount afterwards.

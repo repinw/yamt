@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_calculator.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_open_eat_stock.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_amounts.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_submission.dart';
@@ -75,32 +76,7 @@ class InventoryItemEatSheetController
   }
 
   /// Sets the amount field text.
-  void setAmountText(String text) {
-    if (state.usesPortionMode) {
-      _update(
-        withPortionAmounts(
-          state.copyWith(
-            portionCountText: text,
-            didEditPortion: true,
-            errors: _without(const {
-              InventoryItemEatSheetError.invalidPortionCount,
-              InventoryItemEatSheetError.invalidInventoryAmount,
-            }),
-          ),
-        ),
-      );
-      return;
-    }
-    _update(
-      state.copyWith(
-        inventoryAmountText: text,
-        didEditInventoryAmount: true,
-        errors: _without(const {
-          InventoryItemEatSheetError.invalidInventoryAmount,
-        }),
-      ),
-    );
-  }
+  void setAmountText(String text) => _update(withAmountText(state, text));
 
   /// Sets the amount to [value] in the unit of the amount field, for
   /// example from the ruler.
@@ -110,6 +86,23 @@ class InventoryItemEatSheetController
           ? formatInventoryNutritionValue(value)
           : state.calculator.formatInventoryAmount(value.round()),
     );
+  }
+
+  /// Sets the amount to the portion at [marker] and counts that portion,
+  /// so the portion count can add more of it.
+  void pickMarker(InventoryItemEatMarker marker) {
+    _update(withMarker(state, marker));
+  }
+
+  /// Adds one counted portion, or takes one away when [up] is false.
+  void stepPortions({required bool up}) {
+    if (withSteppedPortions(state, up: up) case final next?) _update(next);
+  }
+
+  /// Moves the amount to the next whole package up, or down when [up] is
+  /// false.
+  void stepPackages({required bool up}) {
+    if (withSteppedPackages(state, up: up) case final next?) _update(next);
   }
 
   /// Names the entered amount as a portion, or the entered piece weight as

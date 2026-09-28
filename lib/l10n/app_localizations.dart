@@ -416,6 +416,12 @@ abstract class AppLocalizations {
   /// **'Front'**
   String get productEditorFrontPhoto;
 
+  /// No description provided for @productEditorCreateAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get productEditorCreateAction;
+
   /// No description provided for @productEditorFrontPhotoHint.
   ///
   /// In en, this message translates to:
@@ -439,6 +445,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reading …'**
   String get productEditorPhotoReading;
+
+  /// No description provided for @productEditorMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Still missing: {fields}'**
+  String productEditorMissing(String fields);
+
+  /// No description provided for @productEditorMissingValues.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} nutrition values'**
+  String productEditorMissingValues(int count);
+
+  /// No description provided for @productEditorMissingBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode – scan or “Has none”'**
+  String get productEditorMissingBarcode;
+
+  /// No description provided for @productEditorPhotoReadName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get productEditorPhotoReadName;
+
+  /// No description provided for @productEditorPhotoReadValues.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 value} other{{count} values}}'**
+  String productEditorPhotoReadValues(int count);
 
   /// No description provided for @productEditorPhotoRead.
   ///
@@ -619,6 +655,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Describe a food and the AI estimates its nutrition'**
   String get inventoryAddAiDescription;
+
+  /// No description provided for @inventoryAddCreateDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your own product, from photos or by hand'**
+  String get inventoryAddCreateDescription;
 
   /// No description provided for @inventoryAddUploadDescription.
   ///
@@ -1515,6 +1557,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'total {amount}'**
   String eatPageMealTotal(String amount);
+
+  /// No description provided for @eatPageRemovePortion.
+  ///
+  /// In en, this message translates to:
+  /// **'One portion less'**
+  String get eatPageRemovePortion;
+
+  /// No description provided for @eatPageAddPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'One portion more'**
+  String get eatPageAddPortion;
+
+  /// No description provided for @inventoryStockAddConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add to stock (1 package)} other{Add to stock ({count} packages)}}'**
+  String inventoryStockAddConfirm(int count);
+
+  /// No description provided for @eatPagePackages.
+  ///
+  /// In en, this message translates to:
+  /// **'Packages'**
+  String get eatPagePackages;
+
+  /// No description provided for @eatPageRemovePackage.
+  ///
+  /// In en, this message translates to:
+  /// **'One package less'**
+  String get eatPageRemovePackage;
+
+  /// No description provided for @eatPageAddPackage.
+  ///
+  /// In en, this message translates to:
+  /// **'One package more'**
+  String get eatPageAddPackage;
 
   /// No description provided for @eatPageMealPortions.
   ///

@@ -22,6 +22,10 @@ const _weightDefaultAmount = 100;
 ///
 /// A gram or milliliter unit is kept even when the product has no package
 /// size, so the amount is entered in that unit instead of in pieces.
+///
+/// The package size never limits the amount: a product picked for a generic
+/// search such as "roll" once capped the amount at that product's package.
+/// Several packages are picked with the package count instead.
 InventoryItemEatCalculator openStockEatCalculator(InventoryItem item) {
   final stock = consumableInventoryAmount(item) ?? 0;
   final unit = item.amountUnit;
@@ -36,6 +40,7 @@ InventoryItemEatCalculator openStockEatCalculator(InventoryItem item) {
       ),
       maxAmount: _openStockLimit,
       rulerMaxAmount: math.max(stock, _weightRulerRange * scale),
+      packageAmount: stock > 0 ? stock : null,
     );
   }
   if (item.usesAmountProgress) {

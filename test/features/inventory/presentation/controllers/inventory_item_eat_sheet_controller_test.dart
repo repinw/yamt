@@ -233,6 +233,89 @@ void main() {
     expect(request.inventoryAmount, 2500);
   });
 
+  test('an open stock steps whole packages without a package limit', () {
+    final (:container, :provider) = _setUp(_gramItem(), hasOpenStock: true);
+    final controller = container.read(provider.notifier)..setAmountText('150');
+
+    expect(container.read(provider).packageCount, 0);
+
+    controller.stepPackages(up: true);
+    expect(container.read(provider).inventoryAmountText, '1000');
+    expect(container.read(provider).packageCount, 1);
+
+    controller
+      ..stepPackages(up: true)
+      ..setAmountText('2150');
+    expect(container.read(provider).packageCount, 2);
+
+    controller.stepPackages(up: false);
+    expect(container.read(provider).inventoryAmountText, '2000');
+
+    controller
+      ..stepPackages(up: false)
+      ..stepPackages(up: false)
+      ..stepPackages(up: false);
+    expect(container.read(provider).inventoryAmountText, '0');
+    expect(container.read(provider).amountMax, 1000);
+  });
+
+  test('a picked portion mark is counted up and down within the stock', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('30')
+      ..rememberPortion('Slice');
+    final slice = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Slice');
+
+    controller
+      ..pickMarker(slice)
+      ..stepPortions(up: true)
+      ..stepPortions(up: true);
+
+    var state = container.read(provider);
+    expect(state.inventoryAmountText, '90');
+    expect(state.portionCount, 3);
+    expect(state.isMarkerSelected(slice), isTrue);
+
+    controller.stepPortions(up: false);
+    expect(container.read(provider).inventoryAmountText, '60');
+
+    controller.setAmountText('1000');
+    for (var i = 0; i < 3; i++) {
+      controller.stepPortions(up: true);
+    }
+    state = container.read(provider);
+    expect(state.countedPortion, isNull);
+    expect(state.portionCount, isNull);
+    expect(state.inventoryAmountText, '1000');
+  });
+
+  test('the counted portion never goes past the stock', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('400')
+      ..rememberPortion('Bowl');
+    final bowl = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Bowl');
+
+    controller
+      ..pickMarker(bowl)
+      ..stepPortions(up: true)
+      ..stepPortions(up: true);
+
+    expect(container.read(provider).inventoryAmountText, '800');
+  });
+
+  test('a stock item counts no packages', () {
+    final (:container, :provider) = _setUp(_gramItem());
+
+    expect(container.read(provider).packageCount, isNull);
+  });
+
   test('a gram product without package size is eaten in grams', () {
     final item = InventoryItem.create(
       id: 'roll',

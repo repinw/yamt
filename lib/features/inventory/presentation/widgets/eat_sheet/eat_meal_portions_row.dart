@@ -1,7 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_count_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Row of the hub's meal view to say how many portions the picked foods
@@ -25,45 +23,16 @@ class EatMealPortionsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = FoodLabelColors.of(context);
-    final textTheme = Theme.of(context).textTheme;
-
-    return Row(
-      spacing: AppSpacing.md,
-      children: [
-        Expanded(
-          child: Text(
-            l10n.eatPageMealPortions,
-            style: textTheme.bodySmall?.copyWith(color: colors.ink),
-          ),
-        ),
-        Tooltip(
-          message: l10n.inventoryItemEatSheetDecreasePortionCountAction,
-          child: EatChip(
-            key: decreaseKey,
-            label: '−',
-            isSelected: false,
-            onPressed: portions > 1 ? () => onChanged(portions - 1) : () {},
-          ),
-        ),
-        Text(
-          '$portions',
-          key: const Key('eat_meal_portions_value'),
-          style: textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-            color: colors.ink,
-          ),
-        ),
-        Tooltip(
-          message: l10n.inventoryItemEatSheetIncreasePortionCountAction,
-          child: EatChip(
-            key: increaseKey,
-            label: '+',
-            isSelected: false,
-            onPressed: () => onChanged(portions + 1),
-          ),
-        ),
-      ],
+    return EatCountRow(
+      label: l10n.eatPageMealPortions,
+      count: portions,
+      decreaseTooltip: l10n.inventoryItemEatSheetDecreasePortionCountAction,
+      increaseTooltip: l10n.inventoryItemEatSheetIncreasePortionCountAction,
+      onDecrease: portions > 1 ? () => onChanged(portions - 1) : null,
+      onIncrease: () => onChanged(portions + 1),
+      decreaseKey: decreaseKey,
+      increaseKey: increaseKey,
+      valueKey: const Key('eat_meal_portions_value'),
     );
   }
 }

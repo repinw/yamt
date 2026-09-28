@@ -4,6 +4,7 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_item_
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_count_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inedible_line.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inline_amount_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_remember_portion.dart';
@@ -26,6 +27,24 @@ class InventoryItemEatAmountSection extends StatelessWidget {
     required this.onToggleInedible,
     super.key,
   });
+
+  /// Key of the button that takes one counted portion away.
+  static const portionDecreaseKey = Key('eat_page_portion_decrease');
+
+  /// Key of the button that adds one counted portion.
+  static const portionIncreaseKey = Key('eat_page_portion_increase');
+
+  /// Key of the counted portion count.
+  static const portionCountKey = Key('eat_page_portion_count');
+
+  /// Key of the button that takes one package away.
+  static const packageDecreaseKey = Key('eat_page_package_decrease');
+
+  /// Key of the button that adds one package.
+  static const packageIncreaseKey = Key('eat_page_package_increase');
+
+  /// Key of the package count.
+  static const packageCountKey = Key('eat_page_package_count');
 
   /// The eat page state.
   final InventoryItemEatSheetState state;
@@ -66,8 +85,8 @@ class InventoryItemEatAmountSection extends StatelessWidget {
               EatRulerMark(
                 label: state.markLabel(l10n, marker),
                 value: marker.value,
-                isSelected: state.amountValue == marker.value,
-                onPressed: () => controller.pickAmount(marker.value),
+                isSelected: state.isMarkerSelected(marker),
+                onPressed: () => controller.pickMarker(marker),
               ),
           ],
           allowFractionalInput:
@@ -78,6 +97,37 @@ class InventoryItemEatAmountSection extends StatelessWidget {
           onTextChanged: controller.setAmountText,
           onSliderChanged: controller.pickAmount,
         ),
+        if ((state.countedPortion, state.portionCount) case (
+          final portion?,
+          final count?,
+        ))
+          EatCountRow(
+            label: state.markLabel(l10n, portion),
+            count: count,
+            decreaseTooltip: l10n.eatPageRemovePortion,
+            increaseTooltip: l10n.eatPageAddPortion,
+            onDecrease: (state.enteredInventoryAmount ?? 0) > 0
+                ? () => controller.stepPortions(up: false)
+                : null,
+            onIncrease: () => controller.stepPortions(up: true),
+            decreaseKey: portionDecreaseKey,
+            increaseKey: portionIncreaseKey,
+            valueKey: portionCountKey,
+          )
+        else if (state.packageCount case final packages?)
+          EatCountRow(
+            label: l10n.eatPagePackages,
+            count: packages,
+            decreaseTooltip: l10n.eatPageRemovePackage,
+            increaseTooltip: l10n.eatPageAddPackage,
+            onDecrease: (state.enteredInventoryAmount ?? 0) > 0
+                ? () => controller.stepPackages(up: false)
+                : null,
+            onIncrease: () => controller.stepPackages(up: true),
+            decreaseKey: packageDecreaseKey,
+            increaseKey: packageIncreaseKey,
+            valueKey: packageCountKey,
+          ),
         if (state.usesPortionMode) ...[
           EatInlineAmountField(
             fieldKey: InventoryItemEatSheetBody.pieceWeightKey,

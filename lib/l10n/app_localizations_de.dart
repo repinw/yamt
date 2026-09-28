@@ -197,6 +197,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get productEditorFrontPhoto => 'Vorderseite';
 
   @override
+  String get productEditorCreateAction => 'Erstellen';
+
+  @override
   String get productEditorFrontPhotoHint => 'Name, Marke, Packung';
 
   @override
@@ -207,6 +210,34 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get productEditorPhotoReading => 'Liest …';
+
+  @override
+  String productEditorMissing(String fields) {
+    return 'Noch offen: $fields';
+  }
+
+  @override
+  String productEditorMissingValues(int count) {
+    return '$count Nährwerte';
+  }
+
+  @override
+  String get productEditorMissingBarcode =>
+      'Barcode – scannen oder „Hat keinen“';
+
+  @override
+  String get productEditorPhotoReadName => 'Name';
+
+  @override
+  String productEditorPhotoReadValues(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Werte',
+      one: '1 Wert',
+    );
+    return '$_temp0';
+  }
 
   @override
   String get productEditorPhotoRead => 'Erkannt';
@@ -308,6 +339,10 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get inventoryAddAiDescription =>
       'Beschreib ein Lebensmittel, die KI schätzt die Nährwerte';
+
+  @override
+  String get inventoryAddCreateDescription =>
+      'Eigenes Produkt anlegen, per Foto oder von Hand';
 
   @override
   String get inventoryAddUploadDescription =>
@@ -830,6 +865,32 @@ class AppLocalizationsDe extends AppLocalizations {
   String eatPageMealTotal(String amount) {
     return 'gesamt $amount';
   }
+
+  @override
+  String get eatPageRemovePortion => 'Eine Portion weniger';
+
+  @override
+  String get eatPageAddPortion => 'Eine Portion mehr';
+
+  @override
+  String inventoryStockAddConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'In Vorrat ($count Packungen)',
+      one: 'In Vorrat (1 Packung)',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get eatPagePackages => 'Packungen';
+
+  @override
+  String get eatPageRemovePackage => 'Eine Packung weniger';
+
+  @override
+  String get eatPageAddPackage => 'Eine Packung mehr';
 
   @override
   String get eatPageMealPortions => 'Portionen';
