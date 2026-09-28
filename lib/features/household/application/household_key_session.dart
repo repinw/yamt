@@ -9,6 +9,7 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/data/household_data_repository.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/data/household_member_repository.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
@@ -33,6 +34,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     final keys = ref.watch(householdKeyRepositoryProvider);
     final members = ref.watch(householdMemberRepositoryProvider);
     final households = ref.watch(householdRepositoryProvider);
+    final data = ref.watch(householdDataRepositoryProvider);
     final userKeys = ref.watch(userDataKeyRepositoryProvider);
     final householdId = ref.watch(activeHouseholdIdProvider);
     final ownHouseholdFuture = ref.watch(
@@ -44,6 +46,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
         keys == null ||
         members == null ||
         households == null ||
+        data == null ||
         userKeys == null) {
       return const HouseholdKeyUnavailable();
     }
@@ -71,7 +74,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     final uid = dataCipher.uid;
     if (await userKeys.loadFreshStartPending(uid)) {
       for (final id in <String>{ownHouseholdId, householdId}) {
-        await _cleanUpAfterFreshStart(keys, members, households, id, uid);
+        await _cleanUpAfterFreshStart(keys, members, data, id, uid);
       }
       await userKeys.saveFreshStartPending(uid, pending: false);
     }
@@ -156,7 +159,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
   Future<void> _cleanUpAfterFreshStart(
     HouseholdKeyRepository keys,
     HouseholdMemberRepository members,
-    HouseholdRepository households,
+    HouseholdDataRepository data,
     String householdId,
     String uid,
   ) async {
@@ -164,7 +167,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     if (await members.loadHasOtherMembers(householdId)) {
       await keys.requestKeyRestore(householdId: householdId, memberUid: uid);
     } else {
-      await households.wipeHouseholdData(householdId);
+      await data.wipeHouseholdData(householdId);
     }
   }
 

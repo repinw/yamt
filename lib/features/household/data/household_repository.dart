@@ -1,14 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:collection/collection.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/data/firestore_batch_write.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/household/data/household_data_repository.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/data/household_member_repository.dart';
 import 'package:yamt/features/household/domain/household_exceptions.dart';
@@ -23,7 +21,6 @@ const _roleField = 'role';
 const _uidField = 'uid';
 const _householdIdField = 'householdId';
 const _ownHouseholdIdField = 'ownHouseholdId';
-const _maxBatchSize = 400;
 
 typedef _NewHousehold = ({
   DocumentReference<Map<String, dynamic>> household,
@@ -42,7 +39,7 @@ class HouseholdRepository {
   /// Creates the repository.
   const new({
     required this._firestore,
-    required this._storage,
+    required this._data,
     required this._keys,
     required this._members,
     required this._currentUserId,
@@ -50,7 +47,7 @@ class HouseholdRepository {
   });
 
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
+  final HouseholdDataRepository _data;
   final HouseholdKeyRepository _keys;
   final HouseholdMemberRepository _members;
   final String _currentUserId;
@@ -146,37 +143,12 @@ class HouseholdRepository {
     }, SetOptions(merge: true));
   }
 
-  /// Deletes the documents and images of [householdId]. The household, its
-  /// members and their key entries stay.
-  Future<void> wipeHouseholdData(String householdId) async {
-    final references = <DocumentReference<Map<String, dynamic>>>[];
-    for (final collection in householdEncryptedCollections.keys) {
-      final snapshot = await _household(householdId)
-          .collection(collection)
-          .get();
-      references.addAll(snapshot.docs.map((document) => document.reference));
-    }
-    for (final chunk in FirestoreBatchChunker.chunk(
-      operations: references,
-      maxChunkSize: _maxBatchSize,
-    )) {
-      final batch = _firestore.batch();
-      chunk.forEach(batch.delete);
-      await batch.commit();
-    }
-    for (final folder in householdImageFolders) {
-      await _deleteFolder(
-        _storage.ref('$_householdsCollection/$householdId/$folder'),
-      );
-    }
-  }
-
   /// The last member deletes the household with everything in it.
   Future<void> _deleteHousehold(
     String householdId,
     String ownHouseholdId,
   ) async {
-    await wipeHouseholdData(householdId);
+    await _data.wipeHouseholdData(householdId);
     await _firestore.runTransaction((transaction) async {
       _writeDeparture(transaction, householdId);
       transaction.delete(_household(householdId));
@@ -255,16 +227,6 @@ class HouseholdRepository {
     });
   }
 
-  Future<void> _deleteFolder(Reference folder) async {
-    final result = await folder.listAll();
-    for (final item in result.items) {
-      await item.delete();
-    }
-    for (final prefix in result.prefixes) {
-      await _deleteFolder(prefix);
-    }
-  }
-
   DocumentReference<Map<String, dynamic>> _household(String householdId) {
     return _firestore.collection(_householdsCollection).doc(householdId);
   }
@@ -282,19 +244,19 @@ HouseholdRepository? householdRepository(Ref ref) {
     authStateChangesProvider.select((user) => user.asData?.value?.uid),
   );
   final firestore = ref.watch(firebaseFirestoreProvider);
-  final storage = ref.watch(firebaseStorageProvider);
+  final data = ref.watch(householdDataRepositoryProvider);
   final keys = ref.watch(householdKeyRepositoryProvider);
   final members = ref.watch(householdMemberRepositoryProvider);
   if (uid == null ||
       firestore == null ||
-      storage == null ||
+      data == null ||
       keys == null ||
       members == null) {
     return null;
   }
   return HouseholdRepository(
     firestore: firestore,
-    storage: storage,
+    data: data,
     keys: keys,
     members: members,
     currentUserId: uid,

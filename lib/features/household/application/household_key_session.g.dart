@@ -52,7 +52,7 @@ final class HouseholdKeySessionProvider
 }
 
 String _$householdKeySessionHash() =>
-    r'f9fdae06f79de9b8f016ebd3998c4b9011a0ed3e';
+    r'6b504f3fcb30823d053b2c949138e37a47d50622';
 
 /// Resolves the household key of the active household.
 ///

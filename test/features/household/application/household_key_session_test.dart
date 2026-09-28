@@ -15,6 +15,7 @@ import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/data/user_profile_document_codec.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/data/household_data_repository.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/data/household_member_repository.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
@@ -58,6 +59,10 @@ void main() {
       keys: keys,
       currentUserId: _uid,
     );
+    final data = HouseholdDataRepository(
+      firestore: firestore,
+      storage: storage,
+    );
     final container = ProviderContainer(
       overrides: [
         userProfileProvider.overrideWith(
@@ -77,10 +82,11 @@ void main() {
         userDataCipherProvider.overrideWithValue(dataCipher),
         householdKeyRepositoryProvider.overrideWithValue(keys),
         householdMemberRepositoryProvider.overrideWithValue(members),
+        householdDataRepositoryProvider.overrideWithValue(data),
         householdRepositoryProvider.overrideWithValue(
           HouseholdRepository(
             firestore: firestore,
-            storage: storage,
+            data: data,
             keys: keys,
             members: members,
             currentUserId: _uid,

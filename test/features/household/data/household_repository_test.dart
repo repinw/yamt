@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/household/data/household_data_repository.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/data/household_member_repository.dart';
 import 'package:yamt/features/household/data/household_repository.dart';
@@ -27,7 +28,7 @@ void main() {
   Future<HouseholdRepository> repositoryFor(String uid) async {
     return HouseholdRepository(
       firestore: firestore,
-      storage: storage,
+      data: HouseholdDataRepository(firestore: firestore, storage: storage),
       keys: keys,
       members: HouseholdMemberRepository(
         firestore: firestore,
@@ -118,7 +119,7 @@ void main() {
     test('needs the data key', () async {
       final repository = HouseholdRepository(
         firestore: firestore,
-        storage: storage,
+        data: HouseholdDataRepository(firestore: firestore, storage: storage),
         keys: keys,
         members: HouseholdMemberRepository(
           firestore: firestore,
@@ -261,38 +262,6 @@ void main() {
         )).leaveHousehold(householdId: 'own-solo', ownHouseholdId: 'own-solo'),
         throwsStateError,
       );
-    });
-  });
-
-  test('wipeHouseholdData keeps the household, its members and keys', () async {
-    await addMember('h1', 'solo', joinedAt: DateTime(2026), admin: true);
-    for (final collection in householdEncryptedCollections.keys) {
-      await firestore.doc('households/h1/$collection/d1').set(<String, dynamic>{
-        'payload': 'p',
-      });
-    }
-    await firestore.doc('households/h2/inventory_items/i1').set(
-      <String, dynamic>{'payload': 'p'},
-    );
-    storage.files.addAll(<String>[
-      'households/h1/recipes/meal/images/cover.jpg',
-      'households/h2/recipes/meal/images/cover.jpg',
-    ]);
-
-    await (await repositoryFor('solo')).wipeHouseholdData('h1');
-
-    for (final collection in householdEncryptedCollections.keys) {
-      expect(
-        (await firestore.collection('households/h1/$collection').get()).docs,
-        isEmpty,
-        reason: collection,
-      );
-    }
-    expect(await data('households/h1/members/solo'), isNotNull);
-    expect(await data('households/h1/keys/solo'), isNotNull);
-    expect(await data('households/h2/inventory_items/i1'), isNotNull);
-    expect(storage.files, <String>{
-      'households/h2/recipes/meal/images/cover.jpg',
     });
   });
 
