@@ -40,6 +40,9 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   The home shell stacks it on the bottom navigation bar of the diary tab, so it
   hides and returns with the bar. The day view pads its content by
   `diaryQuickEatDockHeight`, and the shell keeps floating snack bars above it.
+  Its quick entry tool opens `presentation/diary_quick_entry_page.dart`, which
+  saves a calorie quick entry through the calories entry saver without an
+  inventory item.
 - `presentation/widgets/diary_meals_empty_state.dart` points to the dock on a
   day without logged food.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the

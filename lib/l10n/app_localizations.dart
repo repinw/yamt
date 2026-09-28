@@ -4612,6 +4612,54 @@ abstract class AppLocalizations {
   /// **'No available food in inventory.'**
   String get diaryQuickEatInventoryEmpty;
 
+  /// No description provided for @diaryQuickEatSourceQuickEntry.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick'**
+  String get diaryQuickEatSourceQuickEntry;
+
+  /// No description provided for @diaryQuickEntryDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick entry'**
+  String get diaryQuickEntryDefaultName;
+
+  /// No description provided for @diaryQuickEntryKcalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories'**
+  String get diaryQuickEntryKcalLabel;
+
+  /// No description provided for @diaryQuickEntryValuesHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten'**
+  String get diaryQuickEntryValuesHeader;
+
+  /// No description provided for @diaryQuickEntryKcalMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Still missing: calories'**
+  String get diaryQuickEntryKcalMissing;
+
+  /// No description provided for @diaryQuickEntryAiHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing macros count as 0 g. The AI estimate is more precise.'**
+  String get diaryQuickEntryAiHint;
+
+  /// No description provided for @diaryQuickEntryAiAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate with AI instead'**
+  String get diaryQuickEntryAiAction;
+
+  /// No description provided for @diaryQuickEntrySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to diary'**
+  String get diaryQuickEntrySaved;
+
   /// No description provided for @diaryBalanceLoadFailed.
   ///
   /// In en, this message translates to:

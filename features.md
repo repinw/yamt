@@ -76,6 +76,14 @@ and feature description docs. This is product-facing; architecture rules stay in
   Its buttons sit in a dock on the bottom navigation bar of the diary tab and
   hide with it: square buttons for inventory, search, and AI, and a lime barcode button
   on the right.
+- Quick entry ("Schnell" in the dock) logs calories typed in by hand, without
+  a food or a Vorrat item, on a page in the food label look with day and meal
+  top right. Only the calories are required; the name defaults to "Quick
+  entry", and protein, carbs, and fat are optional and count as 0 g when left
+  empty. While a macro is empty, a quiet hint points to the more precise AI
+  estimate and opens it for the same day and meal. The entry shows no amount
+  in the diary, moves between days and meals like any entry, and its amount
+  cannot be edited.
 - Daily head in the food label look, without a card frame: the kcal left as a
   big number over a ruler, whose bar has four equal quarters of the target
   that fill in order. It is quiet by default; a tap shows eaten and target,

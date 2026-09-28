@@ -2624,6 +2624,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryQuickEatInventoryEmpty => 'No available food in inventory.';
 
   @override
+  String get diaryQuickEatSourceQuickEntry => 'Quick';
+
+  @override
+  String get diaryQuickEntryDefaultName => 'Quick entry';
+
+  @override
+  String get diaryQuickEntryKcalLabel => 'Calories';
+
+  @override
+  String get diaryQuickEntryValuesHeader => 'Eaten';
+
+  @override
+  String get diaryQuickEntryKcalMissing => 'Still missing: calories';
+
+  @override
+  String get diaryQuickEntryAiHint =>
+      'Missing macros count as 0 g. The AI estimate is more precise.';
+
+  @override
+  String get diaryQuickEntryAiAction => 'Estimate with AI instead';
+
+  @override
+  String get diaryQuickEntrySaved => 'Added to diary';
+
+  @override
   String get diaryBalanceLoadFailed => 'Balance could not be loaded';
 
   @override

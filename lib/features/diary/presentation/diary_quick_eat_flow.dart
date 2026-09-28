@@ -6,14 +6,20 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
+import 'package:yamt/features/diary/presentation/diary_quick_entry_page.dart';
+import 'package:yamt/features/diary/presentation/models/'
+    'diary_quick_entry_result.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_eat_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Diary quick-eat sources.
 enum DiaryQuickEatSource {
@@ -28,6 +34,9 @@ enum DiaryQuickEatSource {
 
   /// AI food estimate and eat.
   ai,
+
+  /// Calories typed in by hand, without a food.
+  quickEntry,
 }
 
 /// Runs diary quick-eat flows.
@@ -58,32 +67,78 @@ class DiaryQuickEatFlow {
     required MealType mealType,
     required DateTime loggedAt,
   }) {
-    if (source == DiaryQuickEatSource.inventory) {
-      return _openInventoryPicker(
+    Future<void> openHub(ProductSearchHubInitialIntent intent) {
+      return _openProductSearchHub(
         context: context,
+        initialIntent: intent,
         mealType: mealType,
         loggedAt: loggedAt,
       );
     }
-    return _openProductSearchHub(
-      context: context,
-      initialIntent: _resolveProductSearchIntent(source),
-      mealType: mealType,
-      loggedAt: loggedAt,
-    );
+
+    return switch (source) {
+      DiaryQuickEatSource.inventory => _openInventoryPicker(
+        context: context,
+        mealType: mealType,
+        loggedAt: loggedAt,
+      ),
+      DiaryQuickEatSource.quickEntry => _openQuickEntry(
+        context: context,
+        mealType: mealType,
+        loggedAt: loggedAt,
+      ),
+      DiaryQuickEatSource.barcode => openHub(
+        ProductSearchHubInitialIntent.barcode,
+      ),
+      DiaryQuickEatSource.manualSearch => openHub(
+        ProductSearchHubInitialIntent.search,
+      ),
+      DiaryQuickEatSource.ai => openHub(ProductSearchHubInitialIntent.ai),
+    };
   }
 
-  static ProductSearchHubInitialIntent _resolveProductSearchIntent(
-    DiaryQuickEatSource source,
-  ) {
-    return switch (source) {
-      DiaryQuickEatSource.barcode => ProductSearchHubInitialIntent.barcode,
-      DiaryQuickEatSource.manualSearch => ProductSearchHubInitialIntent.search,
-      DiaryQuickEatSource.ai => ProductSearchHubInitialIntent.ai,
-      DiaryQuickEatSource.inventory => throw StateError(
-        'Inventory source does not use product search.',
-      ),
-    };
+  static Future<void> _openQuickEntry({
+    required BuildContext context,
+    required MealType mealType,
+    required DateTime loggedAt,
+  }) async {
+    final result = await Navigator.of(context, rootNavigator: true)
+        .push<DiaryQuickEntryResult>(
+          MaterialPageRoute(
+            fullscreenDialog: true,
+            builder: (_) => DiaryQuickEntryPage(
+              initialLoggedAt: loggedAt,
+              initialMealType: mealType,
+            ),
+          ),
+        );
+    if (result == null || !context.mounted) {
+      return;
+    }
+    switch (result) {
+      case DiaryQuickEntrySaved(:final entry):
+        _showQuickEntrySaved(context, entry);
+      case DiaryQuickEntryAiRequested(:final loggedAt, :final mealType):
+        await _openProductSearchHub(
+          context: context,
+          initialIntent: ProductSearchHubInitialIntent.ai,
+          mealType: mealType,
+          loggedAt: loggedAt,
+        );
+    }
+  }
+
+  static void _showQuickEntrySaved(BuildContext context, CalorieEntry entry) {
+    final container = ProviderScope.containerOf(context, listen: false);
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      AppLocalizations.of(context)!.diaryQuickEntrySaved,
+      onUndo: () async {
+        final result = await container
+            .read(calorieEntryDeleteFlowProvider)
+            .deleteEntry(entry: entry, restoreToInventory: false);
+        return result.isSuccess;
+      },
+    );
   }
 
   static Future<void> _openProductSearchHub({

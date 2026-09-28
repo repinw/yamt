@@ -2679,6 +2679,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryQuickEatInventoryEmpty => 'Kein verfügbares Essen im Vorrat.';
 
   @override
+  String get diaryQuickEatSourceQuickEntry => 'Schnell';
+
+  @override
+  String get diaryQuickEntryDefaultName => 'Schnelleintrag';
+
+  @override
+  String get diaryQuickEntryKcalLabel => 'Kalorien';
+
+  @override
+  String get diaryQuickEntryValuesHeader => 'Gegessen';
+
+  @override
+  String get diaryQuickEntryKcalMissing => 'Noch offen: Kalorien';
+
+  @override
+  String get diaryQuickEntryAiHint =>
+      'Fehlende Makros zählen als 0 g. Die KI-Schätzung ist genauer.';
+
+  @override
+  String get diaryQuickEntryAiAction => 'Lieber mit KI schätzen';
+
+  @override
+  String get diaryQuickEntrySaved => 'Ins Tagebuch eingetragen';
+
+  @override
   String get diaryBalanceLoadFailed => 'Balance konnte nicht geladen werden';
 
   @override

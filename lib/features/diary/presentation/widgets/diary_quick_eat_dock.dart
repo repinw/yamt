@@ -15,8 +15,9 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Height of the dock, so pages can scroll their content above it.
 const double diaryQuickEatDockHeight = AppSpacing.md * 2 + AppSizes.headerTool;
 
-/// Quick-eat tools docked at the bottom of the diary: four equal tonal
-/// tools for the inventory, search, AI, and barcode, each with its word.
+/// Quick-eat tools docked at the bottom of the diary: five equal tonal
+/// tools for the inventory, search, AI, barcode, and a quick entry, each
+/// with its word.
 ///
 /// They log food to the selected diary day. The dock carries no lime: on the
 /// diary, lime marks the calories left.
@@ -75,6 +76,12 @@ class DiaryQuickEatDock extends ConsumerWidget {
               source: DiaryQuickEatSource.barcode,
               symbol: const _BarcodeIcon(),
               label: l10n.diaryQuickEatSourceBarcode,
+              onPressed: open,
+            ),
+            _DockTool(
+              source: DiaryQuickEatSource.quickEntry,
+              symbol: const Icon(Icons.bolt_rounded),
+              label: l10n.diaryQuickEatSourceQuickEntry,
               onPressed: open,
             ),
           ],
