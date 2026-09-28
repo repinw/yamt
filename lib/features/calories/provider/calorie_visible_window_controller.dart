@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 
 part 'calorie_visible_window_controller.g.dart';
 
@@ -7,7 +8,7 @@ part 'calorie_visible_window_controller.g.dart';
 class CalorieVisibleWindowController extends _$CalorieVisibleWindowController {
   @override
   DateTime build() {
-    return _normalize(DateTime.now());
+    return _normalize(ref.watch(clockProvider)());
   }
 
   /// Set window end.
@@ -20,7 +21,7 @@ class CalorieVisibleWindowController extends _$CalorieVisibleWindowController {
   }
 
   DateTime _clampToToday(DateTime value) {
-    final today = _normalize(DateTime.now());
+    final today = _normalize(ref.read(clockProvider)());
     if (value.isAfter(today)) {
       return today;
     }

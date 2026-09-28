@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_day_controller.g.dart';
@@ -8,7 +9,7 @@ part 'calorie_day_controller.g.dart';
 class CalorieDayController extends _$CalorieDayController {
   @override
   DateTime build() {
-    return normalizeDiaryDay(DateTime.now());
+    return normalizeDiaryDay(ref.watch(clockProvider)());
   }
 
   /// Set day.

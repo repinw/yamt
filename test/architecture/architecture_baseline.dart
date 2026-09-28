@@ -390,8 +390,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/domain/calorie_entry.dart': 5,
     'lib/features/calories/domain/calorie_goal_settings_queries.dart': 1,
     'lib/features/calories/domain/tdee_cycle_resolver.dart': 1,
-    'lib/features/calories/provider/calorie_day_controller.dart': 1,
-    'lib/features/calories/provider/calorie_visible_window_controller.dart': 2,
     'lib/features/cooking_flow/application/cooking_flow_finalize_logic.dart': 2,
     'lib/features/inventory/application/inventory_calorie_bridge_flow.dart': 3,
     'lib/features/inventory/application/inventory_shopping_suggestions.dart': 1,
