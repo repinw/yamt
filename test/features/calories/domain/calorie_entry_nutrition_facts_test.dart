@@ -4,6 +4,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_nutrition_facts.dart';
 import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
+import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 
 final _loggedAt = DateTime(2026, 2, 25, 8);
 
@@ -46,6 +47,21 @@ void main() {
     expect(facts?.sugar, 4);
     expect(facts?.salt, 0.1);
     expect(facts?.fiber, isNull);
+  });
+
+  test('a quick entry has no per 100 values', () {
+    final entry = buildQuickCalorieEntry(
+      id: 'entry-1',
+      userId: 'user-1',
+      name: 'Kuchen',
+      mealType: MealType.snack,
+      loggedAt: _loggedAt,
+      now: _loggedAt,
+      kcal: 350,
+    );
+
+    expect(calorieEntryPer100Facts(entry), isNull);
+    expect(calorieEntryEatenFacts(entry).kcal, 350);
   });
 
   test('eaten uses the totals and scales the label nutrients', () {

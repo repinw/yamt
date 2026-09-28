@@ -88,6 +88,9 @@ class DiaryEntryLabelSection extends ConsumerWidget {
   }
 
   static String _eatenHeader(AppLocalizations l10n, CalorieEntry entry) {
+    if (entry.isQuickEntry) {
+      return l10n.diaryQuickEntryValuesHeader;
+    }
     final number = NumberFormat.decimalPattern(l10n.localeName)
       ..maximumFractionDigits = 1;
     if (entry.isCombined) {

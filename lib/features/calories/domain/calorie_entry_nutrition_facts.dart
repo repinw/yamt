@@ -1,10 +1,10 @@
 import 'package:yamt/core/domain/nutrition_facts.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 
-/// Label nutrients of [entry] per 100 g or ml, or null for a bundle, which
-/// knows only its totals.
+/// Label nutrients of [entry] per 100 g or ml, or null for a bundle or a
+/// quick entry, which know only their totals.
 NutritionFacts? calorieEntryPer100Facts(CalorieEntry entry) {
-  if (entry.isBundle) {
+  if (entry.isBundle || entry.isQuickEntry) {
     return null;
   }
   final details = entry.nutrientDetails;

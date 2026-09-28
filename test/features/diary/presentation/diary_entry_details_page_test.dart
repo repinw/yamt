@@ -23,6 +23,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_stock_adjustment.dart';
+import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_entry_actions_card.dart';
@@ -92,6 +93,20 @@ CalorieEntry _preparedMeal() {
     loggedAt: loggedAt,
     createdAt: loggedAt,
     updatedAt: loggedAt,
+  );
+}
+
+CalorieEntry _quickEntry() {
+  final loggedAt = DateTime(2026, 2, 25, 15);
+  return buildQuickCalorieEntry(
+    id: 'entry-1',
+    userId: 'user-1',
+    name: 'Kuchen',
+    mealType: MealType.snack,
+    loggedAt: loggedAt,
+    now: loggedAt,
+    kcal: 350,
+    fat: 18,
   );
 }
 
@@ -450,6 +465,17 @@ void main() {
     expect(find.text('150 g'), findsOneWidget);
     expect(find.byKey(DiaryEntryActionsCard.eatAgainKey), findsNothing);
     expect(find.byKey(DiaryEntryActionsCard.removeKey), findsOneWidget);
+  });
+
+  testWidgets('shows a quick entry with its typed values only', (tester) async {
+    await _open(tester, [_quickEntry()], locale: const Locale('de'));
+
+    expect(find.text('Kuchen'), findsOneWidget);
+    expect(find.text('Gegessen'), findsOneWidget);
+    expect(find.textContaining('Je 100'), findsNothing);
+    expect(find.text('100 g'), findsNothing);
+    expect(find.byKey(EatAmountRuler.fieldKey), findsNothing);
+    expect(find.byKey(DiaryEntryActionsCard.eatAgainKey), findsOneWidget);
   });
 
   testWidgets('shows a message for a missing entry', (tester) async {
