@@ -100,7 +100,7 @@ void main() {
       isOwnHousehold: false,
       interact: () async {
         expect(find.text('Delete household?'), findsOneWidget);
-        await tester.tap(find.text('Cancel'));
+        await tester.tap(find.byKey(HouseholdLeaveDialog.cancelKey));
         await tester.pumpAndSettle();
       },
     );

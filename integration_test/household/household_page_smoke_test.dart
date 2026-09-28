@@ -77,7 +77,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('Cancel'));
+    await tester.tap(find.byKey(HouseholdLeaveDialog.cancelKey));
     await _pumpVisibleStep(tester);
     expect(find.byType(HouseholdLeaveDialog), findsNothing);
     expect(tester.takeException(), isNull);

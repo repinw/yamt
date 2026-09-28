@@ -42,6 +42,9 @@ class HouseholdLeaveDialog extends StatefulWidget {
   /// Key of the confirm button.
   static const confirmKey = Key('household_leave_confirm');
 
+  /// Key of the cancel button.
+  static const cancelKey = Key('household_leave_cancel');
+
   /// Key of the choice of [uid] as the next admin.
   static Key successorKey(String uid) =>
       ValueKey<String>('household_leave_successor_$uid');
@@ -128,6 +131,7 @@ class _HouseholdLeaveDialogState extends State<HouseholdLeaveDialog> {
       ),
       actions: [
         TextButton(
+          key: HouseholdLeaveDialog.cancelKey,
           onPressed: () => Navigator.of(context).pop(),
           child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
         ),
