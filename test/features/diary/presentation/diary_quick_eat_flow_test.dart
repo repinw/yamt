@@ -13,8 +13,13 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/'
+    'diary_quick_entry_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/diary/presentation/diary_quick_entry_page.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_quick_entry_label.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/application/'
@@ -22,11 +27,15 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_when_menu.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../calories/support/fake_calories_repositories.dart';
 import '../support/diary_dashboard_test_support.dart';
+import '../support/diary_quick_entry_test_support.dart';
 
 void main() {
   testWidgets('manual quick-eat sources push hub with diary route args', (
@@ -78,6 +87,70 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('loggedDay:$expectedDay'), findsOneWidget);
+  });
+
+  testWidgets('quick entry opens the AI estimate for its day and meal', (
+    tester,
+  ) async {
+    final calorieLog = FakeCalorieLogRepository();
+    addTearDown(calorieLog.dispose);
+    await tester.pumpWidget(
+      _RouteHarness(
+        source: DiaryQuickEatSource.quickEntry,
+        selectedDay: DateTime(2026, 9, 26),
+        overrides: quickEntryOverrides(calorieLog),
+      ),
+    );
+
+    await tester.tap(find.byKey(_openFlowButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(EatWhenMenu.buttonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.widgetWithText(CheckedPopupMenuItem<Object>, 'Snack'),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryQuickEntryPage.aiButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryQuickEntryPage), findsNothing);
+    expect(find.text('intent:ai'), findsOneWidget);
+    expect(find.text('mode:diary'), findsOneWidget);
+    expect(find.text('mealType:${MealType.snack.jsonValue}'), findsOneWidget);
+    expect(find.text('loggedDay:2026-09-26'), findsOneWidget);
+  });
+
+  testWidgets('a logged quick entry can be undone from the diary', (
+    tester,
+  ) async {
+    final calorieLog = FakeCalorieLogRepository();
+    addTearDown(calorieLog.dispose);
+    await tester.pumpWidget(
+      _RouteHarness(
+        source: DiaryQuickEatSource.quickEntry,
+        selectedDay: DateTime(2026, 9, 26),
+        overrides: quickEntryOverrides(calorieLog),
+      ),
+    );
+
+    await tester.tap(find.byKey(_openFlowButtonKey));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(DiaryQuickEntryLabel.valueKey(DiaryQuickEntryValue.kcal)),
+      '300',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(DiaryQuickEntryPage.confirmKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryQuickEntryPage), findsNothing);
+    expect(calorieLog.entries.single.isQuickEntry, isTrue);
+    expect(find.text('Added to diary'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(calorieLog.entries, isEmpty);
   });
 
   testWidgets(
@@ -366,10 +439,13 @@ int _stageCallCount = 0;
 final _discardedPendingIds = <String>[];
 
 class _RouteHarness extends StatelessWidget {
-  const new({required this.source, required this.selectedDay});
+  const new({required this.source, required this.selectedDay, this.overrides});
 
   final DiaryQuickEatSource source;
   final DateTime selectedDay;
+
+  /// Provider overrides in place of the loaded dashboard.
+  final List<Override>? overrides;
 
   @override
   Widget build(BuildContext context) {
@@ -407,7 +483,7 @@ class _RouteHarness extends StatelessWidget {
     );
 
     return ProviderScope(
-      overrides: [_dashboardOverrideFor(selectedDay)],
+      overrides: overrides ?? [_dashboardOverrideFor(selectedDay)],
       child: MaterialApp.router(
         routerConfig: router,
         locale: const Locale('en'),

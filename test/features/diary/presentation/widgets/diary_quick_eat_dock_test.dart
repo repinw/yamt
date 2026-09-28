@@ -2,22 +2,25 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/diary/presentation/diary_quick_entry_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../../calories/support/fake_calories_repositories.dart';
+import '../../support/diary_quick_entry_test_support.dart';
 
 void main() {
   Future<void> pumpDock(WidgetTester tester, {required ThemeData theme}) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
+    final calorieLog = FakeCalorieLogRepository();
+    addTearDown(calorieLog.dispose);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          clockProvider.overrideWithValue(() => DateTime(2026, 4, 27)),
-        ],
+        overrides: quickEntryOverrides(calorieLog),
         child: MaterialApp(
           theme: theme,
           locale: const Locale('de'),
@@ -35,7 +38,7 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('shows four equal tools, each with its word', (tester) async {
+  testWidgets('shows five equal tools, each with its word', (tester) async {
     await pumpDock(tester, theme: AppTheme.dark());
 
     for (final source in DiaryQuickEatSource.values) {
@@ -44,7 +47,7 @@ void main() {
         findsOneWidget,
       );
     }
-    for (final word in ['VORRAT', 'SUCHE', 'KI', 'BARCODE']) {
+    for (final word in ['VORRAT', 'SUCHE', 'KI', 'BARCODE', 'SCHNELL']) {
       expect(find.text(word), findsOneWidget);
     }
     final widths = {
@@ -54,6 +57,20 @@ void main() {
             .width,
     };
     expect(widths, hasLength(1));
+  });
+
+  testWidgets('the quick tool opens the quick entry page', (tester) async {
+    await pumpDock(tester, theme: AppTheme.dark());
+
+    await tester.tap(
+      find.byKey(
+        DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.quickEntry),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryQuickEntryPage), findsOneWidget);
+    expect(find.text('Schnelleintrag'), findsOneWidget);
   });
 
   testWidgets('fits its declared height in light mode', (tester) async {
