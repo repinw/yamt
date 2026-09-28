@@ -11,6 +11,8 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_inventory_conflict_resolver.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_inventory_requirement.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_action_button.dart';
 import 'package:yamt/features/cooking_flow/presentation/'

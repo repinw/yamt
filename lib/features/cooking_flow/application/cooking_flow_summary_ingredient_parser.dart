@@ -5,9 +5,6 @@ import 'package:yamt/features/cooking_flow/application/'
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
-export 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_parser_locale.dart'
-    show cookingFlowPieceUnitCode;
 
 /// Parsed ingredient label and amount label.
 

@@ -5,9 +5,6 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_parser_locale.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
-export 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_parser_locale.dart'
-    show cookingFlowPieceUnitCode;
 
 /// Canonical unit code for tablespoon-measured amounts (EL, tbsp).
 const String cookingFlowTablespoonUnitCode = 'el';

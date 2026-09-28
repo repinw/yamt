@@ -2,10 +2,10 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_inventory_requirement.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_parser_locale.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
-export 'package:yamt/features/cooking_flow/application/'
-    'cooking_flow_inventory_requirement.dart';
 
 /// Type of conflict between recipe requirement and selected inventory.
 enum CookingFlowInventoryConflictKind {

@@ -1,6 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_parser_locale.dart';
+import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_builder.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_summary_ingredient_parser.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';

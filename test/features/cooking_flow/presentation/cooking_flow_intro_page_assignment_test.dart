@@ -5,6 +5,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_intro_inventory_models.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_inventory_requirement.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_parser_locale.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_intro_page_assignment.dart';

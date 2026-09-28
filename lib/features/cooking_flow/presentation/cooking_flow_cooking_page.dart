@@ -6,6 +6,8 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_instruction_builder.dart';
+import 'package:yamt/features/cooking_flow/application/'
+    'cooking_flow_instruction_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_on_the_fly_adjustment_card.dart';

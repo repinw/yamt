@@ -9,7 +9,6 @@ import 'package:yamt/features/cooking_flow/application/'
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_parser_locale.dart';
 
-export 'cooking_flow_instruction_match_bounds.dart';
 
 /// Builds instruction segments with highlighted and replaced ingredient spans.
 List<CookingFlowInstructionSegment> buildInstructionSegments({

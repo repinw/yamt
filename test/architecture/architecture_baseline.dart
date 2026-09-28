@@ -462,22 +462,6 @@ const architectureBaseline = <String, Map<String, int>>{
   },
   'export': {
     'lib/core/widgets/text_voice_search_bar/text_voice_search_bar.dart': 1,
-    'lib/features/cooking_flow/application/cooking_flow_instruction_builder.dart':
-        1,
-    'lib/features/cooking_flow/application/cooking_flow_instruction_inventory.dart':
-        1,
-    'lib/features/cooking_flow/application/cooking_flow_instruction_matcher.dart':
-        1,
-    'lib/features/cooking_flow/application/cooking_flow_intro_inventory_models.dart':
-        2,
-    'lib/features/cooking_flow/application/cooking_flow_inventory_conflict_resolver.dart':
-        1,
-    'lib/features/cooking_flow/application/cooking_flow_inventory_requirement.dart':
-        1,
-    'lib/features/cooking_flow/application/cooking_flow_summary_builder.dart':
-        1,
-    'lib/features/cooking_flow/application/cooking_flow_summary_ingredient_parser.dart':
-        1,
     'lib/features/diary/presentation/controllers/diary_day_dashboard_controller.dart':
         1,
     'lib/features/inventory/data/global_barcode_candidate_repository.dart': 1,

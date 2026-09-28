@@ -12,7 +12,6 @@ import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
-export 'cooking_flow_instruction_models.dart';
 
 /// Builds localized cooking instruction steps and ingredient highlights.
 List<CookingFlowInstructionStep> buildCookingFlowInstructionSteps({
