@@ -87,7 +87,7 @@ wait_for_boot() {
     boot_completed="$(
       "${adb_bin}" -s "${device_id}" shell getprop sys.boot_completed \
         2>/dev/null | tr -d '\r'
-    )"
+    )" || true
     if [[ "${boot_completed}" == "1" ]]; then
       break
     fi
