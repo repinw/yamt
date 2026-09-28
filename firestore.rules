@@ -57,14 +57,20 @@ service cloud.firestore {
 
     function isValidInvite(code, householdId) {
       let invite = get(/databases/$(database)/documents/household_invites/$(code));
-      return invite.data.householdId == householdId
+      return invite.data.keys().hasOnly([
+          'householdId',
+          'expiresAt',
+          'wrapped_household_key',
+        ])
+        && invite.data.householdId == householdId
         && invite.data.expiresAt > request.time;
     }
 
-    // The households subtree has its own rules. The generic rule at the end
-    // must not open it for a document that only carries a userId field.
+    // Households and their invites have their own rules. The generic rule at
+    // the end must not open them for a document that only carries a userId
+    // field: a forged invite would let anybody join any household.
     function isOutsideHouseholds(path) {
-      return path[0] != 'households';
+      return !(path[0] in ['households', 'household_invites']);
     }
 
     function isOptionalString(data, key) {
@@ -936,7 +942,8 @@ service cloud.firestore {
           && request.resource.data.role == 'member'
           && request.resource.data.joined_at == request.time
           && request.resource.data.invite_code is string
-          && isValidInvite(request.resource.data.invite_code, householdId);
+          && isValidInvite(request.resource.data.invite_code, householdId)
+          && exists(householdPath(householdId));
         // Only the admin changes roles. Whoever becomes admin replaces the
         // admin in the same write: the admin turns member or leaves.
         allow update: if isHouseholdAdmin(householdId)

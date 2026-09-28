@@ -77,13 +77,14 @@ void main() {
           "&& request.resource.data.role == 'member' "
           '&& request.resource.data.joined_at == request.time '
           '&& request.resource.data.invite_code is string '
-          '&& isValidInvite(request.resource.data.invite_code, householdId);',
+          '&& isValidInvite(request.resource.data.invite_code, householdId) '
+          '&& exists(householdPath(householdId));',
         ),
       );
       expect(
         compactRules,
         contains(
-          'return invite.data.householdId == householdId '
+          '&& invite.data.householdId == householdId '
           '&& invite.data.expiresAt > request.time;',
         ),
       );
@@ -213,12 +214,20 @@ void main() {
       );
     });
 
-    test('the generic userId rule stays out of households', () {
+    test('the generic userId rule stays out of households and invites', () {
       expect(
         compactRules,
         contains(
           'function isOutsideHouseholds(path) { '
-          "return path[0] != 'households'; }",
+          "return !(path[0] in ['households', 'household_invites']); }",
+        ),
+      );
+      expect(
+        compactRules,
+        contains(
+          'return invite.data.keys().hasOnly([ '
+          "'householdId', 'expiresAt', 'wrapped_household_key', ]) "
+          '&& invite.data.householdId == householdId',
         ),
       );
       expect(
