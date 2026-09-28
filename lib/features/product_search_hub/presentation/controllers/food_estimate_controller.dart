@@ -5,6 +5,11 @@ import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
 
 part 'food_estimate_controller.g.dart';
 
+/// Most photos one estimate sends to the AI. A second photo helps when it
+/// shows something new, such as the package next to the plate; more cost
+/// tokens without a better estimate.
+const foodEstimateMaxPhotos = 2;
+
 /// Input and analysis state of the AI food estimate page.
 class FoodEstimateState {
   /// Creates the state.
@@ -18,6 +23,9 @@ class FoodEstimateState {
 
   /// The latest estimate; loading while the AI works.
   final AsyncValue<FoodEstimate?> estimate;
+
+  /// Whether another photo fits.
+  bool get canAddPhoto => photos.length < foodEstimateMaxPhotos;
 
   /// Copies the state.
   FoodEstimateState copyWith({
@@ -39,11 +47,14 @@ class FoodEstimateController extends _$FoodEstimateController {
 
   /// Adds a camera photo or gallery photos after the existing ones.
   Future<void> addPhotos({required bool fromCamera}) async {
+    if (!state.canAddPhoto) return;
     final photos = await ref
         .read(foodEstimateRepositoryProvider)
         .loadPhotos(fromCamera: fromCamera);
     if (!ref.mounted || photos.isEmpty) return;
-    state = state.copyWith(photos: [...state.photos, ...photos]);
+    state = state.copyWith(
+      photos: [...state.photos, ...photos].take(foodEstimateMaxPhotos).toList(),
+    );
   }
 
   /// Removes the photo at [index].

@@ -26,7 +26,7 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_ai_search_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'food_estimate_photo_strip.dart';
+    'food_estimate_photo_input.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -114,8 +114,6 @@ class _ManualProductAiSearchPageState
       confirmButtonKey: ManualProductAiSearchPage.analyzeKey,
       onConfirm: hasInput && !isLoading ? () => unawaited(_analyze()) : null,
       cancelButtonKey: const Key('food_estimate_close_button'),
-      secondaryLabel: l10n.foodEstimateCamera,
-      onSecondary: isLoading ? null : () => _addPhotos(fromCamera: true),
       children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -134,9 +132,13 @@ class _ManualProductAiSearchPageState
             ),
           ],
         ),
-        FoodEstimatePhotoStrip(
+        FoodEstimatePhotoInput(
           photos: [for (final photo in state.photos) photo.bytes],
-          onAdd: isLoading ? null : () => _addPhotos(fromCamera: false),
+          canAddPhoto: state.canAddPhoto,
+          onCamera: isLoading ? null : () => _addPhotos(fromCamera: true),
+          onGallery: isLoading || !state.canAddPhoto
+              ? null
+              : () => _addPhotos(fromCamera: false),
           onRemove: (index) => ref
               .read(foodEstimateControllerProvider.notifier)
               .removePhoto(index),

@@ -4698,9 +4698,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodEstimateHint => 'Photo, text, or both. One is enough.';
 
   @override
-  String get foodEstimateAddPhoto => 'Photo';
-
-  @override
   String get foodEstimateDescriptionLabel => 'Description';
 
   @override
@@ -4718,9 +4715,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get foodEstimateChipHalfEaten => 'half eaten';
-
-  @override
-  String get foodEstimateCamera => 'Camera';
 
   @override
   String get foodEstimateAnalyze => 'Analyze';
@@ -4756,6 +4750,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get foodEstimateLevelRich => 'rich';
+
+  @override
+  String get foodEstimateTakePhoto => 'Take a photo';
+
+  @override
+  String get foodEstimateTakePhotoHint => 'Plate, package or menu';
+
+  @override
+  String get foodEstimateFromGallery => 'or pick from gallery';
+
+  @override
+  String get foodEstimateAnotherPhoto => 'One more';
 
   @override
   String foodEstimateRemovePhoto(int index) {

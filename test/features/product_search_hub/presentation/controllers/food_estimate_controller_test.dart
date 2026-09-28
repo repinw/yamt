@@ -60,26 +60,28 @@ ProviderContainer _container(FoodEstimateRepository repository) {
 }
 
 void main() {
-  test('adds and removes photos', () async {
+  test('adds and removes photos, two at most', () async {
     final repository = _FakeFoodEstimateRepository(() async => _estimate)
-      ..nextPhotos = [_photo(1), _photo(2)];
+      ..nextPhotos = [_photo(1), _photo(2), _photo(9)];
     final container = _container(repository);
     final notifier = container.read(foodEstimateControllerProvider.notifier);
+    List<int> bytes() => [
+      for (final photo in container.read(foodEstimateControllerProvider).photos)
+        photo.bytes.single,
+    ];
 
     await notifier.addPhotos(fromCamera: false);
+    expect(bytes(), [1, 2]);
+
     repository.nextPhotos = [_photo(3)];
     await notifier.addPhotos(fromCamera: true);
+    expect(repository.photoSources, [false]);
+
     notifier.removePhoto(1);
+    await notifier.addPhotos(fromCamera: true);
 
     expect(repository.photoSources, [false, true]);
-
-    expect(
-      container
-          .read(foodEstimateControllerProvider)
-          .photos
-          .map((photo) => photo.bytes.single),
-      [1, 3],
-    );
+    expect(bytes(), [1, 3]);
   });
 
   test('analyze sends the photos and goes through loading', () async {

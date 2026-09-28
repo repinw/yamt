@@ -8175,12 +8175,6 @@ abstract class AppLocalizations {
   /// **'Photo, text, or both. One is enough.'**
   String get foodEstimateHint;
 
-  /// No description provided for @foodEstimateAddPhoto.
-  ///
-  /// In en, this message translates to:
-  /// **'Photo'**
-  String get foodEstimateAddPhoto;
-
   /// No description provided for @foodEstimateDescriptionLabel.
   ///
   /// In en, this message translates to:
@@ -8216,12 +8210,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'half eaten'**
   String get foodEstimateChipHalfEaten;
-
-  /// No description provided for @foodEstimateCamera.
-  ///
-  /// In en, this message translates to:
-  /// **'Camera'**
-  String get foodEstimateCamera;
 
   /// No description provided for @foodEstimateAnalyze.
   ///
@@ -8288,6 +8276,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'rich'**
   String get foodEstimateLevelRich;
+
+  /// No description provided for @foodEstimateTakePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get foodEstimateTakePhoto;
+
+  /// No description provided for @foodEstimateTakePhotoHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Plate, package or menu'**
+  String get foodEstimateTakePhotoHint;
+
+  /// No description provided for @foodEstimateFromGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'or pick from gallery'**
+  String get foodEstimateFromGallery;
+
+  /// No description provided for @foodEstimateAnotherPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'One more'**
+  String get foodEstimateAnotherPhoto;
 
   /// No description provided for @foodEstimateRemovePhoto.
   ///

@@ -18,7 +18,9 @@ part 'food_estimate_repository.g.dart';
 const foodEstimateTemplateId = 'food-estimate-template';
 
 const _requestTimeout = Duration(seconds: 90);
-const _maxPhotoWidth = 1600.0;
+// Food reads well at this size, and each photo costs AI tokens that grow
+// with its pixels.
+const _maxPhotoWidth = 1024.0;
 const _photoQuality = 80;
 
 /// Runs [foodEstimateTemplateId] with template [inputs] and returns the

@@ -96,6 +96,15 @@ abstract final class AppFoodLabel {
   /// last. Each quarter is a lighter step of the accent.
   static const List<double> kcalQuarterAlphas = [1, 0.74, 0.52, 0.34];
 
+  /// Height of the camera tile that opens the AI food estimate.
+  static const double cameraTile = 180;
+
+  /// Round camera badge in the camera tile.
+  static const double cameraBadge = 64;
+
+  /// Round camera badge in the tile that adds one more photo.
+  static const double cameraBadgeSmall = 40;
+
   /// Height of a diary macro bar.
   static const double macroBar = 8;
 

@@ -24,7 +24,7 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_ai_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'food_estimate_photo_strip.dart';
+    'food_estimate_photo_input.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -72,11 +72,13 @@ class _FakeFoodEstimateRepository implements FoodEstimateRepository {
   final Future<FoodEstimate> Function(String description) _onLoad;
   final List<String> descriptions = <String>[];
   final List<int> sentPhotoCounts = <int>[];
+  final List<bool> photoSources = <bool>[];
 
   @override
-  Future<List<FoodEstimatePhoto>> loadPhotos({
-    required bool fromCamera,
-  }) async => [(mimeType: 'image/png', bytes: _pixel)];
+  Future<List<FoodEstimatePhoto>> loadPhotos({required bool fromCamera}) async {
+    photoSources.add(fromCamera);
+    return [(mimeType: 'image/png', bytes: _pixel)];
+  }
 
   @override
   Future<FoodEstimate> loadEstimate({
@@ -221,13 +223,50 @@ void main() {
     final repository = _FakeFoodEstimateRepository((_) async => _doener);
     await _pumpPage(tester, repository: repository, onResult: (_) {});
 
-    await tester.tap(find.byKey(FoodEstimatePhotoStrip.addKey));
+    await tester.tap(find.byKey(FoodEstimatePhotoInput.galleryKey));
     await tester.pumpAndSettle();
 
     expect(find.byTooltip('Remove photo 1'), findsOneWidget);
     expect(_analyzeButton(tester).onPressed, isNotNull);
     await _analyze(tester);
     expect(repository.sentPhotoCounts, [1]);
+  });
+
+  testWidgets('the camera comes first and offers one more after a photo', (
+    tester,
+  ) async {
+    final repository = _FakeFoodEstimateRepository((_) async => _doener);
+    await _pumpPage(tester, repository: repository, onResult: (_) {});
+
+    expect(find.text('Take a photo'), findsOneWidget);
+    expect(find.text('or pick from gallery'), findsOneWidget);
+
+    await tester.tap(find.byKey(FoodEstimatePhotoInput.cameraKey));
+    await tester.pumpAndSettle();
+
+    expect(repository.photoSources, [true]);
+    expect(find.text('Take a photo'), findsNothing);
+    expect(find.text('One more'), findsOneWidget);
+    expect(find.text('or pick from gallery'), findsOneWidget);
+    expect(_analyzeButton(tester).onPressed, isNotNull);
+  });
+
+  testWidgets('two photos are the most, then only analyzing is left', (
+    tester,
+  ) async {
+    final repository = _FakeFoodEstimateRepository((_) async => _doener);
+    await _pumpPage(tester, repository: repository, onResult: (_) {});
+
+    await tester.tap(find.byKey(FoodEstimatePhotoInput.cameraKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FoodEstimatePhotoInput.cameraKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byTooltip('Remove photo 2'), findsOneWidget);
+    expect(find.byKey(FoodEstimatePhotoInput.cameraKey), findsNothing);
+    expect(find.byKey(FoodEstimatePhotoInput.galleryKey), findsNothing);
+    await _analyze(tester);
+    expect(repository.sentPhotoCounts, [2]);
   });
 
   testWidgets('dictation fills the description', (tester) async {
