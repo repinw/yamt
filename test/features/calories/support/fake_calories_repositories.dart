@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/'
     'calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
@@ -437,6 +439,21 @@ class FakeCalorieProductCacheRepository
     }
     overrides[profile.barcode] = profile;
     savedOverrideReasons.add(reason);
+    return true;
+  }
+}
+
+class FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
+  new([this.state = const BurnWeekRunState.initial()]);
+
+  BurnWeekRunState state;
+
+  @override
+  Future<BurnWeekRunState> readState() async => state;
+
+  @override
+  Future<bool> saveState(BurnWeekRunState nextState) async {
+    state = nextState;
     return true;
   }
 }

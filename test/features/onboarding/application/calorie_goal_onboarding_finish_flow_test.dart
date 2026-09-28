@@ -26,15 +26,13 @@ class _Harness {
 
   final ProviderContainer container;
   final FakeCalorieSettingsRepository settingsRepository;
-  final _FakeBurnWeekRunStateRepository runStateRepository;
+  final FakeBurnWeekRunStateRepository runStateRepository;
 }
 
 Future<_Harness> _buildHarness() async {
   final settingsRepository = FakeCalorieSettingsRepository();
   final logRepository = FakeCalorieLogRepository();
-  final runStateRepository = _FakeBurnWeekRunStateRepository(
-    const BurnWeekRunState.initial(),
-  );
+  final runStateRepository = FakeBurnWeekRunStateRepository();
   final container = ProviderContainer(
     overrides: [
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
@@ -155,19 +153,4 @@ void main() {
       },
     );
   });
-}
-
-class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  new(this.state);
-
-  BurnWeekRunState state;
-
-  @override
-  Future<BurnWeekRunState> readState() async => state;
-
-  @override
-  Future<bool> saveState(BurnWeekRunState nextState) async {
-    state = nextState;
-    return true;
-  }
 }

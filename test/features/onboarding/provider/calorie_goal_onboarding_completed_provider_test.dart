@@ -1,15 +1,12 @@
 import 'dart:async';
 
-import 'package:cryptography/cryptography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/onboarding/domain/'
@@ -17,6 +14,7 @@ import 'package:yamt/features/onboarding/domain/'
 import 'package:yamt/features/onboarding/provider/'
     'calorie_goal_onboarding_completed_provider.dart';
 
+import '../../../helpers/auth_user_data_key_session.dart';
 import '../../../helpers/memory_app_preferences.dart';
 
 class _MockUser extends Mock implements User;
@@ -149,7 +147,7 @@ void main() {
         overrides: [
           appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
           authStateChangesProvider.overrideWith((ref) => authController.stream),
-          userDataKeySessionProvider.overrideWith(_AuthUserDataKeySession.new),
+          userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
           calorieSettingsRepositoryProvider.overrideWith((ref) {
             final uid = ref.watch(userDataCipherProvider)?.uid;
             return _RecordingCalorieSettingsRepository(
@@ -188,7 +186,7 @@ ProviderContainer _container({
       appPreferencesProvider.overrideWithValue(preferences),
       authStateChangesProvider.overrideWith((ref) => _authStateStream(user)),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      userDataKeySessionProvider.overrideWith(_AuthUserDataKeySession.new),
+      userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
     ],
   );
 }
@@ -207,23 +205,6 @@ Future<bool> _completion(ProviderContainer container) {
 Future<void> _settle() async {
   for (var i = 0; i < 10; i += 1) {
     await Future<void>.delayed(Duration.zero);
-  }
-}
-
-/// Follows the auth state like the real session, without key storage.
-class _AuthUserDataKeySession extends UserDataKeySession {
-  @override
-  Future<UserDataKeyState> build() async {
-    final user = await ref.watch(authStateChangesProvider.future);
-    if (user == null) {
-      return const UserDataKeySignedOut();
-    }
-    return UserDataKeyReady(
-      uid: user.uid,
-      cipher: PayloadCipher(SecretKey(List<int>.filled(32, 1))),
-      recoveryKey: null,
-      recoveryKeyConfirmed: true,
-    );
   }
 }
 

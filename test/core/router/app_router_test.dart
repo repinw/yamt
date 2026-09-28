@@ -53,6 +53,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_route_args.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
+import '../../helpers/auth_user_data_key_session.dart';
 import '../../helpers/memory_app_preferences.dart';
 
 class _MockUser extends Mock implements User;
@@ -208,7 +209,7 @@ ProviderContainer _createContainerWithAuth(
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
       userDataKeySessionProvider.overrideWith(
         dataKeyState == null
-            ? _AuthUserDataKeySession.new
+            ? AuthUserDataKeySession.new
             : () => _FakeUserDataKeySession(dataKeyState),
       ),
     ],
@@ -1290,22 +1291,6 @@ void main() {
     );
     expect(find.text('Welcome to YAMT'), findsOneWidget);
   });
-}
-
-class _AuthUserDataKeySession extends UserDataKeySession {
-  @override
-  Future<UserDataKeyState> build() async {
-    final user = await ref.watch(authStateChangesProvider.future);
-    if (user == null) {
-      return const UserDataKeySignedOut();
-    }
-    return UserDataKeyReady(
-      uid: user.uid,
-      cipher: PayloadCipher(SecretKey(List<int>.filled(32, 1))),
-      recoveryKey: null,
-      recoveryKeyConfirmed: true,
-    );
-  }
 }
 
 class _FakeUserDataKeySession extends UserDataKeySession {

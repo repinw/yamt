@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cryptography/cryptography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,13 +7,11 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -31,6 +28,7 @@ import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/helpers/auth_user_data_key_session.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
@@ -40,23 +38,6 @@ class _MockUser extends Mock implements User;
 class _MockUserMetadata extends Mock implements UserMetadata;
 
 class _MockUserCredential extends Mock implements UserCredential;
-
-/// Follows the auth state like the real session, without key storage.
-class _AuthUserDataKeySession extends UserDataKeySession {
-  @override
-  Future<UserDataKeyState> build() async {
-    final user = await ref.watch(authStateChangesProvider.future);
-    if (user == null) {
-      return const UserDataKeySignedOut();
-    }
-    return UserDataKeyReady(
-      uid: user.uid,
-      cipher: PayloadCipher(SecretKey(List<int>.filled(32, 1))),
-      recoveryKey: null,
-      recoveryKeyConfirmed: true,
-    );
-  }
-}
 
 class _CalorieOnboardingIntegrationHarness {
   const new({
@@ -358,7 +339,7 @@ _CalorieOnboardingIntegrationHarness _buildHarness({required bool signedIn}) {
         yield currentUser;
         yield* authController.stream;
       }),
-      userDataKeySessionProvider.overrideWith(_AuthUserDataKeySession.new),
+      userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
       firebaseAuthProvider.overrideWithValue(firebaseAuth),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),

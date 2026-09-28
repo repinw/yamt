@@ -2,12 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_state.dart';
-import 'package:yamt/features/onboarding/application/'
-    'calorie_goal_onboarding_finish_flow.dart';
 import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
 import 'package:yamt/features/onboarding/presentation/controllers/'
@@ -19,6 +20,7 @@ import 'package:yamt/features/onboarding/presentation/models/'
 
 import '../../../../helpers/fake_guest_account.dart';
 import '../../../../helpers/memory_app_preferences.dart';
+import '../../../calories/support/fake_calories_repositories.dart';
 
 CalorieGoalCalculatorFormState _formState({
   String weight = '80',
@@ -132,22 +134,40 @@ void main() {
   group('finish', () {
     late FakeGuestAccount account;
     late MemoryAppPreferences preferences;
-    late _RecordingFinishFlow finishFlow;
+    late FakeCalorieSettingsRepository settingsRepository;
 
     ProviderContainer finishContainer({bool saves = true}) {
       preferences = MemoryAppPreferences();
-      finishFlow = _RecordingFinishFlow(saves: saves);
+      settingsRepository = FakeCalorieSettingsRepository()
+        ..saveShouldFail = !saves;
+      final logRepository = FakeCalorieLogRepository();
       final container = ProviderContainer(
         overrides: [
           clockProvider.overrideWithValue(() => _now),
           appPreferencesProvider.overrideWithValue(preferences),
-          calorieGoalOnboardingFinishFlowProvider.overrideWithValue(finishFlow),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          burnWeekRunStateRepositoryProvider.overrideWithValue(
+            FakeBurnWeekRunStateRepository(),
+          ),
           ...account.overrides,
         ],
       );
       addTearDown(container.dispose);
       addTearDown(account.dispose);
+      addTearDown(settingsRepository.dispose);
+      addTearDown(logRepository.dispose);
       return container;
+    }
+
+    Future<List<DateTime>> savedGoalStarts() async {
+      final settings = await settingsRepository.readSettings();
+      return [
+        for (final goal in settings.goalHistory)
+          goal.effectiveCountingStartDate,
+      ];
     }
 
     Future<bool> finish(ProviderContainer container) {
@@ -171,7 +191,7 @@ void main() {
 
       expect(finished, isTrue);
       expect(account.repository.guestCalls, 1);
-      expect(finishFlow.requests.single.startDate, DateTime(2026, 9, 24));
+      expect(await savedGoalStarts(), [DateTime(2026, 9, 24)]);
       expect(
         preferences.getStringSync(
           calorieGoalOnboardingKeyForUser(FakeGuestAccount.guestUserId),
@@ -205,7 +225,7 @@ void main() {
       final finished = await finish(container);
 
       expect(finished, isFalse);
-      expect(finishFlow.requests, isEmpty);
+      expect(await savedGoalStarts(), isEmpty);
       final state = container.read(calorieIntroControllerProvider);
       expect(state.isSaving, isFalse);
       expect(state.allowRouteExit, isFalse);
@@ -229,17 +249,4 @@ void main() {
       expect(state.allowRouteExit, isFalse);
     });
   });
-}
-
-class _RecordingFinishFlow implements CalorieGoalOnboardingFinishFlow {
-  new({required this.saves});
-
-  final bool saves;
-  final requests = <CalorieGoalOnboardingFinishRequest>[];
-
-  @override
-  Future<bool> saveGoal(CalorieGoalOnboardingFinishRequest request) async {
-    requests.add(request);
-    return saves;
-  }
 }

@@ -10,7 +10,6 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -273,7 +272,7 @@ class _IntroHarness {
 
   final FakeGuestAccount guestAccount;
   final FakeCalorieSettingsRepository settingsRepository;
-  final _FakeBurnWeekRunStateRepository runStateRepository;
+  final FakeBurnWeekRunStateRepository runStateRepository;
   final GoRouter router;
 
   String get currentLocation => router.state.uri.path;
@@ -283,9 +282,7 @@ Future<_IntroHarness> _pumpIntro(WidgetTester tester, {DateTime? now}) async {
   _disableAnimations(tester);
   final settingsRepository = FakeCalorieSettingsRepository();
   final logRepository = FakeCalorieLogRepository();
-  final runStateRepository = _FakeBurnWeekRunStateRepository(
-    const BurnWeekRunState.initial(),
-  );
+  final runStateRepository = FakeBurnWeekRunStateRepository();
   addTearDown(settingsRepository.dispose);
   addTearDown(logRepository.dispose);
   final guestAccount = FakeGuestAccount();
@@ -419,21 +416,6 @@ Future<void> _tapFinish(WidgetTester tester) async {
   await tester.ensureVisible(finish);
   await tester.tap(finish);
   await tester.pumpAndSettle();
-}
-
-class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
-  new(this.state);
-
-  BurnWeekRunState state;
-
-  @override
-  Future<BurnWeekRunState> readState() async => state;
-
-  @override
-  Future<bool> saveState(BurnWeekRunState nextState) async {
-    state = nextState;
-    return true;
-  }
 }
 
 void _expectPageDoesNotScroll(WidgetTester tester, Finder content) {
