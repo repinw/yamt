@@ -146,6 +146,7 @@ CalorieWeekOverview _weekOverview({required DateTime selectedDay}) {
 CalorieEntry _entry({required String id, required DateTime day}) {
   final loggedAt = day.add(const Duration(hours: 8));
   return CalorieEntry(
+    isQuickEntry: false,
     id: id,
     userId: 'user-1',
     name: id,

@@ -55,8 +55,12 @@ state, and calorie-owned side effects from health or weight changes.
   `CalorieProductProfile` and `CalorieEntry` carry them; integrating features
   fill them when they log food.
 - `domain/calorie_entry_edits.dart` holds the pure rules for changing the
-  amount and logging an entry again. Every entry except a bundle can change
-  its amount.
+  amount and logging an entry again. Every entry except a bundle or a quick
+  entry can change its amount.
+- `domain/quick_calorie_entry.dart` builds a quick entry
+  (`CalorieEntry.isQuickEntry`): calories and macros typed in by hand, without
+  a food. The typed values are the totals; it counts as 100 g of itself, so it
+  has no real amount.
 - `application/calorie_entry_amount_edit_flow.dart` changes the amount of a
   stored entry. An entry logged from the inventory moves the stock with it
   through the `CalorieInventoryStockAdjuster` port, which inventory implements;

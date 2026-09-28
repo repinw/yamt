@@ -1284,6 +1284,7 @@ CalorieEntry _entry({
 }) {
   final loggedAt = day.add(const Duration(hours: 8));
   return CalorieEntry(
+    isQuickEntry: false,
     id: id,
     userId: 'user-1',
     name: 'Debug food',

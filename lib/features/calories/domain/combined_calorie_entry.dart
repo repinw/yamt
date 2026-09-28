@@ -54,6 +54,7 @@ CalorieEntry buildCombinedCalorieEntry({
     updatedAt: now,
     bundleComponents: components,
     nutrientDetails: nutrientDetails,
+    isQuickEntry: false,
   );
 }
 

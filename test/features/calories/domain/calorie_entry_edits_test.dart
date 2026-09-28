@@ -4,6 +4,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
+import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 
 void main() {
   final loggedAt = DateTime(2026, 2, 25, 8);
@@ -58,13 +59,28 @@ void main() {
     );
   }
 
-  test('amount is editable for every entry except bundles', () {
+  test('amount is editable for every entry except bundles and quick '
+      'entries', () {
     expect(canEditCalorieEntryAmount(entry()), isTrue);
     expect(
       canEditCalorieEntryAmount(entry(sourceInventoryItemId: 'inventory-1')),
       isTrue,
     );
     expect(canEditCalorieEntryAmount(bundle()), isFalse);
+    expect(
+      canEditCalorieEntryAmount(
+        buildQuickCalorieEntry(
+          id: 'quick-1',
+          userId: 'user-1',
+          name: 'Quick entry',
+          mealType: MealType.snack,
+          loggedAt: loggedAt,
+          now: loggedAt,
+          kcal: 300,
+        ),
+      ),
+      isFalse,
+    );
   });
 
   test('rescale scales totals to the new amount', () {

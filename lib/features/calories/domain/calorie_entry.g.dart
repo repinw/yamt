@@ -40,6 +40,7 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
   loggedAt: const FlexibleDateTimeConverter().fromJson(json['logged_at']),
   createdAt: const FlexibleDateTimeConverter().fromJson(json['created_at']),
   updatedAt: const FlexibleDateTimeConverter().fromJson(json['updated_at']),
+  isQuickEntry: json['is_quick_entry'] as bool,
   brand: json['brand'] as String?,
   imageUrl: json['image_url'] as String?,
   imageAssetId: json['image_asset_id'] as String?,
@@ -82,6 +83,7 @@ Map<String, dynamic> _$CalorieEntryToJson(
   'nutrient_details': const NullableCalorieNutrientDetailsConverter().toJson(
     instance.nutrientDetails,
   ),
+  'is_quick_entry': instance.isQuickEntry,
   'meal_type': _$MealTypeEnumMap[instance.mealType]!,
   'consumed_amount': const FlexibleDoubleConverter().toJson(
     instance.consumedAmount,

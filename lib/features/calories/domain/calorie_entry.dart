@@ -51,6 +51,7 @@ class CalorieEntry {
     required this.loggedAt,
     required this.createdAt,
     required this.updatedAt,
+    required this.isQuickEntry,
     this.brand,
     this.imageUrl,
     this.imageAssetId,
@@ -112,6 +113,7 @@ class CalorieEntry {
       sourceInventoryItemId: sourceInventoryItemId,
       sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
       nutrientDetails: nutrientDetails,
+      isQuickEntry: false,
     );
   }
 
@@ -163,6 +165,7 @@ class CalorieEntry {
       bundleConsumedPortions: bundleConsumedPortions,
       bundleTotalPortions: bundleTotalPortions,
       bundleComponents: bundleComponents,
+      isQuickEntry: false,
     );
   }
 
@@ -208,6 +211,7 @@ class CalorieEntry {
       loggedAt: loggedAt ?? now,
       createdAt: createdAt ?? now,
       updatedAt: updatedAt ?? now,
+      isQuickEntry: false,
     );
   }
 
@@ -256,6 +260,10 @@ class CalorieEntry {
   /// Nutrients per 100 beyond the macros, when the food source had them.
   @NullableCalorieNutrientDetailsConverter()
   final CalorieNutrientDetails? nutrientDetails;
+
+  /// Whether the user typed the calories and macros in by hand, without a
+  /// food behind them. Its totals are what was typed; it has no real amount.
+  final bool isQuickEntry;
 
   /// The meal type.
   @JsonKey(defaultValue: MealType.snack, unknownEnumValue: MealType.snack)
@@ -436,6 +444,7 @@ class CalorieEntry {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       nutrientDetails: nutrientDetails,
+      isQuickEntry: isQuickEntry,
     );
   }
 

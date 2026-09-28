@@ -135,6 +135,7 @@ void main() {
 DiaryDayDashboardData _dashboardData(DateTime day) {
   final loggedAt = day.add(const Duration(hours: 8));
   final entry = CalorieEntry(
+    isQuickEntry: false,
     id: 'entry-1',
     userId: 'user-1',
     name: 'Oats',
