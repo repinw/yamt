@@ -156,22 +156,25 @@ describe('deleteUserData (Firestore emulator)', () => {
     assert.deepEqual(await ids('household_invites'), []);
   });
 
-  it('deletes an own household without members found through the profile only', async () => {
-    await set('users/u', { householdId: 'joined', ownHouseholdId: 'own' });
-    await set('households/own', { created_at: joined(1) });
-    await set('households/own/inventory_items/i1', { name: 'x' });
-    await set('households/joined', { created_at: joined(1) });
-    await set('households/joined/members/a', { uid: 'a', role: 'admin', joined_at: joined(1) });
-    await set('households/joined/inventory_items/j1', { name: 'x' });
+  it('ignores forged household ids on the profile', async () => {
+    await set('users/u', {
+      householdId: 'victim/inventory_items/i1',
+      ownHouseholdId: 'victim',
+    });
+    await set('households/victim', { created_at: joined(1) });
+    await set('households/victim/members/a', { uid: 'a', role: 'admin', joined_at: joined(1) });
+    await set('households/victim/inventory_items/i1', { name: 'x' });
+    await set('households/victim/inventory_items/i1/nested/n1', { name: 'x' });
 
-    const summary = await deleteUserData(db, new FakeFileStore(), 'u');
+    const files = new FakeFileStore(['households/victim/recipes/1.jpg']);
+    const summary = await deleteUserData(db, files, 'u');
 
-    assert.equal(summary.householdsDeleted, 1);
-    assert.equal(summary.householdsLeft, 0);
-    assert.equal(await exists('households/own'), false);
-    assert.deepEqual(await subcollections('households/own'), []);
-    assert.deepEqual(await ids('households/joined/members'), ['a']);
-    assert.deepEqual(await ids('households/joined/inventory_items'), ['j1']);
+    assert.equal(summary.householdsDeleted, 0);
+    assert.equal(await exists('households/victim'), true);
+    assert.equal(await exists('households/victim/inventory_items/i1'), true);
+    assert.equal(await exists('households/victim/inventory_items/i1/nested/n1'), true);
+    assert.deepEqual([...files.paths], ['households/victim/recipes/1.jpg']);
+    assert.equal(await exists('users/u'), false);
   });
 
   it('keeps an admin when two accounts of one household are deleted at the same time', async () => {

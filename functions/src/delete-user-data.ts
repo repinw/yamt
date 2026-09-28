@@ -38,8 +38,7 @@ const USERS = 'users';
  * Idempotent: every step either deletes what still exists or recomputes its
  * plan from the current documents. A sole member's `members/{uid}` document
  * is deleted only after the rest of the household is gone, so a retry after
- * a crash still finds the household. `users/{uid}` goes last because its
- * household ids are one of the ways to find the households.
+ * a crash still finds the household. `users/{uid}` goes last.
  */
 export async function deleteUserData(
   db: Firestore,
@@ -70,12 +69,12 @@ export async function deleteUserData(
 
 /**
  * Households of the user: every `households/{hid}/members` document with
- * this uid, plus the household ids on the profile. The profile ids only lead
- * to a deletion when that household has no member left at all.
+ * this uid. The household ids on the profile are ignored on purpose: the user
+ * writes them, so a forged id could point this admin code at someone else's
+ * household.
  */
 async function findHouseholdIds(db: Firestore, uid: string): Promise<string[]> {
   const ids = new Set<string>();
-
   const memberships = await db.collectionGroup(MEMBERS).where('uid', '==', uid).get();
   for (const doc of memberships.docs) {
     const householdId = householdIdOfMember(doc.ref);
@@ -83,15 +82,6 @@ async function findHouseholdIds(db: Firestore, uid: string): Promise<string[]> {
       ids.add(householdId);
     }
   }
-
-  const profile = await db.collection(USERS).doc(uid).get();
-  for (const field of ['householdId', 'ownHouseholdId']) {
-    const value: unknown = profile.get(field);
-    if (typeof value === 'string' && value.length > 0) {
-      ids.add(value);
-    }
-  }
-
   return [...ids].sort();
 }
 
@@ -127,12 +117,23 @@ async function exitHousehold(
     return;
   }
 
-  // Sole member: delete everything but the member documents first.
+  // Sole member: delete the invites first, so nobody can join any more, and
+  // check again that nobody joined in the meantime.
   const invites = await db.collection(HOUSEHOLD_INVITES).where('householdId', '==', householdId).get();
   summary.invitesDeleted += await deleteDocsCounted(
     db,
     invites.docs.map((doc) => doc.ref),
   );
+  const checkedPlan = await settleMembership(db, household, uid, false);
+  if (checkedPlan.kind === 'skip') {
+    return;
+  }
+  if (checkedPlan.kind === 'leave') {
+    countLeave(checkedPlan, summary);
+    return;
+  }
+
+  // Then delete everything but the member documents.
   summary.storageFilesDeleted += await files.deletePrefix(`${HOUSEHOLDS}/${householdId}/`);
   for (const collection of await household.listCollections()) {
     if (collection.id !== MEMBERS) {
