@@ -145,8 +145,7 @@ class _PreparedMealEatSheetBodyState
               for (final (:component, :amount) in state.components)
                 (
                   name: component.name,
-                  amount: amount,
-                  unit: component.usedUnit,
+                  amount: eatComponentAmount(l10n, amount, component.usedUnit),
                   kcal: null,
                 ),
             ],

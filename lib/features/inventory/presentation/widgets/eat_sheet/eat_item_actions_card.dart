@@ -1,11 +1,7 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_title.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_action_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Item" card of the item hub: shopping list, edit, replace and remove,
@@ -35,7 +31,7 @@ class EatItemActionsCard extends StatelessWidget {
     final colors = FoodLabelColors.of(context);
     final error = Theme.of(context).colorScheme.error;
 
-    final lines = <_Line>[
+    final lines = <EatCardAction>[
       if (actions.contains(InventoryItemHubAction.addToShoppingList))
         (
           key: const Key('eat_item_action_shopping_list'),
@@ -74,86 +70,6 @@ class EatItemActionsCard extends StatelessWidget {
         ),
     ];
 
-    return EatFramedBox(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          EatLabelTitle(text: l10n.eatPageItemTitle),
-          for (final (index, line) in lines.indexed)
-            _ActionLine(
-              key: line.key,
-              icon: line.icon,
-              label: line.label,
-              color: line.color,
-              showRule: index < lines.length - 1,
-              onPressed: line.onPressed,
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-typedef _Line = ({
-  Key key,
-  IconData icon,
-  String label,
-  Color color,
-  VoidCallback? onPressed,
-});
-
-class _ActionLine extends StatelessWidget {
-  const new({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.onPressed,
-    this.showRule = true,
-    super.key,
-  });
-
-  final IconData icon;
-  final String label;
-  final Color color;
-  final VoidCallback? onPressed;
-  final bool showRule;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = FoodLabelColors.of(context);
-    final foreground = onPressed == null ? colors.muted : color;
-
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        border: Border(
-          bottom: showRule ? BorderSide(color: colors.ink) : BorderSide.none,
-        ),
-      ),
-      child: AppInkWell(
-        onTap: onPressed,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(minHeight: AppSizes.minTapTarget),
-          child: Row(
-            spacing: AppSpacing.md,
-            children: [
-              Icon(icon, color: foreground),
-              Expanded(
-                child: Text(
-                  label,
-                  style: Theme.of(context).textTheme.bodyMedium
-                      ?.copyWith(color: foreground),
-                ),
-              ),
-              if (onPressed != null)
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: foreground,
-                  size: AppSizes.actionChevron,
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
+    return EatActionCard(title: l10n.eatPageItemTitle, actions: lines);
   }
 }

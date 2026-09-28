@@ -19,6 +19,7 @@ class EatPageHeader extends StatelessWidget {
     this.collageImageUrls = const <String?>[],
     this.imageKey,
     this.fallbackKey,
+    this.heroTag,
     super.key,
   });
 
@@ -46,23 +47,28 @@ class EatPageHeader extends StatelessWidget {
   /// Key of the placeholder icon shown without an image.
   final Key? fallbackKey;
 
+  /// Hero tag of the image tile, so an image from the page below flies
+  /// into it. No hero without a tag.
+  final Object? heroTag;
+
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final brandText = brand?.trim();
     final captionText = caption;
+    final tile = EatImageTile(
+      key: imageKey,
+      imageUrl: imageUrl,
+      imageBytes: imageBytes,
+      collageImageUrls: collageImageUrls,
+      fallbackKey: fallbackKey,
+    );
 
     return Row(
       spacing: AppSpacing.xl,
       children: [
-        EatImageTile(
-          key: imageKey,
-          imageUrl: imageUrl,
-          imageBytes: imageBytes,
-          collageImageUrls: collageImageUrls,
-          fallbackKey: fallbackKey,
-        ),
+        if (heroTag case final tag?) Hero(tag: tag, child: tile) else tile,
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

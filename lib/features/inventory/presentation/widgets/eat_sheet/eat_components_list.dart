@@ -8,14 +8,21 @@ import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// One ingredient line: its name, the amount being eaten, and optionally
-/// its energy for that amount.
-typedef EatComponentLine = ({
-  String name,
+/// One ingredient line: its name, the amount being eaten as text, and
+/// optionally its energy for that amount.
+typedef EatComponentLine = ({String name, String amount, double? kcal});
+
+/// Text of an ingredient [amount] in [unit], such as "150 g".
+String eatComponentAmount(
+  AppLocalizations l10n,
   double amount,
   InventoryAmountUnit unit,
-  double? kcal,
-});
+) {
+  return l10n.inventoryEatSheetAmountWithUnit(
+    formatInventoryNutritionValue(amount),
+    unit.localizedName(l10n),
+  );
+}
 
 /// Collapsible list of the ingredients of a meal.
 class EatComponentsList extends StatefulWidget {
@@ -86,7 +93,7 @@ class _EatComponentsListState extends State<EatComponentsList> {
             ),
           ),
           if (_isExpanded)
-            for (final (:name, :amount, :unit, :kcal) in widget.components)
+            for (final (:name, :amount, :kcal) in widget.components)
               DecoratedBox(
                 decoration: BoxDecoration(
                   border: Border(top: BorderSide(color: colors.rule)),
@@ -98,10 +105,7 @@ class _EatComponentsListState extends State<EatComponentsList> {
                     children: [
                       Expanded(child: Text(name, style: rowStyle)),
                       Text(
-                        l10n.inventoryEatSheetAmountWithUnit(
-                          formatInventoryNutritionValue(amount),
-                          unit.localizedName(l10n),
-                        ),
+                        amount,
                         style: rowStyle?.copyWith(
                           fontWeight: kcal == null ? FontWeight.w700 : null,
                           color: kcal == null ? null : colors.muted,

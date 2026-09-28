@@ -121,8 +121,11 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
               ))
                 (
                   name: ingredient.name,
-                  amount: ingredient.grams.roundToDouble(),
-                  unit: InventoryAmountUnit.gram,
+                  amount: eatComponentAmount(
+                    l10n,
+                    ingredient.grams.roundToDouble(),
+                    InventoryAmountUnit.gram,
+                  ),
                   kcal: ingredient.kcal,
                 ),
             ],
