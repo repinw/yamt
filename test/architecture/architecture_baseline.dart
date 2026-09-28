@@ -163,7 +163,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/cooking_flow/application/cooking_flow_amount_utils.dart': 1,
     'lib/features/cooking_flow/application/cooking_flow_finalize_logic.dart': 1,
     'lib/features/cooking_flow/data/cooking_flow_session_local_store.dart': 1,
-    'lib/features/diary/data/diary_day_dashboard_cache_store.dart': 1,
     'lib/features/diary/presentation/diary_product_search_hub_completion_handler.dart':
         1,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':

@@ -15,7 +15,7 @@ import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/application/diary_macro_targets_resolver.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
-import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
+import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/domain/diary_day_goal_signature.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_state.dart';
 
@@ -41,14 +41,14 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         ref.watch(authStateChangesProvider).asData?.value?.uid ??
         ref.watch(firebaseAuthProvider).currentUser?.uid;
     final preferences = ref.watch(appPreferencesProvider);
-    final cacheStore = ref.watch(diaryDayDashboardCacheStoreProvider);
+    final cacheRepository = ref.watch(diaryDayDashboardCacheRepositoryProvider);
     ref.onDispose(() {
       _settledMutationRefreshTimer?.cancel();
       _mutationRefreshInFlight = null;
     });
     final cachedData = userId == null
         ? null
-        : cacheStore.readSync(
+        : cacheRepository.readSync(
             preferences: preferences,
             userId: userId,
             day: normalizedDay,
@@ -92,7 +92,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
           normalizedDay: normalizedDay,
           userId: userId,
           preferences: preferences,
-          cacheStore: cacheStore,
+          cacheRepository: cacheRepository,
         ),
       ),
     );
@@ -146,7 +146,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
           ref.read(authStateChangesProvider).asData?.value?.uid ??
           ref.read(firebaseAuthProvider).currentUser?.uid,
       preferences: ref.read(appPreferencesProvider),
-      cacheStore: ref.read(diaryDayDashboardCacheStoreProvider),
+      cacheRepository: ref.read(diaryDayDashboardCacheRepositoryProvider),
       queueIfInFlight: queueIfInFlight,
       forceRefresh: forceRefresh,
     );
@@ -156,7 +156,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     required DateTime normalizedDay,
     required String? userId,
     required AppPreferences preferences,
-    required DiaryDayDashboardCacheStore cacheStore,
+    required DiaryDayDashboardCacheRepository cacheRepository,
     bool queueIfInFlight = false,
     bool forceRefresh = false,
   }) async {
@@ -175,7 +175,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         normalizedDay: normalizedDay,
         userId: userId,
         preferences: preferences,
-        cacheStore: cacheStore,
+        cacheRepository: cacheRepository,
         generation: generation,
       );
       _refreshInFlight = refresh;
@@ -193,7 +193,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     required DateTime normalizedDay,
     required String? userId,
     required AppPreferences preferences,
-    required DiaryDayDashboardCacheStore cacheStore,
+    required DiaryDayDashboardCacheRepository cacheRepository,
     required int generation,
   }) async {
     state = state.copyWith(isRefreshing: true, error: null);
@@ -249,7 +249,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       );
 
       if (userId != null) {
-        await cacheStore.save(
+        await cacheRepository.save(
           preferences: preferences,
           userId: userId,
           data: data,

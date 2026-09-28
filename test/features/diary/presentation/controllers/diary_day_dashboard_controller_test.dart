@@ -18,7 +18,7 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
+import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 
 import '../../../../helpers/memory_app_preferences.dart';
@@ -37,11 +37,11 @@ void main() {
     'reads cached dashboard synchronously then persists fresh data',
     () async {
       final preferences = MemoryAppPreferences();
-      const cacheStore = DiaryDayDashboardCacheStore();
+      const cacheRepository = DiaryDayDashboardCacheRepository();
       final cachedData = diaryDashboardLoadedStateForTest(
         selectedDay: selectedDay,
       ).data!;
-      await cacheStore.save(
+      await cacheRepository.save(
         preferences: preferences,
         userId: userId,
         data: cachedData,
@@ -71,7 +71,7 @@ void main() {
       expect(initial.isRefreshing, isTrue);
 
       final refreshed = await _waitForDashboardRefresh(container, selectedDay);
-      final persisted = cacheStore.readSync(
+      final persisted = cacheRepository.readSync(
         preferences: preferences,
         userId: userId,
         day: selectedDay,
@@ -86,11 +86,11 @@ void main() {
 
   test('keeps cached dashboard visible when refresh fails', () async {
     final preferences = MemoryAppPreferences();
-    const cacheStore = DiaryDayDashboardCacheStore();
+    const cacheRepository = DiaryDayDashboardCacheRepository();
     final cachedData = diaryDashboardLoadedStateForTest(
       selectedDay: selectedDay,
     ).data!;
-    await cacheStore.save(
+    await cacheRepository.save(
       preferences: preferences,
       userId: userId,
       data: cachedData,

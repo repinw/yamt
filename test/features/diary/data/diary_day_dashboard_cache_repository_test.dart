@@ -8,7 +8,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
-import 'package:yamt/features/diary/data/diary_day_dashboard_cache_store.dart';
+import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
@@ -20,15 +20,15 @@ void main() {
 
   test('saves and reads dashboard snapshot synchronously', () async {
     final preferences = MemoryAppPreferences();
-    const store = DiaryDayDashboardCacheStore();
+    const repository = DiaryDayDashboardCacheRepository();
     final data = _dashboardData(day);
 
-    final didSave = await store.save(
+    final didSave = await repository.save(
       preferences: preferences,
       userId: userId,
       data: data,
     );
-    final cached = store.readSync(
+    final cached = repository.readSync(
       preferences: preferences,
       userId: userId,
       day: day,
@@ -55,8 +55,8 @@ void main() {
 
   test('returns null for a snapshot without week days', () async {
     final preferences = MemoryAppPreferences();
-    const store = DiaryDayDashboardCacheStore();
-    await store.save(
+    const repository = DiaryDayDashboardCacheRepository();
+    await repository.save(
       preferences: preferences,
       userId: userId,
       data: _dashboardData(day),
@@ -69,26 +69,26 @@ void main() {
     overview['days'] = <dynamic>[];
     await preferences.setString(_cacheKey(userId, day), jsonEncode(json));
     expect(
-      store.readSync(preferences: preferences, userId: userId, day: day),
+      repository.readSync(preferences: preferences, userId: userId, day: day),
       isNull,
     );
   });
 
   test('ignores cache for another user or day', () async {
     final preferences = MemoryAppPreferences();
-    const store = DiaryDayDashboardCacheStore();
-    await store.save(
+    const repository = DiaryDayDashboardCacheRepository();
+    await repository.save(
       preferences: preferences,
       userId: userId,
       data: _dashboardData(day),
     );
 
     expect(
-      store.readSync(preferences: preferences, userId: 'user-2', day: day),
+      repository.readSync(preferences: preferences, userId: 'user-2', day: day),
       isNull,
     );
     expect(
-      store.readSync(
+      repository.readSync(
         preferences: preferences,
         userId: userId,
         day: day.add(const Duration(days: 1)),
@@ -111,10 +111,10 @@ void main() {
         }),
       },
     );
-    const store = DiaryDayDashboardCacheStore();
+    const repository = DiaryDayDashboardCacheRepository();
 
     expect(
-      store.readSync(
+      repository.readSync(
         preferences: malformedPreferences,
         userId: userId,
         day: day,
@@ -122,7 +122,7 @@ void main() {
       isNull,
     );
     expect(
-      store.readSync(
+      repository.readSync(
         preferences: wrongVersionPreferences,
         userId: userId,
         day: day,

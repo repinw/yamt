@@ -6,14 +6,14 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 
-part 'diary_day_dashboard_cache_store.g.dart';
+part 'diary_day_dashboard_cache_repository.g.dart';
 
-const _cacheLogName = 'DiaryDayDashboardCacheStore';
+const _cacheLogName = 'DiaryDayDashboardCacheRepository';
 const _cacheVersion = 2;
 
 /// Stores last good diary dashboard snapshots for instant startup.
-class DiaryDayDashboardCacheStore {
-  /// Creates diary dashboard cache store.
+class DiaryDayDashboardCacheRepository {
+  /// Creates the diary dashboard cache repository.
   const new();
 
   /// Reads cached data synchronously.
@@ -79,8 +79,8 @@ class DiaryDayDashboardCacheStore {
   }
 }
 
-/// Provides the diary dashboard cache store.
+/// Provides the diary dashboard cache repository.
 @riverpod
-DiaryDayDashboardCacheStore diaryDayDashboardCacheStore(Ref ref) {
-  return const DiaryDayDashboardCacheStore();
+DiaryDayDashboardCacheRepository diaryDayDashboardCacheRepository(Ref ref) {
+  return const DiaryDayDashboardCacheRepository();
 }
