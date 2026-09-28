@@ -319,7 +319,7 @@ void main() {
     await _spinWheel(tester, CalorieGoalOnboardingKeys.introWeightWheel);
     await _tapIntroNext(tester);
 
-    expect(find.text('Your Goal'), findsOneWidget);
+    expect(find.text('Where do you want to go?'), findsOneWidget);
   });
 }
 
