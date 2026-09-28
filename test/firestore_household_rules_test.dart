@@ -87,8 +87,10 @@ void main() {
         contains(
           'The user who joins with the invite uses it up in the same write. '
           'allow delete: if isSignedIn() '
-          '&& !exists(memberPath(resource.data.householdId, request.auth.uid)) '
-          '&& getAfter(memberPath(resource.data.householdId, request.auth.uid)) '
+          '&& !exists(memberPath(resource.data.householdId, '
+          'request.auth.uid)) '
+          '&& getAfter(memberPath(resource.data.householdId, '
+          'request.auth.uid)) '
           ".data.get('invite_code', null) == code;",
         ),
       );
