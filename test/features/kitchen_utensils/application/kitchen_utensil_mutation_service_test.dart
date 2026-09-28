@@ -46,7 +46,7 @@ class _FakeKitchenUtensilRepository implements KitchenUtensilRepository {
     required Uint8List bytes,
   }) async {
     final path =
-        'users/owner-1/kitchen_utensils/$utensilId/images/$imageId.jpg';
+        'households/household-1/kitchen_utensils/$utensilId/images/$imageId.jpg';
     uploadedPaths.add(path);
     return path;
   }
@@ -133,7 +133,8 @@ void main() {
       final service = _service(repository: repository, ids: ['image-new']);
       final previous = [
         _utensil(
-          imageStoragePath: 'users/owner-1/kitchen_utensils/pot-1/old.jpg',
+          imageStoragePath:
+              'households/household-1/kitchen_utensils/pot-1/old.jpg',
         ),
       ];
 
@@ -152,7 +153,7 @@ void main() {
       expect(repository.savedUtensils.single.weightGrams, 430);
       expect(
         repository.savedUtensils.single.imageStoragePath,
-        'users/owner-1/kitchen_utensils/pot-1/images/image-new.jpg',
+        'households/household-1/kitchen_utensils/pot-1/images/image-new.jpg',
       );
       expect(repository.deletedImagePaths, isEmpty);
     },

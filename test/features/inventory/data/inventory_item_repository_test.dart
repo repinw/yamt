@@ -8,21 +8,22 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 class _FakeInventoryUserSession implements InventoryUserSession {
-  new({this.currentUserId});
+  new({this.householdId});
 
   @override
-  final String? currentUserId;
+  final String? householdId;
 }
 
 class _FakeInventoryItemStore
     implements InventoryItemStore, InventoryItemRecentManualStore {
-  new({Map<String, List<InventoryItemDocument>>? initialDocumentsByUser})
-    : _documentsByUser =
-          initialDocumentsByUser ?? <String, List<InventoryItemDocument>>{};
+  new({Map<String, List<InventoryItemDocument>>? initialDocumentsByHousehold})
+    : _documentsByHousehold =
+          initialDocumentsByHousehold ??
+          <String, List<InventoryItemDocument>>{};
 
-  final Map<String, List<InventoryItemDocument>> _documentsByUser;
+  final Map<String, List<InventoryItemDocument>> _documentsByHousehold;
   final Map<String, StreamController<List<InventoryItemDocument>>>
-  _controllersByUser =
+  _controllersByHousehold =
       <String, StreamController<List<InventoryItemDocument>>>{};
 
   bool replaceAllShouldFail = false;
@@ -36,13 +37,15 @@ class _FakeInventoryItemStore
   bool get supportsLimitedRecentManualQuery => true;
 
   @override
-  Future<List<InventoryItemDocument>> readAll({required String userId}) async {
-    return _copyDocuments(userId);
+  Future<List<InventoryItemDocument>> readAll({
+    required String householdId,
+  }) async {
+    return _copyDocuments(householdId);
   }
 
   @override
   Future<List<InventoryItemDocument>> readRecentManual({
-    required String userId,
+    required String householdId,
     required int limit,
   }) async {
     if (limit <= 0) {
@@ -50,7 +53,7 @@ class _FakeInventoryItemStore
     }
 
     final documents =
-        _copyDocuments(userId)
+        _copyDocuments(householdId)
             .where(
               (document) =>
                   document.data['origin'] == InventoryItemOrigin.manualAdd.name,
@@ -64,32 +67,32 @@ class _FakeInventoryItemStore
 
   @override
   Stream<List<InventoryItemDocument>> watchAll({
-    required String userId,
+    required String householdId,
   }) async* {
     final error = watchAllError;
     if (error != null) {
       throw error;
     }
-    yield _copyDocuments(userId);
-    yield* _controllerFor(userId).stream;
+    yield _copyDocuments(householdId);
+    yield* _controllerFor(householdId).stream;
   }
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     if (replaceAllShouldFail) {
       return false;
     }
-    _documentsByUser[userId] = _documentsFromMap(documentsById);
-    _emit(userId);
+    _documentsByHousehold[householdId] = _documentsFromMap(documentsById);
+    _emit(householdId);
     return true;
   }
 
   @override
   Future<bool> upsertAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     if (upsertAllShouldFail) {
@@ -106,7 +109,8 @@ class _FakeInventoryItemStore
         await Future<void>.delayed(upsertDelay);
       }
       final mergedById = <String, InventoryItemDocument>{
-        for (final document in _copyDocuments(userId)) document.id: document,
+        for (final document in _copyDocuments(householdId))
+          document.id: document,
       };
       for (final entry in documentsById.entries) {
         mergedById[entry.key] = InventoryItemDocument(
@@ -114,8 +118,10 @@ class _FakeInventoryItemStore
           data: Map<String, dynamic>.from(entry.value),
         );
       }
-      _documentsByUser[userId] = mergedById.values.toList(growable: false);
-      _emit(userId);
+      _documentsByHousehold[householdId] = mergedById.values.toList(
+        growable: false,
+      );
+      _emit(householdId);
       return true;
     } finally {
       _activeUpserts--;
@@ -123,15 +129,15 @@ class _FakeInventoryItemStore
   }
 
   Future<void> dispose() async {
-    for (final controller in _controllersByUser.values) {
+    for (final controller in _controllersByHousehold.values) {
       await controller.close();
     }
-    _controllersByUser.clear();
+    _controllersByHousehold.clear();
   }
 
-  List<InventoryItemDocument> _copyDocuments(String userId) {
+  List<InventoryItemDocument> _copyDocuments(String householdId) {
     final documents =
-        _documentsByUser[userId] ?? const <InventoryItemDocument>[];
+        _documentsByHousehold[householdId] ?? const <InventoryItemDocument>[];
     return documents
         .map(
           (document) => InventoryItemDocument(
@@ -155,19 +161,21 @@ class _FakeInventoryItemStore
         .toList(growable: false);
   }
 
-  StreamController<List<InventoryItemDocument>> _controllerFor(String userId) {
-    return _controllersByUser.putIfAbsent(
-      userId,
+  StreamController<List<InventoryItemDocument>> _controllerFor(
+    String householdId,
+  ) {
+    return _controllersByHousehold.putIfAbsent(
+      householdId,
       StreamController<List<InventoryItemDocument>>.broadcast,
     );
   }
 
-  void _emit(String userId) {
-    final controller = _controllersByUser[userId];
+  void _emit(String householdId) {
+    final controller = _controllersByHousehold[householdId];
     if (controller == null || controller.isClosed) {
       return;
     }
-    controller.add(_copyDocuments(userId));
+    controller.add(_copyDocuments(householdId));
   }
 
   int _compareEntryDateDescending(
@@ -207,7 +215,7 @@ InventoryItem _item(
 }
 
 void main() {
-  test('readAll returns empty list when user is signed out', () async {
+  test('readAll returns empty list without a household', () async {
     final store = _FakeInventoryItemStore();
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
@@ -227,15 +235,15 @@ void main() {
       final itemJson = Map<String, dynamic>.from(_item('doc-a').toJson())
         ..remove('id');
       final store = _FakeInventoryItemStore(
-        initialDocumentsByUser: <String, List<InventoryItemDocument>>{
-          'user-1': <InventoryItemDocument>[
+        initialDocumentsByHousehold: <String, List<InventoryItemDocument>>{
+          'household-1': <InventoryItemDocument>[
             InventoryItemDocument(id: 'doc-a', data: itemJson),
           ],
         },
       );
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
-        session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+        session: _FakeInventoryUserSession(householdId: 'household-1'),
         sessionShutdownSignal: SessionShutdownSignal(),
         store: store,
       );
@@ -247,7 +255,7 @@ void main() {
   );
 
   test(
-    'readRecentManualItems returns empty list when user is signed out',
+    'readRecentManualItems returns empty list without a household',
     () async {
       final store = _FakeInventoryItemStore();
       addTearDown(store.dispose);
@@ -265,8 +273,8 @@ void main() {
 
   test('readRecentManualItems reads filtered newest limited items', () async {
     final store = _FakeInventoryItemStore(
-      initialDocumentsByUser: <String, List<InventoryItemDocument>>{
-        'user-1': <InventoryItemDocument>[
+      initialDocumentsByHousehold: <String, List<InventoryItemDocument>>{
+        'household-1': <InventoryItemDocument>[
           InventoryItemDocument(
             id: 'standard',
             data: _item(
@@ -312,7 +320,7 @@ void main() {
     );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -327,15 +335,15 @@ void main() {
 
   test('appendAll upserts by id and appends new items', () async {
     final store = _FakeInventoryItemStore(
-      initialDocumentsByUser: <String, List<InventoryItemDocument>>{
-        'user-1': <InventoryItemDocument>[
+      initialDocumentsByHousehold: <String, List<InventoryItemDocument>>{
+        'household-1': <InventoryItemDocument>[
           InventoryItemDocument(id: 'a', data: _item('a').toJson()),
         ],
       },
     );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -356,15 +364,15 @@ void main() {
     final manualItem = _item('manual-1')
         .copyWith(origin: InventoryItemOrigin.manualAdd);
     final store = _FakeInventoryItemStore(
-      initialDocumentsByUser: <String, List<InventoryItemDocument>>{
-        'user-1': <InventoryItemDocument>[
+      initialDocumentsByHousehold: <String, List<InventoryItemDocument>>{
+        'household-1': <InventoryItemDocument>[
           InventoryItemDocument(id: 'manual-1', data: manualItem.toJson()),
         ],
       },
     );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -377,15 +385,15 @@ void main() {
   test('readAll preserves ocr name from stored documents', () async {
     final ocrItem = _item('ocr-1').copyWith(ocrName: 'MILCH 3,5%');
     final store = _FakeInventoryItemStore(
-      initialDocumentsByUser: <String, List<InventoryItemDocument>>{
-        'user-1': <InventoryItemDocument>[
+      initialDocumentsByHousehold: <String, List<InventoryItemDocument>>{
+        'household-1': <InventoryItemDocument>[
           InventoryItemDocument(id: 'ocr-1', data: ocrItem.toJson()),
         ],
       },
     );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -400,7 +408,7 @@ void main() {
       ..upsertDelay = const Duration(milliseconds: 25);
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -417,7 +425,7 @@ void main() {
     final store = _FakeInventoryItemStore()..replaceAllShouldFail = true;
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -435,7 +443,7 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -461,7 +469,7 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: sessionShutdownSignal,
       store: store,
     );
@@ -477,7 +485,7 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -501,7 +509,7 @@ void main() {
         ..watchAllError = const SocketException('network down');
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
-        session: _FakeInventoryUserSession(currentUserId: 'user-1'),
+        session: _FakeInventoryUserSession(householdId: 'household-1'),
         sessionShutdownSignal: SessionShutdownSignal(),
         store: store,
       );

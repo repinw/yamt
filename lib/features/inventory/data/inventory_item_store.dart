@@ -9,7 +9,7 @@ import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 
 const String _storeLogName = 'FirestoreInventoryItemStore';
-const String _usersCollection = 'users';
+const String _householdsCollection = 'households';
 const String _inventoryItemsCollection = 'inventory_items';
 
 /// Defines inventory item document.
@@ -27,20 +27,20 @@ class InventoryItemDocument {
 /// Defines inventory item store.
 abstract interface class InventoryItemStore {
   /// Read all.
-  Future<List<InventoryItemDocument>> readAll({required String userId});
+  Future<List<InventoryItemDocument>> readAll({required String householdId});
 
   /// Watch all.
-  Stream<List<InventoryItemDocument>> watchAll({required String userId});
+  Stream<List<InventoryItemDocument>> watchAll({required String householdId});
 
   /// Replace all.
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   });
 
   /// Upsert all.
   Future<bool> upsertAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   });
 }
@@ -52,7 +52,7 @@ abstract interface class InventoryItemRecentManualStore {
 
   /// Reads recent manual item documents, newest first.
   Future<List<InventoryItemDocument>> readRecentManual({
-    required String userId,
+    required String householdId,
     required int limit,
   });
 }
@@ -74,8 +74,10 @@ class FirestoreInventoryItemStore
   bool get supportsLimitedRecentManualQuery => true;
 
   @override
-  Future<List<InventoryItemDocument>> readAll({required String userId}) async {
-    final collection = _collection(userId);
+  Future<List<InventoryItemDocument>> readAll({
+    required String householdId,
+  }) async {
+    final collection = _collection(householdId);
     return _mapDocuments(
       await collection.openAll(await collection.reference.get()),
     );
@@ -83,14 +85,14 @@ class FirestoreInventoryItemStore
 
   @override
   Future<List<InventoryItemDocument>> readRecentManual({
-    required String userId,
+    required String householdId,
     required int limit,
   }) async {
     if (limit <= 0) {
       return const <InventoryItemDocument>[];
     }
 
-    final collection = _collection(userId);
+    final collection = _collection(householdId);
     final snapshot = await collection.reference
         .where('origin', isEqualTo: 'manualAdd')
         .where('is_deposit', isEqualTo: false)
@@ -102,8 +104,8 @@ class FirestoreInventoryItemStore
   }
 
   @override
-  Stream<List<InventoryItemDocument>> watchAll({required String userId}) {
-    final collection = _collection(userId);
+  Stream<List<InventoryItemDocument>> watchAll({required String householdId}) {
+    final collection = _collection(householdId);
     return collection.reference.snapshots().asyncMap(
       (snapshot) async => _mapDocuments(await collection.openAll(snapshot)),
     );
@@ -111,11 +113,11 @@ class FirestoreInventoryItemStore
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      final collection = _collection(userId);
+      final collection = _collection(householdId);
       await collection.ensureAllSealed();
       await _atomicReplaceService.replaceAll(
         collection: collection.reference,
@@ -124,7 +126,7 @@ class FirestoreInventoryItemStore
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to replace inventory items for user $userId.',
+        'Failed to replace inventory items for household $householdId.',
         name: _storeLogName,
         error: error,
         stackTrace: stackTrace,
@@ -135,11 +137,11 @@ class FirestoreInventoryItemStore
 
   @override
   Future<bool> upsertAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      final collection = _collection(userId);
+      final collection = _collection(householdId);
       final operations = _atomicReplaceService.buildUpsertOperations(
         collection: collection.reference,
         documentsById: await collection.sealAll(documentsById),
@@ -155,14 +157,15 @@ class FirestoreInventoryItemStore
         commitBatchInBackground(
           batch,
           failureMessage:
-              'Server rejected inventory item upsert for user $userId.',
+              'Server rejected inventory item upsert for '
+              'household $householdId.',
           logName: _storeLogName,
         );
       }
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to upsert inventory items for user $userId.',
+        'Failed to upsert inventory items for household $householdId.',
         name: _storeLogName,
         error: error,
         stackTrace: stackTrace,
@@ -171,11 +174,11 @@ class FirestoreInventoryItemStore
     }
   }
 
-  SealedCollection _collection(String userId) {
+  SealedCollection _collection(String householdId) {
     return SealedCollection(
       _firestore
-          .collection(_usersCollection)
-          .doc(userId)
+          .collection(_householdsCollection)
+          .doc(householdId)
           .collection(_inventoryItemsCollection),
       cipher: _cipher,
       plaintextFields: inventoryItemPlaintextFields,

@@ -21,6 +21,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 
 const _commitStoreLogName = 'InventoryCalorieEntryCommitStore';
 const _usersCollection = 'users';
+const _householdsCollection = 'households';
 const _calorieEntriesCollection = 'calorie_entries';
 const _inventoryItemsCollection = 'inventory_items';
 const _inventoryActivityEventsCollection = 'inventory_activity_events';
@@ -44,8 +45,8 @@ class FirestoreInventoryCalorieEntryCommitStore
   /// data key is not ready.
   final UserDataCipher? dataCipher;
 
-  /// The inventory owner and the household key, or `null` while the
-  /// household key is not ready.
+  /// The active household and its key, or `null` while the household key is
+  /// not ready.
   final HouseholdCipher? householdCipher;
 
   /// The inventory activity actor.
@@ -65,8 +66,8 @@ class FirestoreInventoryCalorieEntryCommitStore
     if (cipher == null || household == null) {
       log(
         'Cannot commit calorie entry ${entry.id}: no data key or household '
-        'key (currentUserId=${cipher?.uid}, '
-        'inventoryOwnerUserId=${household?.householdId}).',
+        'key (userId=${cipher?.uid}, '
+        'householdId=${household?.householdId}).',
         name: _commitStoreLogName,
       );
       return null;
@@ -85,7 +86,7 @@ class FirestoreInventoryCalorieEntryCommitStore
 
     log(
       'Committing calorie entry ${entry.id} with inventory items '
-      '${pendingConsumptions.map(_describe).join(', ')} for inventory owner '
+      '${pendingConsumptions.map(_describe).join(', ')} for household '
       '${household.householdId}.',
       name: _commitStoreLogName,
     );
@@ -228,7 +229,7 @@ class FirestoreInventoryCalorieEntryCommitStore
   SealedCollection _inventoryCollection(HouseholdCipher household) {
     return SealedCollection(
       firestore
-          .collection(_usersCollection)
+          .collection(_householdsCollection)
           .doc(household.householdId)
           .collection(_inventoryItemsCollection),
       cipher: household.cipher,
@@ -248,7 +249,7 @@ class FirestoreInventoryCalorieEntryCommitStore
   SealedCollection _activityEventsCollection(HouseholdCipher household) {
     return SealedCollection(
       firestore
-          .collection(_usersCollection)
+          .collection(_householdsCollection)
           .doc(household.householdId)
           .collection(_inventoryActivityEventsCollection),
       cipher: household.cipher,

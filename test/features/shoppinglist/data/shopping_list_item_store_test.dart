@@ -6,7 +6,7 @@ import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_item_store.dart';
 
-const _usersCollection = 'users';
+const _householdsCollection = 'households';
 const _shoppingListCollection = 'shopping_list_items';
 
 class _HookedFakeFirebaseFirestore extends FakeFirebaseFirestore {
@@ -48,11 +48,11 @@ class _ThrowingTransactionFakeFirebaseFirestore extends FakeFirebaseFirestore {
 
 CollectionReference<Map<String, dynamic>> _shoppingListCollectionRef({
   required FirebaseFirestore firestore,
-  required String userId,
+  required String householdId,
 }) {
   return firestore
-      .collection(_usersCollection)
-      .doc(userId)
+      .collection(_householdsCollection)
+      .doc(householdId)
       .collection(_shoppingListCollection);
 }
 
@@ -133,7 +133,7 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final collection = _shoppingListCollectionRef(
         firestore: firestore,
-        userId: 'user-1',
+        householdId: 'household-1',
       );
       await _put(collection, 'a', <String, dynamic>{'name': 'Old Milk'});
       await _put(collection, 'b', <String, dynamic>{'name': 'Bread'});
@@ -143,7 +143,7 @@ void main() {
         cipher: _cipher,
       );
       final replaced = await store.replaceAll(
-        userId: 'user-1',
+        householdId: 'household-1',
         documentsById: <String, Map<String, dynamic>>{
           'b': <String, dynamic>{'name': 'Bread v2'},
           'c': <String, dynamic>{'name': 'Cheese'},
@@ -172,7 +172,7 @@ void main() {
     );
     collection = _shoppingListCollectionRef(
       firestore: firestore,
-      userId: 'user-1',
+      householdId: 'household-1',
     );
     await _put(collection, 'a', <String, dynamic>{'name': 'Old Milk'});
     await _put(collection, 'b', <String, dynamic>{'name': 'Bread'});
@@ -183,7 +183,7 @@ void main() {
     );
 
     final replaced = await store.replaceAll(
-      userId: 'user-1',
+      householdId: 'household-1',
       documentsById: <String, Map<String, dynamic>>{
         'b': <String, dynamic>{'name': 'Bread v2'},
       },
@@ -209,7 +209,7 @@ void main() {
       );
       collection = _shoppingListCollectionRef(
         firestore: firestore,
-        userId: 'user-1',
+        householdId: 'household-1',
       );
       await _put(collection, 'a', <String, dynamic>{'name': 'Old Milk'});
       await _put(collection, 'b', <String, dynamic>{'name': 'Bread'});
@@ -219,7 +219,7 @@ void main() {
         cipher: _cipher,
       );
       final replaced = await store.replaceAll(
-        userId: 'user-1',
+        householdId: 'household-1',
         documentsById: <String, Map<String, dynamic>>{
           'b': <String, dynamic>{'name': 'Bread v2'},
         },
@@ -241,7 +241,7 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final collection = _shoppingListCollectionRef(
         firestore: firestore,
-        userId: 'user-1',
+        householdId: 'household-1',
       );
       final documentsById = <String, Map<String, dynamic>>{
         for (var index = 0; index < 501; index++)
@@ -253,7 +253,7 @@ void main() {
         cipher: _cipher,
       );
       final replaced = await store.replaceAll(
-        userId: 'user-1',
+        householdId: 'household-1',
         documentsById: documentsById,
       );
 
@@ -282,7 +282,7 @@ void main() {
       );
       collection = _shoppingListCollectionRef(
         firestore: firestore,
-        userId: 'user-1',
+        householdId: 'household-1',
       );
       await _seedStaleDocuments(collection: collection, count: 250);
 
@@ -296,7 +296,7 @@ void main() {
         cipher: _cipher,
       );
       final replaced = await store.replaceAll(
-        userId: 'user-1',
+        householdId: 'household-1',
         documentsById: documentsById,
       );
 
@@ -318,7 +318,7 @@ void main() {
       final firestore = _ThrowingTransactionFakeFirebaseFirestore();
       final collection = _shoppingListCollectionRef(
         firestore: firestore,
-        userId: 'user-1',
+        householdId: 'household-1',
       );
       await _seedStaleDocuments(collection: collection, count: 501);
 
@@ -327,7 +327,7 @@ void main() {
         cipher: _cipher,
       );
       final replaced = await store.replaceAll(
-        userId: 'user-1',
+        householdId: 'household-1',
         documentsById: <String, Map<String, dynamic>>{
           'keep': <String, dynamic>{'name': 'Keep'},
         },

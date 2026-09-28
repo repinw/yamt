@@ -29,68 +29,73 @@ class FirestoreInventoryItemRepository
 
   @override
   Stream<List<InventoryItem>> watchAll() {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Stream<List<InventoryItem>>.value(const <InventoryItem>[]);
     }
-    return _watchAllForUser(userId);
+    return _watchAllForHousehold(householdId);
   }
 
   @override
   Future<List<InventoryItem>> readAll() async {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return const <InventoryItem>[];
     }
-    return await _readAllForUser(userId);
+    return await _readAllForHousehold(householdId);
   }
 
   @override
   Future<List<InventoryItem>> readRecentManualItems({
     required int limit,
   }) async {
-    final userId = _currentUserId();
-    if (userId == null || limit <= 0) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null || limit <= 0) {
       return const <InventoryItem>[];
     }
-    return await _readRecentManualForUser(userId: userId, limit: limit);
+    return await _readRecentManualForHousehold(
+      householdId: householdId,
+      limit: limit,
+    );
   }
 
   @override
   Future<bool> saveAll(List<InventoryItem> items) {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Future<bool>.value(false);
     }
-    return _runExclusiveWrite(() => _replaceAllForUser(userId, items));
+    return _runExclusiveWrite(
+      () => _replaceAllForHousehold(householdId, items),
+    );
   }
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Future<bool>.value(false);
     }
-    return _runExclusiveWrite(() => _upsertAllForUser(userId, items));
+    return _runExclusiveWrite(() => _upsertAllForHousehold(householdId, items));
   }
 
-  String? _currentUserId() {
-    final userId = _session.currentUserId;
-    if (userId != null && userId.isNotEmpty) {
-      return userId;
+  String? _currentHouseholdId() {
+    final householdId = _session.householdId;
+    if (householdId != null && householdId.isNotEmpty) {
+      return householdId;
     }
     log(
-      'No signed-in user for inventory repository.',
+      'No active household for inventory repository.',
       name: _repositoryLogName,
     );
     return null;
   }
 
-  Stream<List<InventoryItem>> _watchAllForUser(String userId) async* {
-    final collectionPath = 'users/$userId/inventory_items';
+  Stream<List<InventoryItem>> _watchAllForHousehold(String householdId) async* {
+    final collectionPath = 'households/$householdId/inventory_items';
     final shutdownEpoch = _sessionShutdownSignal.epoch;
     try {
-      await for (final documents in _store.watchAll(userId: userId)) {
+      await for (final documents in _store.watchAll(householdId: householdId)) {
         yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
@@ -110,8 +115,8 @@ class FirestoreInventoryItemRepository
         _isPermissionDenied(error)
             ? 'Inventory watch denied by Firestore rules for '
                   '$collectionPath.'
-            : 'Failed to watch inventory items from firestore for user '
-                  '$userId.',
+            : 'Failed to watch inventory items from firestore for household '
+                  '$householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -119,7 +124,8 @@ class FirestoreInventoryItemRepository
       rethrow;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to watch inventory items from firestore for user $userId.',
+        'Failed to watch inventory items from firestore for '
+        'household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -128,18 +134,18 @@ class FirestoreInventoryItemRepository
     }
   }
 
-  Future<List<InventoryItem>> _readAllForUser(String userId) async {
-    final collectionPath = 'users/$userId/inventory_items';
+  Future<List<InventoryItem>> _readAllForHousehold(String householdId) async {
+    final collectionPath = 'households/$householdId/inventory_items';
     try {
-      final documents = await _store.readAll(userId: userId);
+      final documents = await _store.readAll(householdId: householdId);
       return _decodeDocuments(documents);
     } on FirebaseException catch (error, stackTrace) {
       log(
         _isPermissionDenied(error)
             ? 'Inventory read denied by Firestore rules for '
                   '$collectionPath.'
-            : 'Failed to read inventory items from firestore for user '
-                  '$userId.',
+            : 'Failed to read inventory items from firestore for household '
+                  '$householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -147,7 +153,8 @@ class FirestoreInventoryItemRepository
       rethrow;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to read inventory items from firestore for user $userId.',
+        'Failed to read inventory items from firestore for '
+        'household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -156,17 +163,17 @@ class FirestoreInventoryItemRepository
     }
   }
 
-  Future<List<InventoryItem>> _readRecentManualForUser({
-    required String userId,
+  Future<List<InventoryItem>> _readRecentManualForHousehold({
+    required String householdId,
     required int limit,
   }) async {
-    final collectionPath = 'users/$userId/inventory_items';
+    final collectionPath = 'households/$householdId/inventory_items';
     try {
       final store = _store;
       if (store is InventoryItemRecentManualStore) {
         final recentStore = store as InventoryItemRecentManualStore;
         final documents = await recentStore.readRecentManual(
-          userId: userId,
+          householdId: householdId,
           limit: limit,
         );
         return _decodeDocuments(documents);
@@ -181,7 +188,7 @@ class FirestoreInventoryItemRepository
             ? 'Recent manual inventory read denied by Firestore rules for '
                   '$collectionPath.'
             : 'Failed to read recent manual inventory items from firestore '
-                  'for user $userId.',
+                  'for household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -190,7 +197,7 @@ class FirestoreInventoryItemRepository
     } on Object catch (error, stackTrace) {
       log(
         'Failed to read recent manual inventory items from firestore for '
-        'user $userId.',
+        'household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -199,27 +206,40 @@ class FirestoreInventoryItemRepository
     }
   }
 
-  Future<bool> _replaceAllForUser(String userId, List<InventoryItem> items) {
+  Future<bool> _replaceAllForHousehold(
+    String householdId,
+    List<InventoryItem> items,
+  ) {
     if (items.isEmpty) {
       log(
-        'Replacing inventory with an empty collection for user $userId.',
+        'Replacing inventory with an empty collection for '
+        'household $householdId.',
         name: _repositoryLogName,
       );
     }
     final documentsById = <String, Map<String, dynamic>>{
       for (final item in items) item.id: _normalizeItem(item).toJson(),
     };
-    return _store.replaceAll(userId: userId, documentsById: documentsById);
+    return _store.replaceAll(
+      householdId: householdId,
+      documentsById: documentsById,
+    );
   }
 
-  Future<bool> _upsertAllForUser(String userId, List<InventoryItem> items) {
+  Future<bool> _upsertAllForHousehold(
+    String householdId,
+    List<InventoryItem> items,
+  ) {
     if (items.isEmpty) {
       return Future<bool>.value(true);
     }
     final documentsById = <String, Map<String, dynamic>>{
       for (final item in items) item.id: _normalizeItem(item).toJson(),
     };
-    return _store.upsertAll(userId: userId, documentsById: documentsById);
+    return _store.upsertAll(
+      householdId: householdId,
+      documentsById: documentsById,
+    );
   }
 
   List<InventoryItem> _decodeDocuments(List<InventoryItemDocument> documents) {

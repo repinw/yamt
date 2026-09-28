@@ -31,31 +31,31 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
 
   @override
   Stream<List<KitchenUtensil>> watchAll() {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Stream<List<KitchenUtensil>>.value(const <KitchenUtensil>[]);
     }
-    return _watchAllForUser(userId);
+    return _watchAllForHousehold(householdId);
   }
 
   @override
   Future<List<KitchenUtensil>> readAll() async {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return const <KitchenUtensil>[];
     }
-    return await _readAllForUser(userId);
+    return await _readAllForHousehold(householdId);
   }
 
   @override
   Future<bool> save(KitchenUtensil utensil) {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Future<bool>.value(false);
     }
     return _runExclusiveWrite(() {
       return _store.upsert(
-        userId: userId,
+        householdId: householdId,
         utensilId: utensil.id,
         data: utensil.toJson(),
       );
@@ -64,12 +64,12 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
 
   @override
   Future<bool> delete(String utensilId) {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Future<bool>.value(false);
     }
     return _runExclusiveWrite(() {
-      return _store.delete(userId: userId, utensilId: utensilId);
+      return _store.delete(householdId: householdId, utensilId: utensilId);
     });
   }
 
@@ -79,12 +79,12 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
     required String imageId,
     required Uint8List bytes,
   }) async {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return null;
     }
     final path = kitchenUtensilImageStoragePath(
-      userId: userId,
+      householdId: householdId,
       utensilId: utensilId,
       imageId: imageId,
     );
@@ -101,23 +101,25 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
     return _imageStore.downloadUrl(imageStoragePath);
   }
 
-  String? _currentUserId() {
-    final userId = _session.currentUserId;
-    if (userId != null && userId.isNotEmpty) {
-      return userId;
+  String? _currentHouseholdId() {
+    final householdId = _session.householdId;
+    if (householdId != null && householdId.isNotEmpty) {
+      return householdId;
     }
     log(
-      'No signed-in user for kitchen utensil repository.',
+      'No active household for kitchen utensil repository.',
       name: _repositoryLogName,
     );
     return null;
   }
 
-  Stream<List<KitchenUtensil>> _watchAllForUser(String userId) async* {
-    final collectionPath = 'users/$userId/kitchen_utensils';
+  Stream<List<KitchenUtensil>> _watchAllForHousehold(
+    String householdId,
+  ) async* {
+    final collectionPath = 'households/$householdId/kitchen_utensils';
     final shutdownEpoch = _sessionShutdownSignal.epoch;
     try {
-      await for (final documents in _store.watchAll(userId: userId)) {
+      await for (final documents in _store.watchAll(householdId: householdId)) {
         yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
@@ -137,7 +139,7 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
         error.code == 'permission-denied'
             ? 'Kitchen utensil watch denied by Firestore rules for '
                   '$collectionPath.'
-            : 'Failed to watch kitchen utensils for user $userId.',
+            : 'Failed to watch kitchen utensils for household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -145,7 +147,7 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
       rethrow;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to watch kitchen utensils for user $userId.',
+        'Failed to watch kitchen utensils for household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -154,13 +156,13 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
     }
   }
 
-  Future<List<KitchenUtensil>> _readAllForUser(String userId) async {
+  Future<List<KitchenUtensil>> _readAllForHousehold(String householdId) async {
     try {
-      final documents = await _store.readAll(userId: userId);
+      final documents = await _store.readAll(householdId: householdId);
       return _decodeDocuments(documents);
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to read kitchen utensils for user $userId.',
+        'Failed to read kitchen utensils for household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,

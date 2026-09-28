@@ -28,7 +28,7 @@ InventoryItemRepository inventoryItemRepository(Ref ref) {
   final store = _resolveStore(ref, householdCipher);
   return FirestoreInventoryItemRepository(
     session: _CurrentInventoryUserSession(
-      currentUserId: householdCipher?.householdId,
+      householdId: householdCipher?.householdId,
     ),
     sessionShutdownSignal: ref.watch(sessionShutdownSignalProvider),
     store: store,
@@ -51,12 +51,12 @@ InventoryItemStore _resolveStore(Ref ref, HouseholdCipher? householdCipher) {
 }
 
 class _CurrentInventoryUserSession implements InventoryUserSession {
-  const new({required this._currentUserId});
+  const new({required this._householdId});
 
-  final String? _currentUserId;
+  final String? _householdId;
 
   @override
-  String? get currentUserId => _currentUserId;
+  String? get householdId => _householdId;
 }
 
 class _UnavailableInventoryItemStore
@@ -67,26 +67,28 @@ class _UnavailableInventoryItemStore
   bool get supportsLimitedRecentManualQuery => true;
 
   @override
-  Future<List<InventoryItemDocument>> readAll({required String userId}) async {
+  Future<List<InventoryItemDocument>> readAll({
+    required String householdId,
+  }) async {
     return const <InventoryItemDocument>[];
   }
 
   @override
   Future<List<InventoryItemDocument>> readRecentManual({
-    required String userId,
+    required String householdId,
     required int limit,
   }) async {
     return const <InventoryItemDocument>[];
   }
 
   @override
-  Stream<List<InventoryItemDocument>> watchAll({required String userId}) {
+  Stream<List<InventoryItemDocument>> watchAll({required String householdId}) {
     return const Stream<List<InventoryItemDocument>>.empty();
   }
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     return false;
@@ -94,7 +96,7 @@ class _UnavailableInventoryItemStore
 
   @override
   Future<bool> upsertAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     return false;

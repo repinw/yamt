@@ -21,26 +21,28 @@ import 'package:yamt/features/kitchen_utensils/data/'
 import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_store.dart';
 
 class _FakeInventoryUserSession implements InventoryUserSession {
-  const new({required this.currentUserId});
+  const new({required this.householdId});
 
   @override
-  final String? currentUserId;
+  final String? householdId;
 }
 
 class _FakeKitchenUtensilStore implements KitchenUtensilStore {
   @override
-  Future<List<KitchenUtensilDocument>> readAll({required String userId}) async {
+  Future<List<KitchenUtensilDocument>> readAll({
+    required String householdId,
+  }) async {
     return const <KitchenUtensilDocument>[];
   }
 
   @override
-  Stream<List<KitchenUtensilDocument>> watchAll({required String userId}) {
+  Stream<List<KitchenUtensilDocument>> watchAll({required String householdId}) {
     return const Stream<List<KitchenUtensilDocument>>.empty();
   }
 
   @override
   Future<bool> upsert({
-    required String userId,
+    required String householdId,
     required String utensilId,
     required Map<String, dynamic> data,
   }) async {
@@ -49,7 +51,7 @@ class _FakeKitchenUtensilStore implements KitchenUtensilStore {
 
   @override
   Future<bool> delete({
-    required String userId,
+    required String householdId,
     required String utensilId,
   }) async {
     return true;
@@ -82,7 +84,7 @@ void main() {
     resetFirebaseStorageProviderDebugHooks();
   });
 
-  test('user session provider reads household owner id', () async {
+  test('user session provider reads the household id', () async {
     final key = await PayloadCipher.newDataKey();
     final container = ProviderContainer(
       overrides: [
@@ -90,7 +92,7 @@ void main() {
           (ref) => const Stream<User?>.empty(),
         ),
         householdCipherProvider.overrideWithValue((
-          householdId: 'owner-1',
+          householdId: 'household-1',
           key: key,
           cipher: PayloadCipher(key),
         )),
@@ -99,8 +101,8 @@ void main() {
     addTearDown(container.dispose);
 
     expect(
-      container.read(kitchenUtensilUserSessionProvider).currentUserId,
-      'owner-1',
+      container.read(kitchenUtensilUserSessionProvider).householdId,
+      'household-1',
     );
   });
 
@@ -111,16 +113,19 @@ void main() {
 
     final store = container.read(kitchenUtensilStoreProvider);
 
-    expect(await store.readAll(userId: 'owner-1'), isEmpty);
+    expect(await store.readAll(householdId: 'household-1'), isEmpty);
     expect(
       await store.upsert(
-        userId: 'owner-1',
+        householdId: 'household-1',
         utensilId: 'pot-1',
         data: const <String, dynamic>{},
       ),
       isFalse,
     );
-    expect(await store.delete(userId: 'owner-1', utensilId: 'pot-1'), isFalse);
+    expect(
+      await store.delete(householdId: 'household-1', utensilId: 'pot-1'),
+      isFalse,
+    );
   });
 
   test('image store provider falls back to unavailable image store', () async {
@@ -132,7 +137,7 @@ void main() {
 
     expect(
       await imageStore.uploadBytes(
-        path: 'users/owner-1/kitchen_utensils/pot-1/images/one.jpg',
+        path: 'households/household-1/kitchen_utensils/pot-1/images/one.jpg',
         bytes: Uint8List.fromList(<int>[1]),
       ),
       isNull,
@@ -145,7 +150,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         kitchenUtensilUserSessionProvider.overrideWithValue(
-          const _FakeInventoryUserSession(currentUserId: 'owner-1'),
+          const _FakeInventoryUserSession(householdId: 'household-1'),
         ),
         sessionShutdownSignalProvider.overrideWithValue(
           SessionShutdownSignal(),

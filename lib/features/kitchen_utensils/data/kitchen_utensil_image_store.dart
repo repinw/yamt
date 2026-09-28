@@ -7,11 +7,12 @@ const String _imageStoreLogName = 'FirebaseKitchenUtensilImageStore';
 
 /// Builds the Firebase Storage path for a utensil photo.
 String kitchenUtensilImageStoragePath({
-  required String userId,
+  required String householdId,
   required String utensilId,
   required String imageId,
 }) {
-  return 'users/$userId/kitchen_utensils/$utensilId/images/$imageId.jpg';
+  return 'households/$householdId/kitchen_utensils/$utensilId/images/'
+      '$imageId.jpg';
 }
 
 /// Store for utensil images.

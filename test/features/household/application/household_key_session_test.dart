@@ -195,18 +195,18 @@ void main() {
     final items = await FirestoreInventoryItemStore(
       firestore: firestore,
       cipher: cipher,
-    ).readAll(userId: 'member-1');
+    ).readAll(householdId: 'member-1');
     expect(items.single.data, itemData);
     final discards = await FirestoreInventoryDiscardEventRepository(
       firestore: firestore,
       cipher: cipher,
-      currentUserId: 'member-1',
+      householdId: 'member-1',
     ).readAll();
     expect(discards.single.name, 'Milch');
     final activity = await FirestoreInventoryActivityEventRepository(
       firestore: firestore,
       cipher: cipher,
-      currentUserId: 'member-1',
+      householdId: 'member-1',
     ).watchRecent().first;
     expect(activity.single.itemName, 'Milch');
   });

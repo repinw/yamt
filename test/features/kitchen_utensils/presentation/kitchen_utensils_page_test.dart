@@ -83,7 +83,7 @@ class _FakeKitchenUtensilRepository implements KitchenUtensilRepository {
     required String imageId,
     required Uint8List bytes,
   }) async {
-    return 'users/owner-1/kitchen_utensils/$utensilId/images/$imageId.jpg';
+    return 'households/household-1/kitchen_utensils/$utensilId/images/$imageId.jpg';
   }
 
   @override

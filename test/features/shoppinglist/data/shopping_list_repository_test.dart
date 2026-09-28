@@ -9,20 +9,22 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_user_session.dart'
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 
 class _FakeShoppingListUserSession implements ShoppingListUserSession {
-  new({this.currentUserId});
+  new({this.householdId});
 
   @override
-  final String? currentUserId;
+  final String? householdId;
 }
 
 class _FakeShoppingListItemStore implements ShoppingListItemStore {
-  new({Map<String, List<ShoppingListItemDocument>>? initialDocumentsByUser})
-    : _documentsByUser =
-          initialDocumentsByUser ?? <String, List<ShoppingListItemDocument>>{};
+  new({
+    Map<String, List<ShoppingListItemDocument>>? initialDocumentsByHousehold,
+  }) : _documentsByHousehold =
+           initialDocumentsByHousehold ??
+           <String, List<ShoppingListItemDocument>>{};
 
-  final Map<String, List<ShoppingListItemDocument>> _documentsByUser;
+  final Map<String, List<ShoppingListItemDocument>> _documentsByHousehold;
   final Map<String, StreamController<List<ShoppingListItemDocument>>>
-  _controllersByUser =
+  _controllersByHousehold =
       <String, StreamController<List<ShoppingListItemDocument>>>{};
 
   bool replaceAllShouldFail = false;
@@ -32,15 +34,21 @@ class _FakeShoppingListItemStore implements ShoppingListItemStore {
   int maxConcurrentReplaces = 0;
 
   @override
-  Future<List<ShoppingListItemDocument>> readAll({required String userId}) {
-    return Future<List<ShoppingListItemDocument>>.value(_copyDocuments(userId));
+  Future<List<ShoppingListItemDocument>> readAll({
+    required String householdId,
+  }) {
+    return Future<List<ShoppingListItemDocument>>.value(
+      _copyDocuments(householdId),
+    );
   }
 
   @override
-  Stream<List<ShoppingListItemDocument>> watchAll({required String userId}) {
+  Stream<List<ShoppingListItemDocument>> watchAll({
+    required String householdId,
+  }) {
     return Stream<List<ShoppingListItemDocument>>.multi((controller) {
-      controller.add(_copyDocuments(userId));
-      final sub = _controllerFor(userId).stream.listen(
+      controller.add(_copyDocuments(householdId));
+      final sub = _controllerFor(householdId).stream.listen(
         controller.add,
         onError: controller.addError,
         onDone: controller.close,
@@ -53,7 +61,7 @@ class _FakeShoppingListItemStore implements ShoppingListItemStore {
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     if (replaceAllShouldFail) {
@@ -69,7 +77,7 @@ class _FakeShoppingListItemStore implements ShoppingListItemStore {
       if (replaceDelay > Duration.zero) {
         await Future<void>.delayed(replaceDelay);
       }
-      _documentsByUser[userId] = documentsById.entries
+      _documentsByHousehold[householdId] = documentsById.entries
           .map(
             (entry) => ShoppingListItemDocument(
               id: entry.key,
@@ -77,15 +85,18 @@ class _FakeShoppingListItemStore implements ShoppingListItemStore {
             ),
           )
           .toList(growable: false);
-      _emit(userId);
+      _emit(householdId);
       return true;
     } finally {
       _activeReplaces--;
     }
   }
 
-  void emitDocuments(String userId, List<ShoppingListItemDocument> documents) {
-    _documentsByUser[userId] = documents
+  void emitDocuments(
+    String householdId,
+    List<ShoppingListItemDocument> documents,
+  ) {
+    _documentsByHousehold[householdId] = documents
         .map(
           (doc) => ShoppingListItemDocument(
             id: doc.id,
@@ -93,11 +104,11 @@ class _FakeShoppingListItemStore implements ShoppingListItemStore {
           ),
         )
         .toList(growable: false);
-    _emit(userId);
+    _emit(householdId);
   }
 
-  void emitError(String userId, Object error) {
-    final controller = _controllersByUser[userId];
+  void emitError(String householdId, Object error) {
+    final controller = _controllersByHousehold[householdId];
     if (controller == null || controller.isClosed) {
       return;
     }
@@ -105,14 +116,16 @@ class _FakeShoppingListItemStore implements ShoppingListItemStore {
   }
 
   Future<void> dispose() async {
-    for (final controller in _controllersByUser.values) {
+    for (final controller in _controllersByHousehold.values) {
       await controller.close();
     }
-    _controllersByUser.clear();
+    _controllersByHousehold.clear();
   }
 
-  List<ShoppingListItemDocument> _copyDocuments(String userId) {
-    final docs = _documentsByUser[userId] ?? const <ShoppingListItemDocument>[];
+  List<ShoppingListItemDocument> _copyDocuments(String householdId) {
+    final docs =
+        _documentsByHousehold[householdId] ??
+        const <ShoppingListItemDocument>[];
     return docs
         .map(
           (doc) => ShoppingListItemDocument(
@@ -124,20 +137,20 @@ class _FakeShoppingListItemStore implements ShoppingListItemStore {
   }
 
   StreamController<List<ShoppingListItemDocument>> _controllerFor(
-    String userId,
+    String householdId,
   ) {
-    return _controllersByUser.putIfAbsent(
-      userId,
+    return _controllersByHousehold.putIfAbsent(
+      householdId,
       StreamController<List<ShoppingListItemDocument>>.broadcast,
     );
   }
 
-  void _emit(String userId) {
-    final controller = _controllersByUser[userId];
+  void _emit(String householdId) {
+    final controller = _controllersByHousehold[householdId];
     if (controller == null || controller.isClosed) {
       return;
     }
-    controller.add(_copyDocuments(userId));
+    controller.add(_copyDocuments(householdId));
   }
 }
 
@@ -160,43 +173,37 @@ ShoppingListItem _item(
 }
 
 void main() {
-  test(
-    'repository readAll returns empty list when user is not signed in',
-    () async {
-      final store = _FakeShoppingListItemStore();
-      addTearDown(store.dispose);
-      final repository = FirestoreShoppingListRepository(
-        session: _FakeShoppingListUserSession(),
-        store: store,
-      );
-
-      final items = await repository.readAll();
-
-      expect(items, isEmpty);
-    },
-  );
-
-  test(
-    'repository watchAll emits empty list when user is not signed in',
-    () async {
-      final store = _FakeShoppingListItemStore();
-      addTearDown(store.dispose);
-      final repository = FirestoreShoppingListRepository(
-        session: _FakeShoppingListUserSession(currentUserId: ''),
-        store: store,
-      );
-
-      final items = await repository.watchAll().first;
-
-      expect(items, isEmpty);
-    },
-  );
-
-  test('repository saveAll fails when user is not signed in', () async {
+  test('repository readAll returns empty list without a household', () async {
     final store = _FakeShoppingListItemStore();
     addTearDown(store.dispose);
     final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(currentUserId: ''),
+      session: _FakeShoppingListUserSession(),
+      store: store,
+    );
+
+    final items = await repository.readAll();
+
+    expect(items, isEmpty);
+  });
+
+  test('repository watchAll emits empty list without a household', () async {
+    final store = _FakeShoppingListItemStore();
+    addTearDown(store.dispose);
+    final repository = FirestoreShoppingListRepository(
+      session: _FakeShoppingListUserSession(householdId: ''),
+      store: store,
+    );
+
+    final items = await repository.watchAll().first;
+
+    expect(items, isEmpty);
+  });
+
+  test('repository saveAll fails without a household', () async {
+    final store = _FakeShoppingListItemStore();
+    addTearDown(store.dispose);
+    final repository = FirestoreShoppingListRepository(
+      session: _FakeShoppingListUserSession(householdId: ''),
       store: store,
     );
 
@@ -209,15 +216,15 @@ void main() {
     final payload = Map<String, dynamic>.from(_item('doc-a').toJson())
       ..remove('id');
     final store = _FakeShoppingListItemStore(
-      initialDocumentsByUser: <String, List<ShoppingListItemDocument>>{
-        'user-1': <ShoppingListItemDocument>[
+      initialDocumentsByHousehold: <String, List<ShoppingListItemDocument>>{
+        'household-1': <ShoppingListItemDocument>[
           ShoppingListItemDocument(id: 'doc-a', data: payload),
         ],
       },
     );
     addTearDown(store.dispose);
     final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(currentUserId: 'user-1'),
+      session: _FakeShoppingListUserSession(householdId: 'household-1'),
       store: store,
     );
 
@@ -228,15 +235,15 @@ void main() {
 
   test('repository watchAll emits updates after remote writes', () async {
     final store = _FakeShoppingListItemStore(
-      initialDocumentsByUser: <String, List<ShoppingListItemDocument>>{
-        'user-1': <ShoppingListItemDocument>[
+      initialDocumentsByHousehold: <String, List<ShoppingListItemDocument>>{
+        'household-1': <ShoppingListItemDocument>[
           ShoppingListItemDocument(id: 'a', data: _item('a').toJson()),
         ],
       },
     );
     addTearDown(store.dispose);
     final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(currentUserId: 'user-1'),
+      session: _FakeShoppingListUserSession(householdId: 'household-1'),
       store: store,
     );
 
@@ -247,7 +254,7 @@ void main() {
     });
 
     await Future<void>.delayed(const Duration(milliseconds: 1));
-    store.emitDocuments('user-1', <ShoppingListItemDocument>[
+    store.emitDocuments('household-1', <ShoppingListItemDocument>[
       ShoppingListItemDocument(id: 'a', data: _item('a').toJson()),
       ShoppingListItemDocument(id: 'b', data: _item('b').toJson()),
     ]);
@@ -265,15 +272,15 @@ void main() {
     'repository watchAll emits empty list when realtime watch is denied',
     () async {
       final store = _FakeShoppingListItemStore(
-        initialDocumentsByUser: <String, List<ShoppingListItemDocument>>{
-          'user-1': <ShoppingListItemDocument>[
+        initialDocumentsByHousehold: <String, List<ShoppingListItemDocument>>{
+          'household-1': <ShoppingListItemDocument>[
             ShoppingListItemDocument(id: 'a', data: _item('a').toJson()),
           ],
         },
       );
       addTearDown(store.dispose);
       final repository = FirestoreShoppingListRepository(
-        session: _FakeShoppingListUserSession(currentUserId: 'user-1'),
+        session: _FakeShoppingListUserSession(householdId: 'household-1'),
         store: store,
       );
 
@@ -289,7 +296,7 @@ void main() {
 
       await Future<void>.delayed(const Duration(milliseconds: 1));
       store.emitError(
-        'user-1',
+        'household-1',
         FirebaseException(
           plugin: 'cloud_firestore',
           code: 'permission-denied',
@@ -309,7 +316,7 @@ void main() {
       ..replaceDelay = const Duration(milliseconds: 25);
     addTearDown(store.dispose);
     final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(currentUserId: 'user-1'),
+      session: _FakeShoppingListUserSession(householdId: 'household-1'),
       store: store,
     );
 
@@ -327,7 +334,7 @@ void main() {
     final store = _FakeShoppingListItemStore()..replaceAllShouldFail = true;
     addTearDown(store.dispose);
     final repository = FirestoreShoppingListRepository(
-      session: _FakeShoppingListUserSession(currentUserId: 'user-1'),
+      session: _FakeShoppingListUserSession(householdId: 'household-1'),
       store: store,
     );
 

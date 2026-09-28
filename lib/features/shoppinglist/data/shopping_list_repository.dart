@@ -21,7 +21,7 @@ ShoppingListRepository shoppingListRepository(Ref ref) {
   }
   return FirestoreShoppingListRepository(
     session: _CurrentShoppingListUserSession(
-      currentUserId: householdCipher.householdId,
+      householdId: householdCipher.householdId,
     ),
     store: FirestoreShoppingListItemStore(
       firestore: firestore,
@@ -31,12 +31,12 @@ ShoppingListRepository shoppingListRepository(Ref ref) {
 }
 
 class _CurrentShoppingListUserSession implements ShoppingListUserSession {
-  const new({required this._currentUserId});
+  const new({required this._householdId});
 
-  final String? _currentUserId;
+  final String? _householdId;
 
   @override
-  String? get currentUserId => _currentUserId;
+  String? get householdId => _householdId;
 }
 
 class _UnavailableShoppingListRepository implements ShoppingListRepository {

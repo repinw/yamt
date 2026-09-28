@@ -18,7 +18,7 @@ void main() {
     final repository = FirestoreInventoryActivityEventRepository(
       firestore: firestore,
       cipher: cipher,
-      currentUserId: 'owner-1',
+      householdId: 'household-1',
     );
     final older = _event(
       id: 'event-1',
@@ -37,7 +37,7 @@ void main() {
     expect(saved, isTrue);
     await pumpEventQueue();
     final raw = await firestore
-        .doc('users/owner-1/inventory_activity_events/event-1')
+        .doc('households/household-1/inventory_activity_events/event-1')
         .get();
     expect(
       raw.data()!.keys,
@@ -61,7 +61,7 @@ void main() {
     final repository = FirestoreInventoryActivityEventRepository(
       firestore: firestore,
       cipher: cipher,
-      currentUserId: 'owner-1',
+      householdId: 'household-1',
     );
     final events = List<InventoryActivityEvent>.generate(501, (index) {
       return _event(

@@ -18,6 +18,7 @@ part 'prepared_meal_calorie_entry_commit_store.g.dart';
 
 const _commitStoreLogName = 'PreparedMealCalorieEntryCommitStore';
 const _usersCollection = 'users';
+const _householdsCollection = 'households';
 const _calorieEntriesCollection = 'calorie_entries';
 const _preparedMealsCollection = 'prepared_meals';
 
@@ -187,7 +188,7 @@ class FirestorePreparedMealCalorieEntryCommitStore
   SealedCollection _preparedMealCollection(HouseholdCipher household) {
     return SealedCollection(
       _firestore
-          .collection(_usersCollection)
+          .collection(_householdsCollection)
           .doc(household.householdId)
           .collection(_preparedMealsCollection),
       cipher: household.cipher,

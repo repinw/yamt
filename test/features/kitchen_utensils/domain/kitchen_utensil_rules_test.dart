@@ -56,7 +56,8 @@ void main() {
       isValidKitchenUtensilInput(
         name: null,
         imageBytes: null,
-        imageStoragePath: 'users/owner/kitchen_utensils/pot/images/1.jpg',
+        imageStoragePath:
+            'households/household-1/kitchen_utensils/pot/images/1.jpg',
         weightGrams: 100,
       ),
       isTrue,

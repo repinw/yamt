@@ -84,7 +84,7 @@ class _FakeKitchenUtensilRepository implements KitchenUtensilRepository {
       return null;
     }
     final path =
-        'users/owner-1/kitchen_utensils/$utensilId/images/$imageId.jpg';
+        'households/household-1/kitchen_utensils/$utensilId/images/$imageId.jpg';
     uploadedPaths.add(path);
     return path;
   }
@@ -215,7 +215,10 @@ void main() {
   test('updateUtensil rejects removing only identity', () async {
     final repository = _FakeKitchenUtensilRepository(
       initialUtensils: [
-        _utensil(name: null, imageStoragePath: 'users/owner-1/pot.jpg'),
+        _utensil(
+          name: null,
+          imageStoragePath: 'households/household-1/pot.jpg',
+        ),
       ],
     );
     addTearDown(repository.dispose);
@@ -238,7 +241,9 @@ void main() {
 
   test('deleteUtensil removes metadata and keeps the image for undo', () async {
     final repository = _FakeKitchenUtensilRepository(
-      initialUtensils: [_utensil(imageStoragePath: 'users/owner-1/pot.jpg')],
+      initialUtensils: [
+        _utensil(imageStoragePath: 'households/household-1/pot.jpg'),
+      ],
     );
     addTearDown(repository.dispose);
     final container = _buildContainer(repository);

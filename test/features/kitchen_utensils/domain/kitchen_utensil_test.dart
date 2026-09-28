@@ -6,7 +6,7 @@ void main() {
     final utensil = KitchenUtensil.fromJson(const {
       'id': ' pot-1 ',
       'name': ' Cooking pot ',
-      'image_storage_path': ' users/u/kitchen_utensils/p/images/a.jpg ',
+      'image_storage_path': ' households/h/kitchen_utensils/p/images/a.jpg ',
       'weight_grams': '420',
       'created_at': '2026-04-01T10:00:00.000Z',
       'updated_at': '2026-04-01T11:00:00.000Z',
@@ -14,7 +14,10 @@ void main() {
 
     expect(utensil.id, 'pot-1');
     expect(utensil.name, 'Cooking pot');
-    expect(utensil.imageStoragePath, 'users/u/kitchen_utensils/p/images/a.jpg');
+    expect(
+      utensil.imageStoragePath,
+      'households/h/kitchen_utensils/p/images/a.jpg',
+    );
     expect(utensil.weightGrams, 420);
     expect(utensil.hasIdentity, isTrue);
   });
@@ -23,7 +26,7 @@ void main() {
     final utensil = KitchenUtensil(
       id: 'pot-1',
       name: 'Cooking pot',
-      imageStoragePath: 'users/u/kitchen_utensils/p/images/a.jpg',
+      imageStoragePath: 'households/h/kitchen_utensils/p/images/a.jpg',
       weightGrams: 420,
       createdAt: DateTime.parse('2026-04-01T10:00:00.000Z'),
       updatedAt: DateTime.parse('2026-04-01T11:00:00.000Z'),
@@ -32,7 +35,7 @@ void main() {
     expect(utensil.toJson(), {
       'id': 'pot-1',
       'name': 'Cooking pot',
-      'image_storage_path': 'users/u/kitchen_utensils/p/images/a.jpg',
+      'image_storage_path': 'households/h/kitchen_utensils/p/images/a.jpg',
       'weight_grams': 420,
       'created_at': '2026-04-01T10:00:00.000Z',
       'updated_at': '2026-04-01T11:00:00.000Z',

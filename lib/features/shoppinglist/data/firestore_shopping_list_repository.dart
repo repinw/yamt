@@ -20,52 +20,54 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
 
   @override
   Stream<List<ShoppingListItem>> watchAll() {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Stream<List<ShoppingListItem>>.value(const <ShoppingListItem>[]);
     }
-    return _watchAllForUser(userId);
+    return _watchAllForHousehold(householdId);
   }
 
   @override
   Future<List<ShoppingListItem>> readAll() async {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return const <ShoppingListItem>[];
     }
-    return await _readAllForUser(userId);
+    return await _readAllForHousehold(householdId);
   }
 
   @override
   Future<bool> saveAll(List<ShoppingListItem> items) {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Future<bool>.value(false);
     }
-    return _runExclusiveWrite(() => _saveAllForUser(userId, items));
+    return _runExclusiveWrite(() => _saveAllForHousehold(householdId, items));
   }
 
-  String? _currentUserId() {
-    final userId = _session.currentUserId;
-    if (userId != null && userId.isNotEmpty) {
-      return userId;
+  String? _currentHouseholdId() {
+    final householdId = _session.householdId;
+    if (householdId != null && householdId.isNotEmpty) {
+      return householdId;
     }
     log(
-      'No signed-in user for shopping list repository.',
+      'No active household for shopping list repository.',
       name: _repositoryLogName,
     );
     return null;
   }
 
-  Stream<List<ShoppingListItem>> _watchAllForUser(String userId) async* {
+  Stream<List<ShoppingListItem>> _watchAllForHousehold(
+    String householdId,
+  ) async* {
     try {
-      await for (final documents in _store.watchAll(userId: userId)) {
+      await for (final documents in _store.watchAll(householdId: householdId)) {
         yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
       if (_isPermissionDenied(error)) {
         log(
-          'Skipping shopping list watch for user $userId: '
+          'Skipping shopping list watch for household $householdId: '
           'permission denied by Firestore rules.',
           name: _repositoryLogName,
           error: error,
@@ -75,7 +77,7 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
         return;
       }
       log(
-        'Failed to watch shopping list items for user $userId',
+        'Failed to watch shopping list items for household $householdId',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -83,7 +85,7 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
       rethrow;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to watch shopping list items for user $userId',
+        'Failed to watch shopping list items for household $householdId',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -92,13 +94,15 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
     }
   }
 
-  Future<List<ShoppingListItem>> _readAllForUser(String userId) async {
+  Future<List<ShoppingListItem>> _readAllForHousehold(
+    String householdId,
+  ) async {
     try {
-      final documents = await _store.readAll(userId: userId);
+      final documents = await _store.readAll(householdId: householdId);
       return _decodeDocuments(documents);
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to read shopping list items for user $userId',
+        'Failed to read shopping list items for household $householdId',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -107,11 +111,17 @@ class FirestoreShoppingListRepository implements ShoppingListRepository {
     }
   }
 
-  Future<bool> _saveAllForUser(String userId, List<ShoppingListItem> items) {
+  Future<bool> _saveAllForHousehold(
+    String householdId,
+    List<ShoppingListItem> items,
+  ) {
     final documentsById = <String, Map<String, dynamic>>{
       for (final item in items) item.id: item.toJson(),
     };
-    return _store.replaceAll(userId: userId, documentsById: documentsById);
+    return _store.replaceAll(
+      householdId: householdId,
+      documentsById: documentsById,
+    );
   }
 
   List<ShoppingListItem> _decodeDocuments(List<ShoppingListItemDocument> docs) {

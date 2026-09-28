@@ -17,6 +17,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 
 const _usersCollection = 'users';
+const _householdsCollection = 'households';
 const _calorieEntriesCollection = 'calorie_entries';
 const _inventoryItemsCollection = 'inventory_items';
 const _activityEventsCollection = 'inventory_activity_events';
@@ -24,11 +25,11 @@ const _actor = InventoryActivityActor(userId: 'user-1', displayName: 'Alex');
 
 CollectionReference<Map<String, dynamic>> _inventoryCollection({
   required FirebaseFirestore firestore,
-  String userId = 'user-1',
+  String householdId = 'household-1',
 }) {
   return firestore
-      .collection(_usersCollection)
-      .doc(userId)
+      .collection(_householdsCollection)
+      .doc(householdId)
       .collection(_inventoryItemsCollection);
 }
 
@@ -44,11 +45,11 @@ CollectionReference<Map<String, dynamic>> _entryCollection({
 
 CollectionReference<Map<String, dynamic>> _activityCollection({
   required FirebaseFirestore firestore,
-  String userId = 'user-1',
+  String householdId = 'household-1',
 }) {
   return firestore
-      .collection(_usersCollection)
-      .doc(userId)
+      .collection(_householdsCollection)
+      .doc(householdId)
       .collection(_activityEventsCollection);
 }
 
@@ -98,10 +99,10 @@ HouseholdCipher _household(String householdId) {
 
 SealedCollection _sealedItems(
   FirebaseFirestore firestore, {
-  String userId = 'user-1',
+  String householdId = 'household-1',
 }) {
   return SealedCollection(
-    _inventoryCollection(firestore: firestore, userId: userId),
+    _inventoryCollection(firestore: firestore, householdId: householdId),
     cipher: PayloadCipher(_householdKey),
     plaintextFields: inventoryItemPlaintextFields,
   );
@@ -110,29 +111,29 @@ SealedCollection _sealedItems(
 Future<void> _putItem(
   FirebaseFirestore firestore,
   Map<String, dynamic> json, {
-  String userId = 'user-1',
+  String householdId = 'household-1',
   String itemId = 'inventory-1',
 }) async {
-  final items = _sealedItems(firestore, userId: userId);
+  final items = _sealedItems(firestore, householdId: householdId);
   await items.reference.doc(itemId).set(await items.seal(itemId, json));
 }
 
 Future<Map<String, dynamic>> _openItem(
   FirebaseFirestore firestore, {
-  String userId = 'user-1',
+  String householdId = 'household-1',
   String itemId = 'inventory-1',
 }) async {
-  final items = _sealedItems(firestore, userId: userId);
+  final items = _sealedItems(firestore, householdId: householdId);
   final snapshot = await items.reference.doc(itemId).get();
   return <String, dynamic>{'id': snapshot.id, ...?await items.open(snapshot)};
 }
 
 Future<List<Map<String, dynamic>>> _openActivity(
   FirebaseFirestore firestore, {
-  String userId = 'user-1',
+  String householdId = 'household-1',
 }) async {
   final events = SealedCollection(
-    _activityCollection(firestore: firestore, userId: userId),
+    _activityCollection(firestore: firestore, householdId: householdId),
     cipher: PayloadCipher(_householdKey),
     plaintextFields: inventoryActivityEventPlaintextFields,
   );
@@ -165,7 +166,7 @@ void main() {
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        householdCipher: _household('user-1'),
+        householdCipher: _household('household-1'),
         actor: _actor,
       );
 
@@ -243,7 +244,7 @@ void main() {
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        householdCipher: _household('user-1'),
+        householdCipher: _household('household-1'),
         actor: _actor,
       );
 
@@ -282,7 +283,7 @@ void main() {
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        householdCipher: _household('user-1'),
+        householdCipher: _household('household-1'),
         actor: _actor,
       );
 
@@ -305,15 +306,19 @@ void main() {
     },
   );
 
-  test('commitEntryAndInventory uses shared inventory owner '
-      'and personal entry user', () async {
+  test('commitEntryAndInventory writes stock to the household '
+      'and the entry to the user', () async {
     final firestore = FakeFirebaseFirestore();
-    await _putItem(firestore, _inventoryItem().toJson(), userId: 'host-1');
+    await _putItem(
+      firestore,
+      _inventoryItem().toJson(),
+      householdId: 'household-shared',
+    );
 
     final store = FirestoreInventoryCalorieEntryCommitStore(
       firestore: firestore,
       dataCipher: _signedIn('member-1'),
-      householdCipher: _household('host-1'),
+      householdCipher: _household('household-shared'),
       actor: const InventoryActivityActor(
         userId: 'member-1',
         displayName: 'Jamie',
@@ -339,12 +344,18 @@ void main() {
       firestore: firestore,
       userId: 'member-1',
     ).doc('entry-1').get();
-    final savedItem = await _openItem(firestore, userId: 'host-1');
+    final savedItem = await _openItem(
+      firestore,
+      householdId: 'household-shared',
+    );
 
     expect(savedEntry.exists, isTrue);
     expect((await _decrypted(savedEntry))['user_id'], 'member-1');
     expect(savedItem['current_amount'], 500);
-    final activity = await _openActivity(firestore, userId: 'host-1');
+    final activity = await _openActivity(
+      firestore,
+      householdId: 'household-shared',
+    );
     expect(activity.single['actor_user_id'], 'member-1');
   });
 
@@ -380,7 +391,7 @@ void main() {
       return FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        householdCipher: _household('user-1'),
+        householdCipher: _household('household-1'),
         actor: _actor,
       );
     }

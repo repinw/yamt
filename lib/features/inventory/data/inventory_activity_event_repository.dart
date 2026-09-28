@@ -15,7 +15,7 @@ import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 part 'inventory_activity_event_repository.g.dart';
 
 const _activityLogName = 'InventoryActivityEventRepository';
-const _usersCollection = 'users';
+const _householdsCollection = 'households';
 const _activityEventsCollection = 'inventory_activity_events';
 const _defaultRecentLimit = 100;
 const _firestoreBatchWriteLimit = 500;
@@ -37,25 +37,25 @@ class FirestoreInventoryActivityEventRepository
   const new({
     required this._firestore,
     required this._cipher,
-    required this._currentUserId,
+    required this._householdId,
   });
 
   final FirebaseFirestore _firestore;
   final PayloadCipher _cipher;
-  final String? _currentUserId;
+  final String? _householdId;
 
   @override
   Stream<List<InventoryActivityEvent>> watchRecent({
     int limit = _defaultRecentLimit,
   }) {
-    final userId = _resolvedUserId();
-    if (userId == null || limit < 1) {
+    final householdId = _resolvedHouseholdId();
+    if (householdId == null || limit < 1) {
       return Stream<List<InventoryActivityEvent>>.value(
         const <InventoryActivityEvent>[],
       );
     }
 
-    final collection = _collection(userId);
+    final collection = _collection(householdId);
     return collection.reference
         .orderBy('happened_at', descending: true)
         .limit(limit)
@@ -68,13 +68,13 @@ class FirestoreInventoryActivityEventRepository
 
   @override
   Future<bool> appendAll(List<InventoryActivityEvent> events) async {
-    final userId = _resolvedUserId();
-    if (userId == null || events.isEmpty) {
+    final householdId = _resolvedHouseholdId();
+    if (householdId == null || events.isEmpty) {
       return events.isEmpty;
     }
 
     try {
-      final collection = _collection(userId);
+      final collection = _collection(householdId);
       final sealedById = await collection.sealAll(
         <String, Map<String, dynamic>>{
           for (final event in events) event.id: event.toJson(),
@@ -94,14 +94,16 @@ class FirestoreInventoryActivityEventRepository
         commitBatchInBackground(
           batch,
           failureMessage:
-              'Server rejected inventory activity events for user $userId.',
+              'Server rejected inventory activity events for '
+              'household $householdId.',
           logName: _activityLogName,
         );
       }
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to append inventory activity events for user $userId.',
+        'Failed to append inventory activity events for '
+        'household $householdId.',
         name: _activityLogName,
         error: error,
         stackTrace: stackTrace,
@@ -110,19 +112,19 @@ class FirestoreInventoryActivityEventRepository
     }
   }
 
-  String? _resolvedUserId() {
-    final userId = _currentUserId?.trim();
-    if (userId == null || userId.isEmpty) {
+  String? _resolvedHouseholdId() {
+    final householdId = _householdId?.trim();
+    if (householdId == null || householdId.isEmpty) {
       return null;
     }
-    return userId;
+    return householdId;
   }
 
-  SealedCollection _collection(String userId) {
+  SealedCollection _collection(String householdId) {
     return SealedCollection(
       _firestore
-          .collection(_usersCollection)
-          .doc(userId)
+          .collection(_householdsCollection)
+          .doc(householdId)
           .collection(_activityEventsCollection),
       cipher: _cipher,
       plaintextFields: inventoryActivityEventPlaintextFields,
@@ -195,7 +197,7 @@ InventoryActivityEventRepository inventoryActivityEventRepository(Ref ref) {
   return FirestoreInventoryActivityEventRepository(
     firestore: firestore,
     cipher: householdCipher.cipher,
-    currentUserId: householdCipher.householdId,
+    householdId: householdCipher.householdId,
   );
 }
 

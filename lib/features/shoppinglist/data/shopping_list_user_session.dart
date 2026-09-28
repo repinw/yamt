@@ -1,5 +1,5 @@
 /// Defines shopping list user session.
 abstract interface class ShoppingListUserSession {
-  /// The current user id.
-  String? get currentUserId;
+  /// The id of the household whose data the repository reads.
+  String? get householdId;
 }

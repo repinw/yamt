@@ -16,8 +16,8 @@ const _dataProviderLogName = 'KitchenUtensilDataProviders';
 /// Current household-scoped user session for kitchen utensils.
 final kitchenUtensilUserSessionProvider = Provider<InventoryUserSession>((ref) {
   ref.watch(authStateChangesProvider);
-  final currentUserId = ref.watch(householdCipherProvider)?.householdId;
-  return _CurrentKitchenUtensilUserSession(currentUserId: currentUserId);
+  final householdId = ref.watch(householdCipherProvider)?.householdId;
+  return _CurrentKitchenUtensilUserSession(householdId: householdId);
 });
 
 /// Firestore-backed kitchen utensil metadata store.
@@ -53,24 +53,26 @@ final kitchenUtensilImageStoreProvider = Provider<KitchenUtensilImageStore>((
 });
 
 class _CurrentKitchenUtensilUserSession implements InventoryUserSession {
-  const new({required this._currentUserId});
+  const new({required this._householdId});
 
-  final String? _currentUserId;
+  final String? _householdId;
 
   @override
-  String? get currentUserId => _currentUserId;
+  String? get householdId => _householdId;
 }
 
 class _UnavailableKitchenUtensilStore implements KitchenUtensilStore {
   const new();
 
   @override
-  Future<List<KitchenUtensilDocument>> readAll({required String userId}) async {
+  Future<List<KitchenUtensilDocument>> readAll({
+    required String householdId,
+  }) async {
     return const <KitchenUtensilDocument>[];
   }
 
   @override
-  Stream<List<KitchenUtensilDocument>> watchAll({required String userId}) {
+  Stream<List<KitchenUtensilDocument>> watchAll({required String householdId}) {
     return Stream<List<KitchenUtensilDocument>>.value(
       const <KitchenUtensilDocument>[],
     );
@@ -78,7 +80,7 @@ class _UnavailableKitchenUtensilStore implements KitchenUtensilStore {
 
   @override
   Future<bool> upsert({
-    required String userId,
+    required String householdId,
     required String utensilId,
     required Map<String, dynamic> data,
   }) async {
@@ -87,7 +89,7 @@ class _UnavailableKitchenUtensilStore implements KitchenUtensilStore {
 
   @override
   Future<bool> delete({
-    required String userId,
+    required String householdId,
     required String utensilId,
   }) async {
     return false;

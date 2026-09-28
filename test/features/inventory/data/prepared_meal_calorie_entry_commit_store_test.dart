@@ -15,16 +15,17 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 const _usersCollection = 'users';
+const _householdsCollection = 'households';
 const _calorieEntriesCollection = 'calorie_entries';
 const _preparedMealsCollection = 'prepared_meals';
 
 CollectionReference<Map<String, dynamic>> _preparedMealCollection({
   required FirebaseFirestore firestore,
-  String userId = 'user-1',
+  String householdId = 'household-1',
 }) {
   return firestore
-      .collection(_usersCollection)
-      .doc(userId)
+      .collection(_householdsCollection)
+      .doc(householdId)
       .collection(_preparedMealsCollection);
 }
 
@@ -91,10 +92,10 @@ late SecretKey _householdCipherKey;
 
 SealedCollection _sealedMeals(
   FirebaseFirestore firestore, {
-  String userId = 'user-1',
+  String householdId = 'household-1',
 }) {
   return SealedCollection(
-    _preparedMealCollection(firestore: firestore, userId: userId),
+    _preparedMealCollection(firestore: firestore, householdId: householdId),
     cipher: _householdCipher,
   );
 }
@@ -102,17 +103,17 @@ SealedCollection _sealedMeals(
 Future<void> _putMeal(
   FirebaseFirestore firestore,
   Map<String, dynamic> json, {
-  String userId = 'user-1',
+  String householdId = 'household-1',
 }) async {
-  final meals = _sealedMeals(firestore, userId: userId);
+  final meals = _sealedMeals(firestore, householdId: householdId);
   await meals.reference.doc('meal-1').set(await meals.seal('meal-1', json));
 }
 
 Future<Map<String, dynamic>> _openMeal(
   FirebaseFirestore firestore, {
-  String userId = 'user-1',
+  String householdId = 'household-1',
 }) async {
-  final meals = _sealedMeals(firestore, userId: userId);
+  final meals = _sealedMeals(firestore, householdId: householdId);
   final snapshot = await meals.reference.doc('meal-1').get();
   expect(snapshot.data()!.keys, <String>[encryptedPayloadField]);
   return (await meals.open(snapshot))!;
@@ -144,7 +145,7 @@ void main() {
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        householdCipher: _household('user-1'),
+        householdCipher: _household('household-1'),
       );
 
       final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -181,7 +182,7 @@ void main() {
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        householdCipher: _household('user-1'),
+        householdCipher: _household('household-1'),
       );
 
       final saved = await store.commitEntryAndPreparedMeal(
@@ -219,7 +220,7 @@ void main() {
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        householdCipher: _household('user-1'),
+        householdCipher: _household('household-1'),
       );
 
       final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -241,7 +242,7 @@ void main() {
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
       dataCipher: _signedIn('user-1'),
-      householdCipher: _household('user-1'),
+      householdCipher: _household('household-1'),
     );
 
     final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -265,7 +266,7 @@ void main() {
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: _signedIn('user-1'),
-        householdCipher: _household('user-1'),
+        householdCipher: _household('household-1'),
       );
 
       final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -292,7 +293,7 @@ void main() {
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
       dataCipher: _signedIn('user-1'),
-      householdCipher: _household('user-1'),
+      householdCipher: _household('household-1'),
     );
 
     final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
@@ -311,15 +312,19 @@ void main() {
     expect(savedMeal['remaining_portions'], 4);
   });
 
-  test('commitEntryAndPreparedMeal uses shared meal owner and personal '
-      'entry user', () async {
+  test('commitEntryAndPreparedMeal writes the meal to the household and '
+      'the entry to the user', () async {
     final firestore = FakeFirebaseFirestore();
-    await _putMeal(firestore, _meal().toJson(), userId: 'host-1');
+    await _putMeal(
+      firestore,
+      _meal().toJson(),
+      householdId: 'household-shared',
+    );
 
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
       dataCipher: _signedIn('member-1'),
-      householdCipher: _household('host-1'),
+      householdCipher: _household('household-shared'),
     );
 
     final saved = await store.commitEntryAndPreparedMeal(
@@ -333,7 +338,10 @@ void main() {
       firestore: firestore,
       userId: 'member-1',
     ).doc('entry-1').get();
-    final savedMeal = await _openMeal(firestore, userId: 'host-1');
+    final savedMeal = await _openMeal(
+      firestore,
+      householdId: 'household-shared',
+    );
 
     expect(savedEntry.exists, isTrue);
     expect((await _decrypted(savedEntry))['user_id'], 'member-1');

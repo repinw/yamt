@@ -63,9 +63,9 @@ void main() {
     addTearDown(container.dispose);
 
     final url = await container.read(
-      kitchenUtensilImageUrlProvider('users/owner/pot.jpg').future,
+      kitchenUtensilImageUrlProvider('households/household-1/pot.jpg').future,
     );
 
-    expect(url, 'https://example.test/users/owner/pot.jpg');
+    expect(url, 'https://example.test/households/household-1/pot.jpg');
   });
 }

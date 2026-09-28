@@ -58,4 +58,4 @@ final class AiChefRepositoryProvider
   }
 }
 
-String _$aiChefRepositoryHash() => r'a628e72c765cacc4525ab68f9ee17bf411936f95';
+String _$aiChefRepositoryHash() => r'edb6714f5af826db0d584a78022555a9ea1f8f40';

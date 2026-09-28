@@ -6,7 +6,7 @@ import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 
 const String _storeLogName = 'FirestoreShoppingListItemStore';
-const String _usersCollection = 'users';
+const String _householdsCollection = 'households';
 const String _shoppingListCollection = 'shopping_list_items';
 
 /// Defines shopping list item document.
@@ -24,14 +24,16 @@ class ShoppingListItemDocument {
 /// Defines shopping list item store.
 abstract interface class ShoppingListItemStore {
   /// Read all.
-  Future<List<ShoppingListItemDocument>> readAll({required String userId});
+  Future<List<ShoppingListItemDocument>> readAll({required String householdId});
 
   /// Watch all.
-  Stream<List<ShoppingListItemDocument>> watchAll({required String userId});
+  Stream<List<ShoppingListItemDocument>> watchAll({
+    required String householdId,
+  });
 
   /// Replace all.
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   });
 }
@@ -50,17 +52,19 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
 
   @override
   Future<List<ShoppingListItemDocument>> readAll({
-    required String userId,
+    required String householdId,
   }) async {
-    final collection = _collection(userId);
+    final collection = _collection(householdId);
     return _mapDocuments(
       await collection.openAll(await collection.reference.get()),
     );
   }
 
   @override
-  Stream<List<ShoppingListItemDocument>> watchAll({required String userId}) {
-    final collection = _collection(userId);
+  Stream<List<ShoppingListItemDocument>> watchAll({
+    required String householdId,
+  }) {
+    final collection = _collection(householdId);
     return collection.reference.snapshots().asyncMap(
       (snapshot) async => _mapDocuments(await collection.openAll(snapshot)),
     );
@@ -68,15 +72,18 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      await _replaceAllUnsafe(userId: userId, documentsById: documentsById);
+      await _replaceAllUnsafe(
+        householdId: householdId,
+        documentsById: documentsById,
+      );
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to replace shopping list items for user $userId',
+        'Failed to replace shopping list items for household $householdId',
         name: _storeLogName,
         error: error,
         stackTrace: stackTrace,
@@ -86,10 +93,10 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
   }
 
   Future<void> _replaceAllUnsafe({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
-    final collection = _collection(userId);
+    final collection = _collection(householdId);
     await collection.ensureAllSealed();
     await _atomicReplaceService.replaceAll(
       collection: collection.reference,
@@ -106,11 +113,11 @@ class FirestoreShoppingListItemStore implements ShoppingListItemStore {
         .toList(growable: false);
   }
 
-  SealedCollection _collection(String userId) {
+  SealedCollection _collection(String householdId) {
     return SealedCollection(
       _firestore
-          .collection(_usersCollection)
-          .doc(userId)
+          .collection(_householdsCollection)
+          .doc(householdId)
           .collection(_shoppingListCollection),
       cipher: _cipher,
     );

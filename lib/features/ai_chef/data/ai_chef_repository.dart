@@ -1,7 +1,6 @@
 import 'dart:developer' show log;
 
 import 'package:firebase_ai/firebase_ai.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
@@ -9,7 +8,7 @@ import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_image_generator.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_recipe_draft.dart';
 import 'package:yamt/features/ai_chef/data/ai_chef_recipe_response_parser.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 part 'ai_chef_repository.g.dart';
@@ -28,8 +27,8 @@ typedef AiChefTemplateModelClient = Future<String?> Function({
 @riverpod
 FirebaseAiChefRepository aiChefRepository(Ref ref) {
   final storage = ref.watch(firebaseStorageProvider);
-  final auth = ref.watch(firebaseAuthProvider);
-  return FirebaseAiChefRepository(storage: storage, auth: auth);
+  final householdId = ref.watch(householdCipherProvider)?.householdId;
+  return FirebaseAiChefRepository(storage: storage, householdId: householdId);
 }
 
 /// Repository managing recipe generation using a Firebase AI server prompt
@@ -38,12 +37,13 @@ class FirebaseAiChefRepository {
   /// Creates an instance.
   new({
     FirebaseStorage? storage,
-    FirebaseAuth? auth,
+    String? householdId,
     this._parser = const AiChefRecipeResponseParser(),
     AiChefImageGenerator? imageGenerator,
     AiChefTemplateModelClient? templateModelClient,
   }) : _imageGenerator =
-           imageGenerator ?? AiChefImageGenerator(storage: storage, auth: auth),
+           imageGenerator ??
+           AiChefImageGenerator(storage: storage, householdId: householdId),
        _templateModelClient =
            templateModelClient ?? _firebaseAiChefTemplateClient;
 

@@ -6,7 +6,7 @@ import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 
 const String _storeLogName = 'FirestorePreparedMealStore';
-const String _usersCollection = 'users';
+const String _householdsCollection = 'households';
 const String _preparedMealsCollection = 'prepared_meals';
 
 /// Defines prepared meal document.
@@ -24,14 +24,14 @@ class PreparedMealDocument {
 /// Defines prepared meal store.
 abstract interface class PreparedMealStore {
   /// Read all.
-  Future<List<PreparedMealDocument>> readAll({required String userId});
+  Future<List<PreparedMealDocument>> readAll({required String householdId});
 
   /// Watch all.
-  Stream<List<PreparedMealDocument>> watchAll({required String userId});
+  Stream<List<PreparedMealDocument>> watchAll({required String householdId});
 
   /// Replace all.
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   });
 }
@@ -49,16 +49,18 @@ class FirestorePreparedMealStore implements PreparedMealStore {
   }
 
   @override
-  Future<List<PreparedMealDocument>> readAll({required String userId}) async {
-    final collection = _collection(userId);
+  Future<List<PreparedMealDocument>> readAll({
+    required String householdId,
+  }) async {
+    final collection = _collection(householdId);
     return _mapDocuments(
       await collection.openAll(await collection.reference.get()),
     );
   }
 
   @override
-  Stream<List<PreparedMealDocument>> watchAll({required String userId}) {
-    final collection = _collection(userId);
+  Stream<List<PreparedMealDocument>> watchAll({required String householdId}) {
+    final collection = _collection(householdId);
     return collection.reference.snapshots().asyncMap(
       (snapshot) async => _mapDocuments(await collection.openAll(snapshot)),
     );
@@ -66,11 +68,11 @@ class FirestorePreparedMealStore implements PreparedMealStore {
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      final collection = _collection(userId);
+      final collection = _collection(householdId);
       await collection.ensureAllSealed();
       await _atomicReplaceService.replaceAll(
         collection: collection.reference,
@@ -79,7 +81,7 @@ class FirestorePreparedMealStore implements PreparedMealStore {
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to replace prepared meals for user $userId.',
+        'Failed to replace prepared meals for household $householdId.',
         name: _storeLogName,
         error: error,
         stackTrace: stackTrace,
@@ -88,11 +90,11 @@ class FirestorePreparedMealStore implements PreparedMealStore {
     }
   }
 
-  SealedCollection _collection(String userId) {
+  SealedCollection _collection(String householdId) {
     return SealedCollection(
       _firestore
-          .collection(_usersCollection)
-          .doc(userId)
+          .collection(_householdsCollection)
+          .doc(householdId)
           .collection(_preparedMealsCollection),
       cipher: _cipher,
     );

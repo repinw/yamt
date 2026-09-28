@@ -22,10 +22,10 @@ part 'prepared_meal_repository.g.dart';
 PreparedMealRepository preparedMealRepository(Ref ref) {
   ref.watch(authStateChangesProvider);
   final householdCipher = ref.watch(householdCipherProvider);
-  final currentUserId = householdCipher?.householdId;
+  final householdId = householdCipher?.householdId;
   final store = _resolveStore(ref, householdCipher);
   return FirestorePreparedMealRepository(
-    session: _CurrentPreparedMealUserSession(currentUserId: currentUserId),
+    session: _CurrentPreparedMealUserSession(householdId: householdId),
     sessionShutdownSignal: ref.watch(sessionShutdownSignalProvider),
     store: store,
   );
@@ -47,30 +47,32 @@ PreparedMealStore _resolveStore(Ref ref, HouseholdCipher? householdCipher) {
 }
 
 class _CurrentPreparedMealUserSession implements InventoryUserSession {
-  const new({required this._currentUserId});
+  const new({required this._householdId});
 
-  final String? _currentUserId;
+  final String? _householdId;
 
   @override
-  String? get currentUserId => _currentUserId;
+  String? get householdId => _householdId;
 }
 
 class _UnavailablePreparedMealStore implements PreparedMealStore {
   const new();
 
   @override
-  Future<List<PreparedMealDocument>> readAll({required String userId}) async {
+  Future<List<PreparedMealDocument>> readAll({
+    required String householdId,
+  }) async {
     return const <PreparedMealDocument>[];
   }
 
   @override
-  Stream<List<PreparedMealDocument>> watchAll({required String userId}) {
+  Stream<List<PreparedMealDocument>> watchAll({required String householdId}) {
     return const Stream<List<PreparedMealDocument>>.empty();
   }
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     return false;

@@ -16,31 +16,33 @@ import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_store.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 
 class _FakeInventoryUserSession implements InventoryUserSession {
-  const new({this.currentUserId});
+  const new({this.householdId});
 
   @override
-  final String? currentUserId;
+  final String? householdId;
 }
 
 class _FakeKitchenUtensilStore implements KitchenUtensilStore {
   List<KitchenUtensilDocument> documents = const <KitchenUtensilDocument>[];
   Exception? watchAllError;
   Map<String, dynamic>? lastUpsertData;
-  String? lastUserId;
+  String? lastHouseholdId;
   String? lastUtensilId;
   bool shouldWriteSucceed = true;
 
   @override
-  Future<List<KitchenUtensilDocument>> readAll({required String userId}) async {
-    lastUserId = userId;
+  Future<List<KitchenUtensilDocument>> readAll({
+    required String householdId,
+  }) async {
+    lastHouseholdId = householdId;
     return documents;
   }
 
   @override
   Stream<List<KitchenUtensilDocument>> watchAll({
-    required String userId,
+    required String householdId,
   }) async* {
-    lastUserId = userId;
+    lastHouseholdId = householdId;
     final error = watchAllError;
     if (error != null) {
       throw error;
@@ -50,11 +52,11 @@ class _FakeKitchenUtensilStore implements KitchenUtensilStore {
 
   @override
   Future<bool> upsert({
-    required String userId,
+    required String householdId,
     required String utensilId,
     required Map<String, dynamic> data,
   }) async {
-    lastUserId = userId;
+    lastHouseholdId = householdId;
     lastUtensilId = utensilId;
     lastUpsertData = data;
     return shouldWriteSucceed;
@@ -62,10 +64,10 @@ class _FakeKitchenUtensilStore implements KitchenUtensilStore {
 
   @override
   Future<bool> delete({
-    required String userId,
+    required String householdId,
     required String utensilId,
   }) async {
-    lastUserId = userId;
+    lastHouseholdId = householdId;
     lastUtensilId = utensilId;
     return shouldWriteSucceed;
   }
@@ -133,7 +135,7 @@ void main() {
 
       expect(
         await store.upsert(
-          userId: 'owner-1',
+          householdId: 'household-1',
           utensilId: 'pot-1',
           data: const {'id': 'pot-1', 'name': 'Pot', 'weight_grams': 420},
         ),
@@ -141,16 +143,21 @@ void main() {
       );
 
       final raw = await firestore
-          .doc('users/owner-1/kitchen_utensils/pot-1')
+          .doc('households/household-1/kitchen_utensils/pot-1')
           .get();
       expect(raw.data()!.keys, <String>[encryptedPayloadField]);
-      final watchedDocuments = await store.watchAll(userId: 'owner-1').first;
-      final readDocuments = await store.readAll(userId: 'owner-1');
+      final watchedDocuments = await store
+          .watchAll(householdId: 'household-1')
+          .first;
+      final readDocuments = await store.readAll(householdId: 'household-1');
 
       expect(watchedDocuments.single.id, 'pot-1');
       expect(readDocuments.single.data['name'], 'Pot');
-      expect(await store.delete(userId: 'owner-1', utensilId: 'pot-1'), isTrue);
-      expect(await store.readAll(userId: 'owner-1'), isEmpty);
+      expect(
+        await store.delete(householdId: 'household-1', utensilId: 'pot-1'),
+        isTrue,
+      );
+      expect(await store.readAll(householdId: 'household-1'), isEmpty);
     },
   );
 
@@ -189,7 +196,7 @@ void main() {
           ),
         ];
       final repository = _repository(
-        session: const _FakeInventoryUserSession(currentUserId: 'user-1'),
+        session: const _FakeInventoryUserSession(householdId: 'household-1'),
         store: store,
         imageStore: _FakeKitchenUtensilImageStore(),
       );
@@ -198,20 +205,20 @@ void main() {
 
       expect(utensils, hasLength(1));
       expect(utensils.single.id, 'pot-1');
-      expect(store.lastUserId, 'user-1');
+      expect(store.lastHouseholdId, 'household-1');
     },
   );
 
-  test('save and delete delegate to household owner user id', () async {
+  test('save and delete delegate to the household id', () async {
     final store = _FakeKitchenUtensilStore();
     final repository = _repository(
-      session: const _FakeInventoryUserSession(currentUserId: 'owner-1'),
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
       store: store,
       imageStore: _FakeKitchenUtensilImageStore(),
     );
 
     expect(await repository.save(_utensil()), isTrue);
-    expect(store.lastUserId, 'owner-1');
+    expect(store.lastHouseholdId, 'household-1');
     expect(store.lastUtensilId, 'pot-1');
     expect(store.lastUpsertData?['weight_grams'], 420);
 
@@ -219,7 +226,7 @@ void main() {
     expect(store.lastUtensilId, 'pot-1');
   });
 
-  test('returns empty data and false writes without user', () async {
+  test('returns empty data and false writes without a household', () async {
     final repository = _repository(
       session: const _FakeInventoryUserSession(),
       store: _FakeKitchenUtensilStore(),
@@ -242,7 +249,7 @@ void main() {
   test('uploadImage builds storage path and imageUrl resolves URL', () async {
     final imageStore = _FakeKitchenUtensilImageStore();
     final repository = _repository(
-      session: const _FakeInventoryUserSession(currentUserId: 'owner-1'),
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
       store: _FakeKitchenUtensilStore(),
       imageStore: imageStore,
     );
@@ -253,7 +260,10 @@ void main() {
       bytes: Uint8List.fromList(<int>[1]),
     );
 
-    expect(path, 'users/owner-1/kitchen_utensils/pot-1/images/image-1.jpg');
+    expect(
+      path,
+      'households/household-1/kitchen_utensils/pot-1/images/image-1.jpg',
+    );
     expect(imageStore.lastUploadPath, path);
     expect(await repository.imageUrl(path!), 'https://example.test/$path');
     expect(await repository.deleteImage(path), isTrue);
@@ -267,7 +277,7 @@ void main() {
         code: 'permission-denied',
       );
     final repository = _repository(
-      session: const _FakeInventoryUserSession(currentUserId: 'owner-1'),
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
       store: store,
       imageStore: _FakeKitchenUtensilImageStore(),
     );
@@ -286,7 +296,7 @@ void main() {
         code: 'permission-denied',
       );
     final repository = _repository(
-      session: const _FakeInventoryUserSession(currentUserId: 'owner-1'),
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
       store: store,
       imageStore: _FakeKitchenUtensilImageStore(),
       sessionShutdownSignal: signal,

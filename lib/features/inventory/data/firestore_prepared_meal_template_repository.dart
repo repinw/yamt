@@ -26,48 +26,50 @@ class FirestorePreparedMealTemplateRepository
 
   @override
   Stream<List<PreparedMeal>> watchAll() {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Stream<List<PreparedMeal>>.value(const <PreparedMeal>[]);
     }
-    return _watchAllForUser(userId);
+    return _watchAllForHousehold(householdId);
   }
 
   @override
   Future<List<PreparedMeal>> readAll() async {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return const <PreparedMeal>[];
     }
-    return await _readAllForUser(userId);
+    return await _readAllForHousehold(householdId);
   }
 
   @override
   Future<bool> saveAll(List<PreparedMeal> templates) {
-    final userId = _currentUserId();
-    if (userId == null) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
       return Future<bool>.value(false);
     }
-    return _runExclusiveWrite(() => _replaceAllForUser(userId, templates));
+    return _runExclusiveWrite(
+      () => _replaceAllForHousehold(householdId, templates),
+    );
   }
 
-  String? _currentUserId() {
-    final userId = _session.currentUserId;
-    if (userId != null && userId.isNotEmpty) {
-      return userId;
+  String? _currentHouseholdId() {
+    final householdId = _session.householdId;
+    if (householdId != null && householdId.isNotEmpty) {
+      return householdId;
     }
     log(
-      'No signed-in user for prepared meal template repository.',
+      'No active household for prepared meal template repository.',
       name: _repositoryLogName,
     );
     return null;
   }
 
-  Stream<List<PreparedMeal>> _watchAllForUser(String userId) async* {
-    final collectionPath = 'users/$userId/prepared_meal_templates';
+  Stream<List<PreparedMeal>> _watchAllForHousehold(String householdId) async* {
+    final collectionPath = 'households/$householdId/prepared_meal_templates';
     final shutdownEpoch = _sessionShutdownSignal.epoch;
     try {
-      await for (final documents in _store.watchAll(userId: userId)) {
+      await for (final documents in _store.watchAll(householdId: householdId)) {
         yield _decodeDocuments(documents);
       }
     } on FirebaseException catch (error, stackTrace) {
@@ -87,7 +89,8 @@ class FirestorePreparedMealTemplateRepository
         error.code == 'permission-denied'
             ? 'Prepared meal template watch denied by Firestore rules for '
                   '$collectionPath.'
-            : 'Failed to watch prepared meal templates for user $userId.',
+            : 'Failed to watch prepared meal templates for '
+                  'household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -95,7 +98,7 @@ class FirestorePreparedMealTemplateRepository
       rethrow;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to watch prepared meal templates for user $userId.',
+        'Failed to watch prepared meal templates for household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -104,13 +107,13 @@ class FirestorePreparedMealTemplateRepository
     }
   }
 
-  Future<List<PreparedMeal>> _readAllForUser(String userId) async {
+  Future<List<PreparedMeal>> _readAllForHousehold(String householdId) async {
     try {
-      final documents = await _store.readAll(userId: userId);
+      final documents = await _store.readAll(householdId: householdId);
       return _decodeDocuments(documents);
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to read prepared meal templates for user $userId.',
+        'Failed to read prepared meal templates for household $householdId.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -119,11 +122,17 @@ class FirestorePreparedMealTemplateRepository
     }
   }
 
-  Future<bool> _replaceAllForUser(String userId, List<PreparedMeal> templates) {
+  Future<bool> _replaceAllForHousehold(
+    String householdId,
+    List<PreparedMeal> templates,
+  ) {
     final documentsById = <String, Map<String, dynamic>>{
       for (final template in templates) template.id: template.toJson(),
     };
-    return _store.replaceAll(userId: userId, documentsById: documentsById);
+    return _store.replaceAll(
+      householdId: householdId,
+      documentsById: documentsById,
+    );
   }
 
   List<PreparedMeal> _decodeDocuments(

@@ -8,10 +8,10 @@ import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_store.dart';
 
 class _FakeInventoryUserSession implements InventoryUserSession {
-  const new({this.currentUserId});
+  const new({this.householdId});
 
   @override
-  final String? currentUserId;
+  final String? householdId;
 }
 
 class _FakePreparedMealStore implements PreparedMealStore {
@@ -20,20 +20,24 @@ class _FakePreparedMealStore implements PreparedMealStore {
       StreamController<List<PreparedMealDocument>>.broadcast();
 
   @override
-  Future<List<PreparedMealDocument>> readAll({required String userId}) async {
+  Future<List<PreparedMealDocument>> readAll({
+    required String householdId,
+  }) async {
     return const <PreparedMealDocument>[];
   }
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     return true;
   }
 
   @override
-  Stream<List<PreparedMealDocument>> watchAll({required String userId}) async* {
+  Stream<List<PreparedMealDocument>> watchAll({
+    required String householdId,
+  }) async* {
     final error = watchAllError;
     if (error != null) {
       throw error;
@@ -63,7 +67,7 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestorePreparedMealRepository(
-      session: const _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -89,7 +93,7 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestorePreparedMealRepository(
-      session: const _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: sessionShutdownSignal,
       store: store,
     );
@@ -104,7 +108,7 @@ void main() {
       addTearDown(store.dispose);
       final sessionShutdownSignal = SessionShutdownSignal();
       final repository = FirestorePreparedMealRepository(
-        session: const _FakeInventoryUserSession(currentUserId: 'user-1'),
+        session: const _FakeInventoryUserSession(householdId: 'household-1'),
         sessionShutdownSignal: sessionShutdownSignal,
         store: store,
       );

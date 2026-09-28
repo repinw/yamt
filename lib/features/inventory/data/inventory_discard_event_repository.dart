@@ -14,7 +14,7 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 part 'inventory_discard_event_repository.g.dart';
 
 const _discardEventRepositoryLogName = 'InventoryDiscardEventRepository';
-const _usersCollection = 'users';
+const _householdsCollection = 'households';
 const _discardEventsCollection = 'inventory_discard_events';
 
 /// Defines inventory discard event repository.
@@ -36,29 +36,29 @@ class FirestoreInventoryDiscardEventRepository
   new({
     required this._firestore,
     required this._cipher,
-    required this._currentUserId,
+    required this._householdId,
   });
 
   final FirebaseFirestore _firestore;
   final PayloadCipher _cipher;
-  final String? _currentUserId;
+  final String? _householdId;
 
   @override
   Future<List<InventoryDiscardEvent>> readAll() async {
-    final userId = _resolvedUserId();
-    if (userId == null) {
+    final householdId = _resolvedHouseholdId();
+    if (householdId == null) {
       return const <InventoryDiscardEvent>[];
     }
 
     try {
-      final collection = _collection(userId);
+      final collection = _collection(householdId);
       final snapshot = await collection.reference
           .orderBy('discarded_at', descending: true)
           .get();
       return _decodeDocuments(await collection.openAll(snapshot));
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to read discard events for user $userId',
+        'Failed to read discard events for household $householdId',
         name: _discardEventRepositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -69,20 +69,20 @@ class FirestoreInventoryDiscardEventRepository
 
   @override
   Future<bool> saveEvent(InventoryDiscardEvent event) async {
-    final userId = _resolvedUserId();
-    if (userId == null) {
+    final householdId = _resolvedHouseholdId();
+    if (householdId == null) {
       return false;
     }
 
     try {
-      final collection = _collection(userId);
+      final collection = _collection(householdId);
       await collection.reference
           .doc(event.id)
           .set(await collection.seal(event.id, event.toJson()));
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to save discard event ${event.id} for user $userId',
+        'Failed to save discard event ${event.id} for household $householdId',
         name: _discardEventRepositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -93,18 +93,19 @@ class FirestoreInventoryDiscardEventRepository
 
   @override
   Future<bool> deleteEvent(String eventId) async {
-    final userId = _resolvedUserId();
+    final householdId = _resolvedHouseholdId();
     final normalizedEventId = eventId.trim();
-    if (userId == null || normalizedEventId.isEmpty) {
+    if (householdId == null || normalizedEventId.isEmpty) {
       return false;
     }
 
     try {
-      await _collection(userId).reference.doc(normalizedEventId).delete();
+      await _collection(householdId).reference.doc(normalizedEventId).delete();
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to delete discard event $normalizedEventId for user $userId',
+        'Failed to delete discard event $normalizedEventId for '
+        'household $householdId',
         name: _discardEventRepositoryLogName,
         error: error,
         stackTrace: stackTrace,
@@ -113,19 +114,19 @@ class FirestoreInventoryDiscardEventRepository
     }
   }
 
-  String? _resolvedUserId() {
-    final userId = _currentUserId;
-    if (userId == null || userId.isEmpty) {
+  String? _resolvedHouseholdId() {
+    final householdId = _householdId;
+    if (householdId == null || householdId.isEmpty) {
       return null;
     }
-    return userId;
+    return householdId;
   }
 
-  SealedCollection _collection(String userId) {
+  SealedCollection _collection(String householdId) {
     return SealedCollection(
       _firestore
-          .collection(_usersCollection)
-          .doc(userId)
+          .collection(_householdsCollection)
+          .doc(householdId)
           .collection(_discardEventsCollection),
       cipher: _cipher,
       plaintextFields: inventoryDiscardEventPlaintextFields,
@@ -189,6 +190,6 @@ InventoryDiscardEventRepository inventoryDiscardEventRepository(Ref ref) {
   return FirestoreInventoryDiscardEventRepository(
     firestore: firestore,
     cipher: householdCipher.cipher,
-    currentUserId: householdCipher.householdId,
+    householdId: householdCipher.householdId,
   );
 }

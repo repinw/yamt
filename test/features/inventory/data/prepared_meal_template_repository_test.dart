@@ -8,10 +8,10 @@ import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_store.dart';
 
 class _FakeInventoryUserSession implements InventoryUserSession {
-  const new({this.currentUserId});
+  const new({this.householdId});
 
   @override
-  final String? currentUserId;
+  final String? householdId;
 }
 
 class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
@@ -19,14 +19,14 @@ class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
 
   @override
   Future<List<PreparedMealTemplateDocument>> readAll({
-    required String userId,
+    required String householdId,
   }) async {
     return const <PreparedMealTemplateDocument>[];
   }
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     return true;
@@ -34,7 +34,7 @@ class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
 
   @override
   Stream<List<PreparedMealTemplateDocument>> watchAll({
-    required String userId,
+    required String householdId,
   }) async* {
     final error = watchAllError;
     if (error != null) {
@@ -52,7 +52,7 @@ void main() {
         code: 'permission-denied',
       );
     final repository = FirestorePreparedMealTemplateRepository(
-      session: const _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
@@ -77,7 +77,7 @@ void main() {
         code: 'permission-denied',
       );
     final repository = FirestorePreparedMealTemplateRepository(
-      session: const _FakeInventoryUserSession(currentUserId: 'user-1'),
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: sessionShutdownSignal,
       store: store,
     );

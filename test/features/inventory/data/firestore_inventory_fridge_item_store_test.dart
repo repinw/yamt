@@ -7,16 +7,16 @@ import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_store.dart';
 
-const _usersCollection = 'users';
+const _householdsCollection = 'households';
 const _inventoryItemsCollection = 'inventory_items';
 
 CollectionReference<Map<String, dynamic>> _inventoryCollection({
   required FirebaseFirestore firestore,
-  required String userId,
+  required String householdId,
 }) {
   return firestore
-      .collection(_usersCollection)
-      .doc(userId)
+      .collection(_householdsCollection)
+      .doc(householdId)
       .collection(_inventoryItemsCollection);
 }
 
@@ -47,7 +47,7 @@ void main() {
     final firestore = FakeFirebaseFirestore();
     final collection = _inventoryCollection(
       firestore: firestore,
-      userId: 'user-1',
+      householdId: 'household-1',
     );
     await put(collection, 'a', <String, dynamic>{'name': 'Milk'});
     await put(collection, 'b', <String, dynamic>{'name': 'Bread'});
@@ -56,7 +56,7 @@ void main() {
       firestore: firestore,
       cipher: cipher,
     );
-    final documents = await store.readAll(userId: 'user-1');
+    final documents = await store.readAll(householdId: 'household-1');
     final mappedById = <String, Map<String, dynamic>>{
       for (final document in documents) document.id: document.data,
     };
@@ -70,14 +70,17 @@ void main() {
     final firestore = FakeFirebaseFirestore();
     final collection = _inventoryCollection(
       firestore: firestore,
-      userId: 'user-1',
+      householdId: 'household-1',
     );
     final store = FirestoreInventoryItemStore(
       firestore: firestore,
       cipher: cipher,
     );
 
-    final nextEmission = store.watchAll(userId: 'user-1').skip(1).first;
+    final nextEmission = store
+        .watchAll(householdId: 'household-1')
+        .skip(1)
+        .first;
     await put(collection, 'a', <String, dynamic>{'name': 'Milk'});
     final documents = await nextEmission;
 
@@ -92,7 +95,7 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final collection = _inventoryCollection(
         firestore: firestore,
-        userId: 'user-1',
+        householdId: 'household-1',
       );
       await put(collection, 'a', <String, dynamic>{'name': 'Old Milk'});
       await put(collection, 'b', <String, dynamic>{'name': 'Bread'});
@@ -102,7 +105,7 @@ void main() {
         cipher: cipher,
       );
       final replaced = await store.replaceAll(
-        userId: 'user-1',
+        householdId: 'household-1',
         documentsById: <String, Map<String, dynamic>>{
           'b': <String, dynamic>{'name': 'Bread v2'},
           'c': <String, dynamic>{'name': 'Cheese'},
@@ -129,7 +132,7 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final collection = _inventoryCollection(
         firestore: firestore,
-        userId: 'user-1',
+        householdId: 'household-1',
       );
 
       final documentsById = <String, Map<String, dynamic>>{
@@ -142,7 +145,7 @@ void main() {
         cipher: cipher,
       );
       final replaced = await store.replaceAll(
-        userId: 'user-1',
+        householdId: 'household-1',
         documentsById: documentsById,
       );
 
@@ -162,7 +165,7 @@ void main() {
       cipher: cipher,
     );
     await store.replaceAll(
-      userId: 'user-1',
+      householdId: 'household-1',
       documentsById: <String, Map<String, dynamic>>{
         'a': <String, dynamic>{
           'name': 'Milk',
@@ -176,7 +179,7 @@ void main() {
 
     final raw = await _inventoryCollection(
       firestore: firestore,
-      userId: 'user-1',
+      householdId: 'household-1',
     ).doc('a').get();
     expect(
       raw.data()!.keys,
@@ -188,7 +191,10 @@ void main() {
         'entry_date',
       ]),
     );
-    final recent = await store.readRecentManual(userId: 'user-1', limit: 5);
+    final recent = await store.readRecentManual(
+      householdId: 'household-1',
+      limit: 5,
+    );
     expect(recent.single.data['name'], 'Milk');
   });
 
@@ -196,7 +202,7 @@ void main() {
     final firestore = FakeFirebaseFirestore();
     final collection = _inventoryCollection(
       firestore: firestore,
-      userId: 'user-1',
+      householdId: 'household-1',
     );
     await collection.doc('plain').set(<String, dynamic>{'name': 'Milk'});
     final store = FirestoreInventoryItemStore(
@@ -205,7 +211,7 @@ void main() {
     );
 
     final replaced = await store.replaceAll(
-      userId: 'user-1',
+      householdId: 'household-1',
       documentsById: <String, Map<String, dynamic>>{
         'b': <String, dynamic>{'name': 'Bread'},
       },

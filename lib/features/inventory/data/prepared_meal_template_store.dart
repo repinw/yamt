@@ -6,7 +6,7 @@ import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 
 const String _storeLogName = 'FirestorePreparedMealTemplateStore';
-const String _usersCollection = 'users';
+const String _householdsCollection = 'households';
 const String _preparedMealTemplatesCollection = 'prepared_meal_templates';
 
 /// Defines prepared meal template document.
@@ -24,14 +24,18 @@ class PreparedMealTemplateDocument {
 /// Defines prepared meal template store.
 abstract interface class PreparedMealTemplateStore {
   /// Read all.
-  Future<List<PreparedMealTemplateDocument>> readAll({required String userId});
+  Future<List<PreparedMealTemplateDocument>> readAll({
+    required String householdId,
+  });
 
   /// Watch all.
-  Stream<List<PreparedMealTemplateDocument>> watchAll({required String userId});
+  Stream<List<PreparedMealTemplateDocument>> watchAll({
+    required String householdId,
+  });
 
   /// Replace all.
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   });
 }
@@ -50,9 +54,9 @@ class FirestorePreparedMealTemplateStore implements PreparedMealTemplateStore {
 
   @override
   Future<List<PreparedMealTemplateDocument>> readAll({
-    required String userId,
+    required String householdId,
   }) async {
-    final collection = _collection(userId);
+    final collection = _collection(householdId);
     return _mapDocuments(
       await collection.openAll(await collection.reference.get()),
     );
@@ -60,9 +64,9 @@ class FirestorePreparedMealTemplateStore implements PreparedMealTemplateStore {
 
   @override
   Stream<List<PreparedMealTemplateDocument>> watchAll({
-    required String userId,
+    required String householdId,
   }) {
-    final collection = _collection(userId);
+    final collection = _collection(householdId);
     return collection.reference.snapshots().asyncMap(
       (snapshot) async => _mapDocuments(await collection.openAll(snapshot)),
     );
@@ -70,11 +74,11 @@ class FirestorePreparedMealTemplateStore implements PreparedMealTemplateStore {
 
   @override
   Future<bool> replaceAll({
-    required String userId,
+    required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      final collection = _collection(userId);
+      final collection = _collection(householdId);
       await collection.ensureAllSealed();
       await _atomicReplaceService.replaceAll(
         collection: collection.reference,
@@ -83,7 +87,7 @@ class FirestorePreparedMealTemplateStore implements PreparedMealTemplateStore {
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to replace prepared meal templates for user $userId.',
+        'Failed to replace prepared meal templates for household $householdId.',
         name: _storeLogName,
         error: error,
         stackTrace: stackTrace,
@@ -92,11 +96,11 @@ class FirestorePreparedMealTemplateStore implements PreparedMealTemplateStore {
     }
   }
 
-  SealedCollection _collection(String userId) {
+  SealedCollection _collection(String householdId) {
     return SealedCollection(
       _firestore
-          .collection(_usersCollection)
-          .doc(userId)
+          .collection(_householdsCollection)
+          .doc(householdId)
           .collection(_preparedMealTemplatesCollection),
       cipher: _cipher,
     );

@@ -2,7 +2,6 @@ import 'dart:developer' show log;
 import 'dart:typed_data';
 
 import 'package:firebase_ai/firebase_ai.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 const _imageLogName = 'AiChefImageGenerator';
@@ -26,25 +25,22 @@ abstract interface class AiChefImageStorageClient {
 /// Firebase Storage-backed generated image upload client.
 class FirebaseAiChefImageStorageClient implements AiChefImageStorageClient {
   /// Creates Firebase image storage client.
-  const new({this._storage, this._auth});
+  const new({this._storage, this._householdId});
 
   final FirebaseStorage? _storage;
-  final FirebaseAuth? _auth;
+  final String? _householdId;
 
   @override
-  bool get canUpload => _storage != null && _auth?.currentUser?.uid != null;
+  bool get canUpload => _storage != null && _householdId != null;
 
   @override
   Future<String?> uploadJpeg({
     required String mealId,
     required Uint8List imageBytes,
   }) async {
-    final userId = _auth?.currentUser?.uid;
-    if (userId == null) {
-      log(
-        'Skipping image upload: user is not authenticated.',
-        name: _imageLogName,
-      );
+    final householdId = _householdId;
+    if (householdId == null) {
+      log('Skipping image upload: no active household.', name: _imageLogName);
       return null;
     }
 
@@ -53,7 +49,8 @@ class FirebaseAiChefImageStorageClient implements AiChefImageStorageClient {
       return null;
     }
 
-    final storagePath = 'users/$userId/recipes/$mealId/images/cover.jpg';
+    final storagePath =
+        'households/$householdId/recipes/$mealId/images/cover.jpg';
     log(
       'Uploading generated image to storage: $storagePath...',
       name: _imageLogName,
@@ -73,12 +70,15 @@ class AiChefImageGenerator {
   /// Creates image generator.
   new({
     FirebaseStorage? storage,
-    FirebaseAuth? auth,
+    String? householdId,
     this._imageBytesClient,
     AiChefImageStorageClient? imageStorageClient,
   }) : _imageStorageClient =
            imageStorageClient ??
-           FirebaseAiChefImageStorageClient(storage: storage, auth: auth);
+           FirebaseAiChefImageStorageClient(
+             storage: storage,
+             householdId: householdId,
+           );
 
   final AiChefImageBytesClient? _imageBytesClient;
   final AiChefImageStorageClient _imageStorageClient;

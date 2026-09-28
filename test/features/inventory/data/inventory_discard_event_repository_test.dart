@@ -51,11 +51,11 @@ void main() {
     final repository = FirestoreInventoryDiscardEventRepository(
       firestore: firestore,
       cipher: cipher,
-      currentUserId: 'user-1',
+      householdId: 'household-1',
     );
     final collection = firestore
-        .collection('users')
-        .doc('user-1')
+        .collection('households')
+        .doc('household-1')
         .collection('inventory_discard_events');
 
     await put(collection, 'valid', <String, dynamic>{
@@ -93,11 +93,11 @@ void main() {
     final repository = FirestoreInventoryDiscardEventRepository(
       firestore: firestore,
       cipher: cipher,
-      currentUserId: 'user-1',
+      householdId: 'household-1',
     );
     final collection = firestore
-        .collection('users')
-        .doc('user-1')
+        .collection('households')
+        .doc('household-1')
         .collection('inventory_discard_events');
     final discardedAt = DateTime.parse('2026-03-20T10:00:00.000Z');
 
@@ -131,11 +131,11 @@ void main() {
     final repository = FirestoreInventoryDiscardEventRepository(
       firestore: firestore,
       cipher: cipher,
-      currentUserId: 'user-1',
+      householdId: 'household-1',
     );
     final collection = firestore
-        .collection('users')
-        .doc('user-1')
+        .collection('households')
+        .doc('household-1')
         .collection('inventory_discard_events');
 
     await put(collection, 'delete-me', <String, dynamic>{
@@ -160,20 +160,24 @@ void main() {
   test(
     'saveEvent and deleteEvent return false for invalid repository inputs',
     () async {
-      final repositoryWithoutUser = FirestoreInventoryDiscardEventRepository(
+      final repositoryWithoutHousehold =
+          FirestoreInventoryDiscardEventRepository(
+            firestore: FakeFirebaseFirestore(),
+            cipher: cipher,
+            householdId: null,
+          );
+      final repositoryWithHousehold = FirestoreInventoryDiscardEventRepository(
         firestore: FakeFirebaseFirestore(),
         cipher: cipher,
-        currentUserId: null,
-      );
-      final repositoryWithUser = FirestoreInventoryDiscardEventRepository(
-        firestore: FakeFirebaseFirestore(),
-        cipher: cipher,
-        currentUserId: 'user-1',
+        householdId: 'household-1',
       );
 
-      expect(await repositoryWithoutUser.saveEvent(_discardEvent()), isFalse);
-      expect(await repositoryWithoutUser.deleteEvent('event-1'), isFalse);
-      expect(await repositoryWithUser.deleteEvent('   '), isFalse);
+      expect(
+        await repositoryWithoutHousehold.saveEvent(_discardEvent()),
+        isFalse,
+      );
+      expect(await repositoryWithoutHousehold.deleteEvent('event-1'), isFalse);
+      expect(await repositoryWithHousehold.deleteEvent('   '), isFalse);
     },
   );
 
