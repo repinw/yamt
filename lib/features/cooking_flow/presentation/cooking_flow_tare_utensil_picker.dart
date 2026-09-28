@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
@@ -10,13 +8,13 @@ import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_action_button.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_text_styles.dart';
+import 'package:yamt/features/kitchen_utensils/application/'
+    'kitchen_utensil_image_url_provider.dart';
+import 'package:yamt/features/kitchen_utensils/application/'
+    'kitchen_utensil_list_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
-import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
-    'kitchen_utensils_controller.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_cover.dart';
-import 'package:yamt/features/kitchen_utensils/provider/'
-    'kitchen_utensil_image_url_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Picker for applying saved kitchen utensils as cookflow tare.
@@ -49,8 +47,7 @@ class CookingFlowTareUtensilPicker extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final utensilsAsync = ref.watch(kitchenUtensilsControllerProvider);
-    final controller = ref.read(kitchenUtensilsControllerProvider.notifier);
+    final utensilsAsync = ref.watch(kitchenUtensilListProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,7 +71,7 @@ class CookingFlowTareUtensilPicker extends ConsumerWidget {
           },
           loading: () => const _CookingFlowTareUtensilLoading(),
           error: (error, stackTrace) => _CookingFlowTareUtensilLoadError(
-            onRetryPressed: () => unawaited(controller.refresh()),
+            onRetryPressed: () => ref.invalidate(kitchenUtensilListProvider),
             message: l10n.cookflowTaraUtensilsLoadFailed,
           ),
         ),

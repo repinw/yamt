@@ -22,9 +22,9 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/kitchen_utensils/application/'
+    'kitchen_utensil_list_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
-import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
-    'kitchen_utensils_controller.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -174,17 +174,6 @@ class _CapturingPreparedMealsController extends PreparedMealsController {
   }
 }
 
-class _StaticKitchenUtensilsController extends KitchenUtensilsController {
-  new(this._utensils);
-
-  final List<KitchenUtensil> _utensils;
-
-  @override
-  FutureOr<List<KitchenUtensil>> build() {
-    return List<KitchenUtensil>.from(_utensils);
-  }
-}
-
 class _FakeCookingFlowVoiceSearchService implements VoiceSearchService {
   var _isListening = false;
   ValueChanged<VoiceSearchRecognition>? _onResult;
@@ -314,8 +303,8 @@ Widget _buildHarness({
       ),
       preparedMealsControllerProvider.overrideWith(() => controller),
       cookingFlowControllerProvider.overrideWith(CookingFlowController.new),
-      kitchenUtensilsControllerProvider.overrideWith(
-        () => _StaticKitchenUtensilsController(kitchenUtensils),
+      kitchenUtensilListProvider.overrideWith(
+        (ref) => Stream.value(List<KitchenUtensil>.of(kitchenUtensils)),
       ),
       if (voiceSearchService != null)
         voiceSearchServiceProvider.overrideWithValue(voiceSearchService),
@@ -360,8 +349,8 @@ Widget _buildRouterHarness({
         ),
       ),
       cookingFlowControllerProvider.overrideWith(CookingFlowController.new),
-      kitchenUtensilsControllerProvider.overrideWith(
-        () => _StaticKitchenUtensilsController(kitchenUtensils),
+      kitchenUtensilListProvider.overrideWith(
+        (ref) => Stream.value(List<KitchenUtensil>.of(kitchenUtensils)),
       ),
       if (shoppingListRepository != null)
         shoppingListRepositoryProvider.overrideWithValue(

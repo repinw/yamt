@@ -24,9 +24,9 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
+import 'package:yamt/features/kitchen_utensils/application/'
+    'kitchen_utensil_list_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
-import 'package:yamt/features/kitchen_utensils/presentation/controllers/'
-    'kitchen_utensils_controller.dart';
 import 'package:yamt/features/meal_templates/presentation/widgets/'
     'meal_templates_page/meal_templates_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -113,13 +113,6 @@ class _NoopPreparedMealsController extends PreparedMealsController {
   @override
   FutureOr<List<PreparedMeal>> build() {
     return const <PreparedMeal>[];
-  }
-}
-
-class _StaticKitchenUtensilsController extends KitchenUtensilsController {
-  @override
-  FutureOr<List<KitchenUtensil>> build() {
-    return const <KitchenUtensil>[];
   }
 }
 
@@ -216,8 +209,8 @@ _CookingFlowStartHarness _buildHarness() {
         _NoopPreparedMealsController.new,
       ),
       cookingFlowControllerProvider.overrideWith(CookingFlowController.new),
-      kitchenUtensilsControllerProvider.overrideWith(
-        _StaticKitchenUtensilsController.new,
+      kitchenUtensilListProvider.overrideWith(
+        (ref) => Stream.value(const <KitchenUtensil>[]),
       ),
     ],
   );

@@ -41,8 +41,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/cooking_flow/presentation/cooking_flow_page.dart': 2,
     'lib/features/cooking_flow/presentation/cooking_flow_summary_ingredient_source_flow.dart':
         1,
-    'lib/features/cooking_flow/presentation/cooking_flow_tare_utensil_picker.dart':
-        2,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 2,
     'lib/features/home_widget/presentation/controllers/home_widget_sync_controller.dart':
         1,
@@ -71,8 +69,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/home/home_page.dart': 1,
     'lib/features/home/widgets/home_shell_chrome_visibility_controller.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,
-    'lib/features/kitchen_utensils/provider/kitchen_utensil_image_url_provider.dart':
-        1,
     'lib/features/onboarding/provider/calorie_goal_onboarding_completed_provider.dart':
         1,
     'lib/features/shared/widgets/auth_form_components.dart': 1,

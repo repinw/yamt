@@ -8,11 +8,11 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_sheet_widgets.dart';
+import 'package:yamt/features/kitchen_utensils/application/'
+    'kitchen_utensil_image_url_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_image_field.dart';
-import 'package:yamt/features/kitchen_utensils/provider/'
-    'kitchen_utensil_image_url_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Kitchen utensil sheet result.
