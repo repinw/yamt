@@ -97,7 +97,7 @@ Main application adapters and mappers:
 - `application/diary_plan_start_day_provider.dart` (earliest selectable diary day)
 - `application/diary_day_type_provider.dart` (training/rest/pause status and
   updates through the calorie goal controller)
-- `data/diary_day_dashboard_cache_store.dart`
+- `data/diary_day_dashboard_cache_repository.dart`
 - `presentation/controllers/diary_day_dashboard_controller.dart`
 - `presentation/controllers/diary_balance_details_controller.dart` (quiet or
   detailed daily card and macro strip; saved in `AppPreferences`)
