@@ -96,14 +96,6 @@ class CalorieIntroController extends _$CalorieIntroController {
     state = state.copyWith(page: page, showErrors: false);
   }
 
-  /// Hides currently visible validation errors.
-  void clearErrors() {
-    if (!state.showErrors) {
-      return;
-    }
-    state = state.copyWith(showErrors: false);
-  }
-
   /// Saves everything the intro collected and allows leaving the route.
   ///
   /// The intro keeps its answers in memory. A visitor without an account gets
