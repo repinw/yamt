@@ -28,12 +28,14 @@ extension AppSnackBar on ScaffoldMessengerState {
   /// has an action. [onUndo] adds the undo action; when it completes with
   /// false, a failure snack bar follows. [action] adds a different action;
   /// pass at most one of them. The returned controller tells how the
-  /// snack bar closed, for example whether the user tapped undo.
+  /// snack bar closed, for example whether the user tapped undo. [margin]
+  /// lifts the snack bar above controls at the bottom of the page.
   ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showAppSnackBar(
     String message, {
     AppSnackBarTone tone = AppSnackBarTone.success,
     Future<bool> Function()? onUndo,
     AppSnackBarAction? action,
+    EdgeInsets margin = AppInsets.snackBarMargin,
   }) {
     assert(
       onUndo == null || action == null,
@@ -73,7 +75,7 @@ extension AppSnackBar on ScaffoldMessengerState {
     return showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        margin: AppInsets.snackBarMargin,
+        margin: margin,
         backgroundColor: background,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),

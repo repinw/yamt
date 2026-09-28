@@ -164,9 +164,8 @@ void main() {
     expect(harness.currentLocation, '/onboarding');
 
     harness.guestAccount.signInError = null;
-    // The snackbar covers the finish button until it closes.
-    await tester.pump(const Duration(seconds: 10));
-    await tester.pumpAndSettle();
+    // The failure snack bar sits above the finish button, so a second tap
+    // right away reaches it.
     await _tapFinish(tester);
 
     expect(harness.guestAccount.repository.guestCalls, 2);

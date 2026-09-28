@@ -281,9 +281,8 @@ void main() {
     expect(_currentRoute(harness), AppRoutes.calorieGoalSetup);
     expect(harness.guestSignIns, isEmpty);
 
-    // The snackbar covers the finish button until it closes.
-    await tester.pump(const Duration(seconds: 10));
-    await tester.pumpAndSettle();
+    // The failure snack bar sits above the finish button, so a second tap
+    // right away reaches it.
     await _tapVisible(
       tester,
       find.byKey(CalorieGoalOnboardingKeys.introFinishAction),
