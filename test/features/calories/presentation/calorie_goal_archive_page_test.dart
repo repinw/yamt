@@ -9,10 +9,10 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.dart';
-import 'package:yamt/features/calories/presentation/pages/calorie_goal_archive_page.dart';
+import 'package:yamt/features/calories/presentation/calorie_goal_archive_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../../support/fake_calories_repositories.dart';
+import '../support/fake_calories_repositories.dart';
 
 CalorieGoalSettings _twoGoals() {
   const profile = CalorieCalculatorProfile.defaults();

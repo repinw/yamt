@@ -7,7 +7,7 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
-import 'package:yamt/features/calories/presentation/pages/tdee_analytics_page.dart';
+import 'package:yamt/features/calories/presentation/tdee_analytics_page.dart';
 import 'package:yamt/features/calories/presentation/widgets/tdee_analytics/tdee_weight_chart.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

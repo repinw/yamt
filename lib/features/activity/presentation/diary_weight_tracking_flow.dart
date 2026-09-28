@@ -3,8 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/activity/application/diary_weight_actions.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/'
     'diary_weight_dialog.dart';
-import 'package:yamt/features/calories/presentation/'
-    'calorie_goal_reach_coordinator.dart';
+import 'package:yamt/features/calories/presentation/calorie_goal_reached_flow.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 
 part 'diary_weight_tracking_flow.g.dart';
@@ -15,7 +14,7 @@ DiaryWeightTrackingFlow diaryWeightTrackingFlow(Ref ref) {
   return DiaryWeightTrackingFlow(
     weightActions: ref.watch(diaryWeightActionsProvider),
     onWeightRecorded: ref
-        .watch(calorieGoalReachCoordinatorProvider)
+        .watch(calorieGoalReachedFlowProvider)
         .handleRecordedWeight,
   );
 }

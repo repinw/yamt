@@ -7,17 +7,17 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_new_goal_flow.dart';
 
-part 'calorie_goal_reach_coordinator.g.dart';
+part 'calorie_goal_reached_flow.g.dart';
 
-/// Provides the coordinator for goal-reached handling.
+/// Provides the goal-reached flow.
 @riverpod
-CalorieGoalReachCoordinator calorieGoalReachCoordinator(Ref ref) {
-  return const CalorieGoalReachCoordinator();
+CalorieGoalReachedFlow calorieGoalReachedFlow(Ref ref) {
+  return const CalorieGoalReachedFlow();
 }
 
 /// Public Calories presentation edge for goal-reached handling.
-class CalorieGoalReachCoordinator {
-  /// Creates the coordinator.
+class CalorieGoalReachedFlow {
+  /// Creates the flow.
   const new();
 
   /// Handles a recorded weight, including the one-time prompt and new goal UI.

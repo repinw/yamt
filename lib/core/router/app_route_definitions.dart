@@ -11,10 +11,10 @@ import 'package:yamt/features/auth/presentation/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/presentation/recovery_key_page.dart';
 import 'package:yamt/features/auth/presentation/welcome_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
+import 'package:yamt/features/calories/presentation/calorie_goal_archive_page.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
-import 'package:yamt/features/calories/presentation/pages/calorie_goal_archive_page.dart';
-import 'package:yamt/features/calories/presentation/pages/tdee_analytics_page.dart';
+import 'package:yamt/features/calories/presentation/tdee_analytics_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';

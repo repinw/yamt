@@ -13,7 +13,6 @@ const architectureBaseline = <String, Map<String, int>>{
         3,
   },
   'foreign-presentation': {
-    'lib/features/activity/presentation/diary_weight_tracking_flow.dart': 1,
     'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_dialog.dart':
         1,
     'lib/features/auth/presentation/welcome_page.dart': 1,
@@ -44,8 +43,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/cooking_flow/presentation/cooking_flow_tare_utensil_picker.dart':
         2,
-    'lib/features/diary/presentation/widgets/diary_meal_group/diary_meal_portion_formatter.dart':
-        1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 2,
     'lib/features/home_widget/presentation/controllers/home_widget_sync_controller.dart':
         1,
@@ -84,11 +81,6 @@ const architectureBaseline = <String, Map<String, int>>{
   },
   'presentation-folders': {
     'lib/features/auth/presentation/auth_error_message_mapper.dart': 1,
-    'lib/features/calories/presentation/calorie_goal_reach_coordinator.dart': 1,
-    'lib/features/calories/presentation/consumed_unit_l10n.dart': 1,
-    'lib/features/calories/presentation/pages/calorie_goal_archive_page.dart':
-        1,
-    'lib/features/calories/presentation/pages/tdee_analytics_page.dart': 1,
     'lib/features/cooking_flow/presentation/cooking_flow_action_button.dart': 1,
     'lib/features/cooking_flow/presentation/cooking_flow_finalize_messages.dart':
         1,
@@ -214,7 +206,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/calories/domain/burn_week_mock_logic.dart': 1,
     'lib/features/calories/domain/calorie_goal_transition_helpers.dart': 1,
-    'lib/features/calories/presentation/calorie_goal_reach_coordinator.dart': 1,
     'lib/features/calories/presentation/widgets/calorie_entry_editor_flow_handler.dart':
         1,
     'lib/features/cooking_flow/application/cooking_flow_amount_utils.dart': 1,

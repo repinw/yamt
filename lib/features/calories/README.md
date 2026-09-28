@@ -1,140 +1,74 @@
 # Calories Feature
 
+## Purpose
+
 Calories owns calorie logging, goal settings, Burn Week state, weekly check-in
-state, and calorie-owned side effects from health or weight changes.
+state, learned TDEE, and the calorie side effects of health and weight
+changes.
 
 ## Owns
 
-- Calorie repositories and commit stores under `data/`.
-- Calorie entries, goals, calculator inputs, weekly check-in, and Burn Week
-  domain models under `domain/`.
-- Calorie use-case providers and reactive cross-feature sync under
-  `application/`.
-- Calorie pages, dialogs, sheets, and section widgets under `presentation/`.
-- Debug-only dump and export surfaces under `debug/`.
-- Legacy calorie controllers and derived providers under `provider/`.
+- Calorie entries, the entry cache, product overrides, goal settings, and the
+  Burn Week run state, stored by the repositories in `data/`.
+- Calorie entries, goals, calculator inputs, weekly check-ins, learned TDEE,
+  and Burn Week rules in `domain/`.
+- The session-wide calorie state in `application/`: goal settings, macro
+  settings, the Burn Week run, the visible week window, resolved daily goals,
+  the week overview, learned TDEE per day, weekly check-in data and actions,
+  the entry mutation stream, and the calorie reactions to weight changes.
+  Later features read and change this state.
+- The debug dump tooling in `application/` (dump builders), `data/` (text
+  file export), and `presentation/`; the Home side menu shows it only in
+  debug builds.
+- Calorie pages, dialogs, sheets, and the controllers and view models they
+  own in `presentation/`.
 
 ## Does Not Own
 
-- Health Connect infrastructure, permission state, or raw health services.
+- Health Connect access, permission state, or raw health weight data.
 - Diary page ordering, date navigation, or diary-level composition.
 - Activity card layout or activity-owned action orchestration.
 - Inventory item storage, prepared meal storage, or household scope state.
+  Inventory-backed save and delete run through calorie-owned ports that
+  inventory implements, so Calories does not depend on Inventory.
 
-## Public Edge
+## Public UI
 
-- `application/calorie_weight_state_refresh.dart` refreshes calorie state after
-  health weight changes.
-- `application/calorie_entry_deleter.dart` exposes calorie-entry deletion to
-  integrating application layers without exposing the legacy controller.
-- `application/daily_nutrition_target_resolver_service.dart` provides
-  `dailyNutritionTargetResolverProvider` implementing
-  `domain/daily_nutrition_target_resolver.dart` to resolve daily nutrition
-  and macro targets including calorie cycling and carryover.
-- Legacy controllers and derived providers under `provider/` are current public
-  edge for existing Diary, Activity, Settings, Home, Onboarding, and Inventory
-  integrations.
-- Domain models under `domain/` used by Diary, Activity, and Settings.
-  `CalorieCalculatorProfile` carries an optional `birthDate` and derives the
-  current age with `ageAt(now)`, falling back to the stored `ageYears` for
-  profiles saved before birthdays existed.
-  `CalorieGoalCalculatorFormController.updateBirthDate` stores it and keeps
-  `ageYearsText` in sync with `clockProvider`.
-- Complete presentation surfaces such as calorie entry editors, goal dialogs,
-  calculator sheets, and diary health card parts.
-- `presentation/calorie_entry_details_flow.dart` (`CalorieEntryDetailsFlow`)
-  is public UI for the entry details page, which Diary owns. It saves a
-  meal or day change, changes the amount, logs an entry again, and removes
-  it, each at once with an undo snack bar. It reads the keep-alive editor
-  controller from the caller's container, so inventory stock follows as in
-  the editor, and removing an entry with stock asks whether it goes back.
-- `domain/calorie_entry_nutrition_facts.dart` gives the label nutrients of an
-  entry per 100 g or ml and for the eaten amount, including
-  `CalorieEntry.nutrientDetails`.
-- `domain/calorie_nutrient_details.dart` holds label nutrients beyond the
-  macros (saturated and polyunsaturated fat, sugar, fiber, salt).
-  `CalorieProductProfile` and `CalorieEntry` carry them; integrating features
-  fill them when they log food.
-- `domain/calorie_entry_edits.dart` holds the pure rules for changing the
-  amount and logging an entry again. Every entry except a bundle or a quick
-  entry can change its amount.
-- `domain/quick_calorie_entry.dart` builds a quick entry
-  (`CalorieEntry.isQuickEntry`): calories and macros typed in by hand, without
-  a food. The typed values are the totals; it counts as 100 g of itself, so it
-  has no real amount.
-- `application/calorie_entry_amount_edit_flow.dart` changes the amount of a
-  stored entry. An entry logged from the inventory moves the stock with it
-  through the `CalorieInventoryStockAdjuster` port, which inventory implements;
-  without inventory only the entry changes. The entry keeps what it still
-  takes from the stock in `sourceInventoryAmountToRestore`, so a later delete
-  returns the right amount. A failed save puts the stock back.
-- `presentation/pages/tdee_analytics_page.dart` for visual TDEE expenditure,
-  flux range corridor, and goal anticipation analysis (routed via
-  `AppRoutes.homeCaloriesAnalytics`). It can preselect goal cycles through the
-  `AppRoutes.homeCaloriesAnalyticsCyclesParam` query parameter, built with
-  `AppRoutes.homeCaloriesAnalyticsPath`.
-- `presentation/pages/calorie_goal_archive_page.dart` lists the current and
-  archived goals (`AppRoutes.homeSettingsGoalArchive`) and opens analytics for
-  one or more selected goal cycles.
-- `presentation/calorie_goal_reach_coordinator.dart` is the complete
-  presentation edge for checking a recorded weight, showing the one-time
-  reached-goal prompt, and optionally opening the new-goal sheet.
-- `presentation/widgets/calorie_new_goal_flow.dart` opens the calculator sheet
-  that ends the active goal and starts a new one. It loads the goal settings
-  itself.
-- `domain/calorie_goal_settings_lifecycle.dart` marks the active goal as
-  reached, prompt handled, or ended without removing its history entry.
-- `domain/calorie_goal_calculated_transitions.dart` and
-  `domain/calorie_goal_learned_transitions.dart` provide pure transition logic
-  for calculated and learned TDEE goals.
-- `application/calorie_goal_save_actions.dart` and
-  `application/calorie_goal_mutation_actions.dart` coordinate goal saves,
-  manual targets, check-in updates, and schedule changes.
-- `application/calorie_goal_seed_weight_flow.dart` resolves seed weight directly
-  from health repositories without unlistened provider future reads.
-- `presentation/widgets/calorie_debug_menu_section.dart`, a debug-only list
-  of dump actions that the Home side menu shows only in debug builds.
+- `CalorieEntryDetailsFlow` for the entry details page, which Diary owns. It
+  saves a meal or day change, changes the amount, logs an entry again, and
+  removes it, each at once with an undo snack bar. Removing an entry with stock
+  asks whether it goes back to the inventory.
+- The TDEE analytics page (`AppRoutes.homeCaloriesAnalytics`) for expenditure,
+  the flux range corridor, and goal anticipation. It can preselect goal cycles
+  through `AppRoutes.homeCaloriesAnalyticsCyclesParam`.
+- The goal archive page (`AppRoutes.homeSettingsGoalArchive`) lists the
+  current and archived goals and opens analytics for selected goal cycles.
+- `CalorieGoalReachedFlow` checks a recorded weight, shows the one-time
+  reached-goal prompt, and optionally opens the new-goal sheet.
+- The new-goal flow opens the calculator sheet that ends the active goal and
+  starts a new one.
+- Calorie entry editors, goal dialogs, calculator sheets, the consumed-unit
+  labels, and the debug menu section of the Home side menu.
 
-Other features should depend on domain types or complete widgets instead of
-reassembling Calories internals. New calorie-owned side effects should live in
-`application/` providers that react to owner feature state, instead of expanding
-the legacy `provider/` surface or exposing action wrappers to sibling features.
+## Rules
 
-## Providers
+- Saving an entry is optimistic. The repository writes through the Firestore
+  local cache and does not wait for the server, so a save works offline.
+  Follow-up writes (skipped-day reset, product override, check-in snapshot
+  invalidation) run in the background.
+- A quick entry (`CalorieEntry.isQuickEntry`) holds calories and macros typed
+  in by hand, without a food. The typed values are the totals, so it has no
+  real amount and cannot change it.
+- An entry logged from the inventory keeps what it still takes from the stock
+  in `sourceInventoryAmountToRestore`, so a later delete returns the right
+  amount. A failed amount change puts the stock back.
+- `CalorieCalculatorProfile` derives the current age from its optional
+  `birthDate`, falling back to the stored `ageYears` for profiles saved before
+  birthdays existed.
+- Health must not depend on Calories. Calorie reactions to weight changes live
+  in Calories `application/`.
 
-- New use-case providers live in `application/`.
-- Repository providers live with repository implementations in `data/`.
-  `CalorieLogRepositoryContract.cachedById` returns the last entry the
-  repository read or wrote without a backend call, so the Diary entry details
-  page renders on its first frame.
-- Saving an entry is optimistic. The repository and the inventory commit
-  stores write through the Firestore local cache and do not wait for the
-  server, so a save works offline and Firestore sends it later. Follow-up
-  writes (skipped-day reset, product override, serving suggestion) run in
-  the background.
-- The feature-level `provider/` folder is legacy structure and currently holds
-  calorie controllers and derived state. Do not add new provider files there
-  unless working inside existing legacy code where moving would create
-  unrelated churn.
-- Providers use Riverpod code generation.
-
-Main application providers:
-
-- `application/calorie_weight_state_refresh.dart`
-- `application/calorie_entry_amount_edit_flow.dart`
-- `application/calorie_entry_delete_flow.dart`
-- `application/calorie_inventory_entry_save_handler.dart`
-- `application/tdee_analytics_provider.dart`
-- `application/calorie_goal_archive_provider.dart` resolves the archive cycles
-  so the archive page does no aggregation.
-- `application/daily_nutrition_target_resolver_service.dart`
-- `application/calorie_week_consumption_snapshot_provider.dart` provides
-  lightweight consumption totals for Burn Week synchronization without loading
-  the full rolling week overview.
-- `application/calorie_week_overview_models.dart` defines the serializable
-  models for daily and weekly calorie progress.
-
-## TDEE Learning
+### TDEE Learning
 
 Calories uses a pure intake and weight-trend model. The calculator profile
 produces an initial TDEE from height, weight, age, sex, and selected activity level.
@@ -144,7 +78,7 @@ Health Connect is restricted strictly to body weight readings (`HealthDataType.w
 The app does not read wearable activity (steps, workouts, active calories), so
 tracked activity never changes TDEE or the daily target.
 
-### Calorie Cycling & Training Days
+#### Calorie Cycling & Training Days
 
 Users can configure training days (e.g. Mo, We, Fr) and a kcal offset (+200..+300 kcal).
 The weekly budget is preserved budget-neutrally:
@@ -167,7 +101,7 @@ schedule counts instead.
 
 The diary header includes a toggle (`🏋️ Trainingstag`, `🛋️ Ruhetag`, `⏸️ Pausentag`).
 
-### Learning Windows & Interpolation
+#### Learning Windows & Interpolation
 
 Weekly learned TDEE uses an expanding window first, then a rolling 28-day window:
 
@@ -190,7 +124,7 @@ newLearnedTdee = oldLearnedTdee * (1 - newDataWeight) + measuredTdee * newDataWe
 A short window at the start of a goal is noisy, so it moves the learned TDEE
 less than a full 28-day window.
 
-### Pause Days & Missing Days
+#### Pause Days & Missing Days
 
 - A day without logged entries or explicitly set to pause acts as a **Pausentag**.
 - Pausentage (Urlaub, Krankheit, Wettkampf) are neutral: no streak penalty, ignored in learning.
@@ -212,7 +146,7 @@ that pre-smoothed weights delay the learned TDEE by one to two weeks without
 making it calmer. The TDEE analytics page shows the smoothed trend weight as
 its weight line, weight numbers, and goal projection.
 
-### Macro Weight
+#### Macro Weight
 
 The protein and fat targets of a day use the macro weight from the goal
 history (`macroWeightKgForDay`), not the current calculator profile weight.
@@ -222,7 +156,7 @@ A calculated goal entry supplies its profile weight as the start weight. A
 check-in without any weigh-in keeps the previous weight. The smoothed trend
 weight is right here because the macros need a calm level, not a slope.
 
-### Body Data in New Goals
+#### Body Data in New Goals
 
 When a calculator profile exists, the calculator flow shows one "Your body
 data" step (`CalorieGoalBodySummary`) instead of the sex, height, and age
@@ -231,7 +165,7 @@ profile" link closes the goal sheet and opens `AppRoutes.homeProfile`, where
 the body data is edited. Weight, activity level, and the goal stay in the
 flow, because a new goal asks them anew.
 
-### Body Data Edits
+#### Body Data Edits
 
 `applyBodyEdit` (`domain/calorie_goal_body_edits.dart`) changes height, sex,
 birthday, or start weight after onboarding. The calculator profile always
@@ -243,7 +177,7 @@ again, and weekly check-ins that kept the old goal take the new one. The start
 weight is fixed once a TDEE is learned. `CalorieBodyEditService` shows today's
 calorie goal and macros before and after an edit and saves it.
 
-### Run Training Days
+#### Run Training Days
 
 `withRunTrainingDays` (`domain/calorie_run_training_plan.dart`) sets the
 training days of the current 7-day run. It writes the same per-day overrides
@@ -252,25 +186,3 @@ keep their type, and later runs follow the weekly schedule again.
 `CalorieRunTrainingService` shows each changed day's calorie goal and the run
 total before and after, and the other days whose goal changes, and saves the
 days.
-
-## Accepted Dependencies
-
-- `core` for routing, theme tokens, shared widgets, and local day helpers.
-- `features/auth` for user-scoped calorie repositories and cache storage.
-- `features/health` for public health controllers, services, and domain data
-  used by calorie goals and connection sync.
-
-Inventory-backed save/delete behavior is supplied through calorie-owned ports.
-The concrete inventory adapters live in `features/inventory` so Calories does
-not depend on Inventory.
-
-Keep health-triggered calorie effects in Calories application providers. Health
-must not depend on Calories.
-
-## Tests
-
-- `test/features/calories/application/`
-- `test/features/calories/data/`
-- `test/features/calories/domain/`
-- `test/features/calories/presentation/`
-- `test/features/calories/provider/`

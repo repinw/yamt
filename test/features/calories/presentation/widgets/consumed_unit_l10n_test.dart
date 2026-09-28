@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
+import 'package:yamt/features/calories/presentation/widgets/consumed_unit_l10n.dart';
 
-import '../../../helpers/l10n_test_utils.dart';
+import '../../../../helpers/l10n_test_utils.dart';
 
 void main() {
   testWidgets('maps all consumed units for English localization', (

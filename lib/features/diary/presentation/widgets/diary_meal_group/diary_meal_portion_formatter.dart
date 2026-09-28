@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/calories/presentation/consumed_unit_l10n.dart';
+import 'package:yamt/features/calories/presentation/widgets/consumed_unit_l10n.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

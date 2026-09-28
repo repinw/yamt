@@ -53,8 +53,7 @@ Current application providers:
 - `features/health` for health access, day activity data, workouts, and weight
   samples.
 - `features/calories` for calorie profile inputs, calorie-owned weight state
-  refresh, and the public goal-reach coordinator
-  (`presentation/calorie_goal_reach_coordinator.dart`) that
+  refresh, and the public `CalorieGoalReachedFlow` that
   `DiaryWeightTrackingFlow` invokes after a weight is saved or synchronized.
 
 Keep these dependencies at the Activity provider or action boundary. Activity
