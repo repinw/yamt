@@ -119,11 +119,7 @@ async function exitHousehold(
 
   // Sole member: delete the invites first, so nobody can join any more, and
   // check again that nobody joined in the meantime.
-  const invites = await db.collection(HOUSEHOLD_INVITES).where('householdId', '==', householdId).get();
-  summary.invitesDeleted += await deleteDocsCounted(
-    db,
-    invites.docs.map((doc) => doc.ref),
-  );
+  summary.invitesDeleted += await deleteHouseholdInvites(db, householdId);
   const checkedPlan = await settleMembership(db, household, uid, false);
   if (checkedPlan.kind === 'skip') {
     return;
@@ -134,14 +130,9 @@ async function exitHousehold(
   }
 
   // Then delete everything but the member documents.
-  summary.storageFilesDeleted += await files.deletePrefix(`${HOUSEHOLDS}/${householdId}/`);
-  for (const collection of await household.listCollections()) {
-    if (collection.id !== MEMBERS) {
-      summary.firestoreDeletes += await recursiveDeleteCounted(db, collection);
-    }
-  }
-  await household.delete();
-  summary.firestoreDeletes += 1;
+  const deleted = await deleteHouseholdContent(db, files, household);
+  summary.storageFilesDeleted += deleted.storageFilesDeleted;
+  summary.firestoreDeletes += deleted.firestoreDeletes;
 
   const finalPlan = await settleMembership(db, household, uid, true);
   if (finalPlan.kind === 'leave') {
@@ -151,6 +142,36 @@ async function exitHousehold(
     return;
   }
   summary.householdsDeleted += 1;
+}
+
+/** Deletes the invites into `householdId` and returns how many it deleted. */
+export async function deleteHouseholdInvites(db: Firestore, householdId: string): Promise<number> {
+  const invites = await db.collection(HOUSEHOLD_INVITES).where('householdId', '==', householdId).get();
+  return deleteDocsCounted(
+    db,
+    invites.docs.map((doc) => doc.ref),
+  );
+}
+
+/**
+ * Deletes the images, the household document and every subcollection but
+ * `members`, so a retry still finds who was in the household.
+ */
+export async function deleteHouseholdContent(
+  db: Firestore,
+  files: FileStore,
+  household: DocumentReference,
+): Promise<{ firestoreDeletes: number; storageFilesDeleted: number }> {
+  const storageFilesDeleted = await files.deletePrefix(`${HOUSEHOLDS}/${household.id}/`);
+  let firestoreDeletes = 0;
+  for (const collection of await household.listCollections()) {
+    if (collection.id !== MEMBERS) {
+      firestoreDeletes += await recursiveDeleteCounted(db, collection);
+    }
+  }
+  await household.delete();
+  firestoreDeletes += 1;
+  return { firestoreDeletes, storageFilesDeleted };
 }
 
 /**
@@ -188,7 +209,7 @@ async function settleMembership(
   });
 }
 
-function toMember(doc: DocumentSnapshot): HouseholdMember {
+export function toMember(doc: DocumentSnapshot): HouseholdMember {
   const role: unknown = doc.get('role');
   const joinedAt: unknown = doc.get('joined_at');
   return {

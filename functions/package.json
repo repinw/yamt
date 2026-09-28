@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "tsc -p tsconfig.test.json && node --test build-test/test/*.test.js",
-    "test:emulator": "tsc -p tsconfig.test.json && firebase emulators:exec --only firestore --project demo-yamt-functions \"node --test build-test/test/*.emulator.js\""
+    "test:emulator": "tsc -p tsconfig.test.json && firebase emulators:exec --only firestore --project demo-yamt-functions \"node --test --test-concurrency=1 build-test/test/*.emulator.js\""
   },
   "dependencies": {
     "firebase-admin": "^13.10.0",

@@ -75,3 +75,27 @@ function compareByJoinedAt(a: HouseholdMember, b: HouseholdMember): number {
   }
   return a.uid < b.uid ? -1 : 1;
 }
+
+export type HouseholdRepairPlan =
+  /** Nobody is left: delete the household with all its data. */
+  | { kind: 'delete-household' }
+  /** Members are left but no admin: `promoteUid` becomes admin. */
+  | { kind: 'promote'; promoteUid: string }
+  /** Members and an admin are left: nothing to do. */
+  | { kind: 'none' };
+
+/**
+ * Decides what a household needs after one of its member documents was
+ * deleted or changed its role. The app never leaves a household without an
+ * admin or with no member, but a client that talks to Firestore directly
+ * can; this puts it right.
+ */
+export function planHouseholdRepair(members: readonly HouseholdMember[]): HouseholdRepairPlan {
+  if (members.length === 0) {
+    return { kind: 'delete-household' };
+  }
+  if (members.some((member) => member.role === ADMIN_ROLE)) {
+    return { kind: 'none' };
+  }
+  return { kind: 'promote', promoteUid: longestMember(members).uid };
+}

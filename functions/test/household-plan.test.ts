@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import { HouseholdMember, longestMember, planHouseholdExit } from '../src/household-plan';
+import {
+  HouseholdMember,
+  longestMember,
+  planHouseholdExit,
+  planHouseholdRepair,
+} from '../src/household-plan';
 
 function member(uid: string, role: string, joinedAtMillis: number | null): HouseholdMember {
   return { uid, role, joinedAtMillis };
@@ -122,5 +127,21 @@ describe('longestMember', () => {
 
   it('throws without members', () => {
     assert.throws(() => longestMember([]));
+  });
+});
+
+describe('planHouseholdRepair', () => {
+  it('deletes a household without members', () => {
+    assert.deepEqual(planHouseholdRepair([]), { kind: 'delete-household' });
+  });
+
+  it('leaves a household with an admin alone', () => {
+    const members = [member('a', 'admin', 1), member('m', 'member', 2)];
+    assert.deepEqual(planHouseholdRepair(members), { kind: 'none' });
+  });
+
+  it('promotes the member who joined first when no admin is left', () => {
+    const members = [member('late', 'member', 9), member('early', 'member', 2)];
+    assert.deepEqual(planHouseholdRepair(members), { kind: 'promote', promoteUid: 'early' });
   });
 });
