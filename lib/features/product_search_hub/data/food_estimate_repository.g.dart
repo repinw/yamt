@@ -59,4 +59,4 @@ final class FoodEstimateRepositoryProvider
 }
 
 String _$foodEstimateRepositoryHash() =>
-    r'571c2a191a69fe8330185f70a857e44e5b636fb2';
+    r'99d63c721d0311f2ff7a6c90cd2677329cfd314f';
