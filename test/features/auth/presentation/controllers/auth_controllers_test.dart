@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-
+import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/google_sign_in_provider.dart';
@@ -218,6 +218,26 @@ void main() {
 
       expect(fakeRepository.signInCalls, 1);
       expect(container.read(authFormControllerProvider).hasError, isFalse);
+    });
+
+    test('email sign in starts a new session shutdown epoch', () async {
+      final fakeRepository = FakeAuthRepository();
+      final container = ProviderContainer(
+        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
+      );
+      addTearDown(container.dispose);
+      final shutdownSignal = container.read(sessionShutdownSignalProvider);
+      final epochBeforeSignIn = shutdownSignal.epoch;
+
+      await container
+          .read(authFormControllerProvider.notifier)
+          .signInWithEmailAndPassword(
+            email: 'demo@test.com',
+            password: 'secret',
+          );
+
+      expect(shutdownSignal.hasShutdownSince(epochBeforeSignIn), isTrue);
+      expect(shutdownSignal.isInProgress, isFalse);
     });
 
     test('register error sets error state', () async {
