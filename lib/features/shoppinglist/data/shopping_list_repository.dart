@@ -30,7 +30,7 @@ ShoppingListRepository shoppingListRepository(Ref ref) {
 ///
 /// Firestore and the household cipher are `null` while the user is signed out
 /// or the household key is not ready. Reads then return no items and writes
-/// fail.
+/// throw a [StateError].
 class ShoppingListRepository {
   /// Creates an instance.
   new({
@@ -83,10 +83,14 @@ class ShoppingListRepository {
   /// Replaces all stored shopping list items with [items].
   ///
   /// Writes run one after another. Returns `false` when the write fails.
+  /// Throws a [StateError] while the user is signed out or the household key
+  /// is not ready.
   Future<bool> saveAll(List<ShoppingListItem> items) {
     final collection = _collection;
     if (collection == null) {
-      return Future<bool>.value(false);
+      return Future<bool>.error(
+        StateError('Shopping list is not available while signed out.'),
+      );
     }
     final write = _writeBarrier.then((_) => _replaceAll(collection, items));
     _writeBarrier = write.then<void>((_) {}, onError: (Object _) {});

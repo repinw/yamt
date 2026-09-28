@@ -122,13 +122,13 @@ void main() {
     expect(items, isEmpty);
   });
 
-  test('saveAll fails without a household cipher', () async {
-    final saved = await repository(
-      FakeFirebaseFirestore(),
-      withCipher: false,
-    ).saveAll(<ShoppingListItem>[_item('a')]);
+  test('saveAll throws without a household cipher', () async {
+    final target = repository(FakeFirebaseFirestore(), withCipher: false);
 
-    expect(saved, isFalse);
+    await expectLater(
+      target.saveAll(<ShoppingListItem>[_item('a')]),
+      throwsStateError,
+    );
   });
 
   test('readAll skips a corrupted document', () async {
