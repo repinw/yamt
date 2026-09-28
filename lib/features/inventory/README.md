@@ -79,8 +79,9 @@ already documented as a reusable presentation surface.
 - `presentation/widgets/eat_sheet/`: `InventoryItemEatSheetBody` (the eat
   page for one item, with header overrides, a custom second action, and a
   selection callback), `EatPageScaffold`, `EatChip`, `EatComponentsList`,
-  `EatImageTile`, `EatInlineAmountField`, `EatFramedBox`, and `EatLabelTitle`,
-  so later features can show and edit foods in the same food label look.
+  `EatImageTile`, `EatInlineAmountField`, `EatFramedBox`, `EatLabelTitle`,
+  and `EatLabelInputRow` (one editable row of a food label), so later
+  features can show and edit foods in the same food label look.
 
 ## Providers
 

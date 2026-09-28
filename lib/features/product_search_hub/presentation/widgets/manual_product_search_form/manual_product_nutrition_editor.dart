@@ -8,14 +8,24 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_framed_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_label_input_row.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_label_title.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_form_field.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'manual_product_search_form/manual_product_nutrient_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+/// One nutrient of the editable label: its input, name, unit, macro color,
+/// and whether it is a part such as "of which sugars".
+typedef ManualProductNutrientLine = ({
+  ManualProductFormField field,
+  String label,
+  String unit,
+  Color? accent,
+  bool isPart,
+});
 
 /// The nutrition label of the product editor: the rows of a printed food
 /// label with an input per 100 g, and a row that adds the optional
@@ -129,8 +139,13 @@ class ManualProductNutritionEditor extends StatelessWidget {
             ),
           ),
           for (final (index, row) in rows.indexed)
-            ManualProductNutrientRow(
-              row: row,
+            EatLabelInputRow(
+              fieldKey: row.field.key,
+              label: row.label,
+              unit: row.unit,
+              accent: row.accent,
+              isPart: row.isPart,
+              isRequired: row.field.isRequired,
               controller: texts[row.field]!,
               focusNode: focusNodes[row.field]!,
               bottom: _bottomRule(colors, rows, index, optionalTypes),
