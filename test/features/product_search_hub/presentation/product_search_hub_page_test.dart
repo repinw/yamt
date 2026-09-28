@@ -30,6 +30,7 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_eat_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_product_search_hub_completion_handler.dart';
+import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/data/'
@@ -586,7 +587,9 @@ void main() {
     expect(poppedResult, same(editedResult));
   });
 
-  testWidgets('inventory search result opens product editor', (tester) async {
+  testWidgets('inventory search result opens the Vorrat page first', (
+    tester,
+  ) async {
     ManualProductSearchRouteArgs? childArgs;
 
     await _pumpRouteHarness(
@@ -602,6 +605,17 @@ void main() {
     await tester.tap(
       find.byKey(const Key('product_search_hub_search_result_4006381333931')),
     );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(InventoryStockAddPage), findsOneWidget);
+    expect(find.text('product search child route'), findsNothing);
+
+    await tester.tap(find.byKey(InventoryStockAddPage.increaseKey));
+    await tester.pump();
+    expect(find.text('Add to stock (2 packages)'), findsOneWidget);
+
+    await tester.ensureVisible(find.byKey(const Key('eat_item_action_edit')));
+    await tester.tap(find.byKey(const Key('eat_item_action_edit')));
     await tester.pumpAndSettle();
 
     expect(find.text('product search child route'), findsOneWidget);

@@ -9,14 +9,18 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Item" card of the item hub: shopping list, edit, replace and remove,
-/// drawn like a second food label.
+/// drawn like a second food label. [actions] picks the lines to show.
 class EatItemActionsCard extends StatelessWidget {
   /// Creates the card.
   const new({
     required this.isOnShoppingList,
     required this.onPicked,
+    this.actions = InventoryItemHubAction.values,
     super.key,
   });
+
+  /// Actions to show, in the card's own order.
+  final List<InventoryItemHubAction> actions;
 
   /// Whether the item is already on the shopping list. The shopping list
   /// line is then disabled.
@@ -31,49 +35,72 @@ class EatItemActionsCard extends StatelessWidget {
     final colors = FoodLabelColors.of(context);
     final error = Theme.of(context).colorScheme.error;
 
+    final lines = <_Line>[
+      if (actions.contains(InventoryItemHubAction.addToShoppingList))
+        (
+          key: const Key('eat_item_action_shopping_list'),
+          icon: Icons.shopping_cart_outlined,
+          label: isOnShoppingList
+              ? l10n.eatPageOnShoppingList
+              : l10n.inventoryItemAddToShoppingListAction,
+          color: colors.ink,
+          onPressed: isOnShoppingList
+              ? null
+              : () => onPicked(InventoryItemHubAction.addToShoppingList),
+        ),
+      if (actions.contains(InventoryItemHubAction.edit))
+        (
+          key: const Key('eat_item_action_edit'),
+          icon: Icons.edit_outlined,
+          label: l10n.inventoryReceiptReviewEditAction,
+          color: colors.ink,
+          onPressed: () => onPicked(InventoryItemHubAction.edit),
+        ),
+      if (actions.contains(InventoryItemHubAction.replace))
+        (
+          key: const Key('eat_item_action_replace'),
+          icon: Icons.swap_horiz_rounded,
+          label: l10n.eatPageReplaceProduct,
+          color: colors.ink,
+          onPressed: () => onPicked(InventoryItemHubAction.replace),
+        ),
+      if (actions.contains(InventoryItemHubAction.remove))
+        (
+          key: const Key('eat_item_action_remove'),
+          icon: Icons.delete_outline_rounded,
+          label: l10n.inventoryItemRemoveAction,
+          color: error,
+          onPressed: () => onPicked(InventoryItemHubAction.remove),
+        ),
+    ];
+
     return EatFramedBox(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           EatLabelTitle(text: l10n.eatPageItemTitle),
-          _ActionLine(
-            key: const Key('eat_item_action_shopping_list'),
-            icon: Icons.shopping_cart_outlined,
-            label: isOnShoppingList
-                ? l10n.eatPageOnShoppingList
-                : l10n.inventoryItemAddToShoppingListAction,
-            color: colors.ink,
-            onPressed: isOnShoppingList
-                ? null
-                : () => onPicked(InventoryItemHubAction.addToShoppingList),
-          ),
-          _ActionLine(
-            key: const Key('eat_item_action_edit'),
-            icon: Icons.edit_outlined,
-            label: l10n.inventoryReceiptReviewEditAction,
-            color: colors.ink,
-            onPressed: () => onPicked(InventoryItemHubAction.edit),
-          ),
-          _ActionLine(
-            key: const Key('eat_item_action_replace'),
-            icon: Icons.swap_horiz_rounded,
-            label: l10n.eatPageReplaceProduct,
-            color: colors.ink,
-            onPressed: () => onPicked(InventoryItemHubAction.replace),
-          ),
-          _ActionLine(
-            key: const Key('eat_item_action_remove'),
-            icon: Icons.delete_outline_rounded,
-            label: l10n.inventoryItemRemoveAction,
-            color: error,
-            showRule: false,
-            onPressed: () => onPicked(InventoryItemHubAction.remove),
-          ),
+          for (final (index, line) in lines.indexed)
+            _ActionLine(
+              key: line.key,
+              icon: line.icon,
+              label: line.label,
+              color: line.color,
+              showRule: index < lines.length - 1,
+              onPressed: line.onPressed,
+            ),
         ],
       ),
     );
   }
 }
+
+typedef _Line = ({
+  Key key,
+  IconData icon,
+  String label,
+  Color color,
+  VoidCallback? onPressed,
+});
 
 class _ActionLine extends StatelessWidget {
   const new({

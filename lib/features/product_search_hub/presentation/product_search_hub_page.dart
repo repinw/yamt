@@ -35,6 +35,8 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_lookup.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_selection_state.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_stock_review_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_view/product_search_hub_search_view.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -201,6 +203,18 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       _closeHub(result);
       return false;
     }
+    var completed = result;
+    if (widget.args.mode == ProductSearchHubMode.inventory) {
+      final reviewed = await reviewProductSearchHubStockResult(
+        context: context,
+        args: widget.args,
+        result: result,
+      );
+      if (reviewed == null || !mounted) {
+        return true;
+      }
+      completed = reviewed;
+    }
 
     setState(() => _isMutatingSelection = true);
 
@@ -208,7 +222,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       context: context,
       args: widget.args,
       sourceKey: sourceKey,
-      result: result,
+      result: completed,
       continueDiaryBatch: _selectionState.selections.isNotEmpty,
     );
     if (!context.mounted) {

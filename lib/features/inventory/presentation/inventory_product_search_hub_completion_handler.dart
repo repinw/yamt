@@ -42,6 +42,14 @@ class InventoryProductSearchHubCompletionHandler
       container: ProviderScope.containerOf(context, listen: false),
       l10n: l10n,
       result: result,
+      // The saved item is built again from the catalog product, so it keeps
+      // the package count picked on the Vorrat page, one bar segment each.
+      adjustItem: (item) => item
+          .withDerivedAmount(
+            quantity: result.item.quantity,
+            fallbackUnit: item.amountUnit,
+          )
+          .copyWith(initialQuantity: result.item.quantity),
     );
     if (!context.mounted) {
       return const ProductSearchHubCompletionResult.none();

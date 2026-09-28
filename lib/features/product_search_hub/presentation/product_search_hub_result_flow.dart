@@ -11,6 +11,8 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
 import 'package:yamt/features/product_search_hub/domain/'
+    'manual_product_eat_now_nutrition.dart';
+import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
@@ -46,11 +48,17 @@ Future<void> editAndSaveProductSearchHubProduct({
     return;
   }
 
-  final directResult = _directDiaryProductResult(
-    context: context,
-    args: args,
-    product: product,
-  );
+  final directResult =
+      _directDiaryProductResult(
+        context: context,
+        args: args,
+        product: product,
+      ) ??
+      _directInventoryProductResult(
+        context: context,
+        args: args,
+        product: product,
+      );
   if (directResult != null) {
     await completeResult(sourceKey: sourceKey, result: directResult);
     return;
@@ -89,7 +97,9 @@ Future<void> editAndSaveProductSearchHubRecentItem({
     return;
   }
 
-  final directResult = _directDiaryRecentItemResult(args: args, item: item);
+  final directResult =
+      _directDiaryRecentItemResult(args: args, item: item) ??
+      _directInventoryRecentItemResult(args: args, item: item);
   if (directResult != null) {
     await completeResult(sourceKey: sourceKey, result: directResult);
     return;
@@ -154,6 +164,46 @@ _directDiaryProductResult({
     ),
     args: args,
     product: product,
+  );
+}
+
+/// A product picked for the Vorrat goes straight to the Vorrat page, which
+/// offers the editor. Without the required nutrition the editor opens first.
+inventory_models.InventoryReceiptManualProductResult?
+_directInventoryProductResult({
+  required BuildContext context,
+  required ProductSearchHubRouteArgs args,
+  required OffProductSearchResult product,
+}) {
+  if (args.mode != ProductSearchHubMode.inventory) {
+    return null;
+  }
+  final l10n = AppLocalizations.of(context)!;
+  return productSearchHubDirectProductResult(
+    container: ProviderScope.containerOf(context, listen: false),
+    draftItem: buildProductSearchHubDraftItem(
+      l10n: l10n,
+      sourceItem: args.item,
+    ),
+    product: product,
+    action: inventory_models.InventoryReceiptManualProductAction.addToInventory,
+  );
+}
+
+inventory_models.InventoryReceiptManualProductResult?
+_directInventoryRecentItemResult({
+  required ProductSearchHubRouteArgs args,
+  required InventoryItem item,
+}) {
+  if (args.mode != ProductSearchHubMode.inventory ||
+      !hasRequiredEatNowNutrition(item.nutrition)) {
+    return null;
+  }
+  return productSearchHubDirectInventoryItemResult(
+    item: item.withDerivedAmount(quantity: 1, fallbackUnit: item.amountUnit),
+    action: inventory_models.InventoryReceiptManualProductAction.addToInventory,
+    selectedGlobalFoodItemId: manualProductRecentItemGlobalFoodItemId(item),
+    globalPackageWeight: item.weight,
   );
 }
 

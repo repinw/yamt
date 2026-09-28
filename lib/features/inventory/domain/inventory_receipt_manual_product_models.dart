@@ -63,4 +63,18 @@ class InventoryReceiptManualProductResult {
 
   /// Generic eat selection to complete after saving.
   final EatSelection? eatSelection;
+
+  /// The same result for [item], for example with another stock amount.
+  InventoryReceiptManualProductResult withItem(InventoryItem item) {
+    return InventoryReceiptManualProductResult(
+      item: item,
+      action: action,
+      selectedProduct: selectedProduct,
+      selectedGlobalFoodItemId: selectedGlobalFoodItemId,
+      requiresGlobalPersistence: requiresGlobalPersistence,
+      globalPackageWeight: globalPackageWeight,
+      skipMissingBarcodePrompt: skipMissingBarcodePrompt,
+      eatSelection: eatSelection,
+    );
+  }
 }
