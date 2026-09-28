@@ -3433,6 +3433,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'This person is no longer in the household.';
 
   @override
+  String get householdChanged =>
+      'The household changed in the meantime. Check it and try again.';
+
+  @override
   String get householdAdminOnly => 'Only the admin can do that.';
 
   @override

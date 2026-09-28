@@ -25,9 +25,22 @@ void main() {
     );
   }
 
-  Future<HouseholdRepository> repositoryFor(String uid) async {
+  /// The repository of [uid]. [race] runs right before its first
+  /// transaction, or right after it with [afterTransaction], like another
+  /// member who changes the household at the same time.
+  Future<HouseholdRepository> repositoryFor(
+    String uid, {
+    Future<void> Function()? race,
+    bool afterTransaction = false,
+  }) async {
     return HouseholdRepository(
-      firestore: firestore,
+      firestore: race == null
+          ? firestore
+          : _RacingFirestore(
+              firestore,
+              race,
+              afterTransaction: afterTransaction,
+            ),
       data: HouseholdDataRepository(firestore: firestore, storage: storage),
       keys: keys,
       members: HouseholdMemberRepository(
@@ -38,6 +51,21 @@ void main() {
       currentUserId: uid,
       dataCipher: await dataCipherFor(uid),
     );
+  }
+
+  /// [uid] leaves [householdId] on another device.
+  Future<void> Function() leaving(
+    String uid,
+    String householdId, {
+    String? successorUid,
+  }) {
+    return () async {
+      await (await repositoryFor(uid)).leaveHousehold(
+        householdId: householdId,
+        ownHouseholdId: 'own-$uid',
+        successorUid: successorUid,
+      );
+    };
   }
 
   Future<void> addMember(
@@ -263,6 +291,75 @@ void main() {
         throwsStateError,
       );
     });
+
+    test('a member who got the lead meanwhile hands it on', () async {
+      final early = await repositoryFor(
+        'early',
+        race: leaving('admin', 'shared', successorUid: 'early'),
+      );
+
+      await early.leaveHousehold(
+        householdId: 'shared',
+        ownHouseholdId: 'own-early',
+      );
+
+      expect((await data('households/shared/members/late'))!['role'], 'admin');
+      expect(await data('households/shared/members/early'), isNull);
+    });
+
+    test('the admin stays when the successor left meanwhile', () async {
+      final admin = await repositoryFor(
+        'admin',
+        race: leaving('late', 'shared'),
+      );
+
+      await expectLater(
+        admin.leaveHousehold(
+          householdId: 'shared',
+          ownHouseholdId: 'own-admin',
+          successorUid: 'late',
+        ),
+        throwsA(isA<HouseholdMemberNotFoundException>()),
+      );
+      expect((await data('households/shared/members/admin'))!['role'], 'admin');
+      expect((await data('users/admin'))!['householdId'], 'shared');
+    });
+
+    test('a member who is left alone meanwhile stays', () async {
+      await addMember('pair', 'solo', joinedAt: DateTime(2026), admin: true);
+      await addMember('pair', 'late', joinedAt: DateTime(2026, 2));
+      final late = await repositoryFor(
+        'late',
+        race: leaving('solo', 'pair', successorUid: 'late'),
+      );
+
+      await expectLater(
+        late.leaveHousehold(householdId: 'pair', ownHouseholdId: 'own-late'),
+        throwsA(isA<HouseholdChangedException>()),
+      );
+      expect((await data('households/pair/members/late'))!['role'], 'admin');
+      expect(await data('households/pair'), isNotNull);
+    });
+
+    test('a member who joined meanwhile stops the deletion', () async {
+      await addMember('last', 'solo', joinedAt: DateTime(2026), admin: true);
+      // The fake hides the members once the household document is gone, so
+      // the member shows up only after the household closed.
+      final solo = await repositoryFor(
+        'solo',
+        race: () => addMember('last', 'joiner', joinedAt: DateTime(2026, 2)),
+        afterTransaction: true,
+      );
+
+      await expectLater(
+        solo.leaveHousehold(householdId: 'last', ownHouseholdId: 'own-solo'),
+        throwsA(isA<HouseholdChangedException>()),
+      );
+      expect(await data('households/last'), isNotNull);
+      expect((await data('households/last/members/solo'))!['role'], 'admin');
+      expect(await data('households/last/members/joiner'), isNotNull);
+      expect((await data('users/solo'))!['householdId'], 'shared');
+    });
   });
 
   group('replaceOwnHousehold', () {
@@ -325,4 +422,46 @@ void main() {
 
     expect((await data('users/late'))!['householdId'], 'own-late');
   });
+}
+
+/// Runs a race once, right before or after the first transaction, and
+/// otherwise works like the Firestore it wraps.
+class _RacingFirestore extends Fake implements FirebaseFirestore {
+  new(this._firestore, this._race, {required this._afterTransaction});
+
+  final FakeFirebaseFirestore _firestore;
+  final bool _afterTransaction;
+  Future<void> Function()? _race;
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
+    return _firestore.collection(collectionPath);
+  }
+
+  @override
+  WriteBatch batch() => _firestore.batch();
+
+  @override
+  Future<T> runTransaction<T>(
+    TransactionHandler<T> transactionHandler, {
+    Duration timeout = const Duration(seconds: 30),
+    int maxAttempts = 5,
+  }) async {
+    final race = _race;
+    _race = null;
+    if (!_afterTransaction) {
+      await race?.call();
+    }
+    final result = await _firestore.runTransaction(
+      transactionHandler,
+      timeout: timeout,
+      maxAttempts: maxAttempts,
+    );
+    if (_afterTransaction && race != null) {
+      // The fake applies the writes of a transaction without waiting.
+      await pumpEventQueue();
+      await race();
+    }
+    return result;
+  }
 }

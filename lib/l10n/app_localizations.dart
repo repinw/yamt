@@ -5946,6 +5946,12 @@ abstract class AppLocalizations {
   /// **'This person is no longer in the household.'**
   String get householdMemberNotFound;
 
+  /// No description provided for @householdChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'The household changed in the meantime. Check it and try again.'**
+  String get householdChanged;
+
   /// No description provided for @householdAdminOnly.
   ///
   /// In en, this message translates to:

@@ -46,6 +46,13 @@ final class HouseholdLeaveRequiredException extends HouseholdException {
   const new();
 }
 
+/// Thrown when the household changed while the user left it, for example
+/// because another member left or joined at the same time.
+final class HouseholdChangedException extends HouseholdException {
+  /// Creates the exception.
+  const new();
+}
+
 /// Thrown when the household key is not ready yet, for example while the
 /// user's data key is still loading.
 final class HouseholdKeyUnavailableException extends HouseholdException {

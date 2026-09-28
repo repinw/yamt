@@ -1558,6 +1558,7 @@
     }
   },
   "householdMemberNotFound": "Diese Person ist nicht mehr im Haushalt.",
+  "householdChanged": "Der Haushalt hat sich inzwischen geändert. Prüfe ihn und versuche es erneut.",
   "householdAdminOnly": "Das kann nur der Admin.",
   "householdJoinLeaveFirst": "Verlasse erst deinen geteilten Haushalt, bevor du einem anderen beitrittst.",
   "householdLeaveOwnMessage": "Du bekommst einen neuen, leeren Haushalt. Die anderen behalten alles hier.",

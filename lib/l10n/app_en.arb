@@ -1708,6 +1708,7 @@
     }
   },
   "householdMemberNotFound": "This person is no longer in the household.",
+  "householdChanged": "The household changed in the meantime. Check it and try again.",
   "householdAdminOnly": "Only the admin can do that.",
   "householdJoinLeaveFirst": "Leave your shared household before you join another one.",
   "householdLeaveOwnMessage": "You get a new, empty household. The others keep everything here.",

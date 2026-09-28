@@ -390,7 +390,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   others remain hands the lead on first: the dialog proposes the member who
   joined first and lets the admin pick another. An admin who leaves the own
   household gets a new, empty one. The last member who leaves deletes the
-  household with all its data and images.
+  household with all its data and images. When the household changes while
+  the user leaves (another member leaves, joins, or hands over the lead at
+  the same time), leaving stops with a message to check the household again.
 - The admin removes members to stop sharing and keeps everything. A removed
   member's app notices it and goes back to the own household. A member
   removed from the household that was their own gets a new, empty one.

@@ -80,6 +80,54 @@ class HouseholdMemberRepository {
     return snapshot.exists ? _parse(snapshot) : null;
   }
 
+  /// Reads the member entry of [uid] in [householdId] inside [transaction],
+  /// or `null`, so that the transaction fails when the entry changes.
+  Future<HouseholdMember?> loadMember(
+    Transaction transaction,
+    String householdId,
+    String uid,
+  ) async {
+    final snapshot = await transaction.get(memberDocument(householdId, uid));
+    return snapshot.exists ? _parse(snapshot) : null;
+  }
+
+  /// Reads the members [uids] of [householdId] in [transaction] and returns
+  /// who leads after the current user leaves, or `null` when the user does
+  /// not lead. The admin picked [successorUid]; without a pick the member
+  /// who joined first leads.
+  ///
+  /// Throws [HouseholdChangedException] when nobody else is left, and
+  /// [HouseholdMemberNotFoundException] when the user or the successor is no
+  /// member any more.
+  Future<String?> loadSuccessor(
+    Transaction transaction,
+    String householdId, {
+    required Set<String> uids,
+    required String? successorUid,
+  }) async {
+    final current = await loadMember(transaction, householdId, _currentUserId);
+    if (current == null) {
+      throw const HouseholdMemberNotFoundException();
+    }
+    final others = <HouseholdMember>[
+      for (final uid in uids.where((uid) => uid != _currentUserId))
+        ?await loadMember(transaction, householdId, uid),
+    ];
+    if (others.isEmpty) {
+      throw const HouseholdChangedException();
+    }
+    if (!current.isAdmin) {
+      return null;
+    }
+    if (successorUid == null) {
+      return proposeSuccessor(others, _currentUserId)!.uid;
+    }
+    if (!others.any((member) => member.uid == successorUid)) {
+      throw const HouseholdMemberNotFoundException();
+    }
+    return successorUid;
+  }
+
   /// Whether users other than the current one are members of [householdId].
   Future<bool> loadHasOtherMembers(String householdId) async {
     final members = await loadMembers(householdId);

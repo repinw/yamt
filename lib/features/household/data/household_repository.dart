@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
@@ -72,24 +71,22 @@ class HouseholdRepository {
   /// The admin hands the lead to [successorUid], or to the member who joined
   /// first. The last member deletes the household with all its data. A user
   /// who leaves the own household gets a new, empty one; the others keep
-  /// everything.
+  /// everything. The transaction reads the members again, so a member who
+  /// leaves or takes the lead at the same time changes the decision.
+  ///
+  /// Throws [HouseholdChangedException] when the user would be left alone,
+  /// and [HouseholdMemberNotFoundException] when the successor left.
   Future<void> leaveHousehold({
     required String householdId,
     required String ownHouseholdId,
     String? successorUid,
   }) async {
     final members = await _members.loadMembers(householdId);
-    final current = members.firstWhereOrNull(
-      (member) => member.uid == _currentUserId,
-    );
-    if (current == null) {
+    if (!members.any((member) => member.uid == _currentUserId)) {
       throw const HouseholdMemberNotFoundException();
     }
-    final others = members
-        .where((member) => member.uid != _currentUserId)
-        .toList(growable: false);
     final isOwn = householdId == ownHouseholdId;
-    if (others.isEmpty) {
+    if (members.length == 1) {
       if (isOwn) {
         throw StateError('Nobody else is in the own household.');
       }
@@ -97,12 +94,17 @@ class HouseholdRepository {
       return;
     }
 
-    final successor = current.isAdmin ? _successor(others, successorUid) : null;
     final newHousehold = isOwn ? await _prepareHousehold() : null;
     await _firestore.runTransaction((transaction) async {
+      final successor = await _members.loadSuccessor(
+        transaction,
+        householdId,
+        uids: {for (final member in members) member.uid, ?successorUid},
+        successorUid: successorUid,
+      );
       if (successor != null) {
         transaction.update(
-          _members.memberDocument(householdId, successor.uid),
+          _members.memberDocument(householdId, successor),
           <String, dynamic>{_roleField: HouseholdRole.admin.name},
         );
       }
@@ -144,27 +146,37 @@ class HouseholdRepository {
   }
 
   /// The last member deletes the household with everything in it.
+  ///
+  /// Deleting the household document closes the household: the rules let
+  /// nobody join one without it. A member who joined before that stops the
+  /// deletion: the household document comes back, the wiped data does not.
   Future<void> _deleteHousehold(
     String householdId,
     String ownHouseholdId,
   ) async {
     await _data.wipeHouseholdData(householdId);
     await _firestore.runTransaction((transaction) async {
-      _writeDeparture(transaction, householdId);
+      final current = await _members.loadMember(
+        transaction,
+        householdId,
+        _currentUserId,
+      );
+      if (current == null) {
+        throw const HouseholdMemberNotFoundException();
+      }
       transaction.delete(_household(householdId));
+    });
+    final members = await _members.loadMembers(householdId);
+    if (members.any((member) => member.uid != _currentUserId)) {
+      await _household(
+        householdId,
+      ).set(<String, dynamic>{_createdAtField: FieldValue.serverTimestamp()});
+      throw const HouseholdChangedException();
+    }
+    await _firestore.runTransaction((transaction) async {
+      _writeDeparture(transaction, householdId);
       _writeActiveHousehold(transaction, ownHouseholdId);
     });
-  }
-
-  HouseholdMember _successor(
-    List<HouseholdMember> others,
-    String? successorUid,
-  ) {
-    if (successorUid == null) {
-      return proposeSuccessor(others, _currentUserId)!;
-    }
-    return others.firstWhereOrNull((member) => member.uid == successorUid) ??
-        (throw const HouseholdMemberNotFoundException());
   }
 
   Future<_NewHousehold> _prepareHousehold() async {

@@ -15,6 +15,7 @@ String householdErrorMessage(AppLocalizations l10n, Object error) {
     HouseholdAdminRequiredException() => l10n.householdAdminOnly,
     HouseholdMemberNotFoundException() => l10n.householdMemberNotFound,
     HouseholdLeaveRequiredException() => l10n.householdJoinLeaveFirst,
+    HouseholdChangedException() => l10n.householdChanged,
     HouseholdKeyUnavailableException() => l10n.householdKeyUnavailable,
     InvalidHouseholdRestoreCodeException() =>
       l10n.householdKeyRestoreInvalidCode,
