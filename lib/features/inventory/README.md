@@ -104,7 +104,7 @@ already documented as a reusable presentation surface.
 ## Inventory Activity
 
 Activity events are append-only household timeline entries stored under the
-effective inventory owner. They record shared stock facts only: actor, item,
+active household. They record shared stock facts only: actor, item,
 amount, timestamp, and before/after stock. Personal calorie diary data remains
 owned by `calories` and is not exposed through the activity timeline.
 
