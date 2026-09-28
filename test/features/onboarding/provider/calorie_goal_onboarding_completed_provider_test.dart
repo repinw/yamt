@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:cryptography/cryptography.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/onboarding/domain/'
@@ -39,10 +43,7 @@ void main() {
       addTearDown(container.dispose);
       await _seedAuthState(container);
 
-      await expectLater(
-        container.read(calorieGoalOnboardingCompletedProvider.future),
-        completion(isFalse),
-      );
+      await expectLater(_completion(container), completion(isFalse));
     });
 
     test('returns true from the local completion marker', () async {
@@ -57,10 +58,7 @@ void main() {
       addTearDown(container.dispose);
       await _seedAuthState(container);
 
-      await expectLater(
-        container.read(calorieGoalOnboardingCompletedProvider.future),
-        completion(isTrue),
-      );
+      await expectLater(_completion(container), completion(isTrue));
     });
 
     test(
@@ -80,10 +78,7 @@ void main() {
         addTearDown(container.dispose);
         await _seedAuthState(container);
 
-        await expectLater(
-          container.read(calorieGoalOnboardingCompletedProvider.future),
-          completion(isTrue),
-        );
+        await expectLater(_completion(container), completion(isTrue));
         expect(
           preferences.getStringSync(calorieGoalOnboardingKeyForUser('user-2')),
           calorieGoalOnboardingCompletedValue,
@@ -103,10 +98,7 @@ void main() {
       addTearDown(container.dispose);
       await _seedAuthState(container);
 
-      await expectLater(
-        container.read(calorieGoalOnboardingCompletedProvider.future),
-        completion(isFalse),
-      );
+      await expectLater(_completion(container), completion(isFalse));
       expect(
         preferences.getStringSync(calorieGoalOnboardingKeyForUser('user-3')),
         isNull,
@@ -173,10 +165,7 @@ void main() {
         preferences.getStringSync(calorieGoalOnboardingKeyForUser('')),
         isNull,
       );
-      await expectLater(
-        container.read(calorieGoalOnboardingCompletedProvider.future),
-        completion(isFalse),
-      );
+      await expectLater(_completion(container), completion(isFalse));
     });
 
     test(
@@ -193,16 +182,10 @@ void main() {
         addTearDown(container.dispose);
         await _seedAuthState(container);
 
-        await expectLater(
-          container.read(calorieGoalOnboardingCompletedProvider.future),
-          completion(isFalse),
-        );
+        await expectLater(_completion(container), completion(isFalse));
         await markCalorieGoalOnboardingCompletedFromContainer(container);
 
-        await expectLater(
-          container.read(calorieGoalOnboardingCompletedProvider.future),
-          completion(isTrue),
-        );
+        await expectLater(_completion(container), completion(isTrue));
         expect(
           preferences.getStringSync(
             calorieGoalOnboardingKeyForUser('container-user'),
@@ -236,6 +219,41 @@ void main() {
         isNull,
       );
     });
+
+    test('reads settings only with the data key of the current user', () async {
+      final authController = StreamController<User?>.broadcast();
+      addTearDown(authController.close);
+      final settingsReads = <String?>[];
+      final container = ProviderContainer(
+        overrides: [
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+          authStateChangesProvider.overrideWith((ref) => authController.stream),
+          userDataKeySessionProvider.overrideWith(_AuthUserDataKeySession.new),
+          calorieSettingsRepositoryProvider.overrideWith((ref) {
+            final uid = ref.watch(userDataCipherProvider)?.uid;
+            return _RecordingCalorieSettingsRepository(
+              uid: uid,
+              reads: settingsReads,
+            );
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+      final results = <AsyncValue<bool>>[];
+      container.listen(
+        calorieGoalOnboardingCompletedProvider,
+        (previous, next) => results.add(next),
+        fireImmediately: true,
+      );
+
+      authController.add(_user('guest-user'));
+      await _settle();
+      authController.add(_user('email-user'));
+      await _settle();
+
+      expect(settingsReads, ['guest-user', 'email-user']);
+      expect(results.last, const AsyncData(false));
+    });
   });
 }
 
@@ -249,8 +267,70 @@ ProviderContainer _container({
       appPreferencesProvider.overrideWithValue(preferences),
       authStateChangesProvider.overrideWith((ref) => _authStateStream(user)),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      userDataKeySessionProvider.overrideWith(_AuthUserDataKeySession.new),
     ],
   );
+}
+
+/// Listens like the router does: the provider rebuilds only while it has a
+/// listener.
+Future<bool> _completion(ProviderContainer container) {
+  final subscription = container.listen(
+    calorieGoalOnboardingCompletedProvider,
+    (previous, next) {},
+  );
+  addTearDown(subscription.close);
+  return container.read(calorieGoalOnboardingCompletedProvider.future);
+}
+
+Future<void> _settle() async {
+  for (var i = 0; i < 10; i += 1) {
+    await Future<void>.delayed(Duration.zero);
+  }
+}
+
+/// Follows the auth state like the real session, without key storage.
+class _AuthUserDataKeySession extends UserDataKeySession {
+  @override
+  Future<UserDataKeyState> build() async {
+    final user = await ref.watch(authStateChangesProvider.future);
+    if (user == null) {
+      return const UserDataKeySignedOut();
+    }
+    return UserDataKeyReady(
+      uid: user.uid,
+      cipher: PayloadCipher(SecretKey(List<int>.filled(32, 1))),
+      recoveryKey: null,
+      recoveryKeyConfirmed: true,
+    );
+  }
+}
+
+class _RecordingCalorieSettingsRepository implements CalorieSettingsRepository {
+  new({required this.uid, required this.reads});
+
+  final String? uid;
+  final List<String?> reads;
+
+  @override
+  Stream<CalorieGoalSettings> watchSettings() {
+    return Stream<CalorieGoalSettings>.value(const CalorieGoalSettings.empty());
+  }
+
+  @override
+  Future<CalorieGoalSettings> readSettings() async {
+    reads.add(uid);
+    return const CalorieGoalSettings.empty();
+  }
+
+  @override
+  Future<bool> saveSettings(CalorieGoalSettings settings) async => true;
+
+  @override
+  Future<bool> setDailyGoal(double dailyKcalGoal) async => true;
+
+  @override
+  Future<bool> clearDailyGoal() async => true;
 }
 
 Future<void> _seedAuthState(ProviderContainer container) async {

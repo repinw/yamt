@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/onboarding/domain/'
     'calorie_goal_onboarding_preferences.dart';
@@ -11,22 +13,32 @@ import 'package:yamt/features/onboarding/domain/'
 part 'calorie_goal_onboarding_completed_provider.g.dart';
 
 /// Calorie goal onboarding completed.
+///
+/// The user id comes from the data key session, not from the auth state. The
+/// settings repository depends on the same session, so after an account
+/// switch the provider rebuilds once and never reads the settings of the new
+/// user with the data key of the previous one.
 @Riverpod(keepAlive: true)
 FutureOr<bool> calorieGoalOnboardingCompleted(Ref ref) async {
-  if (!ref.mounted) {
-    return false;
+  final preferences = ref.watch(appPreferencesProvider);
+  final dataKeySession = ref.watch(userDataKeySessionProvider);
+  final settingsRepository = ref.watch(calorieSettingsRepositoryProvider);
+  if (dataKeySession.isLoading) {
+    return await Completer<bool>().future;
   }
-  final userId = _userIdFromAuthState(ref.watch(authStateChangesProvider));
+  final userId = switch (dataKeySession.requireValue) {
+    UserDataKeyReady(:final uid) ||
+    UserDataKeyRecoveryRequired(:final uid) => uid,
+    UserDataKeySignedOut() => null,
+  };
   if (userId == null) {
     return false;
   }
 
-  final preferences = ref.watch(appPreferencesProvider);
   if (_hasCompletionMarker(preferences, userId)) {
     return true;
   }
 
-  final settingsRepository = ref.watch(calorieSettingsRepositoryProvider);
   final settings = await settingsRepository.readSettings();
   if (!ref.mounted) {
     return false;

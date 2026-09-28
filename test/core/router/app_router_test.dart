@@ -206,10 +206,11 @@ ProviderContainer _createContainerWithAuth(
         const _FakePreparedMealRepository(),
       ),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
-      if (dataKeyState != null)
-        userDataKeySessionProvider.overrideWith(
-          () => _FakeUserDataKeySession(dataKeyState),
-        ),
+      userDataKeySessionProvider.overrideWith(
+        dataKeyState == null
+            ? _AuthUserDataKeySession.new
+            : () => _FakeUserDataKeySession(dataKeyState),
+      ),
     ],
   );
   addTearDown(container.dispose);
@@ -1235,6 +1236,23 @@ void main() {
     );
     expect(find.text('Welcome to YAMT'), findsOneWidget);
   });
+}
+
+/// Follows the auth state like the real session, without key storage.
+class _AuthUserDataKeySession extends UserDataKeySession {
+  @override
+  Future<UserDataKeyState> build() async {
+    final user = await ref.watch(authStateChangesProvider.future);
+    if (user == null) {
+      return const UserDataKeySignedOut();
+    }
+    return UserDataKeyReady(
+      uid: user.uid,
+      cipher: PayloadCipher(SecretKey(List<int>.filled(32, 1))),
+      recoveryKey: null,
+      recoveryKeyConfirmed: true,
+    );
+  }
 }
 
 class _FakeUserDataKeySession extends UserDataKeySession {
