@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_action_controller.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_actions.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_keys.dart';
+import 'package:yamt/features/calories/presentation/controllers/calorie_debug_action_controller.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_debug_actions.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_debug_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 enum _CalorieDebugAction { debugDump, settingsDump, weeklyCheckInDump }

@@ -71,15 +71,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
   },
   'feature-folders': {
-    'lib/features/calories/debug/calorie_debug_action_controller.dart': 1,
-    'lib/features/calories/debug/calorie_debug_action_formatting.dart': 1,
-    'lib/features/calories/debug/calorie_debug_action_results.dart': 1,
-    'lib/features/calories/debug/calorie_debug_actions.dart': 1,
-    'lib/features/calories/debug/calorie_debug_dump_formatting.dart': 1,
-    'lib/features/calories/debug/calorie_debug_dump_service.dart': 1,
-    'lib/features/calories/debug/calorie_debug_file_exporter.dart': 1,
-    'lib/features/calories/debug/calorie_debug_keys.dart': 1,
-    'lib/features/calories/debug/calorie_debug_weekly_checkin_rows.dart': 1,
     'lib/features/home/home_page.dart': 1,
     'lib/features/home/widgets/home_shell_chrome_visibility_controller.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,
@@ -431,8 +422,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/calories/application/calorie_weekly_checkin_health_loader.dart':
         1,
-    'lib/features/calories/debug/calorie_debug_dump_formatting.dart': 1,
-    'lib/features/calories/debug/calorie_debug_weekly_checkin_rows.dart': 1,
     'lib/features/cooking_flow/presentation/cooking_flow_intro_page_assignment.dart':
         1,
     'lib/features/cooking_flow/presentation/cooking_flow_intro_page_hero.dart':
@@ -473,7 +462,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/application/calorie_entry_delete_flow.dart': 1,
     'lib/features/calories/application/calorie_inventory_entry_save_handler.dart':
         2,
-    'lib/features/calories/debug/calorie_debug_action_controller.dart': 1,
     'lib/features/calories/presentation/controllers/calorie_entry_editor_controller.dart':
         1,
     'lib/features/inventory/application/inventory_backed_calorie_entry_save_flow.dart':

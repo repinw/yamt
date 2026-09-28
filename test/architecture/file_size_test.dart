@@ -63,8 +63,6 @@ bool _isSubjectToLineCountCheck(File file) {
 const _legacyLargeFilesAllowlist = <String>{
   'lib/features/activity/presentation/widgets/activity_weight_section/diary_compact_activity_weight_surface.dart',
   'lib/features/calories/application/daily_learned_tdee_resolver.dart',
-  'lib/features/calories/debug/calorie_debug_dump_service.dart',
-  'lib/features/calories/debug/calorie_debug_weekly_checkin_rows.dart',
   'lib/features/calories/domain/calorie_entry.dart',
   'lib/features/calories/domain/calorie_weekly_checkin.dart',
   'lib/features/calories/presentation/widgets/calorie_entry_editor_form_scaffold.dart',

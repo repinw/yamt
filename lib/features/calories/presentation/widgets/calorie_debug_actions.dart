@@ -1,6 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_action_results.dart';
+import 'package:yamt/features/calories/presentation/models/calorie_debug_action_results.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shows the calorie debug dump result.

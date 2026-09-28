@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'dart:developer' as developer;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_debug_action_formatting.dart';
+import 'package:yamt/features/calories/application/calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/data/calorie_debug_file_exporter.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_action_formatting.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_action_results.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_dump_service.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
+import 'package:yamt/features/calories/presentation/models/calorie_debug_action_results.dart';
 import 'package:yamt/features/health/application/health_connection_controller.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -22,12 +23,28 @@ part 'calorie_debug_action_controller.g.dart';
 class CalorieDebugActionController extends _$CalorieDebugActionController {
   @override
   FutureOr<void> build() {
-    ref.keepAlive();
     return null;
+  }
+
+  /// Keeps this controller alive while [action] runs.
+  Future<T> _whileAlive<T>(Future<T> Function() action) async {
+    final link = ref.keepAlive();
+    try {
+      return await action();
+    } finally {
+      link.close();
+    }
   }
 
   /// Exports calorie debug dump as TXT.
   Future<CalorieDebugDumpPrintResult> printDebugDump({
+    required DateTime now,
+    required String saveDialogTitle,
+  }) => _whileAlive(
+    () => _printDebugDump(now: now, saveDialogTitle: saveDialogTitle),
+  );
+
+  Future<CalorieDebugDumpPrintResult> _printDebugDump({
     required DateTime now,
     required String saveDialogTitle,
   }) async {
@@ -77,7 +94,10 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
   }
 
   /// Prints calorie settings debug dump.
-  Future<CalorieSettingsDebugDumpPrintResult> printSettingsDebugDump() async {
+  Future<CalorieSettingsDebugDumpPrintResult> printSettingsDebugDump() =>
+      _whileAlive(_printSettingsDebugDump);
+
+  Future<CalorieSettingsDebugDumpPrintResult> _printSettingsDebugDump() async {
     try {
       final settings = await ref.watch(calorieGoalControllerProvider.future);
       final encoded = const JsonEncoder.withIndent('  ')
@@ -101,14 +121,18 @@ class CalorieDebugActionController extends _$CalorieDebugActionController {
 
   /// Prints calorie weekly check-in debug dump.
   Future<CalorieWeeklyCheckInDebugDumpPrintResult>
-  printWeeklyCheckInDebugDump() async {
+  printWeeklyCheckInDebugDump() => _whileAlive(_printWeeklyCheckInDebugDump);
+
+  Future<CalorieWeeklyCheckInDebugDumpPrintResult>
+  _printWeeklyCheckInDebugDump() async {
     final checkInDataFuture = ref.watch(
       calorieWeeklyCheckInDataProvider.future,
     );
     try {
       final checkInData = await checkInDataFuture;
-      final encoded = const JsonEncoder.withIndent('  ')
-          .convert(weeklyCheckInDataDebugJson(checkInData));
+      final encoded = const JsonEncoder.withIndent('  ').convert(
+        weeklyCheckInDataDebugJson(checkInData, now: ref.read(clockProvider)()),
+      );
       logDebugDump(
         name: 'CalorieWeeklyCheckInDebugDump',
         dump: 'calorieWeeklyCheckInData\n$encoded',

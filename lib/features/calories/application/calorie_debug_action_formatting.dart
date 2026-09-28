@@ -1,7 +1,7 @@
 import 'dart:developer' as developer;
 
+import 'package:yamt/features/calories/application/calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_dump_service.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
@@ -60,12 +60,13 @@ Object? jsonDebugValue(Object? value) {
   };
 }
 
-/// Converts weekly check-in data to debug JSON map.
+/// Converts weekly check-in data to debug JSON map for the day of [now].
 Map<String, Object?> weeklyCheckInDataDebugJson(
-  CalorieWeeklyCheckInData checkInData,
-) {
+  CalorieWeeklyCheckInData checkInData, {
+  required DateTime now,
+}) {
   return <String, Object?>{
-    'today': diaryDayKey(DateTime.now()),
+    'today': diaryDayKey(now),
     'has_pending': checkInData.hasPending,
     'should_auto_open': checkInData.shouldAutoOpen,
     'show_diary_hint': checkInData.showDiaryHint,

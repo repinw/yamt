@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/features/calories/debug/calorie_debug_file_exporter.dart';
+import 'package:yamt/features/calories/data/calorie_debug_file_exporter.dart';
 
 void main() {
   test('saveText returns saved result when file picker returns uri', () async {
