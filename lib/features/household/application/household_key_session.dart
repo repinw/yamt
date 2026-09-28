@@ -78,7 +78,7 @@ class HouseholdKeySession extends _$HouseholdKeySession {
       }
       await userKeys.saveFreshStartPending(uid, pending: false);
     }
-    return await _resolve(keys, members, householdId, dataCipher);
+    return await _resolve(keys, members, data, householdId, dataCipher);
   }
 
   /// Opens the household key that another member left with the unlock
@@ -122,9 +122,12 @@ class HouseholdKeySession extends _$HouseholdKeySession {
     await future;
   }
 
+  /// A user who waits for the key while nobody else is left to hand it
+  /// back starts over: the data is wiped and a new key follows.
   Future<HouseholdKeyState> _resolve(
     HouseholdKeyRepository keys,
     HouseholdMemberRepository members,
+    HouseholdDataRepository data,
     String householdId,
     UserDataCipher dataCipher,
   ) async {
@@ -133,7 +136,12 @@ class HouseholdKeySession extends _$HouseholdKeySession {
       householdId: householdId,
       memberUid: uid,
     )) {
-      return HouseholdKeyRestoreRequired(householdId: householdId);
+      if (await members.loadHasOtherMembers(householdId)) {
+        return HouseholdKeyRestoreRequired(householdId: householdId);
+      }
+      await data.wipeHouseholdData(householdId);
+      await keys.deleteKey(householdId: householdId, memberUid: uid);
+      await keys.deleteKeyRestore(householdId: householdId, memberUid: uid);
     }
     var key = await keys.loadKey(
       householdId: householdId,

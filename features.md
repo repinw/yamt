@@ -400,7 +400,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   holds the key wrapped with their own data key.
 - Unlock after a fresh start: a member who started fresh lost their key
   entry. The other members see a hint and create a one-time unlock code; the
-  member enters it on the household page and gets the key back.
+  member enters it on the household page and gets the key back. When the
+  others leave before anybody unlocked it, the household data is wiped and a
+  new key follows.
 - Shared household scope for inventory, shopping lists, utensils, prepared
   meals, and related household-owned data.
 

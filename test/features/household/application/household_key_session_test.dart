@@ -246,6 +246,34 @@ void main() {
     expect(await exists('households/shared/key_restores/$_uid'), isTrue);
   });
 
+  test(
+    'a user who waits for the key after the others left starts over',
+    () async {
+      await setProfile(active: 'shared', own: 'own');
+      await addMember('shared', _uid, admin: true);
+      await firestore
+          .doc('households/shared/key_restores/$_uid')
+          .set(<String, dynamic>{});
+      await firestore.doc('households/shared/inventory_items/i1').set(
+        <String, dynamic>{'payload': 'old'},
+      );
+
+      final state = await settle<HouseholdKeyReady>(createContainer());
+
+      expect(state.householdId, 'shared');
+      expect(await exists('households/shared/key_restores/$_uid'), isFalse);
+      expect(await exists('households/shared/inventory_items/i1'), isFalse);
+      expect(
+        await (await keys.loadKey(
+          householdId: 'shared',
+          memberUid: _uid,
+          dataCipher: dataCipher.cipher,
+        ))!.extractBytes(),
+        await state.key.extractBytes(),
+      );
+    },
+  );
+
   test('the plaintext data of the household is encrypted once', () async {
     await setProfile(active: 'own', own: 'own');
     await addMember('own', _uid, admin: true);
