@@ -103,12 +103,16 @@ class EatWhenMenu extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   spacing: AppSpacing.xxs,
                   children: [
-                    Text(
-                      label.toUpperCase(),
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: AppFoodLabel.navLabelTracking,
-                        color: colors.ink,
+                    Flexible(
+                      child: Text(
+                        label.toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: AppFoodLabel.navLabelTracking,
+                          color: colors.ink,
+                        ),
                       ),
                     ),
                     Icon(Icons.expand_more_rounded, color: colors.ink),

@@ -93,7 +93,8 @@ class EatPageScaffold extends StatelessWidget {
                     onPressed: () => Navigator.of(context).pop(),
                     icon: Icon(Icons.close_rounded, color: colors.ink),
                   ),
-                  whenControl,
+                  // A long day and meal shrinks instead of overflowing.
+                  Flexible(child: whenControl),
                 ],
               ),
             ),
