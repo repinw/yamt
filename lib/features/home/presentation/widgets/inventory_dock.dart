@@ -34,6 +34,9 @@ class InventoryDock extends ConsumerWidget {
     'inventory-add-manual-search',
   );
 
+  /// Key of the add sheet entry that opens the editor for an own product.
+  static const createKey = ValueKey<String>('inventory-add-create');
+
   /// Key of the receipt sheet entry that takes a photo.
   static const receiptPhotoKey = ValueKey<String>('inventory-receipt-photo');
 
@@ -122,6 +125,18 @@ class InventoryDock extends ConsumerWidget {
                 description: l10n.inventoryAddAiDescription,
                 onSelected: () => unawaited(
                   InventoryActionSheetFlow.openAiSuggestion(
+                    context: context,
+                    l10n: l10n,
+                  ),
+                ),
+              ),
+              HomeMoreEntry(
+                key: createKey,
+                icon: Icons.edit_note_rounded,
+                title: l10n.productSearchHubCreateOwnAction,
+                description: l10n.inventoryAddCreateDescription,
+                onSelected: () => unawaited(
+                  InventoryActionSheetFlow.openCreate(
                     context: context,
                     l10n: l10n,
                   ),

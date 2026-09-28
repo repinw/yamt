@@ -147,6 +147,9 @@ class _ProductSearchHubSearchViewState
         if (widget.args.autofocusSearchField) await _showKeyboardAfterRoute();
       case ProductSearchHubInitialIntent.barcode:
         await _scanBarcodeIntoSearch(cancelClosesPage: true);
+      // Closing the editor leaves the search open.
+      case ProductSearchHubInitialIntent.create:
+        _openEditedEntry(_openCustomEntry);
     }
   }
 

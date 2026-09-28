@@ -36,6 +36,17 @@ class InventoryActionSheetFlow {
     );
   }
 
+  /// Open the editor for an own product.
+  static Future<void> openCreate({
+    required BuildContext context,
+    required AppLocalizations l10n,
+  }) {
+    return _openProductSearchHub(
+      context,
+      initialIntent: ProductSearchHubInitialIntent.create,
+    );
+  }
+
   /// Open barcode scanner.
   static Future<void> openBarcodeScanner({
     required BuildContext context,

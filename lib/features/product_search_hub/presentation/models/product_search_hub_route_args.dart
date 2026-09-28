@@ -18,6 +18,9 @@ enum ProductSearchHubInitialIntent {
 
   /// Open barcode scanner.
   barcode,
+
+  /// Open the editor for an own product.
+  create,
 }
 
 /// Route args for product search hub.
