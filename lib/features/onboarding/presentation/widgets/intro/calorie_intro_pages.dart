@@ -45,7 +45,7 @@ List<Widget> buildCalorieIntroPages({
   required DateTime startDate,
   required ValueChanged<DateTime> onStartDateChanged,
   required VoidCallback onStart,
-  required VoidCallback onLogin,
+  required VoidCallback? onLogin,
 }) {
   Color accentOf(CalorieIntroPage page) => page.accent.resolve(context);
   String kickerOf(CalorieIntroPage page) => page.kicker(l10n);

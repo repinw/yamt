@@ -11,6 +11,7 @@ import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_controller.dart';
@@ -164,6 +165,10 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
     final colors = theme.colorScheme;
     final formState = ref.watch(_formProvider);
     final introState = ref.watch(calorieIntroControllerProvider);
+    // A signed-in account has nothing to log in to; the welcome route would
+    // send it straight back here.
+    final hasAccount =
+        ref.watch(authStateChangesProvider).value?.isAnonymous == false;
     final isSaving = introState.isSaving || formState.isSaving;
 
     final page = introState.currentPage;
@@ -196,7 +201,7 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
               startDate: introState.startDate,
               onStartDateChanged: _introController.selectStartDate,
               onStart: _handleNext,
-              onLogin: _handleLogin,
+              onLogin: hasAccount ? null : _handleLogin,
             ),
             onChange: _introController.syncPage,
             freeze: true,

@@ -10,13 +10,14 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// First intro page. Offers starting the setup or signing in.
 class IntroWelcomePage extends StatelessWidget {
   /// Creates the intro welcome page.
-  const new({required this.onStart, required this.onLogin, super.key});
+  const new({required this.onStart, this.onLogin, super.key});
 
   /// Starts the onboarding.
   final VoidCallback onStart;
 
-  /// Opens the authentication page.
-  final VoidCallback onLogin;
+  /// Opens the authentication page; `null` hides the action because the
+  /// user is already signed in with an account.
+  final VoidCallback? onLogin;
 
   @override
   Widget build(BuildContext context) {
@@ -58,12 +59,14 @@ class IntroWelcomePage extends StatelessWidget {
             child: Text(l10n.introStartAction),
           ),
         ),
-        const SizedBox(height: AppSpacing.md),
-        TextButton(
-          key: CalorieGoalOnboardingKeys.introLoginAction,
-          onPressed: onLogin,
-          child: Text(l10n.introLoginAction),
-        ),
+        if (onLogin case final onLogin?) ...[
+          const SizedBox(height: AppSpacing.md),
+          TextButton(
+            key: CalorieGoalOnboardingKeys.introLoginAction,
+            onPressed: onLogin,
+            child: Text(l10n.introLoginAction),
+          ),
+        ],
       ],
     );
   }

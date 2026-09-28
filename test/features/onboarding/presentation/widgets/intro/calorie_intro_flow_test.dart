@@ -1,12 +1,15 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -23,6 +26,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../../../../helpers/fake_guest_account.dart';
 import '../../../../../helpers/memory_app_preferences.dart';
 import '../../../../calories/support/fake_calories_repositories.dart';
+
+class _MockUser extends Mock implements User;
 
 final _today = DateTime(2026, 9, 17, 10);
 
@@ -278,6 +283,18 @@ void main() {
     );
   });
 
+  testWidgets('hides the login action for a signed-in account', (tester) async {
+    final account = _MockUser();
+    when(() => account.isAnonymous).thenReturn(false);
+    await _pumpIntro(tester, user: account);
+
+    expect(find.byKey(CalorieGoalOnboardingKeys.introStartAction), findsOne);
+    expect(
+      find.byKey(CalorieGoalOnboardingKeys.introLoginAction),
+      findsNothing,
+    );
+  });
+
   testWidgets('opens the welcome route from the login action', (tester) async {
     final harness = await _pumpIntro(tester);
 
@@ -304,7 +321,11 @@ class _IntroHarness {
   String get currentLocation => router.state.uri.path;
 }
 
-Future<_IntroHarness> _pumpIntro(WidgetTester tester, {DateTime? now}) async {
+Future<_IntroHarness> _pumpIntro(
+  WidgetTester tester, {
+  DateTime? now,
+  User? user,
+}) async {
   _disableAnimations(tester);
   final settingsRepository = FakeCalorieSettingsRepository();
   final logRepository = FakeCalorieLogRepository();
@@ -340,6 +361,7 @@ Future<_IntroHarness> _pumpIntro(WidgetTester tester, {DateTime? now}) async {
       overrides: [
         clockProvider.overrideWithValue(() => now ?? _today),
         appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
         ...guestAccount.overrides,
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
