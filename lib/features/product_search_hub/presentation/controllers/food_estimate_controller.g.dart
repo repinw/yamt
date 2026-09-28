@@ -45,7 +45,7 @@ final class FoodEstimateControllerProvider
 }
 
 String _$foodEstimateControllerHash() =>
-    r'a11e1a1bfdd4acd72696d19b72b9f35a92e60b8a';
+    r'a2c1ce24b87af374ed5831da27e9959df0b96f61';
 
 /// Collects photos and runs the AI food estimate.
 
