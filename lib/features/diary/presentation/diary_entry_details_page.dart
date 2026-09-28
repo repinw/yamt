@@ -117,8 +117,8 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
             errorText: state.hasAmountError
                 ? l10n.caloriesPositiveNumberValidation
                 : null,
-            onTextChanged: _controller.setAmountText,
-            onSliderChanged: _controller.pickAmount,
+            onTextChanged: (text) => _controller.setAmountText(text),
+            onSliderChanged: (amount) => _controller.pickAmount(amount),
           ),
         if (entry.isBundle)
           EatComponentsList(
