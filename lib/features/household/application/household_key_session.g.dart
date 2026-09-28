@@ -8,30 +8,30 @@ part of 'household_key_session.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Resolves the household key of the current household data owner.
+/// Resolves the household key of the active household.
 ///
-/// Every user owns a household key for the data under their own uid, also
-/// while they are a member elsewhere, so that data stays readable after they
-/// leave. A member reads the host's key from the entry the member wrote when
-/// joining.
+/// Creates the own household when the user has none yet. Each member holds
+/// the household key wrapped with their own data key. A member who started
+/// fresh lost that entry: with other members left, they ask them for the key;
+/// alone, the household data is wiped and a new key follows.
 
 @ProviderFor(HouseholdKeySession)
 final householdKeySessionProvider = HouseholdKeySessionProvider._();
 
-/// Resolves the household key of the current household data owner.
+/// Resolves the household key of the active household.
 ///
-/// Every user owns a household key for the data under their own uid, also
-/// while they are a member elsewhere, so that data stays readable after they
-/// leave. A member reads the host's key from the entry the member wrote when
-/// joining.
+/// Creates the own household when the user has none yet. Each member holds
+/// the household key wrapped with their own data key. A member who started
+/// fresh lost that entry: with other members left, they ask them for the key;
+/// alone, the household data is wiped and a new key follows.
 final class HouseholdKeySessionProvider
     extends $AsyncNotifierProvider<HouseholdKeySession, HouseholdKeyState> {
-  /// Resolves the household key of the current household data owner.
+  /// Resolves the household key of the active household.
   ///
-  /// Every user owns a household key for the data under their own uid, also
-  /// while they are a member elsewhere, so that data stays readable after they
-  /// leave. A member reads the host's key from the entry the member wrote when
-  /// joining.
+  /// Creates the own household when the user has none yet. Each member holds
+  /// the household key wrapped with their own data key. A member who started
+  /// fresh lost that entry: with other members left, they ask them for the key;
+  /// alone, the household data is wiped and a new key follows.
   HouseholdKeySessionProvider._()
     : super(
         from: null,
@@ -52,14 +52,14 @@ final class HouseholdKeySessionProvider
 }
 
 String _$householdKeySessionHash() =>
-    r'738a72802b53edc811ef85741acec1cd05e6c1a6';
+    r'f9fdae06f79de9b8f016ebd3998c4b9011a0ed3e';
 
-/// Resolves the household key of the current household data owner.
+/// Resolves the household key of the active household.
 ///
-/// Every user owns a household key for the data under their own uid, also
-/// while they are a member elsewhere, so that data stays readable after they
-/// leave. A member reads the host's key from the entry the member wrote when
-/// joining.
+/// Creates the own household when the user has none yet. Each member holds
+/// the household key wrapped with their own data key. A member who started
+/// fresh lost that entry: with other members left, they ask them for the key;
+/// alone, the household data is wiped and a new key follows.
 
 abstract class _$HouseholdKeySession extends $AsyncNotifier<HouseholdKeyState> {
   FutureOr<HouseholdKeyState> build();
@@ -80,57 +80,14 @@ abstract class _$HouseholdKeySession extends $AsyncNotifier<HouseholdKeyState> {
   }
 }
 
-/// Whether the host of the household that the user is a member of lost the
-/// household key and waits for a restore code. Always `false` for a host.
-
-@ProviderFor(householdKeyRestoreRequested)
-final householdKeyRestoreRequestedProvider =
-    HouseholdKeyRestoreRequestedProvider._();
-
-/// Whether the host of the household that the user is a member of lost the
-/// household key and waits for a restore code. Always `false` for a host.
-
-final class HouseholdKeyRestoreRequestedProvider
-    extends $FunctionalProvider<AsyncValue<bool>, bool, Stream<bool>>
-    with $FutureModifier<bool>, $StreamProvider<bool> {
-  /// Whether the host of the household that the user is a member of lost the
-  /// household key and waits for a restore code. Always `false` for a host.
-  HouseholdKeyRestoreRequestedProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'householdKeyRestoreRequestedProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$householdKeyRestoreRequestedHash();
-
-  @$internal
-  @override
-  $StreamProviderElement<bool> $createElement($ProviderPointer pointer) =>
-      $StreamProviderElement(pointer);
-
-  @override
-  Stream<bool> create(Ref ref) {
-    return householdKeyRestoreRequested(ref);
-  }
-}
-
-String _$householdKeyRestoreRequestedHash() =>
-    r'784c5b9d048bdb818e435aa0b6a12d27aa63be03';
-
-/// The cipher for the current household data, or `null` while the household
-/// key is not ready.
+/// The cipher for the active household, or `null` while the household key
+/// is not ready.
 
 @ProviderFor(householdCipher)
 final householdCipherProvider = HouseholdCipherProvider._();
 
-/// The cipher for the current household data, or `null` while the household
-/// key is not ready.
+/// The cipher for the active household, or `null` while the household key
+/// is not ready.
 
 final class HouseholdCipherProvider
     extends
@@ -140,8 +97,8 @@ final class HouseholdCipherProvider
           HouseholdCipher?
         >
     with $Provider<HouseholdCipher?> {
-  /// The cipher for the current household data, or `null` while the household
-  /// key is not ready.
+  /// The cipher for the active household, or `null` while the household key
+  /// is not ready.
   HouseholdCipherProvider._()
     : super(
         from: null,
@@ -175,4 +132,4 @@ final class HouseholdCipherProvider
   }
 }
 
-String _$householdCipherHash() => r'c0e624a2e7827eb90c6903d8a95b1d6caffe9463';
+String _$householdCipherHash() => r'437b224a4329acce1ce81474a83490a6b06103af';

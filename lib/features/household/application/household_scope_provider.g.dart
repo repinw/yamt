@@ -8,17 +8,20 @@ part of 'household_scope_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Household data owner user id.
+/// The household that the profile names as active, or `null` while signed
+/// out or before the own household exists.
 
 @ProviderFor(householdDataOwnerUserId)
 final householdDataOwnerUserIdProvider = HouseholdDataOwnerUserIdProvider._();
 
-/// Household data owner user id.
+/// The household that the profile names as active, or `null` while signed
+/// out or before the own household exists.
 
 final class HouseholdDataOwnerUserIdProvider
     extends $FunctionalProvider<String?, String?, String?>
     with $Provider<String?> {
-  /// Household data owner user id.
+  /// The household that the profile names as active, or `null` while signed
+  /// out or before the own household exists.
   HouseholdDataOwnerUserIdProvider._()
     : super(
         from: null,
@@ -53,22 +56,74 @@ final class HouseholdDataOwnerUserIdProvider
 }
 
 String _$householdDataOwnerUserIdHash() =>
-    r'c9f7a0e6270d2b609d52160fda6266369681feb7';
+    r'3583a19dd0ca02faf370a81da0d544eea0cd546f';
 
-/// Defines household data owner recovery.
+/// The own household of the signed-in user, or `null` while signed out or
+/// before it exists.
+
+@ProviderFor(ownHouseholdId)
+final ownHouseholdIdProvider = OwnHouseholdIdProvider._();
+
+/// The own household of the signed-in user, or `null` while signed out or
+/// before it exists.
+
+final class OwnHouseholdIdProvider
+    extends $FunctionalProvider<String?, String?, String?>
+    with $Provider<String?> {
+  /// The own household of the signed-in user, or `null` while signed out or
+  /// before it exists.
+  OwnHouseholdIdProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'ownHouseholdIdProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$ownHouseholdIdHash();
+
+  @$internal
+  @override
+  $ProviderElement<String?> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  String? create(Ref ref) {
+    return ownHouseholdId(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(String? value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<String?>(value),
+    );
+  }
+}
+
+String _$ownHouseholdIdHash() => r'd939753bd2b9535b5c0abb0e68ce21d8f53d2ea7';
+
+/// Switches household scoped data to the own household when the active one
+/// denies access, until the profile names the own household again.
 
 @ProviderFor(HouseholdDataOwnerRecovery)
 final householdDataOwnerRecoveryProvider =
     HouseholdDataOwnerRecoveryProvider._();
 
-/// Defines household data owner recovery.
+/// Switches household scoped data to the own household when the active one
+/// denies access, until the profile names the own household again.
 final class HouseholdDataOwnerRecoveryProvider
     extends
         $NotifierProvider<
           HouseholdDataOwnerRecovery,
           HouseholdDataOwnerRecoveryState?
         > {
-  /// Defines household data owner recovery.
+  /// Switches household scoped data to the own household when the active one
+  /// denies access, until the profile names the own household again.
   HouseholdDataOwnerRecoveryProvider._()
     : super(
         from: null,
@@ -101,7 +156,8 @@ final class HouseholdDataOwnerRecoveryProvider
 String _$householdDataOwnerRecoveryHash() =>
     r'84692e5670e7dbe96bb829a0816efab6b479ec2c';
 
-/// Defines household data owner recovery.
+/// Switches household scoped data to the own household when the active one
+/// denies access, until the profile names the own household again.
 
 abstract class _$HouseholdDataOwnerRecovery
     extends $Notifier<HouseholdDataOwnerRecoveryState?> {
@@ -175,51 +231,3 @@ final class ActiveHouseholdIdProvider
 }
 
 String _$activeHouseholdIdHash() => r'71226b8a5d77b7d918d114c70c33c66e11117af5';
-
-/// Household has additional members.
-
-@ProviderFor(householdHasAdditionalMembers)
-final householdHasAdditionalMembersProvider =
-    HouseholdHasAdditionalMembersProvider._();
-
-/// Household has additional members.
-
-final class HouseholdHasAdditionalMembersProvider
-    extends $FunctionalProvider<bool, bool, bool>
-    with $Provider<bool> {
-  /// Household has additional members.
-  HouseholdHasAdditionalMembersProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'householdHasAdditionalMembersProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$householdHasAdditionalMembersHash();
-
-  @$internal
-  @override
-  $ProviderElement<bool> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  bool create(Ref ref) {
-    return householdHasAdditionalMembers(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
-    );
-  }
-}
-
-String _$householdHasAdditionalMembersHash() =>
-    r'9d6443224022b0bad84aff22669a639cd37d1326';

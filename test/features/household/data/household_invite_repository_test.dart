@@ -1,0 +1,291 @@
+import 'dart:math';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cryptography/cryptography.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/data/recovery_key.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/household/data/household_invite_repository.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
+import 'package:yamt/features/household/data/household_member_repository.dart';
+import 'package:yamt/features/household/domain/household_exceptions.dart';
+import 'package:yamt/features/household/domain/household_invite.dart';
+
+class _MockRandom extends Mock implements Random;
+
+final _now = DateTime(2026, 9, 28, 12);
+
+void main() {
+  late FakeFirebaseFirestore firestore;
+  late HouseholdKeyRepository keys;
+  late Map<String, UserDataCipher> dataCiphers;
+  late SecretKey sharedKey;
+
+  Future<UserDataCipher> dataCipherFor(String uid) async {
+    return dataCiphers[uid] ??= (
+      uid: uid,
+      cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+    );
+  }
+
+  Future<HouseholdInviteRepository> repositoryFor(
+    String uid, {
+    bool isAnonymous = false,
+    Random? random,
+  }) async {
+    return HouseholdInviteRepository(
+      firestore: firestore,
+      keys: keys,
+      members: HouseholdMemberRepository(
+        firestore: firestore,
+        keys: keys,
+        currentUserId: uid,
+      ),
+      currentUserId: uid,
+      isAnonymous: isAnonymous,
+      dataCipher: await dataCipherFor(uid),
+      now: () => _now,
+      random: random,
+    );
+  }
+
+  Future<void> addMember(String householdId, String uid, String role) {
+    return firestore.doc('households/$householdId/members/$uid').set(
+      <String, dynamic>{
+        'uid': uid,
+        'role': role,
+        'joined_at': Timestamp.fromDate(DateTime(2026)),
+      },
+    );
+  }
+
+  Future<HouseholdInvite> storeInvite({
+    required String code,
+    required String householdId,
+    required Duration expiresIn,
+  }) async {
+    final invite = HouseholdInvite(code: code, secret: RecoveryKey.generate());
+    await firestore.doc('household_invites/$code').set(<String, dynamic>{
+      'householdId': householdId,
+      'expiresAt': Timestamp.fromDate(_now.add(expiresIn)),
+      'wrapped_household_key': await invite.secret.wrapDataKey(
+        sharedKey,
+        uid: 'household_invites/$code',
+      ),
+    });
+    return invite;
+  }
+
+  setUp(() async {
+    FlutterSecureStorage.setMockInitialValues(<String, String>{});
+    firestore = FakeFirebaseFirestore();
+    keys = HouseholdKeyRepository(
+      firestore: firestore,
+      storage: const FlutterSecureStorage(),
+    );
+    dataCiphers = <String, UserDataCipher>{};
+    sharedKey = await PayloadCipher.newDataKey();
+    await addMember('shared', 'admin', 'admin');
+    await addMember('shared', 'member', 'member');
+    await keys.saveKey(
+      householdId: 'shared',
+      memberUid: 'admin',
+      householdKey: sharedKey,
+      dataCipher: (await dataCipherFor('admin')).cipher,
+    );
+    await addMember('own-joiner', 'joiner', 'admin');
+    await firestore.doc('users/joiner').set(<String, dynamic>{
+      'uid': 'joiner',
+      'householdId': 'own-joiner',
+      'ownHouseholdId': 'own-joiner',
+    });
+  });
+
+  group('generateInvite', () {
+    test('stores the household, the expiry and the wrapped key', () async {
+      final invite = await (await repositoryFor('admin'))
+          .generateInvite('shared');
+
+      final stored =
+          (await firestore.doc('household_invites/${invite.code}').get())
+              .data()!;
+      expect(invite.code, hasLength(6));
+      expect(stored['householdId'], 'shared');
+      expect(
+        (stored['expiresAt'] as Timestamp).toDate(),
+        _now.add(const Duration(days: 1)),
+      );
+      expect(stored.toString(), isNot(contains(invite.secret.formatted)));
+      final opened = await invite.secret.unwrapDataKey(
+        stored['wrapped_household_key'] as String,
+        uid: 'household_invites/${invite.code}',
+      );
+      expect(await opened.extractBytes(), await sharedKey.extractBytes());
+    });
+
+    test('only a verified admin invites', () async {
+      await expectLater(
+        (await repositoryFor('member')).generateInvite('shared'),
+        throwsA(isA<HouseholdAdminRequiredException>()),
+      );
+      await expectLater(
+        (await repositoryFor(
+          'admin',
+          isAnonymous: true,
+        )).generateInvite('shared'),
+        throwsA(isA<HouseholdVerificationRequiredException>()),
+      );
+    });
+
+    test('retries a code that exists and gives up after ten', () async {
+      await firestore.doc('household_invites/123456').set(<String, dynamic>{
+        'householdId': 'other',
+      });
+      final random = _MockRandom();
+      final sequence = <int>[123456, 654321];
+      when(() => random.nextInt(1000000))
+          .thenAnswer((_) => sequence.removeAt(0));
+
+      final invite = await (await repositoryFor(
+        'admin',
+        random: random,
+      )).generateInvite('shared');
+      expect(invite.code, '654321');
+
+      final stuck = _MockRandom();
+      when(() => stuck.nextInt(1000000)).thenReturn(123456);
+      await expectLater(
+        (await repositoryFor('admin', random: stuck)).generateInvite('shared'),
+        throwsA(isA<HouseholdInviteCodeGenerationFailedException>()),
+      );
+      expect(
+        (await firestore.doc('household_invites/123456').get())
+            .data()?['householdId'],
+        'other',
+      );
+    });
+  });
+
+  group('joinHousehold', () {
+    test('writes the member entry, the key entry and the active household '
+        'together', () async {
+      final invite = await storeInvite(
+        code: '123456',
+        householdId: 'shared',
+        expiresIn: const Duration(hours: 1),
+      );
+
+      await (await repositoryFor('joiner', isAnonymous: true)).joinHousehold(
+        invite,
+        activeHouseholdId: 'own-joiner',
+        ownHouseholdId: 'own-joiner',
+      );
+
+      final member =
+          (await firestore.doc('households/shared/members/joiner').get())
+              .data()!;
+      expect(member['uid'], 'joiner');
+      expect(member['role'], 'member');
+      expect(member['invite_code'], '123456');
+      expect(member['joined_at'], isA<Timestamp>());
+      final key = await keys.loadKey(
+        householdId: 'shared',
+        memberUid: 'joiner',
+        dataCipher: (await dataCipherFor('joiner')).cipher,
+      );
+      expect(await key!.extractBytes(), await sharedKey.extractBytes());
+      final profile = (await firestore.doc('users/joiner').get()).data()!;
+      expect(profile['householdId'], 'shared');
+      expect(
+        (await firestore.doc('households/own-joiner/members/joiner').get())
+            .exists,
+        isTrue,
+      );
+    });
+
+    test('rejects a wrong secret, an unknown and an expired invite', () async {
+      final repository = await repositoryFor('joiner');
+      final valid = await storeInvite(
+        code: '123456',
+        householdId: 'shared',
+        expiresIn: const Duration(hours: 1),
+      );
+      final expired = await storeInvite(
+        code: '111111',
+        householdId: 'shared',
+        expiresIn: const Duration(minutes: -1),
+      );
+
+      Future<void> join(HouseholdInvite invite) => repository.joinHousehold(
+        invite,
+        activeHouseholdId: 'own-joiner',
+        ownHouseholdId: 'own-joiner',
+      );
+
+      await expectLater(
+        join(HouseholdInvite(code: valid.code, secret: RecoveryKey.generate())),
+        throwsA(isA<InvalidHouseholdInviteCodeException>()),
+      );
+      await expectLater(
+        join(HouseholdInvite(code: '333333', secret: RecoveryKey.generate())),
+        throwsA(isA<InvalidHouseholdInviteCodeException>()),
+      );
+      await expectLater(
+        join(expired),
+        throwsA(isA<ExpiredHouseholdInviteCodeException>()),
+      );
+      expect(
+        (await firestore.doc('households/shared/members/joiner').get()).exists,
+        isFalse,
+      );
+    });
+
+    test('rejects the household the user is in already', () async {
+      final invite = await storeInvite(
+        code: '123456',
+        householdId: 'shared',
+        expiresIn: const Duration(hours: 1),
+      );
+
+      await expectLater(
+        (await repositoryFor('member')).joinHousehold(
+          invite,
+          activeHouseholdId: 'shared',
+          ownHouseholdId: 'own-member',
+        ),
+        throwsA(isA<OwnHouseholdInviteCodeException>()),
+      );
+    });
+
+    test('asks to leave a shared household first', () async {
+      final invite = await storeInvite(
+        code: '123456',
+        householdId: 'shared',
+        expiresIn: const Duration(hours: 1),
+      );
+      await addMember('other', 'joiner', 'member');
+      await addMember('own-joiner', 'guest', 'member');
+
+      await expectLater(
+        (await repositoryFor('joiner')).joinHousehold(
+          invite,
+          activeHouseholdId: 'other',
+          ownHouseholdId: 'own-joiner',
+        ),
+        throwsA(isA<HouseholdLeaveRequiredException>()),
+      );
+      await expectLater(
+        (await repositoryFor('joiner')).joinHousehold(
+          invite,
+          activeHouseholdId: 'own-joiner',
+          ownHouseholdId: 'own-joiner',
+        ),
+        throwsA(isA<HouseholdLeaveRequiredException>()),
+      );
+    });
+  });
+}

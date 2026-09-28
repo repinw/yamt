@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/domain/user_profile.dart';
 
 class _MockUser extends Mock implements User;
 
@@ -23,14 +24,10 @@ void main() {
     return user;
   }
 
-  test('userProfileProvider creates and syncs the signed-in profile', () async {
-    final firestore = FakeFirebaseFirestore();
-    final user = buildUser(
-      uid: 'user-1',
-      isAnonymous: false,
-      email: 'jane@example.com',
-      displayName: 'Jane',
-    );
+  Future<UserProfile?> readProfile(
+    FakeFirebaseFirestore firestore,
+    User user,
+  ) async {
     final container = ProviderContainer(
       overrides: [
         authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
@@ -40,8 +37,19 @@ void main() {
     addTearDown(container.dispose);
     final subscription = container.listen(userProfileProvider, (_, _) {});
     addTearDown(subscription.close);
+    return await container.read(userProfileProvider.future);
+  }
 
-    final profile = await container.read(userProfileProvider.future);
+  test('userProfileProvider creates and syncs the signed-in profile', () async {
+    final firestore = FakeFirebaseFirestore();
+    final user = buildUser(
+      uid: 'user-1',
+      isAnonymous: false,
+      email: 'jane@example.com',
+      displayName: 'Jane',
+    );
+
+    final profile = await readProfile(firestore, user);
     final snapshot = await firestore.collection('users').doc('user-1').get();
 
     expect(profile, isNotNull);
@@ -49,8 +57,38 @@ void main() {
     expect(profile?.email, 'jane@example.com');
     expect(profile?.displayName, 'Jane');
     expect(profile?.isAnonymous, isFalse);
-    expect(snapshot.data()?['uid'], 'user-1');
-    expect(snapshot.data()?['email'], 'jane@example.com');
-    expect(snapshot.data()?['displayName'], 'Jane');
+    expect(profile?.householdId, isNull);
+    expect(snapshot.data(), <String, dynamic>{
+      'uid': 'user-1',
+      'email': 'jane@example.com',
+      'displayName': 'Jane',
+      'isAnonymous': false,
+    });
+  });
+
+  test('userProfileProvider keeps the household fields when it syncs '
+      'the account', () async {
+    final firestore = FakeFirebaseFirestore();
+    await firestore.collection('users').doc('user-1').set(<String, dynamic>{
+      'uid': 'user-1',
+      'displayName': 'Old name',
+      'householdId': 'shared-1',
+      'ownHouseholdId': 'own-1',
+    });
+    final user = buildUser(
+      uid: 'user-1',
+      isAnonymous: false,
+      displayName: 'Jane',
+    );
+
+    final profile = await readProfile(firestore, user);
+    final stored = (await firestore.doc('users/user-1').get()).data()!;
+
+    expect(profile?.displayName, 'Jane');
+    expect(profile?.householdId, 'shared-1');
+    expect(profile?.ownHouseholdId, 'own-1');
+    expect(stored['displayName'], 'Jane');
+    expect(stored['householdId'], 'shared-1');
+    expect(stored['ownHouseholdId'], 'own-1');
   });
 }

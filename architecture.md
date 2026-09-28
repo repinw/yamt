@@ -131,9 +131,10 @@ domain and data. Data depends on domain. Domain depends on nothing.
   (`lib/features/auth/data/auth_service.dart`). NEVER call `.instance` in a
   feature. *Enforced by: architecture test.*
 - **Data owner:** the repository watches `householdCipherProvider` for
-  household data and `userDataCipherProvider` for private data. Both give the
-  owner uid and the cipher, and are `null` until the key is ready. Household
-  documents are written through `SealedCollection`
+  household data and `userDataCipherProvider` for private data. The first
+  gives the active household id, the second the user uid, each with its
+  cipher. Both are `null` until the key is ready. Household documents live
+  under `households/{householdId}` and are written through `SealedCollection`
   (`lib/core/data/sealed_collection.dart`). NEVER declare a per-feature
   session interface. *Enforced by: architecture test.*
 - **Signed out:** Firestore (`null` during sign-out) or the owner id can be

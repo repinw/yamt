@@ -1,38 +1,52 @@
+import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_members_provider.dart';
 
 part 'household_scope_provider.g.dart';
 
-/// Defines household data owner recovery state.
+/// A household that lost its access, and the own household that replaces it
+/// until the profile catches up.
 class HouseholdDataOwnerRecoveryState {
-  /// The household data owner recovery state.
+  /// Creates the state.
   const new({required this.staleOwnerUserId, required this.personalUserId});
 
-  /// The stale owner user id.
+  /// The household whose data the user can no longer read.
   final String staleOwnerUserId;
 
-  /// The personal user id.
+  /// The own household of the user.
   final String personalUserId;
 }
 
-/// Household data owner user id.
+/// The household that the profile names as active, or `null` while signed
+/// out or before the own household exists.
 @riverpod
 String? householdDataOwnerUserId(Ref ref) {
   final user = ref.watch(authStateChangesProvider).asData?.value;
   if (user == null) {
     return null;
   }
-
-  final householdId = ref.watch(userProfileProvider).asData?.value?.householdId;
-  final normalizedHouseholdId = householdId?.trim();
-  if (normalizedHouseholdId != null && normalizedHouseholdId.isNotEmpty) {
-    return normalizedHouseholdId;
-  }
-  return user.uid;
+  return ref.watch(
+    userProfileProvider.select((profile) => profile.asData?.value?.householdId),
+  );
 }
 
-/// Defines household data owner recovery.
+/// The own household of the signed-in user, or `null` while signed out or
+/// before it exists.
+@riverpod
+String? ownHouseholdId(Ref ref) {
+  final user = ref.watch(authStateChangesProvider).asData?.value;
+  if (user == null) {
+    return null;
+  }
+  return ref.watch(
+    userProfileProvider.select(
+      (profile) => profile.asData?.value?.ownHouseholdId,
+    ),
+  );
+}
+
+/// Switches household scoped data to the own household when the active one
+/// denies access, until the profile names the own household again.
 @riverpod
 class HouseholdDataOwnerRecovery extends _$HouseholdDataOwnerRecovery {
   @override
@@ -40,7 +54,8 @@ class HouseholdDataOwnerRecovery extends _$HouseholdDataOwnerRecovery {
     return null;
   }
 
-  /// Recover to personal scope.
+  /// Reads the own household [personalUserId] instead of
+  /// [staleOwnerUserId].
   void recoverToPersonalScope({
     required String staleOwnerUserId,
     required String personalUserId,
@@ -58,7 +73,7 @@ class HouseholdDataOwnerRecovery extends _$HouseholdDataOwnerRecovery {
     );
   }
 
-  /// Clear.
+  /// Forgets the switch.
   void clear() {
     state = null;
   }
@@ -87,7 +102,7 @@ String? activeHouseholdId(Ref ref) {
 }
 
 /// Waits until the signed-in user's profile has resolved before household
-/// scoped data controllers choose a data owner.
+/// scoped data controllers choose a household.
 ///
 /// Must only be called directly inside a provider's build method to correctly
 /// register dependencies.
@@ -103,11 +118,4 @@ Future<void> waitForHouseholdDataOwnerProfile(Ref ref) async {
   }
 
   await ref.watch(userProfileProvider.future);
-}
-
-/// Household has additional members.
-@riverpod
-bool householdHasAdditionalMembers(Ref ref) {
-  final members = ref.watch(householdMembersProvider).asData?.value;
-  return (members?.length ?? 0) > 1;
 }

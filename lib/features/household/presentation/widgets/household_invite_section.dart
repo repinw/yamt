@@ -11,12 +11,15 @@ import 'package:yamt/features/household/presentation/controllers/'
 import 'package:yamt/features/household/presentation/household_error_message.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines household invite section.
+/// Lets the admin create an invite and shows it as a QR code and a link.
 class HouseholdInviteSection extends ConsumerWidget {
-  /// The household invite section.
+  /// Creates the section.
   const new({required this.isBusy, super.key});
 
-  /// Whether busy.
+  /// Key of the button that creates an invite.
+  static const createKey = Key('household_invite_create');
+
+  /// Whether a household action runs.
   final bool isBusy;
 
   @override
@@ -25,31 +28,21 @@ class HouseholdInviteSection extends ConsumerWidget {
     final inviteState = ref.watch(householdInviteCodeControllerProvider);
     final invite = inviteState.asData?.value;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.householdInviteTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        if (invite == null)
-          FilledButton.icon(
-            onPressed: isBusy
-                ? null
-                : () => _generateInviteCode(context, ref, l10n),
-            icon: inviteState.isLoading
-                ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.qr_code_2_outlined),
-            label: Text(l10n.householdInviteCreate),
-          )
-        else
-          _GeneratedInviteView(invite: invite, isBusy: isBusy),
-      ],
+    if (invite != null) {
+      return _GeneratedInviteView(invite: invite, isBusy: isBusy);
+    }
+    return FilledButton.icon(
+      key: createKey,
+      onPressed: isBusy ? null : () => _generateInviteCode(context, ref, l10n),
+      icon: inviteState.isLoading
+          ? const SizedBox.square(
+              dimension: AppSizes.inlineProgressIndicator,
+              child: CircularProgressIndicator(
+                strokeWidth: AppSizes.progressStrokeWidth,
+              ),
+            )
+          : const Icon(Icons.qr_code_2_outlined),
+      label: Text(l10n.householdInviteCreate),
     );
   }
 

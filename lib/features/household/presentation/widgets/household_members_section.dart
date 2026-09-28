@@ -1,189 +1,138 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/auth/domain/user_profile.dart';
-import 'package:yamt/features/household/presentation/controllers/'
-    'household_membership_controller.dart';
-import 'package:yamt/features/household/presentation/household_error_message.dart';
+import 'package:yamt/features/household/domain/household_member.dart';
+import 'package:yamt/features/household/presentation/household_membership_flow.dart';
+import 'package:yamt/features/household/presentation/models/household_member_label.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines household members section.
-class HouseholdMembersSection extends ConsumerWidget {
-  /// The household members section.
+/// The members of the household. The admin may hand on the lead or remove a
+/// member.
+class HouseholdMembersSection extends StatelessWidget {
+  /// Creates the section.
   const new({
     required this.members,
     required this.currentUserId,
-    required this.householdRootId,
-    required this.canRemoveMembers,
+    required this.canManageMembers,
     required this.isBusy,
     super.key,
   });
 
-  /// The members.
-  final List<UserProfile> members;
+  /// Key of the admin badge.
+  static const adminBadgeKey = Key('household_member_admin_badge');
 
-  /// The current user id.
+  /// Key of the menu item that hands the lead on.
+  static const makeAdminKey = Key('household_member_make_admin');
+
+  /// Key of the menu item that removes a member.
+  static const removeKey = Key('household_member_remove');
+
+  /// Key of the action menu of the member [uid].
+  static Key menuKey(String uid) =>
+      ValueKey<String>('household_member_menu_$uid');
+
+  /// The members, the admin first.
+  final List<HouseholdMember> members;
+
+  /// The signed-in user.
   final String currentUserId;
 
-  /// The household root id.
-  final String householdRootId;
+  /// Whether the user is the admin.
+  final bool canManageMembers;
 
-  /// Whether remove members.
-  final bool canRemoveMembers;
-
-  /// Whether busy.
+  /// Whether a household action runs.
   final bool isBusy;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-
+  Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          l10n.householdMembersTitle,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        for (final member in members) ...[
+        for (final member in members)
           _MemberRow(
+            key: ValueKey<String>(member.uid),
             member: member,
-            currentUserId: currentUserId,
-            householdRootId: householdRootId,
-            canRemoveMembers: canRemoveMembers,
+            isCurrentUser: member.uid == currentUserId,
+            canManage: canManageMembers && member.uid != currentUserId,
             isBusy: isBusy,
           ),
-          if (member != members.last) const SizedBox(height: AppSpacing.sm),
-        ],
       ],
     );
   }
 }
+
+enum _MemberAction { makeAdmin, remove }
 
 class _MemberRow extends ConsumerWidget {
   const new({
     required this.member,
-    required this.currentUserId,
-    required this.householdRootId,
-    required this.canRemoveMembers,
+    required this.isCurrentUser,
+    required this.canManage,
     required this.isBusy,
+    super.key,
   });
 
-  final UserProfile member;
-  final String currentUserId;
-  final String householdRootId;
-  final bool canRemoveMembers;
+  final HouseholdMember member;
+  final bool isCurrentUser;
+  final bool canManage;
   final bool isBusy;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final theme = Theme.of(context);
-    final isCurrentUser = member.uid == currentUserId;
-    final isLeader = member.uid == householdRootId;
-    final displayName = member.displayName ?? member.email ?? member.uid;
+    final name = householdMemberLabel(member, l10n);
+    final email = member.email;
 
-    return Row(
-      children: [
-        CircleAvatar(child: Text(displayName.characters.first.toUpperCase())),
-        const SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(displayName, style: theme.textTheme.bodyLarge),
-              if (member.email != null && member.displayName != null)
-                Text(member.email!, style: theme.textTheme.bodySmall),
-            ],
-          ),
-        ),
-        if (isLeader) _MemberChip(label: l10n.householdLeaderBadge),
-        if (isLeader && isCurrentUser) const SizedBox(width: AppSpacing.xs),
-        if (isCurrentUser) _MemberChip(label: l10n.householdYouBadge),
-        if (canRemoveMembers && !isCurrentUser) ...[
-          const SizedBox(width: AppSpacing.xs),
-          IconButton(
-            onPressed: isBusy
-                ? null
-                : () => _confirmRemoval(context, ref, l10n, displayName),
-            icon: const Icon(Icons.person_remove_outlined),
-            tooltip: l10n.householdRemoveMemberAction,
-          ),
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: CircleAvatar(child: Text(name.characters.first.toUpperCase())),
+      title: Text(isCurrentUser ? l10n.householdMemberSelf(name) : name),
+      subtitle: email != null && member.displayName != null
+          ? Text(email)
+          : null,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (member.isAdmin)
+            Tooltip(
+              message: l10n.householdAdminBadge,
+              child: Icon(
+                Icons.shield_outlined,
+                key: HouseholdMembersSection.adminBadgeKey,
+                semanticLabel: l10n.householdAdminBadge,
+              ),
+            ),
+          if (canManage)
+            PopupMenuButton<_MemberAction>(
+              key: HouseholdMembersSection.menuKey(member.uid),
+              enabled: !isBusy,
+              tooltip: l10n.householdMemberActions,
+              onSelected: (action) => unawaited(switch (action) {
+                _MemberAction.makeAdmin => HouseholdMembershipFlow.makeAdmin(
+                  context,
+                  ref,
+                  member,
+                ),
+                _MemberAction.remove => HouseholdMembershipFlow.removeMember(
+                  context,
+                  ref,
+                  member,
+                ),
+              }),
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  key: HouseholdMembersSection.makeAdminKey,
+                  value: _MemberAction.makeAdmin,
+                  child: Text(l10n.householdMakeAdminAction),
+                ),
+                PopupMenuItem(
+                  key: HouseholdMembersSection.removeKey,
+                  value: _MemberAction.remove,
+                  child: Text(l10n.householdRemoveMemberAction),
+                ),
+              ],
+            ),
         ],
-      ],
-    );
-  }
-
-  Future<void> _confirmRemoval(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations l10n,
-    String displayName,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: Text(l10n.householdRemoveMemberTitle),
-          content: Text(l10n.householdRemoveMemberMessage(displayName)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(l10n.householdRemoveMemberAction),
-            ),
-          ],
-        );
-      },
-    );
-    if (confirmed != true || !context.mounted) {
-      return;
-    }
-
-    try {
-      await ref
-          .read(householdMembershipControllerProvider.notifier)
-          .removeMember(member.uid);
-      if (!context.mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context)
-          .showAppSnackBar(l10n.householdRemoveMemberSuccess);
-    } on Object catch (error) {
-      if (!context.mounted) {
-        return;
-      }
-      ScaffoldMessenger.of(context).showAppSnackBar(
-        householdErrorMessage(l10n, error),
-        tone: AppSnackBarTone.error,
-      );
-    }
-  }
-}
-
-class _MemberChip extends StatelessWidget {
-  const new({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.xs,
-        ),
-        child: Text(label),
       ),
     );
   }

@@ -1,542 +1,435 @@
-import 'dart:async';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/auth/domain/user_profile.dart';
-import 'package:yamt/features/household/application/household_key_session.dart';
-import 'package:yamt/features/household/application/household_members_provider.dart';
+import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/domain/household_invite.dart';
-import 'package:yamt/features/household/domain/household_key_state.dart';
-import 'package:yamt/features/household/presentation/controllers/'
-    'household_invite_code_controller.dart';
-import 'package:yamt/features/household/presentation/controllers/'
-    'household_membership_controller.dart';
+import 'package:yamt/features/household/presentation/widgets/'
+    'household_confirm_dialog.dart';
+import 'package:yamt/features/household/presentation/widgets/'
+    'household_invite_section.dart';
+import 'package:yamt/features/household/presentation/widgets/'
+    'household_join_section.dart';
 import 'package:yamt/features/household/presentation/widgets/'
     'household_key_restore_section.dart';
 import 'package:yamt/features/household/presentation/widgets/'
+    'household_leave_dialog.dart';
+import 'package:yamt/features/household/presentation/widgets/'
+    'household_members_section.dart';
+import 'package:yamt/features/household/presentation/widgets/'
     'household_sharing_card.dart';
+import 'package:yamt/features/household/presentation/widgets/'
+    'household_unlock_code_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../../../helpers/fake_household.dart';
 
 class _MockUser extends Mock implements User;
 
-class _FakeHouseholdInviteCodeController extends HouseholdInviteCodeController {
-  @override
-  AsyncValue<HouseholdInvite?> build() {
-    return const AsyncData<HouseholdInvite?>(null);
-  }
-}
-
-class _FakeHouseholdKeySession extends HouseholdKeySession {
-  new(this._state);
-
-  final HouseholdKeyState _state;
-
-  @override
-  Future<HouseholdKeyState> build() async => _state;
-}
-
-String _inviteLink(String code) {
-  return HouseholdInvite(code: code, secret: RecoveryKey.generate()).link;
-}
-
-class _FakeHouseholdMembershipController extends HouseholdMembershipController {
-  new({this.onRemoveMember, this.onJoinHousehold, this.onRestoreKey});
-
-  final Future<void> Function(String userId)? onRemoveMember;
-  final void Function(String code)? onRestoreKey;
-  final Future<void> Function(HouseholdInvite invite, String? displayName)?
-  onJoinHousehold;
-
-  @override
-  FutureOr<void> build() {}
-
-  @override
-  Future<void> joinHousehold(
-    HouseholdInvite invite, {
-    String? displayName,
-  }) async {
-    await onJoinHousehold?.call(invite, displayName);
-    state = const AsyncData<void>(null);
-  }
-
-  @override
-  Future<void> removeMember(String userId) async {
-    await onRemoveMember?.call(userId);
-    state = const AsyncData<void>(null);
-  }
-
-  @override
-  Future<void> leaveHousehold() async {
-    state = const AsyncData<void>(null);
-  }
-
-  @override
-  Future<void> restoreHouseholdKey(String code) async {
-    onRestoreKey?.call(code);
-  }
-
-  @override
-  Future<RecoveryKey> createKeyRestoreCode() async {
-    return RecoveryKey.parse(_restoreCode);
-  }
-}
-
-const _restoreCode = '0123-4567-89AB-CDEF-GHJK-MNPQ-RS';
-
 void main() {
-  User buildUser({required String uid, required bool isAnonymous}) {
+  late FakeHousehold backend;
+
+  setUp(() => backend = FakeHousehold.create());
+
+  /// Lets the real repositories, crypto and streams run between frames.
+  Future<void> settle(WidgetTester tester) async {
+    for (var i = 0; i < 15; i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 5)),
+      );
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+  }
+
+  Future<void> pumpCard(
+    WidgetTester tester,
+    String uid, {
+    bool isAnonymous = false,
+    String? displayName = 'Me',
+  }) async {
     final user = _MockUser();
     when(() => user.uid).thenReturn(uid);
     when(() => user.isAnonymous).thenReturn(isAnonymous);
-    return user;
-  }
-
-  Widget buildApp({
-    required User user,
-    required UserProfile profile,
-    required List<UserProfile> members,
-    HouseholdInviteCodeController? inviteController,
-    HouseholdMembershipController? membershipController,
-    HouseholdKeyState keyState = const HouseholdKeyUnavailable(),
-    bool restoreRequested = false,
-  }) {
-    final container = ProviderContainer(
-      overrides: [
-        authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
-        userProfileProvider.overrideWith((ref) => Stream.value(profile)),
-        householdMembersProvider.overrideWith((ref) => Stream.value(members)),
-        householdInviteCodeControllerProvider.overrideWith(
-          () => inviteController ?? _FakeHouseholdInviteCodeController(),
-        ),
-        householdMembershipControllerProvider.overrideWith(
-          () => membershipController ?? _FakeHouseholdMembershipController(),
-        ),
-        householdKeySessionProvider.overrideWith(
-          () => _FakeHouseholdKeySession(keyState),
-        ),
-        householdKeyRestoreRequestedProvider.overrideWith(
-          (ref) => Stream.value(restoreRequested),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    return UncontrolledProviderScope(
-      container: container,
-      child: MaterialApp(
-        localizationsDelegates: appLocalizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(body: HouseholdSharingCard(user: user)),
+    final overrides = await tester.runAsync(
+      () => backend.overrides(
+        uid,
+        isAnonymous: isAnonymous,
+        displayName: displayName,
       ),
     );
-  }
-
-  testWidgets('verified leader sees join and invite sections', (tester) async {
-    final user = buildUser(uid: 'host-1', isAnonymous: false);
-    const profile = UserProfile(
-      uid: 'host-1',
-      email: 'host@example.com',
-      displayName: 'Host',
-    );
-
-    await tester.pumpWidget(
-      buildApp(user: user, profile: profile, members: [profile]),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Household'), findsOneWidget);
-    expect(find.text('Join household'), findsOneWidget);
-    expect(find.text('Invite members'), findsOneWidget);
-    expect(find.text('Leave household'), findsNothing);
-  });
-
-  testWidgets('anonymous users see the verification hint', (tester) async {
-    final user = buildUser(uid: 'guest-1', isAnonymous: true);
-    const profile = UserProfile(
-      uid: 'guest-1',
-      displayName: 'Guest',
-      isAnonymous: true,
-    );
-
-    await tester.pumpWidget(
-      buildApp(user: user, profile: profile, members: [profile]),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Join household'), findsOneWidget);
-    expect(find.textContaining('link your guest account'), findsOneWidget);
-    expect(find.text('Invite members'), findsNothing);
-  });
-
-  testWidgets('guest members see members and the leave action', (tester) async {
-    final user = buildUser(uid: 'guest-1', isAnonymous: false);
-    const host = UserProfile(
-      uid: 'host-1',
-      email: 'host@example.com',
-      displayName: 'Host',
-    );
-    const guest = UserProfile(
-      uid: 'guest-1',
-      householdId: 'host-1',
-      email: 'guest@example.com',
-      displayName: 'Guest',
-    );
-
-    await tester.pumpWidget(
-      buildApp(user: user, profile: guest, members: [host, guest]),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.text('Members'), findsOneWidget);
-    expect(find.text('Leader'), findsOneWidget);
-    expect(find.text('You'), findsOneWidget);
-    expect(find.text('Leave household'), findsOneWidget);
-    expect(find.text('Invite members'), findsNothing);
-  });
-
-  testWidgets('leaders can remove members from the list', (tester) async {
-    final user = buildUser(uid: 'host-1', isAnonymous: false);
-    const host = UserProfile(
-      uid: 'host-1',
-      email: 'host@example.com',
-      displayName: 'Host',
-    );
-    const guest = UserProfile(
-      uid: 'guest-1',
-      householdId: 'host-1',
-      email: 'guest@example.com',
-      displayName: 'Guest',
-    );
-    String? removedUserId;
-
-    await tester.pumpWidget(
-      buildApp(
-        user: user,
-        profile: host,
-        members: [host, guest],
-        membershipController: _FakeHouseholdMembershipController(
-          onRemoveMember: (userId) async {
-            removedUserId = userId;
-          },
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byIcon(Icons.person_remove_outlined));
-    await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Remove'));
-    await tester.pumpAndSettle();
-
-    expect(removedUserId, 'guest-1');
-    expect(find.text('Member removed.'), findsOneWidget);
-  });
-
-  testWidgets('debug details are shown when household members fail to load', (
-    tester,
-  ) async {
-    final user = buildUser(uid: 'host-1', isAnonymous: false);
-    const profile = UserProfile(
-      uid: 'host-1',
-      email: 'host@example.com',
-      displayName: 'Host',
-    );
-
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          authStateChangesProvider.overrideWith((ref) => Stream.value(user)),
-          userProfileProvider.overrideWith((ref) => Stream.value(profile)),
-          householdMembersProvider.overrideWith(
-            (ref) => Stream<List<UserProfile>>.error(
-              StateError('member query failed'),
-            ),
-          ),
-          householdInviteCodeControllerProvider.overrideWith(
-            _FakeHouseholdInviteCodeController.new,
-          ),
-          householdMembershipControllerProvider.overrideWith(
-            _FakeHouseholdMembershipController.new,
-          ),
-        ],
+        overrides: overrides!,
         child: MaterialApp(
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: HouseholdSharingCard(user: user)),
-        ),
-      ),
-    );
-    await tester.pump();
-
-    expect(
-      find.text('Household action failed. Please try again.'),
-      findsOneWidget,
-    );
-    expect(find.textContaining('member query failed'), findsOneWidget);
-  });
-
-  testWidgets(
-    'user without name entering link and clicking join sees name prompt '
-    'dialog and joins with entered name',
-    (tester) async {
-      final user = buildUser(uid: 'guest-1', isAnonymous: true);
-      const profile = UserProfile(uid: 'guest-1', isAnonymous: true);
-      String? joinedCode;
-      String? joinedDisplayName;
-
-      await tester.pumpWidget(
-        buildApp(
-          user: user,
-          profile: profile,
-          members: [profile],
-          membershipController: _FakeHouseholdMembershipController(
-            onJoinHousehold: (invite, displayName) async {
-              joinedCode = invite.code;
-              joinedDisplayName = displayName;
-            },
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: HouseholdSharingCard(user: user),
+            ),
           ),
         ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextField), _inviteLink('123456'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.widgetWithText(FilledButton, 'Join'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Enter your name'), findsOneWidget);
-
-      await tester.enterText(find.byType(TextFormField), 'Sam');
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.text('Save & Join'));
-      await tester.pumpAndSettle();
-
-      expect(joinedCode, '123456');
-      expect(joinedDisplayName, 'Sam');
-      expect(find.text('Household joined.'), findsOneWidget);
-    },
-  );
-
-  testWidgets(
-    'user with existing name joining household does not see name prompt',
-    (tester) async {
-      final user = buildUser(uid: 'user-1', isAnonymous: false);
-      const profile = UserProfile(uid: 'user-1', displayName: 'Existing User');
-      String? joinedCode;
-      String? joinedDisplayName;
-
-      await tester.pumpWidget(
-        buildApp(
-          user: user,
-          profile: profile,
-          members: [profile],
-          membershipController: _FakeHouseholdMembershipController(
-            onJoinHousehold: (invite, displayName) async {
-              joinedCode = invite.code;
-              joinedDisplayName = displayName;
-            },
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.enterText(find.byType(TextField), _inviteLink('654321'));
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.widgetWithText(FilledButton, 'Join'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Enter your name'), findsNothing);
-      expect(joinedCode, '654321');
-      expect(joinedDisplayName, isNull);
-      expect(find.text('Household joined.'), findsOneWidget);
-    },
-  );
-
-  testWidgets('user canceling name prompt does not join household', (
-    tester,
-  ) async {
-    final user = buildUser(uid: 'guest-1', isAnonymous: true);
-    const profile = UserProfile(uid: 'guest-1', isAnonymous: true);
-    var joinCalled = false;
-
-    await tester.pumpWidget(
-      buildApp(
-        user: user,
-        profile: profile,
-        members: [profile],
-        membershipController: _FakeHouseholdMembershipController(
-          onJoinHousehold: (invite, displayName) async {
-            joinCalled = true;
-          },
-        ),
       ),
     );
-    await tester.pumpAndSettle();
+    await settle(tester);
+  }
 
-    await tester.enterText(find.byType(TextField), _inviteLink('123456'));
-    await tester.pumpAndSettle();
+  Future<void> seed(Future<void> Function() setup, WidgetTester tester) async {
+    await tester.runAsync(setup);
+  }
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Join'));
-    await tester.pumpAndSettle();
+  Future<void> sharedHousehold() async {
+    await backend.addMember(
+      'shared',
+      'admin',
+      joinedAt: DateTime(2026),
+      admin: true,
+    );
+    await backend.addMember('shared', 'early', joinedAt: DateTime(2026, 2));
+    await backend.addMember('shared', 'me', joinedAt: DateTime(2026, 3));
+    await backend.addUser(
+      'admin',
+      householdId: 'shared',
+      ownHouseholdId: 'shared',
+      displayName: 'Alex',
+    );
+    await backend.addUser(
+      'early',
+      householdId: 'shared',
+      ownHouseholdId: 'own-early',
+      displayName: 'Eli',
+    );
+  }
 
-    expect(find.text('Enter your name'), findsOneWidget);
+  testWidgets('alone in the own household the user joins or invites', (
+    tester,
+  ) async {
+    await seed(() async {
+      await backend.addMember(
+        'own',
+        'me',
+        joinedAt: DateTime(2026),
+        admin: true,
+      );
+      await backend.addUser('me', householdId: 'own', ownHouseholdId: 'own');
+    }, tester);
 
-    await tester.tap(find.text('Cancel'));
-    await tester.pumpAndSettle();
+    await pumpCard(tester, 'me');
 
-    expect(find.text('Enter your name'), findsNothing);
-    expect(joinCalled, isFalse);
+    expect(find.byKey(HouseholdJoinSection.linkFieldKey), findsOneWidget);
+    expect(find.byKey(HouseholdInviteSection.createKey), findsOneWidget);
+    expect(find.byKey(HouseholdSharingCard.leaveKey), findsNothing);
+    expect(find.byType(HouseholdMembersSection), findsNothing);
   });
 
-  testWidgets('member without household key sees rejoin hint and join', (
-    tester,
-  ) async {
-    final user = buildUser(uid: 'member-1', isAnonymous: false);
-    const host = UserProfile(uid: 'host-1', displayName: 'Host');
-    const profile = UserProfile(
-      uid: 'member-1',
-      displayName: 'Member',
-      householdId: 'host-1',
-    );
+  testWidgets('a guest sees the hint to link the account', (tester) async {
+    await seed(() async {
+      await backend.addMember(
+        'own',
+        'me',
+        joinedAt: DateTime(2026),
+        admin: true,
+      );
+      await backend.addUser('me', householdId: 'own', ownHouseholdId: 'own');
+    }, tester);
 
-    await tester.pumpWidget(
-      buildApp(
-        user: user,
-        profile: profile,
-        members: [host, profile],
-        keyState: const HouseholdKeyInviteRequired(ownerUid: 'host-1'),
-      ),
-    );
+    await pumpCard(tester, 'me', isAnonymous: true);
+
+    expect(find.textContaining('link your guest account'), findsOneWidget);
+    expect(find.byKey(HouseholdInviteSection.createKey), findsNothing);
+    expect(find.byKey(HouseholdJoinSection.linkFieldKey), findsOneWidget);
+  });
+
+  testWidgets('a member sees the admin badge and leaves', (tester) async {
+    await seed(() async {
+      await sharedHousehold();
+      await backend.addMember(
+        'own-me',
+        'me',
+        joinedAt: DateTime(2026),
+        admin: true,
+      );
+      await backend.addUser(
+        'me',
+        householdId: 'shared',
+        ownHouseholdId: 'own-me',
+        displayName: 'Me',
+      );
+    }, tester);
+
+    await pumpCard(tester, 'me');
+
+    expect(find.text('Alex'), findsOneWidget);
+    expect(find.text('Me (you)'), findsOneWidget);
+    expect(find.byKey(HouseholdMembersSection.adminBadgeKey), findsOneWidget);
+    expect(find.byKey(HouseholdMembersSection.menuKey('early')), findsNothing);
+    expect(find.byKey(HouseholdInviteSection.createKey), findsNothing);
+    expect(find.byKey(HouseholdJoinSection.linkFieldKey), findsNothing);
+
+    await tester.tap(find.byKey(HouseholdSharingCard.leaveKey));
     await tester.pumpAndSettle();
-
     expect(
       find.text(
-        'Please join the household again with a QR code to read the shared '
-        'data.',
+        'You go back to your own household. The shared items stay here.',
       ),
       findsOneWidget,
     );
-    expect(find.text('Join household'), findsOneWidget);
+    expect(find.byType(RadioListTile<String>), findsNothing);
+    await tester.tap(find.byKey(HouseholdLeaveDialog.confirmKey));
+    await settle(tester);
+
+    expect(find.text('Household left.'), findsOneWidget);
+    expect(
+      (await tester.runAsync(() => backend.read('users/me')))!['householdId'],
+      'own-me',
+    );
+    expect(
+      await tester.runAsync(() => backend.read('households/shared/members/me')),
+      isNull,
+    );
+  });
+
+  testWidgets('the admin hands the lead on', (tester) async {
+    await seed(() async {
+      await sharedHousehold();
+      await backend.addUser(
+        'me',
+        householdId: 'shared',
+        ownHouseholdId: 'own-me',
+      );
+    }, tester);
+
+    await pumpCard(tester, 'admin', displayName: 'Alex');
+    await tester.tap(find.byKey(HouseholdMembersSection.menuKey('early')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(HouseholdMembersSection.makeAdminKey));
+    await tester.pumpAndSettle();
+    expect(find.text('Make Eli admin?'), findsOneWidget);
+    await tester.tap(find.byKey(HouseholdConfirmDialog.confirmKey));
+    await settle(tester);
+
+    expect(find.text('Eli is now the admin.'), findsOneWidget);
+    expect(
+      (await tester.runAsync(
+        () => backend.read('households/shared/members/early'),
+      ))!['role'],
+      'admin',
+    );
+    expect(
+      (await tester.runAsync(
+        () => backend.read('households/shared/members/admin'),
+      ))!['role'],
+      'member',
+    );
+  });
+
+  testWidgets('the admin removes a member', (tester) async {
+    await seed(sharedHousehold, tester);
+
+    await pumpCard(tester, 'admin', displayName: 'Alex');
+    await tester.tap(find.byKey(HouseholdMembersSection.menuKey('early')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(HouseholdMembersSection.removeKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(HouseholdConfirmDialog.confirmKey));
+    await settle(tester);
+
+    expect(find.text('Member removed.'), findsOneWidget);
+    expect(
+      await tester.runAsync(
+        () => backend.read('households/shared/members/early'),
+      ),
+      isNull,
+    );
+    expect(find.text('Eli'), findsNothing);
+  });
+
+  testWidgets('the admin who leaves picks who leads next', (tester) async {
+    await seed(sharedHousehold, tester);
+
+    await pumpCard(tester, 'admin', displayName: 'Alex');
+    await tester.tap(find.byKey(HouseholdSharingCard.leaveKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Who leads the household after you?'), findsOneWidget);
+    final proposed = tester.widget<RadioGroup<String>>(
+      find.byType(RadioGroup<String>),
+    );
+    expect(proposed.groupValue, 'early');
+
+    await tester.tap(find.byKey(HouseholdLeaveDialog.successorKey('me')));
+    await tester.pump();
+    await tester.tap(find.byKey(HouseholdLeaveDialog.confirmKey));
+    await settle(tester);
+
+    expect(
+      (await tester.runAsync(
+        () => backend.read('households/shared/members/me'),
+      ))!['role'],
+      'admin',
+    );
+    expect(
+      await tester.runAsync(
+        () => backend.read('households/shared/members/admin'),
+      ),
+      isNull,
+    );
+    final profile = (await tester.runAsync(() => backend.read('users/admin')))!;
+    expect(profile['ownHouseholdId'], isNot('shared'));
+  });
+
+  testWidgets('a member who lost the key enters an unlock code', (
+    tester,
+  ) async {
+    await seed(() async {
+      await sharedHousehold();
+      await backend.addUser(
+        'me',
+        householdId: 'shared',
+        ownHouseholdId: 'own-me',
+      );
+      await backend.loseKey('shared', 'me');
+    }, tester);
+    final code = await tester.runAsync(
+      () =>
+          HouseholdKeyRepository(
+            firestore: backend.firestore,
+            storage: const FlutterSecureStorage(),
+          ).saveRestoreCode(
+            householdId: 'shared',
+            memberUid: 'me',
+            householdKey: backend.householdKeys['shared']!,
+          ),
+    );
+
+    await pumpCard(tester, 'me');
+    await tester.enterText(
+      find.byKey(HouseholdKeyRestoreSection.codeFieldKey),
+      code!.formatted,
+    );
+    await tester.tap(find.byKey(HouseholdKeyRestoreSection.restoreButtonKey));
+    await settle(tester);
+
+    expect(find.text('Pantry unlocked.'), findsOneWidget);
+    expect(find.byKey(HouseholdKeyRestoreSection.codeFieldKey), findsNothing);
+  });
+
+  testWidgets('another member creates the unlock code', (tester) async {
+    await seed(() async {
+      await sharedHousehold();
+      await backend.addUser(
+        'me',
+        householdId: 'shared',
+        ownHouseholdId: 'own-me',
+      );
+      await backend.loseKey('shared', 'early');
+    }, tester);
+
+    await pumpCard(tester, 'me');
+    expect(find.textContaining('Eli started fresh'), findsOneWidget);
+    await tester.tap(
+      find.byKey(HouseholdUnlockCodeSection.createCodeButtonKey),
+    );
+    await settle(tester);
+
+    expect(
+      find.byKey(HouseholdUnlockCodeSection.createdCodeKey),
+      findsOneWidget,
+    );
+    expect(
+      await tester.runAsync(
+        () => backend.read('households/shared/key_restores/early'),
+      ),
+      contains('wrapped_household_key'),
+    );
+  });
+
+  testWidgets('a user without a name joins with the name dialog', (
+    tester,
+  ) async {
+    late HouseholdInvite invite;
+    await seed(() async {
+      await sharedHousehold();
+      await backend.addMember(
+        'own-me',
+        'me',
+        joinedAt: DateTime(2026),
+        admin: true,
+      );
+      await backend.addUser(
+        'me',
+        householdId: 'own-me',
+        ownHouseholdId: 'own-me',
+      );
+      invite = HouseholdInvite(code: '123456', secret: RecoveryKey.generate());
+      await backend.firestore.doc('household_invites/123456').set(
+        <String, dynamic>{
+          'householdId': 'shared',
+          'expiresAt': Timestamp.fromDate(
+            DateTime.now().add(const Duration(hours: 1)),
+          ),
+          'wrapped_household_key': await invite.secret.wrapDataKey(
+            backend.householdKeys['shared']!,
+            uid: 'household_invites/123456',
+          ),
+        },
+      );
+    }, tester);
+
+    await pumpCard(tester, 'me', displayName: null);
+    await tester.enterText(
+      find.byKey(HouseholdJoinSection.linkFieldKey),
+      invite.link,
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(HouseholdJoinSection.joinKey));
+    await tester.pumpAndSettle();
+    expect(find.text('Enter your name'), findsOneWidget);
+    await tester.enterText(find.byType(TextFormField), 'Sam');
+    await tester.tap(find.text('Save & Join'));
+    await settle(tester);
+
+    expect(find.text('Household joined.'), findsOneWidget);
+    expect(
+      (await tester.runAsync(() => backend.read('users/me')))!['householdId'],
+      'shared',
+    );
+    expect(
+      (await tester.runAsync(
+        () => backend.read('households/shared/members/me'),
+      ))!['role'],
+      'member',
+    );
   });
 
   testWidgets('join stays disabled for text that is no invite link', (
     tester,
   ) async {
-    final user = buildUser(uid: 'user-1', isAnonymous: false);
-    const profile = UserProfile(uid: 'user-1', displayName: 'User');
+    await seed(() async {
+      await backend.addMember(
+        'own',
+        'me',
+        joinedAt: DateTime(2026),
+        admin: true,
+      );
+      await backend.addUser('me', householdId: 'own', ownHouseholdId: 'own');
+    }, tester);
 
-    await tester.pumpWidget(
-      buildApp(user: user, profile: profile, members: [profile]),
+    await pumpCard(tester, 'me');
+    await tester.enterText(
+      find.byKey(HouseholdJoinSection.linkFieldKey),
+      '123456',
     );
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.byType(TextField), '123456');
     await tester.pump();
 
     final button = tester.widget<FilledButton>(
-      find.widgetWithText(FilledButton, 'Join'),
+      find.byKey(HouseholdJoinSection.joinKey),
     );
     expect(button.onPressed, isNull);
-  });
-
-  testWidgets('a host who started fresh enters the restore code', (
-    tester,
-  ) async {
-    final user = buildUser(uid: 'host-1', isAnonymous: false);
-    const host = UserProfile(uid: 'host-1', displayName: 'Host');
-    const guest = UserProfile(
-      uid: 'guest-1',
-      householdId: 'host-1',
-      displayName: 'Guest',
-    );
-    String? restoredWith;
-
-    await tester.pumpWidget(
-      buildApp(
-        user: user,
-        profile: host,
-        members: [host, guest],
-        keyState: const HouseholdKeyRestoreRequired(ownerUid: 'host-1'),
-        membershipController: _FakeHouseholdMembershipController(
-          onRestoreKey: (code) => restoredWith = code,
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.enterText(
-      find.byKey(HouseholdKeyRestoreSection.codeFieldKey),
-      _restoreCode,
-    );
-    await tester.tap(find.byKey(HouseholdKeyRestoreSection.restoreButtonKey));
-    await tester.pumpAndSettle();
-
-    expect(restoredWith, _restoreCode);
-    expect(find.text('Pantry unlocked.'), findsOneWidget);
-  });
-
-  testWidgets('a member creates a restore code for the host', (tester) async {
-    final user = buildUser(uid: 'guest-1', isAnonymous: false);
-    const host = UserProfile(uid: 'host-1', displayName: 'Host');
-    const guest = UserProfile(
-      uid: 'guest-1',
-      householdId: 'host-1',
-      displayName: 'Guest',
-    );
-
-    await tester.pumpWidget(
-      buildApp(
-        user: user,
-        profile: guest,
-        members: [host, guest],
-        restoreRequested: true,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(HouseholdKeyRestoreSection.codeFieldKey), findsNothing);
-    await tester.tap(
-      find.byKey(HouseholdKeyRestoreSection.createCodeButtonKey),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(HouseholdKeyRestoreSection.createdCodeKey),
-      findsOneWidget,
-    );
-    expect(
-      find.text(RecoveryKey.parse(_restoreCode).formatted),
-      findsOneWidget,
-    );
-  });
-
-  testWidgets('a member without a restore request sees no restore section', (
-    tester,
-  ) async {
-    final user = buildUser(uid: 'guest-1', isAnonymous: false);
-    const host = UserProfile(uid: 'host-1', displayName: 'Host');
-    const guest = UserProfile(
-      uid: 'guest-1',
-      householdId: 'host-1',
-      displayName: 'Guest',
-    );
-
-    await tester.pumpWidget(
-      buildApp(user: user, profile: guest, members: [host, guest]),
-    );
-    await tester.pumpAndSettle();
-
-    expect(
-      find.byKey(HouseholdKeyRestoreSection.createCodeButtonKey),
-      findsNothing,
-    );
   });
 }

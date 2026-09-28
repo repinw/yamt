@@ -6,14 +6,18 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/plaintext_document_encryption.dart';
+import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/secure_storage_provider.dart';
+import 'package:yamt/features/household/domain/household_exceptions.dart';
 
 part 'household_key_repository.g.dart';
 
-const _usersCollection = 'users';
-const _householdKeysCollection = 'household_keys';
+const _householdsCollection = 'households';
+const _keysCollection = 'keys';
+const _keyRestoresCollection = 'key_restores';
 const _wrappedKeyField = 'wrapped_key';
+const _restoreWrappedKeyField = 'wrapped_household_key';
 const _keyJsonField = 'key';
 const _migratedFlagValue = 'true';
 
@@ -44,11 +48,16 @@ const householdEncryptedCollections = <String, List<String>>{
   'inventory_activity_events': inventoryActivityEventPlaintextFields,
 };
 
-/// Storage folders under `users/{uid}` that hold household images.
+/// Storage folders under `households/{householdId}` that hold household
+/// images.
 const householdImageFolders = <String>['kitchen_utensils', 'recipes'];
 
-/// Stores the household key of a data owner, wrapped separately for every
-/// member with that member's own data key.
+/// Stores the household key, wrapped separately for every member with that
+/// member's own data key, and hands it back to a member who lost it.
+///
+/// A member who started fresh asks for the key with a restore request.
+/// Another member answers with an unlock code: the household key wrapped with
+/// a one-time secret that only the code carries.
 class HouseholdKeyRepository {
   /// Creates the repository.
   const new({required this._firestore, required this._storage});
@@ -56,16 +65,46 @@ class HouseholdKeyRepository {
   final FirebaseFirestore _firestore;
   final FlutterSecureStorage _storage;
 
-  /// Loads the household key of [ownerUid] for [memberUid], opened with the
-  /// member's [dataCipher]. Returns `null` when the member has no entry.
+  /// The key entry of [memberUid] in [householdId].
+  DocumentReference<Map<String, dynamic>> keyDocument(
+    String householdId,
+    String memberUid,
+  ) {
+    return _household(householdId).collection(_keysCollection).doc(memberUid);
+  }
+
+  /// The restore request of [memberUid] in [householdId].
+  DocumentReference<Map<String, dynamic>> restoreDocument(
+    String householdId,
+    String memberUid,
+  ) {
+    return _household(householdId)
+        .collection(_keyRestoresCollection)
+        .doc(memberUid);
+  }
+
+  /// The stored form of [householdKey] for the key entry [reference], wrapped
+  /// with the member's [dataCipher].
+  Future<Map<String, dynamic>> wrapKey(
+    DocumentReference<Map<String, dynamic>> reference,
+    SecretKey householdKey,
+    PayloadCipher dataCipher,
+  ) async {
+    final wrapped = await dataCipher.encryptJson(<String, dynamic>{
+      _keyJsonField: base64Encode(await householdKey.extractBytes()),
+    }, aad: reference.path);
+    return <String, dynamic>{_wrappedKeyField: wrapped};
+  }
+
+  /// Loads the household key of [householdId] for [memberUid], opened with
+  /// the member's [dataCipher]. Returns `null` when the member has no entry.
   Future<SecretKey?> loadKey({
-    required String ownerUid,
+    required String householdId,
     required String memberUid,
     required PayloadCipher dataCipher,
   }) async {
-    final reference = _keyDocument(ownerUid, memberUid);
-    final snapshot = await reference.get();
-    final wrapped = snapshot.data()?[_wrappedKeyField];
+    final reference = keyDocument(householdId, memberUid);
+    final wrapped = (await reference.get()).data()?[_wrappedKeyField];
     if (wrapped is! String) {
       return null;
     }
@@ -73,21 +112,17 @@ class HouseholdKeyRepository {
     return SecretKey(base64Decode(json[_keyJsonField] as String));
   }
 
-  /// Saves [householdKey] for [memberUid], wrapped with the member's
-  /// [dataCipher]. With [onlyIfMissing], an existing entry wins and `false`
-  /// is returned.
+  /// Saves [householdKey] for [memberUid]. With [onlyIfMissing], an existing
+  /// entry wins and `false` is returned.
   Future<bool> saveKey({
-    required String ownerUid,
+    required String householdId,
     required String memberUid,
     required SecretKey householdKey,
     required PayloadCipher dataCipher,
     bool onlyIfMissing = false,
   }) async {
-    final reference = _keyDocument(ownerUid, memberUid);
-    final wrapped = await dataCipher.encryptJson(<String, dynamic>{
-      _keyJsonField: base64Encode(await householdKey.extractBytes()),
-    }, aad: reference.path);
-    final data = <String, dynamic>{_wrappedKeyField: wrapped};
+    final reference = keyDocument(householdId, memberUid);
+    final data = await wrapKey(reference, householdKey, dataCipher);
     if (!onlyIfMissing) {
       await reference.set(data);
       return true;
@@ -102,26 +137,97 @@ class HouseholdKeyRepository {
     });
   }
 
-  /// Deletes the key entry of [memberUid] in the household of [ownerUid].
+  /// Deletes the key entry of [memberUid] in [householdId].
   Future<void> deleteKey({
-    required String ownerUid,
+    required String householdId,
     required String memberUid,
   }) {
-    return _keyDocument(ownerUid, memberUid).delete();
+    return keyDocument(householdId, memberUid).delete();
   }
 
-  /// Whether this device already encrypted the plaintext household data of
-  /// [ownerUid].
-  Future<bool> loadPlaintextMigrated(String ownerUid) async {
-    return await _storage.read(key: _migratedName(ownerUid)) ==
+  /// Asks the other members of [householdId] to hand the key back to
+  /// [memberUid].
+  Future<void> requestKeyRestore({
+    required String householdId,
+    required String memberUid,
+  }) {
+    return restoreDocument(householdId, memberUid).set(<String, dynamic>{});
+  }
+
+  /// Whether [memberUid] waits for the key of [householdId].
+  Future<bool> loadKeyRestoreRequested({
+    required String householdId,
+    required String memberUid,
+  }) async {
+    return (await restoreDocument(householdId, memberUid).get()).exists;
+  }
+
+  /// Watches the members of [householdId] who wait for the key.
+  Stream<List<String>> watchKeyRestoreRequests(String householdId) {
+    return _household(householdId)
+        .collection(_keyRestoresCollection)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((document) => document.id)
+              .toList(growable: false),
+        );
+  }
+
+  /// Wraps [householdKey] for [memberUid] and returns the code that opens it.
+  Future<RecoveryKey> saveRestoreCode({
+    required String householdId,
+    required String memberUid,
+    required SecretKey householdKey,
+  }) async {
+    final reference = restoreDocument(householdId, memberUid);
+    final code = RecoveryKey.generate();
+    final wrapped = await code.wrapDataKey(householdKey, uid: reference.path);
+    await reference.set(<String, dynamic>{_restoreWrappedKeyField: wrapped});
+    return code;
+  }
+
+  /// Opens the household key that a member left for [memberUid] with [code].
+  ///
+  /// Throws [InvalidHouseholdRestoreCodeException] if no member left a key or
+  /// [code] does not open it.
+  Future<SecretKey> loadRestoredKey({
+    required String householdId,
+    required String memberUid,
+    required RecoveryKey code,
+  }) async {
+    final reference = restoreDocument(householdId, memberUid);
+    final wrapped = (await reference.get()).data()?[_restoreWrappedKeyField];
+    if (wrapped is! String) {
+      throw const InvalidHouseholdRestoreCodeException();
+    }
+    try {
+      return await code.unwrapDataKey(wrapped, uid: reference.path);
+    } on SecretBoxAuthenticationError {
+      throw const InvalidHouseholdRestoreCodeException();
+    }
+  }
+
+  /// Deletes the restore request of [memberUid] in [householdId].
+  Future<void> deleteKeyRestore({
+    required String householdId,
+    required String memberUid,
+  }) {
+    return restoreDocument(householdId, memberUid).delete();
+  }
+
+  /// Whether this device already encrypted the plaintext data of
+  /// [householdId].
+  Future<bool> loadPlaintextMigrated(String householdId) async {
+    return await _storage.read(key: _migratedName(householdId)) ==
         _migratedFlagValue;
   }
 
-  /// Encrypts the plaintext household data of [ownerUid] once.
+  /// Encrypts the plaintext data of [householdId] once.
   ///
   /// Temporary: remove once all accounts are migrated.
   Future<void> encryptPlaintextHouseholdData(
-    String ownerUid,
+    String householdId,
     PayloadCipher householdCipher,
   ) async {
     await encryptPlaintextDocuments(
@@ -130,31 +236,25 @@ class HouseholdKeyRepository {
       collections: <EncryptedCollection>[
         for (final entry in householdEncryptedCollections.entries)
           EncryptedCollection(
-            '$_usersCollection/$ownerUid/${entry.key}',
+            '$_householdsCollection/$householdId/${entry.key}',
             plaintextFields: entry.value,
           ),
       ],
       fields: const <EncryptedDocumentField>[],
     );
     await _storage.write(
-      key: _migratedName(ownerUid),
+      key: _migratedName(householdId),
       value: _migratedFlagValue,
     );
   }
 
-  DocumentReference<Map<String, dynamic>> _keyDocument(
-    String ownerUid,
-    String memberUid,
-  ) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(ownerUid)
-        .collection(_householdKeysCollection)
-        .doc(memberUid);
+  DocumentReference<Map<String, dynamic>> _household(String householdId) {
+    return _firestore.collection(_householdsCollection).doc(householdId);
   }
 }
 
-String _migratedName(String ownerUid) => 'household_data_encrypted_$ownerUid';
+String _migratedName(String householdId) =>
+    'household_data_encrypted_$householdId';
 
 /// Household key repository, or `null` while Firestore is unavailable.
 @riverpod

@@ -1474,45 +1474,48 @@
   "accountPageUserId": "Benutzer-ID",
   "accountPageNotSet": "Nicht gesetzt",
   "householdTitle": "Haushalt",
-  "householdJoinTitle": "Haushalt beitreten",
   "householdJoinLinkLabel": "Einladungslink",
   "householdJoinLinkHint": "Link einfügen oder QR-Code scannen",
   "householdJoinAction": "Beitreten",
   "householdJoinSuccess": "Haushalt beigetreten.",
   "householdJoinInvalidCode": "Ungültige Einladung.",
   "householdJoinExpiredCode": "Diese Einladung ist abgelaufen.",
-  "householdJoinOwnCode": "Du kannst deinem eigenen Haushalt nicht beitreten.",
+  "householdJoinOwnCode": "Du bist schon in diesem Haushalt.",
   "householdJoinNameDialogTitle": "Name angeben",
   "householdJoinNameDialogMessage": "Bitte gib deinen Namen ein, damit andere Haushaltsmitglieder dich erkennen können.",
   "householdJoinNameDialogFieldLabel": "Dein Name",
   "householdJoinNameDialogRequiredError": "Bitte gib einen Namen ein.",
   "householdJoinNameDialogAction": "Speichern & Beitreten",
-  "householdInviteTitle": "Mitglieder einladen",
-  "householdInviteCreate": "Einladung erstellen",
+  "householdInviteCreate": "Mitglieder einladen",
   "householdInviteValidFor": "Einladung 24 Stunden gültig",
   "householdInviteCopyLink": "Link kopieren",
   "householdInviteLinkCopied": "Link kopiert.",
   "householdInviteRefresh": "Neue Einladung erstellen",
-  "householdInviteVerificationRequired": "Verknüpfe dein Konto erst mit Google oder E-Mail, bevor du einen Haushalt leitest.",
+  "householdInviteVerificationRequired": "Verknüpfe dein Konto erst mit Google oder E-Mail, bevor du Leute einlädst.",
   "householdJoinScanQr": "QR-Code scannen",
-  "householdRejoinRequired": "Bitte tritt dem Haushalt erneut per QR-Code bei, damit du die gemeinsamen Daten lesen kannst.",
   "householdKeyUnavailable": "Dein Schlüssel wird noch geladen. Versuche es gleich noch einmal.",
-  "householdKeyRestoreHostMessage": "Du hast neu gestartet, darum ist dein Vorrat gesperrt. Ein Mitglied deines Haushalts kann ihn freigeben: Lass dir einen Freigabe-Code geben und gib ihn hier ein.",
-  "householdKeyRestoreMemberMessage": "Die Person, der dieser Haushalt gehört, hat neu gestartet und kann den gemeinsamen Vorrat nicht mehr lesen. Erstelle einen Freigabe-Code und gib ihn ihr.",
+  "householdKeyRestoreMemberMessage": "{name} hat neu gestartet und kann den gemeinsamen Vorrat nicht mehr lesen. Erstelle einen Freigabe-Code und gib ihn weiter.",
+  "@householdKeyRestoreMemberMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "householdKeyRestoreCodeLabel": "Freigabe-Code",
   "householdKeyRestoreAction": "Vorrat freigeben",
   "householdKeyRestoreSuccess": "Vorrat freigegeben.",
   "householdKeyRestoreInvalidCode": "Dieser Freigabe-Code passt nicht.",
   "householdKeyRestoreCreateAction": "Freigabe-Code erstellen",
-  "householdKeyRestoreCodeHint": "Gib diesen Code der Person, der der Haushalt gehört. Er gilt, bis sie ihn benutzt oder du einen neuen erstellst.",
+  "householdKeyRestoreCodeHint": "Gib diesen Code an {name} weiter. Er gilt, bis er benutzt wird oder du einen neuen erstellst.",
+  "@householdKeyRestoreCodeHint": {
+    "placeholders": {
+      "name": {}
+    }
+  },
   "householdKeyRestoreCopyAction": "Code kopieren",
   "householdKeyRestoreCopied": "Code kopiert.",
   "householdHostVerificationHint": "Um andere Personen in deinen Haushalt einzuladen, verknüpfe dein Gastkonto mit Google oder E-Mail & Passwort.",
-  "householdMembersTitle": "Mitglieder",
-  "householdLeaderBadge": "Leitung",
-  "householdYouBadge": "Du",
   "householdRemoveMemberTitle": "Mitglied entfernen?",
-  "householdRemoveMemberMessage": "{name} aus diesem Haushalt entfernen?",
+  "householdRemoveMemberMessage": "{name} aus diesem Haushalt entfernen? Die gemeinsamen Sachen bleiben hier.",
   "@householdRemoveMemberMessage": {
     "placeholders": {
       "name": {}
@@ -1520,13 +1523,48 @@
   },
   "householdRemoveMemberAction": "Entfernen",
   "householdRemoveMemberSuccess": "Mitglied entfernt.",
-  "householdRemoveMemberFailed": "Dieses Mitglied kann nicht entfernt werden.",
   "householdLeaveTitle": "Haushalt verlassen?",
-  "householdLeaveMessage": "Du verlierst den Zugriff auf den geteilten Haushalt, bis du erneut beitrittst.",
+  "householdLeaveMessage": "Du wechselst zurück in deinen eigenen Haushalt. Die gemeinsamen Sachen bleiben hier.",
   "householdLeaveAction": "Haushalt verlassen",
   "householdLeaveSuccess": "Haushalt verlassen.",
-  "householdLeaderOnly": "Das kann nur die Haushaltsleitung tun.",
   "householdActionFailed": "Haushaltsaktion fehlgeschlagen. Bitte versuche es erneut.",
+  "householdKeyRestoreSelfMessage": "Du hast neu gestartet, darum ist der Vorrat dieses Haushalts gesperrt. Lass dir von einem anderen Mitglied einen Freigabe-Code geben und gib ihn hier ein.",
+  "householdAdminBadge": "Admin",
+  "householdMemberSelf": "{name} (du)",
+  "@householdMemberSelf": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "householdMemberNoName": "Ohne Namen",
+  "householdMemberActions": "Mitglied verwalten",
+  "householdMakeAdminAction": "Zum Admin machen",
+  "householdMakeAdminTitle": "{name} zum Admin machen?",
+  "@householdMakeAdminTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "householdMakeAdminMessage": "{name} lädt dann Mitglieder ein und entfernt sie. Du bleibst als Mitglied im Haushalt.",
+  "@householdMakeAdminMessage": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "householdMakeAdminSuccess": "{name} ist jetzt Admin.",
+  "@householdMakeAdminSuccess": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "householdMemberNotFound": "Diese Person ist nicht mehr im Haushalt.",
+  "householdAdminOnly": "Das kann nur der Admin.",
+  "householdJoinLeaveFirst": "Verlasse erst deinen geteilten Haushalt, bevor du einem anderen beitrittst.",
+  "householdLeaveOwnMessage": "Du bekommst einen neuen, leeren Haushalt. Die anderen behalten alles hier.",
+  "householdLeaveSuccessorLabel": "Wer leitet den Haushalt nach dir?",
+  "householdDeleteTitle": "Haushalt löschen?",
+  "householdDeleteMessage": "Du bist das letzte Mitglied. Wenn du gehst, wird dieser Haushalt mit allen Sachen gelöscht.",
+  "householdDeleteAction": "Verlassen und löschen",
   "settingsAboutTitle": "Über die App",
   "settingsAboutSubtitle": "App-Version und Informationen",
   "settingsHomeWidgetVerboseModeTitle": "Ausführliches Homescreen-Widget",

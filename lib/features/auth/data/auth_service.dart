@@ -33,51 +33,39 @@ Stream<UserProfile?> userProfile(Ref ref) {
   }
 
   final document = firestore.collection(_usersCollection).doc(user.uid);
-  UserProfile? lastCommittedProfile;
-  // Metadata changes report the moment the server commits a pending write.
-  return document.snapshots(includeMetadataChanges: true).asyncMap((
-    snapshot,
-  ) async {
-    final profile = await _syncUserProfile(document, snapshot, user);
-    final hasPendingWrites = snapshot.metadata.hasPendingWrites;
-    final visibleProfile = withCommittedHouseholdId(
-      profile,
-      hasPendingWrites: hasPendingWrites,
-      lastCommittedProfile: lastCommittedProfile,
-    );
-    if (!hasPendingWrites) {
-      lastCommittedProfile = profile;
-    }
-    return visibleProfile;
-  });
+  return document.snapshots().asyncMap(
+    (snapshot) => _syncUserProfile(document, snapshot, user),
+  );
 }
 
+/// Keeps the account fields of the profile in line with [user].
+///
+/// Writes only the fields that the account owns. The household fields belong
+/// to the household feature, which switches them in transactions.
 Future<UserProfile> _syncUserProfile(
   DocumentReference<Map<String, dynamic>> document,
   DocumentSnapshot<Map<String, dynamic>> snapshot,
   User user,
 ) async {
-  final syncedProfile = UserProfile(
-    uid: user.uid,
-    householdId: householdIdFromUserProfileSnapshot(snapshot),
-    email: normalizeOptionalUserProfileValue(user.email),
-    displayName: normalizeOptionalUserProfileValue(user.displayName),
-    isAnonymous: user.isAnonymous,
-  );
-
-  if (!snapshot.exists) {
-    await document.set(syncedProfile.toJson(), SetOptions(merge: true));
-    return syncedProfile;
-  }
-
   final storedProfile = decodeUserProfileDocument(
     snapshot.data() ?? const <String, dynamic>{},
     snapshot.id,
   );
-  if (storedProfile == syncedProfile) {
+  final syncedProfile = storedProfile.copyWith(
+    uid: user.uid,
+    email: normalizeOptionalUserProfileValue(user.email),
+    displayName: normalizeOptionalUserProfileValue(user.displayName),
+    isAnonymous: user.isAnonymous,
+  );
+  if (snapshot.exists && storedProfile == syncedProfile) {
     return storedProfile;
   }
 
-  await document.set(syncedProfile.toJson(), SetOptions(merge: true));
+  await document.set(<String, dynamic>{
+    'uid': syncedProfile.uid,
+    'email': syncedProfile.email,
+    'displayName': syncedProfile.displayName,
+    'isAnonymous': syncedProfile.isAnonymous,
+  }, SetOptions(merge: true));
   return syncedProfile;
 }

@@ -1,7 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/auth/domain/user_profile.dart';
 
 /// Normalize household scope value.
 String? normalizeHouseholdScopeValue(String? value) {
@@ -10,64 +8,6 @@ String? normalizeHouseholdScopeValue(String? value) {
     return null;
   }
   return normalized;
-}
-
-/// Household root id for profile.
-String? householdRootIdForProfile(UserProfile? profile) {
-  if (profile == null) {
-    return null;
-  }
-
-  return normalizeHouseholdScopeValue(profile.householdId) ??
-      normalizeHouseholdScopeValue(profile.uid);
-}
-
-/// Should recover from household permission denied.
-bool shouldRecoverFromHouseholdPermissionDenied({
-  required Object error,
-  required bool isRecoveringHouseholdAccess,
-  required String? currentUserId,
-  required String? actualDataOwnerUserId,
-  required String? effectiveDataOwnerUserId,
-  required String? profileHouseholdId,
-}) {
-  if (isRecoveringHouseholdAccess ||
-      error is! FirebaseException ||
-      error.code != 'permission-denied') {
-    return false;
-  }
-
-  final normalizedCurrentUserId = normalizeHouseholdScopeValue(currentUserId);
-  final normalizedActualDataOwnerUserId = normalizeHouseholdScopeValue(
-    actualDataOwnerUserId,
-  );
-  final normalizedEffectiveDataOwnerUserId = normalizeHouseholdScopeValue(
-    effectiveDataOwnerUserId,
-  );
-  final normalizedProfileHouseholdId = normalizeHouseholdScopeValue(
-    profileHouseholdId,
-  );
-  if (normalizedCurrentUserId == null) {
-    return normalizedProfileHouseholdId != null;
-  }
-
-  return normalizedEffectiveDataOwnerUserId != normalizedCurrentUserId ||
-      normalizedActualDataOwnerUserId != normalizedCurrentUserId ||
-      normalizedProfileHouseholdId != null;
-}
-
-/// Has watched household root changed.
-bool hasWatchedHouseholdRootChanged({
-  required String watchedHouseholdRootId,
-  required UserProfile? latestProfile,
-}) {
-  final normalizedWatchedHouseholdRootId = normalizeHouseholdScopeValue(
-    watchedHouseholdRootId,
-  );
-  final latestHouseholdRootId = householdRootIdForProfile(latestProfile);
-  return normalizedWatchedHouseholdRootId != null &&
-      latestHouseholdRootId != null &&
-      latestHouseholdRootId != normalizedWatchedHouseholdRootId;
 }
 
 /// Signed in household recovery user id.

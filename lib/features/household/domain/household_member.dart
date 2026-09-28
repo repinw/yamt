@@ -1,8 +1,14 @@
-import 'package:meta/meta.dart';
+import 'package:collection/collection.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:yamt/core/domain/date_time_json_converter.dart';
+
+part 'household_member.freezed.dart';
+part 'household_member.g.dart';
 
 /// Role of a member in a household.
 enum HouseholdRole {
-  /// Invites and removes members and hands the lead on.
+  /// Invites and removes members and hands the lead on. A household has
+  /// exactly one admin.
   admin,
 
   /// Uses the shared data.
@@ -10,44 +16,40 @@ enum HouseholdRole {
 }
 
 /// A member of a household.
-@immutable
-class HouseholdMember {
+///
+/// The member document holds [uid], [role] and [joinedAt]. The name and the
+/// e-mail address come from the user profile.
+@freezed
+abstract class HouseholdMember with _$HouseholdMember {
   /// Creates a member.
-  const new({
-    required this.uid,
-    required this.role,
-    required this.joinedAt,
-    this.displayName,
-    this.email,
-  });
+  const factory({
+    required String uid,
+    required HouseholdRole role,
+    @JsonKey(name: 'joined_at')
+    @DateTimeJsonConverter()
+    required DateTime joinedAt,
+    @JsonKey(includeFromJson: false, includeToJson: false) String? displayName,
+    @JsonKey(includeFromJson: false, includeToJson: false) String? email,
+  }) = _HouseholdMember;
 
-  /// The user id.
-  final String uid;
+  const new _();
 
-  /// The role in the household.
-  final HouseholdRole role;
+  /// Reads a member document.
+  factory fromJson(Map<String, dynamic> json) =>
+      _$HouseholdMemberFromJson(json);
 
-  /// When the user joined. The longest member takes over as admin.
-  final DateTime joinedAt;
-
-  /// The display name, if the user set one.
-  final String? displayName;
-
-  /// The e-mail address, if the account has one.
-  final String? email;
-
-  /// Whether the member is an admin.
+  /// Whether the member is the admin.
   bool get isAdmin => role == HouseholdRole.admin;
+}
 
-  @override
-  bool operator ==(Object other) =>
-      other is HouseholdMember &&
-      other.uid == uid &&
-      other.role == role &&
-      other.joinedAt == joinedAt &&
-      other.displayName == displayName &&
-      other.email == email;
-
-  @override
-  int get hashCode => Object.hash(uid, role, joinedAt, displayName, email);
+/// The member who takes over the lead when [leavingUid] leaves: the one who
+/// joined first. `null` when nobody else is left.
+HouseholdMember? proposeSuccessor(
+  List<HouseholdMember> members,
+  String leavingUid,
+) {
+  return members
+      .where((member) => member.uid != leavingUid)
+      .sortedBy((member) => member.joinedAt)
+      .firstOrNull;
 }

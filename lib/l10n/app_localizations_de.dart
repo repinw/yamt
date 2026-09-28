@@ -3322,9 +3322,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdTitle => 'Haushalt';
 
   @override
-  String get householdJoinTitle => 'Haushalt beitreten';
-
-  @override
   String get householdJoinLinkLabel => 'Einladungslink';
 
   @override
@@ -3343,8 +3340,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdJoinExpiredCode => 'Diese Einladung ist abgelaufen.';
 
   @override
-  String get householdJoinOwnCode =>
-      'Du kannst deinem eigenen Haushalt nicht beitreten.';
+  String get householdJoinOwnCode => 'Du bist schon in diesem Haushalt.';
 
   @override
   String get householdJoinNameDialogTitle => 'Name angeben';
@@ -3364,10 +3360,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdJoinNameDialogAction => 'Speichern & Beitreten';
 
   @override
-  String get householdInviteTitle => 'Mitglieder einladen';
-
-  @override
-  String get householdInviteCreate => 'Einladung erstellen';
+  String get householdInviteCreate => 'Mitglieder einladen';
 
   @override
   String get householdInviteValidFor => 'Einladung 24 Stunden gültig';
@@ -3383,26 +3376,19 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get householdInviteVerificationRequired =>
-      'Verknüpfe dein Konto erst mit Google oder E-Mail, bevor du einen Haushalt leitest.';
+      'Verknüpfe dein Konto erst mit Google oder E-Mail, bevor du Leute einlädst.';
 
   @override
   String get householdJoinScanQr => 'QR-Code scannen';
-
-  @override
-  String get householdRejoinRequired =>
-      'Bitte tritt dem Haushalt erneut per QR-Code bei, damit du die gemeinsamen Daten lesen kannst.';
 
   @override
   String get householdKeyUnavailable =>
       'Dein Schlüssel wird noch geladen. Versuche es gleich noch einmal.';
 
   @override
-  String get householdKeyRestoreHostMessage =>
-      'Du hast neu gestartet, darum ist dein Vorrat gesperrt. Ein Mitglied deines Haushalts kann ihn freigeben: Lass dir einen Freigabe-Code geben und gib ihn hier ein.';
-
-  @override
-  String get householdKeyRestoreMemberMessage =>
-      'Die Person, der dieser Haushalt gehört, hat neu gestartet und kann den gemeinsamen Vorrat nicht mehr lesen. Erstelle einen Freigabe-Code und gib ihn ihr.';
+  String householdKeyRestoreMemberMessage(Object name) {
+    return '$name hat neu gestartet und kann den gemeinsamen Vorrat nicht mehr lesen. Erstelle einen Freigabe-Code und gib ihn weiter.';
+  }
 
   @override
   String get householdKeyRestoreCodeLabel => 'Freigabe-Code';
@@ -3421,8 +3407,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdKeyRestoreCreateAction => 'Freigabe-Code erstellen';
 
   @override
-  String get householdKeyRestoreCodeHint =>
-      'Gib diesen Code der Person, der der Haushalt gehört. Er gilt, bis sie ihn benutzt oder du einen neuen erstellst.';
+  String householdKeyRestoreCodeHint(Object name) {
+    return 'Gib diesen Code an $name weiter. Er gilt, bis er benutzt wird oder du einen neuen erstellst.';
+  }
 
   @override
   String get householdKeyRestoreCopyAction => 'Code kopieren';
@@ -3435,20 +3422,11 @@ class AppLocalizationsDe extends AppLocalizations {
       'Um andere Personen in deinen Haushalt einzuladen, verknüpfe dein Gastkonto mit Google oder E-Mail & Passwort.';
 
   @override
-  String get householdMembersTitle => 'Mitglieder';
-
-  @override
-  String get householdLeaderBadge => 'Leitung';
-
-  @override
-  String get householdYouBadge => 'Du';
-
-  @override
   String get householdRemoveMemberTitle => 'Mitglied entfernen?';
 
   @override
   String householdRemoveMemberMessage(Object name) {
-    return '$name aus diesem Haushalt entfernen?';
+    return '$name aus diesem Haushalt entfernen? Die gemeinsamen Sachen bleiben hier.';
   }
 
   @override
@@ -3458,15 +3436,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdRemoveMemberSuccess => 'Mitglied entfernt.';
 
   @override
-  String get householdRemoveMemberFailed =>
-      'Dieses Mitglied kann nicht entfernt werden.';
-
-  @override
   String get householdLeaveTitle => 'Haushalt verlassen?';
 
   @override
   String get householdLeaveMessage =>
-      'Du verlierst den Zugriff auf den geteilten Haushalt, bis du erneut beitrittst.';
+      'Du wechselst zurück in deinen eigenen Haushalt. Die gemeinsamen Sachen bleiben hier.';
 
   @override
   String get householdLeaveAction => 'Haushalt verlassen';
@@ -3475,11 +3449,73 @@ class AppLocalizationsDe extends AppLocalizations {
   String get householdLeaveSuccess => 'Haushalt verlassen.';
 
   @override
-  String get householdLeaderOnly => 'Das kann nur die Haushaltsleitung tun.';
-
-  @override
   String get householdActionFailed =>
       'Haushaltsaktion fehlgeschlagen. Bitte versuche es erneut.';
+
+  @override
+  String get householdKeyRestoreSelfMessage =>
+      'Du hast neu gestartet, darum ist der Vorrat dieses Haushalts gesperrt. Lass dir von einem anderen Mitglied einen Freigabe-Code geben und gib ihn hier ein.';
+
+  @override
+  String get householdAdminBadge => 'Admin';
+
+  @override
+  String householdMemberSelf(Object name) {
+    return '$name (du)';
+  }
+
+  @override
+  String get householdMemberNoName => 'Ohne Namen';
+
+  @override
+  String get householdMemberActions => 'Mitglied verwalten';
+
+  @override
+  String get householdMakeAdminAction => 'Zum Admin machen';
+
+  @override
+  String householdMakeAdminTitle(Object name) {
+    return '$name zum Admin machen?';
+  }
+
+  @override
+  String householdMakeAdminMessage(Object name) {
+    return '$name lädt dann Mitglieder ein und entfernt sie. Du bleibst als Mitglied im Haushalt.';
+  }
+
+  @override
+  String householdMakeAdminSuccess(Object name) {
+    return '$name ist jetzt Admin.';
+  }
+
+  @override
+  String get householdMemberNotFound =>
+      'Diese Person ist nicht mehr im Haushalt.';
+
+  @override
+  String get householdAdminOnly => 'Das kann nur der Admin.';
+
+  @override
+  String get householdJoinLeaveFirst =>
+      'Verlasse erst deinen geteilten Haushalt, bevor du einem anderen beitrittst.';
+
+  @override
+  String get householdLeaveOwnMessage =>
+      'Du bekommst einen neuen, leeren Haushalt. Die anderen behalten alles hier.';
+
+  @override
+  String get householdLeaveSuccessorLabel =>
+      'Wer leitet den Haushalt nach dir?';
+
+  @override
+  String get householdDeleteTitle => 'Haushalt löschen?';
+
+  @override
+  String get householdDeleteMessage =>
+      'Du bist das letzte Mitglied. Wenn du gehst, wird dieser Haushalt mit allen Sachen gelöscht.';
+
+  @override
+  String get householdDeleteAction => 'Verlassen und löschen';
 
   @override
   String get settingsAboutTitle => 'Über die App';
