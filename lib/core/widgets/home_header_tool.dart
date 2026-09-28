@@ -14,6 +14,7 @@ class HomeHeaderTool extends StatelessWidget {
     required this.symbol,
     required this.label,
     required this.onPressed,
+    this.color,
     super.key,
   });
 
@@ -26,13 +27,17 @@ class HomeHeaderTool extends StatelessWidget {
   /// Called on tap. The tool is disabled when this is `null`.
   final VoidCallback? onPressed;
 
+  /// Color of the symbol and the word; the surface's text color when null.
+  final Color? color;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    final content = color ?? colors.onSurface;
     final foreground = onPressed == null
-        ? colors.onSurface.withValues(alpha: AppOpacities.disabledContent)
-        : colors.onSurface;
+        ? content.withValues(alpha: AppOpacities.disabledContent)
+        : content;
 
     // The word is the label; the tap action is set here because the ink
     // well's own semantics are excluded with the visual content.

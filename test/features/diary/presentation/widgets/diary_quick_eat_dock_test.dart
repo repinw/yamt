@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/theme/app_theme.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_entry_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
@@ -57,6 +58,40 @@ void main() {
             .width,
     };
     expect(widths, hasLength(1));
+  });
+
+  testWidgets('orders the tools and puts the barcode on the lime accent', (
+    tester,
+  ) async {
+    await pumpDock(tester, theme: AppTheme.dark());
+
+    double leftOf(DiaryQuickEatSource source) => tester
+        .getTopLeft(find.byKey(DiaryMealsSectionKeys.quickEatSource(source)))
+        .dx;
+    final sources = [...DiaryQuickEatSource.values]
+      ..sort((a, b) => leftOf(a).compareTo(leftOf(b)));
+    expect(sources, [
+      DiaryQuickEatSource.inventory,
+      DiaryQuickEatSource.quickEntry,
+      DiaryQuickEatSource.ai,
+      DiaryQuickEatSource.manualSearch,
+      DiaryQuickEatSource.barcode,
+    ]);
+
+    Color? surfaceOf(DiaryQuickEatSource source) => tester
+        .widget<Material>(
+          find
+              .descendant(
+                of: find.byKey(DiaryMealsSectionKeys.quickEatSource(source)),
+                matching: find.byType(Material),
+              )
+              .first,
+        )
+        .color;
+    final context = tester.element(find.byType(DiaryQuickEatDock));
+    final accent = FoodLabelColors.of(context).accent;
+    expect(surfaceOf(DiaryQuickEatSource.barcode), accent);
+    expect(surfaceOf(DiaryQuickEatSource.quickEntry), isNot(accent));
   });
 
   testWidgets('the quick tool opens the quick entry page', (tester) async {

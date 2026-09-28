@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/barcode_icon.dart';
 import 'package:yamt/core/widgets/home_dock_tool.dart';
 import 'package:yamt/core/widgets/home_more_sheet.dart';
 import 'package:yamt/features/home/widgets/inventory_action_sheet_flow.dart';
@@ -14,8 +15,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 const double inventoryDockHeight = AppSpacing.md * 2 + AppSizes.headerTool;
 
 /// Add actions docked at the bottom of the Vorrat tab: the lime "Hinzufügen"
-/// with the less frequent ways to add, and tonal tools for the barcode and
-/// the receipt.
+/// with the less frequent ways to add, and tonal tools for the receipt and
+/// the barcode.
 class InventoryDock extends ConsumerWidget {
   /// Creates the dock.
   const new({super.key});
@@ -73,8 +74,14 @@ class InventoryDock extends ConsumerWidget {
               ),
             ),
             HomeDockTool(
+              key: receiptKey,
+              symbol: const Icon(Icons.receipt_long_rounded),
+              label: l10n.inventoryDockReceiptTool,
+              onPressed: () => _openReceipt(context, ref, l10n),
+            ),
+            HomeDockTool(
               key: barcodeKey,
-              symbol: const Icon(Icons.qr_code_scanner_rounded),
+              symbol: const BarcodeIcon(),
               label: l10n.diaryQuickEatSourceBarcode,
               onPressed: () => unawaited(
                 InventoryActionSheetFlow.openBarcodeScanner(
@@ -82,12 +89,6 @@ class InventoryDock extends ConsumerWidget {
                   l10n: l10n,
                 ),
               ),
-            ),
-            HomeDockTool(
-              key: receiptKey,
-              symbol: const Icon(Icons.receipt_long_rounded),
-              label: l10n.inventoryDockReceiptTool,
-              onPressed: () => _openReceipt(context, ref, l10n),
             ),
           ],
         ),

@@ -11,6 +11,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/core/widgets/barcode_icon.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/core/widgets/home_header_tool.dart';
@@ -1474,6 +1475,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(InventoryDock), findsOneWidget);
+    expect(
+      tester.getTopLeft(find.byKey(InventoryDock.receiptKey)).dx,
+      lessThan(tester.getTopLeft(find.byKey(InventoryDock.barcodeKey)).dx),
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(InventoryDock.barcodeKey),
+        matching: find.byType(BarcodeIcon),
+      ),
+      findsOneWidget,
+    );
     expect(find.byType(HomeContextFab), findsNothing);
     final scaffoldFinder = find.ancestor(
       of: find.byType(InventoryDock),
