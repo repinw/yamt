@@ -10,6 +10,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/provider/'
     'calorie_goal_calculator_form_controller.dart';
@@ -21,8 +22,6 @@ import 'package:yamt/features/onboarding/presentation/models/'
     'calorie_intro_page.dart';
 import 'package:yamt/features/onboarding/presentation/models/'
     'intro_chapter_accent.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/intro/'
-    'calorie_intro_finish_handler.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/'
     'calorie_intro_pages.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
@@ -113,11 +112,30 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
   }
 
   Future<void> _handleFinish() async {
-    await CalorieIntroFinishHandler(introController: _introController).finish(
-      context: context,
-      formState: ref.read(_formProvider),
-      isMounted: () => mounted,
-    );
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    final formState = ref.read(_formProvider);
+    final profile = formState.profile;
+    final finished =
+        profile != null &&
+        formState.calculation != null &&
+        await _introController.finish(profile);
+    if (!mounted) {
+      return;
+    }
+    if (!finished) {
+      messenger.showAppSnackBar(
+        l10n.caloriesCalculatorSaveFailed,
+        tone: AppSnackBarTone.error,
+      );
+      return;
+    }
+    if (router.canPop()) {
+      router.pop();
+    } else {
+      router.go(AppRoutes.homeDiary);
+    }
   }
 
   @override

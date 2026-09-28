@@ -145,13 +145,12 @@ Contains the page, the intro flow, and its pages:
   `intro_weight_range.dart` (bounds and step of the weight wheels).
 - `widgets/intro/calorie_intro_flow.dart`: Hosts `IntroductionScreen` over the
   animated backdrop, owns navigation, the rising haptics, route exit
-  protection, and the control bar with back, next, and finish.
+  protection, and the control bar with back, next, and finish. The finish
+  button shows a localized save failure or exits the setup route.
 - `widgets/intro/calorie_intro_pages.dart`: Builds the raw page list in the
   order of `CalorieIntroPage` and wraps every page in its chapter theme.
 - `widgets/intro/intro_chapter_labels.dart`: Localized chapter name, kicker,
   counter, section, and next-action label per page.
-- `widgets/intro/calorie_intro_finish_handler.dart`: Calls the finish action,
-  shows localized save failures, and exits the setup route.
 - `widgets/intro/pages/`: One widget per page. `intro_story_page.dart` is the
   shared layout of the six explaining pages.
 - `widgets/intro/fields/`: Building blocks shared by the pages.
@@ -223,8 +222,8 @@ Generated Riverpod files. They should not be edited manually.
 ### Saving The Goal
 
 1. The summary page calls the finish callback.
-2. `CalorieIntroFinishHandler` reads the calculated profile from the form state
-   and calls `CalorieIntroController.finish`.
+2. `CalorieIntroFlow` reads the calculated profile from the form state and
+   calls `CalorieIntroController.finish`.
 3. Without an account, the controller signs in a guest and waits until the
    data key of that guest is ready. Nothing reaches Firebase before this step.
 4. `CalorieGoalOnboardingFinishFlow.saveGoal` receives a

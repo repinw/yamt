@@ -86,8 +86,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/onboarding/presentation/models/calorie_intro_state.dart': 1,
     'lib/features/onboarding/presentation/models/intro_input_page_args.dart': 2,
-    'lib/features/onboarding/presentation/widgets/intro/calorie_intro_finish_handler.dart':
-        1,
     'lib/features/onboarding/presentation/widgets/intro/calorie_intro_flow.dart':
         1,
     'lib/features/onboarding/presentation/widgets/intro/calorie_intro_pages.dart':
@@ -367,8 +365,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/kitchen_utensils/data/kitchen_utensil_repository_contract.dart':
         1,
     'lib/features/kitchen_utensils/data/kitchen_utensil_store.dart': 1,
-    'lib/features/onboarding/presentation/widgets/intro/calorie_intro_finish_handler.dart':
-        1,
     'lib/features/product_search_hub/data/composite_product_search_adapter.dart':
         1,
     'lib/features/product_search_hub/domain/manual_product_search_value_utils.dart':

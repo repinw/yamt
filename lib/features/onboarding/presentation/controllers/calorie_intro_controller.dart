@@ -104,31 +104,9 @@ class CalorieIntroController extends _$CalorieIntroController {
       (previous, next) {},
     );
     state = state.copyWith(isSaving: true);
+    var finished = false;
     try {
-      final userId = await _signedInUserId();
-      if (!ref.mounted) {
-        return false;
-      }
-      final saved = await finishFlow.read().saveGoal(
-        CalorieGoalOnboardingFinishRequest(
-          profile: profile,
-          today: ref.read(clockProvider)(),
-          startDate: state.startDate,
-        ),
-      );
-      if (!ref.mounted) {
-        return false;
-      }
-      if (!saved) {
-        state = state.copyWith(isSaving: false);
-        return false;
-      }
-      await markCalorieGoalOnboardingCompleted(ref, userId: userId);
-      if (!ref.mounted) {
-        return false;
-      }
-      state = state.copyWith(allowRouteExit: true);
-      return true;
+      finished = await _signInAndSave(profile, finishFlow.read);
     } on Object catch (error, stackTrace) {
       log(
         'Finishing the calorie intro failed.',
@@ -136,14 +114,38 @@ class CalorieIntroController extends _$CalorieIntroController {
         error: error,
         stackTrace: stackTrace,
       );
-      if (ref.mounted) {
-        state = state.copyWith(isSaving: false);
-      }
-      return false;
     } finally {
       finishFlow.close();
       link.close();
     }
+    if (ref.mounted) {
+      state = finished
+          ? state.copyWith(allowRouteExit: true)
+          : state.copyWith(isSaving: false);
+    }
+    return finished;
+  }
+
+  Future<bool> _signInAndSave(
+    CalorieCalculatorProfile profile,
+    CalorieGoalOnboardingFinishFlow Function() finishFlow,
+  ) async {
+    final userId = await _signedInUserId();
+    if (!ref.mounted) {
+      return false;
+    }
+    final saved = await finishFlow().saveGoal(
+      CalorieGoalOnboardingFinishRequest(
+        profile: profile,
+        today: ref.read(clockProvider)(),
+        startDate: state.startDate,
+      ),
+    );
+    if (!saved || !ref.mounted) {
+      return false;
+    }
+    await markCalorieGoalOnboardingCompleted(ref, userId: userId);
+    return ref.mounted;
   }
 
   /// Signs in a guest when nobody is signed in, and returns the user id once
@@ -151,12 +153,6 @@ class CalorieIntroController extends _$CalorieIntroController {
   Future<String> _signedInUserId() async {
     final dataKeyReady = Completer<String>();
     var signInStarted = false;
-    void fail(Object error, StackTrace stackTrace) {
-      if (!dataKeyReady.isCompleted) {
-        dataKeyReady.completeError(error, stackTrace);
-      }
-    }
-
     final subscription = ref.listen(userDataKeySessionProvider, (
       previous,
       next,
@@ -166,22 +162,16 @@ class CalorieIntroController extends _$CalorieIntroController {
       }
       switch (next) {
         case AsyncError(:final error, :final stackTrace):
-          fail(error, stackTrace);
+          dataKeyReady.completeError(error, stackTrace);
         case AsyncData(value: UserDataKeyReady(:final uid)):
           dataKeyReady.complete(uid);
         case AsyncData(value: UserDataKeyRecoveryRequired()):
-          fail(
+          dataKeyReady.completeError(
             StateError('The data key of the new account needs recovery.'),
-            StackTrace.current,
           );
         case AsyncData(value: UserDataKeySignedOut()) when !signInStarted:
           signInStarted = true;
-          unawaited(
-            ref
-                .read(authRepositoryProvider)
-                .signInAnonymously()
-                .catchError(fail),
-          );
+          unawaited(_signInGuest(dataKeyReady));
         case _:
           break;
       }
@@ -190,6 +180,16 @@ class CalorieIntroController extends _$CalorieIntroController {
       return await dataKeyReady.future.timeout(_dataKeyTimeout);
     } finally {
       subscription.close();
+    }
+  }
+
+  Future<void> _signInGuest(Completer<String> dataKeyReady) async {
+    try {
+      await ref.read(authRepositoryProvider).signInAnonymously();
+    } on Object catch (error, stackTrace) {
+      if (!dataKeyReady.isCompleted) {
+        dataKeyReady.completeError(error, stackTrace);
+      }
     }
   }
 
