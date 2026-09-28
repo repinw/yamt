@@ -1,79 +1,33 @@
 # Cooking Flow Feature
 
-Cooking Flow owns the guided flow for turning a prepared-meal template into one
-or more saved prepared-meal containers.
+## Purpose
+
+Cooking Flow guides the user from a prepared-meal template to one or more
+saved prepared-meal containers: check the Vorrat, prepare containers, cook,
+review the ingredients, and weigh and portion the result.
 
 ## Owns
 
-- Cookflow session snapshots and local persistence under `data/`.
-- Cookflow wizard state, summary/finalize logic, instruction matching, inventory
-  conflict resolution, and session mapping under `application/`.
-- Cookflow pages, step widgets, local form controllers, and Riverpod UI
-  controllers under `presentation/`.
+- The cookflow session snapshot and its local persistence (`data/`).
+- The pure session model and portion distribution (`domain/`).
+- Wizard state, ingredient parsing and matching, instruction building,
+  inventory conflict resolution, summary and finalize logic, and the session
+  service (`application/`).
+- The cookflow pages and UI flows at the top of `presentation/`, their
+  Riverpod controllers and the page-owned storage container state in
+  `presentation/controllers/`, localized messages and view models in
+  `presentation/models/`, and the step widgets in `presentation/widgets/`.
 
 ## Does Not Own
 
-- Inventory item or prepared-meal persistence.
-- Shopping-list persistence.
-- Kitchen utensil management.
-- Product-search-hub flows.
-- Recipe ingredient parsing.
+- Inventory items and prepared-meal persistence (`inventory`).
+- Shopping-list persistence (`shoppinglist`).
+- Saved kitchen utensils and their management page (`kitchen_utensils`).
+- Recipe ingredient parsing (`recipes`).
+- The product search hub (`product_search_hub`).
 
-## Public Edge
+## Rules
 
-- `presentation/cooking_flow_page.dart` is the route-level page.
-- `data/cooking_flow_session_local_store.dart` exposes the session snapshot used
-  by template cards and app composition.
-- Controllers under `presentation/controllers/` are scoped by router/tests and
-  should not be assembled by sibling features.
-
-Step widgets under `presentation/` are Cookflow internals unless a test imports
-them directly.
-
-## Providers
-
-- Repository/store providers live in `data/`.
-- Stateless use-case/service providers live in `application/`.
-- UI state controllers live in `presentation/controllers/`.
-- Providers use Riverpod code generation.
-
-Main providers:
-
-- `data/cooking_flow_session_local_store.dart`
-- `application/cooking_flow_wizard_session_service.dart`
-- `presentation/controllers/cooking_flow_controller.dart`
-- `presentation/controllers/cooking_flow_wizard_controller.dart`
-- `presentation/controllers/cooking_flow_intro_inventory_controller.dart`
-- `presentation/controllers/cooking_flow_shopping_controller.dart`
-
-## Accepted Dependencies
-
-- `core` for routing, local preferences, shared widgets, theme tokens, and voice
-  search.
-- `features/inventory` for inventory/prepared-meal domain types, repositories,
-  controllers, reusable prepared-meal cover UI, and inventory action color
-  tokens.
-- `features/recipes` for template ingredient parsing.
-- `features/shoppinglist` for shopping-list item operations during intro
-  shortage handling.
-- `features/kitchen_utensils` for tare selection and utensil cover imagery.
-- `features/product_search_hub` for the route used when summary additions need
-  a new inventory item.
-
-Keep these dependencies at the page/controller boundary. Other features should
-open `CookingFlowPage` or watch the session snapshot instead of wiring cookflow
-step widgets themselves.
-
-## Tests
-
-- `test/features/cooking_flow/application/`
-- `test/features/cooking_flow/data/`
-- `test/features/cooking_flow/domain/`
-- `test/features/cooking_flow/presentation/`
-- `test/features/cooking_flow/presentation/controllers/`
-
-## Migration Notes
-
-- Riverpod controllers were moved from `application/` to
-  `presentation/controllers/`.
-- Legacy manual Cookflow providers were migrated to Riverpod code generation.
+- Other features open the cookflow through its route or watch the session
+  snapshot. They do not assemble step widgets or controllers.
+- Finalize always writes at least one assigned inventory ingredient.

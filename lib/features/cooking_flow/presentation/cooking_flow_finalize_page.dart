@@ -10,14 +10,14 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_finalize_models.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_step_layout.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
+import 'package:yamt/features/cooking_flow/presentation/models/'
     'cooking_flow_storage_container_models.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_weight_input_row.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_step_layout.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_text_styles.dart';
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
+    'cooking_flow_weight_input_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Finalize step for cookflow.

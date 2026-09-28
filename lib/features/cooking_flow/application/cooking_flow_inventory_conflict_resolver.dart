@@ -6,7 +6,6 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_parser_locale.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
-
 /// Type of conflict between recipe requirement and selected inventory.
 enum CookingFlowInventoryConflictKind {
   /// Selected inventory amount is too low.

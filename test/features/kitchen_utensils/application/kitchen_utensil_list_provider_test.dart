@@ -47,8 +47,8 @@ void main() {
     addTearDown(subscription.close);
 
     repository.controller.add(<KitchenUtensil>[
-      _utensil('old', DateTime(2026, 1, 1)),
-      _utensil('new', DateTime(2026, 2, 1)),
+      _utensil('old', DateTime(2026)),
+      _utensil('new', DateTime(2026, 2)),
     ]);
     await pumpEventQueue();
 

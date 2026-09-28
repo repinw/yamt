@@ -9,9 +9,9 @@ import 'package:yamt/features/cooking_flow/application/'
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_instruction_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_on_the_fly_adjustment_card.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_step_layout.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_text_styles.dart';

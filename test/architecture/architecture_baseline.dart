@@ -77,49 +77,6 @@ const architectureBaseline = <String, Map<String, int>>{
   },
   'presentation-folders': {
     'lib/features/auth/presentation/auth_error_message_mapper.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_action_button.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_finalize_messages.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_inventory_coordinator.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_inventory_header.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_page_assignment.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_page_hero.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_page_inventory.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_page_widgets.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_portion_scaler.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_inventory_conflict_panels.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_inventory_row_actions.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_localizations.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_on_the_fly_adjustment_card.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_page_body.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_page_bottom_navigation.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_page_widgets.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_progress_indicator.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_session_input_builder.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_step_layout.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_storage_container_controller.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_storage_container_models.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_tare_utensil_picker.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_template_helpers.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_weight_input_row.dart':
-        1,
     'lib/features/diary/presentation/diary_calendar_controller.dart': 1,
     'lib/features/diary/presentation/diary_home_widget_summary_provider.dart':
         1,
@@ -207,10 +164,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/cooking_flow/application/cooking_flow_amount_utils.dart': 1,
     'lib/features/cooking_flow/application/cooking_flow_finalize_logic.dart': 1,
     'lib/features/cooking_flow/data/cooking_flow_session_local_store.dart': 1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_inventory_coordinator.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_template_helpers.dart':
-        1,
     'lib/features/diary/data/diary_day_dashboard_cache_store.dart': 1,
     'lib/features/diary/presentation/diary_product_search_hub_completion_handler.dart':
         1,
@@ -408,18 +361,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/application/calorie_weekly_checkin_build_models.dart':
         1,
     'lib/features/calories/application/calorie_weekly_checkin_health_loader.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_page_assignment.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_page_hero.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_page_widgets.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_intro_portion_scaler.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_inventory_conflict_panels.dart':
-        1,
-    'lib/features/cooking_flow/presentation/cooking_flow_inventory_row_actions.dart':
         1,
     'lib/features/inventory/presentation/controllers/inventory_items_controller.dart':
         1,

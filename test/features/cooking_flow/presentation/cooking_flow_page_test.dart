@@ -13,7 +13,7 @@ import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_controller.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_progress_indicator.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';

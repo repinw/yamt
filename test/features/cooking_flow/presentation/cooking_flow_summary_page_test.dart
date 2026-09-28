@@ -5,9 +5,9 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/'
-    'cooking_flow_storage_container_models.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
     'cooking_flow_summary_page.dart';
+import 'package:yamt/features/cooking_flow/presentation/models/'
+    'cooking_flow_storage_container_models.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 

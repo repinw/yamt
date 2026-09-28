@@ -7,11 +7,11 @@ import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_wizard_state.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_intro_page_hero.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_intro_page_inventory.dart';
-import 'package:yamt/features/cooking_flow/presentation/'
+import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_intro_portion_scaler.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
