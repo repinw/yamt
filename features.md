@@ -72,6 +72,15 @@ and feature description docs. This is product-facing; architecture rules stay in
   in small capitals over the date, and the day type as a framed chip.
 - A day without logged food shows a short hint that points to the dock.
 - Meal sections for breakfast, lunch, dinner, and snacks.
+- Tapping a logged entry opens its item details in the food label look of
+  the eat page: image, brand and name, the nutrition label per 100 g or ml
+  and for the eaten amount, and the amount on the ruler. "Save" stores a
+  changed amount, with totals from the entry's per-100 values, and closes
+  the page. The day and meal menu top right moves the entry at once. The
+  "Entry" card logs the food again or removes the entry; an entry from the
+  Vorrat asks whether its stock goes back. A changed amount moves the stock
+  of a Vorrat entry too, and every change offers an undo. Prepared meals and
+  combined entries list their foods instead of the ruler.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
   Its buttons sit in a dock on the bottom navigation bar of the diary tab and
   hide with it: square buttons for inventory, search, and AI, and a lime barcode button
