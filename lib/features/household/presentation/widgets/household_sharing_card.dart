@@ -13,7 +13,6 @@ import 'package:yamt/features/household/domain/household_key_state.dart';
 import 'package:yamt/features/household/domain/household_member.dart';
 import 'package:yamt/features/household/presentation/controllers/'
     'household_membership_controller.dart';
-import 'package:yamt/features/household/presentation/household_error_message.dart';
 import 'package:yamt/features/household/presentation/household_membership_flow.dart';
 import 'package:yamt/features/household/presentation/widgets/'
     'household_invite_section.dart';
@@ -35,6 +34,9 @@ class HouseholdSharingCard extends ConsumerWidget {
 
   /// Key of the button that leaves the household.
   static const leaveKey = Key('household_leave_button');
+
+  /// Key of the message that the household could not be loaded.
+  static const loadErrorKey = Key('household_load_error');
 
   static const _logName = 'yamt.household';
 
@@ -64,7 +66,8 @@ class HouseholdSharingCard extends ConsumerWidget {
               data: (members) =>
                   _HouseholdContent(user: user, members: members),
               loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, _) => Text(householdErrorMessage(l10n, error)),
+              error: (_, _) =>
+                  Text(l10n.householdLoadFailed, key: loadErrorKey),
             ),
       ),
     );

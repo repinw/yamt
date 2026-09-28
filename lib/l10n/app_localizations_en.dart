@@ -3393,6 +3393,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'Household action failed. Please try again.';
 
   @override
+  String get householdLoadFailed => 'Could not load the household.';
+
+  @override
   String get householdKeyRestoreSelfMessage =>
       'You started fresh, so the pantry of this household is locked. Ask another member for an unlock code and enter it here.';
 

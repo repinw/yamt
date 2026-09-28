@@ -1678,6 +1678,7 @@
   "householdLeaveAction": "Leave household",
   "householdLeaveSuccess": "Household left.",
   "householdActionFailed": "Household action failed. Please try again.",
+  "householdLoadFailed": "Could not load the household.",
   "householdKeyRestoreSelfMessage": "You started fresh, so the pantry of this household is locked. Ask another member for an unlock code and enter it here.",
   "householdAdminBadge": "Admin",
   "householdMemberSelf": "{name} (you)",

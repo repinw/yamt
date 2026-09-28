@@ -3453,6 +3453,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Haushaltsaktion fehlgeschlagen. Bitte versuche es erneut.';
 
   @override
+  String get householdLoadFailed => 'Haushalt konnte nicht geladen werden.';
+
+  @override
   String get householdKeyRestoreSelfMessage =>
       'Du hast neu gestartet, darum ist der Vorrat dieses Haushalts gesperrt. Lass dir von einem anderen Mitglied einen Freigabe-Code geben und gib ihn hier ein.';
 

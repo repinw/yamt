@@ -1528,6 +1528,7 @@
   "householdLeaveAction": "Haushalt verlassen",
   "householdLeaveSuccess": "Haushalt verlassen.",
   "householdActionFailed": "Haushaltsaktion fehlgeschlagen. Bitte versuche es erneut.",
+  "householdLoadFailed": "Haushalt konnte nicht geladen werden.",
   "householdKeyRestoreSelfMessage": "Du hast neu gestartet, darum ist der Vorrat dieses Haushalts gesperrt. Lass dir von einem anderen Mitglied einen Freigabe-Code geben und gib ihn hier ein.",
   "householdAdminBadge": "Admin",
   "householdMemberSelf": "{name} (du)",

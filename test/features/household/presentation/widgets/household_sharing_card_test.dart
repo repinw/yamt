@@ -127,6 +127,26 @@ void main() {
     expect(find.byType(HouseholdMembersSection), findsNothing);
   });
 
+  testWidgets('a failed load says that the household did not load', (
+    tester,
+  ) async {
+    await seed(() async {
+      // A member entry without a join date cannot be read.
+      await backend.firestore.doc('households/own/members/me').set(
+        <String, dynamic>{'uid': 'me', 'role': 'admin'},
+      );
+      await backend.addUser('me', householdId: 'own', ownHouseholdId: 'own');
+    }, tester);
+
+    await pumpCard(tester, 'me');
+
+    expect(
+      tester.widget<Text>(find.byKey(HouseholdSharingCard.loadErrorKey)).data,
+      'Could not load the household.',
+    );
+    expect(find.byKey(HouseholdSharingCard.leaveKey), findsNothing);
+  });
+
   testWidgets('a guest sees the hint to link the account', (tester) async {
     await seed(() async {
       await backend.addMember(

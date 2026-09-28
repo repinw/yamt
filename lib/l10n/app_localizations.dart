@@ -5886,6 +5886,12 @@ abstract class AppLocalizations {
   /// **'Household action failed. Please try again.'**
   String get householdActionFailed;
 
+  /// No description provided for @householdLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the household.'**
+  String get householdLoadFailed;
+
   /// No description provided for @householdKeyRestoreSelfMessage.
   ///
   /// In en, this message translates to:
