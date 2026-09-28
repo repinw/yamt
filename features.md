@@ -19,6 +19,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Google login and registration.
 - Guest account, created only when the user finishes onboarding. Opening the
   app without finishing creates no Firebase user.
+  Without a connection the last page says so and keeps every answer for
+  another try.
 - Guest display-name setup with theme color and theme mode choice.
 - Guest account linking with Google or email/password.
 - Credential conflict handling when a sign-in method is already used.

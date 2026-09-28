@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -26,6 +27,18 @@ const _logName = 'CalorieIntroController';
 
 /// How long finishing waits for the data key of a new guest account.
 const _dataKeyTimeout = Duration(seconds: 20);
+
+/// Outcome of finishing the intro.
+enum CalorieIntroFinishResult {
+  /// Everything is saved; the intro may close.
+  finished,
+
+  /// There was no connection. The answers stay, and the user can try again.
+  offline,
+
+  /// Saving failed for another reason.
+  failed,
+}
 
 /// State controller for the calorie onboarding intro.
 @riverpod
@@ -97,16 +110,20 @@ class CalorieIntroController extends _$CalorieIntroController {
   /// a guest account only here, so opening the app without finishing creates
   /// no Firebase user. The goal is saved once the data key of that account is
   /// ready, so it is stored encrypted like all private data.
-  Future<bool> finish(CalorieCalculatorProfile profile) async {
+  Future<CalorieIntroFinishResult> finish(
+    CalorieCalculatorProfile profile,
+  ) async {
     final link = ref.keepAlive();
     final finishFlow = ref.listen(
       calorieGoalOnboardingFinishFlowProvider,
       (previous, next) {},
     );
     state = state.copyWith(isSaving: true);
-    var finished = false;
+    var result = CalorieIntroFinishResult.failed;
     try {
-      finished = await _signInAndSave(profile, finishFlow.read);
+      if (await _signInAndSave(profile, finishFlow.read)) {
+        result = CalorieIntroFinishResult.finished;
+      }
     } on Object catch (error, stackTrace) {
       log(
         'Finishing the calorie intro failed.',
@@ -114,16 +131,19 @@ class CalorieIntroController extends _$CalorieIntroController {
         error: error,
         stackTrace: stackTrace,
       );
+      if (error is AuthOfflineException || error is TimeoutException) {
+        result = CalorieIntroFinishResult.offline;
+      }
     } finally {
       finishFlow.close();
       link.close();
     }
     if (ref.mounted) {
-      state = finished
+      state = result == CalorieIntroFinishResult.finished
           ? state.copyWith(allowRouteExit: true)
           : state.copyWith(isSaving: false);
     }
-    return finished;
+    return result;
   }
 
   Future<bool> _signInAndSave(
@@ -151,6 +171,11 @@ class CalorieIntroController extends _$CalorieIntroController {
   /// Signs in a guest when nobody is signed in, and returns the user id once
   /// the data key of that user is ready.
   Future<String> _signedInUserId() async {
+    // A failed attempt, for example offline, leaves the session in an error.
+    // A new attempt loads it again.
+    if (ref.read(userDataKeySessionProvider).hasError) {
+      ref.invalidate(userDataKeySessionProvider);
+    }
     final dataKeyReady = Completer<String>();
     var signInStarted = false;
     final subscription = ref.listen(userDataKeySessionProvider, (
@@ -160,9 +185,13 @@ class CalorieIntroController extends _$CalorieIntroController {
       if (dataKeyReady.isCompleted) {
         return;
       }
+      // The first call shows the state from before the invalidation above,
+      // which may still carry the old error.
+      if (previous != null && next.hasError) {
+        dataKeyReady.completeError(next.error!, next.stackTrace);
+        return;
+      }
       switch (next) {
-        case AsyncError(:final error, :final stackTrace):
-          dataKeyReady.completeError(error, stackTrace);
         case AsyncData(value: UserDataKeyReady(:final uid)):
           dataKeyReady.complete(uid);
         case AsyncData(value: UserDataKeyRecoveryRequired()):

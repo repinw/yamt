@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -170,7 +171,7 @@ void main() {
       ];
     }
 
-    Future<bool> finish(ProviderContainer container) {
+    Future<CalorieIntroFinishResult> finish(ProviderContainer container) {
       final subscription = container.listen(
         calorieIntroControllerProvider,
         (previous, next) {},
@@ -187,9 +188,9 @@ void main() {
 
       expect(account.repository.guestCalls, 0);
 
-      final finished = await finish(container);
+      final result = await finish(container);
 
-      expect(finished, isTrue);
+      expect(result, CalorieIntroFinishResult.finished);
       expect(account.repository.guestCalls, 1);
       expect(await savedGoalStarts(), [DateTime(2026, 9, 24)]);
       expect(
@@ -206,9 +207,9 @@ void main() {
       account = FakeGuestAccount(userId: 'signed-in-user');
       final container = finishContainer();
 
-      final finished = await finish(container);
+      final result = await finish(container);
 
-      expect(finished, isTrue);
+      expect(result, CalorieIntroFinishResult.finished);
       expect(account.repository.guestCalls, 0);
       expect(
         preferences.getStringSync(
@@ -218,13 +219,40 @@ void main() {
       );
     });
 
-    test('stays on the intro when the guest sign-in fails', () async {
-      account = FakeGuestAccount(shouldFailGuest: true);
+    test('keeps the answers when there is no connection', () async {
+      account = FakeGuestAccount(signInError: const AuthOfflineException());
       final container = finishContainer();
 
-      final finished = await finish(container);
+      expect(await finish(container), CalorieIntroFinishResult.offline);
+      expect(await savedGoalStarts(), isEmpty);
+      expect(container.read(calorieIntroControllerProvider).isSaving, isFalse);
 
-      expect(finished, isFalse);
+      account.signInError = null;
+
+      expect(await finish(container), CalorieIntroFinishResult.finished);
+      expect(account.repository.guestCalls, 2);
+      expect(await savedGoalStarts(), [DateTime(2026, 9, 24)]);
+    });
+
+    test('loads a failed data key again on the next attempt', () async {
+      account = FakeGuestAccount(userId: 'signed-in-user')
+        ..dataKeyError = Exception('key backup unavailable');
+      final container = finishContainer();
+
+      expect(await finish(container), CalorieIntroFinishResult.failed);
+
+      account.dataKeyError = null;
+
+      expect(await finish(container), CalorieIntroFinishResult.finished);
+    });
+
+    test('stays on the intro when the guest sign-in fails', () async {
+      account = FakeGuestAccount(signInError: Exception('sign-in failed'));
+      final container = finishContainer();
+
+      final result = await finish(container);
+
+      expect(result, CalorieIntroFinishResult.failed);
       expect(await savedGoalStarts(), isEmpty);
       final state = container.read(calorieIntroControllerProvider);
       expect(state.isSaving, isFalse);
@@ -235,9 +263,9 @@ void main() {
       account = FakeGuestAccount();
       final container = finishContainer(saves: false);
 
-      final finished = await finish(container);
+      final result = await finish(container);
 
-      expect(finished, isFalse);
+      expect(result, CalorieIntroFinishResult.failed);
       expect(
         preferences.getStringSync(
           calorieGoalOnboardingKeyForUser(FakeGuestAccount.guestUserId),

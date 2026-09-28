@@ -117,18 +117,19 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
     final router = GoRouter.of(context);
     final formState = ref.read(_formProvider);
     final profile = formState.profile;
-    final finished =
-        profile != null &&
-        formState.calculation != null &&
-        await _introController.finish(profile);
+    final result = profile == null || formState.calculation == null
+        ? CalorieIntroFinishResult.failed
+        : await _introController.finish(profile);
     if (!mounted) {
       return;
     }
-    if (!finished) {
-      messenger.showAppSnackBar(
-        l10n.caloriesCalculatorSaveFailed,
-        tone: AppSnackBarTone.error,
-      );
+    final failureMessage = switch (result) {
+      CalorieIntroFinishResult.finished => null,
+      CalorieIntroFinishResult.offline => l10n.onboardingFinishOffline,
+      CalorieIntroFinishResult.failed => l10n.caloriesCalculatorSaveFailed,
+    };
+    if (failureMessage != null) {
+      messenger.showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
       return;
     }
     if (router.canPop()) {

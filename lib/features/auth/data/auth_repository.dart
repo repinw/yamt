@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 
 part 'auth_repository.g.dart';
 
@@ -24,6 +25,8 @@ abstract interface class AuthRepository {
   });
 
   /// Sign in anonymously.
+  ///
+  /// Throws [AuthOfflineException] without a connection.
   Future<void> signInAnonymously();
 
   /// Update current user display name.
@@ -64,10 +67,12 @@ class FirebaseAuthRepository implements AuthRepository {
     try {
       await _auth.signInAnonymously().timeout(const Duration(seconds: 15));
     } on TimeoutException {
-      throw FirebaseAuthException(
-        code: 'network-request-failed',
-        message: 'Anonymous sign-in timed out after 15 seconds.',
-      );
+      throw const AuthOfflineException();
+    } on FirebaseAuthException catch (error) {
+      if (error.code == 'network-request-failed') {
+        throw const AuthOfflineException();
+      }
+      rethrow;
     }
   }
 

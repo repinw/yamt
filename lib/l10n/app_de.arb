@@ -1549,6 +1549,7 @@
   "commonUndoFailed": "Rückgängig fehlgeschlagen.",
   "commonNotImplementedYet": "Noch nicht implementiert",
   "onboardingNextAction": "Weiter",
+  "onboardingFinishOffline": "Keine Internetverbindung. Deine Angaben bleiben erhalten, versuch es erneut, sobald du online bist.",
   "onboardingGoalWeightSubtitle": "Lass uns dein Zielgewicht festlegen.",
   "onboardingGoalWeightTargetLabel": "Wunschgewicht (kg)",
   "onboardingGoalWeightLoseFeedback": "Du möchtest abnehmen.",

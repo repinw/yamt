@@ -259,6 +259,43 @@ void main() {
     _expectOnboardingCompleted(harness, _guestUserId);
   });
 
+  testWidgets('calorie intro keeps the answers without a connection', (
+    tester,
+  ) async {
+    final harness = await _pumpOnboardingApp(
+      tester,
+      signedIn: false,
+      offlineSignIns: 1,
+    );
+
+    await _completeIntro(tester);
+    await _finishIntro(tester);
+
+    expect(
+      find.text(
+        'No internet connection. Your answers are kept, so try again once '
+        'you are online.',
+      ),
+      findsOneWidget,
+    );
+    expect(_currentRoute(harness), AppRoutes.calorieGoalSetup);
+    expect(harness.guestSignIns, isEmpty);
+
+    // The snackbar covers the finish button until it closes.
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    await _tapVisible(
+      tester,
+      find.byKey(CalorieGoalOnboardingKeys.introFinishAction),
+    );
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(harness.guestSignIns, [_guestUserId]);
+    _expectHomeDiary(harness);
+    await _expectGoalStartedToday(harness);
+  });
+
   testWidgets('calorie intro blocks the identity page without a birthday', (
     tester,
   ) async {
@@ -290,8 +327,12 @@ void main() {
 Future<_CalorieOnboardingIntegrationHarness> _pumpOnboardingApp(
   WidgetTester tester, {
   bool signedIn = true,
+  int offlineSignIns = 0,
 }) async {
-  final harness = _buildHarness(signedIn: signedIn);
+  final harness = _buildHarness(
+    signedIn: signedIn,
+    offlineSignIns: offlineSignIns,
+  );
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: harness.container,
@@ -306,9 +347,13 @@ Future<_CalorieOnboardingIntegrationHarness> _pumpOnboardingApp(
   return harness;
 }
 
-_CalorieOnboardingIntegrationHarness _buildHarness({required bool signedIn}) {
+_CalorieOnboardingIntegrationHarness _buildHarness({
+  required bool signedIn,
+  required int offlineSignIns,
+}) {
+  var remainingOfflineSignIns = offlineSignIns;
   User? currentUser = signedIn ? _authenticatedUser(uid: _userId) : null;
-  final authController = StreamController<User?>.broadcast(onListen: () {});
+  final authController = StreamController<User?>.broadcast();
   addTearDown(authController.close);
   final firebaseAuth = _MockFirebaseAuth();
   final guestSignIns = <String>[];
@@ -323,6 +368,10 @@ _CalorieOnboardingIntegrationHarness _buildHarness({required bool signedIn}) {
 
   when(() => firebaseAuth.currentUser).thenAnswer((_) => currentUser);
   when(firebaseAuth.signInAnonymously).thenAnswer((_) async {
+    if (remainingOfflineSignIns > 0) {
+      remainingOfflineSignIns--;
+      throw FirebaseAuthException(code: 'network-request-failed');
+    }
     final guest = _guestUser(uid: _guestUserId);
     guestSignIns.add(_guestUserId);
     currentUser = guest;

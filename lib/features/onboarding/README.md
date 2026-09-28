@@ -237,8 +237,11 @@ Generated Riverpod files. They should not be edited manually.
    to Burn Week live sync, and the diary shows practice days until the start.
 7. On success, onboarding writes the completion marker.
 8. The flow allows route exit and returns to the previous route or diary home.
-9. On failure, saving state is reset and a localized failure snackbar is shown.
-   The answers stay in memory, so the user can try again.
+9. On failure, saving state is reset and a localized failure snackbar is shown,
+   with its own message when there is no connection. The answers stay in
+   memory, so the user can try again. A data key that failed to load is loaded
+   again on the next attempt, and the router keeps the intro open meanwhile.
+   Writes that Firestore queues offline finish once the connection is back.
 
 ### Birthday And Age
 

@@ -8,3 +8,9 @@ final class InvalidRecoveryKeyException extends AuthException {
   /// Creates the exception.
   const new();
 }
+
+/// The device has no connection to the auth server.
+final class AuthOfflineException extends AuthException {
+  /// Creates the exception.
+  const new();
+}

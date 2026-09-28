@@ -1672,6 +1672,7 @@
   "commonUndoFailed": "Could not undo.",
   "commonNotImplementedYet": "Not implemented yet",
   "onboardingNextAction": "Next",
+  "onboardingFinishOffline": "No internet connection. Your answers are kept, so try again once you are online.",
   "onboardingGoalWeightSubtitle": "Let's set your goal weight.",
   "onboardingGoalWeightTargetLabel": "Goal weight (kg)",
   "onboardingGoalWeightLoseFeedback": "You want to lose weight.",

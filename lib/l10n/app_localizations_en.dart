@@ -3474,6 +3474,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingNextAction => 'Next';
 
   @override
+  String get onboardingFinishOffline =>
+      'No internet connection. Your answers are kept, so try again once you are online.';
+
+  @override
   String get onboardingGoalWeightSubtitle => 'Let\'s set your goal weight.';
 
   @override

@@ -1,15 +1,10 @@
 import 'package:yamt/features/auth/data/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
-  new({
-    this.shouldFailSignIn = false,
-    this.shouldFailRegister = false,
-    this.shouldFailGuest = false,
-  });
+  new({this.shouldFailSignIn = false, this.shouldFailRegister = false});
 
   final bool shouldFailSignIn;
   final bool shouldFailRegister;
-  final bool shouldFailGuest;
 
   int signInCalls = 0;
   int registerCalls = 0;
@@ -45,9 +40,6 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<void> signInAnonymously() async {
     guestCalls++;
-    if (shouldFailGuest) {
-      throw Exception('guest failed');
-    }
   }
 
   @override

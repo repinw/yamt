@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -144,6 +145,32 @@ void main() {
       findsOneWidget,
     );
     expect(harness.currentLocation, '/onboarding');
+  });
+
+  testWidgets('keeps the answers when there is no connection', (tester) async {
+    final harness = await _pumpIntro(tester);
+    harness.guestAccount.signInError = const AuthOfflineException();
+
+    await _completeIntro(tester);
+    await _tapFinish(tester);
+
+    expect(
+      find.text(
+        'No internet connection. Your answers are kept, so try again once '
+        'you are online.',
+      ),
+      findsOneWidget,
+    );
+    expect(harness.currentLocation, '/onboarding');
+
+    harness.guestAccount.signInError = null;
+    // The snackbar covers the finish button until it closes.
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    await _tapFinish(tester);
+
+    expect(harness.guestAccount.repository.guestCalls, 2);
+    expect(harness.currentLocation, '/');
   });
 
   testWidgets('blocks the identity page until gender and birthday are set', (

@@ -172,6 +172,7 @@ ProviderContainer _createContainerWithAuth(
       const CalorieGoalSettings.empty(),
   Future<UserCredential> Function()? onSignInAnonymously,
   UserDataKeyState? dataKeyState,
+  Exception? dataKeyError,
 }) {
   final calorieLogRepository = FakeCalorieLogRepository();
   final calorieSettingsRepository = FakeCalorieSettingsRepository(
@@ -207,11 +208,14 @@ ProviderContainer _createContainerWithAuth(
         const _FakePreparedMealRepository(),
       ),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
-      userDataKeySessionProvider.overrideWith(
-        dataKeyState == null
-            ? AuthUserDataKeySession.new
-            : () => _FakeUserDataKeySession(dataKeyState),
-      ),
+      userDataKeySessionProvider.overrideWith(switch ((
+        dataKeyState,
+        dataKeyError,
+      )) {
+        (final state?, _) => () => _FakeUserDataKeySession(state),
+        (_, final error?) => () => _FailingUserDataKeySession(error),
+        _ => AuthUserDataKeySession.new,
+      }),
     ],
   );
   addTearDown(container.dispose);
@@ -1205,6 +1209,34 @@ void main() {
     expect(guestSignIns, 0);
   });
 
+  testWidgets('a data key failure keeps onboarding open', (tester) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_guestUser()),
+      dataKeyError: Exception('key backup unavailable'),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    container.read(appRouterProvider).go(AppRoutes.calorieGoalSetup);
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
+
+    container.read(appRouterProvider).go(AppRoutes.homeDiary);
+    await _pumpRouterTransition(tester);
+
+    expect(container.read(appRouterProvider).state.uri.path, AppRoutes.dataKey);
+    // Stops the retry timer of the failed session.
+    container.dispose();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('asks for the recovery key on a new device', (tester) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
@@ -1291,6 +1323,15 @@ void main() {
     );
     expect(find.text('Welcome to YAMT'), findsOneWidget);
   });
+}
+
+class _FailingUserDataKeySession extends UserDataKeySession {
+  new(this._error);
+
+  final Exception _error;
+
+  @override
+  Future<UserDataKeyState> build() async => throw _error;
 }
 
 class _FakeUserDataKeySession extends UserDataKeySession {

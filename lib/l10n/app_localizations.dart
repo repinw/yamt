@@ -6072,6 +6072,12 @@ abstract class AppLocalizations {
   /// **'Next'**
   String get onboardingNextAction;
 
+  /// No description provided for @onboardingFinishOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection. Your answers are kept, so try again once you are online.'**
+  String get onboardingFinishOffline;
+
   /// No description provided for @onboardingGoalWeightSubtitle.
   ///
   /// In en, this message translates to:

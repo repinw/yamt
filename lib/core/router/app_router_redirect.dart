@@ -60,7 +60,10 @@ String? _redirectSignedOut(String path) {
 /// on the splash, or asks for the recovery key on a new device.
 String? _forcedDataKeyRoute(Ref ref, String path) {
   final session = ref.read(userDataKeySessionProvider);
-  if (session.hasError) return AppRoutes.dataKey;
+  if (session.hasError) {
+    // Onboarding keeps its answers only in memory and retries by itself.
+    return path == AppRoutes.calorieGoalSetup ? null : AppRoutes.dataKey;
+  }
   return switch (session.value) {
     null => _waitsOnCurrentRoute(path) ? null : AppRoutes.splash,
     UserDataKeyRecoveryRequired() => AppRoutes.dataKey,
