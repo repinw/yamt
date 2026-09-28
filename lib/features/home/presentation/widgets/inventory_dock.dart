@@ -35,6 +35,9 @@ class InventoryDock extends ConsumerWidget {
     'inventory-add-manual-search',
   );
 
+  /// Key of the add sheet entry that opens the AI estimate.
+  static const aiKey = ValueKey<String>('inventory-add-ai');
+
   /// Key of the add sheet entry that opens the editor for an own product.
   static const createKey = ValueKey<String>('inventory-add-create');
 
@@ -121,6 +124,7 @@ class InventoryDock extends ConsumerWidget {
                 ),
               ),
               HomeMoreEntry(
+                key: aiKey,
                 icon: Icons.auto_awesome_rounded,
                 title: l10n.inventoryActionAiSuggestion,
                 description: l10n.inventoryAddAiDescription,
