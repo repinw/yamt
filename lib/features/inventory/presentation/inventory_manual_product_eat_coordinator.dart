@@ -10,9 +10,7 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_eat_completion_flow.dart'
     as internal_eat_flow;
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_product_save_flow.dart'
-    as internal_save_flow;
+import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_save_outcome.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 part 'inventory_manual_product_eat_coordinator.g.dart';
@@ -52,15 +50,15 @@ class _InventoryManualProductEatCoordinator
   }
 
   InventoryManualProductEatOutcome _toEatOutcome(
-    internal_save_flow.InventoryManualProductSaveOutcome outcome,
+    InventoryManualProductSaveOutcome outcome,
   ) {
     return InventoryManualProductEatOutcome(
       status: switch (outcome.status) {
-        internal_save_flow.InventoryManualProductSaveStatus.saved =>
+        InventoryManualProductSaveStatus.saved =>
           InventoryManualProductEatStatus.saved,
-        internal_save_flow.InventoryManualProductSaveStatus.canceled =>
+        InventoryManualProductSaveStatus.canceled =>
           InventoryManualProductEatStatus.canceled,
-        internal_save_flow.InventoryManualProductSaveStatus.failed =>
+        InventoryManualProductSaveStatus.failed =>
           InventoryManualProductEatStatus.failed,
       },
       item: outcome.item,

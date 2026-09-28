@@ -2146,6 +2146,7 @@
   "foodEstimateTakePhotoHint": "Teller, Verpackung oder Speisekarte",
   "foodEstimateFromGallery": "oder Bild aus Galerie",
   "foodEstimateAnotherPhoto": "Noch eins",
+  "foodEstimatePhotoNotSaved": "Das Foto konnte nicht gespeichert werden. Das Essen wird ohne Bild gespeichert.",
   "foodEstimateRemovePhoto": "Foto {index} entfernen",
   "@foodEstimateRemovePhoto": {
     "placeholders": {

@@ -74,6 +74,10 @@ class _FakeFoodEstimateRepository implements FoodEstimateRepository {
     ),
     ingredients: [],
   );
+
+  @override
+  Future<String> saveFoodPhoto(FoodEstimatePhoto photo) async =>
+      'https://example.com/food.jpg';
 }
 
 Future<void> _pumpHarness(

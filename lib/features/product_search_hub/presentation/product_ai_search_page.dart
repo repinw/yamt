@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -7,6 +8,7 @@ import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -232,11 +234,47 @@ class _ManualProductAiSearchPageState
           ),
         );
     if (result == null || !mounted) return;
+    final saved = await _withFoodPhoto(result);
+    if (!mounted) return;
     final onResult = widget.onResult;
     if (onResult != null) {
-      onResult(result);
+      onResult(saved);
       return;
     }
-    popManualProductSearchPage(context, result);
+    popManualProductSearchPage(context, saved);
+  }
+
+  /// [result] with the first photo as the item's image. Without the upload
+  /// the food is still saved, only without its image.
+  Future<ManualProductAiSearchResult> _withFoodPhoto(
+    ManualProductAiSearchResult result,
+  ) async {
+    final String? imageUrl;
+    try {
+      imageUrl = await ref
+          .read(foodEstimateControllerProvider.notifier)
+          .saveFirstPhoto();
+    } on Object catch (error, stackTrace) {
+      log(
+        'Storing the food photo failed.',
+        name: 'ManualProductAiSearchPage',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showAppSnackBar(
+          AppLocalizations.of(context)!.foodEstimatePhotoNotSaved,
+          tone: AppSnackBarTone.error,
+        );
+      }
+      return result;
+    }
+    if (imageUrl == null) return result;
+    return ManualProductAiSearchResult(
+      item: result.item.copyWith(imageUrl: imageUrl),
+      action: result.action,
+      globalPackageWeight: result.globalPackageWeight,
+      eatSelection: result.eatSelection,
+    );
   }
 }

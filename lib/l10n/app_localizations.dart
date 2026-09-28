@@ -8301,6 +8301,12 @@ abstract class AppLocalizations {
   /// **'One more'**
   String get foodEstimateAnotherPhoto;
 
+  /// No description provided for @foodEstimatePhotoNotSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'The photo could not be saved. The food is saved without an image.'**
+  String get foodEstimatePhotoNotSaved;
+
   /// No description provided for @foodEstimateRemovePhoto.
   ///
   /// In en, this message translates to:

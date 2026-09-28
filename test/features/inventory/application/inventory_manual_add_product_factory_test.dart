@@ -81,6 +81,32 @@ void main() {
     expect(savedItem.amountUnit, InventoryAmountUnit.milliliter);
   });
 
+  test('a private food photo stays on the item, never in the catalog', () {
+    const photo =
+        'https://firebasestorage.googleapis.com/v0/b/yamt/o/'
+        'users%2Fu1%2Ffood_photos%2Fp1.jpg?alt=media';
+    final item = _milkItem(weight: '300 ml').copyWith(imageUrl: photo);
+
+    final globalItem = buildInventoryManualAddGlobalFoodItem(
+      item: item,
+      barcode: null,
+      now: DateTime.parse('2026-04-13T10:00:00Z'),
+      packageWeight: null,
+      manualGlobalFoodItemId: 'manual-1',
+    );
+    final savedItem = buildInventoryManualAddSavedItem(
+      id: 'inventory-1',
+      globalProduct: globalItem,
+      now: DateTime.parse('2026-04-13T10:00:00Z'),
+      storeName: 'Added manually',
+      inventoryWeight: '300 ml',
+      imageUrl: photo,
+    );
+
+    expect(globalItem.imageUrl, isNull);
+    expect(savedItem.imageUrl, photo);
+  });
+
   test('manual global food id includes barcode and normalized names', () {
     final item = _milkItem(weight: '300 ml');
     final unnamedItem = InventoryItem.create(

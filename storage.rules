@@ -71,6 +71,17 @@ service firebase.storage {
         && request.resource.contentType.matches('image/.*');
     }
 
+    // The user's own food photos, such as the plate photo of an AI food
+    // estimate. They are the image of the user's item and are never shared
+    // as a product image.
+    match /users/{uid}/food_photos/{fileName} {
+      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow create: if isSignedIn()
+        && request.auth.uid == uid
+        && isProductImage();
+      allow update: if false;
+    }
+
     // Package photos from the product editor. Every signed-in user sees
     // them as shared product images. Only the uploader writes into their
     // own folder, and nobody changes or deletes a photo from the app, so a

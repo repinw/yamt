@@ -57,6 +57,14 @@ class FoodEstimateController extends _$FoodEstimateController {
     );
   }
 
+  /// Stores the first photo as the user's private food photo and returns
+  /// its address, or null without a photo. Throws when the upload fails.
+  Future<String?> saveFirstPhoto() async {
+    final photo = state.photos.firstOrNull;
+    if (photo == null) return null;
+    return await ref.read(foodEstimateRepositoryProvider).saveFoodPhoto(photo);
+  }
+
   /// Removes the photo at [index].
   void removePhoto(int index) {
     state = state.copyWith(

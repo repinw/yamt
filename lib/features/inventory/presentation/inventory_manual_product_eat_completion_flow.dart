@@ -16,6 +16,7 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_eat_selection_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_save_flow.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_save_outcome.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualProductEatFlowLogName =

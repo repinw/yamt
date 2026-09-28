@@ -89,7 +89,22 @@ class _FakeFoodEstimateRepository implements FoodEstimateRepository {
     sentPhotoCounts.add(photos.length);
     return _onLoad(description);
   }
+
+  Exception? saveError;
+  final List<FoodEstimatePhoto> savedPhotos = <FoodEstimatePhoto>[];
+
+  @override
+  Future<String> saveFoodPhoto(FoodEstimatePhoto photo) async {
+    final error = saveError;
+    if (error != null) throw error;
+    savedPhotos.add(photo);
+    return _foodPhotoUrl;
+  }
 }
+
+const _foodPhotoUrl =
+    'https://firebasestorage.googleapis.com/v0/b/yamt/o/'
+    'users%2Fu1%2Ffood_photos%2Fp1.jpg?alt=media';
 
 const _doener = FoodEstimate(
   name: 'Döner Kebab',
@@ -330,6 +345,54 @@ void main() {
     expect(pageResult?.action, InventoryReceiptManualProductAction.eatNow);
     expect(pageResult?.item.name, 'Döner Kebab');
     expect(pageResult?.eatSelection?.inventoryAmount, 400);
+  });
+
+  testWidgets('the first photo becomes the private image of the item', (
+    tester,
+  ) async {
+    ManualProductAiSearchResult? pageResult;
+    final repository = _FakeFoodEstimateRepository((_) async => _doener);
+    await _pumpPage(
+      tester,
+      repository: repository,
+      onResult: (result) => pageResult = result,
+    );
+    await tester.tap(find.byKey(FoodEstimatePhotoInput.cameraKey));
+    await tester.pumpAndSettle();
+    await _analyze(tester);
+
+    await tester.tap(find.text('Log'));
+    await tester.pumpAndSettle();
+
+    expect(repository.savedPhotos, hasLength(1));
+    expect(pageResult?.item.imageUrl, _foodPhotoUrl);
+  });
+
+  testWidgets('a failed photo upload still saves the food', (tester) async {
+    ManualProductAiSearchResult? pageResult;
+    final repository = _FakeFoodEstimateRepository((_) async => _doener)
+      ..saveError = Exception('offline');
+    await _pumpPage(
+      tester,
+      repository: repository,
+      onResult: (result) => pageResult = result,
+    );
+    await tester.tap(find.byKey(FoodEstimatePhotoInput.cameraKey));
+    await tester.pumpAndSettle();
+    await _analyze(tester);
+
+    await tester.tap(find.text('Log'));
+    await tester.pump();
+
+    expect(
+      find.text(
+        'The photo could not be saved. The food is saved without an image.',
+      ),
+      findsOneWidget,
+    );
+    await tester.pumpAndSettle();
+    expect(pageResult?.item.name, 'Döner Kebab');
+    expect(pageResult?.item.imageUrl, isNull);
   });
 
   testWidgets('a rich preparation raises the energy', (tester) async {

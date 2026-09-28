@@ -13,6 +13,7 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_product_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_save_outcome.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _logName = 'InventoryCombinedEatFlow';

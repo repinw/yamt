@@ -1,9 +1,14 @@
 import 'dart:convert';
 
 import 'package:firebase_ai/firebase_ai.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
+import 'package:yamt/core/provider/firebase_storage_provider.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -18,6 +23,7 @@ part 'food_estimate_repository.g.dart';
 const foodEstimateTemplateId = 'food-estimate-template';
 
 const _requestTimeout = Duration(seconds: 90);
+const _uuid = Uuid();
 // Food reads well at this size, and each photo costs AI tokens that grow
 // with its pixels.
 const _maxPhotoWidth = 1024.0;
@@ -35,6 +41,8 @@ FoodEstimateRepository foodEstimateRepository(Ref ref) {
   final model = FirebaseAI.googleAI().templateGenerativeModel();
   return FoodEstimateRepository(
     imagePicker: ImagePicker(),
+    storage: ref.watch(firebaseStorageProvider),
+    ownerId: ref.watch(authStateChangesProvider).asData?.value?.uid,
     templateClient: (inputs) async {
       final response = await model
           .generateContent(foodEstimateTemplateId, inputs: inputs)
@@ -47,10 +55,17 @@ FoodEstimateRepository foodEstimateRepository(Ref ref) {
 /// Estimates the nutrition of food from photos and a description.
 class FoodEstimateRepository {
   /// Creates a food estimate repository.
-  new({required this._imagePicker, required this._templateClient});
+  new({
+    required this._imagePicker,
+    required this._templateClient,
+    this._storage,
+    this._ownerId,
+  });
 
   final ImagePicker _imagePicker;
   final FoodEstimateTemplateClient _templateClient;
+  final FirebaseStorage? _storage;
+  final String? _ownerId;
 
   /// Takes a photo with the camera, or picks photos from the gallery.
   ///
@@ -69,6 +84,27 @@ class FoodEstimateRepository {
             imageQuality: _photoQuality,
           );
     return [for (final file in files) await _photoOf(file)];
+  }
+
+  /// Stores [photo] as a private food photo of the user and returns its
+  /// address.
+  ///
+  /// Throws a [StateError] when signed out, and the storage error when the
+  /// upload fails.
+  Future<String> saveFoodPhoto(FoodEstimatePhoto photo) async {
+    final storage = _storage;
+    final ownerId = _ownerId;
+    if (storage == null || ownerId == null) {
+      throw StateError('Food photos need a signed-in user.');
+    }
+    final ref = storage.ref(
+      'users/$ownerId/$privateFoodPhotoFolder/${_uuid.v4()}.jpg',
+    );
+    await ref.putData(
+      photo.bytes,
+      SettableMetadata(contentType: photo.mimeType),
+    );
+    return await ref.getDownloadURL();
   }
 
   /// Estimates the food shown in [photos] and described in [description].

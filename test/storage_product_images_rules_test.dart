@@ -46,4 +46,34 @@ void main() {
       );
     });
   });
+
+  group('food photo Storage rules', () {
+    late String compactRules;
+
+    setUpAll(() {
+      compactRules = File('storage.rules')
+          .readAsStringSync()
+          .replaceAll(RegExp(r'\s+'), ' ');
+    });
+
+    test('only the household reads and deletes the private food photos', () {
+      expect(
+        compactRules,
+        contains(
+          'match /users/{uid}/food_photos/{fileName} { '
+          'allow read, delete: if canAccessHouseholdOwnedData(uid);',
+        ),
+      );
+    });
+
+    test('only the user creates their food photos and nobody changes one', () {
+      expect(
+        compactRules,
+        contains(
+          'allow create: if isSignedIn() && request.auth.uid == uid '
+          '&& isProductImage(); allow update: if false; }',
+        ),
+      );
+    });
+  });
 }

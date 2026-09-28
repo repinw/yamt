@@ -4764,6 +4764,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get foodEstimateAnotherPhoto => 'One more';
 
   @override
+  String get foodEstimatePhotoNotSaved =>
+      'The photo could not be saved. The food is saved without an image.';
+
+  @override
   String foodEstimateRemovePhoto(int index) {
     return 'Remove photo $index';
   }

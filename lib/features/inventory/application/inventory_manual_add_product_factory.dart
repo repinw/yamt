@@ -63,7 +63,7 @@ GlobalFoodItem buildInventoryManualAddGlobalFoodItem({
     now: now,
     brand: item.brand,
     barcode: barcode,
-    imageUrl: normalizeProductImageUrl(item.imageUrl),
+    imageUrl: shareableProductImageUrl(item.imageUrl),
     packageWeight: packageWeight,
     servingSize: item.servingSize ?? selectedProduct?.servingSize,
     servingQuantity: item.servingQuantity ?? selectedProduct?.servingQuantity,
@@ -80,6 +80,7 @@ InventoryItem buildInventoryManualAddSavedItem({
   required DateTime now,
   required String storeName,
   required String? inventoryWeight,
+  String? imageUrl,
 }) {
   return InventoryItem.create(
     id: id,
@@ -91,7 +92,7 @@ InventoryItem buildInventoryManualAddSavedItem({
     quantity: 1,
     brand: globalProduct.brand,
     barcode: globalProduct.barcode,
-    imageUrl: globalProduct.imageUrl,
+    imageUrl: imageUrl ?? globalProduct.imageUrl,
     servingSize: globalProduct.servingSize,
     servingQuantity: globalProduct.servingQuantity,
     servingQuantityUnit: globalProduct.servingQuantityUnit,
