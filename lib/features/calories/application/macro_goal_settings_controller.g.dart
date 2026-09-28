@@ -46,7 +46,7 @@ final class MacroGoalSettingsControllerProvider
 }
 
 String _$macroGoalSettingsControllerHash() =>
-    r'0401252b30d574039192298ff97db84615e2c3db';
+    r'869df7f8a1adb7253b2410d2d1d79c3a8c5f507e';
 
 /// Manages persisted macro goal settings.
 
