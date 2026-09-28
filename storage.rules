@@ -14,6 +14,18 @@ service firebase.storage {
         );
     }
 
+    // The owner, or a member of the household the owner is active in: the
+    // photo shows an item of that household.
+    function canReadUserFoodPhoto(uid) {
+      return isSignedIn()
+        && (
+          request.auth.uid == uid
+          || isHouseholdMember(
+            firestore.get(/databases/(default)/documents/users/$(uid)).data.householdId
+          )
+        );
+    }
+
     function isKitchenUtensilImage() {
       return request.resource == null
         || (
@@ -58,7 +70,8 @@ service firebase.storage {
     // estimate. They are the image of the user's item and are never shared
     // as a product image.
     match /users/{uid}/food_photos/{fileName} {
-      allow read, delete: if canAccessHouseholdOwnedData(uid);
+      allow read: if canReadUserFoodPhoto(uid);
+      allow delete: if isSignedIn() && request.auth.uid == uid;
       allow create: if isSignedIn()
         && request.auth.uid == uid
         && isProductImage();

@@ -58,7 +58,9 @@ void main() {
     });
 
     test('household images no longer live under the user', () {
-      expect(compactRules, isNot(contains('match /users/{uid}/')));
+      for (final folder in <String>['kitchen_utensils', 'recipes']) {
+        expect(compactRules, isNot(contains('match /users/{uid}/$folder')));
+      }
     });
   });
 }

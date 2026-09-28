@@ -61,7 +61,8 @@ void main() {
         compactRules,
         contains(
           'match /users/{uid}/food_photos/{fileName} { '
-          'allow read, delete: if canAccessHouseholdOwnedData(uid);',
+          'allow read: if canReadUserFoodPhoto(uid); '
+          'allow delete: if isSignedIn() && request.auth.uid == uid;',
         ),
       );
     });
