@@ -136,3 +136,29 @@ class AppCheckboxListTile extends StatelessWidget {
     );
   }
 }
+
+/// App-standard [RadioListTile] with Material feedback disabled centrally.
+///
+/// It sits in a [RadioGroup]; wrap the group's `onChanged` with
+/// [AppHapticFeedback.wrapValueChanged].
+class AppRadioListTile<T> extends StatelessWidget {
+  /// Creates an app radio list tile.
+  const new({required this.value, this.title, this.contentPadding, super.key});
+
+  final T value;
+  final Widget? title;
+  final EdgeInsetsGeometry? contentPadding;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      type: MaterialType.transparency,
+      child: RadioListTile<T>(
+        enableFeedback: false,
+        value: value,
+        title: title,
+        contentPadding: contentPadding,
+      ),
+    );
+  }
+}

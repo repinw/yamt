@@ -1,6 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_haptic_feedback.dart';
+import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/features/household/domain/household_member.dart';
 import 'package:yamt/features/household/presentation/models/household_member_label.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -105,11 +107,13 @@ class _HouseholdLeaveDialogState extends State<HouseholdLeaveDialog> {
               ),
               RadioGroup<String>(
                 groupValue: _successorUid,
-                onChanged: (uid) => setState(() => _successorUid = uid),
+                onChanged: AppHapticFeedback.wrapValueChanged<String?>(
+                  (uid) => setState(() => _successorUid = uid),
+                )!,
                 child: Column(
                   children: [
                     for (final member in others)
-                      RadioListTile<String>(
+                      AppRadioListTile<String>(
                         key: HouseholdLeaveDialog.successorKey(member.uid),
                         value: member.uid,
                         contentPadding: EdgeInsets.zero,
