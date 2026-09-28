@@ -314,7 +314,7 @@ void main() {
     expect(find.text('Cookbook').first, findsOneWidget);
     expect(find.text('No templates saved yet.'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Add recipe template'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Add recipe template'));
     await tester.pump();
     await _pumpUntilFound(
       tester,
