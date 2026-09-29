@@ -14,36 +14,6 @@ import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 
 /// Business service that builds TDEE analytics data, trends, and projections.
 abstract final class TdeeAnalyticsService {
-  /// Resolves the start and end dates for a given cycle and time range.
-  static ({DateTime start, DateTime end}) resolveDateWindow({
-    required TdeeAnalyticsGoalCycle cycle,
-    required TdeeAnalyticsTimeRange timeRange,
-    required DateTime today,
-  }) {
-    final normalizedToday = normalizeDiaryDay(today);
-    final cycleEnd =
-        cycle.endDate != null && cycle.endDate!.isBefore(normalizedToday)
-        ? cycle.endDate!
-        : normalizedToday;
-
-    final cycleStart = cycle.startDate.isAfter(cycleEnd)
-        ? cycleEnd
-        : cycle.startDate;
-
-    final dayCount = timeRange.dayCount;
-    if (dayCount == null) {
-      return (start: cycleStart, end: cycleEnd);
-    }
-
-    final rawWindowStart = cycleEnd.subtract(Duration(days: dayCount - 1));
-    final windowStart =
-        (!cycle.isAllGoals && rawWindowStart.isBefore(cycleStart))
-        ? cycleStart
-        : rawWindowStart;
-
-    return (start: windowStart, end: cycleEnd);
-  }
-
   /// Resolves one continuous window spanning all selected goal cycles.
   static ({DateTime start, DateTime end}) resolveDateWindowForCycles({
     required List<TdeeAnalyticsGoalCycle> cycles,

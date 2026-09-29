@@ -195,25 +195,6 @@ Future<bool> toggleCalorieTrainingDay({
   return await controller.persistSettings(nextSettings);
 }
 
-/// Updates weekly training days and kcal offset.
-Future<bool> updateCalorieTrainingSchedule({
-  required CalorieGoalController controller,
-  required List<int> trainingWeekdays,
-  required double trainingDayKcalOffset,
-}) async {
-  final previous = await controller.currentSettings();
-  final nextProfile = previous.calculatorProfile?.copyWith(
-    trainingWeekdays: trainingWeekdays,
-    trainingDayKcalOffset: trainingDayKcalOffset,
-  );
-  final nextSettings = previous.copyWith(
-    trainingWeekdays: trainingWeekdays,
-    trainingDayKcalOffset: trainingDayKcalOffset,
-    calculatorProfile: nextProfile,
-  );
-  return await controller.persistSettings(nextSettings);
-}
-
 /// Sets pause day for a specific date.
 Future<bool> setCaloriePauseDay({
   required CalorieGoalController controller,

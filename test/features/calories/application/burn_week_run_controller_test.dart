@@ -386,30 +386,6 @@ void main() {
     expect(repository.state.runWeekNumber, burnWeekLearningRunWeekNumber);
   });
 
-  test('continueRunAfterLimitWarning keeps run and blocks star', () async {
-    final repository = _FakeBurnWeekRunStateRepository(
-      const BurnWeekRunState(
-        currentWeekStartDayKey: '2026-4-15',
-        runWeekNumber: 3,
-        starCount: 2,
-        starBrokeThisWeek: false,
-        missedTrackingThisWeek: false,
-      ),
-    );
-    final container = buildContainer(repository);
-
-    await container.read(burnWeekRunControllerProvider.future);
-    await container
-        .read(burnWeekRunControllerProvider.notifier)
-        .continueRunAfterLimitWarning();
-
-    expect(repository.state.currentWeekStartDayKey, '2026-4-15');
-    expect(repository.state.runWeekNumber, 3);
-    expect(repository.state.starCount, 2);
-    expect(repository.state.starBrokeThisWeek, isTrue);
-    expect(repository.state.runLimitWarningThisWeek, isTrue);
-  });
-
   test('syncForWeek earns no star for a broken week', () async {
     final repository = _FakeBurnWeekRunStateRepository(
       buildState(

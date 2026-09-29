@@ -709,7 +709,6 @@ Future<void> _pumpBalanceCard(
   ThemeMode themeMode = ThemeMode.light,
   bool isPauseDay = false,
   ValueChanged<DateTime>? onRestartRunFrom,
-  VoidCallback? onContinueRunAfterLimitWarning,
   bool weekOverviewThrows = false,
   bool showDetails = true,
   DateTime? now,
@@ -773,7 +772,6 @@ Future<void> _pumpBalanceCard(
           () => _FakeBurnWeekRunController(
             runState,
             onRestartRunFrom: onRestartRunFrom,
-            onContinueRunAfterLimitWarning: onContinueRunAfterLimitWarning,
           ),
         ),
       ],
@@ -948,16 +946,10 @@ CalorieWeekOverview _weekOverview({
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
-  new(
-    this.initialState, {
-    this.onRestartRunFrom,
-    this.onContinueRunAfterLimitWarning,
-  });
+  new(this.initialState, {this.onRestartRunFrom});
 
   final BurnWeekRunState initialState;
   final ValueChanged<DateTime>? onRestartRunFrom;
-  final VoidCallback? onContinueRunAfterLimitWarning;
-
   @override
   Future<BurnWeekRunState> build() async => initialState;
 
@@ -967,11 +959,6 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
     int? runWeekNumber,
   }) async {
     onRestartRunFrom?.call(weekStartDate);
-  }
-
-  @override
-  Future<void> continueRunAfterLimitWarning() async {
-    onContinueRunAfterLimitWarning?.call();
   }
 }
 

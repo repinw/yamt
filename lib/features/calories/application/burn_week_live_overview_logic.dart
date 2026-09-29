@@ -7,7 +7,6 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 /// Resolves live Burn Week metrics from real diary data.
 BurnWeekMockMetrics resolveBurnWeekLiveMetrics({
@@ -133,19 +132,4 @@ double resolveBurnWeekPreviousOverflowKcal({
     return 0;
   }
   return cycleCarryoverBeforeTodayKcal - currentWeekCarryoverBeforeTodayKcal;
-}
-
-/// Formats live Burn Week label from run week and current day.
-String formatBurnWeekLiveWeekDayLabel({
-  required DateTime currentDay,
-  required DateTime currentWeekStartDate,
-  required int runWeekNumber,
-  required AppLocalizations l10n,
-}) {
-  final dayNumber =
-      normalizeDiaryDay(currentDay)
-          .difference(normalizeDiaryDay(currentWeekStartDate))
-          .inDays +
-      1;
-  return l10n.burnWeekWeekDayLabel(runWeekNumber, dayNumber);
 }

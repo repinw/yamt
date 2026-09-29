@@ -11,41 +11,6 @@ import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 void main() {
   group('TdeeAnalyticsService', () {
     final today = DateTime(2025, 3, 10);
-    final cycleStart = DateTime(2025);
-
-    test('resolveDateWindow clamps correctly for 7 days', () {
-      final cycle = TdeeAnalyticsGoalCycle(
-        id: '1',
-        title: 'Active',
-        startDate: cycleStart,
-      );
-
-      final window = TdeeAnalyticsService.resolveDateWindow(
-        cycle: cycle,
-        timeRange: TdeeAnalyticsTimeRange.days7,
-        today: today,
-      );
-
-      expect(window.end, today);
-      expect(window.start, DateTime(2025, 3, 4));
-    });
-
-    test('resolveDateWindow handles all time for cycle', () {
-      final cycle = TdeeAnalyticsGoalCycle(
-        id: '1',
-        title: 'Active',
-        startDate: cycleStart,
-      );
-
-      final window = TdeeAnalyticsService.resolveDateWindow(
-        cycle: cycle,
-        timeRange: TdeeAnalyticsTimeRange.all,
-        today: today,
-      );
-
-      expect(window.start, cycleStart);
-      expect(window.end, today);
-    });
 
     test('multiple cycles form one continuous earliest-to-latest window', () {
       final window = TdeeAnalyticsService.resolveDateWindowForCycles(

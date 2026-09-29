@@ -185,18 +185,6 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     );
   }
 
-  /// Keeps current run alive after an unrecoverable limit warning.
-  Future<void> continueRunAfterLimitWarning() async {
-    final current = await future;
-    if (current.starBrokeThisWeek) {
-      return;
-    }
-    await _save(
-      current.copyWith(starBrokeThisWeek: true, runLimitWarningThisWeek: true),
-      previous: current,
-    );
-  }
-
   BurnWeekRunState _advanceToNextWeek({
     required BurnWeekRunState current,
     required String nextWeekStartDayKey,

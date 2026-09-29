@@ -37,7 +37,7 @@ final class BurnWeekRunControllerProvider
 }
 
 String _$burnWeekRunControllerHash() =>
-    r'd42d4da9e9cc3db8bfb24dcb15aeddae204de9a9';
+    r'4c4ca94ca765ff080c0681b37ced25bd5eaa57ac';
 
 /// Real Burn Week run controller.
 
