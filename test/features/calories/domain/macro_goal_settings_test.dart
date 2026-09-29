@@ -4,7 +4,7 @@ import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 void main() {
   group('MacroCalculationDefaults', () {
-    test('protein is 1.6 g/kg with sport and 1.2 g/kg without', () {
+    test('protein is 1.6 g/kg with and without sport', () {
       expect(
         MacroCalculationDefaults.defaultProteinMultiplier(
           isSportActive: true,
@@ -17,7 +17,7 @@ void main() {
           isSportActive: false,
           isLosingWeight: false,
         ),
-        1.2,
+        1.6,
       );
     });
 
@@ -68,7 +68,7 @@ void main() {
           hasTrainingDays: false,
           isLosingWeight: false,
         ),
-        1.2,
+        1.6,
       );
       expect(settings.effectiveFatMultiplier(isMale: true), 0.8);
       expect(settings.effectiveFatMultiplier(isMale: false), 0.9);
@@ -233,10 +233,11 @@ void main() {
 
       // Protein: 80 * 2.0 = 160g (640 kcal)
       // Fat: 80 * 1.0 = 80g (720 kcal)
-      // Carbs: (2400 - 640 - 720) / 4 = 1040 / 4 = 260g (1040 kcal)
+      // Carbs: (2400 - 640 - 720) / 4 = 260g, capped at 40 % = 240g.
+      // Protein is at 2.0 g/kg, so the 80 kcal excess goes to fat.
       expect(targets.protein, 160.0);
-      expect(targets.fat, 80.0);
-      expect(targets.carbs, 260.0);
+      expect(targets.fat, closeTo(80 + 80 / 9, 0.001));
+      expect(targets.carbs, 240.0);
     });
 
     test('calculates correct macros for 65kg female active at 2000 kcal', () {
@@ -249,10 +250,11 @@ void main() {
 
       // Protein: 65 * 1.8 = 117g (468 kcal)
       // Fat: 65 * 1.2 = 78g (702 kcal)
-      // Carbs: (2000 - 468 - 702) / 4 = 830 / 4 = 207.5g
-      expect(targets.protein, 117.0);
+      // Carbs: (2000 - 468 - 702) / 4 = 207.5g, capped at 40 % = 200g.
+      // The 7.5g excess fits into protein below 2.0 g/kg.
+      expect(targets.protein, 124.5);
       expect(targets.fat, 78.0);
-      expect(targets.carbs, 207.5);
+      expect(targets.carbs, 200.0);
     });
 
     test(
@@ -321,27 +323,27 @@ void main() {
     test('falls back to safe default weight when weightKg <= 0', () {
       // When weight is 0 or negative, should use safe weight fallback (70kg)
       final targets = DiaryMacroTargets.calculate(
-        goalKcal: 2000,
+        goalKcal: 1900,
         weightKg: 0,
         proteinGramsPerKg: 2,
         fatGramsPerKg: 1,
       );
       // 70kg * 2.0 = 140g protein (560 kcal)
       // 70kg * 1.0 = 70g fat (630 kcal)
-      // (2000 - 1190) / 4 = 202.5g carbs
+      // (1900 - 1190) / 4 = 177.5g carbs
       expect(targets.protein, 140.0);
       expect(targets.fat, 70.0);
-      expect(targets.carbs, 202.5);
+      expect(targets.carbs, 177.5);
 
       final negativeWeightTargets = DiaryMacroTargets.calculate(
-        goalKcal: 2000,
+        goalKcal: 1900,
         weightKg: -75,
         proteinGramsPerKg: 2,
         fatGramsPerKg: 1,
       );
       expect(negativeWeightTargets.protein, 140.0);
       expect(negativeWeightTargets.fat, 70.0);
-      expect(negativeWeightTargets.carbs, 202.5);
+      expect(negativeWeightTargets.carbs, 177.5);
     });
 
     test('handles zero multipliers by attributing all calories to carbs', () {

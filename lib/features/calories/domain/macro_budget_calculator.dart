@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 
 /// Result containing balanced macro targets in grams.
 @immutable
@@ -34,10 +34,21 @@ class MacroCalculationResult {
       'MacroCalculationResult(carbs: $carbs, protein: $protein, fat: $fat)';
 }
 
-/// Domain calculator for macro budgets ensuring minimum carbs floor (100g).
+/// Domain calculator for macro budgets.
+///
+/// Protein and fat start from their g/kg targets. Carbs get the rest, but at
+/// most [maximumCarbsKcalShare] of the kcal. What lies above that cap goes to
+/// protein up to [maximumProteinGramsPerKg], then to fat. On a small budget
+/// carbs keep at least [minimumCarbsFloorGrams].
 abstract final class MacroBudgetCalculator {
   /// Minimum carbs floor in grams to prevent ketosis / hypoglycemia.
   static const double minimumCarbsFloorGrams = 100;
+
+  /// Largest share of the daily kcal that carbs get.
+  static const double maximumCarbsKcalShare = 0.40;
+
+  /// Protein limit in g/kg for the kcal above the carb cap.
+  static const double maximumProteinGramsPerKg = 2;
 
   /// Minimum physiological fat floor in g/kg body weight.
   static const double minimumFatFloorGramsPerKg = 0.6;
@@ -54,7 +65,8 @@ abstract final class MacroBudgetCalculator {
   /// Energy density for fat in standard daily calculation.
   static const double standardFatKcalPerGram = 9;
 
-  /// Calculates balanced macros ensuring at least 100g carbs when possible.
+  /// Calculates balanced macros, capping carbs and ensuring at least 100 g
+  /// carbs when possible.
   static MacroCalculationResult calculate({
     required double goalKcal,
     required double weightKg,
@@ -96,10 +108,12 @@ abstract final class MacroBudgetCalculator {
     final initialCarbsGrams = remainingKcal / standardCarbKcalPerGram;
 
     if (initialCarbsGrams >= minimumCarbsFloorGrams) {
-      return MacroCalculationResult(
-        carbs: initialCarbsGrams,
-        protein: targetProteinGrams,
-        fat: targetFatGrams,
+      return _capCarbs(
+        goalKcal: goalKcal,
+        safeWeight: safeWeight,
+        targetProteinGrams: targetProteinGrams,
+        targetFatGrams: targetFatGrams,
+        carbsGrams: initialCarbsGrams,
       );
     }
 
@@ -109,6 +123,42 @@ abstract final class MacroBudgetCalculator {
       targetProteinGrams: targetProteinGrams,
       targetFatGrams: targetFatGrams,
       remainingKcal: remainingKcal,
+    );
+  }
+
+  static MacroCalculationResult _capCarbs({
+    required double goalKcal,
+    required double safeWeight,
+    required double targetProteinGrams,
+    required double targetFatGrams,
+    required double carbsGrams,
+  }) {
+    final capGrams = math.max<double>(
+      minimumCarbsFloorGrams,
+      goalKcal * maximumCarbsKcalShare / standardCarbKcalPerGram,
+    );
+    if (carbsGrams <= capGrams) {
+      return MacroCalculationResult(
+        carbs: carbsGrams,
+        protein: targetProteinGrams,
+        fat: targetFatGrams,
+      );
+    }
+    final excessKcal = (carbsGrams - capGrams) * standardCarbKcalPerGram;
+    final proteinRoomGrams = math.max<double>(
+      0,
+      safeWeight * maximumProteinGramsPerKg - targetProteinGrams,
+    );
+    final addedProteinGrams = math.min<double>(
+      proteinRoomGrams,
+      excessKcal / standardProteinKcalPerGram,
+    );
+    final addedFatKcal =
+        excessKcal - addedProteinGrams * standardProteinKcalPerGram;
+    return MacroCalculationResult(
+      carbs: capGrams,
+      protein: targetProteinGrams + addedProteinGrams,
+      fat: targetFatGrams + addedFatKcal / standardFatKcalPerGram,
     );
   }
 

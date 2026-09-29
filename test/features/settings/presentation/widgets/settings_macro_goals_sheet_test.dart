@@ -46,11 +46,11 @@ void main() {
     expect(find.byKey(SettingsMacroGoalsSheetKeys.resetButton), findsOneWidget);
     expect(find.byKey(SettingsMacroGoalsSheetKeys.saveButton), findsOneWidget);
 
-    // Without training days the defaults are 1.2 P and 0.8 F
-    expect(find.textContaining('1.2 g/kg'), findsOneWidget);
+    // Without training days the defaults are 1.6 P and 0.8 F
+    expect(find.textContaining('1.6 g/kg'), findsOneWidget);
     expect(find.textContaining('0.8 g/kg'), findsOneWidget);
 
-    // Toggle sport switch on -> protein rises to 1.6, fat stays 0.8
+    // Toggle sport switch on -> protein stays 1.6 while maintaining
     await tester.tap(find.byKey(SettingsMacroGoalsSheetKeys.sportActiveSwitch));
     await tester.pumpAndSettle();
 
@@ -68,7 +68,7 @@ void main() {
     await tester.tap(find.byKey(SettingsMacroGoalsSheetKeys.resetButton));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('1.2 g/kg'), findsOneWidget);
+    expect(find.textContaining('1.6 g/kg'), findsOneWidget);
     expect(find.textContaining('0.8 g/kg'), findsOneWidget);
 
     // Save
@@ -83,9 +83,9 @@ void main() {
     'displays budget exceeded warning and 0g carbs when goal is exceeded',
     (tester) async {
       // 900 kcal goal with 80kg male without training days:
-      // 1.2 P * 80kg = 96g (384 kcal)
+      // 1.6 P * 80kg = 128g (512 kcal)
       // 0.8 F * 80kg = 64g (576 kcal)
-      // Total: 960 kcal > 900 kcal
+      // Total: 1088 kcal > 900 kcal
       final preferences = MemoryAppPreferences();
 
       await tester.pumpWidget(
