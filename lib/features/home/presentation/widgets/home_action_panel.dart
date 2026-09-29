@@ -3,7 +3,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/core/widgets/home_more_sheet.dart';
+import 'package:yamt/core/widgets/home_action_entry.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -24,7 +24,7 @@ class HomeActionPanel extends StatelessWidget {
   static const closeButtonKey = ValueKey<String>('home-actions-close');
 
   /// The actions, grouped by section.
-  final List<HomeMoreSection> sections;
+  final List<HomeActionSection> sections;
 
   /// Closes the panel.
   final VoidCallback onClose;
@@ -33,7 +33,7 @@ class HomeActionPanel extends StatelessWidget {
   final Key? highlightedKey;
 
   /// Called with an action when it is tapped, before it runs.
-  final ValueChanged<HomeMoreEntry>? onUsed;
+  final ValueChanged<HomeActionEntry>? onUsed;
 
   @override
   Widget build(BuildContext context) {
@@ -114,7 +114,7 @@ class _ActionEntry extends StatelessWidget {
     required this.onTap,
   });
 
-  final HomeMoreEntry entry;
+  final HomeActionEntry entry;
   final bool isHighlighted;
   final VoidCallback onTap;
 

@@ -8,10 +8,8 @@
   "homeProfile": "Profile",
   "homeProgress": "Progress",
   "homeMenuTool": "Menu",
-  "homeMoreTool": "More",
   "aiChefIdeaDescription": "The AI suggests a random recipe",
   "aiChefIdeaTitle": "AI recipe idea",
-  "aiChefIdeaToolLabel": "AI idea",
   "aiChefSetupTitle": "What should the AI cook?",
   "aiChefSetupSubtitle": "Choose whether your inventory matters and add any wishes.",
   "aiChefUseInventoryTitle": "Use inventory",
@@ -750,19 +748,14 @@
   "inventoryDiscardReasonOther": "Other",
   "preparedMealSaveTemplateAction": "Save as template",
   "preparedMealTemplateSavedMessage": "Template saved.",
-  "preparedMealTemplatesPageTitle": "Templates",
-  "preparedMealTemplatesEmptyState": "No templates saved yet.",
   "preparedMealTemplatesLoadFailed": "Could not load templates.",
-  "preparedMealTemplateDeleteAction": "Delete template",
   "preparedMealTemplateDeletedMessage": "Template deleted.",
   "preparedMealTemplateAddRecipeAction": "Add recipe template",
-  "preparedMealTemplateRecipeToolLabel": "Recipe",
   "preparedMealTemplateAddRecipeDescription": "Import a recipe from a web page",
   "preparedMealTemplateCreateFromRecipeAction": "Create from recipe",
   "preparedMealTemplateCreateFailedMessage": "Template could not be created.",
   "preparedMealTemplateRecipeImportFailedMessage": "Recipe data could not be imported.",
   "preparedMealTemplateRecipeSheetTitle": "Create template from recipe",
-  "preparedMealTemplateRecipeEditSheetTitle": "Edit recipe template",
   "preparedMealTemplateRecipeSheetSubtitle": "Paste a recipe link, for example from Chefkoch.",
   "preparedMealTemplateRecipeGreetingSubtitle": "Simply copy the web address of your favorite recipe and we will read all ingredients automatically.",
   "preparedMealTemplateClipboardTitle": "Paste from clipboard ✨",
@@ -794,11 +787,8 @@
   "preparedMealTemplateNameHelper": "Optional. If empty, the name is derived from the link.",
   "preparedMealTemplatePortionsLabel": "Portions",
   "preparedMealTemplatePortionsHelper": "Optional. If empty, the servings from the recipe are used.",
-  "preparedMealTemplateUpdatedMessage": "Template updated.",
   "kitchenUtensilsPageTitle": "Kitchen utensils",
-  "kitchenUtensilsOpenAction": "Kitchen utensils",
   "kitchenUtensilsToolLabel": "Tools",
-  "kitchenUtensilsDescription": "Manage your pots and containers",
   "kitchenUtensilsEmptyState": "No kitchen utensils saved yet.",
   "kitchenUtensilsLoadFailed": "Could not load kitchen utensils.",
   "kitchenUtensilAddAction": "Add utensil",
@@ -2323,7 +2313,6 @@
   "cookflowSuccessSubtitle": "Your meal was saved and is now available in inventory.",
   "cookflowSuccessHeadline": "Meal saved",
   "cookflowToInventoryButton": "Go to inventory",
-  "cookflowResumeLabel": "Resume",
   "caloriesProteinShortLetter": "P",
   "caloriesCarbsShortLetter": "C",
   "caloriesFatShortLetter": "F",
@@ -2969,6 +2958,110 @@
   "diaryCheckInMissingDataPreviewAction": "Preview missing data",
   "homeMenuDebugSection": "Debug",
   "diaryCheckInFixedDaysHint": "Past days and pause days keep their type.",
+  "cookbookRecipeCount": "{count, plural, =1{1 recipe} other{{count} recipes}}",
+  "@cookbookRecipeCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "cookbookOpenMealsTitle": "In the pot",
+  "cookbookOpenMealRows": "{count, plural, =1{1 row open} other{{count} rows open}} · since {time}",
+  "@cookbookOpenMealRows": {
+    "placeholders": {
+      "count": {"type": "int"},
+      "time": {"type": "String"}
+    }
+  },
+  "cookbookContinueAction": "Continue",
+  "cookbookTemplatesTitle": "Templates",
+  "cookbookTemplatesCaption": "Combined from stock",
+  "cookbookNewTemplateTitle": "New template",
+  "cookbookNewTemplateCaption": "combine from stock",
+  "cookbookRecipesTitle": "Recipes",
+  "cookbookRecipesEmpty": "No recipes yet. Add one from a link or get an AI idea.",
+  "cookbookStockComplete": "All in stock",
+  "cookbookStockMissing": "{count} missing",
+  "@cookbookStockMissing": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "cookbookKcal": "{kcal} kcal",
+  "@cookbookKcal": {
+    "placeholders": {
+      "kcal": {"type": "int"}
+    }
+  },
+  "cookbookLoadFailed": "Could not load the cookbook.",
+  "homeActionCook": "Cook",
+  "cookbookFreeCookingAction": "Cook freely",
+  "cookbookFreeCookingDescription": "Say or type ingredients while you cook",
+  "freeCookingNameHint": "What is the dish called?",
+  "freeCookingDefaultName": "Cooked freely",
+  "freeCookingIngredientsTitle": "Ingredients",
+  "freeCookingStockCount": "{inStock} of {total} in stock",
+  "@freeCookingStockCount": {
+    "placeholders": {
+      "inStock": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "freeCookingStockLeft": "{amount} in stock",
+  "@freeCookingStockLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "freeCookingAmountWithUnit": "{amount} {unit}",
+  "@freeCookingAmountWithUnit": {
+    "placeholders": {
+      "amount": {
+        "type": "int"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "freeCookingPieces": "{count} pcs",
+  "@freeCookingPieces": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "freeCookingMissing": "missing",
+  "freeCookingListenTitle": "Listening",
+  "freeCookingListenHint": "Say the amount and the food. A pause starts a new row. Tap anywhere to stop.",
+  "freeCookingIdleTitle": "Tap and speak",
+  "freeCookingIdleHint": "For example: 500 g chicken, 40 g butter",
+  "freeCookingTypeAction": "Type",
+  "freeCookingTypeHint": "e.g. 200 g rice",
+  "freeCookingAddAction": "Add",
+  "freeCookingCookAction": "Cook",
+  "freeCookingSaved": "{name} is in the pot",
+  "@freeCookingSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "freeCookingStockLoadFailed": "Could not load the stock.",
+  "freeCookingSaveFailed": "Could not save the meal.",
+  "freeCookingDiscardTitle": "Discard the meal?",
+  "freeCookingDiscardBody": "The ingredients will be lost.",
+  "freeCookingDiscardAction": "Discard",
+  "freeCookingVoiceUnavailable": "Voice input does not work on this device.",
+  "freeCookingVoicePermissionDenied": "Allow the microphone to say ingredients.",
+  "freeCookingVoiceFailed": "Voice input could not start.",
   "preparedMealFillTitle": "Fill row",
   "preparedMealFillStockMatch": "Found in stock",
   "preparedMealFillTake": "Use",

@@ -7,10 +7,13 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_image_picker.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
@@ -21,8 +24,6 @@ import 'package:yamt/features/kitchen_utensils/presentation/'
     'kitchen_utensils_page.dart';
 import 'package:yamt/features/kitchen_utensils/presentation/widgets/'
     'kitchen_utensil_sheet.dart';
-import 'package:yamt/features/meal_templates/presentation/widgets/'
-    'meal_templates_page/meal_templates_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/root_navigator_test_utils.dart';
@@ -173,7 +174,7 @@ Widget _buildCookbookHarness({
     routes: [
       GoRoute(
         path: AppRoutes.root,
-        builder: (context, state) => const MealTemplatesPage(),
+        builder: (context, state) => const CookbookPage(),
       ),
       GoRoute(
         path: AppRoutes.homeKitchenUtensils,
@@ -194,6 +195,12 @@ Widget _buildCookbookHarness({
       ),
       preparedMealImagePickerProvider.overrideWithValue(
         FakePreparedMealImagePicker(),
+      ),
+      inventoryQuickEatItemsProvider.overrideWith(
+        (ref) => Stream.value(const <InventoryItem>[]),
+      ),
+      inventoryQuickEatMealsProvider.overrideWith(
+        (ref) => Stream.value(const <PreparedMeal>[]),
       ),
     ],
   );
@@ -332,7 +339,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Templates'), findsOneWidget);
+    expect(find.text('Cookbook'), findsOneWidget);
 
     await tester.tap(find.text('TOOLS'));
     await tester.pumpAndSettle();

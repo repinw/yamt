@@ -57,6 +57,30 @@ abstract final class AppGraphit {
   /// How far the action button reaches above the home bar.
   static const double navActionOverhang = 22;
 
+  /// Edge length of one square in a line of stock squares, one per food.
+  static const double stockSquare = 8;
+
+  /// Most squares in a line of stock squares; longer lists show only text.
+  static const int stockSquareMaxCount = 10;
+
+  /// Edge length of a letter tile that stands for one food of a meal.
+  static const double letterTile = 34;
+
+  /// How far overlapping letter tiles reach under the previous tile.
+  static const double letterTileOverlap = 10;
+
+  /// Width of a tile in a horizontal strip, such as a Vorlage.
+  static const double stripTileWidth = 156;
+
+  /// Width of the tile that starts a new entry at the head of a strip.
+  static const double stripStartTileWidth = 112;
+
+  /// Height of the picture on a recipe card.
+  static const double recipeCardPicture = 116;
+
+  /// Smallest height of a Vorlage tile.
+  static const double stripTileMinHeight = 150;
+
   /// Smallest height of a Vorrat row.
   static const double stockRowMinHeight = 70;
 
@@ -74,6 +98,15 @@ abstract final class AppGraphit {
 
   /// Thickness of the underline that marks an amount in an instruction.
   static const double highlightUnderline = 2;
+
+  /// Icon in the round button of the voice zone.
+  static const double voiceZoneIcon = 40;
+
+  /// Smallest height of the voice zone, so it stays easy to hit.
+  static const double voiceZoneMinHeight = 220;
+
+  /// Opacity of a row that speech recognition is still writing.
+  static const double pendingRowOpacity = 0.55;
 
   /// Opacity of a disabled button.
   static const double disabledOpacity = 0.7;

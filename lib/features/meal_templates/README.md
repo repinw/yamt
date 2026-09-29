@@ -1,46 +1,25 @@
 # Meal Templates Feature
 
-Meal templates owns the cookbook UI for browsing, importing, and reviewing
-prepared-meal templates before cooking flow starts from a template.
+## Purpose
+
+Meal templates owns the recipe link import and the review of an imported
+recipe before it is saved as a prepared-meal template.
 
 ## Owns
 
-- Meal template list, import review, and recipe-source UI surfaces.
-- Import-review argument models used by meal-template routes.
+- The recipe link sheet and the import flow.
+- The import review page and its route arguments.
 
 ## Does Not Own
 
 - Prepared meal persistence, template repositories, or mutation workflows.
 - Inventory item storage, matching domain models, or inventory consumption.
 - Recipe ingredient parsing rules.
-- Shopping-list persistence.
-- Cooking-flow session state.
+- The Kochbuch tab (`cookbook_new`).
 
-## Public Edge
+## Public UI
 
-Other features may consume these public Meal Templates entry points:
-
-- `MealTemplatesPage`
-- `MealTemplateImportReviewPage`
-
-## Providers
-
-Meal Templates currently owns no Riverpod providers. It composes public
-providers from Inventory in presentation code.
-
-## Accepted Dependencies
-
-Meal Templates currently has explicit dependencies on:
-
-- `inventory` for prepared-meal template data, inventory matching, assignment
-  support, and prepared-meal creation.
-- `home` for optional Home shell chrome around the templates page.
-- `kitchen_utensils` for the cookbook toolbar action.
-- `cooking_flow` for rendering cooking entry points on template cards.
-
-New dependencies should be added only with a README note and should avoid new
-cycles.
-
-## Tests
-
-Meal Templates tests live under `test/features/meal_templates/`.
+- `MealTemplateImportReviewPage`: review of an imported recipe.
+- `presentation/meal_template_recipe_import_flow.dart`:
+  `startRecipeTemplateImport` asks for a recipe link, imports it, and opens
+  the review.

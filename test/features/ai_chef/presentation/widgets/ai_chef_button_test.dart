@@ -7,7 +7,7 @@ import 'package:yamt/features/ai_chef/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('button opens recipe setup dialog', (tester) async {
+  testWidgets('openAiChef opens the recipe setup dialog', (tester) async {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(
@@ -19,7 +19,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byType(AiChefButton));
+    await tester.tap(find.byType(TextButton));
     await tester.pumpAndSettle();
 
     expect(find.text('Was soll die KI kochen?'), findsOneWidget);
@@ -33,6 +33,11 @@ class _AiChefButtonTestHost extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(actions: const [AiChefButton()]));
+    return Scaffold(
+      body: TextButton(
+        onPressed: () => openAiChef(context),
+        child: const Text('open'),
+      ),
+    );
   }
 }

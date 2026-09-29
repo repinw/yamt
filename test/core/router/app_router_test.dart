@@ -29,6 +29,7 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calories_page_keys.dart';
+import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
 import 'package:yamt/features/household/domain/household_invite.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -890,7 +891,7 @@ void main() {
 
     expect(router.state.uri.path, AppRoutes.homeInventoryTemplates);
     expect(find.text('Cookbook'), findsWidgets);
-    expect(find.byIcon(Icons.add_link_rounded), findsWidgets);
+    expect(find.byType(CookbookPage), findsOneWidget);
     expect(find.byType(BackButton), findsNothing);
   });
 

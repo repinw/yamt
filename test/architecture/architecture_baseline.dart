@@ -47,8 +47,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/inventory_shopping_list_page.dart': 1,
     'lib/features/meal_templates/presentation/meal_template_import_review_page.dart':
         1,
-    'lib/features/meal_templates/presentation/widgets/meal_templates_page/meal_templates_page.dart':
-        1,
     'lib/features/onboarding/presentation/models/intro_input_page_args.dart': 1,
     'lib/features/onboarding/presentation/widgets/intro/calorie_intro_flow.dart':
         1,
@@ -269,7 +267,7 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/controllers/inventory_items_controller.dart':
         2,
     'lib/features/inventory/presentation/controllers/prepared_meal_templates_controller.dart':
-        4,
+        3,
     'lib/features/kitchen_utensils/application/kitchen_utensil_mutation_service.dart':
         2,
     'lib/features/kitchen_utensils/domain/kitchen_utensil.dart': 1,
@@ -301,8 +299,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/meal_templates/presentation/widgets/meal_template_recipe_template_sheet.dart':
         3,
-    'lib/features/meal_templates/presentation/widgets/prepared_meal_template_card/prepared_meal_template_card.dart':
-        2,
     'lib/features/product_search_hub/presentation/widgets/product_search_barcode_scanner_page/product_search_barcode_scanner_resolving_indicator.dart':
         1,
     'lib/features/scanner/presentation/widgets/product_nutrition_summary.dart':

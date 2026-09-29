@@ -200,7 +200,4 @@ abstract final class AppSizes {
 
   /// Gap between the symbol and the word of a labeled header tool.
   static const double headerToolGap = 4;
-
-  /// Icon tile in front of a Mehr sheet entry.
-  static const double moreEntryIconTile = 40;
 }

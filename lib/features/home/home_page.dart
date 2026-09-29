@@ -7,14 +7,14 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
+import 'package:yamt/core/widgets/home_action_entry.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
-import 'package:yamt/core/widgets/home_more_sheet.dart';
 import 'package:yamt/core/widgets/home_nav_action.dart';
 import 'package:yamt/core/widgets/home_nav_entry.dart';
 import 'package:yamt/core/widgets/home_nav_item.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
-import 'package:yamt/core/widgets/home_shell_more_scope.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/cookbook_cook_actions.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_actions.dart';
 import 'package:yamt/features/home/domain/home_action_ranking.dart';
 import 'package:yamt/features/home/presentation/controllers/home_action_usage_controller.dart';
@@ -96,16 +96,6 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
 
   void _closeMenu() => setState(() => _isMenuOpen = false);
 
-  /// Opens the Mehr sheet with the actions of the current tab.
-  void _openMore(String title, List<HomeMoreEntry> entries) {
-    unawaited(
-      showHomeMoreSheet(
-        context,
-        sections: [HomeMoreSection(title: title, entries: entries)],
-      ),
-    );
-  }
-
   HomeTabType _currentTab() {
     return switch (widget.navigationShell.currentIndex) {
       _inventoryBranchIndex => HomeTabType.inventory,
@@ -122,16 +112,18 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     return switch (tab) {
       HomeTabType.inventory => l10n.inventoryDockAddAction,
       HomeTabType.diary => l10n.homeActionEat,
-      HomeTabType.cookbook || HomeTabType.progress => null,
+      HomeTabType.cookbook => l10n.homeActionCook,
+      HomeTabType.progress => null,
     };
   }
 
   /// The actions of [tab] for the action panel.
-  List<HomeMoreSection> _actions(HomeTabType tab) {
+  List<HomeActionSection> _actions(HomeTabType tab) {
     return switch (tab) {
       HomeTabType.inventory => inventoryAddActions(context, ref),
       HomeTabType.diary => diaryQuickEatActions(context, ref),
-      HomeTabType.cookbook || HomeTabType.progress => const <HomeMoreSection>[],
+      HomeTabType.cookbook => cookbookCookActions(context, ref),
+      HomeTabType.progress => const <HomeActionSection>[],
     };
   }
 
@@ -158,7 +150,7 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   }
 
   /// Id under which taps on [entry] are counted: its string key.
-  String? _usageId(HomeMoreEntry entry) {
+  String? _usageId(HomeActionEntry entry) {
     return switch (entry.key) {
       ValueKey<String>(:final value) => value,
       _ => null,
@@ -233,36 +225,33 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       extendBody: true,
       body: HomeShellMenuScope(
         openMenu: _openMenu,
-        child: HomeShellMoreScope(
-          openMore: _openMore,
-          child: Stack(
-            children: [
-              ContentVisibility(
-                isVisible: !_isCovered,
-                child: widget.navigationShell,
+        child: Stack(
+          children: [
+            ContentVisibility(
+              isVisible: !_isCovered,
+              child: widget.navigationShell,
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  HomeBottomNavBar(
+                    entries: _navEntries(context, l10n),
+                    action: switch (_actionLabel(l10n, currentTab)) {
+                      final label? => HomeNavAction(
+                        label: label,
+                        onPressed: _openActions,
+                      ),
+                      null => null,
+                    },
+                  ),
+                ],
               ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    HomeBottomNavBar(
-                      entries: _navEntries(context, l10n),
-                      action: switch (_actionLabel(l10n, currentTab)) {
-                        final label? => HomeNavAction(
-                          label: label,
-                          onPressed: _openActions,
-                        ),
-                        null => null,
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,

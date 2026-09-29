@@ -17,7 +17,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   The tab header and the bottom navigation stay in place while a tab
   scrolls. In the middle of the bar a round lime button opens the actions of
   the current tab, with a haptic pulse; its word changes per tab
-  ("Hinzufügen", "Essen"). The Cookbook and Fortschritt have no button yet.
+  ("Hinzufügen", "Essen", "Kochen"). Fortschritt has no button.
   The actions open like the side menu, but mirrored: the page slides to the
   left and shrinks, and the actions stand at the bottom right, where the
   thumb is. The app counts on the device how often each action is tapped;
@@ -407,9 +407,41 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Throw-away portions and return-to-inventory flows.
 - Save prepared meal as template.
 
-## Meal Templates And Cookbook
+## Cookbook
 
-- Saved meal template list.
+- The Kochbuch tab shows three sections: "Im Topf" lists Vorrat meals that
+  still have open rows, newest first, with the open row count and the start
+  time; "Vorlagen" is a horizontal strip of templates combined from Vorrat
+  foods, led by a "Neue Vorlage" tile; "Rezepte" is a two-column grid of
+  recipe templates.
+- A template with recipe ingredients counts as a recipe; one without is a
+  Vorlage.
+- Each Vorlage and recipe shows one square per food: ink when the Vorrat holds
+  a matching food, the low color when it is missing, followed by "Alles da" or
+  the missing count.
+- The "Kochen" button offers "Frei kochen", a recipe from a link, and an AI
+  idea. The header offers the kitchen utensils.
+- "Frei kochen" is a meal without a recipe. The cook names the dish (empty
+  means "Frei gekocht") and adds rows by voice or with "Schreiben". A tap on
+  the large voice zone starts listening; it keeps listening after each pause
+  until the next tap. Rows are cut before each amount, at commas, and at
+  "und", so "500 g Hähnchen 40 g Butter" gives two rows. While a row is
+  spoken it shows faded. Each row shows a filled square and the amount left
+  when the Vorrat holds the food in a fitting unit and the row has an amount,
+  or "fehlt"; the title counts "2 von 3 da".
+  A swipe removes a row.
+- "Kochen" saves one Vorrat meal with one portion: rows in stock take their
+  amount from the best Vorrat match, which is used up in the Vorrat; the
+  other rows stay open on the meal, so it appears under "Im Topf". Leaving
+  the page with rows asks before it discards them.
+- "Weiter" on a pot meal opens the meal's detail page, where its open rows
+  are filled. "Neue Vorlage" opens the Vorrat tab for now.
+  A recipe or Vorlage opens its template detail.
+- Editing and deleting templates from the Kochbuch is not available until the
+  recipe page exists.
+
+## Meal Templates
+
 - Import recipe templates from recipe links, currently centered on Chefkoch.
 - Review imported recipe before saving.
 - Template detail with recipe image, source, base portions, ingredients, and
@@ -420,7 +452,6 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Add one or many missing ingredients to shopping list.
 - Create prepared meals from templates, including incomplete meals when
   ingredients are missing.
-- Template edit, delete, and update flows.
 
 ## AI Chef
 

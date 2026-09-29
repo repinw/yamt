@@ -285,8 +285,8 @@ A feature may import only features that come earlier in this list:
 ```text
 shared (legacy), auth, household, health, product_nutrition, recipes,
 shoppinglist, calories, inventory, kitchen_utensils, product_search_hub,
-scanner, ai_chef, cooking_flow, meal_templates, activity, diary, progress,
-onboarding, home_widget, settings, home
+scanner, ai_chef, cooking_flow, meal_templates, cookbook_new, activity, diary,
+progress, onboarding, home_widget, settings, home
 ```
 
 - From an earlier feature, import only `domain/`, `data/`, `application/`,

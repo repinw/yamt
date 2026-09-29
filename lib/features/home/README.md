@@ -18,16 +18,11 @@ Home owns the tab shell, tab navigation, and shell-level composition.
   into the menu.
 - The action button in the middle of the bottom bar and its action panel
   (`presentation/widgets/home_action_panel.dart`). It opens like the side
-  menu, mirrored, with the tab's actions at the bottom right. Vorrat and
-  Diary have it; the Cookbook and Fortschritt do not yet. Taps on each action
+  menu, mirrored, with the tab's actions at the bottom right. Vorrat,
+  Diary, and Cookbook have it; Fortschritt does not. Taps on each action
   are counted on the device (`HomeActionUsageController`), and the most used
   action of the panel gets a lime icon tile
   (`domain/home_action_ranking.dart`). The order of the actions stays fixed.
-- The Mehr sheet for the actions of one tab: `HomePage` provides
-  `HomeShellMoreScope`, and a tab's `HomeMoreTool` (from `core/widgets`)
-  opens the sheet with that tab's entries, each with a one-line description.
-  Only a tab with more than two actions of its own gets one; today that is
-  the Cookbook. App-wide destinations stay in the side menu.
 
 ## Does Not Own
 

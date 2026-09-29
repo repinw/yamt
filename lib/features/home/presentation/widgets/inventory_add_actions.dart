@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/barcode_icon.dart';
-import 'package:yamt/core/widgets/home_more_sheet.dart';
+import 'package:yamt/core/widgets/home_action_entry.dart';
 import 'package:yamt/features/home/widgets/inventory_action_sheet_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -31,13 +31,16 @@ abstract final class InventoryAddActionKeys {
 /// The ways to add food to the Vorrat: barcode, search, AI, an own product,
 /// and a receipt as photo or upload. Without a camera the receipt offers only
 /// the upload.
-List<HomeMoreSection> inventoryAddActions(BuildContext context, WidgetRef ref) {
+List<HomeActionSection> inventoryAddActions(
+  BuildContext context,
+  WidgetRef ref,
+) {
   final l10n = AppLocalizations.of(context)!;
   return [
-    HomeMoreSection(
+    HomeActionSection(
       title: l10n.inventoryDockAddAction,
       entries: [
-        HomeMoreEntry(
+        HomeActionEntry(
           key: InventoryAddActionKeys.barcode,
           symbol: const BarcodeIcon(),
           title: l10n.diaryQuickEatSourceBarcode,
@@ -49,7 +52,7 @@ List<HomeMoreSection> inventoryAddActions(BuildContext context, WidgetRef ref) {
             ),
           ),
         ),
-        HomeMoreEntry(
+        HomeActionEntry(
           key: InventoryAddActionKeys.manualSearch,
           icon: Icons.search_rounded,
           title: l10n.inventoryActionManualSearch,
@@ -61,7 +64,7 @@ List<HomeMoreSection> inventoryAddActions(BuildContext context, WidgetRef ref) {
             ),
           ),
         ),
-        HomeMoreEntry(
+        HomeActionEntry(
           key: InventoryAddActionKeys.ai,
           icon: Icons.auto_awesome_rounded,
           title: l10n.inventoryActionAiSuggestion,
@@ -73,7 +76,7 @@ List<HomeMoreSection> inventoryAddActions(BuildContext context, WidgetRef ref) {
             ),
           ),
         ),
-        HomeMoreEntry(
+        HomeActionEntry(
           key: InventoryAddActionKeys.create,
           icon: Icons.edit_note_rounded,
           title: l10n.productSearchHubCreateOwnAction,
@@ -84,11 +87,11 @@ List<HomeMoreSection> inventoryAddActions(BuildContext context, WidgetRef ref) {
         ),
       ],
     ),
-    HomeMoreSection(
+    HomeActionSection(
       title: l10n.inventoryDockReceiptTool,
       entries: [
         if (InventoryActionSheetFlow.canPhotographReceipt(ref))
-          HomeMoreEntry(
+          HomeActionEntry(
             key: InventoryAddActionKeys.receiptPhoto,
             icon: Icons.photo_camera_rounded,
             title: l10n.inventoryReceiptPhotoAction,
@@ -101,7 +104,7 @@ List<HomeMoreSection> inventoryAddActions(BuildContext context, WidgetRef ref) {
               ),
             ),
           ),
-        HomeMoreEntry(
+        HomeActionEntry(
           key: InventoryAddActionKeys.receiptUpload,
           icon: Icons.upload_file_rounded,
           title: l10n.inventoryActionUploadImagePdf,

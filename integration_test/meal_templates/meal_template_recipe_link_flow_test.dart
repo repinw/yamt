@@ -7,7 +7,13 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
+import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cookbook_cook_actions.dart';
 import 'package:yamt/features/home/home_page.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
@@ -21,8 +27,6 @@ import 'package:yamt/features/meal_templates/presentation/'
     'meal_template_import_review_page.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
-import 'package:yamt/features/meal_templates/presentation/widgets/'
-    'meal_templates_page/meal_templates_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _recipeUrl =
@@ -189,9 +193,7 @@ _RecipeLinkHarness _buildHarness() {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventoryTemplates,
-                builder: (context, state) {
-                  return const MealTemplatesPage(includeAppBar: false);
-                },
+                builder: (context, state) => const CookbookPage(),
               ),
             ],
           ),
@@ -236,6 +238,12 @@ _RecipeLinkHarness _buildHarness() {
       ),
       preparedMealsControllerProvider.overrideWith(
         _NoopPreparedMealsController.new,
+      ),
+      inventoryQuickEatItemsProvider.overrideWith(
+        (ref) => Stream.value(const <InventoryItem>[]),
+      ),
+      inventoryQuickEatMealsProvider.overrideWith(
+        (ref) => Stream.value(const <PreparedMeal>[]),
       ),
     ],
   );
@@ -312,9 +320,14 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Cookbook').first, findsOneWidget);
-    expect(find.text('No templates saved yet.'), findsOneWidget);
+    expect(
+      find.text('No recipes yet. Add one from a link or get an AI idea.'),
+      findsOneWidget,
+    );
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Add recipe template'));
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookbookCookActionKeys.link));
     await tester.pump();
     await _pumpUntilFound(
       tester,
