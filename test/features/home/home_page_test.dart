@@ -944,50 +944,6 @@ void main() {
     );
   });
 
-  testWidgets('inventory ingredient selection chrome uses add action', (
-    tester,
-  ) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        initialLocation: AppRoutes.homeInventory,
-        branchBody: _inventoryTopChromeBranchBody(),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    final container = ProviderScope.containerOf(
-      tester.element(find.byType(HomePage)),
-    );
-    container
-        .read(preparedMealSelectionControllerProvider.notifier)
-        .startAddIngredientsToMealSelection();
-    container
-        .read(preparedMealSelectionControllerProvider.notifier)
-        .toggleSelection('item-1');
-    await tester.pumpAndSettle();
-
-    expect(find.text('Add ingredient'), findsOneWidget);
-    expect(
-      find.descendant(
-        of: find.byType(HomeShellTabTopChrome),
-        matching: find.byIcon(Icons.add_rounded),
-      ),
-      findsOneWidget,
-    );
-
-    await tester.tap(find.text('Add ingredient'));
-    await tester.pumpAndSettle();
-
-    expect(
-      container.read(preparedMealSelectionControllerProvider).bindRequestToken,
-      1,
-    );
-  });
-
   testWidgets('inventory tab shows the dock while inventory is loading', (
     tester,
   ) async {

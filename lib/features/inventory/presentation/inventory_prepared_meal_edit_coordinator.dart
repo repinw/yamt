@@ -5,134 +5,22 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_templates_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
-import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/prepared_meal_edit_sheet.dart';
+import 'package:yamt/features/inventory/presentation/models/prepared_meal_edit_draft.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _preparedMealImageAssetUuid = Uuid();
 
-class _PendingPreparedMealEditSelection {
-  const new({required this.mealId, required this.result});
-
-  final String mealId;
-  final PreparedMealEditSheetResult result;
-}
-
-/// Coordinates prepared meal edit and ingredient selection flows.
+/// Saves meal edits and meal templates, with an undo on the Vorrat page.
 class InventoryPreparedMealEditCoordinator {
-  _PendingPreparedMealEditSelection? _pendingEditSelection;
-  VoidCallback? _onFocusRequested;
-
-  /// Incremented whenever ingredient selection is triggered to focus list.
-  int inventorySelectionFocusToken = 0;
-
-  /// Starts ingredient selection from inventory for a meal edit draft.
-  bool startSelection({
-    required WidgetRef ref,
-    required String mealId,
-    required PreparedMealEditSheetResult result,
-    VoidCallback? onFocusRequested,
-  }) {
-    _onFocusRequested = onFocusRequested;
-    _pendingEditSelection = _PendingPreparedMealEditSelection(
-      mealId: mealId,
-      result: result.copyWith(requestIngredientSelection: false),
-    );
-    ref
-        .read(preparedMealSelectionControllerProvider.notifier)
-        .startAddIngredientsToMealSelection();
-    inventorySelectionFocusToken += 1;
-    _onFocusRequested?.call();
-    return true;
-  }
-
-  /// Continues meal edit flow after ingredients are selected in inventory.
-  Future<void> continueWithSelectedIngredients({
-    required BuildContext context,
-    required WidgetRef ref,
-    required PreparedMealSelectionState selectionState,
-  }) async {
-    final pendingSelection = _pendingEditSelection;
-    if (pendingSelection == null || selectionState.selectedItemIds.isEmpty) {
-      return;
-    }
-
-    final items = ref.read(inventoryItemsControllerProvider).asData?.value;
-    final meals = ref.read(preparedMealsControllerProvider).asData?.value;
-    if (items == null || meals == null || !context.mounted) {
-      return;
-    }
-
-    final meal = meals.firstWhereOrNull((m) => m.id == pendingSelection.mealId);
-    if (meal == null) {
-      _pendingEditSelection = null;
-      ref
-          .read(preparedMealSelectionControllerProvider.notifier)
-          .clearSelection();
-      return;
-    }
-
-    final nextResult = _addSelectedItemsToEditResult(
-      result: pendingSelection.result,
-      inventoryItems: items,
-      selectedItemIds: selectionState.selectedItemIds,
-    );
-    _pendingEditSelection = null;
-    ref.read(preparedMealSelectionControllerProvider.notifier).clearSelection();
-
-    await _openSheetAndHandleResult(
-      context: context,
-      ref: ref,
-      meal: meal,
-      items: items,
-      initialValue: nextResult,
-    );
-  }
-
-  Future<void> _openSheetAndHandleResult({
-    required BuildContext context,
-    required WidgetRef ref,
-    required PreparedMeal meal,
-    required List<InventoryItem> items,
-    required PreparedMealEditSheetResult initialValue,
-  }) async {
-    final editResult = await showPreparedMealEditSheet(
-      context: context,
-      meal: meal,
-      inventoryItems: items,
-      initialValue: initialValue,
-    );
-    if (!context.mounted || editResult == null) {
-      return;
-    }
-    if (editResult.requestIngredientSelection) {
-      startSelection(
-        ref: ref,
-        mealId: meal.id,
-        result: editResult,
-        onFocusRequested: _onFocusRequested,
-      );
-      return;
-    }
-    await updatePreparedMeal(
-      context: context,
-      ref: ref,
-      mealId: meal.id,
-      result: editResult,
-    );
-  }
-
   /// Updates prepared meal details, including persisting changed images.
   Future<bool> updatePreparedMeal({
     required BuildContext context,
     required WidgetRef ref,
     required String mealId,
-    required PreparedMealEditSheetResult result,
+    required PreparedMealEditResult result,
   }) async {
     final previous = ref
         .read(preparedMealsControllerProvider)
@@ -181,7 +69,7 @@ class InventoryPreparedMealEditCoordinator {
 
   Future<String?> _saveImageBytesIfChanged(
     WidgetRef ref,
-    PreparedMealEditSheetResult result,
+    PreparedMealEditResult result,
   ) async {
     if (!result.imageChanged || result.imageBytes == null) {
       return null;
@@ -219,30 +107,4 @@ class InventoryPreparedMealEditCoordinator {
     );
     return true;
   }
-
-  PreparedMealEditSheetResult _addSelectedItemsToEditResult({
-    required PreparedMealEditSheetResult result,
-    required List<InventoryItem> inventoryItems,
-    required Set<String> selectedItemIds,
-  }) {
-    final existingItemIds = result.items.map((item) => item.itemId).toSet();
-    final addedInputs = [
-      for (final item in inventoryItems)
-        if (selectedItemIds.contains(item.id) &&
-            !existingItemIds.contains(item.id) &&
-            _defaultInventoryItemAmount(item) > 0)
-          PreparedMealItemInput(
-            itemId: item.id,
-            usedAmount: _defaultInventoryItemAmount(item),
-          ),
-    ];
-
-    return result.copyWith(
-      items: <PreparedMealItemInput>[...result.items, ...addedInputs],
-      requestIngredientSelection: false,
-    );
-  }
-
-  int _defaultInventoryItemAmount(InventoryItem item) =>
-      item.usesAmountProgress ? item.currentAmount : item.quantity;
 }

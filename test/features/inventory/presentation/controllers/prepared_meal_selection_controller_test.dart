@@ -30,17 +30,4 @@ void main() {
     );
   });
 
-  test('selection controller can start add-ingredient selection empty', () {
-    final container = ProviderContainer();
-    addTearDown(container.dispose);
-
-    container
-        .read(preparedMealSelectionControllerProvider.notifier)
-        .startAddIngredientsToMealSelection();
-
-    final state = container.read(preparedMealSelectionControllerProvider);
-    expect(state.isSelectionMode, isTrue);
-    expect(state.isAddingIngredientsToMeal, isTrue);
-    expect(state.selectedItemIds, isEmpty);
-  });
 }

@@ -11,27 +11,15 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_hub_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_prepared_meal_edit_coordinator.dart';
 
 /// Handles prepared-meal selection completion for the inventory page.
 Future<void> handleInventoryPageSelectionConfirmed({
   required BuildContext context,
   required WidgetRef ref,
-  required InventoryPreparedMealEditCoordinator mealEditCoordinator,
   required int? previous,
   required int next,
 }) async {
   if (previous == next || next < 1) {
-    return;
-  }
-  final selectionState = ref.read(preparedMealSelectionControllerProvider);
-  if (selectionState.isAddingIngredientsToMeal) {
-    await mealEditCoordinator.continueWithSelectedIngredients(
-      context: context,
-      ref: ref,
-      selectionState: selectionState,
-    );
     return;
   }
   await _openSelectionAsMeal(context: context, ref: ref);

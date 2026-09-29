@@ -11,6 +11,24 @@ import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_r
 
 part 'inventory_item_combine_controller.g.dart';
 
+/// Stock items that can join a meal: counted in grams or milliliters, with
+/// nutrition values and stock, and not in [taken]. Sorted by name.
+List<InventoryItem> inventoryMealCandidates(
+  List<InventoryItem> items, {
+  required Set<String> taken,
+}) {
+  return items
+      .where(
+        (item) =>
+            !taken.contains(item.id) &&
+            consumableInventoryAmount(item) != null &&
+            defaultMealFoodAmount(item) != null &&
+            InventoryCombinedEatService.canCombine(item),
+      )
+      .toList()
+    ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+}
+
 /// Foods picked on the item hub of [hubItemId] to log together with it.
 ///
 /// The hub item's own request decides day and meal; a pick's `loggedAt` and
@@ -30,20 +48,10 @@ class InventoryItemCombineController extends _$InventoryItemCombineController {
     List<InventoryItem> items, {
     bool includesHub = true,
   }) {
-    final taken = {
-      if (includesHub) hubItemId,
-      ...state.map((pick) => pick.item.id),
-    };
-    return items
-        .where(
-          (item) =>
-              !taken.contains(item.id) &&
-              consumableInventoryAmount(item) != null &&
-              defaultMealFoodAmount(item) != null &&
-              InventoryCombinedEatService.canCombine(item),
-        )
-        .toList()
-      ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
+    return inventoryMealCandidates(
+      items,
+      taken: {if (includesHub) hubItemId, ...state.map((pick) => pick.item.id)},
+    );
   }
 
   /// Adds [request] of [item] to the list. A food found by search passes

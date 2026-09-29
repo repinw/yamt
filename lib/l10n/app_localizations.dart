@@ -2038,6 +2038,12 @@ abstract class AppLocalizations {
   /// **'Prepared meals'**
   String get preparedMealSectionTitle;
 
+  /// No description provided for @preparedMealEditLockedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions of this meal are already eaten, so its ingredients and portions stay fixed. You can still change the name and picture.'**
+  String get preparedMealEditLockedHint;
+
   /// No description provided for @preparedMealEditTitle.
   ///
   /// In en, this message translates to:

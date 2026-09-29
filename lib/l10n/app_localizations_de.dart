@@ -1195,6 +1195,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealSectionTitle => 'Mahlzeiten';
 
   @override
+  String get preparedMealEditLockedHint =>
+      'Von dieser Mahlzeit wurde schon gegessen. Zutaten und Portionen bleiben daher fest; Name und Bild kannst du ändern.';
+
+  @override
   String get preparedMealEditTitle => 'Mahlzeit bearbeiten';
 
   @override

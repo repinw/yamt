@@ -204,7 +204,7 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Each row shows a tilted, framed picture (photo, ingredient photos of a
   meal, or the first letter), the name, the amount left and the full amount,
   brand and kcal per 100 g (for a meal its portions or its missing
-  ingredients), and a stock bar with one segment per pack, or per portion for
+  ingredients; "Aus Rezept" or "Kombiniert" names where a meal comes from), and a stock bar with one segment per pack, or per portion for
   a meal. Under a quarter left the amount and the bar turn orange with "fast
   leer".
 - The Sortieren sheet sorts by added, eaten, name or amount; tapping the
@@ -228,11 +228,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   carry no images), the meal name, and one
   nutrition label for the whole meal, per 100 g and in total ("–" when one
   food lacks a value; no per-100 column when grams and milliliters mix),
-  and "Log meal" saves one combined diary entry named "A + B". The entry and
+  and the main button "In Vorrat" keeps the picked foods in stock as one
+  prepared meal "A + B" with one portion. The grey "Mahlzeit eintragen"
+  saves one combined diary entry named "A + B" instead. The entry and
   every stock change are written together. A combined entry cannot change its
   amount or be eaten again; deleting it can return the stock of every food.
-  Instead of logging, "In Vorrat" keeps the picked foods in stock as one
-  prepared meal "A + B" with one portion. A food found by search that is not
+  While other foods are picked, the Item card hides "Bearbeiten". A food found by search that is not
   counted in grams or milliliters still gets its amount on the eat page,
   whose button reads "Add".
 - Amount parsing and unit handling for grams, milliliters, pieces, and custom
@@ -241,7 +242,7 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Household inventory activity timeline for stock changes.
 - Add-to-shopping-list and buy-again actions.
 - The picture of a food or meal flies from its row into the page it opens.
-- A long press selects foods; "Binden" opens the item hub of the first
+- A long press selects foods; "Lebensmittel kombinieren" opens the item hub of the first
   selected food with the others already combined, so the meal is logged or
   kept in the Vorrat there.
 - Tapping a prepared meal opens its detail page: the meal eat page plus a
@@ -249,8 +250,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   meal; missing recipe ingredients in orange with "Zutat ergänzen" and "Zutat
   ignorieren") and a "Mahlzeit" card with edit, save as recipe, unbundle and
   throw away. A meal with missing ingredients can be logged once they are
-  filled or ignored. Picking more ingredients during an edit closes the page
-  and selects foods in the Vorrat list.
+  filled or ignored.
+- Editing a meal opens the meal editor, drawn like the eat page: picture
+  (tap for camera, gallery or remove) and name, one row per ingredient with
+  a ruler for its amount and a remove button, "+ Lebensmittel hinzufügen"
+  (stock foods only, 100 g or ml each), the portions and the nutrition label
+  of the edited meal. Once portions are eaten, only name and picture change.
 - Global food item matching and serving suggestions for future adds.
 
 ## Receipt Scanner And Review

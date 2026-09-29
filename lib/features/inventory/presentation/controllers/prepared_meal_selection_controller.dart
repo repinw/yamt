@@ -4,15 +4,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'prepared_meal_selection_controller.g.dart';
 
-/// Defines why inventory items are being selected.
-enum PreparedMealSelectionPurpose {
-  /// Create a new prepared meal from selected inventory items.
-  createMeal,
-
-  /// Add selected inventory items to an existing prepared meal edit.
-  addIngredientsToMeal,
-}
-
 /// Defines prepared meal selection state.
 @immutable
 class PreparedMealSelectionState {
@@ -20,7 +11,6 @@ class PreparedMealSelectionState {
   const new({
     this.selectedItemIds = const <String>{},
     this.bindRequestToken = 0,
-    this.purpose = PreparedMealSelectionPurpose.createMeal,
   });
 
   /// The selected item ids.
@@ -29,19 +19,8 @@ class PreparedMealSelectionState {
   /// The bind request token.
   final int bindRequestToken;
 
-  /// The current selection purpose.
-  final PreparedMealSelectionPurpose purpose;
-
   /// Whether selection mode.
-  bool get isSelectionMode {
-    return selectedItemIds.isNotEmpty ||
-        purpose == PreparedMealSelectionPurpose.addIngredientsToMeal;
-  }
-
-  /// Whether selecting ingredients for an existing meal edit.
-  bool get isAddingIngredientsToMeal {
-    return purpose == PreparedMealSelectionPurpose.addIngredientsToMeal;
-  }
+  bool get isSelectionMode => selectedItemIds.isNotEmpty;
 
   /// The selected count.
   int get selectedCount => selectedItemIds.length;
@@ -50,12 +29,10 @@ class PreparedMealSelectionState {
   PreparedMealSelectionState copyWith({
     Set<String>? selectedItemIds,
     int? bindRequestToken,
-    PreparedMealSelectionPurpose? purpose,
   }) {
     return PreparedMealSelectionState(
       selectedItemIds: selectedItemIds ?? this.selectedItemIds,
       bindRequestToken: bindRequestToken ?? this.bindRequestToken,
-      purpose: purpose ?? this.purpose,
     );
   }
 
@@ -67,8 +44,7 @@ class PreparedMealSelectionState {
               other.selectedItemIds,
               selectedItemIds,
             ) &&
-            other.bindRequestToken == bindRequestToken &&
-            other.purpose == purpose;
+            other.bindRequestToken == bindRequestToken;
   }
 
   @override
@@ -76,7 +52,6 @@ class PreparedMealSelectionState {
     return Object.hash(
       const SetEquality<String>().hash(selectedItemIds),
       bindRequestToken,
-      purpose,
     );
   }
 }
@@ -99,14 +74,6 @@ class PreparedMealSelectionController
     state = PreparedMealSelectionState(
       selectedItemIds: <String>{trimmedItemId},
       bindRequestToken: state.bindRequestToken,
-    );
-  }
-
-  /// Start ingredient selection for an existing meal edit.
-  void startAddIngredientsToMealSelection() {
-    state = PreparedMealSelectionState(
-      bindRequestToken: state.bindRequestToken,
-      purpose: PreparedMealSelectionPurpose.addIngredientsToMeal,
     );
   }
 

@@ -29,7 +29,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       isShowingHistory: _selectedView == _InventoryPageView.history,
       onToggleView: _toggleView,
       mealEditCoordinator: _mealEditCoordinator,
-      onFocusRequested: () => setState(() {}),
       includeHomeShellChrome: widget.includeHomeShellChrome,
     );
   }

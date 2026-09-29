@@ -67,15 +67,9 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
     PreparedMealSelectionState selectionState,
     bool useCompactSelectionActions,
   ) {
-    final isAddingIngredients = selectionState.isAddingIngredientsToMeal;
-    final selectionActionLabel = isAddingIngredients
-        ? l10n.preparedMealAddIngredientAction
-        : l10n.preparedMealBindAction;
-    final selectionActionIcon = isAddingIngredients
-        ? Icons.add_rounded
-        : Icons.restaurant_menu_rounded;
-    final canConfirmSelection =
-        selectionState.selectedCount >= (isAddingIngredients ? 1 : 2);
+    final selectionActionLabel = l10n.preparedMealBindAction;
+    const selectionActionIcon = Icons.restaurant_menu_rounded;
+    final canConfirmSelection = selectionState.selectedCount >= 2;
 
     if (useCompactSelectionActions) {
       return [
@@ -97,7 +91,7 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
                       .confirmSelection();
                 }
               : null,
-          icon: Icon(selectionActionIcon),
+          icon: const Icon(selectionActionIcon),
         ),
       ];
     }
@@ -119,7 +113,7 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
                     .confirmSelection();
               }
             : null,
-        icon: Icon(selectionActionIcon),
+        icon: const Icon(selectionActionIcon),
         label: Text(selectionActionLabel),
       ),
     ];

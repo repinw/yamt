@@ -34,7 +34,6 @@ class InventoryPageContent extends ConsumerWidget {
     required this.isShowingHistory,
     required this.onToggleView,
     required this.mealEditCoordinator,
-    required this.onFocusRequested,
     this.includeHomeShellChrome = false,
     super.key,
   });
@@ -47,9 +46,6 @@ class InventoryPageContent extends ConsumerWidget {
 
   /// Coordinator retained by the page state.
   final InventoryPreparedMealEditCoordinator mealEditCoordinator;
-
-  /// Rebuilds the page when ingredient selection requests focus.
-  final VoidCallback onFocusRequested;
 
   /// Whether to render home-shell chrome.
   final bool includeHomeShellChrome;
@@ -65,7 +61,6 @@ class InventoryPageContent extends ConsumerWidget {
         (previous, next) => handleInventoryPageSelectionConfirmed(
           context: context,
           ref: ref,
-          mealEditCoordinator: mealEditCoordinator,
           previous: previous,
           next: next,
         ),
@@ -139,13 +134,6 @@ class InventoryPageContent extends ConsumerWidget {
         mealId: mealId,
         result: result,
       ),
-      selectEditIngredients: (mealId, result) async =>
-          mealEditCoordinator.startSelection(
-            ref: ref,
-            mealId: mealId,
-            result: result,
-            onFocusRequested: onFocusRequested,
-          ),
       saveTemplate: (meal) => mealEditCoordinator.saveTemplate(
         context: context,
         ref: ref,
@@ -155,8 +143,6 @@ class InventoryPageContent extends ConsumerWidget {
 
     return InventoryList(
       includeHomeShellChrome: includeHomeShellChrome,
-      inventorySelectionFocusToken:
-          mealEditCoordinator.inventorySelectionFocusToken,
       topChromeActions: topChromeActions,
       onOpenMeal: (meal) => unawaited(
         PreparedMealEatFlow.eat(

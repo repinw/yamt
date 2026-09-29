@@ -14,14 +14,14 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'prepared_meal_actions.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'prepared_meal_edit_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_action_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_meal_ingredients_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
-import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_edit_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_ingredient_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -131,25 +131,11 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
   }
 
   Future<void> _edit(PreparedMeal meal) async {
-    final result = await showPreparedMealEditSheet(
-      context: context,
-      meal: meal,
-      inventoryItems: _inventoryItems(),
-    );
+    final result = await showPreparedMealEditPage(context, meal: meal);
     if (!mounted || result == null) {
       return;
     }
-    if (!result.requestIngredientSelection) {
-      await _run(() => widget.actions.edit(meal.id, result));
-      return;
-    }
-    // Picking more ingredients happens in the Vorrat list below this page.
-    final started = await _run(
-      () => widget.actions.selectEditIngredients(meal.id, result),
-    );
-    if (started && mounted) {
-      Navigator.of(context).pop();
-    }
+    await _run(() => widget.actions.edit(meal.id, result));
   }
 
   Future<void> _throwAway(PreparedMeal meal) async {

@@ -1178,6 +1178,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealSectionTitle => 'Prepared meals';
 
   @override
+  String get preparedMealEditLockedHint =>
+      'Portions of this meal are already eaten, so its ingredients and portions stay fixed. You can still change the name and picture.';
+
+  @override
   String get preparedMealEditTitle => 'Edit prepared meal';
 
   @override

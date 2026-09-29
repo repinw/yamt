@@ -20,6 +20,7 @@ typedef InventoryCombinePickResult = ({
 Future<InventoryCombinePickResult?> showInventoryCombinePickPage(
   BuildContext context, {
   required List<InventoryItem> candidates,
+  bool canSearch = true,
 }) {
   return Navigator.of(
     context,
@@ -27,7 +28,10 @@ Future<InventoryCombinePickResult?> showInventoryCombinePickPage(
   ).push<InventoryCombinePickResult>(
     MaterialPageRoute<InventoryCombinePickResult>(
       fullscreenDialog: true,
-      builder: (_) => InventoryCombinePickPage(candidates: candidates),
+      builder: (_) => InventoryCombinePickPage(
+        candidates: candidates,
+        canSearch: canSearch,
+      ),
     ),
   );
 }
@@ -35,7 +39,7 @@ Future<InventoryCombinePickResult?> showInventoryCombinePickPage(
 /// The inventory list in selection mode, showing only [candidates].
 class InventoryCombinePickPage extends StatefulWidget {
   /// Creates the page.
-  const new({required this.candidates, super.key});
+  const new({required this.candidates, this.canSearch = true, super.key});
 
   /// Key of the button that takes over the selection.
   static const confirmKey = Key('inventory_combine_pick_confirm');
@@ -48,6 +52,9 @@ class InventoryCombinePickPage extends StatefulWidget {
 
   /// Stock items that can be combined.
   final List<InventoryItem> candidates;
+
+  /// Whether a food outside the stock can be searched.
+  final bool canSearch;
 
   @override
   State<InventoryCombinePickPage> createState() =>
@@ -68,12 +75,13 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
               : l10n.preparedMealSelectionCount(_selected.length),
         ),
         actions: [
-          IconButton(
-            key: InventoryCombinePickPage.searchKey,
-            tooltip: l10n.eatPageCombineSearch,
-            onPressed: _search,
-            icon: const Icon(Icons.search_rounded),
-          ),
+          if (widget.canSearch)
+            IconButton(
+              key: InventoryCombinePickPage.searchKey,
+              tooltip: l10n.eatPageCombineSearch,
+              onPressed: _search,
+              icon: const Icon(Icons.search_rounded),
+            ),
           TextButton(
             key: InventoryCombinePickPage.confirmKey,
             onPressed: _selected.isEmpty ? null : _confirm,

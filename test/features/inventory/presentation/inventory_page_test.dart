@@ -37,6 +37,7 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/features/inventory/presentation/inventory_calorie_entry_delete_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/prepared_meal_edit_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
@@ -529,6 +530,62 @@ Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
   await tester.ensureVisible(confirmButton);
   await tester.tap(confirmButton);
   await tester.pumpAndSettle();
+}
+
+PreparedMeal _bowl({num remainingPortions = 1}) {
+  final milk = _itemWithNutrition('a');
+  return PreparedMeal(
+    id: 'bowl',
+    name: 'Milk bowl',
+    totalPortions: 1,
+    remainingPortions: remainingPortions,
+    totalKcal: 128,
+    totalProtein: 6.6,
+    totalCarbs: 9.6,
+    totalFat: 7,
+    createdAt: DateTime(2026, 9),
+    updatedAt: DateTime(2026, 9),
+    components: <PreparedMealComponent>[
+      PreparedMealComponent(
+        inventoryItemId: 'a',
+        name: 'Milk',
+        brand: 'Acme',
+        imageUrl: null,
+        usedAmount: 200,
+        usedUnit: InventoryAmountUnit.gram,
+        totalKcal: 128,
+        totalProtein: 6.6,
+        totalCarbs: 9.6,
+        totalFat: 7,
+        sourceItemSnapshot: milk,
+      ),
+    ],
+  );
+}
+
+Future<_RecordingPreparedMealRepository> _openMealEditor(
+  WidgetTester tester,
+  PreparedMeal meal,
+) async {
+  final repository = _FakeFridgeItemRepository(
+    onReadAll: () async => <InventoryItem>[
+      _itemWithNutrition('a', currentAmount: 800),
+      _itemWithNutrition('b', name: 'Oats'),
+    ],
+  );
+  addTearDown(repository.dispose);
+  final mealRepository = _RecordingPreparedMealRepository()..saved = [meal];
+  await _pumpTestApp(
+    tester,
+    repository,
+    overrides: <Override>[
+      preparedMealRepositoryProvider.overrideWithValue(mealRepository),
+    ],
+  );
+  await tester.pumpAndSettle();
+  await _tapVisible(tester, find.text('Milk bowl'));
+  await _tapVisible(tester, find.byKey(const Key('eat_meal_action_edit')));
+  return mealRepository;
 }
 
 void main() {
@@ -1972,4 +2029,38 @@ void main() {
       expect(_stockLabel('1 pc'), findsOneWidget);
     },
   );
+  testWidgets('meal editor adds a stock food and saves the portions', (
+    tester,
+  ) async {
+    final mealRepository = await _openMealEditor(tester, _bowl());
+
+    expect(find.byKey(PreparedMealEditPage.saveKey), findsOneWidget);
+    await _tapVisible(tester, find.byKey(PreparedMealEditPage.addKey));
+    expect(find.byKey(InventoryCombinePickPage.searchKey), findsNothing);
+    await _tapVisible(tester, find.text('Oats'));
+    await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
+    await _tapVisible(tester, find.byKey(EatMealPortionsRow.increaseKey));
+    await _tapVisible(tester, find.byKey(PreparedMealEditPage.saveKey));
+
+    final meal = mealRepository.saved.single;
+    expect(meal.totalPortions, 2);
+    expect(meal.components.map((c) => (c.inventoryItemId, c.usedAmount)), [
+      ('a', 200),
+      ('b', 100),
+    ]);
+  });
+
+  testWidgets('meal editor keeps eaten meals to name and picture', (
+    tester,
+  ) async {
+    await _openMealEditor(tester, _bowl(remainingPortions: 0.5));
+
+    expect(
+      find.byKey(const Key('prepared_meal_edit_locked_hint')),
+      findsOneWidget,
+    );
+    expect(find.byKey(PreparedMealEditPage.addKey), findsNothing);
+    expect(find.byKey(EatMealPortionsRow.increaseKey), findsNothing);
+    expect(find.byTooltip('Remove from the list'), findsNothing);
+  });
 }

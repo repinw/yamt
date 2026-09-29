@@ -12,8 +12,6 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_list_view_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_content.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_quick_filter.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_home_shell_top_chrome.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -44,7 +42,6 @@ class InventoryList extends ConsumerStatefulWidget {
     required this.onSelectionToggle,
     super.key,
     this.includeHomeShellChrome = false,
-    this.inventorySelectionFocusToken = 0,
     this.topChromeActions = const <Widget>[],
   });
 
@@ -66,9 +63,6 @@ class InventoryList extends ConsumerStatefulWidget {
   /// Whether to render the shared home shell app bar as a sliver.
   final bool includeHomeShellChrome;
 
-  /// Changes when the page asks to show all foods for a selection.
-  final int inventorySelectionFocusToken;
-
   /// Tools of the home shell header.
   final List<Widget> topChromeActions;
 
@@ -82,15 +76,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
   late final VoiceSearchService _voiceSearchService = ref.read(
     voiceSearchServiceProvider,
   );
-
-  @override
-  void didUpdateWidget(covariant InventoryList oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.inventorySelectionFocusToken !=
-        widget.inventorySelectionFocusToken) {
-      _controller.setQuickFilter(InventoryQuickFilter.all);
-    }
-  }
 
   @override
   void dispose() {

@@ -1,7 +1,7 @@
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_edit_sheet.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'prepared_meal_edit_draft.dart';
 
 /// Discards [portions] of a meal. Returns whether it worked.
 typedef PreparedMealDiscardCallback = Future<bool> Function(
@@ -26,10 +26,10 @@ typedef PreparedMealIngredientIgnoreCallback = Future<bool> Function(
 /// Changes one meal by id, such as unbundling it.
 typedef PreparedMealIdCallback = Future<bool> Function(String mealId);
 
-/// Saves an edit of a meal, or starts picking more ingredients for it.
+/// Saves an edit of a meal.
 typedef PreparedMealEditCallback = Future<bool> Function(
   String mealId,
-  PreparedMealEditSheetResult result,
+  PreparedMealEditResult result,
 );
 
 /// Saves a meal as a recipe template.
@@ -38,7 +38,7 @@ typedef PreparedMealSaveTemplateCallback = Future<bool> Function(
 );
 
 /// What the meal detail page can do with a meal. The Vorrat page provides
-/// them, because picking ingredients returns to its list.
+/// them, so their messages show on the list.
 class PreparedMealActions {
   /// Creates the actions.
   const new({
@@ -47,7 +47,6 @@ class PreparedMealActions {
     required this.ignorePendingIngredient,
     required this.unbundle,
     required this.edit,
-    required this.selectEditIngredients,
     required this.saveTemplate,
   });
 
@@ -65,9 +64,6 @@ class PreparedMealActions {
 
   /// Saves an edit.
   final PreparedMealEditCallback edit;
-
-  /// Starts picking more ingredients in the Vorrat list.
-  final PreparedMealEditCallback selectEditIngredients;
 
   /// Saves the meal as a recipe.
   final PreparedMealSaveTemplateCallback saveTemplate;
