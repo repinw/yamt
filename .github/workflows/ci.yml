@@ -121,6 +121,25 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
+      # The emulator runner downloads the emulator itself and fails on a
+      # broken download ("Error on ZipFile unknown archive"). Installing it
+      # here first, with retries, makes the runner's own install a no-op.
+      - name: Install the Android emulator
+        run: |
+          for attempt in 1 2 3; do
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install emulator --channel=0 >/dev/null || true
+            if "$ANDROID_HOME/emulator/emulator" -version >/dev/null 2>&1; then
+              exit 0
+            fi
+            echo "Emulator install failed on attempt $attempt." >&2
+            sleep 10
+          done
+          exit 1
+
+      # flutter drive retries the VM Service connection forever, so a hung
+      # start ends through `timeout` instead of the job timeout. On failure
+      # the device log is saved for the artifact below. The runner executes
+      # every script line on its own, so this must stay one line.
       - name: Run on the Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -130,7 +149,15 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: flutter drive --driver=test_driver/integration_test.dart --target=${{ matrix.target }} -d emulator-5554
+          script: timeout 15m flutter drive --driver=test_driver/integration_test.dart --target=${{ matrix.target }} -d emulator-5554 || { status=$?; adb -s emulator-5554 logcat -d > logcat.txt; exit $status; }
+
+      - name: Upload the device log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logcat-${{ strategy.job-index }}
+          path: logcat.txt
+          if-no-files-found: ignore
 
   integration-result:
     name: Integration tests
