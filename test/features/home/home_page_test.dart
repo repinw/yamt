@@ -53,6 +53,7 @@ import 'package:yamt/features/product_search_hub/domain/'
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
+import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/contracts/receipt_product_resolver.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -61,6 +62,8 @@ import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordi
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../calories/support/fake_calories_repositories.dart';
+import '../scanner/fakes/fake_receipt_ai_repository.dart';
+import '../scanner/fakes/fake_receipt_product_resolver.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
@@ -425,11 +428,16 @@ Widget _buildHarness({
         preparedMealsControllerProvider.overrideWith(
           () => preparedMealsController,
         ),
-      // The Vorrat actions read the coordinator to know whether a camera
-      // exists, so it is always a fake.
-      receiptScanFlowCoordinatorProvider.overrideWithValue(
-        receiptScanFlowCoordinator ?? _RecordingReceiptScanFlowCoordinator(),
+      // The Vorrat actions watch the scan coordinator while building, so its
+      // AI and product lookups are fakes.
+      receiptAiRepositoryProvider.overrideWithValue(FakeReceiptAiRepository()),
+      receiptProductResolverProvider.overrideWithValue(
+        FakeReceiptProductResolver(),
       ),
+      if (receiptScanFlowCoordinator != null)
+        receiptScanFlowCoordinatorProvider.overrideWithValue(
+          receiptScanFlowCoordinator,
+        ),
       if (selectedDiaryDay != null)
         diaryCalendarControllerProvider.overrideWith(
           () => _TestDiaryCalendarController(selectedDiaryDay),
