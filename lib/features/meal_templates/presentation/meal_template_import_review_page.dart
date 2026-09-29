@@ -87,8 +87,14 @@ class _MealTemplateImportReviewPageState
               ),
             ),
           ],
-          const SizedBox(height: AppSpacing.xxxxl),
-          Row(
+        ],
+      ),
+      // The actions stay outside the lazy list, so they are always built
+      // and visible, however long the recipe is.
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: AppInsets.page,
+          child: Row(
             children: [
               Expanded(
                 child: OutlinedButton(
@@ -110,7 +116,7 @@ class _MealTemplateImportReviewPageState
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
