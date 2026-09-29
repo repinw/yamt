@@ -51,6 +51,18 @@ abstract final class AppProgress {
   /// Length of a dash in a dashed chart line.
   static const double dash = 4;
 
+  /// Space above a chart's values for the goal marker labels.
+  static const double markerLabelSpace = 16;
+
+  /// Gap between a goal marker line and its label.
+  static const double markerLabelGap = 4;
+
+  /// Most days for which a chart draws one tick per day.
+  static const int dailyTickMaxDays = 60;
+
+  /// Most days for which a chart draws one long tick per week.
+  static const int weeklyTickMaxDays = 180;
+
   /// Length of a long tick on the chart base line.
   static const double longTick = 10;
 

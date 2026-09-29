@@ -7,10 +7,11 @@ week, and the longer trends are going, so the diary can stay focused on today.
 
 ## Owns
 
-- The Fortschritt tab page and its sections: the current goal with the way to
-  the goal archive, the 7-day run with its week budget and one bar per day,
-  the weight trend of four weeks with the goal forecast, the TDEE per
-  confirmed weekly check-in, and training days against rest days.
+- The Fortschritt tab page with its two scopes, "Aktuelles Ziel" and
+  "Gesamt", and its sections: the current goal with the way to the goal
+  archive, the 7-day run with its week budget and one bar per day, the weight
+  trend with the goal forecast, the TDEE per confirmed weekly check-in, and
+  training days against rest days.
 - The read models of these sections in `domain/` and the providers that build
   them from calorie and weight data in `application/`.
 
@@ -28,8 +29,12 @@ week, and the longer trends are going, so the diary can stay focused on today.
 - The day bars and the week budget split the eaten kcal by the kcal share of
   protein, carbohydrates, and fat, in the macro colors. The part over the goal
   is hatched.
+- "Aktuelles Ziel" covers the current goal from its start; "Gesamt" covers
+  all goals from the start of the first one and hides the goal card and the
+  run. Charts cover at least 7 days, so a goal that just started still shows
+  a trend. A dashed line marks each goal start inside a chart.
 - Averages count only past or current days with entries that are no pause
-  days. The training and rest day comparison covers the 28 days before today.
+  days. The training and rest day comparison ends the day before today.
 - A TDEE point appears only after the user decided on the weekly check-in. A
   declined check-in keeps the previous TDEE and shows the calculated value as
   a hollow point.

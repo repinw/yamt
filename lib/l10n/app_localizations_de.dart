@@ -2688,6 +2688,28 @@ class AppLocalizationsDe extends AppLocalizations {
   String get progressAveragePerDay => 'Schnitt pro Tag';
 
   @override
+  String get progressScopeGoal => 'Aktuelles Ziel';
+
+  @override
+  String get progressScopeAll => 'Gesamt';
+
+  @override
+  String progressRunKicker(int run, int day, int total) {
+    return 'Run $run · Tag $day von $total';
+  }
+
+  @override
+  String get progressDayTypeKickerGoal => 'Seit Zielstart · Schnitt';
+
+  @override
+  String get progressDayTypeKickerAll => 'Alle Ziele · Schnitt';
+
+  @override
+  String progressGoalMarker(int number) {
+    return 'Ziel $number';
+  }
+
+  @override
   String progressWeekKicker(String start, String end) {
     return '$start – $end';
   }
@@ -2708,8 +2730,8 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String progressWeekBudgetKicker(int day, int total) {
-    return 'Wochenbudget · Tag $day von $total';
+  String progressWeekBudgetKicker(String start, String end) {
+    return 'Wochenbudget · $start – $end';
   }
 
   @override
@@ -2796,9 +2818,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get progressTdeeEmpty =>
       'Der erste Punkt kommt nach deinem ersten Wochen-Check-in.';
-
-  @override
-  String get progressDayTypeKicker => 'Letzte 4 Wochen · Schnitt';
 
   @override
   String get progressDayTypeTitle => 'Training vs. Ruhetag';

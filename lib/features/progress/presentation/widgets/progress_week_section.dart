@@ -7,6 +7,7 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/progress/application/progress_intake_provider.dart';
 import 'package:yamt/features/progress/domain/progress_intake.dart';
+import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_day_row.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_legend.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_macro_averages_row.dart';
@@ -28,7 +29,7 @@ class ProgressWeekSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final today = normalizeDiaryDay(ref.watch(clockProvider)());
     return ref
-        .watch(progressIntakeProvider)
+        .watch(progressIntakeProvider(ProgressScope.goal))
         .when(
           data: (intake) =>
               _WeekContent(key: sectionKey, intake: intake, today: today),
@@ -58,10 +59,17 @@ class _WeekContent extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         ProgressSectionHeader(
-          kicker: l10n.progressWeekKicker(
-            date.format(days.first.day),
-            date.format(days.last.day),
-          ),
+          kicker: switch (intake.runNumber) {
+            final run? => l10n.progressRunKicker(
+              run,
+              intake.weekDayNumber,
+              days.length,
+            ),
+            null => l10n.progressWeekKicker(
+              date.format(days.first.day),
+              date.format(days.last.day),
+            ),
+          },
           value: number.format(week.eatenKcal.round()),
           unit: l10n.caloriesUnitKcal,
           caption: l10n.progressAveragePerDay,

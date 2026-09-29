@@ -1265,6 +1265,32 @@
     }
   },
   "progressAveragePerDay": "Schnitt pro Tag",
+  "progressScopeGoal": "Aktuelles Ziel",
+  "progressScopeAll": "Gesamt",
+  "progressRunKicker": "Run {run} · Tag {day} von {total}",
+  "@progressRunKicker": {
+    "placeholders": {
+      "run": {
+        "type": "int"
+      },
+      "day": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressDayTypeKickerGoal": "Seit Zielstart · Schnitt",
+  "progressDayTypeKickerAll": "Alle Ziele · Schnitt",
+  "progressGoalMarker": "Ziel {number}",
+  "@progressGoalMarker": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
   "progressWeekKicker": "{start} – {end}",
   "@progressWeekKicker": {
     "placeholders": {
@@ -1300,14 +1326,14 @@
       }
     }
   },
-  "progressWeekBudgetKicker": "Wochenbudget · Tag {day} von {total}",
+  "progressWeekBudgetKicker": "Wochenbudget · {start} – {end}",
   "@progressWeekBudgetKicker": {
     "placeholders": {
-      "day": {
-        "type": "int"
+      "start": {
+        "type": "String"
       },
-      "total": {
-        "type": "int"
+      "end": {
+        "type": "String"
       }
     }
   },
@@ -1399,7 +1425,6 @@
   "progressTdeeLegendKept": "Berechnet, alter Wert behalten",
   "progressTdeeLegendStart": "Start",
   "progressTdeeEmpty": "Der erste Punkt kommt nach deinem ersten Wochen-Check-in.",
-  "progressDayTypeKicker": "Letzte 4 Wochen · Schnitt",
   "progressDayTypeTitle": "Training vs. Ruhetag",
   "progressDayTypeDays": "{emoji} {type} · {count, plural, =1{1 Tag} other{{count} Tage}}",
   "@progressDayTypeDays": {

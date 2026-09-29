@@ -8,12 +8,12 @@ part of 'progress_tdee_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// TDEE per confirmed weekly check-in of the current goal.
+/// TDEE per confirmed weekly check-in of the goals of [scope].
 
 @ProviderFor(progressTdee)
-final progressTdeeProvider = ProgressTdeeProvider._();
+final progressTdeeProvider = ProgressTdeeFamily._();
 
-/// TDEE per confirmed weekly check-in of the current goal.
+/// TDEE per confirmed weekly check-in of the goals of [scope].
 
 final class ProgressTdeeProvider
     extends
@@ -23,20 +23,27 @@ final class ProgressTdeeProvider
           FutureOr<ProgressTdee>
         >
     with $FutureModifier<ProgressTdee>, $FutureProvider<ProgressTdee> {
-  /// TDEE per confirmed weekly check-in of the current goal.
-  ProgressTdeeProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'progressTdeeProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
+  /// TDEE per confirmed weekly check-in of the goals of [scope].
+  ProgressTdeeProvider._({
+    required ProgressTdeeFamily super.from,
+    required ProgressScope super.argument,
+  }) : super(
+         retry: null,
+         name: r'progressTdeeProvider',
+         isAutoDispose: true,
+         dependencies: null,
+         $allTransitiveDependencies: null,
+       );
 
   @override
   String debugGetCreateSourceHash() => _$progressTdeeHash();
+
+  @override
+  String toString() {
+    return r'progressTdeeProvider'
+        ''
+        '($argument)';
+  }
 
   @$internal
   @override
@@ -46,8 +53,41 @@ final class ProgressTdeeProvider
 
   @override
   FutureOr<ProgressTdee> create(Ref ref) {
-    return progressTdee(ref);
+    final argument = this.argument as ProgressScope;
+    return progressTdee(ref, argument);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProgressTdeeProvider && other.argument == argument;
+  }
+
+  @override
+  int get hashCode {
+    return argument.hashCode;
   }
 }
 
-String _$progressTdeeHash() => r'0849080e7ff5598916b5109f1d498867691e2a3e';
+String _$progressTdeeHash() => r'6e14d57077124c531f4e06543d0131214822d399';
+
+/// TDEE per confirmed weekly check-in of the goals of [scope].
+
+final class ProgressTdeeFamily extends $Family
+    with $FunctionalFamilyOverride<FutureOr<ProgressTdee>, ProgressScope> {
+  ProgressTdeeFamily._()
+    : super(
+        retry: null,
+        name: r'progressTdeeProvider',
+        dependencies: null,
+        $allTransitiveDependencies: null,
+        isAutoDispose: true,
+      );
+
+  /// TDEE per confirmed weekly check-in of the goals of [scope].
+
+  ProgressTdeeProvider call(ProgressScope scope) =>
+      ProgressTdeeProvider._(argument: scope, from: this);
+
+  @override
+  String toString() => r'progressTdeeProvider';
+}

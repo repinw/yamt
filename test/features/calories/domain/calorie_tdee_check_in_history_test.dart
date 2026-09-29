@@ -140,4 +140,26 @@ void main() {
     expect(history.checkIns, isEmpty);
     expect(history.startTdeeKcal, startTdee);
   });
+
+  test('splits the history per goal with the start day of each', () {
+    final newGoal = DateTime(2026, 9);
+    final goals = CalorieTdeeHistory.perGoal(
+      _settings([
+        _calculatorGoal(),
+        _checkIn(week: 1, calculatedTdeeKcal: 2480),
+        CalorieGoalHistoryEntry(
+          dailyKcalGoal: 2100,
+          calculatorProfile: _profile,
+          effectiveDate: newGoal,
+          changedAt: newGoal,
+          source: CalorieGoalSource.calculator,
+        ),
+      ]),
+    );
+
+    expect(goals.map((goal) => goal.startDay), [_goalStart, newGoal]);
+    expect(goals.first.checkIns.map((checkIn) => checkIn.tdeeKcal), [2480]);
+    expect(goals.last.checkIns, isEmpty);
+    expect(goals.last.startTdeeKcal, startTdee);
+  });
 }

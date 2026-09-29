@@ -21,9 +21,9 @@ class ProgressWeekBudget extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
-    final number = NumberFormat.decimalPattern(
-      Localizations.localeOf(context).toString(),
-    );
+    final locale = Localizations.localeOf(context).toString();
+    final number = NumberFormat.decimalPattern(locale);
+    final date = DateFormat.MMMd(locale);
     final eaten = intake.weekEatenKcal;
     final goal = intake.weekGoalKcal;
     final left = (goal - eaten).round();
@@ -37,8 +37,8 @@ class ProgressWeekBudget extends StatelessWidget {
               child: Text(
                 l10n
                     .progressWeekBudgetKicker(
-                      intake.weekDayNumber,
-                      intake.weekDays.length,
+                      date.format(intake.weekDays.first.day),
+                      date.format(intake.weekDays.last.day),
                     )
                     .toUpperCase(),
                 style: progressKickerStyle(context),

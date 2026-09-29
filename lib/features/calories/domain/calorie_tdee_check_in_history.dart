@@ -30,37 +30,64 @@ class CalorieTdeeCheckIn {
   final bool isRejected;
 }
 
-/// The TDEE of the current goal: the calculator estimate at its start and one
-/// value per confirmed weekly check-in, oldest first.
+/// The TDEE of one goal: the calculator estimate at its start and one value
+/// per confirmed weekly check-in, oldest first.
 @immutable
 class CalorieTdeeHistory {
   /// Creates a TDEE history.
-  const new({required this.startTdeeKcal, required this.checkIns});
+  const new({
+    required this.startDay,
+    required this.startTdeeKcal,
+    required this.checkIns,
+  });
 
-  /// Resolves the history from the goal history in [settings].
-  ///
-  /// A check-in counts only after the user decided on it: an entry for the
-  /// window of the still pending check-in is left out.
+  /// Resolves the history of the current goal in [settings], or an empty
+  /// history without a goal.
   factory fromSettings(CalorieGoalSettings settings) {
-    final history = settings.sortedGoalHistory;
-    final startIndex = history.lastIndexWhere(
-      (entry) =>
-          entry.hasGoal && entry.source != CalorieGoalSource.weeklyCheckIn,
-    );
-    final startProfile = startIndex < 0
-        ? null
-        : history[startIndex].calculatorProfile;
-    final startTdeeKcal = startProfile == null
-        ? null
-        : CalorieGoalCalculator.calculate(startProfile).tdeeKcal;
+    return CalorieTdeeHistory.perGoal(settings).lastOrNull ??
+        const CalorieTdeeHistory(
+          startDay: null,
+          startTdeeKcal: null,
+          checkIns: <CalorieTdeeCheckIn>[],
+        );
+  }
+
+  /// Resolves one history per goal in [settings], oldest goal first.
+  ///
+  /// A goal starts with every entry that sets a goal outside a weekly
+  /// check-in. A check-in counts only after the user decided on it: an entry
+  /// for the window of the still pending check-in is left out.
+  static List<CalorieTdeeHistory> perGoal(CalorieGoalSettings settings) {
     final pending = settings.pendingWeeklyCheckIn;
     final pendingStart = pending == null
         ? null
         : diaryDayKey(pending.windowStartDate);
+    final histories = <CalorieTdeeHistory>[];
+    CalorieGoalHistoryEntry? goal;
+    var checkIns = <CalorieTdeeCheckIn>[];
+    double? keptTdeeKcal;
 
-    final checkIns = <CalorieTdeeCheckIn>[];
-    var keptTdeeKcal = startTdeeKcal;
-    for (final entry in history.skip(startIndex + 1)) {
+    void close() {
+      final start = goal;
+      if (start == null) return;
+      histories.add(
+        CalorieTdeeHistory(
+          startDay: normalizeDiaryDay(start.effectiveCountingStartDate),
+          startTdeeKcal: _calculatorTdee(start),
+          checkIns: List<CalorieTdeeCheckIn>.unmodifiable(checkIns),
+        ),
+      );
+    }
+
+    for (final entry in settings.sortedGoalHistory) {
+      if (entry.hasGoal && entry.source != CalorieGoalSource.weeklyCheckIn) {
+        close();
+        goal = entry;
+        checkIns = <CalorieTdeeCheckIn>[];
+        keptTdeeKcal = _calculatorTdee(entry);
+        continue;
+      }
+      if (goal == null) continue;
       final snapshot = _confirmedSnapshot(entry, pendingStart);
       if (snapshot == null) continue;
       final calculated = snapshot.calculatedTdeeKcal;
@@ -77,11 +104,12 @@ class CalorieTdeeHistory {
       );
       keptTdeeKcal = tdeeKcal;
     }
-    return CalorieTdeeHistory(
-      startTdeeKcal: startTdeeKcal,
-      checkIns: List<CalorieTdeeCheckIn>.unmodifiable(checkIns),
-    );
+    close();
+    return List<CalorieTdeeHistory>.unmodifiable(histories);
   }
+
+  /// First counted day of the goal, or `null` without a goal.
+  final DateTime? startDay;
 
   /// TDEE of the calculator at the start of the goal, or `null` for a goal
   /// typed in by hand.
@@ -89,6 +117,13 @@ class CalorieTdeeHistory {
 
   /// Confirmed check-ins, oldest first.
   final List<CalorieTdeeCheckIn> checkIns;
+}
+
+double? _calculatorTdee(CalorieGoalHistoryEntry entry) {
+  final profile = entry.calculatorProfile;
+  return profile == null
+      ? null
+      : CalorieGoalCalculator.calculate(profile).tdeeKcal;
 }
 
 CalorieGoalWeeklyCheckInSnapshot? _confirmedSnapshot(

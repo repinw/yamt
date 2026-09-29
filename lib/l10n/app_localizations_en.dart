@@ -2636,6 +2636,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progressAveragePerDay => 'average per day';
 
   @override
+  String get progressScopeGoal => 'Current goal';
+
+  @override
+  String get progressScopeAll => 'Overall';
+
+  @override
+  String progressRunKicker(int run, int day, int total) {
+    return 'Run $run · day $day of $total';
+  }
+
+  @override
+  String get progressDayTypeKickerGoal => 'Since goal start · average';
+
+  @override
+  String get progressDayTypeKickerAll => 'All goals · average';
+
+  @override
+  String progressGoalMarker(int number) {
+    return 'Goal $number';
+  }
+
+  @override
   String progressWeekKicker(String start, String end) {
     return '$start – $end';
   }
@@ -2656,8 +2678,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String progressWeekBudgetKicker(int day, int total) {
-    return 'Week budget · day $day of $total';
+  String progressWeekBudgetKicker(String start, String end) {
+    return 'Week budget · $start – $end';
   }
 
   @override
@@ -2744,9 +2766,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get progressTdeeEmpty =>
       'The first point appears after your first weekly check-in.';
-
-  @override
-  String get progressDayTypeKicker => 'Last 4 weeks · average';
 
   @override
   String get progressDayTypeTitle => 'Training vs. rest day';

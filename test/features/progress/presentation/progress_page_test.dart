@@ -4,10 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/presentation/progress_page.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_day_row.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_day_type_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_goal_card.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_scope_switch.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_tdee_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_week_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_weight_section.dart';
@@ -66,7 +68,7 @@ void main() {
     expect(find.byKey(ProgressWeekSection.sectionKey), findsOneWidget);
     // The run started on Monday 21 September; today is Thursday.
     expect(find.byType(ProgressDayRow), findsNWidgets(7));
-    expect(find.text('WOCHENBUDGET · TAG 4 VON 7'), findsOneWidget);
+    expect(find.text('RUN 3 · TAG 4 VON 7'), findsOneWidget);
     expect(find.byKey(ProgressWeightSection.sectionKey), findsOneWidget);
     expect(find.byKey(ProgressTdeeSection.sectionKey), findsOneWidget);
     expect(find.byKey(ProgressDayTypeSection.sectionKey), findsOneWidget);
@@ -80,5 +82,21 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text(_archive), findsOneWidget);
+  });
+
+  testWidgets('hides the goal and the week under Gesamt', (tester) async {
+    await _pumpProgressPage(tester);
+
+    await tester.tap(
+      find.byKey(ProgressScopeSwitch.chipKey(ProgressScope.all)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(ProgressGoalCard.cardKey), findsNothing);
+    expect(find.byKey(ProgressWeekSection.sectionKey), findsNothing);
+    expect(find.byKey(ProgressWeightSection.sectionKey), findsOneWidget);
+    expect(find.byKey(ProgressTdeeSection.sectionKey), findsOneWidget);
+    expect(find.text('ALLE ZIELE · SCHNITT'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 }

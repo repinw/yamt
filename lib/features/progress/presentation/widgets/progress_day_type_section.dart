@@ -11,26 +11,35 @@ import 'package:yamt/features/diary/domain/diary_day_type.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_labels.dart';
 import 'package:yamt/features/progress/application/progress_intake_provider.dart';
 import 'package:yamt/features/progress/domain/progress_average.dart';
+import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_header.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_state.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Averages of training days against rest days over the last four weeks:
+/// Averages of training days against rest days over the period of a scope:
 /// eaten kcal, protein, carbohydrates, and fat.
 class ProgressDayTypeSection extends ConsumerWidget {
-  /// Creates the comparison section.
-  const new({super.key});
+  /// Creates the comparison section for [scope].
+  const new({required this.scope, super.key});
+
+  /// Which goals the averages cover.
+  final ProgressScope scope;
 
   /// Stable key of the section.
   static const sectionKey = ValueKey<String>('progress-day-type-section');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     return ref
-        .watch(progressIntakeProvider)
+        .watch(progressIntakeProvider(scope))
         .when(
           data: (intake) => _DayTypeContent(
             key: sectionKey,
+            kicker: switch (scope) {
+              ProgressScope.goal => l10n.progressDayTypeKickerGoal,
+              ProgressScope.all => l10n.progressDayTypeKickerAll,
+            },
             training: intake.training,
             rest: intake.rest,
           ),
@@ -41,8 +50,14 @@ class ProgressDayTypeSection extends ConsumerWidget {
 }
 
 class _DayTypeContent extends StatelessWidget {
-  const new({required this.training, required this.rest, super.key});
+  const new({
+    required this.kicker,
+    required this.training,
+    required this.rest,
+    super.key,
+  });
 
+  final String kicker;
   final ProgressAverage training;
   final ProgressAverage rest;
 
@@ -56,10 +71,7 @@ class _DayTypeContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          l10n.progressDayTypeKicker.toUpperCase(),
-          style: progressKickerStyle(context),
-        ),
+        Text(kicker.toUpperCase(), style: progressKickerStyle(context)),
         const SizedBox(height: AppSpacing.xs),
         Text(
           l10n.progressDayTypeTitle,

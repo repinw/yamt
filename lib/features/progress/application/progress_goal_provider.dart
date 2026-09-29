@@ -5,7 +5,6 @@ import 'package:yamt/features/calories/application/daily_nutrition_target_resolv
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/health/application/recent_weight_trend_provider.dart';
 import 'package:yamt/features/progress/domain/progress_goal.dart';
-import 'package:yamt/features/progress/domain/progress_weight.dart';
 
 part 'progress_goal_provider.g.dart';
 
@@ -14,9 +13,7 @@ part 'progress_goal_provider.g.dart';
 Future<ProgressGoal> progressGoal(Ref ref) async {
   final now = ref.watch(clockProvider)();
   final resolver = ref.watch(dailyNutritionTargetResolverProvider);
-  final trendFuture = ref.watch(
-    recentWeightTrendProvider(dayCount: progressWeightDayCount).future,
-  );
+  final trendFuture = ref.watch(recentWeightTrendProvider().future);
   final settings = await ref.watch(calorieGoalControllerProvider.future);
   final trend = await trendFuture;
   final goalKcal = settings.hasGoal ? settings.baseGoalKcalForDay(now) : null;

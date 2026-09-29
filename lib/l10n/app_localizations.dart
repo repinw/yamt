@@ -4558,6 +4558,42 @@ abstract class AppLocalizations {
   /// **'average per day'**
   String get progressAveragePerDay;
 
+  /// No description provided for @progressScopeGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Current goal'**
+  String get progressScopeGoal;
+
+  /// No description provided for @progressScopeAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall'**
+  String get progressScopeAll;
+
+  /// No description provided for @progressRunKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Run {run} · day {day} of {total}'**
+  String progressRunKicker(int run, int day, int total);
+
+  /// No description provided for @progressDayTypeKickerGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Since goal start · average'**
+  String get progressDayTypeKickerGoal;
+
+  /// No description provided for @progressDayTypeKickerAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All goals · average'**
+  String get progressDayTypeKickerAll;
+
+  /// No description provided for @progressGoalMarker.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {number}'**
+  String progressGoalMarker(int number);
+
   /// No description provided for @progressWeekKicker.
   ///
   /// In en, this message translates to:
@@ -4585,8 +4621,8 @@ abstract class AppLocalizations {
   /// No description provided for @progressWeekBudgetKicker.
   ///
   /// In en, this message translates to:
-  /// **'Week budget · day {day} of {total}'**
-  String progressWeekBudgetKicker(int day, int total);
+  /// **'Week budget · {start} – {end}'**
+  String progressWeekBudgetKicker(String start, String end);
 
   /// No description provided for @progressWeekBudgetValue.
   ///
@@ -4719,12 +4755,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The first point appears after your first weekly check-in.'**
   String get progressTdeeEmpty;
-
-  /// No description provided for @progressDayTypeKicker.
-  ///
-  /// In en, this message translates to:
-  /// **'Last 4 weeks · average'**
-  String get progressDayTypeKicker;
 
   /// No description provided for @progressDayTypeTitle.
   ///

@@ -38,7 +38,9 @@ void main() {
     days: days,
     weekStart: weekStart,
     weekEnd: weekEnd,
+    comparisonStart: DateTime(2026, 8, 29),
     today: _today,
+    runNumber: 3,
   );
 
   test('averages only logged past days of the run', () {
@@ -53,6 +55,7 @@ void main() {
     ]);
 
     expect(result.weekDays, hasLength(6));
+    expect(result.runNumber, 3);
     expect(result.week.dayCount, 3);
     expect(result.week.eatenKcal, 2000);
     expect(result.week.proteinGrams, 150);
@@ -71,7 +74,7 @@ void main() {
     expect(result.weekFatKcal, 6 * 60 * kcalPerGramFat);
   });
 
-  test('compares training and rest days before today', () {
+  test('compares training and rest days from period start to yesterday', () {
     final result = intake([
       _day(DateTime(2026, 8, 28), eaten: 9000, training: true),
       _day(DateTime(2026, 9), eaten: 2600, training: true),

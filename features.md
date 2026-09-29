@@ -176,25 +176,30 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## Fortschritt
 
-- Fortschritt tab, from top to bottom:
+- Fortschritt tab with two chips, "Aktuelles Ziel" and "Gesamt".
+  "Aktuelles Ziel" covers the current goal from its start (at least 7 days
+  for the charts); "Gesamt" covers all goals from the first start, hides the
+  goal card and the run, and marks each goal start ("Ziel 2") in the weight
+  and TDEE charts. From top to bottom:
   - the goal ("Lose weight to 78 kg"), a four-part bar of the way from the
     start weight to the target by trend weight, the kg to go and the pace,
     the daily calories with protein, carbs, and fat, and a button to the goal
     archive;
-  - the current 7-day run: the average kcal per day as the main number with
-    the goal, the week budget (eaten of the run's total, one segment per day,
-    kcal left), and one row per day with weekday, day type emoji, a bar of
-    four quarters of the day's goal, and the eaten kcal. The bars fill in the
+  - the current 7-day run, headed "Run 3 · Tag 2 von 7": the average kcal
+    per day as the main number with the goal, the week budget (eaten of the
+    run's total, one segment per day, kcal left), and one row per day with
+    weekday, day type emoji, a bar of four quarters of the day's goal, and
+    the eaten kcal. The bars fill in the
     macro colors (protein red, carbs blue, fat yellow) by kcal share; the part
     over the goal is hatched orange. Under them the average grams per macro
     against their goals;
-  - the weight trend of four weeks: weigh-ins as squares, the trend as a line,
+  - the weight trend: weigh-ins as squares, the trend as a line through gaps,
     the trend per week, and the day the trend reaches the goal weight;
   - the TDEE per weekly check-in: the calculator estimate at the goal start,
     then one point per check-in the user confirmed, and a dashed line to the
     next check-in. A declined check-in keeps the old value and shows the
     calculated one as a hollow point;
-  - training days against rest days over the last four weeks: days of each,
+  - training days against rest days up to yesterday: days of each,
     and average kcal, protein, carbs, and fat.
 
 ## Activity And Weight

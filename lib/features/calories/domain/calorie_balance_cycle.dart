@@ -81,6 +81,23 @@ DateTime resolveCalorieGoalRunStartDate({
   return normalizedDay.subtract(Duration(days: runOffset));
 }
 
+/// Number of the 7-day run of the current goal that holds [day], starting
+/// at 1, or `null` without a counting goal.
+int? resolveCalorieGoalRunNumber({
+  required CalorieGoalSettings settings,
+  required DateTime day,
+}) {
+  final normalizedDay = normalizeDiaryDay(day);
+  final countingGoalEntry = settings.countingGoalEntryForDay(normalizedDay);
+  if (countingGoalEntry == null) return null;
+  final anchorEntry =
+      settings.cycleAnchorEntryForDay(normalizedDay) ?? countingGoalEntry;
+  final cycleStart = normalizeDiaryDay(anchorEntry.effectiveCountingStartDate);
+  final elapsedDays = normalizedDay.difference(cycleStart).inDays;
+  if (elapsedDays < 0) return null;
+  return elapsedDays ~/ calorieGoalRunLengthDays + 1;
+}
+
 /// Resolve the active 7-day run end for a given day.
 DateTime resolveCalorieGoalRunEndDate({
   required CalorieGoalSettings settings,

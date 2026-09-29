@@ -13,15 +13,17 @@ import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.da
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/progress/domain/progress_day.dart';
 import 'package:yamt/features/progress/domain/progress_intake.dart';
+import 'package:yamt/features/progress/domain/progress_period.dart';
 
 part 'progress_intake_provider.g.dart';
 
-/// Intake of the current 7-day run and of the last four weeks.
+/// Intake of the current 7-day run and, by day type, of the period of
+/// [scope].
 ///
 /// Logging, editing, or removing an entry refreshes it through the calorie
 /// overview revision.
 @riverpod
-Future<ProgressIntake> progressIntake(Ref ref) async {
+Future<ProgressIntake> progressIntake(Ref ref, ProgressScope scope) async {
   ref.watch(calorieOverviewRevisionProvider);
   final today = normalizeDiaryDay(ref.watch(clockProvider)());
   final repository = ref.watch(calorieLogRepositoryProvider);
@@ -36,8 +38,14 @@ Future<ProgressIntake> progressIntake(Ref ref) async {
     day: today,
   );
   final weekEnd = resolveCalorieGoalRunEndDate(settings: settings, day: today);
-  final firstDay = addDiaryDays(today, -progressComparisonDayCount);
-  final start = weekStart.isBefore(firstDay) ? weekStart : firstDay;
+  final comparisonStart = ProgressPeriod.of(
+    settings: settings,
+    scope: scope,
+    today: today,
+  ).start;
+  final start = weekStart.isBefore(comparisonStart)
+      ? weekStart
+      : comparisonStart;
   final entries = await repository.readEntriesInRange(
     startInclusive: start,
     endExclusive: nextDiaryDay(weekEnd),
@@ -66,7 +74,9 @@ Future<ProgressIntake> progressIntake(Ref ref) async {
     days: days,
     weekStart: weekStart,
     weekEnd: weekEnd,
+    comparisonStart: comparisonStart,
     today: today,
+    runNumber: resolveCalorieGoalRunNumber(settings: settings, day: today),
   );
 }
 
