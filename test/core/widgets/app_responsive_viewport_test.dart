@@ -89,42 +89,6 @@ void main() {
     );
   });
 
-  testWidgets('responsiveCardPadding uses compact inset on narrow screens', (
-    tester,
-  ) async {
-    late EdgeInsets padding;
-
-    await tester.pumpWidget(
-      _buildProbe(
-        size: const Size(320, 800),
-        builder: (context) {
-          padding = responsiveCardPadding(context);
-          return const SizedBox.shrink();
-        },
-      ),
-    );
-
-    expect(padding, const EdgeInsets.all(AppSpacing.lg));
-  });
-
-  testWidgets('responsiveCardPadding uses regular inset on wider screens', (
-    tester,
-  ) async {
-    late EdgeInsets padding;
-
-    await tester.pumpWidget(
-      _buildProbe(
-        size: const Size(430, 800),
-        builder: (context) {
-          padding = responsiveCardPadding(context);
-          return const SizedBox.shrink();
-        },
-      ),
-    );
-
-    expect(padding, const EdgeInsets.all(AppSpacing.xl));
-  });
-
   testWidgets('homeShellPageBottomPadding includes shell clearance', (
     tester,
   ) async {

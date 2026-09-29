@@ -27,40 +27,6 @@ class MetricDetailCardShell extends StatelessWidget {
   }
 }
 
-/// Shared rounded frame for compact metric cards.
-class MetricCardFrame extends StatelessWidget {
-  /// Creates a metric card frame.
-  const new({required this.child, this.padding, this.clip = true, super.key});
-
-  /// Card content.
-  final Widget child;
-
-  /// Optional inner padding.
-  final EdgeInsetsGeometry? padding;
-
-  /// Whether to clip overflowing children to the rounded shape.
-  final bool clip;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    final radius = BorderRadius.circular(AppRadius.lg);
-    final content = padding == null
-        ? child
-        : Padding(padding: padding!, child: child);
-    final decoration = BoxDecoration(
-      color: colors.surfaceContainerLow,
-      borderRadius: radius,
-      border: Border.all(color: colors.outlineVariant),
-    );
-
-    return DecoratedBox(
-      decoration: decoration,
-      child: clip ? ClipRRect(borderRadius: radius, child: content) : content,
-    );
-  }
-}
-
 /// Shared skeleton block for metric loading placeholders.
 class MetricSkeletonBlock extends StatelessWidget {
   /// Creates a skeleton block.

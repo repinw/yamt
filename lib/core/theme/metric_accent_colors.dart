@@ -92,11 +92,6 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
     return brightness == Brightness.dark ? activityTextDark : activityText;
   }
 
-  /// Steps accent color adapted for brightness.
-  Color stepsFor(Brightness brightness) {
-    return brightness == Brightness.dark ? stepsDark : steps;
-  }
-
   /// Activity.
   final Color activity;
 

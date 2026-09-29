@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/theme/app_theme.dart';
-import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 
@@ -77,38 +76,6 @@ void main() {
 
     expect(tapCount, 1);
     expect(_hapticCalls(platformCalls), hasLength(1));
-  });
-
-  testWidgets('AppDropdownButton sends feedback when opened and changed', (
-    tester,
-  ) async {
-    String? selected = 'a';
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: Center(
-            child: AppDropdownButton<String>(
-              value: selected,
-              items: const [
-                DropdownMenuItem(value: 'a', child: Text('A')),
-                DropdownMenuItem(value: 'b', child: Text('B')),
-              ],
-              onChanged: (value) => selected = value,
-            ),
-          ),
-        ),
-      ),
-    );
-
-    await tester.tap(find.byType(AppDropdownButton<String>));
-    await tester.pumpAndSettle();
-    expect(_hapticCalls(platformCalls), hasLength(1));
-
-    await tester.tap(find.text('B').last);
-    await tester.pumpAndSettle();
-
-    expect(selected, 'b');
-    expect(_hapticCalls(platformCalls), hasLength(2));
   });
 
   testWidgets('AppCheckboxListTile sends feedback when changed', (

@@ -30,13 +30,3 @@ EdgeInsets responsivePagePadding(
   final horizontal = responsivePageHorizontalPadding(context);
   return EdgeInsets.fromLTRB(horizontal, top, horizontal, bottom);
 }
-
-/// Shared card padding for compact and regular layouts.
-EdgeInsets responsiveCardPadding(
-  BuildContext context, {
-  double compact = AppSpacing.lg,
-  double regular = AppSpacing.xl,
-}) {
-  final inset = isCompactViewport(context) ? compact : regular;
-  return EdgeInsets.all(inset);
-}

@@ -4,31 +4,6 @@ import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 
 void main() {
-  testWidgets('metric frame uses solid card surface and subtle border', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: AppTheme.dark(),
-        home: const Scaffold(
-          body: MetricCardFrame(
-            child: SizedBox(key: ValueKey<String>('metric-child')),
-          ),
-        ),
-      ),
-    );
-
-    final context = tester.element(find.byType(MetricCardFrame));
-    final colors = Theme.of(context).colorScheme;
-    final frame = tester.widget<DecoratedBox>(find.byType(DecoratedBox));
-    final decoration = frame.decoration as BoxDecoration;
-
-    expect(decoration.color, colors.surfaceContainerLow);
-    expect((decoration.border as Border?)?.top.color, colors.outlineVariant);
-    expect(decoration.boxShadow, isNull);
-    expect(find.byKey(const ValueKey<String>('metric-child')), findsOneWidget);
-  });
-
   testWidgets('metric detail shell applies requested padding around content', (
     tester,
   ) async {
