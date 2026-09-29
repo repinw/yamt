@@ -15,11 +15,23 @@ cd "$repo_root"
 
 merge_base="$(git merge-base "$base_ref" HEAD)"
 
-mapfile -t changed < <(
-  git diff --name-only --diff-filter=AMR "$merge_base" HEAD -- \
-    'lib/*.dart' 'test/*.dart' 'integration_test/*.dart' |
-    grep -vE '\.(g|freezed)\.dart$|^lib/l10n/|^lib/firebase_options\.dart$' ||
-    true
+skip_pattern='\.(g|freezed)\.dart$|^lib/l10n/|^lib/firebase_options\.dart$'
+
+# Changed files on HEAD, and for each one its path on the merge base.
+# A renamed file is compared against its old path.
+changed=()
+declare -A base_path_of=()
+while IFS=$'\t' read -r status first second; do
+  case "$status" in
+    R*) old_path="$first" new_path="$second" ;;
+    *) old_path="$first" new_path="$first" ;;
+  esac
+  [[ "$new_path" =~ $skip_pattern ]] && continue
+  changed+=("$new_path")
+  base_path_of["$new_path"]="$old_path"
+done < <(
+  git diff --name-status -M --diff-filter=AMR "$merge_base" HEAD -- \
+    'lib/*.dart' 'test/*.dart' 'integration_test/*.dart'
 )
 
 if [ "${#changed[@]}" -eq 0 ]; then
@@ -38,29 +50,49 @@ cleanup() {
 trap cleanup EXIT
 
 # Prints "<relative path>|<CODE>" for every issue, one line per issue.
+# Exit codes 1 to 3 mean issues were found; anything higher means the
+# analyzer itself failed, and the gate must not pass then.
 analyze() {
   local root="$1"
   shift
   [ "$#" -eq 0 ] && return 0
-  (cd "$root" && dart analyze --format=machine "$@" 2>&1 || true) |
-    awk -F'|' -v root="$root/" 'NF >= 8 {
-      path = $4
-      sub("^" root, "", path)
-      print path "|" $3
-    }'
+  local output="$work_dir/analyze.out"
+  local status=0
+  (cd "$root" && dart analyze --format=machine "$@") >"$output" 2>&1 ||
+    status=$?
+  if [ "$status" -gt 3 ]; then
+    echo "dart analyze failed with exit code $status in $root:" >&2
+    cat "$output" >&2
+    exit "$status"
+  fi
+  awk -F'|' -v root="$root/" 'NF >= 8 {
+    path = $4
+    sub("^" root, "", path)
+    print path "|" $3
+  }' "$output"
 }
 
-analyze "$repo_root" "${changed[@]}" | sort >"$work_dir/head.txt"
+analyze "$repo_root" "${changed[@]}" >"$work_dir/head.unsorted"
+sort "$work_dir/head.unsorted" >"$work_dir/head.txt"
 
 git worktree add --detach --quiet "$base_tree" "$merge_base"
 (cd "$base_tree" && flutter pub get >/dev/null)
 (cd "$base_tree/tools/architecture_lints" && dart pub get >/dev/null)
 
 base_files=()
+: >"$work_dir/renames.txt"
 for file in "${changed[@]}"; do
-  [ -f "$base_tree/$file" ] && base_files+=("$file")
+  base_file="${base_path_of[$file]}"
+  [ -f "$base_tree/$base_file" ] || continue
+  base_files+=("$base_file")
+  echo "$base_file|$file" >>"$work_dir/renames.txt"
 done
-analyze "$base_tree" "${base_files[@]}" | sort >"$work_dir/base.txt"
+analyze "$base_tree" "${base_files[@]}" >"$work_dir/base.unsorted"
+# Report base issues under the HEAD path so renamed files line up.
+awk -F'|' '
+  FNR == NR { head_path[$1] = $2; next }
+  { print head_path[$1] "|" $2 }
+' "$work_dir/renames.txt" "$work_dir/base.unsorted" | sort >"$work_dir/base.txt"
 
 # Issues on HEAD beyond the count on the base branch, per file and rule.
 new_issues="$(
