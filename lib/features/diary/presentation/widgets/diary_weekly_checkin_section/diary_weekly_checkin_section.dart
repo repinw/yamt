@@ -83,8 +83,11 @@ class _DiaryWeeklyCheckInSectionState
     final checkInData = _visibleCheckInData;
     final dismissedPending = _dismissedPending(rawCheckInData);
     final weightTrackingFlow = ref.watch(diaryWeightTrackingFlowProvider);
-    // Keeps the goal settings loaded for the reached-goal check.
-    ref.watch(diaryCalorieGoalSettingsProvider);
+    // Keeps the goal settings loaded for the reached-goal check and the
+    // check-in controllers alive for the dialog callbacks.
+    ref
+      ..watch(diaryCalorieGoalSettingsProvider)
+      ..watch(diaryWeeklyCheckInActionsProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

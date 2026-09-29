@@ -10,8 +10,8 @@ part of 'calorie_weekly_checkin_controller.dart';
 // ignore_for_file: type=lint, type=warning
 /// Defines calorie weekly check in controller.
 ///
-/// Diary dialog callbacks capture this notifier without watching it, so it
-/// lives for the whole session.
+/// Diary dialog callbacks capture this notifier, so every action keeps this
+/// controller and the goal controller alive until it ends.
 
 @ProviderFor(CalorieWeeklyCheckInController)
 final calorieWeeklyCheckInControllerProvider =
@@ -19,22 +19,22 @@ final calorieWeeklyCheckInControllerProvider =
 
 /// Defines calorie weekly check in controller.
 ///
-/// Diary dialog callbacks capture this notifier without watching it, so it
-/// lives for the whole session.
+/// Diary dialog callbacks capture this notifier, so every action keeps this
+/// controller and the goal controller alive until it ends.
 final class CalorieWeeklyCheckInControllerProvider
     extends
         $NotifierProvider<CalorieWeeklyCheckInController, AsyncValue<void>> {
   /// Defines calorie weekly check in controller.
   ///
-  /// Diary dialog callbacks capture this notifier without watching it, so it
-  /// lives for the whole session.
+  /// Diary dialog callbacks capture this notifier, so every action keeps this
+  /// controller and the goal controller alive until it ends.
   CalorieWeeklyCheckInControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'calorieWeeklyCheckInControllerProvider',
-        isAutoDispose: false,
+        isAutoDispose: true,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -56,12 +56,12 @@ final class CalorieWeeklyCheckInControllerProvider
 }
 
 String _$calorieWeeklyCheckInControllerHash() =>
-    r'af69473d87a2ac7884f315cb74a27ac7f8fcbfbe';
+    r'fe1d8826685f19117f035dac6e6cf2a078657704';
 
 /// Defines calorie weekly check in controller.
 ///
-/// Diary dialog callbacks capture this notifier without watching it, so it
-/// lives for the whole session.
+/// Diary dialog callbacks capture this notifier, so every action keeps this
+/// controller and the goal controller alive until it ends.
 
 abstract class _$CalorieWeeklyCheckInController
     extends $Notifier<AsyncValue<void>> {

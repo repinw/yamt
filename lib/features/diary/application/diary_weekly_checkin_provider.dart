@@ -1,8 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart'
     as goal_controller;
-import 'package:yamt/features/calories/application/calorie_page_action_controller.dart'
-    as page_actions;
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart'
     as week_overview;
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart'
@@ -113,8 +111,8 @@ DiaryWeeklyCheckInActions diaryWeeklyCheckInActions(Ref ref) {
   final checkInController = ref.watch(
     checkin_controller.calorieWeeklyCheckInControllerProvider.notifier,
   );
-  final pageActionController = ref.watch(
-    page_actions.caloriePageActionControllerProvider.notifier,
+  final goalController = ref.watch(
+    goal_controller.calorieGoalControllerProvider.notifier,
   );
 
   return DiaryWeeklyCheckInActions(
@@ -131,7 +129,11 @@ DiaryWeeklyCheckInActions diaryWeeklyCheckInActions(Ref ref) {
       }
       return saved;
     },
-    setSkippedIntakeDay: pageActionController.setSkippedIntakeDay,
+    setSkippedIntakeDay: ({required selectedDay, required isSkipped}) =>
+        goalController.setSkippedIntakeDay(
+          day: selectedDay,
+          isSkipped: isSkipped,
+        ),
     refreshCheckInData: () {
       if (!ref.mounted) {
         return;
