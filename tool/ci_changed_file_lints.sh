@@ -89,15 +89,17 @@ for file in "${changed[@]}"; do
 done
 analyze "$base_tree" "${base_files[@]}" >"$work_dir/base.unsorted"
 # Report base issues under the HEAD path so renamed files line up.
+# The awk scripts test FILENAME instead of FNR == NR: an empty first file
+# would make FNR == NR true for the second file as well.
 awk -F'|' '
-  FNR == NR { head_path[$1] = $2; next }
+  FILENAME == ARGV[1] { head_path[$1] = $2; next }
   { print head_path[$1] "|" $2 }
 ' "$work_dir/renames.txt" "$work_dir/base.unsorted" | sort >"$work_dir/base.txt"
 
 # Issues on HEAD beyond the count on the base branch, per file and rule.
 new_issues="$(
   awk -F'|' '
-    FNR == NR { base[$0]++; next }
+    FILENAME == ARGV[1] { base[$0]++; next }
     { head[$0]++ }
     END {
       for (key in head) {
