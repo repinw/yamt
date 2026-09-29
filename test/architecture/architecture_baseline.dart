@@ -394,7 +394,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/domain/calorie_goal_calculator.dart': 1,
     'lib/features/calories/domain/calorie_weekly_checkin.dart': 1,
     'lib/features/calories/domain/daily_nutrition_target.dart': 1,
-    'lib/features/calories/domain/macro_carryover_calculator.dart': 1,
     'lib/features/diary/domain/diary_macro_targets.dart': 1,
     'lib/features/inventory/domain/inventory_parsing_utils.dart': 1,
     'lib/features/inventory/domain/prepared_meal.dart': 1,

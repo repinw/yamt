@@ -37,6 +37,35 @@ void main() {
       expect(delta.wasCarbsFloorApplied, isFalse);
     });
 
+    test('positive carryover keeps the 75/25 split below the carb cap', () {
+      // 2500 + 100 kcal allow 260 g carbs; 200 g + 18 g stay below.
+      final delta = MacroCarryoverCalculator.calculateCarryoverDelta(
+        baseCarbs: 200,
+        baseFat: baseFat,
+        carryoverKcal: 100,
+        weightKg: weightKg,
+        baseGoalKcal: 2500,
+      );
+
+      expect(delta.carbsGrams, closeTo(75.0 / 4.1, 0.001));
+      expect(delta.fatGrams, closeTo(25.0 / 9.3, 0.001));
+    });
+
+    test('positive carryover gives fat the kcal above the carb cap', () {
+      // 2500 + 600 kcal allow 310 g carbs, so carbs grow by 60 g only.
+      final delta = MacroCarryoverCalculator.calculateCarryoverDelta(
+        baseCarbs: 250,
+        baseFat: baseFat,
+        carryoverKcal: 600,
+        weightKg: weightKg,
+        baseGoalKcal: 2500,
+      );
+
+      expect(delta.proteinGrams, 0.0);
+      expect(delta.carbsGrams, closeTo(60, 0.001));
+      expect(delta.fatGrams, closeTo((600 - 60 * 4.1) / 9.3, 0.001));
+    });
+
     test('negative carryover respects fat floor and carbs floor', () {
       final delta = MacroCarryoverCalculator.calculateCarryoverDelta(
         baseCarbs: baseCarbs,

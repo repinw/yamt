@@ -189,7 +189,7 @@ void main() {
       expect(targets.carbs, closeTo(220, 0.001));
     });
 
-    test('applies positive carryover (75% carbs / 25% fat split, protein untouched)', () {
+    test('applies positive carryover up to the carb cap', () {
       final preferences = MemoryAppPreferences();
       final container = ProviderContainer(
         overrides: [appPreferencesProvider.overrideWithValue(preferences)],
@@ -214,11 +214,11 @@ void main() {
       // 240g carbs.
       // Carryover +100 kcal:
       // Protein: unchanged (160.0)
-      // Carbs: 240 + (75 / 4.1)
-      // Fat: base + (25 / 9.3)
+      // Carbs: 40 % of 2500 kcal allow 250g, so only +10g.
+      // Fat: base + the other 59 kcal.
       expect(targets.protein, closeTo(160, 0.001));
-      expect(targets.carbs, closeTo(240.0 + (75.0 / 4.1), 0.01));
-      expect(targets.fat, closeTo(64.0 + 224 / 9 + (25.0 / 9.3), 0.01));
+      expect(targets.carbs, closeTo(250, 0.01));
+      expect(targets.fat, closeTo(64.0 + 224 / 9 + (59 / 9.3), 0.01));
     });
 
     test('applies negative carryover (Schutzregeln A & B)', () {
