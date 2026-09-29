@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 
@@ -14,18 +15,12 @@ double responsivePageHorizontalPadding(BuildContext context) {
   return isCompactViewport(context) ? AppSpacing.md : AppSpacing.xl;
 }
 
-/// Height of a tab's dock that sits on the home navigation bar.
-const double homeShellDockHeight = AppSpacing.md * 2 + AppSizes.headerTool;
-
-/// Bottom padding that keeps scrollable home-shell content above chrome.
-/// A tab with a dock passes [hasDock], so its last row clears the dock too.
-double homeShellPageBottomPadding(
-  BuildContext context, {
-  bool hasDock = false,
-}) {
+/// Bottom padding that keeps scrollable home-shell content above chrome,
+/// including the round action button that reaches above the bar.
+double homeShellPageBottomPadding(BuildContext context) {
   return AppSizes.homeShellBottomBarClearance +
+      AppGraphit.navActionOverhang +
       AppSpacing.xxxxl +
-      (hasDock ? homeShellDockHeight : 0) +
       MediaQuery.paddingOf(context).bottom;
 }
 

@@ -29,7 +29,7 @@ import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_inventory_food_picker/diary_inventory_food_picker_status.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_actions.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
 import 'package:yamt/features/health/data/'
@@ -47,6 +47,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/helpers/memory_app_preferences.dart';
+import '../../test/helpers/sheet_launcher.dart';
 
 final _selectedDay = DateTime(2026, 5, 13);
 const _userId = 'user-1';
@@ -114,10 +115,12 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       GoRoute(
         path: AppRoutes.homeCalories,
         builder: (context, state) {
-          // The quick-eat tools sit in the home dock under the diary.
+          // The quick-eat sheet opens from the home bar's action button.
           return const Scaffold(
             body: DiaryPage(),
-            bottomNavigationBar: DiaryQuickEatDock(),
+            bottomNavigationBar: SafeArea(
+              child: SheetLauncher(actions: diaryQuickEatActions),
+            ),
           );
         },
       ),
@@ -256,6 +259,8 @@ Future<void> _pumpUntilOnScreen(
 }
 
 Future<void> _openInventoryQuickEat(WidgetTester tester) async {
+  await tester.tap(find.byKey(SheetLauncher.buttonKey));
+  await tester.pumpAndSettle();
   final inventorySource = find.byKey(
     DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.inventory),
   );

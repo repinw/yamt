@@ -44,16 +44,15 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   check-in, and only on today.
 - `presentation/widgets/diary_day_type_labels.dart` gives the emoji and the
   names of a day type. The Fortschritt tab uses them for its day rows.
-- `presentation/widgets/diary_quick_eat_dock.dart` (`DiaryQuickEatDock`) is
-  public UI for `features/home`: the quick-eat buttons for the selected day.
-  The home shell stacks it on the bottom navigation bar of the diary tab, so it
-  hides and returns with the bar. The day view pads its content by
-  `diaryQuickEatDockHeight`, and the shell keeps floating snack bars above it.
-  Its quick entry tool opens `presentation/diary_quick_entry_page.dart`, which
+- `presentation/widgets/diary_quick_eat_actions.dart`
+  (`diaryQuickEatActions`) is public UI for `features/home`: the quick-eat
+  actions for the selected day. The home shell shows them in its action panel
+  when the "Essen" button in the middle of the bar is tapped. Its quick entry
+  action opens `presentation/diary_quick_entry_page.dart`, which
   saves a calorie quick entry through the calories entry saver without an
   inventory item.
-- `presentation/widgets/diary_meals_empty_state.dart` points to the dock on a
-  day without logged food.
+- `presentation/widgets/diary_meals_empty_state.dart` points to the "Essen"
+  button on a day without logged food.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the
   diary-facing daily and weekly calorie balance UI.
   The daily card uses the food label look (`FoodLabelColors`, `AppFonts`)

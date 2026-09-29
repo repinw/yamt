@@ -6,7 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
-import 'package:yamt/features/home/presentation/widgets/inventory_dock.dart';
+import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
 import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -19,6 +19,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../test/features/scanner/fakes/fake_receipt_ai_repository.dart';
 import '../../test/features/scanner/fakes/fake_receipt_product_resolver.dart';
 import '../../test/features/scanner/fakes/fake_receipt_storage_gateway.dart';
+import '../../test/helpers/sheet_launcher.dart';
 
 Widget _buildHarness({required FakeReceiptAiRepository fakeReceiptAi}) {
   final routeObserver = RouteObserver<ModalRoute<void>>();
@@ -27,8 +28,9 @@ Widget _buildHarness({required FakeReceiptAiRepository fakeReceiptAi}) {
     routes: [
       GoRoute(
         path: AppRoutes.root,
-        builder: (context, state) =>
-            const Scaffold(bottomNavigationBar: InventoryDock()),
+        builder: (context, state) => const Scaffold(
+          body: Center(child: SheetLauncher(actions: inventoryAddActions)),
+        ),
       ),
       GoRoute(
         path: AppRoutes.homeInventoryReceiptReview,
@@ -101,9 +103,9 @@ void main() {
     await tester.pumpWidget(_buildHarness(fakeReceiptAi: fakeReceiptAi));
     await _pumpVisibleStep(tester);
 
-    await tester.tap(find.byKey(InventoryDock.receiptKey));
+    await tester.tap(find.byKey(SheetLauncher.buttonKey));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
-    await tester.tap(find.byKey(InventoryDock.receiptPhotoKey));
+    await tester.tap(find.byKey(InventoryAddActionKeys.receiptPhoto));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
 
     expect(find.byType(ReceiptReviewPage), findsOneWidget);

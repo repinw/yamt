@@ -11,7 +11,6 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/core/widgets/barcode_icon.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/core/widgets/home_header_tool.dart';
@@ -37,7 +36,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
-import 'package:yamt/features/home/presentation/widgets/inventory_dock.dart';
+import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -426,10 +425,11 @@ Widget _buildHarness({
         preparedMealsControllerProvider.overrideWith(
           () => preparedMealsController,
         ),
-      if (receiptScanFlowCoordinator != null)
-        receiptScanFlowCoordinatorProvider.overrideWithValue(
-          receiptScanFlowCoordinator,
-        ),
+      // The Vorrat actions read the coordinator to know whether a camera
+      // exists, so it is always a fake.
+      receiptScanFlowCoordinatorProvider.overrideWithValue(
+        receiptScanFlowCoordinator ?? _RecordingReceiptScanFlowCoordinator(),
+      ),
       if (selectedDiaryDay != null)
         diaryCalendarControllerProvider.overrideWith(
           () => _TestDiaryCalendarController(selectedDiaryDay),
@@ -862,7 +862,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('inventory tab shows the dock when inventory is empty', (
+  testWidgets('inventory tab shows the action when inventory is empty', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -877,7 +877,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryDock), findsOneWidget);
+    expect(find.byKey(HomeBottomNavBar.actionKey), findsOneWidget);
   });
 
   testWidgets('inventory top bar actions show shopping route', (tester) async {
@@ -961,53 +961,39 @@ void main() {
     );
     await tester.pump();
 
-    expect(find.byType(InventoryDock), findsOneWidget);
+    expect(find.byKey(HomeBottomNavBar.actionKey), findsOneWidget);
   });
 
-  testWidgets('inventory tab shows the dock when inventory and meals exist', (
-    tester,
-  ) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
+  testWidgets(
+    'inventory action opens the add sheet when inventory and meals exist',
+    (tester) async {
+      final repository = FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        initialLocation: AppRoutes.homeInventory,
-        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
-          _inventoryItem('item-1'),
-        ]),
-        preparedMealRepository: _FakePreparedMealRepository(<PreparedMeal>[
-          _preparedMeal('meal-1'),
-        ]),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildHarness(
+          settingsRepository: repository,
+          initialLocation: AppRoutes.homeInventory,
+          inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+            _inventoryItem('item-1'),
+          ]),
+          preparedMealRepository: _FakePreparedMealRepository(<PreparedMeal>[
+            _preparedMeal('meal-1'),
+          ]),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryDock), findsOneWidget);
-    expect(
-      tester.getTopLeft(find.byKey(InventoryDock.receiptKey)).dx,
-      lessThan(tester.getTopLeft(find.byKey(InventoryDock.barcodeKey)).dx),
-    );
-    expect(
-      find.descendant(
-        of: find.byKey(InventoryDock.barcodeKey),
-        matching: find.byType(BarcodeIcon),
-      ),
-      findsOneWidget,
-    );
-    final scaffoldFinder = find.ancestor(
-      of: find.byType(InventoryDock),
-      matching: find.byType(Scaffold),
-    );
-    final scaffold = tester.widget<Scaffold>(scaffoldFinder.first);
-    expect(
-      scaffold.floatingActionButtonAnimator,
-      FloatingActionButtonAnimator.noAnimation,
-    );
-  });
+      await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
+      await tester.pumpAndSettle();
 
-  testWidgets('inventory dock and header stay put while scrolling', (
+      expect(find.byKey(InventoryAddActionKeys.barcode), findsOneWidget);
+      expect(find.byKey(InventoryAddActionKeys.manualSearch), findsOneWidget);
+      expect(find.byKey(InventoryAddActionKeys.receiptUpload), findsOneWidget);
+    },
+  );
+
+  testWidgets('inventory action and header stay put while scrolling', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
@@ -1038,13 +1024,18 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    final initialDockTop = tester.getTopLeft(find.byType(InventoryDock)).dy;
+    final initialActionTop = tester
+        .getTopLeft(find.byKey(HomeBottomNavBar.actionKey))
+        .dy;
     final initialTitleTop = tester.getTopLeft(find.text('Inventory').first).dy;
 
     await tester.drag(find.text('Row 5'), const Offset(0, -600));
     await tester.pumpAndSettle();
 
-    expect(tester.getTopLeft(find.byType(InventoryDock)).dy, initialDockTop);
+    expect(
+      tester.getTopLeft(find.byKey(HomeBottomNavBar.actionKey)).dy,
+      initialActionTop,
+    );
     expect(tester.getTopLeft(find.text('Inventory').first).dy, initialTitleTop);
     expect(tester.takeException(), isNull);
   });
@@ -1090,7 +1081,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('inventory dock disappears immediately after leaving inventory', (
+  testWidgets('action word changes immediately after leaving inventory', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1107,35 +1098,37 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryDock), findsOneWidget);
+    expect(find.text('ADD'), findsOneWidget);
 
     await tester.tap(find.text('DIARY'));
     await tester.pump();
 
-    expect(find.byType(InventoryDock), findsNothing);
+    expect(find.text('ADD'), findsNothing);
+    expect(find.text('EAT'), findsOneWidget);
   });
 
-  testWidgets('inventory tab shows the dock when only inventory items exist', (
-    tester,
-  ) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
+  testWidgets(
+    'inventory tab shows the action when only inventory items exist',
+    (tester) async {
+      final repository = FakeCalorieSettingsRepository();
+      addTearDown(repository.dispose);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        initialLocation: AppRoutes.homeInventory,
-        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
-          _inventoryItem('item-1'),
-        ]),
-      ),
-    );
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        _buildHarness(
+          settingsRepository: repository,
+          initialLocation: AppRoutes.homeInventory,
+          inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+            _inventoryItem('item-1'),
+          ]),
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryDock), findsOneWidget);
-  });
+      expect(find.byKey(HomeBottomNavBar.actionKey), findsOneWidget);
+    },
+  );
 
-  testWidgets('inventory snackbar lays out with the inventory dock', (
+  testWidgets('inventory snackbar lays out with the action button', (
     tester,
   ) async {
     await tester.binding.setSurfaceSize(const Size(384, 832));
@@ -1207,9 +1200,7 @@ void main() {
     });
   }
 
-  testWidgets('inventory dock opens the add sheet and shows its tools', (
-    tester,
-  ) async {
+  testWidgets('inventory action opens the add actions', (tester) async {
     final repository = FakeCalorieSettingsRepository();
     addTearDown(repository.dispose);
     Object? hubRouteExtra;
@@ -1226,15 +1217,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('BARCODE'), findsOneWidget);
-    expect(find.text('RECEIPT'), findsOneWidget);
-
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
     await tester.pumpAndSettle();
 
     expect(find.text('Manual search'), findsOneWidget);
     expect(find.text('AI suggestion'), findsOneWidget);
-    expect(find.text('Upload image/PDF'), findsNothing);
+    expect(find.text('Upload image/PDF'), findsOneWidget);
 
     await tester.tap(find.text('Manual search'));
     await tester.pumpAndSettle();
@@ -1261,7 +1249,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.add_rounded));
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
     await tester.pumpAndSettle();
     await tester.tap(find.text('AI suggestion'));
     await tester.pumpAndSettle();
@@ -1288,7 +1276,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('RECEIPT'));
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Upload image/PDF'));
     await tester.pumpAndSettle();
@@ -1317,7 +1305,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('RECEIPT'));
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Photograph receipt'));
     await tester.pumpAndSettle();
@@ -1325,7 +1313,7 @@ void main() {
     expect(coordinator.cameraFlowCallCount, 1);
   });
 
-  testWidgets('inventory receipt tool picks a file without a camera', (
+  testWidgets('inventory actions offer only the upload without a camera', (
     tester,
   ) async {
     final repository = FakeCalorieSettingsRepository();
@@ -1347,7 +1335,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('RECEIPT'));
+    await tester.tap(find.byKey(HomeBottomNavBar.actionKey));
+    await tester.pumpAndSettle();
+    expect(find.text('Photograph receipt'), findsNothing);
+    await tester.tap(find.text('Upload image/PDF'));
     await tester.pumpAndSettle();
 
     expect(coordinator.cameraFlowCallCount, 0);
@@ -1371,7 +1362,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryDock), findsOneWidget);
+    expect(find.byKey(HomeBottomNavBar.actionKey), findsOneWidget);
   });
 
   testWidgets('inventory selection chrome compacts on small zoomed layouts', (

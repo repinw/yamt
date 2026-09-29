@@ -1279,7 +1279,7 @@
   "diaryBalanceShowDetails": "Show all numbers",
   "diaryBalanceHideDetails": "Show fewer numbers",
   "diaryMealsEmptyTitle": "Nothing eaten yet",
-  "diaryMealsEmptyHint": "Log food below from the inventory, search, AI, or barcode.",
+  "diaryMealsEmptyHint": "Tap “Eat” below to log food by barcode, from the inventory, search, or AI.",
   "diaryBalanceEatenAmount": "{kcal} eaten",
   "@diaryBalanceEatenAmount": {
     "placeholders": {
@@ -2816,5 +2816,12 @@
         "type": "String"
       }
     }
-  }
+  },
+  "homeActionEat": "Eat",
+  "inventoryAddBarcodeDescription": "Scan a package and put it into stock",
+  "diaryQuickEatBarcodeDescription": "Scan a package and log what you ate",
+  "diaryQuickEatInventoryDescription": "Eat something from your stock",
+  "diaryQuickEatQuickEntryDescription": "Enter calories and macros by hand",
+  "diaryQuickEatAiDescription": "Describe a meal, the AI estimates it",
+  "diaryQuickEatSearchDescription": "Find a food by name or brand"
 }
