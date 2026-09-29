@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Floating sliver that hosts the shared home top chrome.
+/// Pinned sliver that hosts the shared home top chrome. The header stays
+/// put while the tab scrolls below it.
 class HomeShellTopSliverChrome extends StatelessWidget {
   /// The shell top chrome sliver.
   const new({required this.child, super.key});
@@ -9,14 +10,12 @@ class HomeShellTopSliverChrome extends StatelessWidget {
   final PreferredSizeWidget child;
   @override
   Widget build(BuildContext context) {
-    final statusBarInset = MediaQuery.paddingOf(context).top;
-    final toolbarHeight = child.preferredSize.height;
     return SliverPersistentHeader(
-      floating: true,
+      pinned: true,
       delegate: _HomeShellTopChromeDelegate(
         child: child,
-        statusBarInset: statusBarInset,
-        toolbarHeight: toolbarHeight,
+        extent: MediaQuery.paddingOf(context).top + child.preferredSize.height,
+        background: Theme.of(context).scaffoldBackgroundColor,
       ),
     );
   }
@@ -25,41 +24,29 @@ class HomeShellTopSliverChrome extends StatelessWidget {
 class _HomeShellTopChromeDelegate extends SliverPersistentHeaderDelegate {
   const new({
     required this.child,
-    required this.statusBarInset,
-    required this.toolbarHeight,
+    required this.extent,
+    required this.background,
   });
   final PreferredSizeWidget child;
-  final double statusBarInset;
-  final double toolbarHeight;
+  final double extent;
+  final Color background;
   @override
-  double get minExtent => 0;
+  double get minExtent => extent;
   @override
-  double get maxExtent => statusBarInset + toolbarHeight;
+  double get maxExtent => extent;
   @override
   Widget build(
     BuildContext context,
     double shrinkOffset,
     bool overlapsContent,
   ) {
-    if (maxExtent <= 0) return const SizedBox.shrink();
-    final visibility = ((maxExtent - shrinkOffset) / maxExtent).clamp(0.0, 1.0);
-    if (visibility <= 0) return const SizedBox.shrink();
-    return ClipRect(
-      child: OverflowBox(
-        alignment: Alignment.topCenter,
-        minHeight: maxExtent,
-        maxHeight: maxExtent,
-        child: Transform.translate(
-          offset: Offset(0, -toolbarHeight * (1 - visibility)),
-          child: child,
-        ),
-      ),
-    );
+    if (extent <= 0) return const SizedBox.shrink();
+    return ColoredBox(color: background, child: child);
   }
 
   @override
   bool shouldRebuild(covariant _HomeShellTopChromeDelegate oldDelegate) =>
       child != oldDelegate.child ||
-      statusBarInset != oldDelegate.statusBarInset ||
-      toolbarHeight != oldDelegate.toolbarHeight;
+      extent != oldDelegate.extent ||
+      background != oldDelegate.background;
 }

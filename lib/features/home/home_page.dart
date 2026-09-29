@@ -3,22 +3,20 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/core/widgets/home_more_sheet.dart';
 import 'package:yamt/core/widgets/home_nav_entry.dart';
 import 'package:yamt/core/widgets/home_nav_item.dart';
-import 'package:yamt/core/widgets/home_shell_bottom_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
-import 'package:yamt/core/widgets/home_shell_floating_action_button_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
 import 'package:yamt/core/widgets/home_shell_more_scope.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_slide_menu.dart';
 import 'package:yamt/features/home/presentation/widgets/inventory_dock.dart';
-import 'package:yamt/features/home/widgets/home_shell_chrome_visibility_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -39,7 +37,6 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> with RouteAware {
-  late final HomeShellChromeVisibilityController _chromeVisibilityController;
   RouteObserver<ModalRoute<void>>? _routeObserver;
 
   /// Whether the side menu is open.
@@ -47,12 +44,6 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
 
   /// Whether a sheet, dialog, or page covers the shell.
   var _isCovered = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _chromeVisibilityController = HomeShellChromeVisibilityController();
-  }
 
   @override
   void didChangeDependencies() {
@@ -74,12 +65,10 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   @override
   void dispose() {
     _routeObserver?.unsubscribe(this);
-    _chromeVisibilityController.dispose();
     super.dispose();
   }
 
   void _onTabTapped(int index) {
-    _chromeVisibilityController.reveal();
     widget.navigationShell.goBranch(
       index,
       initialLocation: index == widget.navigationShell.currentIndex,
@@ -174,62 +163,45 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   ) {
     return Scaffold(
       extendBody: true,
-      body: NotificationListener<ScrollNotification>(
-        onNotification: _chromeVisibilityController.handleScrollNotification,
-        child: HomeShellMenuScope(
-          openMenu: _openMenu,
-          child: HomeShellMoreScope(
-            openMore: _openMore,
-            child: Stack(
-              children: [
-                ContentVisibility(
-                  isVisible: !_isCovered,
-                  child: widget.navigationShell,
+      body: HomeShellMenuScope(
+        openMenu: _openMenu,
+        child: HomeShellMoreScope(
+          openMore: _openMore,
+          child: Stack(
+            children: [
+              ContentVisibility(
+                isVisible: !_isCovered,
+                child: widget.navigationShell,
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // The dock sits on the navigation bar.
+                    if (currentTab == HomeTabType.diary)
+                      const DiaryQuickEatDock(),
+                    if (currentTab == HomeTabType.inventory)
+                      const InventoryDock(),
+                    HomeBottomNavBar(entries: _navEntries(context, l10n)),
+                  ],
                 ),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: ValueListenableBuilder<double>(
-                    valueListenable: _chromeVisibilityController,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // The dock sits on the navigation bar and hides with
-                        // it.
-                        if (currentTab == HomeTabType.diary)
-                          const DiaryQuickEatDock(),
-                        if (currentTab == HomeTabType.inventory)
-                          const InventoryDock(),
-                        HomeBottomNavBar(entries: _navEntries(context, l10n)),
-                      ],
-                    ),
-                    builder: (context, visibility, bottomNavBar) {
-                      return HomeShellBottomChrome(
-                        visibility: visibility,
-                        child: bottomNavBar!,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
-      // The chrome wraps an empty slot too: floating snack bars sit above the
+      // The slot stays even when empty: floating snack bars sit above the
       // floating action button slot, so they clear the bottom navigation.
-      floatingActionButton: ValueListenableBuilder<double>(
-        valueListenable: _chromeVisibilityController,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(
+          bottom: AppSizes.homeShellBottomBarClearance,
+        ),
         child: floatingActionButton ?? const SizedBox.shrink(),
-        builder: (context, visibility, fab) {
-          return HomeShellFloatingActionButtonChrome(
-            visibility: visibility,
-            child: fab!,
-          );
-        },
       ),
     );
   }

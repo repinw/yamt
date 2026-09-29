@@ -67,7 +67,6 @@ const architectureBaseline = <String, Map<String, int>>{
   },
   'feature-folders': {
     'lib/features/home/home_page.dart': 1,
-    'lib/features/home/widgets/home_shell_chrome_visibility_controller.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,
     'lib/features/onboarding/provider/calorie_goal_onboarding_completed_provider.dart':
         1,
