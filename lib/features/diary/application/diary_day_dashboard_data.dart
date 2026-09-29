@@ -3,6 +3,7 @@ import 'package:yamt/features/calories/application/calorie_week_overview_models.
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
 part 'diary_day_dashboard_data.g.dart';
@@ -23,6 +24,7 @@ class DiaryDayDashboardData {
     required this.runState,
     required this.mealSections,
     required this.nutritionBars,
+    required this.carryoverMacroDelta,
   });
 
   /// Creates data from persisted cache json.
@@ -49,6 +51,9 @@ class DiaryDayDashboardData {
 
   /// Macro bars for [selectedDay].
   final DiaryNutritionBarsData nutritionBars;
+
+  /// Change of the macro targets that the carryover of [selectedDay] causes.
+  final DiaryMacroTargets carryoverMacroDelta;
 
   /// Converts data to persisted cache json.
   Map<String, dynamic> toJson() => _$DiaryDayDashboardDataToJson(this);

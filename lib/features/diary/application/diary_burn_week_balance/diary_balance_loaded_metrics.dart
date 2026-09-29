@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_weekly_balance_metrics.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 /// Derived values needed to render the loaded Burn Week balance card.
 class DiaryBalanceLoadedMetrics {
@@ -59,6 +60,7 @@ typedef _DiaryBalanceLoadedContext = ({
   BurnWeekRunState runState,
   bool isLiveDay,
   DateTime now,
+  DiaryMacroTargets carryoverMacroDelta,
 });
 
 /// Resolves all derived values for a loaded Burn Week balance card.
@@ -69,6 +71,7 @@ DiaryBalanceLoadedMetrics resolveDiaryBalanceLoadedMetrics({
   required BurnWeekRunState runState,
   required bool isLiveDay,
   required DateTime now,
+  required DiaryMacroTargets carryoverMacroDelta,
 }) {
   final context = (
     weekOverview: weekOverview,
@@ -77,6 +80,7 @@ DiaryBalanceLoadedMetrics resolveDiaryBalanceLoadedMetrics({
     runState: runState,
     isLiveDay: isLiveDay,
     now: now,
+    carryoverMacroDelta: carryoverMacroDelta,
   );
   return _resolveDiaryBalanceLoadedMetrics(context);
 }
@@ -145,6 +149,7 @@ DiaryDailyBudgetDetailsData _resolveBudgetDetails(
   metrics: daily,
   isPauseDay: state.isPauseDay,
   carryoverStartDate: weekStart,
+  carryoverMacroDelta: context.carryoverMacroDelta,
 );
 
 DiaryBalanceLoadedState _resolveLoadedState(

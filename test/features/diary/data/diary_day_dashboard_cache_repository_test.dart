@@ -186,6 +186,7 @@ DiaryDayDashboardData _dashboardData(DateTime day) {
       fat: 4,
       goals: DiaryMacroTargets(carbs: 250, protein: 120, fat: 70),
     ),
+    carryoverMacroDelta: const DiaryMacroTargets(carbs: 0, protein: 0, fat: 0),
   );
 }
 

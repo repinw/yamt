@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
@@ -10,6 +11,8 @@ import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_ba
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/diary_entries_provider.dart';
+import 'package:yamt/features/diary/application/diary_macro_targets_resolver.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 part 'diary_balance_provider.g.dart';
 
@@ -72,6 +75,7 @@ class DiaryBalanceSource {
     required this._selectedDayOverview,
     required this._selectedDayEntries,
     required this._runState,
+    required this._carryoverMacroDelta,
   });
 
   /// Creates a balance source from cached dashboard data.
@@ -81,6 +85,7 @@ class DiaryBalanceSource {
       selectedDayOverview: data.weekOverview.days.last,
       selectedDayEntries: data.selectedDayEntries,
       runState: data.runState,
+      carryoverMacroDelta: data.carryoverMacroDelta,
     );
   }
 
@@ -88,6 +93,7 @@ class DiaryBalanceSource {
   final CalorieWeekDayOverview _selectedDayOverview;
   final List<CalorieEntry> _selectedDayEntries;
   final BurnWeekRunState _runState;
+  final DiaryMacroTargets _carryoverMacroDelta;
 
   /// Week overview backing this source.
   CalorieWeekOverview get weekOverview => _weekOverview;
@@ -148,6 +154,7 @@ class DiaryBalanceSource {
         runState: _runState,
         isLiveDay: isLiveDay,
         now: now,
+        carryoverMacroDelta: _carryoverMacroDelta,
       ),
     );
   }
@@ -170,12 +177,25 @@ Future<DiaryBalanceSource> diaryBalanceSource(
   final weekOverview = await weekOverviewFuture;
   final selectedDayEntries = await selectedDayEntriesFuture;
   final runState = await runStateFuture;
+  final selectedDayOverview = weekOverview.days.last;
+  final today = normalizeDiaryDay(ref.read(clockProvider)());
 
   return DiaryBalanceSource._(
     weekOverview: weekOverview,
-    selectedDayOverview: weekOverview.days.last,
+    selectedDayOverview: selectedDayOverview,
     selectedDayEntries: selectedDayEntries,
     runState: runState,
+    carryoverMacroDelta: resolveDiaryCarryoverMacroDelta(
+      ref,
+      day: normalizedSelectedDay,
+      goalKcal: resolveDiaryDisplayGoalKcal(
+        weekOverview: weekOverview,
+        selectedDayOverview: selectedDayOverview,
+      ),
+      carryoverKcal: normalizedSelectedDay.isBefore(today)
+          ? 0
+          : weekOverview.carryoverBeforeTodayKcal,
+    ),
   );
 }
 

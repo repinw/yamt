@@ -221,6 +221,34 @@ void main() {
       expect(targets.fat, closeTo(64.0 + 224 / 9 + (59 / 9.3), 0.01));
     });
 
+    test('resolves the carryover delta from the same rule', () {
+      final preferences = MemoryAppPreferences();
+      final container = ProviderContainer(
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
+      );
+      addTearDown(container.dispose);
+
+      final delta = container
+          .listen(
+            Provider(
+              (ref) => resolveDiaryCarryoverMacroDelta(
+                ref,
+                day: _day,
+                goalKcal: 2400,
+                carryoverKcal: 100,
+              ),
+            ),
+            (_, _) {},
+          )
+          .read();
+
+      // Same case as the positive carryover test: carbs +10g up to the cap,
+      // the other 59 kcal go to fat, protein stays.
+      expect(delta.protein, closeTo(0, 0.001));
+      expect(delta.carbs, closeTo(10, 0.01));
+      expect(delta.fat, closeTo(59 / 9.3, 0.01));
+    });
+
     test('applies negative carryover (Schutzregeln A & B)', () {
       final preferences = MemoryAppPreferences();
       final container = ProviderContainer(

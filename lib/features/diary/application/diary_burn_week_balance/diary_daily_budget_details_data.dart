@@ -47,6 +47,7 @@ class DiaryDailyBudgetDetailsData {
     required this.totalCarryoverBeforeTodayKcal,
     required this.remainingRunDays,
     required this.previousDays,
+    required this.carryoverMacroDelta,
     this.unadjustedBaseGoalKcal,
     this.cyclingAdjustmentKcal = 0.0,
   });
@@ -58,12 +59,14 @@ class DiaryDailyBudgetDetailsData {
     required DiaryDailyBalanceMetrics metrics,
     required bool isPauseDay,
     required DateTime carryoverStartDate,
+    required DiaryMacroTargets carryoverMacroDelta,
   }) => _DiaryDailyBudgetDetailsResolver(
     weekOverview: weekOverview,
     selectedDayOverview: selectedDayOverview,
     metrics: metrics,
     isPauseDay: isPauseDay,
     carryoverStartDate: carryoverStartDate,
+    carryoverMacroDelta: carryoverMacroDelta,
   ).resolve();
 
   /// Selected diary day.
@@ -118,23 +121,15 @@ class DiaryDailyBudgetDetailsData {
     return rawDailyKcal.abs() > carryoverKcal.abs() + 0.5;
   }
 
-  /// Carbs delta in grams from the carryover (75% / 4.1).
-  double get carryoverCarbsDeltaGrams {
-    if (carryoverKcal == 0) return 0;
-    return carryoverKcal > 0
-        ? (carryoverKcal * carryoverCarbFraction) / carbEnergyDensityKcalPerGram
-        : -((carryoverKcal.abs() * carryoverCarbFraction) /
-              carbEnergyDensityKcalPerGram);
-  }
+  /// Change of the macro targets that the carryover causes, taken from the
+  /// same rule as the diary targets.
+  final DiaryMacroTargets carryoverMacroDelta;
 
-  /// Fat delta in grams from the carryover (25% / 9.3).
-  double get carryoverFatDeltaGrams {
-    if (carryoverKcal == 0) return 0;
-    return carryoverKcal > 0
-        ? (carryoverKcal * carryoverFatFraction) / fatEnergyDensityKcalPerGram
-        : -((carryoverKcal.abs() * carryoverFatFraction) /
-              fatEnergyDensityKcalPerGram);
-  }
+  /// Carbs delta in grams from the carryover.
+  double get carryoverCarbsDeltaGrams => carryoverMacroDelta.carbs;
+
+  /// Fat delta in grams from the carryover.
+  double get carryoverFatDeltaGrams => carryoverMacroDelta.fat;
 }
 
 class _DiaryDailyBudgetDetailsResolver {
@@ -144,6 +139,7 @@ class _DiaryDailyBudgetDetailsResolver {
     required this.metrics,
     required this.isPauseDay,
     required this.carryoverStartDate,
+    required this.carryoverMacroDelta,
   });
 
   final CalorieWeekOverview weekOverview;
@@ -151,6 +147,7 @@ class _DiaryDailyBudgetDetailsResolver {
   final DiaryDailyBalanceMetrics metrics;
   final bool isPauseDay;
   final DateTime carryoverStartDate;
+  final DiaryMacroTargets carryoverMacroDelta;
 
   DiaryDailyBudgetDetailsData resolve() {
     final previousDays = _resolvePreviousDays();
@@ -173,6 +170,7 @@ class _DiaryDailyBudgetDetailsResolver {
       totalCarryoverBeforeTodayKcal: _sumCarryover(previousDays),
       remainingRunDays: _resolveRemainingRunDays(),
       previousDays: List<DiaryCarryoverDayDetail>.unmodifiable(previousDays),
+      carryoverMacroDelta: carryoverMacroDelta,
     );
   }
 

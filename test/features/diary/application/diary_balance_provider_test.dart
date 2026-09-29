@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
@@ -12,6 +13,8 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_entries_provider.dart';
+
+import '../../../helpers/memory_app_preferences.dart';
 
 void main() {
   test(
@@ -124,6 +127,7 @@ void main() {
       final runStateCompleter = Completer<BurnWeekRunState>();
       final container = ProviderContainer(
         overrides: [
+          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
           burnWeekLiveSyncProvider.overrideWith((ref) => null),
           calorieWeekOverviewForWindowProvider(normalizedSelectedDay)
               .overrideWith((ref) => _weekOverview(selectedDay: selectedDay)),
@@ -178,6 +182,7 @@ Future<DiaryBalanceCardData> _resolveBalanceData({
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final container = ProviderContainer(
     overrides: [
+      appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
       calorieWeekOverviewForWindowProvider(normalizedSelectedDay)
           .overrideWith((ref) => weekOverview),

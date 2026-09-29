@@ -35,6 +35,11 @@ DiaryDayDashboardState diaryDashboardLoadedStateForTest({
       runState: runState,
       mealSections: mealSections,
       nutritionBars: nutritionBars,
+      carryoverMacroDelta: const DiaryMacroTargets(
+        carbs: 0,
+        protein: 0,
+        fat: 0,
+      ),
     ),
     isFromCache: isFromCache,
     isRefreshing: isRefreshing,
