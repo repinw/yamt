@@ -168,16 +168,51 @@ jobs:
       # adb port forward and then retries forever, although the app runs. Each
       # attempt ends after 4 minutes, and a new attempt gets a new forward.
       # The device log of a failed run is saved for the artifact below.
+      #
+      # The emulator gets all 4 cores of the runner and more memory than the
+      # profile's default, because it renders on the CPU and sometimes went
+      # offline during a run.
       - name: Run on the Android emulator
+        id: drive
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 35
           target: google_apis
           arch: x86_64
           profile: pixel_6
+          cores: 4
+          ram-size: 4096M
+          heap-size: 512M
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: tool/ci_integration_drive.sh ${{ matrix.target }}
+
+      # When the emulator went offline, the drive script leaves the file
+      # emulator-crashed. The test then runs once more on a fresh emulator.
+      # A test that failed on a running emulator is not run again.
+      - name: Run again on a fresh emulator after an emulator crash
+        id: drive-again
+        if: steps.drive.outcome == 'failure' && hashFiles('emulator-crashed') != ''
+        continue-on-error: true
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          cores: 4
+          ram-size: 4096M
+          heap-size: 512M
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: tool/ci_integration_drive.sh ${{ matrix.target }}
+
+      - name: Check the test result
+        if: steps.drive.outcome == 'failure' && steps.drive-again.outcome != 'success'
+        run: |
+          echo "The integration test failed." >&2
+          exit 1
 
       - name: Upload the device log
         if: failure()
