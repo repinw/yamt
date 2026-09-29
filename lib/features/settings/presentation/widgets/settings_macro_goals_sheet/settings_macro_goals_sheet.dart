@@ -47,7 +47,9 @@ class SettingsMacroGoalsSheet extends ConsumerStatefulWidget {
 class _SettingsMacroGoalsSheetState
     extends ConsumerState<SettingsMacroGoalsSheet> {
   late bool _isSportActive;
-  late double _proteinMultiplier;
+
+  /// Protein g/kg the user set; `null` while protein follows the default rule.
+  double? _customProteinMultiplier;
   late double _fatMultiplier;
 
   @override
@@ -59,10 +61,7 @@ class _SettingsMacroGoalsSheetState
     _isSportActive = settings.resolveSportActive(
       hasTrainingDays: hasTrainingDays,
     );
-    _proteinMultiplier = settings.effectiveProteinMultiplier(
-      hasTrainingDays: hasTrainingDays,
-      isLosingWeight: _resolveIsLosingWeight(),
-    );
+    _customProteinMultiplier = settings.customProteinMultiplier;
     _fatMultiplier = settings.effectiveFatMultiplier(isMale: isMale);
   }
 
@@ -93,10 +92,7 @@ class _SettingsMacroGoalsSheetState
     setState(() {
       _isSportActive = value;
       final isMale = _resolveIsMale();
-      _proteinMultiplier = MacroCalculationDefaults.defaultProteinMultiplier(
-        isSportActive: value,
-        isLosingWeight: _resolveIsLosingWeight(),
-      );
+      _customProteinMultiplier = null;
       _fatMultiplier = MacroCalculationDefaults.defaultFatMultiplier(
         isMale: isMale,
       );
@@ -106,31 +102,23 @@ class _SettingsMacroGoalsSheetState
   void _onResetToDefaults() {
     final isMale = _resolveIsMale();
     setState(() {
-      _proteinMultiplier = MacroCalculationDefaults.defaultProteinMultiplier(
-        isSportActive: _isSportActive,
-        isLosingWeight: _resolveIsLosingWeight(),
-      );
+      _customProteinMultiplier = null;
       _fatMultiplier = MacroCalculationDefaults.defaultFatMultiplier(
         isMale: isMale,
       );
     });
   }
 
-  /// Settings as the sheet shows them; values equal to the defaults stay
+  /// Settings as the sheet shows them; values the user did not set stay
   /// unset so they follow later profile changes.
   MacroGoalSettings _draftSettings() {
-    final defaultProtein = MacroCalculationDefaults.defaultProteinMultiplier(
-      isSportActive: _isSportActive,
-      isLosingWeight: _resolveIsLosingWeight(),
-    );
     final defaultFat = MacroCalculationDefaults.defaultFatMultiplier(
       isMale: _resolveIsMale(),
     );
-    final isCustomProtein = (_proteinMultiplier - defaultProtein).abs() > 0.01;
     final isCustomFat = (_fatMultiplier - defaultFat).abs() > 0.01;
     return MacroGoalSettings(
       isSportActive: _isSportActive,
-      customProteinMultiplier: isCustomProtein ? _proteinMultiplier : null,
+      customProteinMultiplier: _customProteinMultiplier,
       customFatMultiplier: isCustomFat ? _fatMultiplier : null,
     );
   }
@@ -225,14 +213,18 @@ class _SettingsMacroGoalsSheetState
             sliderKey: SettingsMacroGoalsSheetKeys.proteinSlider,
             label: l10n.settingsMacroGoalsProteinLabel,
             accentColor: accents.protein,
-            multiplier: _proteinMultiplier,
+            // The default rule can move protein away from its g/kg value
+            // (deficit band, carb cap), so the slider shows the result.
+            multiplier:
+                _customProteinMultiplier ??
+                (previewProteinGrams / weightKg).clamp(0.8, 3),
             grams: previewData.proteinGrams,
             min: 0.8,
             max: 3,
             divisions: 22,
             onChanged: (val) {
               setState(() {
-                _proteinMultiplier = double.parse(val.toStringAsFixed(1));
+                _customProteinMultiplier = double.parse(val.toStringAsFixed(1));
               });
             },
             formatGramPerKg: (val) =>
