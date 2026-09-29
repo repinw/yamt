@@ -1199,9 +1199,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Von dieser Mahlzeit wurde schon gegessen. Zutaten und Portionen bleiben daher fest; Name und Bild kannst du ändern.';
 
   @override
-  String get preparedMealEditTitle => 'Mahlzeit bearbeiten';
-
-  @override
   String get preparedMealNameLabel => 'Mahlzeitname';
 
   @override
@@ -1209,13 +1206,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get preparedMealInvalidName => 'Bitte gib einen Mahlzeitnamen ein.';
-
-  @override
-  String get preparedMealPortionsLabel => 'Portionen';
-
-  @override
-  String get preparedMealInvalidPortions =>
-      'Bitte gib mindestens eine Portion ein.';
 
   @override
   String get preparedMealFixFormErrorsMessage =>
@@ -1255,37 +1245,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealIngredientsTitle => 'Zutaten';
 
   @override
-  String get preparedMealAddIngredientAction => 'Zutat hinzufügen';
-
-  @override
-  String get preparedMealRemoveIngredientAction => 'Zutat entfernen';
-
-  @override
   String get preparedMealEmptyIngredientsMessage =>
       'Füge vor dem Speichern mindestens eine Zutat hinzu.';
 
   @override
   String get preparedMealBindAction => 'Lebensmittel kombinieren';
-
-  @override
-  String get preparedMealUsedAmountLabel => 'Verwendete Menge';
-
-  @override
-  String preparedMealAvailableAmount(int amount, String unit) {
-    return 'Verfügbar: $amount $unit';
-  }
-
-  @override
-  String get preparedMealInvalidIngredientAmount =>
-      'Bitte gib eine gültige Zutatenmenge ein.';
-
-  @override
-  String get preparedMealNutritionPerPieceHint =>
-      'Bitte Nährwerte pro verwendetem Stück eintragen.';
-
-  @override
-  String get preparedMealNutritionPerHundredHint =>
-      'Bitte Nährwerte pro 100 g/ml eintragen.';
 
   @override
   String preparedMealSelectionCount(int count) {

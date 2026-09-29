@@ -1182,9 +1182,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Portions of this meal are already eaten, so its ingredients and portions stay fixed. You can still change the name and picture.';
 
   @override
-  String get preparedMealEditTitle => 'Edit prepared meal';
-
-  @override
   String get preparedMealNameLabel => 'Meal name';
 
   @override
@@ -1192,13 +1189,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preparedMealInvalidName => 'Please enter a meal name.';
-
-  @override
-  String get preparedMealPortionsLabel => 'Portions';
-
-  @override
-  String get preparedMealInvalidPortions =>
-      'Please enter at least one portion.';
 
   @override
   String get preparedMealFixFormErrorsMessage =>
@@ -1237,37 +1227,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealIngredientsTitle => 'Ingredients';
 
   @override
-  String get preparedMealAddIngredientAction => 'Add ingredient';
-
-  @override
-  String get preparedMealRemoveIngredientAction => 'Remove ingredient';
-
-  @override
   String get preparedMealEmptyIngredientsMessage =>
       'Add at least one ingredient before saving.';
 
   @override
   String get preparedMealBindAction => 'Combine foods';
-
-  @override
-  String get preparedMealUsedAmountLabel => 'Used amount';
-
-  @override
-  String preparedMealAvailableAmount(int amount, String unit) {
-    return 'Available: $amount $unit';
-  }
-
-  @override
-  String get preparedMealInvalidIngredientAmount =>
-      'Please enter a valid ingredient amount.';
-
-  @override
-  String get preparedMealNutritionPerPieceHint =>
-      'Add nutrition values per used piece.';
-
-  @override
-  String get preparedMealNutritionPerHundredHint =>
-      'Add nutrition values per 100 g/ml.';
 
   @override
   String preparedMealSelectionCount(int count) {

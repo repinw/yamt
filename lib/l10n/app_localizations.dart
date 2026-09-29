@@ -2044,12 +2044,6 @@ abstract class AppLocalizations {
   /// **'Portions of this meal are already eaten, so its ingredients and portions stay fixed. You can still change the name and picture.'**
   String get preparedMealEditLockedHint;
 
-  /// No description provided for @preparedMealEditTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit prepared meal'**
-  String get preparedMealEditTitle;
-
   /// No description provided for @preparedMealNameLabel.
   ///
   /// In en, this message translates to:
@@ -2067,18 +2061,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter a meal name.'**
   String get preparedMealInvalidName;
-
-  /// No description provided for @preparedMealPortionsLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Portions'**
-  String get preparedMealPortionsLabel;
-
-  /// No description provided for @preparedMealInvalidPortions.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter at least one portion.'**
-  String get preparedMealInvalidPortions;
 
   /// No description provided for @preparedMealFixFormErrorsMessage.
   ///
@@ -2146,18 +2128,6 @@ abstract class AppLocalizations {
   /// **'Ingredients'**
   String get preparedMealIngredientsTitle;
 
-  /// No description provided for @preparedMealAddIngredientAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Add ingredient'**
-  String get preparedMealAddIngredientAction;
-
-  /// No description provided for @preparedMealRemoveIngredientAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove ingredient'**
-  String get preparedMealRemoveIngredientAction;
-
   /// No description provided for @preparedMealEmptyIngredientsMessage.
   ///
   /// In en, this message translates to:
@@ -2169,36 +2139,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Combine foods'**
   String get preparedMealBindAction;
-
-  /// No description provided for @preparedMealUsedAmountLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Used amount'**
-  String get preparedMealUsedAmountLabel;
-
-  /// No description provided for @preparedMealAvailableAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'Available: {amount} {unit}'**
-  String preparedMealAvailableAmount(int amount, String unit);
-
-  /// No description provided for @preparedMealInvalidIngredientAmount.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a valid ingredient amount.'**
-  String get preparedMealInvalidIngredientAmount;
-
-  /// No description provided for @preparedMealNutritionPerPieceHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Add nutrition values per used piece.'**
-  String get preparedMealNutritionPerPieceHint;
-
-  /// No description provided for @preparedMealNutritionPerHundredHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Add nutrition values per 100 g/ml.'**
-  String get preparedMealNutritionPerHundredHint;
 
   /// No description provided for @preparedMealSelectionCount.
   ///
