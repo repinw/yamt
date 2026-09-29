@@ -29,6 +29,7 @@ RUN_ALL_PREFIXES = (
     'test_driver/',
     '.github/workflows/ci.yml',
     'tool/ci_integration_targets.py',
+    'tool/ci_integration_drive.sh',
 )
 # A whole directive up to its semicolon, so the URIs in conditional import
 # clauses (`if (dart.library.io) '...'`) are followed too. Following every

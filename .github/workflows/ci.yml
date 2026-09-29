@@ -139,10 +139,15 @@ jobs:
           done
           exit 1
 
-      # flutter drive retries the VM Service connection forever, so a hung
-      # start ends through `timeout` instead of the job timeout. On failure
-      # the device log is saved for the artifact below. The runner executes
-      # every script line on its own, so this must stay one line.
+      # Building before the emulator starts keeps the build out of the drive
+      # timeout below.
+      - name: Build the test app
+        run: flutter build apk --debug --target=${{ matrix.target }}
+
+      # flutter drive sometimes cannot reach the app's VM Service through the
+      # adb port forward and then retries forever, although the app runs. Each
+      # attempt ends after 4 minutes, and a new attempt gets a new forward.
+      # The device log of a failed run is saved for the artifact below.
       - name: Run on the Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -152,7 +157,7 @@ jobs:
           profile: pixel_6
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: timeout 15m flutter drive --driver=test_driver/integration_test.dart --target=${{ matrix.target }} -d emulator-5554 || { status=$?; adb -s emulator-5554 logcat -d > logcat.txt; exit $status; }
+          script: tool/ci_integration_drive.sh ${{ matrix.target }}
 
       - name: Upload the device log
         if: failure()
