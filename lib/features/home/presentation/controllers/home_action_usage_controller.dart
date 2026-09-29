@@ -14,7 +14,7 @@ class HomeActionUsageController extends _$HomeActionUsageController {
   @override
   Map<String, int> build() {
     final stored = ref
-        .read(appPreferencesProvider)
+        .watch(appPreferencesProvider)
         .getStringSync(_preferenceKey);
     if (stored == null) {
       return const <String, int>{};
