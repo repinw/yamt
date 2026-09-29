@@ -37,6 +37,7 @@ import 'package:yamt/features/health/data/'
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -273,7 +274,11 @@ Future<void> _openInventoryQuickEat(WidgetTester tester) async {
   await tester.pump();
 
   await tester.tap(inventorySource);
-  await tester.pump();
+  await _pumpUntil(
+    tester,
+    () => find.byType(HomeActionPanel).evaluate().isEmpty,
+    description: 'closed action panel',
+  );
 }
 
 /// Meal type the diary preselects for food logged right now.
