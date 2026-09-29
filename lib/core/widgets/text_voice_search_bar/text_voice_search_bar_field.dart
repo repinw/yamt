@@ -145,6 +145,7 @@ class TextVoiceSearchField extends StatelessWidget {
           decoration: InputDecoration(
             labelText: hintText == null ? label : null,
             hintText: hintText,
+            hintMaxLines: 1,
             hintStyle: useCompactSurface
                 ? Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: colors.onSurfaceVariant.withValues(

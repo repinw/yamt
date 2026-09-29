@@ -1312,6 +1312,12 @@ abstract class AppLocalizations {
   /// **'Search inventory'**
   String get inventorySearchLabel;
 
+  /// No description provided for @inventorySearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get inventorySearchHint;
+
   /// No description provided for @inventorySearchClearAction.
   ///
   /// In en, this message translates to:

@@ -755,6 +755,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventorySearchLabel => 'Im Vorrat suchen';
 
   @override
+  String get inventorySearchHint => 'Suchen';
+
+  @override
   String get inventorySearchClearAction => 'Suche leeren';
 
   @override

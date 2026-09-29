@@ -744,6 +744,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventorySearchLabel => 'Search inventory';
 
   @override
+  String get inventorySearchHint => 'Search';
+
+  @override
   String get inventorySearchClearAction => 'Clear search';
 
   @override

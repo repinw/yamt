@@ -418,6 +418,7 @@
     }
   },
   "inventorySearchLabel": "Search inventory",
+  "inventorySearchHint": "Search",
   "inventorySearchClearAction": "Clear search",
   "inventoryViewListAction": "List",
   "inventoryViewTilesAction": "Tiles",

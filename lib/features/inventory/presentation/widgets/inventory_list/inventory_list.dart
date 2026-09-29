@@ -6,15 +6,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/core/widgets/home_header_tool.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_list_view_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_content.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_list_view_preferences.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_quick_filter.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -117,14 +114,7 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       slivers: [
         if (widget.includeHomeShellChrome)
           InventoryHomeShellTopChrome(
-            tools: [
-              if (content?.hasSource ?? false)
-                _ViewModeTool(
-                  viewMode: view.preferences.viewMode,
-                  onPressed: enabled ? _controller.toggleViewMode : null,
-                ),
-              ...widget.topChromeActions,
-            ],
+            tools: widget.topChromeActions,
             stockCount: content?.stockCount,
           ),
         InventoryListTopControlsSliver(
@@ -133,6 +123,8 @@ class _InventoryListState extends ConsumerState<InventoryList> {
           enabled: enabled,
           onSearchChanged: _controller.setQuery,
           onShowSort: () => unawaited(showInventorySortSheet(context)),
+          viewMode: view.preferences.viewMode,
+          onToggleViewMode: _controller.toggleViewMode,
           voiceSearchService: _voiceSearchService,
           voiceSearchController: _voiceSearchController,
           l10n: l10n,
@@ -196,31 +188,6 @@ class _InventoryListState extends ConsumerState<InventoryList> {
       onOpenMeal: widget.onOpenMeal,
       onItemLongPress: widget.onItemLongPress,
       onSelectionToggle: widget.onSelectionToggle,
-    );
-  }
-}
-
-/// Header tool that switches between rows and tiles; it names the layout
-/// it switches to.
-class _ViewModeTool extends StatelessWidget {
-  const new({required this.viewMode, required this.onPressed});
-
-  final InventoryListViewMode viewMode;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final showsList = viewMode == InventoryListViewMode.list;
-    return HomeHeaderTool(
-      key: const Key('inventory_list_view_mode_button'),
-      symbol: Icon(
-        showsList ? Icons.grid_view_rounded : Icons.view_agenda_rounded,
-      ),
-      label: showsList
-          ? l10n.inventoryViewTilesAction
-          : l10n.inventoryViewListAction,
-      onPressed: onPressed,
     );
   }
 }

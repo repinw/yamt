@@ -397,6 +397,7 @@
     }
   },
   "inventorySearchLabel": "Im Vorrat suchen",
+  "inventorySearchHint": "Suchen",
   "inventorySearchClearAction": "Suche leeren",
   "inventoryViewListAction": "Liste",
   "inventoryViewTilesAction": "Kacheln",

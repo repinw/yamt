@@ -4,9 +4,12 @@ import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_view_preferences.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Search field of the Vorrat list with the Sortieren button.
+/// Search field of the Vorrat list with the Sortieren button and the
+/// Liste/Kacheln switch.
 class InventoryListTopControlsSliver extends StatelessWidget {
   /// The inventory list top controls sliver.
   const new({
@@ -15,6 +18,8 @@ class InventoryListTopControlsSliver extends StatelessWidget {
     required this.enabled,
     required this.onSearchChanged,
     required this.onShowSort,
+    required this.viewMode,
+    required this.onToggleViewMode,
     required this.voiceSearchService,
     required this.voiceSearchController,
     required this.l10n,
@@ -35,6 +40,12 @@ class InventoryListTopControlsSliver extends StatelessWidget {
 
   /// Opens the Sortieren sheet.
   final VoidCallback onShowSort;
+
+  /// Current layout; the switch shows the icon of the other one.
+  final InventoryListViewMode viewMode;
+
+  /// Switches between list and tiles.
+  final VoidCallback onToggleViewMode;
 
   /// The voice search service.
   final VoiceSearchService voiceSearchService;
@@ -68,7 +79,7 @@ class InventoryListTopControlsSliver extends StatelessWidget {
           onChanged: onSearchChanged,
           voiceSearchService: voiceSearchService,
           voiceSearchController: voiceSearchController,
-          hintText: l10n.inventorySearchLabel,
+          hintText: l10n.inventorySearchHint,
           useCompactSurface: true,
           trailingActions: [
             _ToolButton(
@@ -77,6 +88,11 @@ class InventoryListTopControlsSliver extends StatelessWidget {
               icon: Icons.filter_alt_rounded,
               label: l10n.inventorySortAction,
               onPressed: onShowSort,
+            ),
+            _ViewModeButton(
+              enabled: enabled,
+              viewMode: viewMode,
+              onPressed: onToggleViewMode,
             ),
           ],
         ),
@@ -111,6 +127,40 @@ class _ToolButton extends StatelessWidget {
         ),
         icon: Icon(icon, size: AppSizes.compactSearchSettingsIcon),
         label: Text(label),
+      ),
+    );
+  }
+}
+
+/// Square tonal button that switches between rows and tiles. It shows only
+/// the icon of the layout it switches to; the word is its tooltip.
+class _ViewModeButton extends StatelessWidget {
+  const new({
+    required this.enabled,
+    required this.viewMode,
+    required this.onPressed,
+  });
+
+  final bool enabled;
+  final InventoryListViewMode viewMode;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final showsList = viewMode == InventoryListViewMode.list;
+    return SizedBox.square(
+      dimension: AppSizes.compactSearchControlHeight,
+      child: IconButton.filledTonal(
+        key: const Key('inventory_list_view_mode_button'),
+        tooltip: showsList
+            ? l10n.inventoryViewTilesAction
+            : l10n.inventoryViewListAction,
+        onPressed: enabled ? onPressed : null,
+        icon: Icon(
+          showsList ? Icons.grid_view_rounded : Icons.view_agenda_rounded,
+          size: AppSizes.compactSearchSettingsIcon,
+        ),
       ),
     );
   }
