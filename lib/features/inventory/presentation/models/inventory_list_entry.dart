@@ -1,4 +1,3 @@
-import 'package:characters/characters.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -7,7 +6,9 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 /// image; null for an empty name.
 String? inventoryPictureLetter(String name) {
   final trimmed = name.trim();
-  return trimmed.isEmpty ? null : trimmed.characters.first.toUpperCase();
+  return trimmed.isEmpty
+      ? null
+      : String.fromCharCode(trimmed.runes.first).toUpperCase();
 }
 
 /// One row of the flat Vorrat list: a food or a prepared meal.
