@@ -19,7 +19,9 @@ List<HomeMoreSection> diaryQuickEatActions(
 ) {
   final l10n = AppLocalizations.of(context)!;
   final selectedDay = normalizeLocalDay(
-    ref.read(diaryCalendarControllerProvider).selectedDay,
+    ref.watch(
+      diaryCalendarControllerProvider.select((state) => state.selectedDay),
+    ),
   );
 
   HomeMoreEntry entry(

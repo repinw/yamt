@@ -58,9 +58,10 @@ class InventoryActionSheetFlow {
     );
   }
 
-  /// Whether the platform can take a photo of a receipt.
+  /// Whether the platform can take a photo of a receipt. Call it while
+  /// building, since it watches the scan coordinator.
   static bool canPhotographReceipt(WidgetRef ref) =>
-      ref.read(receiptScanFlowCoordinatorProvider).isCameraSupported;
+      ref.watch(receiptScanFlowCoordinatorProvider).isCameraSupported;
 
   /// Takes a photo of a receipt and reads it.
   static Future<void> photographReceipt({
