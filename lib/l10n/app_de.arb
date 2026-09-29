@@ -1599,7 +1599,14 @@
   "settingsMacroGoalsSportActiveSubtitle": "Passt die Empfehlungen an Training an",
   "settingsMacroGoalsProteinLabel": "Protein-Multiplikator",
   "settingsMacroGoalsFatLabel": "Fett-Multiplikator",
-  "settingsMacroGoalsCarbsAutoLabel": "Kohlenhydrate füllen die restlichen Kalorien auf, höchstens 40 %",
+  "settingsMacroGoalsCarbsAutoLabel": "Kohlenhydrate füllen die restlichen Kalorien auf, höchstens {percent} %",
+  "@settingsMacroGoalsCarbsAutoLabel": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
   "macroAdjustedWeightNote": "Für Eiweiß und Fett rechnen wir mit einem angepassten Körpergewicht von {weight} kg, weil Fettgewebe kaum Eiweiß braucht. Das sind Richtwerte, keine medizinische Beratung. Bei starkem Übergewicht oder Vorerkrankungen wie Diabetes oder Nierenproblemen sprich deine Ernährung mit deiner Ärztin oder deinem Arzt ab.",
   "@macroAdjustedWeightNote": {
     "placeholders": {
