@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:meta/meta.dart';
 import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
@@ -29,6 +30,9 @@ abstract final class MacroCalculationDefaults {
   /// Largest share of the daily kcal that protein gets while losing weight,
   /// so a small budget keeps room for carbs.
   static const double deficitProteinMaxKcalShare = 0.35;
+
+  /// Protein limit in g/kg for the kcal above the carb cap.
+  static const double maximumProteinGramsPerKg = 2;
 
   /// Default fat multiplier in g/kg.
   ///
@@ -96,11 +100,17 @@ class MacroGoalSettings {
   /// [MacroCalculationDefaults.deficitProteinMinKcalShare] and
   /// [MacroCalculationDefaults.deficitProteinMaxKcalShare] of
   /// [baseGoalKcal], the daily average of the week. Using the average keeps
-  /// protein the same on training and rest days. A custom multiplier is the
-  /// user's own choice and is used as it is.
+  /// protein the same on training and rest days.
+  ///
+  /// When [fatGrams] and the default protein leave carbs above
+  /// [MacroBudgetCalculator.maximumCarbsKcalShare] of [baseGoalKcal], protein
+  /// takes that excess up to
+  /// [MacroCalculationDefaults.maximumProteinGramsPerKg]. A custom multiplier
+  /// is the user's own choice and is used as it is.
   double resolveProteinGrams({
     required double referenceWeightKg,
     required double baseGoalKcal,
+    required double fatGrams,
     required bool hasTrainingDays,
     required bool isLosingWeight,
   }) {
@@ -110,20 +120,35 @@ class MacroGoalSettings {
           hasTrainingDays: hasTrainingDays,
           isLosingWeight: isLosingWeight,
         );
-    if (customProteinMultiplier != null ||
-        !isLosingWeight ||
-        baseGoalKcal <= 0) {
+    if (customProteinMultiplier != null || baseGoalKcal <= 0) {
       return byWeightGrams;
     }
     const kcalPerGram = MacroBudgetCalculator.standardProteinKcalPerGram;
-    return byWeightGrams.clamp(
-      baseGoalKcal *
-          MacroCalculationDefaults.deficitProteinMinKcalShare /
-          kcalPerGram,
-      baseGoalKcal *
-          MacroCalculationDefaults.deficitProteinMaxKcalShare /
-          kcalPerGram,
-    );
+    final defaultGrams = isLosingWeight
+        ? byWeightGrams.clamp(
+            baseGoalKcal *
+                MacroCalculationDefaults.deficitProteinMinKcalShare /
+                kcalPerGram,
+            baseGoalKcal *
+                MacroCalculationDefaults.deficitProteinMaxKcalShare /
+                kcalPerGram,
+          )
+        : byWeightGrams;
+    final carbsKcal =
+        baseGoalKcal -
+        defaultGrams * kcalPerGram -
+        fatGrams * MacroBudgetCalculator.standardFatKcalPerGram;
+    final excessKcal =
+        carbsKcal -
+        MacroBudgetCalculator.carbsCapGrams(baseGoalKcal) *
+            MacroBudgetCalculator.standardCarbKcalPerGram;
+    final roomGrams =
+        referenceWeightKg * MacroCalculationDefaults.maximumProteinGramsPerKg -
+        defaultGrams;
+    if (excessKcal <= 0 || roomGrams <= 0) {
+      return defaultGrams;
+    }
+    return defaultGrams + math.min(roomGrams, excessKcal / kcalPerGram);
   }
 
   /// Resolves the effective fat multiplier in g/kg.

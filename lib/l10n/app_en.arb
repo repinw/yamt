@@ -1735,7 +1735,7 @@
   "settingsMacroGoalsSportActiveSubtitle": "Adjusts recommendations for training",
   "settingsMacroGoalsProteinLabel": "Protein multiplier",
   "settingsMacroGoalsFatLabel": "Fat multiplier",
-  "settingsMacroGoalsCarbsAutoLabel": "Carbohydrates are filled with remaining calories",
+  "settingsMacroGoalsCarbsAutoLabel": "Carbohydrates fill the remaining calories, up to 40 %",
   "macroAdjustedWeightNote": "For protein and fat we use an adjusted body weight of {weight} kg, because fat tissue needs hardly any protein. These are guidelines, not medical advice. With severe overweight or conditions such as diabetes or kidney disease, talk to your doctor about your diet.",
   "@macroAdjustedWeightNote": {
     "placeholders": {

@@ -177,11 +177,12 @@ class _SettingsMacroGoalsSheetState
             heightCm: profile.heightCm,
           );
     final goalKcal = _resolveGoalKcal();
-    // The deficit share band can move protein away from the multiplier, so
-    // the preview asks the same rule the diary uses.
+    // The deficit share band and the carb cap can move protein away from
+    // the multiplier, so the preview asks the same rule the diary uses.
     final previewProteinGrams = _draftSettings().resolveProteinGrams(
       referenceWeightKg: weightKg,
       baseGoalKcal: goalKcal,
+      fatGrams: weightKg * _fatMultiplier,
       hasTrainingDays: _isSportActive,
       isLosingWeight: _resolveIsLosingWeight(),
     );

@@ -3,7 +3,7 @@ import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 
 void main() {
   group('MacroBudgetCalculator.calculate', () {
-    test('moves the excess above the cap to protein', () {
+    test('moves the excess above the cap to fat', () {
       final result = MacroBudgetCalculator.calculate(
         goalKcal: 2000,
         weightKg: 80,
@@ -13,11 +13,11 @@ void main() {
 
       // 2000 - 512 - 576 = 912 kcal of carbs, 112 kcal above the cap.
       expect(result.carbs, closeTo(200, 0.001));
-      expect(result.protein, closeTo(156, 0.001));
-      expect(result.fat, closeTo(64, 0.001));
+      expect(result.protein, closeTo(128, 0.001));
+      expect(result.fat, closeTo(64 + 112 / 9, 0.001));
     });
 
-    test('caps carbs at 40 % and moves the excess to protein first', () {
+    test('caps carbs at 40 % of the kcal', () {
       final result = MacroBudgetCalculator.calculate(
         goalKcal: 2500,
         weightKg: 80,
@@ -26,9 +26,8 @@ void main() {
       );
 
       expect(result.carbs, closeTo(250, 0.001));
-      // Protein grows to 2.0 g/kg, the rest goes to fat.
-      expect(result.protein, closeTo(160, 0.001));
-      expect(result.fat, closeTo(64 + 284 / 9, 0.001));
+      expect(result.protein, closeTo(128, 0.001));
+      expect(result.fat, closeTo(64 + 412 / 9, 0.001));
     });
 
     test('gives carbs the rest when they stay below the cap', () {
@@ -44,7 +43,7 @@ void main() {
       expect(result.carbs, closeTo(178, 0.001));
     });
 
-    test('moves all excess to fat when protein is already at the limit', () {
+    test('keeps a high protein target as it is', () {
       final result = MacroBudgetCalculator.calculate(
         goalKcal: 3000,
         weightKg: 80,

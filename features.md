@@ -172,8 +172,9 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Protein and fat targets in g/kg: 1.6 g protein, 2.0 g while losing weight
   with training; 0.8 g fat for men, 0.9 g for women. The training days decide
   until the user sets sport in the macro settings. Carbs get the rest of the
-  kcal, but at most 40 percent. What lies above that goes to protein up to
-  2.0 g/kg, then to fat. Above a BMI of 25 only 40 percent
+  kcal, but at most 40 percent. What lies above that on the weekly average
+  goes to protein up to 2.0 g/kg, so protein stays the same every day; the
+  rest goes to fat. A custom protein value stays as set. Above a BMI of 25 only 40 percent
   of the extra weight counts (adjusted body weight), so heavy users get
   realistic targets. Those users see the adjusted weight and a medical
   disclaimer on the onboarding summary and in the macro settings. No training
