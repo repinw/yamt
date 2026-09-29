@@ -2,9 +2,6 @@ import 'package:flutter/widgets.dart';
 
 /// Stable keys for diary balance card tests.
 abstract final class DiaryBalanceCardKeys {
-  /// Progress track key.
-  static const progressTrack = ValueKey<String>('diary-balance-progress-track');
-
   /// Daily progress track key.
   static const dailyProgressTrack = ValueKey<String>(
     'diary-balance-daily-progress-track',
@@ -14,9 +11,6 @@ abstract final class DiaryBalanceCardKeys {
   static const dailyProgressEatenFill = ValueKey<String>(
     'diary-balance-daily-progress-eaten-fill',
   );
-
-  /// Target marker key.
-  static const targetMarker = ValueKey<String>('diary-balance-target-marker');
 
   /// Practice day card key.
   static const practiceDay = ValueKey<String>('diary-balance-practice-day');

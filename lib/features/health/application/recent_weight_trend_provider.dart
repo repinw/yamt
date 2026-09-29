@@ -11,12 +11,16 @@ import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 
 part 'recent_weight_trend_provider.g.dart';
 
-/// The weights of the last days from manual entries and Health samples.
+/// The weights of the last [dayCount] days from manual entries and Health
+/// samples.
 ///
 /// Health samples load only when Health access is ready. Saving or deleting
 /// a weight through `ManualHealthWeightEntriesController` refreshes it.
 @riverpod
-Future<RecentWeightTrend> recentWeightTrend(Ref ref) async {
+Future<RecentWeightTrend> recentWeightTrend(
+  Ref ref, {
+  int dayCount = RecentWeightTrend.chartDayCount,
+}) async {
   final today = normalizeLocalDay(ref.watch(clockProvider)());
   final manualRepository = ref.watch(manualHealthWeightRepositoryProvider);
   final connectionService = ref.watch(healthConnectionServiceProvider);
@@ -35,8 +39,7 @@ Future<RecentWeightTrend> recentWeightTrend(Ref ref) async {
       ? await healthWeightService.loadWeightSamples(
           startInclusive: addLocalDays(
             today,
-            -(WeightTrendCalculator.warmUpDays +
-                RecentWeightTrend.chartDayCount),
+            -(WeightTrendCalculator.warmUpDays + dayCount),
           ),
           endExclusive: nextLocalDay(today),
         )
@@ -50,5 +53,6 @@ Future<RecentWeightTrend> recentWeightTrend(Ref ref) async {
       healthSamples: healthSamples,
     ),
     today: today,
+    dayCount: dayCount,
   );
 }

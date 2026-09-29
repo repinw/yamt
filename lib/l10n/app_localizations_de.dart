@@ -2670,30 +2670,171 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get progressTdeeTrendTitle => 'TDEE- & Gewichtsverlauf';
+  String progressGoalAverageKcal(String kcal) {
+    return 'Ø $kcal kcal/Tag';
+  }
 
   @override
-  String get progressTdeeTrendSubtitle =>
-      'Verbrauchskurve, Schwankungsbereich & Zielprognose';
+  String progressGoalAboveStart(String kg) {
+    return '$kg kg über Start';
+  }
+
+  @override
+  String progressGoalBelowStart(String kg) {
+    return '$kg kg unter Start';
+  }
+
+  @override
+  String get progressAveragePerDay => 'Schnitt pro Tag';
+
+  @override
+  String progressWeekKicker(String start, String end) {
+    return '$start – $end';
+  }
+
+  @override
+  String progressGoalKcal(String kcal) {
+    return 'Ziel $kcal';
+  }
+
+  @override
+  String progressKcalUnderGoal(String kcal) {
+    return '$kcal unter Ziel';
+  }
+
+  @override
+  String progressKcalOverGoal(String kcal) {
+    return '$kcal über Ziel';
+  }
+
+  @override
+  String progressWeekBudgetKicker(int day, int total) {
+    return 'Wochenbudget · Tag $day von $total';
+  }
+
+  @override
+  String progressWeekBudgetValue(String eaten, String goal) {
+    return '$eaten / $goal kcal';
+  }
+
+  @override
+  String progressWeekBudgetLeft(String kcal) {
+    return 'noch $kcal kcal';
+  }
+
+  @override
+  String progressWeekBudgetOver(String kcal) {
+    return '$kcal kcal drüber';
+  }
+
+  @override
+  String get progressDayBarLegend => 'Balken = Tagesziel in Vierteln';
+
+  @override
+  String progressMacroGoal(String grams) {
+    return 'Ziel $grams g';
+  }
+
+  @override
+  String progressGrams(String grams) {
+    return '$grams g';
+  }
+
+  @override
+  String get progressWeightKicker => 'Gewicht · Trend';
+
+  @override
+  String progressWeightPerWeek(String kg) {
+    return '$kg kg / Woche';
+  }
+
+  @override
+  String progressWeightForecast(String date) {
+    return 'voraussichtlich $date';
+  }
+
+  @override
+  String get progressWeightGoalReached => 'Ziel erreicht';
+
+  @override
+  String get progressWeightLegendWeighIn => 'Messung';
+
+  @override
+  String get progressWeightLegendTrend => 'Trend';
+
+  @override
+  String get progressWeightEmpty => 'Keine Messung in den letzten vier Wochen.';
+
+  @override
+  String get progressToday => 'heute';
+
+  @override
+  String get progressTdeeKicker => 'TDEE · pro Check-in';
+
+  @override
+  String progressTdeeChange(String kcal) {
+    return '$kcal seit letzter Woche';
+  }
+
+  @override
+  String progressTdeeNextCheckIn(String date) {
+    return 'nächster Check-in $date';
+  }
+
+  @override
+  String get progressTdeeCheckInOpen => 'Check-in wartet im Tagebuch';
+
+  @override
+  String get progressTdeeLegendTaken => 'Übernommen';
+
+  @override
+  String get progressTdeeLegendKept => 'Berechnet, alter Wert behalten';
+
+  @override
+  String get progressTdeeLegendStart => 'Start';
+
+  @override
+  String get progressTdeeEmpty =>
+      'Der erste Punkt kommt nach deinem ersten Wochen-Check-in.';
+
+  @override
+  String get progressDayTypeKicker => 'Letzte 4 Wochen · Schnitt';
+
+  @override
+  String get progressDayTypeTitle => 'Training vs. Ruhetag';
+
+  @override
+  String progressDayTypeDays(String emoji, String type, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tage',
+      one: '1 Tag',
+    );
+    return '$emoji $type · $_temp0';
+  }
+
+  @override
+  String progressKcal(String kcal) {
+    return '$kcal kcal';
+  }
+
+  @override
+  String get progressEaten => 'Gegessen';
+
+  @override
+  String get progressDayTypeEmpty =>
+      'Trag ein paar Tage ein, dann siehst du Training und Ruhetag im Vergleich.';
+
+  @override
+  String get progressLoadFailed =>
+      'Dieser Bereich konnte nicht geladen werden.';
 
   @override
   String get diaryBalanceBaseLabel => 'Basis';
 
   @override
   String get diaryBalancePlannedWithCarryoverLabel => 'Mit Übertrag geplant';
-
-  @override
-  String diaryBalanceWeekLabel(Object week) {
-    return 'Woche $week';
-  }
-
-  @override
-  String diaryBalanceDayProgressLabel(Object day, Object total) {
-    return 'Tag $day von $total';
-  }
-
-  @override
-  String get diaryBalanceTargetMarkerLabel => 'Soll';
 
   @override
   String diaryBalanceRealEatenLabel(Object kcal) {
@@ -2821,10 +2962,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryActivityTitle => 'Aktivität';
 
   @override
-  String get diaryActivityWeightLoadFailed =>
-      'Aktivität und Gewicht konnten nicht geladen werden';
-
-  @override
   String get diaryWeightTitle => 'Gewicht';
 
   @override
@@ -2841,9 +2978,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryWeightTrackNowAction => 'JETZT TRACKEN';
-
-  @override
-  String get diaryWeightEmpty => 'Keine Gewichte';
 
   @override
   String get diaryWeightAddAction => 'Gewicht eintragen';
@@ -2932,11 +3066,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String settingsProfileSummaryWeightValue(String weight) {
     return '$weight kg';
-  }
-
-  @override
-  String settingsProfileSummaryGramsValue(String grams) {
-    return '$grams g';
   }
 
   @override
@@ -4893,9 +5022,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileBodySection => 'Körper';
 
   @override
-  String get profileGoalSection => 'Ziel';
-
-  @override
   String get profileTrainingLabel => 'Training';
 
   @override
@@ -4924,30 +5050,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String get profileTdeeEstimated => 'geschätzt';
 
   @override
-  String profileGoalLose(String weight) {
+  String progressGoalLose(String weight) {
     return 'Abnehmen auf $weight kg';
   }
 
   @override
-  String profileGoalGain(String weight) {
+  String progressGoalGain(String weight) {
     return 'Zunehmen auf $weight kg';
   }
 
   @override
-  String get profileGoalMaintain => 'Gewicht halten';
+  String get progressGoalMaintain => 'Gewicht halten';
 
   @override
-  String profileGoalStart(String weight) {
+  String progressGoalStart(String weight) {
     return 'Start $weight kg';
   }
 
   @override
-  String profileGoalRemaining(String weight, String pace) {
+  String progressGoalRemaining(String weight, String pace) {
     return 'noch $weight kg · $pace kg/Woche';
   }
 
   @override
-  String get profileGoalNone => 'Noch kein Ziel gesetzt.';
+  String get progressGoalNone => 'Noch kein Ziel gesetzt.';
 
   @override
   String get profileHeightTitle => 'Größe';

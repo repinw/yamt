@@ -1,40 +1,35 @@
 # Progress Feature
 
-Progress is the home tab that shows how the week and the longer trend are
-going, so the diary can stay focused on today.
+## Purpose
+
+Progress is the Fortschritt home tab. It shows how the current goal, the
+week, and the longer trends are going, so the diary can stay focused on today.
 
 ## Owns
 
-- `presentation/progress_page.dart`, the Progress home tab.
+- The Fortschritt tab page and its sections: the current goal with the way to
+  the goal archive, the 7-day run with its week budget and one bar per day,
+  the weight trend of four weeks with the goal forecast, the TDEE per
+  confirmed weekly check-in, and training days against rest days.
+- The read models of these sections in `domain/` and the providers that build
+  them from calorie and weight data in `application/`.
 
 ## Does Not Own
 
-- Calorie, weight, or activity data and their calculations.
-- The weekly progress card itself (owned by Diary) and the TDEE analytics page
-  (owned by Calories).
+- Calorie entries, goal settings, weekly check-ins, and the learned TDEE
+  (Calories). Which check-ins count as confirmed is decided by
+  `CalorieTdeeHistory` in Calories.
+- Weight data and the trend weight (Health).
+- The goal archive page and the TDEE analytics page (Calories).
 - Home shell navigation chrome.
 
-## Public Edge
+## Rules
 
-- `presentation/progress_page.dart` (`ProgressPage`), routed at
-  `AppRoutes.homeProgress` as a home shell branch.
-
-## Providers
-
-Progress owns no providers. It reads the current day from `clockProvider` in
-`lib/core/provider/`.
-
-## Dependencies
-
-- `core` for routes, layout tokens, the clock, and shell chrome.
-- `features/diary` for `DiaryWeeklyProgressSection`.
-- The TDEE analytics page of `features/calories`, opened by route only.
-
-## Tests
-
-- `test/features/home/home_page_test.dart` covers the tab and its position.
-- `test/core/router/app_router_test.dart` covers navigation to the tab.
-
-## Legacy
-
-None.
+- The day bars and the week budget split the eaten kcal by the kcal share of
+  protein, carbohydrates, and fat, in the macro colors. The part over the goal
+  is hatched.
+- Averages count only past or current days with entries that are no pause
+  days. The training and rest day comparison covers the 28 days before today.
+- A TDEE point appears only after the user decided on the weekly check-in. A
+  declined check-in keeps the previous TDEE and shows the calculated value as
+  a hollow point.

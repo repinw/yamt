@@ -83,9 +83,8 @@ void main() {
     expect(find.text('80,0 kg'), findsNWidgets(2));
     expect(find.byKey(ProfileWeightCard.addWeightButtonKey), findsOneWidget);
     expect(find.text('180 cm'), findsOneWidget);
-    expect(find.text('Gewicht halten'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('2.100 kcal/Tag'), 200);
-    expect(find.text('2.100 kcal/Tag'), findsOneWidget);
+    // The goal lives on the Fortschritt tab now.
+    expect(find.text('Gewicht halten'), findsNothing);
   });
 
   testWidgets('a height edit shows the new calorie goal before it saves', (

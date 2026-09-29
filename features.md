@@ -129,9 +129,6 @@ and feature description docs. This is product-facing; architecture rules stay in
   - tiles for height, age with birthday, sex, training days with the extra
     kcal, the macro weight with the day since it applies, and the daily
     expenditure (learned or estimated);
-  - the goal ("Lose weight to 78 kg"), a four-part bar of the way from the
-    start weight to the target by trend weight, the kg to go and the pace,
-    and the daily calories with protein, carbs, and fat.
   - tapping height, birthday, or sex, or the start weight while no TDEE is
     learned, opens an editor. It shows what changes before it saves: with a
     learned TDEE the calorie goal stays and only the macros follow; without
@@ -177,12 +174,35 @@ and feature description docs. This is product-facing; architecture rules stay in
   stay fixed within a week and past days keep their targets.
 - Inventory-backed delete/restore behavior for entries created from stock.
 
+## Fortschritt
+
+- Fortschritt tab, from top to bottom:
+  - the goal ("Lose weight to 78 kg"), a four-part bar of the way from the
+    start weight to the target by trend weight, the kg to go and the pace,
+    the daily calories with protein, carbs, and fat, and a button to the goal
+    archive;
+  - the current 7-day run: the average kcal per day as the main number with
+    the goal, the week budget (eaten of the run's total, one segment per day,
+    kcal left), and one row per day with weekday, day type emoji, a bar of
+    four quarters of the day's goal, and the eaten kcal. The bars fill in the
+    macro colors (protein red, carbs blue, fat yellow) by kcal share; the part
+    over the goal is hatched orange. Under them the average grams per macro
+    against their goals;
+  - the weight trend of four weeks: weigh-ins as squares, the trend as a line,
+    the trend per week, and the day the trend reaches the goal weight;
+  - the TDEE per weekly check-in: the calculator estimate at the goal start,
+    then one point per check-in the user confirmed, and a dashed line to the
+    next check-in. A declined check-in keeps the old value and shows the
+    calculated one as a hollow point;
+  - training days against rest days over the last four weeks: days of each,
+    and average kcal, protein, carbs, and fat.
+
 ## Activity And Weight
 
 - Activity and weight section used by the diary.
 - Manual and imported weight data.
-- Weight prompt when today has no weight, on the Progress tab and on today's
-  diary page. Dismissing it hides it on both for that day.
+- Weight prompt when today has no weight, on today's diary page. Dismissing it
+  hides it for that day.
 - Health connection actions from diary-owned surfaces.
 
 ## Health Integration

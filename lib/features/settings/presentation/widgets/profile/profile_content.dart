@@ -3,14 +3,13 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/settings/presentation/controllers/profile_summary_controller.dart';
 import 'package:yamt/features/settings/presentation/widgets/profile/profile_body_tiles.dart';
-import 'package:yamt/features/settings/presentation/widgets/profile/profile_goal_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/profile/profile_identity_row.dart';
 import 'package:yamt/features/settings/presentation/widgets/profile/profile_kicker.dart';
 import 'package:yamt/features/settings/presentation/widgets/profile/profile_weight_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// The profile page body: identity, weight, body data, and goal.
+/// The profile page body: identity, weight, and body data.
 class ProfileContent extends StatelessWidget {
   /// Creates the profile content for [state].
   const new({required this.state, super.key});
@@ -43,11 +42,6 @@ class ProfileContent extends StatelessWidget {
                   Text(l10n.settingsProfileSummaryNoProfile)
                 else
                   ProfileBodyTiles(state: state, profile: profile),
-                _SectionTitle(text: l10n.profileGoalSection),
-                if (profile == null)
-                  Text(l10n.profileGoalNone)
-                else
-                  ProfileGoalCard(state: state, profile: profile),
               ],
             ),
           ),

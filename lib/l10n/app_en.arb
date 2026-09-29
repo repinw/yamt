@@ -1341,24 +1341,194 @@
       }
     }
   },
-  "progressTdeeTrendTitle": "TDEE and weight trend",
-  "progressTdeeTrendSubtitle": "Burn curve, fluctuation range and goal forecast",
+  "progressGoalAverageKcal": "Ø {kcal} kcal/day",
+  "@progressGoalAverageKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalAboveStart": "{kg} kg above start",
+  "@progressGoalAboveStart": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalBelowStart": "{kg} kg below start",
+  "@progressGoalBelowStart": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "progressAveragePerDay": "average per day",
+  "progressWeekKicker": "{start} – {end}",
+  "@progressWeekKicker": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGoalKcal": "Goal {kcal}",
+  "@progressGoalKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressKcalUnderGoal": "{kcal} under goal",
+  "@progressKcalUnderGoal": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressKcalOverGoal": "{kcal} over goal",
+  "@progressKcalOverGoal": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeekBudgetKicker": "Week budget · day {day} of {total}",
+  "@progressWeekBudgetKicker": {
+    "placeholders": {
+      "day": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "progressWeekBudgetValue": "{eaten} / {goal} kcal",
+  "@progressWeekBudgetValue": {
+    "placeholders": {
+      "eaten": {
+        "type": "String"
+      },
+      "goal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeekBudgetLeft": "{kcal} kcal left",
+  "@progressWeekBudgetLeft": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeekBudgetOver": "{kcal} kcal over",
+  "@progressWeekBudgetOver": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressDayBarLegend": "Bar = daily goal in quarters",
+  "progressMacroGoal": "Goal {grams} g",
+  "@progressMacroGoal": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "progressGrams": "{grams} g",
+  "@progressGrams": {
+    "placeholders": {
+      "grams": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightKicker": "Weight · trend",
+  "progressWeightPerWeek": "{kg} kg / week",
+  "@progressWeightPerWeek": {
+    "placeholders": {
+      "kg": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightForecast": "expected {date}",
+  "@progressWeightForecast": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressWeightGoalReached": "Goal reached",
+  "progressWeightLegendWeighIn": "Weigh-in",
+  "progressWeightLegendTrend": "Trend",
+  "progressWeightEmpty": "No weigh-ins in the last four weeks.",
+  "progressToday": "today",
+  "progressTdeeKicker": "TDEE · per check-in",
+  "progressTdeeChange": "{kcal} since last week",
+  "@progressTdeeChange": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressTdeeNextCheckIn": "next check-in {date}",
+  "@progressTdeeNextCheckIn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "progressTdeeCheckInOpen": "Check-in waits in the diary",
+  "progressTdeeLegendTaken": "Taken",
+  "progressTdeeLegendKept": "Calculated, old value kept",
+  "progressTdeeLegendStart": "Start",
+  "progressTdeeEmpty": "The first point appears after your first weekly check-in.",
+  "progressDayTypeKicker": "Last 4 weeks · average",
+  "progressDayTypeTitle": "Training vs. rest day",
+  "progressDayTypeDays": "{emoji} {type} · {count, plural, =1{1 day} other{{count} days}}",
+  "@progressDayTypeDays": {
+    "placeholders": {
+      "emoji": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "progressKcal": "{kcal} kcal",
+  "@progressKcal": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressEaten": "Eaten",
+  "progressDayTypeEmpty": "Log a few days to compare training and rest days.",
+  "progressLoadFailed": "Could not load this section.",
   "diaryBalanceBaseLabel": "Base",
   "diaryBalancePlannedWithCarryoverLabel": "Planned with carryover",
-  "diaryBalanceWeekLabel": "Week {week}",
-  "@diaryBalanceWeekLabel": {
-    "placeholders": {
-      "week": {}
-    }
-  },
-  "diaryBalanceDayProgressLabel": "Day {day} of {total}",
-  "@diaryBalanceDayProgressLabel": {
-    "placeholders": {
-      "day": {},
-      "total": {}
-    }
-  },
-  "diaryBalanceTargetMarkerLabel": "Target",
   "diaryBalanceRealEatenLabel": "Real {kcal}",
   "@diaryBalanceRealEatenLabel": {
     "placeholders": {
@@ -1446,7 +1616,6 @@
   "diaryBudgetDetailsSafetyCapActive": "Safety limit active: Daily reduction was capped to prevent extreme restriction.",
   "diaryBudgetDetailsNoPreviousDays": "This is the first day of your active run. There is no carryover yet.",
   "diaryActivityTitle": "Activity",
-  "diaryActivityWeightLoadFailed": "Activity and weight could not be loaded",
   "diaryWeightTitle": "Weight",
   "diarySevenDaysLabel": "7 days",
   "diaryProfileWeightLabel": "Profile: {weight} kg",
@@ -1459,7 +1628,6 @@
   },
   "diaryWeightMissingPrompt": "Log your weight for better calculation.",
   "diaryWeightTrackNowAction": "Track now",
-  "diaryWeightEmpty": "No weights",
   "diaryWeightAddAction": "Log weight",
   "diaryOkAction": "OK",
   "diaryCounterLabel": "x {count}",
@@ -1528,14 +1696,6 @@
   "@settingsProfileSummaryWeightValue": {
     "placeholders": {
       "weight": {
-        "type": "String"
-      }
-    }
-  },
-  "settingsProfileSummaryGramsValue": "{grams} g",
-  "@settingsProfileSummaryGramsValue": {
-    "placeholders": {
-      "grams": {
         "type": "String"
       }
     }
@@ -2400,7 +2560,6 @@
   "profileWeightTrendLabel": "Trend",
   "profileWeightPerWeek": "per week",
   "profileBodySection": "Body",
-  "profileGoalSection": "Goal",
   "profileTrainingLabel": "Training",
   "profileTrainingNone": "None",
   "profileTrainingOffset": "{kcal} kcal per session",
@@ -2423,33 +2582,33 @@
   "profileTdeeLabel": "Expenditure",
   "profileTdeeLearned": "learned",
   "profileTdeeEstimated": "estimated",
-  "profileGoalLose": "Lose weight to {weight} kg",
-  "@profileGoalLose": {
+  "progressGoalLose": "Lose weight to {weight} kg",
+  "@progressGoalLose": {
     "placeholders": {
       "weight": {
         "type": "String"
       }
     }
   },
-  "profileGoalGain": "Gain weight to {weight} kg",
-  "@profileGoalGain": {
+  "progressGoalGain": "Gain weight to {weight} kg",
+  "@progressGoalGain": {
     "placeholders": {
       "weight": {
         "type": "String"
       }
     }
   },
-  "profileGoalMaintain": "Maintain weight",
-  "profileGoalStart": "Start {weight} kg",
-  "@profileGoalStart": {
+  "progressGoalMaintain": "Maintain weight",
+  "progressGoalStart": "Start {weight} kg",
+  "@progressGoalStart": {
     "placeholders": {
       "weight": {
         "type": "String"
       }
     }
   },
-  "profileGoalRemaining": "{weight} kg to go · {pace} kg/week",
-  "@profileGoalRemaining": {
+  "progressGoalRemaining": "{weight} kg to go · {pace} kg/week",
+  "@progressGoalRemaining": {
     "placeholders": {
       "weight": {
         "type": "String"
@@ -2459,7 +2618,7 @@
       }
     }
   },
-  "profileGoalNone": "No goal set yet.",
+  "progressGoalNone": "No goal set yet.",
   "profileHeightTitle": "Height",
   "profileBirthDateTitle": "Birthday",
   "profileSexTitle": "Sex",

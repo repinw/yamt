@@ -4534,17 +4534,233 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 entry} other{{count} entries}}'**
   String diaryMealEntryCount(int count);
 
-  /// No description provided for @progressTdeeTrendTitle.
+  /// No description provided for @progressGoalAverageKcal.
   ///
   /// In en, this message translates to:
-  /// **'TDEE and weight trend'**
-  String get progressTdeeTrendTitle;
+  /// **'Ø {kcal} kcal/day'**
+  String progressGoalAverageKcal(String kcal);
 
-  /// No description provided for @progressTdeeTrendSubtitle.
+  /// No description provided for @progressGoalAboveStart.
   ///
   /// In en, this message translates to:
-  /// **'Burn curve, fluctuation range and goal forecast'**
-  String get progressTdeeTrendSubtitle;
+  /// **'{kg} kg above start'**
+  String progressGoalAboveStart(String kg);
+
+  /// No description provided for @progressGoalBelowStart.
+  ///
+  /// In en, this message translates to:
+  /// **'{kg} kg below start'**
+  String progressGoalBelowStart(String kg);
+
+  /// No description provided for @progressAveragePerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'average per day'**
+  String get progressAveragePerDay;
+
+  /// No description provided for @progressWeekKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} – {end}'**
+  String progressWeekKicker(String start, String end);
+
+  /// No description provided for @progressGoalKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {kcal}'**
+  String progressGoalKcal(String kcal);
+
+  /// No description provided for @progressKcalUnderGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} under goal'**
+  String progressKcalUnderGoal(String kcal);
+
+  /// No description provided for @progressKcalOverGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} over goal'**
+  String progressKcalOverGoal(String kcal);
+
+  /// No description provided for @progressWeekBudgetKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Week budget · day {day} of {total}'**
+  String progressWeekBudgetKicker(int day, int total);
+
+  /// No description provided for @progressWeekBudgetValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{eaten} / {goal} kcal'**
+  String progressWeekBudgetValue(String eaten, String goal);
+
+  /// No description provided for @progressWeekBudgetLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal left'**
+  String progressWeekBudgetLeft(String kcal);
+
+  /// No description provided for @progressWeekBudgetOver.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal over'**
+  String progressWeekBudgetOver(String kcal);
+
+  /// No description provided for @progressDayBarLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'Bar = daily goal in quarters'**
+  String get progressDayBarLegend;
+
+  /// No description provided for @progressMacroGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {grams} g'**
+  String progressMacroGoal(String grams);
+
+  /// No description provided for @progressGrams.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g'**
+  String progressGrams(String grams);
+
+  /// No description provided for @progressWeightKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight · trend'**
+  String get progressWeightKicker;
+
+  /// No description provided for @progressWeightPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'{kg} kg / week'**
+  String progressWeightPerWeek(String kg);
+
+  /// No description provided for @progressWeightForecast.
+  ///
+  /// In en, this message translates to:
+  /// **'expected {date}'**
+  String progressWeightForecast(String date);
+
+  /// No description provided for @progressWeightGoalReached.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached'**
+  String get progressWeightGoalReached;
+
+  /// No description provided for @progressWeightLegendWeighIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh-in'**
+  String get progressWeightLegendWeighIn;
+
+  /// No description provided for @progressWeightLegendTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get progressWeightLegendTrend;
+
+  /// No description provided for @progressWeightEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No weigh-ins in the last four weeks.'**
+  String get progressWeightEmpty;
+
+  /// No description provided for @progressToday.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get progressToday;
+
+  /// No description provided for @progressTdeeKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE · per check-in'**
+  String get progressTdeeKicker;
+
+  /// No description provided for @progressTdeeChange.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} since last week'**
+  String progressTdeeChange(String kcal);
+
+  /// No description provided for @progressTdeeNextCheckIn.
+  ///
+  /// In en, this message translates to:
+  /// **'next check-in {date}'**
+  String progressTdeeNextCheckIn(String date);
+
+  /// No description provided for @progressTdeeCheckInOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in waits in the diary'**
+  String get progressTdeeCheckInOpen;
+
+  /// No description provided for @progressTdeeLegendTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Taken'**
+  String get progressTdeeLegendTaken;
+
+  /// No description provided for @progressTdeeLegendKept.
+  ///
+  /// In en, this message translates to:
+  /// **'Calculated, old value kept'**
+  String get progressTdeeLegendKept;
+
+  /// No description provided for @progressTdeeLegendStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get progressTdeeLegendStart;
+
+  /// No description provided for @progressTdeeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'The first point appears after your first weekly check-in.'**
+  String get progressTdeeEmpty;
+
+  /// No description provided for @progressDayTypeKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 4 weeks · average'**
+  String get progressDayTypeKicker;
+
+  /// No description provided for @progressDayTypeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Training vs. rest day'**
+  String get progressDayTypeTitle;
+
+  /// No description provided for @progressDayTypeDays.
+  ///
+  /// In en, this message translates to:
+  /// **'{emoji} {type} · {count, plural, =1{1 day} other{{count} days}}'**
+  String progressDayTypeDays(String emoji, String type, int count);
+
+  /// No description provided for @progressKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal'**
+  String progressKcal(String kcal);
+
+  /// No description provided for @progressEaten.
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten'**
+  String get progressEaten;
+
+  /// No description provided for @progressDayTypeEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Log a few days to compare training and rest days.'**
+  String get progressDayTypeEmpty;
+
+  /// No description provided for @progressLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load this section.'**
+  String get progressLoadFailed;
 
   /// No description provided for @diaryBalanceBaseLabel.
   ///
@@ -4557,24 +4773,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Planned with carryover'**
   String get diaryBalancePlannedWithCarryoverLabel;
-
-  /// No description provided for @diaryBalanceWeekLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Week {week}'**
-  String diaryBalanceWeekLabel(Object week);
-
-  /// No description provided for @diaryBalanceDayProgressLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Day {day} of {total}'**
-  String diaryBalanceDayProgressLabel(Object day, Object total);
-
-  /// No description provided for @diaryBalanceTargetMarkerLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Target'**
-  String get diaryBalanceTargetMarkerLabel;
 
   /// No description provided for @diaryBalanceRealEatenLabel.
   ///
@@ -4776,12 +4974,6 @@ abstract class AppLocalizations {
   /// **'Activity'**
   String get diaryActivityTitle;
 
-  /// No description provided for @diaryActivityWeightLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Activity and weight could not be loaded'**
-  String get diaryActivityWeightLoadFailed;
-
   /// No description provided for @diaryWeightTitle.
   ///
   /// In en, this message translates to:
@@ -4811,12 +5003,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Track now'**
   String get diaryWeightTrackNowAction;
-
-  /// No description provided for @diaryWeightEmpty.
-  ///
-  /// In en, this message translates to:
-  /// **'No weights'**
-  String get diaryWeightEmpty;
 
   /// No description provided for @diaryWeightAddAction.
   ///
@@ -4937,12 +5123,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{weight} kg'**
   String settingsProfileSummaryWeightValue(String weight);
-
-  /// No description provided for @settingsProfileSummaryGramsValue.
-  ///
-  /// In en, this message translates to:
-  /// **'{grams} g'**
-  String settingsProfileSummaryGramsValue(String grams);
 
   /// No description provided for @settingsProfileSummaryLoadFailed.
   ///
@@ -8331,12 +8511,6 @@ abstract class AppLocalizations {
   /// **'Body'**
   String get profileBodySection;
 
-  /// No description provided for @profileGoalSection.
-  ///
-  /// In en, this message translates to:
-  /// **'Goal'**
-  String get profileGoalSection;
-
   /// No description provided for @profileTrainingLabel.
   ///
   /// In en, this message translates to:
@@ -8385,41 +8559,41 @@ abstract class AppLocalizations {
   /// **'estimated'**
   String get profileTdeeEstimated;
 
-  /// No description provided for @profileGoalLose.
+  /// No description provided for @progressGoalLose.
   ///
   /// In en, this message translates to:
   /// **'Lose weight to {weight} kg'**
-  String profileGoalLose(String weight);
+  String progressGoalLose(String weight);
 
-  /// No description provided for @profileGoalGain.
+  /// No description provided for @progressGoalGain.
   ///
   /// In en, this message translates to:
   /// **'Gain weight to {weight} kg'**
-  String profileGoalGain(String weight);
+  String progressGoalGain(String weight);
 
-  /// No description provided for @profileGoalMaintain.
+  /// No description provided for @progressGoalMaintain.
   ///
   /// In en, this message translates to:
   /// **'Maintain weight'**
-  String get profileGoalMaintain;
+  String get progressGoalMaintain;
 
-  /// No description provided for @profileGoalStart.
+  /// No description provided for @progressGoalStart.
   ///
   /// In en, this message translates to:
   /// **'Start {weight} kg'**
-  String profileGoalStart(String weight);
+  String progressGoalStart(String weight);
 
-  /// No description provided for @profileGoalRemaining.
+  /// No description provided for @progressGoalRemaining.
   ///
   /// In en, this message translates to:
   /// **'{weight} kg to go · {pace} kg/week'**
-  String profileGoalRemaining(String weight, String pace);
+  String progressGoalRemaining(String weight, String pace);
 
-  /// No description provided for @profileGoalNone.
+  /// No description provided for @progressGoalNone.
   ///
   /// In en, this message translates to:
   /// **'No goal set yet.'**
-  String get profileGoalNone;
+  String get progressGoalNone;
 
   /// No description provided for @profileHeightTitle.
   ///

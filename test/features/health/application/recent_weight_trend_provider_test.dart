@@ -45,7 +45,7 @@ ProviderContainer _createContainer({
 }
 
 Future<void> _settle(ProviderContainer container) async {
-  final subscription = container.listen(recentWeightTrendProvider, (_, _) {});
+  final subscription = container.listen(recentWeightTrendProvider(), (_, _) {});
   addTearDown(subscription.close);
   await pumpEventQueue();
 }
@@ -62,7 +62,7 @@ void main() {
     );
     await _settle(container);
 
-    final trend = container.read(recentWeightTrendProvider).requireValue;
+    final trend = container.read(recentWeightTrendProvider()).requireValue;
 
     expect(trend.latestWeighInKg, 81);
     expect(trend.latestWeighInDay, DateTime(2026, 9, 25));
@@ -84,7 +84,7 @@ void main() {
     );
     await _settle(container);
 
-    final trend = container.read(recentWeightTrendProvider).requireValue;
+    final trend = container.read(recentWeightTrendProvider()).requireValue;
 
     expect(trend.latestWeighInKg, 80.6);
     // The manual entry wins over the Health sample of the same day.
@@ -95,7 +95,7 @@ void main() {
     final container = _createContainer(manualEntries: []);
     await _settle(container);
     expect(
-      container.read(recentWeightTrendProvider).requireValue.latestWeighInKg,
+      container.read(recentWeightTrendProvider()).requireValue.latestWeighInKg,
       isNull,
     );
 
@@ -106,7 +106,7 @@ void main() {
 
     expect(saved, isTrue);
     expect(
-      container.read(recentWeightTrendProvider).requireValue.latestWeighInKg,
+      container.read(recentWeightTrendProvider()).requireValue.latestWeighInKg,
       79.8,
     );
   });

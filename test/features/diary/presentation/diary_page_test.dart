@@ -11,7 +11,6 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/activity/presentation/widgets/activity_weight_section/diary_activity_weight_section.dart';
 import 'package:yamt/features/activity/presentation/widgets/diary_weight_missing_prompt_section.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_missing_prompt_card.dart';
@@ -53,8 +52,6 @@ import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_weekly_balance_summary.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
     'diary_day_type_toggle.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
@@ -62,7 +59,6 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_weekly_progress_section.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
@@ -693,55 +689,6 @@ void main() {
     expect(find.text('Could not reject the weekly check-in.'), findsOneWidget);
   });
 
-  testWidgets('weekly progress shows balance beside weight without activity', (
-    tester,
-  ) async {
-    const healthStatus = HealthConnectionStatus(
-      platform: HealthPlatform.ios,
-      healthConnectAvailability: HealthConnectAvailability.notApplicable,
-      permissionState: HealthPermissionState.granted,
-      historyAccess: HealthHistoryAccess.notApplicable,
-    );
-
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      healthConnectionService: FakeHealthConnectionService(healthStatus),
-      body: SingleChildScrollView(
-        child: DiaryWeeklyProgressSection(selectedDay: selectedDay),
-      ),
-    );
-
-    await _pumpFrames(tester);
-
-    expect(find.byType(DiaryWeeklyBalanceSummary), findsOneWidget);
-    expect(find.text('WEIGHT'), findsOneWidget);
-    expect(find.text('STEPS'), findsNothing);
-    expect(find.text('ACTIVITY'), findsNothing);
-  });
-
-  testWidgets('weekly progress shows skeleton while dashboard is loading', (
-    tester,
-  ) async {
-    await _pumpDiaryPage(
-      tester,
-      selectedDay: selectedDay,
-      dashboardState: const DiaryDayDashboardState(
-        data: null,
-        isFromCache: false,
-        isRefreshing: true,
-        error: null,
-      ),
-      initialFrameCount: 0,
-      body: SingleChildScrollView(
-        child: DiaryWeeklyProgressSection(selectedDay: selectedDay),
-      ),
-    );
-
-    expect(find.byType(DiaryActivityWeightSection), findsOneWidget);
-    expect(find.byType(DiaryWeeklyBalanceSummary), findsOneWidget);
-  });
-
   testWidgets(
     'diary no longer shows weekly progress or check-in while loading',
     (tester) async {
@@ -757,8 +704,6 @@ void main() {
         initialFrameCount: 0,
       );
 
-      expect(find.byType(DiaryWeeklyProgressSection), findsNothing);
-      expect(find.byType(DiaryActivityWeightSection), findsNothing);
       expect(find.byType(DiaryWeeklyCheckInSection), findsNothing);
     },
   );

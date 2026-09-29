@@ -40,10 +40,10 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   strip pinned under the top bar. `diary_macro_strip_trigger.dart` reveals it
   in stages as the daily card's kcal bar and macro bars scroll away; each day
   view places the trigger sliver directly above its daily card.
-- `presentation/widgets/diary_weekly_progress_section.dart` is the weekly
-  budget, activity, and weight card. The Progress tab shows it; the diary page
-  does not. The diary page shows only the Activity missing-weight prompt, below
-  the weekly check-in, and only on today.
+- The diary page shows the Activity missing-weight prompt below the weekly
+  check-in, and only on today.
+- `presentation/widgets/diary_day_type_labels.dart` gives the emoji and the
+  names of a day type. The Fortschritt tab uses them for its day rows.
 - `presentation/widgets/diary_quick_eat_dock.dart` (`DiaryQuickEatDock`) is
   public UI for `features/home`: the quick-eat buttons for the selected day.
   The home shell stacks it on the bottom navigation bar of the diary tab, so it

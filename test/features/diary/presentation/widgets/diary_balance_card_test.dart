@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
@@ -15,25 +14,16 @@ import 'package:yamt/features/calories/application/burn_week_run_controller.dart
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/application/diary_burn_week_balance/'
-    'diary_weekly_balance_metrics.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_balance_card_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_loading.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_balance_progress.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_kcal_ruler.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_burn_week_card/diary_weekly_balance_card.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../helpers/memory_app_preferences.dart';
@@ -87,133 +77,6 @@ void main() {
     );
     expect(_findTextContaining('1,000'), findsWidgets);
     expect(_findTextContaining('14,000 kcal'), findsNothing);
-  });
-
-  testWidgets('weekly progress handles unbounded horizontal constraints', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      const MaterialApp(
-        locale: Locale('en'),
-        localizationsDelegates: appLocalizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: DiaryBalanceProgressBar(
-              consumedKcal: 3100,
-              targetKcal: 4915,
-              weeklyGoalKcal: 17204,
-              totalDays: 7,
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(tester.takeException(), isNull);
-    expect(
-      tester.getSize(find.byKey(DiaryBalanceCardKeys.progressTrack)).width,
-      diaryBalanceProgressFallbackWidth,
-    );
-  });
-
-  testWidgets('weekly progress animates fill and target marker', (
-    tester,
-  ) async {
-    await _pumpWeeklyProgressBar(tester, consumedKcal: 0, targetKcal: 0);
-
-    await _pumpWeeklyProgressBar(tester, consumedKcal: 500, targetKcal: 700);
-    await tester.pump(const Duration(milliseconds: 500));
-
-    final midTrackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.progressTrack),
-    );
-    final midFillRect = tester.getRect(_weeklyProgressFillFinder());
-    final midTargetRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.targetMarker),
-    );
-
-    expect(midFillRect.width, greaterThan(0));
-    expect(midFillRect.width, lessThan(midTrackRect.width * 0.5));
-    expect(midTargetRect.center.dxRatioWithin(midTrackRect), greaterThan(0));
-    expect(midTargetRect.center.dxRatioWithin(midTrackRect), lessThan(0.7));
-
-    await tester.pumpAndSettle();
-
-    final settledTrackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.progressTrack),
-    );
-    final settledFillRect = tester.getRect(_weeklyProgressFillFinder());
-    final settledTargetRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.targetMarker),
-    );
-
-    expect(settledFillRect.width / settledTrackRect.width, closeTo(0.5, 0.02));
-    expect(
-      settledTargetRect.center.dxRatioWithin(settledTrackRect),
-      closeTo(0.7, 0.02),
-    );
-  });
-
-  testWidgets('weekly compact card aligns kcal label to bar right edge', (
-    tester,
-  ) async {
-    await _pumpWeeklyBalanceCard(tester);
-    await tester.pumpAndSettle();
-
-    final trackRect = tester.getRect(
-      find.byKey(DiaryBalanceCardKeys.progressTrack),
-    );
-    final valueLabel = find.text('15,726 / 17,755 kcal');
-
-    expect(valueLabel, findsOneWidget);
-    expect(find.byIcon(Icons.local_fire_department_rounded), findsNothing);
-    expect(find.text('6'), findsOneWidget);
-    expect(find.text('Day 6 of 7'), findsOneWidget);
-    expect(find.text('Week 6'), findsNothing);
-    expect(tester.getRect(valueLabel).right, closeTo(trackRect.right, 1));
-  });
-
-  testWidgets('weekly compact progress renders 7 mini-bar segments', (
-    tester,
-  ) async {
-    await _pumpWeeklyBalanceCard(tester);
-    await tester.pumpAndSettle();
-
-    final track = find.byKey(DiaryBalanceCardKeys.progressTrack);
-    final segments = tester.widgetList<Expanded>(
-      find.descendant(of: track, matching: find.byType(Expanded)),
-    );
-
-    expect(segments, hasLength(7));
-  });
-
-  testWidgets('weekly compact progress fills segments proportionally', (
-    tester,
-  ) async {
-    await _pumpWeeklyBalanceCard(tester);
-    await tester.pumpAndSettle();
-
-    final track = find.byKey(DiaryBalanceCardKeys.progressTrack);
-    final fractionallySizedBoxes = tester
-        .widgetList<FractionallySizedBox>(
-          find.descendant(
-            of: track,
-            matching: find.byType(FractionallySizedBox),
-          ),
-        )
-        .toList();
-
-    expect(fractionallySizedBoxes, hasLength(7));
-    // First 6 segments should be completely full (progress is 15,726 / 17,755 ~ 88.5% > 6/7)
-    for (var i = 0; i < 6; i++) {
-      expect(fractionallySizedBoxes[i].widthFactor, 1.0);
-    }
-    // 7th segment should be partially filled
-    expect(fractionallySizedBoxes[6].widthFactor, greaterThan(0.0));
-    expect(fractionallySizedBoxes[6].widthFactor, lessThan(1.0));
   });
 
   testWidgets('daily ruler fills its first quarter, then the next ones', (
@@ -798,62 +661,6 @@ Future<void> _pumpBalanceCard(
   }
 }
 
-Future<void> _pumpWeeklyProgressBar(
-  WidgetTester tester, {
-  required double consumedKcal,
-  required double targetKcal,
-}) async {
-  await tester.pumpWidget(
-    MaterialApp(
-      locale: const Locale('en'),
-      localizationsDelegates: appLocalizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: 300,
-            child: DiaryBalanceProgressBar(
-              consumedKcal: consumedKcal,
-              targetKcal: targetKcal,
-              weeklyGoalKcal: 1000,
-              totalDays: 7,
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
-Future<void> _pumpWeeklyBalanceCard(
-  WidgetTester tester, {
-  ThemeMode themeMode = ThemeMode.light,
-}) async {
-  await tester.pumpWidget(
-    MaterialApp(
-      locale: const Locale('en'),
-      localizationsDelegates: appLocalizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData.light(),
-      darkTheme: ThemeData.dark(),
-      themeMode: themeMode,
-      home: Scaffold(
-        body: Center(
-          child: SizedBox(
-            width: 340,
-            child: DiaryWeeklyBalanceCard(
-              weeklyMetrics: _weeklyBalanceMetrics(),
-              runWeekNumber: 6,
-              numberFormat: NumberFormat.decimalPattern('en'),
-              framed: false,
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-}
-
 Future<void> _pumpDailyProgressBar(
   WidgetTester tester, {
   required double eatenKcal,
@@ -871,35 +678,6 @@ Future<void> _pumpDailyProgressBar(
       ),
     ),
   );
-}
-
-DiaryWeeklyBalanceMetrics _weeklyBalanceMetrics() {
-  return const DiaryWeeklyBalanceMetrics(
-    pacing: BurnWeekMockMetrics(
-      dailyGoalKcal: 2536.4,
-      weeklyGoalKcal: 17755,
-      usesFallbackGoal: false,
-      paceRatio: 6 / 7,
-      targetKcal: 15218,
-      consumedKcal: 15726,
-      safeZoneMinKcal: 14000,
-      safeZoneMaxKcal: 16500,
-      barMinKcal: 0,
-      barMaxKcal: 17755,
-    ),
-    targetKcal: 15218,
-    goalKcal: 17755,
-    progressDay: 6,
-  );
-}
-
-Finder _weeklyProgressFillFinder() {
-  return find
-      .descendant(
-        of: find.byKey(DiaryBalanceCardKeys.progressTrack),
-        matching: find.byType(DecoratedBox),
-      )
-      .first;
 }
 
 CalorieWeekOverview _weekOverview({
@@ -963,12 +741,6 @@ class _FakeBurnWeekRunController extends BurnWeekRunController {
 }
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
-
-extension on Offset {
-  double dxRatioWithin(Rect rect) {
-    return (dx - rect.left) / rect.width;
-  }
-}
 
 Finder _findTextContaining(String text) {
   return find.textContaining(text, findRichText: true);

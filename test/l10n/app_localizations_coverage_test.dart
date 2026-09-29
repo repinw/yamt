@@ -14,7 +14,6 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.homeProfile,
     l10n.diaryBalancePauseDayValue,
     l10n.homeQuickActionTooltip,
-    l10n.diaryBalanceWeekLabel(6),
     l10n.productSearchHubTitle,
     l10n.productSearchHubInventoryTitle,
     l10n.productSearchHubDiaryTitle,

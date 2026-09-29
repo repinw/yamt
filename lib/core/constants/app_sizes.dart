@@ -155,9 +155,6 @@ abstract final class AppSizes {
   /// do not look steep.
   static const double profileWeightChartMinRangeKg = 1;
 
-  /// Height of one goal progress segment on the profile.
-  static const double profileGoalSegment = 8;
-
   /// Edge length of a macro color square on the profile.
   static const double profileMacroSquare = 8;
 

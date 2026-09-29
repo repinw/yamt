@@ -64,7 +64,7 @@ Future<ProfileSummaryState> _settledSummary(ProviderContainer container) async {
 }
 
 void main() {
-  test('combines account, body data, weights, and macro goals', () async {
+  test('combines account, body data, and weights', () async {
     final repository = FakeCalorieSettingsRepository(
       initialSettings: _settingsWithGoal(),
     );
@@ -87,25 +87,15 @@ void main() {
     expect(summary.weight?.latestWeighInDay, DateTime(2026, 9, 22));
     // 61.6 kg eases towards 61.2 kg by a tenth per day.
     expect(summary.weight?.trendWeightKg, closeTo(61.542, 0.0001));
-    expect(summary.currentWeightKg, closeTo(61.542, 0.0001));
-    expect(summary.kgToTarget, closeTo(6.542, 0.0001));
-    expect(summary.goalProgress, 0);
     expect(summary.macroWeightKg, 60);
     expect(summary.macroWeightSince, DateTime(2026, 9));
     expect(summary.tdee, (
       kcal: CalorieGoalCalculator.calculate(_profile).tdeeKcal,
       isLearned: false,
     ));
-    expect(summary.dailyKcalGoal, 1800);
-    // Female losing weight without training days: 1.6 g/kg (96 g) is below
-    // 30 % of the 1800 kcal goal, so protein rises to 135 g.
-    expect(summary.macroTarget?.proteinGrams, closeTo(1800 * 0.30 / 4, 0.001));
-    expect(summary.macroTarget?.fatGrams, closeTo(54, 0.001));
-    // (1800 − 135 × 4 − 54 × 9) / 4 = 193.5 g.
-    expect(summary.macroTarget?.carbsGrams, closeTo(193.5, 0.001));
   });
 
-  test('has no current weight without weigh-ins', () async {
+  test('has no weight without weigh-ins', () async {
     final repository = FakeCalorieSettingsRepository(
       initialSettings: _settingsWithGoal(),
     );
@@ -116,9 +106,6 @@ void main() {
 
     expect(summary.weight?.latestWeighInKg, isNull);
     expect(summary.weight?.trendWeightKg, isNull);
-    expect(summary.currentWeightKg, isNull);
-    expect(summary.kgToTarget, isNull);
-    expect(summary.goalProgress, isNull);
   });
 
   test('shows the macro weight of the latest weekly check-in', () async {
@@ -188,8 +175,6 @@ void main() {
     expect(summary.ageYears, isNull);
     expect(summary.macroWeightKg, isNull);
     expect(summary.tdee, isNull);
-    expect(summary.dailyKcalGoal, isNull);
-    expect(summary.macroTarget, isNull);
   });
 
   test('follows a saved goal change', () async {
@@ -209,10 +194,6 @@ void main() {
     await pumpEventQueue();
 
     expect(states.first, isA<AsyncLoading<ProfileSummaryState>>());
-    expect(states.last.requireValue.dailyKcalGoal, 1800);
-    expect(
-      states.last.requireValue.macroTarget?.proteinGrams,
-      closeTo(1800 * 0.30 / 4, 0.001),
-    );
+    expect(states.last.requireValue.profile, same(_profile));
   });
 }

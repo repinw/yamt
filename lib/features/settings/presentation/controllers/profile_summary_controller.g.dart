@@ -8,19 +8,19 @@ part of 'profile_summary_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Combines the user's account, calculator profile, recent weigh-ins, and
-/// macro targets for the profile page.
+/// Combines the user's account, calculator profile, and recent weigh-ins for
+/// the profile page.
 
 @ProviderFor(ProfileSummaryController)
 final profileSummaryControllerProvider = ProfileSummaryControllerProvider._();
 
-/// Combines the user's account, calculator profile, recent weigh-ins, and
-/// macro targets for the profile page.
+/// Combines the user's account, calculator profile, and recent weigh-ins for
+/// the profile page.
 final class ProfileSummaryControllerProvider
     extends
         $StreamNotifierProvider<ProfileSummaryController, ProfileSummaryState> {
-  /// Combines the user's account, calculator profile, recent weigh-ins, and
-  /// macro targets for the profile page.
+  /// Combines the user's account, calculator profile, and recent weigh-ins for
+  /// the profile page.
   ProfileSummaryControllerProvider._()
     : super(
         from: null,
@@ -41,10 +41,10 @@ final class ProfileSummaryControllerProvider
 }
 
 String _$profileSummaryControllerHash() =>
-    r'b0174b488ee285f84dec743069359d3ef4815656';
+    r'b757ae6768ca229e877204e42ee4b0b7daab682c';
 
-/// Combines the user's account, calculator profile, recent weigh-ins, and
-/// macro targets for the profile page.
+/// Combines the user's account, calculator profile, and recent weigh-ins for
+/// the profile page.
 
 abstract class _$ProfileSummaryController
     extends $StreamNotifier<ProfileSummaryState> {

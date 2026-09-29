@@ -1,32 +1,33 @@
-import 'dart:async';
-
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
-import 'package:yamt/core/domain/local_day_window.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_weekly_progress_section.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_day_type_section.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_goal_card.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_tdee_section.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_week_section.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_weight_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Home tab that shows how the current week and the longer trend are going.
-class ProgressPage extends ConsumerWidget {
+/// Home tab that shows how the current week and the longer trend are going:
+/// the goal, the week with its budget, the weight trend, the TDEE per
+/// check-in, and training days against rest days.
+class ProgressPage extends StatelessWidget {
   /// Creates the progress page.
   const new({super.key});
 
-  /// Stable key of the TDEE trend entry.
-  static const tdeeTrendTileKey = ValueKey<String>('progress-tdee-trend-tile');
-
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final today = normalizeLocalDay(ref.watch(clockProvider)());
-
+    final rule = FoodLabelColors.of(context).rule;
+    const sections = <Widget>[
+      ProgressWeekSection(),
+      ProgressWeightSection(),
+      ProgressTdeeSection(),
+      ProgressDayTypeSection(),
+    ];
     return CustomScrollView(
       slivers: [
         HomeShellTabTopChrome(title: l10n.homeProgress),
@@ -46,18 +47,13 @@ class ProgressPage extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      DiaryWeeklyProgressSection(selectedDay: today),
-                      const SizedBox(height: AppSpacing.md),
-                      ListTile(
-                        key: tdeeTrendTileKey,
-                        leading: const Icon(Icons.insights_rounded),
-                        title: Text(l10n.progressTdeeTrendTitle),
-                        subtitle: Text(l10n.progressTdeeTrendSubtitle),
-                        trailing: const Icon(Icons.chevron_right_rounded),
-                        onTap: () => unawaited(
-                          context.push(AppRoutes.homeCaloriesAnalytics),
-                        ),
-                      ),
+                      const ProgressGoalCard(),
+                      for (final section in sections) ...[
+                        const SizedBox(height: AppSpacing.xxxl),
+                        Divider(height: AppSizes.hairline, color: rule),
+                        const SizedBox(height: AppSpacing.xl),
+                        section,
+                      ],
                     ],
                   ),
                 ),

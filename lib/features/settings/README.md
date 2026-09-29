@@ -29,7 +29,8 @@ settings.
   with its own app bar, opened from the Home side menu at
   `AppRoutes.homeProfile`. It shows who the user is, the weight (trend
   weight, last weigh-in, start weight, weekly trend, a 14-day chart, and a
-  weigh-in button), the body data as tiles, and the current goal.
+  weigh-in button), and the body data as tiles. The current goal is on the
+  Fortschritt tab.
   Height, birthday, and sex tiles, and the start weight until a TDEE is
   learned, open `ProfileBodyEditSheet`. The sheet shows what the edit changes
   on today's calorie goal and macros before "Apply" saves it
@@ -62,7 +63,7 @@ Current providers:
 - `features/activity` for the weigh-in dialog of the profile page
   (`DiaryWeightTrackingFlow`).
 - `features/auth` for account data, auth actions, and auth error mapping.
-- `features/calories` for the profile page's body data, macro weight, and goals
+- `features/calories` for the profile page's body data and macro weight
   (settings repository and nutrition target resolver), and calorie goal
   settings surfaces, including the complete goal archive page that the goal
   archive row opens through app routing (`AppRoutes.homeSettingsGoalArchive`).
