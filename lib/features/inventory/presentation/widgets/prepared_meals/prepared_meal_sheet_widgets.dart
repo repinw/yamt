@@ -50,54 +50,6 @@ class PreparedMealSheetContainer extends StatelessWidget {
   }
 }
 
-/// Defines shared prepared meal name field.
-class PreparedMealNameField extends StatelessWidget {
-  /// The prepared meal name field.
-  const new({
-    required this.controller,
-    required this.textInputAction,
-    super.key,
-    this.onChanged,
-  });
-
-  /// The field controller.
-  final TextEditingController controller;
-
-  /// The keyboard action.
-  final TextInputAction textInputAction;
-
-  /// Called when the name changes.
-  final ValueChanged<String>? onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return TextFormField(
-      controller: controller,
-      textInputAction: textInputAction,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        labelText: l10n.preparedMealNameLabel,
-        suffixIcon: IconButton(
-          tooltip: l10n.preparedMealClearNameAction,
-          onPressed: () {
-            controller.clear();
-            onChanged?.call(controller.text);
-          },
-          icon: const Icon(Icons.cleaning_services_outlined),
-        ),
-      ),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return l10n.preparedMealInvalidName;
-        }
-        return null;
-      },
-    );
-  }
-}
-
 /// Defines shared prepared meal sheet actions.
 class PreparedMealSheetActions extends StatelessWidget {
   /// The prepared meal sheet actions.

@@ -6,40 +6,6 @@ import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
-  testWidgets('validates name field and clears text', (tester) async {
-    final formKey = GlobalKey<FormState>();
-    final controller = TextEditingController(text: 'Meal');
-    final changedValues = <String>[];
-
-    await tester.pumpWidget(
-      _TestApp(
-        child: PreparedMealSheetContainer(
-          formKey: formKey,
-          children: [
-            PreparedMealNameField(
-              controller: controller,
-              textInputAction: TextInputAction.done,
-              onChanged: changedValues.add,
-            ),
-          ],
-        ),
-      ),
-    );
-
-    expect(formKey.currentState!.validate(), isTrue);
-
-    await tester.tap(find.byTooltip('Clear name'));
-    await tester.pump();
-
-    expect(controller.text, isEmpty);
-    expect(changedValues, <String>['']);
-    expect(formKey.currentState!.validate(), isFalse);
-    await tester.pump();
-    expect(find.text('Please enter a meal name.'), findsOneWidget);
-
-    controller.dispose();
-  });
-
   testWidgets('primary action fires and cancel closes route', (tester) async {
     var primaryTapCount = 0;
 
