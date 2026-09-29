@@ -1,10 +1,9 @@
 import 'package:go_router/go_router.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
-import 'package:yamt/features/meal_templates/presentation/widgets/'
-    'meal_templates_page/meal_templates_page.dart';
 import 'package:yamt/features/progress/presentation/progress_page.dart';
 
 /// Builds the home navigation shell route with bottom-bar tab branches.
@@ -35,9 +34,7 @@ StatefulShellRoute buildHomeShellRoute() {
         routes: [
           GoRoute(
             path: AppRoutes.homeInventoryTemplates,
-            builder: (context, state) {
-              return const MealTemplatesPage(includeAppBar: false);
-            },
+            builder: (context, state) => const CookbookPage(),
           ),
         ],
       ),

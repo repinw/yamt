@@ -33,31 +33,19 @@ class PreparedMealRecipeTemplateDraft {
 
 /// Show prepared meal recipe template sheet.
 Future<PreparedMealRecipeTemplateDraft?> showPreparedMealRecipeTemplateSheet(
-  BuildContext context, {
-  PreparedMealRecipeTemplateDraft? initialDraft,
-  String? title,
-  String? submitLabel,
-  bool useRootNavigator = true,
-}) {
+  BuildContext context,
+) {
   return showModalBottomSheet<PreparedMealRecipeTemplateDraft>(
     context: context,
     isScrollControlled: true,
-    useRootNavigator: useRootNavigator,
+    useRootNavigator: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => _PreparedMealRecipeTemplateSheet(
-      initialDraft: initialDraft,
-      title: title,
-      submitLabel: submitLabel,
-    ),
+    builder: (context) => const _PreparedMealRecipeTemplateSheet(),
   );
 }
 
 class _PreparedMealRecipeTemplateSheet extends StatefulWidget {
-  const new({this.initialDraft, this.title, this.submitLabel});
-
-  final PreparedMealRecipeTemplateDraft? initialDraft;
-  final String? title;
-  final String? submitLabel;
+  const new();
 
   @override
   State<_PreparedMealRecipeTemplateSheet> createState() =>
@@ -66,28 +54,13 @@ class _PreparedMealRecipeTemplateSheet extends StatefulWidget {
 
 class _PreparedMealRecipeTemplateSheetState
     extends State<_PreparedMealRecipeTemplateSheet> {
-  late final TextEditingController _recipeUrlController = TextEditingController(
-    text: widget.initialDraft?.recipeUrl ?? '',
-  );
-  late final TextEditingController _nameController = TextEditingController(
-    text: widget.initialDraft?.name ?? '',
-  );
-  late final TextEditingController _portionsController = TextEditingController(
-    text: widget.initialDraft?.totalPortions?.toString() ?? '',
-  );
+  final _recipeUrlController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _portionsController = TextEditingController();
 
   String? _recipeUrlErrorText;
   String? _portionsErrorText;
   bool _advancedExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _advancedExpanded =
-        widget.initialDraft != null ||
-        _nameController.text.isNotEmpty ||
-        _portionsController.text.isNotEmpty;
-  }
 
   @override
   void dispose() {
@@ -187,9 +160,7 @@ class _PreparedMealRecipeTemplateSheetState
                 children: [
                   _SheetHandleIndicator(colors: colors),
                   _SheetHeader(
-                    title:
-                        widget.title ??
-                        l10n.preparedMealTemplateRecipeSheetTitle,
+                    title: l10n.preparedMealTemplateRecipeSheetTitle,
                     subtitle: l10n.preparedMealTemplateRecipeSheetSubtitle,
                     onClose: () => Navigator.of(context).pop(),
                   ),
@@ -257,7 +228,6 @@ class _PreparedMealRecipeTemplateSheetState
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   _ActionButtonsRow(
-                    submitLabel: widget.submitLabel,
                     onCancel: () {
                       unawaited(HapticFeedback.lightImpact());
                       Navigator.of(context).pop();
@@ -643,11 +613,10 @@ class _AdvancedOptionsPanel extends StatelessWidget {
 
 /// Action buttons for confirming or canceling template creation.
 class _ActionButtonsRow extends StatelessWidget {
-  const new({required this.onCancel, required this.onSubmit, this.submitLabel});
+  const new({required this.onCancel, required this.onSubmit});
 
   final VoidCallback onCancel;
   final VoidCallback onSubmit;
-  final String? submitLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -692,7 +661,7 @@ class _ActionButtonsRow extends StatelessWidget {
               ),
               icon: const Icon(Icons.auto_awesome_rounded),
               label: Text(
-                submitLabel ?? l10n.preparedMealTemplateCreateFromRecipeAction,
+                l10n.preparedMealTemplateCreateFromRecipeAction,
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
             ),

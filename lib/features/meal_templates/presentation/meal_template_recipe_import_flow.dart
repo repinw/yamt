@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/core/widgets/home_header_tool.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
@@ -24,22 +23,6 @@ void startRecipeTemplateImport(BuildContext context, WidgetRef ref) {
       localeName: AppLocalizations.of(context)!.localeName,
     ),
   );
-}
-
-/// Cookbook header tool that starts the recipe import for prepared meal
-/// templates.
-class MealTemplateRecipeImportButton extends ConsumerWidget {
-  /// Creates a recipe import button.
-  const new({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return HomeHeaderTool(
-      symbol: const Icon(Icons.add_link_rounded),
-      label: AppLocalizations.of(context)!.preparedMealTemplateRecipeToolLabel,
-      onPressed: () => startRecipeTemplateImport(context, ref),
-    );
-  }
 }
 
 Future<void> _createTemplateFromRecipe({
@@ -62,7 +45,7 @@ Future<void> _createTemplateFromRecipe({
   } on Object catch (error, stackTrace) {
     log(
       'Failed to import recipe from ${draft.recipeUrl}',
-      name: 'MealTemplateRecipeImportButton',
+      name: 'MealTemplateRecipeImportFlow',
       error: error,
       stackTrace: stackTrace,
     );

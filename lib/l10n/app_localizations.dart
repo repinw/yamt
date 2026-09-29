@@ -146,12 +146,6 @@ abstract class AppLocalizations {
   /// **'Menu'**
   String get homeMenuTool;
 
-  /// No description provided for @homeMoreTool.
-  ///
-  /// In en, this message translates to:
-  /// **'More'**
-  String get homeMoreTool;
-
   /// No description provided for @aiChefIdeaDescription.
   ///
   /// In en, this message translates to:
@@ -163,12 +157,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'AI recipe idea'**
   String get aiChefIdeaTitle;
-
-  /// No description provided for @aiChefIdeaToolLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'AI idea'**
-  String get aiChefIdeaToolLabel;
 
   /// No description provided for @aiChefSetupTitle.
   ///
@@ -2278,29 +2266,11 @@ abstract class AppLocalizations {
   /// **'Template saved.'**
   String get preparedMealTemplateSavedMessage;
 
-  /// No description provided for @preparedMealTemplatesPageTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Templates'**
-  String get preparedMealTemplatesPageTitle;
-
-  /// No description provided for @preparedMealTemplatesEmptyState.
-  ///
-  /// In en, this message translates to:
-  /// **'No templates saved yet.'**
-  String get preparedMealTemplatesEmptyState;
-
   /// No description provided for @preparedMealTemplatesLoadFailed.
   ///
   /// In en, this message translates to:
   /// **'Could not load templates.'**
   String get preparedMealTemplatesLoadFailed;
-
-  /// No description provided for @preparedMealTemplateDeleteAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete template'**
-  String get preparedMealTemplateDeleteAction;
 
   /// No description provided for @preparedMealTemplateDeletedMessage.
   ///
@@ -2313,12 +2283,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add recipe template'**
   String get preparedMealTemplateAddRecipeAction;
-
-  /// No description provided for @preparedMealTemplateRecipeToolLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Recipe'**
-  String get preparedMealTemplateRecipeToolLabel;
 
   /// No description provided for @preparedMealTemplateAddRecipeDescription.
   ///
@@ -2349,12 +2313,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create template from recipe'**
   String get preparedMealTemplateRecipeSheetTitle;
-
-  /// No description provided for @preparedMealTemplateRecipeEditSheetTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit recipe template'**
-  String get preparedMealTemplateRecipeEditSheetTitle;
 
   /// No description provided for @preparedMealTemplateRecipeSheetSubtitle.
   ///
@@ -2440,35 +2398,17 @@ abstract class AppLocalizations {
   /// **'Optional. If empty, the servings from the recipe are used.'**
   String get preparedMealTemplatePortionsHelper;
 
-  /// No description provided for @preparedMealTemplateUpdatedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Template updated.'**
-  String get preparedMealTemplateUpdatedMessage;
-
   /// No description provided for @kitchenUtensilsPageTitle.
   ///
   /// In en, this message translates to:
   /// **'Kitchen utensils'**
   String get kitchenUtensilsPageTitle;
 
-  /// No description provided for @kitchenUtensilsOpenAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Kitchen utensils'**
-  String get kitchenUtensilsOpenAction;
-
   /// No description provided for @kitchenUtensilsToolLabel.
   ///
   /// In en, this message translates to:
   /// **'Tools'**
   String get kitchenUtensilsToolLabel;
-
-  /// No description provided for @kitchenUtensilsDescription.
-  ///
-  /// In en, this message translates to:
-  /// **'Manage your pots and containers'**
-  String get kitchenUtensilsDescription;
 
   /// No description provided for @kitchenUtensilsEmptyState.
   ///
@@ -7533,12 +7473,6 @@ abstract class AppLocalizations {
   /// **'Go to inventory'**
   String get cookflowToInventoryButton;
 
-  /// No description provided for @cookflowResumeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Resume'**
-  String get cookflowResumeLabel;
-
   /// No description provided for @caloriesProteinShortLetter.
   ///
   /// In en, this message translates to:
@@ -9134,6 +9068,258 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Past days and pause days keep their type.'**
   String get diaryCheckInFixedDaysHint;
+
+  /// No description provided for @cookbookRecipeCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 recipe} other{{count} recipes}}'**
+  String cookbookRecipeCount(int count);
+
+  /// No description provided for @cookbookOpenMealsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'In the pot'**
+  String get cookbookOpenMealsTitle;
+
+  /// No description provided for @cookbookOpenMealRows.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 row open} other{{count} rows open}} · since {time}'**
+  String cookbookOpenMealRows(int count, String time);
+
+  /// No description provided for @cookbookContinueAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get cookbookContinueAction;
+
+  /// No description provided for @cookbookTemplatesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Templates'**
+  String get cookbookTemplatesTitle;
+
+  /// No description provided for @cookbookTemplatesCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Combined from stock'**
+  String get cookbookTemplatesCaption;
+
+  /// No description provided for @cookbookNewTemplateTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'New template'**
+  String get cookbookNewTemplateTitle;
+
+  /// No description provided for @cookbookNewTemplateCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'combine from stock'**
+  String get cookbookNewTemplateCaption;
+
+  /// No description provided for @cookbookRecipesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipes'**
+  String get cookbookRecipesTitle;
+
+  /// No description provided for @cookbookRecipesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No recipes yet. Add one from a link or get an AI idea.'**
+  String get cookbookRecipesEmpty;
+
+  /// No description provided for @cookbookStockComplete.
+  ///
+  /// In en, this message translates to:
+  /// **'All in stock'**
+  String get cookbookStockComplete;
+
+  /// No description provided for @cookbookStockMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} missing'**
+  String cookbookStockMissing(int count);
+
+  /// No description provided for @cookbookKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal'**
+  String cookbookKcal(int kcal);
+
+  /// No description provided for @cookbookLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the cookbook.'**
+  String get cookbookLoadFailed;
+
+  /// No description provided for @homeActionCook.
+  ///
+  /// In en, this message translates to:
+  /// **'Cook'**
+  String get homeActionCook;
+
+  /// No description provided for @cookbookFreeCookingAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cook freely'**
+  String get cookbookFreeCookingAction;
+
+  /// No description provided for @cookbookFreeCookingDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Say or type ingredients while you cook'**
+  String get cookbookFreeCookingDescription;
+
+  /// No description provided for @freeCookingNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'What is the dish called?'**
+  String get freeCookingNameHint;
+
+  /// No description provided for @freeCookingDefaultName.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooked freely'**
+  String get freeCookingDefaultName;
+
+  /// No description provided for @freeCookingIngredientsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Ingredients'**
+  String get freeCookingIngredientsTitle;
+
+  /// No description provided for @freeCookingStockCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{inStock} of {total} in stock'**
+  String freeCookingStockCount(int inStock, int total);
+
+  /// No description provided for @freeCookingStockLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} in stock'**
+  String freeCookingStockLeft(String amount);
+
+  /// No description provided for @freeCookingAmountWithUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} {unit}'**
+  String freeCookingAmountWithUnit(int amount, String unit);
+
+  /// No description provided for @freeCookingPieces.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} pcs'**
+  String freeCookingPieces(int count);
+
+  /// No description provided for @freeCookingMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'missing'**
+  String get freeCookingMissing;
+
+  /// No description provided for @freeCookingListenTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening'**
+  String get freeCookingListenTitle;
+
+  /// No description provided for @freeCookingListenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Say the amount and the food. A pause starts a new row. Tap anywhere to stop.'**
+  String get freeCookingListenHint;
+
+  /// No description provided for @freeCookingIdleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap and speak'**
+  String get freeCookingIdleTitle;
+
+  /// No description provided for @freeCookingIdleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: 500 g chicken, 40 g butter'**
+  String get freeCookingIdleHint;
+
+  /// No description provided for @freeCookingTypeAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get freeCookingTypeAction;
+
+  /// No description provided for @freeCookingTypeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 200 g rice'**
+  String get freeCookingTypeHint;
+
+  /// No description provided for @freeCookingAddAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get freeCookingAddAction;
+
+  /// No description provided for @freeCookingCookAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cook'**
+  String get freeCookingCookAction;
+
+  /// No description provided for @freeCookingSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is in the pot'**
+  String freeCookingSaved(String name);
+
+  /// No description provided for @freeCookingStockLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the stock.'**
+  String get freeCookingStockLoadFailed;
+
+  /// No description provided for @freeCookingSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the meal.'**
+  String get freeCookingSaveFailed;
+
+  /// No description provided for @freeCookingDiscardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard the meal?'**
+  String get freeCookingDiscardTitle;
+
+  /// No description provided for @freeCookingDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The ingredients will be lost.'**
+  String get freeCookingDiscardBody;
+
+  /// No description provided for @freeCookingDiscardAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Discard'**
+  String get freeCookingDiscardAction;
+
+  /// No description provided for @freeCookingVoiceUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input does not work on this device.'**
+  String get freeCookingVoiceUnavailable;
+
+  /// No description provided for @freeCookingVoicePermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow the microphone to say ingredients.'**
+  String get freeCookingVoicePermissionDenied;
+
+  /// No description provided for @freeCookingVoiceFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input could not start.'**
+  String get freeCookingVoiceFailed;
 
   /// No description provided for @preparedMealFillTitle.
   ///

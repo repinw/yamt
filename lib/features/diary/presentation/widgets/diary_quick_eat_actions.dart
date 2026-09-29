@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/barcode_icon.dart';
-import 'package:yamt/core/widgets/home_more_sheet.dart';
+import 'package:yamt/core/widgets/home_action_entry.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
@@ -13,7 +13,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// The ways to log food to the selected diary day: barcode, Vorrat, quick
 /// entry, AI, and search. The barcode, the fastest way to log a packaged
 /// food, comes first.
-List<HomeMoreSection> diaryQuickEatActions(
+List<HomeActionSection> diaryQuickEatActions(
   BuildContext context,
   WidgetRef ref,
 ) {
@@ -24,13 +24,13 @@ List<HomeMoreSection> diaryQuickEatActions(
     ),
   );
 
-  HomeMoreEntry entry(
+  HomeActionEntry entry(
     DiaryQuickEatSource source,
     Widget symbol,
     String title,
     String description,
   ) {
-    return HomeMoreEntry(
+    return HomeActionEntry(
       key: DiaryMealsSectionKeys.quickEatSource(source),
       symbol: symbol,
       title: title,
@@ -46,7 +46,7 @@ List<HomeMoreSection> diaryQuickEatActions(
   }
 
   return [
-    HomeMoreSection(
+    HomeActionSection(
       title: l10n.homeActionEat,
       entries: [
         entry(

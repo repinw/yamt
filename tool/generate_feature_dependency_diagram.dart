@@ -4,6 +4,7 @@ final _featureImportPattern = RegExp(
   r'''(?:import|export)\s+['"]package:yamt/features/([^/]+)/''',
 );
 final _featureLabels = <String, String>{
+  'cookbook_new': 'Cookbook',
   'meal_templates': 'Meal Templates',
   'prepared_meals': 'Prepared Meals',
   'product_nutrition': 'Product Nutrition',

@@ -8,7 +8,6 @@ import 'package:yamt/features/household/application/'
     'household_access_recovery_utils.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -224,124 +223,6 @@ class PreparedMealTemplatesController
         .whenComplete(keepAliveLink.close);
   }
 
-  /// Update recipe template.
-  Future<PreparedMealTemplateSaveResult> updateRecipeTemplate({
-    required String templateId,
-    required String recipeUrl,
-    String name = '',
-    int? totalPortions,
-    String? localeName,
-  }) {
-    final normalizedRecipeUrl = _normalizeRecipeUrl(recipeUrl);
-    if (templateId.trim().isEmpty || normalizedRecipeUrl == null) {
-      return Future<PreparedMealTemplateSaveResult>.value(
-        const PreparedMealTemplateSaveResult.failure(
-          PreparedMealTemplateSaveFailureReason.invalidInput,
-        ),
-      );
-    }
-
-    final keepAliveLink = ref.keepAlive();
-    return _mutationQueue
-        .run<PreparedMealTemplateSaveResult>(
-          operation: () async {
-            final currentTemplates = await _currentTemplates();
-            final templateIndex = currentTemplates.indexWhere(
-              (template) => template.id == templateId,
-            );
-            if (templateIndex < 0) {
-              return const PreparedMealTemplateSaveResult.failure(
-                PreparedMealTemplateSaveFailureReason.invalidInput,
-              );
-            }
-
-            final currentTemplate = currentTemplates[templateIndex];
-            final shouldReloadRecipe =
-                currentTemplate.recipeUrl != normalizedRecipeUrl;
-            var nextRecipeUrl = normalizedRecipeUrl;
-            var nextImageUrl = currentTemplate.imageUrl;
-            var nextRecipeIngredients = currentTemplate.recipeIngredients;
-            var nextRecipeInstructions = currentTemplate.recipeInstructions;
-            var nextIgnoredIngredients =
-                currentTemplate.ignoredRecipeIngredients;
-            var nextRecipeIngredientAssignments =
-                currentTemplate.recipeIngredientAssignments;
-            var importedTitle = currentTemplate.name;
-            var importedServings = currentTemplate.totalPortions;
-
-            if (shouldReloadRecipe) {
-              final importedRecipe = await ref
-                  .read(preparedMealRecipeImporterProvider)
-                  .importRecipe(normalizedRecipeUrl, localeName: localeName);
-              if (importedRecipe == null) {
-                return const PreparedMealTemplateSaveResult.failure(
-                  PreparedMealTemplateSaveFailureReason.recipeLoadFailed,
-                );
-              }
-              nextRecipeUrl = importedRecipe.recipeUrl;
-              nextImageUrl = importedRecipe.imageUrl;
-              nextRecipeIngredients = importedRecipe.ingredients;
-              nextRecipeInstructions = importedRecipe.instructions;
-              nextIgnoredIngredients = const <String>[];
-              nextRecipeIngredientAssignments = const <String, List<String>>{};
-              importedTitle = importedRecipe.title;
-              importedServings = importedRecipe.servings;
-            }
-
-            final resolvedName = _resolveRecipeTemplateName(
-              name: name,
-              importedTitle: importedTitle,
-              normalizedRecipeUrl: nextRecipeUrl,
-            );
-            if (resolvedName == null) {
-              return const PreparedMealTemplateSaveResult.failure(
-                PreparedMealTemplateSaveFailureReason.invalidInput,
-              );
-            }
-
-            final resolvedPortions = _resolveRecipeTemplatePortions(
-              requestedPortions: totalPortions,
-              importedServings: importedServings,
-            );
-            final nextTemplates = List<PreparedMeal>.from(currentTemplates);
-            nextTemplates[templateIndex] = currentTemplate.copyWith(
-              name: resolvedName,
-              imageUrl: nextImageUrl,
-              recipeUrl: nextRecipeUrl,
-              recipeIngredients: nextRecipeIngredients,
-              recipeInstructions: nextRecipeInstructions,
-              ignoredRecipeIngredients: nextIgnoredIngredients,
-              recipeIngredientAssignments: nextRecipeIngredientAssignments,
-              totalPortions: resolvedPortions,
-              remainingPortions: resolvedPortions,
-              updatedAt: DateTime.now(),
-            );
-            final saved = await _saveTemplates(
-              previousTemplates: currentTemplates,
-              nextTemplates: nextTemplates,
-            );
-            if (!saved) {
-              return const PreparedMealTemplateSaveResult.failure(
-                PreparedMealTemplateSaveFailureReason.saveFailed,
-              );
-            }
-            return PreparedMealTemplateSaveResult.success(templateId);
-          },
-          fallbackValue: const PreparedMealTemplateSaveResult.failure(
-            PreparedMealTemplateSaveFailureReason.saveFailed,
-          ),
-          onError: (error, stackTrace) {
-            log(
-              'Unexpected recipe template update error.',
-              name: _preparedMealTemplatesControllerLogName,
-              error: error,
-              stackTrace: stackTrace,
-            );
-          },
-        )
-        .whenComplete(keepAliveLink.close);
-  }
-
   /// Delete template.
   Future<bool> deleteTemplate(String templateId) {
     if (templateId.trim().isEmpty) {
@@ -360,22 +241,6 @@ class PreparedMealTemplatesController
       return await _saveTemplates(
         previousTemplates: currentTemplates,
         nextTemplates: nextTemplates,
-      );
-    }).whenComplete(keepAliveLink.close);
-  }
-
-  /// Saves [template] back as it was before an update or delete.
-  Future<bool> restoreTemplate(PreparedMeal template) {
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(() async {
-      final currentTemplates = await _currentTemplates();
-      return await _saveTemplates(
-        previousTemplates: currentTemplates,
-        nextTemplates: [
-          for (final current in currentTemplates)
-            if (current.id != template.id) current,
-          template,
-        ],
       );
     }).whenComplete(keepAliveLink.close);
   }
@@ -753,9 +618,6 @@ PreparedMeal _buildTemplateFromRecipe({
     components: const <PreparedMealComponent>[],
   );
 }
-
-String? _normalizeRecipeUrl(String value) =>
-    normalizePreparedMealRecipeUrl(value);
 
 String? _resolveRecipeTemplateName({
   required String name,

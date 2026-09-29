@@ -14,8 +14,6 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/core/widgets/home_header_tool.dart';
-import 'package:yamt/core/widgets/home_more_sheet.dart';
-import 'package:yamt/core/widgets/home_more_tool.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_button.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
@@ -766,60 +764,6 @@ void main() {
       await tester.pumpWidget(const SizedBox.shrink());
       await tester.pump();
     }
-  });
-
-  testWidgets('Mehr sheet lists the tab actions with their descriptions', (
-    tester,
-  ) async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-    var imported = false;
-
-    await tester.pumpWidget(
-      _buildHarness(
-        settingsRepository: repository,
-        initialLocation: AppRoutes.homeInventoryTemplates,
-        branchBody: CustomScrollView(
-          slivers: [
-            HomeShellTabTopChrome(
-              title: 'Cookbook',
-              tools: [
-                HomeMoreTool(
-                  title: 'Cookbook',
-                  entries: [
-                    HomeMoreEntry(
-                      icon: Icons.add_link_rounded,
-                      title: 'Import recipe',
-                      description: 'Take a recipe from a web page',
-                      onSelected: () => imported = true,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SliverFillRemaining(hasScrollBody: false, child: SizedBox()),
-          ],
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(HomeMoreTool.toolKey));
-    await tester.pumpAndSettle();
-
-    final sheet = find.byType(HomeMoreSheet);
-    expect(
-      find.descendant(of: sheet, matching: find.text('COOKBOOK')),
-      findsOneWidget,
-    );
-    expect(find.text('Take a recipe from a web page'), findsOneWidget);
-    expect(find.text('Settings'), findsNothing);
-
-    await tester.tap(find.text('Import recipe'));
-    await tester.pumpAndSettle();
-
-    expect(imported, isTrue);
-    expect(sheet, findsNothing);
   });
 
   testWidgets('bottom navigation lists diary, inventory, cookbook, progress', (

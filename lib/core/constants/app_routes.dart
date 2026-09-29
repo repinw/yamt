@@ -69,6 +69,9 @@ abstract final class AppRoutes {
   /// Editor of one Vorrat item, with item id parameter.
   static const homeInventoryItemEdit = '/home/inventory/items/:itemId/edit';
 
+  /// Free cooking: a meal without a recipe, filled by voice or typing.
+  static const homeFreeCooking = '/home/free-cooking';
+
   /// Kitchen utensils route.
   static const homeKitchenUtensils = '/home/kitchen-utensils';
 

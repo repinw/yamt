@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/widgets/home_more_sheet.dart';
+import 'package:yamt/core/widgets/home_action_entry.dart';
 import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 
 /// Button that shows a tab's actions in the action panel inside a sheet,
@@ -13,7 +13,7 @@ class SheetLauncher extends ConsumerWidget {
   static const buttonKey = ValueKey<String>('sheet-launcher');
 
   /// Builds the actions to show.
-  final List<HomeMoreSection> Function(BuildContext context, WidgetRef ref)
+  final List<HomeActionSection> Function(BuildContext context, WidgetRef ref)
   actions;
 
   @override

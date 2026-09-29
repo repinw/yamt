@@ -8,6 +8,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/'
+    'cookbook_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
@@ -15,6 +18,8 @@ import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_controller.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/home/home_page.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -27,8 +32,6 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/kitchen_utensils/application/'
     'kitchen_utensil_list_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
-import 'package:yamt/features/meal_templates/presentation/widgets/'
-    'meal_templates_page/meal_templates_page.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 class _CookingFlowStartHarness {
@@ -154,9 +157,7 @@ _CookingFlowStartHarness _buildHarness() {
             routes: <RouteBase>[
               GoRoute(
                 path: AppRoutes.homeInventoryTemplates,
-                builder: (context, state) {
-                  return const MealTemplatesPage(includeAppBar: false);
-                },
+                builder: (context, state) => const CookbookPage(),
               ),
             ],
           ),
@@ -198,6 +199,10 @@ _CookingFlowStartHarness _buildHarness() {
       cookingFlowSessionLocalStoreProvider.overrideWithValue(sessionStore),
       preparedMealTemplatesControllerProvider.overrideWith(
         () => _StaticPreparedMealTemplatesController(templates),
+      ),
+      cookbookTemplatesProvider.overrideWith((ref) => Stream.value(templates)),
+      inventoryQuickEatMealsProvider.overrideWith(
+        (ref) => Stream.value(const <PreparedMeal>[]),
       ),
       inventoryItemsControllerProvider.overrideWith(
         () => _StaticInventoryItemsController(inventoryItems),

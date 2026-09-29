@@ -34,17 +34,11 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeMenuTool => 'Menü';
 
   @override
-  String get homeMoreTool => 'Mehr';
-
-  @override
   String get aiChefIdeaDescription =>
       'Die KI schlägt dir ein zufälliges Rezept vor';
 
   @override
   String get aiChefIdeaTitle => 'KI-Rezeptidee';
-
-  @override
-  String get aiChefIdeaToolLabel => 'KI-Idee';
 
   @override
   String get aiChefSetupTitle => 'Was soll die KI kochen?';
@@ -1338,27 +1332,14 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealTemplateSavedMessage => 'Rezept gespeichert.';
 
   @override
-  String get preparedMealTemplatesPageTitle => 'Rezepte';
-
-  @override
-  String get preparedMealTemplatesEmptyState =>
-      'Noch keine Rezepte gespeichert.';
-
-  @override
   String get preparedMealTemplatesLoadFailed =>
       'Rezepte konnten nicht geladen werden.';
-
-  @override
-  String get preparedMealTemplateDeleteAction => 'Rezept löschen';
 
   @override
   String get preparedMealTemplateDeletedMessage => 'Rezept gelöscht.';
 
   @override
   String get preparedMealTemplateAddRecipeAction => 'Rezept hinzufügen';
-
-  @override
-  String get preparedMealTemplateRecipeToolLabel => 'Rezept';
 
   @override
   String get preparedMealTemplateAddRecipeDescription =>
@@ -1377,9 +1358,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get preparedMealTemplateRecipeSheetTitle => 'Rezept anlegen';
-
-  @override
-  String get preparedMealTemplateRecipeEditSheetTitle => 'Rezept bearbeiten';
 
   @override
   String get preparedMealTemplateRecipeSheetSubtitle =>
@@ -1435,19 +1413,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Optional. Wenn leer, werden die Portionen aus dem Rezept übernommen.';
 
   @override
-  String get preparedMealTemplateUpdatedMessage => 'Rezept aktualisiert.';
-
-  @override
   String get kitchenUtensilsPageTitle => 'Küchenutensilien';
 
   @override
-  String get kitchenUtensilsOpenAction => 'Küchenutensilien';
-
-  @override
   String get kitchenUtensilsToolLabel => 'Geräte';
-
-  @override
-  String get kitchenUtensilsDescription => 'Deine Töpfe und Behälter verwalten';
 
   @override
   String get kitchenUtensilsEmptyState =>
@@ -4474,9 +4443,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookflowToInventoryButton => 'Zum Inventar';
 
   @override
-  String get cookflowResumeLabel => 'Fortsetzen';
-
-  @override
   String get caloriesProteinShortLetter => 'P';
 
   @override
@@ -5447,6 +5413,176 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get diaryCheckInFixedDaysHint =>
       'Vergangene Tage und Pausentage bleiben, wie sie sind.';
+
+  @override
+  String cookbookRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Rezepte',
+      one: '1 Rezept',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookOpenMealsTitle => 'Im Topf';
+
+  @override
+  String cookbookOpenMealRows(int count, String time) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zeilen offen',
+      one: '1 Zeile offen',
+    );
+    return '$_temp0 · seit $time';
+  }
+
+  @override
+  String get cookbookContinueAction => 'Weiter';
+
+  @override
+  String get cookbookTemplatesTitle => 'Vorlagen';
+
+  @override
+  String get cookbookTemplatesCaption => 'Aus dem Vorrat kombiniert';
+
+  @override
+  String get cookbookNewTemplateTitle => 'Neue Vorlage';
+
+  @override
+  String get cookbookNewTemplateCaption => 'aus dem Vorrat kombinieren';
+
+  @override
+  String get cookbookRecipesTitle => 'Rezepte';
+
+  @override
+  String get cookbookRecipesEmpty =>
+      'Noch keine Rezepte. Füge eins per Link hinzu oder hol dir eine KI-Idee.';
+
+  @override
+  String get cookbookStockComplete => 'Alles da';
+
+  @override
+  String cookbookStockMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fehlen',
+      one: '1 fehlt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cookbookKcal(int kcal) {
+    return '$kcal kcal';
+  }
+
+  @override
+  String get cookbookLoadFailed => 'Das Kochbuch konnte nicht geladen werden.';
+
+  @override
+  String get homeActionCook => 'Kochen';
+
+  @override
+  String get cookbookFreeCookingAction => 'Frei kochen';
+
+  @override
+  String get cookbookFreeCookingDescription =>
+      'Zutaten beim Kochen sagen oder schreiben';
+
+  @override
+  String get freeCookingNameHint => 'Wie heißt das Gericht?';
+
+  @override
+  String get freeCookingDefaultName => 'Frei gekocht';
+
+  @override
+  String get freeCookingIngredientsTitle => 'Zutaten';
+
+  @override
+  String freeCookingStockCount(int inStock, int total) {
+    return '$inStock von $total da';
+  }
+
+  @override
+  String freeCookingStockLeft(String amount) {
+    return '$amount da';
+  }
+
+  @override
+  String freeCookingAmountWithUnit(int amount, String unit) {
+    return '$amount $unit';
+  }
+
+  @override
+  String freeCookingPieces(int count) {
+    return '$count Stk.';
+  }
+
+  @override
+  String get freeCookingMissing => 'fehlt';
+
+  @override
+  String get freeCookingListenTitle => 'Ich höre zu';
+
+  @override
+  String get freeCookingListenHint =>
+      'Menge und Zutat sagen. Eine Pause trennt die Zeilen. Irgendwo tippen beendet.';
+
+  @override
+  String get freeCookingIdleTitle => 'Tippen und sprechen';
+
+  @override
+  String get freeCookingIdleHint => 'Zum Beispiel: 500 g Hähnchen, 40 g Butter';
+
+  @override
+  String get freeCookingTypeAction => 'Schreiben';
+
+  @override
+  String get freeCookingTypeHint => 'z. B. 200 g Reis';
+
+  @override
+  String get freeCookingAddAction => 'Hinzufügen';
+
+  @override
+  String get freeCookingCookAction => 'Kochen';
+
+  @override
+  String freeCookingSaved(String name) {
+    return '$name ist im Topf';
+  }
+
+  @override
+  String get freeCookingStockLoadFailed =>
+      'Der Vorrat konnte nicht geladen werden.';
+
+  @override
+  String get freeCookingSaveFailed =>
+      'Die Mahlzeit konnte nicht gespeichert werden.';
+
+  @override
+  String get freeCookingDiscardTitle => 'Mahlzeit verwerfen?';
+
+  @override
+  String get freeCookingDiscardBody => 'Die Zutaten gehen verloren.';
+
+  @override
+  String get freeCookingDiscardAction => 'Verwerfen';
+
+  @override
+  String get freeCookingVoiceUnavailable =>
+      'Spracheingabe geht auf diesem Gerät nicht.';
+
+  @override
+  String get freeCookingVoicePermissionDenied =>
+      'Erlaube das Mikrofon, um Zutaten zu sagen.';
+
+  @override
+  String get freeCookingVoiceFailed =>
+      'Die Spracheingabe konnte nicht starten.';
 
   @override
   String get preparedMealFillTitle => 'Zeile füllen';

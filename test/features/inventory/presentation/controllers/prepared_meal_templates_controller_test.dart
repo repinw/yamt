@@ -364,69 +364,6 @@ void main() {
     expect(repository.savedTemplates.single.name, 'Lunch Box');
   });
 
-  test('updateRecipeTemplate updates recipe-backed templates', () async {
-    final repository = _FakePreparedMealTemplateRepository(
-      initialTemplates: <PreparedMeal>[
-        _templateMeal(id: 'template-1', name: 'Old Name').copyWith(
-          recipeUrl: 'https://chefkoch.de/rezepte/old.html',
-          recipeIngredients: const <String>['1 old ingredient'],
-        ),
-      ],
-    );
-    addTearDown(repository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        preparedMealTemplateRepositoryProvider.overrideWithValue(repository),
-        preparedMealRecipeImporterProvider.overrideWithValue(
-          const _FakePreparedMealRecipeImporter(
-            PreparedMealRecipeImport(
-              recipeUrl: 'https://chefkoch.de/rezepte/new.html',
-              title: 'Imported Recipe',
-              servings: 6,
-              ingredients: <String>['2 carrots', '1 onion'],
-              instructions: <String>[
-                'Karotten schneiden.',
-                'Mit Zwiebeln kochen.',
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-    final subscription = _keepControllerAlive(container);
-    addTearDown(subscription.close);
-
-    await container.read(preparedMealTemplatesControllerProvider.future);
-    final result = await container
-        .read(preparedMealTemplatesControllerProvider.notifier)
-        .updateRecipeTemplate(
-          templateId: 'template-1',
-          recipeUrl: 'chefkoch.de/rezepte/new.html',
-          name: 'Edited Name',
-          totalPortions: 2,
-        );
-
-    expect(result.isSuccess, isTrue);
-    expect(repository.savedTemplates, hasLength(1));
-    expect(repository.savedTemplates.single.name, 'Edited Name');
-    expect(
-      repository.savedTemplates.single.recipeUrl,
-      'https://chefkoch.de/rezepte/new.html',
-    );
-    expect(repository.savedTemplates.single.recipeIngredients, <String>[
-      '2 carrots',
-      '1 onion',
-    ]);
-    expect(repository.savedTemplates.single.recipeInstructions, <String>[
-      'Karotten schneiden.',
-      'Mit Zwiebeln kochen.',
-    ]);
-    expect(repository.savedTemplates.single.totalPortions, 2);
-    expect(repository.savedTemplates.single.remainingPortions, 2);
-  });
-
   test('existing recipe templates backfill missing instructions', () async {
     final repository = _FakePreparedMealTemplateRepository(
       initialTemplates: <PreparedMeal>[
