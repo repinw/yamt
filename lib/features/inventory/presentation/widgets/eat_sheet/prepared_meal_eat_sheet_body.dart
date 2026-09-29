@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/hero_tags.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -8,6 +9,7 @@ import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
@@ -119,6 +121,8 @@ class _PreparedMealEatSheetBodyState
             for (final component in meal.components) component.imageUrl,
           ],
           imageKey: const Key('prepared_meal_eat_sheet_hero_cover'),
+          heroTag: HeroTags.preparedMealImage(meal.id),
+          fallbackLetter: inventoryPictureLetter(meal.name),
         ),
         if (nutrition != null)
           EatLabelTable(

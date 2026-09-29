@@ -2,10 +2,12 @@ import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/hero_tags.dart';
 import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
@@ -58,6 +60,8 @@ class InventoryItemEatLabelSection extends StatelessWidget {
           imageUrl: item.imageUrl,
           imageBytes: imageBytes,
           fallbackKey: const Key('inventory_item_eat_sheet_hero_fallback'),
+          heroTag: HeroTags.stockItemImage(item.id),
+          fallbackLetter: inventoryPictureLetter(item.name),
         ),
         if (nutrition != null)
           EatLabelTable(

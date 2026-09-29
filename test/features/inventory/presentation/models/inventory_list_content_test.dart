@@ -82,7 +82,13 @@ void main() {
   final meals = [_meal('chili', left: 3, day: 5)];
 
   test('mixes foods and meals and hides used-up entries', () {
-    final content = _build(items: items, meals: meals);
+    final content = _build(
+      items: items,
+      meals: meals,
+      preferences: const InventoryListViewPreferences(
+        sortMode: InventoryItemSortMode.recentlyAddedDescending,
+      ),
+    );
 
     expect(_ids(content), ['chili', 'full', 'open', 'low']);
     expect(content.stockCount, 4);
@@ -103,6 +109,14 @@ void main() {
       InventoryQuickFilter.low: 1,
     });
     expect(_ids(content), ['low']);
+  });
+
+  test('sorts by last eaten, newest first, until the user picks another '
+      'order', () {
+    expect(
+      const InventoryListViewPreferences().sortMode,
+      InventoryItemSortMode.recentlyEatenDescending,
+    );
   });
 
   test('shows used-up entries when the setting allows it', () {

@@ -18,7 +18,7 @@ class InventoryListViewPreferences {
   /// Creates the settings.
   const new({
     this.viewMode = InventoryListViewMode.list,
-    this.sortMode = InventoryItemSortMode.recentlyAddedDescending,
+    this.sortMode = InventoryItemSortMode.recentlyEatenDescending,
     this.hideConsumed = true,
     this.groupByReceipt = false,
   });

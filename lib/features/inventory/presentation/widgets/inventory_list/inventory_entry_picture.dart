@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
+import 'package:yamt/core/constants/hero_tags.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -30,10 +31,9 @@ class InventoryEntryPicture extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final name = entry.name.trim();
-    final letter = name.isEmpty ? null : name.characters.first.toUpperCase();
+    final letter = inventoryPictureLetter(entry.name);
     final angle = tiltLeft ? -AppGraphit.pictureTilt : AppGraphit.pictureTilt;
-    return switch (entry) {
+    final tile = switch (entry) {
       InventoryFoodEntry(:final item) => EatImageTile(
         imageUrl: item.imageUrl,
         size: size,
@@ -55,5 +55,12 @@ class InventoryEntryPicture extends ConsumerWidget {
         fallbackLetter: letter,
       ),
     };
+    return Hero(
+      tag: switch (entry) {
+        InventoryFoodEntry(:final item) => HeroTags.stockItemImage(item.id),
+        InventoryMealEntry(:final meal) => HeroTags.preparedMealImage(meal.id),
+      },
+      child: tile,
+    );
   }
 }

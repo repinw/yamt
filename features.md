@@ -208,7 +208,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   a meal. Under a quarter left the amount and the bar turn orange with "fast
   leer".
 - The Sortieren sheet sorts by added, eaten, name or amount; tapping the
-  chosen field again flips its direction. It also holds "Verbrauchte
+  chosen field again flips its direction. Until the user changes it, the
+  list sorts by last eaten, newest first. It also holds "Verbrauchte
   ausblenden" and "Nach Beleg". Changes apply at once and survive a restart.
 - Add items from receipts, barcode search, manual search, or AI suggestion.
 - Inventory item edit, consumption, discard, and delete flows.
@@ -239,6 +240,7 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Receipt grouping ("Nach Beleg" in the Sortieren sheet).
 - Household inventory activity timeline for stock changes.
 - Add-to-shopping-list and buy-again actions.
+- The picture of a food or meal flies from its row into the page it opens.
 - Tapping a prepared meal opens its detail page: the meal eat page plus a
   "Zutaten" box (every ingredient with picture and its amount in the whole
   meal; missing recipe ingredients in orange with "Zutat ergänzen" and "Zutat

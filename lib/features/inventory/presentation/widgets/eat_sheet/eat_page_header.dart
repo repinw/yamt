@@ -20,6 +20,7 @@ class EatPageHeader extends StatelessWidget {
     this.imageKey,
     this.fallbackKey,
     this.heroTag,
+    this.fallbackLetter,
     super.key,
   });
 
@@ -51,6 +52,10 @@ class EatPageHeader extends StatelessWidget {
   /// into it. No hero without a tag.
   final Object? heroTag;
 
+  /// Letter shown without an image instead of the fallback icon; the Vorrat
+  /// rows show the same letter, so a hero flight does not switch it.
+  final String? fallbackLetter;
+
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
@@ -63,6 +68,7 @@ class EatPageHeader extends StatelessWidget {
       imageBytes: imageBytes,
       collageImageUrls: collageImageUrls,
       fallbackKey: fallbackKey,
+      fallbackLetter: fallbackLetter,
     );
 
     return Row(

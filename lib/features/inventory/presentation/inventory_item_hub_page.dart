@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/constants/hero_tags.dart';
 import 'package:yamt/core/domain/nutrition_facts.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
@@ -14,6 +15,7 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_item_
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_header.dart';
@@ -258,6 +260,8 @@ class _UsedUpHubBody extends StatelessWidget {
           title: item.name,
           brand: item.brand,
           imageUrl: item.imageUrl,
+          heroTag: HeroTags.stockItemImage(item.id),
+          fallbackLetter: inventoryPictureLetter(item.name),
         ),
         actions,
       ],
