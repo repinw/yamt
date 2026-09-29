@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
+import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Notice box explaining automated calculation of carbohydrates budget.
@@ -31,7 +32,9 @@ class SettingsMacroGoalsCarbsNotice extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
-              l10n.settingsMacroGoalsCarbsAutoLabel,
+              l10n.settingsMacroGoalsCarbsAutoLabel(
+                (MacroBudgetCalculator.maximumCarbsKcalShare * 100).round(),
+              ),
               style: textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w600,
                 color: colors.onSurface,

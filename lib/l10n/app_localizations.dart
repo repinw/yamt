@@ -5217,8 +5217,8 @@ abstract class AppLocalizations {
   /// No description provided for @settingsMacroGoalsCarbsAutoLabel.
   ///
   /// In en, this message translates to:
-  /// **'Carbohydrates fill the remaining calories, up to 40 %'**
-  String get settingsMacroGoalsCarbsAutoLabel;
+  /// **'Carbohydrates fill the remaining calories, up to {percent}%'**
+  String settingsMacroGoalsCarbsAutoLabel(int percent);
 
   /// No description provided for @macroAdjustedWeightNote.
   ///
