@@ -30,7 +30,11 @@ RUN_ALL_PREFIXES = (
     '.github/workflows/ci.yml',
     'tool/ci_integration_targets.py',
 )
-DIRECTIVE = re.compile(r"^\s*(?:import|export|part)\s+'([^']+)'", re.MULTILINE)
+# A whole directive up to its semicolon, so the URIs in conditional import
+# clauses (`if (dart.library.io) '...'`) are followed too. Following every
+# branch over-selects a little, which is safe.
+DIRECTIVE = re.compile(r'^\s*(?:import|export|part)\b([^;]*);', re.MULTILINE)
+URI = re.compile(r"""['"]([^'"]+)['"]""")
 
 
 def all_tests():
@@ -47,7 +51,8 @@ def directives(path, cache):
         cache[path] = []
         return []
     result = []
-    for uri in DIRECTIVE.findall(text):
+    uris = [uri for clause in DIRECTIVE.findall(text) for uri in URI.findall(clause)]
+    for uri in uris:
         if uri.startswith(f'package:{PACKAGE}/'):
             result.append('lib/' + uri[len(f'package:{PACKAGE}/'):])
         elif not uri.startswith(('package:', 'dart:')):
