@@ -88,7 +88,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
-  testWidgets('camera receipt flow from the dock opens review page', (
+  testWidgets('camera receipt flow from the add actions opens review page', (
     tester,
   ) async {
     final fakeReceiptAi = FakeReceiptAiRepository()

@@ -15,9 +15,13 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form_details.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
+import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
+import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/features/scanner/fakes/fake_receipt_ai_repository.dart';
+import '../../test/features/scanner/fakes/fake_receipt_product_resolver.dart';
 import '../../test/helpers/sheet_launcher.dart';
 
 Widget _buildHarness() {
@@ -46,8 +50,16 @@ Widget _buildHarness() {
   );
   addTearDown(router.dispose);
 
+  // The add actions ask the scan coordinator whether a camera exists, so
+  // its AI and product lookups are fakes.
   final container = ProviderContainer(
-    overrides: [receiptCameraSupportedProvider.overrideWithValue(true)],
+    overrides: [
+      receiptCameraSupportedProvider.overrideWithValue(true),
+      receiptAiRepositoryProvider.overrideWithValue(FakeReceiptAiRepository()),
+      receiptProductResolverProvider.overrideWithValue(
+        FakeReceiptProductResolver(),
+      ),
+    ],
   );
   addTearDown(container.dispose);
 
