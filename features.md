@@ -198,7 +198,9 @@ and feature description docs. This is product-facing; architecture rules stay in
 - The Vorrat is one flat list of foods and prepared meals. The header shows
   "Vorrat" with the count of foods and meals in stock above it. Next to the
   search field sit "Sortieren" and a Liste/Kacheln button; Kacheln shows a
-  grid of small tiles for a quick overview.
+  grid of small tiles for a quick overview. While the list scrolls, the
+  header scrolls away and the search row with both buttons stays at the top;
+  in selection mode the header stays, because it holds the selection actions.
 - Quick filter chips with counts: Alle, Offen (partly used), Mahlzeiten, Fast
   leer (under a quarter left). The chip starts at Alle on every visit.
 - Each row shows a tilted, framed picture (photo, ingredient photos of a

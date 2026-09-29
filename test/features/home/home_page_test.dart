@@ -20,6 +20,7 @@ import 'package:yamt/core/widgets/home_more_tool.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_button.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_top_sliver_chrome.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
@@ -1045,6 +1046,47 @@ void main() {
 
     expect(tester.getTopLeft(find.byType(InventoryDock)).dy, initialDockTop);
     expect(tester.getTopLeft(find.text('Inventory').first).dy, initialTitleTop);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('an unpinned header scrolls away under a pinned search row', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(390, 844));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        initialLocation: AppRoutes.homeInventory,
+        inventoryRepository: _FakeInventoryItemRepository(<InventoryItem>[
+          _inventoryItem('item-1'),
+        ]),
+        branchBody: CustomScrollView(
+          slivers: [
+            const HomeShellStatusBarSliver(),
+            const HomeShellTabTopChrome(title: 'Inventory', pinned: false),
+            const HomeShellPinnedSliver(height: 60, child: Text('Search row')),
+            SliverList.builder(
+              itemCount: 40,
+              itemBuilder: (context, index) {
+                return SizedBox(height: 72, child: Text('Row $index'));
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.text('Row 5'), const Offset(0, -600));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Inventory'), findsNothing);
+    expect(tester.getTopLeft(find.text('Search row')).dy, 0);
     expect(tester.takeException(), isNull);
   });
 

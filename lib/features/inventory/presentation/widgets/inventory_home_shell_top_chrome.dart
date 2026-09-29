@@ -26,6 +26,8 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
     final selectionState = ref.watch(preparedMealSelectionControllerProvider);
     final stockCount = this.stockCount;
     return HomeShellTabTopChrome(
+      // While selecting, the header holds the selection actions.
+      pinned: selectionState.isSelectionMode,
       kicker: selectionState.isSelectionMode || stockCount == null
           ? null
           : l10n.inventoryPageKicker(stockCount),

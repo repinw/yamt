@@ -3,6 +3,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/core/widgets/home_shell_top_sliver_chrome.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_view_preferences.dart';
@@ -62,13 +63,15 @@ class InventoryListTopControlsSliver extends StatelessWidget {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
 
-    return SliverPadding(
-      padding: responsivePagePadding(
-        context,
-        top: AppSpacing.xs,
-        bottom: AppSpacing.xs,
-      ),
-      sliver: SliverToBoxAdapter(
+    // Stays at the top while the list scrolls below it.
+    return HomeShellPinnedSliver(
+      height: AppSizes.compactSearchControlHeight + AppSpacing.xs * 2,
+      child: Padding(
+        padding: responsivePagePadding(
+          context,
+          top: AppSpacing.xs,
+          bottom: AppSpacing.xs,
+        ),
         child: TextVoiceSearchBar(
           controller: searchController,
           label: l10n.inventorySearchLabel,

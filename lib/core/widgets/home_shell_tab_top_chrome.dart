@@ -11,6 +11,7 @@ class HomeShellTabTopChrome extends StatelessWidget {
     super.key,
     this.tools = const <Widget>[],
     this.kicker,
+    this.pinned = true,
   });
 
   /// Top bar title.
@@ -22,10 +23,14 @@ class HomeShellTabTopChrome extends StatelessWidget {
   /// Labeled tools of the tab.
   final List<Widget> tools;
 
+  /// Whether the header stays at the top while scrolling.
+  final bool pinned;
+
   @override
   Widget build(BuildContext context) {
     final compact = shouldUseCompactHomeChrome(context);
     return HomeShellTopSliverChrome(
+      pinned: pinned,
       child: HomeTopBar(
         title: title,
         kicker: kicker,
