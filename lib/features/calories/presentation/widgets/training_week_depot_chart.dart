@@ -1,42 +1,39 @@
-import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_intro_layout_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/training_week_goals.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Any Monday, used to render localized weekday initials.
-final _referenceMonday = DateTime(2024);
+/// One bar of [TrainingWeekDepotChart].
+typedef TrainingWeekDepotDay = ({String label, bool isTraining});
 
 /// Shows how the weekly calorie budget is spread over training and rest days.
 ///
 /// The weekly sum holds the sessions; a training day gets one session more
 /// than a rest day.
-class IntroWeekDepotChart extends StatelessWidget {
+class TrainingWeekDepotChart extends StatelessWidget {
   /// Creates the week depot chart.
   const new({
+    required this.days,
     required this.baseGoalKcal,
-    required this.trainingWeekdays,
     required this.sessionKcal,
     required this.accent,
     super.key,
   });
 
+  /// The seven days, in the order they are shown.
+  final List<TrainingWeekDepotDay> days;
+
   /// Daily goal before calorie cycling.
   final double baseGoalKcal;
-
-  /// Weekdays that carry a workout, 1 = Monday.
-  final List<int> trainingWeekdays;
 
   /// kcal of one training session.
   final double sessionKcal;
 
-  /// Accent color of this chapter.
+  /// Color of the training day bars.
   final Color accent;
 
-  int get _trainingDays => trainingWeekdays.length;
-
-  int get _restDays => DateTime.daysPerWeek - _trainingDays;
+  int get _trainingDays => days.where((day) => day.isTraining).length;
 
   TrainingWeekGoals get _goals => resolveTrainingWeekGoals(
     baseGoalKcal: baseGoalKcal,
@@ -44,18 +41,15 @@ class IntroWeekDepotChart extends StatelessWidget {
     sessionKcal: sessionKcal,
   );
 
-  double get _trainingGoal => _goals.trainingDayKcal;
-
-  double get _restGoal => _goals.restDayKcal;
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final weekdayFormat = DateFormat.E(locale);
-    final restRatio = _trainingGoal <= 0 ? 1.0 : _restGoal / _trainingGoal;
+    final goals = _goals;
+    final restRatio = goals.trainingDayKcal <= 0
+        ? 1.0
+        : goals.restDayKcal / goals.trainingDayKcal;
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -82,20 +76,14 @@ class IntroWeekDepotChart extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  for (
-                    var weekday = 1;
-                    weekday <= DateTime.daysPerWeek;
-                    weekday++
-                  )
+                  for (final day in days)
                     Expanded(
                       child: _DepotBar(
-                        label: weekdayFormat.format(
-                          _referenceMonday.add(Duration(days: weekday - 1)),
-                        ),
-                        heightFactor: trainingWeekdays.contains(weekday)
+                        label: day.label,
+                        heightFactor: day.isTraining
                             ? 1
                             : restRatio.clamp(0.25, 1.0),
-                        isTraining: trainingWeekdays.contains(weekday),
+                        isTraining: day.isTraining,
                         accent: accent,
                       ),
                     ),
@@ -104,10 +92,10 @@ class IntroWeekDepotChart extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             _DepotLegend(
-              trainingGoal: _trainingGoal,
-              restGoal: _restGoal,
+              trainingGoal: goals.trainingDayKcal,
+              restGoal: goals.restDayKcal,
               trainingDays: _trainingDays,
-              restDays: _restDays,
+              restDays: days.length - _trainingDays,
               accent: accent,
             ),
           ],

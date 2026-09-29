@@ -67,6 +67,12 @@ abstract final class AppIntroLayout {
   /// Side length of a weekday chip.
   static const double weekdayChip = 38;
 
+  /// Minimum height of a weekday chip.
+  static const double weekdayChipHeight = 40;
+
+  /// Opacity of the date caption under a weekday chip label.
+  static const double weekdayCaptionOpacity = 0.75;
+
   /// Tint of an unselected weekday chip.
   static const double weekdayIdleOpacity = 0.5;
 

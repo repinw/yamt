@@ -47,6 +47,9 @@ changes.
   reached-goal prompt, and optionally opens the new-goal sheet.
 - The new-goal flow opens the calculator sheet that ends the active goal and
   starts a new one.
+- `TrainingDayChips` and `TrainingWeekDepotChart` pick the training days of
+  a week and show how the week's calories spread over training and rest days.
+  Onboarding and the weekly check-in use them.
 - Calorie entry editors, goal dialogs, calculator sheets, the consumed-unit
   labels, and the debug menu section of the Home side menu.
 
