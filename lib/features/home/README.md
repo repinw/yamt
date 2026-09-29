@@ -45,8 +45,10 @@ depend on Home just to render inside the shell.
 
 ## Providers
 
-- `HomeActionUsageController` in `presentation/controllers/` keeps the tap
-  counts of the panel actions in the app preferences.
+- `HomeActionUsageController` in `presentation/controllers/` holds the tap
+  counts of the panel actions.
+- `homeActionUsageRepositoryProvider` in `data/` stores them in the app
+  preferences of the device.
 
 ## Accepted Dependencies
 

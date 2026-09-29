@@ -48,7 +48,7 @@ final class HomeActionUsageControllerProvider
 }
 
 String _$homeActionUsageControllerHash() =>
-    r'33de518fd4f09b980fa28cb928ab5b54e7cadd02';
+    r'cd3a965cfa2d1e06fe7946fa0220007d09ef167d';
 
 /// Counts how often each action of the home action panel was tapped on this
 /// device, so the panel can mark the most used one.
