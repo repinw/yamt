@@ -21,6 +21,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: subosito/flutter-action@v2
         with:
@@ -35,6 +37,11 @@ jobs:
 
       - name: Analyze
         run: flutter analyze lib test integration_test
+
+      # `flutter analyze <directory>` does not report analyzer plugin lints
+      # such as max_file_lines, so the changed files are analyzed one by one.
+      - name: No new lints in changed files
+        run: tool/ci_changed_file_lints.sh origin/${{ github.base_ref || 'master' }}
 
       - name: Unit and widget tests
         run: flutter test
