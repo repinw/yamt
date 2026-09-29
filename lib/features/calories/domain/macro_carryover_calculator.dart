@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
+import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 
 /// Conversion factor: Carbs kcal per gram (sports nutrition standard).
 const carbEnergyDensityKcalPerGram = 4.1;
@@ -89,7 +90,11 @@ abstract final class MacroCarryoverCalculator {
       );
     }
     if (carryoverKcal > 0) {
-      return _positiveCarryoverDelta(carryoverKcal);
+      return _positiveCarryoverDelta(
+        baseCarbs: baseCarbs,
+        carryoverKcal: carryoverKcal,
+        baseGoalKcal: baseGoalKcal,
+      );
     }
     return _negativeCarryoverDelta(
       baseCarbs: baseCarbs,
@@ -100,14 +105,33 @@ abstract final class MacroCarryoverCalculator {
     );
   }
 
-  static MacroCarryoverDelta _positiveCarryoverDelta(double carryoverKcal) {
+  /// Splits a positive carryover 75/25 between carbs and fat. Carbs stop at
+  /// [MacroBudgetCalculator.maximumCarbsKcalShare] of the day's kcal with the
+  /// carryover; the rest goes to fat. Protein stays the same every day.
+  static MacroCarryoverDelta _positiveCarryoverDelta({
+    required double baseCarbs,
+    required double carryoverKcal,
+    double? baseGoalKcal,
+  }) {
+    final plannedCarbsGrams =
+        (carryoverKcal * carryoverCarbFraction) / carbEnergyDensityKcalPerGram;
+    final carbsGrams = baseGoalKcal == null
+        ? plannedCarbsGrams
+        : math.min<double>(
+            plannedCarbsGrams,
+            math.max<double>(
+              0,
+              MacroBudgetCalculator.carbsCapGrams(
+                    baseGoalKcal + carryoverKcal,
+                  ) -
+                  baseCarbs,
+            ),
+          );
+    final fatKcal = carryoverKcal - carbsGrams * carbEnergyDensityKcalPerGram;
     return MacroCarryoverDelta(
       proteinGrams: 0,
-      carbsGrams:
-          (carryoverKcal * carryoverCarbFraction) /
-          carbEnergyDensityKcalPerGram,
-      fatGrams:
-          (carryoverKcal * carryoverFatFraction) / fatEnergyDensityKcalPerGram,
+      carbsGrams: carbsGrams,
+      fatGrams: fatKcal / fatEnergyDensityKcalPerGram,
     );
   }
 

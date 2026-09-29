@@ -174,7 +174,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   until the user sets sport in the macro settings. Carbs get the rest of the
   kcal, but at most 40 percent. What lies above that on the weekly average
   goes to protein up to 2.0 g/kg, so protein stays the same every day; the
-  rest goes to fat. A custom protein value stays as set. Above a BMI of 25 only 40 percent
+  rest goes to fat. A custom protein value stays as set. A positive carryover
+  keeps the same cap for the day's kcal and gives the rest to fat. Above a BMI of 25 only 40 percent
   of the extra weight counts (adjusted body weight), so heavy users get
   realistic targets. Those users see the adjusted weight and a medical
   disclaimer on the onboarding summary and in the macro settings. No training
