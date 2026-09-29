@@ -32,11 +32,15 @@ class DailyNutritionTargetResolverService
     required double goalKcal,
     double carryoverKcal = 0.0,
   }) {
-    final profile = goalSettings?.calculatorProfile;
+    final settings = goalSettings;
+    final profile = settings?.calculatorProfile;
+    final dayProfile =
+        settings?.goalEntryForDay(day)?.calculatorProfile ?? profile;
+    final isTraining = settings?.isTrainingDay(day) ?? false;
     final isMale =
         (profile?.sex ?? CalorieCalculatorSex.male) ==
         CalorieCalculatorSex.male;
-    final macroWeightKg = goalSettings?.macroWeightKgForDay(day);
+    final macroWeightKg = settings?.macroWeightKgForDay(day);
     final weightKg = profile == null || macroWeightKg == null
         ? (isMale ? 80.0 : 65.0)
         : macroReferenceWeightKg(
@@ -44,12 +48,19 @@ class DailyNutritionTargetResolverService
             heightCm: profile.heightCm,
           );
 
+    final proteinGrams = macroSettings.resolveProteinGrams(
+      referenceWeightKg: weightKg,
+      baseGoalKcal: settings?.baseGoalKcalForDay(day) ?? goalKcal,
+      // A training day set only for this day counts too, not only the
+      // weekly schedule.
+      hasTrainingDays:
+          (dayProfile?.trainingWeekdays.isNotEmpty ?? false) || isTraining,
+      isLosingWeight: dayProfile?.goalMode == CalorieGoalMode.lose,
+    );
     final baseResult = MacroBudgetCalculator.calculate(
       goalKcal: goalKcal,
       weightKg: weightKg,
-      proteinGramsPerKg: macroSettings.effectiveProteinMultiplier(
-        hasTrainingDays: profile?.trainingWeekdays.isNotEmpty ?? false,
-      ),
+      proteinGramsPerKg: proteinGrams / weightKg,
       fatGramsPerKg: macroSettings.effectiveFatMultiplier(isMale: isMale),
     );
 
@@ -60,8 +71,7 @@ class DailyNutritionTargetResolverService
       goalKcal: goalKcal,
     );
 
-    final isTraining = goalSettings?.isTrainingDay(day) ?? false;
-    final isPause = goalSettings?.isPauseDay(day) ?? false;
+    final isPause = settings?.isPauseDay(day) ?? false;
 
     return DailyNutritionTarget(
       date: day,
@@ -69,7 +79,7 @@ class DailyNutritionTargetResolverService
       carbsGrams: adjustedMacros.carbs,
       proteinGrams: adjustedMacros.protein,
       fatGrams: adjustedMacros.fat,
-      baseGoalKcal: goalSettings?.dailyKcalGoal ?? goalKcal,
+      baseGoalKcal: settings?.dailyKcalGoal ?? goalKcal,
       isTrainingDay: isTraining,
       isPauseDay: isPause,
     );

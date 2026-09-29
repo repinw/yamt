@@ -6,12 +6,35 @@ void main() {
   group('MacroCalculationDefaults', () {
     test('protein is 1.6 g/kg with sport and 1.2 g/kg without', () {
       expect(
-        MacroCalculationDefaults.defaultProteinMultiplier(isSportActive: true),
+        MacroCalculationDefaults.defaultProteinMultiplier(
+          isSportActive: true,
+          isLosingWeight: false,
+        ),
         1.6,
       );
       expect(
-        MacroCalculationDefaults.defaultProteinMultiplier(isSportActive: false),
+        MacroCalculationDefaults.defaultProteinMultiplier(
+          isSportActive: false,
+          isLosingWeight: false,
+        ),
         1.2,
+      );
+    });
+
+    test('protein goes up to 2.0 and 1.6 g/kg while losing weight', () {
+      expect(
+        MacroCalculationDefaults.defaultProteinMultiplier(
+          isSportActive: true,
+          isLosingWeight: true,
+        ),
+        2.0,
+      );
+      expect(
+        MacroCalculationDefaults.defaultProteinMultiplier(
+          isSportActive: false,
+          isLosingWeight: true,
+        ),
+        1.6,
       );
     });
 
@@ -33,8 +56,20 @@ void main() {
 
     test('effective multipliers fall back to defaults when not overridden', () {
       const settings = MacroGoalSettings();
-      expect(settings.effectiveProteinMultiplier(hasTrainingDays: true), 1.6);
-      expect(settings.effectiveProteinMultiplier(hasTrainingDays: false), 1.2);
+      expect(
+        settings.effectiveProteinMultiplier(
+          hasTrainingDays: true,
+          isLosingWeight: false,
+        ),
+        1.6,
+      );
+      expect(
+        settings.effectiveProteinMultiplier(
+          hasTrainingDays: false,
+          isLosingWeight: false,
+        ),
+        1.2,
+      );
       expect(settings.effectiveFatMultiplier(isMale: true), 0.8);
       expect(settings.effectiveFatMultiplier(isMale: false), 0.9);
     });
@@ -44,10 +79,86 @@ void main() {
         customProteinMultiplier: 2.3,
         customFatMultiplier: 0.8,
       );
-      expect(settings.effectiveProteinMultiplier(hasTrainingDays: false), 2.3);
+      expect(
+        settings.effectiveProteinMultiplier(
+          hasTrainingDays: false,
+          isLosingWeight: true,
+        ),
+        2.3,
+      );
       // Custom overrides apply regardless of sex or activity
       expect(settings.effectiveFatMultiplier(isMale: true), 0.8);
       expect(settings.effectiveFatMultiplier(isMale: false), 0.8);
+    });
+
+    group('resolveProteinGrams', () {
+      test('uses the g/kg rule when not losing weight', () {
+        const settings = MacroGoalSettings();
+        expect(
+          settings.resolveProteinGrams(
+            referenceWeightKg: 80,
+            baseGoalKcal: 1500,
+            hasTrainingDays: true,
+            isLosingWeight: false,
+          ),
+          closeTo(128, 1e-9),
+        );
+      });
+
+      test('caps protein at 35 % of the base goal while losing weight', () {
+        // 2.0 g/kg x 75.66 kg = 151 g, but 35 % of 1614 kcal is 141 g.
+        const settings = MacroGoalSettings();
+        expect(
+          settings.resolveProteinGrams(
+            referenceWeightKg: 75.66,
+            baseGoalKcal: 1614,
+            hasTrainingDays: true,
+            isLosingWeight: true,
+          ),
+          closeTo(1614 * 0.35 / 4, 1e-9),
+        );
+      });
+
+      test('lifts protein to 30 % of the base goal while losing weight', () {
+        // 1.6 g/kg x 75.5 kg = 121 g, but 30 % of 2099 kcal is 157 g.
+        const settings = MacroGoalSettings();
+        expect(
+          settings.resolveProteinGrams(
+            referenceWeightKg: 75.5,
+            baseGoalKcal: 2099,
+            hasTrainingDays: false,
+            isLosingWeight: true,
+          ),
+          closeTo(2099 * 0.30 / 4, 1e-9),
+        );
+      });
+
+      test('keeps the g/kg rule inside the band while losing weight', () {
+        // 2.0 g/kg x 70 kg = 140 g, between 30 % (135 g) and 35 % (158 g).
+        const settings = MacroGoalSettings();
+        expect(
+          settings.resolveProteinGrams(
+            referenceWeightKg: 70,
+            baseGoalKcal: 1800,
+            hasTrainingDays: true,
+            isLosingWeight: true,
+          ),
+          closeTo(140, 1e-9),
+        );
+      });
+
+      test('uses a custom multiplier as it is while losing weight', () {
+        const settings = MacroGoalSettings(customProteinMultiplier: 1.2);
+        expect(
+          settings.resolveProteinGrams(
+            referenceWeightKg: 80,
+            baseGoalKcal: 2000,
+            hasTrainingDays: true,
+            isLosingWeight: true,
+          ),
+          closeTo(96, 1e-9),
+        );
+      });
     });
 
     test('copyWith can clear custom overrides back to defaults', () {
@@ -59,7 +170,10 @@ void main() {
       expect(clearedProtein.customProteinMultiplier, isNull);
       expect(clearedProtein.customFatMultiplier, 1.5);
       expect(
-        clearedProtein.effectiveProteinMultiplier(hasTrainingDays: true),
+        clearedProtein.effectiveProteinMultiplier(
+          hasTrainingDays: true,
+          isLosingWeight: false,
+        ),
         1.6,
       );
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 
 /// Recommended macro multipliers based on sex and activity.
 ///
@@ -10,11 +11,28 @@ abstract final class MacroCalculationDefaults {
   /// Default protein multiplier in g/kg.
   ///
   /// 1.6 g/kg covers muscle gain and retention for people who train; more
-  /// brings no measurable benefit for most. Without training 1.2 g/kg keeps
-  /// muscle during a diet.
-  static double defaultProteinMultiplier({required bool isSportActive}) {
+  /// brings no measurable benefit for most. Without training 1.2 g/kg is
+  /// enough. While losing weight the body breaks down more protein, so the
+  /// values go up to 2.0 and 1.6 g/kg.
+  static double defaultProteinMultiplier({
+    required bool isSportActive,
+    required bool isLosingWeight,
+  }) {
+    if (isLosingWeight) {
+      return isSportActive ? 2.0 : 1.6;
+    }
     return isSportActive ? 1.6 : 1.2;
   }
+
+  /// Smallest share of the daily kcal that protein gets while losing weight.
+  ///
+  /// Protein fills up more than carbs or fat, so a diet keeps at least this
+  /// share even when the g/kg rule gives less.
+  static const double deficitProteinMinKcalShare = 0.30;
+
+  /// Largest share of the daily kcal that protein gets while losing weight,
+  /// so a small budget keeps room for carbs.
+  static const double deficitProteinMaxKcalShare = 0.35;
 
   /// Default fat multiplier in g/kg.
   ///
@@ -65,11 +83,51 @@ class MacroGoalSettings {
   final double? customFatMultiplier;
 
   /// Resolves the effective protein multiplier in g/kg.
-  double effectiveProteinMultiplier({required bool hasTrainingDays}) {
+  double effectiveProteinMultiplier({
+    required bool hasTrainingDays,
+    required bool isLosingWeight,
+  }) {
     return customProteinMultiplier ??
         MacroCalculationDefaults.defaultProteinMultiplier(
           isSportActive: resolveSportActive(hasTrainingDays: hasTrainingDays),
+          isLosingWeight: isLosingWeight,
         );
+  }
+
+  /// Resolves the protein target in grams for [referenceWeightKg].
+  ///
+  /// While losing weight the default target stays between
+  /// [MacroCalculationDefaults.deficitProteinMinKcalShare] and
+  /// [MacroCalculationDefaults.deficitProteinMaxKcalShare] of
+  /// [baseGoalKcal], the daily average of the week. Using the average keeps
+  /// protein the same on training and rest days. A custom multiplier is the
+  /// user's own choice and is used as it is.
+  double resolveProteinGrams({
+    required double referenceWeightKg,
+    required double baseGoalKcal,
+    required bool hasTrainingDays,
+    required bool isLosingWeight,
+  }) {
+    final byWeightGrams =
+        referenceWeightKg *
+        effectiveProteinMultiplier(
+          hasTrainingDays: hasTrainingDays,
+          isLosingWeight: isLosingWeight,
+        );
+    if (customProteinMultiplier != null ||
+        !isLosingWeight ||
+        baseGoalKcal <= 0) {
+      return byWeightGrams;
+    }
+    const kcalPerGram = MacroBudgetCalculator.standardProteinKcalPerGram;
+    return byWeightGrams.clamp(
+      baseGoalKcal *
+          MacroCalculationDefaults.deficitProteinMinKcalShare /
+          kcalPerGram,
+      baseGoalKcal *
+          MacroCalculationDefaults.deficitProteinMaxKcalShare /
+          kcalPerGram,
+    );
   }
 
   /// Resolves the effective fat multiplier in g/kg.

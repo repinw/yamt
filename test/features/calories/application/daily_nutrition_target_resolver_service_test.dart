@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 
 void main() {
@@ -25,6 +26,7 @@ void main() {
         goalSettings: const CalorieGoalSettings.empty().copyWith(
           dailyKcalGoal: 2600,
           calculatorProfile: profile,
+          goalHistory: [_calculatorEntry(2600, profile)],
         ),
       );
 
@@ -33,8 +35,9 @@ void main() {
         goalKcal: 2600,
       );
 
-      // Reference weight: 81 kg at BMI 25 + 0.4 * 49 kg = 100.6 kg.
-      expect(target.proteinGrams, closeTo(100.6 * 1.6, 0.001));
+      // Reference weight: 81 kg at BMI 25 + 0.4 * 49 kg = 100.6 kg. Losing
+      // weight with training: 2.0 g/kg, inside 30-35 % of 2600 kcal.
+      expect(target.proteinGrams, closeTo(100.6 * 2.0, 0.001));
       expect(target.fatGrams, closeTo(100.6 * 0.8, 0.001));
     });
 
@@ -46,8 +49,8 @@ void main() {
         heightCm: 200,
         ageYears: 35,
         activityLevel: 1.375,
-        goalMode: CalorieGoalMode.lose,
-        goalSpeedKgPerWeek: 0.5,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
         trainingWeekdays: [1, 4],
       );
       final service = DailyNutritionTargetResolverService(
@@ -96,7 +99,8 @@ void main() {
       expect(afterCheckIn.fatGrams, closeTo(93 * 0.8, 0.001));
     });
 
-    test('resolves 1526 kcal profile guaranteeing 100g carbs floor', () {
+    test('caps protein at 35 % of a 1526 kcal diet so carbs stay above '
+        'the floor', () {
       const macroSettings = MacroGoalSettings();
       const profile = CalorieCalculatorProfile(
         sex: CalorieCalculatorSex.male,
@@ -111,6 +115,7 @@ void main() {
       final goalSettings = const CalorieGoalSettings.empty().copyWith(
         dailyKcalGoal: 1526,
         calculatorProfile: profile,
+        goalHistory: [_calculatorEntry(1526, profile)],
       );
 
       final service = DailyNutritionTargetResolverService(
@@ -123,11 +128,43 @@ void main() {
         goalKcal: 1526,
       );
 
-      // Training days: 128g protein and 64g fat leave 109.5g carbs.
+      // 2.0 g/kg x 80 kg = 160 g is above 35 % of 1526 kcal (133.5 g).
+      // 133.5 g protein and 64 g fat leave 104 g carbs.
       expect(target.goalKcal, 1526.0);
-      expect(target.proteinGrams, closeTo(128, 0.001));
+      expect(target.proteinGrams, closeTo(1526 * 0.35 / 4, 0.001));
       expect(target.fatGrams, closeTo(64, 0.001));
-      expect(target.carbsGrams, closeTo(109.5, 0.001));
+      expect(target.carbsGrams, closeTo((1526 * 0.65 - 64 * 9) / 4, 0.001));
+    });
+
+    test('gives a training day set only for that day the sport protein', () {
+      const profile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 70,
+        heightCm: 180,
+        ageYears: 30,
+        activityLevel: 1.2,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+      );
+      final restDay = DateTime(2026, 9, 14);
+      final trainingDay = DateTime(2026, 9, 15);
+      final service = DailyNutritionTargetResolverService(
+        macroSettings: const MacroGoalSettings(),
+        goalSettings: const CalorieGoalSettings.empty().copyWith(
+          dailyKcalGoal: 2400,
+          calculatorProfile: profile,
+          trainingDayOverrides: {diaryDayKey(trainingDay): true},
+        ),
+      );
+
+      expect(
+        service.resolveTarget(day: restDay, goalKcal: 2400).proteinGrams,
+        closeTo(70 * 1.2, 0.001),
+      );
+      expect(
+        service.resolveTarget(day: trainingDay, goalKcal: 2400).proteinGrams,
+        closeTo(70 * 1.6, 0.001),
+      );
     });
 
     test('resolves cycling training day and pause day flags', () {
@@ -181,4 +218,17 @@ void main() {
       expect(target.carbsGrams, closeTo(360, 0.001));
     });
   });
+}
+
+CalorieGoalHistoryEntry _calculatorEntry(
+  double dailyKcalGoal,
+  CalorieCalculatorProfile profile,
+) {
+  return CalorieGoalHistoryEntry(
+    dailyKcalGoal: dailyKcalGoal,
+    calculatorProfile: profile,
+    effectiveDate: DateTime(2026, 9),
+    changedAt: DateTime(2026, 9),
+    source: CalorieGoalSource.calculator,
+  );
 }

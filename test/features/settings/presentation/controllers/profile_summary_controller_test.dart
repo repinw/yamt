@@ -97,10 +97,12 @@ void main() {
       isLearned: false,
     ));
     expect(summary.dailyKcalGoal, 1800);
-    // Female without training days: 1.2 g protein and 0.9 g fat per kg.
-    expect(summary.macroTarget?.proteinGrams, closeTo(72, 0.001));
+    // Female losing weight without training days: 1.6 g/kg (96 g) is below
+    // 30 % of the 1800 kcal goal, so protein rises to 135 g.
+    expect(summary.macroTarget?.proteinGrams, closeTo(1800 * 0.30 / 4, 0.001));
     expect(summary.macroTarget?.fatGrams, closeTo(54, 0.001));
-    expect(summary.macroTarget?.carbsGrams, closeTo(256.5, 0.001));
+    // (1800 − 135 × 4 − 54 × 9) / 4 = 193.5 g.
+    expect(summary.macroTarget?.carbsGrams, closeTo(193.5, 0.001));
   });
 
   test('has no current weight without weigh-ins', () async {
@@ -210,7 +212,7 @@ void main() {
     expect(states.last.requireValue.dailyKcalGoal, 1800);
     expect(
       states.last.requireValue.macroTarget?.proteinGrams,
-      closeTo(72, 0.001),
+      closeTo(1800 * 0.30 / 4, 0.001),
     );
   });
 }

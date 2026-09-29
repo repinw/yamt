@@ -61,6 +61,7 @@ class _SettingsMacroGoalsSheetState
     );
     _proteinMultiplier = settings.effectiveProteinMultiplier(
       hasTrainingDays: hasTrainingDays,
+      isLosingWeight: _resolveIsLosingWeight(),
     );
     _fatMultiplier = settings.effectiveFatMultiplier(isMale: isMale);
   }
@@ -69,6 +70,11 @@ class _SettingsMacroGoalsSheetState
     final goalSettings = ref.read(calorieGoalControllerProvider).value;
     return goalSettings?.calculatorProfile?.trainingWeekdays.isNotEmpty ??
         false;
+  }
+
+  bool _resolveIsLosingWeight() {
+    final goalSettings = ref.read(calorieGoalControllerProvider).value;
+    return goalSettings?.calculatorProfile?.goalMode == CalorieGoalMode.lose;
   }
 
   bool _resolveIsMale() {
@@ -89,6 +95,7 @@ class _SettingsMacroGoalsSheetState
       final isMale = _resolveIsMale();
       _proteinMultiplier = MacroCalculationDefaults.defaultProteinMultiplier(
         isSportActive: value,
+        isLosingWeight: _resolveIsLosingWeight(),
       );
       _fatMultiplier = MacroCalculationDefaults.defaultFatMultiplier(
         isMale: isMale,
@@ -101,6 +108,7 @@ class _SettingsMacroGoalsSheetState
     setState(() {
       _proteinMultiplier = MacroCalculationDefaults.defaultProteinMultiplier(
         isSportActive: _isSportActive,
+        isLosingWeight: _resolveIsLosingWeight(),
       );
       _fatMultiplier = MacroCalculationDefaults.defaultFatMultiplier(
         isMale: isMale,
@@ -108,23 +116,27 @@ class _SettingsMacroGoalsSheetState
     });
   }
 
-  Future<void> _onSave() async {
-    final isMale = _resolveIsMale();
+  /// Settings as the sheet shows them; values equal to the defaults stay
+  /// unset so they follow later profile changes.
+  MacroGoalSettings _draftSettings() {
     final defaultProtein = MacroCalculationDefaults.defaultProteinMultiplier(
       isSportActive: _isSportActive,
+      isLosingWeight: _resolveIsLosingWeight(),
     );
     final defaultFat = MacroCalculationDefaults.defaultFatMultiplier(
-      isMale: isMale,
+      isMale: _resolveIsMale(),
     );
-
     final isCustomProtein = (_proteinMultiplier - defaultProtein).abs() > 0.01;
     final isCustomFat = (_fatMultiplier - defaultFat).abs() > 0.01;
-
-    final next = MacroGoalSettings(
+    return MacroGoalSettings(
       isSportActive: _isSportActive,
       customProteinMultiplier: isCustomProtein ? _proteinMultiplier : null,
       customFatMultiplier: isCustomFat ? _fatMultiplier : null,
     );
+  }
+
+  Future<void> _onSave() async {
+    final next = _draftSettings();
 
     await ref
         .read(macroGoalSettingsControllerProvider.notifier)
@@ -165,11 +177,19 @@ class _SettingsMacroGoalsSheetState
             heightCm: profile.heightCm,
           );
     final goalKcal = _resolveGoalKcal();
+    // The deficit share band can move protein away from the multiplier, so
+    // the preview asks the same rule the diary uses.
+    final previewProteinGrams = _draftSettings().resolveProteinGrams(
+      referenceWeightKg: weightKg,
+      baseGoalKcal: goalKcal,
+      hasTrainingDays: _isSportActive,
+      isLosingWeight: _resolveIsLosingWeight(),
+    );
 
     final previewData = SettingsMacroGoalsPreviewData.compute(
       goalKcal: goalKcal,
       weightKg: weightKg,
-      proteinMultiplier: _proteinMultiplier,
+      proteinMultiplier: previewProteinGrams / weightKg,
       fatMultiplier: _fatMultiplier,
     );
 
