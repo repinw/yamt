@@ -78,8 +78,8 @@ class CalorieGoalTrainingDaysCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              'Mehr Kalorien an Trainingstagen, weniger an Ruhetagen '
-              'bei gleichem Wochenbudget.',
+              'Jede Einheit zählt zum Verbrauch und landet auf ihrem '
+              'Trainingstag.',
               style: textTheme.bodySmall?.copyWith(
                 color: colors.onSurfaceVariant,
               ),
@@ -138,7 +138,7 @@ class CalorieGoalTrainingDaysCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Zusatz-Kalorien pro Trainingstag',
+              'Kalorien pro Einheit',
               style: textTheme.labelLarge?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
@@ -150,9 +150,7 @@ class CalorieGoalTrainingDaysCard extends StatelessWidget {
                 final isSelected = trainingDayKcalOffset == offset;
                 return ChoiceChip(
                   label: Text(
-                    offset == 0
-                        ? 'Gleichmäßig (0 kcal)'
-                        : '+${offset.toInt()} kcal',
+                    offset == 0 ? 'Nicht mitzählen' : '${offset.toInt()} kcal',
                     style: TextStyle(
                       fontWeight: isSelected
                           ? FontWeight.w700

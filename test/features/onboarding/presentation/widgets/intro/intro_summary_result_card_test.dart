@@ -119,8 +119,9 @@ void main() {
       trainingDayKcalOffset: 200,
     );
 
+    // A training day gets one session more than a rest day.
     final base = calculation.finalGoalKcal;
-    expect(find.text('${(base + 200).round()} kcal'), findsOneWidget);
-    expect(find.text('${(base - 150).round()} kcal'), findsOneWidget);
+    expect(find.text('${(base + 200 * 4 / 7).round()} kcal'), findsOneWidget);
+    expect(find.text('${(base - 200 * 3 / 7).round()} kcal'), findsOneWidget);
   });
 }

@@ -12,9 +12,12 @@ part 'calorie_goal_settings.g.dart';
 /// The default daily calorie goal kcal.
 const defaultDailyCalorieGoalKcal = 2500.0;
 
-/// Default calorie offset added on training days when cycling offset is
-/// unconfigured.
-const defaultTrainingDayKcalOffset = 200.0;
+/// Default kcal of one training session.
+///
+/// A session adds this much to the energy use of its week, and a training day
+/// gets this much more than a rest day. It is a fixed estimate on purpose;
+/// the learned TDEE corrects it for people who train a lot more or less.
+const defaultTrainingDayKcalOffset = 250.0;
 
 /// The current calorie math data version.
 const currentCalorieMathVersion = 3;
@@ -136,7 +139,8 @@ class CalorieGoalSettings {
   /// Configured weekdays for training (1 = Monday, 7 = Sunday).
   final List<int> trainingWeekdays;
 
-  /// Extra calories allocated to training days (calorie cycling).
+  /// kcal of one training session: added to the energy use of the week and
+  /// the gap between a training day and a rest day.
   @FlexibleDoubleConverter()
   final double trainingDayKcalOffset;
 

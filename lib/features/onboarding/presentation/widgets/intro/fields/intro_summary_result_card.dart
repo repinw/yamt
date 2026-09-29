@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_intro_layout_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
-import 'package:yamt/features/onboarding/domain/training_week_goals.dart';
+import 'package:yamt/features/calories/domain/training_week_goals.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Shows the calculated expenditure and the resulting daily intake target.
@@ -24,7 +24,7 @@ class IntroSummaryResultCard extends StatelessWidget {
   /// Weekdays that carry a workout, 1 = Monday.
   final List<int> trainingWeekdays;
 
-  /// Extra calories granted on a training day.
+  /// kcal of one training session.
   final double trainingDayKcalOffset;
 
   @override
@@ -38,7 +38,7 @@ class IntroSummaryResultCard extends StatelessWidget {
     final weekGoals = resolveTrainingWeekGoals(
       baseGoalKcal: calculation.finalGoalKcal,
       trainingDays: trainingDays,
-      offsetKcal: trainingDayKcalOffset,
+      sessionKcal: trainingDayKcalOffset,
     );
 
     return DecoratedBox(

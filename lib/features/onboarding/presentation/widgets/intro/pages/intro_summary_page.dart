@@ -45,7 +45,7 @@ class IntroSummaryPage extends StatelessWidget {
   /// Weekdays that carry a workout, 1 = Monday.
   final List<int> trainingWeekdays;
 
-  /// Extra calories granted on a training day.
+  /// kcal of one training session.
   final double trainingDayKcalOffset;
 
   /// Current day.

@@ -101,9 +101,9 @@ void main() {
     final tuesday = DateTime(2026, 4, 14);
 
     // 3 training days: Monday (1), Wednesday (3), Friday (5)
-    // Base: 2000 kcal, Offset: +200 kcal
-    // Training days (3): 2200 kcal
-    // Rest days (4): (7*2000 - 3*2200) / 4 = (14000 - 6600) / 4 = 1850 kcal
+    // Base: 2000 kcal (daily average), one session: 210 kcal
+    // Training days (3): 2000 + 210 * 4 / 7 = 2120 kcal
+    // Rest days (4): 2000 - 210 * 3 / 7 = 1910 kcal
     final settings = const CalorieGoalSettings.empty()
         .applyGoalChange(
           dailyKcalGoal: 2000,
@@ -112,7 +112,7 @@ void main() {
         )
         .copyWith(
           trainingWeekdays: const [1, 3, 5],
-          trainingDayKcalOffset: 200,
+          trainingDayKcalOffset: 210,
         );
 
     final container = _createContainer(today: monday, settings: settings);
@@ -126,9 +126,9 @@ void main() {
     );
 
     expect(mondayGoal.storedGoalKcal, 2000);
-    expect(mondayGoal.goalKcal, 2200);
+    expect(mondayGoal.goalKcal, closeTo(2120, 1e-9));
     expect(tuesdayGoal.storedGoalKcal, 2000);
-    expect(tuesdayGoal.goalKcal, 1850);
+    expect(tuesdayGoal.goalKcal, closeTo(1910, 1e-9));
   });
 
   test('respects manual day toggle override for training day', () async {
@@ -141,7 +141,7 @@ void main() {
           changedAt: DateTime(2026, 4),
           calculatorProfile: null,
         )
-        .copyWith(trainingWeekdays: const [1, 3, 5], trainingDayKcalOffset: 200)
+        .copyWith(trainingWeekdays: const [1, 3, 5], trainingDayKcalOffset: 210)
         .toggleTrainingDay(tuesday);
 
     final container = _createContainer(today: tuesday, settings: settings);
@@ -151,8 +151,9 @@ void main() {
       resolvedCalorieGoalForDayProvider(tuesday).future,
     );
 
-    // Tuesday is now toggled to a training day: gets base + 200 = 2200
-    expect(tuesdayGoal.goalKcal, 2200);
+    // Tuesday is now toggled to a training day: 4 training days in the run,
+    // so it gets 2000 + 210 * 3 / 7 = 2090
+    expect(tuesdayGoal.goalKcal, closeTo(2090, 1e-9));
   });
 
   test('does not clamp a resolved goal above the 1200 floor', () async {

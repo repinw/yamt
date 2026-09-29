@@ -339,10 +339,14 @@ void main() {
     final trainingDay = await _waitForDashboardGoalKcal(
       container,
       selectedDay,
-      2300,
+      // The only training day of its run: 2000 + 300 * 6 / 7.
+      2000 + 300 * 6 / 7,
     );
 
-    expect(trainingDay.data?.weekOverview.days.last.goalKcal, 2300);
+    expect(
+      trainingDay.data?.weekOverview.days.last.goalKcal,
+      2000 + 300 * 6 / 7,
+    );
     // The macro row is what stayed stale on screen, so it is asserted too.
     expect(
       trainingDay.data?.nutritionBars.goals.carbs,

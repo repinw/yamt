@@ -3,6 +3,7 @@ import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/training_week_goals.dart';
 
 /// Calorie cycling and training day extension for [CalorieGoalSettings].
 extension CalorieGoalSettingsCycling on CalorieGoalSettings {
@@ -33,12 +34,13 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
   /// Effective goal kcal for day taking training days / rest day cycling into
   /// account.
   ///
-  /// Training days get the configured offset, and the rest days of the same
-  /// 7-day run give it up in equal parts, so the run total stays the base
-  /// goal times seven. The training days are counted in the run with the
-  /// per-day overrides, so a changed day type moves calories between the days
-  /// of its run; the carryover passes on what past days of the run got
-  /// differently.
+  /// The base goal is the daily average and already holds the planned
+  /// training sessions. A training day gets one session (the configured
+  /// offset) more than a rest day of the same 7-day run, so the run total
+  /// stays the base goal times seven. The training days are counted in the
+  /// run with the per-day overrides, so a changed day type moves calories
+  /// between the days of its run; the carryover passes on what past days of
+  /// the run got differently.
   double goalKcalForDay(DateTime day) {
     final base = baseGoalKcalForDay(day);
     if (base <= 0) {
@@ -53,17 +55,14 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
         ? configuredOffset
         : (weekdays.isEmpty ? defaultTrainingDayKcalOffset : 0.0);
     final trainingDaysCount = _trainingDaysInRun(day);
-    final isCycling =
-        offset > 0 &&
-        trainingDaysCount > 0 &&
-        trainingDaysCount < calorieGoalRunLengthDays;
-    final resolvedKcal = !isCycling
-        ? base
-        : isTrainingDay(day)
-        ? base + offset
-        : base -
-              (trainingDaysCount * offset) /
-                  (calorieGoalRunLengthDays - trainingDaysCount);
+    final weekGoals = resolveTrainingWeekGoals(
+      baseGoalKcal: base,
+      trainingDays: trainingDaysCount,
+      sessionKcal: offset,
+    );
+    final resolvedKcal = isTrainingDay(day)
+        ? weekGoals.trainingDayKcal
+        : weekGoals.restDayKcal;
     return resolvedKcal.clamp(minimumDailyCalorieBudgetKcal, double.infinity);
   }
 

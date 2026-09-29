@@ -13,7 +13,7 @@ CalorieGoalSettings _settings() {
     dailyKcalGoal: 2000,
     calculatorProfile: const CalorieCalculatorProfile.defaults().copyWith(
       trainingWeekdays: [DateTime.monday, DateTime.wednesday],
-      trainingDayKcalOffset: 200,
+      trainingDayKcalOffset: 210,
     ),
     effectiveDate: _goalStart,
   );
@@ -85,13 +85,14 @@ void main() {
         runDays(start)
             .fold(0, (sum, day) => sum + settings.goalKcalForDay(day));
 
-    // Two training days: 2.000 + 200, rest days 2.000 − 2 × 200 / 5.
-    expect(settings.goalKcalForDay(DateTime(2026, 9, 10)), 1920);
-    // Three training days: rest days 2.000 − 3 × 200 / 4.
-    expect(next.goalKcalForDay(DateTime(2026, 9, 10)), 2200);
-    expect(next.goalKcalForDay(DateTime(2026, 9, 8)), 1850);
-    expect(sumOf(next, DateTime(2026, 9, 8)), 14000);
-    expect(sumOf(settings, DateTime(2026, 9, 8)), 14000);
+    // Two training days: rest days 2.000 − 2 × 210 / 7.
+    expect(settings.goalKcalForDay(DateTime(2026, 9, 10)), closeTo(1940, 1e-9));
+    // Three training days: training days 2.000 + 4 × 210 / 7, rest days
+    // 2.000 − 3 × 210 / 7.
+    expect(next.goalKcalForDay(DateTime(2026, 9, 10)), closeTo(2120, 1e-9));
+    expect(next.goalKcalForDay(DateTime(2026, 9, 8)), closeTo(1910, 1e-9));
+    expect(sumOf(next, DateTime(2026, 9, 8)), closeTo(14000, 1e-9));
+    expect(sumOf(settings, DateTime(2026, 9, 8)), closeTo(14000, 1e-9));
     // The run before keeps its goals.
     for (final day in runDays(_goalStart)) {
       expect(next.goalKcalForDay(day), settings.goalKcalForDay(day));

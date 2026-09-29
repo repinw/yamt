@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/application/calorie_goal_controller.dart'
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_age_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_state.dart';
 
 part 'calorie_goal_calculator_form_controller.g.dart';
@@ -119,11 +120,22 @@ class CalorieGoalCalculatorFormController
   }
 
   /// Update workout weekdays (1 = Monday, 7 = Sunday).
+  ///
+  /// Every weekday is one session: the first one starts at
+  /// [defaultTrainingDayKcalOffset] kcal, and no weekdays mean no sessions.
   void updateTrainingWeekdays(List<int> weekdays) {
-    state = state.copyWith(trainingWeekdays: weekdays);
+    final sessionKcal = weekdays.isEmpty
+        ? 0.0
+        : state.trainingDayKcalOffset > 0
+        ? state.trainingDayKcalOffset
+        : defaultTrainingDayKcalOffset;
+    state = state.copyWith(
+      trainingWeekdays: weekdays,
+      trainingDayKcalOffset: sessionKcal,
+    );
   }
 
-  /// Update calorie offset for workout days.
+  /// Update kcal of one training session.
   void updateTrainingDayKcalOffset(double offset) {
     state = state.copyWith(trainingDayKcalOffset: offset);
   }

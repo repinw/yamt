@@ -1824,42 +1824,42 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get caloriesCalculatorActivityLevelHelp =>
-      'Wähle die Option, die am besten zu deiner typischen Woche passt.';
+      'Wähle, was zu deinem Alltag passt. Training zählt über die Trainingstage extra.';
 
   @override
   String get caloriesCalculatorActivityLevelNoneTitle => 'Kaum aktiv';
 
   @override
   String get caloriesCalculatorActivityLevelNoneDescription =>
-      'Büro, viel sitzen, wenige Schritte und kein oder kaum Sport.';
+      'Büro, viel sitzen, wenige Schritte.';
 
   @override
   String get caloriesCalculatorActivityLevelLowTitle => 'Leicht aktiv';
 
   @override
   String get caloriesCalculatorActivityLevelLowDescription =>
-      'Überwiegend sitzend, aber mit etwas Bewegung im Alltag oder 1 bis 2 lockeren Einheiten pro Woche.';
+      'Überwiegend sitzend, aber mit etwas Bewegung im Alltag.';
 
   @override
   String get caloriesCalculatorActivityLevelMediumTitle => 'Moderat aktiv';
 
   @override
   String get caloriesCalculatorActivityLevelMediumDescription =>
-      'Regelmäßige Bewegung im Alltag oder 3 bis 4 Sporteinheiten pro Woche.';
+      'Viel auf den Beinen, im Beruf oder im Alltag.';
 
   @override
   String get caloriesCalculatorActivityLevelHighTitle => 'Sehr aktiv';
 
   @override
   String get caloriesCalculatorActivityLevelHighDescription =>
-      'Körperlich aktiver Alltag oder intensives Training an den meisten Tagen.';
+      'Körperlich aktiver Beruf mit viel Laufen und Tragen.';
 
   @override
   String get caloriesCalculatorActivityLevelExtremeTitle => 'Extrem aktiv';
 
   @override
   String get caloriesCalculatorActivityLevelExtremeDescription =>
-      'Sehr hohe Trainingsumfänge, körperlich harte Arbeit oder Leistungssport.';
+      'Schwere körperliche Arbeit den ganzen Tag.';
 
   @override
   String get caloriesCalculatorGoalModeLabel => 'Zielmodus';
@@ -2628,7 +2628,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String diaryDayTypeTrainingOffsetSubtitle(int kcal) {
-    return '+$kcal kcal erhöhtes Kalorienziel';
+    return '+$kcal kcal gegenüber einem Ruhetag';
   }
 
   @override
@@ -3728,10 +3728,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Mehr als 0,5 kg pro Woche zuzunehmen ist recht hoch. Ein moderateres Tempo hilft dir, Muskeln aufzubauen, ohne zu viel Fett anzusetzen.';
 
   @override
-  String get onboardingTrainingDaysExtraKcalLabel =>
-      'An Trainingstagen mehr essen (+200 kcal)';
-
-  @override
   String onboardingTrainingDaysTrainingResult(int days) {
     return '🏋️ Training ($days Tage)';
   }
@@ -3876,7 +3872,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get introSportSubtitle =>
-      'Trainingstage bekommen mehr, Ruhetage weniger. Die Wochensumme bleibt gleich.';
+      'Jede Einheit zählt zu deinem Verbrauch. Trainingstage bekommen sie dazu, Ruhetage etwas weniger.';
 
   @override
   String get introWeekDepotTitle => 'Kalorien pro Tag über die Woche';
@@ -3891,7 +3887,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get introSummaryDepotHint =>
-      'Trainingstage borgen sich Kalorien von den Ruhetagen. Die Wochensumme bleibt gleich.';
+      'Deine Einheiten stecken im Wochenbudget. Ein Trainingstag bekommt eine Einheit mehr als ein Ruhetag.';
 
   @override
   String get introStartDayTitle => 'Wann startet deine erste Woche?';
@@ -4027,34 +4023,35 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get introActivitySubtitle =>
-      'Zähl Alltag und Sport zusammen: Beruf, Wege zu Fuß und dein Training.';
+      'Nur dein Alltag: Beruf und Wege. Dein Training fragen wir gleich extra.';
 
   @override
   String get introActivitySittingTitle => 'Kaum aktiv';
 
   @override
-  String get introActivitySittingBody => 'Schreibtisch, Auto, Sofa, kaum Sport';
+  String get introActivitySittingBody =>
+      'Schreibtisch, Auto, Sofa, wenige Schritte';
 
   @override
   String get introActivityLightTitle => 'Leicht aktiv';
 
   @override
   String get introActivityLightBody =>
-      'Täglich zu Fuß oder 1–2 lockere Einheiten pro Woche';
+      'Überwiegend sitzend, täglich etwas zu Fuß';
 
   @override
   String get introActivityOnFeetTitle => 'Moderat aktiv';
 
   @override
   String get introActivityOnFeetBody =>
-      'Viel auf den Beinen oder 3–4 Einheiten pro Woche';
+      'Viel auf den Beinen, z. B. Verkauf oder Pflege';
 
   @override
   String get introActivityHardLabourTitle => 'Sehr aktiv';
 
   @override
   String get introActivityHardLabourBody =>
-      'Harte körperliche Arbeit oder Training an den meisten Tagen';
+      'Harte körperliche Arbeit, z. B. Bau oder Lager';
 
   @override
   String get introSummaryExpenditureLabel => 'Dein berechneter Verbrauch';
@@ -5008,7 +5005,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String profileTrainingOffset(String kcal) {
-    return '+$kcal kcal an Trainingstagen';
+    return '$kcal kcal pro Einheit';
   }
 
   @override

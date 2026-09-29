@@ -3169,7 +3169,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesCalculatorActivityLevelHelp.
   ///
   /// In en, this message translates to:
-  /// **'Choose the option that best matches your typical week.'**
+  /// **'Choose what matches your daily life. Training counts separately through your training days.'**
   String get caloriesCalculatorActivityLevelHelp;
 
   /// No description provided for @caloriesCalculatorActivityLevelNoneTitle.
@@ -3181,7 +3181,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesCalculatorActivityLevelNoneDescription.
   ///
   /// In en, this message translates to:
-  /// **'Office work, lots of sitting, few steps, and little to no exercise.'**
+  /// **'Office work, lots of sitting, few steps.'**
   String get caloriesCalculatorActivityLevelNoneDescription;
 
   /// No description provided for @caloriesCalculatorActivityLevelLowTitle.
@@ -3193,7 +3193,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesCalculatorActivityLevelLowDescription.
   ///
   /// In en, this message translates to:
-  /// **'Mostly sitting, but with some daily movement or 1 to 2 light workouts per week.'**
+  /// **'Mostly sitting, but with some daily movement.'**
   String get caloriesCalculatorActivityLevelLowDescription;
 
   /// No description provided for @caloriesCalculatorActivityLevelMediumTitle.
@@ -3205,7 +3205,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesCalculatorActivityLevelMediumDescription.
   ///
   /// In en, this message translates to:
-  /// **'Regular daily movement or 3 to 4 training sessions per week.'**
+  /// **'On your feet a lot, at work or in daily life.'**
   String get caloriesCalculatorActivityLevelMediumDescription;
 
   /// No description provided for @caloriesCalculatorActivityLevelHighTitle.
@@ -3217,7 +3217,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesCalculatorActivityLevelHighDescription.
   ///
   /// In en, this message translates to:
-  /// **'A physically active daily life or intense training on most days.'**
+  /// **'A physically active job with lots of walking and carrying.'**
   String get caloriesCalculatorActivityLevelHighDescription;
 
   /// No description provided for @caloriesCalculatorActivityLevelExtremeTitle.
@@ -3229,7 +3229,7 @@ abstract class AppLocalizations {
   /// No description provided for @caloriesCalculatorActivityLevelExtremeDescription.
   ///
   /// In en, this message translates to:
-  /// **'Very high training volume, physically demanding work, or competitive sports.'**
+  /// **'Heavy physical work all day.'**
   String get caloriesCalculatorActivityLevelExtremeDescription;
 
   /// No description provided for @caloriesCalculatorGoalModeLabel.
@@ -4525,7 +4525,7 @@ abstract class AppLocalizations {
   /// No description provided for @diaryDayTypeTrainingOffsetSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'+{kcal} kcal higher calorie target'**
+  /// **'+{kcal} kcal compared to a rest day'**
   String diaryDayTypeTrainingOffsetSubtitle(int kcal);
 
   /// No description provided for @diaryDayTypeTrainingSubtitle.
@@ -6366,12 +6366,6 @@ abstract class AppLocalizations {
   /// **'Gaining more than 0.5 kg per week is quite high. A more moderate pace helps build muscle without adding too much fat.'**
   String get onboardingPaceWarningGainMessage;
 
-  /// No description provided for @onboardingTrainingDaysExtraKcalLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat more on workout days (+200 kcal)'**
-  String get onboardingTrainingDaysExtraKcalLabel;
-
   /// No description provided for @onboardingTrainingDaysTrainingResult.
   ///
   /// In en, this message translates to:
@@ -6615,7 +6609,7 @@ abstract class AppLocalizations {
   /// No description provided for @introSportSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Training days get more, rest days less. The weekly total stays the same.'**
+  /// **'Every session counts toward your energy use. Training days get it, rest days a little less.'**
   String get introSportSubtitle;
 
   /// No description provided for @introWeekDepotTitle.
@@ -6639,7 +6633,7 @@ abstract class AppLocalizations {
   /// No description provided for @introSummaryDepotHint.
   ///
   /// In en, this message translates to:
-  /// **'Training days borrow from rest days. The weekly sum stays the same.'**
+  /// **'Your sessions are part of the weekly budget. A training day gets one session more than a rest day.'**
   String get introSummaryDepotHint;
 
   /// No description provided for @introStartDayTitle.
@@ -6885,7 +6879,7 @@ abstract class AppLocalizations {
   /// No description provided for @introActivitySubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Count daily life and sport together: your job, walking and your training.'**
+  /// **'Only your daily life: job and getting around. We ask about your training next.'**
   String get introActivitySubtitle;
 
   /// No description provided for @introActivitySittingTitle.
@@ -6897,7 +6891,7 @@ abstract class AppLocalizations {
   /// No description provided for @introActivitySittingBody.
   ///
   /// In en, this message translates to:
-  /// **'Desk, car, sofa, hardly any sport'**
+  /// **'Desk, car, sofa, few steps'**
   String get introActivitySittingBody;
 
   /// No description provided for @introActivityLightTitle.
@@ -6909,7 +6903,7 @@ abstract class AppLocalizations {
   /// No description provided for @introActivityLightBody.
   ///
   /// In en, this message translates to:
-  /// **'Walking daily or 1–2 easy workouts a week'**
+  /// **'Mostly sitting, some walking every day'**
   String get introActivityLightBody;
 
   /// No description provided for @introActivityOnFeetTitle.
@@ -6921,7 +6915,7 @@ abstract class AppLocalizations {
   /// No description provided for @introActivityOnFeetBody.
   ///
   /// In en, this message translates to:
-  /// **'On your feet a lot or 3–4 workouts a week'**
+  /// **'On your feet a lot, e.g. retail or care work'**
   String get introActivityOnFeetBody;
 
   /// No description provided for @introActivityHardLabourTitle.
@@ -6933,7 +6927,7 @@ abstract class AppLocalizations {
   /// No description provided for @introActivityHardLabourBody.
   ///
   /// In en, this message translates to:
-  /// **'Hard physical work or training on most days'**
+  /// **'Hard physical work, e.g. construction or warehouse'**
   String get introActivityHardLabourBody;
 
   /// No description provided for @introSummaryExpenditureLabel.
@@ -8580,7 +8574,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileTrainingOffset.
   ///
   /// In en, this message translates to:
-  /// **'+{kcal} kcal on training days'**
+  /// **'{kcal} kcal per session'**
   String profileTrainingOffset(String kcal);
 
   /// No description provided for @profileMacroWeightLabel.

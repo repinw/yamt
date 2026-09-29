@@ -194,7 +194,7 @@ void main() {
         dailyKcalGoal: 2100,
         calculatorProfile: const CalorieCalculatorProfile.defaults().copyWith(
           trainingWeekdays: [DateTime.monday, DateTime.wednesday],
-          trainingDayKcalOffset: 200,
+          trainingDayKcalOffset: 210,
         ),
         effectiveDate: DateTime(2026, 9),
       ),
@@ -222,11 +222,15 @@ void main() {
     );
     await tester.pump();
 
-    // Rest days get 2.100 − 2 × 200 / 5 = 2.020 kcal, training days 2.300.
-    // With a third training day the rest days give 3 × 200 / 4 each.
-    expect(find.text('2.020 → 2.300 kcal'), findsOneWidget);
+    // A training day gets one session (210 kcal) more than a rest day.
+    // Two training days: rest days 2.100 − 2 × 210 / 7 = 2.040 kcal,
+    // training days 2.100 + 5 × 210 / 7 = 2.250. Three training days:
+    // rest days 2.100 − 3 × 210 / 7 = 2.010, training days 2.220.
+    expect(find.text('2.040 → 2.220 kcal'), findsOneWidget);
     expect(find.text('4 übrige Ruhetage'), findsOneWidget);
-    expect(find.text('2.020 → 1.950 kcal'), findsOneWidget);
+    expect(find.text('2.040 → 2.010 kcal'), findsOneWidget);
+    expect(find.text('2 übrige Trainingstage'), findsOneWidget);
+    expect(find.text('2.250 → 2.220 kcal'), findsOneWidget);
     expect(find.text('bleibt 14.700 kcal'), findsOneWidget);
 
     await tester.tap(find.byKey(ProfileEditSheetFrame.applyButtonKey));

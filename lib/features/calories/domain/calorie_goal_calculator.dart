@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 import 'package:flutter/foundation.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/training_week_goals.dart';
 
 /// The minimum calorie goal kcal.
 const double minimumCalorieGoalKcal = minimumDailyCalorieBudgetKcal;
@@ -44,7 +45,14 @@ abstract final class CalorieGoalCalculator {
     CalorieCalculatorProfile profile,
   ) {
     final bmrKcal = _calculateBmr(profile);
-    final tdeeKcal = bmrKcal * profile.activityLevel;
+    // The activity level covers everyday life only; the planned training
+    // sessions come on top.
+    final tdeeKcal =
+        bmrKcal * profile.activityLevel +
+        trainingKcalPerDay(
+          trainingDays: profile.trainingWeekdays.length,
+          sessionKcal: profile.trainingDayKcalOffset,
+        );
     final goalSpeedKgPerWeek = profile.goalMode == CalorieGoalMode.maintain
         ? 0.0
         : profile.goalSpeedKgPerWeek;

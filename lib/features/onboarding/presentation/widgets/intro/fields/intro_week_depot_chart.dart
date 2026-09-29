@@ -2,7 +2,7 @@ import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_intro_layout_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/features/onboarding/domain/training_week_goals.dart';
+import 'package:yamt/features/calories/domain/training_week_goals.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Any Monday, used to render localized weekday initials.
@@ -10,13 +10,14 @@ final _referenceMonday = DateTime(2024);
 
 /// Shows how the weekly calorie budget is spread over training and rest days.
 ///
-/// The weekly sum stays the same; training days borrow from the rest days.
+/// The weekly sum holds the sessions; a training day gets one session more
+/// than a rest day.
 class IntroWeekDepotChart extends StatelessWidget {
   /// Creates the week depot chart.
   const new({
     required this.baseGoalKcal,
     required this.trainingWeekdays,
-    required this.offsetKcal,
+    required this.sessionKcal,
     required this.accent,
     super.key,
   });
@@ -27,8 +28,8 @@ class IntroWeekDepotChart extends StatelessWidget {
   /// Weekdays that carry a workout, 1 = Monday.
   final List<int> trainingWeekdays;
 
-  /// Extra calories granted on a training day.
-  final double offsetKcal;
+  /// kcal of one training session.
+  final double sessionKcal;
 
   /// Accent color of this chapter.
   final Color accent;
@@ -40,7 +41,7 @@ class IntroWeekDepotChart extends StatelessWidget {
   TrainingWeekGoals get _goals => resolveTrainingWeekGoals(
     baseGoalKcal: baseGoalKcal,
     trainingDays: _trainingDays,
-    offsetKcal: offsetKcal,
+    sessionKcal: sessionKcal,
   );
 
   double get _trainingGoal => _goals.trainingDayKcal;

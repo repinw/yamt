@@ -124,7 +124,8 @@ class CalorieCalculatorProfile {
   /// Configured weekdays for training (1 = Monday, 7 = Sunday).
   final List<int> trainingWeekdays;
 
-  /// Extra calories allocated to training days (calorie cycling).
+  /// kcal of one training session: added to the energy use of the week and
+  /// the gap between a training day and a rest day.
   @FlexibleDoubleConverter()
   final double trainingDayKcalOffset;
 

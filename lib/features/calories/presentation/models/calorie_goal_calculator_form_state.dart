@@ -168,7 +168,7 @@ class CalorieGoalCalculatorFormState {
   /// Days of the week for workouts.
   final List<int> trainingWeekdays;
 
-  /// Kcal offset for workout days.
+  /// kcal of one training session.
   final double trainingDayKcalOffset;
 
   /// The activity level option.
