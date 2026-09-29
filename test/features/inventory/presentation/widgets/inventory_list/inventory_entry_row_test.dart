@@ -31,7 +31,10 @@ InventoryItem _food({required int left, int packs = 1, int full = 500}) {
   );
 }
 
-PreparedMeal _meal({List<String> pending = const []}) {
+PreparedMeal _meal({
+  List<String> pending = const [],
+  List<String> recipe = const [],
+}) {
   return PreparedMeal(
     id: 'chili',
     name: 'Chili sin Carne',
@@ -44,6 +47,7 @@ PreparedMeal _meal({List<String> pending = const []}) {
     createdAt: DateTime(2026, 9),
     updatedAt: DateTime(2026, 9),
     components: const <PreparedMealComponent>[],
+    recipeIngredients: recipe,
     pendingRecipeIngredients: pending,
   );
 }
@@ -110,6 +114,10 @@ void main() {
         children: [
           InventoryEntryRow(entry: InventoryMealEntry(_meal()), tiltLeft: true),
           InventoryEntryRow(
+            entry: InventoryMealEntry(_meal(recipe: ['Bohnen'])),
+            tiltLeft: false,
+          ),
+          InventoryEntryRow(
             entry: InventoryMealEntry(_meal(pending: ['Reis', 'Mais'])),
             tiltLeft: false,
           ),
@@ -117,9 +125,10 @@ void main() {
       ),
     );
 
-    expect(find.text('Gekocht · 3 von 4 Portionen'), findsOneWidget);
+    expect(find.text('Kombiniert · 3 von 4 Portionen'), findsOneWidget);
+    expect(find.text('Aus Rezept · 3 von 4 Portionen'), findsOneWidget);
     expect(find.text('2 Zutaten fehlen'), findsOneWidget);
-    expect(find.text('von 4 Port.'), findsNWidgets(2));
+    expect(find.text('von 4 Port.'), findsNWidgets(3));
   });
 
   testWidgets('chips show their counts and report the tapped one', (

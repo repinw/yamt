@@ -101,7 +101,9 @@ InventoryEntryTexts _meal(PreparedMeal meal, AppLocalizations l10n) {
   final missing = meal.pendingRecipeIngredients.length;
   final info = missing > 0
       ? l10n.inventoryRowMealMissing(missing)
-      : l10n.inventoryRowMealCooked(portionsLeft, meal.totalPortions);
+      : meal.recipeIngredients.isNotEmpty
+      ? l10n.inventoryRowMealFromRecipe(portionsLeft, meal.totalPortions)
+      : l10n.inventoryRowMealCombined(portionsLeft, meal.totalPortions);
 
   final netWeight = meal.finalNetWeight;
   final weightLeft = meal.remainingNetWeight;

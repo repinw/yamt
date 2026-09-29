@@ -184,8 +184,19 @@
       }
     }
   },
-  "inventoryRowMealCooked": "Cooked · {left} of {total} portions",
-  "@inventoryRowMealCooked": {
+  "inventoryRowMealFromRecipe": "From recipe · {left} of {total} portions",
+  "@inventoryRowMealFromRecipe": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryRowMealCombined": "Combined · {left} of {total} portions",
+  "@inventoryRowMealCombined": {
     "placeholders": {
       "left": {
         "type": "String"

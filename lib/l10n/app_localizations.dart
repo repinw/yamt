@@ -680,11 +680,17 @@ abstract class AppLocalizations {
   /// **'{kcal} kcal/100 g'**
   String inventoryRowKcalPer100(String kcal);
 
-  /// No description provided for @inventoryRowMealCooked.
+  /// No description provided for @inventoryRowMealFromRecipe.
   ///
   /// In en, this message translates to:
-  /// **'Cooked · {left} of {total} portions'**
-  String inventoryRowMealCooked(String left, int total);
+  /// **'From recipe · {left} of {total} portions'**
+  String inventoryRowMealFromRecipe(String left, int total);
+
+  /// No description provided for @inventoryRowMealCombined.
+  ///
+  /// In en, this message translates to:
+  /// **'Combined · {left} of {total} portions'**
+  String inventoryRowMealCombined(String left, int total);
 
   /// No description provided for @inventoryRowMealMissing.
   ///

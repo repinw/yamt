@@ -163,8 +163,19 @@
       }
     }
   },
-  "inventoryRowMealCooked": "Gekocht · {left} von {total} Portionen",
-  "@inventoryRowMealCooked": {
+  "inventoryRowMealFromRecipe": "Aus Rezept · {left} von {total} Portionen",
+  "@inventoryRowMealFromRecipe": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryRowMealCombined": "Kombiniert · {left} von {total} Portionen",
+  "@inventoryRowMealCombined": {
     "placeholders": {
       "left": {
         "type": "String"

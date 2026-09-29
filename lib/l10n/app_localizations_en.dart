@@ -359,8 +359,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String inventoryRowMealCooked(String left, int total) {
-    return 'Cooked · $left of $total portions';
+  String inventoryRowMealFromRecipe(String left, int total) {
+    return 'From recipe · $left of $total portions';
+  }
+
+  @override
+  String inventoryRowMealCombined(String left, int total) {
+    return 'Combined · $left of $total portions';
   }
 
   @override
