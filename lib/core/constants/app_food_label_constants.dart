@@ -11,6 +11,9 @@ abstract final class AppFoodLabel {
   /// tile edge.
   static const double imageFallbackIconShare = 40 / imageTile;
 
+  /// Share of the image tile that the fallback letter fills.
+  static const double imageFallbackLetterShare = 0.43;
+
   /// Edge length of one food image in a meal header.
   static const double mealImageTile = 56;
 

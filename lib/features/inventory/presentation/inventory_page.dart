@@ -10,14 +10,7 @@ enum _InventoryPageView { stock, history }
 /// Defines inventory page.
 class InventoryPage extends ConsumerStatefulWidget {
   /// The inventory page.
-  const new({
-    super.key,
-    this.expandedPreparedMealId,
-    this.includeHomeShellChrome = false,
-  });
-
-  /// The expanded prepared meal id.
-  final String? expandedPreparedMealId;
+  const new({super.key, this.includeHomeShellChrome = false});
 
   /// Whether to render the shared home shell app bar as a sliver.
   final bool includeHomeShellChrome;
@@ -37,7 +30,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
       onToggleView: _toggleView,
       mealEditCoordinator: _mealEditCoordinator,
       onFocusRequested: () => setState(() {}),
-      expandedPreparedMealId: widget.expandedPreparedMealId,
       includeHomeShellChrome: widget.includeHomeShellChrome,
     );
   }

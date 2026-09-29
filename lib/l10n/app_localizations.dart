@@ -611,8 +611,104 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryPageTitle.
   ///
   /// In en, this message translates to:
-  /// **'My inventory'**
+  /// **'Inventory'**
   String get inventoryPageTitle;
+
+  /// No description provided for @inventoryPageKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 food} other{{count} foods}}'**
+  String inventoryPageKicker(int count);
+
+  /// No description provided for @inventorySortAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort'**
+  String get inventorySortAction;
+
+  /// No description provided for @inventoryQuickFilterAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get inventoryQuickFilterAll;
+
+  /// No description provided for @inventoryQuickFilterOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get inventoryQuickFilterOpen;
+
+  /// No description provided for @inventoryQuickFilterMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Meals'**
+  String get inventoryQuickFilterMeals;
+
+  /// No description provided for @inventoryQuickFilterLow.
+  ///
+  /// In en, this message translates to:
+  /// **'Almost empty'**
+  String get inventoryQuickFilterLow;
+
+  /// No description provided for @inventoryRowOfAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'of {amount}'**
+  String inventoryRowOfAmount(String amount);
+
+  /// No description provided for @inventoryRowLow.
+  ///
+  /// In en, this message translates to:
+  /// **'almost empty'**
+  String get inventoryRowLow;
+
+  /// No description provided for @inventoryRowInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'{first} · {second}'**
+  String inventoryRowInfo(String first, String second);
+
+  /// No description provided for @inventoryRowKcalPer100.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal/100 g'**
+  String inventoryRowKcalPer100(String kcal);
+
+  /// No description provided for @inventoryRowMealCooked.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooked · {left} of {total} portions'**
+  String inventoryRowMealCooked(String left, int total);
+
+  /// No description provided for @inventoryRowMealMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 ingredient missing} other{{count} ingredients missing}}'**
+  String inventoryRowMealMissing(int count);
+
+  /// No description provided for @inventorySortNewestFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get inventorySortNewestFirst;
+
+  /// No description provided for @inventorySortOldestFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get inventorySortOldestFirst;
+
+  /// No description provided for @inventorySortLeastFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Least first'**
+  String get inventorySortLeastFirst;
+
+  /// No description provided for @inventorySortMostFirst.
+  ///
+  /// In en, this message translates to:
+  /// **'Most first'**
+  String get inventorySortMostFirst;
 
   /// No description provided for @inventoryActionManualSearch.
   ///
@@ -1106,12 +1202,6 @@ abstract class AppLocalizations {
   /// **'By receipt'**
   String get inventoryListModeByReceipt;
 
-  /// No description provided for @inventoryListModeAllItems.
-  ///
-  /// In en, this message translates to:
-  /// **'All foods'**
-  String get inventoryListModeAllItems;
-
   /// No description provided for @inventoryViewStock.
   ///
   /// In en, this message translates to:
@@ -1123,12 +1213,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'History'**
   String get inventoryViewHistory;
-
-  /// No description provided for @inventoryRecentSectionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Foods'**
-  String get inventoryRecentSectionTitle;
 
   /// No description provided for @inventoryActivityLoading.
   ///
@@ -1234,30 +1318,6 @@ abstract class AppLocalizations {
   /// **'Clear search'**
   String get inventorySearchClearAction;
 
-  /// No description provided for @inventoryFiltersTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Adjust view'**
-  String get inventoryFiltersTitle;
-
-  /// No description provided for @inventoryFiltersSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sort and filter your foods'**
-  String get inventoryFiltersSubtitle;
-
-  /// No description provided for @inventoryFiltersShowResultsAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Show results'**
-  String get inventoryFiltersShowResultsAction;
-
-  /// No description provided for @inventoryViewSectionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'View'**
-  String get inventoryViewSectionTitle;
-
   /// No description provided for @inventoryViewListAction.
   ///
   /// In en, this message translates to:
@@ -1269,18 +1329,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tiles'**
   String get inventoryViewTilesAction;
-
-  /// No description provided for @inventorySortSectionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sort'**
-  String get inventorySortSectionTitle;
-
-  /// No description provided for @inventoryFilterSectionTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter'**
-  String get inventoryFilterSectionTitle;
 
   /// No description provided for @inventorySortAdded.
   ///
@@ -1305,18 +1353,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Amount'**
   String get inventorySortQuantity;
-
-  /// No description provided for @inventorySortDirectionAscending.
-  ///
-  /// In en, this message translates to:
-  /// **'Ascending'**
-  String get inventorySortDirectionAscending;
-
-  /// No description provided for @inventorySortDirectionDescending.
-  ///
-  /// In en, this message translates to:
-  /// **'Descending'**
-  String get inventorySortDirectionDescending;
 
   /// No description provided for @inventorySortDirectionAlphaAscending.
   ///
@@ -1348,42 +1384,6 @@ abstract class AppLocalizations {
   /// **'Hide consumed'**
   String get inventoryHideConsumedFilterTitle;
 
-  /// No description provided for @inventoryHideConsumedFilterSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide completely empty items'**
-  String get inventoryHideConsumedFilterSubtitle;
-
-  /// No description provided for @preparedMealFiltersSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Sort and filter your meals'**
-  String get preparedMealFiltersSubtitle;
-
-  /// No description provided for @preparedMealShowReadyOnlyToggle.
-  ///
-  /// In en, this message translates to:
-  /// **'Only ready meals'**
-  String get preparedMealShowReadyOnlyToggle;
-
-  /// No description provided for @preparedMealShowIncompleteOnlyToggle.
-  ///
-  /// In en, this message translates to:
-  /// **'Only incomplete meals'**
-  String get preparedMealShowIncompleteOnlyToggle;
-
-  /// No description provided for @preparedMealShowDepletedOnlyToggle.
-  ///
-  /// In en, this message translates to:
-  /// **'Only fully consumed'**
-  String get preparedMealShowDepletedOnlyToggle;
-
-  /// No description provided for @preparedMealHideFullyConsumedItemsToggle.
-  ///
-  /// In en, this message translates to:
-  /// **'Hide fully consumed meals'**
-  String get preparedMealHideFullyConsumedItemsToggle;
-
   /// No description provided for @inventoryReceiptGroupTitle.
   ///
   /// In en, this message translates to:
@@ -1413,12 +1413,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Item removed.'**
   String get inventoryItemRemovedMessage;
-
-  /// No description provided for @inventoryItemEatAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Eat'**
-  String get inventoryItemEatAction;
 
   /// No description provided for @inventoryAmountDialogAllRemainingAction.
   ///
@@ -1491,6 +1485,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Item'**
   String get eatPageItemTitle;
+
+  /// No description provided for @eatPageMealTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal'**
+  String get eatPageMealTitle;
+
+  /// No description provided for @eatPageIngredientMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing – not taken from stock'**
+  String get eatPageIngredientMissing;
 
   /// No description provided for @eatPageReplaceProduct.
   ///
@@ -2290,42 +2296,6 @@ abstract class AppLocalizations {
   /// **'Add nutrition values per 100 g/ml.'**
   String get preparedMealNutritionPerHundredHint;
 
-  /// No description provided for @preparedMealNutritionModePerHundred.
-  ///
-  /// In en, this message translates to:
-  /// **'100 g/ml'**
-  String get preparedMealNutritionModePerHundred;
-
-  /// No description provided for @preparedMealNutritionModePerPortion.
-  ///
-  /// In en, this message translates to:
-  /// **'Portion'**
-  String get preparedMealNutritionModePerPortion;
-
-  /// No description provided for @preparedMealNutritionModeTotal.
-  ///
-  /// In en, this message translates to:
-  /// **'Total'**
-  String get preparedMealNutritionModeTotal;
-
-  /// No description provided for @preparedMealPricePerHundred.
-  ///
-  /// In en, this message translates to:
-  /// **'Price per 100 g/ml'**
-  String get preparedMealPricePerHundred;
-
-  /// No description provided for @preparedMealPricePerPortion.
-  ///
-  /// In en, this message translates to:
-  /// **'Price per portion'**
-  String get preparedMealPricePerPortion;
-
-  /// No description provided for @preparedMealPriceTotal.
-  ///
-  /// In en, this message translates to:
-  /// **'Total price'**
-  String get preparedMealPriceTotal;
-
   /// No description provided for @preparedMealSelectionCount.
   ///
   /// In en, this message translates to:
@@ -2373,24 +2343,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 ingredient} other{{count} ingredients}}'**
   String preparedMealIngredientsCount(int count);
-
-  /// No description provided for @preparedMealIncompleteLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Incomplete'**
-  String get preparedMealIncompleteLabel;
-
-  /// No description provided for @preparedMealIncompleteHint.
-  ///
-  /// In en, this message translates to:
-  /// **'This meal is not complete yet and can only be eaten once all missing ingredients have been added.'**
-  String get preparedMealIncompleteHint;
-
-  /// No description provided for @preparedMealPendingIngredientUnassigned.
-  ///
-  /// In en, this message translates to:
-  /// **'Not linked yet'**
-  String get preparedMealPendingIngredientUnassigned;
 
   /// No description provided for @preparedMealPendingIngredientAddAction.
   ///

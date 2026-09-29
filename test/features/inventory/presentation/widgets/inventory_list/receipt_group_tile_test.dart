@@ -10,8 +10,7 @@ import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row_list_entry.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_entry_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -185,7 +184,7 @@ void main() {
       find.byKey(indicatorKey),
     );
     expect(initialRotation.turns, 0.5);
-    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
+    expect(find.byType(InventoryEntryRow), findsNWidgets(2));
 
     await tester.tap(find.text('Receipt Feb 20, 2026'));
     await tester.pumpAndSettle();
@@ -194,7 +193,7 @@ void main() {
       find.byKey(indicatorKey),
     );
     expect(rotationAfterTap.turns, 0.5);
-    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
+    expect(find.byType(InventoryEntryRow), findsNWidgets(2));
 
     final container = tester.widget<AnimatedContainer>(
       find
@@ -258,7 +257,7 @@ void main() {
     await _pump(tester, theme: lightTheme);
     await _toggleExpansion(tester);
 
-    expect(find.byType(InventoryItemRowListEntry), findsNothing);
+    expect(find.byType(InventoryEntryRow), findsNothing);
   });
 
   testWidgets('expanding tile lazily builds receipt row entries', (
@@ -269,7 +268,7 @@ void main() {
 
     await _toggleExpansion(tester);
 
-    expect(find.byType(InventoryItemRowListEntry), findsNWidgets(2));
+    expect(find.byType(InventoryEntryRow), findsNWidgets(2));
   });
 
   testWidgets('restores expansion state from PageStorage', (tester) async {
@@ -281,7 +280,7 @@ void main() {
     await tester.pumpAndSettle();
 
     await _toggleExpansion(tester);
-    expect(find.byType(InventoryItemRowListEntry), findsNothing);
+    expect(find.byType(InventoryEntryRow), findsNothing);
 
     await tester.pumpWidget(
       _buildHarness(
@@ -298,6 +297,6 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(InventoryItemRowListEntry), findsNothing);
+    expect(find.byType(InventoryEntryRow), findsNothing);
   });
 }

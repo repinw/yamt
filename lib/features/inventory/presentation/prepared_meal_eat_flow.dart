@@ -7,6 +7,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/inventory_quick_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
 
 /// Eats portions of a prepared meal and logs them as one calorie entry.
@@ -15,18 +16,23 @@ abstract final class PreparedMealEatFlow {
 
   /// Opens the eat sheet for [meal] and logs the entered portions.
   ///
+  /// With [actions] the sheet is the meal's detail page from the Vorrat: it
+  /// also lists the ingredients and offers the meal actions.
+  ///
   /// Returns the saved entry, or null when the user cancels or saving fails.
   static Future<CalorieEntry?> eat({
     required BuildContext context,
     required PreparedMeal meal,
     DateTime? initialLoggedAt,
     MealType? initialMealType,
+    PreparedMealActions? actions,
   }) async {
     final request = await showPreparedMealEatSheet(
       context,
       meal,
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
+      actions: actions,
     );
     if (request == null || !context.mounted) {
       return null;

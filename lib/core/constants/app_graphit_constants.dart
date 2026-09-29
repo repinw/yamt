@@ -30,6 +30,30 @@ abstract final class AppGraphit {
   /// Edge length of the framed picture tile in a list row.
   static const double rowTile = 44;
 
+  /// Edge length of the framed picture in a Vorrat row.
+  static const double stockRowPicture = 42;
+
+  /// Edge length of the framed picture in a Vorrat tile.
+  static const double stockTilePicture = 64;
+
+  /// Tilt of a framed picture in radians. Rows alternate the sign.
+  static const double pictureTilt = 0.05;
+
+  /// Height of one stock bar segment.
+  static const double stockBarHeight = 5;
+
+  /// Gap between two stock bar segments.
+  static const double stockBarGap = 3;
+
+  /// Most stock bar segments; more packs draw one continuous bar.
+  static const int stockBarMaxSegments = 12;
+
+  /// Share of the stock under which a row turns to the low color.
+  static const double lowStockShare = 0.25;
+
+  /// Smallest height of a Vorrat row.
+  static const double stockRowMinHeight = 70;
+
   /// Edge length of the square badge that shows a step number or an icon.
   static const double badge = 32;
 

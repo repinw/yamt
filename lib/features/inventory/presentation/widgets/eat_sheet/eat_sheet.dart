@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_prepared_meal_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
+import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_sheet_body.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -61,6 +62,7 @@ Future<InventoryPreparedMealEatRequest?> showPreparedMealEatSheet(
   PreparedMeal meal, {
   DateTime? initialLoggedAt,
   MealType? initialMealType,
+  PreparedMealActions? actions,
 }) {
   return _showEatSheet(
     context,
@@ -69,6 +71,7 @@ Future<InventoryPreparedMealEatRequest?> showPreparedMealEatSheet(
       localeName: AppLocalizations.of(context)!.localeName,
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
+      actions: actions,
     ),
   );
 }

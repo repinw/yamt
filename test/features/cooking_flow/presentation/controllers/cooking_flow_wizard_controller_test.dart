@@ -534,7 +534,6 @@ void main() {
     });
     final state = container.read(cookingFlowWizardControllerProvider);
     expect(state.step, CookingFlowStep.success);
-    expect(state.savedPreparedMealId, 'meal-1');
     expect(state.savedPreparedMealName, 'Rice Bowl');
     expect(state.savedContainerCount, 1);
   });

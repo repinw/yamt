@@ -18,6 +18,7 @@ class EatImageTile extends StatelessWidget {
     this.size = AppFoodLabel.imageTile,
     this.angle = AppFoodLabel.imageTilt,
     this.fallbackKey,
+    this.fallbackLetter,
     super.key,
   });
 
@@ -36,8 +37,12 @@ class EatImageTile extends StatelessWidget {
   /// Tilt in radians.
   final double angle;
 
-  /// Key of the placeholder icon shown without an image.
+  /// Key of the placeholder shown without an image.
   final Key? fallbackKey;
+
+  /// Letter shown without an image instead of the fallback icon, such as the
+  /// first letter of the food's name.
+  final String? fallbackLetter;
 
   @override
   Widget build(BuildContext context) {
@@ -66,17 +71,45 @@ class EatImageTile extends StatelessWidget {
                         imageUrls: collage,
                       )
                     : Center(
-                        child: Icon(
-                          Icons.restaurant_rounded,
+                        child: _Fallback(
                           key: fallbackKey,
-                          color: colors.onTile,
-                          size: size * AppFoodLabel.imageFallbackIconShare,
+                          letter: fallbackLetter,
+                          size: size,
                         ),
                       ),
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _Fallback extends StatelessWidget {
+  const new({required this.letter, required this.size, super.key});
+
+  final String? letter;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = FoodLabelColors.of(context);
+    final letter = this.letter;
+    if (letter == null) {
+      return Icon(
+        Icons.restaurant_rounded,
+        color: colors.onTile,
+        size: size * AppFoodLabel.imageFallbackIconShare,
+      );
+    }
+    return Text(
+      letter,
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        color: colors.ink,
+        fontSize: size * AppFoodLabel.imageFallbackLetterShare,
+        fontWeight: FontWeight.w800,
+        height: 1,
       ),
     );
   }

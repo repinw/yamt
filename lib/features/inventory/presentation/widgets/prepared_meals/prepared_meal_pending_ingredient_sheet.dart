@@ -1,0 +1,169 @@
+import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
+import 'package:yamt/core/widgets/app_cached_network_image.dart';
+import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
+import 'package:yamt/features/inventory/application/'
+    'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/l10n/app_localizations.dart';
+
+class _PendingIngredientPreview extends StatelessWidget {
+  const new({this.imageUrl});
+
+  final String? imageUrl;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final normalizedImageUrl = normalizeProductImageUrl(imageUrl);
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: SizedBox.square(
+        dimension: 44,
+        child: normalizedImageUrl == null
+            ? ColoredBox(
+                color: colors.surfaceContainerHighest,
+                child: Icon(
+                  Icons.restaurant_menu_rounded,
+                  color: colors.onSurfaceVariant,
+                ),
+              )
+            : AppCachedNetworkImage(
+                imageUrl: normalizedImageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, error, stackTrace) {
+                  return ColoredBox(
+                    color: colors.surfaceContainerHighest,
+                    child: Icon(
+                      Icons.restaurant_menu_rounded,
+                      color: colors.onSurfaceVariant,
+                    ),
+                  );
+                },
+              ),
+      ),
+    );
+  }
+}
+
+/// Lets the user pick the Vorrat foods that fill the missing recipe
+/// [ingredient]; the best matches come first. Returns the picked ids.
+Future<List<String>?> showPendingIngredientSelectionSheet({
+  required BuildContext context,
+  required String ingredient,
+  required List<InventoryItem> inventoryItems,
+}) {
+  final l10n = AppLocalizations.of(context)!;
+  final emptySelectionMessage =
+      l10n.preparedMealPendingIngredientSelectionEmpty;
+  final sortedItems = rankInventoryItemsForIngredient(
+    ingredient: ingredient,
+    inventoryItems: inventoryItems,
+    localeCode: l10n.localeName,
+  );
+
+  return showModalBottomSheet<List<String>>(
+    context: context,
+    isScrollControlled: true,
+    useRootNavigator: true,
+    builder: (sheetContext) {
+      final draftSelection = <String>{};
+      final maxHeight = MediaQuery.sizeOf(sheetContext).height * 0.8;
+      final bottomInset = MediaQuery.viewInsetsOf(sheetContext).bottom;
+
+      return StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          return SafeArea(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxHeight),
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(24, 24, 24, 24 + bottomInset),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      l10n.preparedMealPendingIngredientSelectionTitle,
+                      style: Theme.of(dialogContext).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    Text(
+                      ingredient,
+                      style: Theme.of(dialogContext).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    Expanded(
+                      child: sortedItems.isEmpty
+                          ? Center(child: Text(emptySelectionMessage))
+                          : ListView.builder(
+                              itemCount: sortedItems.length,
+                              itemBuilder: (context, index) {
+                                final item = sortedItems[index];
+                                final isSelected = draftSelection.contains(
+                                  item.id,
+                                );
+                                return AppCheckboxListTile(
+                                  value: isSelected,
+                                  contentPadding: EdgeInsets.zero,
+                                  secondary: _PendingIngredientPreview(
+                                    imageUrl: item.imageUrl,
+                                  ),
+                                  title: Text(item.name),
+                                  subtitle: Text(
+                                    _pendingIngredientInventoryAmount(item),
+                                  ),
+                                  onChanged: (checked) {
+                                    setDialogState(() {
+                                      if (checked ?? false) {
+                                        draftSelection.add(item.id);
+                                      } else {
+                                        draftSelection.remove(item.id);
+                                      }
+                                    });
+                                  },
+                                );
+                              },
+                            ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          child: Text(l10n.inventoryReceiptReviewCancelAction),
+                        ),
+                        const SizedBox(width: AppSpacing.sm),
+                        FilledButton(
+                          onPressed: () =>
+                              Navigator.of(dialogContext)
+                                  .pop(draftSelection.toList(growable: false)),
+                          child: Text(
+                            l10n.inventoryReceiptReviewManualDataSaveAction,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+}
+
+String _pendingIngredientInventoryAmount(InventoryItem item) {
+  if (item.usesAmountProgress && item.amountUnit != null) {
+    final amount = formatInventoryAmountValue(
+      amount: item.currentAmount,
+      unit: item.amountUnit!,
+      scale: item.amountScale,
+    );
+    return '$amount ${item.amountUnit!.code}';
+  }
+  return '${item.quantity}x';
+}

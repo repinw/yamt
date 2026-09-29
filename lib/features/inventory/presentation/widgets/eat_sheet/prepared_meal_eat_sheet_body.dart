@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
@@ -6,9 +7,12 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_table.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_detail_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
@@ -25,6 +29,7 @@ class PreparedMealEatSheetBody extends ConsumerStatefulWidget {
     required this.localeName,
     this.initialLoggedAt,
     this.initialMealType,
+    this.actions,
     super.key,
   });
 
@@ -39,6 +44,11 @@ class PreparedMealEatSheetBody extends ConsumerStatefulWidget {
 
   /// Preselected meal.
   final MealType? initialMealType;
+
+  /// Meal actions of the Vorrat. With them the page is the meal's detail
+  /// page: it lists the ingredients and offers edit, unbundle and throw
+  /// away.
+  final PreparedMealActions? actions;
 
   @override
   ConsumerState<PreparedMealEatSheetBody> createState() =>
@@ -93,7 +103,11 @@ class _PreparedMealEatSheetBodyState
       ),
       kcal: nutrition?.eaten.kcal,
       confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),
-      onConfirm: _submit,
+      // On the detail page a meal with missing ingredients can be logged
+      // only when they are filled or ignored, as on the old meal card.
+      onConfirm: widget.actions != null && _hasMissingIngredients()
+          ? null
+          : _submit,
       cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
       children: [
         EatPageHeader(
@@ -139,7 +153,9 @@ class _PreparedMealEatSheetBodyState
               ? () => _controller.switchMode()
               : null,
         ),
-        if (state.components.isNotEmpty)
+        if (widget.actions case final actions?)
+          EatMealDetailSections(meal: meal, actions: actions)
+        else if (state.components.isNotEmpty)
           EatComponentsList(
             components: [
               for (final (:component, :amount) in state.components)
@@ -152,6 +168,17 @@ class _PreparedMealEatSheetBodyState
           ),
       ],
     );
+  }
+
+  /// Whether the live meal still misses recipe ingredients.
+  bool _hasMissingIngredients() {
+    final live = ref.watch(
+      preparedMealsControllerProvider.select(
+        (meals) =>
+            meals.value?.firstWhereOrNull((meal) => meal.id == widget.meal.id),
+      ),
+    );
+    return (live ?? widget.meal).hasPendingRecipeIngredients;
   }
 
   void _syncText(PreparedMealEatSheetState state) {

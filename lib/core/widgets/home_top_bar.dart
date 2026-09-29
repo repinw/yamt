@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 
 const _regularHomeTopBarHeight = 76.0;
@@ -18,10 +19,14 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     this.compact = false,
     this.preferredHeight,
+    this.kicker,
   });
 
   /// The title.
   final String title;
+
+  /// Small uppercase caption above the title, such as "23 Lebensmittel".
+  final String? kicker;
 
   /// Labeled tools at the end of the bar, usually `HomeHeaderTool`s.
   final List<Widget> tools;
@@ -36,18 +41,28 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   static double preferredHeightFor(
     BuildContext context, {
     required bool compact,
+    bool hasKicker = false,
   }) {
-    final titleStyle = _titleStyle(context, compact: compact);
-    final painter = TextPainter(
-      text: TextSpan(text: 'Ag', style: titleStyle),
-      textDirection: TextDirection.ltr,
-      maxLines: 1,
-      textScaler: MediaQuery.textScalerOf(context),
-    )..layout();
+    double lineHeight(TextStyle? style) {
+      final painter = TextPainter(
+        text: TextSpan(text: 'Ag', style: style),
+        textDirection: TextDirection.ltr,
+        maxLines: 1,
+        textScaler: MediaQuery.textScalerOf(context),
+      )..layout();
+      return painter.height;
+    }
+
     final baseHeight = compact
         ? _compactHomeTopBarHeight
         : _regularHomeTopBarHeight;
-    final contentHeight = painter.height + _homeTopBarTextVerticalPadding;
+    final kickerHeight = hasKicker
+        ? lineHeight(_kickerStyle(context)) + AppSpacing.xxs
+        : 0.0;
+    final contentHeight =
+        lineHeight(_titleStyle(context, compact: compact)) +
+        kickerHeight +
+        _homeTopBarTextVerticalPadding;
     return baseHeight < contentHeight ? contentHeight : baseHeight;
   }
 
@@ -58,8 +73,14 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
   );
   @override
   Widget build(BuildContext context) {
+    final kicker = this.kicker;
     final resolvedHeight =
-        preferredHeight ?? preferredHeightFor(context, compact: compact);
+        preferredHeight ??
+        preferredHeightFor(
+          context,
+          compact: compact,
+          hasKicker: kicker != null,
+        );
     return SafeArea(
       bottom: false,
       child: SizedBox(
@@ -71,11 +92,25 @@ class HomeTopBar extends StatelessWidget implements PreferredSizeWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: _titleStyle(context, compact: compact),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.xxs,
+                  children: [
+                    if (kicker != null)
+                      Text(
+                        kicker.toUpperCase(),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: _kickerStyle(context),
+                      ),
+                    Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: _titleStyle(context, compact: compact),
+                    ),
+                  ],
                 ),
               ),
               if (tools.isNotEmpty) ...[
@@ -112,3 +147,9 @@ TextStyle? _titleStyle(BuildContext context, {required bool compact}) =>
               : AppFontSizes.homeTabTitle,
           fontWeight: FontWeight.w800,
         );
+
+TextStyle? _kickerStyle(BuildContext context) =>
+    Theme.of(context).textTheme.labelSmall?.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+      letterSpacing: AppGraphit.kickerTracking,
+    );

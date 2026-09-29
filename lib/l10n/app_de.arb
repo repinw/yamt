@@ -120,7 +120,71 @@
   "productSearchHubRecentlySelectedLoadFailed": "Zuletzt ausgewählte Produkte konnten nicht geladen werden.",
   "productSearchHubRecentlySelectedRetryAction": "Erneut versuchen",
   "productSearchHubRecentlySelectedEmptyState": "Noch keine zuletzt ausgewählten Produkte.",
-  "inventoryPageTitle": "Mein Vorrat",
+  "inventoryPageTitle": "Vorrat",
+  "inventoryPageKicker": "{count, plural, =1{1 Lebensmittel} other{{count} Lebensmittel}}",
+  "@inventoryPageKicker": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inventorySortAction": "Sortieren",
+  "inventoryQuickFilterAll": "Alle",
+  "inventoryQuickFilterOpen": "Offen",
+  "inventoryQuickFilterMeals": "Mahlzeiten",
+  "inventoryQuickFilterLow": "Fast leer",
+  "inventoryRowOfAmount": "von {amount}",
+  "@inventoryRowOfAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryRowLow": "fast leer",
+  "inventoryRowInfo": "{first} · {second}",
+  "@inventoryRowInfo": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryRowKcalPer100": "{kcal} kcal/100 g",
+  "@inventoryRowKcalPer100": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryRowMealCooked": "Gekocht · {left} von {total} Portionen",
+  "@inventoryRowMealCooked": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryRowMealMissing": "{count, plural, =1{1 Zutat fehlt} other{{count} Zutaten fehlen}}",
+  "@inventoryRowMealMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inventorySortNewestFirst": "Neueste zuerst",
+  "inventorySortOldestFirst": "Älteste zuerst",
+  "inventorySortLeastFirst": "Wenig zuerst",
+  "inventorySortMostFirst": "Viel zuerst",
   "inventoryActionManualSearch": "Manuelle Suche",
   "inventoryActionAiSuggestion": "KI-Vorschlag",
   "inventoryActionUploadImagePdf": "Bild/PDF hochladen",
@@ -220,10 +284,8 @@
   "inventoryReceiptSaveSucceeded": "Positionen zum Vorrat hinzugefügt.",
   "inventoryReceiptSaveFailed": "Positionen konnten nicht gespeichert werden.",
   "inventoryListModeByReceipt": "Nach Beleg",
-  "inventoryListModeAllItems": "Alle Lebensmittel",
   "inventoryViewStock": "Vorrat",
   "inventoryViewHistory": "Verlauf",
-  "inventoryRecentSectionTitle": "Lebensmittel",
   "inventoryActivityLoading": "Historie wird geladen...",
   "inventoryActivityLoadFailed": "Historie konnte nicht geladen werden.",
   "inventoryActivityEmptyTitle": "Noch keine Vorratshistorie.",
@@ -336,37 +398,22 @@
   },
   "inventorySearchLabel": "Im Vorrat suchen",
   "inventorySearchClearAction": "Suche leeren",
-  "inventoryFiltersTitle": "Ansicht anpassen",
-  "inventoryFiltersSubtitle": "Sortiere und filtere deine Lebensmittel",
-  "inventoryFiltersShowResultsAction": "Ergebnisse anzeigen",
-  "inventoryViewSectionTitle": "Ansicht",
   "inventoryViewListAction": "Liste",
   "inventoryViewTilesAction": "Kacheln",
-  "inventorySortSectionTitle": "Sortierung",
-  "inventoryFilterSectionTitle": "Filter",
   "inventorySortAdded": "Hinzugefügt",
   "inventorySortEaten": "Gegessen",
   "inventorySortAlphabetical": "Alphabetisch",
   "inventorySortQuantity": "Menge",
-  "inventorySortDirectionAscending": "Aufsteigend",
-  "inventorySortDirectionDescending": "Absteigend",
   "inventorySortDirectionAlphaAscending": "A bis Z",
   "inventorySortDirectionAlphaDescending": "Z bis A",
   "inventoryNutritionCaloriesShortLabel": "Kcal",
   "inventoryNutritionCarbsShortLabel": "KH",
   "inventoryHideConsumedFilterTitle": "Verbrauchte ausblenden",
-  "inventoryHideConsumedFilterSubtitle": "Komplett leere Artikel verbergen",
-  "preparedMealFiltersSubtitle": "Sortiere und filtere deine Mahlzeiten",
-  "preparedMealShowReadyOnlyToggle": "Nur fertige anzeigen",
-  "preparedMealShowIncompleteOnlyToggle": "Vollständige ausblenden",
-  "preparedMealShowDepletedOnlyToggle": "Nur aufgebrauchte anzeigen",
-  "preparedMealHideFullyConsumedItemsToggle": "Verbrauchte ausblenden",
   "inventoryReceiptGroupTitle": "Beleg",
   "inventoryReceiptGroupNoReceipt": "Ohne Beleg",
   "inventoryReceiptGroupItems": "Artikel",
   "inventoryItemDeletedMessage": "Artikel gelöscht.",
   "inventoryItemRemovedMessage": "Artikel aussortiert.",
-  "inventoryItemEatAction": "Essen",
   "inventoryAmountDialogAllRemainingAction": "Alles/Rest",
   "inventoryItemEatSheetDecreasePortionCountAction": "Portionen verringern",
   "inventoryItemEatSheetIncreasePortionCountAction": "Portionen erhöhen",
@@ -379,6 +426,8 @@
   "inventoryItemEatSheetAddMoreAction": "+ Mehr",
   "eatPageNutritionTitle": "Nährwerte",
   "eatPageItemTitle": "Artikel",
+  "eatPageMealTitle": "Mahlzeit",
+  "eatPageIngredientMissing": "Fehlt – keinem Vorrat zugeordnet",
   "eatPageReplaceProduct": "Produkt ersetzen",
   "eatPageOnShoppingList": "Steht auf der Einkaufsliste",
   "eatPageCombineLink": "+ mit anderem Lebensmittel kombinieren",
@@ -638,12 +687,6 @@
   "preparedMealInvalidIngredientAmount": "Bitte gib eine gültige Zutatenmenge ein.",
   "preparedMealNutritionPerPieceHint": "Bitte Nährwerte pro verwendetem Stück eintragen.",
   "preparedMealNutritionPerHundredHint": "Bitte Nährwerte pro 100 g/ml eintragen.",
-  "preparedMealNutritionModePerHundred": "100 g/ml",
-  "preparedMealNutritionModePerPortion": "Portion",
-  "preparedMealNutritionModeTotal": "Gesamt",
-  "preparedMealPricePerHundred": "Preis pro 100 g/ml",
-  "preparedMealPricePerPortion": "Preis pro Portion",
-  "preparedMealPriceTotal": "Gesamtpreis",
   "preparedMealSelectionCount": "{count} ausgewählt",
   "@preparedMealSelectionCount": {
     "placeholders": {
@@ -666,9 +709,6 @@
       }
     }
   },
-  "preparedMealIncompleteLabel": "Unvollständig",
-  "preparedMealIncompleteHint": "Diese Mahlzeit ist noch nicht vollständig und kann erst gegessen werden, wenn alle fehlenden Zutaten ergänzt wurden.",
-  "preparedMealPendingIngredientUnassigned": "Noch nicht belegt",
   "preparedMealPendingIngredientAddAction": "Zutat ergänzen",
   "preparedMealPendingIngredientIgnoreAction": "Zutat ignorieren",
   "preparedMealPendingIngredientSelectionTitle": "Zutat aus Inventar ergänzen",

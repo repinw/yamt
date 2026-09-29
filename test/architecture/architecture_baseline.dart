@@ -307,8 +307,6 @@ const architectureBaseline = <String, Map<String, int>>{
         2,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
         1,
-    'lib/features/inventory/presentation/constants/inventory_ui_constants.dart':
-        1,
     'lib/features/inventory/presentation/widgets/inventory_action_picker_sheet.dart':
         1,
     'lib/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_discount_rows_field.dart':
@@ -363,22 +361,11 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/presentation/controllers/prepared_meals_controller.dart':
         1,
-    'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_card_actions.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_card_content.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_card_display.dart':
-        1,
-    'lib/features/inventory/presentation/widgets/prepared_meals/prepared_meal_card_pending_ingredient.dart':
-        1,
     'lib/features/kitchen_utensils/presentation/controllers/kitchen_utensils_controller.dart':
         1,
     'lib/features/shared/widgets/auth_form_components.dart': 1,
   },
-  'route-extra-cast': {
-    'lib/core/router/app_route_definitions.dart': 1,
-    'lib/core/router/home_shell_routes.dart': 1,
-  },
+  'route-extra-cast': {'lib/core/router/app_route_definitions.dart': 1},
   'bare-keep-alive': {
     'lib/features/calories/application/burn_week_live_sync_provider.dart': 1,
     'lib/features/calories/application/calorie_entry_amount_edit_flow.dart': 2,

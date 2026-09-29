@@ -12,16 +12,23 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Home-shell top chrome for the inventory tab.
 class InventoryHomeShellTopChrome extends ConsumerWidget {
   /// Creates inventory top chrome.
-  const new({super.key, this.tools = const <Widget>[]});
+  const new({super.key, this.tools = const <Widget>[], this.stockCount});
 
-  /// Tools of the current view, placed between Einkauf and Mehr.
+  /// Tools of the current view, placed after Einkauf.
   final List<Widget> tools;
+
+  /// Foods and meals in stock, shown as the kicker above the title.
+  final int? stockCount;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final selectionState = ref.watch(preparedMealSelectionControllerProvider);
+    final stockCount = this.stockCount;
     return HomeShellTabTopChrome(
+      kicker: selectionState.isSelectionMode || stockCount == null
+          ? null
+          : l10n.inventoryPageKicker(stockCount),
       title: selectionState.isSelectionMode
           ? l10n.preparedMealSelectionCount(selectionState.selectedCount)
           : l10n.inventoryPageTitle,

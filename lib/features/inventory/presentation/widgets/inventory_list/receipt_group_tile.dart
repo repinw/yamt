@@ -1,11 +1,17 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/inventory/presentation/inventory_item_hub_flow.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_expand_indicator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row_list_entry.dart';
+    'inventory_entry_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_receipt_group.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -139,19 +145,34 @@ class _ReceiptGroupTileState extends State<ReceiptGroupTile> {
               ? Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.lg),
                   child: Column(
-                    children: widget.group.items
-                        .map((item) {
-                          return InventoryItemRowListEntry(
-                            item: item,
-                            keyPrefix: 'receipt_item_row',
-                            bottomSpacing: AppSpacing.xl,
-                            isSelectionMode: widget.selection.isSelectionMode,
-                            isSelected: widget.selection.selectedItemIds
-                                .contains(item.id),
-                            onItemLongPress: () =>
-                                widget.selection.onItemLongPress(item.id),
-                            onSelectionToggle: () =>
-                                widget.selection.onSelectionToggle(item.id),
+                    children: widget.group.items.indexed
+                        .map((indexed) {
+                          final (index, item) = indexed;
+                          final selection = widget.selection;
+                          return Consumer(
+                            builder: (context, ref, _) => InventoryEntryRow(
+                              key: ValueKey('receipt_item_row_${item.id}'),
+                              entry: InventoryFoodEntry(item),
+                              tiltLeft: index.isEven,
+                              isSelectionMode: selection.isSelectionMode,
+                              isSelected: selection.selectedItemIds.contains(
+                                item.id,
+                              ),
+                              onTap: selection.isSelectionMode
+                                  ? () => selection.onSelectionToggle(item.id)
+                                  : () => unawaited(
+                                      InventoryItemHubFlow.open(
+                                        context: context,
+                                        ref: ref,
+                                        item: item,
+                                      ),
+                                    ),
+                              onLongPress:
+                                  selection.isSelectionMode ||
+                                      item.isFullyConsumed
+                                  ? null
+                                  : () => selection.onItemLongPress(item.id),
+                            ),
                           );
                         })
                         .toList(growable: false),

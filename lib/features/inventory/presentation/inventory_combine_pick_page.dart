@@ -4,8 +4,8 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_list.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_entry_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Foods picked on [InventoryCombinePickPage]: ticked stock items in list
@@ -93,21 +93,20 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
                 ),
               ),
             )
-          : InventoryList(
-              items: widget.candidates,
-              preparedMeals: const <PreparedMeal>[],
-              // Prepared meals are not listed here, so their actions never run.
-              onThrowAwayPreparedMeal: (_, _, _) async => false,
-              onFillPendingPreparedMealIngredient: (_, _, _) async => false,
-              onIgnorePendingPreparedMealIngredient: (_, _) async => false,
-              onUnbundlePreparedMeal: (_) async => false,
-              onEditPreparedMeal: (_, _) async => false,
-              onSelectPreparedMealEditIngredients: (_, _) async => false,
-              onSavePreparedMealTemplate: (_) async => false,
-              isSelectionMode: true,
-              selectedItemIds: _selected,
-              onItemLongPress: _toggle,
-              onSelectionToggle: _toggle,
+          : ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+              itemCount: widget.candidates.length,
+              itemBuilder: (context, index) {
+                final item = widget.candidates[index];
+                return InventoryEntryRow(
+                  key: ValueKey('combine_pick_row_${item.id}'),
+                  entry: InventoryFoodEntry(item),
+                  tiltLeft: index.isEven,
+                  isSelectionMode: true,
+                  isSelected: _selected.contains(item.id),
+                  onTap: () => _toggle(item.id),
+                );
+              },
             ),
     );
   }

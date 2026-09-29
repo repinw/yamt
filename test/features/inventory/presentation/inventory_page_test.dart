@@ -42,8 +42,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
-    'inventory_item_row/inventory_item_row.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_entry_row.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_sort_sheet.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -488,7 +488,7 @@ Future<void> _tapInventoryRowAction(WidgetTester tester, String action) async {
 }
 
 Future<void> _openItemHub(WidgetTester tester) async {
-  await _tapVisible(tester, find.byType(InventoryItemRow).first);
+  await _tapVisible(tester, find.byType(InventoryEntryRow).first);
 }
 
 const _usedUpShoppingListButton = Key(
@@ -498,30 +498,25 @@ const _usedUpShoppingListButton = Key(
 Future<void> _openInventoryFilters(WidgetTester tester) async {
   await _tapVisible(
     tester,
-    find.byKey(const Key('inventory_list_search_settings_button')),
+    find.byKey(const Key('inventory_list_sort_button')),
   );
 }
 
-Future<void> _showInventoryFilterResults(WidgetTester tester) async {
-  await _tapVisible(tester, find.text('Show results'));
+Future<void> _closeInventorySortSheet(WidgetTester tester) async {
+  Navigator.of(tester.element(find.byType(InventorySortSheet))).pop();
+  await tester.pumpAndSettle();
 }
 
-Future<void> _selectInventoryListMode(WidgetTester tester, String label) async {
+Future<void> _groupInventoryByReceipt(WidgetTester tester) async {
   await _openInventoryFilters(tester);
-  await _tapVisible(tester, find.text(label));
-  await _showInventoryFilterResults(tester);
+  await _tapVisible(tester, find.byKey(InventorySortSheet.groupByReceiptKey));
+  await _closeInventorySortSheet(tester);
 }
 
 Future<void> _toggleFullyConsumedFilter(WidgetTester tester) async {
   await _openInventoryFilters(tester);
-  await _tapVisible(
-    tester,
-    find.descendant(
-      of: find.byKey(const Key('inventory_items_hide_consumed_toggle')),
-      matching: find.byType(Switch),
-    ),
-  );
-  await _showInventoryFilterResults(tester);
+  await _tapVisible(tester, find.byKey(InventorySortSheet.hideConsumedKey));
+  await _closeInventorySortSheet(tester);
 }
 
 Future<void> _tapAmountDialogConfirm(WidgetTester tester) async {
@@ -647,7 +642,7 @@ void main() {
     await _scrollUntilVisible(tester, find.text('Milk'));
 
     expect(find.text('Milk'), findsOneWidget);
-    expect(find.text('ACME'), findsOneWidget);
+    expect(find.textContaining('Acme'), findsOneWidget);
   });
 
   testWidgets('groups items under one receipt and expands on tap', (
@@ -664,7 +659,7 @@ void main() {
     await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
-    await _selectInventoryListMode(tester, 'By receipt');
+    await _groupInventoryByReceipt(tester);
 
     expect(find.text('Receipt #abc123'), findsOneWidget);
 
@@ -741,9 +736,9 @@ void main() {
     await _pumpTestApp(tester, repository);
     await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(tester, _stockLabel('1 × 500g / 2 × 500g'));
+    await _scrollUntilVisible(tester, _stockLabel('500 g'));
 
-    expect(_stockLabel('1 × 500g / 2 × 500g'), findsOneWidget);
+    expect(_stockLabel('500 g'), findsOneWidget);
   });
 
   testWidgets('swap candidate opens picker and persists the selected item', (
@@ -939,9 +934,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(tester, _stockLabel('1000g / 1000g'));
+    await _scrollUntilVisible(tester, _stockLabel('1000 g'));
 
-    expect(_stockLabel('1000g / 1000g'), findsOneWidget);
+    expect(_stockLabel('1000 g'), findsOneWidget);
 
     await _openItemHub(tester);
 
@@ -1410,7 +1405,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await _scrollUntilVisible(tester, _stockLabel('1000g / 1000g'));
+    await _scrollUntilVisible(tester, _stockLabel('1000 g'));
     await _openItemHub(tester);
     await _tapVisible(tester, find.text('All'));
 
@@ -1747,7 +1742,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(_stockLabel('3 /3'), findsOneWidget);
+    expect(_stockLabel('3 pc'), findsOneWidget);
   });
 
   testWidgets('remove flow can mark item as thrown away and update stock', (
@@ -1783,12 +1778,12 @@ void main() {
       findsNothing,
     );
     expect(find.text('Undo'), findsOneWidget);
-    expect(_stockLabel('2 /3'), findsOneWidget);
+    expect(_stockLabel('2 pc'), findsOneWidget);
 
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
 
-    expect(_stockLabel('3 /3'), findsOneWidget);
+    expect(_stockLabel('3 pc'), findsOneWidget);
   });
 
   testWidgets('throw-away undo also removes the discard event', (tester) async {
@@ -1825,7 +1820,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(discardEventRepository.savedEvents, isEmpty);
-    expect(_stockLabel('3 /3'), findsOneWidget);
+    expect(_stockLabel('3 pc'), findsOneWidget);
   });
 
   testWidgets('throw-away amount dialog can fill all remaining stock', (
@@ -1933,12 +1928,12 @@ void main() {
       await _tapAmountDialogConfirm(tester);
       await tester.pumpAndSettle();
 
-      expect(_stockLabel('0 /3'), findsOneWidget);
+      expect(_stockLabel('0 pc'), findsOneWidget);
 
       await tester.tap(find.text('Undo'));
       await tester.pumpAndSettle();
 
-      expect(_stockLabel('1 /3'), findsOneWidget);
+      expect(_stockLabel('1 pc'), findsOneWidget);
     },
   );
 }

@@ -315,7 +315,79 @@ class AppLocalizationsDe extends AppLocalizations {
       'Noch keine zuletzt ausgewählten Produkte.';
 
   @override
-  String get inventoryPageTitle => 'Mein Vorrat';
+  String get inventoryPageTitle => 'Vorrat';
+
+  @override
+  String inventoryPageKicker(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Lebensmittel',
+      one: '1 Lebensmittel',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inventorySortAction => 'Sortieren';
+
+  @override
+  String get inventoryQuickFilterAll => 'Alle';
+
+  @override
+  String get inventoryQuickFilterOpen => 'Offen';
+
+  @override
+  String get inventoryQuickFilterMeals => 'Mahlzeiten';
+
+  @override
+  String get inventoryQuickFilterLow => 'Fast leer';
+
+  @override
+  String inventoryRowOfAmount(String amount) {
+    return 'von $amount';
+  }
+
+  @override
+  String get inventoryRowLow => 'fast leer';
+
+  @override
+  String inventoryRowInfo(String first, String second) {
+    return '$first · $second';
+  }
+
+  @override
+  String inventoryRowKcalPer100(String kcal) {
+    return '$kcal kcal/100 g';
+  }
+
+  @override
+  String inventoryRowMealCooked(String left, int total) {
+    return 'Gekocht · $left von $total Portionen';
+  }
+
+  @override
+  String inventoryRowMealMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zutaten fehlen',
+      one: '1 Zutat fehlt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inventorySortNewestFirst => 'Neueste zuerst';
+
+  @override
+  String get inventorySortOldestFirst => 'Älteste zuerst';
+
+  @override
+  String get inventorySortLeastFirst => 'Wenig zuerst';
+
+  @override
+  String get inventorySortMostFirst => 'Viel zuerst';
 
   @override
   String get inventoryActionManualSearch => 'Manuelle Suche';
@@ -591,16 +663,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryListModeByReceipt => 'Nach Beleg';
 
   @override
-  String get inventoryListModeAllItems => 'Alle Lebensmittel';
-
-  @override
   String get inventoryViewStock => 'Vorrat';
 
   @override
   String get inventoryViewHistory => 'Verlauf';
-
-  @override
-  String get inventoryRecentSectionTitle => 'Lebensmittel';
 
   @override
   String get inventoryActivityLoading => 'Historie wird geladen...';
@@ -692,29 +758,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventorySearchClearAction => 'Suche leeren';
 
   @override
-  String get inventoryFiltersTitle => 'Ansicht anpassen';
-
-  @override
-  String get inventoryFiltersSubtitle =>
-      'Sortiere und filtere deine Lebensmittel';
-
-  @override
-  String get inventoryFiltersShowResultsAction => 'Ergebnisse anzeigen';
-
-  @override
-  String get inventoryViewSectionTitle => 'Ansicht';
-
-  @override
   String get inventoryViewListAction => 'Liste';
 
   @override
   String get inventoryViewTilesAction => 'Kacheln';
-
-  @override
-  String get inventorySortSectionTitle => 'Sortierung';
-
-  @override
-  String get inventoryFilterSectionTitle => 'Filter';
 
   @override
   String get inventorySortAdded => 'Hinzugefügt';
@@ -727,12 +774,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventorySortQuantity => 'Menge';
-
-  @override
-  String get inventorySortDirectionAscending => 'Aufsteigend';
-
-  @override
-  String get inventorySortDirectionDescending => 'Absteigend';
 
   @override
   String get inventorySortDirectionAlphaAscending => 'A bis Z';
@@ -750,27 +791,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryHideConsumedFilterTitle => 'Verbrauchte ausblenden';
 
   @override
-  String get inventoryHideConsumedFilterSubtitle =>
-      'Komplett leere Artikel verbergen';
-
-  @override
-  String get preparedMealFiltersSubtitle =>
-      'Sortiere und filtere deine Mahlzeiten';
-
-  @override
-  String get preparedMealShowReadyOnlyToggle => 'Nur fertige anzeigen';
-
-  @override
-  String get preparedMealShowIncompleteOnlyToggle => 'Vollständige ausblenden';
-
-  @override
-  String get preparedMealShowDepletedOnlyToggle => 'Nur aufgebrauchte anzeigen';
-
-  @override
-  String get preparedMealHideFullyConsumedItemsToggle =>
-      'Verbrauchte ausblenden';
-
-  @override
   String get inventoryReceiptGroupTitle => 'Beleg';
 
   @override
@@ -784,9 +804,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryItemRemovedMessage => 'Artikel aussortiert.';
-
-  @override
-  String get inventoryItemEatAction => 'Essen';
 
   @override
   String get inventoryAmountDialogAllRemainingAction => 'Alles/Rest';
@@ -828,6 +845,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get eatPageItemTitle => 'Artikel';
+
+  @override
+  String get eatPageMealTitle => 'Mahlzeit';
+
+  @override
+  String get eatPageIngredientMissing => 'Fehlt – keinem Vorrat zugeordnet';
 
   @override
   String get eatPageReplaceProduct => 'Produkt ersetzen';
@@ -1314,24 +1337,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Bitte Nährwerte pro 100 g/ml eintragen.';
 
   @override
-  String get preparedMealNutritionModePerHundred => '100 g/ml';
-
-  @override
-  String get preparedMealNutritionModePerPortion => 'Portion';
-
-  @override
-  String get preparedMealNutritionModeTotal => 'Gesamt';
-
-  @override
-  String get preparedMealPricePerHundred => 'Preis pro 100 g/ml';
-
-  @override
-  String get preparedMealPricePerPortion => 'Preis pro Portion';
-
-  @override
-  String get preparedMealPriceTotal => 'Gesamtpreis';
-
-  @override
   String preparedMealSelectionCount(int count) {
     return '$count ausgewählt';
   }
@@ -1368,16 +1373,6 @@ class AppLocalizationsDe extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get preparedMealIncompleteLabel => 'Unvollständig';
-
-  @override
-  String get preparedMealIncompleteHint =>
-      'Diese Mahlzeit ist noch nicht vollständig und kann erst gegessen werden, wenn alle fehlenden Zutaten ergänzt wurden.';
-
-  @override
-  String get preparedMealPendingIngredientUnassigned => 'Noch nicht belegt';
 
   @override
   String get preparedMealPendingIngredientAddAction => 'Zutat ergänzen';

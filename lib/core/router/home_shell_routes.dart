@@ -17,15 +17,8 @@ StatefulShellRoute buildHomeShellRoute() {
         routes: [
           GoRoute(
             path: AppRoutes.homeInventory,
-            builder: (context, state) {
-              final expandedPreparedMealId = state.extra is String
-                  ? state.extra! as String
-                  : null;
-              return InventoryPage(
-                expandedPreparedMealId: expandedPreparedMealId,
-                includeHomeShellChrome: true,
-              );
-            },
+            builder: (context, state) =>
+                const InventoryPage(includeHomeShellChrome: true),
           ),
         ],
       ),

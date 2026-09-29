@@ -1,259 +1,117 @@
+import 'package:meta/meta.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_consumption_filter.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 
-/// Defines inventory card layout mode.
+/// Layout of the Vorrat list.
 enum InventoryListViewMode {
-  /// Single-column list.
+  /// One row per entry.
   list,
 
-  /// Two-column tile layout.
+  /// A grid of small tiles for a quick overview.
   tiles,
 }
 
-/// Defines prepared meal sort mode.
-enum PreparedMealSortMode {
-  /// Documented member.
-  addedDescending,
-
-  /// Documented member.
-  addedAscending,
-
-  /// Documented member.
-  eatenDescending,
-
-  /// Documented member.
-  eatenAscending,
-
-  /// Documented member.
-  alphabeticalAscending,
-
-  /// Documented member.
-  alphabeticalDescending,
-
-  /// Documented member.
-  quantityAscending,
-
-  /// Documented member.
-  quantityDescending,
-}
-
-/// Defines prepared meal completion filter.
-enum PreparedMealCompletionFilter {
-  /// All.
-  all,
-
-  /// Ready only.
-  readyOnly,
-
-  /// Incomplete only.
-  incompleteOnly,
-}
-
-/// Defines prepared meal consumption filter.
-enum PreparedMealConsumptionFilter {
-  /// All.
-  all,
-
-  /// Hide consumed.
-  hideConsumed,
-
-  /// Depleted only.
-  depletedOnly,
-}
-
-/// Defines inventory list view preferences.
+/// View settings of the Vorrat list that survive a restart.
+@immutable
 class InventoryListViewPreferences {
-  /// The inventory list view preferences.
+  /// Creates the settings.
   const new({
     this.viewMode = InventoryListViewMode.list,
-    this.consumptionFilter = const InventoryConsumptionFilter(),
-    this.inventoryItemSortMode = InventoryItemSortMode.recentlyAddedDescending,
-    this.preparedMealCompletionFilter = PreparedMealCompletionFilter.all,
-    this.preparedMealConsumptionFilter =
-        PreparedMealConsumptionFilter.hideConsumed,
-    this.preparedMealSortMode = PreparedMealSortMode.addedDescending,
-    this.isRecentItemsSectionExpanded = true,
-    this.isPreparedMealsSectionExpanded = true,
+    this.sortMode = InventoryItemSortMode.recentlyAddedDescending,
+    this.hideConsumed = true,
+    this.groupByReceipt = false,
   });
 
-  /// The inventory card layout mode.
+  /// List or tiles.
   final InventoryListViewMode viewMode;
 
-  /// The consumption filter.
-  final InventoryConsumptionFilter consumptionFilter;
+  /// Order of the entries.
+  final InventoryItemSortMode sortMode;
 
-  /// The inventory item sort mode.
-  final InventoryItemSortMode inventoryItemSortMode;
+  /// Whether used-up foods and meals are hidden.
+  final bool hideConsumed;
 
-  /// The prepared meal completion filter.
-  final PreparedMealCompletionFilter preparedMealCompletionFilter;
-
-  /// The prepared meal consumption filter.
-  final PreparedMealConsumptionFilter preparedMealConsumptionFilter;
-
-  /// The prepared meal sort mode.
-  final PreparedMealSortMode preparedMealSortMode;
-
-  /// Whether recent items section expanded.
-  final bool isRecentItemsSectionExpanded;
-
-  /// Whether prepared meals section expanded.
-  final bool isPreparedMealsSectionExpanded;
+  /// Whether foods are grouped by the receipt they came from.
+  final bool groupByReceipt;
 
   /// Copy with.
   InventoryListViewPreferences copyWith({
     InventoryListViewMode? viewMode,
-    InventoryConsumptionFilter? consumptionFilter,
-    InventoryItemSortMode? inventoryItemSortMode,
-    PreparedMealCompletionFilter? preparedMealCompletionFilter,
-    PreparedMealConsumptionFilter? preparedMealConsumptionFilter,
-    PreparedMealSortMode? preparedMealSortMode,
-    bool? isRecentItemsSectionExpanded,
-    bool? isPreparedMealsSectionExpanded,
+    InventoryItemSortMode? sortMode,
+    bool? hideConsumed,
+    bool? groupByReceipt,
   }) {
     return InventoryListViewPreferences(
       viewMode: viewMode ?? this.viewMode,
-      consumptionFilter: consumptionFilter ?? this.consumptionFilter,
-      inventoryItemSortMode:
-          inventoryItemSortMode ?? this.inventoryItemSortMode,
-      preparedMealCompletionFilter:
-          preparedMealCompletionFilter ?? this.preparedMealCompletionFilter,
-      preparedMealConsumptionFilter:
-          preparedMealConsumptionFilter ?? this.preparedMealConsumptionFilter,
-      preparedMealSortMode: preparedMealSortMode ?? this.preparedMealSortMode,
-      isRecentItemsSectionExpanded:
-          isRecentItemsSectionExpanded ?? this.isRecentItemsSectionExpanded,
-      isPreparedMealsSectionExpanded:
-          isPreparedMealsSectionExpanded ?? this.isPreparedMealsSectionExpanded,
+      sortMode: sortMode ?? this.sortMode,
+      hideConsumed: hideConsumed ?? this.hideConsumed,
+      groupByReceipt: groupByReceipt ?? this.groupByReceipt,
     );
   }
+
+  @override
+  bool operator ==(Object other) =>
+      other is InventoryListViewPreferences &&
+      other.viewMode == viewMode &&
+      other.sortMode == sortMode &&
+      other.hideConsumed == hideConsumed &&
+      other.groupByReceipt == groupByReceipt;
+
+  @override
+  int get hashCode =>
+      Object.hash(viewMode, sortMode, hideConsumed, groupByReceipt);
 }
 
-/// Defines inventory list view preferences store.
+/// Reads and writes [InventoryListViewPreferences] in the app preferences.
 class InventoryListViewPreferencesStore {
-  /// The inventory list view preferences store.
+  /// Creates the store.
   const new();
 
-  static const _inventoryHideConsumedItemsKey =
-      'inventory_list_hide_consumed_items';
   static const _viewModeKey = 'inventory_list_view_mode';
-  static const _inventoryItemSortModeKey = 'inventory_list_item_sort_mode';
-  static const _preparedMealCompletionFilterKey =
-      'inventory_list_prepared_meal_completion_filter';
-  static const _preparedMealConsumptionFilterKey =
-      'inventory_list_prepared_meal_consumption_filter';
-  static const _preparedMealSortModeKey =
-      'inventory_list_prepared_meal_sort_mode';
-  static const _recentItemsExpandedKey = 'inventory_list_recent_items_expanded';
-  static const _preparedMealsExpandedKey =
-      'inventory_list_prepared_meals_expanded';
+  static const _sortModeKey = 'inventory_list_sort_mode';
+  static const _hideConsumedKey = 'inventory_list_hide_consumed';
+  static const _groupByReceiptKey = 'inventory_list_group_by_receipt';
 
-  /// Read sync.
-  InventoryListViewPreferences readSync(AppPreferences preferences) {
-    const defaultPreferences = InventoryListViewPreferences();
-
+  /// Reads the stored settings; a missing value keeps its default.
+  InventoryListViewPreferences read(AppPreferences preferences) {
+    const defaults = InventoryListViewPreferences();
     return InventoryListViewPreferences(
-      viewMode: _enumFromName(
+      viewMode: _readEnum(
         InventoryListViewMode.values,
         preferences.getStringSync(_viewModeKey),
-        defaultPreferences.viewMode,
+        defaults.viewMode,
       ),
-      consumptionFilter: InventoryConsumptionFilter(
-        hideFullyConsumedItems: _readBool(
-          preferences,
-          _inventoryHideConsumedItemsKey,
-          defaultPreferences.consumptionFilter.hideFullyConsumedItems,
-        ),
-      ),
-      inventoryItemSortMode: _enumFromName(
+      sortMode: _readEnum(
         InventoryItemSortMode.values,
-        preferences.getStringSync(_inventoryItemSortModeKey),
-        defaultPreferences.inventoryItemSortMode,
+        preferences.getStringSync(_sortModeKey),
+        defaults.sortMode,
       ),
-      preparedMealCompletionFilter: _enumFromName(
-        PreparedMealCompletionFilter.values,
-        preferences.getStringSync(_preparedMealCompletionFilterKey),
-        defaultPreferences.preparedMealCompletionFilter,
+      hideConsumed: _readBool(
+        preferences.getIntSync(_hideConsumedKey),
+        defaults.hideConsumed,
       ),
-      preparedMealConsumptionFilter: _enumFromName(
-        PreparedMealConsumptionFilter.values,
-        preferences.getStringSync(_preparedMealConsumptionFilterKey),
-        defaultPreferences.preparedMealConsumptionFilter,
-      ),
-      preparedMealSortMode: _enumFromName(
-        PreparedMealSortMode.values,
-        preferences.getStringSync(_preparedMealSortModeKey),
-        defaultPreferences.preparedMealSortMode,
-      ),
-      isRecentItemsSectionExpanded: _readBool(
-        preferences,
-        _recentItemsExpandedKey,
-        defaultPreferences.isRecentItemsSectionExpanded,
-      ),
-      isPreparedMealsSectionExpanded: _readBool(
-        preferences,
-        _preparedMealsExpandedKey,
-        defaultPreferences.isPreparedMealsSectionExpanded,
+      groupByReceipt: _readBool(
+        preferences.getIntSync(_groupByReceiptKey),
+        defaults.groupByReceipt,
       ),
     );
   }
 
-  /// Save.
+  /// Stores [value].
   Future<void> save(
     AppPreferences preferences,
     InventoryListViewPreferences value,
   ) async {
     await preferences.setString(_viewModeKey, value.viewMode.name);
-    await preferences.setInt(
-      _inventoryHideConsumedItemsKey,
-      value.consumptionFilter.hideFullyConsumedItems ? 1 : 0,
-    );
-    await preferences.setString(
-      _inventoryItemSortModeKey,
-      value.inventoryItemSortMode.name,
-    );
-    await preferences.setString(
-      _preparedMealCompletionFilterKey,
-      value.preparedMealCompletionFilter.name,
-    );
-    await preferences.setString(
-      _preparedMealConsumptionFilterKey,
-      value.preparedMealConsumptionFilter.name,
-    );
-    await preferences.setString(
-      _preparedMealSortModeKey,
-      value.preparedMealSortMode.name,
-    );
-    await preferences.setInt(
-      _recentItemsExpandedKey,
-      value.isRecentItemsSectionExpanded ? 1 : 0,
-    );
-    await preferences.setInt(
-      _preparedMealsExpandedKey,
-      value.isPreparedMealsSectionExpanded ? 1 : 0,
-    );
+    await preferences.setString(_sortModeKey, value.sortMode.name);
+    await preferences.setInt(_hideConsumedKey, value.hideConsumed ? 1 : 0);
+    await preferences.setInt(_groupByReceiptKey, value.groupByReceipt ? 1 : 0);
   }
 
-  bool _readBool(AppPreferences preferences, String key, bool fallback) {
-    final storedValue = preferences.getIntSync(key);
-    if (storedValue == null) {
-      return fallback;
-    }
-    return storedValue != 0;
-  }
+  bool _readBool(int? stored, bool fallback) =>
+      stored == null ? fallback : stored != 0;
 
-  T _enumFromName<T extends Enum>(
-    Iterable<T> values,
-    String? storedName,
-    T fallback,
-  ) {
-    if (storedName == null) {
-      return fallback;
-    }
-
-    return values.asNameMap()[storedName] ?? fallback;
-  }
+  T _readEnum<T extends Enum>(List<T> values, String? stored, T fallback) =>
+      stored == null ? fallback : values.byName(stored);
 }

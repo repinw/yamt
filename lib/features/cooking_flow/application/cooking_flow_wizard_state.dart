@@ -154,7 +154,6 @@ class CookingFlowWizardState {
     required this.finalPortionCount,
     required this.savedContainerCount,
     this.introDraft,
-    this.savedPreparedMealId,
     this.savedPreparedMealName,
   });
 
@@ -180,7 +179,6 @@ class CookingFlowWizardState {
       finalPortionCount = null,
       savedContainerCount = 0,
       introDraft = null,
-      savedPreparedMealId = null,
       savedPreparedMealName = null;
 
   /// Current step.
@@ -241,9 +239,6 @@ class CookingFlowWizardState {
   /// Restored/current intro draft.
   final CookingFlowIntroDraft? introDraft;
 
-  /// Saved prepared meal id.
-  final String? savedPreparedMealId;
-
   /// Saved prepared meal name.
   final String? savedPreparedMealName;
 
@@ -281,7 +276,6 @@ class CookingFlowWizardState {
     double? portionCount,
     Object? finalPortionCount = _keepWizardValue,
     Object? introDraft = _keepWizardValue,
-    Object? savedPreparedMealId = _keepWizardValue,
     Object? savedPreparedMealName = _keepWizardValue,
     int? savedContainerCount,
   }) {
@@ -321,9 +315,6 @@ class CookingFlowWizardState {
       introDraft: introDraft == _keepWizardValue
           ? this.introDraft
           : introDraft as CookingFlowIntroDraft?,
-      savedPreparedMealId: savedPreparedMealId == _keepWizardValue
-          ? this.savedPreparedMealId
-          : savedPreparedMealId as String?,
       savedPreparedMealName: savedPreparedMealName == _keepWizardValue
           ? this.savedPreparedMealName
           : savedPreparedMealName as String?,

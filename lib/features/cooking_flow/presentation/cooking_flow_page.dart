@@ -238,8 +238,6 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
     return _wizardState.ingredientContainerAssignments;
   }
 
-  String? get _savedPreparedMealId => _wizardState.savedPreparedMealId;
-
   String? get _savedPreparedMealName {
     final state = _wizardState;
     if (state.savedPreparedMealName != null) {
@@ -504,12 +502,7 @@ class _CookingFlowPageState extends ConsumerState<CookingFlowPage> {
   }
 
   void _openSavedMealInInventory() {
-    final preparedMealId = _savedPreparedMealId;
-    if (preparedMealId == null) {
-      context.go(AppRoutes.homeInventory);
-      return;
-    }
-    context.go(AppRoutes.homeInventory, extra: preparedMealId);
+    context.go(AppRoutes.homeInventory);
   }
 
   void _addOnTheFlyAdjustment() {

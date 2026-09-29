@@ -309,7 +309,79 @@ class AppLocalizationsEn extends AppLocalizations {
       'No recently selected products yet.';
 
   @override
-  String get inventoryPageTitle => 'My inventory';
+  String get inventoryPageTitle => 'Inventory';
+
+  @override
+  String inventoryPageKicker(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count foods',
+      one: '1 food',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inventorySortAction => 'Sort';
+
+  @override
+  String get inventoryQuickFilterAll => 'All';
+
+  @override
+  String get inventoryQuickFilterOpen => 'Open';
+
+  @override
+  String get inventoryQuickFilterMeals => 'Meals';
+
+  @override
+  String get inventoryQuickFilterLow => 'Almost empty';
+
+  @override
+  String inventoryRowOfAmount(String amount) {
+    return 'of $amount';
+  }
+
+  @override
+  String get inventoryRowLow => 'almost empty';
+
+  @override
+  String inventoryRowInfo(String first, String second) {
+    return '$first · $second';
+  }
+
+  @override
+  String inventoryRowKcalPer100(String kcal) {
+    return '$kcal kcal/100 g';
+  }
+
+  @override
+  String inventoryRowMealCooked(String left, int total) {
+    return 'Cooked · $left of $total portions';
+  }
+
+  @override
+  String inventoryRowMealMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ingredients missing',
+      one: '1 ingredient missing',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get inventorySortNewestFirst => 'Newest first';
+
+  @override
+  String get inventorySortOldestFirst => 'Oldest first';
+
+  @override
+  String get inventorySortLeastFirst => 'Least first';
+
+  @override
+  String get inventorySortMostFirst => 'Most first';
 
   @override
   String get inventoryActionManualSearch => 'Manual search';
@@ -581,16 +653,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryListModeByReceipt => 'By receipt';
 
   @override
-  String get inventoryListModeAllItems => 'All foods';
-
-  @override
   String get inventoryViewStock => 'Stock';
 
   @override
   String get inventoryViewHistory => 'History';
-
-  @override
-  String get inventoryRecentSectionTitle => 'Foods';
 
   @override
   String get inventoryActivityLoading => 'Loading history...';
@@ -681,28 +747,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventorySearchClearAction => 'Clear search';
 
   @override
-  String get inventoryFiltersTitle => 'Adjust view';
-
-  @override
-  String get inventoryFiltersSubtitle => 'Sort and filter your foods';
-
-  @override
-  String get inventoryFiltersShowResultsAction => 'Show results';
-
-  @override
-  String get inventoryViewSectionTitle => 'View';
-
-  @override
   String get inventoryViewListAction => 'List';
 
   @override
   String get inventoryViewTilesAction => 'Tiles';
-
-  @override
-  String get inventorySortSectionTitle => 'Sort';
-
-  @override
-  String get inventoryFilterSectionTitle => 'Filter';
 
   @override
   String get inventorySortAdded => 'Added';
@@ -715,12 +763,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventorySortQuantity => 'Amount';
-
-  @override
-  String get inventorySortDirectionAscending => 'Ascending';
-
-  @override
-  String get inventorySortDirectionDescending => 'Descending';
 
   @override
   String get inventorySortDirectionAlphaAscending => 'A to Z';
@@ -738,26 +780,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryHideConsumedFilterTitle => 'Hide consumed';
 
   @override
-  String get inventoryHideConsumedFilterSubtitle =>
-      'Hide completely empty items';
-
-  @override
-  String get preparedMealFiltersSubtitle => 'Sort and filter your meals';
-
-  @override
-  String get preparedMealShowReadyOnlyToggle => 'Only ready meals';
-
-  @override
-  String get preparedMealShowIncompleteOnlyToggle => 'Only incomplete meals';
-
-  @override
-  String get preparedMealShowDepletedOnlyToggle => 'Only fully consumed';
-
-  @override
-  String get preparedMealHideFullyConsumedItemsToggle =>
-      'Hide fully consumed meals';
-
-  @override
   String get inventoryReceiptGroupTitle => 'Receipt';
 
   @override
@@ -771,9 +793,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryItemRemovedMessage => 'Item removed.';
-
-  @override
-  String get inventoryItemEatAction => 'Eat';
 
   @override
   String get inventoryAmountDialogAllRemainingAction => 'All/Rest';
@@ -814,6 +833,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eatPageItemTitle => 'Item';
+
+  @override
+  String get eatPageMealTitle => 'Meal';
+
+  @override
+  String get eatPageIngredientMissing => 'Missing – not taken from stock';
 
   @override
   String get eatPageReplaceProduct => 'Replace product';
@@ -1292,24 +1317,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add nutrition values per 100 g/ml.';
 
   @override
-  String get preparedMealNutritionModePerHundred => '100 g/ml';
-
-  @override
-  String get preparedMealNutritionModePerPortion => 'Portion';
-
-  @override
-  String get preparedMealNutritionModeTotal => 'Total';
-
-  @override
-  String get preparedMealPricePerHundred => 'Price per 100 g/ml';
-
-  @override
-  String get preparedMealPricePerPortion => 'Price per portion';
-
-  @override
-  String get preparedMealPriceTotal => 'Total price';
-
-  @override
   String preparedMealSelectionCount(int count) {
     return '$count selected';
   }
@@ -1346,16 +1353,6 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
-
-  @override
-  String get preparedMealIncompleteLabel => 'Incomplete';
-
-  @override
-  String get preparedMealIncompleteHint =>
-      'This meal is not complete yet and can only be eaten once all missing ingredients have been added.';
-
-  @override
-  String get preparedMealPendingIngredientUnassigned => 'Not linked yet';
 
   @override
   String get preparedMealPendingIngredientAddAction => 'Add ingredient';

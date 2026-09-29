@@ -406,7 +406,6 @@ class CookingFlowWizardController extends _$CookingFlowWizardController {
       return result;
     }
     state = state.copyWith(
-      savedPreparedMealId: result.preparedMealId,
       savedPreparedMealName: result.containerCount <= 1 ? template.name : null,
       savedContainerCount: result.containerCount,
       step: CookingFlowStep.success,

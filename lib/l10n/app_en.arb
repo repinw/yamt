@@ -141,7 +141,71 @@
   "productSearchHubRecentlySelectedLoadFailed": "Could not load recent products.",
   "productSearchHubRecentlySelectedRetryAction": "Retry",
   "productSearchHubRecentlySelectedEmptyState": "No recently selected products yet.",
-  "inventoryPageTitle": "My inventory",
+  "inventoryPageTitle": "Inventory",
+  "inventoryPageKicker": "{count, plural, =1{1 food} other{{count} foods}}",
+  "@inventoryPageKicker": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inventorySortAction": "Sort",
+  "inventoryQuickFilterAll": "All",
+  "inventoryQuickFilterOpen": "Open",
+  "inventoryQuickFilterMeals": "Meals",
+  "inventoryQuickFilterLow": "Almost empty",
+  "inventoryRowOfAmount": "of {amount}",
+  "@inventoryRowOfAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryRowLow": "almost empty",
+  "inventoryRowInfo": "{first} · {second}",
+  "@inventoryRowInfo": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryRowKcalPer100": "{kcal} kcal/100 g",
+  "@inventoryRowKcalPer100": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryRowMealCooked": "Cooked · {left} of {total} portions",
+  "@inventoryRowMealCooked": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryRowMealMissing": "{count, plural, =1{1 ingredient missing} other{{count} ingredients missing}}",
+  "@inventoryRowMealMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "inventorySortNewestFirst": "Newest first",
+  "inventorySortOldestFirst": "Oldest first",
+  "inventorySortLeastFirst": "Least first",
+  "inventorySortMostFirst": "Most first",
   "inventoryActionManualSearch": "Manual search",
   "inventoryActionAiSuggestion": "AI suggestion",
   "inventoryActionUploadImagePdf": "Upload image/PDF",
@@ -241,10 +305,8 @@
   "inventoryReceiptSaveSucceeded": "Items added to inventory.",
   "inventoryReceiptSaveFailed": "Could not save receipt items. Please try again.",
   "inventoryListModeByReceipt": "By receipt",
-  "inventoryListModeAllItems": "All foods",
   "inventoryViewStock": "Stock",
   "inventoryViewHistory": "History",
-  "inventoryRecentSectionTitle": "Foods",
   "inventoryActivityLoading": "Loading history...",
   "inventoryActivityLoadFailed": "Could not load history.",
   "inventoryActivityEmptyTitle": "No inventory history yet.",
@@ -357,37 +419,22 @@
   },
   "inventorySearchLabel": "Search inventory",
   "inventorySearchClearAction": "Clear search",
-  "inventoryFiltersTitle": "Adjust view",
-  "inventoryFiltersSubtitle": "Sort and filter your foods",
-  "inventoryFiltersShowResultsAction": "Show results",
-  "inventoryViewSectionTitle": "View",
   "inventoryViewListAction": "List",
   "inventoryViewTilesAction": "Tiles",
-  "inventorySortSectionTitle": "Sort",
-  "inventoryFilterSectionTitle": "Filter",
   "inventorySortAdded": "Added",
   "inventorySortEaten": "Eaten",
   "inventorySortAlphabetical": "Alphabetical",
   "inventorySortQuantity": "Amount",
-  "inventorySortDirectionAscending": "Ascending",
-  "inventorySortDirectionDescending": "Descending",
   "inventorySortDirectionAlphaAscending": "A to Z",
   "inventorySortDirectionAlphaDescending": "Z to A",
   "inventoryNutritionCaloriesShortLabel": "Kcal",
   "inventoryNutritionCarbsShortLabel": "Carbs",
   "inventoryHideConsumedFilterTitle": "Hide consumed",
-  "inventoryHideConsumedFilterSubtitle": "Hide completely empty items",
-  "preparedMealFiltersSubtitle": "Sort and filter your meals",
-  "preparedMealShowReadyOnlyToggle": "Only ready meals",
-  "preparedMealShowIncompleteOnlyToggle": "Only incomplete meals",
-  "preparedMealShowDepletedOnlyToggle": "Only fully consumed",
-  "preparedMealHideFullyConsumedItemsToggle": "Hide fully consumed meals",
   "inventoryReceiptGroupTitle": "Receipt",
   "inventoryReceiptGroupNoReceipt": "No receipt",
   "inventoryReceiptGroupItems": "items",
   "inventoryItemDeletedMessage": "Item deleted.",
   "inventoryItemRemovedMessage": "Item removed.",
-  "inventoryItemEatAction": "Eat",
   "inventoryAmountDialogAllRemainingAction": "All/Rest",
   "inventoryItemEatSheetDecreasePortionCountAction": "Decrease portions",
   "inventoryItemEatSheetIncreasePortionCountAction": "Increase portions",
@@ -400,6 +447,8 @@
   "inventoryItemEatSheetAddMoreAction": "+ More",
   "eatPageNutritionTitle": "Nutrition",
   "eatPageItemTitle": "Item",
+  "eatPageMealTitle": "Meal",
+  "eatPageIngredientMissing": "Missing – not taken from stock",
   "eatPageReplaceProduct": "Replace product",
   "eatPageOnShoppingList": "On the shopping list",
   "eatPageCombineLink": "+ Combine with another food",
@@ -680,12 +729,6 @@
   "preparedMealInvalidIngredientAmount": "Please enter a valid ingredient amount.",
   "preparedMealNutritionPerPieceHint": "Add nutrition values per used piece.",
   "preparedMealNutritionPerHundredHint": "Add nutrition values per 100 g/ml.",
-  "preparedMealNutritionModePerHundred": "100 g/ml",
-  "preparedMealNutritionModePerPortion": "Portion",
-  "preparedMealNutritionModeTotal": "Total",
-  "preparedMealPricePerHundred": "Price per 100 g/ml",
-  "preparedMealPricePerPortion": "Price per portion",
-  "preparedMealPriceTotal": "Total price",
   "preparedMealSelectionCount": "{count} selected",
   "@preparedMealSelectionCount": {
     "placeholders": {
@@ -708,9 +751,6 @@
       }
     }
   },
-  "preparedMealIncompleteLabel": "Incomplete",
-  "preparedMealIncompleteHint": "This meal is not complete yet and can only be eaten once all missing ingredients have been added.",
-  "preparedMealPendingIngredientUnassigned": "Not linked yet",
   "preparedMealPendingIngredientAddAction": "Add ingredient",
   "preparedMealPendingIngredientIgnoreAction": "Ignore ingredient",
   "preparedMealPendingIngredientSelectionTitle": "Add ingredient from inventory",

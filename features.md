@@ -10,6 +10,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   redirects. Without an account the app opens onboarding; after a sign-out it
   opens the welcome page.
 - Home shell with bottom tabs for Inventory, Diary, Cookbook, and Settings.
+  The tab header, the dock and the bottom navigation stay in place while a
+  tab scrolls.
 - Responsive page layouts for mobile and wider screens.
 - English and German localization.
 
@@ -93,8 +95,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   of a Vorrat entry too, and every change offers an undo. Prepared meals and
   combined entries list their foods instead of the ruler.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
-  Its buttons sit in a dock on the bottom navigation bar of the diary tab and
-  hide with it: square buttons for inventory, search, and AI, and a lime barcode button
+  Its buttons sit in a dock on the bottom navigation bar of the diary tab:
+  square buttons for inventory, search, and AI, and a lime barcode button
   on the right.
 - Quick entry ("Schnell" in the dock) logs calories typed in by hand, without
   a food or a Vorrat item, on a page in the food label look with day and meal
@@ -193,7 +195,21 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## Inventory
 
-- Inventory item list with empty, loading, search, and filter states.
+- The Vorrat is one flat list of foods and prepared meals. The header shows
+  "Vorrat" with the count of foods and meals in stock above it. Next to the
+  search field sit "Sortieren" and a Liste/Kacheln button; Kacheln shows a
+  grid of small tiles for a quick overview.
+- Quick filter chips with counts: Alle, Offen (partly used), Mahlzeiten, Fast
+  leer (under a quarter left). The chip starts at Alle on every visit.
+- Each row shows a tilted, framed picture (photo, ingredient photos of a
+  meal, or the first letter), the name, the amount left and the full amount,
+  brand and kcal per 100 g (for a meal its portions or its missing
+  ingredients), and a stock bar with one segment per pack, or per portion for
+  a meal. Under a quarter left the amount and the bar turn orange with "fast
+  leer".
+- The Sortieren sheet sorts by added, eaten, name or amount; tapping the
+  chosen field again flips its direction. It also holds "Verbrauchte
+  ausblenden" and "Nach Beleg". Changes apply at once and survive a restart.
 - Add items from receipts, barcode search, manual search, or AI suggestion.
 - Inventory item edit, consumption, discard, and delete flows.
 - Tapping an item row opens the item hub: the food label eat page plus an
@@ -220,10 +236,16 @@ and feature description docs. This is product-facing; architecture rules stay in
   whose button reads "Add".
 - Amount parsing and unit handling for grams, milliliters, pieces, and custom
   serving data.
-- Receipt grouping and by-receipt inventory mode.
+- Receipt grouping ("Nach Beleg" in the Sortieren sheet).
 - Household inventory activity timeline for stock changes.
 - Add-to-shopping-list and buy-again actions.
-- Prepared meal cards and inventory-backed prepared meal mutation workflows.
+- Tapping a prepared meal opens its detail page: the meal eat page plus a
+  "Zutaten" box (every ingredient with picture and its amount in the whole
+  meal; missing recipe ingredients in orange with "Zutat ergänzen" and "Zutat
+  ignorieren") and a "Mahlzeit" card with edit, save as recipe, unbundle and
+  throw away. A meal with missing ingredients can be logged once they are
+  filled or ignored. Picking more ingredients during an edit closes the page
+  and selects foods in the Vorrat list.
 - Global food item matching and serving suggestions for future adds.
 
 ## Receipt Scanner And Review
@@ -306,8 +328,6 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 - Create and edit prepared meals from inventory ingredients.
 - Meal name, portions, cover image, and ingredient amount editing.
-- Nutrition display modes for per 100 g/ml, per portion, and total.
-- Price display modes for per 100 g/ml, per portion, and total.
 - Ready, incomplete, and fully consumed meal states.
 - Pending ingredient handling for incomplete meals.
 - Eat prepared meal flow with diary day and portions.

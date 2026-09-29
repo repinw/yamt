@@ -62,7 +62,6 @@ class CookingFlowWizardSessionService {
           storedSession.introShoppingBaselineInventoryItemIds,
       ingredientContainerAssignments:
           storedSession.ingredientContainerAssignments,
-      savedPreparedMealId: null,
       savedPreparedMealName: null,
       savedContainerCount: 0,
       isRestoringSession: false,

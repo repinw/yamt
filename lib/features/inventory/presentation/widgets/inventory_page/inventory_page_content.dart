@@ -1,7 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -10,16 +10,19 @@ import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_prepared_meal_edit_coordinator.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'prepared_meal_actions.dart';
+import 'package:yamt/features/inventory/presentation/prepared_meal_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_activity_timeline/inventory_activity_timeline.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_page/'
     'inventory_error_view.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_page/'
     'inventory_loading_view.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_page/'
     'inventory_page_lifecycle.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_page/'
-    'inventory_page_list_content.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_page/'
     'inventory_view_toggle_button.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -32,7 +35,6 @@ class InventoryPageContent extends ConsumerWidget {
     required this.onToggleView,
     required this.mealEditCoordinator,
     required this.onFocusRequested,
-    this.expandedPreparedMealId,
     this.includeHomeShellChrome = false,
     super.key,
   });
@@ -48,9 +50,6 @@ class InventoryPageContent extends ConsumerWidget {
 
   /// Rebuilds the page when ingredient selection requests focus.
   final VoidCallback onFocusRequested;
-
-  /// Optional prepared meal to expand.
-  final String? expandedPreparedMealId;
 
   /// Whether to render home-shell chrome.
   final bool includeHomeShellChrome;
@@ -115,53 +114,56 @@ class InventoryPageContent extends ConsumerWidget {
       );
     }
 
-    final items = itemsAsync.value ?? const <InventoryItem>[];
-    final meals = mealsAsync.value ?? const <PreparedMeal>[];
-
-    return InventoryPageListContent(
-      items: items,
-      preparedMeals: meals,
-      expandedPreparedMealId: expandedPreparedMealId,
-      includeHomeShellChrome: includeHomeShellChrome,
-      inventorySelectionFocusToken:
-          mealEditCoordinator.inventorySelectionFocusToken,
-      topChromeActions: topChromeActions,
-      onThrowAwayPreparedMeal: (mealId, portions, reason) =>
+    final mealActions = PreparedMealActions(
+      throwAway: (mealId, portions, reason) =>
           mealsController.throwAwayPreparedMeal(
             mealId: mealId,
             discardedPortions: portions,
             reason: reason,
           ),
-      onFillPendingPreparedMealIngredient: (mealId, ingredient, itemIds) =>
+      fillPendingIngredient: (mealId, ingredient, itemIds) =>
           mealsController.fillPreparedMealPendingIngredient(
             mealId: mealId,
             ingredient: ingredient,
             inventoryItemIds: itemIds,
           ),
-      onIgnorePendingPreparedMealIngredient: (mealId, ingredient) =>
+      ignorePendingIngredient: (mealId, ingredient) =>
           mealsController.ignorePreparedMealPendingIngredient(
             mealId: mealId,
             ingredient: ingredient,
           ),
-      onUnbundlePreparedMeal: mealsController.unbundlePreparedMeal,
-      onEditPreparedMeal: (mealId, result) =>
-          mealEditCoordinator.updatePreparedMeal(
-            context: context,
-            ref: ref,
-            mealId: mealId,
-            result: result,
-          ),
-      onSelectPreparedMealEditIngredients: (mealId, result) async =>
+      unbundle: mealsController.unbundlePreparedMeal,
+      edit: (mealId, result) => mealEditCoordinator.updatePreparedMeal(
+        context: context,
+        ref: ref,
+        mealId: mealId,
+        result: result,
+      ),
+      selectEditIngredients: (mealId, result) async =>
           mealEditCoordinator.startSelection(
             ref: ref,
             mealId: mealId,
             result: result,
             onFocusRequested: onFocusRequested,
           ),
-      onSavePreparedMealTemplate: (meal) => mealEditCoordinator.saveTemplate(
+      saveTemplate: (meal) => mealEditCoordinator.saveTemplate(
         context: context,
         ref: ref,
         meal: meal,
+      ),
+    );
+
+    return InventoryList(
+      includeHomeShellChrome: includeHomeShellChrome,
+      inventorySelectionFocusToken:
+          mealEditCoordinator.inventorySelectionFocusToken,
+      topChromeActions: topChromeActions,
+      onOpenMeal: (meal) => unawaited(
+        PreparedMealEatFlow.eat(
+          context: context,
+          meal: meal,
+          actions: mealActions,
+        ),
       ),
       isSelectionMode: selectionState.isSelectionMode,
       selectedItemIds: selectionState.selectedItemIds,

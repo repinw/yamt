@@ -4,9 +4,12 @@ import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_list_view_preferences.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines inventory list top controls sliver.
+/// Search field of the Vorrat list with the Sortieren and Liste/Kacheln
+/// buttons.
 class InventoryListTopControlsSliver extends StatelessWidget {
   /// The inventory list top controls sliver.
   const new({
@@ -14,7 +17,9 @@ class InventoryListTopControlsSliver extends StatelessWidget {
     required this.searchController,
     required this.enabled,
     required this.onSearchChanged,
-    required this.onShowFilters,
+    required this.onShowSort,
+    required this.viewMode,
+    required this.onToggleViewMode,
     required this.voiceSearchService,
     required this.voiceSearchController,
     required this.l10n,
@@ -33,8 +38,14 @@ class InventoryListTopControlsSliver extends StatelessWidget {
   /// The on search changed.
   final ValueChanged<String> onSearchChanged;
 
-  /// Opens the unified filter menu.
-  final VoidCallback onShowFilters;
+  /// Opens the Sortieren sheet.
+  final VoidCallback onShowSort;
+
+  /// Current layout; the toggle names the other one.
+  final InventoryListViewMode viewMode;
+
+  /// Switches between list and tiles.
+  final VoidCallback onToggleViewMode;
 
   /// The voice search service.
   final VoiceSearchService voiceSearchService;
@@ -54,8 +65,8 @@ class InventoryListTopControlsSliver extends StatelessWidget {
     return SliverPadding(
       padding: responsivePagePadding(
         context,
-        top: AppSpacing.lg,
-        bottom: AppSpacing.lg,
+        top: AppSpacing.xs,
+        bottom: AppSpacing.xs,
       ),
       sliver: SliverToBoxAdapter(
         child: TextVoiceSearchBar(
@@ -71,11 +82,29 @@ class InventoryListTopControlsSliver extends StatelessWidget {
           hintText: l10n.inventorySearchLabel,
           useCompactSurface: true,
           trailingActions: [
-            _InventorySearchSettingsButton(
+            _ToolButton(
+              key: const Key('inventory_list_sort_button'),
               enabled: enabled,
-              label: l10n.inventoryFilterSectionTitle,
-              onPressed: onShowFilters,
+              icon: Icons.tune_rounded,
+              label: l10n.inventorySortAction,
+              onPressed: onShowSort,
             ),
+            if (viewMode == InventoryListViewMode.list)
+              _ToolButton(
+                key: const Key('inventory_list_view_mode_button'),
+                enabled: enabled,
+                icon: Icons.grid_view_rounded,
+                label: l10n.inventoryViewTilesAction,
+                onPressed: onToggleViewMode,
+              )
+            else
+              _ToolButton(
+                key: const Key('inventory_list_view_mode_button'),
+                enabled: enabled,
+                icon: Icons.view_agenda_rounded,
+                label: l10n.inventoryViewListAction,
+                onPressed: onToggleViewMode,
+              ),
           ],
         ),
       ),
@@ -83,16 +112,18 @@ class InventoryListTopControlsSliver extends StatelessWidget {
   }
 }
 
-/// Tonal "Filter" button next to the search field: its word says that it
-/// opens the view, sort and filter settings.
-class _InventorySearchSettingsButton extends StatelessWidget {
+/// Tonal button with an icon and a word next to the search field.
+class _ToolButton extends StatelessWidget {
   const new({
     required this.enabled,
+    required this.icon,
     required this.label,
     required this.onPressed,
+    super.key,
   });
 
   final bool enabled;
+  final IconData icon;
   final String label;
   final VoidCallback onPressed;
 
@@ -101,15 +132,11 @@ class _InventorySearchSettingsButton extends StatelessWidget {
     return SizedBox(
       height: AppSizes.compactSearchControlHeight,
       child: FilledButton.tonalIcon(
-        key: const Key('inventory_list_search_settings_button'),
         onPressed: enabled ? onPressed : null,
         style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
         ),
-        icon: const Icon(
-          Icons.tune_rounded,
-          size: AppSizes.compactSearchSettingsIcon,
-        ),
+        icon: Icon(icon, size: AppSizes.compactSearchSettingsIcon),
         label: Text(label),
       ),
     );
