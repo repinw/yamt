@@ -241,6 +241,9 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Household inventory activity timeline for stock changes.
 - Add-to-shopping-list and buy-again actions.
 - The picture of a food or meal flies from its row into the page it opens.
+- A long press selects foods; "Binden" opens the item hub of the first
+  selected food with the others already combined, so the meal is logged or
+  kept in the Vorrat there.
 - Tapping a prepared meal opens its detail page: the meal eat page plus a
   "Zutaten" box (every ingredient with picture and its amount in the whole
   meal; missing recipe ingredients in orange with "Zutat ergänzen" and "Zutat

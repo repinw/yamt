@@ -44,10 +44,19 @@ typedef InventoryItemHubActionRunner = Future<bool> Function(
 /// shopping list.
 class InventoryItemHubPage extends ConsumerStatefulWidget {
   /// Creates the hub for [item].
-  const new({required this.item, required this.onAction, super.key});
+  const new({
+    required this.item,
+    required this.onAction,
+    this.initialPicks = const <InventoryItem>[],
+    super.key,
+  });
 
   /// The stock item.
   final InventoryItem item;
+
+  /// Foods that join the meal when the hub opens, such as the foods
+  /// selected in the Vorrat list; foods without a default amount stay out.
+  final List<InventoryItem> initialPicks;
 
   /// Runs a picked action.
   final InventoryItemHubActionRunner onAction;
@@ -66,6 +75,27 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
   // The hub's item can leave the meal while other foods are picked. It is
   // back as soon as the meal is empty again.
   var _hubRemoved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialPicks.isEmpty) {
+      return;
+    }
+    // Riverpod refuses changes while the first frame builds.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      widget.initialPicks.forEach(
+        ref
+            .read(
+              inventoryItemCombineControllerProvider(widget.item.id).notifier,
+            )
+            .addWithDefaultAmount,
+      );
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -1190,9 +1190,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get preparedMealSectionTitle => 'Mahlzeiten';
 
   @override
-  String get preparedMealCreateTitle => 'Mahlzeit erstellen';
-
-  @override
   String get preparedMealEditTitle => 'Mahlzeit bearbeiten';
 
   @override
@@ -1259,9 +1256,6 @@ class AppLocalizationsDe extends AppLocalizations {
       'Füge vor dem Speichern mindestens eine Zutat hinzu.';
 
   @override
-  String get preparedMealCreateAction => 'Mahlzeit erstellen';
-
-  @override
   String get preparedMealBindAction => 'Als Mahlzeit binden';
 
   @override
@@ -1294,18 +1288,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get preparedMealUpdatedMessage => 'Mahlzeit wurde aktualisiert.';
-
-  @override
-  String get preparedMealInsufficientAmountMessage =>
-      'Mindestens eine ausgewählte Zutat ist nicht mehr in ausreichender Menge verfügbar.';
-
-  @override
-  String get preparedMealMissingNutritionMessage =>
-      'Mindestens einer ausgewählten Zutat fehlen vollständige Nährwerte.';
-
-  @override
-  String get preparedMealItemUnavailableMessage =>
-      'Mindestens eine ausgewählte Zutat ist nicht mehr im Inventar verfügbar.';
 
   @override
   String get preparedMealActionFailed =>

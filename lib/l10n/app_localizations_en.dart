@@ -1173,9 +1173,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preparedMealSectionTitle => 'Prepared meals';
 
   @override
-  String get preparedMealCreateTitle => 'Create prepared meal';
-
-  @override
   String get preparedMealEditTitle => 'Edit prepared meal';
 
   @override
@@ -1241,9 +1238,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add at least one ingredient before saving.';
 
   @override
-  String get preparedMealCreateAction => 'Create meal';
-
-  @override
   String get preparedMealBindAction => 'Bind meal';
 
   @override
@@ -1276,18 +1270,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get preparedMealUpdatedMessage => 'Prepared meal updated.';
-
-  @override
-  String get preparedMealInsufficientAmountMessage =>
-      'At least one selected ingredient is no longer available in a sufficient amount.';
-
-  @override
-  String get preparedMealMissingNutritionMessage =>
-      'At least one selected ingredient is missing complete nutrition values.';
-
-  @override
-  String get preparedMealItemUnavailableMessage =>
-      'At least one selected ingredient is no longer available in inventory.';
 
   @override
   String get preparedMealActionFailed =>

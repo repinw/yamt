@@ -99,8 +99,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/presentation/inventory_manual_product_search_launcher.dart':
         1,
-    'lib/features/inventory/presentation/inventory_prepared_meal_creation_coordinator.dart':
-        1,
     'lib/features/inventory/presentation/inventory_prepared_meal_edit_coordinator.dart':
         1,
     'lib/features/inventory/presentation/inventory_product_search_hub_completion_handler.dart':
@@ -217,8 +215,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/domain/inventory_parsing_utils.dart': 1,
     'lib/features/inventory/presentation/inventory_manual_product_eat_coordinator.dart':
-        1,
-    'lib/features/inventory/presentation/inventory_prepared_meal_creation_coordinator.dart':
         1,
     'lib/features/inventory/presentation/inventory_prepared_meal_edit_coordinator.dart':
         1,

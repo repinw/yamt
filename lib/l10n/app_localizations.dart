@@ -2032,12 +2032,6 @@ abstract class AppLocalizations {
   /// **'Prepared meals'**
   String get preparedMealSectionTitle;
 
-  /// No description provided for @preparedMealCreateTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Create prepared meal'**
-  String get preparedMealCreateTitle;
-
   /// No description provided for @preparedMealEditTitle.
   ///
   /// In en, this message translates to:
@@ -2158,12 +2152,6 @@ abstract class AppLocalizations {
   /// **'Add at least one ingredient before saving.'**
   String get preparedMealEmptyIngredientsMessage;
 
-  /// No description provided for @preparedMealCreateAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Create meal'**
-  String get preparedMealCreateAction;
-
   /// No description provided for @preparedMealBindAction.
   ///
   /// In en, this message translates to:
@@ -2217,24 +2205,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Prepared meal updated.'**
   String get preparedMealUpdatedMessage;
-
-  /// No description provided for @preparedMealInsufficientAmountMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'At least one selected ingredient is no longer available in a sufficient amount.'**
-  String get preparedMealInsufficientAmountMessage;
-
-  /// No description provided for @preparedMealMissingNutritionMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'At least one selected ingredient is missing complete nutrition values.'**
-  String get preparedMealMissingNutritionMessage;
-
-  /// No description provided for @preparedMealItemUnavailableMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'At least one selected ingredient is no longer available in inventory.'**
-  String get preparedMealItemUnavailableMessage;
 
   /// No description provided for @preparedMealActionFailed.
   ///

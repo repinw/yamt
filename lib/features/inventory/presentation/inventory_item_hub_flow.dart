@@ -24,11 +24,12 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// reports on the inventory page, which then shows the changed item. Adding
 /// to the shopping list keeps the hub open.
 abstract final class InventoryItemHubFlow {
-  /// Opens the hub for [item].
+  /// Opens the hub for [item]. [initialPicks] join the meal right away.
   static Future<void> open({
     required BuildContext context,
     required WidgetRef ref,
     required InventoryItem item,
+    List<InventoryItem> initialPicks = const <InventoryItem>[],
   }) async {
     final pageMessenger = ScaffoldMessenger.of(context);
     final result = await Navigator.of(context, rootNavigator: true)
@@ -37,6 +38,7 @@ abstract final class InventoryItemHubFlow {
             fullscreenDialog: true,
             builder: (_) => InventoryItemHubPage(
               item: item,
+              initialPicks: initialPicks,
               onAction: (hubContext, action) =>
                   _run(hubContext, ref, item, action, pageMessenger),
             ),
