@@ -84,36 +84,6 @@ class DiaryMacroTargets {
   /// Fat goal in grams.
   final double fat;
 
-  /// Returns a new [DiaryMacroTargets] with positive or negative carryover.
-  ///
-  /// Implements:
-  /// - Protein remains 100% constant (Schutzregel A).
-  /// - Positive carryover: +75% kcal to carbs (/ 4.1), +25% kcal to fat (/ 9.3).
-  /// - Negative carryover: -25% kcal from fat (/ 9.3) down to the Fat Floor
-  ///   (>= 0.6 g/kg or >= 20% of daily kcal). Any excess reduction that would
-  ///   breach the Fat Floor is redirected to carbs.
-  /// - Carbs are reduced by remaining reduction (/ 4.1), never below 50g floor.
-  DiaryMacroTargets applyCarryover({
-    required double carryoverKcal,
-    required double weightKg,
-    double? baseGoalKcal,
-  }) {
-    if (carryoverKcal == 0) {
-      return this;
-    }
-    final delta = calculateCarryoverDelta(
-      baseTargets: this,
-      carryoverKcal: carryoverKcal,
-      weightKg: weightKg,
-      baseGoalKcal: baseGoalKcal,
-    );
-    return DiaryMacroTargets(
-      protein: protein + delta.proteinGrams,
-      carbs: carbs + delta.carbsGrams,
-      fat: fat + delta.fatGrams,
-    );
-  }
-
   /// Calculates the delta applied to base macros for a given carryover.
   static DiaryMacroCarryoverDelta calculateCarryoverDelta({
     required DiaryMacroTargets baseTargets,
