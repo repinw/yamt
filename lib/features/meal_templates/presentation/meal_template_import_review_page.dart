@@ -99,6 +99,7 @@ class _MealTemplateImportReviewPageState
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: FilledButton(
+                  key: const Key('meal_template_import_review_save_button'),
                   onPressed: _isSaving ? null : _saveTemplate,
                   child: Text(
                     _isSaving
