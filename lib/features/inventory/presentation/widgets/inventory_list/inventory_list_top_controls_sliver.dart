@@ -4,12 +4,9 @@ import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/text_voice_search_bar/text_voice_search_bar.dart';
-import 'package:yamt/features/inventory/presentation/models/'
-    'inventory_list_view_preferences.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Search field of the Vorrat list with the Sortieren and Liste/Kacheln
-/// buttons.
+/// Search field of the Vorrat list with the Sortieren button.
 class InventoryListTopControlsSliver extends StatelessWidget {
   /// The inventory list top controls sliver.
   const new({
@@ -18,8 +15,6 @@ class InventoryListTopControlsSliver extends StatelessWidget {
     required this.enabled,
     required this.onSearchChanged,
     required this.onShowSort,
-    required this.viewMode,
-    required this.onToggleViewMode,
     required this.voiceSearchService,
     required this.voiceSearchController,
     required this.l10n,
@@ -40,12 +35,6 @@ class InventoryListTopControlsSliver extends StatelessWidget {
 
   /// Opens the Sortieren sheet.
   final VoidCallback onShowSort;
-
-  /// Current layout; the toggle names the other one.
-  final InventoryListViewMode viewMode;
-
-  /// Switches between list and tiles.
-  final VoidCallback onToggleViewMode;
 
   /// The voice search service.
   final VoiceSearchService voiceSearchService;
@@ -85,26 +74,10 @@ class InventoryListTopControlsSliver extends StatelessWidget {
             _ToolButton(
               key: const Key('inventory_list_sort_button'),
               enabled: enabled,
-              icon: Icons.tune_rounded,
+              icon: Icons.filter_alt_rounded,
               label: l10n.inventorySortAction,
               onPressed: onShowSort,
             ),
-            if (viewMode == InventoryListViewMode.list)
-              _ToolButton(
-                key: const Key('inventory_list_view_mode_button'),
-                enabled: enabled,
-                icon: Icons.grid_view_rounded,
-                label: l10n.inventoryViewTilesAction,
-                onPressed: onToggleViewMode,
-              )
-            else
-              _ToolButton(
-                key: const Key('inventory_list_view_mode_button'),
-                enabled: enabled,
-                icon: Icons.view_agenda_rounded,
-                label: l10n.inventoryViewListAction,
-                onPressed: onToggleViewMode,
-              ),
           ],
         ),
       ),
