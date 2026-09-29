@@ -257,53 +257,6 @@ void main() {
     });
 
     test(
-      'replaceWithBarcode ersetzt Artikel sauber bei bekanntem Barcode',
-      () async {
-        final container = createContainer();
-        fakeResolver.registerProductForBarcode(
-          '4009876543210',
-          testBrotCandidate,
-        );
-
-        final controller = container.read(
-          receiptReviewControllerProvider(baseReceipt).notifier,
-        );
-
-        final success = await controller.replaceWithBarcode(
-          'item-2',
-          '4009876543210',
-        );
-
-        expect(success, isTrue);
-        final item2 = controller.state.receipt.items[1];
-        expect(item2.status, ReceiptItemStatus.confirmed);
-        expect(item2.matchedProduct?.name, 'Harry Vollkornbrot 500g');
-        expect(item2.matchedProduct?.barcode, '4009876543210');
-        expect(controller.state.isResolving, isFalse);
-      },
-    );
-
-    test('replaceWithBarcode meldet Fehler bei unbekanntem Barcode', () async {
-      final container = createContainer();
-      final controller = container.read(
-        receiptReviewControllerProvider(baseReceipt).notifier,
-      );
-
-      final success = await controller.replaceWithBarcode(
-        'item-2',
-        '9999999999999',
-      );
-
-      expect(success, isFalse);
-      expect(controller.state.errorMessage, contains('Kein Produkt'));
-      expect(controller.state.isResolving, isFalse);
-      expect(
-        controller.state.receipt.items[1].status,
-        ReceiptItemStatus.unmatched,
-      );
-    });
-
-    test(
       'saveReceipt blockiert, wenn noch offene Positionen existieren',
       () async {
         final container = createContainer();

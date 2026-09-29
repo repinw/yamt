@@ -103,55 +103,6 @@ class ReceiptReviewController extends _$ReceiptReviewController {
     state = state.copyWith(receipt: state.receipt.confirmAllSuggestions());
   }
 
-  /// Replaces an item's product using a scanned product barcode.
-  Future<bool> replaceWithBarcode(String itemId, String barcode) async {
-    final item = _findItem(itemId);
-    if (item == null) return false;
-
-    state = state.copyWith(isResolving: true, errorMessage: null);
-
-    try {
-      final resolver = ref.read(receiptProductResolverProvider);
-      final product = await resolver.resolveByBarcode(barcode);
-
-      if (!ref.mounted) return false;
-
-      if (product == null) {
-        state = state.copyWith(
-          isResolving: false,
-          errorMessage: 'Kein Produkt für Barcode $barcode gefunden.',
-        );
-        return false;
-      }
-
-      final updatedItem = item.withSelectedProduct(product);
-      state = state.copyWith(
-        isResolving: false,
-        receipt: state.receipt.updateItem(updatedItem),
-      );
-      return true;
-    } on Object catch (error) {
-      if (!ref.mounted) return false;
-      state = state.copyWith(
-        isResolving: false,
-        errorMessage: 'Barcode-Suche fehlgeschlagen: $error',
-      );
-      return false;
-    }
-  }
-
-  /// Searches catalog for candidate products matching [query].
-  Future<List<ProductCandidate>> searchProducts(String query) async {
-    final resolver = ref.read(receiptProductResolverProvider);
-    return await resolver.searchByName(query);
-  }
-
-  /// Resolves candidate products matching [barcode] without auto-confirming.
-  Future<List<ProductCandidate>> searchByBarcode(String barcode) async {
-    final resolver = ref.read(receiptProductResolverProvider);
-    return await resolver.resolveCandidatesByBarcode(barcode);
-  }
-
   /// Saves the entire receipt with all confirmed items to inventory.
   Future<bool> saveReceipt() async {
     if (!state.receipt.isReadyToSave) {
