@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_intro_layout_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/onboarding/presentation/calorie_goal_onboarding_keys.dart';
 
 /// Renders a row of selectable weekday chips (Monday-Sunday).
 class IntroWeekdaySelector extends StatelessWidget {
@@ -35,6 +36,7 @@ class IntroWeekdaySelector extends StatelessWidget {
         final isSelected = selectedWeekdays.contains(weekday);
 
         return _WeekdayChip(
+          key: CalorieGoalOnboardingKeys.introTrainingWeekday(weekday),
           label: _weekdayLabel(context, weekday),
           isSelected: isSelected,
           onTap: () => onToggleWeekday(weekday),
@@ -49,6 +51,7 @@ class _WeekdayChip extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onTap,
+    super.key,
   });
 
   final String label;

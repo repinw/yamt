@@ -19,6 +19,7 @@ import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -295,6 +296,32 @@ void main() {
     await _expectGoalStartedToday(harness);
   });
 
+  testWidgets('calorie intro counts the picked training days as sessions', (
+    tester,
+  ) async {
+    final harness = await _pumpOnboardingApp(tester);
+
+    await _completeIntro(
+      tester,
+      trainingWeekdays: const [DateTime.monday, DateTime.thursday],
+    );
+    await _finishIntro(tester);
+
+    _expectHomeDiary(harness);
+    final settings = await harness.settingsRepository.readSettings();
+    final profile = settings.calculatorProfile!;
+    expect(profile.trainingWeekdays, [DateTime.monday, DateTime.thursday]);
+    expect(profile.trainingDayKcalOffset, defaultTrainingDayKcalOffset);
+    // Two sessions of 250 kcal a week add 500 / 7 kcal to every day.
+    final withoutTraining = CalorieGoalCalculator.calculate(
+      profile.copyWith(trainingWeekdays: const <int>[]),
+    );
+    expect(
+      settings.dailyKcalGoal,
+      closeTo(withoutTraining.finalGoalKcal + 500 / 7, 0.001),
+    );
+  });
+
   testWidgets('calorie intro blocks the identity page without a birthday', (
     tester,
   ) async {
@@ -470,7 +497,10 @@ Future<void> _spinWheel(WidgetTester tester, Key wheelKey) async {
   await _pumpVisibleStep(tester);
 }
 
-Future<void> _completeIntro(WidgetTester tester) async {
+Future<void> _completeIntro(
+  WidgetTester tester, {
+  List<int> trainingWeekdays = const [],
+}) async {
   await _openIdentityPage(tester);
   await _completeIdentity(tester);
 
@@ -485,6 +515,12 @@ Future<void> _completeIntro(WidgetTester tester) async {
   await _tapVisible(tester, find.text('Lightly active'));
   await _tapIntroNext(tester);
 
+  for (final weekday in trainingWeekdays) {
+    await _tapVisible(
+      tester,
+      find.byKey(CalorieGoalOnboardingKeys.introTrainingWeekday(weekday)),
+    );
+  }
   await _tapIntroNext(tester);
 }
 

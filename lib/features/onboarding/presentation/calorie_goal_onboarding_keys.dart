@@ -57,4 +57,8 @@ abstract final class CalorieGoalOnboardingKeys {
 
   /// The shared back action of the intro controls.
   static const introBackAction = Key('calorie_intro_back_action');
+
+  /// The training day chip of [weekday] (1 = Monday .. 7 = Sunday).
+  static Key introTrainingWeekday(int weekday) =>
+      ValueKey<String>('calorie_intro_training_weekday_$weekday');
 }
