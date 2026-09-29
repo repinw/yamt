@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 void main() {
   group('DiaryDailyBudgetDetailsData.from', () {
@@ -59,6 +60,11 @@ void main() {
         metrics: metrics,
         isPauseDay: false,
         carryoverStartDate: monday,
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 0,
+          protein: 0,
+          fat: 0,
+        ),
       );
 
       expect(data.baseGoalKcal, 2000);
@@ -128,6 +134,11 @@ void main() {
         metrics: metrics,
         isPauseDay: false,
         carryoverStartDate: monday,
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 0,
+          protein: 0,
+          fat: 0,
+        ),
       );
 
       expect(data.previousDays.length, 1);
@@ -177,6 +188,11 @@ void main() {
         metrics: metrics,
         isPauseDay: false,
         carryoverStartDate: monday,
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 0,
+          protein: 0,
+          fat: 0,
+        ),
       );
 
       expect(data.previousDays, isEmpty);
@@ -230,6 +246,11 @@ void main() {
         metrics: metrics,
         isPauseDay: false,
         carryoverStartDate: newRunStart,
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 0,
+          protein: 0,
+          fat: 0,
+        ),
       );
 
       expect(data.previousDays, isEmpty);
@@ -237,7 +258,7 @@ void main() {
       expect(data.remainingRunDays, 7);
     });
 
-    test('computes carryover macro deltas and detects active safety cap', () {
+    test('shows the carryover macro deltas and detects active safety cap', () {
       final tuesday = DateTime(2026, 4, 14);
 
       // Overate on Monday by 1000 kcal with 2 remaining days ->
@@ -253,17 +274,16 @@ void main() {
         totalCarryoverBeforeTodayKcal: -1000,
         remainingRunDays: 2,
         previousDays: const [],
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: -64,
+          protein: 0,
+          fat: -9.4,
+        ),
       );
 
       expect(cappedData.wasSafetyCapActive, isTrue);
-      expect(
-        cappedData.carryoverCarbsDeltaGrams,
-        closeTo(-(350 * 0.75) / 4.1, 0.01),
-      );
-      expect(
-        cappedData.carryoverFatDeltaGrams,
-        closeTo(-(350 * 0.25) / 9.3, 0.01),
-      );
+      expect(cappedData.carryoverCarbsDeltaGrams, -64);
+      expect(cappedData.carryoverFatDeltaGrams, -9.4);
 
       // Positive carryover +100 kcal: cap is false, positive macro deltas
       final positiveData = DiaryDailyBudgetDetailsData(
@@ -277,17 +297,17 @@ void main() {
         totalCarryoverBeforeTodayKcal: 300,
         remainingRunDays: 3,
         previousDays: const [],
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 10,
+          protein: 0,
+          fat: 6.3,
+        ),
       );
 
+      // The deltas come from the macro target rule, not from a fixed split.
       expect(positiveData.wasSafetyCapActive, isFalse);
-      expect(
-        positiveData.carryoverCarbsDeltaGrams,
-        closeTo((100 * 0.75) / 4.1, 0.01),
-      );
-      expect(
-        positiveData.carryoverFatDeltaGrams,
-        closeTo((100 * 0.25) / 9.3, 0.01),
-      );
+      expect(positiveData.carryoverCarbsDeltaGrams, 10);
+      expect(positiveData.carryoverFatDeltaGrams, 6.3);
     });
 
     test('populates calorie cycling fields for a rest day', () {
@@ -330,6 +350,11 @@ void main() {
         metrics: metrics,
         isPauseDay: false,
         carryoverStartDate: monday,
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 0,
+          protein: 0,
+          fat: 0,
+        ),
       );
 
       expect(data.unadjustedBaseGoalKcal, 2553);
@@ -381,6 +406,11 @@ void main() {
         metrics: metrics,
         isPauseDay: false,
         carryoverStartDate: monday,
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 0,
+          protein: 0,
+          fat: 0,
+        ),
       );
 
       expect(data.unadjustedBaseGoalKcal, 2553);

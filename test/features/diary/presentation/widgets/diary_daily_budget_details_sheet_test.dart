@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_budget_details_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -74,6 +75,11 @@ void main() {
             isPauseDay: false,
           ),
         ],
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 0,
+          protein: 0,
+          fat: 0,
+        ),
       );
 
       await tester.pumpWidget(buildTestWidget(data));
@@ -137,6 +143,11 @@ void main() {
         totalCarryoverBeforeTodayKcal: 0,
         remainingRunDays: 7,
         previousDays: const [],
+        carryoverMacroDelta: const DiaryMacroTargets(
+          carbs: 0,
+          protein: 0,
+          fat: 0,
+        ),
       );
 
       await tester.pumpWidget(buildTestWidget(data));
@@ -174,6 +185,11 @@ void main() {
           totalCarryoverBeforeTodayKcal: -126,
           remainingRunDays: 6,
           previousDays: const [],
+          carryoverMacroDelta: const DiaryMacroTargets(
+            carbs: 0,
+            protein: 0,
+            fat: 0,
+          ),
         );
 
         await tester.pumpWidget(buildTestWidget(data));

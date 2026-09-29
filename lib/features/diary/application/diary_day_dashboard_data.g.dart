@@ -30,6 +30,9 @@ DiaryDayDashboardData _$DiaryDayDashboardDataFromJson(
   nutritionBars: DiaryNutritionBarsData.fromJson(
     json['nutrition_bars'] as Map<String, dynamic>,
   ),
+  carryoverMacroDelta: DiaryMacroTargets.fromJson(
+    json['carryover_macro_delta'] as Map<String, dynamic>,
+  ),
 );
 
 Map<String, dynamic> _$DiaryDayDashboardDataToJson(
@@ -44,4 +47,5 @@ Map<String, dynamic> _$DiaryDayDashboardDataToJson(
   'run_state': instance.runState.toJson(),
   'meal_sections': instance.mealSections.map((e) => e.toJson()).toList(),
   'nutrition_bars': instance.nutritionBars.toJson(),
+  'carryover_macro_delta': instance.carryoverMacroDelta.toJson(),
 };

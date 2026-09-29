@@ -240,6 +240,12 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
           goalKcal,
           macroTargets: macroTargets,
         ),
+        carryoverMacroDelta: resolveDiaryCarryoverMacroDelta(
+          ref,
+          day: normalizedDay,
+          goalKcal: goalKcal,
+          carryoverKcal: carryoverKcal,
+        ),
       );
       state = DiaryDayDashboardState(
         data: data,
