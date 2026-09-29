@@ -417,6 +417,7 @@ Future<void> _pumpTestApp(
   InventoryItemRepository repository, {
   List<Override> overrides = const <Override>[],
   GoRoute? calorieEntryRoute,
+  List<GoRoute> extraRoutes = const <GoRoute>[],
   InventoryDiscardEventRepository? discardEventRepository,
   bool includeHomeShellChrome = false,
   Widget Function(Widget child)? shellBuilder,
@@ -438,6 +439,7 @@ Future<void> _pumpTestApp(
   if (calorieEntryRoute != null) {
     routes.add(calorieEntryRoute);
   }
+  routes.addAll(extraRoutes);
   final router = GoRouter(routes: routes);
   await tester.pumpWidget(
     ProviderScope(
@@ -821,25 +823,52 @@ void main() {
     },
   );
 
-  testWidgets('edit action opens the inventory item editor', (tester) async {
+  testWidgets('edit action opens the product editor and saves its result', (
+    tester,
+  ) async {
     final repository = _FakeFridgeItemRepository(
       onReadAll: () async => <InventoryItem>[_item('a', name: 'Milk')],
     );
     addTearDown(repository.dispose);
+    const saveKey = Key('fake_item_editor_save');
 
-    await _pumpTestApp(tester, repository);
+    await _pumpTestApp(
+      tester,
+      repository,
+      extraRoutes: [
+        // Stands in for the product editor that the app router builds.
+        GoRoute(
+          path: AppRoutes.homeInventoryItemEdit,
+          builder: (context, state) => Scaffold(
+            body: TextButton(
+              key: saveKey,
+              onPressed: () => context.pop(
+                InventoryReceiptManualProductResult(
+                  item: _item(
+                    state.pathParameters['itemId']!,
+                    name: 'Oat milk',
+                  ),
+                  action: InventoryReceiptManualProductAction.addToInventory,
+                ),
+              ),
+              child: const Text('save'),
+            ),
+          ),
+        ),
+      ],
+    );
     await tester.pumpAndSettle();
     await _toggleFullyConsumedFilter(tester);
 
     await _tapVisible(tester, find.text('Milk'));
     await tester.pumpAndSettle();
     await _tapInventoryRowAction(tester, 'Edit');
+    expect(find.byKey(saveKey), findsOneWidget);
 
-    expect(find.text('Edit inventory item'), findsOneWidget);
-    expect(find.text('Discounts'), findsNothing);
-    expect(find.text('Is deposit item'), findsNothing);
-    expect(find.text('Is discount item'), findsNothing);
-    expect(find.text('Not implemented yet'), findsNothing);
+    await tester.tap(find.byKey(saveKey));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Oat milk'), findsWidgets);
   });
 
   testWidgets('remove action can delete item and restore it via undo', (

@@ -309,8 +309,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/presentation/widgets/inventory_action_picker_sheet.dart':
         1,
-    'lib/features/inventory/presentation/widgets/inventory_item_editor/receipt_item_editor_discount_rows_field.dart':
-        1,
     'lib/features/inventory/presentation/widgets/shared/status_line.dart': 1,
     'lib/features/meal_templates/presentation/widgets/meal_template_recipe_template_sheet.dart':
         3,

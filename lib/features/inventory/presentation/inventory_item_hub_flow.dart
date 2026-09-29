@@ -1,9 +1,12 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combined_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
@@ -11,7 +14,6 @@ import 'package:yamt/features/inventory/presentation/inventory_item_hub_page.dar
 import 'package:yamt/features/inventory/presentation/inventory_item_remove_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
-import 'package:yamt/features/inventory/presentation/widgets/inventory_item_editor/inventory_receipt_item_editor_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_item_row/inventory_item_candidate_swap_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -150,18 +152,11 @@ abstract final class InventoryItemHubFlow {
       _showFailure(context, l10n.inventoryItemEditRequiresFullItem);
       return false;
     }
-    final edited = await showModalBottomSheet<InventoryItem>(
-      context: context,
-      isScrollControlled: true,
-      useRootNavigator: true,
-      useSafeArea: true,
-      builder: (_) => InventoryReceiptItemEditorSheet(
-        item: item,
-        title: l10n.inventoryItemEditTitle,
-        showDiscountFields: false,
-        showReviewOnlyFields: false,
-      ),
-    );
+    final result = await GoRouter.of(context)
+        .push<InventoryReceiptManualProductResult>(
+          AppRoutes.homeInventoryItemEditPath(item.id),
+        );
+    final edited = result?.item;
     if (edited == null || edited == item || !context.mounted) {
       return false;
     }

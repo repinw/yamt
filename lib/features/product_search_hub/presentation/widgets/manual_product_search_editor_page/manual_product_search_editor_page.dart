@@ -37,6 +37,7 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
     this.showActionSelector = true,
     this.initialRecentItem,
     this.initialInfoMessage,
+    this.confirmLabel,
     super.key,
   });
 
@@ -60,6 +61,10 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
 
   /// Optional message shown when the editor opens.
   final String? initialInfoMessage;
+
+  /// Word of the save button; "Erstellen" when null. Editing a Vorrat item
+  /// says "Speichern".
+  final String? confirmLabel;
 
   @override
   ConsumerState<InventoryReceiptManualProductEditorPage> createState() =>
@@ -144,6 +149,7 @@ class _InventoryReceiptManualProductEditorPageState
           _controller.updateHasNoBarcode(value: value),
       onActionChanged: (action) => setState(() => _selectedAction = action),
       onSave: _onSave,
+      confirmLabel: widget.confirmLabel,
     );
   }
 

@@ -30,6 +30,7 @@ import 'package:yamt/features/onboarding/presentation/'
 import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'models/product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_item_edit_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -171,6 +172,12 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       path: AppRoutes.homeInventoryTemplateDetail,
       builder: (context, state) =>
           CookingFlowPage(templateId: state.pathParameters['templateId'] ?? ''),
+    ),
+    GoRoute(
+      path: AppRoutes.homeInventoryItemEdit,
+      builder: (context, state) => ProductSearchHubItemEditPage(
+        itemId: state.pathParameters['itemId'] ?? '',
+      ),
     ),
     GoRoute(
       path: AppRoutes.homeKitchenUtensils,

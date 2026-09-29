@@ -136,17 +136,7 @@ void main() {
       _food('new', eatenAt: DateTime(2026, 9, 9)),
     ];
 
-    expect(
-      _ids(
-        _build(
-          items: eaten,
-          preferences: const InventoryListViewPreferences(
-            sortMode: InventoryItemSortMode.recentlyEatenDescending,
-          ),
-        ),
-      ),
-      ['new', 'old', 'never'],
-    );
+    expect(_ids(_build(items: eaten)), ['new', 'old', 'never']);
     expect(
       _ids(
         _build(

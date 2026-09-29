@@ -422,6 +422,12 @@ abstract class AppLocalizations {
   /// **'Create'**
   String get productEditorCreateAction;
 
+  /// No description provided for @productEditorSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get productEditorSaveAction;
+
   /// No description provided for @productEditorFrontPhotoHint.
   ///
   /// In en, this message translates to:
@@ -914,41 +920,17 @@ abstract class AppLocalizations {
   /// **'Edit'**
   String get inventoryReceiptReviewEditAction;
 
-  /// No description provided for @inventoryReceiptReviewEditTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit receipt item'**
-  String get inventoryReceiptReviewEditTitle;
-
-  /// No description provided for @inventoryReceiptReviewApplyItemAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Apply changes'**
-  String get inventoryReceiptReviewApplyItemAction;
-
   /// No description provided for @inventoryReceiptReviewFieldName.
   ///
   /// In en, this message translates to:
   /// **'Name'**
   String get inventoryReceiptReviewFieldName;
 
-  /// No description provided for @inventoryReceiptReviewFieldStoreName.
-  ///
-  /// In en, this message translates to:
-  /// **'Store name'**
-  String get inventoryReceiptReviewFieldStoreName;
-
   /// No description provided for @inventoryReceiptReviewFieldQuantity.
   ///
   /// In en, this message translates to:
   /// **'Quantity'**
   String get inventoryReceiptReviewFieldQuantity;
-
-  /// No description provided for @inventoryReceiptReviewFieldUnitPrice.
-  ///
-  /// In en, this message translates to:
-  /// **'Unit price'**
-  String get inventoryReceiptReviewFieldUnitPrice;
 
   /// No description provided for @inventoryReceiptReviewFieldWeight.
   ///
@@ -961,30 +943,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unit'**
   String get inventoryReceiptReviewFieldWeightUnit;
-
-  /// No description provided for @inventoryReceiptReviewFieldWeightUnitFallback.
-  ///
-  /// In en, this message translates to:
-  /// **'Fallback unit'**
-  String get inventoryReceiptReviewFieldWeightUnitFallback;
-
-  /// No description provided for @inventoryReceiptReviewWeightUnitAuto.
-  ///
-  /// In en, this message translates to:
-  /// **'Auto'**
-  String get inventoryReceiptReviewWeightUnitAuto;
-
-  /// No description provided for @inventoryReceiptReviewWeightUnitGram.
-  ///
-  /// In en, this message translates to:
-  /// **'Gram (g)'**
-  String get inventoryReceiptReviewWeightUnitGram;
-
-  /// No description provided for @inventoryReceiptReviewWeightUnitMilliliter.
-  ///
-  /// In en, this message translates to:
-  /// **'Milliliter (ml)'**
-  String get inventoryReceiptReviewWeightUnitMilliliter;
 
   /// No description provided for @inventoryReceiptReviewWeightUnitPiece.
   ///
@@ -1016,48 +974,6 @@ abstract class AppLocalizations {
   /// **'Brand'**
   String get inventoryReceiptReviewFieldBrand;
 
-  /// No description provided for @inventoryReceiptReviewFieldCategory.
-  ///
-  /// In en, this message translates to:
-  /// **'Category'**
-  String get inventoryReceiptReviewFieldCategory;
-
-  /// No description provided for @inventoryReceiptReviewFieldDiscounts.
-  ///
-  /// In en, this message translates to:
-  /// **'Discounts'**
-  String get inventoryReceiptReviewFieldDiscounts;
-
-  /// No description provided for @inventoryReceiptReviewDiscountNameLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Discount label'**
-  String get inventoryReceiptReviewDiscountNameLabel;
-
-  /// No description provided for @inventoryReceiptReviewDiscountAmountLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Amount'**
-  String get inventoryReceiptReviewDiscountAmountLabel;
-
-  /// No description provided for @inventoryReceiptReviewAddDiscountAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Add discount row'**
-  String get inventoryReceiptReviewAddDiscountAction;
-
-  /// No description provided for @inventoryReceiptReviewFieldIsDeposit.
-  ///
-  /// In en, this message translates to:
-  /// **'Is deposit item'**
-  String get inventoryReceiptReviewFieldIsDeposit;
-
-  /// No description provided for @inventoryReceiptReviewFieldIsDiscount.
-  ///
-  /// In en, this message translates to:
-  /// **'Is discount item'**
-  String get inventoryReceiptReviewFieldIsDiscount;
-
   /// No description provided for @inventoryReceiptReviewNoDate.
   ///
   /// In en, this message translates to:
@@ -1070,12 +986,6 @@ abstract class AppLocalizations {
   /// **'Please enter valid numbers.'**
   String get inventoryReceiptReviewInvalidNumber;
 
-  /// No description provided for @inventoryReceiptReviewInvalidWeightUnit.
-  ///
-  /// In en, this message translates to:
-  /// **'Please add a unit (e.g. g or ml).'**
-  String get inventoryReceiptReviewInvalidWeightUnit;
-
   /// No description provided for @inventoryReceiptReviewConfirmItemAction.
   ///
   /// In en, this message translates to:
@@ -1087,12 +997,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Undo confirmation'**
   String get inventoryReceiptReviewUndoConfirmAction;
-
-  /// No description provided for @inventoryReceiptReviewInvalidDiscounts.
-  ///
-  /// In en, this message translates to:
-  /// **'Use JSON or key=value pairs.'**
-  String get inventoryReceiptReviewInvalidDiscounts;
 
   /// No description provided for @inventoryReceiptReviewDetectedItems.
   ///
@@ -1851,12 +1755,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Throw away'**
   String get inventoryItemThrowAwayAction;
-
-  /// No description provided for @inventoryItemEditTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Edit inventory item'**
-  String get inventoryItemEditTitle;
 
   /// No description provided for @inventoryItemUpdatedMessage.
   ///

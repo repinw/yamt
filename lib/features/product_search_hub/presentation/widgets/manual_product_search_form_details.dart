@@ -43,11 +43,15 @@ class ManualProductDetailsForm extends StatefulWidget {
     required this.onAddOptionalNutrition,
     required this.onActionChanged,
     required this.onSave,
+    this.confirmLabel,
     super.key,
   });
 
   /// Key of the confirm button.
   static const saveKey = Key('receipt_review_manual_save_button');
+
+  /// Word of the save button; "Erstellen" when null.
+  final String? confirmLabel;
 
   /// The entered product.
   final InventoryReceiptManualProductState state;
@@ -162,7 +166,7 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
       whenControl: const SizedBox.shrink(),
       kcal: null,
       confirmButtonKey: ManualProductDetailsForm.saveKey,
-      confirmLabel: l10n.productEditorCreateAction,
+      confirmLabel: widget.confirmLabel ?? l10n.productEditorCreateAction,
       onConfirm: widget.canSave ? widget.onSave : null,
       confirmHint: widget.canSave
           ? null

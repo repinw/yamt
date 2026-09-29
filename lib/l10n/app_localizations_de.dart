@@ -200,6 +200,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get productEditorCreateAction => 'Erstellen';
 
   @override
+  String get productEditorSaveAction => 'Speichern';
+
+  @override
   String get productEditorFrontPhotoHint => 'Name, Marke, Packung';
 
   @override
@@ -506,41 +509,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewEditAction => 'Bearbeiten';
 
   @override
-  String get inventoryReceiptReviewEditTitle => 'Belegposition bearbeiten';
-
-  @override
-  String get inventoryReceiptReviewApplyItemAction => 'Änderungen übernehmen';
-
-  @override
   String get inventoryReceiptReviewFieldName => 'Name';
 
   @override
-  String get inventoryReceiptReviewFieldStoreName => 'Geschäft';
-
-  @override
   String get inventoryReceiptReviewFieldQuantity => 'Menge';
-
-  @override
-  String get inventoryReceiptReviewFieldUnitPrice => 'Stückpreis';
 
   @override
   String get inventoryReceiptReviewFieldWeight => 'Gewicht';
 
   @override
   String get inventoryReceiptReviewFieldWeightUnit => 'Einheit';
-
-  @override
-  String get inventoryReceiptReviewFieldWeightUnitFallback =>
-      'Fallback-Einheit';
-
-  @override
-  String get inventoryReceiptReviewWeightUnitAuto => 'Automatisch';
-
-  @override
-  String get inventoryReceiptReviewWeightUnitGram => 'Gramm (g)';
-
-  @override
-  String get inventoryReceiptReviewWeightUnitMilliliter => 'Milliliter (ml)';
 
   @override
   String get inventoryReceiptReviewWeightUnitPiece => 'Stück';
@@ -558,28 +536,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryReceiptReviewFieldBrand => 'Marke';
 
   @override
-  String get inventoryReceiptReviewFieldCategory => 'Kategorie';
-
-  @override
-  String get inventoryReceiptReviewFieldDiscounts => 'Rabatte';
-
-  @override
-  String get inventoryReceiptReviewDiscountNameLabel => 'Rabattname';
-
-  @override
-  String get inventoryReceiptReviewDiscountAmountLabel => 'Betrag';
-
-  @override
-  String get inventoryReceiptReviewAddDiscountAction =>
-      'Rabattzeile hinzufügen';
-
-  @override
-  String get inventoryReceiptReviewFieldIsDeposit => 'Ist Pfandartikel';
-
-  @override
-  String get inventoryReceiptReviewFieldIsDiscount => 'Ist Rabattposition';
-
-  @override
   String get inventoryReceiptReviewNoDate => 'Kein Datum';
 
   @override
@@ -587,18 +543,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Bitte gültige Zahlen eingeben.';
 
   @override
-  String get inventoryReceiptReviewInvalidWeightUnit =>
-      'Bitte eine Einheit angeben (z. B. g oder ml).';
-
-  @override
   String get inventoryReceiptReviewConfirmItemAction => 'Artikel bestätigen';
 
   @override
   String get inventoryReceiptReviewUndoConfirmAction => 'Bestätigung aufheben';
-
-  @override
-  String get inventoryReceiptReviewInvalidDiscounts =>
-      'JSON oder key=value verwenden.';
 
   @override
   String get inventoryReceiptReviewDetectedItems => 'Erkannte Artikel';
@@ -1082,9 +1030,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryItemThrowAwayAction => 'Wegwerfen';
-
-  @override
-  String get inventoryItemEditTitle => 'Vorratsartikel bearbeiten';
 
   @override
   String get inventoryItemUpdatedMessage =>

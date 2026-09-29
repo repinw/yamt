@@ -36,8 +36,12 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
     required this.onNoBarcodeChanged,
     required this.onActionChanged,
     required this.onSave,
+    this.confirmLabel,
     super.key,
   });
+
+  /// Word of the save button; the create word when null.
+  final String? confirmLabel;
 
   /// Current product search state.
   final InventoryReceiptManualProductState state;
@@ -108,6 +112,7 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
       onAddOptionalNutrition: controller.showOptionalNutrition,
       onActionChanged: onActionChanged,
       onSave: onSave,
+      confirmLabel: confirmLabel,
     );
   }
 

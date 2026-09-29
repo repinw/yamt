@@ -197,6 +197,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productEditorCreateAction => 'Create';
 
   @override
+  String get productEditorSaveAction => 'Save';
+
+  @override
   String get productEditorFrontPhotoHint => 'Name, brand, size';
 
   @override
@@ -499,40 +502,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewEditAction => 'Edit';
 
   @override
-  String get inventoryReceiptReviewEditTitle => 'Edit receipt item';
-
-  @override
-  String get inventoryReceiptReviewApplyItemAction => 'Apply changes';
-
-  @override
   String get inventoryReceiptReviewFieldName => 'Name';
 
   @override
-  String get inventoryReceiptReviewFieldStoreName => 'Store name';
-
-  @override
   String get inventoryReceiptReviewFieldQuantity => 'Quantity';
-
-  @override
-  String get inventoryReceiptReviewFieldUnitPrice => 'Unit price';
 
   @override
   String get inventoryReceiptReviewFieldWeight => 'Weight';
 
   @override
   String get inventoryReceiptReviewFieldWeightUnit => 'Unit';
-
-  @override
-  String get inventoryReceiptReviewFieldWeightUnitFallback => 'Fallback unit';
-
-  @override
-  String get inventoryReceiptReviewWeightUnitAuto => 'Auto';
-
-  @override
-  String get inventoryReceiptReviewWeightUnitGram => 'Gram (g)';
-
-  @override
-  String get inventoryReceiptReviewWeightUnitMilliliter => 'Milliliter (ml)';
 
   @override
   String get inventoryReceiptReviewWeightUnitPiece => 'Piece';
@@ -550,27 +529,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryReceiptReviewFieldBrand => 'Brand';
 
   @override
-  String get inventoryReceiptReviewFieldCategory => 'Category';
-
-  @override
-  String get inventoryReceiptReviewFieldDiscounts => 'Discounts';
-
-  @override
-  String get inventoryReceiptReviewDiscountNameLabel => 'Discount label';
-
-  @override
-  String get inventoryReceiptReviewDiscountAmountLabel => 'Amount';
-
-  @override
-  String get inventoryReceiptReviewAddDiscountAction => 'Add discount row';
-
-  @override
-  String get inventoryReceiptReviewFieldIsDeposit => 'Is deposit item';
-
-  @override
-  String get inventoryReceiptReviewFieldIsDiscount => 'Is discount item';
-
-  @override
   String get inventoryReceiptReviewNoDate => 'No date';
 
   @override
@@ -578,18 +536,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Please enter valid numbers.';
 
   @override
-  String get inventoryReceiptReviewInvalidWeightUnit =>
-      'Please add a unit (e.g. g or ml).';
-
-  @override
   String get inventoryReceiptReviewConfirmItemAction => 'Confirm item';
 
   @override
   String get inventoryReceiptReviewUndoConfirmAction => 'Undo confirmation';
-
-  @override
-  String get inventoryReceiptReviewInvalidDiscounts =>
-      'Use JSON or key=value pairs.';
 
   @override
   String get inventoryReceiptReviewDetectedItems => 'Detected items';
@@ -1066,9 +1016,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get inventoryItemThrowAwayAction => 'Throw away';
-
-  @override
-  String get inventoryItemEditTitle => 'Edit inventory item';
 
   @override
   String get inventoryItemUpdatedMessage => 'Inventory item updated.';

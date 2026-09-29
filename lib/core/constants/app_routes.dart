@@ -44,6 +44,9 @@ abstract final class AppRoutes {
   static const homeInventoryTemplateDetail =
       '/home/inventory/templates/:templateId';
 
+  /// Editor of one Vorrat item, with item id parameter.
+  static const homeInventoryItemEdit = '/home/inventory/items/:itemId/edit';
+
   /// Kitchen utensils route.
   static const homeKitchenUtensils = '/home/kitchen-utensils';
 
@@ -117,5 +120,10 @@ abstract final class AppRoutes {
   /// Builds inventory template detail path for concrete template id.
   static String homeInventoryTemplateDetailPath(String templateId) {
     return '/home/inventory/templates/$templateId';
+  }
+
+  /// Builds the editor path for the Vorrat item with [itemId].
+  static String homeInventoryItemEditPath(String itemId) {
+    return '/home/inventory/items/$itemId/edit';
   }
 }
