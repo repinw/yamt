@@ -46,15 +46,16 @@ void main() {
     expect(find.byKey(SettingsMacroGoalsSheetKeys.resetButton), findsOneWidget);
     expect(find.byKey(SettingsMacroGoalsSheetKeys.saveButton), findsOneWidget);
 
-    // Without training days the defaults are 1.6 P and 0.8 F
-    expect(find.textContaining('1.6 g/kg'), findsOneWidget);
+    // Without a profile: 80 kg at 2200 kcal. 1.6 g/kg protein and 0.8 g/kg
+    // fat leave carbs above the 40 % cap, so protein shows 2.0 g/kg.
+    expect(find.textContaining('2.0 g/kg'), findsOneWidget);
     expect(find.textContaining('0.8 g/kg'), findsOneWidget);
 
-    // Toggle sport switch on -> protein stays 1.6 while maintaining
+    // Toggle sport switch on -> protein stays the same while maintaining
     await tester.tap(find.byKey(SettingsMacroGoalsSheetKeys.sportActiveSwitch));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('1.6 g/kg'), findsOneWidget);
+    expect(find.textContaining('2.0 g/kg'), findsOneWidget);
     expect(find.textContaining('0.8 g/kg'), findsOneWidget);
 
     // Toggle back off -> inactive defaults again
@@ -68,7 +69,7 @@ void main() {
     await tester.tap(find.byKey(SettingsMacroGoalsSheetKeys.resetButton));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('1.6 g/kg'), findsOneWidget);
+    expect(find.textContaining('2.0 g/kg'), findsOneWidget);
     expect(find.textContaining('0.8 g/kg'), findsOneWidget);
 
     // Save
@@ -130,6 +131,39 @@ void main() {
       expect(find.text('0%'), findsOneWidget);
     },
   );
+
+  testWidgets('saving without moving the protein slider keeps the default', (
+    tester,
+  ) async {
+    final preferences = MemoryAppPreferences();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
+        child: const MaterialApp(
+          locale: Locale('de'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(body: SettingsMacroGoalsSheet()),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // The slider shows the 2.0 g/kg that the carb cap gives, not 1.6 g/kg.
+    expect(find.textContaining('2.0 g/kg'), findsOneWidget);
+
+    await tester.ensureVisible(
+      find.byKey(SettingsMacroGoalsSheetKeys.saveButton),
+    );
+    await tester.tap(find.byKey(SettingsMacroGoalsSheetKeys.saveButton));
+    await tester.pumpAndSettle();
+
+    final saved = MacroGoalSettings.fromJsonString(
+      await preferences.getString('macro_goal_settings_v1'),
+    );
+    expect(saved?.customProteinMultiplier, isNull);
+  });
 
   testWidgets('initializes with custom multipliers when previously stored', (
     tester,
