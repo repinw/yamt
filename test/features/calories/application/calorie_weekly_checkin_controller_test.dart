@@ -52,33 +52,6 @@ void main() {
     },
   );
 
-  test('dismissPendingWeeklyCheckIn syncs and dismisses pending', () async {
-    final pendingWeeklyCheckIn = _pendingWeeklyCheckIn();
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: _settingsWithGoal(),
-    );
-    addTearDown(settingsRepository.dispose);
-    final container = ProviderContainer(
-      overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
-    );
-    addTearDown(container.dispose);
-    await container.read(calorieGoalControllerProvider.future);
-
-    final dismissed = await container
-        .read(calorieWeeklyCheckInControllerProvider.notifier)
-        .dismissPendingWeeklyCheckIn(pendingWeeklyCheckIn);
-
-    expect(dismissed, isTrue);
-    final settings = await settingsRepository.readSettings();
-    expect(settings.pendingWeeklyCheckIn?.isDismissed, isTrue);
-    expect(
-      container.read(calorieWeeklyCheckInControllerProvider).hasError,
-      isFalse,
-    );
-  });
-
   test('showPendingWeeklyCheckInAgain clears pending dismissal', () async {
     final dismissedPending = _pendingWeeklyCheckIn().copyWith(
       dismissedAt: DateTime(2026, 4, 15, 10),
@@ -111,30 +84,6 @@ void main() {
     expect(
       container.read(calorieWeeklyCheckInControllerProvider).hasError,
       isFalse,
-    );
-  });
-
-  test('dismissPendingWeeklyCheckIn reports sync failure', () async {
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: _settingsWithGoal(),
-    )..saveShouldFail = true;
-    addTearDown(settingsRepository.dispose);
-    final container = ProviderContainer(
-      overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
-    );
-    addTearDown(container.dispose);
-    await container.read(calorieGoalControllerProvider.future);
-
-    final dismissed = await container
-        .read(calorieWeeklyCheckInControllerProvider.notifier)
-        .dismissPendingWeeklyCheckIn(_pendingWeeklyCheckIn());
-
-    expect(dismissed, isFalse);
-    expect(
-      container.read(calorieWeeklyCheckInControllerProvider).hasError,
-      isTrue,
     );
   });
 

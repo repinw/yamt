@@ -55,33 +55,6 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     });
   }
 
-  /// Dismiss pending weekly check in.
-  Future<bool> dismissPendingWeeklyCheckIn(
-    PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
-  ) {
-    return _keepAliveDuring((goalController) async {
-      state = const AsyncLoading();
-      final synced = await syncPendingWeeklyCheckIn(pendingWeeklyCheckIn);
-      if (!ref.mounted) {
-        return false;
-      }
-      if (!synced) {
-        state = AsyncError(
-          StateError('Failed to persist pending weekly check-in.'),
-          StackTrace.empty,
-        );
-        return false;
-      }
-
-      final saved = await goalController.dismissPendingWeeklyCheckIn();
-      if (!ref.mounted) {
-        return saved;
-      }
-      state = const AsyncData(null);
-      return saved;
-    });
-  }
-
   /// Clears dismissal for a pending weekly check in.
   Future<bool> showPendingWeeklyCheckInAgain(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
