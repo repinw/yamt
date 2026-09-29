@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_goal_result_row.dart';
 
 /// Card to configure training days and calorie cycling offset.
 class CalorieGoalTrainingDaysCard extends StatelessWidget {
@@ -172,12 +173,12 @@ class CalorieGoalTrainingDaysCard extends StatelessWidget {
                 ),
                 child: Column(
                   children: [
-                    _TrainingDayResultRow(
+                    CalorieGoalResultRow(
                       label: '🏋️ Training ($trainingCount Tage)',
                       value: '$trainingGoal kcal',
                     ),
                     const SizedBox(height: 4),
-                    _TrainingDayResultRow(
+                    CalorieGoalResultRow(
                       label: '🛋️ Ruhetag ($restCount Tage)',
                       value: '$restGoal kcal',
                     ),
@@ -188,33 +189,6 @@ class CalorieGoalTrainingDaysCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _TrainingDayResultRow extends StatelessWidget {
-  const new({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(fontWeight: FontWeight.w600),
-          ),
-        ),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodyMedium
-              ?.copyWith(fontWeight: FontWeight.w800),
-        ),
-      ],
     );
   }
 }

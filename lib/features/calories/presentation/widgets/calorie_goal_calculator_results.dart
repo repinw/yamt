@@ -4,6 +4,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_keys.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_goal_result_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Result card showing BMR, TDEE, and the final daily target.
@@ -40,21 +41,21 @@ class CalorieGoalCalculatorResultsCard extends StatelessWidget {
                   ?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.md),
-            _ResultRow(
+            CalorieGoalResultRow(
               label: l10n.caloriesCalculatorBmrLabel,
               value:
                   '${numberFormat.format(calculation.bmrKcal.round())} '
                   '$kcalUnit',
             ),
             const SizedBox(height: AppSpacing.sm),
-            _ResultRow(
+            CalorieGoalResultRow(
               label: l10n.caloriesCalculatorTdeeLabel,
               value:
                   '${numberFormat.format(calculation.tdeeKcal.round())} '
                   '$kcalUnit',
             ),
             const SizedBox(height: AppSpacing.sm),
-            _ResultRow(
+            CalorieGoalResultRow(
               label: l10n.caloriesCalculatorDailyGoalLabel,
               value:
                   '${numberFormat.format(calculation.finalGoalKcal.round())} '
@@ -203,33 +204,6 @@ class _GoalStartCardHint extends StatelessWidget {
       text,
       style: Theme.of(context).textTheme.bodySmall
           ?.copyWith(color: colors.onSurfaceVariant),
-    );
-  }
-}
-
-class _ResultRow extends StatelessWidget {
-  const new({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            label,
-            style: Theme.of(context).textTheme.bodyMedium
-                ?.copyWith(fontWeight: FontWeight.w600),
-          ),
-        ),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.bodyMedium
-              ?.copyWith(fontWeight: FontWeight.w800),
-        ),
-      ],
     );
   }
 }
