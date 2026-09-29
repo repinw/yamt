@@ -9,7 +9,8 @@ Usage:
 With a base ref, a test is selected when its import closure contains a file
 that changed against the merge base, or when the test file itself changed.
 Changes to files that every test depends on (packages, the Android project,
-the test driver, this workflow) select every test.
+the test driver) select every test. A change to the CI setup (this workflow,
+the tool/ci_* scripts) selects at least one test.
 
 With --since and --passed, a selected test is carried over instead of run
 when it is listed in the passed file (one test per line, the tests that passed
@@ -33,10 +34,12 @@ RUN_ALL_PREFIXES = (
     'android/',
     'assets/',
     'test_driver/',
+)
+# Changes to the CI setup itself need one integration test to show that the
+# pipeline still works, not every test.
+CI_PREFIXES = (
     '.github/workflows/ci.yml',
-    'tool/ci_integration_targets.py',
-    'tool/ci_integration_drive.sh',
-    'tool/ci_previous_integration_passes.sh',
+    'tool/ci_',
 )
 # A whole directive up to its semicolon, so the URIs in conditional import
 # clauses (`if (dart.library.io) '...'`) are followed too. Following every
@@ -151,6 +154,9 @@ def main():
                 if test in passed and not closure(test, cache) & since_set
             ]
             selected = [test for test in selected if test not in carried]
+
+    if not selected and any(path.startswith(CI_PREFIXES) for path in changed):
+        selected = tests[:1]
 
     if '--carried-out' in options:
         with open(options['--carried-out'], 'w', encoding='utf-8') as target:
