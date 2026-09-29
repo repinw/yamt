@@ -14,10 +14,18 @@ double responsivePageHorizontalPadding(BuildContext context) {
   return isCompactViewport(context) ? AppSpacing.md : AppSpacing.xl;
 }
 
+/// Height of a tab's dock that sits on the home navigation bar.
+const double homeShellDockHeight = AppSpacing.md * 2 + AppSizes.headerTool;
+
 /// Bottom padding that keeps scrollable home-shell content above chrome.
-double homeShellPageBottomPadding(BuildContext context) {
+/// A tab with a dock passes [hasDock], so its last row clears the dock too.
+double homeShellPageBottomPadding(
+  BuildContext context, {
+  bool hasDock = false,
+}) {
   return AppSizes.homeShellBottomBarClearance +
       AppSpacing.xxxxl +
+      (hasDock ? homeShellDockHeight : 0) +
       MediaQuery.paddingOf(context).bottom;
 }
 

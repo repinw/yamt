@@ -5,6 +5,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/core/widgets/barcode_icon.dart';
 import 'package:yamt/core/widgets/home_dock_tool.dart';
 import 'package:yamt/core/widgets/home_more_sheet.dart';
@@ -12,7 +13,7 @@ import 'package:yamt/features/home/widgets/inventory_action_sheet_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Height of the dock, so the shell keeps snack bars above it.
-const double inventoryDockHeight = AppSpacing.md * 2 + AppSizes.headerTool;
+const double inventoryDockHeight = homeShellDockHeight;
 
 /// Add actions docked at the bottom of the Vorrat tab: the lime "Hinzufügen"
 /// with the less frequent ways to add, and tonal tools for the receipt and

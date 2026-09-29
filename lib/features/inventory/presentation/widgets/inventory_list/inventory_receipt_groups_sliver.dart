@@ -7,9 +7,6 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'receipt_group_tile.dart';
 
-const double _inventoryReceiptGroupsBottomPadding =
-    AppSpacing.xxxxl * 4 + AppSpacing.xxxl;
-
 /// Defines inventory receipt groups sliver.
 class InventoryReceiptGroupsSliver extends StatelessWidget {
   /// The inventory receipt groups sliver.
@@ -37,7 +34,7 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
         horizontalPadding,
         0,
         horizontalPadding,
-        _inventoryReceiptGroupsBottomPadding,
+        homeShellPageBottomPadding(context, hasDock: true),
       ),
       sliver: SliverList.builder(
         itemCount: groups.length,
