@@ -16,9 +16,9 @@ import 'package:yamt/features/progress/presentation/widgets/'
 import 'package:yamt/features/progress/presentation/widgets/'
     'progress_tdee_section.dart';
 import 'package:yamt/features/progress/presentation/widgets/'
-    'progress_weight_section.dart';
-import 'package:yamt/features/progress/presentation/widgets/'
     'progress_week_section.dart';
+import 'package:yamt/features/progress/presentation/widgets/'
+    'progress_weight_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
@@ -30,7 +30,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets(
-    'the Fortschritt tab shows every section, opens the archive, and switches to Gesamt',
+    'Fortschritt shows its sections, opens the archive, switches to Gesamt',
     (tester) async {
       final settings = FakeCalorieSettingsRepository(
         initialSettings: progressSettings(),
@@ -41,6 +41,20 @@ void main() {
       );
       addTearDown(calorieLog.dispose);
 
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => const Scaffold(body: ProgressPage()),
+          ),
+          GoRoute(
+            path: AppRoutes.homeSettingsGoalArchive,
+            builder: (context, state) =>
+                const Scaffold(body: SizedBox(key: _archiveKey)),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
       await tester.pumpWidget(
         ProviderScope(
           overrides: progressSourceOverrides(
@@ -51,20 +65,7 @@ void main() {
             locale: const Locale('de'),
             localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            routerConfig: GoRouter(
-              routes: [
-                GoRoute(
-                  path: '/',
-                  builder: (context, state) =>
-                      const Scaffold(body: ProgressPage()),
-                ),
-                GoRoute(
-                  path: AppRoutes.homeSettingsGoalArchive,
-                  builder: (context, state) =>
-                      const Scaffold(body: SizedBox(key: _archiveKey)),
-                ),
-              ],
-            ),
+            routerConfig: router,
           ),
         ),
       );
@@ -90,11 +91,18 @@ void main() {
 
       expect(find.byKey(_archiveKey), findsOneWidget);
 
-      await tester.pageBack();
+      router.pop();
       await tester.pumpAndSettle();
-      await tester.tap(
-        find.byKey(ProgressScopeSwitch.chipKey(ProgressScope.all)),
+      final allChip = find.byKey(
+        ProgressScopeSwitch.chipKey(ProgressScope.all),
       );
+      await tester.fling(
+        find.byType(CustomScrollView),
+        const Offset(0, 3000),
+        3000,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(allChip);
       await tester.pumpAndSettle();
       expect(find.byKey(ProgressGoalCard.cardKey), findsNothing);
       expect(find.byKey(ProgressWeightSection.sectionKey), findsOneWidget);
