@@ -653,7 +653,7 @@
   "preparedMealAddIngredientAction": "Zutat hinzufügen",
   "preparedMealRemoveIngredientAction": "Zutat entfernen",
   "preparedMealEmptyIngredientsMessage": "Füge vor dem Speichern mindestens eine Zutat hinzu.",
-  "preparedMealBindAction": "Als Mahlzeit binden",
+  "preparedMealBindAction": "Lebensmittel kombinieren",
   "preparedMealUsedAmountLabel": "Verwendete Menge",
   "preparedMealAvailableAmount": "Verfügbar: {amount} {unit}",
   "@preparedMealAvailableAmount": {

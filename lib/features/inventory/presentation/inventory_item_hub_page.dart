@@ -27,9 +27,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Runs a hub action on top of the hub. Returns whether it changed the item.
-/// A changed item closes the hub, except after adding it to the shopping
-/// list, where the hub follows the list itself.
+/// Runs a hub action on top of the hub and returns whether it changed the
+/// item. A changed item closes the hub, except after a shopping list add.
 typedef InventoryItemHubActionRunner = Future<bool> Function(
   BuildContext hubContext,
   InventoryItemHubAction,
@@ -37,11 +36,9 @@ typedef InventoryItemHubActionRunner = Future<bool> Function(
 
 /// Item hub: the eat page of a stock item plus the item's own actions.
 ///
-/// Pops with an [InventoryItemHubResult]: the entered amount, or the amount
-/// together with other foods to log as one entry. The actions run while the
-/// hub stays open, so cancelling one returns to the hub. An item without
-/// stock to eat shows only its actions, and the main button puts it on the
-/// shopping list.
+/// Pops with an [InventoryItemHubResult]: the entered amount, or a meal of
+/// several foods. Actions run while the hub stays open. An item without stock
+/// shows only its actions, and the main button puts it on the shopping list.
 class InventoryItemHubPage extends ConsumerStatefulWidget {
   /// Creates the hub for [item].
   const new({
@@ -54,8 +51,7 @@ class InventoryItemHubPage extends ConsumerStatefulWidget {
   /// The stock item.
   final InventoryItem item;
 
-  /// Foods that join the meal when the hub opens, such as the foods
-  /// selected in the Vorrat list; foods without a default amount stay out.
+  /// Foods that join the meal on open; those without a default amount stay out.
   final List<InventoryItem> initialPicks;
 
   /// Runs a picked action.
@@ -99,6 +95,7 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     // Watched, so the line follows the list after an undo.
     final isOnShoppingList = ref.watch(
       sourceItemInActiveShoppingListProvider((
@@ -108,10 +105,17 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
         unitPrice: widget.item.unitPrice,
       )),
     );
+    final picks = ref.watch(
+      inventoryItemCombineControllerProvider(widget.item.id),
+    );
     final actions = EatItemActionsCard(
       key: _cardKey,
       isOnShoppingList: isOnShoppingList,
       onPicked: _run,
+      actions: [
+        for (final action in InventoryItemHubAction.values)
+          if (picks.isEmpty || action != InventoryItemHubAction.edit) action,
+      ],
     );
     if (consumableInventoryAmount(widget.item) == null) {
       return _UsedUpHubBody(
@@ -122,9 +126,6 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
             _run(InventoryItemHubAction.addToShoppingList),
       );
     }
-    final picks = ref.watch(
-      inventoryItemCombineControllerProvider(widget.item.id),
-    );
     ref.listen(inventoryItemCombineControllerProvider(widget.item.id), (
       _,
       next,
@@ -138,15 +139,14 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     final hasMealRuler = inventoryItemUsesFixedCalorieUnit(widget.item);
     return InventoryItemEatSheetBody(
       item: widget.item,
-      confirmIntent: InventoryItemEatSheetIntent.logOnly,
-      confirmLabel: picks.isEmpty
-          ? null
-          : AppLocalizations.of(context)!.eatPageCombineConfirm,
+      // A meal goes into the stock first; logging it is the second choice.
+      confirmIntent: picks.isEmpty
+          ? InventoryItemEatSheetIntent.logOnly
+          : InventoryItemEatSheetIntent.storeAsMeal,
+      confirmLabel: picks.isEmpty ? null : l10n.eatPageCombineStore,
       mealKcal: meal?.total.kcal,
-      addMoreActionText: picks.isEmpty
-          ? null
-          : AppLocalizations.of(context)!.eatPageCombineStore,
-      secondaryIntent: InventoryItemEatSheetIntent.storeAsMeal,
+      addMoreActionText: picks.isEmpty ? null : l10n.eatPageCombineConfirm,
+      secondaryIntent: InventoryItemEatSheetIntent.logOnly,
       header: meal == null
           ? null
           : EatMealHeader(

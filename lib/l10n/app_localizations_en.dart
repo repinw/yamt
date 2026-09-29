@@ -1238,7 +1238,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Add at least one ingredient before saving.';
 
   @override
-  String get preparedMealBindAction => 'Bind meal';
+  String get preparedMealBindAction => 'Combine foods';
 
   @override
   String get preparedMealUsedAmountLabel => 'Used amount';

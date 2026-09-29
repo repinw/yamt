@@ -1074,7 +1074,10 @@ void main() {
 
     expect(find.text('Milk + Bread'), findsOneWidget);
 
-    await _tapAmountDialogConfirm(tester);
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('inventory_item_amount_dialog_add_more_button')),
+    );
 
     expect(find.text('Meal logged.'), findsOneWidget);
     expect(commitStore.entry?.name, 'Milk + Bread');
@@ -1162,7 +1165,10 @@ void main() {
     await _tapVisible(tester, find.byKey(EatCombineSection.addKey));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.searchKey));
     await _tapVisible(tester, find.text('pick bread'));
-    await _tapAmountDialogConfirm(tester);
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('inventory_item_amount_dialog_add_more_button')),
+    );
 
     await _tapVisible(
       tester,
@@ -1288,11 +1294,9 @@ void main() {
       await _tapVisible(tester, find.byKey(EatMealPortionsRow.increaseKey));
     }
     expect(find.text('per portion 75\u00A0g'), findsOneWidget);
+    expect(find.byKey(const Key('eat_item_action_edit')), findsNothing);
 
-    await _tapVisible(
-      tester,
-      find.byKey(const Key('inventory_item_amount_dialog_add_more_button')),
-    );
+    await _tapAmountDialogConfirm(tester);
 
     final meal = mealRepository.saved.single;
     expect(meal.name, 'Milk + Oats');
@@ -1386,9 +1390,12 @@ void main() {
 
     expect(find.text('Milk + Oats'), findsOneWidget);
     expect(find.text('total 300\u00A0g'), findsOneWidget);
-    expect(find.text('Log meal'), findsOneWidget);
+    expect(find.text('Keep in stock'), findsOneWidget);
 
-    await _tapAmountDialogConfirm(tester);
+    await _tapVisible(
+      tester,
+      find.byKey(const Key('inventory_item_amount_dialog_add_more_button')),
+    );
 
     expect(find.text('Meal logged.'), findsOneWidget);
     expect(commitStore.entry?.name, 'Milk + Oats');

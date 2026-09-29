@@ -1256,7 +1256,7 @@ class AppLocalizationsDe extends AppLocalizations {
       'Füge vor dem Speichern mindestens eine Zutat hinzu.';
 
   @override
-  String get preparedMealBindAction => 'Als Mahlzeit binden';
+  String get preparedMealBindAction => 'Lebensmittel kombinieren';
 
   @override
   String get preparedMealUsedAmountLabel => 'Verwendete Menge';

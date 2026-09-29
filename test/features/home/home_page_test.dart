@@ -925,9 +925,9 @@ void main() {
 
     expect(find.text('2 selected'), findsOneWidget);
     expect(find.text('Cancel'), findsOneWidget);
-    expect(find.text('Bind meal'), findsOneWidget);
+    expect(find.text('Combine foods'), findsOneWidget);
 
-    await tester.tap(find.text('Bind meal'));
+    await tester.tap(find.text('Combine foods'));
     await tester.pumpAndSettle();
 
     expect(
@@ -1405,7 +1405,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Cancel'), findsNothing);
-    expect(find.text('Bind meal'), findsNothing);
+    expect(find.text('Combine foods'), findsNothing);
     expect(find.byIcon(Icons.close_rounded), findsOneWidget);
     expect(find.byIcon(Icons.restaurant_menu_rounded), findsOneWidget);
 

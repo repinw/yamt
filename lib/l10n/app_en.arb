@@ -695,7 +695,7 @@
   "preparedMealAddIngredientAction": "Add ingredient",
   "preparedMealRemoveIngredientAction": "Remove ingredient",
   "preparedMealEmptyIngredientsMessage": "Add at least one ingredient before saving.",
-  "preparedMealBindAction": "Bind meal",
+  "preparedMealBindAction": "Combine foods",
   "preparedMealUsedAmountLabel": "Used amount",
   "preparedMealAvailableAmount": "Available: {amount} {unit}",
   "@preparedMealAvailableAmount": {

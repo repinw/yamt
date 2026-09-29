@@ -2155,7 +2155,7 @@ abstract class AppLocalizations {
   /// No description provided for @preparedMealBindAction.
   ///
   /// In en, this message translates to:
-  /// **'Bind meal'**
+  /// **'Combine foods'**
   String get preparedMealBindAction;
 
   /// No description provided for @preparedMealUsedAmountLabel.
