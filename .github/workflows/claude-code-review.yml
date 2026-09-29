@@ -3,25 +3,23 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
+    # Only PRs from branches of this repository. Fork PRs get no secrets and
+    # must never run with the Claude token.
+    if: >-
+      !github.event.pull_request.draft &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
       issues: read
       id-token: write
 
@@ -29,17 +27,62 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
 
       - name: Run Claude Code Review
-        id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
-          plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
-          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
+          prompt: |
+            You review pull request #${{ github.event.pull_request.number }}
+            of ${{ github.repository }}. The base is
+            origin/${{ github.event.pull_request.base.ref }}.
 
+            1. Read `architecture.md` and `AGENTS.md`. The Pre-Push Review
+               and its checklist are the rules of this review. Check first
+               what no test catches: the repository shape, cross-feature
+               workflows, the provider lifecycle, error display, and
+               hardcoded strings.
+            2. Read the diff with
+               `git diff origin/${{ github.event.pull_request.base.ref }}...HEAD`
+               and read the changed files in full where the diff is not
+               enough. Also look for correctness bugs.
+            3. Report only verified findings. Post each finding as an inline
+               comment on its line with
+               `mcp__github_inline_comment__create_inline_comment`: the
+               problem, why it matters, and the fix. No praise, no style
+               nits that the analyzer already covers.
+            4. Decide:
+               - REQUEST_CHANGES if at least one finding is a bug, breaks a
+                 MUST or NEVER rule of `architecture.md`, or leaves the code
+                 unsafe to merge.
+               - APPROVE otherwise, also when only small suggestions remain.
+            5. Write the decision as the single word APPROVE or
+               REQUEST_CHANGES into `review-verdict.txt`, and a short summary
+               in Markdown into `review-body.md`: what the PR does, the
+               findings by severity, and the reason for the decision. Write
+               both files in the repository root. Do not change any other
+               file.
+          claude_args: >-
+            --model claude-opus-5-5
+            --allowedTools "Read,Grep,Glob,Write,Bash(git diff:*),Bash(git log:*),Bash(git show:*),mcp__github_inline_comment__create_inline_comment"
+
+      - name: Submit the review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          verdict="$(tr -d '[:space:]' < review-verdict.txt 2>/dev/null || true)"
+          if [ ! -s review-body.md ]; then
+            echo "Claude wrote no review summary." > review-body.md
+          fi
+          case "$verdict" in
+            APPROVE)
+              gh pr review "$PR" --approve --body-file review-body.md ;;
+            REQUEST_CHANGES)
+              gh pr review "$PR" --request-changes --body-file review-body.md
+              exit 1 ;;
+            *)
+              echo "Claude wrote no verdict: '$verdict'" >&2
+              exit 1 ;;
+          esac
