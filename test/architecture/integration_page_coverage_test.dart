@@ -28,6 +28,10 @@ const _legacyPagesWithoutIntegrationTest = <String>{
   'lib/features/product_search_hub/presentation/food_estimate_result_page.dart',
   'lib/features/product_search_hub/presentation/product_ai_search_page.dart',
   'lib/features/product_search_hub/presentation/product_search_hub_item_edit_page.dart',
+  'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_page.dart',
+  'lib/features/product_search_hub/presentation/widgets/product_search_barcode_scanner_page/product_search_barcode_scanner_page.dart',
+  'lib/features/settings/presentation/pages/account_page.dart',
+  'lib/features/settings/presentation/pages/settings_page.dart',
   'lib/features/settings/presentation/profile_page.dart',
   'lib/features/shoppinglist/presentation/shopping_list_page.dart',
 };
@@ -73,18 +77,29 @@ void main() {
   });
 }
 
-/// Every page file: `lib/features/<feature>/presentation/*_page.dart`.
+/// Every page file: each `*_page.dart` under `lib/features/`, in any
+/// folder.
+///
+/// Two kinds of files carry the suffix but are no routed pages, so the check
+/// skips them on purpose:
+/// - `presentation/models/`: route arguments and UI models, such as the
+///   onboarding intro page model;
+/// - `onboarding/presentation/widgets/intro/pages/`: the steps inside the
+///   onboarding intro, which `calorie_goal_onboarding_page.dart` shows.
 Set<String> _pages() {
   return {
-    for (final feature in Directory('lib/features').listSync())
-      if (feature is Directory)
-        for (final file in Directory(
-          '${feature.path}/presentation',
-        ).listSyncOrEmpty())
-          if (file is File && file.path.endsWith('_page.dart'))
-            _normalize(file.path),
+    for (final file in Directory('lib/features').listSync(recursive: true))
+      if (file is File && file.path.endsWith('_page.dart'))
+        if (_normalize(file.path) case final path
+            when !_notRoutedPage.any(path.contains))
+          path,
   };
 }
+
+const _notRoutedPage = <String>[
+  '/presentation/models/',
+  '/onboarding/presentation/widgets/intro/pages/',
+];
 
 /// Pages that an integration test imports, directly or through the test
 /// helpers under `test/` and `integration_test/` that it imports.
@@ -142,9 +157,4 @@ String _normalize(String path) {
     }
   }
   return parts.join('/');
-}
-
-extension on Directory {
-  List<FileSystemEntity> listSyncOrEmpty() =>
-      existsSync() ? listSync() : const [];
 }

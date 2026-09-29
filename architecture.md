@@ -393,8 +393,9 @@ NEVER move a feature type into `lib/core` to avoid an ownership decision.
   page. If none exists, write one. A change to the look only gets a smoke test
   that opens the page and fails on any exception. Use the fakes of UI flow
   tests, and find widgets by key, not by text. Every
-  `presentation/*_page.dart` must be imported by an integration test or by a
-  test helper that one imports. *Enforced by:
+  `*_page.dart` under `lib/features/` (except route models and onboarding
+  intro steps) must be imported by an integration test or by a test helper
+  that one imports. *Enforced by:
   `test/architecture/integration_page_coverage_test.dart`.*
 - Run integration tests only on the Android emulator:
   `TARGET=<file> tool/android_integration_emulator.sh run`. NEVER run them on
