@@ -3122,7 +3122,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get settingsMacroGoalsCarbsAutoLabel =>
-      'Kohlenhydrate füllen die restlichen Kalorien auf';
+      'Kohlenhydrate füllen die restlichen Kalorien auf, höchstens 40 %';
 
   @override
   String macroAdjustedWeightNote(String weight) {

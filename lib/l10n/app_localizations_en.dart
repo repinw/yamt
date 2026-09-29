@@ -3067,7 +3067,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsMacroGoalsCarbsAutoLabel =>
-      'Carbohydrates are filled with remaining calories';
+      'Carbohydrates fill the remaining calories, up to 40 %';
 
   @override
   String macroAdjustedWeightNote(String weight) {

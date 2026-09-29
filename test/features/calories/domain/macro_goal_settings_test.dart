@@ -98,6 +98,7 @@ void main() {
           settings.resolveProteinGrams(
             referenceWeightKg: 80,
             baseGoalKcal: 1500,
+            fatGrams: 80 * 0.8,
             hasTrainingDays: true,
             isLosingWeight: false,
           ),
@@ -112,6 +113,7 @@ void main() {
           settings.resolveProteinGrams(
             referenceWeightKg: 75.66,
             baseGoalKcal: 1614,
+            fatGrams: 75.66 * 0.8,
             hasTrainingDays: true,
             isLosingWeight: true,
           ),
@@ -126,6 +128,7 @@ void main() {
           settings.resolveProteinGrams(
             referenceWeightKg: 75.5,
             baseGoalKcal: 2099,
+            fatGrams: 75.5 * 0.8,
             hasTrainingDays: false,
             isLosingWeight: true,
           ),
@@ -140,10 +143,57 @@ void main() {
           settings.resolveProteinGrams(
             referenceWeightKg: 70,
             baseGoalKcal: 1800,
+            fatGrams: 70 * 0.8,
             hasTrainingDays: true,
             isLosingWeight: true,
           ),
           closeTo(140, 1e-9),
+        );
+      });
+
+      test('gives protein the kcal above the carb cap up to 2.0 g/kg', () {
+        // 128 g protein and 64 g fat leave 328 g carbs at 2400 kcal. The cap
+        // allows 240 g, so protein takes 352 kcal but stops at 160 g.
+        const settings = MacroGoalSettings();
+        expect(
+          settings.resolveProteinGrams(
+            referenceWeightKg: 80,
+            baseGoalKcal: 2400,
+            fatGrams: 64,
+            hasTrainingDays: false,
+            isLosingWeight: false,
+          ),
+          closeTo(160, 1e-9),
+        );
+      });
+
+      test('gives protein only part of the room when the excess is small', () {
+        // 128 g protein and 64 g fat leave 228 g carbs at 2000 kcal; the
+        // 28 g above the 200 g cap go to protein.
+        const settings = MacroGoalSettings();
+        expect(
+          settings.resolveProteinGrams(
+            referenceWeightKg: 80,
+            baseGoalKcal: 2000,
+            fatGrams: 64,
+            hasTrainingDays: false,
+            isLosingWeight: false,
+          ),
+          closeTo(156, 1e-9),
+        );
+      });
+
+      test('keeps a custom multiplier above the carb cap', () {
+        const settings = MacroGoalSettings(customProteinMultiplier: 1.2);
+        expect(
+          settings.resolveProteinGrams(
+            referenceWeightKg: 80,
+            baseGoalKcal: 3000,
+            fatGrams: 64,
+            hasTrainingDays: false,
+            isLosingWeight: false,
+          ),
+          closeTo(96, 1e-9),
         );
       });
 
@@ -153,6 +203,7 @@ void main() {
           settings.resolveProteinGrams(
             referenceWeightKg: 80,
             baseGoalKcal: 2000,
+            fatGrams: 80 * 0.8,
             hasTrainingDays: true,
             isLosingWeight: true,
           ),
@@ -234,7 +285,7 @@ void main() {
       // Protein: 80 * 2.0 = 160g (640 kcal)
       // Fat: 80 * 1.0 = 80g (720 kcal)
       // Carbs: (2400 - 640 - 720) / 4 = 260g, capped at 40 % = 240g.
-      // Protein is at 2.0 g/kg, so the 80 kcal excess goes to fat.
+      // The 80 kcal excess goes to fat.
       expect(targets.protein, 160.0);
       expect(targets.fat, closeTo(80 + 80 / 9, 0.001));
       expect(targets.carbs, 240.0);
@@ -251,9 +302,9 @@ void main() {
       // Protein: 65 * 1.8 = 117g (468 kcal)
       // Fat: 65 * 1.2 = 78g (702 kcal)
       // Carbs: (2000 - 468 - 702) / 4 = 207.5g, capped at 40 % = 200g.
-      // The 7.5g excess fits into protein below 2.0 g/kg.
-      expect(targets.protein, 124.5);
-      expect(targets.fat, 78.0);
+      // The 30 kcal excess goes to fat.
+      expect(targets.protein, 117.0);
+      expect(targets.fat, closeTo(78 + 30 / 9, 0.001));
       expect(targets.carbs, 200.0);
     });
 

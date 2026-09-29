@@ -171,6 +171,47 @@ void main() {
       );
     });
 
+    test('keeps protein the same on training and rest days', () {
+      const profile = CalorieCalculatorProfile(
+        sex: CalorieCalculatorSex.male,
+        weightKg: 80,
+        heightCm: 180,
+        ageYears: 30,
+        activityLevel: 1.375,
+        goalMode: CalorieGoalMode.maintain,
+        goalSpeedKgPerWeek: 0,
+        trainingWeekdays: [1],
+      );
+      final service = DailyNutritionTargetResolverService(
+        macroSettings: const MacroGoalSettings(),
+        goalSettings: const CalorieGoalSettings.empty().copyWith(
+          dailyKcalGoal: 2000,
+          calculatorProfile: profile,
+          goalHistory: [_calculatorEntry(2000, profile)],
+        ),
+      );
+
+      final trainingDay = service.resolveTarget(
+        day: DateTime(2026, 9, 14),
+        goalKcal: 2400,
+      );
+      final restDay = service.resolveTarget(
+        day: DateTime(2026, 9, 15),
+        goalKcal: 1800,
+      );
+
+      // The 2000 kcal average leaves 228 g carbs; the 28 g above the cap
+      // raise protein to 156 g on every day. The day's kcal move carbs and
+      // fat only.
+      expect(trainingDay.proteinGrams, closeTo(156, 0.001));
+      expect(restDay.proteinGrams, closeTo(156, 0.001));
+      expect(trainingDay.carbsGrams, closeTo(240, 0.001));
+      expect(
+        trainingDay.fatGrams,
+        closeTo(64 + (2400 - 624 - 576 - 960) / 9, 0.001),
+      );
+    });
+
     test('resolves cycling training day and pause day flags', () {
       const macroSettings = MacroGoalSettings();
       final goalSettings = const CalorieGoalSettings.empty().copyWith(

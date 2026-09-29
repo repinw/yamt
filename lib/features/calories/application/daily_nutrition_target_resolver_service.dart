@@ -48,9 +48,11 @@ class DailyNutritionTargetResolverService
             heightCm: profile.heightCm,
           );
 
+    final fatGramsPerKg = macroSettings.effectiveFatMultiplier(isMale: isMale);
     final proteinGrams = macroSettings.resolveProteinGrams(
       referenceWeightKg: weightKg,
       baseGoalKcal: settings?.baseGoalKcalForDay(day) ?? goalKcal,
+      fatGrams: weightKg * fatGramsPerKg,
       // A training day set only for this day counts too, not only the
       // weekly schedule.
       hasTrainingDays:
@@ -61,7 +63,7 @@ class DailyNutritionTargetResolverService
       goalKcal: goalKcal,
       weightKg: weightKg,
       proteinGramsPerKg: proteinGrams / weightKg,
-      fatGramsPerKg: macroSettings.effectiveFatMultiplier(isMale: isMale),
+      fatGramsPerKg: fatGramsPerKg,
     );
 
     final adjustedMacros = _applyCarryoverIfNeeded(
