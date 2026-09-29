@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:intl/intl.dart';
 
 /// Parses and validates editable receipt item inputs from the review UI.
@@ -53,23 +51,6 @@ class ReceiptItemInputParser {
     }
 
     return _parseWithLocale(sanitized, locale);
-  }
-
-  /// Parses discounts from JSON (`{"x": 1.2}`) or key/value pairs.
-  ///
-  /// Supported pair separators are `=` and `:`.
-  Map<String, double>? parseDiscounts(String raw, {required String locale}) {
-    final normalized = raw.trim();
-    if (normalized.isEmpty) {
-      return const <String, double>{};
-    }
-
-    final fromJson = _parseDiscountsFromJson(normalized, locale: locale);
-    if (fromJson != null) {
-      return fromJson;
-    }
-
-    return _parseDiscountsFromPairs(normalized, locale: locale);
   }
 
   /// Parses structured discount rows from the receipt editor.
@@ -169,95 +150,5 @@ class ReceiptItemInputParser {
       return value.replaceAll(',', '.');
     }
     return value;
-  }
-
-  Map<String, double>? _parseDiscountsFromJson(
-    String raw, {
-    required String locale,
-  }) {
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is! Map<String, dynamic>) {
-        return null;
-      }
-
-      final parsed = <String, double>{};
-      for (final entry in decoded.entries) {
-        final value = entry.value;
-        final amount = switch (value) {
-          num() => value.toDouble(),
-          String() => parseDouble(value, locale: locale),
-          _ => null,
-        };
-        if (amount == null) {
-          return null;
-        }
-        parsed[entry.key] = amount;
-      }
-      return parsed;
-    } on Object catch (_) {
-      return null;
-    }
-  }
-
-  Map<String, double>? _parseDiscountsFromPairs(
-    String raw, {
-    required String locale,
-  }) {
-    final entries = _splitPairEntries(raw);
-    final parsed = <String, double>{};
-
-    for (final entry in entries) {
-      final pair = _splitPair(entry);
-      if (pair == null) {
-        return null;
-      }
-
-      final amount = parseDouble(pair.$2, locale: locale);
-      if (amount == null) {
-        return null;
-      }
-      parsed[pair.$1] = amount;
-    }
-
-    return parsed;
-  }
-
-  List<String> _splitPairEntries(String raw) {
-    final normalized = raw.replaceAll('\n', ',').replaceAll(';', ',');
-    final parts = normalized.split(RegExp(r',(?=\s*[^,=:]+\s*[:=])'));
-    return parts
-        .map((part) => part.trim())
-        .where((part) => part.isNotEmpty)
-        .toList(growable: false);
-  }
-
-  (String, String)? _splitPair(String entry) {
-    final equals = entry.indexOf('=');
-    final colon = entry.indexOf(':');
-    final separatorIndex = _firstValidSeparatorIndex(equals, colon);
-    if (separatorIndex < 0) {
-      return null;
-    }
-
-    final key = entry.substring(0, separatorIndex).trim();
-    final value = entry.substring(separatorIndex + 1).trim();
-    if (key.isEmpty || value.isEmpty) {
-      return null;
-    }
-    return (key, value);
-  }
-
-  int _firstValidSeparatorIndex(int equals, int colon) {
-    if (equals < 0 && colon < 0) {
-      return -1;
-    }
-    if (equals < 0) {
-      return colon;
-    }
-    if (colon < 0) {
-      return equals;
-    }
-    return equals < colon ? equals : colon;
   }
 }

@@ -5,36 +5,6 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_manual_add_amount_service.dart';
 
 void main() {
-  test('prompt requirement depends on resolved amount data', () {
-    final amountItem = _amountItem(
-      weight: '300 ml',
-      amountUnit: InventoryAmountUnit.milliliter,
-      initialAmount: 300,
-      currentAmount: 300,
-    );
-
-    expect(requiresInventoryManualAddConsumedAmountPrompt(amountItem), isFalse);
-    expect(
-      requiresInventoryManualAddConsumedAmountPrompt(_plainItem()),
-      isTrue,
-    );
-  });
-
-  test('resolves prompted consumed amount on item', () {
-    final item = _plainItem();
-
-    final resolved = resolveInventoryManualAddItemAmount(
-      item: item,
-      amount: 300,
-      unit: InventoryAmountUnit.milliliter,
-    );
-
-    expect(resolved.weight, '300 ml');
-    expect(resolved.initialAmount, 300);
-    expect(resolved.currentAmount, 300);
-    expect(resolved.amountUnit, InventoryAmountUnit.milliliter);
-  });
-
   test('resize immediate amount keeps identity and shrinks stock', () {
     final item = _amountItem(
       globalFoodItemId: 'off-milk',
@@ -114,24 +84,6 @@ void main() {
     expect(resized.currentAmount, 750);
   });
 
-  test('default eat unit uses serving hints when amount unit is missing', () {
-    final milk = _plainItem(servingSize: '250 ml', servingQuantityUnit: 'ml');
-    final eggs = _plainItem(servingSize: '1 pc');
-
-    expect(
-      defaultInventoryManualAddConsumedAmountUnit(milk),
-      InventoryAmountUnit.milliliter,
-    );
-    expect(
-      defaultInventoryManualAddConsumedAmountUnit(eggs),
-      InventoryAmountUnit.piece,
-    );
-    expect(
-      defaultInventoryManualAddConsumedAmountUnit(_plainItem()),
-      InventoryAmountUnit.gram,
-    );
-  });
-
   test('initial eat amount parses package weight only for matching unit', () {
     final milk = _amountItem(
       weight: '1 l',
@@ -200,19 +152,6 @@ InventoryItem _amountItem({
     currentAmount: currentAmount,
     amountScale: amountScale,
     amountUnit: amountUnit,
-    nutrition: _nutrition,
-  );
-}
-
-InventoryItem _plainItem({String? servingSize, String? servingQuantityUnit}) {
-  return InventoryItem.create(
-    id: 'item-1',
-    name: 'Food',
-    entryDate: DateTime.parse('2026-04-13T10:00:00Z'),
-    storeName: 'Added manually',
-    quantity: 1,
-    servingSize: servingSize,
-    servingQuantityUnit: servingQuantityUnit,
     nutrition: _nutrition,
   );
 }

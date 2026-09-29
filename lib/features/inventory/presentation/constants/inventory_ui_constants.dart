@@ -1,45 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 
-/// Defines app receipt review ui.
-abstract final class AppReceiptReviewUi {
-  /// The panel radius.
-  static const double panelRadius = 18;
-
-  /// The chip radius.
-  static const double chipRadius = 8;
-
-  /// The button radius.
-  static const double buttonRadius = 10;
-
-  /// The header button radius.
-  static const double headerButtonRadius = 20;
-}
-
-/// Defines app receipt review surfaces.
-abstract final class AppReceiptReviewSurfaces {
-  /// Panel decoration.
-  static BoxDecoration panelDecoration(
-    ColorScheme colors, {
-    Color? backgroundColor,
-  }) {
-    return BoxDecoration(
-      color: backgroundColor ?? colors.surface,
-      borderRadius: BorderRadius.circular(AppReceiptReviewUi.panelRadius),
-      border: Border.all(color: colors.outlineVariant),
-      boxShadow: [panelShadow(colors)],
-    );
-  }
-
-  /// Panel shadow.
-  static BoxShadow panelShadow(ColorScheme colors) {
-    return BoxShadow(
-      color: colors.shadow.withValues(alpha: 0.08),
-      blurRadius: 10,
-      offset: const Offset(0, 2),
-    );
-  }
-}
-
 /// Defines app brand badge.
 abstract final class AppBrandBadge {
   /// The font size.

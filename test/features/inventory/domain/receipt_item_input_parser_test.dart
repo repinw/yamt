@@ -23,31 +23,6 @@ void main() {
     expect(parsed, isNull);
   });
 
-  test('parseDiscounts parses json map values', () {
-    final parsed = parser.parseDiscounts(
-      '{"coupon":"1.20","promo":0.5}',
-      locale: 'en_US',
-    );
-    expect(parsed, isNotNull);
-    expect(parsed!['coupon'], 1.2);
-    expect(parsed['promo'], 0.5);
-  });
-
-  test('parseDiscounts parses key value pairs with decimal commas', () {
-    final parsed = parser.parseDiscounts(
-      'coupon=1,20, promo=0,50',
-      locale: 'de_DE',
-    );
-    expect(parsed, isNotNull);
-    expect(parsed!['coupon'], 1.2);
-    expect(parsed['promo'], 0.5);
-  });
-
-  test('parseDiscounts returns null for invalid pair syntax', () {
-    final parsed = parser.parseDiscounts('coupon 1.20', locale: 'en_US');
-    expect(parsed, isNull);
-  });
-
   test('parseDiscountEntries parses rows and normalizes positive values', () {
     final parsed = parser.parseDiscountEntries(const <MapEntry<String, String>>[
       MapEntry<String, String>('coupon', '1,20'),

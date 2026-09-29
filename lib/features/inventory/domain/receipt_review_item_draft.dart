@@ -85,19 +85,6 @@ class ReceiptReviewItemDraft {
     );
   }
 
-  /// Apply automatic selection.
-  ReceiptReviewItemDraft applyAutomaticSelection(
-    String? globalFoodItemId, {
-    bool selectionNeedsReview = false,
-  }) {
-    return copyWith(
-      selectedGlobalFoodItemId: globalFoodItemId,
-      initialSelectedGlobalFoodItemId: globalFoodItemId,
-      selectionNeedsReview: selectionNeedsReview,
-      shouldSaveReceiptAlias: false,
-    );
-  }
-
   /// Select candidate.
   ReceiptReviewItemDraft selectCandidate(String globalFoodItemId) {
     return copyWith(
@@ -106,16 +93,6 @@ class ReceiptReviewItemDraft {
       isConfirmed: false,
       shouldSaveReceiptAlias:
           globalFoodItemId != initialSelectedGlobalFoodItemId,
-    );
-  }
-
-  /// Select new item.
-  ReceiptReviewItemDraft selectNewItem() {
-    return copyWith(
-      selectedGlobalFoodItemId: null,
-      selectionNeedsReview: false,
-      isConfirmed: false,
-      shouldSaveReceiptAlias: true,
     );
   }
 

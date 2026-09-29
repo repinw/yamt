@@ -3,38 +3,6 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 const _inventoryManualAddAmountParser = InventoryAmountParser();
 
-/// Whether manual add must ask for the consumed amount first.
-bool requiresInventoryManualAddConsumedAmountPrompt(InventoryItem item) {
-  return item.weight == null ||
-      item.amountUnit == null ||
-      item.initialAmount < 1;
-}
-
-/// Applies a consumed amount selected before the item is saved.
-InventoryItem resolveInventoryManualAddItemAmount({
-  required InventoryItem item,
-  required int amount,
-  required InventoryAmountUnit unit,
-}) {
-  final amountScale = unit == InventoryAmountUnit.piece
-      ? inventoryPieceAmountScale
-      : 1;
-  final amountText = formatInventoryAmountValue(
-    amount: amount,
-    unit: unit,
-    scale: amountScale,
-  );
-  return item.withResolvedAmount(
-    weight: '$amountText ${unit.code}',
-    parsedAmount: InventoryAmountParseResult(
-      amount: amount,
-      unit: unit,
-      scale: amountScale,
-    ),
-    quantity: item.quantity,
-  );
-}
-
 /// Resizes newly saved inventory stock to match immediate consumed amount.
 InventoryItem resizeInventoryManualAddItemToConsumedAmount({
   required InventoryItem item,
@@ -77,30 +45,6 @@ InventoryItem resizeInventoryManualAddItemToConsumedAmount({
     ),
     quantity: item.quantity < 1 ? 1 : item.quantity,
   );
-}
-
-/// Resolves default unit for the manual-add consumed amount prompt.
-InventoryAmountUnit defaultInventoryManualAddConsumedAmountUnit(
-  InventoryItem item,
-) {
-  if (item.amountUnit case final InventoryAmountUnit unit) {
-    return unit;
-  }
-
-  final combinedHint = <String>[
-    item.servingSize ?? '',
-    item.servingQuantityUnit ?? '',
-  ].join(' ').toLowerCase();
-  if (combinedHint.contains('ml') ||
-      RegExp(r'(^|\s)l\b').hasMatch(combinedHint)) {
-    return InventoryAmountUnit.milliliter;
-  }
-  if (combinedHint.contains('stk') ||
-      combinedHint.contains('stück') ||
-      combinedHint.contains('pc')) {
-    return InventoryAmountUnit.piece;
-  }
-  return InventoryAmountUnit.gram;
 }
 
 /// Resolves initial amount for the immediate-eat sheet.

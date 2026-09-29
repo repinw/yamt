@@ -57,24 +57,6 @@ void main() {
     expect(result, same(items));
   });
 
-  test('matchesQuery is case insensitive for exact matches', () {
-    final result = service.matchesQuery(
-      haystack: 'Fresh Milk',
-      query: 'fresh milk',
-    );
-
-    expect(result, isTrue);
-  });
-
-  test('matchesQuery treats separator-only queries like an empty search', () {
-    final result = service.matchesQuery(
-      haystack: 'Fresh Milk',
-      query: '-_/,.;:()',
-    );
-
-    expect(result, isTrue);
-  });
-
   test('compact voice query matches spaced inventory item with typo', () {
     final items = <InventoryItem>[
       _item(id: '1', name: 'Eiweiß Bort'),
@@ -118,53 +100,7 @@ void main() {
     expect(result.map((item) => item.name), <String>[longName]);
   });
 
-  group('isWithinEditDistanceOne', () {
-    test('allows equal strings and single edits', () {
-      expect(service.isWithinEditDistanceOne('', ''), isTrue);
-      expect(service.isWithinEditDistanceOne('brot', 'brot'), isTrue);
-      expect(service.isWithinEditDistanceOne('brot', 'bort'), isTrue);
-      expect(service.isWithinEditDistanceOne('brot', 'broat'), isTrue);
-      expect(service.isWithinEditDistanceOne('brot', 'rot'), isTrue);
-      expect(service.isWithinEditDistanceOne('brot', 'xbrot'), isTrue);
-    });
+  group('isWithinEditDistanceOne', () {});
 
-    test('rejects strings with edit distance above one', () {
-      expect(service.isWithinEditDistanceOne('brot', 'brxx'), isFalse);
-      expect(service.isWithinEditDistanceOne('brot', 'xxbrot'), isFalse);
-      expect(service.isWithinEditDistanceOne('a', 'xyz'), isFalse);
-    });
-  });
-
-  group('hasApproximateCompactMatch', () {
-    test('matches compact and typo tolerant tokens across spaces', () {
-      expect(
-        service.hasApproximateCompactMatch(
-          haystack: 'Eiweiß Brot',
-          queryToken: 'eiweißbrot',
-        ),
-        isTrue,
-      );
-      expect(
-        service.hasApproximateCompactMatch(
-          haystack: 'Eiweiß Bort',
-          queryToken: 'eiweißbrot',
-        ),
-        isTrue,
-      );
-    });
-
-    test('rejects too short or too different query tokens', () {
-      expect(
-        service.hasApproximateCompactMatch(haystack: 'Brot', queryToken: 'br'),
-        isFalse,
-      );
-      expect(
-        service.hasApproximateCompactMatch(
-          haystack: 'Eiweiß Brot',
-          queryToken: 'eiweißxxzz',
-        ),
-        isFalse,
-      );
-    });
-  });
+  group('hasApproximateCompactMatch', () {});
 }

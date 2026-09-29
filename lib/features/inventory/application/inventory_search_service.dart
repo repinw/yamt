@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
@@ -45,45 +44,6 @@ class InventorySearchService {
           );
         })
         .toList(growable: false);
-  }
-
-  /// Matches query.
-  @visibleForTesting
-  bool matchesQuery({required String haystack, required String query}) {
-    final queryTokens = _buildSearchTokens(query);
-    if (queryTokens.isEmpty) {
-      return true;
-    }
-
-    return _matchesSearchTokens(haystack: haystack, queryTokens: queryTokens);
-  }
-
-  /// Has approximate compact match.
-  @visibleForTesting
-  bool hasApproximateCompactMatch({
-    required String haystack,
-    required String queryToken,
-  }) {
-    final compactHaystackTokens = _normalizeSearchText(haystack)
-        .split(' ')
-        .where((token) => token.isNotEmpty)
-        .map(_compactNormalizedToken)
-        .where((token) => token.isNotEmpty)
-        .toList(growable: false);
-
-    return _hasApproximateCompactMatch(
-      compactQueryToken: _compactSearchText(queryToken),
-      compactHaystackTokens: compactHaystackTokens,
-    );
-  }
-
-  /// Is within edit distance one.
-  @visibleForTesting
-  bool isWithinEditDistanceOne(String left, String right) {
-    return _isWithinEditDistanceOne(
-      _compactSearchText(left),
-      _compactSearchText(right),
-    );
   }
 }
 
@@ -160,10 +120,6 @@ String _normalizeSearchText(String value) {
       .replaceAll('ö', 'oe')
       .replaceAll('ü', 'ue')
       .replaceAll(RegExp(r'\s+'), ' ');
-}
-
-String _compactSearchText(String value) {
-  return _compactNormalizedToken(_normalizeSearchText(value));
 }
 
 String _compactNormalizedToken(String value) {

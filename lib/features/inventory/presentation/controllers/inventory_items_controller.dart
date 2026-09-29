@@ -615,19 +615,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
-  /// Throw away item.
-  Future<bool> throwAwayItem(
-    String itemId,
-    int amount,
-    InventoryDiscardReason reason,
-  ) {
-    return throwAwayItemDetailed(
-      itemId,
-      amount,
-      reason,
-    ).then((result) => result != null);
-  }
-
   /// Throw away item and return the actual discarded amount.
   Future<InventoryItemDiscardResult?> throwAwayItemDetailed(
     String itemId,
@@ -879,30 +866,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
-  /// Set item barcode.
-  Future<bool> setItemBarcode({
-    required String itemId,
-    required String barcode,
-  }) {
-    final normalized = barcode.trim();
-    if (normalized.isEmpty) {
-      return Future<bool>.value(false);
-    }
-
-    return _runItemsMutation((currentItems) {
-      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-      if (itemIndex < 0) {
-        return null;
-      }
-
-      final current = currentItems[itemIndex];
-      final updated = current.copyWith(barcode: normalized);
-      final nextItems = List<InventoryItem>.from(currentItems);
-      nextItems[itemIndex] = updated;
-      return nextItems;
-    });
-  }
-
   /// Buy again item.
   Future<ShoppingListRevert?> buyAgainItem(InventoryItem item) {
     return addSourceItemToShoppingList(
@@ -1091,50 +1054,6 @@ class InventoryItemsController extends _$InventoryItemsController {
       },
       fallbackValue: false,
     );
-  }
-
-  /// Finalize committed pending consumption.
-  Future<bool> finalizeCommittedPendingConsumption({
-    required String draftId,
-    required String itemId,
-    required int quantity,
-    required int currentAmount,
-    DateTime? consumedAt,
-  }) {
-    return _runSerializedTask<bool>(
-      operation: () async {
-        final finalized = await ref
-            .read(inventoryPendingConsumptionStoreProvider)
-            .finalize(
-              id: draftId,
-              itemId: itemId,
-              quantity: quantity,
-              currentAmount: currentAmount,
-              consumedAt: consumedAt,
-            );
-        if (!finalized) {
-          return false;
-        }
-        return true;
-      },
-      fallbackValue: false,
-    );
-  }
-
-  Future<bool> _runItemsMutation(
-    List<InventoryItem>? Function(List<InventoryItem> currentItems) mutation,
-  ) {
-    return _runSerializedMutation(() async {
-      final currentItems = await _currentPersistedItems();
-      final nextItems = mutation(currentItems);
-      if (nextItems == null) {
-        return true;
-      }
-      return await _saveItems(
-        previousItems: currentItems,
-        nextItems: nextItems,
-      );
-    });
   }
 
   Future<bool> _saveItems({

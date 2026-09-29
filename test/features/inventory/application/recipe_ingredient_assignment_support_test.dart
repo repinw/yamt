@@ -6,24 +6,6 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 void main() {
-  test('auto assignment maps recipe gram unit to inventory gram unit', () {
-    const requirement = TemplateIngredientRequirement(
-      amount: 500,
-      unit: TemplateIngredientUnit.gram,
-      name: 'Rice',
-    );
-    final rice = _measuredItem(
-      id: 'rice',
-      name: 'Rice',
-      unit: InventoryAmountUnit.gram,
-    );
-
-    expect(
-      canAutoAssignInventoryItem(requirement: requirement, item: rice),
-      isTrue,
-    );
-  });
-
   test('effective requirement keeps inventory unit at assignment boundary', () {
     const requirement = TemplateIngredientRequirement(
       amount: 2,
@@ -48,28 +30,6 @@ void main() {
     expect(effectiveRequirement, isNotNull);
     expect(effectiveRequirement!.amount, 200);
     expect(effectiveRequirement.unit, InventoryAmountUnit.gram);
-  });
-
-  test('selection rejects mismatched mapped inventory units', () {
-    const requirement = TemplateIngredientRequirement(
-      amount: 500,
-      unit: TemplateIngredientUnit.gram,
-      name: 'Rice',
-    );
-    final milk = _measuredItem(
-      id: 'milk',
-      name: 'Milk',
-      unit: InventoryAmountUnit.milliliter,
-    );
-
-    expect(
-      canSelectInventoryItemForRequirement(
-        requirement: requirement,
-        selectedItems: const <InventoryItem>[],
-        candidate: milk,
-      ),
-      isFalse,
-    );
   });
 }
 

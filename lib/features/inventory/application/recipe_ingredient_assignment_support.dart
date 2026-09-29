@@ -50,26 +50,6 @@ bool usesOnlyPieceTrackedItems(List<InventoryItem> items) {
   return items.isNotEmpty && items.every((item) => !item.usesAmountProgress);
 }
 
-/// Can auto assign inventory item.
-bool canAutoAssignInventoryItem({
-  required TemplateIngredientRequirement? requirement,
-  required InventoryItem item,
-}) {
-  if (requirement == null) {
-    return true;
-  }
-
-  final requiredUnit = requirement.inventoryUnit;
-  if (requiredUnit == InventoryAmountUnit.piece) {
-    if (!requirement.allowsDirectPieceInventoryMatch) {
-      return false;
-    }
-    return !item.usesAmountProgress;
-  }
-
-  return item.usesAmountProgress && item.amountUnit == requiredUnit;
-}
-
 /// Resolve effective requirement for items.
 RecipeIngredientEffectiveRequirement? resolveEffectiveRequirementForItems({
   required TemplateIngredientRequirement requirement,
@@ -129,40 +109,4 @@ RecipeIngredientEffectiveRequirement? resolveEffectiveRequirementForItems({
     unit: requiredUnit,
     name: requirement.name,
   );
-}
-
-/// Can select inventory item for requirement.
-bool canSelectInventoryItemForRequirement({
-  required TemplateIngredientRequirement? requirement,
-  required List<InventoryItem> selectedItems,
-  required InventoryItem candidate,
-}) {
-  if (requirement == null) {
-    return true;
-  }
-
-  final requiredUnit = requirement.inventoryUnit;
-  if (requiredUnit != InventoryAmountUnit.piece) {
-    return candidate.usesAmountProgress && candidate.amountUnit == requiredUnit;
-  }
-
-  if (selectedItems.isEmpty) {
-    if (!requirement.allowsDirectPieceInventoryMatch) {
-      return candidate.usesAmountProgress;
-    }
-    return true;
-  }
-
-  if (usesOnlyPieceTrackedItems(selectedItems)) {
-    return requirement.allowsDirectPieceInventoryMatch &&
-        !candidate.usesAmountProgress;
-  }
-
-  final sharedAmountUnit = resolveSharedAmountProgressUnit(selectedItems);
-  if (sharedAmountUnit == null) {
-    return false;
-  }
-
-  return candidate.usesAmountProgress &&
-      candidate.amountUnit == sharedAmountUnit;
 }

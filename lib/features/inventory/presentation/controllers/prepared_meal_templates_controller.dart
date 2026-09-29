@@ -11,7 +11,6 @@ import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart'
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_url_parser.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 part 'prepared_meal_templates_controller.g.dart';
@@ -176,58 +175,6 @@ class PreparedMealTemplatesController
               );
             }
             return PreparedMealTemplateSaveResult.success(newTemplate.id);
-          },
-          fallbackValue: const PreparedMealTemplateSaveResult.failure(
-            PreparedMealTemplateSaveFailureReason.saveFailed,
-          ),
-          onError: (error, stackTrace) {
-            log(
-              'Unexpected recipe template save error.',
-              name: _preparedMealTemplatesControllerLogName,
-              error: error,
-              stackTrace: stackTrace,
-            );
-          },
-        )
-        .whenComplete(keepAliveLink.close);
-  }
-
-  /// Create template from recipe.
-  Future<PreparedMealTemplateSaveResult> createTemplateFromRecipe({
-    required String recipeUrl,
-    String name = '',
-    int? totalPortions,
-    String? localeName,
-  }) {
-    final normalizedRecipeUrl = _normalizeRecipeUrl(recipeUrl);
-    if (normalizedRecipeUrl == null) {
-      return Future<PreparedMealTemplateSaveResult>.value(
-        const PreparedMealTemplateSaveResult.failure(
-          PreparedMealTemplateSaveFailureReason.invalidInput,
-        ),
-      );
-    }
-
-    final keepAliveLink = ref.keepAlive();
-    return _mutationQueue
-        .run<PreparedMealTemplateSaveResult>(
-          operation: () async {
-            final currentTemplates = await _currentTemplates();
-            final importedRecipe = await ref
-                .read(preparedMealRecipeImporterProvider)
-                .importRecipe(normalizedRecipeUrl, localeName: localeName);
-            if (importedRecipe == null) {
-              return const PreparedMealTemplateSaveResult.failure(
-                PreparedMealTemplateSaveFailureReason.recipeLoadFailed,
-              );
-            }
-
-            return await _saveImportedRecipeTemplate(
-              currentTemplates: currentTemplates,
-              importedRecipe: importedRecipe,
-              name: name,
-              totalPortions: totalPortions,
-            );
           },
           fallbackValue: const PreparedMealTemplateSaveResult.failure(
             PreparedMealTemplateSaveFailureReason.saveFailed,
@@ -429,118 +376,6 @@ class PreparedMealTemplatesController
             if (current.id != template.id) current,
           template,
         ],
-      );
-    }).whenComplete(keepAliveLink.close);
-  }
-
-  /// Set recipe ingredient ignored.
-  Future<bool> setRecipeIngredientIgnored({
-    required String templateId,
-    required String ingredient,
-    required bool isIgnored,
-  }) {
-    if (templateId.trim().isEmpty || ingredient.trim().isEmpty) {
-      return Future<bool>.value(false);
-    }
-
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(() async {
-      final currentTemplates = await _currentTemplates();
-      final templateIndex = currentTemplates.indexWhere(
-        (template) => template.id == templateId,
-      );
-      if (templateIndex < 0) {
-        return false;
-      }
-
-      final currentTemplate = currentTemplates[templateIndex];
-      final normalizedIngredient = ingredient.trim();
-      final nextIgnoredIngredients = List<String>.from(
-        currentTemplate.ignoredRecipeIngredients,
-      );
-      final alreadyIgnored = nextIgnoredIngredients.contains(
-        normalizedIngredient,
-      );
-      if (isIgnored && !alreadyIgnored) {
-        nextIgnoredIngredients.add(normalizedIngredient);
-      } else if (!isIgnored && alreadyIgnored) {
-        nextIgnoredIngredients.remove(normalizedIngredient);
-      } else {
-        return true;
-      }
-
-      final nextTemplates = List<PreparedMeal>.from(currentTemplates);
-      nextTemplates[templateIndex] = currentTemplate.copyWith(
-        ignoredRecipeIngredients: nextIgnoredIngredients,
-        updatedAt: DateTime.now(),
-      );
-      return await _saveTemplates(
-        previousTemplates: currentTemplates,
-        nextTemplates: nextTemplates,
-      );
-    }).whenComplete(keepAliveLink.close);
-  }
-
-  /// Update recipe ingredient assignments.
-  Future<bool> updateRecipeIngredientAssignments({
-    required String templateId,
-    required Map<String, List<String>> recipeIngredientAssignments,
-    required Map<String, RecipeIngredientAmountConversion>
-    recipeIngredientAmountConversions,
-  }) {
-    if (templateId.trim().isEmpty) {
-      return Future<bool>.value(false);
-    }
-
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(() async {
-      final currentTemplates = await _currentTemplates();
-      final templateIndex = currentTemplates.indexWhere(
-        (template) => template.id == templateId,
-      );
-      if (templateIndex < 0) {
-        return false;
-      }
-
-      final currentTemplate = currentTemplates[templateIndex];
-      final nextAssignments = <String, List<String>>{};
-      for (final entry in recipeIngredientAssignments.entries) {
-        final ingredient = entry.key.trim();
-        if (ingredient.isEmpty) {
-          continue;
-        }
-        final itemIds = entry.value
-            .map((itemId) => itemId.trim())
-            .where((itemId) => itemId.isNotEmpty)
-            .toSet()
-            .toList(growable: false);
-        if (itemIds.isEmpty) {
-          continue;
-        }
-        nextAssignments[ingredient] = itemIds;
-      }
-      final nextConversions = <String, RecipeIngredientAmountConversion>{};
-      for (final entry in recipeIngredientAmountConversions.entries) {
-        final ingredient = entry.key.trim();
-        final conversion = entry.value;
-        if (ingredient.isEmpty ||
-            conversion.amountPerPiece < 1 ||
-            conversion.unit == InventoryAmountUnit.piece ||
-            !nextAssignments.containsKey(ingredient)) {
-          continue;
-        }
-        nextConversions[ingredient] = conversion;
-      }
-
-      final nextTemplates = List<PreparedMeal>.from(currentTemplates);
-      nextTemplates[templateIndex] = currentTemplate.copyWith(
-        recipeIngredientAssignments: nextAssignments,
-        recipeIngredientAmountConversions: nextConversions,
-        updatedAt: DateTime.now(),
-      );
-      return await _saveTemplates(
-        previousTemplates: currentTemplates,
-        nextTemplates: nextTemplates,
       );
     }).whenComplete(keepAliveLink.close);
   }
