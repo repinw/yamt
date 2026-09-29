@@ -608,18 +608,6 @@ service cloud.firestore {
         );
     }
 
-    // [Legacy] App versions before the votes rewrite the whole alias. Allowed
-    // only on aliases that have no user count yet; remove once no supported
-    // app version writes aliases this way.
-    function isLegacyReceiptAliasSave(aliasId, next, current) {
-      return !('unique_user_count' in current)
-        && isValidGlobalFoodReceiptAlias(next, aliasId)
-        && next.id == current.id
-        && next.global_food_item_id == current.global_food_item_id
-        && next.lookup_key == current.lookup_key
-        && next.selection_count == current.selection_count + 1;
-    }
-
     function isValidUserReceiptAliasVote(data, aliasId) {
       return data.keys().hasOnly([
           'alias_id',
@@ -836,21 +824,10 @@ service cloud.firestore {
         && request.resource.data.get('unique_user_count', 1) == 1;
       allow update: if isSignedIn()
         && keepsAuthor(request.resource.data, resource.data)
-        // Pick the path first: evaluating both on a full product document
-        // exceeds the limit of 1000 expressions per request.
-        && (
-          ('unique_user_count' in request.resource.data
-            && isReceiptAliasSaveUpdate(
-              aliasId,
-              request.resource.data,
-              resource.data
-            ))
-          || (!('unique_user_count' in request.resource.data)
-            && isLegacyReceiptAliasSave(
-              aliasId,
-              request.resource.data,
-              resource.data
-            ))
+        && isReceiptAliasSaveUpdate(
+          aliasId,
+          request.resource.data,
+          resource.data
         );
       allow delete: if false;
     }
