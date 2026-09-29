@@ -82,11 +82,11 @@ class InventoryListTopControlsSliver extends StatelessWidget {
           hintText: l10n.inventorySearchHint,
           useCompactSurface: true,
           trailingActions: [
-            _ToolButton(
+            _SquareToolButton(
               key: const Key('inventory_list_sort_button'),
               enabled: enabled,
-              icon: Icons.filter_alt_rounded,
-              label: l10n.inventorySortAction,
+              icon: Icons.swap_vert_rounded,
+              tooltip: l10n.inventorySortAction,
               onPressed: onShowSort,
             ),
             _ViewModeButton(
@@ -101,39 +101,36 @@ class InventoryListTopControlsSliver extends StatelessWidget {
   }
 }
 
-/// Tonal button with an icon and a word next to the search field.
-class _ToolButton extends StatelessWidget {
+/// Square tonal button with only an icon; its word is the tooltip.
+class _SquareToolButton extends StatelessWidget {
   const new({
     required this.enabled,
     required this.icon,
-    required this.label,
+    required this.tooltip,
     required this.onPressed,
     super.key,
   });
 
   final bool enabled;
   final IconData icon;
-  final String label;
+  final String tooltip;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: AppSizes.compactSearchControlHeight,
-      child: FilledButton.tonalIcon(
+    return SizedBox.square(
+      dimension: AppSizes.compactSearchControlHeight,
+      child: IconButton.filledTonal(
+        tooltip: tooltip,
         onPressed: enabled ? onPressed : null,
-        style: FilledButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-        ),
         icon: Icon(icon, size: AppSizes.compactSearchSettingsIcon),
-        label: Text(label),
       ),
     );
   }
 }
 
-/// Square tonal button that switches between rows and tiles. It shows only
-/// the icon of the layout it switches to; the word is its tooltip.
+/// Switch between rows and tiles. It shows the icon of the layout it
+/// switches to; the word is its tooltip.
 class _ViewModeButton extends StatelessWidget {
   const new({
     required this.enabled,
@@ -149,19 +146,14 @@ class _ViewModeButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final showsList = viewMode == InventoryListViewMode.list;
-    return SizedBox.square(
-      dimension: AppSizes.compactSearchControlHeight,
-      child: IconButton.filledTonal(
-        key: const Key('inventory_list_view_mode_button'),
-        tooltip: showsList
-            ? l10n.inventoryViewTilesAction
-            : l10n.inventoryViewListAction,
-        onPressed: enabled ? onPressed : null,
-        icon: Icon(
-          showsList ? Icons.grid_view_rounded : Icons.view_agenda_rounded,
-          size: AppSizes.compactSearchSettingsIcon,
-        ),
-      ),
+    return _SquareToolButton(
+      key: const Key('inventory_list_view_mode_button'),
+      enabled: enabled,
+      icon: showsList ? Icons.grid_view_rounded : Icons.view_agenda_rounded,
+      tooltip: showsList
+          ? l10n.inventoryViewTilesAction
+          : l10n.inventoryViewListAction,
+      onPressed: onPressed,
     );
   }
 }
