@@ -169,9 +169,11 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Burn Week budget model with daily goal, activity credit, carryover, skipped
   days, remaining calories, and details sheet.
 - Macro tracking for protein, carbs, fat, and extended nutrient fields.
-- Protein and fat targets in g/kg: 1.6 g protein with training days, 1.2 g
-  without; 0.8 g fat for men, 0.9 g for women. The training days decide until
-  the user sets sport in the macro settings. Above a BMI of 25 only 40 percent
+- Protein and fat targets in g/kg: 1.6 g protein, 2.0 g while losing weight
+  with training; 0.8 g fat for men, 0.9 g for women. The training days decide
+  until the user sets sport in the macro settings. Carbs get the rest of the
+  kcal, but at most 40 percent. What lies above that goes to protein up to
+  2.0 g/kg, then to fat. Above a BMI of 25 only 40 percent
   of the extra weight counts (adjusted body weight), so heavy users get
   realistic targets. Those users see the adjusted weight and a medical
   disclaimer on the onboarding summary and in the macro settings. No training

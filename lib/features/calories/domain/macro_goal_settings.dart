@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
+import 'package:meta/meta.dart';
 import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 
 /// Recommended macro multipliers based on sex and activity.
@@ -10,18 +10,14 @@ import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 abstract final class MacroCalculationDefaults {
   /// Default protein multiplier in g/kg.
   ///
-  /// 1.6 g/kg covers muscle gain and retention for people who train; more
-  /// brings no measurable benefit for most. Without training 1.2 g/kg is
-  /// enough. While losing weight the body breaks down more protein, so the
-  /// values go up to 2.0 and 1.6 g/kg.
+  /// 1.6 g/kg covers muscle gain and retention, with or without training.
+  /// While losing weight with training the body breaks down more protein, so
+  /// the value goes up to 2.0 g/kg.
   static double defaultProteinMultiplier({
     required bool isSportActive,
     required bool isLosingWeight,
   }) {
-    if (isLosingWeight) {
-      return isSportActive ? 2.0 : 1.6;
-    }
-    return isSportActive ? 1.6 : 1.2;
+    return isLosingWeight && isSportActive ? 2.0 : 1.6;
   }
 
   /// Smallest share of the daily kcal that protein gets while losing weight.

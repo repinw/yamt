@@ -24,19 +24,20 @@ void main() {
       final service = DailyNutritionTargetResolverService(
         macroSettings: const MacroGoalSettings(),
         goalSettings: const CalorieGoalSettings.empty().copyWith(
-          dailyKcalGoal: 2600,
+          dailyKcalGoal: 2500,
           calculatorProfile: profile,
-          goalHistory: [_calculatorEntry(2600, profile)],
+          goalHistory: [_calculatorEntry(2500, profile)],
         ),
       );
 
       final target = service.resolveTarget(
         day: DateTime(2026, 9, 14),
-        goalKcal: 2600,
+        goalKcal: 2500,
       );
 
       // Reference weight: 81 kg at BMI 25 + 0.4 * 49 kg = 100.6 kg. Losing
-      // weight with training: 2.0 g/kg, inside 30-35 % of 2600 kcal.
+      // weight with training: 2.0 g/kg, inside 30-35 % of 2500 kcal. Carbs
+      // stay below the 40 % cap.
       expect(target.proteinGrams, closeTo(100.6 * 2.0, 0.001));
       expect(target.fatGrams, closeTo(100.6 * 0.8, 0.001));
     });
@@ -56,18 +57,18 @@ void main() {
       final service = DailyNutritionTargetResolverService(
         macroSettings: const MacroGoalSettings(),
         goalSettings: const CalorieGoalSettings.empty().copyWith(
-          dailyKcalGoal: 2600,
+          dailyKcalGoal: 2000,
           calculatorProfile: profile,
           goalHistory: [
             CalorieGoalHistoryEntry(
-              dailyKcalGoal: 2600,
+              dailyKcalGoal: 2000,
               calculatorProfile: profile,
               effectiveDate: DateTime(2026, 9),
               changedAt: DateTime(2026, 9),
               source: CalorieGoalSource.calculator,
             ),
             CalorieGoalHistoryEntry(
-              dailyKcalGoal: 2600,
+              dailyKcalGoal: 2000,
               calculatorProfile: null,
               effectiveDate: DateTime(2026, 9, 8),
               changedAt: DateTime(2026, 9, 8),
@@ -86,14 +87,15 @@ void main() {
 
       final beforeCheckIn = service.resolveTarget(
         day: DateTime(2026, 9, 7),
-        goalKcal: 2600,
+        goalKcal: 2000,
       );
       final afterCheckIn = service.resolveTarget(
         day: DateTime(2026, 9, 14),
-        goalKcal: 2600,
+        goalKcal: 2000,
       );
 
-      // Below BMI 25 at 2 m, so the weights count in full.
+      // Below BMI 25 at 2 m, so the weights count in full. Carbs stay below
+      // the 40 % cap.
       expect(beforeCheckIn.proteinGrams, closeTo(95 * 1.6, 0.001));
       expect(afterCheckIn.proteinGrams, closeTo(93 * 1.6, 0.001));
       expect(afterCheckIn.fatGrams, closeTo(93 * 0.8, 0.001));
@@ -143,27 +145,29 @@ void main() {
         heightCm: 180,
         ageYears: 30,
         activityLevel: 1.2,
-        goalMode: CalorieGoalMode.maintain,
-        goalSpeedKgPerWeek: 0,
+        goalMode: CalorieGoalMode.lose,
+        goalSpeedKgPerWeek: 0.5,
       );
       final restDay = DateTime(2026, 9, 14);
       final trainingDay = DateTime(2026, 9, 15);
       final service = DailyNutritionTargetResolverService(
         macroSettings: const MacroGoalSettings(),
         goalSettings: const CalorieGoalSettings.empty().copyWith(
-          dailyKcalGoal: 2400,
+          dailyKcalGoal: 1600,
           calculatorProfile: profile,
+          goalHistory: [_calculatorEntry(1600, profile)],
           trainingDayOverrides: {diaryDayKey(trainingDay): true},
         ),
       );
 
+      // Rest day: 70 * 1.6 = 112 g, raised to 30 % of 1600 kcal = 120 g.
       expect(
-        service.resolveTarget(day: restDay, goalKcal: 2400).proteinGrams,
-        closeTo(70 * 1.2, 0.001),
+        service.resolveTarget(day: restDay, goalKcal: 1600).proteinGrams,
+        closeTo(120, 0.001),
       );
       expect(
-        service.resolveTarget(day: trainingDay, goalKcal: 2400).proteinGrams,
-        closeTo(70 * 1.6, 0.001),
+        service.resolveTarget(day: trainingDay, goalKcal: 1600).proteinGrams,
+        closeTo(70 * 2.0, 0.001),
       );
     });
 
@@ -211,11 +215,13 @@ void main() {
         goalKcal: 2400,
       );
 
-      // 80kg male without training days: 96g protein, 64g fat, 360g carbs
+      // 80kg male: 128g protein and 64g fat leave 328g carbs. Carbs stop at
+      // 40 % (240g); the excess raises protein to 2.0 g/kg, the rest goes to
+      // fat.
       expect(target.goalKcal, 2400.0);
-      expect(target.proteinGrams, closeTo(96, 0.001));
-      expect(target.fatGrams, closeTo(64, 0.001));
-      expect(target.carbsGrams, closeTo(360, 0.001));
+      expect(target.proteinGrams, closeTo(160, 0.001));
+      expect(target.fatGrams, closeTo(64 + 224 / 9, 0.001));
+      expect(target.carbsGrams, closeTo(240, 0.001));
     });
   });
 }

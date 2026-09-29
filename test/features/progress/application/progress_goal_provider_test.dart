@@ -67,9 +67,10 @@ void main() {
     // Female losing weight without training days: 1.6 g/kg (96 g) is below
     // 30 % of the 1800 kcal goal, so protein rises to 135 g.
     expect(goal.macroTarget?.proteinGrams, closeTo(1800 * 0.30 / 4, 0.001));
-    expect(goal.macroTarget?.fatGrams, closeTo(54, 0.001));
-    // (1800 − 135 × 4 − 54 × 9) / 4 = 193.5 g.
-    expect(goal.macroTarget?.carbsGrams, closeTo(193.5, 0.001));
+    // (1800 − 135 × 4 − 54 × 9) / 4 = 193.5 g carbs, capped at 40 % = 180 g.
+    // Protein is above 2.0 g/kg, so the 54 kcal excess goes to fat.
+    expect(goal.macroTarget?.fatGrams, closeTo(60, 0.001));
+    expect(goal.macroTarget?.carbsGrams, closeTo(180, 0.001));
   });
 
   test('has no past-start value while the weight is on the way', () async {
