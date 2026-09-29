@@ -523,10 +523,12 @@ strings. Report existing compatibility code in changed files to the user.
 
 1. `dart run build_runner build` if annotated files changed.
 2. `flutter gen-l10n` if ARB files changed.
-3. `flutter analyze` reports no new issue. Legacy code still has infos, for
-   example `max_file_lines` on allowlisted files, so the command itself can
-   fail. An issue in a file that you did not change is legacy. In a file that
-   you changed, no rule may fire more often than on `origin/master`.
+3. `tool/ci_changed_file_lints.sh` reports no new issue, and
+   `flutter analyze lib test integration_test` passes. Analyzing a directory
+   does not report plugin lints such as `max_file_lines`, so the script
+   analyzes the changed files one by one. An issue in a file that you did not
+   change is legacy. In a file that you changed, no rule may fire more often
+   than on `origin/master`.
 4. `flutter test test/architecture` passes.
 5. Tests of the affected features pass.
 6. `npx jscpd lib` lists no clone in a file that you changed. The project
