@@ -341,22 +341,10 @@ void main() {
     expect(find.text('4 portions'), findsOneWidget);
     expect(find.text('• 4 Merguez'), findsOneWidget);
 
-    // The save button sits below the recipe in a lazy ListView, so it is
-    // not built until it is scrolled into view.
     final saveButton = find.byKey(
       const Key('meal_template_import_review_save_button'),
     );
-    await tester.scrollUntilVisible(
-      saveButton,
-      200,
-      scrollable: find
-          .descendant(
-            of: find.byType(ListView),
-            matching: find.byType(Scrollable),
-          )
-          .first,
-    );
-    await tester.pumpAndSettle();
+    await _pumpUntilFound(tester, saveButton, description: 'save button');
     await tester.tap(saveButton);
     await tester.pumpAndSettle();
 
