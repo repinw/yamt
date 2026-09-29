@@ -5,7 +5,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/features/home/presentation/widgets/inventory_dock.dart';
+import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/product_search_hub_page.dart';
@@ -18,13 +18,17 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/helpers/sheet_launcher.dart';
+
 Widget _buildHarness() {
   final router = GoRouter(
     routes: [
       GoRoute(
         path: AppRoutes.root,
         builder: (context, state) {
-          return const Scaffold(bottomNavigationBar: InventoryDock());
+          return const Scaffold(
+            body: Center(child: SheetLauncher(actions: inventoryAddActions)),
+          );
         },
       ),
       GoRoute(
@@ -71,15 +75,15 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
-  testWidgets('inventory dock opens product search hub page from root', (
+  testWidgets('the add sheet opens product search hub page from root', (
     tester,
   ) async {
     await tester.pumpWidget(_buildHarness());
     await _pumpVisibleStep(tester);
 
-    await tester.tap(find.byKey(InventoryDock.addKey));
+    await tester.tap(find.byKey(SheetLauncher.buttonKey));
     await _pumpVisibleStep(tester);
-    await tester.tap(find.byKey(InventoryDock.manualSearchKey));
+    await tester.tap(find.byKey(InventoryAddActionKeys.manualSearch));
     await _pumpVisibleStep(tester);
 
     expect(find.byType(ProductSearchHubPage), findsOneWidget);
@@ -95,9 +99,9 @@ void main() {
     await tester.pumpWidget(_buildHarness());
     await _pumpVisibleStep(tester);
 
-    await tester.tap(find.byKey(InventoryDock.addKey));
+    await tester.tap(find.byKey(SheetLauncher.buttonKey));
     await _pumpVisibleStep(tester);
-    await tester.tap(find.byKey(InventoryDock.createKey));
+    await tester.tap(find.byKey(InventoryAddActionKeys.create));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
 
     expect(find.byKey(ManualProductDetailsForm.saveKey), findsOneWidget);
@@ -110,9 +114,9 @@ void main() {
     await tester.pumpWidget(_buildHarness());
     await _pumpVisibleStep(tester);
 
-    await tester.tap(find.byKey(InventoryDock.addKey));
+    await tester.tap(find.byKey(SheetLauncher.buttonKey));
     await _pumpVisibleStep(tester);
-    await tester.tap(find.byKey(InventoryDock.aiKey));
+    await tester.tap(find.byKey(InventoryAddActionKeys.ai));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
 
     expect(find.byKey(FoodEstimatePhotoInput.cameraKey), findsOneWidget);

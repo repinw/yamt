@@ -1209,7 +1209,7 @@
   "diaryBalanceShowDetails": "Alle Zahlen anzeigen",
   "diaryBalanceHideDetails": "Weniger Zahlen anzeigen",
   "diaryMealsEmptyTitle": "Noch nichts gegessen",
-  "diaryMealsEmptyHint": "Unten per Vorrat, Suche, KI oder Barcode eintragen.",
+  "diaryMealsEmptyHint": "Über „Essen“ unten per Barcode, Vorrat, Suche oder KI eintragen.",
   "diaryBalanceEatenAmount": "{kcal} gegessen",
   "diaryBalanceOfTarget": "von {kcal}",
   "diaryBalanceScaleTarget": "Ziel {kcal}",
@@ -2481,5 +2481,12 @@
   "caloriesGoalBodyEditInProfile": "Im Profil bearbeiten",
   "caloriesGoalBodyHeightValue": "{height} cm",
   "caloriesGoalBodyAgeValue": "{age} Jahre",
-  "caloriesGoalBodyAgeWithBirthday": "{age} Jahre · {birthday}"
+  "caloriesGoalBodyAgeWithBirthday": "{age} Jahre · {birthday}",
+  "homeActionEat": "Essen",
+  "inventoryAddBarcodeDescription": "Packung scannen und in den Vorrat legen",
+  "diaryQuickEatBarcodeDescription": "Packung scannen und Gegessenes eintragen",
+  "diaryQuickEatInventoryDescription": "Etwas aus deinem Vorrat essen",
+  "diaryQuickEatQuickEntryDescription": "Kalorien und Makros von Hand eintragen",
+  "diaryQuickEatAiDescription": "Beschreib eine Mahlzeit, die KI schätzt sie",
+  "diaryQuickEatSearchDescription": "Lebensmittel nach Name oder Marke finden"
 }

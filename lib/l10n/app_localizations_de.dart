@@ -2620,7 +2620,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryMealsEmptyHint =>
-      'Unten per Vorrat, Suche, KI oder Barcode eintragen.';
+      'Über „Essen“ unten per Barcode, Vorrat, Suche oder KI eintragen.';
 
   @override
   String diaryBalanceEatenAmount(String kcal) {
@@ -5263,4 +5263,31 @@ class AppLocalizationsDe extends AppLocalizations {
   String caloriesGoalBodyAgeWithBirthday(int age, String birthday) {
     return '$age Jahre · $birthday';
   }
+
+  @override
+  String get homeActionEat => 'Essen';
+
+  @override
+  String get inventoryAddBarcodeDescription =>
+      'Packung scannen und in den Vorrat legen';
+
+  @override
+  String get diaryQuickEatBarcodeDescription =>
+      'Packung scannen und Gegessenes eintragen';
+
+  @override
+  String get diaryQuickEatInventoryDescription =>
+      'Etwas aus deinem Vorrat essen';
+
+  @override
+  String get diaryQuickEatQuickEntryDescription =>
+      'Kalorien und Makros von Hand eintragen';
+
+  @override
+  String get diaryQuickEatAiDescription =>
+      'Beschreib eine Mahlzeit, die KI schätzt sie';
+
+  @override
+  String get diaryQuickEatSearchDescription =>
+      'Lebensmittel nach Name oder Marke finden';
 }

@@ -3,20 +3,25 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/core/widgets/home_more_sheet.dart';
+import 'package:yamt/core/widgets/home_nav_action.dart';
 import 'package:yamt/core/widgets/home_nav_entry.dart';
 import 'package:yamt/core/widgets/home_nav_item.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_menu_scope.dart';
 import 'package:yamt/core/widgets/home_shell_more_scope.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_dock.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_actions.dart';
+import 'package:yamt/features/home/domain/home_action_ranking.dart';
+import 'package:yamt/features/home/presentation/controllers/home_action_usage_controller.dart';
+import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_slide_menu.dart';
-import 'package:yamt/features/home/presentation/widgets/inventory_dock.dart';
+import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -39,8 +44,12 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   RouteObserver<ModalRoute<void>>? _routeObserver;
 
-  /// Whether the side menu is open.
+  /// Whether the side menu or the action panel is open.
   var _isMenuOpen = false;
+
+  /// Whether the open panel is the action panel on the right; it stays set
+  /// while the panel closes, so the right content slides away.
+  var _showsActions = false;
 
   /// Whether a sheet, dialog, or page covers the shell.
   var _isCovered = false;
@@ -75,7 +84,15 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     );
   }
 
-  void _openMenu() => setState(() => _isMenuOpen = true);
+  void _openMenu() => setState(() {
+    _showsActions = false;
+    _isMenuOpen = true;
+  });
+
+  void _openActions() => setState(() {
+    _showsActions = true;
+    _isMenuOpen = true;
+  });
 
   void _closeMenu() => setState(() => _isMenuOpen = false);
 
@@ -96,6 +113,55 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       _cookbookBranchIndex => HomeTabType.cookbook,
       _progressBranchIndex => HomeTabType.progress,
       _ => HomeTabType.inventory, // coverage:ignore-line
+    };
+  }
+
+  /// Word of the action button of [tab], or `null` when the tab has no
+  /// actions.
+  String? _actionLabel(AppLocalizations l10n, HomeTabType tab) {
+    return switch (tab) {
+      HomeTabType.inventory => l10n.inventoryDockAddAction,
+      HomeTabType.diary => l10n.homeActionEat,
+      HomeTabType.cookbook || HomeTabType.progress => null,
+    };
+  }
+
+  /// The actions of [tab] for the action panel.
+  List<HomeMoreSection> _actions(HomeTabType tab) {
+    return switch (tab) {
+      HomeTabType.inventory => inventoryAddActions(context, ref),
+      HomeTabType.diary => diaryQuickEatActions(context, ref),
+      HomeTabType.cookbook || HomeTabType.progress => const <HomeMoreSection>[],
+    };
+  }
+
+  /// The action panel of [tab]; its most used action is drawn in lime.
+  Widget _buildActionPanel(HomeTabType tab) {
+    final sections = _actions(tab);
+    final counts = ref.watch(homeActionUsageControllerProvider);
+    final mostUsed = mostUsedAction(counts, [
+      for (final section in sections)
+        for (final entry in section.entries) ?_usageId(entry),
+    ]);
+    return HomeActionPanel(
+      sections: sections,
+      onClose: _closeMenu,
+      highlightedKey: mostUsed == null ? null : ValueKey<String>(mostUsed),
+      onUsed: (entry) {
+        if (_usageId(entry) case final id?) {
+          unawaited(
+            ref.read(homeActionUsageControllerProvider.notifier).record(id),
+          );
+        }
+      },
+    );
+  }
+
+  /// Id under which taps on [entry] are counted: its string key.
+  String? _usageId(HomeMoreEntry entry) {
+    return switch (entry.key) {
+      ValueKey<String>(:final value) => value,
+      _ => null,
     };
   }
 
@@ -141,17 +207,19 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final currentTab = _currentTab();
-    // Keeps floating snack bars above the tab's dock.
-    final floatingActionButton = switch (currentTab) {
-      HomeTabType.inventory => const SizedBox(height: inventoryDockHeight),
-      HomeTabType.diary => const SizedBox(height: diaryQuickEatDockHeight),
-      HomeTabType.cookbook || HomeTabType.progress => null,
-    };
+    final actionLabel = _actionLabel(l10n, currentTab);
+    // Keeps floating snack bars above the round action button.
+    final floatingActionButton = actionLabel == null
+        ? null
+        : const SizedBox(height: AppGraphit.navActionOverhang);
 
     return HomeSlideMenu(
       isOpen: _isMenuOpen,
       onClose: _closeMenu,
-      menu: HomeMenuPanel(onClose: _closeMenu),
+      fromEnd: _showsActions,
+      menu: _showsActions
+          ? _buildActionPanel(currentTab)
+          : HomeMenuPanel(onClose: _closeMenu),
       child: _buildShell(l10n, currentTab, floatingActionButton),
     );
   }
@@ -180,12 +248,16 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // The dock sits on the navigation bar.
-                    if (currentTab == HomeTabType.diary)
-                      const DiaryQuickEatDock(),
-                    if (currentTab == HomeTabType.inventory)
-                      const InventoryDock(),
-                    HomeBottomNavBar(entries: _navEntries(context, l10n)),
+                    HomeBottomNavBar(
+                      entries: _navEntries(context, l10n),
+                      action: switch (_actionLabel(l10n, currentTab)) {
+                        final label? => HomeNavAction(
+                          label: label,
+                          onPressed: _openActions,
+                        ),
+                        null => null,
+                      },
+                    ),
                   ],
                 ),
               ),

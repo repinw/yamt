@@ -51,6 +51,12 @@ abstract final class AppGraphit {
   /// Share of the stock under which a row turns to the low color.
   static const double lowStockShare = 0.25;
 
+  /// Diameter of the round action button in the middle of the home bar.
+  static const double navActionButton = 56;
+
+  /// How far the action button reaches above the home bar.
+  static const double navActionOverhang = 22;
+
   /// Smallest height of a Vorrat row.
   static const double stockRowMinHeight = 70;
 

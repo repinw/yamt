@@ -34,7 +34,7 @@ class InventoryReceiptGroupsSliver extends StatelessWidget {
         horizontalPadding,
         0,
         horizontalPadding,
-        homeShellPageBottomPadding(context, hasDock: true),
+        homeShellPageBottomPadding(context),
       ),
       sliver: SliverList.builder(
         itemCount: groups.length,

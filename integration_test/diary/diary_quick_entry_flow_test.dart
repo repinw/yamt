@@ -10,7 +10,7 @@ import 'package:yamt/features/diary/presentation/diary_quick_entry_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meals_section_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_quick_eat_dock.dart';
+    'diary_quick_eat_actions.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_quick_entry_label.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -19,6 +19,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/diary/support/diary_quick_entry_test_support.dart';
+import '../../test/helpers/sheet_launcher.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -36,14 +37,15 @@ void main() {
           localizationsDelegates: appLocalizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
-            body: SizedBox.expand(),
-            bottomNavigationBar: DiaryQuickEatDock(),
+            body: Center(child: SheetLauncher(actions: diaryQuickEatActions)),
           ),
         ),
       ),
     );
     await tester.pumpAndSettle();
 
+    await tester.tap(find.byKey(SheetLauncher.buttonKey));
+    await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(
         DiaryMealsSectionKeys.quickEatSource(DiaryQuickEatSource.quickEntry),

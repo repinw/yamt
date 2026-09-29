@@ -179,6 +179,10 @@ abstract final class AppSizes {
   /// Width of the side menu entries, as a share of the screen width.
   static const double homeSlideMenuContentWidth = 0.62;
 
+  /// Share of the width that the action panel on the right uses; narrower
+  /// than the side menu, so its icons clear the shadow of the slid page.
+  static const double homeActionPanelContentWidth = 0.54;
+
   /// Corner radius of the scaled home page, before scaling.
   static const double homeSlideMenuPageRadius = 36;
 

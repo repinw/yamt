@@ -10,15 +10,23 @@ import 'package:yamt/core/widgets/app_ink_well.dart';
 class HomeMoreEntry {
   /// Creates a Mehr sheet entry.
   const new({
-    required this.icon,
     required this.title,
     required this.description,
     required this.onSelected,
+    this.icon,
+    this.symbol,
     this.key,
-  });
+  }) : assert(icon != null || symbol != null, 'Needs an icon or a symbol.');
 
   /// Icon in front of the title.
-  final IconData icon;
+  final IconData? icon;
+
+  /// Drawn symbol in front of the title, such as a barcode, used instead of
+  /// [icon].
+  final Widget? symbol;
+
+  /// The symbol in front of the title, sized and colored by the icon theme.
+  Widget get leading => symbol ?? Icon(icon);
 
   /// Name of the action.
   final String title;
@@ -26,7 +34,7 @@ class HomeMoreEntry {
   /// One line that says what the action does.
   final String description;
 
-  /// Called after the sheet closed.
+  /// Called after the sheet or the action panel closed.
   final VoidCallback onSelected;
 
   /// Key of the entry's tile, for tests.
@@ -133,7 +141,10 @@ class _HomeMoreEntryTile extends StatelessWidget {
                     color: colors.secondaryContainer,
                     borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
-                  child: Icon(entry.icon, color: colors.onSecondaryContainer),
+                  child: IconTheme.merge(
+                    data: IconThemeData(color: colors.onSecondaryContainer),
+                    child: entry.leading,
+                  ),
                 ),
               ),
               const SizedBox(width: AppSpacing.md),

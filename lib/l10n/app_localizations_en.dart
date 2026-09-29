@@ -2568,7 +2568,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryMealsEmptyHint =>
-      'Log food below from the inventory, search, AI, or barcode.';
+      'Tap “Eat” below to log food by barcode, from the inventory, search, or AI.';
 
   @override
   String diaryBalanceEatenAmount(String kcal) {
@@ -5190,4 +5190,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String caloriesGoalBodyAgeWithBirthday(int age, String birthday) {
     return '$age years · $birthday';
   }
+
+  @override
+  String get homeActionEat => 'Eat';
+
+  @override
+  String get inventoryAddBarcodeDescription =>
+      'Scan a package and put it into stock';
+
+  @override
+  String get diaryQuickEatBarcodeDescription =>
+      'Scan a package and log what you ate';
+
+  @override
+  String get diaryQuickEatInventoryDescription =>
+      'Eat something from your stock';
+
+  @override
+  String get diaryQuickEatQuickEntryDescription =>
+      'Enter calories and macros by hand';
+
+  @override
+  String get diaryQuickEatAiDescription =>
+      'Describe a meal, the AI estimates it';
+
+  @override
+  String get diaryQuickEatSearchDescription => 'Find a food by name or brand';
 }

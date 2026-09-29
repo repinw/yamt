@@ -4477,7 +4477,7 @@ abstract class AppLocalizations {
   /// No description provided for @diaryMealsEmptyHint.
   ///
   /// In en, this message translates to:
-  /// **'Log food below from the inventory, search, AI, or barcode.'**
+  /// **'Tap “Eat” below to log food by barcode, from the inventory, search, or AI.'**
   String get diaryMealsEmptyHint;
 
   /// No description provided for @diaryBalanceEatenAmount.
@@ -8864,6 +8864,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{age} years · {birthday}'**
   String caloriesGoalBodyAgeWithBirthday(int age, String birthday);
+
+  /// No description provided for @homeActionEat.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat'**
+  String get homeActionEat;
+
+  /// No description provided for @inventoryAddBarcodeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a package and put it into stock'**
+  String get inventoryAddBarcodeDescription;
+
+  /// No description provided for @diaryQuickEatBarcodeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan a package and log what you ate'**
+  String get diaryQuickEatBarcodeDescription;
+
+  /// No description provided for @diaryQuickEatInventoryDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat something from your stock'**
+  String get diaryQuickEatInventoryDescription;
+
+  /// No description provided for @diaryQuickEatQuickEntryDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter calories and macros by hand'**
+  String get diaryQuickEatQuickEntryDescription;
+
+  /// No description provided for @diaryQuickEatAiDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe a meal, the AI estimates it'**
+  String get diaryQuickEatAiDescription;
+
+  /// No description provided for @diaryQuickEatSearchDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a food by name or brand'**
+  String get diaryQuickEatSearchDescription;
 }
 
 class _AppLocalizationsDelegate

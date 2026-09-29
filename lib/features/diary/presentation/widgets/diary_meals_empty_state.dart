@@ -7,8 +7,8 @@ import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_key
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Short hint on a day without logged food, between the same dashed lines
-/// that frame the meals. It points
-/// to the quick-eat dock at the bottom.
+/// that frame the meals. It points to the "Essen" button in the middle of
+/// the home bar.
 class DiaryMealsEmptyState extends StatelessWidget {
   /// Creates the empty state.
   const new({super.key});

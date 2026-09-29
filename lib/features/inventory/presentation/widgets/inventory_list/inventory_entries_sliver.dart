@@ -68,7 +68,7 @@ class InventoryEntriesSliver extends ConsumerWidget {
       horizontalPadding,
       0,
       horizontalPadding,
-      homeShellPageBottomPadding(context, hasDock: true),
+      homeShellPageBottomPadding(context),
     );
 
     VoidCallback? onTap(InventoryListEntry entry) => switch (entry) {

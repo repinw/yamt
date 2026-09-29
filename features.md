@@ -10,8 +10,17 @@ and feature description docs. This is product-facing; architecture rules stay in
   redirects. Without an account the app opens onboarding; after a sign-out it
   opens the welcome page.
 - Home shell with bottom tabs for Inventory, Diary, Cookbook, and Settings.
-  The tab header, the dock and the bottom navigation stay in place while a
-  tab scrolls.
+  The tab header and the bottom navigation stay in place while a tab
+  scrolls. In the middle of the bar a round lime button opens the actions of
+  the current tab, with a haptic pulse; its word changes per tab
+  ("Hinzufügen", "Essen"). The Cookbook and Fortschritt have no button yet.
+  The actions open like the side menu, but mirrored: the page slides to the
+  left and shrinks, and the actions stand at the bottom right, where the
+  thumb is. The app counts on the device how often each action is tapped;
+  the most used action of the panel gets a lime icon tile. The order stays
+  fixed.
+- Vorrat actions: barcode, search, AI, an own product, and a receipt as photo
+  or upload (the photo only where a camera is available).
 - Responsive page layouts for mobile and wider screens.
 - English and German localization.
 
@@ -83,7 +92,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Date selection and calendar strip navigation. Swiping the diary slides to
   the previous or next day. The top bar shows today, yesterday, or the weekday
   in small capitals over the date, and the day type as a framed chip.
-- A day without logged food shows a short hint that points to the dock.
+- A day without logged food shows a short hint that points to the "Essen"
+  button.
 - Meal sections for breakfast, lunch, dinner, and snacks.
 - Tapping a logged entry opens its item details in the food label look of
   the eat page: image, brand and name, the nutrition label per 100 g or ml
@@ -95,10 +105,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   of a Vorrat entry too, and every change offers an undo. Prepared meals and
   combined entries list their foods instead of the ruler.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
-  Its buttons sit in a dock on the bottom navigation bar of the diary tab:
-  square buttons for inventory, search, and AI, and a lime barcode button
-  on the right.
-- Quick entry ("Schnell" in the dock) logs calories typed in by hand, without
+  Its actions open from the "Essen" button in the middle of the bar: barcode
+  first, then Vorrat, quick entry, AI, and search.
+- Quick entry ("Schnell" in the actions) logs calories typed in by hand, without
   a food or a Vorrat item, on a page in the food label look with day and meal
   top right. Only the calories are required; the name defaults to "Quick
   entry", and protein, carbs, and fat are optional and count as 0 g when left

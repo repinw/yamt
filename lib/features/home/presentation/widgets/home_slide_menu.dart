@@ -3,8 +3,11 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Shows [menu] behind the home shell: opening slides [child] to the right,
-/// shrinks it to a rounded card, and leaves a faded card behind it.
+/// Shows [menu] behind the home shell: opening slides [child] aside, shrinks
+/// it to a rounded card, and leaves a faded card behind it.
+///
+/// The page moves to the right, or to the left when [fromEnd] is set, so the
+/// menu shows on the side it belongs to.
 ///
 /// Tapping the card, the system back gesture, or [onClose] closes the menu.
 class HomeSlideMenu extends StatefulWidget {
@@ -14,8 +17,12 @@ class HomeSlideMenu extends StatefulWidget {
     required this.onClose,
     required this.menu,
     required this.child,
+    this.fromEnd = false,
     super.key,
   });
+
+  /// Whether the menu opens on the right side.
+  final bool fromEnd;
 
   /// Whether the menu is open.
   final bool isOpen;
@@ -86,6 +93,10 @@ class _HomeSlideMenuState extends State<HomeSlideMenu>
             final progress = _progress.value;
             final isClosed = progress == 0;
             final size = MediaQuery.sizeOf(context);
+            // Share of the width left of the card; the end side mirrors it.
+            double left(double share, double scale) => widget.fromEnd
+                ? size.width * (1 - share - scale)
+                : size.width * share;
             return Stack(
               children: [
                 // The menu leaves the tree while closed, so it neither builds
@@ -97,7 +108,10 @@ class _HomeSlideMenuState extends State<HomeSlideMenu>
                 ),
                 _SlidCard(
                   progress: progress,
-                  left: size.width * AppSizes.homeSlideMenuGhostLeft,
+                  left: left(
+                    AppSizes.homeSlideMenuGhostLeft,
+                    AppSizes.homeSlideMenuGhostScale,
+                  ),
                   top: size.height * AppSizes.homeSlideMenuGhostTop,
                   scale: AppSizes.homeSlideMenuGhostScale,
                   child: IgnorePointer(
@@ -110,7 +124,10 @@ class _HomeSlideMenuState extends State<HomeSlideMenu>
                 ),
                 _SlidCard(
                   progress: progress,
-                  left: size.width * AppSizes.homeSlideMenuPageLeft,
+                  left: left(
+                    AppSizes.homeSlideMenuPageLeft,
+                    AppSizes.homeSlideMenuPageScale,
+                  ),
                   top: size.height * AppSizes.homeSlideMenuPageTop,
                   scale: AppSizes.homeSlideMenuPageScale,
                   shadowColor: colors.shadow.withValues(
