@@ -126,12 +126,15 @@ jobs:
       # here first, with retries, makes the runner's own install a no-op.
       - name: Install the Android emulator
         run: |
+          sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           for attempt in 1 2 3; do
-            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install emulator --channel=0 >/dev/null || true
-            if "$ANDROID_HOME/emulator/emulator" -version >/dev/null 2>&1; then
+            if output=$("$sdkmanager" --install emulator --channel=0 2>&1) &&
+              ! grep -q 'An error occurred' <<<"$output" &&
+              [ -x "$ANDROID_HOME/emulator/emulator" ]; then
               exit 0
             fi
-            echo "Emulator install failed on attempt $attempt." >&2
+            echo "Emulator install failed on attempt $attempt:" >&2
+            grep -v '^\[' <<<"$output" >&2 || true
             sleep 10
           done
           exit 1
