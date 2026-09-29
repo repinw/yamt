@@ -16,6 +16,7 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_sort_mode.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_quick_filter.dart';
+import 'package:yamt/features/inventory/presentation/prepared_meal_edit_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_meal_detail_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
@@ -117,8 +118,8 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
 
-  testWidgets('Vorrat filters by chip, switches to tiles, sorts and opens '
-      'a meal', (tester) async {
+  testWidgets('Vorrat filters by chip, switches to tiles, sorts, opens '
+      'a meal and its editor', (tester) async {
     await tester.pumpWidget(_buildHarness());
     await _settle(tester);
 
@@ -158,6 +159,18 @@ void main() {
     await _settle(tester);
     expect(find.byType(EatMealDetailSections), findsOneWidget);
     expect(find.byKey(const ValueKey('eat_meal_missing_Reis')), findsOne);
+
+    await tester.ensureVisible(find.byKey(const Key('eat_meal_action_edit')));
+    await tester.tap(find.byKey(const Key('eat_meal_action_edit')));
+    await _settle(tester);
+    expect(find.byKey(PreparedMealEditPage.saveKey), findsOneWidget);
+    expect(
+      find.byKey(const Key('prepared_meal_edit_locked_hint')),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('prepared_meal_edit_close')));
+    await _settle(tester);
+    expect(find.byKey(PreparedMealEditPage.saveKey), findsNothing);
 
     expect(tester.takeException(), isNull);
   });
