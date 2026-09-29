@@ -2,8 +2,12 @@ name: CI
 
 on:
   pull_request:
-  # A release tag runs every integration test.
+  # A release tag runs every integration test. A push to master runs one
+  # integration test, only to fill the caches: GitHub Actions caches that
+  # pull requests can read must be written on master.
   push:
+    branches:
+      - master
     tags:
       - 'v*'
   workflow_dispatch:
@@ -67,11 +71,14 @@ jobs:
       # Pull requests run only the tests whose imports reach a changed file.
       - id: list
         env:
-          RUN_ALL: ${{ github.event_name == 'push' || inputs.all == true }}
+          RUN_ALL: ${{ github.ref_type == 'tag' || inputs.all == true }}
+          WARM_CACHE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
           BASE_REF: origin/${{ github.base_ref || 'master' }}
         run: |
           if [ "$RUN_ALL" = "true" ]; then
             targets=$(tool/ci_integration_targets.py --all)
+          elif [ "$WARM_CACHE" = "true" ]; then
+            targets=$(tool/ci_integration_targets.py --all | jq -c '.[:1]')
           else
             targets=$(tool/ci_integration_targets.py "$BASE_REF")
           fi
