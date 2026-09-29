@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
@@ -316,11 +315,8 @@ void main() {
       await backend.loseKey('shared', 'me');
     }, tester);
     final code = await tester.runAsync(
-      () =>
-          HouseholdKeyRepository(
-            firestore: backend.firestore,
-            storage: const FlutterSecureStorage(),
-          ).saveRestoreCode(
+      () => HouseholdKeyRepository(firestore: backend.firestore)
+          .saveRestoreCode(
             householdId: 'shared',
             memberUid: 'me',
             householdKey: backend.householdKeys['shared']!,

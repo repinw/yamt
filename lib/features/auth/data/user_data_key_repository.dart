@@ -5,9 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cryptography/cryptography.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/firestore_batch_write.dart';
-import 'package:yamt/core/data/payload_cipher.dart';
-import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/device/key_backup.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
@@ -75,16 +74,6 @@ class UserDataKeyRepository {
     return _saveFlag(_recoveryKeyConfirmedName(uid), value: confirmed);
   }
 
-  /// Whether this device already encrypted the plaintext documents of [uid].
-  Future<bool> loadPlaintextMigrated(String uid) {
-    return _loadFlag(_plaintextMigratedName(uid));
-  }
-
-  /// Saves that this device encrypted the plaintext documents of [uid].
-  Future<void> savePlaintextMigrated(String uid) {
-    return _saveFlag(_plaintextMigratedName(uid), value: true);
-  }
-
   /// Whether this device started fresh for [uid] and the household data
   /// still waits for its clean-up.
   Future<bool> loadFreshStartPending(String uid) {
@@ -102,7 +91,6 @@ class UserDataKeyRepository {
       _dataKeyName(uid),
       _recoveryKeyName(uid),
       _recoveryKeyConfirmedName(uid),
-      _plaintextMigratedName(uid),
     ]) {
       await _storage.delete(key: name);
     }
@@ -203,23 +191,11 @@ class UserDataKeyRepository {
         .set(<String, dynamic>{_wrappedKeyField: wrappedKey});
   }
 
-  /// Encrypts the private documents of [uid] that are still plaintext.
-  ///
-  /// Temporary: remove once all accounts are migrated.
-  Future<void> encryptPlaintextPrivateData(String uid, PayloadCipher cipher) {
-    return encryptPlaintextDocuments(
-      firestore: _firestore,
-      cipher: cipher,
-      collections: _privateCollections(uid),
-      fields: _privateFields(uid),
-    );
-  }
-
   /// Deletes all private data of [uid] that the data key encrypts.
   Future<void> deletePrivateData(String uid) async {
     final references = <DocumentReference<Map<String, dynamic>>>[];
     for (final collection in _privateCollections(uid)) {
-      final snapshot = await _firestore.collection(collection.path).get();
+      final snapshot = await _firestore.collection(collection).get();
       references.addAll(snapshot.docs.map((document) => document.reference));
     }
     for (final chunk in FirestoreBatchChunker.chunk(
@@ -254,17 +230,14 @@ class UserDataKeyRepository {
   }
 }
 
-/// The private collections of [uid] that the data key encrypts.
-List<EncryptedCollection> _privateCollections(String uid) {
+/// The paths of the private collections of [uid] that the data key encrypts.
+List<String> _privateCollections(String uid) {
   final userPath = '$_usersCollection/$uid';
-  return <EncryptedCollection>[
-    EncryptedCollection(
-      '$userPath/calorie_entries',
-      plaintextFields: const <String>['logged_at'],
-    ),
-    EncryptedCollection('$userPath/calorie_settings'),
-    EncryptedCollection('$userPath/health_weights'),
-    EncryptedCollection('$userPath/calorie_product_overrides'),
+  return <String>[
+    '$userPath/calorie_entries',
+    '$userPath/calorie_settings',
+    '$userPath/health_weights',
+    '$userPath/calorie_product_overrides',
   ];
 }
 
@@ -280,8 +253,6 @@ String _dataKeyName(String uid) => 'data_key_$uid';
 String _recoveryKeyName(String uid) => 'recovery_key_$uid';
 
 String _recoveryKeyConfirmedName(String uid) => 'recovery_key_confirmed_$uid';
-
-String _plaintextMigratedName(String uid) => 'private_data_encrypted_$uid';
 
 String _freshStartPendingName(String uid) => 'fresh_start_pending_$uid';
 

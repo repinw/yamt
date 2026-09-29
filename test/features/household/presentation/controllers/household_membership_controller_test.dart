@@ -226,10 +226,7 @@ void main() {
     'createKeyRestoreCode wraps the key for the member who lost it',
     () async {
       FlutterSecureStorage.setMockInitialValues(<String, String>{});
-      final keys = HouseholdKeyRepository(
-        firestore: FakeFirebaseFirestore(),
-        storage: const FlutterSecureStorage(),
-      );
+      final keys = HouseholdKeyRepository(firestore: FakeFirebaseFirestore());
       final householdKey = await PayloadCipher.newDataKey();
       final container = createContainer(
         overrides: [

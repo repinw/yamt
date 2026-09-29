@@ -59,4 +59,4 @@ final class HouseholdKeyRepositoryProvider
 }
 
 String _$householdKeyRepositoryHash() =>
-    r'00d84e8cb53d743d1faf689b81145b09223f7d4b';
+    r'304c7d29e74fa663aefea1009216aa0195a3f2d3';

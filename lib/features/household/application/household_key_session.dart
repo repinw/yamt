@@ -169,9 +169,6 @@ class HouseholdKeySession extends _$HouseholdKeySession {
       }
       key = await _createKey(keys, householdId, dataCipher);
     }
-    if (!await keys.loadPlaintextMigrated(householdId)) {
-      await keys.encryptPlaintextHouseholdData(householdId, PayloadCipher(key));
-    }
     return HouseholdKeyReady(householdId: householdId, key: key);
   }
 

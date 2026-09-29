@@ -290,27 +290,6 @@ void main() {
     );
   });
 
-  test('plaintext private data is encrypted before the key is ready', () async {
-    await firestore.doc('users/u1/health_weights/2026-09-24').set(
-      <String, dynamic>{'day': '2026-09-24', 'weightKg': 80.5},
-    );
-    final container = createContainer();
-
-    final state = await signIn(container, isAnonymous: true);
-
-    final stored =
-        (await firestore.doc('users/u1/health_weights/2026-09-24').get())
-            .data()!;
-    expect(stored.keys, <String>['payload']);
-    expect(
-      await (state as UserDataKeyReady).cipher.decryptJson(
-        stored['payload'] as String,
-        aad: 'users/u1/health_weights/2026-09-24',
-      ),
-      <String, dynamic>{'day': '2026-09-24', 'weightKg': 80.5},
-    );
-  });
-
   test('signed out without a user', () async {
     final container = createContainer();
     authChanges.add(null);

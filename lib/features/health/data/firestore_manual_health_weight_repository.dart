@@ -1,7 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:yamt/core/data/plaintext_document_encryption.dart';
+import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/health/data/manual_health_weight_repository.dart';

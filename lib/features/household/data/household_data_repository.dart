@@ -27,7 +27,7 @@ class HouseholdDataRepository {
         .collection(_householdsCollection)
         .doc(householdId);
     final references = <DocumentReference<Map<String, dynamic>>>[];
-    for (final collection in householdEncryptedCollections.keys) {
+    for (final collection in householdEncryptedCollections) {
       final snapshot = await household.collection(collection).get();
       references.addAll(snapshot.docs.map((document) => document.reference));
     }

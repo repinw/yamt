@@ -23,7 +23,7 @@ final class UserDataKeyRecoveryRequired extends UserDataKeyState {
   final String uid;
 }
 
-/// The data key is available and old plaintext data is encrypted.
+/// The data key is available.
 final class UserDataKeyReady extends UserDataKeyState {
   /// Creates the state.
   const new({

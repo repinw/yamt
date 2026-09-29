@@ -209,9 +209,6 @@ void main() {
           'allow read: if isHouseholdMember(householdId); '
           'allow create: if isHouseholdMember(householdId) '
           "&& isEncryptedDocument(request.resource.data, ['happened_at']); "
-          'allow update: if isHouseholdMember(householdId) '
-          "&& !('payload' in resource.data) "
-          "&& isEncryptedDocument(request.resource.data, ['happened_at']); "
           'allow delete: if isHouseholdAdmin(householdId); }',
         ),
       );

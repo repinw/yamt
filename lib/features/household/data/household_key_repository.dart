@@ -2,13 +2,10 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cryptography/cryptography.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
-import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/core/provider/secure_storage_provider.dart';
 import 'package:yamt/features/household/domain/household_exceptions.dart';
 
 part 'household_key_repository.g.dart';
@@ -19,7 +16,6 @@ const _keyRestoresCollection = 'key_restores';
 const _wrappedKeyField = 'wrapped_key';
 const _restoreWrappedKeyField = 'wrapped_household_key';
 const _keyJsonField = 'key';
-const _migratedFlagValue = 'true';
 
 /// Fields of an inventory item that stay readable for the recent manual
 /// items query.
@@ -36,17 +32,16 @@ const inventoryDiscardEventPlaintextFields = <String>['discarded_at'];
 /// Field of an activity event that stays readable for ordering.
 const inventoryActivityEventPlaintextFields = <String>['happened_at'];
 
-/// The household collections that the household key encrypts, with the fields
-/// that stay readable for queries.
-const householdEncryptedCollections = <String, List<String>>{
-  'inventory_items': inventoryItemPlaintextFields,
-  'shopping_list_items': <String>[],
-  'prepared_meals': <String>[],
-  'prepared_meal_templates': <String>[],
-  'kitchen_utensils': <String>[],
-  'inventory_discard_events': inventoryDiscardEventPlaintextFields,
-  'inventory_activity_events': inventoryActivityEventPlaintextFields,
-};
+/// The household collections that the household key encrypts.
+const householdEncryptedCollections = <String>[
+  'inventory_items',
+  'shopping_list_items',
+  'prepared_meals',
+  'prepared_meal_templates',
+  'kitchen_utensils',
+  'inventory_discard_events',
+  'inventory_activity_events',
+];
 
 /// Storage folders under `households/{householdId}` that hold household
 /// images.
@@ -60,10 +55,9 @@ const householdImageFolders = <String>['kitchen_utensils', 'recipes'];
 /// a one-time secret that only the code carries.
 class HouseholdKeyRepository {
   /// Creates the repository.
-  const new({required this._firestore, required this._storage});
+  const new({required this._firestore});
 
   final FirebaseFirestore _firestore;
-  final FlutterSecureStorage _storage;
 
   /// The key entry of [memberUid] in [householdId].
   DocumentReference<Map<String, dynamic>> keyDocument(
@@ -216,45 +210,10 @@ class HouseholdKeyRepository {
     return restoreDocument(householdId, memberUid).delete();
   }
 
-  /// Whether this device already encrypted the plaintext data of
-  /// [householdId].
-  Future<bool> loadPlaintextMigrated(String householdId) async {
-    return await _storage.read(key: _migratedName(householdId)) ==
-        _migratedFlagValue;
-  }
-
-  /// Encrypts the plaintext data of [householdId] once.
-  ///
-  /// Temporary: remove once all accounts are migrated.
-  Future<void> encryptPlaintextHouseholdData(
-    String householdId,
-    PayloadCipher householdCipher,
-  ) async {
-    await encryptPlaintextDocuments(
-      firestore: _firestore,
-      cipher: householdCipher,
-      collections: <EncryptedCollection>[
-        for (final entry in householdEncryptedCollections.entries)
-          EncryptedCollection(
-            '$_householdsCollection/$householdId/${entry.key}',
-            plaintextFields: entry.value,
-          ),
-      ],
-      fields: const <EncryptedDocumentField>[],
-    );
-    await _storage.write(
-      key: _migratedName(householdId),
-      value: _migratedFlagValue,
-    );
-  }
-
   DocumentReference<Map<String, dynamic>> _household(String householdId) {
     return _firestore.collection(_householdsCollection).doc(householdId);
   }
 }
-
-String _migratedName(String householdId) =>
-    'household_data_encrypted_$householdId';
 
 /// Household key repository, or `null` while Firestore is unavailable.
 @riverpod
@@ -263,8 +222,5 @@ HouseholdKeyRepository? householdKeyRepository(Ref ref) {
   if (firestore == null) {
     return null;
   }
-  return HouseholdKeyRepository(
-    firestore: firestore,
-    storage: ref.watch(secureStorageProvider),
-  );
+  return HouseholdKeyRepository(firestore: firestore);
 }

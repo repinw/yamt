@@ -15,7 +15,7 @@ void main() {
     await firestore.doc('households/h1/keys/solo').set(<String, dynamic>{
       'wrapped_key': 'k',
     });
-    for (final collection in householdEncryptedCollections.keys) {
+    for (final collection in householdEncryptedCollections) {
       await firestore.doc('households/h1/$collection/d1').set(<String, dynamic>{
         'payload': 'p',
       });
@@ -34,7 +34,7 @@ void main() {
       storage: storage,
     ).wipeHouseholdData('h1');
 
-    for (final collection in householdEncryptedCollections.keys) {
+    for (final collection in householdEncryptedCollections) {
       expect(
         (await firestore.collection('households/h1/$collection').get()).docs,
         isEmpty,

@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
-import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_repository.dart';
@@ -38,10 +37,7 @@ void main() {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
     firestore = FakeFirebaseFirestore();
     storage = FakeFirebaseStorage();
-    keys = HouseholdKeyRepository(
-      firestore: firestore,
-      storage: const FlutterSecureStorage(),
-    );
+    keys = HouseholdKeyRepository(firestore: firestore);
     userKeys = UserDataKeyRepository(
       storage: const FlutterSecureStorage(),
       firestore: firestore,
@@ -313,22 +309,6 @@ void main() {
       );
     },
   );
-
-  test('the plaintext data of the household is encrypted once', () async {
-    await setProfile(active: 'own', own: 'own');
-    await addMember('own', _uid, admin: true);
-    await storeKey('own', dataCipher.cipher);
-    final item = firestore.doc('households/own/inventory_items/i1');
-    await item.set(<String, dynamic>{'name': 'Milch', 'origin': 'manual'});
-
-    await settle<HouseholdKeyReady>(createContainer());
-
-    expect(
-      (await item.get()).data()!.keys,
-      unorderedEquals(<String>[encryptedPayloadField, 'origin']),
-    );
-    expect(await keys.loadPlaintextMigrated('own'), isTrue);
-  });
 
   group('after a fresh start', () {
     late PayloadCipher lostCipher;

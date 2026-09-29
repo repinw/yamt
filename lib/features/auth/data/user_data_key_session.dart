@@ -137,7 +137,6 @@ class UserDataKeySession extends _$UserDataKeySession {
         await recoveryKey.wrapDataKey(dataKey, uid: uid),
       );
     }
-    await repository.savePlaintextMigrated(uid);
     await _reload();
   }
 
@@ -188,15 +187,9 @@ class UserDataKeySession extends _$UserDataKeySession {
       recoveryKeyConfirmed = await repository.loadRecoveryKeyConfirmed(uid);
     }
 
-    final cipher = PayloadCipher(dataKey);
-    if (!await repository.loadPlaintextMigrated(uid)) {
-      await repository.encryptPlaintextPrivateData(uid, cipher);
-      await repository.savePlaintextMigrated(uid);
-    }
-
     return UserDataKeyReady(
       uid: uid,
-      cipher: cipher,
+      cipher: PayloadCipher(dataKey),
       recoveryKey: recoveryKey,
       recoveryKeyConfirmed: recoveryKeyConfirmed,
     );

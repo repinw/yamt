@@ -76,10 +76,7 @@ void main() {
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
     firestore = FakeFirebaseFirestore();
-    keys = HouseholdKeyRepository(
-      firestore: firestore,
-      storage: const FlutterSecureStorage(),
-    );
+    keys = HouseholdKeyRepository(firestore: firestore);
     dataCiphers = <String, UserDataCipher>{};
     sharedKey = await PayloadCipher.newDataKey();
     await addMember('shared', 'admin', 'admin');

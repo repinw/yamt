@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
-import 'package:yamt/core/data/plaintext_document_encryption.dart';
 import 'package:yamt/core/data/sealed_document.dart';
 
 /// A document of a [SealedCollection] after decryption.

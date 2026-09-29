@@ -134,8 +134,6 @@ class FakeHousehold {
     ];
   }
 
-  HouseholdKeyRepository get _keys => HouseholdKeyRepository(
-    firestore: firestore,
-    storage: const FlutterSecureStorage(),
-  );
+  HouseholdKeyRepository get _keys =>
+      HouseholdKeyRepository(firestore: firestore);
 }

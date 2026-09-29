@@ -11,8 +11,8 @@ shared data.
 - `households/{householdId}` with its `members`, `keys`, and `key_restores`,
   the `household_invites`, and the `householdId` and `ownHouseholdId` fields
   of the user profile.
-- The household key session, the cipher that household repositories watch,
-  and the plaintext migration of household data.
+- The household key session and the cipher that household repositories
+  watch.
 - Wiping and deleting the data and images of a household.
 - The household page: members, invites, joining, leaving, and unlocking the
   key after a fresh start.

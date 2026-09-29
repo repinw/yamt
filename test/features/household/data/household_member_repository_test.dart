@@ -15,10 +15,7 @@ void main() {
   HouseholdMemberRepository repositoryFor(String uid) {
     return HouseholdMemberRepository(
       firestore: firestore,
-      keys: HouseholdKeyRepository(
-        firestore: firestore,
-        storage: const FlutterSecureStorage(),
-      ),
+      keys: HouseholdKeyRepository(firestore: firestore),
       currentUserId: uid,
     );
   }

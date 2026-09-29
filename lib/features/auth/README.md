@@ -17,8 +17,7 @@ Auth owns:
   up the recovery key with the platform (`lib/core/device/key_backup.dart`:
   Google Block Store; iOS syncs through the iCloud Keychain instead).
 - The list of private collections that the data key encrypts, used to delete
-  them when a user starts fresh and, temporarily, to encrypt plaintext data
-  from before encryption.
+  them when a user starts fresh.
 
 Auth does not own:
 

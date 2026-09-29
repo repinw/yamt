@@ -21,10 +21,7 @@ void main() {
   setUp(() async {
     FlutterSecureStorage.setMockInitialValues(<String, String>{});
     firestore = FakeFirebaseFirestore();
-    keys = HouseholdKeyRepository(
-      firestore: firestore,
-      storage: const FlutterSecureStorage(),
-    );
+    keys = HouseholdKeyRepository(firestore: firestore);
     for (final (uid, role, month) in <(String, String, int)>[
       ('member-2', 'member', 3),
       ('admin', 'admin', 1),
