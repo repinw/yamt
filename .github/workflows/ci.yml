@@ -251,3 +251,70 @@ jobs:
             gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" \
               --label testing --body "$body"
           fi
+
+  # A release tag that passes every test builds a signed APK and AAB. The AAB
+  # goes to the Google Play internal track; the APK is attached to a GitHub
+  # release. The version comes from pubspec.yaml, so merge the version bump
+  # before tagging.
+  android-release:
+    name: Android release
+    needs: [unit, integration-result]
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v6
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Write the upload keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          base64 --decode <<<"$KEYSTORE_BASE64" >"$RUNNER_TEMP/upload.jks"
+          cat >android/key.properties <<PROPERTIES
+          storeFile=$RUNNER_TEMP/upload.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          PROPERTIES
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build APK and AAB
+        run: |
+          flutter build apk --release
+          flutter build appbundle --release
+
+      - name: Upload the AAB to Google Play
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: de.yamt.app
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: internal
+
+      - name: Attach the APK to a GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk "yamt-$TAG.apk"
+          gh release create "$TAG" "yamt-$TAG.apk" --title "$TAG" --generate-notes
