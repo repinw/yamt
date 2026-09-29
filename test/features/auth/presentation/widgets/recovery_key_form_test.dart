@@ -13,9 +13,16 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../helpers/fake_key_backup.dart';
 
-class _FakeUserDataKeySession extends UserDataKeySession {
+/// Records the calls of [_FakeUserDataKeySession].
+class _SessionCalls {
   bool startedFresh = false;
   final restoredKeys = <String>[];
+}
+
+class _FakeUserDataKeySession extends UserDataKeySession {
+  new(this._calls);
+
+  final _SessionCalls _calls;
 
   @override
   Future<UserDataKeyState> build() async {
@@ -24,27 +31,29 @@ class _FakeUserDataKeySession extends UserDataKeySession {
 
   @override
   Future<void> restore(String typedRecoveryKey) async {
-    restoredKeys.add(typedRecoveryKey);
+    _calls.restoredKeys.add(typedRecoveryKey);
     throw const InvalidRecoveryKeyException();
   }
 
   @override
   Future<void> startFresh() async {
-    startedFresh = true;
+    _calls.startedFresh = true;
   }
 }
 
 void main() {
-  late _FakeUserDataKeySession session;
+  late _SessionCalls session;
   late FakeKeyBackup keyBackup;
 
   Future<void> pumpForm(WidgetTester tester) async {
-    session = _FakeUserDataKeySession();
+    session = _SessionCalls();
     keyBackup = FakeKeyBackup();
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          userDataKeySessionProvider.overrideWith(() => session),
+          userDataKeySessionProvider.overrideWith(
+            () => _FakeUserDataKeySession(session),
+          ),
           keyBackupProvider.overrideWithValue(keyBackup),
           firebaseFirestoreProvider.overrideWith(
             (ref) => FakeFirebaseFirestore(),

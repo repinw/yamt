@@ -6,10 +6,22 @@ import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/auth/presentation/controllers/data_key_controller.dart';
 
-class _FakeUserDataKeySession extends UserDataKeySession {
+/// Records the calls of [_FakeUserDataKeySession].
+class _SessionCalls {
   final restoredKeys = <String>[];
   bool startedFresh = false;
   bool confirmed = false;
+
+  /// What the password manager does: saves, cancels (`false`), or throws
+  /// (`null`).
+  bool? passwordManagerSaves = true;
+  final passwordManagerAccounts = <String>[];
+}
+
+class _FakeUserDataKeySession extends UserDataKeySession {
+  new(this._calls);
+
+  final _SessionCalls _calls;
 
   @override
   Future<UserDataKeyState> build() async {
@@ -21,30 +33,25 @@ class _FakeUserDataKeySession extends UserDataKeySession {
     if (typedRecoveryKey != 'right') {
       throw const InvalidRecoveryKeyException();
     }
-    restoredKeys.add(typedRecoveryKey);
+    _calls.restoredKeys.add(typedRecoveryKey);
   }
 
   @override
   Future<void> startFresh() async {
-    startedFresh = true;
+    _calls.startedFresh = true;
   }
 
   @override
   Future<void> confirmRecoveryKeySaved() async {
-    confirmed = true;
+    _calls.confirmed = true;
   }
-
-  /// What the password manager does: saves, cancels (`false`), or throws
-  /// (`null`).
-  bool? passwordManagerSaves = true;
-  final passwordManagerAccounts = <String>[];
 
   @override
   Future<bool> saveRecoveryKeyToPasswordManager({
     required String accountName,
   }) async {
-    passwordManagerAccounts.add(accountName);
-    final saves = passwordManagerSaves;
+    _calls.passwordManagerAccounts.add(accountName);
+    final saves = _calls.passwordManagerSaves;
     if (saves == null) {
       throw StateError('Password manager failed.');
     }
@@ -53,14 +60,16 @@ class _FakeUserDataKeySession extends UserDataKeySession {
 }
 
 void main() {
-  late _FakeUserDataKeySession session;
+  late _SessionCalls session;
   late ProviderContainer container;
 
   setUp(() {
-    session = _FakeUserDataKeySession();
+    session = _SessionCalls();
     container = ProviderContainer(
       overrides: [
-        userDataKeySessionProvider.overrideWith(() => session),
+        userDataKeySessionProvider.overrideWith(
+          () => _FakeUserDataKeySession(session),
+        ),
         authStateChangesProvider.overrideWith((ref) => Stream.value(null)),
       ],
     );

@@ -160,17 +160,17 @@ class _FakeManualHealthWeightRepository
 /// Stands in for the repository provider switching to a new repository when
 /// the user data key becomes ready.
 class _SelectedRepository extends Notifier<_FakeManualHealthWeightRepository> {
-  new(this._initial);
+  new(this._locked, this._unlocked);
 
-  final _FakeManualHealthWeightRepository _initial;
+  final _FakeManualHealthWeightRepository _locked;
+  final _FakeManualHealthWeightRepository _unlocked;
 
   @override
-  _FakeManualHealthWeightRepository build() => _initial;
+  _FakeManualHealthWeightRepository build() => _locked;
 
-  _FakeManualHealthWeightRepository get selected => state;
-
-  set selected(_FakeManualHealthWeightRepository repository) {
-    state = repository;
+  /// Switches to the repository of the unlocked data key.
+  void unlock() {
+    state = _unlocked;
   }
 }
 
@@ -183,9 +183,7 @@ void main() {
   }) {
     return ProviderContainer(
       overrides: [
-        clockProvider.overrideWithValue(
-          now ?? () => DateTime(2026, 4, 1, 12),
-        ),
+        clockProvider.overrideWithValue(now ?? () => DateTime(2026, 4, 1, 12)),
         manualHealthWeightRepositoryProvider.overrideWith((ref) => repository),
         healthConnectionServiceProvider.overrideWith(
           (ref) => _FakeHealthConnectionService(status),
@@ -536,7 +534,7 @@ void main() {
         NotifierProvider<
           _SelectedRepository,
           _FakeManualHealthWeightRepository
-        >(() => _SelectedRepository(lockedRepository));
+        >(() => _SelectedRepository(lockedRepository, unlockedRepository));
     final container = ProviderContainer(
       overrides: [
         manualHealthWeightRepositoryProvider.overrideWith(
@@ -556,8 +554,7 @@ void main() {
       isEmpty,
     );
 
-    container.read(selectedRepositoryProvider.notifier).selected =
-        unlockedRepository;
+    container.read(selectedRepositoryProvider.notifier).unlock();
     final entries = await container.read(
       manualHealthWeightEntriesControllerProvider.future,
     );
