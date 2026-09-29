@@ -138,19 +138,22 @@ jobs:
       - name: Get packages
         run: flutter pub get
 
-      # The emulator runner downloads the emulator itself and fails on a
-      # broken download ("Error on ZipFile unknown archive"). Installing it
-      # here first, with retries, makes the runner's own install a no-op.
-      - name: Install the Android emulator
+      # The emulator runner downloads the emulator and the system image
+      # itself and fails on a broken download ("Error on ZipFile unknown
+      # archive"). Installing both here first, with retries, makes the
+      # runner's own install a no-op.
+      - name: Install the Android emulator and system image
         run: |
           sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          image='system-images;android-35;google_apis;x86_64'
           for attempt in 1 2 3; do
-            if output=$("$sdkmanager" --install emulator --channel=0 2>&1) &&
+            if output=$("$sdkmanager" --install emulator "$image" --channel=0 2>&1) &&
               ! grep -q 'An error occurred' <<<"$output" &&
-              [ -x "$ANDROID_HOME/emulator/emulator" ]; then
+              [ -x "$ANDROID_HOME/emulator/emulator" ] &&
+              [ -d "$ANDROID_HOME/system-images/android-35/google_apis/x86_64" ]; then
               exit 0
             fi
-            echo "Emulator install failed on attempt $attempt:" >&2
+            echo "Android SDK install failed on attempt $attempt:" >&2
             grep -v '^\[' <<<"$output" >&2 || true
             sleep 10
           done
