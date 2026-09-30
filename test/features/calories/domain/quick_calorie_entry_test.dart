@@ -86,9 +86,9 @@ void main() {
     );
   });
 
-  test('an entry without the quick entry mark does not parse', () {
+  test('an entry saved before quick entries reads as a regular entry', () {
     final json = quick().toJson()..remove('is_quick_entry');
 
-    expect(() => CalorieEntry.fromJson(json), throwsA(isA<TypeError>()));
+    expect(CalorieEntry.fromJson(json).isQuickEntry, isFalse);
   });
 }
