@@ -46,24 +46,29 @@ extension CalorieGoalSettingsCycling on CalorieGoalSettings {
     if (base <= 0) {
       return base;
     }
-    final activeProfile =
-        goalEntryForDay(day)?.calculatorProfile ?? calculatorProfile;
-    final configuredOffset =
-        activeProfile?.trainingDayKcalOffset ?? trainingDayKcalOffset;
-    final weekdays = activeProfile?.trainingWeekdays ?? trainingWeekdays;
-    final offset = configuredOffset > 0
-        ? configuredOffset
-        : (weekdays.isEmpty ? defaultTrainingDayKcalOffset : 0.0);
-    final trainingDaysCount = _trainingDaysInRun(day);
     final weekGoals = resolveTrainingWeekGoals(
       baseGoalKcal: base,
-      trainingDays: trainingDaysCount,
-      sessionKcal: offset,
+      trainingDays: _trainingDaysInRun(day),
+      sessionKcal: trainingSessionKcalForDay(day),
     );
     final resolvedKcal = isTrainingDay(day)
         ? weekGoals.trainingDayKcal
         : weekGoals.restDayKcal;
     return resolvedKcal.clamp(minimumDailyCalorieBudgetKcal, double.infinity);
+  }
+
+  /// kcal of one training session on [day]: the offset of the active
+  /// calculator profile, or the default offset without a weekly schedule.
+  double trainingSessionKcalForDay(DateTime day) {
+    final activeProfile =
+        goalEntryForDay(day)?.calculatorProfile ?? calculatorProfile;
+    final configuredOffset =
+        activeProfile?.trainingDayKcalOffset ?? trainingDayKcalOffset;
+    final weekdays = activeProfile?.trainingWeekdays ?? trainingWeekdays;
+    if (configuredOffset > 0) {
+      return configuredOffset;
+    }
+    return weekdays.isEmpty ? defaultTrainingDayKcalOffset : 0.0;
   }
 
   /// Number of training days in the 7-day run of [day]. Before a goal starts
