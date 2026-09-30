@@ -4,6 +4,7 @@ import 'package:yamt/features/calories/application/burn_week_run_controller.dart
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
+import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -174,11 +175,12 @@ Future<DiaryBalanceSource> diaryBalanceSource(
     diaryEntriesForDayProvider(normalizedSelectedDay).future,
   );
   final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
+  final macroResolver = ref.watch(dailyNutritionTargetResolverProvider);
+  final today = normalizeDiaryDay(ref.watch(clockProvider)());
   final weekOverview = await weekOverviewFuture;
   final selectedDayEntries = await selectedDayEntriesFuture;
   final runState = await runStateFuture;
   final selectedDayOverview = weekOverview.days.last;
-  final today = normalizeDiaryDay(ref.read(clockProvider)());
 
   return DiaryBalanceSource._(
     weekOverview: weekOverview,
@@ -186,7 +188,7 @@ Future<DiaryBalanceSource> diaryBalanceSource(
     selectedDayEntries: selectedDayEntries,
     runState: runState,
     carryoverMacroDelta: resolveDiaryCarryoverMacroDelta(
-      ref,
+      macroResolver,
       day: normalizedSelectedDay,
       goalKcal: resolveDiaryDisplayGoalKcal(
         weekOverview: weekOverview,

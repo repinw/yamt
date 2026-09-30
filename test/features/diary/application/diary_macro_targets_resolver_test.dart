@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/application/macro_goal_settings_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -232,7 +233,7 @@ void main() {
           .listen(
             Provider(
               (ref) => resolveDiaryCarryoverMacroDelta(
-                ref,
+                ref.watch(dailyNutritionTargetResolverProvider),
                 day: _day,
                 goalKcal: 2400,
                 carryoverKcal: 100,

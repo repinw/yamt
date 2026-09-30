@@ -6,18 +6,6 @@ import 'package:yamt/features/calories/domain/macro_carryover_calculator.dart';
 
 part 'diary_macro_targets.g.dart';
 
-/// Conversion factor: Carbs kcal per gram (sports nutrition standard).
-const carbEnergyDensityKcalPerGram = 4.1;
-
-/// Conversion factor: Fat kcal per gram (sports nutrition standard).
-const fatEnergyDensityKcalPerGram = 9.3;
-
-/// Proportion of carryover allocated to carbs (75%).
-const carryoverCarbFraction = 0.75;
-
-/// Proportion of carryover allocated to fat (25%).
-const carryoverFatFraction = 0.25;
-
 /// Minimum carbs in grams (Ketose- / Unterzuckerungsschutz).
 const minimumCarbsFloorGrams = 100.0;
 
