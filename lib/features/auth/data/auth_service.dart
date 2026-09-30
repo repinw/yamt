@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -68,11 +69,27 @@ Future<UserProfile> _syncUserProfile(
     return storedProfile;
   }
 
-  await document.set(<String, dynamic>{
+  final write = document.set(<String, dynamic>{
     'uid': syncedProfile.uid,
     'email': syncedProfile.email,
     'displayName': syncedProfile.displayName,
     'isAnonymous': syncedProfile.isAnonymous,
   }, SetOptions(merge: true));
+  if (storedProfile != syncedProfile) {
+    await write;
+    return syncedProfile;
+  }
+  // Only the migration writes: the profile did not change, so it must not
+  // wait for the server, for example offline.
+  unawaited(
+    write.catchError(
+      (Object error, StackTrace stackTrace) => log(
+        'Failed to add the account fields to the profile.',
+        name: 'AuthService',
+        error: error,
+        stackTrace: stackTrace,
+      ),
+    ),
+  );
   return syncedProfile;
 }

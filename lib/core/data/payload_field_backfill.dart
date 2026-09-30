@@ -6,16 +6,18 @@ import 'package:yamt/core/data/payload_cipher.dart';
 
 const _logName = 'PayloadFieldBackfill';
 
-/// Adds the fields of [defaults] to the encrypted payload of every document
-/// in [collection] that lacks them.
+/// Temporary migration, added in 3.4.1: removed in 3.7.0. Adds the fields
+/// of [defaults] to the encrypted payload of every document in [collection]
+/// that lacks them.
 ///
-/// A migration for documents that an older app version wrote before a field
-/// existed. It reads from the server only, so a partial offline cache never
-/// counts as done. Documents that already hold every field stay untouched,
-/// so it is safe to run again. A document that cannot be decrypted is
-/// logged and skipped, so it does not block the others. Each write runs in
-/// a transaction that re-reads the document and skips it when its payload
-/// changed since the read, so an edit made meanwhile is never overwritten.
+/// For documents that an older app version wrote before a field existed. It
+/// reads from the server only, so a partial offline cache never counts as
+/// done. Documents that already hold every field stay untouched, so it is
+/// safe to run again. A document that does not decrypt, or whose write is
+/// rejected, is logged and skipped, so it does not block the others. Each
+/// write runs in a transaction that re-reads the document and skips it when
+/// its payload changed since the read, so an edit made meanwhile is never
+/// overwritten.
 Future<void> backfillPayloadFields({
   required CollectionReference<Map<String, dynamic>> collection,
   required PayloadCipher cipher,
@@ -58,14 +60,23 @@ Future<void> backfillPayloadFields({
   }
 
   for (final (reference, read, upgraded) in updates) {
-    await collection.firestore.runTransaction((transaction) async {
-      final current = await transaction.get(reference);
-      if (current.data()?[encryptedPayloadField] != read) {
-        return;
-      }
-      transaction.update(reference, <String, dynamic>{
-        encryptedPayloadField: upgraded,
+    try {
+      await collection.firestore.runTransaction((transaction) async {
+        final current = await transaction.get(reference);
+        if (current.data()?[encryptedPayloadField] != read) {
+          return;
+        }
+        transaction.update(reference, <String, dynamic>{
+          encryptedPayloadField: upgraded,
+        });
       });
-    });
+    } on FirebaseException catch (error, stackTrace) {
+      log(
+        'Skipping ${reference.path}: the update was rejected.',
+        name: _logName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
   }
 }

@@ -52,7 +52,7 @@ final class UserDataKeySessionProvider
 }
 
 String _$userDataKeySessionHash() =>
-    r'7fea25d58b6fc0376061eaa4c9e1dfe1db77bfe9';
+    r'80ffdfbd3639ae5ddb0784db6e3e269c1013234f';
 
 /// Resolves the data key of the signed-in user.
 ///

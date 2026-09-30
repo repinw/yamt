@@ -326,11 +326,26 @@ void main() {
       });
     }
 
+    /// The migration runs in the background after the key is ready.
+    Future<bool> migrationDone() async {
+      for (var i = 0; i < 50; i++) {
+        if (await const FlutterSecureStorage().read(
+              key: 'private_data_migrated_3_4_1_u1',
+            ) ==
+            'true') {
+          return true;
+        }
+        await pumpEventQueue();
+      }
+      return false;
+    }
+
     test('adds is_quick_entry to entries from before quick entries', () async {
       await storeEntryFromBeforeQuickEntries();
       final container = createContainer();
 
       final state = await signIn(container, isAnonymous: true);
+      expect(await migrationDone(), isTrue);
 
       final cipher = (state as UserDataKeyReady).cipher;
       final snapshot = await firestore.doc(entryPath).get();
@@ -346,8 +361,8 @@ void main() {
     test('runs only once per device', () async {
       await storeEntryFromBeforeQuickEntries();
       final container = createContainer();
-      await signIn(container, isAnonymous: true);
-      final state = container.read(userDataKeySessionProvider).requireValue;
+      final state = await signIn(container, isAnonymous: true);
+      expect(await migrationDone(), isTrue);
       final cipher = (state as UserDataKeyReady).cipher;
       final lateEntry = <String, dynamic>{'name': 'late'};
       await firestore.doc('users/u1/calorie_entries/e2').set(<String, dynamic>{
@@ -359,6 +374,7 @@ void main() {
 
       container.invalidate(userDataKeySessionProvider);
       await container.read(userDataKeySessionProvider.future);
+      await pumpEventQueue();
 
       final snapshot = await firestore.doc('users/u1/calorie_entries/e2').get();
       expect(
@@ -367,6 +383,31 @@ void main() {
           aad: 'users/u1/calorie_entries/e2',
         ),
         lateEntry,
+      );
+    });
+
+    test('a new data key counts as migrated without reading entries', () async {
+      final container = createContainer();
+
+      await signIn(container, isAnonymous: true);
+
+      expect(await migrationDone(), isTrue);
+    });
+
+    test('deleting the local keys also forgets the migration', () async {
+      final container = createContainer();
+      await signIn(container, isAnonymous: true);
+      expect(await migrationDone(), isTrue);
+
+      await container
+          .read(userDataKeyRepositoryProvider)!
+          .deleteLocalKeys('u1');
+
+      expect(
+        await const FlutterSecureStorage().read(
+          key: 'private_data_migrated_3_4_1_u1',
+        ),
+        isNull,
       );
     });
   });
