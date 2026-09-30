@@ -2820,5 +2820,170 @@
   "diaryQuickEatInventoryDescription": "Eat something from your stock",
   "diaryQuickEatQuickEntryDescription": "Enter calories and macros by hand",
   "diaryQuickEatAiDescription": "Describe a meal, the AI estimates it",
-  "diaryQuickEatSearchDescription": "Find a food by name or brand"
+  "diaryQuickEatSearchDescription": "Find a food by name or brand",
+  "diaryCheckInRunKicker": "Run {run} · {range}",
+  "@diaryCheckInRunKicker": {
+    "placeholders": {
+      "run": {
+        "type": "int"
+      },
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInRangeKicker": "{range}",
+  "@diaryCheckInRangeKicker": {
+    "placeholders": {
+      "range": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInReviewTitle": "Week done",
+  "diaryCheckInBlockedTitle": "Check-in needs data",
+  "diaryCheckInGoalSince": "Goal {weight} kg · since {date}",
+  "@diaryCheckInGoalSince": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInSince": "Since {date}",
+  "@diaryCheckInSince": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInTrendFact": "Trend",
+  "diaryCheckInTrendChange": "{change} kg since start",
+  "@diaryCheckInTrendChange": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInEatenFact": "Eaten",
+  "diaryCheckInPerDay": "kcal / day",
+  "diaryCheckInTrainingFact": "Training",
+  "diaryCheckInTrainingDaysCaption": "days in the run",
+  "diaryCheckInWeightChart": "Weight",
+  "diaryCheckInWeighIn": "Weigh-in",
+  "diaryCheckInTrend": "Trend",
+  "diaryCheckInTdeeChart": "Expenditure (TDEE) per run",
+  "diaryCheckInUseMeasured": "Use the measured one",
+  "diaryCheckInUseMeasuredDetail": "TDEE {kcal} from this run",
+  "@diaryCheckInUseMeasuredDetail": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInKeepPrevious": "Keep the previous one",
+  "diaryCheckInKeepPreviousDetail": "TDEE {kcal}, goal as last week",
+  "@diaryCheckInKeepPreviousDetail": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInGoalKcalCaption": "kcal goal",
+  "diaryCheckInChangeGoal": "Change goal",
+  "diaryCheckInChangeGoalDetail": "Set a new goal weight or pace",
+  "diaryCheckInNext": "Next",
+  "diaryCheckInBack": "Back",
+  "diaryCheckInTrainingTitle": "When do you train?",
+  "diaryCheckInTrainingSubtitle": "Suggested: your days from the last run",
+  "diaryCheckInSessions": "Sessions",
+  "diaryCheckInSameAsLastRun": "Like last run",
+  "diaryCheckInNoSession": "No session",
+  "diaryCheckInAverageGoal": "Daily goal on average",
+  "diaryCheckInMeasuredSource": "measured",
+  "diaryCheckInPreviousSource": "previous",
+  "diaryCheckInGoalChange": "{change} to last week",
+  "@diaryCheckInGoalChange": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInDayCount": "{count, plural, =1{1 day} other{{count} days}}",
+  "@diaryCheckInDayCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCheckInMacros": "Macros",
+  "diaryCheckInMacrosPrevious": "before",
+  "diaryCheckInMacrosNew": "new",
+  "diaryCheckInGramsValue": "{grams} g",
+  "@diaryCheckInGramsValue": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCheckInMacroWeight": "Weight for macros",
+  "diaryCheckInMacroWeightDetail": "Protein and fat count against {weight} kg.",
+  "@diaryCheckInMacroWeightDetail": {
+    "placeholders": {
+      "weight": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInStartWeek": "Start the week",
+  "diaryCheckInGoalReachedKicker": "Goal reached",
+  "diaryCheckInGoalReachedTitle": "Congratulations!",
+  "diaryCheckInGoalReachedBody": "You reached your goal weight in {weeks, plural, =1{1 week} other{{weeks} weeks}}.",
+  "@diaryCheckInGoalReachedBody": {
+    "placeholders": {
+      "weeks": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCheckInStartFact": "Start",
+  "diaryCheckInTodayFact": "Now",
+  "diaryCheckInDoneFact": "Done",
+  "diaryCheckInPerWeek": "{change} kg / week",
+  "@diaryCheckInPerWeek": {
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryCheckInStartNewGoal": "Start a new goal",
+  "diaryCheckInClose": "Close",
+  "diaryCheckInLoadFailed": "Could not load the check-in.",
+  "diaryCheckInTrainingDaysFailed": "Could not save the training days.",
+  "diaryCheckInPreviewAction": "Preview weekly check-in",
+  "diaryCheckInGoalReachedPreviewAction": "Preview goal reached",
+  "diaryCheckInPreviewResult": "Preview: {action}, {days} training days, nothing saved",
+  "@diaryCheckInPreviewResult": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      },
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryCheckInMissingDataPreviewAction": "Preview missing data",
+  "homeMenuDebugSection": "Debug"
 }

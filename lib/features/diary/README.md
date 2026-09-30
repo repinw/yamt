@@ -75,6 +75,20 @@ Other features should compose the page or complete widgets instead of wiring
 Diary application providers directly. `diaryHomeWidgetSummaryProvider` above
 is the one accepted exception, for `features/home_widget`.
 
+- `presentation/widgets/diary_weekly_checkin_sheet/` owns the weekly check-in
+  as a tall bottom sheet in three steps: the review since the goal start with
+  the choice between the measured and the previous TDEE, the training days of
+  the next run (Calories `TrainingDayChips` and `TrainingWeekDepotChart`), and
+  the new targets. "Woche starten" applies or rejects the check-in, then saves
+  the training days of the run. A reached goal shows its own page and asks for
+  a new goal. The sheet controller keeps the step and the choices while the
+  data reloads.
+- `presentation/widgets/diary_weekly_checkin_preview_tiles.dart`
+  (`DiaryWeeklyCheckInPreviewTiles`) are debug entries for the Home side menu.
+  They open the weekly check-in sheet for the latest completed window, or for
+  demo data without one, and save nothing. The Home menu shows them in its
+  collapsed debug section.
+
 ## Providers
 
 - Application providers live in `application/`.
@@ -110,7 +124,7 @@ Main application adapters and mappers:
   missing-weight prompt, and the Activity-owned weight tracking flow.
 - `features/calories` for calorie log data, goal settings, Burn Week state, and
   weekly check-in behavior through Diary application adapters. The weekly
-  check-in dialog opens the public new-goal sheet
+  check-in sheet opens the public new-goal sheet
   (`presentation/widgets/calorie_new_goal_flow.dart`) when the active goal was
   reached. The entry details page saves its changes through
   `presentation/calorie_entry_details_flow.dart`.

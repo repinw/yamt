@@ -19,6 +19,7 @@ import 'package:yamt/features/calories/application/burn_week_live_sync_provider.
 import 'package:yamt/features/calories/application/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -32,6 +33,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
@@ -45,7 +47,8 @@ import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.da
         PendingCalorieGoalWeeklyCheckIn,
         diaryCalorieGoalSettingsProvider,
         diaryWeeklyCheckInActionsProvider,
-        diaryWeeklyCheckInDataProvider;
+        diaryWeeklyCheckInDataProvider,
+        diaryWeeklyCheckInPlanProvider;
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -56,9 +59,9 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/diary_day_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_weekly_checkin_dialog/diary_weekly_checkin_dialog_keys.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_keys.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
@@ -130,8 +133,8 @@ void main() {
       ),
     );
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
-    expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(find.textContaining('APR 20 – APR 26'), findsOneWidget);
   });
 
   testWidgets('does not warm quick-eat inventory providers on diary open', (
@@ -329,8 +332,8 @@ void main() {
     );
     await _pumpFrames(tester);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
-    expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(find.textContaining('APR 20 – APR 26'), findsOneWidget);
   });
 
   testWidgets('weekly check-in hint continue opens dialog', (tester) async {
@@ -345,7 +348,7 @@ void main() {
     );
 
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
 
     await _tapDiaryCardAction(
       tester,
@@ -353,7 +356,7 @@ void main() {
     );
     await _pumpFrames(tester);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
   });
 
   testWidgets('show-again button reopens dismissed weekly check-in', (
@@ -381,6 +384,7 @@ void main() {
             syncLearnedTdeeCache: (_) async {},
             applyWeeklyCheckIn: (_) async => true,
             rejectWeeklyCheckIn: (_) async => true,
+            saveRunTrainingDays: (_) async => true,
             showWeeklyCheckInAgain: (_) async {
               _setWeeklyCheckInData(container, reopenedCheckIn);
               return true;
@@ -400,15 +404,15 @@ void main() {
       findsOneWidget,
     );
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsNothing);
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
 
     await tester.drag(find.byType(CustomScrollView), const Offset(0, -200));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.showAgainButton));
     await _pumpFrames(tester);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
-    expect(find.text('Apr 21 - Apr 27'), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(find.textContaining('APR 21 – APR 27'), findsOneWidget);
   });
 
   testWidgets('weekly check-in hint opens missing weight day', (tester) async {
@@ -468,10 +472,10 @@ void main() {
     );
     await _pumpFrames(tester);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
 
     await tester.tap(
-      find.byKey(DiaryWeeklyCheckInDialogKeys.trackMissingWeightButton),
+      find.byKey(DiaryWeeklyCheckInSheetKeys.trackMissingWeightButton),
     );
     await tester.pumpAndSettle();
 
@@ -529,8 +533,8 @@ void main() {
       ),
     );
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
-    expect(find.text('Apr 13 - Apr 19'), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(find.textContaining('APR 13 – APR 19'), findsOneWidget);
 
     _setWeeklyCheckInData(
       container,
@@ -538,14 +542,14 @@ void main() {
     );
     await _pumpFrames(tester);
 
-    expect(find.text('Apr 13 - Apr 19'), findsOneWidget);
-    expect(find.text('Apr 20 - Apr 26'), findsNothing);
+    expect(find.textContaining('APR 13 – APR 19'), findsOneWidget);
+    expect(find.textContaining('APR 20 – APR 26'), findsNothing);
 
-    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.laterButton));
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.laterButton));
     await _pumpFrames(tester, count: 12);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
-    expect(find.text('Apr 20 - Apr 26'), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(find.textContaining('APR 20 – APR 26'), findsOneWidget);
   });
 
   testWidgets('hides weekly check-in hint immediately while apply saves', (
@@ -569,12 +573,12 @@ void main() {
       ),
     );
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
 
-    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.applyButton));
+    await _finishWeeklyCheckIn(tester, keepPrevious: false);
     await _pumpFrames(tester, count: 4);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsNothing);
 
     saveCompleter.complete();
@@ -605,12 +609,12 @@ void main() {
       ),
     );
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
 
-    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.applyButton));
+    await _finishWeeklyCheckIn(tester, keepPrevious: false);
     await _pumpFrames(tester);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
     expect(find.text('Could not close the weekly check-in.'), findsOneWidget);
   });
@@ -635,16 +639,16 @@ void main() {
       ),
     );
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
     expect(
-      find.byKey(DiaryWeeklyCheckInDialogKeys.rejectButton),
+      find.byKey(DiaryWeeklyCheckInSheetKeys.keepPreviousChoice),
       findsOneWidget,
     );
 
-    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.rejectButton));
+    await _finishWeeklyCheckIn(tester, keepPrevious: true);
     await _pumpFrames(tester);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsNothing);
     expect(
       find.byKey(DiaryWeeklyCheckInCardKeys.showAgainButton),
@@ -679,12 +683,12 @@ void main() {
       ),
     );
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
 
-    await tester.tap(find.byKey(DiaryWeeklyCheckInDialogKeys.rejectButton));
+    await _finishWeeklyCheckIn(tester, keepPrevious: true);
     await _pumpFrames(tester);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsOneWidget);
     expect(find.text('Could not reject the weekly check-in.'), findsOneWidget);
   });
@@ -920,16 +924,35 @@ void main() {
       ],
     );
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
 
     now = DateTime(2026, 4, 15, 8);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
     await _pumpFrames(tester);
 
-    expect(find.byKey(DiaryWeeklyCheckInDialogKeys.dialog), findsOneWidget);
-    expect(find.text('Apr 8 - Apr 14'), findsOneWidget);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(find.textContaining('APR 8 – APR 14'), findsOneWidget);
   });
+}
+
+/// Walks the check-in sheet to its last step and starts the week.
+Future<void> _finishWeeklyCheckIn(
+  WidgetTester tester, {
+  required bool keepPrevious,
+}) async {
+  if (keepPrevious) {
+    final choice = find.byKey(DiaryWeeklyCheckInSheetKeys.keepPreviousChoice);
+    await tester.ensureVisible(choice);
+    await _pumpFrames(tester);
+    await tester.tap(choice);
+    await _pumpFrames(tester);
+  }
+  for (var step = 0; step < 2; step++) {
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+    await _pumpFrames(tester);
+  }
+  await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.startWeekButton));
 }
 
 Future<ProviderContainer> _pumpDiaryPage(
@@ -1028,6 +1051,19 @@ Future<ProviderContainer> _pumpDiaryPage(
         diaryWeeklyCheckInDataProvider.overrideWith(
           (ref) => _weeklyCheckInData,
         ),
+      diaryWeeklyCheckInPlanProvider.overrideWith((ref) async {
+        final checkInData = await ref.watch(
+          diaryWeeklyCheckInDataProvider.future,
+        );
+        final pending = checkInData.pendingWeeklyCheckIn;
+        return pending == null
+            ? null
+            : calorieWeeklyCheckInDemoPlan(
+                today: pending.dueDate,
+                macroSettings: const MacroGoalSettings(),
+                profile: null,
+              );
+      }),
       ...overrides,
     ],
   );
@@ -1167,6 +1203,7 @@ DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
     syncLearnedTdeeCache: (_) async {},
     applyWeeklyCheckIn: (_) async => true,
     rejectWeeklyCheckIn: (_) async => true,
+    saveRunTrainingDays: (_) async => true,
     showWeeklyCheckInAgain: (_) async => true,
     setSkippedIntakeDay: ({required selectedDay, required isSkipped}) async =>
         true,
@@ -1194,6 +1231,7 @@ DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
     shouldAutoOpen: shouldAutoOpen,
     days: days,
     calculation: const CalorieWeeklyCheckInCalculation(
+      previousTdeeKcal: 2000,
       trendWeightChangePerDay: -0.05,
       averageIntakeKcal: 2100,
       measuredTdeeKcal: 2450,
