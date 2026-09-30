@@ -423,12 +423,16 @@ NEVER move a feature type into `lib/core` to avoid an ownership decision.
   enforced by: `avoid_print`.*
 - NEVER add an abstraction, parameter, or option that the current task does
   not use.
-- NEVER write backward-compatibility code. The app has no users yet, so no
-  stored data or format needs to survive a change. This covers migrations,
-  backfills, tolerant parsers (for example a string accepted as a number or a
-  date), default values for fields that older documents lack, and special
-  cases for data created before a change. Add new fields cleanly. If old local
-  test data breaks, say so instead of coding around it.
+- NEVER make reading code tolerant of old data: no tolerant parsers (for
+  example a string accepted as a number or a date), no default values for
+  fields that older documents lack, and no special cases for data created
+  before a change. Models parse strictly.
+- When a change leaves stored data that the new app cannot read (a new
+  required field, a moved path, a renamed value), write a migration that
+  rewrites the stored data into the new shape. The app has real users, so
+  their data MUST survive every release. Start the doc comment of the
+  migration with `Temporary migration, added in <version>`. It stays for a
+  few releases; the release checklist removes it later.
 - If you find existing backward-compatibility code, NEVER remove it on your
   own. Name it to the user with file and line, and let the user decide.
 
