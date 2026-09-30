@@ -5,7 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/auth/domain/user_profile.dart';
+import 'package:yamt/features/auth/data/user_profile_dto.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/household/domain/household_exceptions.dart';
 import 'package:yamt/features/household/domain/household_member.dart';
@@ -189,7 +189,10 @@ class HouseholdMemberRepository {
         .collection(_usersCollection)
         .doc(member.uid)
         .get();
-    final profile = UserProfile.fromJson(snapshot.data()!);
+    final profile = decodeUserProfileDocument(
+      snapshot.data() ?? const <String, dynamic>{},
+      member.uid,
+    );
     return member.copyWith(
       displayName: profile.displayName,
       email: profile.email,

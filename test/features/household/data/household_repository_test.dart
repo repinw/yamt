@@ -118,7 +118,6 @@ void main() {
     test('keeps the household that the profile names already', () async {
       await firestore.doc('users/alex').set(<String, dynamic>{
         'uid': 'alex',
-        'isAnonymous': false,
         'householdId': 'own-1',
         'ownHouseholdId': 'own-1',
       });
@@ -160,7 +159,6 @@ void main() {
       for (final uid in <String>['admin', 'early', 'late', 'solo']) {
         await firestore.doc('users/$uid').set(<String, dynamic>{
           'uid': uid,
-          'isAnonymous': false,
           'householdId': 'shared',
           'ownHouseholdId': 'own-$uid',
         });
@@ -318,7 +316,6 @@ void main() {
       await addMember('own-alex', 'bo', joinedAt: DateTime(2026), admin: true);
       await firestore.doc('users/alex').set(<String, dynamic>{
         'uid': 'alex',
-        'isAnonymous': false,
         'householdId': 'own-alex',
         'ownHouseholdId': 'own-alex',
       });
@@ -366,7 +363,6 @@ void main() {
   test('returnToOwnHousehold makes the own household active', () async {
     await firestore.doc('users/late').set(<String, dynamic>{
       'uid': 'late',
-      'isAnonymous': false,
       'householdId': 'shared',
       'ownHouseholdId': 'own-late',
     });
