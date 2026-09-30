@@ -3,6 +3,7 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 
 CalorieWeeklyCheckInPlan _plan({
+  bool hasWeeklyTrainingSchedule = false,
   CalorieWeeklyCheckInMeasurement? measurement = (
     tdeeKcal: 2240,
     goalKcal: 1690,
@@ -12,11 +13,14 @@ CalorieWeeklyCheckInPlan _plan({
   final days = [for (var day = 1; day <= 7; day++) DateTime(2026, 9, day)];
   return CalorieWeeklyCheckInPlan(
     reviewedRunNumber: 4,
+    nextRunNumber: 5,
     reviewedDays: (start: DateTime(2026, 8, 25), end: DateTime(2026, 8, 31)),
     previousTrainingDayCount: 3,
     nextRunDays: days,
     suggestedTrainingDays: {days[0], days[2], days[4]},
     pauseDays: const {},
+    pastDays: {days[0]},
+    hasWeeklyTrainingSchedule: hasWeeklyTrainingSchedule,
     sessionKcal: 350,
     previousTdeeKcal: 2164,
     previousGoalKcal: 1614,
@@ -68,5 +72,20 @@ void main() {
 
     expect(targets.macros.carbs, greaterThan(targets.previousMacros.carbs));
     expect(targets.macros.fat, targets.previousMacros.fat);
+  });
+
+  test('a weekly schedule counts training without a session', () {
+    final withSchedule = _plan(hasWeeklyTrainingSchedule: true)
+        .targetsFor(useMeasured: true, trainingDays: 0);
+    final withSession = _plan().targetsFor(useMeasured: true, trainingDays: 3);
+
+    expect(withSchedule.macros.protein, withSession.macros.protein);
+  });
+
+  test('only days that are neither past nor pause days can change', () {
+    final plan = _plan();
+
+    expect(plan.canChangeDay(plan.nextRunDays[0]), isFalse);
+    expect(plan.canChangeDay(plan.nextRunDays[1]), isTrue);
   });
 }

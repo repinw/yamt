@@ -19,11 +19,14 @@ DiaryWeeklyCheckInPlan _plan({bool measured = true}) {
   }
   return DiaryWeeklyCheckInPlan(
     reviewedRunNumber: plan.reviewedRunNumber,
+    nextRunNumber: plan.nextRunNumber,
     reviewedDays: plan.reviewedDays,
     previousTrainingDayCount: plan.previousTrainingDayCount,
     nextRunDays: plan.nextRunDays,
     suggestedTrainingDays: plan.suggestedTrainingDays,
     pauseDays: {plan.nextRunDays[1]},
+    pastDays: {plan.nextRunDays[0]},
+    hasWeeklyTrainingSchedule: true,
     sessionKcal: plan.sessionKcal,
     previousTdeeKcal: plan.previousTdeeKcal,
     previousGoalKcal: plan.previousGoalKcal,

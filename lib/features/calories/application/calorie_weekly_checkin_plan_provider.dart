@@ -102,13 +102,22 @@ Future<CalorieWeeklyCheckInPlan?> _buildPlan(
     ),
     previousTrainingDayCount: reviewedRun.trainingDays.length,
     nextRunDays: nextRun.days,
+    nextRunNumber: resolveCalorieGoalRunNumber(settings: settings, day: today),
     suggestedTrainingDays: {
       for (final day in nextRun.days)
-        if (!nextRun.pauseDays.contains(day) &&
-            reviewedWeekdays.contains(day.weekday))
+        if (day.isBefore(today)
+            ? nextRun.trainingDays.contains(day)
+            : !nextRun.pauseDays.contains(day) &&
+                  reviewedWeekdays.contains(day.weekday))
           day,
     },
     pauseDays: nextRun.pauseDays,
+    pastDays: {
+      for (final day in nextRun.days)
+        if (day.isBefore(today)) day,
+    },
+    hasWeeklyTrainingSchedule:
+        goalProfile?.trainingWeekdays.isNotEmpty ?? false,
     sessionKcal: settings.trainingSessionKcalForDay(today),
     previousTdeeKcal: calculation?.previousTdeeKcal ?? 0,
     previousGoalKcal: goalKcalBeforeWeeklyCheckIn(
