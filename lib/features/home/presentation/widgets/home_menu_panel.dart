@@ -11,6 +11,7 @@ import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/widgets/initial_tile.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_debug_menu_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_preview_tiles.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_entry.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_section.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -52,6 +53,9 @@ class HomeMenuPanel extends ConsumerWidget {
 
   /// Stable key of the account entry.
   static const accountTileKey = ValueKey<String>('home-menu-account-tile');
+
+  /// Stable key of the collapsible debug section.
+  static const debugSectionKey = ValueKey<String>('home-menu-debug-section');
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -156,7 +160,18 @@ class HomeMenuPanel extends ConsumerWidget {
                         ),
                       ],
                     ),
-                    if (kDebugMode) const CalorieDebugMenuSection(),
+                    if (kDebugMode)
+                      ExpansionTile(
+                        key: HomeMenuPanel.debugSectionKey,
+                        title: Text(l10n.homeMenuDebugSection),
+                        leading: const Icon(Icons.bug_report_outlined),
+                        shape: const Border(),
+                        collapsedShape: const Border(),
+                        children: const [
+                          CalorieDebugMenuSection(),
+                          DiaryWeeklyCheckInPreviewTiles(),
+                        ],
+                      ),
                   ],
                 ),
               ),

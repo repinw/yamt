@@ -28,12 +28,15 @@ import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart'
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/presentation/widgets/calorie_debug_keys.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_weekly_checkin_preview_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_calendar_overview_sheet/diary_calendar_overview_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_navigator.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_home_shell_top_chrome.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_preview_tiles.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
@@ -652,6 +655,38 @@ void main() {
       find.byKey(HomeMenuPanel.closeButtonKey).hitTestable(),
       findsNothing,
     );
+  });
+
+  testWidgets('diary menu keeps the debug entries collapsed', (tester) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: _diaryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(HomeShellMenuButton.buttonKey));
+    await tester.pumpAndSettle();
+    final debugPreview = find.byKey(
+      DiaryWeeklyCheckInPreviewTiles.tileKey(
+        DiaryWeeklyCheckInPreviewKind.checkIn,
+      ),
+    );
+    expect(find.byKey(CalorieDebugKeys.debugDumpButton), findsNothing);
+    expect(debugPreview, findsNothing);
+
+    final debugSection = find.byKey(HomeMenuPanel.debugSectionKey);
+    await tester.ensureVisible(debugSection);
+    await tester.pumpAndSettle();
+    await tester.tap(debugSection);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CalorieDebugKeys.debugDumpButton), findsOneWidget);
+    expect(debugPreview, findsOneWidget);
   });
 
   testWidgets('tapping the moved page closes the menu', (tester) async {
