@@ -73,7 +73,7 @@ void main() {
     );
 
     expect(seed.previousGoalKcal, expected.newGoalKcal);
-    expect(seed.previousLearnedTdeeKcal, expected.calculatedBaseTdeeKcal);
+    expect(seed.previousLearnedTdeeKcal, expected.calculatedTdeeKcal);
   });
 
   test('keeps current seed when prior window lacks intake data', () {

@@ -74,8 +74,8 @@ abstract final class TdeeAnalyticsService {
         day: day,
         fallbackGoalKcal: target,
       );
-      final baseTdee = learnedData?.calculatedBaseTdeeKcal ?? fallbackBaseTdee;
-      final totalTdee = learnedData?.measured.measuredTotalTdeeKcal ?? baseTdee;
+      final baseTdee = learnedData?.calculatedTdeeKcal ?? fallbackBaseTdee;
+      final totalTdee = learnedData?.measured.measuredTdeeKcal ?? baseTdee;
 
       points.add(
         TdeeAnalyticsPoint(

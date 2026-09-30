@@ -24,11 +24,11 @@ void main() {
     // Theil-Sen ignores the 81.70 kg outlier on day 3.
     expect(result.trendWeightChangePerDay, closeTo(-0.1, 0.00001));
     expect(result.averageIntakeKcal, closeTo(2347.14, 0.01));
-    expect(result.measuredTotalTdeeKcal, closeTo(3117.14, 0.01));
-    expect(result.measuredBaseTdeeKcal, closeTo(3117.14, 0.01));
+    expect(result.measuredTdeeKcal, closeTo(3117.14, 0.01));
+    expect(result.measuredTdeeKcal, closeTo(3117.14, 0.01));
     // A 7-day window enters with 0.5 × 7 / 28 = 0.125.
-    expect(result.calculatedBaseTdeeKcal, closeTo(2513.27, 0.01));
-    expect(result.newBaseGoalKcal, closeTo(2513.27, 0.01));
+    expect(result.calculatedTdeeKcal, closeTo(2513.27, 0.01));
+    expect(result.newGoalKcal, closeTo(2513.27, 0.01));
     expect(result.dynamicGoalTodayKcal, closeTo(2513.27, 0.01));
   });
 
@@ -50,8 +50,8 @@ void main() {
       ],
     );
 
-    expect(result.measuredTrueTdeeKcal, closeTo(5850, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2656.25, 0.01));
+    expect(result.measuredTdeeKcal, closeTo(5850, 0.01));
+    expect(result.calculatedTdeeKcal, closeTo(2656.25, 0.01));
     expect(result.newGoalKcal, 2400);
   });
 
@@ -70,11 +70,11 @@ void main() {
 
     expect(result.trendWeightChangePerDay, closeTo(-0.1, 0.00001));
     expect(result.averageIntakeKcal, 2000);
-    expect(result.measuredTrueTdeeKcal, closeTo(2770, 0.01));
-    expect(result.measuredBaseTdeeKcal, closeTo(2770, 0.01));
+    expect(result.measuredTdeeKcal, closeTo(2770, 0.01));
+    expect(result.measuredTdeeKcal, closeTo(2770, 0.01));
     // A 6-day window enters with 0.5 × 6 / 28.
-    expect(result.calculatedBaseTdeeKcal, closeTo(2261.07, 0.01));
-    expect(result.newBaseGoalKcal, closeTo(2261.07, 0.01));
+    expect(result.calculatedTdeeKcal, closeTo(2261.07, 0.01));
+    expect(result.newGoalKcal, closeTo(2261.07, 0.01));
     expect(result.dynamicGoalTodayKcal, closeTo(2261.07, 0.01));
   });
 
@@ -91,7 +91,7 @@ void main() {
       ],
     );
 
-    expect(result.measuredBaseTdeeKcal, closeTo(1600, 0.01));
+    expect(result.measuredTdeeKcal, closeTo(1600, 0.01));
     expect(result.dynamicGoalTodayKcal, closeTo(1600, 0.01));
   });
 
@@ -135,8 +135,8 @@ void main() {
       ],
     );
 
-    expect(result.measuredTrueTdeeKcal, 2500);
-    expect(result.calculatedTrueTdeeKcal, 2500);
+    expect(result.measuredTdeeKcal, 2500);
+    expect(result.calculatedTdeeKcal, 2500);
     expect(result.newGoalKcal, 1950);
   });
 

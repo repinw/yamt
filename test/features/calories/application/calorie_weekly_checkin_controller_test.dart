@@ -718,8 +718,8 @@ CalorieGoalSettings _settingsWithGoal() {
 const _defaultWeeklyCheckInCalculation = CalorieWeeklyCheckInCalculation(
   trendWeightChangePerDay: -0.10893,
   averageIntakeKcal: 2460.85,
-  measuredTrueTdeeKcal: 3223.35,
-  calculatedTrueTdeeKcal: 2665.82,
+  measuredTdeeKcal: 3223.35,
+  calculatedTdeeKcal: 2665.82,
   newGoalKcal: 2626.875,
   dynamicGoalTodayKcal: 2626.875,
 );

@@ -216,8 +216,8 @@ abstract final class DailyLearnedTdeeResolver {
       );
       latest = DailyLearnedTdeeGoalData(
         measured: calculation.measured,
-        calculatedBaseTdeeKcal: calculation.calculatedTdeeKcal,
-        newBaseGoalKcal: calculation.newGoalKcal,
+        calculatedTdeeKcal: calculation.calculatedTdeeKcal,
+        newGoalKcal: calculation.newGoalKcal,
       );
       previousGoalKcal = calculation.newGoalKcal;
       previousLearnedTdeeKcal = calculation.calculatedTdeeKcal;
@@ -248,8 +248,8 @@ abstract final class DailyLearnedTdeeResolver {
         averageIntakeKcal: 0,
         measuredTdeeKcal: snapshot.measuredTdeeKcal,
       ),
-      calculatedBaseTdeeKcal: snapshot.calculatedTdeeKcal,
-      newBaseGoalKcal: snapshot.baseGoalKcal,
+      calculatedTdeeKcal: snapshot.calculatedTdeeKcal,
+      newGoalKcal: snapshot.baseGoalKcal,
     );
   }
 

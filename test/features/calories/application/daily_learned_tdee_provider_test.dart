@@ -334,9 +334,9 @@ void main() {
     expect(result, isNotNull);
     expect(result!.measured.averageIntakeKcal, closeTo(2500, 0.01));
     expect(result.measured.trendWeightChangePerDay, closeTo(0, 0.00001));
-    expect(result.measured.measuredTrueTdeeKcal, closeTo(2500, 0.01));
+    expect(result.measured.measuredTdeeKcal, closeTo(2500, 0.01));
     // Windows of 7, 14, 21, and 28 days enter with 0.125, 0.25, 0.375, 0.5.
-    expect(result.calculatedTrueTdeeKcal, closeTo(2479.49, 0.01));
+    expect(result.calculatedTdeeKcal, closeTo(2479.49, 0.01));
     expect(result.newGoalKcal, closeTo(2479.49, 0.01));
   });
 
@@ -383,7 +383,7 @@ void main() {
 
       expect(result, isNotNull);
       expect(result!.measured.trendWeightChangePerDay, closeTo(0, 0.00001));
-      expect(result.measured.measuredTrueTdeeKcal, closeTo(2500, 0.01));
+      expect(result.measured.measuredTdeeKcal, closeTo(2500, 0.01));
       expect(result.newGoalKcal, closeTo(2412.5, 0.01));
     },
   );
@@ -504,7 +504,7 @@ void main() {
       final result = await _readDailyLearned(harness.container, today: today);
 
       expect(result, isNotNull);
-      expect(result!.calculatedTrueTdeeKcal, greaterThan(0));
+      expect(result!.calculatedTdeeKcal, greaterThan(0));
       expect(result.newGoalKcal, greaterThan(0));
     },
   );
@@ -535,7 +535,7 @@ void main() {
 
     expect(result, isNotNull);
     expect(result!.measured.averageIntakeKcal, closeTo(3000, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2475, 0.01));
+    expect(result.calculatedTdeeKcal, closeTo(2475, 0.01));
     expect(result.newGoalKcal, closeTo(2475, 0.01));
   });
 
@@ -576,9 +576,9 @@ void main() {
     );
 
     expect(result, isNotNull);
-    expect(result!.calculatedBaseTdeeKcal, closeTo(1395.59, 0.01));
+    expect(result!.calculatedTdeeKcal, closeTo(1395.59, 0.01));
     expect(result.newGoalKcal, closeTo(1283.81, 0.01));
-    expect(result.measured.measuredTotalTdeeKcal, closeTo(601.73, 0.01));
+    expect(result.measured.measuredTdeeKcal, closeTo(601.73, 0.01));
   });
 
   test(
@@ -799,7 +799,7 @@ void main() {
     );
 
     expect(result, isNotNull);
-    expect(result!.calculatedTrueTdeeKcal, closeTo(4065.66, 0.01));
+    expect(result!.calculatedTdeeKcal, closeTo(4065.66, 0.01));
     expect(result.newGoalKcal, closeTo(2900.0, 0.01));
   });
 
@@ -842,7 +842,7 @@ void main() {
       result!.measured.trendWeightChangePerDay,
       closeTo(-0.33333, 0.00001),
     );
-    expect(result.measured.measuredTrueTdeeKcal, closeTo(5066.67, 0.01));
+    expect(result.measured.measuredTdeeKcal, closeTo(5066.67, 0.01));
   });
 
   test(
@@ -875,7 +875,7 @@ void main() {
         );
         addTearDown(harness.dispose);
         final result = await _readDailyLearned(harness.container, today: today);
-        return result!.measured.measuredTrueTdeeKcal;
+        return result!.measured.measuredTdeeKcal;
       }
 
       final steady = await measuredTdee(boundarySpikeKg: 0);
@@ -923,7 +923,7 @@ void main() {
 
     expect(result, isNotNull);
     expect(result!.measured.averageIntakeKcal, closeTo(2416.67, 0.01));
-    expect(result.calculatedTrueTdeeKcal, closeTo(2402.08, 0.01));
+    expect(result.calculatedTdeeKcal, closeTo(2402.08, 0.01));
     expect(result.newGoalKcal, closeTo(2402.08, 0.01));
   });
 
