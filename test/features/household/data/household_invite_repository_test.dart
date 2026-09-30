@@ -90,7 +90,6 @@ void main() {
     await addMember('own-joiner', 'joiner', 'admin');
     await firestore.doc('users/joiner').set(<String, dynamic>{
       'uid': 'joiner',
-      'isAnonymous': false,
       'householdId': 'own-joiner',
       'ownHouseholdId': 'own-joiner',
     });

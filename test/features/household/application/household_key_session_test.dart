@@ -11,7 +11,7 @@ import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/auth/domain/user_profile.dart';
+import 'package:yamt/features/auth/data/user_profile_dto.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/data/household_data_repository.dart';
@@ -69,7 +69,12 @@ void main() {
           (ref) => firestore
               .doc('users/$_uid')
               .snapshots()
-              .map((snapshot) => UserProfile.fromJson(snapshot.data()!)),
+              .map(
+                (snapshot) => decodeUserProfileDocument(
+                  snapshot.data() ?? const <String, dynamic>{},
+                  snapshot.id,
+                ),
+              ),
         ),
         householdDataOwnerUserIdProvider.overrideWith(
           (ref) => ref.watch(userProfileProvider).value?.householdId,
@@ -122,7 +127,6 @@ void main() {
   Future<void> setProfile({required String active, required String own}) {
     return firestore.doc('users/$_uid').set(<String, dynamic>{
       'uid': _uid,
-      'isAnonymous': false,
       'householdId': active,
       'ownHouseholdId': own,
     });
@@ -158,10 +162,7 @@ void main() {
   }
 
   test('a user without a household gets an own one with a key', () async {
-    await firestore.doc('users/$_uid').set(<String, dynamic>{
-      'uid': _uid,
-      'isAnonymous': false,
-    });
+    await firestore.doc('users/$_uid').set(<String, dynamic>{'uid': _uid});
     final container = createContainer();
 
     final state = await settle<HouseholdKeyReady>(container);
