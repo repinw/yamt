@@ -9,13 +9,13 @@ part of 'calorie_goal_progress_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Weight and learned TDEE of the goal that is active on [endDate], from its
-/// start up to [endDate]. `null` without an active goal.
+/// start up to [endDate]. `null` without a goal on [endDate].
 
 @ProviderFor(calorieGoalProgress)
 final calorieGoalProgressProvider = CalorieGoalProgressFamily._();
 
 /// Weight and learned TDEE of the goal that is active on [endDate], from its
-/// start up to [endDate]. `null` without an active goal.
+/// start up to [endDate]. `null` without a goal on [endDate].
 
 final class CalorieGoalProgressProvider
     extends
@@ -28,7 +28,7 @@ final class CalorieGoalProgressProvider
         $FutureModifier<CalorieGoalProgress?>,
         $FutureProvider<CalorieGoalProgress?> {
   /// Weight and learned TDEE of the goal that is active on [endDate], from its
-  /// start up to [endDate]. `null` without an active goal.
+  /// start up to [endDate]. `null` without a goal on [endDate].
   CalorieGoalProgressProvider._({
     required CalorieGoalProgressFamily super.from,
     required DateTime super.argument,
@@ -74,10 +74,10 @@ final class CalorieGoalProgressProvider
 }
 
 String _$calorieGoalProgressHash() =>
-    r'ab9eb45979df1ddaaae35caf549104f4c9cc9401';
+    r'4f026ddc6fba277e95f13d48883f5f7b5cfd89c2';
 
 /// Weight and learned TDEE of the goal that is active on [endDate], from its
-/// start up to [endDate]. `null` without an active goal.
+/// start up to [endDate]. `null` without a goal on [endDate].
 
 final class CalorieGoalProgressFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<CalorieGoalProgress?>, DateTime> {
@@ -91,7 +91,7 @@ final class CalorieGoalProgressFamily extends $Family
       );
 
   /// Weight and learned TDEE of the goal that is active on [endDate], from its
-  /// start up to [endDate]. `null` without an active goal.
+  /// start up to [endDate]. `null` without a goal on [endDate].
 
   CalorieGoalProgressProvider call(DateTime endDate) =>
       CalorieGoalProgressProvider._(argument: endDate, from: this);
