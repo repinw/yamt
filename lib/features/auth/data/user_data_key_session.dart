@@ -191,10 +191,12 @@ class UserDataKeySession extends _$UserDataKeySession {
 
     final cipher = PayloadCipher(dataKey);
     try {
-      await repository.migratePrivateData(uid, cipher);
+      await repository
+          .migratePrivateData(uid, cipher)
+          .timeout(const Duration(seconds: 15));
     } on Object catch (error, stackTrace) {
-      // Offline, for example: this must not keep the user out of the app.
-      // The next start tries again.
+      // Offline or slow, for example: this must not keep the user out of the
+      // app. The next start tries again.
       log(
         'Migrating the private data failed.',
         name: 'UserDataKeySession',
