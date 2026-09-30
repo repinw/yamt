@@ -16,10 +16,10 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch:
 
-# A new push to a pull request cancels its old run. Runs on master are not
-# cancelled, so every merged commit gets its integration tests.
+# A new push to a pull request cancels its old run. Every other run gets its
+# own group, so no push, tag, nightly or manual run cancels another.
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.sha }}
+  group: ci-${{ github.event.pull_request.number || github.run_id }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
@@ -232,14 +232,22 @@ jobs:
               ;;
           esac
 
-      # The tests run after the merge, so a failure must not go unnoticed.
-      - name: Open an issue for the failed run
-        if: failure()
+      # The tests run after the merge, so a failure must not go unnoticed. One
+      # open issue collects all failures until it is closed; a cancelled run
+      # reports nothing.
+      - name: Report the failed run in an issue
+        if: failure() && needs.integration.result != 'cancelled'
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          gh issue create --repo "$GITHUB_REPOSITORY" \
-            --title "Integration tests failed on $GITHUB_REF_NAME (${GITHUB_SHA::8})" \
-            --label testing \
-            --body "The integration tests failed after a $GITHUB_EVENT_NAME run on $GITHUB_REF_NAME at $GITHUB_SHA. Run: $RUN_URL"
+          title='Integration tests failed after the merge'
+          body="Failed after a $GITHUB_EVENT_NAME run on $GITHUB_REF_NAME at $GITHUB_SHA. Run: $RUN_URL"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label testing \
+            --state open --search "\"$title\" in:title" --json number -q '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" \
+              --label testing --body "$body"
+          fi
