@@ -192,7 +192,7 @@ Future<void> _openSheet(WidgetTester tester) async {
 }
 
 Widget _scoped(Widget app) {
-  return ProviderScope(
+  final container = ProviderContainer(
     overrides: [
       diaryWeeklyCheckInPlanProvider.overrideWith(
         (ref) async => calorieWeeklyCheckInDemoPlan(
@@ -202,8 +202,9 @@ Widget _scoped(Widget app) {
         ),
       ),
     ],
-    child: app,
   );
+  addTearDown(container.dispose);
+  return UncontrolledProviderScope(container: container, child: app);
 }
 
 const _openSheetButtonKey = ValueKey<String>('open-sheet');
