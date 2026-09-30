@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
 import 'package:yamt/features/cooking_flow/presentation/models/'
@@ -11,8 +12,6 @@ import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_step_layout.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/cooking_flow_tare_utensil_picker/'
     'cooking_flow_tare_utensil_picker.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/'
-    'cooking_flow_text_styles.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_weight_input_row.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
@@ -141,9 +140,7 @@ class _PreparationStorageContainerCard extends StatelessWidget {
                 Expanded(
                   child: Text(
                     _containerTitle(l10n, container, index),
-                    style: context.cookingFlowDisplayStyle(
-                      textTheme.titleLarge,
-                    ),
+                    style: context.graphitDisplayStyle(textTheme.titleLarge),
                   ),
                 ),
                 if (container.canRemove) ...<Widget>[
@@ -160,7 +157,7 @@ class _PreparationStorageContainerCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.xl),
             Text(
               l10n.cookflowContainerTaraLabel.toUpperCase(),
-              style: context.cookingFlowKickerStyle,
+              style: context.graphitKickerStyle,
             ),
             const SizedBox(height: AppSpacing.xs),
             CookingFlowWeightInputRow(

@@ -2,10 +2,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/cooking_flow_action_button/'
     'cooking_flow_secondary_action_button.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/'
-    'cooking_flow_text_styles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Caption of the note card.
@@ -18,7 +17,7 @@ class CookingFlowOnTheFlyHeader extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return Text(
       l10n.cookflowOnTheFlyTitle.toUpperCase(),
-      style: context.cookingFlowKickerStyle,
+      style: context.graphitKickerStyle,
     );
   }
 }

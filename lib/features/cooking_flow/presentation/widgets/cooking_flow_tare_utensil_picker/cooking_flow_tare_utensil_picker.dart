@@ -3,9 +3,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/cooking_flow_action_button/cooking_flow_quiet_button.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/cooking_flow_tare_utensil_picker/cooking_flow_tare_utensil_list.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/cooking_flow_text_styles.dart';
 import 'package:yamt/features/kitchen_utensils/application/kitchen_utensil_list_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -85,10 +85,7 @@ class _CookingFlowTareUtensilHeader extends StatelessWidget {
     return Row(
       children: <Widget>[
         Expanded(
-          child: Text(
-            title.toUpperCase(),
-            style: context.cookingFlowKickerStyle,
-          ),
+          child: Text(title.toUpperCase(), style: context.graphitKickerStyle),
         ),
         CookingFlowQuietButton(
           label: l10n.kitchenUtensilAddAction,

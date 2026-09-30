@@ -4,6 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_instruction_builder.dart';
 import 'package:yamt/features/cooking_flow/application/'
@@ -13,8 +14,6 @@ import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_on_the_fly_adjustment_card.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_step_layout.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/'
-    'cooking_flow_text_styles.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -257,7 +256,7 @@ class _CookingInstructionCard extends StatelessWidget {
               color: colors.tile,
               child: Text(
                 '$stepNumber',
-                style: context.cookingFlowDisplayStyle(textTheme.titleMedium),
+                style: context.graphitDisplayStyle(textTheme.titleMedium),
               ),
             ),
             const SizedBox(width: AppSpacing.md),

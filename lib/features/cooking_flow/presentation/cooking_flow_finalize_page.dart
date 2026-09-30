@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/core/widgets/nutrition_metrics_strip.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
@@ -14,8 +15,6 @@ import 'package:yamt/features/cooking_flow/presentation/models/'
     'cooking_flow_storage_container_models.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_step_layout.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/'
-    'cooking_flow_text_styles.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_weight_input_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -136,7 +135,7 @@ class CookingFlowFinalizePage extends StatelessWidget {
                   const SizedBox(height: AppSpacing.xl),
                   Text(
                     l10n.cookflowHowManyPortions.toUpperCase(),
-                    style: context.cookingFlowKickerStyle,
+                    style: context.graphitKickerStyle,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Row(
@@ -163,7 +162,7 @@ class CookingFlowFinalizePage extends StatelessWidget {
                       const SizedBox(width: AppSpacing.lg),
                       Text(
                         '$roundedPortions',
-                        style: context.cookingFlowDisplayStyle(
+                        style: context.graphitDisplayStyle(
                           textTheme.headlineMedium,
                         ),
                       ),
@@ -317,9 +316,7 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
                     _containerLabel(l10n, container, index),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: context.cookingFlowDisplayStyle(
-                      textTheme.titleLarge,
-                    ),
+                    style: context.graphitDisplayStyle(textTheme.titleLarge),
                   ),
                 ),
                 if (portions case final int count) ...<Widget>[
@@ -354,7 +351,7 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.xl),
             Text(
               l10n.cookflowGrossWeightTitle.toUpperCase(),
-              style: context.cookingFlowKickerStyle,
+              style: context.graphitKickerStyle,
             ),
             const SizedBox(height: AppSpacing.xs),
             CookingFlowWeightInputRow(
@@ -377,7 +374,7 @@ class _FinalizeStorageContainerCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   '${netWeight.toStringAsFixed(0)} g',
-                  style: context.cookingFlowDisplayStyle(
+                  style: context.graphitDisplayStyle(
                     textTheme.headlineMedium,
                     color: isWeightValid ? colors.ink : schemeColors.error,
                   ),

@@ -3,6 +3,7 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_amount_utils.dart';
@@ -20,8 +21,6 @@ import 'package:yamt/features/cooking_flow/presentation/models/'
     'cooking_flow_storage_container_models.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_step_layout.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/'
-    'cooking_flow_text_styles.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
@@ -375,7 +374,7 @@ class _SummaryInventoryIngredientPicker extends StatelessWidget {
                       Expanded(
                         child: Text(
                           l10n.cookflowInventorySelectionTitle,
-                          style: context.cookingFlowDisplayStyle(
+                          style: context.graphitDisplayStyle(
                             textTheme.titleLarge,
                           ),
                         ),
@@ -789,7 +788,7 @@ class _SummaryIngredientRow extends StatelessWidget {
                           enabledBorder: fieldBorder,
                           focusedBorder: fieldBorder,
                         ),
-                        style: context.cookingFlowDisplayStyle(
+                        style: context.graphitDisplayStyle(
                           textTheme.titleMedium,
                         ),
                       ),
