@@ -6,6 +6,10 @@ import 'package:yamt/features/diary/domain/diary_meal_entry_group.dart';
 
 part 'diary_meal_section.g.dart';
 
+// Temporary compatibility, added in 3.4.1: the JSON defaults, unknown enum
+// fallbacks, and flexible converters in this file go from 3.7.0 on, once a
+// migration has re-saved the stored data in the strict shape.
+
 /// Diary entry data needed by meal cards.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryMealEntry {

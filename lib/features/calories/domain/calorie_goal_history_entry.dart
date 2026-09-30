@@ -7,6 +7,10 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_goal_history_entry.g.dart';
 
+// Temporary compatibility, added in 3.4.1: the JSON defaults, unknown enum
+// fallbacks, and flexible converters in this file go from 3.7.0 on, once a
+// migration has re-saved the stored data in the strict shape.
+
 /// Defines calorie goal history entry.
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class CalorieGoalHistoryEntry {

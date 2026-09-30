@@ -31,6 +31,9 @@ class FlexibleDoubleConverter implements JsonConverter<double, Object?> {
 }
 
 /// Defines nullable flexible double converter.
+///
+/// Temporary compatibility, added in 3.4.1: removed from 3.7.0 on, once a
+/// migration has re-saved the stored calorie data in the strict shape.
 class NullableFlexibleDoubleConverter
     implements JsonConverter<double?, Object?> {
   /// The nullable flexible double converter.
@@ -124,6 +127,9 @@ class FlexibleDateTimeConverter implements JsonConverter<DateTime, Object?> {
 }
 
 /// Defines nullable flexible date time converter.
+///
+/// Temporary compatibility, added in 3.4.1: removed from 3.7.0 on, once a
+/// migration has re-saved the stored calorie data in the strict shape.
 class NullableFlexibleDateTimeConverter
     implements JsonConverter<DateTime?, Object?> {
   /// The nullable flexible date time converter.

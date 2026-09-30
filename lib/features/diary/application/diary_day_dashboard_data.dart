@@ -8,6 +8,10 @@ import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
 part 'diary_day_dashboard_data.g.dart';
 
+// Temporary compatibility, added in 3.4.1: the JSON defaults, unknown enum
+// fallbacks, and flexible converters in this file go from 3.7.0 on, once a
+// migration has re-saved the stored data in the strict shape.
+
 /// Render-ready diary dashboard data for one selected day.
 @JsonSerializable(
   fieldRename: FieldRename.snake,

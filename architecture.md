@@ -472,9 +472,10 @@ Much existing code breaks these rules. It is not precedent.
   `FlexibleDateTimeConverter`, `FlexibleDoubleConverter`, `_readIntOrZero`,
   `_readDateTimeOrNow`, and `readJsonDateTime`. Report them and NEVER remove
   them on your own (see [Hygiene](#12-hygiene)). The tolerant calorie
-  readers and the tolerant user profile decoder came back in 3.4.1; they go
-  from 3.7.0 on, once a migration has re-saved the private documents in the
-  strict shape.
+  readers and the tolerant user profile decoder came back in 3.4.1; every
+  file that holds them carries `Temporary compatibility, added in 3.4.1`.
+  They go from 3.7.0 on, once a migration has re-saved the private documents
+  in the strict shape.
 
 ### Rules for Legacy Code
 

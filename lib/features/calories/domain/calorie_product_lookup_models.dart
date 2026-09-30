@@ -5,6 +5,10 @@ import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 
 part 'calorie_product_lookup_models.g.dart';
 
+// Temporary compatibility, added in 3.4.1: the JSON defaults, unknown enum
+// fallbacks, and flexible converters in this file go from 3.7.0 on, once a
+// migration has re-saved the stored data in the strict shape.
+
 /// Defines calorie product source.
 @JsonEnum(valueField: 'jsonValue')
 enum CalorieProductSource {
