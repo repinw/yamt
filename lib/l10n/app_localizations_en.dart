@@ -5205,4 +5205,220 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryQuickEatSearchDescription => 'Find a food by name or brand';
+
+  @override
+  String diaryCheckInRunKicker(int run, String range) {
+    return 'Run $run · $range';
+  }
+
+  @override
+  String diaryCheckInRangeKicker(String range) {
+    return '$range';
+  }
+
+  @override
+  String get diaryCheckInReviewTitle => 'Week done';
+
+  @override
+  String get diaryCheckInBlockedTitle => 'Check-in needs data';
+
+  @override
+  String diaryCheckInGoalSince(String weight, String date) {
+    return 'Goal $weight kg · since $date';
+  }
+
+  @override
+  String diaryCheckInSince(String date) {
+    return 'Since $date';
+  }
+
+  @override
+  String get diaryCheckInTrendFact => 'Trend';
+
+  @override
+  String diaryCheckInTrendChange(String change) {
+    return '$change kg since start';
+  }
+
+  @override
+  String get diaryCheckInEatenFact => 'Eaten';
+
+  @override
+  String get diaryCheckInPerDay => 'kcal / day';
+
+  @override
+  String get diaryCheckInTrainingFact => 'Training';
+
+  @override
+  String get diaryCheckInTrainingDaysCaption => 'days in the run';
+
+  @override
+  String get diaryCheckInWeightChart => 'Weight';
+
+  @override
+  String get diaryCheckInWeighIn => 'Weigh-in';
+
+  @override
+  String get diaryCheckInTrend => 'Trend';
+
+  @override
+  String get diaryCheckInTdeeChart => 'Expenditure (TDEE) per run';
+
+  @override
+  String get diaryCheckInUseMeasured => 'Use the measured one';
+
+  @override
+  String diaryCheckInUseMeasuredDetail(String kcal) {
+    return 'TDEE $kcal from this run';
+  }
+
+  @override
+  String get diaryCheckInKeepPrevious => 'Keep the previous one';
+
+  @override
+  String diaryCheckInKeepPreviousDetail(String kcal) {
+    return 'TDEE $kcal, goal as last week';
+  }
+
+  @override
+  String get diaryCheckInGoalKcalCaption => 'kcal goal';
+
+  @override
+  String get diaryCheckInChangeGoal => 'Change goal';
+
+  @override
+  String get diaryCheckInChangeGoalDetail => 'Set a new goal weight or pace';
+
+  @override
+  String get diaryCheckInNext => 'Next';
+
+  @override
+  String get diaryCheckInBack => 'Back';
+
+  @override
+  String get diaryCheckInTrainingTitle => 'When do you train?';
+
+  @override
+  String get diaryCheckInTrainingSubtitle =>
+      'Suggested: your days from the last run';
+
+  @override
+  String get diaryCheckInSessions => 'Sessions';
+
+  @override
+  String get diaryCheckInSameAsLastRun => 'Like last run';
+
+  @override
+  String get diaryCheckInNoSession => 'No session';
+
+  @override
+  String get diaryCheckInAverageGoal => 'Daily goal on average';
+
+  @override
+  String get diaryCheckInMeasuredSource => 'measured';
+
+  @override
+  String get diaryCheckInPreviousSource => 'previous';
+
+  @override
+  String diaryCheckInGoalChange(String change) {
+    return '$change to last week';
+  }
+
+  @override
+  String diaryCheckInDayCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryCheckInMacros => 'Macros';
+
+  @override
+  String get diaryCheckInMacrosPrevious => 'before';
+
+  @override
+  String get diaryCheckInMacrosNew => 'new';
+
+  @override
+  String diaryCheckInGramsValue(int grams) {
+    return '$grams g';
+  }
+
+  @override
+  String get diaryCheckInMacroWeight => 'Weight for macros';
+
+  @override
+  String diaryCheckInMacroWeightDetail(String weight) {
+    return 'Protein and fat count against $weight kg.';
+  }
+
+  @override
+  String get diaryCheckInStartWeek => 'Start the week';
+
+  @override
+  String get diaryCheckInGoalReachedKicker => 'Goal reached';
+
+  @override
+  String get diaryCheckInGoalReachedTitle => 'Congratulations!';
+
+  @override
+  String diaryCheckInGoalReachedBody(int weeks) {
+    String _temp0 = intl.Intl.pluralLogic(
+      weeks,
+      locale: localeName,
+      other: '$weeks weeks',
+      one: '1 week',
+    );
+    return 'You reached your goal weight in $_temp0.';
+  }
+
+  @override
+  String get diaryCheckInStartFact => 'Start';
+
+  @override
+  String get diaryCheckInTodayFact => 'Now';
+
+  @override
+  String get diaryCheckInDoneFact => 'Done';
+
+  @override
+  String diaryCheckInPerWeek(String change) {
+    return '$change kg / week';
+  }
+
+  @override
+  String get diaryCheckInStartNewGoal => 'Start a new goal';
+
+  @override
+  String get diaryCheckInClose => 'Close';
+
+  @override
+  String get diaryCheckInLoadFailed => 'Could not load the check-in.';
+
+  @override
+  String get diaryCheckInTrainingDaysFailed =>
+      'Could not save the training days.';
+
+  @override
+  String get diaryCheckInPreviewAction => 'Preview weekly check-in';
+
+  @override
+  String get diaryCheckInGoalReachedPreviewAction => 'Preview goal reached';
+
+  @override
+  String diaryCheckInPreviewResult(String action, int days) {
+    return 'Preview: $action, $days training days, nothing saved';
+  }
+
+  @override
+  String get diaryCheckInMissingDataPreviewAction => 'Preview missing data';
+
+  @override
+  String get homeMenuDebugSection => 'Debug';
 }

@@ -8888,6 +8888,354 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Find a food by name or brand'**
   String get diaryQuickEatSearchDescription;
+
+  /// No description provided for @diaryCheckInRunKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Run {run} · {range}'**
+  String diaryCheckInRunKicker(int run, String range);
+
+  /// No description provided for @diaryCheckInRangeKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'{range}'**
+  String diaryCheckInRangeKicker(String range);
+
+  /// No description provided for @diaryCheckInReviewTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Week done'**
+  String get diaryCheckInReviewTitle;
+
+  /// No description provided for @diaryCheckInBlockedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check-in needs data'**
+  String get diaryCheckInBlockedTitle;
+
+  /// No description provided for @diaryCheckInGoalSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal {weight} kg · since {date}'**
+  String diaryCheckInGoalSince(String weight, String date);
+
+  /// No description provided for @diaryCheckInSince.
+  ///
+  /// In en, this message translates to:
+  /// **'Since {date}'**
+  String diaryCheckInSince(String date);
+
+  /// No description provided for @diaryCheckInTrendFact.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get diaryCheckInTrendFact;
+
+  /// No description provided for @diaryCheckInTrendChange.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} kg since start'**
+  String diaryCheckInTrendChange(String change);
+
+  /// No description provided for @diaryCheckInEatenFact.
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten'**
+  String get diaryCheckInEatenFact;
+
+  /// No description provided for @diaryCheckInPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal / day'**
+  String get diaryCheckInPerDay;
+
+  /// No description provided for @diaryCheckInTrainingFact.
+  ///
+  /// In en, this message translates to:
+  /// **'Training'**
+  String get diaryCheckInTrainingFact;
+
+  /// No description provided for @diaryCheckInTrainingDaysCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'days in the run'**
+  String get diaryCheckInTrainingDaysCaption;
+
+  /// No description provided for @diaryCheckInWeightChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get diaryCheckInWeightChart;
+
+  /// No description provided for @diaryCheckInWeighIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh-in'**
+  String get diaryCheckInWeighIn;
+
+  /// No description provided for @diaryCheckInTrend.
+  ///
+  /// In en, this message translates to:
+  /// **'Trend'**
+  String get diaryCheckInTrend;
+
+  /// No description provided for @diaryCheckInTdeeChart.
+  ///
+  /// In en, this message translates to:
+  /// **'Expenditure (TDEE) per run'**
+  String get diaryCheckInTdeeChart;
+
+  /// No description provided for @diaryCheckInUseMeasured.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the measured one'**
+  String get diaryCheckInUseMeasured;
+
+  /// No description provided for @diaryCheckInUseMeasuredDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE {kcal} from this run'**
+  String diaryCheckInUseMeasuredDetail(String kcal);
+
+  /// No description provided for @diaryCheckInKeepPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep the previous one'**
+  String get diaryCheckInKeepPrevious;
+
+  /// No description provided for @diaryCheckInKeepPreviousDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'TDEE {kcal}, goal as last week'**
+  String diaryCheckInKeepPreviousDetail(String kcal);
+
+  /// No description provided for @diaryCheckInGoalKcalCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'kcal goal'**
+  String get diaryCheckInGoalKcalCaption;
+
+  /// No description provided for @diaryCheckInChangeGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Change goal'**
+  String get diaryCheckInChangeGoal;
+
+  /// No description provided for @diaryCheckInChangeGoalDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Set a new goal weight or pace'**
+  String get diaryCheckInChangeGoalDetail;
+
+  /// No description provided for @diaryCheckInNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get diaryCheckInNext;
+
+  /// No description provided for @diaryCheckInBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get diaryCheckInBack;
+
+  /// No description provided for @diaryCheckInTrainingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'When do you train?'**
+  String get diaryCheckInTrainingTitle;
+
+  /// No description provided for @diaryCheckInTrainingSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested: your days from the last run'**
+  String get diaryCheckInTrainingSubtitle;
+
+  /// No description provided for @diaryCheckInSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get diaryCheckInSessions;
+
+  /// No description provided for @diaryCheckInSameAsLastRun.
+  ///
+  /// In en, this message translates to:
+  /// **'Like last run'**
+  String get diaryCheckInSameAsLastRun;
+
+  /// No description provided for @diaryCheckInNoSession.
+  ///
+  /// In en, this message translates to:
+  /// **'No session'**
+  String get diaryCheckInNoSession;
+
+  /// No description provided for @diaryCheckInAverageGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal on average'**
+  String get diaryCheckInAverageGoal;
+
+  /// No description provided for @diaryCheckInMeasuredSource.
+  ///
+  /// In en, this message translates to:
+  /// **'measured'**
+  String get diaryCheckInMeasuredSource;
+
+  /// No description provided for @diaryCheckInPreviousSource.
+  ///
+  /// In en, this message translates to:
+  /// **'previous'**
+  String get diaryCheckInPreviousSource;
+
+  /// No description provided for @diaryCheckInGoalChange.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} to last week'**
+  String diaryCheckInGoalChange(String change);
+
+  /// No description provided for @diaryCheckInDayCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day} other{{count} days}}'**
+  String diaryCheckInDayCount(int count);
+
+  /// No description provided for @diaryCheckInMacros.
+  ///
+  /// In en, this message translates to:
+  /// **'Macros'**
+  String get diaryCheckInMacros;
+
+  /// No description provided for @diaryCheckInMacrosPrevious.
+  ///
+  /// In en, this message translates to:
+  /// **'before'**
+  String get diaryCheckInMacrosPrevious;
+
+  /// No description provided for @diaryCheckInMacrosNew.
+  ///
+  /// In en, this message translates to:
+  /// **'new'**
+  String get diaryCheckInMacrosNew;
+
+  /// No description provided for @diaryCheckInGramsValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g'**
+  String diaryCheckInGramsValue(int grams);
+
+  /// No description provided for @diaryCheckInMacroWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight for macros'**
+  String get diaryCheckInMacroWeight;
+
+  /// No description provided for @diaryCheckInMacroWeightDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Protein and fat count against {weight} kg.'**
+  String diaryCheckInMacroWeightDetail(String weight);
+
+  /// No description provided for @diaryCheckInStartWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Start the week'**
+  String get diaryCheckInStartWeek;
+
+  /// No description provided for @diaryCheckInGoalReachedKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Goal reached'**
+  String get diaryCheckInGoalReachedKicker;
+
+  /// No description provided for @diaryCheckInGoalReachedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations!'**
+  String get diaryCheckInGoalReachedTitle;
+
+  /// No description provided for @diaryCheckInGoalReachedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You reached your goal weight in {weeks, plural, =1{1 week} other{{weeks} weeks}}.'**
+  String diaryCheckInGoalReachedBody(int weeks);
+
+  /// No description provided for @diaryCheckInStartFact.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get diaryCheckInStartFact;
+
+  /// No description provided for @diaryCheckInTodayFact.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get diaryCheckInTodayFact;
+
+  /// No description provided for @diaryCheckInDoneFact.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get diaryCheckInDoneFact;
+
+  /// No description provided for @diaryCheckInPerWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'{change} kg / week'**
+  String diaryCheckInPerWeek(String change);
+
+  /// No description provided for @diaryCheckInStartNewGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a new goal'**
+  String get diaryCheckInStartNewGoal;
+
+  /// No description provided for @diaryCheckInClose.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get diaryCheckInClose;
+
+  /// No description provided for @diaryCheckInLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the check-in.'**
+  String get diaryCheckInLoadFailed;
+
+  /// No description provided for @diaryCheckInTrainingDaysFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the training days.'**
+  String get diaryCheckInTrainingDaysFailed;
+
+  /// No description provided for @diaryCheckInPreviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview weekly check-in'**
+  String get diaryCheckInPreviewAction;
+
+  /// No description provided for @diaryCheckInGoalReachedPreviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview goal reached'**
+  String get diaryCheckInGoalReachedPreviewAction;
+
+  /// No description provided for @diaryCheckInPreviewResult.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview: {action}, {days} training days, nothing saved'**
+  String diaryCheckInPreviewResult(String action, int days);
+
+  /// No description provided for @diaryCheckInMissingDataPreviewAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview missing data'**
+  String get diaryCheckInMissingDataPreviewAction;
+
+  /// No description provided for @homeMenuDebugSection.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug'**
+  String get homeMenuDebugSection;
 }
 
 class _AppLocalizationsDelegate

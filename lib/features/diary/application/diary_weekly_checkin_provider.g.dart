@@ -102,6 +102,149 @@ final class DiaryWeeklyCheckInDataProvider
 String _$diaryWeeklyCheckInDataHash() =>
     r'2575f93ab69a8f0f903d7ec33c551883f7dbc0b7';
 
+/// Plan of the pending weekly check-in consumed by diary UI.
+
+@ProviderFor(diaryWeeklyCheckInPlan)
+final diaryWeeklyCheckInPlanProvider = DiaryWeeklyCheckInPlanProvider._();
+
+/// Plan of the pending weekly check-in consumed by diary UI.
+
+final class DiaryWeeklyCheckInPlanProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DiaryWeeklyCheckInPlan?>,
+          DiaryWeeklyCheckInPlan?,
+          FutureOr<DiaryWeeklyCheckInPlan?>
+        >
+    with
+        $FutureModifier<DiaryWeeklyCheckInPlan?>,
+        $FutureProvider<DiaryWeeklyCheckInPlan?> {
+  /// Plan of the pending weekly check-in consumed by diary UI.
+  DiaryWeeklyCheckInPlanProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'diaryWeeklyCheckInPlanProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$diaryWeeklyCheckInPlanHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<DiaryWeeklyCheckInPlan?> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<DiaryWeeklyCheckInPlan?> create(Ref ref) {
+    return diaryWeeklyCheckInPlan(ref);
+  }
+}
+
+String _$diaryWeeklyCheckInPlanHash() =>
+    r'a33f179035cf791d14d0914a8c101c0355145e65';
+
+/// Plan of the latest completed window, for the debug preview.
+
+@ProviderFor(diaryWeeklyCheckInPreviewPlan)
+final diaryWeeklyCheckInPreviewPlanProvider =
+    DiaryWeeklyCheckInPreviewPlanProvider._();
+
+/// Plan of the latest completed window, for the debug preview.
+
+final class DiaryWeeklyCheckInPreviewPlanProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DiaryWeeklyCheckInPlan?>,
+          DiaryWeeklyCheckInPlan?,
+          FutureOr<DiaryWeeklyCheckInPlan?>
+        >
+    with
+        $FutureModifier<DiaryWeeklyCheckInPlan?>,
+        $FutureProvider<DiaryWeeklyCheckInPlan?> {
+  /// Plan of the latest completed window, for the debug preview.
+  DiaryWeeklyCheckInPreviewPlanProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'diaryWeeklyCheckInPreviewPlanProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$diaryWeeklyCheckInPreviewPlanHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<DiaryWeeklyCheckInPlan?> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<DiaryWeeklyCheckInPlan?> create(Ref ref) {
+    return diaryWeeklyCheckInPreviewPlan(ref);
+  }
+}
+
+String _$diaryWeeklyCheckInPreviewPlanHash() =>
+    r'37dd7b913eab5433325cee5f5ddcc2b996a3a5a8';
+
+/// Check-in data of the latest completed window, for the debug preview.
+
+@ProviderFor(diaryWeeklyCheckInPreviewData)
+final diaryWeeklyCheckInPreviewDataProvider =
+    DiaryWeeklyCheckInPreviewDataProvider._();
+
+/// Check-in data of the latest completed window, for the debug preview.
+
+final class DiaryWeeklyCheckInPreviewDataProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<DiaryWeeklyCheckInData>,
+          DiaryWeeklyCheckInData,
+          FutureOr<DiaryWeeklyCheckInData>
+        >
+    with
+        $FutureModifier<DiaryWeeklyCheckInData>,
+        $FutureProvider<DiaryWeeklyCheckInData> {
+  /// Check-in data of the latest completed window, for the debug preview.
+  DiaryWeeklyCheckInPreviewDataProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'diaryWeeklyCheckInPreviewDataProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$diaryWeeklyCheckInPreviewDataHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<DiaryWeeklyCheckInData> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<DiaryWeeklyCheckInData> create(Ref ref) {
+    return diaryWeeklyCheckInPreviewData(ref);
+  }
+}
+
+String _$diaryWeeklyCheckInPreviewDataHash() =>
+    r'795ea86afe6fadf7a8a14a84173d72f76178ba3c';
+
 /// Whether [selectedDay] currently has calorie entries in the weekly window.
 
 @ProviderFor(diaryWeeklyCheckInSelectedDayHasEntries)
@@ -238,4 +381,4 @@ final class DiaryWeeklyCheckInActionsProvider
 }
 
 String _$diaryWeeklyCheckInActionsHash() =>
-    r'48eddf0876f4c2a2689559b26392aa59b5d43bb5';
+    r'5773edf25d13dddcd508d2a1f0e251b667fdb830';
