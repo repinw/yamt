@@ -6,6 +6,7 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
@@ -241,7 +242,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
           macroTargets: macroTargets,
         ),
         carryoverMacroDelta: resolveDiaryCarryoverMacroDelta(
-          ref,
+          ref.read(dailyNutritionTargetResolverProvider),
           day: normalizedDay,
           goalKcal: goalKcal,
           carryoverKcal: carryoverKcal,

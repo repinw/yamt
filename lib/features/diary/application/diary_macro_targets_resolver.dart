@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
+import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 /// Resolves the macro targets of [day] from user preferences and calorie goal.
@@ -28,12 +29,11 @@ DiaryMacroTargets resolveDiaryMacroTargets(
 /// Resolves how much [carryoverKcal] changes the macro targets of [day]: the
 /// targets with the carryover minus the targets without it.
 DiaryMacroTargets resolveDiaryCarryoverMacroDelta(
-  Ref ref, {
+  DailyNutritionTargetResolver resolver, {
   required DateTime day,
   required double goalKcal,
   required double carryoverKcal,
 }) {
-  final resolver = ref.read(dailyNutritionTargetResolverProvider);
   final withCarryover = resolver.resolveTarget(
     day: day,
     goalKcal: goalKcal,
