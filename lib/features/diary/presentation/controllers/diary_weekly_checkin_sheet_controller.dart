@@ -94,12 +94,12 @@ class DiaryWeeklyCheckInSheetController
         plan: plan,
         step: previous.step,
         useMeasured: previous.useMeasured && plan.measurement != null,
-        trainingDays: Set<DateTime>.unmodifiable(
-          previous.trainingDays.where(
-            (day) =>
-                plan.nextRunDays.contains(day) && !plan.pauseDays.contains(day),
+        trainingDays: Set<DateTime>.unmodifiable({
+          ...previous.trainingDays.where(
+            (day) => plan.nextRunDays.contains(day) && plan.canChangeDay(day),
           ),
-        ),
+          ...plan.suggestedTrainingDays.where(plan.pastDays.contains),
+        }),
       );
     }
     return DiaryWeeklyCheckInSheetState(
@@ -137,7 +137,7 @@ class DiaryWeeklyCheckInSheetController
   /// Turns [day] into a training day or back into a rest day.
   void toggleTrainingDay(DateTime day) {
     _update((current) {
-      if (current.plan.pauseDays.contains(day)) {
+      if (!current.plan.canChangeDay(day)) {
         return current;
       }
       final days = Set<DateTime>.of(current.trainingDays);
@@ -157,8 +157,16 @@ class DiaryWeeklyCheckInSheetController
     );
   }
 
-  /// Plans no training day.
+  /// Plans no training day. Past days keep their type.
   void clearTrainingDays() {
-    _update((current) => current.copyWith(trainingDays: const {}));
+    _update(
+      (current) => current.copyWith(
+        trainingDays: Set.unmodifiable(
+          current.plan.suggestedTrainingDays.where(
+            current.plan.pastDays.contains,
+          ),
+        ),
+      ),
+    );
   }
 }

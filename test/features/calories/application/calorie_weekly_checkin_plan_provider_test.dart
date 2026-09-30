@@ -39,11 +39,11 @@ CalorieGoalSettings _settings() {
   );
 }
 
-ProviderContainer _container(CalorieWeeklyCheckInData data) {
+ProviderContainer _container(CalorieWeeklyCheckInData data, {DateTime? today}) {
   final container = ProviderContainer(
     overrides: [
       appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-      clockProvider.overrideWithValue(() => _today),
+      clockProvider.overrideWithValue(() => today ?? _today),
       calorieGoalControllerProvider.overrideWith(
         () => _FakeCalorieGoalController(_settings()),
       ),
@@ -110,5 +110,27 @@ void main() {
       await container.read(calorieWeeklyCheckInPlanProvider.future),
       isNull,
     );
+  });
+
+  test('a late check-in keeps the past days of the run', () async {
+    final data = calorieWeeklyCheckInDemoData(today: DateTime(2026, 9, 15));
+    final container = _container(data, today: DateTime(2026, 9, 17, 9));
+    final subscription = container.listen(
+      calorieWeeklyCheckInPlanProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+
+    final plan = (await container.read(
+      calorieWeeklyCheckInPlanProvider.future,
+    ))!;
+
+    expect(plan.nextRunNumber, 3);
+    expect(plan.pastDays, {DateTime(2026, 9, 15), DateTime(2026, 9, 16)});
+    expect(plan.canChangeDay(DateTime(2026, 9, 16)), isFalse);
+    expect(plan.suggestedTrainingDays, {
+      DateTime(2026, 9, 17),
+      DateTime(2026, 9, 21),
+    });
   });
 }

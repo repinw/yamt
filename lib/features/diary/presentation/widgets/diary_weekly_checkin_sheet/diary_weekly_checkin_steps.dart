@@ -143,9 +143,9 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
   String _nextRunKicker(AppLocalizations l10n) {
     final days = state.plan.nextRunDays;
     final range = format.range(days.first, days.last);
-    final run = state.plan.reviewedRunNumber;
+    final run = state.plan.nextRunNumber;
     return run == null
         ? l10n.diaryCheckInRangeKicker(range)
-        : l10n.diaryCheckInRunKicker(run + 1, range);
+        : l10n.diaryCheckInRunKicker(run, range);
   }
 }

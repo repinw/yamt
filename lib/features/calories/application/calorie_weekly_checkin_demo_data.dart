@@ -120,6 +120,7 @@ CalorieWeeklyCheckInPlan calorieWeeklyCheckInDemoPlan({
   ];
   return CalorieWeeklyCheckInPlan(
     reviewedRunNumber: _demoRunNumber,
+    nextRunNumber: _demoRunNumber + 1,
     reviewedDays: (start: window.windowStartDate, end: window.windowEndDate),
     previousTrainingDayCount: _demoTrainingOffsets.length,
     nextRunDays: nextRunDays,
@@ -127,6 +128,8 @@ CalorieWeeklyCheckInPlan calorieWeeklyCheckInDemoPlan({
       for (final offset in _demoTrainingOffsets) nextRunDays[offset],
     },
     pauseDays: const {},
+    pastDays: const {},
+    hasWeeklyTrainingSchedule: true,
     sessionKcal: _demoSessionKcal,
     previousTdeeKcal: _demoPreviousTdeeKcal,
     previousGoalKcal: _demoPreviousGoalKcal,

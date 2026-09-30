@@ -19,11 +19,14 @@ class CalorieWeeklyCheckInPlan {
   /// Creates the plan of a weekly check-in.
   const new({
     required this.reviewedRunNumber,
+    required this.nextRunNumber,
     required this.reviewedDays,
     required this.previousTrainingDayCount,
     required this.nextRunDays,
     required this.suggestedTrainingDays,
     required this.pauseDays,
+    required this.pastDays,
+    required this.hasWeeklyTrainingSchedule,
     required this.sessionKcal,
     required this.previousTdeeKcal,
     required this.previousGoalKcal,
@@ -39,6 +42,9 @@ class CalorieWeeklyCheckInPlan {
   /// Number of the run that the check-in looks back on, if known.
   final int? reviewedRunNumber;
 
+  /// Number of the run that the check-in plans, if known.
+  final int? nextRunNumber;
+
   /// First and last day of the run that the check-in looks back on.
   final ({DateTime start, DateTime end}) reviewedDays;
 
@@ -49,10 +55,23 @@ class CalorieWeeklyCheckInPlan {
   final List<DateTime> nextRunDays;
 
   /// Days of the next run that train on the weekdays of the reviewed run.
+  /// Past days keep their type.
   final Set<DateTime> suggestedTrainingDays;
 
   /// Days of the next run that are pause days. They cannot train.
   final Set<DateTime> pauseDays;
+
+  /// Days of the next run before today, after a late check-in. They keep
+  /// their type, because their calorie goals were already in use.
+  final Set<DateTime> pastDays;
+
+  /// Whether the goal has weekly training days. Like the diary targets, the
+  /// macros then count training even in a run without a session.
+  final bool hasWeeklyTrainingSchedule;
+
+  /// Whether the planning may change the type of [day].
+  bool canChangeDay(DateTime day) =>
+      !pauseDays.contains(day) && !pastDays.contains(day);
 
   /// kcal of one training session.
   final double sessionKcal;
@@ -106,12 +125,13 @@ class CalorieWeeklyCheckInPlan {
       macros: _macros(
         goalKcal: goalKcal,
         macroWeightKg: newMacroWeightKg ?? previousMacroWeightKg,
-        hasTrainingDays: trainingDays > 0,
+        hasTrainingDays: hasWeeklyTrainingSchedule || trainingDays > 0,
       ),
       previousMacros: _macros(
         goalKcal: previousGoalKcal,
         macroWeightKg: previousMacroWeightKg,
-        hasTrainingDays: previousTrainingDayCount > 0,
+        hasTrainingDays:
+            hasWeeklyTrainingSchedule || previousTrainingDayCount > 0,
       ),
       macroWeightKg: macroCountedWeightKg(
         profile: profile,
