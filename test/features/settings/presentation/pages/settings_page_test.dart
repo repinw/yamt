@@ -288,6 +288,7 @@ void main() {
           uid: 'uid-123',
           email: 'jane@example.com',
           displayName: 'Jane Doe',
+          isAnonymous: false,
         ),
       ),
     );
@@ -303,7 +304,11 @@ void main() {
       tester,
       appVersionOverride: (ref) async => '1.1.0+2',
       userProfile: Stream.value(
-        const UserProfile(uid: 'uid-123', email: 'jane@example.com'),
+        const UserProfile(
+          uid: 'uid-123',
+          email: 'jane@example.com',
+          isAnonymous: false,
+        ),
       ),
     );
     await tester.pumpAndSettle();

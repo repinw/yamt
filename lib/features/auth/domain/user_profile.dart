@@ -13,11 +13,11 @@ abstract class UserProfile with _$UserProfile {
   /// exists.
   const factory({
     required String uid,
+    required bool isAnonymous,
     String? householdId,
     String? ownHouseholdId,
     String? email,
     String? displayName,
-    @Default(false) bool isAnonymous,
   }) = _UserProfile;
 
   /// Decodes profile from JSON.

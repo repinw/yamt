@@ -4,7 +4,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/auth/data/user_profile_dto.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 
 part 'auth_service.g.dart';
@@ -47,25 +46,38 @@ Future<UserProfile> _syncUserProfile(
   DocumentSnapshot<Map<String, dynamic>> snapshot,
   User user,
 ) async {
-  final storedProfile = decodeUserProfileDocument(
-    snapshot.data() ?? const <String, dynamic>{},
-    snapshot.id,
-  );
-  final syncedProfile = storedProfile.copyWith(
+  final data = snapshot.data();
+  final syncedProfile = UserProfile(
     uid: user.uid,
-    email: normalizeOptionalUserProfileValue(user.email),
-    displayName: normalizeOptionalUserProfileValue(user.displayName),
     isAnonymous: user.isAnonymous,
+    email: _normalizeOptionalValue(user.email),
+    displayName: _normalizeOptionalValue(user.displayName),
+    householdId: data?['householdId'] as String?,
+    ownHouseholdId: data?['ownHouseholdId'] as String?,
   );
-  if (snapshot.exists && storedProfile == syncedProfile) {
-    return storedProfile;
-  }
-
-  await document.set(<String, dynamic>{
+  final accountFields = <String, Object?>{
     'uid': syncedProfile.uid,
     'email': syncedProfile.email,
     'displayName': syncedProfile.displayName,
     'isAnonymous': syncedProfile.isAnonymous,
-  }, SetOptions(merge: true));
+  };
+  final isInSync =
+      data != null &&
+      accountFields.entries.every(
+        (field) =>
+            data.containsKey(field.key) && data[field.key] == field.value,
+      );
+  if (!isInSync) {
+    await document.set(accountFields, SetOptions(merge: true));
+  }
   return syncedProfile;
+}
+
+/// Trims an empty account value down to `null`.
+String? _normalizeOptionalValue(String? value) {
+  final normalized = value?.trim();
+  if (normalized == null || normalized.isEmpty) {
+    return null;
+  }
+  return normalized;
 }

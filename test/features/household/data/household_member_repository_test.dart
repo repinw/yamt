@@ -42,11 +42,17 @@ void main() {
     await addMember('early', 'member', DateTime(2026, 2));
     await firestore.doc('users/admin').set(<String, dynamic>{
       'uid': 'admin',
+      'isAnonymous': false,
       'displayName': 'Alex',
       'email': 'alex@example.com',
     });
+    await firestore.doc('users/late').set(<String, dynamic>{
+      'uid': 'late',
+      'isAnonymous': false,
+    });
     await firestore.doc('users/early').set(<String, dynamic>{
       'uid': 'early',
+      'isAnonymous': false,
       'email': 'early@example.com',
     });
   });
