@@ -57,7 +57,14 @@ Future<UserProfile> _syncUserProfile(
     displayName: normalizeOptionalUserProfileValue(user.displayName),
     isAnonymous: user.isAnonymous,
   );
-  if (snapshot.exists && storedProfile == syncedProfile) {
+  // Temporary migration, added in 3.4.1: profiles saved without uid or
+  // isAnonymous are written once, so the tolerant decoder can go in 3.7.0.
+  final data = snapshot.data();
+  final hasAccountFields =
+      data != null &&
+      data.containsKey('uid') &&
+      data.containsKey('isAnonymous');
+  if (hasAccountFields && storedProfile == syncedProfile) {
     return storedProfile;
   }
 
