@@ -535,4 +535,5 @@ strings. Report existing compatibility code in changed files to the user.
    baseline still has clones, so the command itself fails.
 7. The change leaves no unreachable file and no unused symbol (step 4).
 8. After a UI change, the integration tests of the affected features pass on
-   the emulator.
+   the emulator. CI runs them after the merge to `master`, not on the pull
+   request; a failed run opens an issue, which the next change fixes first.
