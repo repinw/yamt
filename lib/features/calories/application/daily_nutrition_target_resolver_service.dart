@@ -9,8 +9,8 @@ import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.dart';
 import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/macro_carryover_calculator.dart';
+import 'package:yamt/features/calories/domain/macro_day_targets.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
-import 'package:yamt/features/calories/domain/macro_reference_weight.dart';
 
 part 'daily_nutrition_target_resolver_service.g.dart';
 
@@ -37,33 +37,23 @@ class DailyNutritionTargetResolverService
     final dayProfile =
         settings?.goalEntryForDay(day)?.calculatorProfile ?? profile;
     final isTraining = settings?.isTrainingDay(day) ?? false;
-    final isMale =
-        (profile?.sex ?? CalorieCalculatorSex.male) ==
-        CalorieCalculatorSex.male;
     final macroWeightKg = settings?.macroWeightKgForDay(day);
-    final weightKg = profile == null || macroWeightKg == null
-        ? (isMale ? 80.0 : 65.0)
-        : macroReferenceWeightKg(
-            weightKg: macroWeightKg,
-            heightCm: profile.heightCm,
-          );
+    final weightKg = macroCountedWeightKg(
+      profile: profile,
+      macroWeightKg: macroWeightKg,
+    );
 
-    final fatGramsPerKg = macroSettings.effectiveFatMultiplier(isMale: isMale);
-    final proteinGrams = macroSettings.resolveProteinGrams(
-      referenceWeightKg: weightKg,
+    final baseResult = resolveMacroDayTargets(
+      macroSettings: macroSettings,
+      profile: profile,
+      macroWeightKg: macroWeightKg,
+      goalKcal: goalKcal,
       baseGoalKcal: settings?.baseGoalKcalForDay(day) ?? goalKcal,
-      fatGrams: weightKg * fatGramsPerKg,
       // A training day set only for this day counts too, not only the
       // weekly schedule.
       hasTrainingDays:
           (dayProfile?.trainingWeekdays.isNotEmpty ?? false) || isTraining,
       isLosingWeight: dayProfile?.goalMode == CalorieGoalMode.lose,
-    );
-    final baseResult = MacroBudgetCalculator.calculate(
-      goalKcal: goalKcal,
-      weightKg: weightKg,
-      proteinGramsPerKg: proteinGrams / weightKg,
-      fatGramsPerKg: fatGramsPerKg,
     );
 
     final adjustedMacros = _applyCarryoverIfNeeded(
