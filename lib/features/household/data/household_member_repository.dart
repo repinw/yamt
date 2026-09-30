@@ -12,6 +12,10 @@ import 'package:yamt/features/household/domain/household_member.dart';
 
 part 'household_member_repository.g.dart';
 
+// Temporary compatibility, added in 3.4.1: the tolerant profile reading in
+// this file goes from 3.7.0 on, once every stored profile holds uid and
+// isAnonymous.
+
 const _householdsCollection = 'households';
 const _membersCollection = 'members';
 const _usersCollection = 'users';

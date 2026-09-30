@@ -2,6 +2,10 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'burn_week_run_state.g.dart';
 
+// Temporary compatibility, added in 3.4.1: the JSON defaults, unknown enum
+// fallbacks, and flexible converters in this file go from 3.7.0 on, once a
+// migration has re-saved the stored data in the strict shape.
+
 /// Number of days in one Burn Week.
 const int burnWeekDaysPerWeek = 7;
 

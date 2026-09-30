@@ -9,6 +9,10 @@ import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_
 
 part 'calorie_goal_settings.g.dart';
 
+// Temporary compatibility, added in 3.4.1: the JSON defaults, unknown enum
+// fallbacks, and flexible converters in this file go from 3.7.0 on, once a
+// migration has re-saved the stored data in the strict shape.
+
 /// The default daily calorie goal kcal.
 const defaultDailyCalorieGoalKcal = 2500.0;
 

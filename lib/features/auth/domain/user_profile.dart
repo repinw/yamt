@@ -3,6 +3,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'user_profile.freezed.dart';
 part 'user_profile.g.dart';
 
+// Temporary compatibility, added in 3.4.1: the tolerant profile reading in
+// this file goes from 3.7.0 on, once every stored profile holds uid and
+// isAnonymous.
+
 /// Persisted account profile used for household membership and member lists.
 @freezed
 abstract class UserProfile with _$UserProfile {
