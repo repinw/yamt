@@ -87,24 +87,26 @@ class UserDataKeyRepository {
     return _saveFlag(_freshStartPendingName(uid), value: pending);
   }
 
-  /// Adds the fields that older app versions did not write to the private
-  /// documents of [uid]. Runs once per device and account.
-  ///
-  /// Temporary migration, added in 3.4.1: calorie entries saved before 3.3.0
-  /// lack `is_quick_entry`. Removed in 3.7.0.
-  Future<void> migratePrivateData(String uid, PayloadCipher cipher) async {
-    final flagName = _privateDataMigratedName(uid);
-    if (await _loadFlag(flagName)) {
+  /// Temporary migration, added in 3.4.1: removed in 3.7.0. Adds
+  /// `is_quick_entry` to calorie entries saved before 3.3.0, once per device.
+  Future<void> migratePrivateData(
+    String uid,
+    PayloadCipher cipher, {
+    required bool dataKeyIsNew,
+  }) async {
+    if (await _loadFlag(_privateDataMigratedName(uid))) {
       return;
     }
-    await backfillPayloadFields(
-      collection: _firestore.collection(
-        '$_usersCollection/$uid/calorie_entries',
-      ),
-      cipher: cipher,
-      defaults: const <String, Object?>{'is_quick_entry': false},
-    );
-    await _saveFlag(flagName, value: true);
+    if (!dataKeyIsNew) {
+      await backfillPayloadFields(
+        collection: _firestore.collection(
+          '$_usersCollection/$uid/calorie_entries',
+        ),
+        cipher: cipher,
+        defaults: const <String, Object?>{'is_quick_entry': false},
+      );
+    }
+    await _saveFlag(_privateDataMigratedName(uid), value: true);
   }
 
   /// Deletes everything this device and the platform backup store for [uid].
@@ -113,6 +115,7 @@ class UserDataKeyRepository {
       _dataKeyName(uid),
       _recoveryKeyName(uid),
       _recoveryKeyConfirmedName(uid),
+      _privateDataMigratedName(uid),
     ]) {
       await _storage.delete(key: name);
     }

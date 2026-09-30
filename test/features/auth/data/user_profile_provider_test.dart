@@ -91,4 +91,23 @@ void main() {
     expect(stored['householdId'], 'shared-1');
     expect(stored['ownHouseholdId'], 'own-1');
   });
+
+  test(
+    'userProfileProvider adds isAnonymous to a profile that lacks it',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.doc('users/user-1').set(<String, dynamic>{
+        'uid': 'user-1',
+        'email': null,
+        'displayName': null,
+      });
+      final user = buildUser(uid: 'user-1', isAnonymous: false);
+
+      await readProfile(firestore, user);
+      await pumpEventQueue();
+
+      final stored = (await firestore.doc('users/user-1').get()).data()!;
+      expect(stored['isAnonymous'], isFalse);
+    },
+  );
 }
