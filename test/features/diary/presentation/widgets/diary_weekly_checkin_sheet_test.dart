@@ -21,7 +21,7 @@ void main() {
   ) async {
     final results = <DiaryWeeklyCheckInSheetResult?>[];
     await tester.pumpWidget(
-      _App(checkInData: _readyData(), onResult: results.add),
+      _scoped(_App(checkInData: _readyData(), onResult: results.add)),
     );
     await _openSheet(tester);
 
@@ -59,7 +59,7 @@ void main() {
   testWidgets('keeping the previous TDEE returns reject', (tester) async {
     final results = <DiaryWeeklyCheckInSheetResult?>[];
     await tester.pumpWidget(
-      _App(checkInData: _readyData(), onResult: results.add),
+      _scoped(_App(checkInData: _readyData(), onResult: results.add)),
     );
     await _openSheet(tester);
 
@@ -91,7 +91,7 @@ void main() {
   ) async {
     final results = <DiaryWeeklyCheckInSheetResult?>[];
     await tester.pumpWidget(
-      _App(checkInData: _readyData(), onResult: results.add),
+      _scoped(_App(checkInData: _readyData(), onResult: results.add)),
     );
 
     await _openSheet(tester);
@@ -117,9 +117,14 @@ void main() {
   ) async {
     final results = <DiaryWeeklyCheckInSheetResult?>[];
     await tester.pumpWidget(
-      _App(
-        checkInData: calorieWeeklyCheckInDemoData(today: _today, blocked: true),
-        onResult: results.add,
+      _scoped(
+        _App(
+          checkInData: calorieWeeklyCheckInDemoData(
+            today: _today,
+            blocked: true,
+          ),
+          onResult: results.add,
+        ),
       ),
     );
     await _openSheet(tester);
@@ -143,7 +148,13 @@ void main() {
   ) async {
     final results = <DiaryWeeklyCheckInSheetResult?>[];
     await tester.pumpWidget(
-      _App(checkInData: _readyData(), onResult: results.add, goalReached: true),
+      _scoped(
+        _App(
+          checkInData: _readyData(),
+          onResult: results.add,
+          goalReached: true,
+        ),
+      ),
     );
     await _openSheet(tester);
 
@@ -180,6 +191,21 @@ Future<void> _openSheet(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+Widget _scoped(Widget app) {
+  return ProviderScope(
+    overrides: [
+      diaryWeeklyCheckInPlanProvider.overrideWith(
+        (ref) async => calorieWeeklyCheckInDemoPlan(
+          today: _today,
+          macroSettings: const MacroGoalSettings(),
+          profile: null,
+        ),
+      ),
+    ],
+    child: app,
+  );
+}
+
 const _openSheetButtonKey = ValueKey<String>('open-sheet');
 
 class _App extends StatelessWidget {
@@ -195,38 +221,27 @@ class _App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ProviderScope(
-      overrides: [
-        diaryWeeklyCheckInPlanProvider.overrideWith(
-          (ref) async => calorieWeeklyCheckInDemoPlan(
-            today: _today,
-            macroSettings: const MacroGoalSettings(),
-            profile: null,
-          ),
-        ),
-      ],
-      child: MaterialApp(
-        locale: const Locale('en'),
-        localizationsDelegates: appLocalizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Builder(
-            builder: (context) {
-              return TextButton(
-                key: _openSheetButtonKey,
-                onPressed: () async {
-                  onResult(
-                    await showDiaryWeeklyCheckInSheet(
-                      context,
-                      checkInData: checkInData,
-                      goalReached: goalReached,
-                    ),
-                  );
-                },
-                child: const Text('Open sheet'),
-              );
-            },
-          ),
+    return MaterialApp(
+      locale: const Locale('en'),
+      localizationsDelegates: appLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: Scaffold(
+        body: Builder(
+          builder: (context) {
+            return TextButton(
+              key: _openSheetButtonKey,
+              onPressed: () async {
+                onResult(
+                  await showDiaryWeeklyCheckInSheet(
+                    context,
+                    checkInData: checkInData,
+                    goalReached: goalReached,
+                  ),
+                );
+              },
+              child: const Text('Open sheet'),
+            );
+          },
         ),
       ),
     );

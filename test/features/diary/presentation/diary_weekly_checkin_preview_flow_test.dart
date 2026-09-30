@@ -34,11 +34,11 @@ Future<void> _pumpTiles(WidgetTester tester) async {
           ),
         ),
       ],
-      child: MaterialApp(
-        locale: const Locale('en'),
+      child: const MaterialApp(
+        locale: Locale('en'),
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: const Scaffold(body: DiaryWeeklyCheckInPreviewTiles()),
+        home: Scaffold(body: DiaryWeeklyCheckInPreviewTiles()),
       ),
     ),
   );
