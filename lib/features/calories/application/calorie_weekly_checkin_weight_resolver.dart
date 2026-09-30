@@ -2,7 +2,7 @@ import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Merges daily weights and the goal-anchor weight for a check-in.
