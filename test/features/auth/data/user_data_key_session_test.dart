@@ -48,6 +48,9 @@ void main() {
   });
 
   ProviderContainer createContainer() {
+    // The private data migration runs in the background; let it end before
+    // the next test resets the secure storage mock.
+    addTearDown(pumpEventQueue);
     final container = ProviderContainer(
       overrides: [
         authStateChangesProvider.overrideWith((ref) => authChanges.stream),
@@ -374,7 +377,9 @@ void main() {
 
       container.invalidate(userDataKeySessionProvider);
       await container.read(userDataKeySessionProvider.future);
-      await pumpEventQueue();
+      for (var i = 0; i < 50; i++) {
+        await pumpEventQueue();
+      }
 
       final snapshot = await firestore.doc('users/u1/calorie_entries/e2').get();
       expect(

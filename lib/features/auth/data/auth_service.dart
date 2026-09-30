@@ -75,12 +75,12 @@ Future<UserProfile> _syncUserProfile(
     'displayName': syncedProfile.displayName,
     'isAnonymous': syncedProfile.isAnonymous,
   }, SetOptions(merge: true));
-  if (storedProfile != syncedProfile) {
+  if (data == null || storedProfile != syncedProfile) {
     await write;
     return syncedProfile;
   }
-  // Only the migration writes: the profile did not change, so it must not
-  // wait for the server, for example offline.
+  // Only the migration writes: the stored profile did not change, so it
+  // must not wait for the server, for example offline.
   unawaited(
     write.catchError(
       (Object error, StackTrace stackTrace) => log(

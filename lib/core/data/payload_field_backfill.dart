@@ -13,8 +13,10 @@ const _logName = 'PayloadFieldBackfill';
 /// For documents that an older app version wrote before a field existed. It
 /// reads from the server only, so a partial offline cache never counts as
 /// done. Documents that already hold every field stay untouched, so it is
-/// safe to run again. A document that does not decrypt, or whose write is
-/// rejected, is logged and skipped, so it does not block the others. Each
+/// safe to run again. A document that does not decrypt, or whose write the
+/// rules reject, is logged and skipped, so it does not block the others; a
+/// rejected write makes the run throw at the end, so it counts as not done.
+/// Other errors, for example a lost connection, stop the run. Each
 /// write runs in a transaction that re-reads the document and skips it when
 /// its payload changed since the read, so an edit made meanwhile is never
 /// overwritten.
@@ -59,6 +61,7 @@ Future<void> backfillPayloadFields({
     updates.add((document.reference, payload, upgraded));
   }
 
+  var rejected = 0;
   for (final (reference, read, upgraded) in updates) {
     try {
       await collection.firestore.runTransaction((transaction) async {
@@ -71,6 +74,10 @@ Future<void> backfillPayloadFields({
         });
       });
     } on FirebaseException catch (error, stackTrace) {
+      if (error.code != 'permission-denied') {
+        rethrow;
+      }
+      rejected++;
       log(
         'Skipping ${reference.path}: the update was rejected.',
         name: _logName,
@@ -78,5 +85,8 @@ Future<void> backfillPayloadFields({
         stackTrace: stackTrace,
       );
     }
+  }
+  if (rejected > 0) {
+    throw StateError('$rejected of ${updates.length} updates were rejected.');
   }
 }
