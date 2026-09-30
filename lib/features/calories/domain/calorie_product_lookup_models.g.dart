@@ -11,15 +11,17 @@ CalorieProductProfile _$CalorieProductProfileFromJson(
 ) => CalorieProductProfile(
   barcode: json['barcode'] as String,
   name: json['name'] as String,
-  per100Kcal: const FlexibleDoubleConverter().fromJson(json['per100_kcal']),
-  per100Protein: const FlexibleDoubleConverter().fromJson(
-    json['per100_protein'],
-  ),
-  per100Carbs: const FlexibleDoubleConverter().fromJson(json['per100_carbs']),
-  per100Fat: const FlexibleDoubleConverter().fromJson(json['per100_fat']),
+  per100Kcal: (json['per100_kcal'] as num).toDouble(),
+  per100Protein: (json['per100_protein'] as num).toDouble(),
+  per100Carbs: (json['per100_carbs'] as num).toDouble(),
+  per100Fat: (json['per100_fat'] as num).toDouble(),
   source: $enumDecode(_$CalorieProductSourceEnumMap, json['source']),
-  createdAt: const FlexibleDateTimeConverter().fromJson(json['created_at']),
-  updatedAt: const FlexibleDateTimeConverter().fromJson(json['updated_at']),
+  createdAt: const DateTimeJsonConverter().fromJson(
+    json['created_at'] as DateTime,
+  ),
+  updatedAt: const DateTimeJsonConverter().fromJson(
+    json['updated_at'] as DateTime,
+  ),
   brand: json['brand'] as String?,
   offProductId: json['off_product_id'] as String?,
   imageUrl: json['image_url'] as String?,
@@ -34,20 +36,18 @@ Map<String, dynamic> _$CalorieProductProfileToJson(
   'barcode': instance.barcode,
   'name': instance.name,
   'brand': instance.brand,
-  'per100_kcal': const FlexibleDoubleConverter().toJson(instance.per100Kcal),
-  'per100_protein': const FlexibleDoubleConverter().toJson(
-    instance.per100Protein,
-  ),
-  'per100_carbs': const FlexibleDoubleConverter().toJson(instance.per100Carbs),
-  'per100_fat': const FlexibleDoubleConverter().toJson(instance.per100Fat),
+  'per100_kcal': instance.per100Kcal,
+  'per100_protein': instance.per100Protein,
+  'per100_carbs': instance.per100Carbs,
+  'per100_fat': instance.per100Fat,
   'source': _$CalorieProductSourceEnumMap[instance.source]!,
   'off_product_id': instance.offProductId,
   'image_url': instance.imageUrl,
   'nutrient_details': const NullableCalorieNutrientDetailsConverter().toJson(
     instance.nutrientDetails,
   ),
-  'created_at': const FlexibleDateTimeConverter().toJson(instance.createdAt),
-  'updated_at': const FlexibleDateTimeConverter().toJson(instance.updatedAt),
+  'created_at': const DateTimeJsonConverter().toJson(instance.createdAt),
+  'updated_at': const DateTimeJsonConverter().toJson(instance.updatedAt),
 };
 
 const _$CalorieProductSourceEnumMap = {

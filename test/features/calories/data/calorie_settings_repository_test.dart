@@ -184,6 +184,8 @@ void main() {
         'calculator_profile': profile.toJson(),
         'calorie_math_version': currentCalorieMathVersion,
         'updated_at': DateTime(2026, 4, 2, 8),
+        'goal_history': const <Object>[],
+        'skipped_intake_day_keys': const <Object>[],
       });
 
       final settings = await repositoryFor(firestore).readSettings();

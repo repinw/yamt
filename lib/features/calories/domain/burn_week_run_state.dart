@@ -18,7 +18,7 @@ class BurnWeekRunState {
     required this.starCount,
     required this.starBrokeThisWeek,
     required this.missedTrackingThisWeek,
-    this.runLimitWarningThisWeek = false,
+    required this.runLimitWarningThisWeek,
     this.lastActiveDayKey,
   });
 
@@ -43,19 +43,15 @@ class BurnWeekRunState {
   final String? lastActiveDayKey;
 
   /// Current run week number.
-  @JsonKey(defaultValue: burnWeekLearningRunWeekNumber)
   final int runWeekNumber;
 
   /// Earned permanent stars.
-  @JsonKey(defaultValue: 0)
   final int starCount;
 
   /// Whether a star already broke this week.
-  @JsonKey(defaultValue: false)
   final bool starBrokeThisWeek;
 
   /// Whether tracking miss already killed perfect week.
-  @JsonKey(defaultValue: false)
   final bool missedTrackingThisWeek;
 
   /// Whether user chose to continue an unrecoverable limit week.

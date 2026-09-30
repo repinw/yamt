@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/core/domain/date_time_json_converter.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
@@ -90,19 +91,15 @@ class CalorieProductProfile {
   final String? brand;
 
   /// The per100 kcal.
-  @FlexibleDoubleConverter()
   final double per100Kcal;
 
   /// The per100 protein.
-  @FlexibleDoubleConverter()
   final double per100Protein;
 
   /// The per100 carbs.
-  @FlexibleDoubleConverter()
   final double per100Carbs;
 
   /// The per100 fat.
-  @FlexibleDoubleConverter()
   final double per100Fat;
 
   /// The source.
@@ -119,11 +116,11 @@ class CalorieProductProfile {
   final CalorieNutrientDetails? nutrientDetails;
 
   /// The created at.
-  @FlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime createdAt;
 
   /// The updated at.
-  @FlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime updatedAt;
 
   /// To json.

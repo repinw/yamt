@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/core/domain/date_time_json_converter.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
@@ -20,12 +21,9 @@ enum ConsumedUnit {
   /// The json value.
   final String jsonValue;
 
-  /// From json value.
-  static ConsumedUnit fromJsonValue(String? value) {
-    return switch (value) {
-      'ml' => ConsumedUnit.milliliters,
-      _ => ConsumedUnit.grams,
-    };
+  /// The unit stored as [value]. Throws a [StateError] for an unknown value.
+  static ConsumedUnit fromJsonValue(String value) {
+    return values.firstWhere((unit) => unit.jsonValue == value);
   }
 }
 
@@ -254,7 +252,6 @@ class CalorieEntry {
   final int? bundleTotalPortions;
 
   /// The bundle components.
-  @JsonKey(defaultValue: <CalorieEntryBundleComponent>[])
   final List<CalorieEntryBundleComponent> bundleComponents;
 
   /// Nutrients per 100 beyond the macros, when the food source had them.
@@ -266,61 +263,48 @@ class CalorieEntry {
   final bool isQuickEntry;
 
   /// The meal type.
-  @JsonKey(defaultValue: MealType.snack, unknownEnumValue: MealType.snack)
   final MealType mealType;
 
   /// The consumed amount.
-  @FlexibleDoubleConverter()
   final double consumedAmount;
-  @JsonKey(
-    defaultValue: ConsumedUnit.grams,
-    unknownEnumValue: ConsumedUnit.grams,
-  )
+
   /// The consumed unit.
   final ConsumedUnit consumedUnit;
 
   /// The per100 kcal.
-  @FlexibleDoubleConverter()
   final double per100Kcal;
 
   /// The per100 protein.
-  @FlexibleDoubleConverter()
   final double per100Protein;
 
   /// The per100 carbs.
-  @FlexibleDoubleConverter()
   final double per100Carbs;
 
   /// The per100 fat.
-  @FlexibleDoubleConverter()
   final double per100Fat;
 
   /// The total kcal.
-  @FlexibleDoubleConverter()
   final double totalKcal;
 
   /// The total protein.
-  @FlexibleDoubleConverter()
   final double totalProtein;
 
   /// The total carbs.
-  @FlexibleDoubleConverter()
   final double totalCarbs;
 
   /// The total fat.
-  @FlexibleDoubleConverter()
   final double totalFat;
 
   /// The logged at.
-  @FlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime loggedAt;
 
   /// The created at.
-  @FlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime createdAt;
 
   /// The updated at.
-  @FlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime updatedAt;
 
   /// To json.

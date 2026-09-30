@@ -59,15 +59,20 @@ class DiaryDayDashboardData {
   Map<String, dynamic> toJson() => _$DiaryDayDashboardDataToJson(this);
 }
 
-// CalorieEntry retains DateTime values for database writes. Only its cache
-// representation needs ISO strings; all other fields use its generated codec.
+// CalorieEntry reads and writes DateTime values for the database. Only its
+// cache representation needs ISO strings; all other fields use its generated
+// codec.
 class _CachedCalorieEntryConverter
     implements JsonConverter<CalorieEntry, Map<String, dynamic>> {
   const new();
 
   @override
-  CalorieEntry fromJson(Map<String, dynamic> json) =>
-      CalorieEntry.fromJson(json);
+  CalorieEntry fromJson(Map<String, dynamic> json) => CalorieEntry.fromJson({
+    ...json,
+    'logged_at': DateTime.parse(json['logged_at'] as String),
+    'created_at': DateTime.parse(json['created_at'] as String),
+    'updated_at': DateTime.parse(json['updated_at'] as String),
+  });
 
   @override
   Map<String, dynamic> toJson(CalorieEntry entry) => {

@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:yamt/features/calories/domain/calories_json_converters.dart';
+import 'package:yamt/core/domain/date_time_json_converter.dart';
 
 part 'calorie_goal_weekly_check_in_snapshot.g.dart';
 
@@ -14,12 +14,12 @@ class CalorieGoalWeeklyCheckInSnapshot {
     required this.windowEndDate,
     required this.trendWeightChangePerDay,
     required this.lowConfidence,
-    this.measuredTdeeKcal = 0,
-    this.calculatedTdeeKcal = 0,
-    this.baseGoalKcal = 0,
+    required this.measuredTdeeKcal,
+    required this.calculatedTdeeKcal,
+    required this.baseGoalKcal,
+    required this.isRejected,
     this.inputHash,
     this.invalidatedAt,
-    this.isRejected = false,
     this.macroWeightKg,
   });
 
@@ -28,27 +28,23 @@ class CalorieGoalWeeklyCheckInSnapshot {
       _$CalorieGoalWeeklyCheckInSnapshotFromJson(json);
 
   /// The window start date.
-  @FlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime windowStartDate;
 
   /// The window end date.
-  @FlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime windowEndDate;
 
   /// The trend weight change per day.
-  @FlexibleDoubleConverter()
   final double trendWeightChangePerDay;
 
   /// The measured TDEE kcal from intake and weight trend.
-  @FlexibleDoubleConverter()
   final double measuredTdeeKcal;
 
   /// The smoothed learned TDEE kcal.
-  @FlexibleDoubleConverter()
   final double calculatedTdeeKcal;
 
   /// The base daily goal after target mode and movement cap.
-  @FlexibleDoubleConverter()
   final double baseGoalKcal;
 
   /// The low confidence.
@@ -60,12 +56,11 @@ class CalorieGoalWeeklyCheckInSnapshot {
 
   /// When the snapshot was marked dirty by a later diary edit.
   @JsonKey(includeIfNull: false)
-  @NullableFlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime? invalidatedAt;
 
   /// Whether the user rejected this weekly check-in update to keep the
   /// previous TDEE.
-  @JsonKey(defaultValue: false)
   final bool isRejected;
 
   /// Trend weight at the end of the window, which the macro targets use
