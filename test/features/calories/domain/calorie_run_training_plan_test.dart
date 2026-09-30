@@ -98,4 +98,31 @@ void main() {
       expect(next.goalKcalForDay(day), settings.goalKcalForDay(day));
     }
   });
+
+  test('a session counts the kcal offset of the profile', () {
+    expect(_settings().trainingSessionKcalForDay(_now), 210);
+
+    final withoutOffset = CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: const CalorieCalculatorProfile.defaults().copyWith(
+        trainingWeekdays: [DateTime.monday],
+        trainingDayKcalOffset: 0,
+      ),
+      effectiveDate: _goalStart,
+    );
+    expect(withoutOffset.trainingSessionKcalForDay(_now), 0);
+
+    final withoutSchedule = CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: const CalorieCalculatorProfile.defaults().copyWith(
+        trainingWeekdays: const [],
+        trainingDayKcalOffset: 0,
+      ),
+      effectiveDate: _goalStart,
+    );
+    expect(
+      withoutSchedule.trainingSessionKcalForDay(_now),
+      defaultTrainingDayKcalOffset,
+    );
+  });
 }
