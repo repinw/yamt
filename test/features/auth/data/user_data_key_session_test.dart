@@ -326,18 +326,21 @@ void main() {
       });
     }
 
-    test('makes entries from before quick entries readable', () async {
+    test('adds is_quick_entry to entries from before quick entries', () async {
       await storeEntryFromBeforeQuickEntries();
       final container = createContainer();
 
       final state = await signIn(container, isAnonymous: true);
 
-      final entry = await decodeCalorieEntryDocument(
-        await firestore.doc(entryPath).get(),
-        cipher: (state as UserDataKeyReady).cipher,
+      final cipher = (state as UserDataKeyReady).cipher;
+      final snapshot = await firestore.doc(entryPath).get();
+      final stored = await cipher.decryptJson(
+        snapshot.data()![encryptedPayloadField] as String,
+        aad: entryPath,
       );
+      expect(stored['is_quick_entry'], isFalse);
+      final entry = await decodeCalorieEntryDocument(snapshot, cipher: cipher);
       expect(entry.name, 'Apfel');
-      expect(entry.isQuickEntry, isFalse);
     });
 
     test('runs only once per device', () async {

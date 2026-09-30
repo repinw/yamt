@@ -40,7 +40,7 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
   loggedAt: const FlexibleDateTimeConverter().fromJson(json['logged_at']),
   createdAt: const FlexibleDateTimeConverter().fromJson(json['created_at']),
   updatedAt: const FlexibleDateTimeConverter().fromJson(json['updated_at']),
-  isQuickEntry: json['is_quick_entry'] as bool,
+  isQuickEntry: json['is_quick_entry'] as bool? ?? false,
   brand: json['brand'] as String?,
   imageUrl: json['image_url'] as String?,
   imageAssetId: json['image_asset_id'] as String?,

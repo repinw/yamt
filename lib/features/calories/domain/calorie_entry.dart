@@ -6,6 +6,10 @@ import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 
 part 'calorie_entry.g.dart';
 
+// Temporary compatibility, added in 3.4.1: the JSON defaults, unknown enum
+// fallbacks, and flexible converters in this file go from 3.7.0 on, once a
+// migration has re-saved the stored data in the strict shape.
+
 /// Defines consumed unit.
 @JsonEnum(valueField: 'jsonValue')
 enum ConsumedUnit {
@@ -263,6 +267,11 @@ class CalorieEntry {
 
   /// Whether the user typed the calories and macros in by hand, without a
   /// food behind them. Its totals are what was typed; it has no real amount.
+  ///
+  /// Temporary compatibility, added in 3.4.1: the default covers entries
+  /// saved before 3.3.0 until the private data migration has added the
+  /// field; it goes from 3.7.0 on.
+  @JsonKey(defaultValue: false)
   final bool isQuickEntry;
 
   /// The meal type.
