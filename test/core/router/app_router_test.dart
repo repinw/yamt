@@ -12,6 +12,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/features/auth/application/'
@@ -194,6 +195,9 @@ ProviderContainer _createContainerWithAuth(
   }
   final container = ProviderContainer(
     overrides: [
+      // A fixed mid-month day: on the last day of a month the birthday day
+      // wheel starts at its end and cannot spin forward.
+      clockProvider.overrideWithValue(() => DateTime(2026, 6, 15, 12)),
       appPreferencesProvider.overrideWithValue(appPreferences),
       authStateChangesProvider.overrideWith((ref) => broadcastAuthStream),
       firebaseAuthProvider.overrideWithValue(firebaseAuth),
