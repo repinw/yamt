@@ -52,6 +52,7 @@ class CalorieWeeklyCheckInCalculation {
   const new({
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
+    required this.previousTdeeKcal,
     required this.measuredTdeeKcal,
     required this.calculatedTdeeKcal,
     required this.newGoalKcal,
@@ -69,6 +70,10 @@ class CalorieWeeklyCheckInCalculation {
 
   /// The smoothed learned TDEE kcal.
   final double calculatedTdeeKcal;
+
+  /// The TDEE before this check-in: the previous learned TDEE, or the
+  /// calculator estimate before the first one.
+  final double previousTdeeKcal;
 
   /// The new daily goal kcal after target mode and movement cap.
   final double newGoalKcal;
@@ -196,6 +201,7 @@ abstract final class CalorieWeeklyCheckInCalculator {
     return CalorieWeeklyCheckInCalculation(
       trendWeightChangePerDay: trendWeightChangePerDay,
       averageIntakeKcal: averageIntakeKcal,
+      previousTdeeKcal: previousLearnedTdeeKcal,
       measuredTdeeKcal: measuredTdeeKcal,
       calculatedTdeeKcal: calculatedTdeeKcal,
       newGoalKcal: newGoalKcal,

@@ -134,6 +134,14 @@ less than a full 28-day window.
 - In a 7-day check-in window:
   - Missing/pause days (< 3 days) are auto-interpolated from the logged average of tracked days without blocking the check-in.
   - Check-in triggers every 7 days from the anchor start date.
+- `calorieWeeklyCheckInPlanProvider` builds the `CalorieWeeklyCheckInPlan` of
+  the pending check-in: the reviewed run, the next run with the weekdays of
+  the reviewed run as suggested training days, the previous and the measured
+  goal, and the weight and TDEE since the goal start. `targetsFor` gives the
+  goal, the training and rest day split, and the macros of the next run. The
+  debug preview uses `calorieWeeklyCheckInPreviewPlanProvider`, which falls
+  back to made-up data (`calorie_weekly_checkin_demo_data.dart`) when the goal
+  has no completed window.
   - >= 3 missing days blocks learning due to insufficient data.
 
 Weight handling in the weekly runs uses raw daily weights and a robust slope:
