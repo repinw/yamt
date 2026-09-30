@@ -423,15 +423,16 @@ NEVER move a feature type into `lib/core` to avoid an ownership decision.
   enforced by: `avoid_print`.*
 - NEVER add an abstraction, parameter, or option that the current task does
   not use.
-- NEVER make reading code tolerant of old data: no tolerant parsers (for
-  example a string accepted as a number or a date), no default values for
-  fields that older documents lack, and no special cases for data created
-  before a change. Models parse strictly.
-- When a change leaves stored data that the new app cannot read (a new
-  required field, a moved path, a renamed value), write a migration that
-  rewrites the stored data into the new shape. The app has real users, so
-  their data MUST survive every release. Start the doc comment of the
-  migration with `Temporary migration, added in <version>`.
+- Models parse strictly. When a change leaves stored data that the new app
+  cannot read (a new required field, a moved path, a renamed value), write a
+  migration that rewrites the stored data into the new shape. The app has
+  real users, so their data MUST survive every release. Start the doc
+  comment of the migration with `Temporary migration, added in <version>`.
+- Prefer a migration over backward-compatibility code: tolerant parsers (for
+  example a string accepted as a number or a date), default values for
+  fields that older documents lack, and special cases for data created
+  before a change. Add such code only as a temporary bridge, marked
+  `Temporary compatibility, added in <version>`.
 - **Lifetime:** a migration or backward-compatibility code stays for the two
   release stages (minor versions) after the one that adds it and is removed
   from the third on. Code added in 3.4.1 stays in 3.5 and 3.6 and is removed
@@ -470,7 +471,10 @@ Much existing code breaks these rules. It is not precedent.
 - **Compatibility code:** tolerant JSON readers in models, for example
   `FlexibleDateTimeConverter`, `FlexibleDoubleConverter`, `_readIntOrZero`,
   `_readDateTimeOrNow`, and `readJsonDateTime`. Report them and NEVER remove
-  them on your own (see [Hygiene](#12-hygiene)).
+  them on your own (see [Hygiene](#12-hygiene)). The tolerant calorie
+  readers and the tolerant user profile decoder came back in 3.4.1; they go
+  from 3.7.0 on, once a migration has re-saved the private documents in the
+  strict shape.
 
 ### Rules for Legacy Code
 
