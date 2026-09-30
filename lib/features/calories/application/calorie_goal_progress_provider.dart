@@ -10,7 +10,7 @@ import 'package:yamt/features/calories/domain/tdee_cycle_resolver.dart';
 part 'calorie_goal_progress_provider.g.dart';
 
 /// Weight and learned TDEE of the goal that is active on [endDate], from its
-/// start up to [endDate]. `null` without an active goal.
+/// start up to [endDate]. `null` without a goal on [endDate].
 @riverpod
 Future<CalorieGoalProgress?> calorieGoalProgress(
   Ref ref,
@@ -22,13 +22,21 @@ Future<CalorieGoalProgress?> calorieGoalProgress(
     throw StateError('Calorie goal progress was disposed.');
   }
   final anchor = settings.cycleAnchorEntryForDay(end);
-  final cycle = TdeeCycleResolver.resolveGoalCycles(settings)
-      .where((cycle) => cycle.isActive)
-      .firstOrNull;
-  if (anchor == null || cycle == null) {
+  if (anchor == null) {
     return null;
   }
   final startDate = normalizeDiaryDay(anchor.effectiveCountingStartDate);
+  // The goal of [endDate], which a newer goal may have replaced since.
+  final cycle = TdeeCycleResolver.resolveGoalCycles(settings)
+      .where(
+        (cycle) =>
+            !cycle.isAllGoals &&
+            normalizeDiaryDay(cycle.startDate) == startDate,
+      )
+      .firstOrNull;
+  if (cycle == null) {
+    return null;
+  }
   final analytics = await ref.watch(
     tdeeAnalyticsProvider(
       TdeeAnalyticsQuery(
