@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -6,15 +7,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/recovery_key.dart';
 import 'package:yamt/core/device/key_backup.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/auth_exceptions.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
+import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 
 import '../../../helpers/fake_key_backup.dart';
 
@@ -288,6 +293,79 @@ void main() {
         );
       },
     );
+  });
+
+  group('private data migration', () {
+    const entryPath = 'users/u1/calorie_entries/e1';
+
+    /// Stores the device key of u1 and an entry in the shape that app
+    /// versions before 3.3.0 saved, without `is_quick_entry`.
+    Future<void> storeEntryFromBeforeQuickEntries() async {
+      final dataKey = await PayloadCipher.newDataKey();
+      FlutterSecureStorage.setMockInitialValues(<String, String>{
+        'data_key_u1': base64Encode(await dataKey.extractBytes()),
+      });
+      final entry = CalorieEntry.create(
+        id: 'e1',
+        userId: 'u1',
+        name: 'Apfel',
+        mealType: MealType.snack,
+        consumedAmount: 150,
+        consumedUnit: ConsumedUnit.grams,
+        per100Kcal: 52,
+        per100Protein: 0.3,
+        per100Carbs: 14,
+        per100Fat: 0.2,
+        loggedAt: DateTime(2026, 9, 20, 12),
+      );
+      final oldJson = entry.toJson()..remove('is_quick_entry');
+      await firestore.doc(entryPath).set(<String, dynamic>{
+        calorieEntryLoggedAtField: entry.loggedAt,
+        encryptedPayloadField: await PayloadCipher(dataKey)
+            .encryptJson(oldJson, aad: entryPath),
+      });
+    }
+
+    test('makes entries from before quick entries readable', () async {
+      await storeEntryFromBeforeQuickEntries();
+      final container = createContainer();
+
+      final state = await signIn(container, isAnonymous: true);
+
+      final entry = await decodeCalorieEntryDocument(
+        await firestore.doc(entryPath).get(),
+        cipher: (state as UserDataKeyReady).cipher,
+      );
+      expect(entry.name, 'Apfel');
+      expect(entry.isQuickEntry, isFalse);
+    });
+
+    test('runs only once per device', () async {
+      await storeEntryFromBeforeQuickEntries();
+      final container = createContainer();
+      await signIn(container, isAnonymous: true);
+      final state = container.read(userDataKeySessionProvider).requireValue;
+      final cipher = (state as UserDataKeyReady).cipher;
+      final lateEntry = <String, dynamic>{'name': 'late'};
+      await firestore.doc('users/u1/calorie_entries/e2').set(<String, dynamic>{
+        encryptedPayloadField: await cipher.encryptJson(
+          lateEntry,
+          aad: 'users/u1/calorie_entries/e2',
+        ),
+      });
+
+      container.invalidate(userDataKeySessionProvider);
+      await container.read(userDataKeySessionProvider.future);
+
+      final snapshot = await firestore.doc('users/u1/calorie_entries/e2').get();
+      expect(
+        await cipher.decryptJson(
+          snapshot.data()![encryptedPayloadField] as String,
+          aad: 'users/u1/calorie_entries/e2',
+        ),
+        lateEntry,
+      );
+    });
   });
 
   test('signed out without a user', () async {

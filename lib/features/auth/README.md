@@ -18,6 +18,9 @@ Auth owns:
   Google Block Store; iOS syncs through the iCloud Keychain instead).
 - The list of private collections that the data key encrypts, used to delete
   them when a user starts fresh.
+- Temporary migrations that rewrite private documents that older app
+  versions saved in an outdated shape. The data key session runs them once
+  per device, before the key counts as ready.
 
 Auth does not own:
 
