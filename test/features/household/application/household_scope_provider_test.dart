@@ -21,6 +21,7 @@ void main() {
               uid: 'member-1',
               householdId: 'shared',
               ownHouseholdId: 'own',
+              isAnonymous: false,
             ),
           ),
         ),

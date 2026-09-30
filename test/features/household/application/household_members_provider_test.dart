@@ -27,6 +27,10 @@ void main() {
       ('admin', 'admin', 1),
       ('member-1', 'member', 2),
     ]) {
+      await firestore.doc('users/$uid').set(<String, dynamic>{
+        'uid': uid,
+        'isAnonymous': false,
+      });
       await firestore.doc('households/h1/members/$uid').set(<String, dynamic>{
         'uid': uid,
         'role': role,

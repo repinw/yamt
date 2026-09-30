@@ -59,6 +59,7 @@ class FakeHousehold {
   }) {
     return firestore.doc('users/$uid').set(<String, dynamic>{
       'uid': uid,
+      'isAnonymous': false,
       'householdId': householdId,
       'ownHouseholdId': ownHouseholdId,
       'displayName': ?displayName,
@@ -76,6 +77,10 @@ class FakeHousehold {
     await firestore.doc('households/$householdId').set(<String, dynamic>{
       'created_at': Timestamp.fromDate(DateTime(2026)),
     });
+    await firestore.doc('users/$uid').set(<String, dynamic>{
+      'uid': uid,
+      'isAnonymous': false,
+    }, SetOptions(merge: true));
     await firestore.doc('households/$householdId/members/$uid').set(
       <String, dynamic>{
         'uid': uid,

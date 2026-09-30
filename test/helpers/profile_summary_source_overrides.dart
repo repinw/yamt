@@ -26,7 +26,9 @@ List<Override> profileSummarySourceOverrides({
     calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
     clockProvider.overrideWithValue(() => now),
     userProfileProvider.overrideWith(
-      (ref) => Stream.value(UserProfile(uid: 'u1', displayName: displayName)),
+      (ref) => Stream.value(
+        UserProfile(uid: 'u1', displayName: displayName, isAnonymous: false),
+      ),
     ),
     healthConnectionServiceProvider.overrideWith(
       (ref) => FakeHealthConnectionService(
