@@ -318,7 +318,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
     }
     return ServingSizeSuggestion(
       amount: amount,
-      unit: ConsumedUnit.fromJsonValue(newestData['unit'] as String?),
+      unit: ConsumedUnit.fromJsonValue(newestData['unit'] as String),
       label: _readOptionalString(newestData['label']),
     );
   }
@@ -532,7 +532,7 @@ String? _resolvePreferenceLabelFromData({
   if (existingAmount == null || existingAmount != amount) {
     return null;
   }
-  final existingUnit = ConsumedUnit.fromJsonValue(data['unit'] as String?);
+  final existingUnit = ConsumedUnit.fromJsonValue(data['unit'] as String);
   if (existingUnit != unit) {
     return null;
   }

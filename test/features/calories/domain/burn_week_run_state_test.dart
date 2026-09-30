@@ -42,6 +42,7 @@ void main() {
       starCount: 1,
       starBrokeThisWeek: false,
       missedTrackingThisWeek: false,
+      runLimitWarningThisWeek: false,
     );
 
     final updated = state.copyWith(

@@ -86,7 +86,11 @@ class _DiaryInventoryQuickEatHarness {
 
   void publishHouseholdProfile() {
     profileController.add(
-      const UserProfile(uid: _userId, householdId: _householdId),
+      const UserProfile(
+        uid: _userId,
+        householdId: _householdId,
+        isAnonymous: false,
+      ),
     );
   }
 }

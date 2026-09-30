@@ -1,8 +1,8 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/core/domain/date_time_json_converter.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_goal_history_entry.g.dart';
@@ -16,8 +16,8 @@ class CalorieGoalHistoryEntry {
     required this.calculatorProfile,
     required this.effectiveDate,
     required this.changedAt,
+    required this.source,
     this.countingStartDate,
-    this.source = CalorieGoalSource.manual,
     this.weeklyCheckInSnapshot,
     this.reachedAt,
     this.reachedWeightKg,
@@ -31,28 +31,23 @@ class CalorieGoalHistoryEntry {
       _$CalorieGoalHistoryEntryFromJson(json);
 
   /// The daily kcal goal.
-  @NullableFlexibleDoubleConverter()
   final double? dailyKcalGoal;
 
   /// The calculator profile.
   final CalorieCalculatorProfile? calculatorProfile;
 
   /// The effective date.
-  @FlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime effectiveDate;
 
   /// The changed at.
-  @NullableFlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime? changedAt;
 
   /// The official counting start date for Burn Week and weekly check-ins.
-  @NullableFlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime? countingStartDate;
 
-  @JsonKey(
-    defaultValue: CalorieGoalSource.manual,
-    unknownEnumValue: CalorieGoalSource.manual,
-  )
   /// The source.
   final CalorieGoalSource source;
 
@@ -60,23 +55,21 @@ class CalorieGoalHistoryEntry {
   final CalorieGoalWeeklyCheckInSnapshot? weeklyCheckInSnapshot;
 
   /// First date on which the configured target weight was reached.
-  @NullableFlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime? reachedAt;
 
   /// Scale weight recorded when the target was first reached.
-  @NullableFlexibleDoubleConverter()
   final double? reachedWeightKg;
 
   /// Date on which the user answered the goal-reached prompt.
-  @NullableFlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime? reachedPromptHandledAt;
 
   /// Date on which this goal was explicitly replaced by a new goal.
-  @NullableFlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime? endedAt;
 
   /// Scale weight recorded when this goal was replaced.
-  @NullableFlexibleDoubleConverter()
   final double? endedWeightKg;
 
   /// Whether goal is set.

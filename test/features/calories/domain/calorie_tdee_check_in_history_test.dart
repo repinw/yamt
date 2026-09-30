@@ -51,6 +51,8 @@ CalorieGoalHistoryEntry _checkIn({
       lowConfidence: false,
       calculatedTdeeKcal: calculatedTdeeKcal,
       isRejected: isRejected,
+      measuredTdeeKcal: 0,
+      baseGoalKcal: 0,
     ),
   );
 }

@@ -201,6 +201,7 @@ void main() {
         starCount: 1,
         starBrokeThisWeek: true,
         missedTrackingThisWeek: false,
+        runLimitWarningThisWeek: false,
       ),
     );
     final container = ProviderContainer(
@@ -272,6 +273,7 @@ void main() {
         starCount: 1,
         starBrokeThisWeek: true,
         missedTrackingThisWeek: false,
+        runLimitWarningThisWeek: false,
       ),
     );
     final container = ProviderContainer(
@@ -410,6 +412,9 @@ void main() {
         trendWeightChangePerDay: -0.02,
         calculatedTdeeKcal: 2500,
         lowConfidence: false,
+        measuredTdeeKcal: 0,
+        baseGoalKcal: 0,
+        isRejected: false,
       ),
     );
 
@@ -465,6 +470,9 @@ void main() {
               trendWeightChangePerDay: -0.02,
               calculatedTdeeKcal: 2500,
               lowConfidence: false,
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           ),
     );
@@ -528,6 +536,7 @@ void main() {
               baseGoalKcal: _defaultWeeklyCheckInCalculation.newGoalKcal,
               lowConfidence: false,
               macroWeightKg: 82.4,
+              isRejected: false,
             ),
           ),
     )..saveShouldFail = true;
@@ -566,6 +575,9 @@ void main() {
         trendWeightChangePerDay: -0.02,
         calculatedTdeeKcal: 2500,
         lowConfidence: false,
+        measuredTdeeKcal: 0,
+        baseGoalKcal: 0,
+        isRejected: false,
       );
       final freshSnapshot = CalorieGoalWeeklyCheckInSnapshot(
         windowStartDate: goalStart,
@@ -575,6 +587,7 @@ void main() {
         calculatedTdeeKcal: _defaultWeeklyCheckInCalculation.calculatedTdeeKcal,
         baseGoalKcal: _defaultWeeklyCheckInCalculation.newGoalKcal,
         lowConfidence: false,
+        isRejected: false,
       );
       final settingsRepository = FakeCalorieSettingsRepository(
         initialSettings:
@@ -718,8 +731,8 @@ CalorieGoalSettings _settingsWithGoal() {
 const _defaultWeeklyCheckInCalculation = CalorieWeeklyCheckInCalculation(
   trendWeightChangePerDay: -0.10893,
   averageIntakeKcal: 2460.85,
-  measuredTrueTdeeKcal: 3223.35,
-  calculatedTrueTdeeKcal: 2665.82,
+  measuredTdeeKcal: 3223.35,
+  calculatedTdeeKcal: 2665.82,
   newGoalKcal: 2626.875,
   dynamicGoalTodayKcal: 2626.875,
 );

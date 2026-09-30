@@ -1,52 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 
-/// Parses numeric JSON values from `num` or locale-like `String` input.
-class FlexibleDoubleConverter implements JsonConverter<double, Object?> {
-  /// The flexible double converter.
-  const new();
-
-  @override
-  double fromJson(Object? json) {
-    if (json is num) {
-      return json.toDouble();
-    }
-    if (json is String) {
-      final normalized = json.replaceAll(',', '.').trim();
-      final parsed = double.tryParse(normalized);
-      if (parsed != null) {
-        return parsed;
-      }
-    }
-    throw FormatException('Expected number but got: $json');
-  }
-
-  @override
-  Object? toJson(double object) {
-    return object;
-  }
-}
-
-/// Defines nullable flexible double converter.
-class NullableFlexibleDoubleConverter
-    implements JsonConverter<double?, Object?> {
-  /// The nullable flexible double converter.
-  const new();
-
-  @override
-  double? fromJson(Object? json) {
-    if (json == null) {
-      return null;
-    }
-    return const FlexibleDoubleConverter().fromJson(json);
-  }
-
-  @override
-  Object? toJson(double? object) {
-    return object;
-  }
-}
-
 /// Stores [CalorieNutrientDetails] as a nested map with snake_case keys.
 class NullableCalorieNutrientDetailsConverter
     implements JsonConverter<CalorieNutrientDetails?, Object?> {
@@ -86,53 +40,5 @@ class NullableCalorieNutrientDetailsConverter
       _fiber: object.per100Fiber,
       _salt: object.per100Salt,
     };
-  }
-}
-
-/// Defines flexible date time converter.
-class FlexibleDateTimeConverter implements JsonConverter<DateTime, Object?> {
-  /// The flexible date time converter.
-  const new();
-
-  @override
-  DateTime fromJson(Object? json) {
-    if (json is DateTime) {
-      return json;
-    }
-    if (json is String) {
-      final parsed = DateTime.tryParse(json);
-      if (parsed != null) {
-        return parsed;
-      }
-    }
-    if (json is int) {
-      return DateTime.fromMillisecondsSinceEpoch(json);
-    }
-    throw FormatException('Expected DateTime but got: $json');
-  }
-
-  @override
-  Object? toJson(DateTime object) {
-    return object;
-  }
-}
-
-/// Defines nullable flexible date time converter.
-class NullableFlexibleDateTimeConverter
-    implements JsonConverter<DateTime?, Object?> {
-  /// The nullable flexible date time converter.
-  const new();
-
-  @override
-  DateTime? fromJson(Object? json) {
-    if (json == null) {
-      return null;
-    }
-    return const FlexibleDateTimeConverter().fromJson(json);
-  }
-
-  @override
-  Object? toJson(DateTime? object) {
-    return object;
   }
 }

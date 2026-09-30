@@ -125,6 +125,9 @@ CalorieGoalSettings _learnedTdeeSettings() {
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2450,
       lowConfidence: false,
+      measuredTdeeKcal: 0,
+      baseGoalKcal: 0,
+      isRejected: false,
     ),
   );
 }

@@ -769,6 +769,9 @@ void main() {
               trendWeightChangePerDay: -0.05,
               calculatedTdeeKcal: 2400,
               lowConfidence: false,
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           );
       final settingsRepository = FakeCalorieSettingsRepository(
@@ -995,6 +998,9 @@ void main() {
       trendWeightChangePerDay: 0,
       calculatedTdeeKcal: 2580,
       lowConfidence: false,
+      measuredTdeeKcal: 0,
+      baseGoalKcal: 0,
+      isRejected: false,
     );
     final settingsRepository = FakeCalorieSettingsRepository(
       initialSettings:
@@ -1048,10 +1054,7 @@ void main() {
     );
     expect(checkInData.isReady, isTrue);
     // Replay: 2400 → 2475 (7-day window, 0.125) → 2606.25 (14 days, 0.25).
-    expect(
-      checkInData.calculation?.calculatedTrueTdeeKcal,
-      closeTo(2606.25, 0.01),
-    );
+    expect(checkInData.calculation?.calculatedTdeeKcal, closeTo(2606.25, 0.01));
     expect(checkInData.calculation?.newGoalKcal, closeTo(2606.25, 0.01));
   });
 
@@ -1076,6 +1079,9 @@ void main() {
               calculatedTdeeKcal: 2580,
               lowConfidence: false,
               inputHash: 'v1:week-one',
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           ),
     );
@@ -1149,6 +1155,9 @@ void main() {
               calculatedTdeeKcal: 2580,
               lowConfidence: false,
               invalidatedAt: DateTime(2026, 4, 20),
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           ),
     );
@@ -1213,6 +1222,9 @@ void main() {
               trendWeightChangePerDay: 0,
               calculatedTdeeKcal: 2500,
               lowConfidence: false,
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           ),
     );
@@ -1282,6 +1294,9 @@ void main() {
               trendWeightChangePerDay: -0.05,
               calculatedTdeeKcal: 2400,
               lowConfidence: false,
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           );
       final settingsRepository = FakeCalorieSettingsRepository(
@@ -1331,6 +1346,9 @@ void main() {
               trendWeightChangePerDay: -0.05,
               calculatedTdeeKcal: 2400,
               lowConfidence: false,
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           );
       final settingsRepository = FakeCalorieSettingsRepository(
@@ -1378,6 +1396,9 @@ void main() {
             trendWeightChangePerDay: -0.05,
             calculatedTdeeKcal: 2400,
             lowConfidence: false,
+            measuredTdeeKcal: 0,
+            baseGoalKcal: 0,
+            isRejected: false,
           ),
         )
         .applyGoalChange(
@@ -1391,6 +1412,9 @@ void main() {
             trendWeightChangePerDay: -0.04,
             calculatedTdeeKcal: 2380,
             lowConfidence: false,
+            measuredTdeeKcal: 0,
+            baseGoalKcal: 0,
+            isRejected: false,
           ),
         )
         .applyGoalChange(
@@ -1404,6 +1428,9 @@ void main() {
             trendWeightChangePerDay: -0.03,
             calculatedTdeeKcal: 2360,
             lowConfidence: false,
+            measuredTdeeKcal: 0,
+            baseGoalKcal: 0,
+            isRejected: false,
           ),
         );
     final settingsRepository = FakeCalorieSettingsRepository(
@@ -1472,6 +1499,9 @@ void main() {
             trendWeightChangePerDay: -0.05,
             calculatedTdeeKcal: 2400,
             lowConfidence: false,
+            measuredTdeeKcal: 0,
+            baseGoalKcal: 0,
+            isRejected: false,
           ),
         )
         .copyWithPendingWeeklyCheckIn(
@@ -1535,6 +1565,9 @@ void main() {
               trendWeightChangePerDay: -0.05,
               calculatedTdeeKcal: 2400,
               lowConfidence: false,
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           );
       final settingsRepository = FakeCalorieSettingsRepository(
@@ -1610,6 +1643,9 @@ void main() {
               trendWeightChangePerDay: 0,
               calculatedTdeeKcal: 2580,
               lowConfidence: false,
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           )
           .copyWithPendingWeeklyCheckIn(firstWindow);
@@ -1666,6 +1702,9 @@ void main() {
             trendWeightChangePerDay: -0.08,
             calculatedTdeeKcal: 2450,
             lowConfidence: false,
+            measuredTdeeKcal: 0,
+            baseGoalKcal: 0,
+            isRejected: false,
           ),
         )
         .applyGoalChange(
@@ -1741,6 +1780,9 @@ void main() {
                 trendWeightChangePerDay: -0.05,
                 calculatedTdeeKcal: 2400,
                 lowConfidence: false,
+                measuredTdeeKcal: 0,
+                baseGoalKcal: 0,
+                isRejected: false,
               ),
             )
             .applyGoalChange(

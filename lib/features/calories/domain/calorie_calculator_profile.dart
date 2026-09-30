@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/core/domain/date_time_json_converter.dart';
 import 'package:yamt/features/calories/domain/calorie_age_calculator.dart';
-import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 
 part 'calorie_calculator_profile.g.dart';
 
@@ -76,49 +76,37 @@ class CalorieCalculatorProfile {
       trainingWeekdays = const <int>[],
       trainingDayKcalOffset = 0.0;
 
-  @JsonKey(
-    defaultValue: CalorieCalculatorSex.male,
-    unknownEnumValue: CalorieCalculatorSex.male,
-  )
   /// The sex.
   final CalorieCalculatorSex sex;
 
   /// The weight kg.
-  @FlexibleDoubleConverter()
   final double weightKg;
 
   /// The height cm.
-  @FlexibleDoubleConverter()
   final double heightCm;
 
   /// The age years, kept as fallback for profiles saved without a birth date.
   final int ageYears;
 
   /// Optional birth date used to derive the current age.
-  @NullableFlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime? birthDate;
 
   /// The activity level.
-  @FlexibleDoubleConverter()
   final double activityLevel;
-  @JsonKey(
-    defaultValue: CalorieGoalMode.maintain,
-    unknownEnumValue: CalorieGoalMode.maintain,
-  )
+
   /// The goal mode.
   final CalorieGoalMode goalMode;
 
   /// The goal speed kg per week.
-  @FlexibleDoubleConverter()
   final double goalSpeedKgPerWeek;
 
   /// Optional target weight in kg.
-  @NullableFlexibleDoubleConverter()
   final double? targetWeightKg;
 
   /// Optional date until which a maintain goal should stay active.
   /// A null value means that the goal continues until it is replaced.
-  @NullableFlexibleDateTimeConverter()
+  @DateTimeJsonConverter()
   final DateTime? maintainUntil;
 
   /// Configured weekdays for training (1 = Monday, 7 = Sunday).
@@ -126,7 +114,6 @@ class CalorieCalculatorProfile {
 
   /// kcal of one training session: added to the energy use of the week and
   /// the gap between a training day and a rest day.
-  @FlexibleDoubleConverter()
   final double trainingDayKcalOffset;
 
   /// To json.

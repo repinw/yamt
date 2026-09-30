@@ -40,6 +40,7 @@ void main() {
       starCount: 2,
       starBrokeThisWeek: true,
       missedTrackingThisWeek: false,
+      runLimitWarningThisWeek: false,
     );
 
     final saved = await repository.saveState(savedState);

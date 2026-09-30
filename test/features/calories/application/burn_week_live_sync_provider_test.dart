@@ -267,6 +267,9 @@ CalorieGoalSettings _learnedGoalSettings(DateTime effectiveDate) {
       trendWeightChangePerDay: -0.05,
       calculatedTdeeKcal: 2300,
       lowConfidence: false,
+      measuredTdeeKcal: 0,
+      baseGoalKcal: 0,
+      isRejected: false,
     ),
   );
 }
@@ -293,6 +296,7 @@ void main() {
           starCount: 0,
           starBrokeThisWeek: false,
           missedTrackingThisWeek: false,
+          runLimitWarningThisWeek: false,
         ),
         captureController: (value) => controller = value,
       );
@@ -323,6 +327,7 @@ void main() {
           starCount: 0,
           starBrokeThisWeek: false,
           missedTrackingThisWeek: false,
+          runLimitWarningThisWeek: false,
         ),
         captureController: (value) => controller = value,
       );
@@ -390,6 +395,7 @@ void main() {
             starCount: 0,
             starBrokeThisWeek: false,
             missedTrackingThisWeek: false,
+            runLimitWarningThisWeek: false,
           ),
           snapshotsByWindowEnd: <DateTime, CalorieWeekConsumptionSnapshot>{
             cycleStart.add(const Duration(days: 6)): _snapshotForWeek(
@@ -473,6 +479,7 @@ void main() {
             starCount: 0,
             starBrokeThisWeek: false,
             missedTrackingThisWeek: false,
+            runLimitWarningThisWeek: false,
           ),
           captureController: (value) => controller = value,
         );
@@ -514,6 +521,7 @@ void main() {
           starCount: 2,
           starBrokeThisWeek: true,
           missedTrackingThisWeek: true,
+          runLimitWarningThisWeek: false,
         ),
         captureController: (value) => controller = value,
       );
@@ -555,6 +563,7 @@ void main() {
           starCount: 0,
           starBrokeThisWeek: false,
           missedTrackingThisWeek: false,
+          runLimitWarningThisWeek: false,
         ),
         captureController: (value) => controller = value,
       );
@@ -589,6 +598,7 @@ void main() {
             starCount: 1,
             starBrokeThisWeek: false,
             missedTrackingThisWeek: false,
+            runLimitWarningThisWeek: false,
           ),
           captureController: (value) => controller = value,
         );
@@ -621,6 +631,7 @@ void main() {
           starCount: 2,
           starBrokeThisWeek: true,
           missedTrackingThisWeek: true,
+          runLimitWarningThisWeek: false,
         ),
         captureController: (value) => controller = value,
       );
@@ -661,6 +672,7 @@ void main() {
             starCount: 0,
             starBrokeThisWeek: false,
             missedTrackingThisWeek: false,
+            runLimitWarningThisWeek: false,
           ),
           captureController: (value) => controller = value,
         );
@@ -705,6 +717,7 @@ void main() {
           starCount: 0,
           starBrokeThisWeek: false,
           missedTrackingThisWeek: false,
+          runLimitWarningThisWeek: false,
         ),
         snapshotsByWindowEnd: <DateTime, CalorieWeekConsumptionSnapshot>{
           closedWeekStart.add(const Duration(days: 6)): _snapshotForWeek(
@@ -754,6 +767,7 @@ void main() {
             starCount: 0,
             starBrokeThisWeek: false,
             missedTrackingThisWeek: false,
+            runLimitWarningThisWeek: false,
           ),
           controllerFactory: (initialState) => _RecordingBurnWeekRunController(
             initialState,
@@ -801,6 +815,7 @@ void main() {
             starCount: 1,
             starBrokeThisWeek: false,
             missedTrackingThisWeek: false,
+            runLimitWarningThisWeek: false,
           ),
           controllerFactory: (initialState) => _RecordingBurnWeekRunController(
             initialState,
@@ -859,6 +874,7 @@ void main() {
             starCount: 1,
             starBrokeThisWeek: false,
             missedTrackingThisWeek: false,
+            runLimitWarningThisWeek: false,
           ),
           controllerFactory: (initialState) => _RecordingBurnWeekRunController(
             initialState,

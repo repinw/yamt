@@ -219,6 +219,9 @@ void main() {
               trendWeightChangePerDay: 0,
               calculatedTdeeKcal: 2580,
               lowConfidence: false,
+              measuredTdeeKcal: 0,
+              baseGoalKcal: 0,
+              isRejected: false,
             ),
           );
 
@@ -255,6 +258,9 @@ void main() {
             trendWeightChangePerDay: 0,
             calculatedTdeeKcal: 1450,
             lowConfidence: false,
+            measuredTdeeKcal: 0,
+            baseGoalKcal: 0,
+            isRejected: false,
           ),
         );
 

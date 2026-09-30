@@ -9,13 +9,7 @@ part of 'diary_meal_section.dart';
 DiaryMealEntry _$DiaryMealEntryFromJson(Map<String, dynamic> json) =>
     DiaryMealEntry(
       id: json['id'] as String,
-      mealType:
-          $enumDecodeNullable(
-            _$MealTypeEnumMap,
-            json['meal_type'],
-            unknownValue: MealType.breakfast,
-          ) ??
-          MealType.breakfast,
+      mealType: $enumDecode(_$MealTypeEnumMap, json['meal_type']),
       name: json['name'] as String,
       totalKcal: (json['total_kcal'] as num).toDouble(),
       totalProtein: (json['total_protein'] as num).toDouble(),
@@ -27,7 +21,6 @@ DiaryMealEntry _$DiaryMealEntryFromJson(Map<String, dynamic> json) =>
       consumedUnit: $enumDecodeNullable(
         _$ConsumedUnitEnumMap,
         json['consumed_unit'],
-        unknownValue: ConsumedUnit.grams,
       ),
       bundleConsumedPortions: json['bundle_consumed_portions'] as num?,
       bundleTotalPortions: (json['bundle_total_portions'] as num?)?.toInt(),
@@ -71,13 +64,7 @@ const _$ConsumedUnitEnumMap = {
 
 DiaryMealSection _$DiaryMealSectionFromJson(Map<String, dynamic> json) =>
     DiaryMealSection(
-      mealType:
-          $enumDecodeNullable(
-            _$MealTypeEnumMap,
-            json['meal_type'],
-            unknownValue: MealType.breakfast,
-          ) ??
-          MealType.breakfast,
+      mealType: $enumDecode(_$MealTypeEnumMap, json['meal_type']),
       entries: (json['entries'] as List<dynamic>)
           .map((e) => DiaryMealEntry.fromJson(e as Map<String, dynamic>))
           .toList(),

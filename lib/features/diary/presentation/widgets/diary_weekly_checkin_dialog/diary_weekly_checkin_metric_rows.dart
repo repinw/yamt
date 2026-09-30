@@ -92,7 +92,7 @@ class _MeasuredTotalTdeeRow extends StatelessWidget {
     return _MetricRow(
       label: l10n.caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel,
       value:
-          '${_formatKcal(context, calculation.measuredTotalTdeeKcal)} '
+          '${_formatKcal(context, calculation.measuredTdeeKcal)} '
           '${l10n.caloriesUnitKcal}',
     );
   }
