@@ -3,19 +3,13 @@
 
 Usage:
   tool/ci_integration_targets.py --all
-  tool/ci_integration_targets.py <base-ref> [--since <sha> --passed <file>]
-                                            [--carried-out <file>]
+  tool/ci_integration_targets.py <base-ref>
 
 With a base ref, a test is selected when its import closure contains a file
 that changed against the merge base, or when the test file itself changed.
 Changes to files that every test depends on (packages, the Android project,
 the test driver) select every test. A change to the CI setup (this workflow,
 the tool/ci_* scripts) selects at least one test.
-
-With --since and --passed, a selected test is carried over instead of run
-when it is listed in the passed file (one test per line, the tests that passed
-on commit <sha>) and nothing in its import closure changed since <sha>. The
-carried tests are written as a JSON list to the --carried-out file.
 """
 
 import glob
@@ -94,44 +88,20 @@ def changed_files(base_ref):
     return [line for line in output.splitlines() if line]
 
 
-def changed_since(sha):
-    """Files changed from sha to HEAD, or None if sha is not available."""
-    try:
-        output = subprocess.check_output(
-            ['git', 'diff', '--name-only', sha, 'HEAD'],
-            text=True,
-            stderr=subprocess.DEVNULL,
-        )
-    except subprocess.CalledProcessError:
-        return None
-    return [line for line in output.splitlines() if line]
-
-
 def runs_all(changed):
     return any(path.startswith(RUN_ALL_PREFIXES) for path in changed)
-
-
-def parse_options(args):
-    options = {}
-    while args:
-        if len(args) < 2 or args[0] not in ('--since', '--passed', '--carried-out'):
-            sys.exit(__doc__)
-        options[args[0]] = args[1]
-        args = args[2:]
-    return options
 
 
 def main():
     os.chdir(
         subprocess.check_output(['git', 'rev-parse', '--show-toplevel'], text=True).strip()
     )
-    if len(sys.argv) < 2:
+    if len(sys.argv) != 2:
         sys.exit(__doc__)
     tests = all_tests()
     if sys.argv[1] == '--all':
         print(json.dumps(tests))
         return
-    options = parse_options(sys.argv[2:])
 
     changed = changed_files(sys.argv[1])
     cache = {}
@@ -141,26 +111,9 @@ def main():
         changed_set = set(changed)
         selected = [test for test in tests if closure(test, cache) & changed_set]
 
-    carried = []
-    if '--since' in options and '--passed' in options:
-        since = changed_since(options['--since'])
-        if since is not None and not runs_all(since):
-            with open(options['--passed'], encoding='utf-8') as source:
-                passed = {line.strip() for line in source if line.strip()}
-            since_set = set(since)
-            carried = [
-                test
-                for test in selected
-                if test in passed and not closure(test, cache) & since_set
-            ]
-            selected = [test for test in selected if test not in carried]
-
     if not selected and any(path.startswith(CI_PREFIXES) for path in changed):
         selected = tests[:1]
 
-    if '--carried-out' in options:
-        with open(options['--carried-out'], 'w', encoding='utf-8') as target:
-            json.dump(carried, target)
     print(json.dumps(selected))
 
 

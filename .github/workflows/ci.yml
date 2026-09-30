@@ -1,25 +1,26 @@
 name: CI
 
+# Pull requests run only analyze and the unit and widget tests, so they stay
+# fast. The emulator tests run after the merge: a push to master runs the
+# integration tests that the pushed commits affect, and the nightly run, a
+# release tag and a manual run run all of them. A failed run after the merge
+# opens an issue.
 on:
   pull_request:
-  # A release tag runs every integration test. A push to master runs one
-  # integration test, only to fill the caches: GitHub Actions caches that
-  # pull requests can read must be written on master.
   push:
     branches:
       - master
     tags:
       - 'v*'
+  schedule:
+    - cron: '0 2 * * *'
   workflow_dispatch:
-    inputs:
-      all:
-        description: Run every integration test
-        type: boolean
-        default: true
 
+# A new push to a pull request cancels its old run. Runs on master are not
+# cancelled, so every merged commit gets its integration tests.
 concurrency:
-  group: ci-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -61,46 +62,29 @@ jobs:
 
   integration-targets:
     name: List integration tests
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: read
     outputs:
       targets: ${{ steps.list.outputs.targets }}
-      carried: ${{ steps.list.outputs.carried }}
     steps:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      # Pull requests run only the tests whose imports reach a changed file.
-      # After a new push to a pull request, a test that passed on the previous
-      # push and whose imports did not change since is carried over, not run.
+      # A push to master runs the tests whose imports reach a file that the
+      # pushed commits changed. Without the previous commit, all tests run.
       - id: list
         env:
-          RUN_ALL: ${{ github.ref_type == 'tag' || inputs.all == true }}
-          WARM_CACHE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-          BASE_REF: origin/${{ github.base_ref || 'master' }}
-          BEFORE_SHA: ${{ github.event.action == 'synchronize' && github.event.before || '' }}
-          GH_TOKEN: ${{ github.token }}
+          RUN_ALL: ${{ github.event_name != 'push' || github.ref_type == 'tag' }}
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          echo '[]' >carried.json
-          if [ "$RUN_ALL" = "true" ]; then
+          if [ "$RUN_ALL" = "true" ] ||
+            ! git cat-file -e "$BEFORE_SHA^{commit}" 2>/dev/null; then
             targets=$(tool/ci_integration_targets.py --all)
-          elif [ "$WARM_CACHE" = "true" ]; then
-            targets=$(tool/ci_integration_targets.py --all | jq -c '.[:1]')
           else
-            args=("$BASE_REF" --carried-out carried.json)
-            if [ -n "$BEFORE_SHA" ] &&
-              tool/ci_previous_integration_passes.sh "$BEFORE_SHA" >passed.txt; then
-              args+=(--since "$BEFORE_SHA" --passed passed.txt)
-            fi
-            targets=$(tool/ci_integration_targets.py "${args[@]}")
+            targets=$(tool/ci_integration_targets.py "$BEFORE_SHA")
           fi
-          carried=$(jq -c . carried.json)
           echo "Selected integration tests: $targets"
-          echo "Passed on the previous push, not run again: $carried"
           echo "targets=$targets" >> "$GITHUB_OUTPUT"
-          echo "carried=$carried" >> "$GITHUB_OUTPUT"
 
   integration:
     name: Integration (${{ matrix.target }})
@@ -225,33 +209,11 @@ jobs:
   integration-result:
     name: Integration tests
     needs: [integration-targets, integration]
-    if: always()
+    if: always() && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
-      actions: read
+      issues: write
     steps:
-      # The next push to this pull request reads this list to skip the tests
-      # that passed here: those that ran and passed, and those carried over.
-      - name: Record the passed integration tests
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CARRIED: ${{ needs.integration-targets.outputs.carried }}
-        run: |
-          {
-            jq -r '.[]' <<<"${CARRIED:-[]}"
-            gh api --paginate \
-              "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/jobs?filter=latest" \
-              -q '.jobs[] | select(.conclusion == "success") | .name' |
-              sed -n 's/^Integration (\(.*\))$/\1/p'
-          } | sort -u >passed.txt
-          cat passed.txt
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: integration-passed
-          path: passed.txt
-          overwrite: true
-
       # "skipped" means that no selected test was affected by the change.
       - name: Check that every selected integration test passed
         env:
@@ -269,3 +231,15 @@ jobs:
               exit 1
               ;;
           esac
+
+      # The tests run after the merge, so a failure must not go unnoticed.
+      - name: Open an issue for the failed run
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create --repo "$GITHUB_REPOSITORY" \
+            --title "Integration tests failed on $GITHUB_REF_NAME (${GITHUB_SHA::8})" \
+            --label testing \
+            --body "The integration tests failed after a $GITHUB_EVENT_NAME run on $GITHUB_REF_NAME at $GITHUB_SHA. Run: $RUN_URL"
