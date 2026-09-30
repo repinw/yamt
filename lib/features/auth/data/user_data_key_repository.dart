@@ -91,7 +91,7 @@ class UserDataKeyRepository {
   /// documents of [uid]. Runs once per device and account.
   ///
   /// Temporary migration, added in 3.4.1: calorie entries saved before 3.3.0
-  /// lack `is_quick_entry`. Remove it a few releases later.
+  /// lack `is_quick_entry`. Removed in 3.7.0.
   Future<void> migratePrivateData(String uid, PayloadCipher cipher) async {
     final flagName = _privateDataMigratedName(uid);
     if (await _loadFlag(flagName)) {
