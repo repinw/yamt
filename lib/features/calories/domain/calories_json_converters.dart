@@ -2,6 +2,9 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 
 /// Parses numeric JSON values from `num` or locale-like `String` input.
+///
+/// Temporary compatibility, added in 3.4.1: removed from 3.7.0 on, once a
+/// migration has re-saved the stored calorie data in the strict shape.
 class FlexibleDoubleConverter implements JsonConverter<double, Object?> {
   /// The flexible double converter.
   const new();
@@ -90,6 +93,9 @@ class NullableCalorieNutrientDetailsConverter
 }
 
 /// Defines flexible date time converter.
+///
+/// Temporary compatibility, added in 3.4.1: removed from 3.7.0 on, once a
+/// migration has re-saved the stored calorie data in the strict shape.
 class FlexibleDateTimeConverter implements JsonConverter<DateTime, Object?> {
   /// The flexible date time converter.
   const new();
