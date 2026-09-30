@@ -1048,10 +1048,7 @@ void main() {
     );
     expect(checkInData.isReady, isTrue);
     // Replay: 2400 → 2475 (7-day window, 0.125) → 2606.25 (14 days, 0.25).
-    expect(
-      checkInData.calculation?.calculatedTrueTdeeKcal,
-      closeTo(2606.25, 0.01),
-    );
+    expect(checkInData.calculation?.calculatedTdeeKcal, closeTo(2606.25, 0.01));
     expect(checkInData.calculation?.newGoalKcal, closeTo(2606.25, 0.01));
   });
 
