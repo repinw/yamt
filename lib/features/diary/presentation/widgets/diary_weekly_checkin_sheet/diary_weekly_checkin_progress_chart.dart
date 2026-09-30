@@ -6,6 +6,7 @@ import 'package:yamt/core/constants/app_progress_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Weight since the goal start and, when [showTdee] is set, the learned TDEE
@@ -41,7 +42,7 @@ class DiaryWeeklyCheckInProgressChart extends StatelessWidget {
     final weights = progress.weights;
     final dayCount = math.max(weights.length, 1);
     double dayOffset(DateTime day) =>
-        day.difference(progress.startDate).inDays.toDouble();
+        diaryDaysBetween(progress.startDate, day).toDouble();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

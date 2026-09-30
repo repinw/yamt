@@ -13,6 +13,15 @@ DateTime addDiaryDays(DateTime day, int dayOffset) {
   return addLocalDays(day, dayOffset);
 }
 
+/// Whole diary days from [from] to [to], also across a clock change.
+int diaryDaysBetween(DateTime from, DateTime to) {
+  return DateTime.utc(
+    to.year,
+    to.month,
+    to.day,
+  ).difference(DateTime.utc(from.year, from.month, from.day)).inDays;
+}
+
 /// Returns the next local diary day.
 DateTime nextDiaryDay(DateTime day) {
   return nextLocalDay(day);
