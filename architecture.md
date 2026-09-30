@@ -431,8 +431,12 @@ NEVER move a feature type into `lib/core` to avoid an ownership decision.
   required field, a moved path, a renamed value), write a migration that
   rewrites the stored data into the new shape. The app has real users, so
   their data MUST survive every release. Start the doc comment of the
-  migration with `Temporary migration, added in <version>`. It stays for a
-  few releases; the release checklist removes it later.
+  migration with `Temporary migration, added in <version>`.
+- **Lifetime:** a migration or backward-compatibility code stays for the two
+  release stages (minor versions) after the one that adds it and is removed
+  from the third on. Code added in 3.4.1 stays in 3.5 and 3.6 and is removed
+  in 3.7.0. In the same change, record the removal version in the memory or
+  the roadmap, with file and symbol, so the release checklist removes it.
 - If you find existing backward-compatibility code, NEVER remove it on your
   own. Name it to the user with file and line, and let the user decide.
 
