@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_weekly_checkin_sheet_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_weekly_checkin_messages.dart';
@@ -93,29 +94,20 @@ class DiaryWeeklyCheckInSheet extends ConsumerWidget {
         )
         .when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, _) => _BlockedFrame(
-            checkInData: checkInData,
-            message: l10n.diaryCheckInLoadFailed,
-            onPop: pop,
-          ),
+          // A reached goal still asks for a new goal without its chart.
+          error: (_, _) => goalReached
+              ? _GoalReachedFrame(progress: null, format: format, onPop: pop)
+              : _BlockedFrame(
+                  checkInData: checkInData,
+                  message: l10n.diaryCheckInLoadFailed,
+                  onPop: pop,
+                ),
           data: (state) {
             if (goalReached) {
-              return DiaryWeeklyCheckInSheetFrame(
-                kicker: l10n.diaryCheckInGoalReachedKicker,
-                stepIndex: 0,
-                dock: [
-                  FilledButton(
-                    key: DiaryWeeklyCheckInSheetKeys.newGoalButton,
-                    onPressed: () => pop(DiaryWeeklyCheckInSheetAction.newGoal),
-                    child: Text(l10n.diaryCheckInStartNewGoal),
-                  ),
-                ],
-                children: [
-                  DiaryWeeklyCheckInGoalReachedStep(
-                    progress: state?.plan.progress,
-                    format: format,
-                  ),
-                ],
+              return _GoalReachedFrame(
+                progress: state?.plan.progress,
+                format: format,
+                onPop: pop,
               );
             }
             if (state == null || !checkInData.isReady) {
@@ -142,6 +134,37 @@ class DiaryWeeklyCheckInSheet extends ConsumerWidget {
             );
           },
         );
+  }
+}
+
+class _GoalReachedFrame extends StatelessWidget {
+  const new({
+    required this.progress,
+    required this.format,
+    required this.onPop,
+  });
+
+  final CalorieGoalProgress? progress;
+  final DiaryWeeklyCheckInNumberFormat format;
+  final void Function(DiaryWeeklyCheckInSheetAction action) onPop;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return DiaryWeeklyCheckInSheetFrame(
+      kicker: l10n.diaryCheckInGoalReachedKicker,
+      stepIndex: 0,
+      dock: [
+        FilledButton(
+          key: DiaryWeeklyCheckInSheetKeys.newGoalButton,
+          onPressed: () => onPop(DiaryWeeklyCheckInSheetAction.newGoal),
+          child: Text(l10n.diaryCheckInStartNewGoal),
+        ),
+      ],
+      children: [
+        DiaryWeeklyCheckInGoalReachedStep(progress: progress, format: format),
+      ],
+    );
   }
 }
 
