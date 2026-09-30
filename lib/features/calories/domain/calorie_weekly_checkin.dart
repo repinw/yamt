@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_domain_math.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_weight_point.dart';
 
 /// The minimum resolved daily calorie goal kcal.
 const double minimumResolvedDailyCalorieGoalKcal =
@@ -33,18 +34,6 @@ const int dailyLearnedTdeeMinimumCompleteDays =
 
 /// Maximum completed intake days used for daily learned TDEE.
 const dailyLearnedTdeeMaximumLookbackDays = 28;
-
-/// Defines calorie weekly check in weight point.
-class CalorieWeeklyCheckInWeightPoint {
-  /// The calorie weekly check in weight point.
-  const new({required this.dayIndex, required this.weightKg});
-
-  /// The day index.
-  final int dayIndex;
-
-  /// The weight kg.
-  final double weightKg;
-}
 
 /// Defines calorie weekly check in calculation.
 class CalorieWeeklyCheckInCalculation {
