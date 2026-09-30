@@ -1,9 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/'
-    'cooking_flow_text_styles.dart';
 
 const _cookflowMaxContentWidth = 560.0;
 
@@ -54,9 +53,7 @@ class CookingFlowStepLayout extends StatelessWidget {
             children: <Widget>[
               Text(
                 title,
-                style: context.cookingFlowDisplayStyle(
-                  textTheme.headlineMedium,
-                ),
+                style: context.graphitDisplayStyle(textTheme.headlineMedium),
               ),
               const SizedBox(height: AppSpacing.md),
               Text(

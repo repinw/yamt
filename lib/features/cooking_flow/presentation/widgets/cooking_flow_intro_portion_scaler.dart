@@ -2,8 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/'
-    'cooking_flow_text_styles.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Portion stepper of the intro step: a caption, the count as a large
@@ -81,7 +80,7 @@ class _CookingFlowIntroPortionScalerState
             children: <Widget>[
               Text(
                 l10n.cookflowPortionScalerTitle.toUpperCase(),
-                style: context.cookingFlowKickerStyle,
+                style: context.graphitKickerStyle,
               ),
               Text(
                 l10n.cookflowTargetPortionsFieldLabel,
@@ -128,7 +127,7 @@ class _CookingFlowIntroPortionScalerState
               enabledBorder: _fieldBorder,
               focusedBorder: _fieldBorder,
             ),
-            style: context.cookingFlowDisplayStyle(textTheme.headlineSmall),
+            style: context.graphitDisplayStyle(textTheme.headlineSmall),
           ),
         ),
         const SizedBox(width: AppSpacing.xs),

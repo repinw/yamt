@@ -1,12 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/cooking_flow_action_button/'
     'cooking_flow_action_button.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_step_layout.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/'
-    'cooking_flow_text_styles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Success screen shown after cookflow saved a meal.
@@ -46,14 +45,12 @@ class CookingFlowSuccessPage extends StatelessWidget {
               children: <Widget>[
                 Text(
                   l10n.cookflowSuccessHeadline.toUpperCase(),
-                  style: context.cookingFlowKickerStyle,
+                  style: context.graphitKickerStyle,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   mealName,
-                  style: context.cookingFlowDisplayStyle(
-                    textTheme.headlineSmall,
-                  ),
+                  style: context.graphitDisplayStyle(textTheme.headlineSmall),
                 ),
                 const SizedBox(height: AppSpacing.xxl),
                 SizedBox(

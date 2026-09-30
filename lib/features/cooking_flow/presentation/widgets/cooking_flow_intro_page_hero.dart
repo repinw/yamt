@@ -4,8 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/'
-    'cooking_flow_text_styles.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_cover.dart';
 
@@ -78,13 +77,13 @@ class CookingFlowIntroMealHero extends StatelessWidget {
                 kicker.toUpperCase(),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: context.cookingFlowKickerStyle,
+                style: context.graphitKickerStyle,
               ),
               Text(
                 label,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: context.cookingFlowDisplayStyle(textTheme.headlineSmall),
+                style: context.graphitDisplayStyle(textTheme.headlineSmall),
               ),
               Text(
                 caption,

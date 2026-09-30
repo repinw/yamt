@@ -1,9 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/cooking_flow_progress_indicator.dart';
-import 'package:yamt/features/cooking_flow/presentation/widgets/cooking_flow_text_styles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Cookflow top app bar: back, the phase as a small caption over the title,
@@ -73,7 +73,7 @@ class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
                           phaseLabel.toUpperCase(),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: context.cookingFlowKickerStyle,
+                          style: context.graphitKickerStyle,
                         ),
                         const SizedBox(height: AppSpacing.xxs),
                       ],
@@ -81,7 +81,7 @@ class CookflowTopBar extends StatelessWidget implements PreferredSizeWidget {
                         l10n.cookflowPrepflowTitle,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: context.cookingFlowDisplayStyle(
+                        style: context.graphitDisplayStyle(
                           textTheme.titleLarge,
                         ),
                       ),
