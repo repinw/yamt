@@ -64,7 +64,6 @@ void main() {
       starCount: starCount,
       starBrokeThisWeek: starBrokeThisWeek,
       missedTrackingThisWeek: missedTrackingThisWeek,
-      runLimitWarningThisWeek: false,
     );
   }
 
@@ -420,7 +419,6 @@ void main() {
         starCount: 2,
         starBrokeThisWeek: true,
         missedTrackingThisWeek: true,
-        runLimitWarningThisWeek: false,
       ),
     );
     final container = buildContainer(repository);

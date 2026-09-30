@@ -57,7 +57,7 @@ class GlobalFoodServingSuggestion extends ServingSizeSuggestion {
   /// Creates a [GlobalFoodServingSuggestion] for from json.
   factory fromJson(Map<String, dynamic> json) {
     final amount = _readPositiveDouble(json['amount']) ?? 0;
-    final unit = ConsumedUnit.fromJsonValue(json['unit'] as String);
+    final unit = ConsumedUnit.fromJsonValue(json['unit'] as String?);
     final updatedAt = _readDateTime(json['updated_at']) ?? DateTime.now();
     return GlobalFoodServingSuggestion(
       id: (json['id'] as String? ?? '').trim(),

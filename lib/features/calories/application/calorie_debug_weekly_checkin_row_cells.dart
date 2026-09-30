@@ -167,12 +167,12 @@ CalorieDebugDumpRow _measuredTotalTdeeWeeklyRow({
   required int order,
 }) {
   final weightStorageKcalPerDay =
-      calculation.averageIntakeKcal - calculation.measuredTdeeKcal;
+      calculation.averageIntakeKcal - calculation.measuredTotalTdeeKcal;
 
   return _weeklyRow(
     window: window,
     name: 'measured_total_tdee',
-    kcal: calculation.measuredTdeeKcal,
+    kcal: calculation.measuredTotalTdeeKcal,
     order: order,
     extra: [
       calorieDebugWindowExtra(window, dates),
@@ -184,7 +184,7 @@ CalorieDebugDumpRow _measuredTotalTdeeWeeklyRow({
       ),
       calorieDebugNamedNumber(
         'measured_total_tdee',
-        calculation.measuredTdeeKcal,
+        calculation.measuredTotalTdeeKcal,
       ),
       'learning_intake=[${formatCalorieDebugDoubleList(intakeKcalByDay)}]',
     ].join('; '),

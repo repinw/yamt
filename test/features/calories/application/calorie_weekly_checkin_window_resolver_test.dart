@@ -72,8 +72,6 @@ void main() {
         baseGoalKcal: 2050,
         lowConfidence: false,
         inputHash: 'v2:abc',
-        measuredTdeeKcal: 0,
-        isRejected: false,
       ),
     );
 
@@ -101,7 +99,6 @@ void main() {
         baseGoalKcal: 2050,
         lowConfidence: false,
         isRejected: true,
-        measuredTdeeKcal: 0,
       ),
     );
 
@@ -129,8 +126,6 @@ void main() {
             calculatedTdeeKcal: 2050,
             baseGoalKcal: 2050,
             lowConfidence: false,
-            measuredTdeeKcal: 0,
-            isRejected: false,
           ),
         )
         .copyWithPendingWeeklyCheckIn(
@@ -166,8 +161,6 @@ void main() {
         baseGoalKcal: 2050,
         lowConfidence: false,
         invalidatedAt: today,
-        measuredTdeeKcal: 0,
-        isRejected: false,
       ),
     );
 

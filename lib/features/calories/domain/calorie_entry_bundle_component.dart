@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 
 part 'calorie_entry_bundle_component.g.dart';
 
@@ -50,15 +51,19 @@ class CalorieEntryBundleComponent {
   }
 
   /// The total kcal.
+  @FlexibleDoubleConverter()
   final double totalKcal;
 
   /// The total protein.
+  @FlexibleDoubleConverter()
   final double totalProtein;
 
   /// The total carbs.
+  @FlexibleDoubleConverter()
   final double totalCarbs;
 
   /// The total fat.
+  @FlexibleDoubleConverter()
   final double totalFat;
 
   /// To json.

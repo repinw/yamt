@@ -110,7 +110,7 @@ CalorieWeeklyLearningSeed resolveCascadedPreviousLearningSeedForWindow({
     );
     seed = CalorieWeeklyLearningSeed(
       previousGoalKcal: calculation.newGoalKcal,
-      previousLearnedTdeeKcal: calculation.calculatedTdeeKcal,
+      previousLearnedTdeeKcal: calculation.calculatedBaseTdeeKcal,
     );
     windowStartDate = nextDiaryDay(windowEndDate);
   }

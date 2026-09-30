@@ -105,9 +105,6 @@ CalorieGoalSettings _learnedTdeeSettings({
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2450,
       lowConfidence: false,
-      measuredTdeeKcal: 0,
-      baseGoalKcal: 0,
-      isRejected: false,
     ),
   );
 }
@@ -252,9 +249,6 @@ void main() {
         trendWeightChangePerDay: -0.08,
         calculatedTdeeKcal: 2450,
         lowConfidence: false,
-        measuredTdeeKcal: 0,
-        baseGoalKcal: 0,
-        isRejected: false,
       ),
     );
 
@@ -284,9 +278,6 @@ void main() {
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2450,
       lowConfidence: false,
-      measuredTdeeKcal: 0,
-      baseGoalKcal: 0,
-      isRejected: false,
     );
     const profile = CalorieCalculatorProfile(
       sex: CalorieCalculatorSex.female,
@@ -318,7 +309,6 @@ void main() {
       starCount: 2,
       starBrokeThisWeek: true,
       missedTrackingThisWeek: true,
-      runLimitWarningThisWeek: false,
     );
     final runStateRepository = _FakeBurnWeekRunStateRepository(initialRunState);
     addTearDown(settingsRepository.dispose);
@@ -374,7 +364,6 @@ void main() {
         starCount: 7,
         starBrokeThisWeek: false,
         missedTrackingThisWeek: false,
-        runLimitWarningThisWeek: false,
       ),
     );
     addTearDown(settingsRepository.dispose);
@@ -533,7 +522,6 @@ void main() {
                 starCount: 0,
                 starBrokeThisWeek: false,
                 missedTrackingThisWeek: false,
-                runLimitWarningThisWeek: false,
               ),
             ),
           ),

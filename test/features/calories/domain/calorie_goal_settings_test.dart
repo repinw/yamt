@@ -46,26 +46,35 @@ void main() {
     expect(decoded.goalHistory.single.changedAt, DateTime(2026, 2, 25, 11));
   });
 
+  test('json without math version decodes as current clean shape', () {
+    final decoded = CalorieGoalSettings.fromJson({
+      'daily_kcal_goal': 2100,
+      'updated_at': DateTime(2026, 2, 25, 11),
+      'goal_history': const <Object>[],
+      'skipped_intake_day_keys': const <Object>[],
+    });
+
+    expect(decoded.calorieMathVersion, currentCalorieMathVersion);
+  });
+
   test('weekly snapshot json round trip preserves learned tdee values', () {
     final decoded = CalorieGoalSettings.fromJson({
       'daily_kcal_goal': 2100,
-      'updated_at': DateTime(2026, 3, 1, 8),
-      'calorie_math_version': currentCalorieMathVersion,
+      'updated_at': '2026-03-01T08:00:00.000',
       'goal_history': [
         {
           'daily_kcal_goal': 2100,
-          'effective_date': DateTime(2026, 2, 23),
-          'changed_at': DateTime(2026, 3, 1, 8),
+          'effective_date': '2026-02-23T00:00:00.000',
+          'changed_at': '2026-03-01T08:00:00.000',
           'source': 'weekly_checkin',
           'weekly_check_in_snapshot': {
-            'window_start_date': DateTime(2026, 2, 16),
-            'window_end_date': DateTime(2026, 2, 22),
+            'window_start_date': '2026-02-16T00:00:00.000',
+            'window_end_date': '2026-02-22T00:00:00.000',
             'trend_weight_change_per_day': -0.1,
             'measured_tdee_kcal': 2450,
             'calculated_tdee_kcal': 2450,
             'base_goal_kcal': 2100,
             'low_confidence': false,
-            'is_rejected': false,
           },
         },
       ],
@@ -429,10 +438,6 @@ void main() {
           trendWeightChangePerDay: -0.07,
           lowConfidence: false,
           macroWeightKg: macroWeightKg,
-          measuredTdeeKcal: 0,
-          calculatedTdeeKcal: 0,
-          baseGoalKcal: 0,
-          isRejected: false,
         ),
       );
     }
@@ -453,7 +458,6 @@ void main() {
           calculatorProfile: null,
           effectiveDate: DateTime(2026, 9, 10),
           changedAt: DateTime(2026, 9, 10),
-          source: CalorieGoalSource.manual,
         ),
         checkIn(DateTime(2026, 9, 15), null),
         CalorieGoalHistoryEntry(

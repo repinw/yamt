@@ -49,8 +49,6 @@ CalorieGoalSettings _withCheckIn(
       calculatedTdeeKcal: 2600,
       inputHash: 'hash',
       isRejected: isRejected,
-      measuredTdeeKcal: 0,
-      baseGoalKcal: 0,
     ),
   );
 }

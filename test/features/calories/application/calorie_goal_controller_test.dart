@@ -595,9 +595,6 @@ void main() {
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2450,
       lowConfidence: false,
-      measuredTdeeKcal: 0,
-      baseGoalKcal: 0,
-      isRejected: false,
     );
     const initialProfile = CalorieCalculatorProfile(
       sex: CalorieCalculatorSex.female,
@@ -735,9 +732,6 @@ void main() {
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2450,
       lowConfidence: false,
-      measuredTdeeKcal: 0,
-      baseGoalKcal: 0,
-      isRejected: false,
     );
     const profile = CalorieCalculatorProfile(
       sex: CalorieCalculatorSex.female,
@@ -924,9 +918,6 @@ void main() {
       trendWeightChangePerDay: -0.08,
       calculatedTdeeKcal: 2315,
       lowConfidence: false,
-      measuredTdeeKcal: 0,
-      baseGoalKcal: 0,
-      isRejected: false,
     );
     final initialSettings = const CalorieGoalSettings.empty()
         .applyGoalChange(
@@ -1202,9 +1193,6 @@ void main() {
             trendWeightChangePerDay: -0.08,
             calculatedTdeeKcal: 2315,
             lowConfidence: false,
-            measuredTdeeKcal: 0,
-            baseGoalKcal: 0,
-            isRejected: false,
           ),
         );
 
@@ -1234,9 +1222,6 @@ void main() {
         calculatedTdeeKcal: 2315,
         lowConfidence: false,
         inputHash: 'v1:old',
-        measuredTdeeKcal: 0,
-        baseGoalKcal: 0,
-        isRejected: false,
       );
       final newSnapshot = CalorieGoalWeeklyCheckInSnapshot(
         windowStartDate: DateTime(2026, 4, 8),
@@ -1245,9 +1230,6 @@ void main() {
         calculatedTdeeKcal: 2340,
         lowConfidence: false,
         inputHash: 'v1:new',
-        measuredTdeeKcal: 0,
-        baseGoalKcal: 0,
-        isRejected: false,
       );
       final repository = FakeCalorieSettingsRepository(
         initialSettings: CalorieGoalSettings.single(
@@ -1320,9 +1302,6 @@ void main() {
         trendWeightChangePerDay: -0.08,
         calculatedTdeeKcal: 2315,
         lowConfidence: false,
-        measuredTdeeKcal: 0,
-        baseGoalKcal: 0,
-        isRejected: false,
       ),
     );
     final secondSaved = await controller.saveWeeklyCheckInGoal(
@@ -1334,9 +1313,6 @@ void main() {
         trendWeightChangePerDay: -0.04,
         calculatedTdeeKcal: 2280,
         lowConfidence: true,
-        measuredTdeeKcal: 0,
-        baseGoalKcal: 0,
-        isRejected: false,
       ),
     );
 
@@ -1382,9 +1358,6 @@ void main() {
                 calculatedTdeeKcal: 2300,
                 lowConfidence: false,
                 inputHash: 'v1:first',
-                measuredTdeeKcal: 0,
-                baseGoalKcal: 0,
-                isRejected: false,
               ),
             )
             .applyGoalChange(
@@ -1399,9 +1372,6 @@ void main() {
                 calculatedTdeeKcal: 2350,
                 lowConfidence: false,
                 inputHash: 'v1:second',
-                measuredTdeeKcal: 0,
-                baseGoalKcal: 0,
-                isRejected: false,
               ),
             ),
       );
@@ -1457,9 +1427,6 @@ void main() {
           calculatedTdeeKcal: 2300,
           lowConfidence: false,
           inputHash: 'v1:first',
-          measuredTdeeKcal: 0,
-          baseGoalKcal: 0,
-          isRejected: false,
         ),
       );
 

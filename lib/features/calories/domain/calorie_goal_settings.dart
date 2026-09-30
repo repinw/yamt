@@ -1,9 +1,9 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:yamt/core/domain/date_time_json_converter.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
+import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
@@ -111,25 +111,29 @@ class CalorieGoalSettings {
   }
 
   /// The daily kcal goal.
+  @NullableFlexibleDoubleConverter()
   final double? dailyKcalGoal;
 
   /// The calculator profile.
   final CalorieCalculatorProfile? calculatorProfile;
 
   /// The calorie math data version.
+  @JsonKey(defaultValue: currentCalorieMathVersion)
   final int calorieMathVersion;
 
   /// The updated at.
-  @DateTimeJsonConverter()
+  @NullableFlexibleDateTimeConverter()
   final DateTime? updatedAt;
 
   /// The goal history.
+  @JsonKey(defaultValue: <CalorieGoalHistoryEntry>[])
   final List<CalorieGoalHistoryEntry> goalHistory;
 
   /// The pending weekly check in.
   final PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn;
 
   /// The skipped intake day keys.
+  @JsonKey(defaultValue: <String>[])
   final List<String> skippedIntakeDayKeys;
 
   /// Configured weekdays for training (1 = Monday, 7 = Sunday).
@@ -137,6 +141,7 @@ class CalorieGoalSettings {
 
   /// kcal of one training session: added to the energy use of the week and
   /// the gap between a training day and a rest day.
+  @FlexibleDoubleConverter()
   final double trainingDayKcalOffset;
 
   /// Manual per-day training overrides (dayKey -> isTrainingDay).

@@ -79,9 +79,6 @@ CalorieGoalSettings _settingsWithTrustedSnapshot() {
       calculatedTdeeKcal: 2300,
       lowConfidence: false,
       inputHash: 'v1:trusted',
-      measuredTdeeKcal: 0,
-      baseGoalKcal: 0,
-      isRejected: false,
     ),
   );
 }

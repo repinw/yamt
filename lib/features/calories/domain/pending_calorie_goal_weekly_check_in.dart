@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:yamt/core/domain/date_time_json_converter.dart';
+import 'package:yamt/features/calories/domain/calories_json_converters.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'pending_calorie_goal_weekly_check_in.g.dart';
@@ -22,19 +22,19 @@ class PendingCalorieGoalWeeklyCheckIn {
       _$PendingCalorieGoalWeeklyCheckInFromJson(json);
 
   /// The window start date.
-  @DateTimeJsonConverter()
+  @FlexibleDateTimeConverter()
   final DateTime windowStartDate;
 
   /// The window end date.
-  @DateTimeJsonConverter()
+  @FlexibleDateTimeConverter()
   final DateTime windowEndDate;
 
   /// The due date.
-  @DateTimeJsonConverter()
+  @FlexibleDateTimeConverter()
   final DateTime dueDate;
 
   /// The dismissed at.
-  @DateTimeJsonConverter()
+  @NullableFlexibleDateTimeConverter()
   final DateTime? dismissedAt;
 
   /// Whether dismissed.

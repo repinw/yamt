@@ -10,26 +10,36 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
   id: json['id'] as String,
   userId: json['user_id'] as String,
   name: json['name'] as String,
-  mealType: $enumDecode(_$MealTypeEnumMap, json['meal_type']),
-  consumedAmount: (json['consumed_amount'] as num).toDouble(),
-  consumedUnit: $enumDecode(_$ConsumedUnitEnumMap, json['consumed_unit']),
-  per100Kcal: (json['per100_kcal'] as num).toDouble(),
-  per100Protein: (json['per100_protein'] as num).toDouble(),
-  per100Carbs: (json['per100_carbs'] as num).toDouble(),
-  per100Fat: (json['per100_fat'] as num).toDouble(),
-  totalKcal: (json['total_kcal'] as num).toDouble(),
-  totalProtein: (json['total_protein'] as num).toDouble(),
-  totalCarbs: (json['total_carbs'] as num).toDouble(),
-  totalFat: (json['total_fat'] as num).toDouble(),
-  loggedAt: const DateTimeJsonConverter().fromJson(
-    json['logged_at'] as DateTime,
+  mealType:
+      $enumDecodeNullable(
+        _$MealTypeEnumMap,
+        json['meal_type'],
+        unknownValue: MealType.snack,
+      ) ??
+      MealType.snack,
+  consumedAmount: const FlexibleDoubleConverter().fromJson(
+    json['consumed_amount'],
   ),
-  createdAt: const DateTimeJsonConverter().fromJson(
-    json['created_at'] as DateTime,
+  consumedUnit:
+      $enumDecodeNullable(
+        _$ConsumedUnitEnumMap,
+        json['consumed_unit'],
+        unknownValue: ConsumedUnit.grams,
+      ) ??
+      ConsumedUnit.grams,
+  per100Kcal: const FlexibleDoubleConverter().fromJson(json['per100_kcal']),
+  per100Protein: const FlexibleDoubleConverter().fromJson(
+    json['per100_protein'],
   ),
-  updatedAt: const DateTimeJsonConverter().fromJson(
-    json['updated_at'] as DateTime,
-  ),
+  per100Carbs: const FlexibleDoubleConverter().fromJson(json['per100_carbs']),
+  per100Fat: const FlexibleDoubleConverter().fromJson(json['per100_fat']),
+  totalKcal: const FlexibleDoubleConverter().fromJson(json['total_kcal']),
+  totalProtein: const FlexibleDoubleConverter().fromJson(json['total_protein']),
+  totalCarbs: const FlexibleDoubleConverter().fromJson(json['total_carbs']),
+  totalFat: const FlexibleDoubleConverter().fromJson(json['total_fat']),
+  loggedAt: const FlexibleDateTimeConverter().fromJson(json['logged_at']),
+  createdAt: const FlexibleDateTimeConverter().fromJson(json['created_at']),
+  updatedAt: const FlexibleDateTimeConverter().fromJson(json['updated_at']),
   isQuickEntry: json['is_quick_entry'] as bool,
   brand: json['brand'] as String?,
   imageUrl: json['image_url'] as String?,
@@ -47,7 +57,7 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
                 CalorieEntryBundleComponent.fromJson(e as Map<String, dynamic>),
           )
           .toList() ??
-      const <CalorieEntryBundleComponent>[],
+      [],
   nutrientDetails: const NullableCalorieNutrientDetailsConverter().fromJson(
     json['nutrient_details'],
   ),
@@ -75,19 +85,25 @@ Map<String, dynamic> _$CalorieEntryToJson(
   ),
   'is_quick_entry': instance.isQuickEntry,
   'meal_type': _$MealTypeEnumMap[instance.mealType]!,
-  'consumed_amount': instance.consumedAmount,
+  'consumed_amount': const FlexibleDoubleConverter().toJson(
+    instance.consumedAmount,
+  ),
   'consumed_unit': _$ConsumedUnitEnumMap[instance.consumedUnit]!,
-  'per100_kcal': instance.per100Kcal,
-  'per100_protein': instance.per100Protein,
-  'per100_carbs': instance.per100Carbs,
-  'per100_fat': instance.per100Fat,
-  'total_kcal': instance.totalKcal,
-  'total_protein': instance.totalProtein,
-  'total_carbs': instance.totalCarbs,
-  'total_fat': instance.totalFat,
-  'logged_at': const DateTimeJsonConverter().toJson(instance.loggedAt),
-  'created_at': const DateTimeJsonConverter().toJson(instance.createdAt),
-  'updated_at': const DateTimeJsonConverter().toJson(instance.updatedAt),
+  'per100_kcal': const FlexibleDoubleConverter().toJson(instance.per100Kcal),
+  'per100_protein': const FlexibleDoubleConverter().toJson(
+    instance.per100Protein,
+  ),
+  'per100_carbs': const FlexibleDoubleConverter().toJson(instance.per100Carbs),
+  'per100_fat': const FlexibleDoubleConverter().toJson(instance.per100Fat),
+  'total_kcal': const FlexibleDoubleConverter().toJson(instance.totalKcal),
+  'total_protein': const FlexibleDoubleConverter().toJson(
+    instance.totalProtein,
+  ),
+  'total_carbs': const FlexibleDoubleConverter().toJson(instance.totalCarbs),
+  'total_fat': const FlexibleDoubleConverter().toJson(instance.totalFat),
+  'logged_at': const FlexibleDateTimeConverter().toJson(instance.loggedAt),
+  'created_at': const FlexibleDateTimeConverter().toJson(instance.createdAt),
+  'updated_at': const FlexibleDateTimeConverter().toJson(instance.updatedAt),
 };
 
 const _$MealTypeEnumMap = {
