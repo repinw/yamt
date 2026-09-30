@@ -183,9 +183,10 @@ DiaryWeeklyCheckInData _checkInData({
         ? const CalorieWeeklyCheckInCalculation(
             trendWeightChangePerDay: -0.05,
             averageIntakeKcal: 2150,
-            measuredTdeeKcal: 2500,
-            calculatedTdeeKcal: 2450,
-            newGoalKcal: 2200,
+            measuredTotalTdeeKcal: 2500,
+            measuredBaseTdeeKcal: 2200,
+            calculatedBaseTdeeKcal: 2450,
+            newBaseGoalKcal: 2200,
             dynamicGoalTodayKcal: 2225,
           )
         : null,

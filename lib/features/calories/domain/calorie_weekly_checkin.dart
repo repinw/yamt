@@ -52,11 +52,30 @@ class CalorieWeeklyCheckInCalculation {
   const new({
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
-    required this.measuredTdeeKcal,
-    required this.calculatedTdeeKcal,
-    required this.newGoalKcal,
-    required this.dynamicGoalTodayKcal,
-  });
+    double? measuredTdeeKcal,
+    double? calculatedTdeeKcal,
+    double? newGoalKcal,
+    double? dynamicGoalTodayKcal,
+    double? measuredTotalTdeeKcal,
+    double? measuredBaseTdeeKcal,
+    double? calculatedBaseTdeeKcal,
+    double? newBaseGoalKcal,
+    double? measuredTrueTdeeKcal,
+    double? calculatedTrueTdeeKcal,
+  }) : measuredTdeeKcal =
+           measuredTdeeKcal ??
+           measuredTotalTdeeKcal ??
+           measuredBaseTdeeKcal ??
+           measuredTrueTdeeKcal ??
+           0,
+       calculatedTdeeKcal =
+           calculatedTdeeKcal ??
+           calculatedBaseTdeeKcal ??
+           calculatedTrueTdeeKcal ??
+           0,
+       newGoalKcal = newGoalKcal ?? newBaseGoalKcal ?? 0,
+       dynamicGoalTodayKcal =
+           dynamicGoalTodayKcal ?? newGoalKcal ?? newBaseGoalKcal ?? 0;
 
   /// The trend weight change per day.
   final double trendWeightChangePerDay;
@@ -75,6 +94,24 @@ class CalorieWeeklyCheckInCalculation {
 
   /// The dynamic goal today kcal.
   final double dynamicGoalTodayKcal;
+
+  /// Backwards-compatible label for measured total TDEE.
+  double get measuredTotalTdeeKcal => measuredTdeeKcal;
+
+  /// Backwards-compatible label for measured base TDEE.
+  double get measuredBaseTdeeKcal => measuredTdeeKcal;
+
+  /// Backwards-compatible label for calculated base TDEE.
+  double get calculatedBaseTdeeKcal => calculatedTdeeKcal;
+
+  /// Backwards-compatible label for new base goal.
+  double get newBaseGoalKcal => newGoalKcal;
+
+  /// Backwards-compatible label for measured total TDEE.
+  double get measuredTrueTdeeKcal => measuredTdeeKcal;
+
+  /// Backwards-compatible label for Base-TDEE while UI copy is updated.
+  double get calculatedTrueTdeeKcal => calculatedTdeeKcal;
 }
 
 /// Defines measured TDEE calculation before EMA smoothing.
@@ -83,8 +120,16 @@ class CalorieMeasuredTdeeCalculation {
   const new({
     required this.trendWeightChangePerDay,
     required this.averageIntakeKcal,
-    required this.measuredTdeeKcal,
-  });
+    double? measuredTdeeKcal,
+    double? measuredTotalTdeeKcal,
+    double? measuredBaseTdeeKcal,
+    double? measuredTrueTdeeKcal,
+  }) : measuredTdeeKcal =
+           measuredTdeeKcal ??
+           measuredTotalTdeeKcal ??
+           measuredBaseTdeeKcal ??
+           measuredTrueTdeeKcal ??
+           0;
 
   /// The trend weight change per day.
   final double trendWeightChangePerDay;
@@ -94,6 +139,15 @@ class CalorieMeasuredTdeeCalculation {
 
   /// The measured true TDEE kcal.
   final double measuredTdeeKcal;
+
+  /// Backwards-compatible label for measured total TDEE.
+  double get measuredTotalTdeeKcal => measuredTdeeKcal;
+
+  /// Backwards-compatible label for measured base TDEE.
+  double get measuredBaseTdeeKcal => measuredTdeeKcal;
+
+  /// Backwards-compatible label for measured total TDEE.
+  double get measuredTrueTdeeKcal => measuredTdeeKcal;
 }
 
 /// Defines learned TDEE target calculation from measured data.
@@ -104,7 +158,10 @@ class CalorieLearnedTdeeGoalCalculation {
     required this.calculatedTdeeKcal,
     required this.rawGoalKcal,
     required this.newGoalKcal,
-  });
+    double? calculatedBaseTdeeKcal,
+    double? newBaseGoalKcal,
+  }) : calculatedBaseTdeeKcal = calculatedBaseTdeeKcal ?? calculatedTdeeKcal,
+       newBaseGoalKcal = newBaseGoalKcal ?? newGoalKcal;
 
   /// The measured TDEE calculation.
   final CalorieMeasuredTdeeCalculation measured;
@@ -117,6 +174,15 @@ class CalorieLearnedTdeeGoalCalculation {
 
   /// The final base goal after movement clamping.
   final double newGoalKcal;
+
+  /// Backwards-compatible label for Base-TDEE.
+  final double calculatedBaseTdeeKcal;
+
+  /// Backwards-compatible label for base goal.
+  final double newBaseGoalKcal;
+
+  /// Backwards-compatible label for Base-TDEE.
+  double get calculatedTrueTdeeKcal => calculatedTdeeKcal;
 }
 
 /// Defines calorie weekly check in calculator.
@@ -250,8 +316,11 @@ abstract final class CalorieWeeklyCheckInCalculator {
     required double previousLearnedTdeeKcal,
     required double measuredTdeeKcal,
     required int learningDayCount,
+    double? measuredBaseTdeeKcal,
   }) {
-    final effectiveMeasured = measuredTdeeKcal > 0 ? measuredTdeeKcal : 0.0;
+    final effectiveMeasured = measuredTdeeKcal > 0
+        ? measuredTdeeKcal
+        : (measuredBaseTdeeKcal ?? 0.0);
     final newDataWeight =
         _maxNewDataWeight *
         learningDayCount.clamp(1, dailyLearnedTdeeMaximumLookbackDays) /

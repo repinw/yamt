@@ -760,9 +760,6 @@ void main() {
       trendWeightChangePerDay: -0.05,
       calculatedTdeeKcal: 2200,
       lowConfidence: false,
-      measuredTdeeKcal: 0,
-      baseGoalKcal: 0,
-      isRejected: false,
     );
 
     await _pumpDiaryPage(
@@ -1199,8 +1196,8 @@ DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
     calculation: const CalorieWeeklyCheckInCalculation(
       trendWeightChangePerDay: -0.05,
       averageIntakeKcal: 2100,
-      measuredTdeeKcal: 2450,
-      calculatedTdeeKcal: 2400,
+      measuredTrueTdeeKcal: 2450,
+      calculatedTrueTdeeKcal: 2400,
       newGoalKcal: 2200,
       dynamicGoalTodayKcal: 2250,
     ),
@@ -1265,9 +1262,6 @@ CalorieGoalSettings _weeklyCheckInGoalSettings(DateTime today) {
       trendWeightChangePerDay: -0.05,
       calculatedTdeeKcal: 2200,
       lowConfidence: false,
-      measuredTdeeKcal: 0,
-      baseGoalKcal: 0,
-      isRejected: false,
     ),
   );
 }

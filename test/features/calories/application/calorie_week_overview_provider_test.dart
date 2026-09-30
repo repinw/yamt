@@ -926,9 +926,6 @@ void main() {
                 trendWeightChangePerDay: -0.05,
                 calculatedTdeeKcal: 2300,
                 lowConfidence: false,
-                measuredTdeeKcal: 0,
-                baseGoalKcal: 0,
-                isRejected: false,
               ),
             ),
       );

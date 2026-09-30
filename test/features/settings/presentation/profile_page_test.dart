@@ -148,9 +148,6 @@ void main() {
           lowConfidence: false,
           calculatedTdeeKcal: 2400,
           inputHash: 'hash',
-          measuredTdeeKcal: 0,
-          baseGoalKcal: 0,
-          isRejected: false,
         ),
       ),
     );

@@ -30,10 +30,6 @@ void main() {
       windowEndDate: DateTime.utc(2026, 3, 14),
       trendWeightChangePerDay: 0,
       lowConfidence: false,
-      measuredTdeeKcal: 0,
-      calculatedTdeeKcal: 0,
-      baseGoalKcal: 0,
-      isRejected: false,
     );
     final entry = CalorieGoalHistoryEntry(
       dailyKcalGoal: 2000,

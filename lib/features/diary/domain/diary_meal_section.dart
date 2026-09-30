@@ -37,6 +37,10 @@ class DiaryMealEntry {
   final String id;
 
   /// Meal section.
+  @JsonKey(
+    defaultValue: MealType.breakfast,
+    unknownEnumValue: MealType.breakfast,
+  )
   final MealType mealType;
 
   /// Display name.
@@ -64,6 +68,7 @@ class DiaryMealEntry {
   final double? consumedAmount;
 
   /// Consumed unit (grams or milliliters).
+  @JsonKey(unknownEnumValue: ConsumedUnit.grams)
   final ConsumedUnit? consumedUnit;
 
   /// Consumed portions if part of a bundle.
@@ -92,6 +97,10 @@ class DiaryMealSection {
   Map<String, dynamic> toJson() => _$DiaryMealSectionToJson(this);
 
   /// Meal type.
+  @JsonKey(
+    defaultValue: MealType.breakfast,
+    unknownEnumValue: MealType.breakfast,
+  )
   final MealType mealType;
 
   /// Entries in this meal section.

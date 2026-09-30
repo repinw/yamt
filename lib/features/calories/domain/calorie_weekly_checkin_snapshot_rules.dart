@@ -130,10 +130,9 @@ CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshotFor({
     trendWeightChangePerDay: calculation.trendWeightChangePerDay,
     measuredTdeeKcal: calculation.measuredTdeeKcal,
     calculatedTdeeKcal: calculation.calculatedTdeeKcal,
-    baseGoalKcal: calculation.newGoalKcal,
+    baseGoalKcal: calculation.newBaseGoalKcal,
     lowConfidence: lowConfidence,
     inputHash: inputHash,
-    isRejected: false,
     macroWeightKg: macroWeightKg,
   );
 }

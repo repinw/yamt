@@ -9,11 +9,13 @@ part of 'burn_week_run_state.dart';
 BurnWeekRunState _$BurnWeekRunStateFromJson(Map<String, dynamic> json) =>
     BurnWeekRunState(
       currentWeekStartDayKey: json['current_week_start_day_key'] as String?,
-      runWeekNumber: (json['run_week_number'] as num).toInt(),
-      starCount: (json['star_count'] as num).toInt(),
-      starBrokeThisWeek: json['star_broke_this_week'] as bool,
-      missedTrackingThisWeek: json['missed_tracking_this_week'] as bool,
-      runLimitWarningThisWeek: json['run_limit_warning_this_week'] as bool,
+      runWeekNumber: (json['run_week_number'] as num?)?.toInt() ?? 1,
+      starCount: (json['star_count'] as num?)?.toInt() ?? 0,
+      starBrokeThisWeek: json['star_broke_this_week'] as bool? ?? false,
+      missedTrackingThisWeek:
+          json['missed_tracking_this_week'] as bool? ?? false,
+      runLimitWarningThisWeek:
+          json['run_limit_warning_this_week'] as bool? ?? false,
       lastActiveDayKey: json['last_active_day_key'] as String?,
     );
 

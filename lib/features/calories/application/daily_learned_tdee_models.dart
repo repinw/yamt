@@ -11,18 +11,24 @@ class DailyLearnedTdeeGoalData {
   /// Creates learned TDEE goal data.
   const new({
     required this.measured,
-    required this.calculatedTdeeKcal,
-    required this.newGoalKcal,
+    required this.calculatedBaseTdeeKcal,
+    required this.newBaseGoalKcal,
   });
 
   /// The measured TDEE before EMA smoothing.
   final CalorieMeasuredTdeeCalculation measured;
 
   /// The smoothed learned Base-TDEE.
-  final double calculatedTdeeKcal;
+  final double calculatedBaseTdeeKcal;
 
   /// The capped base target goal.
-  final double newGoalKcal;
+  final double newBaseGoalKcal;
+
+  /// Backwards-compatible label while old UI copy is renamed.
+  double get calculatedTrueTdeeKcal => calculatedBaseTdeeKcal;
+
+  /// Backwards-compatible label for base goal.
+  double get newGoalKcal => newBaseGoalKcal;
 }
 
 /// One day request for learned TDEE batch resolution.
