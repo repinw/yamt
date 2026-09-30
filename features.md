@@ -167,7 +167,14 @@ and feature description docs. This is product-facing; architecture rules stay in
   learned TDEE goal sheet shows the same list.
 - Learned TDEE recalculation from tracked data.
 - Weekly check-in with weight trend, learned TDEE, target refresh, and blocking
-  reasons for missing intake or weight data.
+  reasons for missing intake or weight data. It is a tall sheet in three
+  steps: a look back since the goal start (trend, eaten, training days, weight
+  chart, and the TDEE of each run) with the choice "Gemessenen übernehmen" or
+  "Bisherigen behalten" and a link to change the goal; the training days of
+  the next run, preset from the last run; and the new targets with the
+  training and rest day split and the macros before and after. "Woche
+  starten" saves the choice and the training days. A reached goal shows a
+  congratulations page instead of the look back.
 - Burn Week budget model with daily goal, activity credit, carryover, skipped
   days, remaining calories, and details sheet.
 - Macro tracking for protein, carbs, fat, and extended nutrient fields.

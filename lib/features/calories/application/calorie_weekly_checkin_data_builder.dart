@@ -40,7 +40,13 @@ import 'package:yamt/features/health/domain/weight_trend_calculator.dart';
 const _weeklyCheckInProviderLogName = 'CalorieWeeklyCheckInProvider';
 
 /// Build calorie weekly check-in data.
-Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(Ref ref) async {
+///
+/// With [previewLatestWindow], the latest completed window counts as pending
+/// even when it was already decided, so a debug preview can show it.
+Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
+  Ref ref, {
+  bool previewLatestWindow = false,
+}) async {
   // Trigger recompute when calorie logs mutate through overview revision.
   ref.watch(calorieOverviewRevisionProvider);
 
@@ -60,10 +66,12 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(Ref ref) async {
     throw StateError('Calorie weekly check-in disposed.');
   }
   final today = normalizeDiaryDay(balanceNow());
-  final pendingWeeklyCheckIn = resolvePendingCalorieWeeklyCheckIn(
-    settings: settings,
-    today: today,
-  );
+  final pendingWeeklyCheckIn = previewLatestWindow
+      ? resolveLatestCompletedCalorieWeeklyCheckIn(
+          settings: settings,
+          today: today,
+        )
+      : resolvePendingCalorieWeeklyCheckIn(settings: settings, today: today);
   final freshness = resolveCalorieLearnedTdeeFreshness(
     settings: settings,
     today: today,
