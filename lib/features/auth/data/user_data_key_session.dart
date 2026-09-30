@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:cryptography/cryptography.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
@@ -187,9 +189,22 @@ class UserDataKeySession extends _$UserDataKeySession {
       recoveryKeyConfirmed = await repository.loadRecoveryKeyConfirmed(uid);
     }
 
+    final cipher = PayloadCipher(dataKey);
+    try {
+      await repository.migratePrivateData(uid, cipher);
+    } on Object catch (error, stackTrace) {
+      // Offline, for example: this must not keep the user out of the app.
+      // The next start tries again.
+      log(
+        'Migrating the private data failed.',
+        name: 'UserDataKeySession',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
     return UserDataKeyReady(
       uid: uid,
-      cipher: PayloadCipher(dataKey),
+      cipher: cipher,
       recoveryKey: recoveryKey,
       recoveryKeyConfirmed: recoveryKeyConfirmed,
     );
