@@ -315,6 +315,12 @@ jobs:
           flutter build apk --release
           flutter build appbundle --release
 
+      # The signing key is not needed after the build; remove it before the
+      # third-party Play action runs.
+      - name: Remove the upload keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/upload.jks" android/key.properties
+
       # The GitHub release comes first and can run again, because Play rejects
       # a second upload of the same versionCode. A failed job can then be
       # re-run until the Play upload is done.
@@ -328,7 +334,7 @@ jobs:
             gh release upload "$TAG" "yamt-$TAG.apk" --clobber
 
       - name: Upload the AAB to Google Play
-        uses: r0adkll/upload-google-play@v1
+        uses: r0adkll/upload-google-play@e738b9dd8f2476ea806d921b64aacd24f34515a5 # v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: de.yamt.app
