@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
@@ -9,6 +11,7 @@ import 'package:yamt/features/calories/application/calorie_weekly_checkin_window
 import 'package:yamt/features/calories/application/macro_goal_settings_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
@@ -74,9 +77,18 @@ Future<CalorieWeeklyCheckInPlan?> _buildPlan(
   }
   final today = normalizeDiaryDay(ref.watch(clockProvider)());
   final windowEnd = normalizeDiaryDay(pending.windowEndDate);
-  final progress = await ref.watch(
-    calorieGoalProgressProvider(windowEnd).future,
-  );
+  // The chart is optional: without it, the user can still decide.
+  CalorieGoalProgress? progress;
+  try {
+    progress = await ref.watch(calorieGoalProgressProvider(windowEnd).future);
+  } on Object catch (error, stackTrace) {
+    log(
+      'Goal progress for the check-in failed to load.',
+      name: 'CalorieWeeklyCheckInPlan',
+      error: error,
+      stackTrace: stackTrace,
+    );
+  }
   if (!ref.mounted) {
     throw StateError('Weekly check-in plan was disposed.');
   }
