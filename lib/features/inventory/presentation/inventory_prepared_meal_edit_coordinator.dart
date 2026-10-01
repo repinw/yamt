@@ -24,6 +24,7 @@ class InventoryPreparedMealEditCoordinator {
     required WidgetRef ref,
     required String mealId,
     required PreparedMealEditResult result,
+    required ScaffoldMessengerState messenger,
   }) async {
     final previous = ref
         .read(preparedMealsControllerProvider)
@@ -46,27 +47,29 @@ class InventoryPreparedMealEditCoordinator {
     }
 
     final container = ProviderScope.containerOf(context, listen: false);
-    ScaffoldMessenger.of(context).showAppSnackBar(
-      AppLocalizations.of(context)!.preparedMealUpdatedMessage,
-      onUndo: previous == null
-          ? null
-          : () => container
-                .read(preparedMealsControllerProvider.notifier)
-                .updatePreparedMealDetails(
-                  mealId: previous.id,
-                  name: previous.name,
-                  imageChanged: result.imageChanged,
-                  imageAssetId: previous.imageAssetId,
-                  totalPortions: previous.totalPortions,
-                  items: [
-                    for (final component in previous.components)
-                      PreparedMealItemInput(
-                        itemId: component.inventoryItemId,
-                        usedAmount: component.usedAmount,
-                      ),
-                  ],
-                ),
-    );
+    // The meal page may close while the save runs.
+    (messenger.mounted ? messenger : ScaffoldMessenger.of(context))
+        .showAppSnackBar(
+          AppLocalizations.of(context)!.preparedMealUpdatedMessage,
+          onUndo: previous == null
+              ? null
+              : () => container
+                    .read(preparedMealsControllerProvider.notifier)
+                    .updatePreparedMealDetails(
+                      mealId: previous.id,
+                      name: previous.name,
+                      imageChanged: result.imageChanged,
+                      imageAssetId: previous.imageAssetId,
+                      totalPortions: previous.totalPortions,
+                      items: [
+                        for (final component in previous.components)
+                          PreparedMealItemInput(
+                            itemId: component.inventoryItemId,
+                            usedAmount: component.usedAmount,
+                          ),
+                      ],
+                    ),
+        );
     return true;
   }
 
@@ -91,6 +94,7 @@ class InventoryPreparedMealEditCoordinator {
     required BuildContext context,
     required WidgetRef ref,
     required PreparedMeal meal,
+    required ScaffoldMessengerState messenger,
   }) async {
     final templatesController = ref.read(
       preparedMealTemplatesControllerProvider.notifier,
@@ -102,12 +106,14 @@ class InventoryPreparedMealEditCoordinator {
     }
 
     final container = ProviderScope.containerOf(context, listen: false);
-    ScaffoldMessenger.of(context).showAppSnackBar(
-      AppLocalizations.of(context)!.preparedMealTemplateSavedMessage,
-      onUndo: () => container
-          .read(preparedMealTemplatesControllerProvider.notifier)
-          .deleteTemplate(templateId),
-    );
+    // The meal page may close while the save runs.
+    (messenger.mounted ? messenger : ScaffoldMessenger.of(context))
+        .showAppSnackBar(
+          AppLocalizations.of(context)!.preparedMealTemplateSavedMessage,
+          onUndo: () => container
+              .read(preparedMealTemplatesControllerProvider.notifier)
+              .deleteTemplate(templateId),
+        );
     return true;
   }
 }

@@ -168,9 +168,15 @@ void main() {
       find.byKey(const Key('prepared_meal_edit_locked_hint')),
       findsOneWidget,
     );
-    await tester.tap(find.byKey(const Key('prepared_meal_edit_close')));
+    await tester.tap(find.byKey(PreparedMealEditPage.saveKey));
     await _settle(tester);
     expect(find.byKey(PreparedMealEditPage.saveKey), findsNothing);
+    // The save message shows on the meal page, not on the hidden list.
+    expect(find.byType(EatMealDetailSections), findsOneWidget);
+    expect(
+      find.descendant(of: find.byType(SnackBar), matching: find.byType(Text)),
+      findsWidgets,
+    );
 
     expect(tester.takeException(), isNull);
   });

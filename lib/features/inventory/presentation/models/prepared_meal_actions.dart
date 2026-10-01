@@ -1,3 +1,4 @@
+import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -34,19 +35,23 @@ typedef PreparedMealIngredientIgnoreCallback = Future<bool> Function(
 /// Changes one meal by id, such as unbundling it.
 typedef PreparedMealIdCallback = Future<bool> Function(String mealId);
 
-/// Saves an edit of a meal.
+/// Saves an edit of a meal and shows the outcome on [messenger].
 typedef PreparedMealEditCallback = Future<bool> Function(
   String mealId,
   PreparedMealEditResult result,
+  ScaffoldMessengerState messenger,
 );
 
-/// Saves a meal as a recipe template.
+/// Saves a meal as a recipe template and shows the outcome on [messenger].
 typedef PreparedMealSaveTemplateCallback = Future<bool> Function(
   PreparedMeal meal,
+  ScaffoldMessengerState messenger,
 );
 
-/// What the meal detail page can do with a meal. The Vorrat page provides
-/// them, so their messages show on the list.
+/// What the meal detail page can do with a meal, provided by
+/// `PreparedMealDetailFlow`. Edit and template messages show on the messenger
+/// the detail page passes, because the page has its own messenger and covers
+/// the page below.
 class PreparedMealActions {
   /// Creates the actions.
   const new({
