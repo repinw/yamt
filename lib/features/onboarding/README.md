@@ -72,6 +72,8 @@ widgets live in `lib/features/calories`.
 
 - `presentation/calorie_goal_onboarding_page.dart`, mounted by
   `lib/core/router` at `AppRoutes.calorieGoalSetup`.
+- `presentation/calorie_goal_load_failed_page.dart`, mounted by
+  `lib/core/router` at `AppRoutes.calorieGoalLoadFailed`.
 - `provider/calorie_goal_onboarding_completed_provider.dart` with
   `calorieGoalOnboardingCompletedProvider`, used by the router gate.
 - `domain/calorie_goal_onboarding_preferences.dart` for the completion marker
@@ -124,7 +126,9 @@ settings:
 - `calorie_goal_onboarding_completed_provider.dart`: Returns whether the
   current user has completed calorie onboarding. It first checks the
   user-scoped preference marker, then falls back to saved calorie settings. If a
-  saved goal already exists, it writes the marker and returns completed.
+  saved goal already exists, it writes the marker and returns completed. A
+  failed settings read (for example offline on a new device) becomes an error,
+  never `false`.
 - `markCalorieGoalOnboardingCompleted`: Marks onboarding of a user complete
   and refreshes the provider. The intro controller calls it when it finishes.
 
@@ -134,6 +138,8 @@ Contains the page, the intro flow, and its pages:
 
 - `calorie_goal_onboarding_page.dart`: Loads existing calorie settings and
   starts the intro with either those settings or empty defaults.
+- `calorie_goal_load_failed_page.dart`: Shown when the completion state could
+  not load. Its retry action refreshes the completion provider.
 - `calorie_goal_onboarding_keys.dart`: Stable widget keys used by tests.
 - `controllers/calorie_intro_controller.dart`: Moves between pages, applies the
   per-page "can continue" rules and the maintain-mode pace skip, and tracks
@@ -189,7 +195,10 @@ Generated Riverpod files. They should not be edited manually.
    `AppRoutes.calorieGoalSetup`.
 5. While onboarding completion is loading, startup routes stay on splash, and
    the setup route stays open.
-6. Once onboarding is complete, visiting calorie setup redirects to the diary
+6. When onboarding completion fails to load, every route goes to
+   `AppRoutes.calorieGoalLoadFailed`, so an onboarded user is never sent into
+   onboarding by an offline read.
+7. Once onboarding is complete, visiting calorie setup redirects to the diary
    home route.
 
 ### Completing Existing Users
@@ -201,6 +210,8 @@ Generated Riverpod files. They should not be edited manually.
 4. If settings already contain a goal, the provider writes the marker and
    returns completed.
 5. If there is no marker and no goal, router sends the user to onboarding.
+6. If the settings read fails, the provider fails too, and the router shows
+   the load-failed page.
 
 ### Intro Navigation
 

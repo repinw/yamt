@@ -209,11 +209,8 @@ class CalorieGoalController extends _$CalorieGoalController {
 
     final repository = ref.read(calorieSettingsRepositoryProvider);
     try {
-      final saved = await repository.saveSettings(nextSettings);
-      if (!saved && ref.mounted) {
-        state = AsyncData(previous);
-      }
-      return saved;
+      await repository.saveSettings(nextSettings);
+      return true;
     } on Object catch (error, stackTrace) {
       log(
         'Failed to persist calorie goal settings.',

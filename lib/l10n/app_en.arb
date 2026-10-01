@@ -2510,6 +2510,8 @@
   "dataKeyStartFreshFailed": "Could not start fresh.",
   "dataKeyLoadFailed": "Could not load your data key. Check your connection.",
   "dataKeyRetryAction": "Try again",
+  "calorieGoalLoadFailed": "Could not load your goal. Check your connection.",
+  "calorieGoalLoadRetryAction": "Try again",
   "dataKeyPickFromPasswordManagerAction": "Paste from password manager",
   "dataKeyPickFailed": "Could not open the password manager.",
   "foodEstimateHeadline": "What are you eating?",

@@ -8,7 +8,6 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
@@ -223,6 +222,7 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
   CalorieGoalSettings _settings;
   final _controller = StreamController<CalorieGoalSettings>.broadcast();
   bool saveShouldFail = false;
+  Exception? readError;
   Future<void> Function(CalorieGoalSettings settings)? onSaveSettings;
 
   @override
@@ -242,13 +242,17 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
 
   @override
   Future<CalorieGoalSettings> readSettings() async {
+    final readError = this.readError;
+    if (readError != null) {
+      throw readError;
+    }
     return _settings;
   }
 
   @override
-  Future<bool> saveSettings(CalorieGoalSettings settings) async {
+  Future<void> saveSettings(CalorieGoalSettings settings) async {
     if (saveShouldFail) {
-      return false;
+      throw StateError('Saving calorie settings failed.');
     }
     final onSaveSettings = this.onSaveSettings;
     if (onSaveSettings != null) {
@@ -257,29 +261,6 @@ class FakeCalorieSettingsRepository implements CalorieSettingsRepository {
 
     _settings = settings;
     _controller.add(_settings);
-    return true;
-  }
-
-  @override
-  Future<bool> setDailyGoal(double dailyKcalGoal) {
-    return saveSettings(
-      CalorieGoalSettings.single(
-        dailyKcalGoal: dailyKcalGoal,
-        calculatorProfile: null,
-        effectiveDate: DateTime(2026, 2, 25, 10),
-      ),
-    );
-  }
-
-  @override
-  Future<bool> clearDailyGoal() {
-    return saveSettings(
-      const CalorieGoalSettings.empty().applyGoalChange(
-        changedAt: DateTime(2026, 2, 25, 10),
-        dailyKcalGoal: null,
-        calculatorProfile: null,
-      ),
-    );
   }
 
   Future<void> dispose() {

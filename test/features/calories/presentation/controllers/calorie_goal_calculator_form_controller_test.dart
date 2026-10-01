@@ -7,7 +7,6 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_activity_level_option.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/presentation/controllers/calorie_goal_calculator_form_controller.dart';
 import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_fields.dart';
 import 'package:yamt/features/calories/presentation/models/calorie_goal_calculator_form_state.dart';
@@ -402,40 +401,17 @@ class _BlockingCalorieSettingsRepository implements CalorieSettingsRepository {
   }
 
   @override
-  Future<bool> saveSettings(CalorieGoalSettings settings) async {
+  Future<void> saveSettings(CalorieGoalSettings settings) async {
     saveCallCount += 1;
     final blocker = saveBlocker;
     if (blocker != null) {
       await blocker.future;
     }
     if (saveShouldFail) {
-      return false;
+      throw StateError('Saving calorie settings failed.');
     }
     _settings = settings;
     _controller.add(settings);
-    return true;
-  }
-
-  @override
-  Future<bool> setDailyGoal(double dailyKcalGoal) {
-    return saveSettings(
-      CalorieGoalSettings.single(
-        dailyKcalGoal: dailyKcalGoal,
-        calculatorProfile: null,
-        effectiveDate: DateTime(2026, 3, 29, 10),
-      ),
-    );
-  }
-
-  @override
-  Future<bool> clearDailyGoal() {
-    return saveSettings(
-      const CalorieGoalSettings.empty().applyGoalChange(
-        changedAt: DateTime(2026, 3, 29, 10),
-        dailyKcalGoal: null,
-        calculatorProfile: null,
-      ),
-    );
   }
 
   Future<void> dispose() {

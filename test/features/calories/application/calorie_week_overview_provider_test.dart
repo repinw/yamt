@@ -1226,32 +1226,9 @@ class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {
   Future<CalorieGoalSettings> readSettings() async => _settings;
 
   @override
-  Future<bool> saveSettings(CalorieGoalSettings settings) async {
+  Future<void> saveSettings(CalorieGoalSettings settings) async {
     _settings = settings;
     _controller.add(settings);
-    return true;
-  }
-
-  @override
-  Future<bool> setDailyGoal(double dailyKcalGoal) {
-    return saveSettings(
-      CalorieGoalSettings.single(
-        dailyKcalGoal: dailyKcalGoal,
-        calculatorProfile: null,
-        effectiveDate: DateTime.now(),
-      ),
-    );
-  }
-
-  @override
-  Future<bool> clearDailyGoal() {
-    return saveSettings(
-      const CalorieGoalSettings.empty().applyGoalChange(
-        changedAt: DateTime.now(),
-        dailyKcalGoal: null,
-        calculatorProfile: null,
-      ),
-    );
   }
 
   void emit(CalorieGoalSettings settings) {

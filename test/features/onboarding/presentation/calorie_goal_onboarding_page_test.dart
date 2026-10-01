@@ -86,13 +86,7 @@ class _NeverEmittingCalorieSettingsRepository
   }
 
   @override
-  Future<bool> saveSettings(CalorieGoalSettings settings) async => true;
-
-  @override
-  Future<bool> setDailyGoal(double dailyKcalGoal) async => true;
-
-  @override
-  Future<bool> clearDailyGoal() async => true;
+  Future<void> saveSettings(CalorieGoalSettings settings) async {}
 
   Future<void> dispose() {
     return _controller.close();
@@ -113,11 +107,5 @@ class _StaticCalorieSettingsRepository implements CalorieSettingsRepository {
   Future<CalorieGoalSettings> readSettings() async => settings;
 
   @override
-  Future<bool> saveSettings(CalorieGoalSettings settings) async => true;
-
-  @override
-  Future<bool> setDailyGoal(double dailyKcalGoal) async => true;
-
-  @override
-  Future<bool> clearDailyGoal() async => true;
+  Future<void> saveSettings(CalorieGoalSettings settings) async {}
 }

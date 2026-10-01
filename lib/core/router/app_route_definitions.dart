@@ -25,6 +25,8 @@ import 'package:yamt/features/meal_templates/presentation/'
 import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/features/onboarding/presentation/'
+    'calorie_goal_load_failed_page.dart';
+import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_page.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -63,6 +65,10 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.calorieGoalSetup,
       builder: (context, state) => const CalorieGoalOnboardingPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.calorieGoalLoadFailed,
+      builder: (context, state) => const CalorieGoalLoadFailedPage(),
     ),
     GoRoute(
       path: AppRoutes.dataKey,

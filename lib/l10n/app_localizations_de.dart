@@ -4858,6 +4858,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get dataKeyRetryAction => 'Erneut versuchen';
 
   @override
+  String get calorieGoalLoadFailed =>
+      'Dein Ziel konnte nicht geladen werden. Prüfe deine Verbindung.';
+
+  @override
+  String get calorieGoalLoadRetryAction => 'Erneut versuchen';
+
+  @override
   String get dataKeyPickFromPasswordManagerAction =>
       'Aus Passwortmanager einfügen';
 

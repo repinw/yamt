@@ -12,6 +12,10 @@ abstract final class AppRoutes {
   /// Calorie goal setup route.
   static const calorieGoalSetup = '/welcome/calorie-goal';
 
+  /// Shown when the onboarding state of a signed-in user could not load, for
+  /// example offline on a new device.
+  static const calorieGoalLoadFailed = '/calorie-goal-load-failed';
+
   /// Data key route: shows a new recovery key or asks for it on a new device.
   static const dataKey = '/data-key';
 
