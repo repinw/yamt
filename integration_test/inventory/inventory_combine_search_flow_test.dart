@@ -132,6 +132,9 @@ void main() {
       find.byKey(const Key('product_search_hub_search_field')),
       'Milch',
     );
+    // The search key closes the keyboard, so the eat page gets the full
+    // screen.
+    await tester.testTextInput.receiveAction(TextInputAction.search);
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
     await tester.tap(find.byKey(_resultKey));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
@@ -152,6 +155,7 @@ void main() {
     expect(find.byKey(_amountFieldKey), findsOneWidget);
 
     await tester.enterText(find.byKey(_amountFieldKey), '250');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
     await _pumpVisibleStep(tester);
     await tester.tap(find.byKey(_addKey));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
