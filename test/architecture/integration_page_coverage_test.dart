@@ -8,7 +8,6 @@ import 'package:flutter_test/flutter_test.dart';
 /// a test or is deleted, remove its entry in the same change.
 const _legacyPagesWithoutIntegrationTest = <String>{
   'lib/features/auth/presentation/data_key_page.dart',
-  'lib/features/auth/presentation/guest_name_setup_page.dart',
   'lib/features/auth/presentation/recovery_key_page.dart',
   'lib/features/auth/presentation/welcome_page.dart',
   'lib/features/calories/presentation/calorie_entry_editor_page.dart',

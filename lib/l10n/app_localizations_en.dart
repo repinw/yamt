@@ -3577,17 +3577,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authForgotPassword => 'Forgot?';
 
   @override
-  String get authGuestNameSetupTitle => 'Set your guest name';
-
-  @override
-  String get authGuestNameSetupSubtitle =>
-      'Choose a display name so your guest session is easier to recognize.';
-
-  @override
   String get authGuestNameFieldLabel => 'Display name';
-
-  @override
-  String get authGuestNameSaveAction => 'Continue';
 
   @override
   String get authGuestNameRequiredError => 'Please enter a display name.';

@@ -1,8 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
-import 'package:yamt/features/auth/application/'
-    'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
@@ -40,18 +38,18 @@ String? appRouterRedirect(Ref ref, GoRouterState state) {
     return _redirectFromWelcome(ref, state, isAnonymous: isAnon);
   }
 
-  return _redirectForOnboarding(ref, path, isAnonymous: isAnon);
+  return _redirectForOnboarding(ref, path);
 }
 
-/// Without an account, the app starts with onboarding. The guest account is
-/// created only when onboarding finishes. After a sign-out, the user lands on
-/// the welcome page.
+/// Without an account, the app shows the onboarding intro: at startup, after
+/// a sign-out, and when the session ends. The guest account is created only
+/// when onboarding finishes. The login page stays open, because the intro
+/// opens it.
 String? _redirectSignedOut(String path) {
   if (path == AppRoutes.welcome || path == AppRoutes.calorieGoalSetup) {
     return null;
   }
-  final isStartup = path == AppRoutes.root || path == AppRoutes.splash;
-  return isStartup ? AppRoutes.calorieGoalSetup : AppRoutes.welcome;
+  return AppRoutes.calorieGoalSetup;
 }
 
 /// Returns the route that the data key forces, or `null` once it is ready.
@@ -91,19 +89,8 @@ String? _redirectFromWelcome(
   return hasCalorie ? AppRoutes.homeDiary : AppRoutes.calorieGoalSetup;
 }
 
-String? _redirectForOnboarding(
-  Ref ref,
-  String path, {
-  required bool isAnonymous,
-}) {
-  final hasProfile = isAnonymous || ref.read(authProfileSetupCompletedProvider);
-  if (!isAnonymous && !hasProfile) {
-    return path == AppRoutes.guestNameSetup ? null : AppRoutes.guestNameSetup;
-  }
-
-  final calorieState = hasProfile
-      ? ref.read(calorieGoalOnboardingCompletedProvider)
-      : const AsyncData<bool>(false);
+String? _redirectForOnboarding(Ref ref, String path) {
+  final calorieState = ref.read(calorieGoalOnboardingCompletedProvider);
   final hasPendingInvite = ref.read(pendingHouseholdInviteProvider) != null;
   return _redirectForCalorieGoal(
     calorieState,
@@ -135,6 +122,5 @@ bool _isTerminalRoute(String path) {
   return path == AppRoutes.root ||
       path == AppRoutes.splash ||
       path == AppRoutes.dataKey ||
-      path == AppRoutes.guestNameSetup ||
       path == AppRoutes.calorieGoalSetup;
 }

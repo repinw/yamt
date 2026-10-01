@@ -2,12 +2,8 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/recovery_key.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/auth/application/'
-    'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/auth/domain/auth_profile_setup_preferences.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/data/household_invite_repository.dart';
@@ -109,22 +105,13 @@ class HouseholdMembershipController extends _$HouseholdMembershipController {
   }
 
   Future<void> _updateDisplayName(String name) async {
-    final repository = ref.read(authRepositoryProvider);
-    final preferences = ref.read(appPreferencesProvider);
-    final userId = repository.currentUserId;
-    await repository.updateCurrentUserDisplayName(displayName: name);
-    if (userId != null) {
-      await preferences.setString(
-        AuthProfileSetupPreferences.keyForUser(userId),
-        AuthProfileSetupPreferences.completedValue,
-      );
-    }
+    await ref
+        .read(authRepositoryProvider)
+        .updateCurrentUserDisplayName(displayName: name);
     if (!ref.mounted) {
       return;
     }
-    ref
-      ..invalidate(authProfileSetupCompletedProvider)
-      ..invalidate(authStateChangesProvider);
+    ref.invalidate(authStateChangesProvider);
   }
 
   Future<void> _runAction(Future<void> Function() action) async {

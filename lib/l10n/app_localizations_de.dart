@@ -3634,16 +3634,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get authForgotPassword => 'Passwort vergessen?';
 
   @override
-  String get authGuestNameSetupTitle => 'Name festlegen';
-
-  @override
-  String get authGuestNameSetupSubtitle => 'Wie möchtest du genannt werden?';
-
-  @override
   String get authGuestNameFieldLabel => 'Anzeigename';
-
-  @override
-  String get authGuestNameSaveAction => 'Weiter';
 
   @override
   String get authGuestNameRequiredError => 'Bitte einen Anzeigenamen eingeben.';

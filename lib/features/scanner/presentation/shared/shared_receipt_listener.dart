@@ -96,7 +96,6 @@ class _SharedReceiptListenerState extends ConsumerState<SharedReceiptListener> {
 
     return path != AppRoutes.splash &&
         path != AppRoutes.welcome &&
-        path != AppRoutes.guestNameSetup &&
         path != AppRoutes.calorieGoalSetup;
   }
 
