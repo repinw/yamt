@@ -9,6 +9,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/theme/app_theme.dart';
+import 'package:yamt/core/widgets/keyboard_done_bar.dart';
 import 'package:yamt/features/home_widget/application/'
     'home_widget_click_action_provider.dart';
 import 'package:yamt/features/home_widget/presentation/controllers/'
@@ -66,9 +67,12 @@ class _YAMTState extends ConsumerState<YAMT> {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       routerConfig: router,
-      builder: (context, child) => SharedReceiptListener(
-        onReceiptSaved: () => ref.invalidate(inventoryItemsControllerProvider),
-        child: child ?? const SizedBox.shrink(),
+      builder: (context, child) => KeyboardDoneBar(
+        child: SharedReceiptListener(
+          onReceiptSaved: () =>
+              ref.invalidate(inventoryItemsControllerProvider),
+          child: child ?? const SizedBox.shrink(),
+        ),
       ),
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
