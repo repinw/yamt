@@ -3512,6 +3512,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loginWithGoogle => 'Login with Google';
 
   @override
+  String get authShowPassword => 'Show password';
+
+  @override
+  String get authHidePassword => 'Hide password';
+
+  @override
   String get authBrandTitle => 'Yamt';
 
   @override

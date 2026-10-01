@@ -1776,6 +1776,8 @@
   "commonOr": "Oder",
   "login": "Login",
   "loginWithGoogle": "Mit Google anmelden",
+  "authShowPassword": "Passwort anzeigen",
+  "authHidePassword": "Passwort verbergen",
   "authBrandTitle": "Yamt",
   "authBrandSubtitle": "Yet Another Meal Tracker",
   "authContinueAsGuest": "Als Gast fortfahren",

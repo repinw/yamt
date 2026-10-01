@@ -351,6 +351,8 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.settingsAboutSubtitle,
     l10n.login,
     l10n.loginWithGoogle,
+    l10n.authShowPassword,
+    l10n.authHidePassword,
     l10n.authBrandTitle,
     l10n.authBrandSubtitle,
     l10n.authContinueAsGuest,

@@ -5982,6 +5982,18 @@ abstract class AppLocalizations {
   /// **'Login with Google'**
   String get loginWithGoogle;
 
+  /// No description provided for @authShowPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Show password'**
+  String get authShowPassword;
+
+  /// No description provided for @authHidePassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide password'**
+  String get authHidePassword;
+
   /// No description provided for @authBrandTitle.
   ///
   /// In en, this message translates to:
