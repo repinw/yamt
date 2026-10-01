@@ -5447,4 +5447,45 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get diaryCheckInFixedDaysHint =>
       'Vergangene Tage und Pausentage bleiben, wie sie sind.';
+
+  @override
+  String get preparedMealFillTitle => 'Zeile füllen';
+
+  @override
+  String get preparedMealFillStockMatch => 'Im Vorrat gefunden';
+
+  @override
+  String get preparedMealFillTake => 'Übernehmen';
+
+  @override
+  String get preparedMealFillStock => 'Vorrat';
+
+  @override
+  String get preparedMealFillStockDescription => 'Anderes Lebensmittel wählen';
+
+  @override
+  String get preparedMealFillSearch => 'Suche';
+
+  @override
+  String get preparedMealFillSearchDescription => 'Produkt im Katalog finden';
+
+  @override
+  String get preparedMealFillBarcode => 'Barcode';
+
+  @override
+  String get preparedMealFillBarcodeDescription => 'Packung scannen';
+
+  @override
+  String get preparedMealFillAi => 'KI';
+
+  @override
+  String get preparedMealFillAiDescription => 'Aus Foto oder Text schätzen';
+
+  @override
+  String get preparedMealFillIgnore => 'Zeile ignorieren';
+
+  @override
+  String preparedMealFillStockLeft(String amount) {
+    return '$amount übrig';
+  }
 }

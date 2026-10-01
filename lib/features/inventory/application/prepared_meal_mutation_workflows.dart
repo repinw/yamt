@@ -7,6 +7,8 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_pending_item_fill.dart';
+import 'package:yamt/features/inventory/application/'
     'prepared_meal_workflow_context.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
@@ -169,6 +171,23 @@ class PreparedMealMutationWorkflows {
           inventoryRepository: inventoryRepository,
           ingredientParser: ingredientParser,
         );
+  }
+
+  /// Fills one pending ingredient with [usedAmount] of the item [itemId].
+  Future<bool> fillPreparedMealPendingIngredientWithItem({
+    required String mealId,
+    required String ingredient,
+    required String itemId,
+    required int usedAmount,
+    required InventoryItemRepository inventoryRepository,
+  }) {
+    return PreparedMealPendingItemFill(context: _context).fill(
+      mealId: mealId,
+      ingredient: ingredient,
+      itemId: itemId,
+      usedAmount: usedAmount,
+      inventoryRepository: inventoryRepository,
+    );
   }
 
   /// Marks one pending ingredient as intentionally ignored.

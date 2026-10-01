@@ -111,7 +111,7 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
                                   ),
                                   title: Text(item.name),
                                   subtitle: Text(
-                                    _pendingIngredientInventoryAmount(item),
+                                    pendingIngredientInventoryAmount(item),
                                   ),
                                   onChanged: (checked) {
                                     setDialogState(() {
@@ -156,7 +156,8 @@ Future<List<String>?> showPendingIngredientSelectionSheet({
   );
 }
 
-String _pendingIngredientInventoryAmount(InventoryItem item) {
+/// How much of [item] is left, such as "600 g" or "2x".
+String pendingIngredientInventoryAmount(InventoryItem item) {
   if (item.usesAmountProgress && item.amountUnit != null) {
     final amount = formatInventoryAmountValue(
       amount: item.currentAmount,

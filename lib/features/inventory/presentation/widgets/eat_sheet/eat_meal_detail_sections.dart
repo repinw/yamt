@@ -16,12 +16,16 @@ import 'package:yamt/features/inventory/presentation/models/'
     'prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_edit_page.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'prepared_meal_pending_food_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_action_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_meal_ingredients_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_discard_reason_dialog.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
+    'prepared_meal_pending_fill_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_ingredient_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
@@ -161,18 +165,70 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
   }
 
   Future<void> _fill(PreparedMeal meal, String ingredient) async {
-    final l10n = AppLocalizations.of(context)!;
-    final itemIds = await showPendingIngredientSelectionSheet(
-      context: context,
+    final choice = await PreparedMealPendingFillSheet.show(
+      context,
       ingredient: ingredient,
-      inventoryItems: _inventoryItems(),
+      match: ref
+          .read(preparedMealsControllerProvider.notifier)
+          .pendingIngredientStockMatch(
+            ingredient: ingredient,
+            inventoryItems: _inventoryItems(),
+            localeCode: AppLocalizations.of(context)!.localeName,
+          ),
     );
-    if (!mounted || itemIds == null || itemIds.isEmpty) {
+    if (!mounted || choice == null) {
       return;
     }
-    await _run(
+    switch (choice) {
+      case PreparedMealPendingFillTake(:final item):
+        await _fillFromStock(meal, ingredient, [item.id]);
+      case PreparedMealPendingFillPickStock():
+        // Lets the choice sheet finish closing before the next one opens.
+        await WidgetsBinding.instance.endOfFrame;
+        if (!mounted) {
+          return;
+        }
+        final itemIds = await showPendingIngredientSelectionSheet(
+          context: context,
+          ingredient: ingredient,
+          inventoryItems: _inventoryItems(),
+        );
+        if (!mounted || itemIds == null || itemIds.isEmpty) {
+          return;
+        }
+        await _fillFromStock(meal, ingredient, itemIds);
+      case PreparedMealPendingFillFind(:final source):
+        await _run(
+          () async =>
+              await PreparedMealPendingFoodFlow.fill(
+                context: context,
+                source: source,
+                onFill: (itemId, amount) =>
+                    widget.actions.fillPendingIngredientWithItem(
+                      meal.id,
+                      ingredient,
+                      itemId,
+                      amount,
+                    ),
+              ) ??
+              true,
+          failureMessage: AppLocalizations.of(context)!
+              .preparedMealPendingIngredientFillFailed,
+        );
+      case PreparedMealPendingFillIgnore():
+        await _ignore(meal, ingredient);
+    }
+  }
+
+  Future<void> _fillFromStock(
+    PreparedMeal meal,
+    String ingredient,
+    List<String> itemIds,
+  ) {
+    return _run(
       () => widget.actions.fillPendingIngredient(meal.id, ingredient, itemIds),
-      failureMessage: l10n.preparedMealPendingIngredientFillFailed,
+      failureMessage: AppLocalizations.of(context)!
+          .preparedMealPendingIngredientFillFailed,
     );
   }
 

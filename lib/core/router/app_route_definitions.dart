@@ -91,10 +91,16 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     ),
     GoRoute(
       path: AppRoutes.homeFoodPick,
-      builder: (context, state) => const ProductSearchHubPage(
+      builder: (context, state) => ProductSearchHubPage(
         args: ProductSearchHubRouteArgs(
           mode: ProductSearchHubMode.mealFood,
-          initialIntent: ProductSearchHubInitialIntent.search,
+          initialIntent: switch (state.uri.queryParameters[AppRoutes
+              .homeFoodPickStartParam]) {
+            AppRoutes.homeFoodPickStartBarcode =>
+              ProductSearchHubInitialIntent.barcode,
+            AppRoutes.homeFoodPickStartAi => ProductSearchHubInitialIntent.ai,
+            _ => ProductSearchHubInitialIntent.search,
+          },
         ),
       ),
     ),

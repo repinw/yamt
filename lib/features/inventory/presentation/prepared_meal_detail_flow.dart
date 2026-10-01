@@ -43,6 +43,13 @@ abstract final class PreparedMealDetailFlow {
             ingredient: ingredient,
             inventoryItemIds: itemIds,
           ),
+      fillPendingIngredientWithItem: (mealId, ingredient, itemId, amount) =>
+          meals.fillPreparedMealPendingIngredientWithItem(
+            mealId: mealId,
+            ingredient: ingredient,
+            itemId: itemId,
+            usedAmount: amount,
+          ),
       ignorePendingIngredient: (mealId, ingredient) =>
           meals.ignorePreparedMealPendingIngredient(
             mealId: mealId,

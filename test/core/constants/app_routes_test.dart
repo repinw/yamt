@@ -16,4 +16,17 @@ void main() {
       <String>{'cycle_1_0', 'cycle_2_1'},
     );
   });
+
+  test('food pick path starts with the search, the scanner, or the AI', () {
+    expect(AppRoutes.homeFoodPickPath(), AppRoutes.homeFoodPick);
+    final uri = Uri.parse(
+      AppRoutes.homeFoodPickPath(start: AppRoutes.homeFoodPickStartBarcode),
+    );
+
+    expect(uri.path, AppRoutes.homeFoodPick);
+    expect(
+      uri.queryParameters[AppRoutes.homeFoodPickStartParam],
+      AppRoutes.homeFoodPickStartBarcode,
+    );
+  });
 }

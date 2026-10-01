@@ -306,6 +306,14 @@ and feature description docs. This is product-facing; architecture rules stay in
   ignorieren") and a "Mahlzeit" card with edit, save as recipe, unbundle and
   throw away. A meal with missing ingredients can be logged once they are
   filled or ignored.
+- "Zutat ergänzen" opens the "Zeile füllen" sheet: when the row has an
+  amount, the best Vorrat match comes first with how much is left and
+  "Übernehmen", which uses the row's amount. Below it: "Vorrat" (pick other
+  Vorrat foods), "Suche", "Barcode", "KI", and "Zeile ignorieren". Search,
+  barcode, and AI open the food pick at that tool; the found food's eat page
+  asks the amount, the food is added to the Vorrat with exactly that amount
+  and used up for the row. This also fills rows without an amount ("Salz").
+  If the row cannot be filled, the added food is removed again.
 - Editing a meal opens the meal editor, drawn like the eat page: picture
   (tap for camera, gallery or remove) and name, one row per ingredient with
   a ruler for its amount and a remove button, "+ Lebensmittel hinzufügen"
