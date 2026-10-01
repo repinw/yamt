@@ -170,11 +170,12 @@ ProviderContainer _createContainerWithAuth(
   Future<UserCredential> Function()? onSignInAnonymously,
   UserDataKeyState? dataKeyState,
   Exception? dataKeyError,
+  Exception? calorieSettingsReadError,
 }) {
   final calorieLogRepository = FakeCalorieLogRepository();
   final calorieSettingsRepository = FakeCalorieSettingsRepository(
     initialSettings: initialCalorieSettings,
-  );
+  )..readError = calorieSettingsReadError;
   final broadcastAuthStream = authStream.isBroadcast
       ? authStream
       : authStream.asBroadcastStream();
@@ -1238,6 +1239,33 @@ void main() {
 
     expect(container.read(appRouterProvider).state.uri.path, AppRoutes.dataKey);
     // Stops the retry timer of the failed session.
+    container.dispose();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('a failed goal read shows the load error, not onboarding', (
+    tester,
+  ) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      calorieSettingsReadError: Exception('client is offline'),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalLoadFailed,
+    );
+    expect(
+      find.text('Could not load your goal. Check your connection.'),
+      findsOneWidget,
+    );
+    // Stops the retry timer of the failed provider.
     container.dispose();
     await tester.pumpWidget(const SizedBox.shrink());
   });

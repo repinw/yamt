@@ -20,7 +20,8 @@ Future<bool> invalidateCalorieWeeklyCheckInSnapshotsFromDay({
     if (identical(previous, nextSettings)) {
       return true;
     }
-    return await settingsRepository.saveSettings(nextSettings);
+    await settingsRepository.saveSettings(nextSettings);
+    return true;
   } on Object catch (error, stackTrace) {
     log(
       'Failed to invalidate weekly check-in snapshots.',

@@ -8,6 +8,9 @@ abstract final class CalorieGoalOnboardingKeys {
   /// The action that opens the authentication page.
   static const introLoginAction = Key('calorie_intro_login_action');
 
+  /// The retry action on the page shown when the goal could not load.
+  static const loadFailedRetryAction = Key('calorie_goal_load_failed_retry');
+
   /// The birthday day wheel.
   static const introBirthDayWheel = Key('calorie_intro_birth_day_wheel');
 

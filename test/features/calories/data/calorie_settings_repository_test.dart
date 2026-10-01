@@ -38,13 +38,20 @@ void main() {
     });
   }
 
-  test('setDailyGoal persists and readSettings returns value', () async {
+  CalorieGoalSettings goalSettings(double dailyKcalGoal) {
+    return CalorieGoalSettings.single(
+      dailyKcalGoal: dailyKcalGoal,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 2, 25, 10),
+    );
+  }
+
+  test('saveSettings persists and readSettings returns value', () async {
     final repository = repositoryFor(FakeFirebaseFirestore());
 
-    final saved = await repository.setDailyGoal(2400);
+    await repository.saveSettings(goalSettings(2400));
     final settings = await repository.readSettings();
 
-    expect(saved, isTrue);
     expect(settings.dailyKcalGoal, 2400);
     expect(settings.hasGoal, isTrue);
   });
@@ -52,23 +59,11 @@ void main() {
   test('stores only an encrypted payload', () async {
     final firestore = FakeFirebaseFirestore();
 
-    await repositoryFor(firestore).setDailyGoal(2400);
+    await repositoryFor(firestore).saveSettings(goalSettings(2400));
 
     final stored = (await firestore.doc(_settingsPath).get()).data()!;
     expect(stored.keys, <String>['payload']);
     expect(stored['payload'], isNot(contains('2400')));
-  });
-
-  test('clearDailyGoal resets goal to empty settings', () async {
-    final repository = repositoryFor(FakeFirebaseFirestore());
-
-    await repository.setDailyGoal(2200);
-    final cleared = await repository.clearDailyGoal();
-    final settings = await repository.readSettings();
-
-    expect(cleared, isTrue);
-    expect(settings.dailyKcalGoal, isNull);
-    expect(settings.hasGoal, isFalse);
   });
 
   test('watchSettings emits realtime updates', () async {
@@ -80,7 +75,7 @@ void main() {
       unawaited(subscription.cancel());
     });
 
-    await repository.setDailyGoal(2100);
+    await repository.saveSettings(goalSettings(2100));
     await Future<void>.delayed(const Duration(milliseconds: 1));
 
     expect(emitted, isNotEmpty);
@@ -104,10 +99,9 @@ void main() {
       effectiveDate: DateTime(2026, 2, 25, 11),
     );
 
-    final saved = await repository.saveSettings(settings);
+    await repository.saveSettings(settings);
     final readBack = await repository.readSettings();
 
-    expect(saved, isTrue);
     expect(readBack.dailyKcalGoal, 1850);
     expect(readBack.calculatorProfile?.sex, CalorieCalculatorSex.female);
     expect(readBack.calculatorProfile?.goalMode, CalorieGoalMode.lose);
@@ -195,7 +189,24 @@ void main() {
     },
   );
 
-  test('repository returns empty defaults when no user is signed in', () async {
+  test(
+    'readSettings and watchSettings throw on a malformed document',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await firestore.doc(_settingsPath).set(<String, dynamic>{
+        'daily_kcal_goal': 2000,
+      });
+      final repository = repositoryFor(firestore);
+
+      await expectLater(repository.readSettings(), throwsFormatException);
+      await expectLater(
+        repository.watchSettings().first,
+        throwsFormatException,
+      );
+    },
+  );
+
+  test('reads return empty settings and saves throw when signed out', () async {
     final repository = FirestoreCalorieSettingsRepository(
       dataCipher: null,
       firestore: FakeFirebaseFirestore(),
@@ -203,10 +214,12 @@ void main() {
 
     final watched = await repository.watchSettings().first;
     final read = await repository.readSettings();
-    final setGoal = await repository.setDailyGoal(2000);
 
     expect(watched.dailyKcalGoal, isNull);
     expect(read.dailyKcalGoal, isNull);
-    expect(setGoal, isFalse);
+    await expectLater(
+      repository.saveSettings(goalSettings(2000)),
+      throwsStateError,
+    );
   });
 }

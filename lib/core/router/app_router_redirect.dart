@@ -107,6 +107,13 @@ String? _redirectForCalorieGoal(
   required String homeRoute,
 }) {
   final isStartup = path == AppRoutes.root || path == AppRoutes.splash;
+  if (calorieState.hasError && !calorieState.hasValue) {
+    // An offline read must not send a user with a goal into onboarding.
+    // Checked before loading: Riverpod keeps the error while it retries.
+    return path == AppRoutes.calorieGoalLoadFailed
+        ? null
+        : AppRoutes.calorieGoalLoadFailed;
+  }
   if (calorieState.isLoading) {
     return isStartup ? AppRoutes.splash : null;
   }
@@ -122,5 +129,6 @@ bool _isTerminalRoute(String path) {
   return path == AppRoutes.root ||
       path == AppRoutes.splash ||
       path == AppRoutes.dataKey ||
+      path == AppRoutes.calorieGoalLoadFailed ||
       path == AppRoutes.calorieGoalSetup;
 }

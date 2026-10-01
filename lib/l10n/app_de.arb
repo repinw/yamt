@@ -2367,6 +2367,8 @@
   "dataKeyStartFreshFailed": "Neustart fehlgeschlagen.",
   "dataKeyLoadFailed": "Dein Datenschlüssel konnte nicht geladen werden. Prüfe deine Verbindung.",
   "dataKeyRetryAction": "Erneut versuchen",
+  "calorieGoalLoadFailed": "Dein Ziel konnte nicht geladen werden. Prüfe deine Verbindung.",
+  "calorieGoalLoadRetryAction": "Erneut versuchen",
   "dataKeyPickFromPasswordManagerAction": "Aus Passwortmanager einfügen",
   "dataKeyPickFailed": "Passwortmanager konnte nicht geöffnet werden.",
   "foodEstimateHeadline": "Was isst du?",

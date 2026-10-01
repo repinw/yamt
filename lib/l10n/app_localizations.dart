@@ -8217,6 +8217,18 @@ abstract class AppLocalizations {
   /// **'Try again'**
   String get dataKeyRetryAction;
 
+  /// No description provided for @calorieGoalLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load your goal. Check your connection.'**
+  String get calorieGoalLoadFailed;
+
+  /// No description provided for @calorieGoalLoadRetryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get calorieGoalLoadRetryAction;
+
   /// No description provided for @dataKeyPickFromPasswordManagerAction.
   ///
   /// In en, this message translates to:

@@ -10,6 +10,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   Without an account the app opens the onboarding intro: at startup, after a
   sign-out or account deletion, and when the session ends. The intro's login
   button opens the welcome page.
+  When the app cannot tell whether a signed-in user has a goal (for example
+  offline on a new device), it shows a "try again" page instead of sending the
+  user into onboarding.
 - Home shell with bottom tabs for Inventory, Diary, Cookbook, and Settings.
   The tab header and the bottom navigation stay in place while a tab
   scrolls. In the middle of the bar a round lime button opens the actions of

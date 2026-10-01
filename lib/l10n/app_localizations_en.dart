@@ -4785,6 +4785,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dataKeyRetryAction => 'Try again';
 
   @override
+  String get calorieGoalLoadFailed =>
+      'Could not load your goal. Check your connection.';
+
+  @override
+  String get calorieGoalLoadRetryAction => 'Try again';
+
+  @override
   String get dataKeyPickFromPasswordManagerAction =>
       'Paste from password manager';
 

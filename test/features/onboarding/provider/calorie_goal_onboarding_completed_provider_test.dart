@@ -99,6 +99,23 @@ void main() {
       );
     });
 
+    test('fails instead of returning false when the read fails', () async {
+      final preferences = MemoryAppPreferences();
+      final container = _container(
+        preferences: preferences,
+        user: _user('user-4'),
+        settingsRepository: const _ThrowingCalorieSettingsRepository(),
+      );
+      addTearDown(container.dispose);
+      await _seedAuthState(container);
+
+      await expectLater(_completion(container), throwsStateError);
+      expect(
+        preferences.getStringSync(calorieGoalOnboardingKeyForUser('user-4')),
+        isNull,
+      );
+    });
+
     test('mark helper writes the marker of the given user', () async {
       final preferences = MemoryAppPreferences();
       final container = _container(
@@ -226,13 +243,7 @@ class _RecordingCalorieSettingsRepository implements CalorieSettingsRepository {
   }
 
   @override
-  Future<bool> saveSettings(CalorieGoalSettings settings) async => true;
-
-  @override
-  Future<bool> setDailyGoal(double dailyKcalGoal) async => true;
-
-  @override
-  Future<bool> clearDailyGoal() async => true;
+  Future<void> saveSettings(CalorieGoalSettings settings) async {}
 }
 
 Future<void> _seedAuthState(ProviderContainer container) async {
@@ -276,13 +287,7 @@ class _StaticCalorieSettingsRepository implements CalorieSettingsRepository {
   Future<CalorieGoalSettings> readSettings() async => settings;
 
   @override
-  Future<bool> saveSettings(CalorieGoalSettings settings) async => true;
-
-  @override
-  Future<bool> setDailyGoal(double dailyKcalGoal) async => true;
-
-  @override
-  Future<bool> clearDailyGoal() async => true;
+  Future<void> saveSettings(CalorieGoalSettings settings) async {}
 }
 
 class _ThrowingCalorieSettingsRepository implements CalorieSettingsRepository {
@@ -299,11 +304,5 @@ class _ThrowingCalorieSettingsRepository implements CalorieSettingsRepository {
   }
 
   @override
-  Future<bool> saveSettings(CalorieGoalSettings settings) async => true;
-
-  @override
-  Future<bool> setDailyGoal(double dailyKcalGoal) async => true;
-
-  @override
-  Future<bool> clearDailyGoal() async => true;
+  Future<void> saveSettings(CalorieGoalSettings settings) async {}
 }
