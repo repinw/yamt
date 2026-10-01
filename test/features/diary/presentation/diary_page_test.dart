@@ -11,6 +11,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/activity/presentation/widgets/diary_weight_missing_prompt_section.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_dialog_keys.dart';
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_missing_prompt_card.dart';
@@ -1009,6 +1010,8 @@ Future<ProviderContainer> _pumpDiaryPage(
       appPreferencesProvider.overrideWithValue(
         appPreferences ?? MemoryAppPreferences(),
       ),
+      // The check-in plans and saves the run of this day.
+      clockProvider.overrideWithValue(() => today ?? selectedDay),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
       firebaseAuthProvider.overrideWithValue(auth),
       calorieLogRepositoryProvider.overrideWithValue(resolvedLogRepository),
