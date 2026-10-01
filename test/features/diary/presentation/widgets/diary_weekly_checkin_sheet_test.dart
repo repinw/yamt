@@ -53,7 +53,7 @@ void main() {
 
     expect(results, hasLength(1));
     expect(results.single!.action, DiaryWeeklyCheckInSheetAction.apply);
-    expect(results.single!.trainingDays, hasLength(4));
+    expect(results.single!.training!.trainingDays, hasLength(4));
   });
 
   testWidgets('keeping the previous TDEE returns reject', (tester) async {
@@ -83,7 +83,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(results.single!.action, DiaryWeeklyCheckInSheetAction.reject);
-    expect(results.single!.trainingDays, isEmpty);
+    expect(results.single!.training!.trainingDays, isEmpty);
   });
 
   testWidgets('later and change goal close the sheet with their action', (
@@ -109,7 +109,7 @@ void main() {
       DiaryWeeklyCheckInSheetAction.later,
       DiaryWeeklyCheckInSheetAction.newGoal,
     ]);
-    expect(results.map((result) => result?.trainingDays), [null, null]);
+    expect(results.map((result) => result?.training), [null, null]);
   });
 
   testWidgets('blocked check-in offers the missing weight and later', (

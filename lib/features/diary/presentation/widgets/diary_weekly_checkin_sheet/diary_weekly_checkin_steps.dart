@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_weekly_checkin_sheet_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_number_format.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_review_step.dart';
@@ -37,7 +38,7 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
   /// Closes the sheet with a decision.
   final void Function(
     DiaryWeeklyCheckInSheetAction action, [
-    Set<DateTime>? trainingDays,
+    DiaryRunTrainingChoice? training,
   ])
   onPop;
 
@@ -111,7 +112,10 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
               state.useMeasured
                   ? DiaryWeeklyCheckInSheetAction.apply
                   : DiaryWeeklyCheckInSheetAction.reject,
-              state.trainingDays,
+              (
+                runDay: plan.nextRunDays.first,
+                trainingDays: state.trainingDays,
+              ),
             ),
             child: Text(l10n.diaryCheckInStartWeek),
           ),
@@ -123,7 +127,7 @@ class DiaryWeeklyCheckInSteps extends ConsumerWidget {
             restDayCount:
                 plan.nextRunDays.length -
                 state.trainingDays.length -
-                plan.pauseDays.length,
+                plan.pauseDays.difference(state.trainingDays).length,
             format: format,
           ),
         ],

@@ -78,10 +78,13 @@ class DiaryWeeklyCheckInSheet extends ConsumerWidget {
     final format = DiaryWeeklyCheckInNumberFormat(
       Localizations.localeOf(context).toLanguageTag(),
     );
-    void pop(DiaryWeeklyCheckInSheetAction action, [Set<DateTime>? days]) {
+    void pop(
+      DiaryWeeklyCheckInSheetAction action, [
+      DiaryRunTrainingChoice? training,
+    ]) {
       Navigator.of(context).pop<DiaryWeeklyCheckInSheetResult>((
         action: action,
-        trainingDays: days,
+        training: training,
       ));
     }
 

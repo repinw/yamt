@@ -286,7 +286,10 @@ void main() {
 
       final saved = await container
           .read(calorieWeeklyCheckInControllerProvider.notifier)
-          .applyWeeklyCheckIn(data(), trainingDays: trainingDays);
+          .applyWeeklyCheckIn(
+            data(),
+            training: (runDay: dueDate, trainingDays: trainingDays),
+          );
 
       expect(saved, isTrue);
       final settings = await repository.readSettings();
@@ -305,7 +308,10 @@ void main() {
 
       final saved = await container
           .read(calorieWeeklyCheckInControllerProvider.notifier)
-          .rejectWeeklyCheckIn(data(), trainingDays: trainingDays);
+          .rejectWeeklyCheckIn(
+            data(),
+            training: (runDay: dueDate, trainingDays: trainingDays),
+          );
 
       expect(saved, isFalse);
       final settings = await repository.readSettings();

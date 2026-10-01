@@ -659,7 +659,8 @@ void main() {
       currentSettings.goalHistory.last.weeklyCheckInSnapshot?.isRejected,
       isTrue,
     );
-    expect(currentSettings.goalKcalForDay(selectedDay), 2200);
+    // The base goal stays; the planned training days only split it.
+    expect(currentSettings.baseGoalKcalForDay(selectedDay), 2200);
   });
 
   testWidgets('shows weekly check-in hint again when reject fails', (

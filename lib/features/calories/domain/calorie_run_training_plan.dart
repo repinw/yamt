@@ -4,6 +4,12 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
+/// Training days that the user picked for the run that contains `runDay`.
+typedef CalorieRunTrainingChoice = ({
+  DateTime runDay,
+  Set<DateTime> trainingDays,
+});
+
 /// The training and pause days of one 7-day run.
 @immutable
 class CalorieRunTrainingPlan {

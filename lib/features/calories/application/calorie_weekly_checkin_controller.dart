@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -168,23 +167,24 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     return true;
   }
 
-  /// Saves [trainingDays] as the training days of the run that contains
-  /// today. Runs before the decision, so a failure leaves the check-in open
-  /// for another try.
+  /// Saves the [training] days of the planned run. Runs before the
+  /// decision, so a failure leaves the check-in open for another try.
   Future<bool> _saveRunTrainingDays(
     CalorieGoalController goalController,
-    Set<DateTime>? trainingDays,
+    CalorieRunTrainingChoice? training,
   ) async {
-    if (trainingDays == null) {
+    if (training == null) {
       return true;
     }
-    final now = ref.read(clockProvider)();
     final settings = await goalController.currentSettings();
     if (!ref.mounted) {
       return false;
     }
     final saved = await goalController.persistSettings(
-      settings.withRunTrainingDays(now, trainingDays: trainingDays),
+      settings.withRunTrainingDays(
+        training.runDay,
+        trainingDays: training.trainingDays,
+      ),
     );
     if (!ref.mounted) {
       return false;
@@ -198,16 +198,16 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     return saved;
   }
 
-  /// Apply weekly check in, after saving [trainingDays] for the next run.
+  /// Apply weekly check in, after saving the [training] of the next run.
   Future<bool> applyWeeklyCheckIn(
     CalorieWeeklyCheckInData checkInData, {
-    Set<DateTime>? trainingDays,
+    CalorieRunTrainingChoice? training,
   }) {
     return _keepAliveDuring((goalController) async {
       if (!await _syncPendingBeforeDecision(checkInData)) {
         return false;
       }
-      if (!await _saveRunTrainingDays(goalController, trainingDays)) {
+      if (!await _saveRunTrainingDays(goalController, training)) {
         return false;
       }
 
@@ -234,16 +234,16 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     });
   }
 
-  /// Reject weekly check in, after saving [trainingDays] for the next run.
+  /// Reject weekly check in, after saving the [training] of the next run.
   Future<bool> rejectWeeklyCheckIn(
     CalorieWeeklyCheckInData checkInData, {
-    Set<DateTime>? trainingDays,
+    CalorieRunTrainingChoice? training,
   }) {
     return _keepAliveDuring((goalController) async {
       if (!await _syncPendingBeforeDecision(checkInData)) {
         return false;
       }
-      if (!await _saveRunTrainingDays(goalController, trainingDays)) {
+      if (!await _saveRunTrainingDays(goalController, training)) {
         return false;
       }
       final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn!;

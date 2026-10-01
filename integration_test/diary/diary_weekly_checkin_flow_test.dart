@@ -114,7 +114,8 @@ void main() {
 
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
     expect(result?.action, DiaryWeeklyCheckInSheetAction.apply);
-    expect(result?.trainingDays, {
+    expect(result?.training?.runDay, DateTime(2026, 9, 15));
+    expect(result?.training?.trainingDays, {
       DateTime(2026, 9, 15),
       DateTime(2026, 9, 17),
       DateTime(2026, 9, 21),

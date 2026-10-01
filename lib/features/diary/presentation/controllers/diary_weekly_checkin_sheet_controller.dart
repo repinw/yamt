@@ -98,7 +98,7 @@ class DiaryWeeklyCheckInSheetController
           ...previous.trainingDays.where(
             (day) => plan.nextRunDays.contains(day) && plan.canChangeDay(day),
           ),
-          ...plan.suggestedTrainingDays.where(plan.pastDays.contains),
+          ...plan.fixedTrainingDays,
         }),
       );
     }
@@ -157,15 +157,11 @@ class DiaryWeeklyCheckInSheetController
     );
   }
 
-  /// Plans no training day. Past days keep their type.
+  /// Plans no training day. Past days and pause days keep their type.
   void clearTrainingDays() {
     _update(
       (current) => current.copyWith(
-        trainingDays: Set.unmodifiable(
-          current.plan.suggestedTrainingDays.where(
-            current.plan.pastDays.contains,
-          ),
-        ),
+        trainingDays: Set.unmodifiable(current.plan.fixedTrainingDays),
       ),
     );
   }
