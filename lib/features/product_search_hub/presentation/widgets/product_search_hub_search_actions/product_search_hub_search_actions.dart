@@ -49,13 +49,6 @@ class ProductSearchHubSearchActions extends StatelessWidget {
             runSpacing: AppSpacing.sm,
             children: [
               _ProductSearchHubSearchActionButton(
-                key: const Key('product_search_hub_search_barcode_action'),
-                icon: Icons.qr_code_scanner_rounded,
-                label: l10n.productSearchHubBarcodeAction,
-                width: actionWidth,
-                onPressed: onBarcodePressed,
-              ),
-              _ProductSearchHubSearchActionButton(
                 key: const Key('product_search_hub_search_ai_action'),
                 icon: Icons.auto_awesome_rounded,
                 label: l10n.productSearchHubAiAction,
@@ -68,6 +61,13 @@ class ProductSearchHubSearchActions extends StatelessWidget {
                 label: l10n.productSearchHubCreateOwnAction,
                 width: actionWidth,
                 onPressed: onCreateOwnPressed,
+              ),
+              _ProductSearchHubSearchActionButton(
+                key: const Key('product_search_hub_search_barcode_action'),
+                icon: Icons.qr_code_scanner_rounded,
+                label: l10n.productSearchHubBarcodeAction,
+                width: actionWidth,
+                onPressed: onBarcodePressed,
               ),
             ],
           ),
