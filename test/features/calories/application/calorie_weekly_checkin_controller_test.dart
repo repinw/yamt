@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
@@ -242,6 +243,79 @@ void main() {
     expect(snapshot?.macroWeightKg, 82.4);
     expect(settings.macroWeightKgForDay(DateTime(2026, 4, 14)), 84);
     expect(settings.macroWeightKgForDay(dueDate), 82.4);
+  });
+
+  group('training days of the next run', () {
+    final goalStart = DateTime(2026, 4, 8);
+    final dueDate = DateTime(2026, 4, 15);
+    final trainingDays = {DateTime(2026, 4, 16), DateTime(2026, 4, 18)};
+
+    Future<
+      ({ProviderContainer container, FakeCalorieSettingsRepository repository})
+    >
+    start() async {
+      final repository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2400,
+          calculatorProfile: null,
+          effectiveDate: goalStart,
+        ),
+      );
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+          clockProvider.overrideWithValue(() => dueDate),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(calorieGoalControllerProvider.future);
+      return (container: container, repository: repository);
+    }
+
+    CalorieWeeklyCheckInData data() => _weeklyCheckInData(
+      pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
+        windowStartDate: goalStart,
+        windowEndDate: DateTime(2026, 4, 14),
+        dueDate: dueDate,
+      ),
+    );
+
+    test('apply saves them before the decision', () async {
+      final (:container, :repository) = await start();
+
+      final saved = await container
+          .read(calorieWeeklyCheckInControllerProvider.notifier)
+          .applyWeeklyCheckIn(data(), trainingDays: trainingDays);
+
+      expect(saved, isTrue);
+      final settings = await repository.readSettings();
+      expect(settings.isTrainingDay(DateTime(2026, 4, 16)), isTrue);
+      expect(settings.isTrainingDay(DateTime(2026, 4, 17)), isFalse);
+      expect(settings.isTrainingDay(DateTime(2026, 4, 18)), isTrue);
+      expect(settings.pendingWeeklyCheckIn, isNull);
+    });
+
+    test('a failed save keeps the check-in open', () async {
+      final (:container, :repository) = await start();
+      // The pending check-in saves first; the training days fail after it.
+      repository.onSaveSettings = (_) async {
+        repository.saveShouldFail = true;
+      };
+
+      final saved = await container
+          .read(calorieWeeklyCheckInControllerProvider.notifier)
+          .rejectWeeklyCheckIn(data(), trainingDays: trainingDays);
+
+      expect(saved, isFalse);
+      final settings = await repository.readSettings();
+      expect(settings.pendingWeeklyCheckIn, isNotNull);
+      expect(settings.isTrainingDay(DateTime(2026, 4, 16)), isFalse);
+      expect(
+        container.read(calorieWeeklyCheckInControllerProvider).hasError,
+        isTrue,
+      );
+    });
   });
 
   test('rejectWeeklyCheckIn preserves previous goal, marks snapshot rejected, '

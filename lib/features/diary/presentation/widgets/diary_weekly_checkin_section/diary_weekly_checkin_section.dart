@@ -238,7 +238,7 @@ class _DiaryWeeklyCheckInSectionState
     }
   }
 
-  /// Saves the TDEE decision, then the training days of the next run.
+  /// Saves the training days of the next run and the TDEE decision.
   Future<void> _decide(
     DiaryWeeklyCheckInActions actions,
     DiaryWeeklyCheckInData checkInData,
@@ -247,29 +247,30 @@ class _DiaryWeeklyCheckInSectionState
   ) async {
     final l10n = AppLocalizations.of(context)!;
     final apply = result.action == DiaryWeeklyCheckInSheetAction.apply;
-    final trainingDays = result.trainingDays;
     _hide(pending);
     final saved = apply
-        ? await actions.applyWeeklyCheckIn(checkInData)
-        : await actions.rejectWeeklyCheckIn(checkInData);
-    final savedDays =
-        !saved ||
-        trainingDays == null ||
-        await actions.saveRunTrainingDays(trainingDays);
+        ? await actions.applyWeeklyCheckIn(
+            checkInData,
+            trainingDays: result.trainingDays,
+          )
+        : await actions.rejectWeeklyCheckIn(
+            checkInData,
+            trainingDays: result.trainingDays,
+          );
     if (!mounted) {
       return;
     }
-    saved ? _refreshDashboard() : _showAgain(pending);
-    final failure = switch ((saved, savedDays)) {
-      (false, _) when apply => l10n.caloriesWeeklyCheckInApplyFailed,
-      (false, _) => l10n.caloriesWeeklyCheckInRejectFailed,
-      (true, false) => l10n.diaryCheckInTrainingDaysFailed,
-      (true, true) => null,
-    };
-    if (failure != null) {
-      ScaffoldMessenger.of(context)
-          .showAppSnackBar(failure, tone: AppSnackBarTone.error);
+    if (saved) {
+      _refreshDashboard();
+      return;
     }
+    _showAgain(pending);
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      apply
+          ? l10n.caloriesWeeklyCheckInApplyFailed
+          : l10n.caloriesWeeklyCheckInRejectFailed,
+      tone: AppSnackBarTone.error,
+    );
   }
 
   Future<void> _syncLearnedTdeeCache(

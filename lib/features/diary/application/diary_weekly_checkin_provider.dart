@@ -1,9 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart'
     as goal_controller;
-import 'package:yamt/features/calories/application/calorie_run_training_service.dart'
-    as run_training;
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart'
     as week_overview;
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart'
@@ -155,15 +152,13 @@ DiaryWeeklyCheckInActions diaryWeeklyCheckInActions(Ref ref) {
   final goalController = ref.watch(
     goal_controller.calorieGoalControllerProvider.notifier,
   );
-  final runTraining = ref.watch(run_training.calorieRunTrainingServiceProvider);
-  final clock = ref.watch(clockProvider);
 
   return DiaryWeeklyCheckInActions(
     syncLearnedTdeeCache: checkInController.syncLearnedTdeeCache,
-    applyWeeklyCheckIn: checkInController.applyWeeklyCheckIn,
-    rejectWeeklyCheckIn: checkInController.rejectWeeklyCheckIn,
-    saveRunTrainingDays: (trainingDays) =>
-        runTraining.save(trainingDays, now: clock()),
+    applyWeeklyCheckIn: (data, trainingDays) =>
+        checkInController.applyWeeklyCheckIn(data, trainingDays: trainingDays),
+    rejectWeeklyCheckIn: (data, trainingDays) =>
+        checkInController.rejectWeeklyCheckIn(data, trainingDays: trainingDays),
     showWeeklyCheckInAgain: (pendingWeeklyCheckIn) async {
       final saved = await checkInController.showPendingWeeklyCheckInAgain(
         pendingWeeklyCheckIn,
@@ -196,7 +191,6 @@ class DiaryWeeklyCheckInActions {
     required this._syncLearnedTdeeCache,
     required this._applyWeeklyCheckIn,
     required this._rejectWeeklyCheckIn,
-    required this._saveRunTrainingDays,
     required this._showWeeklyCheckInAgain,
     required this._setSkippedIntakeDay,
     required this._refreshCheckInData,
@@ -204,9 +198,16 @@ class DiaryWeeklyCheckInActions {
 
   final Future<void> Function(DiaryWeeklyCheckInData data)
   _syncLearnedTdeeCache;
-  final Future<bool> Function(DiaryWeeklyCheckInData data) _applyWeeklyCheckIn;
-  final Future<bool> Function(DiaryWeeklyCheckInData data) _rejectWeeklyCheckIn;
-  final Future<bool> Function(Set<DateTime> trainingDays) _saveRunTrainingDays;
+  final Future<bool> Function(
+    DiaryWeeklyCheckInData data,
+    Set<DateTime>? trainingDays,
+  )
+  _applyWeeklyCheckIn;
+  final Future<bool> Function(
+    DiaryWeeklyCheckInData data,
+    Set<DateTime>? trainingDays,
+  )
+  _rejectWeeklyCheckIn;
   final Future<bool> Function(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   )
@@ -223,19 +224,21 @@ class DiaryWeeklyCheckInActions {
     return _syncLearnedTdeeCache(data);
   }
 
-  /// Applies a weekly check-in.
-  Future<bool> applyWeeklyCheckIn(DiaryWeeklyCheckInData data) {
-    return _applyWeeklyCheckIn(data);
+  /// Applies a weekly check-in, after saving [trainingDays] for the run.
+  Future<bool> applyWeeklyCheckIn(
+    DiaryWeeklyCheckInData data, {
+    Set<DateTime>? trainingDays,
+  }) {
+    return _applyWeeklyCheckIn(data, trainingDays);
   }
 
-  /// Rejects a weekly check-in, keeping the previous TDEE and goal.
-  Future<bool> rejectWeeklyCheckIn(DiaryWeeklyCheckInData data) {
-    return _rejectWeeklyCheckIn(data);
-  }
-
-  /// Saves [trainingDays] as the training days of the current run.
-  Future<bool> saveRunTrainingDays(Set<DateTime> trainingDays) {
-    return _saveRunTrainingDays(trainingDays);
+  /// Rejects a weekly check-in, keeping the previous TDEE and goal, after
+  /// saving [trainingDays] for the run.
+  Future<bool> rejectWeeklyCheckIn(
+    DiaryWeeklyCheckInData data, {
+    Set<DateTime>? trainingDays,
+  }) {
+    return _rejectWeeklyCheckIn(data, trainingDays);
   }
 
   /// Reopens a dismissed weekly check-in window.
