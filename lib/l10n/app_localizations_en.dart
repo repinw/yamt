@@ -5369,4 +5369,46 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryCheckInFixedDaysHint =>
       'Past days and pause days keep their type.';
+
+  @override
+  String get preparedMealFillTitle => 'Fill row';
+
+  @override
+  String get preparedMealFillStockMatch => 'Found in stock';
+
+  @override
+  String get preparedMealFillTake => 'Use';
+
+  @override
+  String get preparedMealFillStock => 'Stock';
+
+  @override
+  String get preparedMealFillStockDescription => 'Pick another food';
+
+  @override
+  String get preparedMealFillSearch => 'Search';
+
+  @override
+  String get preparedMealFillSearchDescription =>
+      'Find a product in the catalog';
+
+  @override
+  String get preparedMealFillBarcode => 'Barcode';
+
+  @override
+  String get preparedMealFillBarcodeDescription => 'Scan the package';
+
+  @override
+  String get preparedMealFillAi => 'AI';
+
+  @override
+  String get preparedMealFillAiDescription => 'Estimate from a photo or text';
+
+  @override
+  String get preparedMealFillIgnore => 'Ignore row';
+
+  @override
+  String preparedMealFillStockLeft(String amount) {
+    return '$amount left';
+  }
 }

@@ -17,6 +17,14 @@ typedef PreparedMealIngredientFillCallback = Future<bool> Function(
   List<String> inventoryItemIds,
 );
 
+/// Fills a missing recipe ingredient with an amount of one Vorrat item.
+typedef PreparedMealIngredientItemFillCallback = Future<bool> Function(
+  String mealId,
+  String ingredient,
+  String itemId,
+  int usedAmount,
+);
+
 /// Ignores a missing recipe ingredient.
 typedef PreparedMealIngredientIgnoreCallback = Future<bool> Function(
   String mealId,
@@ -44,6 +52,7 @@ class PreparedMealActions {
   const new({
     required this.throwAway,
     required this.fillPendingIngredient,
+    required this.fillPendingIngredientWithItem,
     required this.ignorePendingIngredient,
     required this.unbundle,
     required this.edit,
@@ -55,6 +64,9 @@ class PreparedMealActions {
 
   /// Fills a missing ingredient.
   final PreparedMealIngredientFillCallback fillPendingIngredient;
+
+  /// Fills a missing ingredient with a chosen amount of one item.
+  final PreparedMealIngredientItemFillCallback fillPendingIngredientWithItem;
 
   /// Ignores a missing ingredient.
   final PreparedMealIngredientIgnoreCallback ignorePendingIngredient;

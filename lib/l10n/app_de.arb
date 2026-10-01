@@ -2526,5 +2526,18 @@
   "diaryCheckInPreviewResult": "Vorschau: {action}, {days} Trainingstage, nichts gespeichert",
   "diaryCheckInMissingDataPreviewAction": "Vorschau Daten fehlen",
   "homeMenuDebugSection": "Debug",
-  "diaryCheckInFixedDaysHint": "Vergangene Tage und Pausentage bleiben, wie sie sind."
+  "diaryCheckInFixedDaysHint": "Vergangene Tage und Pausentage bleiben, wie sie sind.",
+  "preparedMealFillTitle": "Zeile füllen",
+  "preparedMealFillStockMatch": "Im Vorrat gefunden",
+  "preparedMealFillTake": "Übernehmen",
+  "preparedMealFillStock": "Vorrat",
+  "preparedMealFillStockDescription": "Anderes Lebensmittel wählen",
+  "preparedMealFillSearch": "Suche",
+  "preparedMealFillSearchDescription": "Produkt im Katalog finden",
+  "preparedMealFillBarcode": "Barcode",
+  "preparedMealFillBarcodeDescription": "Packung scannen",
+  "preparedMealFillAi": "KI",
+  "preparedMealFillAiDescription": "Aus Foto oder Text schätzen",
+  "preparedMealFillIgnore": "Zeile ignorieren",
+  "preparedMealFillStockLeft": "{amount} übrig"
 }

@@ -2968,5 +2968,25 @@
   },
   "diaryCheckInMissingDataPreviewAction": "Preview missing data",
   "homeMenuDebugSection": "Debug",
-  "diaryCheckInFixedDaysHint": "Past days and pause days keep their type."
+  "diaryCheckInFixedDaysHint": "Past days and pause days keep their type.",
+  "preparedMealFillTitle": "Fill row",
+  "preparedMealFillStockMatch": "Found in stock",
+  "preparedMealFillTake": "Use",
+  "preparedMealFillStock": "Stock",
+  "preparedMealFillStockDescription": "Pick another food",
+  "preparedMealFillSearch": "Search",
+  "preparedMealFillSearchDescription": "Find a product in the catalog",
+  "preparedMealFillBarcode": "Barcode",
+  "preparedMealFillBarcodeDescription": "Scan the package",
+  "preparedMealFillAi": "AI",
+  "preparedMealFillAiDescription": "Estimate from a photo or text",
+  "preparedMealFillIgnore": "Ignore row",
+  "preparedMealFillStockLeft": "{amount} left",
+  "@preparedMealFillStockLeft": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  }
 }

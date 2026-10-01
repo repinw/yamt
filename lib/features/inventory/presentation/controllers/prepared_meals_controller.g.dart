@@ -38,7 +38,7 @@ final class PreparedMealsControllerProvider
 }
 
 String _$preparedMealsControllerHash() =>
-    r'3cdddbb275120ec07fcfce6bd27a6dc335f8c762';
+    r'2bf402a9133afac54833b55ba2d3601f61d69699';
 
 /// Defines prepared meals controller.
 

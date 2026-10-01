@@ -31,6 +31,27 @@ abstract final class AppRoutes {
   /// Product search that returns the picked food without saving it.
   static const homeFoodPick = '/home/food-pick';
 
+  /// Query parameter of [homeFoodPick] that opens the barcode scanner or the
+  /// AI instead of the search.
+  static const homeFoodPickStartParam = 'start';
+
+  /// [homeFoodPickStartParam] value that opens the barcode scanner.
+  static const homeFoodPickStartBarcode = 'barcode';
+
+  /// [homeFoodPickStartParam] value that opens the AI.
+  static const homeFoodPickStartAi = 'ai';
+
+  /// Builds the food pick path that starts with [start], one of the
+  /// `homeFoodPickStart*` values, or with the search when it is null.
+  static String homeFoodPickPath({String? start}) {
+    return Uri(
+      path: homeFoodPick,
+      queryParameters: start == null
+          ? null
+          : <String, String>{homeFoodPickStartParam: start},
+    ).toString();
+  }
+
   /// Product-search child flow route.
   static const productSearchChildFlow = '/product-search/child-flow/:flow';
 

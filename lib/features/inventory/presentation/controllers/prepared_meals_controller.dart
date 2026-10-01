@@ -12,6 +12,8 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_workflows.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_pending_ingredient_support.dart';
+import 'package:yamt/features/inventory/application/'
     'prepared_meal_stock_activity.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
@@ -216,6 +218,43 @@ class PreparedMealsController extends _$PreparedMealsController {
               inventoryItemIds: inventoryItemIds,
               inventoryRepository: inventoryRepository,
               ingredientParser: ref.read(templateIngredientParserProvider),
+            ),
+      ),
+    ).whenComplete(keepAliveLink.close);
+  }
+
+  /// The best item of [inventoryItems] that can fill the open row
+  /// [ingredient] with the row's own amount.
+  InventoryItem? pendingIngredientStockMatch({
+    required String ingredient,
+    required List<InventoryItem> inventoryItems,
+    required String localeCode,
+  }) {
+    return findPendingIngredientStockMatch(
+      ingredient: ingredient,
+      inventoryItems: inventoryItems,
+      ingredientParser: ref.read(templateIngredientParserProvider),
+      localeCode: localeCode,
+    );
+  }
+
+  /// Fills the open row [ingredient] with [usedAmount] of the item [itemId].
+  Future<bool> fillPreparedMealPendingIngredientWithItem({
+    required String mealId,
+    required String ingredient,
+    required String itemId,
+    required int usedAmount,
+  }) {
+    final keepAliveLink = ref.keepAlive();
+    return _runSerializedMutation(
+      () => _runInventoryTrackedBool(
+        (inventoryRepository) =>
+            _mutationWorkflows.fillPreparedMealPendingIngredientWithItem(
+              mealId: mealId,
+              ingredient: ingredient,
+              itemId: itemId,
+              usedAmount: usedAmount,
+              inventoryRepository: inventoryRepository,
             ),
       ),
     ).whenComplete(keepAliveLink.close);

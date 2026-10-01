@@ -9134,6 +9134,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Past days and pause days keep their type.'**
   String get diaryCheckInFixedDaysHint;
+
+  /// No description provided for @preparedMealFillTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill row'**
+  String get preparedMealFillTitle;
+
+  /// No description provided for @preparedMealFillStockMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Found in stock'**
+  String get preparedMealFillStockMatch;
+
+  /// No description provided for @preparedMealFillTake.
+  ///
+  /// In en, this message translates to:
+  /// **'Use'**
+  String get preparedMealFillTake;
+
+  /// No description provided for @preparedMealFillStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Stock'**
+  String get preparedMealFillStock;
+
+  /// No description provided for @preparedMealFillStockDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick another food'**
+  String get preparedMealFillStockDescription;
+
+  /// No description provided for @preparedMealFillSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get preparedMealFillSearch;
+
+  /// No description provided for @preparedMealFillSearchDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a product in the catalog'**
+  String get preparedMealFillSearchDescription;
+
+  /// No description provided for @preparedMealFillBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get preparedMealFillBarcode;
+
+  /// No description provided for @preparedMealFillBarcodeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan the package'**
+  String get preparedMealFillBarcodeDescription;
+
+  /// No description provided for @preparedMealFillAi.
+  ///
+  /// In en, this message translates to:
+  /// **'AI'**
+  String get preparedMealFillAi;
+
+  /// No description provided for @preparedMealFillAiDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Estimate from a photo or text'**
+  String get preparedMealFillAiDescription;
+
+  /// No description provided for @preparedMealFillIgnore.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore row'**
+  String get preparedMealFillIgnore;
+
+  /// No description provided for @preparedMealFillStockLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} left'**
+  String preparedMealFillStockLeft(String amount);
 }
 
 class _AppLocalizationsDelegate
