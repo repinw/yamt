@@ -38,7 +38,7 @@ final class HouseholdMembershipControllerProvider
 }
 
 String _$householdMembershipControllerHash() =>
-    r'a5d19af0d485555a635d30d61088a4bf752a9cde';
+    r'692197e79ac93317283052b814f69d852e161a04';
 
 /// Runs the membership actions of the household page.
 
