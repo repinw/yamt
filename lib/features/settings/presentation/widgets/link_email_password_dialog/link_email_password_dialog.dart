@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/features/settings/presentation/widgets/link_email_password_dialog/link_email_password_dialog_keys.dart';
 import 'package:yamt/features/shared/widgets/email_password_credentials_form.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -117,6 +118,7 @@ class _LinkEmailPasswordDialogState extends State<LinkEmailPasswordDialog> {
           child: Text(MaterialLocalizations.of(context).cancelButtonLabel),
         ),
         FilledButton(
+          key: LinkEmailPasswordDialogKeys.confirmButton,
           onPressed: _isSubmitting ? null : _submit,
           child: _isSubmitting
               ? const SizedBox.square(
