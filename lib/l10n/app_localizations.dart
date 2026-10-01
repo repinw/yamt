@@ -7854,8 +7854,8 @@ abstract class AppLocalizations {
   /// No description provided for @receiptReviewProcessingFailed.
   ///
   /// In en, this message translates to:
-  /// **'Receipt processing failed: {error}'**
-  String receiptReviewProcessingFailed(String error);
+  /// **'Could not process the receipt.'**
+  String get receiptReviewProcessingFailed;
 
   /// No description provided for @receiptReviewNoDate.
   ///

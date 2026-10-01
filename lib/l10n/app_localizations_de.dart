@@ -4649,9 +4649,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get receiptReviewAnalyzing => 'Beleg wird analysiert...';
 
   @override
-  String receiptReviewProcessingFailed(String error) {
-    return 'Belegverarbeitung fehlgeschlagen: $error';
-  }
+  String get receiptReviewProcessingFailed =>
+      'Beleg konnte nicht verarbeitet werden.';
 
   @override
   String get receiptReviewNoDate => 'Kein Datum erkannt';

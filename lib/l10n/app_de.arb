@@ -2271,14 +2271,7 @@
   "receiptReviewStoreEdit": "Händler anpassen",
   "receiptReviewStoreLabel": "Händlername",
   "receiptReviewAnalyzing": "Beleg wird analysiert...",
-  "receiptReviewProcessingFailed": "Belegverarbeitung fehlgeschlagen: {error}",
-  "@receiptReviewProcessingFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
+  "receiptReviewProcessingFailed": "Beleg konnte nicht verarbeitet werden.",
   "receiptReviewNoDate": "Kein Datum erkannt",
   "receiptReviewUnknownStore": "Unbekannter Händler",
   "receiptReviewPrintedTotal": "Bon-Summe",

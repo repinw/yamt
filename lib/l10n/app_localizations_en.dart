@@ -4582,9 +4582,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get receiptReviewAnalyzing => 'Analyzing receipt...';
 
   @override
-  String receiptReviewProcessingFailed(String error) {
-    return 'Receipt processing failed: $error';
-  }
+  String get receiptReviewProcessingFailed => 'Could not process the receipt.';
 
   @override
   String get receiptReviewNoDate => 'No date detected';

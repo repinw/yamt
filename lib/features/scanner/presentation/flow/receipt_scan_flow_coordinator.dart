@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:file_picker/file_picker.dart';
 import 'package:go_router/go_router.dart';
@@ -97,7 +98,7 @@ class ReceiptScanFlowCoordinator {
         .toList(growable: false);
     if (validPaths.isEmpty) return false;
 
-    final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final navigator = Navigator.of(context, rootNavigator: true);
     var dialogOpen = true;
 
@@ -114,9 +115,7 @@ class ReceiptScanFlowCoordinator {
                 children: [
                   const CircularProgressIndicator(),
                   const SizedBox(height: 16),
-                  Text(
-                    l10n?.receiptReviewAnalyzing ?? 'Beleg wird analysiert...',
-                  ),
+                  Text(l10n.receiptReviewAnalyzing),
                 ],
               ),
             ),
@@ -139,15 +138,20 @@ class ReceiptScanFlowCoordinator {
       final saved = await _reviewLauncher(context, enriched);
 
       return saved ?? false;
-    } on Object catch (error) {
+    } on Object catch (error, stackTrace) {
+      developer.log(
+        'Receipt processing failed',
+        name: 'ReceiptScanFlowCoordinator',
+        error: error,
+        stackTrace: stackTrace,
+      );
       if (dialogOpen && navigator.mounted) {
         navigator.pop();
         dialogOpen = false;
       }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showAppSnackBar(
-          l10n?.receiptReviewProcessingFailed(error.toString()) ??
-              'Belegverarbeitung fehlgeschlagen: $error',
+          l10n.receiptReviewProcessingFailed,
           tone: AppSnackBarTone.error,
         );
       }

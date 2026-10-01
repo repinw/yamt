@@ -3,11 +3,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 import 'fake_receipt_ai_repository.dart';
 import 'fake_receipt_product_resolver.dart';
@@ -64,7 +66,12 @@ class ReceiptScanFlowTestHarness {
           receiptProductResolverProvider.overrideWithValue(fakeResolver),
           receiptStorageGatewayProvider.overrideWithValue(fakeGateway),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(
+          locale: const Locale('de'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
       ),
     );
   }
