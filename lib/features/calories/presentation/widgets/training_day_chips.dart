@@ -25,15 +25,19 @@ class TrainingDayChips extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         for (final (index, day) in days.indexed)
-          _DayChip(
-            key: day.key,
-            label: day.label,
-            caption: day.caption,
-            isSelected: day.isTraining,
-            onTap: () => onToggle(index),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxs),
+              child: _DayChip(
+                key: day.key,
+                label: day.label,
+                caption: day.caption,
+                isSelected: day.isTraining,
+                onTap: () => onToggle(index),
+              ),
+            ),
           ),
       ],
     );
@@ -65,10 +69,7 @@ class _DayChip extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppRadius.md),
       child: Container(
-        width: AppIntroLayout.weekdayChip,
-        constraints: const BoxConstraints(
-          minHeight: AppIntroLayout.weekdayChipHeight,
-        ),
+        constraints: const BoxConstraints(minHeight: kMinInteractiveDimension),
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
         alignment: Alignment.center,
         decoration: BoxDecoration(
@@ -79,29 +80,32 @@ class _DayChip extends StatelessWidget {
                 ),
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              label,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: foreground,
-                fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-            if (caption != null)
+        // Large text shrinks to the chip instead of drawing over its
+        // neighbours.
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
               Text(
-                caption,
-                maxLines: 1,
-                overflow: TextOverflow.visible,
-                softWrap: false,
-                style: theme.textTheme.labelSmall?.copyWith(
-                  color: foreground.withValues(
-                    alpha: AppIntroLayout.weekdayCaptionOpacity,
-                  ),
+                label,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: foreground,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                 ),
               ),
-          ],
+              if (caption != null)
+                Text(
+                  caption,
+                  maxLines: 1,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: foreground.withValues(
+                      alpha: AppIntroLayout.weekdayCaptionOpacity,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

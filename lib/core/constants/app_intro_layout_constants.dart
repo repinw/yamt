@@ -64,12 +64,6 @@ abstract final class AppIntroLayout {
   /// Tint behind the icon of a selected gender card.
   static const double genderIconOpacity = 0.18;
 
-  /// Side length of a weekday chip.
-  static const double weekdayChip = 38;
-
-  /// Minimum height of a weekday chip.
-  static const double weekdayChipHeight = 40;
-
   /// Opacity of the date caption under a weekday chip label.
   static const double weekdayCaptionOpacity = 0.75;
 
