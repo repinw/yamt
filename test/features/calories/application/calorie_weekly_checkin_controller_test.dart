@@ -53,6 +53,31 @@ void main() {
     },
   );
 
+  test('syncPendingWeeklyCheckIn reports a failed read as an error', () async {
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: _settingsWithGoal(),
+    )..readError = Exception('client is offline');
+    addTearDown(settingsRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final states = <AsyncValue<void>>[];
+    container.listen(
+      calorieWeeklyCheckInControllerProvider,
+      (previous, next) => states.add(next),
+    );
+
+    final synced = await container
+        .read(calorieWeeklyCheckInControllerProvider.notifier)
+        .syncPendingWeeklyCheckIn(_pendingWeeklyCheckIn());
+
+    expect(synced, isFalse);
+    expect(states.last, isA<AsyncError<void>>());
+  });
+
   test('showPendingWeeklyCheckInAgain clears pending dismissal', () async {
     final dismissedPending = _pendingWeeklyCheckIn().copyWith(
       dismissedAt: DateTime(2026, 4, 15, 10),
