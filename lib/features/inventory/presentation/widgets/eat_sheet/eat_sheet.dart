@@ -39,7 +39,6 @@ Future<InventoryItemEatSheetResult?> showInventoryItemEatSheetResult({
   MealType? initialMealType,
   String? addMoreActionText,
   bool hasOpenStock = false,
-  String? confirmLabel,
 }) {
   return _showEatSheet(
     context,
@@ -50,7 +49,6 @@ Future<InventoryItemEatSheetResult?> showInventoryItemEatSheetResult({
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
       addMoreActionText: addMoreActionText,
-      confirmLabel: confirmLabel,
       hasOpenStock: hasOpenStock,
     ),
   );
