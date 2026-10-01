@@ -1986,9 +1986,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get caloriesWeeklyCheckInNewGoalAction => 'Neues Ziel wählen';
-
-  @override
   String get caloriesCalculatorResultsTitle => 'Ergebnisse';
 
   @override
@@ -2074,25 +2071,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesWeeklyCheckInDialogTitle => 'Wochen-Check-in';
 
   @override
-  String get caloriesWeeklyCheckInDialogReadyBody =>
-      'Prüfe deine letzten 7 abgeschlossenen Tage. Dein Ziel nutzt diese Lernwerte bereits automatisch.';
-
-  @override
   String get caloriesWeeklyCheckInDialogBlockedBody =>
       'Uns fehlen noch ein paar Daten, bevor diese Wochenzusammenfassung vollständig ist.';
-
-  @override
-  String get caloriesWeeklyCheckInDialogWindowLabel => 'Zeitraum';
-
-  @override
-  String get caloriesWeeklyCheckInDialogTrendLabel => 'Gewichtstrend';
-
-  @override
-  String get caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel =>
-      'Gemessener Gesamt-TDEE';
-
-  @override
-  String get caloriesWeeklyCheckInDialogNewTargetLabel => 'Neues Ziel';
 
   @override
   String get caloriesWeeklyCheckInDialogLowConfidence =>
@@ -2101,12 +2081,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get caloriesWeeklyCheckInBlockedUnstableWeight =>
       'Die Gewichtsdaten waren diese Woche zu unruhig für ein verlässliches TDEE-Update. Füge gleichmäßigere Wiegewerte hinzu und versuche es erneut.';
-
-  @override
-  String get caloriesWeeklyCheckInApplyAction => 'Übernehmen';
-
-  @override
-  String get caloriesWeeklyCheckInRejectAction => 'Ablehnen';
 
   @override
   String get caloriesWeeklyCheckInLaterAction => 'Später';
@@ -5332,9 +5306,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryCheckInWeightChart => 'Gewicht';
 
   @override
-  String get diaryCheckInWeighIn => 'Messung';
-
-  @override
   String get diaryCheckInTrend => 'Trend';
 
   @override
@@ -5428,9 +5399,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get diaryCheckInMacroWeight => 'Gewicht für Makros';
-
-  @override
   String diaryCheckInMacroWeightDetail(String weight) {
     return 'Eiweiß und Fett zählen mit $weight kg.';
   }
@@ -5478,10 +5446,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get diaryCheckInLoadFailed =>
       'Der Check-in konnte nicht geladen werden.';
-
-  @override
-  String get diaryCheckInTrainingDaysFailed =>
-      'Die Trainingstage konnten nicht gespeichert werden.';
 
   @override
   String get diaryCheckInPreviewAction => 'Wochen-Check-in Vorschau';

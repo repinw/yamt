@@ -3382,12 +3382,6 @@ abstract class AppLocalizations {
   /// **'Current weight: {weight} kg'**
   String caloriesNewGoalCurrentWeight(String weight);
 
-  /// No description provided for @caloriesWeeklyCheckInNewGoalAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose new goal'**
-  String get caloriesWeeklyCheckInNewGoalAction;
-
   /// No description provided for @caloriesCalculatorResultsTitle.
   ///
   /// In en, this message translates to:
@@ -3532,41 +3526,11 @@ abstract class AppLocalizations {
   /// **'Weekly check-in'**
   String get caloriesWeeklyCheckInDialogTitle;
 
-  /// No description provided for @caloriesWeeklyCheckInDialogReadyBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Review your last 7 completed days. Your target already uses this learning automatically.'**
-  String get caloriesWeeklyCheckInDialogReadyBody;
-
   /// No description provided for @caloriesWeeklyCheckInDialogBlockedBody.
   ///
   /// In en, this message translates to:
   /// **'We still need a bit more data before this weekly summary is complete.'**
   String get caloriesWeeklyCheckInDialogBlockedBody;
-
-  /// No description provided for @caloriesWeeklyCheckInDialogWindowLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Window'**
-  String get caloriesWeeklyCheckInDialogWindowLabel;
-
-  /// No description provided for @caloriesWeeklyCheckInDialogTrendLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Weight trend'**
-  String get caloriesWeeklyCheckInDialogTrendLabel;
-
-  /// No description provided for @caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Measured total TDEE'**
-  String get caloriesWeeklyCheckInDialogMeasuredTotalTdeeLabel;
-
-  /// No description provided for @caloriesWeeklyCheckInDialogNewTargetLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'New target'**
-  String get caloriesWeeklyCheckInDialogNewTargetLabel;
 
   /// No description provided for @caloriesWeeklyCheckInDialogLowConfidence.
   ///
@@ -3579,18 +3543,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Weight data was too noisy this week for a reliable TDEE update. Add steadier weigh-ins and try again.'**
   String get caloriesWeeklyCheckInBlockedUnstableWeight;
-
-  /// No description provided for @caloriesWeeklyCheckInApplyAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Done'**
-  String get caloriesWeeklyCheckInApplyAction;
-
-  /// No description provided for @caloriesWeeklyCheckInRejectAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Reject'**
-  String get caloriesWeeklyCheckInRejectAction;
 
   /// No description provided for @caloriesWeeklyCheckInLaterAction.
   ///
@@ -8967,12 +8919,6 @@ abstract class AppLocalizations {
   /// **'Weight'**
   String get diaryCheckInWeightChart;
 
-  /// No description provided for @diaryCheckInWeighIn.
-  ///
-  /// In en, this message translates to:
-  /// **'Weigh-in'**
-  String get diaryCheckInWeighIn;
-
   /// No description provided for @diaryCheckInTrend.
   ///
   /// In en, this message translates to:
@@ -9123,12 +9069,6 @@ abstract class AppLocalizations {
   /// **'{grams} g'**
   String diaryCheckInGramsValue(int grams);
 
-  /// No description provided for @diaryCheckInMacroWeight.
-  ///
-  /// In en, this message translates to:
-  /// **'Weight for macros'**
-  String get diaryCheckInMacroWeight;
-
   /// No description provided for @diaryCheckInMacroWeightDetail.
   ///
   /// In en, this message translates to:
@@ -9200,12 +9140,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load the check-in.'**
   String get diaryCheckInLoadFailed;
-
-  /// No description provided for @diaryCheckInTrainingDaysFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not save the training days.'**
-  String get diaryCheckInTrainingDaysFailed;
 
   /// No description provided for @diaryCheckInPreviewAction.
   ///
