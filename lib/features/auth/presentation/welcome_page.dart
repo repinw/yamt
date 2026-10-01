@@ -11,17 +11,13 @@ import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines welcome page.
-class WelcomePage extends ConsumerStatefulWidget {
+class WelcomePage extends ConsumerWidget {
   /// The welcome page.
   const new({super.key});
 
-  @override
-  ConsumerState<WelcomePage> createState() => _WelcomePageState();
-}
-
-class _WelcomePageState extends ConsumerState<WelcomePage> {
   void _showAuthError({
     required BuildContext context,
+    required WidgetRef ref,
     required AppLocalizations l10n,
     required Object error,
   }) {
@@ -35,31 +31,36 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
   void _handleAsyncError(
     AsyncValue<void> next,
     BuildContext context,
+    WidgetRef ref,
     AppLocalizations l10n,
   ) {
     next.whenOrNull(
       error: (error, stackTrace) =>
-          _showAuthError(context: context, l10n: l10n, error: error),
+          _showAuthError(context: context, ref: ref, l10n: l10n, error: error),
     );
   }
 
-  void _listenForAuthErrors(BuildContext context, AppLocalizations l10n) {
+  void _listenForAuthErrors(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations l10n,
+  ) {
     ref
       ..listen<AsyncValue<void>>(authFormControllerProvider, (previous, next) {
-        _handleAsyncError(next, context, l10n);
+        _handleAsyncError(next, context, ref, l10n);
       })
       ..listen<AsyncValue<void>>(googleAuthControllerProvider, (
         previous,
         next,
       ) {
-        _handleAsyncError(next, context, l10n);
+        _handleAsyncError(next, context, ref, l10n);
       });
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    _listenForAuthErrors(context, l10n);
+    _listenForAuthErrors(context, ref, l10n);
     final mediaQuery = MediaQuery.of(context);
 
     return Scaffold(
