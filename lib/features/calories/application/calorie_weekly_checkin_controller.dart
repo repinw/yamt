@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -180,12 +181,12 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     if (!ref.mounted) {
       return false;
     }
-    final saved = await goalController.persistSettings(
-      settings.withRunTrainingDays(
-        training.runDay,
-        trainingDays: training.trainingDays,
-      ),
+    final next = settings.withPlannedRunTrainingDays(
+      training,
+      today: ref.read(clockProvider)(),
     );
+    // A null result means the planned run has ended; reopening plans anew.
+    final saved = next != null && await goalController.persistSettings(next);
     if (!ref.mounted) {
       return false;
     }

@@ -299,6 +299,23 @@ void main() {
       expect(settings.pendingWeeklyCheckIn, isNull);
     });
 
+    test('a run that has ended keeps the check-in open', () async {
+      final (:container, :repository) = await start();
+
+      // The sheet planned the run of Apr 8–14; the clock is in the next one.
+      final saved = await container
+          .read(calorieWeeklyCheckInControllerProvider.notifier)
+          .applyWeeklyCheckIn(
+            data(),
+            training: (runDay: goalStart, trainingDays: {goalStart}),
+          );
+
+      expect(saved, isFalse);
+      final settings = await repository.readSettings();
+      expect(settings.pendingWeeklyCheckIn, isNotNull);
+      expect(settings.trainingDayOverrides, isEmpty);
+    });
+
     test('a failed save keeps the check-in open', () async {
       final (:container, :repository) = await start();
       // The pending check-in saves first; the training days fail after it.

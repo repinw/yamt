@@ -83,4 +83,21 @@ extension CalorieRunTraining on CalorieGoalSettings {
       trainingDayOverrides: Map<String, bool>.unmodifiable(overrides),
     );
   }
+
+  /// Returns these settings with the [training] days of its run, or `null`
+  /// when that run ended before [today]. A sheet left open into a later run
+  /// must not rewrite days whose goals were already in use.
+  CalorieGoalSettings? withPlannedRunTrainingDays(
+    CalorieRunTrainingChoice training, {
+    required DateTime today,
+  }) {
+    if (runTrainingPlan(training.runDay).lastDay
+        .isBefore(normalizeDiaryDay(today))) {
+      return null;
+    }
+    return withRunTrainingDays(
+      training.runDay,
+      trainingDays: training.trainingDays,
+    );
+  }
 }
