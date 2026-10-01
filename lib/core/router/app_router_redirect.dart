@@ -38,7 +38,7 @@ String? appRouterRedirect(Ref ref, GoRouterState state) {
     return _redirectFromWelcome(ref, state, isAnonymous: isAnon);
   }
 
-  return _redirectForOnboarding(ref, path);
+  return _redirectForOnboarding(ref, path, isAnonymous: isAnon);
 }
 
 /// Without an account, the app shows the onboarding intro: at startup, after
@@ -97,12 +97,17 @@ String? _redirectFromWelcome(
   return hasCalorie ? AppRoutes.homeDiary : AppRoutes.calorieGoalSetup;
 }
 
-String? _redirectForOnboarding(Ref ref, String path) {
+String? _redirectForOnboarding(
+  Ref ref,
+  String path, {
+  required bool isAnonymous,
+}) {
   final calorieState = ref.read(calorieGoalOnboardingCompletedProvider);
   final hasPendingInvite = ref.read(pendingHouseholdInviteProvider) != null;
   return _redirectForCalorieGoal(
     calorieState,
     path,
+    isAnonymous: isAnonymous,
     homeRoute: hasPendingInvite
         ? AppRoutes.homeSettingsHousehold
         : AppRoutes.homeDiary,
@@ -112,6 +117,7 @@ String? _redirectForOnboarding(Ref ref, String path) {
 String? _redirectForCalorieGoal(
   AsyncValue<bool> calorieState,
   String path, {
+  required bool isAnonymous,
   required String homeRoute,
 }) {
   final isStartup = path == AppRoutes.root || path == AppRoutes.splash;
@@ -120,10 +126,11 @@ String? _redirectForCalorieGoal(
     // Checked before loading and value: Riverpod keeps the error while it
     // retries, and keeps the `false` of a signed-out start after a failed
     // rebuild. A user with the local marker is never read, so a kept `true`
-    // cannot come with an error. Onboarding stays open: a new guest finishing
-    // it keeps the answers only in memory while the save runs.
-    return path == AppRoutes.calorieGoalLoadFailed ||
-            path == AppRoutes.calorieGoalSetup
+    // cannot come with an error. Onboarding stays open for a guest: a new
+    // guest finishing it keeps the answers only in memory while the save
+    // runs. An account never redoes onboarding on an error.
+    final staysOpen = isAnonymous && path == AppRoutes.calorieGoalSetup;
+    return path == AppRoutes.calorieGoalLoadFailed || staysOpen
         ? null
         : AppRoutes.calorieGoalLoadFailed;
   }
