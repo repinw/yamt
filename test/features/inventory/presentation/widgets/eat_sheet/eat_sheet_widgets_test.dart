@@ -227,6 +227,41 @@ void main() {
     expect(find.text('Body'), findsNothing);
   });
 
+  testWidgets('page scaffold close respects a PopScope of the page', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _TestApp(
+        child: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const PopScope<void>(
+                  canPop: false,
+                  child: EatPageScaffold(
+                    whenControl: SizedBox(),
+                    kcal: null,
+                    confirmButtonKey: Key('confirm'),
+                    onConfirm: null,
+                    cancelButtonKey: Key('close'),
+                    children: [Text('Body')],
+                  ),
+                ),
+              ),
+            ),
+            child: const Text('Open'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('close')));
+    await tester.pumpAndSettle();
+    expect(find.text('Body'), findsOneWidget);
+  });
+
   testWidgets('page scaffold keeps earlier snack bars off the page', (
     tester,
   ) async {
