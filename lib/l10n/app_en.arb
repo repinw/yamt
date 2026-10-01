@@ -3081,5 +3081,9 @@
         "type": "String"
       }
     }
+  },
+  "keyboardDoneAction": "Done",
+  "@keyboardDoneAction": {
+    "description": "Button above the iOS number keyboard that closes the keyboard."
   }
 }

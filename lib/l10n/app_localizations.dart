@@ -9398,6 +9398,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{amount} left'**
   String preparedMealFillStockLeft(String amount);
+
+  /// Button above the iOS number keyboard that closes the keyboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get keyboardDoneAction;
 }
 
 class _AppLocalizationsDelegate

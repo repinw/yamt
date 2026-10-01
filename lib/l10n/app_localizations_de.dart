@@ -5624,4 +5624,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String preparedMealFillStockLeft(String amount) {
     return '$amount übrig';
   }
+
+  @override
+  String get keyboardDoneAction => 'Fertig';
 }
