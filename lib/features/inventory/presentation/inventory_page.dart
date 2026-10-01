@@ -1,7 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_prepared_meal_edit_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_page/'
     'inventory_page_content.dart';
 
@@ -20,7 +18,6 @@ class InventoryPage extends ConsumerStatefulWidget {
 }
 
 class _InventoryPageState extends ConsumerState<InventoryPage> {
-  final _mealEditCoordinator = InventoryPreparedMealEditCoordinator();
   _InventoryPageView _selectedView = _InventoryPageView.stock;
 
   @override
@@ -28,7 +25,6 @@ class _InventoryPageState extends ConsumerState<InventoryPage> {
     return InventoryPageContent(
       isShowingHistory: _selectedView == _InventoryPageView.history,
       onToggleView: _toggleView,
-      mealEditCoordinator: _mealEditCoordinator,
       includeHomeShellChrome: widget.includeHomeShellChrome,
     );
   }
