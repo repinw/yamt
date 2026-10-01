@@ -11,13 +11,14 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_workflows.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_stock_activity.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -461,7 +462,7 @@ class PreparedMealsController extends _$PreparedMealsController {
   ) async {
     final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
     final beforeItems = await inventoryRepository.readAll();
-    final trackingRepository = _ActivityTrackingInventoryItemRepository(
+    final trackingRepository = PreparedMealStockTrackingRepository(
       delegate: inventoryRepository,
       initialItems: beforeItems,
     );
@@ -481,7 +482,7 @@ class PreparedMealsController extends _$PreparedMealsController {
   ) async {
     final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
     final beforeItems = await inventoryRepository.readAll();
-    final trackingRepository = _ActivityTrackingInventoryItemRepository(
+    final trackingRepository = PreparedMealStockTrackingRepository(
       delegate: inventoryRepository,
       initialItems: beforeItems,
     );
@@ -498,31 +499,15 @@ class PreparedMealsController extends _$PreparedMealsController {
   Future<void> _recordPreparedMealInventoryDiff({
     required List<InventoryItem> beforeItems,
     required List<InventoryItem> afterItems,
-  }) async {
-    final actor = ref.read(inventoryActivityActorProvider);
-    if (actor == null) {
-      return;
-    }
-
-    final events = _buildPreparedMealInventoryDiffEvents(
-      actor: actor,
+  }) {
+    return recordPreparedMealStockActivity(
+      actor: ref.read(inventoryActivityActorProvider),
+      activityRepository: ref.read(inventoryActivityEventRepositoryProvider),
       beforeItems: beforeItems,
       afterItems: afterItems,
       buildId: _newId,
+      logName: _preparedMealsControllerLogName,
     );
-    if (events.isEmpty) {
-      return;
-    }
-
-    final saved = await ref
-        .read(inventoryActivityEventRepositoryProvider)
-        .appendAll(events);
-    if (!saved) {
-      log(
-        'Failed to record prepared meal inventory activity events.',
-        name: _preparedMealsControllerLogName,
-      );
-    }
   }
 
   Future<PreparedMealCreationResult> _runCreationMutation({
@@ -551,117 +536,4 @@ class PreparedMealsController extends _$PreparedMealsController {
   String _newId() {
     return const Uuid().v4();
   }
-}
-
-class _ActivityTrackingInventoryItemRepository
-    implements InventoryItemRepository {
-  new({required this._delegate, required List<InventoryItem> initialItems})
-    : _latestItems = List<InventoryItem>.from(initialItems);
-
-  final InventoryItemRepository _delegate;
-  List<InventoryItem> _latestItems;
-
-  List<InventoryItem> get latestItems => List<InventoryItem>.from(_latestItems);
-
-  @override
-  Stream<List<InventoryItem>> watchAll() {
-    return _delegate.watchAll();
-  }
-
-  @override
-  Future<List<InventoryItem>> readAll() async {
-    return latestItems;
-  }
-
-  @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
-    final saved = await _delegate.saveAll(items);
-    if (saved) {
-      _latestItems = List<InventoryItem>.from(items);
-    }
-    return saved;
-  }
-
-  @override
-  Future<bool> appendAll(List<InventoryItem> items) async {
-    final saved = await _delegate.appendAll(items);
-    if (saved) {
-      _latestItems = _upsertItems(_latestItems, items);
-    }
-    return saved;
-  }
-}
-
-List<InventoryItem> _upsertItems(
-  List<InventoryItem> currentItems,
-  List<InventoryItem> items,
-) {
-  if (items.isEmpty) {
-    return List<InventoryItem>.from(currentItems);
-  }
-
-  final itemsById = <String, InventoryItem>{
-    for (final item in currentItems) item.id: item,
-  };
-  for (final item in items) {
-    itemsById[item.id] = item;
-  }
-  return itemsById.values.toList(growable: false);
-}
-
-List<InventoryActivityEvent> _buildPreparedMealInventoryDiffEvents({
-  required InventoryActivityActor actor,
-  required List<InventoryItem> beforeItems,
-  required List<InventoryItem> afterItems,
-  required String Function() buildId,
-}) {
-  final beforeById = <String, InventoryItem>{
-    for (final item in beforeItems) item.id: item,
-  };
-  final afterById = <String, InventoryItem>{
-    for (final item in afterItems) item.id: item,
-  };
-  final itemIds = <String>{...beforeById.keys, ...afterById.keys};
-  final events = <InventoryActivityEvent>[];
-
-  for (final itemId in itemIds) {
-    final beforeItem = beforeById[itemId];
-    final afterItem = afterById[itemId];
-    final beforeAmount = beforeItem == null ? 0 : _stockAmount(beforeItem);
-    final afterAmount = afterItem == null ? 0 : _stockAmount(afterItem);
-    final delta = afterAmount - beforeAmount;
-    if (delta == 0) {
-      continue;
-    }
-
-    final eventItem = delta < 0 ? beforeItem : afterItem;
-    if (eventItem == null) {
-      continue;
-    }
-
-    events.add(
-      InventoryActivityEvent.fromStockChange(
-        id: buildId(),
-        type: delta < 0
-            ? InventoryActivityEventType.itemUsedInPreparedMeal
-            : InventoryActivityEventType.itemReturnedFromPreparedMeal,
-        actor: actor,
-        item: eventItem,
-        amount: delta.abs(),
-        beforeQuantity: beforeItem?.quantity,
-        afterQuantity: afterItem?.quantity,
-        beforeCurrentAmount: beforeItem?.currentAmount,
-        afterCurrentAmount: afterItem?.currentAmount,
-      ),
-    );
-  }
-
-  return events;
-}
-
-int _stockAmount(InventoryItem item) {
-  if (item.usesAmountProgress) {
-    return item.currentAmount;
-  }
-  return item.quantity;
 }
