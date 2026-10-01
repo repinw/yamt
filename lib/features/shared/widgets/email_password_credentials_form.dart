@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/shared/widgets/auth_form_components.dart';
@@ -11,8 +9,6 @@ class EmailPasswordCredentialsForm extends StatefulWidget {
   const new({
     required this.onSubmitCredentials,
     super.key,
-    this.submitLabel,
-    this.showSubmitButton = true,
     this.isLoading = false,
     this.onInputChanged,
   });
@@ -20,12 +16,6 @@ class EmailPasswordCredentialsForm extends StatefulWidget {
   /// Documented member.
   final Future<void> Function({required String email, required String password})
   onSubmitCredentials;
-
-  /// The submit label.
-  final String? submitLabel;
-
-  /// The show submit button.
-  final bool showSubmitButton;
 
   /// Whether loading.
   final bool isLoading;
@@ -81,14 +71,9 @@ class EmailPasswordCredentialsFormState
     }
   }
 
-  void _onSubmitPressed() {
-    unawaited(submit());
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isLoading = widget.isLoading;
     final validators = AuthValidationFactory.fromContext(context);
     final emailValidator = validators.email();
     final passwordValidator = validators.password();
@@ -121,14 +106,6 @@ class EmailPasswordCredentialsFormState
             validator: confirmPasswordValidator,
             onChanged: (_) => widget.onInputChanged?.call(),
           ),
-          if (widget.showSubmitButton) ...[
-            const SizedBox(height: AppSpacing.xxl),
-            AuthSubmitButton(
-              isLoading: isLoading,
-              onPressed: _onSubmitPressed,
-              label: widget.submitLabel ?? l10n.createAccount,
-            ),
-          ],
         ],
       ),
     );

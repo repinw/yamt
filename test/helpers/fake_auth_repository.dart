@@ -1,13 +1,11 @@
 import 'package:yamt/features/auth/data/auth_repository.dart';
 
 class FakeAuthRepository implements AuthRepository {
-  new({this.shouldFailSignIn = false, this.shouldFailRegister = false});
+  new({this.shouldFailSignIn = false});
 
   final bool shouldFailSignIn;
-  final bool shouldFailRegister;
 
   int signInCalls = 0;
-  int registerCalls = 0;
   int guestCalls = 0;
   int guestNameUpdateCalls = 0;
   String? lastGuestDisplayName;
@@ -23,17 +21,6 @@ class FakeAuthRepository implements AuthRepository {
     signInCalls++;
     if (shouldFailSignIn) {
       throw Exception('sign-in failed');
-    }
-  }
-
-  @override
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
-    registerCalls++;
-    if (shouldFailRegister) {
-      throw Exception('register failed');
     }
   }
 

@@ -6,10 +6,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Editorial side panel for the wide auth welcome layout.
 class EditorialAside extends StatelessWidget {
   /// Creates the editorial side panel.
-  const new({required this.isLoginMode, super.key});
-
-  /// Whether the parent welcome page is showing login mode.
-  final bool isLoginMode;
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,12 +27,12 @@ class EditorialAside extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              isLoginMode ? l10n.authBrandTitle : l10n.authRegisterTitle,
+              l10n.authBrandTitle,
               style: textTheme.displaySmall?.copyWith(color: colors.onSurface),
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              isLoginMode ? l10n.authBrandSubtitle : l10n.authRegisterSubtitle,
+              l10n.authBrandSubtitle,
               style: textTheme.bodyLarge?.copyWith(
                 color: colors.onSurfaceVariant,
               ),

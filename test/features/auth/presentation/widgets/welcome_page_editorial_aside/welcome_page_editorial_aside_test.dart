@@ -14,14 +14,11 @@ Widget _wrapWithApp(Widget child) {
 
 void main() {
   group('EditorialAside', () {
-    testWidgets('shows register copy in register mode', (tester) async {
-      await tester.pumpWidget(
-        _wrapWithApp(const EditorialAside(isLoginMode: false)),
-      );
+    testWidgets('shows the brand copy', (tester) async {
+      await tester.pumpWidget(_wrapWithApp(const EditorialAside()));
 
-      expect(find.text('Register'), findsOneWidget);
-      expect(find.text('Create your account and get started.'), findsOneWidget);
-      expect(find.text('Yamt'), findsNothing);
+      expect(find.text('Yamt'), findsOneWidget);
+      expect(find.text('Yet Another Meal Tracker'), findsOneWidget);
     });
   });
 }

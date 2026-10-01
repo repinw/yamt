@@ -3509,16 +3509,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get login => 'Login';
 
   @override
-  String get register => 'Register';
-
-  @override
   String get loginWithGoogle => 'Login with Google';
-
-  @override
-  String get registerWithGoogle => 'Register with Google';
-
-  @override
-  String get createAccount => 'Create account';
 
   @override
   String get authBrandTitle => 'Yamt';
@@ -3527,34 +3518,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authBrandSubtitle => 'Yet Another Meal Tracker';
 
   @override
-  String get authRegisterTitle => 'Register';
-
-  @override
-  String get authRegisterSubtitle => 'Create your account and get started.';
-
-  @override
   String get authContinueAsGuest => 'Continue as Guest';
 
   @override
-  String get authFooterNoAccountPrefix => 'Don\'t have an account?';
-
-  @override
-  String get authFooterHasAccountPrefix => 'Already have an account?';
-
-  @override
-  String get authSwitchRegisterAction => 'Register now';
-
-  @override
-  String get authSwitchLoginAction => 'Login';
-
-  @override
   String get authForgotPassword => 'Forgot?';
-
-  @override
-  String get authGuestNameFieldLabel => 'Display name';
-
-  @override
-  String get authGuestNameRequiredError => 'Please enter a display name.';
 
   @override
   String get emailLabel => 'Email';

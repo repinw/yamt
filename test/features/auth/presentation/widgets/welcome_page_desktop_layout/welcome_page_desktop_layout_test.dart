@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_card/auth_card.dart';
-import 'package:yamt/features/auth/presentation/widgets/auth_footer_prompt/auth_footer_prompt.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_header/auth_header.dart';
 import 'package:yamt/features/auth/presentation/widgets/auth_layout_metrics/auth_layout_metrics.dart';
 import 'package:yamt/features/auth/presentation/widgets/welcome_page_desktop_layout/welcome_page_desktop_layout.dart';
@@ -33,35 +32,23 @@ Widget _wrapWithApp(Widget child) {
 
 void main() {
   group('DesktopAuthLayout', () {
-    testWidgets('renders wide auth sections and register switch', (
-      tester,
-    ) async {
+    testWidgets('renders the wide login sections', (tester) async {
       await tester.binding.setSurfaceSize(const Size(1200, 900));
       addTearDown(() => tester.binding.setSurfaceSize(null));
-      var registerSwitchCalls = 0;
 
       await tester.pumpWidget(
-        _wrapWithApp(
-          DesktopAuthLayout(
-            isLoginMode: true,
-            onShowLoginMode: () {},
-            onShowRegisterMode: () => registerSwitchCalls++,
-            metrics: _metrics,
-          ),
-        ),
+        _wrapWithApp(const DesktopAuthLayout(metrics: _metrics)),
       );
 
       expect(find.byType(EditorialAside), findsOneWidget);
       expect(find.byType(AuthHeader), findsOneWidget);
       expect(find.byType(AuthCard), findsOneWidget);
-      expect(find.byType(AuthFooterPrompt), findsOneWidget);
       expect(find.text('Yamt'), findsWidgets);
       expect(find.text('Login with Google'), findsOneWidget);
-
-      await tester.tap(find.byKey(const Key('auth_switch_to_register_button')));
-      await tester.pumpAndSettle();
-
-      expect(registerSwitchCalls, 1);
+      expect(
+        find.byKey(const Key('auth_switch_to_register_button')),
+        findsNothing,
+      );
     });
   });
 }

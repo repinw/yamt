@@ -26,8 +26,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/auth/presentation/widgets/auth_layout_metrics/auth_layout_metrics.dart':
         1,
     'lib/features/auth/presentation/widgets/login_form/login_form.dart': 1,
-    'lib/features/auth/presentation/widgets/register_form/register_form.dart':
-        1,
     'lib/features/auth/presentation/widgets/welcome_page_desktop_layout/welcome_page_desktop_layout.dart':
         1,
     'lib/features/auth/presentation/widgets/welcome_page_editorial_aside/welcome_page_editorial_aside.dart':

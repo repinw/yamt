@@ -5,8 +5,9 @@
 Auth owns:
 
 - Firebase authentication access and auth-state providers.
-- Account sign-in, registration, and Google sign-in controllers.
-  The guest account itself is created when onboarding finishes, not here.
+- Email and Google sign-in controllers. There is no registration form:
+  the guest account is created when onboarding finishes, not here, and
+  becomes a real account when the user links it in the account settings.
 - Persisted user profile model and Firestore profile document normalization.
 - Auth entry pages and auth-specific presentation widgets.
 - The per-user data key that encrypts private health data in Firestore, its

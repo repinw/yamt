@@ -28,9 +28,7 @@ void main() {
   group('AuthHeader', () {
     testWidgets('renders centered login copy on narrow layout', (tester) async {
       await tester.pumpWidget(
-        _wrapWithApp(
-          const AuthHeader(isLoginMode: true, isWide: false, metrics: _metrics),
-        ),
+        _wrapWithApp(const AuthHeader(isWide: false, metrics: _metrics)),
       );
 
       final title = tester.widget<Text>(find.text('Yamt'));
@@ -40,19 +38,16 @@ void main() {
       expect(title.textAlign, TextAlign.center);
     });
 
-    testWidgets('renders register copy without badge on wide layout', (
+    testWidgets('renders left-aligned login copy on wide layout', (
       tester,
     ) async {
       await tester.pumpWidget(
-        _wrapWithApp(
-          const AuthHeader(isLoginMode: false, isWide: true, metrics: _metrics),
-        ),
+        _wrapWithApp(const AuthHeader(isWide: true, metrics: _metrics)),
       );
 
-      final title = tester.widget<Text>(find.text('Register'));
+      final title = tester.widget<Text>(find.text('Yamt'));
 
-      expect(find.byKey(const Key('auth_header_badge')), findsNothing);
-      expect(find.text('Create your account and get started.'), findsOneWidget);
+      expect(find.byKey(const Key('auth_header_badge')), findsOneWidget);
       expect(title.textAlign, TextAlign.start);
     });
   });

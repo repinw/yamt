@@ -96,8 +96,6 @@ class _LinkEmailPasswordDialogState extends State<LinkEmailPasswordDialog> {
           const SizedBox(height: AppSpacing.md),
           EmailPasswordCredentialsForm(
             key: _formKey,
-            submitLabel: widget.l10n.accountPageLinkEmailPasswordConfirmAction,
-            showSubmitButton: false,
             isLoading: _isSubmitting,
             onInputChanged: _clearSubmitError,
             onSubmitCredentials: widget.onSubmitCredentials,

@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 
 part 'auth_form_controller.g.dart';
-
-const _authFormControllerLogName = 'AuthFormController';
 
 /// Defines auth form controller.
 @riverpod
@@ -31,47 +28,6 @@ class AuthFormController extends _$AuthFormController {
       return;
     }
     state = result;
-  }
-
-  /// Create user with email and password.
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-    String? displayName,
-  }) async {
-    state = const AsyncLoading();
-    _endCurrentSessionListeners();
-    final repository = ref.read(authRepositoryProvider);
-    final normalizedDisplayName = displayName?.trim();
-    final result = await AsyncValue.guard(
-      () => repository.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      ),
-    );
-    if (!ref.mounted) {
-      return;
-    }
-    state = result;
-
-    if (result.hasError ||
-        normalizedDisplayName == null ||
-        normalizedDisplayName.isEmpty) {
-      return;
-    }
-
-    try {
-      await repository.updateCurrentUserDisplayName(
-        displayName: normalizedDisplayName,
-      );
-    } on Object catch (error, stackTrace) {
-      log(
-        'User registration succeeded, but display name update failed.',
-        name: _authFormControllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
   }
 
   /// Signing in while a guest is signed in switches the Firestore user at
