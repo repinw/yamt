@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
@@ -19,17 +20,20 @@ const productSearchHubMealFoodEditKey = Key(
   'product_search_hub_meal_food_edit',
 );
 
+const _mealFoodIds = Uuid();
+
 /// Shows the eat page for a food picked for a meal. "Bearbeiten" there opens
 /// the editor and comes back to the eat page with the edited food.
 ///
 /// Returns the food with the entered amount, or null when the user closes
-/// the page.
+/// the page. The food gets a new id: a recent item keeps the id of its stock
+/// item, which may already be part of the meal.
 Future<InventoryMealFoodPick?> pickProductSearchHubMealFood({
   required BuildContext context,
   required ProductSearchHubRouteArgs args,
   required InventoryReceiptManualProductResult result,
 }) async {
-  var current = result;
+  var current = result.withItem(result.item.copyWith(id: _mealFoodIds.v4()));
   while (true) {
     final step = await Navigator.of(context, rootNavigator: true)
         .push<_MealFoodStep>(
