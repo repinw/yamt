@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/settings/presentation/widgets/account_guest_card/account_guest_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines account guest card.
@@ -47,6 +48,7 @@ class AccountGuestCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             OutlinedButton.icon(
+              key: AccountGuestCardKeys.linkEmailPasswordButton,
               onPressed: isActionLoading ? null : onLinkWithEmailPassword,
               icon: const Icon(Icons.email_outlined),
               label: Text(l10n.accountPageLinkEmailPassword),
