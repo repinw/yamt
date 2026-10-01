@@ -251,11 +251,11 @@ class _DiaryWeeklyCheckInSectionState
     final saved = apply
         ? await actions.applyWeeklyCheckIn(
             checkInData,
-            trainingDays: result.trainingDays,
+            training: result.training,
           )
         : await actions.rejectWeeklyCheckIn(
             checkInData,
-            trainingDays: result.trainingDays,
+            training: result.training,
           );
     if (!mounted) {
       return;

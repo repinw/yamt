@@ -12,6 +12,7 @@ import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_p
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 
@@ -39,13 +40,17 @@ CalorieGoalSettings _settings() {
   );
 }
 
-ProviderContainer _container(CalorieWeeklyCheckInData data, {DateTime? today}) {
+ProviderContainer _container(
+  CalorieWeeklyCheckInData data, {
+  DateTime? today,
+  CalorieGoalSettings? settings,
+}) {
   final container = ProviderContainer(
     overrides: [
       appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
       clockProvider.overrideWithValue(() => today ?? _today),
       calorieGoalControllerProvider.overrideWith(
-        () => _FakeCalorieGoalController(_settings()),
+        () => _FakeCalorieGoalController(settings ?? _settings()),
       ),
       calorieWeeklyCheckInDataProvider.overrideWith((ref) async => data),
       calorieGoalProgressProvider.overrideWith((ref, endDate) async => null),
@@ -132,5 +137,29 @@ void main() {
       DateTime(2026, 9, 17),
       DateTime(2026, 9, 21),
     });
+  });
+
+  test('a pause day on a training weekday keeps training', () async {
+    final data = calorieWeeklyCheckInDemoData(today: DateTime(2026, 9, 15));
+    final container = _container(
+      data,
+      settings: _settings().setPauseDay(
+        day: DateTime(2026, 9, 17),
+        isPause: true,
+      ),
+    );
+    final subscription = container.listen(
+      calorieWeeklyCheckInPlanProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+
+    final plan = (await container.read(
+      calorieWeeklyCheckInPlanProvider.future,
+    ))!;
+
+    expect(plan.canChangeDay(DateTime(2026, 9, 17)), isFalse);
+    expect(plan.suggestedTrainingDays, contains(DateTime(2026, 9, 17)));
+    expect(plan.fixedTrainingDays, {DateTime(2026, 9, 17)});
   });
 }

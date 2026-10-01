@@ -55,7 +55,7 @@ class CalorieWeeklyCheckInPlan {
   final List<DateTime> nextRunDays;
 
   /// Days of the next run that train on the weekdays of the reviewed run.
-  /// Past days keep their type.
+  /// Past days and pause days keep their type.
   final Set<DateTime> suggestedTrainingDays;
 
   /// Days of the next run that are pause days. They cannot train.
@@ -69,9 +69,16 @@ class CalorieWeeklyCheckInPlan {
   /// macros then count training even in a run without a session.
   final bool hasWeeklyTrainingSchedule;
 
-  /// Whether the planning may change the type of [day].
+  /// Whether the planning may change the type of [day]. Pause days and past
+  /// days keep their type, so [suggestedTrainingDays] holds them as they are.
   bool canChangeDay(DateTime day) =>
       !pauseDays.contains(day) && !pastDays.contains(day);
+
+  /// The days of [nextRunDays] that keep their type and train.
+  Set<DateTime> get fixedTrainingDays => {
+    for (final day in suggestedTrainingDays)
+      if (!canChangeDay(day)) day,
+  };
 
   /// kcal of one training session.
   final double sessionKcal;

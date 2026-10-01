@@ -1,3 +1,5 @@
+import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+
 /// What the user decided in the weekly check-in sheet.
 enum DiaryWeeklyCheckInSheetAction {
   /// Decide later.
@@ -18,8 +20,9 @@ enum DiaryWeeklyCheckInSheetAction {
 
 /// Result of the weekly check-in sheet: the decision and, for
 /// [DiaryWeeklyCheckInSheetAction.apply] and
-/// [DiaryWeeklyCheckInSheetAction.reject], the training days of the next run.
+/// [DiaryWeeklyCheckInSheetAction.reject], the training days of the planned
+/// run.
 typedef DiaryWeeklyCheckInSheetResult = ({
   DiaryWeeklyCheckInSheetAction action,
-  Set<DateTime>? trainingDays,
+  DiaryRunTrainingChoice? training,
 });

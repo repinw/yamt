@@ -45,7 +45,7 @@ Future<void> showDiaryWeeklyCheckInPreviewFlow(
   ScaffoldMessenger.of(context).showAppSnackBar(
     AppLocalizations.of(context)!.diaryCheckInPreviewResult(
       result.action.name,
-      result.trainingDays?.length ?? 0,
+      result.training?.trainingDays.length ?? 0,
     ),
   );
 }

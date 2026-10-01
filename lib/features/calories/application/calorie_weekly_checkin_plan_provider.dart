@@ -105,10 +105,10 @@ Future<CalorieWeeklyCheckInPlan?> _buildPlan(
     nextRunNumber: resolveCalorieGoalRunNumber(settings: settings, day: today),
     suggestedTrainingDays: {
       for (final day in nextRun.days)
-        if (day.isBefore(today)
+        // Past days and pause days keep their type.
+        if (day.isBefore(today) || nextRun.pauseDays.contains(day)
             ? nextRun.trainingDays.contains(day)
-            : !nextRun.pauseDays.contains(day) &&
-                  reviewedWeekdays.contains(day.weekday))
+            : reviewedWeekdays.contains(day.weekday))
           day,
     },
     pauseDays: nextRun.pauseDays,
