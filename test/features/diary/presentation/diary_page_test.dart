@@ -382,9 +382,8 @@ void main() {
         diaryWeeklyCheckInActionsProvider.overrideWithValue(
           DiaryWeeklyCheckInActions(
             syncLearnedTdeeCache: (_) async {},
-            applyWeeklyCheckIn: (_) async => true,
-            rejectWeeklyCheckIn: (_) async => true,
-            saveRunTrainingDays: (_) async => true,
+            applyWeeklyCheckIn: (_, _) async => true,
+            rejectWeeklyCheckIn: (_, _) async => true,
             showWeeklyCheckInAgain: (_) async {
               _setWeeklyCheckInData(container, reopenedCheckIn);
               return true;
@@ -1201,9 +1200,8 @@ DiaryWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
 DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
   return DiaryWeeklyCheckInActions(
     syncLearnedTdeeCache: (_) async {},
-    applyWeeklyCheckIn: (_) async => true,
-    rejectWeeklyCheckIn: (_) async => true,
-    saveRunTrainingDays: (_) async => true,
+    applyWeeklyCheckIn: (_, _) async => true,
+    rejectWeeklyCheckIn: (_, _) async => true,
     showWeeklyCheckInAgain: (_) async => true,
     setSkippedIntakeDay: ({required selectedDay, required isSkipped}) async =>
         true,

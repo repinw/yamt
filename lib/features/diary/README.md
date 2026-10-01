@@ -79,8 +79,8 @@ is the one accepted exception, for `features/home_widget`.
   as a tall bottom sheet in three steps: the review since the goal start with
   the choice between the measured and the previous TDEE, the training days of
   the next run (Calories `TrainingDayChips` and `TrainingWeekDepotChart`), and
-  the new targets. "Woche starten" applies or rejects the check-in, then saves
-  the training days of the run. A reached goal shows its own page and asks for
+  the new targets. "Woche starten" saves the training days of the run, then
+  applies or rejects the check-in, in one Calories controller action. A reached goal shows its own page and asks for
   a new goal. The sheet controller keeps the step and the choices while the
   data reloads.
 - `presentation/widgets/diary_weekly_checkin_preview_tiles.dart`
