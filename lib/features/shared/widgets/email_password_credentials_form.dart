@@ -84,29 +84,43 @@ class EmailPasswordCredentialsFormState
 
     return Form(
       key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          AuthEmailField(
-            controller: _emailController,
-            validator: emailValidator,
-            onChanged: (_) => widget.onInputChanged?.call(),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          AuthPasswordField(
-            controller: _passwordController,
-            validator: passwordValidator,
-            onChanged: (_) => widget.onInputChanged?.call(),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          AuthPasswordField(
-            controller: _confirmPasswordController,
-            label: l10n.confirmPasswordLabel,
-            textInputAction: TextInputAction.done,
-            validator: confirmPasswordValidator,
-            onChanged: (_) => widget.onInputChanged?.call(),
-          ),
-        ],
+      child: AutofillGroup(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            AuthEmailField(
+              controller: _emailController,
+              validator: emailValidator,
+              onChanged: (_) => widget.onInputChanged?.call(),
+              showLabel: false,
+              prefixIcon: const Icon(Icons.mail_outline_rounded),
+              placeholder: l10n.emailLabel,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AuthPasswordField(
+              controller: _passwordController,
+              validator: passwordValidator,
+              onChanged: (_) => widget.onInputChanged?.call(),
+              showLabel: false,
+              prefixIcon: const Icon(Icons.lock_outline_rounded),
+              placeholder: l10n.passwordLabel,
+              showVisibilityToggle: true,
+              autofillHints: const [AutofillHints.newPassword],
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            AuthPasswordField(
+              controller: _confirmPasswordController,
+              textInputAction: TextInputAction.done,
+              validator: confirmPasswordValidator,
+              onChanged: (_) => widget.onInputChanged?.call(),
+              showLabel: false,
+              prefixIcon: const Icon(Icons.lock_outline_rounded),
+              placeholder: l10n.confirmPasswordLabel,
+              showVisibilityToggle: true,
+              autofillHints: const [AutofillHints.newPassword],
+            ),
+          ],
+        ),
       ),
     );
   }
