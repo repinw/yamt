@@ -15,6 +15,9 @@ const _preparedMealImageAssetUuid = Uuid();
 
 /// Saves meal edits and meal templates, with an undo on the Vorrat page.
 class InventoryPreparedMealEditCoordinator {
+  /// Creates the coordinator.
+  const new();
+
   /// Updates prepared meal details, including persisting changed images.
   Future<bool> updatePreparedMeal({
     required BuildContext context,

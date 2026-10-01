@@ -72,6 +72,8 @@ already documented as a reusable presentation surface.
 - `presentation/inventory_combined_eat_flow.dart`: `InventoryCombinedEatFlow.eat`
   logs a stock item together with other stock items as one combined calorie
   entry, written in one batch with every stock change.
+- `presentation/prepared_meal_detail_flow.dart`: `PreparedMealDetailFlow.open`
+  opens the detail page of a Vorrat meal with its open rows and meal actions.
 - `presentation/prepared_meal_eat_flow.dart`: `PreparedMealEatFlow.eat` opens
   the eat sheet for a prepared meal and logs the eaten portions as one bundle
   entry.
