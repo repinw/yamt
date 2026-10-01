@@ -675,6 +675,38 @@ void main() {
     expect(pick.request.inventoryAmount, 150);
   });
 
+  testWidgets('a recent item picked for a meal gets a new id', (tester) async {
+    Object? poppedResult;
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs(
+        mode: ProductSearchHubMode.mealFood,
+      ),
+      recentItems: [
+        _itemWithNutrition(
+          id: 'stock-quark',
+          name: 'Quark',
+        ).copyWith(origin: InventoryItemOrigin.manualAdd),
+      ],
+      onPagePopped: (result) => poppedResult = result,
+    );
+
+    await tester.tap(
+      find.byKey(
+        const Key('product_search_hub_recently_selected_item_stock-quark'),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+
+    final pick = poppedResult! as InventoryMealFoodPick;
+    expect(pick.result.item.name, 'Quark');
+    expect(pick.result.item.id, isNot('stock-quark'));
+  });
+
   testWidgets('meal food eat page edits the food and comes back', (
     tester,
   ) async {
