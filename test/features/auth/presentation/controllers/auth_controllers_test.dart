@@ -6,17 +6,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/auth/data/auth_repository.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/google_sign_in_provider.dart';
 import 'package:yamt/features/auth/presentation/controllers/auth_form_controller.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
-import 'package:yamt/features/auth/presentation/controllers/guest_name_setup_controller.dart';
 
 import '../../../../helpers/fake_auth_repository.dart';
-import '../../../../helpers/memory_app_preferences.dart';
 
 class _MockGoogleSignIn extends Mock implements GoogleSignIn;
 
@@ -29,39 +26,6 @@ class _MockUserCredential extends Mock implements UserCredential;
 class _MockFirebaseUser extends Mock implements User;
 
 class _FakeAuthCredential extends Fake implements AuthCredential;
-
-class _DelayedGuestNameRepository implements AuthRepository {
-  new(this._completer);
-
-  final Completer<void> _completer;
-  int saveCalls = 0;
-
-  @override
-  String? get currentUserId => 'test-user-id';
-
-  @override
-  Future<void> updateCurrentUserDisplayName({
-    required String displayName,
-  }) async {
-    saveCalls++;
-    await _completer.future;
-  }
-
-  @override
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> signInAnonymously() async {}
-
-  @override
-  Future<void> signInWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {}
-}
 
 class _DelayedEmailSignInRepository implements AuthRepository {
   new(this._completer);
@@ -327,130 +291,6 @@ void main() {
 
       await future;
       expect(repository.registerCalls, 1);
-    });
-  });
-
-  group('GuestNameSetupController', () {
-    test('saveDisplayName updates repository with trimmed value', () async {
-      final fakeRepository = FakeAuthRepository();
-      final container = ProviderContainer(
-        overrides: [
-          authRepositoryProvider.overrideWithValue(fakeRepository),
-          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await container
-          .read(guestNameSetupControllerProvider.notifier)
-          .saveDisplayName('  Guest Wlad  ');
-
-      expect(fakeRepository.guestNameUpdateCalls, 1);
-      expect(fakeRepository.lastGuestDisplayName, 'Guest Wlad');
-      expect(
-        container.read(guestNameSetupControllerProvider).hasError,
-        isFalse,
-      );
-    });
-
-    test('saveDisplayName ignores empty values', () async {
-      final fakeRepository = FakeAuthRepository();
-      final container = ProviderContainer(
-        overrides: [
-          authRepositoryProvider.overrideWithValue(fakeRepository),
-          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await container
-          .read(guestNameSetupControllerProvider.notifier)
-          .saveDisplayName('  ');
-
-      expect(fakeRepository.guestNameUpdateCalls, 0);
-      expect(
-        container.read(guestNameSetupControllerProvider),
-        const AsyncData<void>(null),
-      );
-    });
-
-    test('saveDisplayName does not crash when provider is disposed', () async {
-      final completer = Completer<void>();
-      final repository = _DelayedGuestNameRepository(completer);
-      final container = ProviderContainer(
-        overrides: [
-          authRepositoryProvider.overrideWithValue(repository),
-          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-        ],
-      );
-      var disposed = false;
-      void disposeContainer() {
-        if (disposed) {
-          return;
-        }
-        disposed = true;
-        container.dispose();
-      }
-
-      addTearDown(disposeContainer);
-
-      final future = container
-          .read(guestNameSetupControllerProvider.notifier)
-          .saveDisplayName('Guest');
-      disposeContainer();
-      completer.complete();
-
-      await future;
-      expect(repository.saveCalls, 1);
-    });
-
-    test('cancelGuestSetup signs out anonymous users', () async {
-      final auth = _MockFirebaseAuth();
-      final user = _MockFirebaseUser();
-      when(() => user.isAnonymous).thenReturn(true);
-      when(() => auth.currentUser).thenReturn(user);
-      when(auth.signOut).thenAnswer((_) async {});
-      final container = ProviderContainer(
-        overrides: [
-          authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
-          firebaseAuthProvider.overrideWithValue(auth),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await container
-          .read(guestNameSetupControllerProvider.notifier)
-          .cancelGuestSetup();
-
-      verify(auth.signOut).called(1);
-      expect(
-        container.read(guestNameSetupControllerProvider).hasError,
-        isFalse,
-      );
-    });
-
-    test('cancelGuestSetup ignores linked users', () async {
-      final auth = _MockFirebaseAuth();
-      final user = _MockFirebaseUser();
-      when(() => user.isAnonymous).thenReturn(false);
-      when(() => auth.currentUser).thenReturn(user);
-      final container = ProviderContainer(
-        overrides: [
-          authStateChangesProvider.overrideWith((ref) => const Stream.empty()),
-          firebaseAuthProvider.overrideWithValue(auth),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      await container
-          .read(guestNameSetupControllerProvider.notifier)
-          .cancelGuestSetup();
-
-      verifyNever(auth.signOut);
-      expect(
-        container.read(guestNameSetupControllerProvider),
-        const AsyncData<void>(null),
-      );
     });
   });
 

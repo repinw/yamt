@@ -6,9 +6,10 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## App Shell
 
-- Startup flow with splash, welcome, guest setup, and calorie-goal onboarding
-  redirects. Without an account the app opens onboarding; after a sign-out it
-  opens the welcome page.
+- Startup flow with splash, welcome, and calorie-goal onboarding redirects.
+  Without an account the app opens the onboarding intro: at startup, after a
+  sign-out or account deletion, and when the session ends. The intro's login
+  button opens the welcome page.
 - Home shell with bottom tabs for Inventory, Diary, Cookbook, and Settings.
   The tab header and the bottom navigation stay in place while a tab
   scrolls. In the middle of the bar a round lime button opens the actions of
@@ -32,7 +33,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   app without finishing creates no Firebase user.
   Without a connection the last page says so and keeps every answer for
   another try.
-- Guest display-name setup with theme color and theme mode choice.
+- The app asks for a display name only when the user joins a household
+  without one.
 - Guest account linking with Google or email/password.
 - Credential conflict handling when a sign-in method is already used.
 - Account details, sign out, and account deletion.

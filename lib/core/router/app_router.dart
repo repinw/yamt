@@ -5,8 +5,6 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/app_route_definitions.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/router/app_router_redirect.dart';
-import 'package:yamt/features/auth/application/'
-    'auth_profile_setup_status_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/onboarding/provider/'
@@ -30,9 +28,6 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
       listenable.refresh();
     })
     ..listen(userDataKeySessionProvider, (previous, next) {
-      listenable.refresh();
-    })
-    ..listen(authProfileSetupCompletedProvider, (previous, next) {
       listenable.refresh();
     })
     ..listen(calorieGoalOnboardingCompletedProvider, (previous, next) {

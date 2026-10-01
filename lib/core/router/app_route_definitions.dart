@@ -7,7 +7,6 @@ import 'package:yamt/core/router/home_shell_routes.dart';
 import 'package:yamt/core/router/route_page_helpers.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/data_key_page.dart';
-import 'package:yamt/features/auth/presentation/guest_name_setup_page.dart';
 import 'package:yamt/features/auth/presentation/recovery_key_page.dart';
 import 'package:yamt/features/auth/presentation/welcome_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
@@ -50,7 +49,7 @@ List<RouteBase> buildAppRoutes(Ref ref) {
         final authState = ref.read(authStateChangesProvider);
         return authState.asData?.value != null
             ? AppRoutes.homeDiary
-            : AppRoutes.welcome;
+            : AppRoutes.calorieGoalSetup;
       },
     ),
     GoRoute(
@@ -60,10 +59,6 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.welcome,
       builder: (context, state) => const WelcomePage(),
-    ),
-    GoRoute(
-      path: AppRoutes.guestNameSetup,
-      builder: (context, state) => const GuestNameSetupPage(),
     ),
     GoRoute(
       path: AppRoutes.calorieGoalSetup,

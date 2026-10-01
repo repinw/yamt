@@ -383,9 +383,7 @@ _CalorieOnboardingIntegrationHarness _buildHarness({
   addTearDown(authController.close);
   final firebaseAuth = _MockFirebaseAuth();
   final guestSignIns = <String>[];
-  final preferences = MemoryAppPreferences(
-    completedProfileSetupUserIds: {_userId},
-  );
+  final preferences = MemoryAppPreferences();
   final settingsRepository = _FakeCalorieSettingsRepository();
   final logRepository = _FakeCalorieLogRepository();
   final runStateRepository = _FakeBurnWeekRunStateRepository(

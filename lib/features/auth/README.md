@@ -5,11 +5,10 @@
 Auth owns:
 
 - Firebase authentication access and auth-state providers.
-- Account sign-in, registration, Google sign-in, and guest setup controllers.
+- Account sign-in, registration, and Google sign-in controllers.
   The guest account itself is created when onboarding finishes, not here.
 - Persisted user profile model and Firestore profile document normalization.
 - Auth entry pages and auth-specific presentation widgets.
-- Local profile-setup completion status.
 - The per-user data key that encrypts private health data in Firestore, its
   recovery-key backup, and the pages that show or ask for the recovery key.
   Guests keep the key only on the device. A real account also stores the key,
@@ -43,8 +42,7 @@ Other features may import these concrete files directly:
 - `presentation/controllers/google_auth_controller.dart` for account-linking
   flows.
 - `presentation/auth_error_message_mapper.dart` for auth error messages.
-- `presentation/welcome_page.dart` and `presentation/guest_name_setup_page.dart`
-  for app routing.
+- `presentation/welcome_page.dart` for app routing.
 - `data/user_data_key_session.dart` for `userDataCipherProvider`, which
   repositories of private data watch, and `userDataKeySessionProvider` for the
   app routing gate.
@@ -67,17 +65,12 @@ test imports them directly.
   - `authRepositoryProvider`
 - `data/google_sign_in_provider.dart`
   - `googleSignInProvider`
-- `application/auth_profile_setup_status_provider.dart`
-  - `authProfileSetupCompletedProvider`
 - `presentation/auth_error_message_mapper.dart`
   - `authErrorMessageMapperProvider`
 - `presentation/controllers/auth_form_controller.dart`
   - `authFormControllerProvider`
 - `presentation/controllers/google_auth_controller.dart`
   - `googleAuthControllerProvider`
-- `presentation/controllers/guest_name_setup_controller.dart`
-  - `canCancelGuestSetupProvider`
-  - `guestNameSetupControllerProvider`
 
 ## Accepted Dependencies
 

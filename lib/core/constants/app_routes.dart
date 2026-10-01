@@ -9,9 +9,6 @@ abstract final class AppRoutes {
   /// Welcome route.
   static const welcome = '/welcome';
 
-  /// Guest-name setup route.
-  static const guestNameSetup = '/welcome/guest-name';
-
   /// Calorie goal setup route.
   static const calorieGoalSetup = '/welcome/calorie-goal';
 
