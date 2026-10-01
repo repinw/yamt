@@ -74,7 +74,7 @@ final class DiaryWeeklyCheckInSheetControllerProvider
 }
 
 String _$diaryWeeklyCheckInSheetControllerHash() =>
-    r'52e08bd3391e8992abff364cb8acc66268f482ee';
+    r'b87b95f1311f42dd63c154eb86c663b71c60ff64';
 
 /// Holds the step and the choices of the weekly check-in sheet.
 ///
