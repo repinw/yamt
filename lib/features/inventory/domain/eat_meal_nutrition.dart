@@ -141,19 +141,14 @@ EatMealFood? eatMealFoodOfRequest(
   );
 }
 
-/// Amount a food starts with when it joins a meal: 100 g or ml, or less
-/// when less is in stock. Null when [item] does not count in grams or
-/// milliliters, so the amount has to be entered on the eat page.
-///
-/// A food found by search has no stock yet: [hasOpenStock] ignores the
-/// stock limit.
-int? defaultMealFoodAmount(InventoryItem item, {bool hasOpenStock = false}) {
+/// Amount a stock item starts with when it joins a meal: 100 g or ml, or
+/// less when less is in stock. Null when [item] does not count in grams or
+/// milliliters.
+int? defaultMealFoodAmount(InventoryItem item) {
   if (!inventoryItemUsesFixedCalorieUnit(item)) {
     return null;
   }
-  return hasOpenStock
-      ? _defaultMealAmount
-      : math.min(_defaultMealAmount, mealFoodMaxAmount(item));
+  return math.min(_defaultMealAmount, mealFoodMaxAmount(item));
 }
 
 /// Largest amount of [item] that a meal can take.

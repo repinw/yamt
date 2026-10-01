@@ -72,16 +72,10 @@ class InventoryItemCombineController extends _$InventoryItemCombineController {
     ];
   }
 
-  /// Adds [item] with its default amount, so it joins without an eat page.
-  /// Returns false when [item] needs its amount entered on the eat page.
-  bool addWithDefaultAmount(
-    InventoryItem item, {
-    InventoryReceiptManualProductResult? searchResult,
-  }) {
-    final amount = defaultMealFoodAmount(
-      item,
-      hasOpenStock: searchResult != null,
-    );
+  /// Adds the stock item [item] with its default amount. Returns false when
+  /// [item] has no default amount.
+  bool addWithDefaultAmount(InventoryItem item) {
+    final amount = defaultMealFoodAmount(item);
     if (amount == null || amount < 1) {
       return false;
     }
@@ -93,7 +87,6 @@ class InventoryItemCombineController extends _$InventoryItemCombineController {
         loggedAt: loggedAt,
         mealType: MealType.defaultForDateTime(loggedAt),
       ),
-      searchResult: searchResult,
     );
     return true;
   }
