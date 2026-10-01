@@ -42,7 +42,8 @@ class EatPageScaffold extends StatelessWidget {
   /// Text of the confirm button. Defaults to "Log".
   final String? confirmLabel;
 
-  /// Key of the close button.
+  /// Key of the close button. The button closes the page like the system
+  /// back button, so a `PopScope` around the page applies to it.
   final Key cancelButtonKey;
 
   /// Text of an optional second button.
@@ -90,7 +91,9 @@ class EatPageScaffold extends StatelessWidget {
                     key: cancelButtonKey,
                     tooltip: MaterialLocalizations.of(context)
                         .closeButtonTooltip,
-                    onPressed: () => Navigator.of(context).pop(),
+                    // maybePop lets a PopScope of the page, such as one
+                    // that holds the page while it saves, keep it open.
+                    onPressed: () => Navigator.of(context).maybePop(),
                     icon: Icon(Icons.close_rounded, color: colors.ink),
                   ),
                   // A long day and meal shrinks instead of overflowing.
