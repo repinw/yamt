@@ -44,6 +44,7 @@ ProviderContainer _container(
   CalorieWeeklyCheckInData data, {
   DateTime? today,
   CalorieGoalSettings? settings,
+  bool progressFails = false,
 }) {
   final container = ProviderContainer(
     overrides: [
@@ -53,7 +54,10 @@ ProviderContainer _container(
         () => _FakeCalorieGoalController(settings ?? _settings()),
       ),
       calorieWeeklyCheckInDataProvider.overrideWith((ref) async => data),
-      calorieGoalProgressProvider.overrideWith((ref, endDate) async => null),
+      calorieGoalProgressProvider.overrideWith(
+        (ref, endDate) async =>
+            progressFails ? throw StateError('Analytics failed.') : null,
+      ),
     ],
   );
   addTearDown(container.dispose);
@@ -161,5 +165,21 @@ void main() {
     expect(plan.canChangeDay(DateTime(2026, 9, 17)), isFalse);
     expect(plan.suggestedTrainingDays, contains(DateTime(2026, 9, 17)));
     expect(plan.fixedTrainingDays, {DateTime(2026, 9, 17)});
+  });
+
+  test('a failed goal progress still gives a plan without a chart', () async {
+    final data = calorieWeeklyCheckInDemoData(today: DateTime(2026, 9, 15));
+    final container = _container(data, progressFails: true);
+    final subscription = container.listen(
+      calorieWeeklyCheckInPlanProvider,
+      (_, _) {},
+    );
+    addTearDown(subscription.close);
+
+    final plan = await container.read(calorieWeeklyCheckInPlanProvider.future);
+
+    expect(plan, isNotNull);
+    expect(plan!.progress, isNull);
+    expect(plan.measurement, isNotNull);
   });
 }
