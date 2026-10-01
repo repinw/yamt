@@ -125,4 +125,31 @@ void main() {
       defaultTrainingDayKcalOffset,
     );
   });
+
+  test('planned training days skip a run that has ended', () {
+    final settings = _settings();
+    final training = (
+      runDay: DateTime(2026, 9, 8),
+      trainingDays: {DateTime(2026, 9, 10)},
+    );
+
+    expect(
+      settings
+          .withPlannedRunTrainingDays(training, today: _now)
+          ?.trainingDayOverrides,
+      settings
+          .withRunTrainingDays(
+            DateTime(2026, 9, 8),
+            trainingDays: {DateTime(2026, 9, 10)},
+          )
+          .trainingDayOverrides,
+    );
+    expect(
+      settings.withPlannedRunTrainingDays(
+        training,
+        today: DateTime(2026, 9, 15),
+      ),
+      isNull,
+    );
+  });
 }
