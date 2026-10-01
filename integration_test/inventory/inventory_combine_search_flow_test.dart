@@ -111,6 +111,34 @@ Future<void> _pumpVisibleStep(
   await tester.pump();
 }
 
+/// Waits until the soft keyboard that `enterText` opened is gone
+/// again. The emulator keyboard can show up seconds after the key that
+/// closes it, so this waits for it to open and then to close, at most
+/// [timeout]. Without a keyboard it returns after the timeout.
+Future<void> _waitForKeyboardClosed(
+  WidgetTester tester, {
+  Duration timeout = const Duration(seconds: 20),
+}) async {
+  const step = Duration(milliseconds: 100);
+  var seenOpen = false;
+  for (var waited = Duration.zero; waited < timeout; waited += step) {
+    await tester.pump();
+    final isOpen = tester.view.viewInsets.bottom > 0;
+    if (isOpen) {
+      seenOpen = true;
+    } else if (seenOpen) {
+      break;
+    }
+    await Future<void>.delayed(step);
+  }
+  expect(
+    tester.view.viewInsets.bottom,
+    0,
+    reason: 'The keyboard is still open after $timeout.',
+  );
+  await _pumpVisibleStep(tester);
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
@@ -135,7 +163,7 @@ void main() {
     // The search key closes the keyboard, so the eat page gets the full
     // screen.
     await tester.testTextInput.receiveAction(TextInputAction.search);
-    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+    await _waitForKeyboardClosed(tester);
     await tester.tap(find.byKey(_resultKey));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
 
@@ -156,7 +184,7 @@ void main() {
 
     await tester.enterText(find.byKey(_amountFieldKey), '250');
     await tester.testTextInput.receiveAction(TextInputAction.done);
-    await _pumpVisibleStep(tester);
+    await _waitForKeyboardClosed(tester);
     await tester.tap(find.byKey(_addKey));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
 
