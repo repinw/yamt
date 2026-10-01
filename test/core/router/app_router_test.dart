@@ -1292,6 +1292,10 @@ void main() {
       container.read(appRouterProvider).state.uri.path,
       AppRoutes.calorieGoalSetup,
     );
+    // The intro's login action opens the welcome page, where the user signs
+    // in.
+    container.read(appRouterProvider).go(AppRoutes.welcome);
+    await _pumpRouterTransition(tester);
 
     authController.add(_authenticatedUser());
     await _pumpRouterTransition(tester);
@@ -1300,6 +1304,39 @@ void main() {
     expect(
       container.read(appRouterProvider).state.uri.path,
       AppRoutes.calorieGoalLoadFailed,
+    );
+    // Stops the retry timer of the failed provider.
+    container.dispose();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('a failed goal read keeps a finishing intro open', (
+    tester,
+  ) async {
+    final authController = StreamController<User?>.broadcast();
+    addTearDown(() {
+      unawaited(authController.close());
+    });
+    final container = _createContainerWithAuth(
+      authController.stream,
+      calorieSettingsReadError: Exception('client is offline'),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    authController.add(null);
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    // Finishing the intro signs in a new guest before the goal is saved.
+    authController.add(_guestUser());
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
     );
     // Stops the retry timer of the failed provider.
     container.dispose();
