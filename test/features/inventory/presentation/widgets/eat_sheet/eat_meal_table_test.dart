@@ -68,7 +68,7 @@ void main() {
       portions: 4,
     );
 
-    expect(find.text('per portion 50\u00A0g'), findsOneWidget);
+    expect(find.text('portion 50\u00A0g'), findsOneWidget);
     expect(find.text('Per 100 g'), findsOneWidget);
     expect(find.textContaining('75 kcal'), findsOneWidget);
     expect(find.text('1.5 g'), findsOneWidget);

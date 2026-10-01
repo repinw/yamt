@@ -866,7 +866,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String eatPageMealPerPortion(String amount) {
-    return 'per portion $amount';
+    return 'portion $amount';
   }
 
   @override

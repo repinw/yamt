@@ -1525,7 +1525,7 @@ abstract class AppLocalizations {
   /// No description provided for @eatPageMealPerPortion.
   ///
   /// In en, this message translates to:
-  /// **'per portion {amount}'**
+  /// **'portion {amount}'**
   String eatPageMealPerPortion(String amount);
 
   /// No description provided for @eatPageMealUnknownValue.
