@@ -1350,7 +1350,7 @@ void main() {
     for (var i = 0; i < 3; i++) {
       await _tapVisible(tester, find.byKey(EatMealPortionsRow.increaseKey));
     }
-    expect(find.text('per portion 75\u00A0g'), findsOneWidget);
+    expect(find.text('portion 75\u00A0g'), findsOneWidget);
     expect(find.byKey(const Key('eat_item_action_edit')), findsNothing);
 
     await _tapAmountDialogConfirm(tester);

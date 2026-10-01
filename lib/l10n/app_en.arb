@@ -477,7 +477,7 @@
   "eatPageRemovePackage": "One package less",
   "eatPageAddPackage": "One package more",
   "eatPageMealPortions": "Portions",
-  "eatPageMealPerPortion": "per portion {amount}",
+  "eatPageMealPerPortion": "portion {amount}",
   "@eatPageMealPerPortion": {
     "placeholders": {
       "amount": {

@@ -442,7 +442,7 @@
   "eatPageRemovePackage": "Eine Packung weniger",
   "eatPageAddPackage": "Eine Packung mehr",
   "eatPageMealPortions": "Portionen",
-  "eatPageMealPerPortion": "pro Portion {amount}",
+  "eatPageMealPerPortion": "Portion {amount}",
   "eatPageMealUnknownValue": "–",
   "eatPageCombineConfirm": "Mahlzeit eintragen",
   "eatPageCombineRemove": "Aus der Liste nehmen",
