@@ -1,20 +1,40 @@
+import 'dart:developer' show log;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the calculator sheet that ends the active goal and starts a new one.
 ///
 /// Loads the current goal settings itself, so callers need no Calories state.
+/// When they cannot load, it shows an error instead of the sheet.
 Future<void> showCalorieNewGoalSheet(
   BuildContext context, {
   double? currentWeightKg,
 }) async {
   final container = ProviderScope.containerOf(context, listen: false);
-  final settings = await container
-      .read(calorieSettingsRepositoryProvider)
-      .readSettings();
+  final messenger = ScaffoldMessenger.of(context);
+  final failureMessage = AppLocalizations.of(context)!.calorieGoalLoadFailed;
+  final CalorieGoalSettings settings;
+  try {
+    settings = await container
+        .read(calorieSettingsRepositoryProvider)
+        .readSettings();
+  } on Object catch (error, stackTrace) {
+    log(
+      'Failed to load calorie settings for a new goal.',
+      name: 'CalorieNewGoalFlow',
+      error: error,
+      stackTrace: stackTrace,
+    );
+    messenger.showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
+    return;
+  }
   if (!context.mounted) {
     return;
   }

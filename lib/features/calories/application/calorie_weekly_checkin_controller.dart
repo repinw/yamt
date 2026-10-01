@@ -1,3 +1,5 @@
+import 'dart:developer' show log;
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
@@ -20,8 +22,10 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     return const AsyncData(null);
   }
 
-  Future<T> _keepAliveDuring<T>(
-    Future<T> Function(CalorieGoalController goalController) action,
+  /// Runs [action] and reports a failed settings read or write as `false`
+  /// with an [AsyncError] state.
+  Future<bool> _keepAliveDuring(
+    Future<bool> Function(CalorieGoalController goalController) action,
   ) async {
     final link = ref.keepAlive();
     final goalSubscription = ref.listen(
@@ -30,6 +34,17 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     );
     try {
       return await action(ref.read(calorieGoalControllerProvider.notifier));
+    } on Object catch (error, stackTrace) {
+      log(
+        'Weekly check-in action failed.',
+        name: 'CalorieWeeklyCheckInController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      if (ref.mounted) {
+        state = AsyncError(error, stackTrace);
+      }
+      return false;
     } finally {
       goalSubscription.close();
       link.close();

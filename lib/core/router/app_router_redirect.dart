@@ -107,9 +107,12 @@ String? _redirectForCalorieGoal(
   required String homeRoute,
 }) {
   final isStartup = path == AppRoutes.root || path == AppRoutes.splash;
-  if (calorieState.hasError && !calorieState.hasValue) {
+  if (calorieState.hasError) {
     // An offline read must not send a user with a goal into onboarding.
-    // Checked before loading: Riverpod keeps the error while it retries.
+    // Checked before loading and value: Riverpod keeps the error while it
+    // retries, and keeps the `false` of a signed-out start after a failed
+    // rebuild. A user with the local marker is never read, so a kept `true`
+    // cannot come with an error.
     return path == AppRoutes.calorieGoalLoadFailed
         ? null
         : AppRoutes.calorieGoalLoadFailed;

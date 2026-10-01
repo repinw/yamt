@@ -1270,6 +1270,42 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
+  testWidgets('a failed goal read after signing in shows the load error', (
+    tester,
+  ) async {
+    final authController = StreamController<User?>.broadcast();
+    addTearDown(() {
+      unawaited(authController.close());
+    });
+    final container = _createContainerWithAuth(
+      authController.stream,
+      calorieSettingsReadError: Exception('client is offline'),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    authController.add(null);
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
+
+    authController.add(_authenticatedUser());
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalLoadFailed,
+    );
+    // Stops the retry timer of the failed provider.
+    container.dispose();
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
   testWidgets('asks for the recovery key on a new device', (tester) async {
     final container = _createContainerWithAuth(
       Stream<User?>.value(_authenticatedUser()),
