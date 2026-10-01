@@ -51,10 +51,12 @@ class CalorieGoalController extends _$CalorieGoalController {
   }
 
   /// Set goal.
-  Future<bool> setGoal(double dailyKcalGoal) => setManualCalorieGoal(
-    controller: this,
-    dailyKcalGoal: dailyKcalGoal,
-    now: ref.read(clockProvider)(),
+  Future<bool> setGoal(double dailyKcalGoal) => _guarded(
+    () => setManualCalorieGoal(
+      controller: this,
+      dailyKcalGoal: dailyKcalGoal,
+      now: ref.read(clockProvider)(),
+    ),
   );
 
   /// Save calculated goal.
@@ -64,93 +66,108 @@ class CalorieGoalController extends _$CalorieGoalController {
     bool allowFutureGoalStart = false,
     bool? countGoalStartDayForLearning,
     bool archiveCurrentGoal = false,
-  }) => saveCalculatedCalorieGoal(
-    controller: this,
-    ref: ref,
-    profile: profile,
-    goalStartDate: goalStartDate,
-    now: ref.read(clockProvider)(),
-    allowFutureGoalStart: allowFutureGoalStart,
-    countGoalStartDayForLearning: countGoalStartDayForLearning,
-    archiveCurrentGoal: archiveCurrentGoal,
+  }) => _guarded(
+    () => saveCalculatedCalorieGoal(
+      controller: this,
+      ref: ref,
+      profile: profile,
+      goalStartDate: goalStartDate,
+      now: ref.read(clockProvider)(),
+      allowFutureGoalStart: allowFutureGoalStart,
+      countGoalStartDayForLearning: countGoalStartDayForLearning,
+      archiveCurrentGoal: archiveCurrentGoal,
+    ),
   );
 
   /// Shift goal start.
-  Future<bool> shiftGoalStart({required DateTime goalStartDate}) =>
-      shiftCalorieGoalStart(
-        controller: this,
-        goalStartDate: goalStartDate,
-        now: ref.read(clockProvider)(),
-      );
+  Future<bool> shiftGoalStart({required DateTime goalStartDate}) => _guarded(
+    () => shiftCalorieGoalStart(
+      controller: this,
+      goalStartDate: goalStartDate,
+      now: ref.read(clockProvider)(),
+    ),
+  );
 
   /// Clear goal.
-  Future<bool> clearGoal() =>
-      clearCalorieGoal(controller: this, now: ref.read(clockProvider)());
+  Future<bool> clearGoal() => _guarded(
+    () => clearCalorieGoal(controller: this, now: ref.read(clockProvider)()),
+  );
 
   /// Persists target completion and reports whether it was newly reached.
   Future<bool> markGoalReachedIfNeeded({
     required DateTime day,
     required double weightKg,
-  }) => markCalorieGoalReachedIfNeeded(
-    controller: this,
-    day: day,
-    weightKg: weightKg,
+  }) => _guarded(
+    () => markCalorieGoalReachedIfNeeded(
+      controller: this,
+      day: day,
+      weightKg: weightKg,
+    ),
   );
 
   /// Records that the user explicitly answered the reached-goal prompt.
-  Future<bool> markGoalReachedPromptHandled() =>
-      markCalorieGoalReachedPromptHandled(
-        controller: this,
-        now: ref.read(clockProvider)(),
-      );
+  Future<bool> markGoalReachedPromptHandled() => _guarded(
+    () => markCalorieGoalReachedPromptHandled(
+      controller: this,
+      now: ref.read(clockProvider)(),
+    ),
+  );
 
   /// Set pending weekly check in.
   Future<bool> setPendingWeeklyCheckIn(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
-  ) => setPendingGoalWeeklyCheckIn(
-    controller: this,
-    pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+  ) => _guarded(
+    () => setPendingGoalWeeklyCheckIn(
+      controller: this,
+      pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+    ),
   );
 
   /// Dismiss pending weekly check in.
-  Future<bool> dismissPendingWeeklyCheckIn({DateTime? dismissedAt}) =>
-      dismissPendingGoalWeeklyCheckIn(
-        controller: this,
-        now: ref.read(clockProvider)(),
-        dismissedAt: dismissedAt,
-      );
+  Future<bool> dismissPendingWeeklyCheckIn({DateTime? dismissedAt}) => _guarded(
+    () => dismissPendingGoalWeeklyCheckIn(
+      controller: this,
+      now: ref.read(clockProvider)(),
+      dismissedAt: dismissedAt,
+    ),
+  );
 
   /// Clear pending weekly check in.
   Future<bool> clearPendingWeeklyCheckIn() =>
-      clearPendingGoalWeeklyCheckIn(controller: this);
+      _guarded(() => clearPendingGoalWeeklyCheckIn(controller: this));
 
   /// Set skipped intake day.
   Future<bool> setSkippedIntakeDay({
     required DateTime day,
     required bool isSkipped,
-  }) => setCalorieSkippedIntakeDay(
-    controller: this,
-    logRepository: ref.read(calorieLogRepositoryProvider),
-    day: day,
-    isSkipped: isSkipped,
-    now: ref.read(clockProvider)(),
+  }) => _guarded(
+    () => setCalorieSkippedIntakeDay(
+      controller: this,
+      logRepository: ref.read(calorieLogRepositoryProvider),
+      day: day,
+      isSkipped: isSkipped,
+      now: ref.read(clockProvider)(),
+    ),
   );
 
   /// Clear skipped intake day.
-  Future<bool> clearSkippedIntakeDay(DateTime day) =>
-      clearCalorieSkippedIntakeDay(
-        controller: this,
-        logRepository: ref.read(calorieLogRepositoryProvider),
-        day: day,
-        now: ref.read(clockProvider)(),
-      );
+  Future<bool> clearSkippedIntakeDay(DateTime day) => _guarded(
+    () => clearCalorieSkippedIntakeDay(
+      controller: this,
+      logRepository: ref.read(calorieLogRepositoryProvider),
+      day: day,
+      now: ref.read(clockProvider)(),
+    ),
+  );
 
   /// Mark weekly check-in snapshots dirty from a changed diary day.
   Future<bool> invalidateWeeklyCheckInSnapshotsFromDay(DateTime day) =>
-      invalidateGoalWeeklyCheckInSnapshots(
-        controller: this,
-        day: day,
-        now: ref.read(clockProvider)(),
+      _guarded(
+        () => invalidateGoalWeeklyCheckInSnapshots(
+          controller: this,
+          day: day,
+          now: ref.read(clockProvider)(),
+        ),
       );
 
   /// Save learned tdee goal and report whether goal data changed.
@@ -165,19 +182,22 @@ class CalorieGoalController extends _$CalorieGoalController {
     bool archiveCurrentGoal = false,
     List<int>? trainingWeekdays,
     double? trainingDayKcalOffset,
-  }) => saveLearnedTdeeCalorieGoal(
-    controller: this,
-    goalMode: goalMode,
-    goalSpeedKgPerWeek: goalSpeedKgPerWeek,
-    targetWeightKg: targetWeightKg,
-    goalStartDate: goalStartDate,
-    now: ref.read(clockProvider)(),
-    startWeightKg: startWeightKg,
-    maintainUntil: maintainUntil,
-    countGoalStartDayForLearning: countGoalStartDayForLearning,
-    archiveCurrentGoal: archiveCurrentGoal,
-    trainingWeekdays: trainingWeekdays,
-    trainingDayKcalOffset: trainingDayKcalOffset,
+  }) => _guardedOr(
+    (saved: false, goalChanged: false),
+    () => saveLearnedTdeeCalorieGoal(
+      controller: this,
+      goalMode: goalMode,
+      goalSpeedKgPerWeek: goalSpeedKgPerWeek,
+      targetWeightKg: targetWeightKg,
+      goalStartDate: goalStartDate,
+      now: ref.read(clockProvider)(),
+      startWeightKg: startWeightKg,
+      maintainUntil: maintainUntil,
+      countGoalStartDayForLearning: countGoalStartDayForLearning,
+      archiveCurrentGoal: archiveCurrentGoal,
+      trainingWeekdays: trainingWeekdays,
+      trainingDayKcalOffset: trainingDayKcalOffset,
+    ),
   );
 
   /// Save weekly check in goal.
@@ -185,20 +205,52 @@ class CalorieGoalController extends _$CalorieGoalController {
     required DateTime completedAt,
     required double dailyKcalGoal,
     required CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshot,
-  }) => saveWeeklyCheckInCalorieGoal(
-    controller: this,
-    completedAt: completedAt,
-    dailyKcalGoal: dailyKcalGoal,
-    weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+  }) => _guarded(
+    () => saveWeeklyCheckInCalorieGoal(
+      controller: this,
+      completedAt: completedAt,
+      dailyKcalGoal: dailyKcalGoal,
+      weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+    ),
   );
 
   /// Toggle training day for a specific date.
   Future<bool> toggleTrainingDay(DateTime day) =>
-      toggleCalorieTrainingDay(controller: this, day: day);
+      _guarded(() => toggleCalorieTrainingDay(controller: this, day: day));
 
   /// Set pause day for a specific date.
   Future<bool> setPauseDay({required DateTime day, required bool isPause}) =>
-      setCaloriePauseDay(controller: this, day: day, isPause: isPause);
+      _guarded(
+        () => setCaloriePauseDay(controller: this, day: day, isPause: isPause),
+      );
+
+  /// Applies [change] to the current settings and persists the result.
+  ///
+  /// Reports `false` when the settings could not load or save.
+  Future<bool> updateSettings(
+    CalorieGoalSettings Function(CalorieGoalSettings settings) change,
+  ) => _guarded(
+    () async => await persistSettings(change(await currentSettings())),
+  );
+
+  /// Runs a goal action. The repository throws when the settings cannot load
+  /// or save; the action then reports `false` instead.
+  Future<bool> _guarded(Future<bool> Function() action) =>
+      _guardedOr(false, action);
+
+  Future<T> _guardedOr<T>(T failed, Future<T> Function() action) async {
+    try {
+      return await action();
+    } on Object catch (error, stackTrace) {
+      log(
+        'Calorie goal action failed.',
+        name: 'CalorieGoalController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return failed;
+    }
+  }
 
   /// Persists settings to storage and updates state.
   Future<bool> persistSettings(CalorieGoalSettings nextSettings) async {

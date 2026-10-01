@@ -174,6 +174,32 @@ void main() {
     );
   });
 
+  test('goal actions return false when the settings cannot load', () async {
+    final repository = _WatchErrorCalorieSettingsRepository()
+      ..readError = Exception('client is offline');
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      calorieGoalControllerProvider,
+      (previous, next) {},
+    );
+    addTearDown(subscription.close);
+    await expectLater(
+      container.read(calorieGoalControllerProvider.future),
+      throwsA(isA<StateError>()),
+    );
+    final controller = container.read(calorieGoalControllerProvider.notifier);
+
+    expect(await controller.setGoal(2000), isFalse);
+    expect(await controller.toggleTrainingDay(DateTime(2026, 5, 4)), isFalse);
+    expect(await controller.updateSettings((settings) => settings), isFalse);
+  });
+
   test('setGoal restores previous state when save throws', () async {
     final previousSettings = CalorieGoalSettings.single(
       dailyKcalGoal: 2100,

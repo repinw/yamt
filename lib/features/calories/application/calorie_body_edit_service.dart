@@ -76,9 +76,8 @@ class CalorieBodyEditService {
 
   /// Saves [edit] at [now] and reports whether it was stored.
   Future<bool> save(CalorieBodyEdit edit, {required DateTime now}) async {
-    final previous = await goalController.currentSettings();
-    return await goalController.persistSettings(
-      previous.applyBodyEdit(edit, now: now),
+    return await goalController.updateSettings(
+      (previous) => previous.applyBodyEdit(edit, now: now),
     );
   }
 

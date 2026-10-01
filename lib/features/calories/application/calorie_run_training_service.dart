@@ -112,9 +112,9 @@ class CalorieRunTrainingService {
   /// Saves [trainingDays] for the run that contains [now] and reports
   /// whether they were stored.
   Future<bool> save(Set<DateTime> trainingDays, {required DateTime now}) async {
-    final previous = await goalController.currentSettings();
-    return await goalController.persistSettings(
-      previous.withRunTrainingDays(now, trainingDays: trainingDays),
+    return await goalController.updateSettings(
+      (previous) =>
+          previous.withRunTrainingDays(now, trainingDays: trainingDays),
     );
   }
 }

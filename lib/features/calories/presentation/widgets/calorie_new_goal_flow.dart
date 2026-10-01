@@ -3,7 +3,7 @@ import 'dart:developer' show log;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_calculator_sheet.dart';
@@ -20,11 +20,16 @@ Future<void> showCalorieNewGoalSheet(
   final container = ProviderScope.containerOf(context, listen: false);
   final messenger = ScaffoldMessenger.of(context);
   final failureMessage = AppLocalizations.of(context)!.calorieGoalLoadFailed;
+  // Keeps the auto-dispose goal controller alive for the read.
+  final subscription = container.listen(
+    calorieGoalControllerProvider,
+    (previous, next) {},
+  );
   final CalorieGoalSettings settings;
   try {
     settings = await container
-        .read(calorieSettingsRepositoryProvider)
-        .readSettings();
+        .read(calorieGoalControllerProvider.notifier)
+        .currentSettings();
   } on Object catch (error, stackTrace) {
     log(
       'Failed to load calorie settings for a new goal.',
@@ -34,6 +39,8 @@ Future<void> showCalorieNewGoalSheet(
     );
     messenger.showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
     return;
+  } finally {
+    subscription.close();
   }
   if (!context.mounted) {
     return;
