@@ -1,10 +1,7 @@
-import 'dart:developer' show log;
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_snapshot_rules.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
@@ -35,12 +32,6 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     try {
       return await action(ref.read(calorieGoalControllerProvider.notifier));
     } on Object catch (error, stackTrace) {
-      log(
-        'Weekly check-in action failed.',
-        name: 'CalorieWeeklyCheckInController',
-        error: error,
-        stackTrace: stackTrace,
-      );
       if (ref.mounted) {
         state = AsyncError(error, stackTrace);
       }
@@ -56,9 +47,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   ) {
     return _keepAliveDuring((goalController) async {
-      final settings = await ref
-          .read(calorieSettingsRepositoryProvider)
-          .readSettings();
+      final settings = await goalController.currentSettings();
       if (!ref.mounted) {
         return false;
       }
@@ -126,9 +115,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         inputHash: checkInData.inputHash,
         macroWeightKg: checkInData.macroWeightKg,
       );
-      final settings = await ref
-          .read(calorieSettingsRepositoryProvider)
-          .readSettings();
+      final settings = await goalController.currentSettings();
       if (!ref.mounted) {
         return false;
       }
@@ -265,9 +252,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn!;
       final calculation = checkInData.calculation!;
 
-      final settings = await ref
-          .read(calorieSettingsRepositoryProvider)
-          .readSettings();
+      final settings = await goalController.currentSettings();
       if (!ref.mounted) {
         return false;
       }
