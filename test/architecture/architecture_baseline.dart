@@ -321,8 +321,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/scanner/presentation/widgets/receipt_review_header.dart': 6,
     'lib/features/scanner/presentation/widgets/receipt_review_item_card.dart':
         12,
-    'lib/features/settings/presentation/widgets/link_email_password_dialog/link_email_password_dialog.dart':
-        1,
     'lib/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_multiplier_card.dart':
         3,
     'lib/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_preview_card.dart':

@@ -104,7 +104,8 @@ class _LinkEmailPasswordDialogState extends State<LinkEmailPasswordDialog> {
             const SizedBox(height: AppSpacing.md),
             Text(
               _submitError!,
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: Theme.of(context).colorScheme.error),
               textAlign: TextAlign.center,
             ),
           ],

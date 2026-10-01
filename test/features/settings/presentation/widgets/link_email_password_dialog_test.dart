@@ -49,6 +49,23 @@ void main() {
     );
   });
 
+  testWidgets('shows the fields as placeholders with icons', (tester) async {
+    await tester.pumpWidget(
+      _dialogUnderTest(
+        onSubmitCredentials: ({required email, required password}) async {},
+        errorMessageFor: (error) => 'Error',
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Password'), findsOneWidget);
+    expect(find.text('Confirm password'), findsOneWidget);
+    expect(find.byIcon(Icons.mail_outline_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.lock_outline_rounded), findsNWidgets(2));
+    expect(find.byIcon(Icons.visibility_outlined), findsNWidgets(2));
+  });
+
   testWidgets('fails form validation and does not submit if fields are empty', (
     tester,
   ) async {

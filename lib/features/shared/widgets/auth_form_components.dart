@@ -224,6 +224,7 @@ class AuthPasswordField extends StatefulWidget {
     this.textInputAction = TextInputAction.next,
     this.onChanged,
     this.showVisibilityToggle = false,
+    this.autofillHints = const [AutofillHints.password],
     super.key,
   });
 
@@ -235,6 +236,10 @@ class AuthPasswordField extends StatefulWidget {
 
   /// The label.
   final String? label;
+
+  /// Autofill hints; use [AutofillHints.newPassword] when the user picks a
+  /// new password.
+  final Iterable<String> autofillHints;
 
   /// The label trailing.
   final Widget? labelTrailing;
@@ -301,7 +306,7 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
           controller: widget.controller,
           obscureText: _isObscured,
           textInputAction: widget.textInputAction,
-          autofillHints: const [AutofillHints.password],
+          autofillHints: widget.autofillHints,
           decoration: _authInputDecoration(
             context,
             hintText:
