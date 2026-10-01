@@ -56,6 +56,47 @@ void main() {
     expect(results.single!.training!.trainingDays, hasLength(4));
   });
 
+  testWidgets('past days and pause days keep their type and say why', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final results = <DiaryWeeklyCheckInSheetResult?>[];
+    await tester.pumpWidget(
+      _scoped(
+        _App(checkInData: _readyData(), onResult: results.add),
+        plan: _latePlan(),
+      ),
+    );
+    await _openSheet(tester);
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(DiaryWeeklyCheckInSheetKeys.fixedDaysHint),
+      findsOneWidget,
+    );
+    final pastDay = find.byKey(DiaryWeeklyCheckInSheetKeys.trainingDay(0));
+    final pauseDay = find.byKey(DiaryWeeklyCheckInSheetKeys.trainingDay(1));
+    expect(
+      tester.getSemantics(pastDay),
+      isSemantics(isButton: true, hasEnabledState: true, isEnabled: false),
+    );
+
+    await _tapVisible(tester, pastDay);
+    await tester.pumpAndSettle();
+    await _tapVisible(tester, pauseDay);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.startWeekButton));
+    await tester.pumpAndSettle();
+
+    final plan = _latePlan();
+    expect(results.single!.training!.trainingDays, plan.suggestedTrainingDays);
+    expect(results.single!.training!.runDay, plan.nextRunDays.first);
+    semantics.dispose();
+  });
+
   testWidgets('keeping the previous TDEE returns reject', (tester) async {
     final results = <DiaryWeeklyCheckInSheetResult?>[];
     await tester.pumpWidget(
@@ -191,15 +232,45 @@ Future<void> _openSheet(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-Widget _scoped(Widget app) {
+DiaryWeeklyCheckInPlan _demoPlan() => calorieWeeklyCheckInDemoPlan(
+  today: _today,
+  macroSettings: const MacroGoalSettings(),
+  profile: null,
+);
+
+/// The demo plan of a late check-in: the first day is past, the second a
+/// pause day.
+DiaryWeeklyCheckInPlan _latePlan() {
+  final plan = _demoPlan();
+  final days = plan.nextRunDays;
+  return DiaryWeeklyCheckInPlan(
+    reviewedRunNumber: plan.reviewedRunNumber,
+    nextRunNumber: plan.nextRunNumber,
+    reviewedDays: plan.reviewedDays,
+    previousTrainingDayCount: plan.previousTrainingDayCount,
+    nextRunDays: days,
+    suggestedTrainingDays: plan.suggestedTrainingDays,
+    pauseDays: {days[1]},
+    pastDays: {days[0]},
+    hasWeeklyTrainingSchedule: plan.hasWeeklyTrainingSchedule,
+    sessionKcal: plan.sessionKcal,
+    previousTdeeKcal: plan.previousTdeeKcal,
+    previousGoalKcal: plan.previousGoalKcal,
+    measurement: plan.measurement,
+    progress: plan.progress,
+    profile: plan.profile,
+    macroSettings: plan.macroSettings,
+    previousMacroWeightKg: plan.previousMacroWeightKg,
+    newMacroWeightKg: plan.newMacroWeightKg,
+    isLosingWeight: plan.isLosingWeight,
+  );
+}
+
+Widget _scoped(Widget app, {DiaryWeeklyCheckInPlan? plan}) {
   final container = ProviderContainer(
     overrides: [
       diaryWeeklyCheckInPlanProvider.overrideWith(
-        (ref) async => calorieWeeklyCheckInDemoPlan(
-          today: _today,
-          macroSettings: const MacroGoalSettings(),
-          profile: null,
-        ),
+        (ref) async => plan ?? _demoPlan(),
       ),
     ],
   );

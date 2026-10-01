@@ -66,6 +66,7 @@ class IntroSportPage extends StatelessWidget {
                 label: _shortLabel(day.name),
                 caption: null,
                 isTraining: day.isTraining,
+                isEnabled: true,
               ),
           ],
           onToggle: (index) => _toggleWeekday(weekdays[index].weekday),

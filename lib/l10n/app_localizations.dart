@@ -9170,6 +9170,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Debug'**
   String get homeMenuDebugSection;
+
+  /// No description provided for @diaryCheckInFixedDaysHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Past days and pause days keep their type.'**
+  String get diaryCheckInFixedDaysHint;
 }
 
 class _AppLocalizationsDelegate

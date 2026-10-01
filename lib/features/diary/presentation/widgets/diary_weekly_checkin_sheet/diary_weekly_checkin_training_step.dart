@@ -1,6 +1,7 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/core/theme/intro_accent_colors.dart';
 import 'package:yamt/features/calories/presentation/widgets/training_day_chips.dart';
@@ -78,10 +79,21 @@ class DiaryWeeklyCheckInTrainingStep extends StatelessWidget {
                 label: _shortLabel(weekday.format(day)),
                 caption: date.format(day),
                 isTraining: trainingDays.contains(day),
+                isEnabled: plan.canChangeDay(day),
               ),
           ],
           onToggle: (index) => onToggle(days[index]),
         ),
+        if (days.any((day) => !plan.canChangeDay(day))) ...[
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            l10n.diaryCheckInFixedDaysHint,
+            key: DiaryWeeklyCheckInSheetKeys.fixedDaysHint,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: FoodLabelColors.of(context).muted,
+            ),
+          ),
+        ],
         const SizedBox(height: AppSpacing.sm),
         TrainingWeekDepotChart(
           days: [

@@ -2974,5 +2974,6 @@
     }
   },
   "diaryCheckInMissingDataPreviewAction": "Preview missing data",
-  "homeMenuDebugSection": "Debug"
+  "homeMenuDebugSection": "Debug",
+  "diaryCheckInFixedDaysHint": "Past days and pause days keep their type."
 }
