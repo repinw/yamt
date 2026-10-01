@@ -80,10 +80,18 @@ String? _redirectFromWelcome(
   GoRouterState state, {
   required bool isAnonymous,
 }) {
-  final hasCalorie =
-      ref.read(calorieGoalOnboardingCompletedProvider).asData?.value ?? false;
+  final calorieState = ref.read(calorieGoalOnboardingCompletedProvider);
+  final hasCalorie = calorieState.asData?.value ?? false;
   final isFromOnboarding = state.uri.queryParameters['from'] == 'onboarding';
   if (isAnonymous && isFromOnboarding && !hasCalorie) {
+    return null;
+  }
+  // After a sign-in, a failed read must not open onboarding, so welcome
+  // waits until the completion state has loaded.
+  if (calorieState.hasError) {
+    return AppRoutes.calorieGoalLoadFailed;
+  }
+  if (calorieState.isLoading) {
     return null;
   }
   return hasCalorie ? AppRoutes.homeDiary : AppRoutes.calorieGoalSetup;
@@ -112,8 +120,10 @@ String? _redirectForCalorieGoal(
     // Checked before loading and value: Riverpod keeps the error while it
     // retries, and keeps the `false` of a signed-out start after a failed
     // rebuild. A user with the local marker is never read, so a kept `true`
-    // cannot come with an error.
-    return path == AppRoutes.calorieGoalLoadFailed
+    // cannot come with an error. Onboarding stays open: a new guest finishing
+    // it keeps the answers only in memory while the save runs.
+    return path == AppRoutes.calorieGoalLoadFailed ||
+            path == AppRoutes.calorieGoalSetup
         ? null
         : AppRoutes.calorieGoalLoadFailed;
   }
