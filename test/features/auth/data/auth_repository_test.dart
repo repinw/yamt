@@ -43,37 +43,6 @@ void main() {
     ).called(1);
   });
 
-  test('authRepository forwards account creation to FirebaseAuth', () async {
-    final mockAuth = _MockFirebaseAuth();
-    final mockCredential = _MockUserCredential();
-
-    when(
-      () => mockAuth.createUserWithEmailAndPassword(
-        email: any(named: 'email'),
-        password: any(named: 'password'),
-      ),
-    ).thenAnswer((_) async => mockCredential);
-
-    final container = ProviderContainer(
-      overrides: [firebaseAuthProvider.overrideWithValue(mockAuth)],
-    );
-    addTearDown(container.dispose);
-
-    final repository = container.read(authRepositoryProvider);
-
-    await repository.createUserWithEmailAndPassword(
-      email: 'demo@test.com',
-      password: 'secret',
-    );
-
-    verify(
-      () => mockAuth.createUserWithEmailAndPassword(
-        email: 'demo@test.com',
-        password: 'secret',
-      ),
-    ).called(1);
-  });
-
   test('authRepository forwards anonymous sign-in to FirebaseAuth', () async {
     final mockAuth = _MockFirebaseAuth();
     final mockCredential = _MockUserCredential();

@@ -14,7 +14,6 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/google_sign_in_provider.dart';
 import 'package:yamt/features/auth/presentation/welcome_page.dart';
 import 'package:yamt/features/auth/presentation/widgets/login_form/login_form.dart';
-import 'package:yamt/features/auth/presentation/widgets/register_form/register_form.dart';
 import 'package:yamt/features/auth/presentation/widgets/welcome_page_desktop_layout/welcome_page_desktop_layout.dart';
 import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -28,12 +27,6 @@ class _FirebaseSignInErrorRepository implements AuthRepository {
 
   @override
   String? get currentUserId => 'test-user-id';
-
-  @override
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {}
 
   @override
   Future<void> signInWithEmailAndPassword({
@@ -173,89 +166,6 @@ void main() {
     expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
   });
 
-  testWidgets('RegisterForm shows placeholders and icons like the login form', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_wrapWithApp(const RegisterForm()));
-
-    expect(find.text('Display name'), findsOneWidget);
-    expect(find.text('Email'), findsOneWidget);
-    expect(find.text('Password'), findsOneWidget);
-    expect(find.text('Confirm password'), findsOneWidget);
-    expect(find.byIcon(Icons.person_outline_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.mail_outline_rounded), findsOneWidget);
-    expect(find.byIcon(Icons.lock_outline_rounded), findsNWidgets(2));
-    expect(find.byIcon(Icons.visibility_outlined), findsNWidgets(2));
-  });
-
-  testWidgets(
-    'RegisterForm shows validation error when passwords do not match',
-    (tester) async {
-      await tester.pumpWidget(_wrapWithApp(const RegisterForm()));
-
-      await tester.enterText(
-        find.byKey(const Key('auth_display_name_field')),
-        'Julianne Vane',
-      );
-      await tester.enterText(
-        find.byKey(const Key('auth_email_field')),
-        'user@example.com',
-      );
-      await tester.enterText(
-        find.byKey(const Key('auth_password_field')),
-        'secret123',
-      );
-      await tester.enterText(
-        find.byKey(const Key('auth_confirm_password_field')),
-        'different-secret',
-      );
-
-      await tester.tap(find.byKey(const Key('auth_register_submit_button')));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Passwords do not match'), findsOneWidget);
-    },
-  );
-
-  testWidgets('RegisterForm submits valid credentials', (tester) async {
-    final fakeRepository = FakeAuthRepository();
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
-        child: const MaterialApp(
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(body: RegisterForm()),
-        ),
-      ),
-    );
-
-    await tester.enterText(
-      find.byKey(const Key('auth_display_name_field')),
-      'Julianne Vane',
-    );
-    await tester.enterText(
-      find.byKey(const Key('auth_email_field')),
-      'user@example.com',
-    );
-    await tester.enterText(
-      find.byKey(const Key('auth_password_field')),
-      'secret123',
-    );
-    await tester.enterText(
-      find.byKey(const Key('auth_confirm_password_field')),
-      'secret123',
-    );
-
-    await tester.tap(find.byKey(const Key('auth_register_submit_button')));
-    await tester.pumpAndSettle();
-
-    expect(fakeRepository.registerCalls, 1);
-    expect(fakeRepository.guestNameUpdateCalls, 1);
-    expect(fakeRepository.lastGuestDisplayName, 'Julianne Vane');
-  });
-
   testWidgets('WelcomePage guest button opens onboarding without signing in', (
     tester,
   ) async {
@@ -297,7 +207,7 @@ void main() {
     expect(fakeRepository.guestCalls, 0);
   });
 
-  testWidgets('WelcomePage toggles between register and login modes', (
+  testWidgets('WelcomePage shows only login without a register switch', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -319,26 +229,11 @@ void main() {
     expect(find.text('Yamt'), findsOneWidget);
     expect(find.text('Yet Another Meal Tracker'), findsOneWidget);
     expect(find.text('Login with Google'), findsOneWidget);
-
-    await _tapVisible(
-      tester,
-      find.byKey(const Key('auth_switch_to_register_button')),
-    );
-
-    expect(find.byType(RegisterForm), findsOneWidget);
-    expect(find.text('Register'), findsOneWidget);
-    expect(find.text('Register with Google'), findsOneWidget);
+    expect(find.byKey(const Key('auth_guest_button')), findsOneWidget);
     expect(
-      find.byKey(const Key('auth_switch_to_login_button')),
-      findsOneWidget,
+      find.byKey(const Key('auth_switch_to_register_button')),
+      findsNothing,
     );
-
-    await _tapVisible(
-      tester,
-      find.byKey(const Key('auth_switch_to_login_button')),
-    );
-
-    expect(find.byType(LoginForm), findsOneWidget);
   });
 
   testWidgets('WelcomePage uses desktop layout on wide displays', (

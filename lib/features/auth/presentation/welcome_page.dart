@@ -10,8 +10,6 @@ import 'package:yamt/features/auth/presentation/widgets/welcome_page_mobile_layo
 import 'package:yamt/features/shared/widgets/credential_form_ui_constants.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-enum _AuthFormMode { login, register }
-
 /// Defines welcome page.
 class WelcomePage extends ConsumerStatefulWidget {
   /// The welcome page.
@@ -22,10 +20,6 @@ class WelcomePage extends ConsumerStatefulWidget {
 }
 
 class _WelcomePageState extends ConsumerState<WelcomePage> {
-  _AuthFormMode _authFormMode = _AuthFormMode.login;
-
-  bool get _isLoginMode => _authFormMode == _AuthFormMode.login;
-
   void _showAuthError({
     required BuildContext context,
     required AppLocalizations l10n,
@@ -60,18 +54,6 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
       ) {
         _handleAsyncError(next, context, l10n);
       });
-  }
-
-  void _showLoginMode() {
-    setState(() {
-      _authFormMode = _AuthFormMode.login;
-    });
-  }
-
-  void _showRegisterMode() {
-    setState(() {
-      _authFormMode = _AuthFormMode.register;
-    });
   }
 
   @override
@@ -122,19 +104,9 @@ class _WelcomePageState extends ConsumerState<WelcomePage> {
                 ),
                 child: isWide
                     ? IntrinsicHeight(
-                        child: DesktopAuthLayout(
-                          isLoginMode: _isLoginMode,
-                          onShowLoginMode: _showLoginMode,
-                          onShowRegisterMode: _showRegisterMode,
-                          metrics: metrics,
-                        ),
+                        child: DesktopAuthLayout(metrics: metrics),
                       )
-                    : MobileAuthLayout(
-                        isLoginMode: _isLoginMode,
-                        onShowLoginMode: _showLoginMode,
-                        onShowRegisterMode: _showRegisterMode,
-                        metrics: metrics,
-                      ),
+                    : MobileAuthLayout(metrics: metrics),
               ),
             ),
           );

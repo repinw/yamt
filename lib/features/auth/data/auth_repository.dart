@@ -18,12 +18,6 @@ abstract interface class AuthRepository {
     required String password,
   });
 
-  /// Create user with email and password.
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  });
-
   /// Sign in anonymously.
   ///
   /// Throws [AuthOfflineException] without a connection.
@@ -49,17 +43,6 @@ class FirebaseAuthRepository implements AuthRepository {
     required String password,
   }) async {
     await _auth.signInWithEmailAndPassword(email: email, password: password);
-  }
-
-  @override
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
-    await _auth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
   }
 
   @override

@@ -7,15 +7,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Header shown above the auth card.
 class AuthHeader extends StatelessWidget {
   /// Creates the auth header.
-  const new({
-    required this.isLoginMode,
-    required this.isWide,
-    required this.metrics,
-    super.key,
-  });
-
-  /// Whether login mode is active.
-  final bool isLoginMode;
+  const new({required this.isWide, required this.metrics, super.key});
 
   /// Whether the wide layout is active.
   final bool isWide;
@@ -28,33 +20,31 @@ class AuthHeader extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final l10n = AppLocalizations.of(context)!;
-    final isCentered = isLoginMode && !isWide;
+    final isCentered = !isWide;
 
     return Column(
       crossAxisAlignment: isCentered
           ? CrossAxisAlignment.center
           : CrossAxisAlignment.start,
       children: [
-        if (isLoginMode) ...[
-          Align(
-            alignment: isCentered ? Alignment.center : Alignment.centerLeft,
-            child: DecoratedBox(
-              decoration: CredentialFormSurfaces.heroBadge(colors),
-              child: SizedBox(
-                key: const Key('auth_header_badge'),
-                width: metrics.heroBadgeSize,
-                height: metrics.heroBadgeSize,
-                child: Icon(
-                  Icons.restaurant_menu_rounded,
-                  size: metrics.heroIconSize,
-                ),
+        Align(
+          alignment: isCentered ? Alignment.center : Alignment.centerLeft,
+          child: DecoratedBox(
+            decoration: CredentialFormSurfaces.heroBadge(colors),
+            child: SizedBox(
+              key: const Key('auth_header_badge'),
+              width: metrics.heroBadgeSize,
+              height: metrics.heroBadgeSize,
+              child: Icon(
+                Icons.restaurant_menu_rounded,
+                size: metrics.heroIconSize,
               ),
             ),
           ),
-          SizedBox(height: metrics.headerSpacing),
-        ],
+        ),
+        SizedBox(height: metrics.headerSpacing),
         Text(
-          isLoginMode ? l10n.authBrandTitle : l10n.authRegisterTitle,
+          l10n.authBrandTitle,
           textAlign: isCentered ? TextAlign.center : TextAlign.start,
           style: textTheme.displaySmall?.copyWith(
             color: colors.onSurface,
@@ -63,11 +53,9 @@ class AuthHeader extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         Text(
-          isLoginMode ? l10n.authBrandSubtitle : l10n.authRegisterSubtitle,
+          l10n.authBrandSubtitle,
           textAlign: isCentered ? TextAlign.center : TextAlign.start,
-          style: isLoginMode
-              ? textTheme.labelLarge?.copyWith(color: colors.onSurfaceVariant)
-              : textTheme.bodyLarge?.copyWith(color: colors.onSurfaceVariant),
+          style: textTheme.labelLarge?.copyWith(color: colors.onSurfaceVariant),
         ),
       ],
     );

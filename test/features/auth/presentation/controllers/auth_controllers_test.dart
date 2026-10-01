@@ -46,83 +46,11 @@ class _DelayedEmailSignInRepository implements AuthRepository {
   }
 
   @override
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
   Future<void> signInAnonymously() async {}
 
   @override
   Future<void> updateCurrentUserDisplayName({
     required String displayName,
-  }) async {}
-}
-
-class _DelayedEmailRegisterRepository implements AuthRepository {
-  new(this._completer);
-
-  final Completer<void> _completer;
-  int registerCalls = 0;
-
-  @override
-  String? get currentUserId => 'test-user-id';
-
-  @override
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
-    registerCalls++;
-    await _completer.future;
-  }
-
-  @override
-  Future<void> signInWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {}
-
-  @override
-  Future<void> signInAnonymously() async {}
-
-  @override
-  Future<void> updateCurrentUserDisplayName({
-    required String displayName,
-  }) async {}
-}
-
-class _FailingDisplayNameUpdateRepository implements AuthRepository {
-  int registerCalls = 0;
-  int updateCalls = 0;
-
-  @override
-  String? get currentUserId => 'test-user-id';
-
-  @override
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) async {
-    registerCalls++;
-  }
-
-  @override
-  Future<void> updateCurrentUserDisplayName({
-    required String displayName,
-  }) async {
-    updateCalls++;
-    throw StateError('display name update failed');
-  }
-
-  @override
-  Future<void> signInAnonymously() async {}
-
-  @override
-  Future<void> signInWithEmailAndPassword({
-    required String email,
-    required String password,
   }) async {}
 }
 
@@ -170,69 +98,6 @@ void main() {
       expect(shutdownSignal.isInProgress, isFalse);
     });
 
-    test('register error sets error state', () async {
-      final fakeRepository = FakeAuthRepository(shouldFailRegister: true);
-      final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
-      );
-      addTearDown(container.dispose);
-
-      await container
-          .read(authFormControllerProvider.notifier)
-          .createUserWithEmailAndPassword(
-            email: 'demo@test.com',
-            password: 'secret',
-          );
-
-      expect(fakeRepository.registerCalls, 1);
-      expect(container.read(authFormControllerProvider).hasError, isTrue);
-    });
-
-    test('register updates display name when provided', () async {
-      final fakeRepository = FakeAuthRepository();
-      final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(fakeRepository)],
-      );
-      addTearDown(container.dispose);
-
-      await container
-          .read(authFormControllerProvider.notifier)
-          .createUserWithEmailAndPassword(
-            email: 'demo@test.com',
-            password: 'secret',
-            displayName: 'Guest Wlad',
-          );
-
-      expect(fakeRepository.registerCalls, 1);
-      expect(fakeRepository.guestNameUpdateCalls, 1);
-      expect(fakeRepository.lastGuestDisplayName, 'Guest Wlad');
-      expect(container.read(authFormControllerProvider).hasError, isFalse);
-    });
-
-    test('register keeps AsyncData state when display name update '
-        'fails afterwards', () async {
-      final repository = _FailingDisplayNameUpdateRepository();
-      final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
-      );
-      addTearDown(container.dispose);
-
-      await container
-          .read(authFormControllerProvider.notifier)
-          .createUserWithEmailAndPassword(
-            email: 'demo@test.com',
-            password: 'secret',
-            displayName: 'Guest Wlad',
-          );
-
-      expect(repository.registerCalls, 1);
-      expect(repository.updateCalls, 1);
-      expect(
-        container.read(authFormControllerProvider),
-        const AsyncData<void>(null),
-      );
-    });
-
     test('email sign in does not crash when provider is disposed', () async {
       final completer = Completer<void>();
       final repository = _DelayedEmailSignInRepository(completer);
@@ -261,36 +126,6 @@ void main() {
 
       await future;
       expect(repository.signInCalls, 1);
-    });
-
-    test('email register does not crash when provider is disposed', () async {
-      final completer = Completer<void>();
-      final repository = _DelayedEmailRegisterRepository(completer);
-      final container = ProviderContainer(
-        overrides: [authRepositoryProvider.overrideWithValue(repository)],
-      );
-      var disposed = false;
-      void disposeContainer() {
-        if (disposed) {
-          return;
-        }
-        disposed = true;
-        container.dispose();
-      }
-
-      addTearDown(disposeContainer);
-
-      final future = container
-          .read(authFormControllerProvider.notifier)
-          .createUserWithEmailAndPassword(
-            email: 'demo@test.com',
-            password: 'secret',
-          );
-      disposeContainer();
-      completer.complete();
-
-      await future;
-      expect(repository.registerCalls, 1);
     });
   });
 

@@ -30,8 +30,10 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## Authentication And Account
 
-- Email/password login and registration.
-- Google login and registration.
+- Email/password login and Google login. The welcome page has no
+  registration form; a new user starts as a guest and creates an account by
+  linking the guest account. Google login with a Google account the app does
+  not know yet still creates a new account.
 - Guest account, created only when the user finishes onboarding. Opening the
   app without finishing creates no Firebase user.
   Without a connection the last page says so and keeps every answer for

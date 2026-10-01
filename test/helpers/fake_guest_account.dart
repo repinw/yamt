@@ -74,17 +74,6 @@ class _SignInForwardingRepository implements AuthRepository {
   }
 
   @override
-  Future<void> createUserWithEmailAndPassword({
-    required String email,
-    required String password,
-  }) {
-    return _account.repository.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
-  }
-
-  @override
   Future<void> updateCurrentUserDisplayName({required String displayName}) {
     return _account.repository.updateCurrentUserDisplayName(
       displayName: displayName,
