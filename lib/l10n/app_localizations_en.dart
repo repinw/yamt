@@ -5385,4 +5385,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get homeMenuDebugSection => 'Debug';
+
+  @override
+  String get diaryCheckInFixedDaysHint =>
+      'Past days and pause days keep their type.';
 }

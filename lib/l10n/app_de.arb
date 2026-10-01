@@ -2532,5 +2532,6 @@
   "diaryCheckInGoalReachedPreviewAction": "Vorschau Ziel erreicht",
   "diaryCheckInPreviewResult": "Vorschau: {action}, {days} Trainingstage, nichts gespeichert",
   "diaryCheckInMissingDataPreviewAction": "Vorschau Daten fehlen",
-  "homeMenuDebugSection": "Debug"
+  "homeMenuDebugSection": "Debug",
+  "diaryCheckInFixedDaysHint": "Vergangene Tage und Pausentage bleiben, wie sie sind."
 }

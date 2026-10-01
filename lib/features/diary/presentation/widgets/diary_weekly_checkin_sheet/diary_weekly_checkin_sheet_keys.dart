@@ -51,6 +51,11 @@ abstract final class DiaryWeeklyCheckInSheetKeys {
     'diary-weekly-checkin-no-session',
   );
 
+  /// The hint that past days and pause days keep their type.
+  static const fixedDaysHint = ValueKey<String>(
+    'diary-weekly-checkin-fixed-days-hint',
+  );
+
   /// The chip of the next run day at [index].
   static ValueKey<String> trainingDay(int index) =>
       ValueKey<String>('diary-weekly-checkin-training-day-$index');
