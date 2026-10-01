@@ -31,6 +31,7 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/inventory/presentation/'
     'inventory_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/data/'
@@ -44,6 +45,8 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_ai_search_page.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_meal_food_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -206,7 +209,7 @@ Future<void> _pumpRouteHarness(
                   inventoryManualProductEatCoordinatorProvider,
                 ),
               ),
-            ProductSearchHubMode.selection =>
+            ProductSearchHubMode.selection || ProductSearchHubMode.mealFood =>
               const SelectionProductSearchHubCompletionHandler(),
           };
         }),
@@ -256,6 +259,11 @@ bool _searchFieldHasFocus(WidgetTester tester) {
   );
   return field.focusNode.hasFocus;
 }
+
+const _mealFoodArgs = ProductSearchHubRouteArgs(
+  mode: ProductSearchHubMode.mealFood,
+  initialIntent: ProductSearchHubInitialIntent.search,
+);
 
 ProductSearchHubRouteArgs _diaryArgs({
   ProductSearchHubInitialIntent initialIntent =
@@ -624,6 +632,83 @@ void main() {
 
     expect(find.text('product search child route'), findsOneWidget);
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+  });
+
+  testWidgets('meal food search result opens the eat page, not the editor', (
+    tester,
+  ) async {
+    Object? poppedResult;
+    ManualProductSearchRouteArgs? childArgs;
+
+    await _pumpRouteHarness(
+      tester,
+      args: _mealFoodArgs,
+      searchResults: [_searchProduct()],
+      onChildRouteArgs: (args) => childArgs = args,
+      onPagePopped: (result) => poppedResult = result,
+    );
+
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(childArgs, isNull);
+    expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
+    expect(find.byKey(productSearchHubMealFoodEditKey), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('eat_page_amount_field')),
+      '150',
+    );
+    await tester.pump();
+    await tester.tap(
+      find.byKey(const Key('inventory_item_amount_dialog_confirm_button')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('caller'), findsOneWidget);
+    expect(poppedResult, isA<InventoryMealFoodPick>());
+    final pick = poppedResult! as InventoryMealFoodPick;
+    expect(pick.result.item.name, 'Search Milk');
+    expect(pick.request.inventoryAmount, 150);
+  });
+
+  testWidgets('meal food eat page edits the food and comes back', (
+    tester,
+  ) async {
+    ManualProductSearchRouteArgs? childArgs;
+    final edited = InventoryReceiptManualProductResult(
+      item: _item(id: 'edited-milk', name: 'Oat milk', weight: '1 l'),
+      action: InventoryReceiptManualProductAction.addToInventory,
+      requiresGlobalPersistence: false,
+    );
+
+    await _pumpRouteHarness(
+      tester,
+      args: _mealFoodArgs,
+      searchResults: [_searchProduct()],
+      childRouteResults: [edited],
+      onChildRouteArgs: (args) => childArgs = args,
+    );
+
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(productSearchHubMealFoodEditKey));
+    await tester.tap(find.byKey(productSearchHubMealFoodEditKey));
+    await tester.pumpAndSettle();
+
+    expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+
+    await tester.tap(find.byKey(const Key('return_child_result')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
+    expect(find.text('Oat milk'), findsWidgets);
   });
 
   testWidgets('AI initial intent shows the AI page without the search', (

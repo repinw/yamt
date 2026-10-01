@@ -9,8 +9,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_mode.dart';
+import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -25,8 +24,8 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_editor_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_entry_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_navigation.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_meal_food_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/product_search_hub_navigation.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -202,6 +201,15 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     if (widget.args.mode == ProductSearchHubMode.selection) {
       _closeHub(result);
       return false;
+    }
+    if (widget.args.mode == ProductSearchHubMode.mealFood) {
+      final pick = await pickProductSearchHubMealFood(
+        context: context,
+        args: widget.args,
+        result: result,
+      );
+      if (pick != null && mounted) _closeHub(pick);
+      return pick == null;
     }
     var completed = result;
     if (widget.args.mode == ProductSearchHubMode.inventory) {

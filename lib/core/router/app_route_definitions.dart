@@ -87,7 +87,7 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       path: AppRoutes.homeFoodPick,
       builder: (context, state) => const ProductSearchHubPage(
         args: ProductSearchHubRouteArgs(
-          mode: ProductSearchHubMode.selection,
+          mode: ProductSearchHubMode.mealFood,
           initialIntent: ProductSearchHubInitialIntent.search,
         ),
       ),

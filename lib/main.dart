@@ -87,7 +87,7 @@ Future<void> main() async {
                   inventoryManualProductEatCoordinatorProvider,
                 ),
               ),
-            ProductSearchHubMode.selection =>
+            ProductSearchHubMode.selection || ProductSearchHubMode.mealFood =>
               const SelectionProductSearchHubCompletionHandler(),
           };
         }),

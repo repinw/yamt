@@ -282,9 +282,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   saves one combined diary entry named "A + B" instead. The entry and
   every stock change are written together. A combined entry cannot change its
   amount or be eaten again; deleting it can return the stock of every food.
-  While other foods are picked, the Item card hides "Bearbeiten". A food found by search that is not
-  counted in grams or milliliters still gets its amount on the eat page,
-  whose button reads "Add".
+  While other foods are picked, the Item card hides "Bearbeiten". A food found by search skips the
+  product editor when its label is complete and opens on its eat page
+  (label, amount, button "Add"); "Bearbeiten" there opens the editor and
+  comes back to the eat page.
 - Amount parsing and unit handling for grams, milliliters, pieces, and custom
   serving data.
 - Receipt grouping ("Nach Beleg" in the Sortieren sheet).

@@ -6,8 +6,6 @@ import 'package:yamt/features/inventory/application/inventory_combined_eat_servi
 import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/domain/inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
@@ -15,7 +13,6 @@ import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_food_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_framed_box.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_text_link.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -139,9 +136,8 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
   }
 
   /// Opens the inventory to pick foods. Stock items join with a default
-  /// amount. A food found by search joins the same way, unless it needs its
-  /// amount entered on the eat page; it is left out when that page is
-  /// closed.
+  /// amount. A food found by search joins with the amount entered on its
+  /// eat page.
   Future<void> _add() async {
     final notifier = ref.read(
       inventoryItemCombineControllerProvider(hubItem.id).notifier,
@@ -154,34 +150,23 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
         includesHub: widget.includesHubItem,
       ),
     );
-    if (picked == null) {
+    if (picked == null || !mounted) {
       return;
     }
-    final searched = picked.searched;
-    for (final (item, searchResult) in [
-      for (final item in picked.stock) (item, null),
-      if (searched != null) (searched.item, searched),
-    ]) {
-      if (!mounted) {
+    for (final item in picked.stock) {
+      if (!InventoryCombinedEatService.canCombine(item) ||
+          !notifier.addWithDefaultAmount(item)) {
+        _showCannotCombine(context);
+      }
+    }
+    if (picked.searched case (:final result, :final request)) {
+      final item = result.item;
+      if (!InventoryCombinedEatService.canCombine(item) ||
+          !canDirectlySaveInventoryItemEatRequest(item, request)) {
+        _showCannotCombine(context);
         return;
       }
-      if (!InventoryCombinedEatService.canCombine(item)) {
-        _showCannotCombine(context);
-        continue;
-      }
-      if (searchResult?.eatSelection == null &&
-          notifier.addWithDefaultAmount(item, searchResult: searchResult)) {
-        continue;
-      }
-      final request = await _askAmount(context, item);
-      if (request == null || !mounted) {
-        continue;
-      }
-      if (!canDirectlySaveInventoryItemEatRequest(item, request)) {
-        _showCannotCombine(context);
-        continue;
-      }
-      notifier.add(item, request, searchResult: searchResult);
+      notifier.add(item, request, searchResult: result);
     }
   }
 
@@ -190,25 +175,5 @@ class _EatCombineSectionState extends ConsumerState<EatCombineSection> {
       AppLocalizations.of(context)!.eatPageCombineNeedsNutrition,
       tone: AppSnackBarTone.error,
     );
-  }
-
-  /// Asks the amount of a food found by search on the eat page, whose
-  /// button adds the food to the list instead of logging it. The food has
-  /// no stock yet, so its amount is open.
-  static Future<InventoryItemEatRequest?> _askAmount(
-    BuildContext context,
-    InventoryItem item,
-  ) async {
-    final result = await showInventoryItemEatSheetResult(
-      context: context,
-      item: item,
-      initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
-        item: item,
-        rawWeight: item.weight,
-      ),
-      hasOpenStock: true,
-      confirmLabel: AppLocalizations.of(context)!.eatPageCombineAddFood,
-    );
-    return result?.request;
   }
 }

@@ -167,15 +167,16 @@ _directDiaryProductResult({
   );
 }
 
-/// A product picked for the Vorrat goes straight to the Vorrat page, which
-/// offers the editor. Without the required nutrition the editor opens first.
+/// A product picked for the Vorrat or for a meal goes straight to the Vorrat
+/// page or the eat page, which offer the editor. Without the required
+/// nutrition the editor opens first.
 inventory_models.InventoryReceiptManualProductResult?
 _directInventoryProductResult({
   required BuildContext context,
   required ProductSearchHubRouteArgs args,
   required OffProductSearchResult product,
 }) {
-  if (args.mode != ProductSearchHubMode.inventory) {
+  if (!_opensItemPage(args)) {
     return null;
   }
   final l10n = AppLocalizations.of(context)!;
@@ -195,8 +196,7 @@ _directInventoryRecentItemResult({
   required ProductSearchHubRouteArgs args,
   required InventoryItem item,
 }) {
-  if (args.mode != ProductSearchHubMode.inventory ||
-      !hasRequiredEatNowNutrition(item.nutrition)) {
+  if (!_opensItemPage(args) || !hasRequiredEatNowNutrition(item.nutrition)) {
     return null;
   }
   return productSearchHubDirectInventoryItemResult(
@@ -223,4 +223,11 @@ _directDiaryRecentItemResult({
     selectedGlobalFoodItemId: manualProductRecentItemGlobalFoodItemId(item),
     globalPackageWeight: item.weight,
   );
+}
+
+/// Whether a picked food opens the Vorrat page or the eat page before the
+/// editor.
+bool _opensItemPage(ProductSearchHubRouteArgs args) {
+  return args.mode == ProductSearchHubMode.inventory ||
+      args.mode == ProductSearchHubMode.mealFood;
 }
