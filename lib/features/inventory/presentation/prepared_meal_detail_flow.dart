@@ -56,14 +56,19 @@ abstract final class PreparedMealDetailFlow {
             ingredient: ingredient,
           ),
       unbundle: meals.unbundlePreparedMeal,
-      edit: (mealId, result) => coordinator.updatePreparedMeal(
+      edit: (mealId, result, messenger) => coordinator.updatePreparedMeal(
         context: context,
         ref: ref,
         mealId: mealId,
         result: result,
+        messenger: messenger,
       ),
-      saveTemplate: (meal) =>
-          coordinator.saveTemplate(context: context, ref: ref, meal: meal),
+      saveTemplate: (meal, messenger) => coordinator.saveTemplate(
+        context: context,
+        ref: ref,
+        meal: meal,
+        messenger: messenger,
+      ),
     );
   }
 }

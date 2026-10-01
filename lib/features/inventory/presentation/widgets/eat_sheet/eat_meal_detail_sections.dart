@@ -107,7 +107,12 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
               label: l10n.preparedMealSaveTemplateAction,
               color: colors.ink,
               onPressed: enabled
-                  ? () => _run(() => widget.actions.saveTemplate(meal))
+                  ? () => _run(
+                      () => widget.actions.saveTemplate(
+                        meal,
+                        ScaffoldMessenger.of(context),
+                      ),
+                    )
                   : null,
             ),
             (
@@ -139,7 +144,8 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
     if (!mounted || result == null) {
       return;
     }
-    await _run(() => widget.actions.edit(meal.id, result));
+    final messenger = ScaffoldMessenger.of(context);
+    await _run(() => widget.actions.edit(meal.id, result, messenger));
   }
 
   Future<void> _throwAway(PreparedMeal meal) async {
@@ -244,7 +250,8 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
       ref.read(inventoryItemsControllerProvider).value ??
       const <InventoryItem>[];
 
-  /// Runs [action] and shows [failureMessage] when it fails.
+  /// Runs [action] and shows [failureMessage] when it fails. When the page
+  /// has closed in the meantime, the message shows on the page below.
   Future<bool> _run(
     Future<bool> Function() action, {
     String? failureMessage,
@@ -252,15 +259,18 @@ class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
     final message =
         failureMessage ??
         AppLocalizations.of(context)!.preparedMealActionFailed;
-    final messenger = ScaffoldMessenger.of(context);
+    final pageMessenger = ScaffoldMessenger.of(context);
+    final belowMessenger = ScaffoldMessenger.of(Navigator.of(context).context);
     setState(() => _isWorking = true);
     final success = await action();
     if (mounted) {
       setState(() => _isWorking = false);
     }
-    if (!success) {
+    if (success) return true;
+    final messenger = pageMessenger.mounted ? pageMessenger : belowMessenger;
+    if (messenger.mounted) {
       messenger.showAppSnackBar(message, tone: AppSnackBarTone.error);
     }
-    return success;
+    return false;
   }
 }

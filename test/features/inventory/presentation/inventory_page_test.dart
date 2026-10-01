@@ -42,6 +42,7 @@ import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_
 import 'package:yamt/features/inventory/presentation/prepared_meal_edit_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_detail_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
@@ -237,6 +238,9 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
 class _RecordingPreparedMealRepository implements PreparedMealRepository {
   List<PreparedMeal> saved = const <PreparedMeal>[];
 
+  /// Decides the outcome of the next saves; null saves at once.
+  Future<bool> Function()? onSave;
+
   @override
   Stream<List<PreparedMeal>> watchAll() async* {
     yield saved;
@@ -247,6 +251,8 @@ class _RecordingPreparedMealRepository implements PreparedMealRepository {
 
   @override
   Future<bool> saveAll(List<PreparedMeal> meals) async {
+    final outcome = onSave;
+    if (outcome != null) return await outcome();
     saved = meals;
     return true;
   }
@@ -2056,6 +2062,39 @@ void main() {
       ('a', 200),
       ('b', 100),
     ]);
+  });
+
+  testWidgets('meal editor save shows its message on the meal page', (
+    tester,
+  ) async {
+    await _openMealEditor(tester, _bowl());
+
+    await _tapVisible(tester, find.byKey(PreparedMealEditPage.saveKey));
+
+    expect(find.byKey(const Key('eat_meal_action_edit')), findsOneWidget);
+    expect(find.text('Prepared meal updated.'), findsOneWidget);
+  });
+
+  testWidgets('failed meal edit shows its error after the meal page closed', (
+    tester,
+  ) async {
+    final mealRepository = await _openMealEditor(tester, _bowl());
+    final save = Completer<bool>();
+    mealRepository.onSave = () => save.future;
+
+    await _tapVisible(tester, find.byKey(EatMealPortionsRow.increaseKey));
+    await _tapVisible(tester, find.byKey(PreparedMealEditPage.saveKey));
+    Navigator.of(tester.element(find.byType(EatMealDetailSections))).pop();
+    await tester.pumpAndSettle();
+    expect(find.byType(EatMealDetailSections), findsNothing);
+
+    save.complete(false);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Prepared meal action failed. Please try again.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('meal editor keeps eaten meals to name and picture', (
