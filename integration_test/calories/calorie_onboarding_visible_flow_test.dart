@@ -9,6 +9,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
@@ -31,6 +32,10 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/helpers/auth_user_data_key_session.dart';
 import '../../test/helpers/memory_app_preferences.dart';
+
+// A fixed mid-month day: on the last day of a month the birthday day wheel
+// starts at its end and cannot spin forward.
+final _testNow = DateTime(2026, 6, 15, 12);
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
@@ -407,6 +412,7 @@ _CalorieOnboardingIntegrationHarness _buildHarness({
 
   final container = ProviderContainer(
     overrides: [
+      clockProvider.overrideWithValue(() => _testNow),
       appPreferencesProvider.overrideWithValue(preferences),
       authStateChangesProvider.overrideWith((ref) async* {
         yield currentUser;
@@ -544,7 +550,7 @@ void _expectHomeDiary(_CalorieOnboardingIntegrationHarness harness) {
 Future<void> _expectGoalStartedToday(
   _CalorieOnboardingIntegrationHarness harness,
 ) async {
-  final today = normalizeDiaryDay(DateTime.now());
+  final today = normalizeDiaryDay(_testNow);
   final settings = await harness.settingsRepository.readSettings();
   final goalEntry = settings.goalHistory.single;
   expect(goalEntry.effectiveDate, today);
