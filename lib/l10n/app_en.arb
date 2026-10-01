@@ -2414,14 +2414,7 @@
   "receiptReviewStoreEdit": "Edit store",
   "receiptReviewStoreLabel": "Store name",
   "receiptReviewAnalyzing": "Analyzing receipt...",
-  "receiptReviewProcessingFailed": "Receipt processing failed: {error}",
-  "@receiptReviewProcessingFailed": {
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
-  },
+  "receiptReviewProcessingFailed": "Could not process the receipt.",
   "receiptReviewNoDate": "No date detected",
   "receiptReviewUnknownStore": "Unknown store",
   "receiptReviewPrintedTotal": "Receipt total",

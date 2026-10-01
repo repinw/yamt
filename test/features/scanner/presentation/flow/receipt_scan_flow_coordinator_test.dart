@@ -139,9 +139,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Beleg prüfen'), findsNothing);
       expect(
-        find.textContaining('Belegverarbeitung fehlgeschlagen'),
+        find.text('Beleg konnte nicht verarbeitet werden.'),
         findsOneWidget,
       );
+      expect(find.textContaining('Parsing failed'), findsNothing);
     });
   });
 }
