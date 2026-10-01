@@ -3569,6 +3569,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get loginWithGoogle => 'Mit Google anmelden';
 
   @override
+  String get authShowPassword => 'Passwort anzeigen';
+
+  @override
+  String get authHidePassword => 'Passwort verbergen';
+
+  @override
   String get authBrandTitle => 'Yamt';
 
   @override

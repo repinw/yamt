@@ -158,12 +158,14 @@ void main() {
 
     expect(tester.widget<EditableText>(editablePassword).obscureText, isTrue);
     expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+    expect(find.byTooltip('Show password'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.visibility_outlined));
     await tester.pumpAndSettle();
 
     expect(tester.widget<EditableText>(editablePassword).obscureText, isFalse);
     expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+    expect(find.byTooltip('Hide password'), findsOneWidget);
   });
 
   testWidgets('WelcomePage guest button opens onboarding without signing in', (

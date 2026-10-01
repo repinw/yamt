@@ -315,6 +315,9 @@ class _AuthPasswordFieldState extends State<AuthPasswordField> {
             suffixIcon: widget.showVisibilityToggle
                 ? IconButton(
                     onPressed: _toggleVisibility,
+                    tooltip: _isObscured
+                        ? l10n.authShowPassword
+                        : l10n.authHidePassword,
                     icon: Icon(
                       _isObscured
                           ? Icons.visibility_outlined

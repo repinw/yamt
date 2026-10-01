@@ -1919,6 +1919,8 @@
   "commonOr": "Or",
   "login": "Login",
   "loginWithGoogle": "Login with Google",
+  "authShowPassword": "Show password",
+  "authHidePassword": "Hide password",
   "authBrandTitle": "Yamt",
   "authBrandSubtitle": "Yet Another Meal Tracker",
   "authContinueAsGuest": "Continue as Guest",
