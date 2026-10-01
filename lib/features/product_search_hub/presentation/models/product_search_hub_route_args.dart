@@ -134,7 +134,7 @@ class ProductSearchHubRouteArgs {
       switch (mode) {
         ProductSearchHubMode.inventory =>
           InventoryReceiptManualProductAction.addToInventory,
-        ProductSearchHubMode.selection =>
+        ProductSearchHubMode.selection || ProductSearchHubMode.mealFood =>
           InventoryReceiptManualProductAction.addToInventory,
         ProductSearchHubMode.diary =>
           InventoryReceiptManualProductAction.eatNow,
@@ -145,7 +145,8 @@ class ProductSearchHubRouteArgs {
     return switch (mode) {
       ProductSearchHubMode.inventory => l10n.productSearchHubInventoryTitle,
       ProductSearchHubMode.diary => l10n.productSearchHubDiaryTitle,
-      ProductSearchHubMode.selection => l10n.productSearchHubTitle,
+      ProductSearchHubMode.selection ||
+      ProductSearchHubMode.mealFood => l10n.productSearchHubTitle,
     };
   }
 }

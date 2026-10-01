@@ -3,16 +3,16 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/inventory_entry_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Foods picked on [InventoryCombinePickPage]: ticked stock items in list
-/// order, and a food found by search.
+/// order, and a food found by search with its amount.
 typedef InventoryCombinePickResult = ({
   List<InventoryItem> stock,
-  InventoryReceiptManualProductResult? searched,
+  InventoryMealFoodPick? searched,
 });
 
 /// Opens the inventory list to pick the foods to log together with the
@@ -137,7 +137,7 @@ class _InventoryCombinePickPageState extends State<InventoryCombinePickPage> {
   }
 
   Future<void> _search() async {
-    final result = await context.push<InventoryReceiptManualProductResult>(
+    final result = await context.push<InventoryMealFoodPick>(
       AppRoutes.homeFoodPick,
     );
     if (result == null || !mounted) {

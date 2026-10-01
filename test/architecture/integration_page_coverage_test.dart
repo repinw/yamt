@@ -19,7 +19,6 @@ const _legacyPagesWithoutIntegrationTest = <String>{
   'lib/features/cooking_flow/presentation/cooking_flow_preparation_page.dart',
   'lib/features/cooking_flow/presentation/cooking_flow_success_page.dart',
   'lib/features/cooking_flow/presentation/cooking_flow_summary_page.dart',
-  'lib/features/inventory/presentation/inventory_combine_pick_page.dart',
   'lib/features/inventory/presentation/inventory_item_hub_page.dart',
   'lib/features/inventory/presentation/inventory_shopping_list_page.dart',
   'lib/features/kitchen_utensils/presentation/kitchen_utensils_page.dart',

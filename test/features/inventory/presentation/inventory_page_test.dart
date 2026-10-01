@@ -31,12 +31,14 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_calorie_entry_delete_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_edit_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
@@ -1101,11 +1103,13 @@ void main() {
         builder: (context, state) => Scaffold(
           body: TextButton(
             onPressed: () => context.pop(
-              InventoryReceiptManualProductResult(
-                item: bread,
-                action: InventoryReceiptManualProductAction.eatNow,
-                requiresGlobalPersistence: false,
-                skipMissingBarcodePrompt: true,
+              _mealFoodPick(
+                InventoryReceiptManualProductResult(
+                  item: bread,
+                  action: InventoryReceiptManualProductAction.eatNow,
+                  requiresGlobalPersistence: false,
+                  skipMissingBarcodePrompt: true,
+                ),
               ),
             ),
             child: const Text('pick bread'),
@@ -1196,10 +1200,12 @@ void main() {
         builder: (context, state) => Scaffold(
           body: TextButton(
             onPressed: () => context.pop(
-              InventoryReceiptManualProductResult(
-                item: bread,
-                action: InventoryReceiptManualProductAction.eatNow,
-                requiresGlobalPersistence: false,
+              _mealFoodPick(
+                InventoryReceiptManualProductResult(
+                  item: bread,
+                  action: InventoryReceiptManualProductAction.eatNow,
+                  requiresGlobalPersistence: false,
+                ),
               ),
             ),
             child: const Text('pick bread'),
@@ -1257,11 +1263,13 @@ void main() {
         builder: (context, state) => Scaffold(
           body: TextButton(
             onPressed: () => context.pop(
-              InventoryReceiptManualProductResult(
-                item: salt,
-                action: InventoryReceiptManualProductAction.eatNow,
-                requiresGlobalPersistence: false,
-                skipMissingBarcodePrompt: true,
+              _mealFoodPick(
+                InventoryReceiptManualProductResult(
+                  item: salt,
+                  action: InventoryReceiptManualProductAction.eatNow,
+                  requiresGlobalPersistence: false,
+                  skipMissingBarcodePrompt: true,
+                ),
               ),
             ),
             child: const Text('pick salt'),
@@ -2063,4 +2071,18 @@ void main() {
     expect(find.byKey(EatMealPortionsRow.increaseKey), findsNothing);
     expect(find.byTooltip('Remove from the list'), findsNothing);
   });
+}
+
+/// A food found by search for a meal, with 100 g entered on its eat page.
+InventoryMealFoodPick _mealFoodPick(
+  InventoryReceiptManualProductResult result,
+) {
+  return (
+    result: result,
+    request: InventoryItemEatRequest(
+      inventoryAmount: 100,
+      loggedAt: DateTime.parse('2026-02-19T10:00:00Z'),
+      mealType: MealType.lunch,
+    ),
+  );
 }

@@ -8,4 +8,8 @@ enum ProductSearchHubMode {
 
   /// Return edited product result to the caller without persistence.
   selection,
+
+  /// Pick a food for a meal: the eat page asks its amount, and the food
+  /// returns to the caller without persistence.
+  mealFood,
 }

@@ -614,7 +614,7 @@ Widget _buildCompletionHarness({
               inventoryManualProductEatCoordinatorProvider,
             ),
           ),
-          ProductSearchHubMode.selection =>
+          ProductSearchHubMode.selection || ProductSearchHubMode.mealFood =>
             const SelectionProductSearchHubCompletionHandler(),
         };
       }),
