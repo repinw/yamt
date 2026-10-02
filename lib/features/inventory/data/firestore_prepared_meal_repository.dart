@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository_contract.dart';
@@ -116,7 +117,8 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
         error: error,
         stackTrace: stackTrace,
       );
-      return const <PreparedMeal>[];
+      // Callers write the whole list back; no meals would delete them all.
+      rethrow;
     }
   }
 
@@ -130,18 +132,15 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     return _store.replaceAll(
       householdId: householdId,
       documentsById: documentsById,
+      parse: _decode,
     );
   }
 
   List<PreparedMeal> _decodeDocuments(List<PreparedMealDocument> documents) {
     final meals = <PreparedMeal>[];
     for (var index = 0; index < documents.length; index += 1) {
-      final json = Map<String, dynamic>.from(documents[index].data);
-      if ((json['id'] as String?)?.trim().isEmpty ?? true) {
-        json['id'] = documents[index].id;
-      }
       try {
-        meals.add(PreparedMeal.fromJson(json));
+        meals.add(_decode(documents[index].id, documents[index].data));
       } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted prepared meal at index $index.',
@@ -153,6 +152,10 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     }
     return meals;
   }
+
+  /// Decodes a stored document; reads and the [saveAll] delete check agree.
+  PreparedMeal _decode(String id, Map<String, dynamic> data) =>
+      PreparedMeal.fromJson(withDocumentId(id, data));
 
   Future<T> _runExclusiveWrite<T>(Future<T> Function() operation) {
     final queuedOperation = _writeBarrier.then((_) => operation());

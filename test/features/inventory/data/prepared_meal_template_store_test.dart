@@ -19,6 +19,7 @@ void main() {
     );
 
     final saved = await store.replaceAll(
+      parse: (_, _) {},
       householdId: 'household-1',
       documentsById: <String, Map<String, dynamic>>{
         'template-1': <String, dynamic>{'name': 'Chili'},
@@ -33,5 +34,39 @@ void main() {
     final documents = await store.readAll(householdId: 'household-1');
     expect(documents.single.id, 'template-1');
     expect(documents.single.data['name'], 'Chili');
+  });
+
+  test('replaceAll deletes a left-out template only when it parses', () async {
+    final firestore = FakeFirebaseFirestore();
+    final store = FirestorePreparedMealTemplateStore(
+      firestore: firestore,
+      cipher: cipher,
+    );
+    await store.replaceAll(
+      parse: (_, _) {},
+      householdId: 'household-1',
+      documentsById: <String, Map<String, dynamic>>{
+        'gone': <String, dynamic>{'name': 'Soup'},
+        'broken': <String, dynamic>{'name': 'Broken'},
+      },
+    );
+
+    await store.replaceAll(
+      parse: (_, data) {
+        if (data['name'] == 'Broken') {
+          throw const FormatException('broken');
+        }
+      },
+      householdId: 'household-1',
+      documentsById: <String, Map<String, dynamic>>{
+        'new': <String, dynamic>{'name': 'Rice'},
+      },
+    );
+
+    final documents = await store.readAll(householdId: 'household-1');
+    expect(
+      documents.map((document) => document.id),
+      unorderedEquals(<String>['new', 'broken']),
+    );
   });
 }

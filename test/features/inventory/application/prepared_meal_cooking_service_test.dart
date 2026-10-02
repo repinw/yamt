@@ -151,6 +151,27 @@ void main() {
     expect(items.items.single.currentAmount, 1000);
     expect(activity.events, isEmpty);
   });
+
+  test('saves nothing when the meals cannot be read', () async {
+    final meals = _FakeMealRepository(throwsOnRead: true);
+    final items = _FakeInventoryRepository([_rice()]);
+    final service = _service(meals, items, _FakeActivityRepository());
+
+    await expectLater(
+      service.cook(
+        name: 'Reis',
+        ingredients: const ['200 g Reis'],
+        assignments: const {
+          '200 g Reis': ['rice'],
+        },
+      ),
+      throwsStateError,
+    );
+
+    // Saving only the new meal would delete every other meal.
+    expect(meals.saveCount, 0);
+    expect(items.items.single.currentAmount, 1000);
+  });
 }
 
 PreparedMealCookingService _service(
@@ -189,20 +210,32 @@ InventoryItem _rice() {
 }
 
 class _FakeMealRepository implements PreparedMealRepository {
-  new({this.saves = true, this.throwsOnSave = false});
+  new({
+    this.saves = true,
+    this.throwsOnSave = false,
+    this.throwsOnRead = false,
+  });
 
   final bool saves;
   final bool throwsOnSave;
+  final bool throwsOnRead;
   List<PreparedMeal> saved = const [];
+  int saveCount = 0;
 
   @override
   Stream<List<PreparedMeal>> watchAll() => Stream.value(saved);
 
   @override
-  Future<List<PreparedMeal>> readAll() async => saved;
+  Future<List<PreparedMeal>> readAll() async {
+    if (throwsOnRead) {
+      throw StateError('unreadable meal');
+    }
+    return saved;
+  }
 
   @override
   Future<bool> saveAll(List<PreparedMeal> meals) async {
+    saveCount += 1;
     if (throwsOnSave) {
       throw StateError('offline');
     }

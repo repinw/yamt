@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository_contract.dart';
@@ -118,7 +119,9 @@ class FirestorePreparedMealTemplateRepository
         error: error,
         stackTrace: stackTrace,
       );
-      return const <PreparedMeal>[];
+      // Callers write the whole list back; no templates would delete them
+      // all.
+      rethrow;
     }
   }
 
@@ -132,6 +135,7 @@ class FirestorePreparedMealTemplateRepository
     return _store.replaceAll(
       householdId: householdId,
       documentsById: documentsById,
+      parse: _decode,
     );
   }
 
@@ -140,12 +144,8 @@ class FirestorePreparedMealTemplateRepository
   ) {
     final templates = <PreparedMeal>[];
     for (var index = 0; index < documents.length; index += 1) {
-      final json = Map<String, dynamic>.from(documents[index].data);
-      if ((json['id'] as String?)?.trim().isEmpty ?? true) {
-        json['id'] = documents[index].id;
-      }
       try {
-        templates.add(PreparedMeal.fromJson(json));
+        templates.add(_decode(documents[index].id, documents[index].data));
       } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted prepared meal template at index $index.',
@@ -157,6 +157,10 @@ class FirestorePreparedMealTemplateRepository
     }
     return templates;
   }
+
+  /// Decodes a stored document; reads and the [saveAll] delete check agree.
+  PreparedMeal _decode(String id, Map<String, dynamic> data) =>
+      PreparedMeal.fromJson(withDocumentId(id, data));
 
   Future<T> _runExclusiveWrite<T>(Future<T> Function() operation) {
     final queuedOperation = _writeBarrier.then((_) => operation());

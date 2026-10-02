@@ -1,6 +1,7 @@
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/encrypted_payload.dart';
+import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 
@@ -60,6 +61,42 @@ void main() {
       throwsA(anything),
     );
   });
+
+  test(
+    'canDeleteStale allows a delete only when the document opens and parses',
+    () async {
+      Future<FirestoreStaleDeleteCandidate> candidate(
+        String id,
+        Map<String, dynamic> stored,
+      ) async {
+        await collection.reference.doc(id).set(stored);
+        return FirestoreStaleDeleteCandidate(
+          reference: collection.reference.doc(id),
+          expectedData: stored,
+        );
+      }
+
+      void parse(String id, Map<String, dynamic> data) {
+        if (data['name'] == 'Broken') {
+          throw const FormatException('broken');
+        }
+      }
+
+      final readable = await candidate(
+        'a',
+        await collection.seal('a', <String, dynamic>{'name': 'Brot'}),
+      );
+      final broken = await candidate(
+        'b',
+        await collection.seal('b', <String, dynamic>{'name': 'Broken'}),
+      );
+      final plain = await candidate('c', <String, dynamic>{'name': 'Milch'});
+
+      expect(await collection.canDeleteStale(readable, parse), isTrue);
+      expect(await collection.canDeleteStale(broken, parse), isFalse);
+      expect(await collection.canDeleteStale(plain, parse), isFalse);
+    },
+  );
 
   test('ensureAllSealed fails while a plaintext document exists', () async {
     await collection.reference

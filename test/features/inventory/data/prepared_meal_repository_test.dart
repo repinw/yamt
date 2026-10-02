@@ -7,6 +7,8 @@ import 'package:yamt/features/inventory/data/firestore_prepared_meal_repository.
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_store.dart';
 
+import '../../../support/prepared_meal_test_data.dart';
+
 class _FakeInventoryUserSession implements InventoryUserSession {
   const new({this.householdId});
 
@@ -15,7 +17,9 @@ class _FakeInventoryUserSession implements InventoryUserSession {
 }
 
 class _FakePreparedMealStore implements PreparedMealStore {
+  Exception? readAllError;
   Exception? watchAllError;
+  void Function(String id, Map<String, dynamic> data)? parse;
   final StreamController<List<PreparedMealDocument>> _controller =
       StreamController<List<PreparedMealDocument>>.broadcast();
 
@@ -23,6 +27,9 @@ class _FakePreparedMealStore implements PreparedMealStore {
   Future<List<PreparedMealDocument>> readAll({
     required String householdId,
   }) async {
+    if (readAllError case final error?) {
+      throw error;
+    }
     return const <PreparedMealDocument>[];
   }
 
@@ -30,7 +37,9 @@ class _FakePreparedMealStore implements PreparedMealStore {
   Future<bool> replaceAll({
     required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
+    required void Function(String id, Map<String, dynamic> data) parse,
   }) async {
+    this.parse = parse;
     return true;
   }
 
@@ -59,6 +68,53 @@ class _FakePreparedMealStore implements PreparedMealStore {
 }
 
 void main() {
+  test(
+    'readAll rethrows a failed read instead of returning no meals',
+    () async {
+      final store = _FakePreparedMealStore()
+        ..readAllError = FirebaseException(
+          plugin: 'cloud_firestore',
+          code: 'unavailable',
+        );
+      final repository = FirestorePreparedMealRepository(
+        session: const _FakeInventoryUserSession(householdId: 'household-1'),
+        sessionShutdownSignal: SessionShutdownSignal(),
+        store: store,
+      );
+
+      await expectLater(
+        repository.readAll(),
+        throwsA(isA<FirebaseException>()),
+      );
+    },
+  );
+
+  test('saveAll lets the store keep meals that do not parse', () async {
+    final store = _FakePreparedMealStore();
+    final repository = FirestorePreparedMealRepository(
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
+      store: store,
+    );
+
+    await repository.saveAll([preparedMealTestData(id: 'new')]);
+
+    store.parse!('old', preparedMealTestData(id: 'old').toJson());
+    expect(
+      () => store.parse!('bad', <String, dynamic>{'components': 42}),
+      throwsA(isA<TypeError>()),
+    );
+    // The list skips a stored entry with a non-text id, so the delete check
+    // must not accept it either.
+    expect(
+      () => store.parse!(
+        'odd',
+        preparedMealTestData(id: 'odd').toJson()..['id'] = 5,
+      ),
+      throwsA(isA<TypeError>()),
+    );
+  });
+
   test('watchAll rethrows firestore permission denied errors', () async {
     final store = _FakePreparedMealStore()
       ..watchAllError = FirebaseException(

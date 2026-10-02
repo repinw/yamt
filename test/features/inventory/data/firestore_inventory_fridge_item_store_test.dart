@@ -105,6 +105,7 @@ void main() {
         cipher: cipher,
       );
       final replaced = await store.replaceAll(
+        parse: (_, _) {},
         householdId: 'household-1',
         documentsById: <String, Map<String, dynamic>>{
           'b': <String, dynamic>{'name': 'Bread v2'},
@@ -145,6 +146,7 @@ void main() {
         cipher: cipher,
       );
       final replaced = await store.replaceAll(
+        parse: (_, _) {},
         householdId: 'household-1',
         documentsById: documentsById,
       );
@@ -165,6 +167,7 @@ void main() {
       cipher: cipher,
     );
     await store.replaceAll(
+      parse: (_, _) {},
       householdId: 'household-1',
       documentsById: <String, Map<String, dynamic>>{
         'a': <String, dynamic>{
@@ -211,6 +214,7 @@ void main() {
     );
 
     final replaced = await store.replaceAll(
+      parse: (_, _) {},
       householdId: 'household-1',
       documentsById: <String, Map<String, dynamic>>{
         'b': <String, dynamic>{'name': 'Bread'},
@@ -219,5 +223,39 @@ void main() {
 
     expect(replaced, isFalse);
     expect((await collection.doc('plain').get()).exists, isTrue);
+  });
+
+  test('replaceAll deletes a left-out item only when it parses', () async {
+    final firestore = FakeFirebaseFirestore();
+    final store = FirestoreInventoryItemStore(
+      firestore: firestore,
+      cipher: cipher,
+    );
+    await store.replaceAll(
+      parse: (_, _) {},
+      householdId: 'household-1',
+      documentsById: <String, Map<String, dynamic>>{
+        'gone': <String, dynamic>{'name': 'Soup'},
+        'broken': <String, dynamic>{'name': 'Broken'},
+      },
+    );
+
+    await store.replaceAll(
+      parse: (_, data) {
+        if (data['name'] == 'Broken') {
+          throw const FormatException('broken');
+        }
+      },
+      householdId: 'household-1',
+      documentsById: <String, Map<String, dynamic>>{
+        'new': <String, dynamic>{'name': 'Rice'},
+      },
+    );
+
+    final documents = await store.readAll(householdId: 'household-1');
+    expect(
+      documents.map((document) => document.id),
+      unorderedEquals(<String>['new', 'broken']),
+    );
   });
 }

@@ -1,5 +1,8 @@
+import 'dart:developer' show log;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/encrypted_payload.dart';
+import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_document.dart';
 
@@ -81,6 +84,32 @@ class SealedCollection {
         return (id: document.id, data: data);
       }),
     );
+  }
+
+  /// Whether a replace-all may delete the stale [candidate]: only when it
+  /// opens and [parse] reads its data without throwing. The caller could not
+  /// have listed a document that it cannot read, so leaving one out is no
+  /// delete.
+  Future<bool> canDeleteStale(
+    FirestoreStaleDeleteCandidate candidate,
+    void Function(String id, Map<String, dynamic> data) parse,
+  ) async {
+    final path = candidate.reference.path;
+    try {
+      parse(
+        candidate.reference.id,
+        await openDocument(candidate.expectedData, path: path, cipher: cipher),
+      );
+      return true;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Keeping $path, it does not open or parse.',
+        name: 'SealedCollection',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    }
   }
 
   /// Throws a [StateError] if a stored document is not sealed.
