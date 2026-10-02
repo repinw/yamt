@@ -9,6 +9,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_eat_now_nutrition.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_search_value_utils.dart';
+import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_photo_controller.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/manual_product_photo_state.dart';
@@ -130,11 +131,13 @@ InventoryReceiptManualProductResult? tryBuildDirectEatResultFromInventoryItem({
   );
 }
 
-/// Validates, stores the package photos, builds payload, and saves the
-/// manual product.
+/// Validates, starts storing the package photos, builds payload, and saves
+/// the manual product.
 ///
-/// A failed photo upload does not stop the save: the product is saved
-/// without its photos and [onPhotosNotSaved] tells the user.
+/// The save does not wait for the photo upload: the product keeps the
+/// Storage address of the front photo, which shows from the image cache
+/// until it is uploaded. When the upload fails or cannot start,
+/// [onPhotosNotSaved] tells the user, also after the page closed.
 Future<void> executeEditorSave({
   required WidgetRef ref,
   required InventoryReceiptManualProductConfig config,
@@ -152,24 +155,29 @@ Future<void> executeEditorSave({
       !canSaveManualProduct(state: state, selectedAction: selectedAction)) {
     return;
   }
-  String? photoImageUrl;
-  try {
-    photoImageUrl = await ref
-        .read(photos.notifier)
-        .savePhotos(barcode: state.barcode, name: state.nameText.trim());
-  } on Object catch (error, stackTrace) {
+  void photosFailed(Object error, StackTrace stackTrace) {
     log(
-      'Storing the package photos failed; saving without them.',
+      'Storing the package photos failed.',
       name: 'ManualProductEditor',
       error: error,
       stackTrace: stackTrace,
     );
-    if (isMounted()) onPhotosNotSaved();
+    onPhotosNotSaved();
   }
+
+  ProductPhotoUpload? upload;
+  try {
+    upload = await ref
+        .read(photos.notifier)
+        .savePhotos(barcode: state.barcode, name: state.nameText.trim());
+  } on Object catch (error, stackTrace) {
+    photosFailed(error, stackTrace);
+  }
+  unawaited(upload?.done.then((_) {}, onError: photosFailed));
   if (!isMounted()) return;
   final payload = controller.buildSavePayload(
     action: selectedAction,
-    photoImageUrl: photoImageUrl,
+    photoImageUrl: upload?.frontAddress,
   );
   if (payload == null) {
     return;

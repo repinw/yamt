@@ -67,14 +67,18 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   }
 
   @override
-  Future<String?> saveProductPhotos({
+  Future<ProductPhotoUpload> saveProductPhotos({
     required ProductPhoto? front,
     required ProductPhoto? nutritionTable,
     required String barcode,
     required String name,
   }) async {
     saved.add((front: front, table: nutritionTable, barcode: barcode));
-    return front == null ? null : 'https://example.com/front.jpg';
+    return ProductPhotoUpload(
+      frontAddress: front == null ? null : 'gs://bucket/front.jpg',
+      // The upload never ends; starting it must not wait for it.
+      done: Completer<void>().future,
+    );
   }
 }
 
@@ -271,23 +275,30 @@ void main() {
     });
   }
 
-  test('saving stores both photos and returns the front address', () async {
-    final repository = _FakePhotoRepository()
-      ..photos.addAll([_photo('front'), _photo('table')]);
-    final (container: _, :photos, product: _) = _setUp(repository);
-    await photos.takeFrontPhoto();
-    await photos.takeNutritionTablePhoto();
+  test(
+    'saving starts storing both photos and returns the front address',
+    () async {
+      final repository = _FakePhotoRepository()
+        ..photos.addAll([_photo('front'), _photo('table')]);
+      final (:container, :photos, product: _) = _setUp(repository);
+      await photos.takeFrontPhoto();
+      await photos.takeNutritionTablePhoto();
 
-    final url = await photos.savePhotos(
-      barcode: '4006381333931',
-      name: 'Haferflocken zart',
-    );
+      final upload = await photos.savePhotos(
+        barcode: '4006381333931',
+        name: 'Haferflocken zart',
+      );
 
-    expect(url, 'https://example.com/front.jpg');
-    expect(repository.saved.single.front?.path, 'front');
-    expect(repository.saved.single.table?.path, 'table');
-    expect(repository.saved.single.barcode, '4006381333931');
-  });
+      expect(upload?.frontAddress, 'gs://bucket/front.jpg');
+      expect(
+        container.read(manualProductPhotoControllerProvider(_config)).isBusy,
+        isFalse,
+      );
+      expect(repository.saved.single.front?.path, 'front');
+      expect(repository.saved.single.table?.path, 'table');
+      expect(repository.saved.single.barcode, '4006381333931');
+    },
+  );
 
   test('saving without photos stores nothing', () async {
     final repository = _FakePhotoRepository();

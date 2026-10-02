@@ -23,8 +23,26 @@ void main() {
     );
   });
 
+  test('keeps Firebase Storage addresses unchanged', () {
+    expect(
+      normalizeProductImageUrl('gs://bucket/product_images/u/1/front.jpg'),
+      'gs://bucket/product_images/u/1/front.jpg',
+    );
+  });
+
   test('drops unsupported image urls', () {
     expect(normalizeProductImageUrl('ftp://example.com/image.png'), isNull);
     expect(normalizeProductImageUrl('image.png'), isNull);
+  });
+
+  test('keeps Storage addresses out of the shared catalog', () {
+    expect(
+      shareableProductImageUrl('gs://bucket/product_images/u/1/front.jpg'),
+      isNull,
+    );
+    expect(
+      shareableProductImageUrl('https://example.com/image.png'),
+      'https://example.com/image.png',
+    );
   });
 }

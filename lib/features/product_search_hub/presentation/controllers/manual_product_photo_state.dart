@@ -58,7 +58,7 @@ class ManualProductPhotoState {
   /// Whether the nutrition table photo filled in the values.
   final bool hasReadNutritionTable;
 
-  /// Whether the photos are being stored.
+  /// Whether the photo upload is starting.
   final bool isSaving;
 
   /// What the AI read on the front photo.

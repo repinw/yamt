@@ -1,13 +1,16 @@
 import 'dart:convert';
+import 'dart:developer' show log;
 
 import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mime/mime.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/data/storage_image_cache.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
@@ -27,6 +30,7 @@ const _requestTimeout = Duration(seconds: 60);
 const _maxPhotoWidth = 1600.0;
 const _photoQuality = 80;
 const _uuid = Uuid();
+const _logName = 'ProductPhotoRepository';
 
 /// Runs [productFrontTemplateId] with template [inputs] and returns the
 /// response text.
@@ -53,6 +57,7 @@ ProductPhotoRepository productPhotoRepository(Ref ref) {
       return response.text;
     },
     barcodeReader: _readBarcodeWithScanner,
+    imageCache: storageImageCacheManager,
   );
 }
 
@@ -84,6 +89,7 @@ class ProductPhotoRepository {
     required this._ownerId,
     required this._templateClient,
     required this._barcodeReader,
+    required this._imageCache,
   });
 
   final ImagePicker _imagePicker;
@@ -91,6 +97,7 @@ class ProductPhotoRepository {
   final String? _ownerId;
   final ProductFrontTemplateClient _templateClient;
   final ProductBarcodeImageReader _barcodeReader;
+  final BaseCacheManager _imageCache;
 
   /// Takes a photo with the camera. Returns null when the user cancels.
   ///
@@ -161,13 +168,18 @@ class ProductPhotoRepository {
     );
   }
 
-  /// Stores [front] and [nutritionTable] as shared product images and
-  /// returns the address of the front photo, or null without one.
+  /// Starts storing [front] and [nutritionTable] as shared product images
+  /// and returns the Storage address of the front photo, or null without
+  /// one, together with the running upload.
   ///
-  /// Other users see the front photo as the product image. Both photos
-  /// carry the barcode and the name, so they can be checked later. Throws a
-  /// [StateError] when signed out.
-  Future<String?> saveProductPhotos({
+  /// The address is known before the upload, so the product can be saved
+  /// right away. The front photo goes into the image cache under its
+  /// address and shows from there until it is downloaded. Other users see
+  /// it as the product image. Both photos carry the barcode and the name,
+  /// so they can be checked later. A failed nutrition table upload is only
+  /// logged; [ProductPhotoUpload.done] fails when the front photo fails.
+  /// Throws a [StateError] when signed out.
+  Future<ProductPhotoUpload> saveProductPhotos({
     required ProductPhoto? front,
     required ProductPhoto? nutritionTable,
     required String barcode,
@@ -179,22 +191,53 @@ class ProductPhotoRepository {
       throw StateError('Product photos need a signed-in user.');
     }
     final folder = storage.ref('product_images/$ownerId/${_uuid.v4()}');
-    Future<String> upload(ProductPhoto photo, String kind) async {
-      final ref = folder.child('$kind.jpg');
-      await ref.putData(
-        photo.bytes,
-        SettableMetadata(
-          contentType: photo.mimeType,
-          customMetadata: {'kind': kind, 'barcode': barcode, 'name': name},
-        ),
-      );
-      return await ref.getDownloadURL();
+    // Awaited, so the future is a plain Future<void> and not the SDK's
+    // UploadTask, whose catchError needs a TaskSnapshot back.
+    Future<void> upload(ProductPhoto photo, String kind) async {
+      await folder
+          .child('$kind.jpg')
+          .putData(
+            photo.bytes,
+            SettableMetadata(
+              contentType: photo.mimeType,
+              customMetadata: {'kind': kind, 'barcode': barcode, 'name': name},
+            ),
+          );
     }
 
+    // ponytail: the upload lives in memory; a closed app loses it. A
+    // lasting upload queue comes with #349.
+    final uploads = <Future<void>>[];
     if (nutritionTable != null) {
-      await upload(nutritionTable, 'nutrition_table');
+      uploads.add(
+        upload(nutritionTable, 'nutrition_table').catchError((
+          Object error,
+          StackTrace stackTrace,
+        ) {
+          log(
+            'Storing the nutrition table photo failed.',
+            name: _logName,
+            error: error,
+            stackTrace: stackTrace,
+          );
+        }),
+      );
     }
-    return front == null ? null : await upload(front, 'front');
+    String? frontAddress;
+    if (front != null) {
+      final frontRef = folder.child('front.jpg');
+      frontAddress = 'gs://${frontRef.bucket}/${frontRef.fullPath}';
+      await _imageCache.putFile(
+        frontAddress,
+        front.bytes,
+        fileExtension: 'jpg',
+      );
+      uploads.add(upload(front, 'front'));
+    }
+    return ProductPhotoUpload(
+      frontAddress: frontAddress,
+      done: Future.wait(uploads).then((_) {}),
+    );
   }
 
   static String? _text(Object? value) {
