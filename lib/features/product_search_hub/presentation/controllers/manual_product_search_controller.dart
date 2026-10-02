@@ -12,6 +12,8 @@ import 'package:yamt/features/product_nutrition/domain/'
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_eat_now_nutrition.dart';
 import 'package:yamt/features/product_search_hub/domain/'
+    'manual_product_piece_weight.dart';
+import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_search_value_utils.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_weight_input.dart';
 import 'package:yamt/features/product_search_hub/domain/product_photo.dart';
@@ -48,6 +50,16 @@ class InventoryReceiptManualProductController
       selectedWeightUnit: weightInput.amount.isEmpty
           ? config.item.amountUnit
           : weightInput.unit,
+      // The same order as the save, which compares the input with it.
+      pieceWeightText: manualProductPieceWeightText((
+        size: null,
+        quantity:
+            config.selectedProduct?.servingQuantity ??
+            config.item.servingQuantity,
+        quantityUnit:
+            config.selectedProduct?.servingQuantityUnit ??
+            config.item.servingQuantityUnit,
+      )),
       kcalText: formatManualProductDouble(nutrition?.per100Kcal),
       saturatedFatText: formatManualProductDouble(
         nutrition?.per100SaturatedFat,
@@ -104,6 +116,11 @@ class InventoryReceiptManualProductController
   /// Update weight unit.
   void updateWeightUnit(InventoryAmountUnit unit) {
     state = state.copyWith(selectedWeightUnit: unit, error: null);
+  }
+
+  /// Sets the grams of one piece.
+  void updatePieceWeightText(String value) {
+    state = state.copyWith(pieceWeightText: value, error: null);
   }
 
   /// Update kcal text.
@@ -289,6 +306,22 @@ class InventoryReceiptManualProductController
       selection: matchedProduct,
     );
     final inventoryWeight = resolvedWeightInput.normalizedWeight;
+    final serving = resolveManualProductServing(
+      packageUnit:
+          resolvedWeightInput.parsedAmount?.unit ?? state.selectedWeightUnit,
+      pieceWeightText: state.pieceWeightText,
+      serving: (
+        size:
+            matchedProduct?.servingSize ??
+            state.ocrDraft?.servingSizeLabel ??
+            config.item.servingSize,
+        quantity:
+            matchedProduct?.servingQuantity ?? config.item.servingQuantity,
+        quantityUnit:
+            matchedProduct?.servingQuantityUnit ??
+            config.item.servingQuantityUnit,
+      ),
+    );
     final updatedItem = config.item
         .copyWith(
           name: _resolvedManualName(
@@ -299,15 +332,9 @@ class InventoryReceiptManualProductController
           imageUrl:
               config.item.imageUrl ?? matchedProduct?.imageUrl ?? photoImageUrl,
           weight: inventoryWeight,
-          servingSize:
-              matchedProduct?.servingSize ??
-              state.ocrDraft?.servingSizeLabel ??
-              config.item.servingSize,
-          servingQuantity:
-              matchedProduct?.servingQuantity ?? config.item.servingQuantity,
-          servingQuantityUnit:
-              matchedProduct?.servingQuantityUnit ??
-              config.item.servingQuantityUnit,
+          servingSize: serving.size,
+          servingQuantity: serving.quantity,
+          servingQuantityUnit: serving.quantityUnit,
           nutrition: _resolvedSaveNutrition(
             hasNutrition: hasNutrition,
             selectedProduct: selectedProduct,
@@ -472,6 +499,11 @@ class InventoryReceiptManualProductController
       selectedWeightUnit: weightInput.amount.isEmpty
           ? state.selectedWeightUnit
           : weightInput.unit,
+      pieceWeightText: manualProductPieceWeightText((
+        size: null,
+        quantity: product.servingQuantity,
+        quantityUnit: product.servingQuantityUnit,
+      )),
       kcalText: formatManualProductDouble(nutrition?.per100Kcal),
       saturatedFatText: formatManualProductDouble(
         nutrition?.per100SaturatedFat,

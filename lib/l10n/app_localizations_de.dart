@@ -223,6 +223,14 @@ class AppLocalizationsDe extends AppLocalizations {
       'Barcode – scannen oder „Hat keinen“';
 
   @override
+  String productMissingValuesHint(String values) {
+    return 'Fehlt: $values – ergänzen';
+  }
+
+  @override
+  String get productPieceWeightLabel => 'Gramm pro Stück';
+
+  @override
   String get productEditorPhotoReadName => 'Name';
 
   @override

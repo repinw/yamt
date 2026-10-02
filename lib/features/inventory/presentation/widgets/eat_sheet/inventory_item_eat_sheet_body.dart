@@ -4,10 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/product_missing_values.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_submission.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_missing_values_hint.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
@@ -44,6 +46,7 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.onSelectionChanged,
     this.header,
     this.showAmount = true,
+    this.onCompleteValues,
     super.key,
   });
 
@@ -111,6 +114,11 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
 
   /// Whether the page shows its amount ruler.
   final bool showAmount;
+
+  /// Opens the editor from the line that names the item's missing values.
+  /// The line is hidden when null. A stock item also checks its package
+  /// size; a newly picked product does not, since eating needs no package.
+  final VoidCallback? onCompleteValues;
 
   @override
   ConsumerState<InventoryItemEatSheetBody> createState() =>
@@ -202,6 +210,11 @@ class _InventoryItemEatSheetBodyState
               caption: widget.headerCaption,
               imageBytes: widget.headerImageBytes,
             ),
+        if (_missingValues case final missing? when missing.isNotEmpty)
+          EatMissingValuesHint(
+            missing: missing,
+            onPressed: widget.onCompleteValues!,
+          ),
         if (widget.showAmount)
           InventoryItemEatAmountSection(
             state: state,
@@ -213,6 +226,16 @@ class _InventoryItemEatSheetBodyState
           ),
         ?footer,
       ],
+    );
+  }
+
+  List<ProductMissingValue>? get _missingValues {
+    if (widget.onCompleteValues == null || widget.header != null) {
+      return null;
+    }
+    return missingItemValues(
+      widget.item,
+      checkPackageSize: !widget.hasOpenStock,
     );
   }
 

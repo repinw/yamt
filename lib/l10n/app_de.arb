@@ -95,6 +95,8 @@
   "productEditorMissing": "Noch offen: {fields}",
   "productEditorMissingValues": "{count} Nährwerte",
   "productEditorMissingBarcode": "Barcode – scannen oder „Hat keinen“",
+  "productMissingValuesHint": "Fehlt: {values} – ergänzen",
+  "productPieceWeightLabel": "Gramm pro Stück",
   "productEditorPhotoReadName": "Name",
   "productEditorPhotoReadValues": "{count, plural, =1{1 Wert} other{{count} Werte}}",
   "productEditorPhotoRead": "Erkannt",

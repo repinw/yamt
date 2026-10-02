@@ -109,6 +109,15 @@
     }
   },
   "productEditorMissingBarcode": "Barcode – scan or “Has none”",
+  "productMissingValuesHint": "Missing: {values} – add",
+  "@productMissingValuesHint": {
+    "placeholders": {
+      "values": {
+        "type": "String"
+      }
+    }
+  },
+  "productPieceWeightLabel": "Grams per piece",
   "productEditorPhotoReadName": "Name",
   "productEditorPhotoReadValues": "{count, plural, =1{1 value} other{{count} values}}",
   "@productEditorPhotoReadValues": {

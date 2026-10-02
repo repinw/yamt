@@ -6,6 +6,7 @@ import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/presentation/widgets/product_nutrition_summary.dart';
 import 'package:yamt/features/scanner/presentation/widgets/receipt_item_leading_avatar.dart';
+import 'package:yamt/features/scanner/presentation/widgets/receipt_item_missing_values_line.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Card representing a single line item with traffic-light status.
@@ -90,6 +91,7 @@ class ReceiptReviewItemCard extends StatelessWidget {
                       item.packageWeight ?? item.matchedProduct!.packageSize,
                 ),
               ],
+              ReceiptItemMissingValuesLine(item: item),
             ],
           ),
         ),

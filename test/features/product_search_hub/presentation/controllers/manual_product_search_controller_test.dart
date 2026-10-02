@@ -902,4 +902,36 @@ void main() {
     expect(state.polyunsaturatedFatText, isEmpty);
     expect(state.availableOptionalNutritionTypes, isEmpty);
   });
+
+  test('the grams of one piece start from a serving in grams and become the '
+      'serving on save', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+
+    const selectedProduct = OffProductSearchResult(
+      code: '4000000000017',
+      name: 'Eier',
+      score: 100,
+      packageWeight: '10 Stück',
+      servingSize: '1 Ei (60 g)',
+      servingQuantity: 60,
+      servingQuantityUnit: 'g',
+    );
+    final config = InventoryReceiptManualProductConfig(
+      item: _item(),
+      selectedProduct: selectedProduct,
+    );
+    final provider = inventoryReceiptManualProductControllerProvider(config);
+    final notifier = container.read(provider.notifier)
+      ..applyScannedProduct(selectedProduct);
+
+    expect(container.read(provider).pieceWeightText, '60');
+
+    final payload = (notifier..updatePieceWeightText('55')).buildSavePayload();
+
+    expect(payload?.item.amountUnit, InventoryAmountUnit.piece);
+    expect(payload?.item.servingQuantity, 55);
+    expect(payload?.item.servingQuantityUnit, 'g');
+    expect(payload?.item.servingSize, isNull);
+  });
 }

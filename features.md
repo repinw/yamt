@@ -361,6 +361,19 @@ and feature description docs. This is product-facing; architecture rules stay in
   input per 100 g. All seven values of the EU label (energy, fat, saturates,
   carbohydrate, sugars, protein, salt) are required; a missing one is
   framed. Polyunsaturates and fibre come from the "+" row.
+- A package size in pieces ("10 Stück") shows a "Grams per piece" input.
+  The grams become the product's serving, so the eat page offers one piece
+  in grams; an OFF serving such as "1 Ei (60 g)" fills it.
+- Missing values hint: after a pick, a quiet line names what the product
+  lacks ("Missing: Package size, Salt – add") and opens the editor on tap.
+  It never blocks. Missing are the seven EU label values, and on the Vorrat
+  pages also the package size: none, or pieces without grams per piece (OFF
+  often has only "1 Stück"). The line shows on the Vorrat page after a pick
+  and on a stock item's page; the eat page of a picked product checks only
+  the nutrition. The receipt review names a missing package size and the
+  nutrition values on the item card; grams per piece it cannot know.
+- The OFF search keeps a serving as a serving: a product without a package
+  size stays without one instead of taking the serving as its size.
 - Two photo tiles fill the editor: the package front (server template
   `product-front-template` reads name, brand, and package size) and the
   nutrition table (`nutrition-label-template`). The barcode scanner looks at

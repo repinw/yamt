@@ -13,6 +13,9 @@ enum ManualProductFormField {
   /// Package size.
   weightAmount('receipt_review_manual_weight_field'),
 
+  /// Grams of one piece, shown for a package counted in pieces.
+  pieceWeight('receipt_review_manual_piece_weight_field'),
+
   /// Barcode.
   barcode('receipt_review_manual_barcode_field'),
 
@@ -61,7 +64,12 @@ enum ManualProductFormField {
     sugar ||
     protein ||
     salt => true,
-    brand || weightAmount || barcode || polyunsaturatedFat || fiber => false,
+    brand ||
+    weightAmount ||
+    pieceWeight ||
+    barcode ||
+    polyunsaturatedFat ||
+    fiber => false,
   };
 
   /// Text of this input in [state].
@@ -69,6 +77,7 @@ enum ManualProductFormField {
     brand => state.brandText,
     name => state.nameText,
     weightAmount => state.weightAmount,
+    pieceWeight => state.pieceWeightText,
     barcode => state.barcode,
     kcal => state.kcalText,
     fat => state.fatText,

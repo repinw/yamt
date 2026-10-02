@@ -458,6 +458,18 @@ abstract class AppLocalizations {
   /// **'Barcode – scan or “Has none”'**
   String get productEditorMissingBarcode;
 
+  /// No description provided for @productMissingValuesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing: {values} – add'**
+  String productMissingValuesHint(String values);
+
+  /// No description provided for @productPieceWeightLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Grams per piece'**
+  String get productPieceWeightLabel;
+
   /// No description provided for @productEditorPhotoReadName.
   ///
   /// In en, this message translates to:

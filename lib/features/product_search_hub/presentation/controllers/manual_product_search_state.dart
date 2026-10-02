@@ -16,6 +16,7 @@ class InventoryReceiptManualProductState {
     this.hasNoBarcode = false,
     this.weightAmount = '',
     this.selectedWeightUnit,
+    this.pieceWeightText = '',
     this.kcalText = '',
     this.saturatedFatText = '',
     this.polyunsaturatedFatText = '',
@@ -50,6 +51,9 @@ class InventoryReceiptManualProductState {
 
   /// The selected weight unit.
   final InventoryAmountUnit? selectedWeightUnit;
+
+  /// Grams of one piece, for a package counted in pieces.
+  final String pieceWeightText;
 
   /// The kcal text.
   final String kcalText;
@@ -165,6 +169,7 @@ class InventoryReceiptManualProductState {
     bool? hasNoBarcode,
     String? weightAmount,
     InventoryAmountUnit? selectedWeightUnit,
+    String? pieceWeightText,
     String? kcalText,
     String? saturatedFatText,
     String? polyunsaturatedFatText,
@@ -188,6 +193,7 @@ class InventoryReceiptManualProductState {
       hasNoBarcode: hasNoBarcode ?? this.hasNoBarcode,
       weightAmount: weightAmount ?? this.weightAmount,
       selectedWeightUnit: selectedWeightUnit ?? this.selectedWeightUnit,
+      pieceWeightText: pieceWeightText ?? this.pieceWeightText,
       kcalText: kcalText ?? this.kcalText,
       saturatedFatText: saturatedFatText ?? this.saturatedFatText,
       polyunsaturatedFatText:

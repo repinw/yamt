@@ -188,6 +188,7 @@ class _EditableEatPage extends StatelessWidget {
       hasOpenStock: true,
       confirmLabel: confirmLabel,
       onSubmitted: (result) => Navigator.of(context).pop(_EatSubmitted(result)),
+      onCompleteValues: () => Navigator.of(context).pop(const _EatEdit()),
       footer: EatActionCard(
         title: l10n.eatPageItemTitle,
         actions: [

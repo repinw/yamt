@@ -1,12 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 import 'package:yamt/features/scanner/presentation/receipt_review_page.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 import '../fakes/fake_receipt_manual_product_picker.dart';
 import '../fakes/fake_receipt_product_resolver.dart';
@@ -52,7 +54,12 @@ void main() {
             receiptStorageGatewayProvider.overrideWithValue(fakeGateway),
             receiptManualProductPickerProvider.overrideWithValue(fakePicker),
           ],
-          child: MaterialApp(home: ReceiptReviewPage(initialReceipt: receipt)),
+          child: MaterialApp(
+            locale: const Locale('de'),
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: ReceiptReviewPage(initialReceipt: receipt),
+          ),
         ),
       );
     }
@@ -75,7 +82,7 @@ void main() {
         find.byKey(const Key('save_receipt_button')),
       );
       expect(saveButton.onPressed, isNull);
-      expect(find.textContaining('1 Position(en) offen'), findsOneWidget);
+      expect(find.text('Noch 1 Position offen'), findsOneWidget);
     });
 
     testWidgets('confirming suggestion enables save button and saves receipt', (
@@ -94,7 +101,7 @@ void main() {
         find.byKey(const Key('save_receipt_button')),
       );
       expect(saveButton.onPressed, isNotNull);
-      expect(find.textContaining('offen'), findsNothing);
+      expect(find.textContaining('Position offen'), findsNothing);
 
       // Tap save
       await tester.tap(find.byKey(const Key('save_receipt_button')));
@@ -133,7 +140,7 @@ void main() {
       await pumpTestWidget(tester, receipt: receiptWithTwo);
 
       // 1 item is open
-      expect(find.textContaining('1 Position(en) offen'), findsOneWidget);
+      expect(find.text('Noch 1 Position offen'), findsOneWidget);
 
       // Tap card to open edit sheet
       await tester.tap(find.text('UNBEKANNT'));
