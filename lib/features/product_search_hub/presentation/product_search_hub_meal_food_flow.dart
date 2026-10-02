@@ -16,9 +16,7 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Key of the edit line on the eat page of a picked food.
-const productSearchHubMealFoodEditKey = Key(
-  'product_search_hub_meal_food_edit',
-);
+const productSearchHubEatPageEditKey = Key('product_search_hub_eat_page_edit');
 
 const _mealFoodIds = Uuid();
 
@@ -188,7 +186,7 @@ class _EditableEatPage extends StatelessWidget {
         title: l10n.eatPageItemTitle,
         actions: [
           (
-            key: productSearchHubMealFoodEditKey,
+            key: productSearchHubEatPageEditKey,
             icon: Icons.edit_outlined,
             label: l10n.inventoryReceiptReviewEditAction,
             color: FoodLabelColors.of(context).ink,

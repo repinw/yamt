@@ -159,9 +159,9 @@ Future<void> _openMilkEatPage(WidgetTester tester) async {
 
 /// "Bearbeiten" opens the editor; leaving it comes back to the eat page.
 Future<void> _editAndComeBack(WidgetTester tester) async {
-  await tester.ensureVisible(find.byKey(productSearchHubMealFoodEditKey));
+  await tester.ensureVisible(find.byKey(productSearchHubEatPageEditKey));
   await _pumpVisibleStep(tester);
-  await tester.tap(find.byKey(productSearchHubMealFoodEditKey));
+  await tester.tap(find.byKey(productSearchHubEatPageEditKey));
   await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
   expect(find.byKey(ManualProductDetailsForm.saveKey), findsOneWidget);
 
