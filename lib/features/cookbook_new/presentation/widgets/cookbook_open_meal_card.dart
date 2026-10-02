@@ -1,7 +1,9 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_meal_picture.dart';
@@ -10,7 +12,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Framed card of a meal that is still in the pot: its picture, its name,
 /// how many rows are open since when, and "Weiter".
-class CookbookOpenMealCard extends StatelessWidget {
+class CookbookOpenMealCard extends ConsumerWidget {
   /// Creates the card for [meal].
   const new({required this.meal, required this.onContinue, super.key});
 
@@ -21,12 +23,16 @@ class CookbookOpenMealCard extends StatelessWidget {
   final VoidCallback onContinue;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
-    final since = MaterialLocalizations.of(context)
-        .formatTimeOfDay(TimeOfDay.fromDateTime(meal.createdAt.toLocal()));
+    final localizations = MaterialLocalizations.of(context);
+    final created = meal.createdAt.toLocal();
+    // A pot can stay open for days; then the day says more than the time.
+    final since = DateUtils.isSameDay(created, ref.watch(clockProvider)())
+        ? localizations.formatTimeOfDay(TimeOfDay.fromDateTime(created))
+        : localizations.formatShortMonthDay(created);
 
     return DecoratedBox(
       decoration: BoxDecoration(
