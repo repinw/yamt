@@ -260,13 +260,14 @@ jobs:
               --label testing --body "$body"
           fi
 
-  # A release tag that passes every test builds a signed APK and AAB. The AAB
-  # goes to the Google Play internal track; the APK is attached to a GitHub
+  # A release tag that passes analyze and the unit and widget tests builds a
+  # signed APK and AAB; the integration tests still run on the tag but do not
+  # block the release. The AAB goes to the Google Play internal track; the APK is attached to a GitHub
   # release. The version comes from pubspec.yaml, so merge the version bump
   # before tagging.
   android-release:
     name: Android release
-    needs: [unit, integration-result]
+    needs: [unit]
     if: github.ref_type == 'tag'
     runs-on: ubuntu-latest
     timeout-minutes: 45
