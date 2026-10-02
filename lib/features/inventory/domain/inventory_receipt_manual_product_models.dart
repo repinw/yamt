@@ -1,6 +1,7 @@
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 
 /// Initial action for the manual product launcher.
 enum InventoryReceiptManualProductInitialIntent {
@@ -38,6 +39,7 @@ class InventoryReceiptManualProductResult {
     this.globalPackageWeight,
     this.skipMissingBarcodePrompt = false,
     this.eatSelection,
+    this.eatRequest,
   });
 
   /// The item.
@@ -64,8 +66,26 @@ class InventoryReceiptManualProductResult {
   /// Generic eat selection to complete after saving.
   final EatSelection? eatSelection;
 
+  /// Eat request entered on the eat page before saving. It wins over
+  /// [eatSelection] and keeps portion details.
+  final InventoryItemEatRequest? eatRequest;
+
   /// The same result for [item], for example with another stock amount.
   InventoryReceiptManualProductResult withItem(InventoryItem item) {
+    return _copy(item: item, eatRequest: eatRequest);
+  }
+
+  /// The same result, eaten as entered in [request].
+  InventoryReceiptManualProductResult withEatRequest(
+    InventoryItemEatRequest request,
+  ) {
+    return _copy(item: item, eatRequest: request);
+  }
+
+  InventoryReceiptManualProductResult _copy({
+    required InventoryItem item,
+    required InventoryItemEatRequest? eatRequest,
+  }) {
     return InventoryReceiptManualProductResult(
       item: item,
       action: action,
@@ -75,6 +95,7 @@ class InventoryReceiptManualProductResult {
       globalPackageWeight: globalPackageWeight,
       skipMissingBarcodePrompt: skipMissingBarcodePrompt,
       eatSelection: eatSelection,
+      eatRequest: eatRequest,
     );
   }
 }

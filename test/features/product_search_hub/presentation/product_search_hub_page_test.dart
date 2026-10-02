@@ -419,6 +419,41 @@ void main() {
     expect(childArgs, isNull);
     expect(inventoryController.addedItems, isEmpty);
     expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
+    expect(find.byKey(productSearchHubMealFoodEditKey), findsOneWidget);
+  });
+
+  testWidgets('diary eat page edits the food and comes back', (tester) async {
+    ManualProductSearchRouteArgs? childArgs;
+    final edited = InventoryReceiptManualProductResult(
+      item: _item(id: 'edited-milk', name: 'Oat milk', weight: '1 l'),
+      action: InventoryReceiptManualProductAction.eatNow,
+      requiresGlobalPersistence: false,
+    );
+
+    await _pumpRouteHarness(
+      tester,
+      args: _diaryArgs(),
+      searchResults: [_searchProduct()],
+      childRouteResults: [edited],
+      onChildRouteArgs: (args) => childArgs = args,
+    );
+
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(productSearchHubMealFoodEditKey));
+    await tester.tap(find.byKey(productSearchHubMealFoodEditKey));
+    await tester.pumpAndSettle();
+
+    expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+
+    await tester.tap(find.byKey(const Key('return_child_result')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
+    expect(find.text('Oat milk'), findsWidgets);
   });
 
   testWidgets('diary created product log-only save closes the page', (
@@ -476,6 +511,44 @@ void main() {
     expect(childArgs.last.flow, ManualProductSearchChildFlow.editor);
     expect(childArgs.last.item.id, 'created-item');
     expect(childArgs.last.item.name, 'Skyr');
+  });
+
+  testWidgets('back on the eat page keeps an edit of a created product', (
+    tester,
+  ) async {
+    final childArgs = <ManualProductSearchRouteArgs>[];
+
+    await _pumpRouteHarness(
+      tester,
+      args: _diaryArgs(),
+      childRouteResults: [
+        _diarySheetResult(id: 'created-item', name: 'Skyr'),
+        _diarySheetResult(id: 'created-item', name: 'Skyr natur'),
+      ],
+      inventoryController: _SuccessfulInventoryItemsController(),
+      firebaseAuth: _signedInAuth(),
+      commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+      onChildRouteArgs: childArgs.add,
+    );
+
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('return_child_result')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(productSearchHubMealFoodEditKey));
+    await tester.tap(find.byKey(productSearchHubMealFoodEditKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('return_child_result')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
+
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    expect(find.text('product search child route'), findsOneWidget);
+    expect(childArgs.last.item.name, 'Skyr natur');
   });
 
   testWidgets('diary add-more eat stays on the page with overlay', (

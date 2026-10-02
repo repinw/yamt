@@ -31,11 +31,11 @@ import 'package:yamt/features/product_search_hub/presentation/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_result_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_save_review_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_lookup.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_selection_state.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_stock_review_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_view/product_search_hub_search_view.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -169,24 +169,25 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   Future<void> _completeCreatedEntry(ProductSearchHubEditedResult entry) async {
     ProductSearchHubEditedResult? current = entry;
     while (current != null) {
-      final wasCanceled = await _completeEditedResult(
+      final canceled = await _completeEditedResult(
         sourceKey: current.sourceKey,
         result: current.result,
       );
-      if (!wasCanceled || !mounted) {
+      if (canceled == null || !mounted) {
         return;
       }
       current = await reopenProductSearchHubCreatedEntry(
         context: context,
         args: widget.args,
-        result: current.result,
+        result: canceled,
       );
     }
   }
 
-  /// Completes [result] for the route mode. Returns whether the user canceled
-  /// the follow-up dialog.
-  Future<bool> _completeEditedResult({
+  /// Completes [result] for the route mode. When the user cancels the
+  /// follow-up dialog, returns the food with the edits made there.
+  Future<inventory_models.InventoryReceiptManualProductResult?>
+  _completeEditedResult({
     required String sourceKey,
     required inventory_models.InventoryReceiptManualProductResult result,
   }) async {
@@ -196,11 +197,11 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
         'or a save is running (saving=$_isMutatingSelection).',
         name: 'ProductSearchHubPage',
       );
-      return false;
+      return null;
     }
     if (widget.args.mode == ProductSearchHubMode.selection) {
       _closeHub(result);
-      return false;
+      return null;
     }
     if (widget.args.mode == ProductSearchHubMode.mealFood) {
       final pick = await pickProductSearchHubMealFood(
@@ -209,20 +210,15 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
         result: result,
       );
       if (pick != null && mounted) _closeHub(pick);
-      return pick == null;
+      return pick == null ? result : null;
     }
-    var completed = result;
-    if (widget.args.mode == ProductSearchHubMode.inventory) {
-      final reviewed = await reviewProductSearchHubStockResult(
-        context: context,
-        args: widget.args,
-        result: result,
-      );
-      if (reviewed == null || !mounted) {
-        return true;
-      }
-      completed = reviewed;
-    }
+    final reviewed = await reviewProductSearchHubResultBeforeSave(
+      context: context,
+      args: widget.args,
+      result: result,
+      continuesBatch: _selectionState.selections.isNotEmpty,
+    );
+    if (reviewed.closed || !mounted) return reviewed.result;
 
     setState(() => _isMutatingSelection = true);
 
@@ -230,11 +226,11 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       context: context,
       args: widget.args,
       sourceKey: sourceKey,
-      result: completed,
-      continueDiaryBatch: _selectionState.selections.isNotEmpty,
+      result: reviewed.result,
+      continueDiaryBatch: reviewed.continuesBatch,
     );
     if (!context.mounted) {
-      return false;
+      return null;
     }
     final shouldContinueBatch =
         completion.shouldCloseHub && _selectionState.selections.isNotEmpty;
@@ -249,7 +245,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     if (completion.shouldCloseHub && !shouldContinueBatch) {
       _closeHub(true);
     }
-    return completion.wasCanceled;
+    return completion.wasCanceled ? reviewed.result : null;
   }
 
   Future<void> _removeSavedSelection(

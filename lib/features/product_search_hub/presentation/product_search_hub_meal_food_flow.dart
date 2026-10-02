@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
@@ -15,7 +15,7 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_editor_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Key of the edit line on the meal food eat page.
+/// Key of the edit line on the eat page of a picked food.
 const productSearchHubMealFoodEditKey = Key(
   'product_search_hub_meal_food_edit',
 );
@@ -33,31 +33,100 @@ Future<InventoryMealFoodPick?> pickProductSearchHubMealFood({
   required ProductSearchHubRouteArgs args,
   required InventoryReceiptManualProductResult result,
 }) async {
-  var current = result.withItem(result.item.copyWith(id: _mealFoodIds.v4()));
+  final l10n = AppLocalizations.of(context)!;
+  final picked = await _eatWithEdit(
+    context: context,
+    args: args,
+    result: result.withItem(result.item.copyWith(id: _mealFoodIds.v4())),
+    page: (item) => _EditableEatPage(
+      item: item,
+      confirmIntent: InventoryItemEatSheetIntent.logOnly,
+      confirmLabel: l10n.eatPageCombineAddFood,
+    ),
+  );
+  final eat = picked.eat;
+  if (eat == null) return null;
+  return (result: picked.result, request: eat.request);
+}
+
+/// Shows the eat page for a food picked in the diary. "Bearbeiten" there
+/// opens the editor and comes back to the eat page with the edited food.
+///
+/// Returns the food with the entered eat request and whether the user wants
+/// to add more. When the user closes the page, `closed` is true and the
+/// result holds the last edit.
+Future<
+  ({InventoryReceiptManualProductResult result, bool closed, bool addMore})
+>
+eatProductSearchHubDiaryFood({
+  required BuildContext context,
+  required ProductSearchHubRouteArgs args,
+  required InventoryReceiptManualProductResult result,
+  required bool continuesBatch,
+}) async {
+  final l10n = AppLocalizations.of(context)!;
+  final picked = await _eatWithEdit(
+    context: context,
+    args: args,
+    result: result,
+    page: (item) => _EditableEatPage(
+      item: item,
+      confirmIntent: continuesBatch
+          ? InventoryItemEatSheetIntent.addMore
+          : InventoryItemEatSheetIntent.logOnly,
+      addMoreActionText: continuesBatch
+          ? null
+          : l10n.inventoryItemEatSheetAddMoreAction,
+      initialLoggedAt: args.preselectedLoggedAt,
+      initialMealType: args.preselectedMealType,
+    ),
+  );
+  final eat = picked.eat;
+  if (eat == null) return (result: picked.result, closed: true, addMore: false);
+  return (
+    result: picked.result.withEatRequest(eat.request),
+    closed: false,
+    addMore: eat.addMoreRequested,
+  );
+}
+
+typedef _EatWithEditResult = ({
+  InventoryReceiptManualProductResult result,
+  InventoryItemEatSheetResult? eat,
+});
+
+/// Loops between the eat page and the editor until the user eats on the
+/// page or closes it. Without `eat`, the page was closed; the result still
+/// holds the last edit.
+Future<_EatWithEditResult> _eatWithEdit({
+  required BuildContext context,
+  required ProductSearchHubRouteArgs args,
+  required InventoryReceiptManualProductResult result,
+  required Widget Function(InventoryItem item) page,
+}) async {
+  var current = result;
   while (true) {
     final step = await Navigator.of(context, rootNavigator: true)
-        .push<_MealFoodStep>(
-          MaterialPageRoute<_MealFoodStep>(
+        .push<_EatStep>(
+          MaterialPageRoute<_EatStep>(
             fullscreenDialog: true,
-            builder: (_) => _MealFoodEatPage(item: current.item),
+            builder: (_) => page(current.item),
           ),
         );
-    if (!context.mounted) {
-      return null;
+    if (!context.mounted || step == null) {
+      return (result: current, eat: null);
     }
     switch (step) {
-      case null:
-        return null;
-      case _MealFoodAdded(:final request):
-        return (result: current, request: request);
-      case _MealFoodEdit():
+      case _EatSubmitted(:final result):
+        return (result: current, eat: result);
+      case _EatEdit():
         final edited = await openProductSearchHubCustomProductEditor(
           context: context,
           draftItem: current.item,
           args: args,
         );
         if (!context.mounted) {
-          return null;
+          return (result: current, eat: null);
         }
         if (edited != null) {
           current = edited;
@@ -66,41 +135,55 @@ Future<InventoryMealFoodPick?> pickProductSearchHubMealFood({
   }
 }
 
-sealed class _MealFoodStep {
+sealed class _EatStep {
   const new();
 }
 
-final class _MealFoodAdded extends _MealFoodStep {
-  const new(this.request);
+final class _EatSubmitted extends _EatStep {
+  const new(this.result);
 
-  final InventoryItemEatRequest request;
+  final InventoryItemEatSheetResult result;
 }
 
-final class _MealFoodEdit extends _MealFoodStep {
+final class _EatEdit extends _EatStep {
   const new();
 }
 
-/// Eat page of a picked food. Its button adds the food to the meal instead
-/// of logging it. The food has no stock yet, so its amount is open.
-class _MealFoodEatPage extends StatelessWidget {
-  const new({required this.item});
+/// Eat page of a picked food with a "Bearbeiten" line. The food has no stock
+/// yet, so its amount is open.
+class _EditableEatPage extends StatelessWidget {
+  const new({
+    required this.item,
+    required this.confirmIntent,
+    this.confirmLabel,
+    this.addMoreActionText,
+    this.initialLoggedAt,
+    this.initialMealType,
+  });
 
   final InventoryItem item;
+  final InventoryItemEatSheetIntent confirmIntent;
+  final String? confirmLabel;
+  final String? addMoreActionText;
+  final DateTime? initialLoggedAt;
+  final MealType? initialMealType;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     return InventoryItemEatSheetBody(
       item: item,
-      confirmIntent: InventoryItemEatSheetIntent.logOnly,
+      confirmIntent: confirmIntent,
       initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
         item: item,
         rawWeight: item.weight,
       ),
+      initialLoggedAt: initialLoggedAt,
+      initialMealType: initialMealType,
+      addMoreActionText: addMoreActionText,
       hasOpenStock: true,
-      confirmLabel: l10n.eatPageCombineAddFood,
-      onSubmitted: (result) =>
-          Navigator.of(context).pop(_MealFoodAdded(result.request)),
+      confirmLabel: confirmLabel,
+      onSubmitted: (result) => Navigator.of(context).pop(_EatSubmitted(result)),
       footer: EatActionCard(
         title: l10n.eatPageItemTitle,
         actions: [
@@ -109,7 +192,7 @@ class _MealFoodEatPage extends StatelessWidget {
             icon: Icons.edit_outlined,
             label: l10n.inventoryReceiptReviewEditAction,
             color: FoodLabelColors.of(context).ink,
-            onPressed: () => Navigator.of(context).pop(const _MealFoodEdit()),
+            onPressed: () => Navigator.of(context).pop(const _EatEdit()),
           ),
         ],
       ),
