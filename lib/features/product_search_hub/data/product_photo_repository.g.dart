@@ -59,4 +59,4 @@ final class ProductPhotoRepositoryProvider
 }
 
 String _$productPhotoRepositoryHash() =>
-    r'e7853c1f956e86e815d9a0e98f387cafe610a227';
+    r'64fa5a8efc021b4e3c80d5a707a8951a0dc4190c';
