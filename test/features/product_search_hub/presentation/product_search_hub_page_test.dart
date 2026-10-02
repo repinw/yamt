@@ -419,7 +419,7 @@ void main() {
     expect(childArgs, isNull);
     expect(inventoryController.addedItems, isEmpty);
     expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
-    expect(find.byKey(productSearchHubMealFoodEditKey), findsOneWidget);
+    expect(find.byKey(productSearchHubEatPageEditKey), findsOneWidget);
   });
 
   testWidgets('diary eat page edits the food and comes back', (tester) async {
@@ -443,8 +443,8 @@ void main() {
       find.byKey(const Key('product_search_hub_search_result_4006381333931')),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(productSearchHubMealFoodEditKey));
-    await tester.tap(find.byKey(productSearchHubMealFoodEditKey));
+    await tester.ensureVisible(find.byKey(productSearchHubEatPageEditKey));
+    await tester.tap(find.byKey(productSearchHubEatPageEditKey));
     await tester.pumpAndSettle();
 
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
@@ -537,8 +537,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('return_child_result')));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(productSearchHubMealFoodEditKey));
-    await tester.tap(find.byKey(productSearchHubMealFoodEditKey));
+    await tester.ensureVisible(find.byKey(productSearchHubEatPageEditKey));
+    await tester.tap(find.byKey(productSearchHubEatPageEditKey));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('return_child_result')));
     await tester.pumpAndSettle();
@@ -729,7 +729,7 @@ void main() {
 
     expect(childArgs, isNull);
     expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
-    expect(find.byKey(productSearchHubMealFoodEditKey), findsOneWidget);
+    expect(find.byKey(productSearchHubEatPageEditKey), findsOneWidget);
 
     await tester.enterText(
       find.byKey(const Key('eat_page_amount_field')),
@@ -803,8 +803,8 @@ void main() {
       find.byKey(const Key('product_search_hub_search_result_4006381333931')),
     );
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(productSearchHubMealFoodEditKey));
-    await tester.tap(find.byKey(productSearchHubMealFoodEditKey));
+    await tester.ensureVisible(find.byKey(productSearchHubEatPageEditKey));
+    await tester.tap(find.byKey(productSearchHubEatPageEditKey));
     await tester.pumpAndSettle();
 
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
