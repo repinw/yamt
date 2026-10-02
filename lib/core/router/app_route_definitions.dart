@@ -14,6 +14,7 @@ import 'package:yamt/features/calories/presentation/calorie_goal_archive_page.da
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/tdee_analytics_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
@@ -190,6 +191,11 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.homeFreeCooking,
       builder: (context, state) => const FreeCookingPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.homeCookedMeal,
+      builder: (context, state) =>
+          CookedMealPage(mealId: state.pathParameters['mealId'] ?? ''),
     ),
     GoRoute(
       path: AppRoutes.homeKitchenUtensils,

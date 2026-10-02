@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
@@ -27,7 +28,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Frei kochen": a meal without a recipe. The cook says or types the
 /// ingredients while cooking, sees which ones the Vorrat holds, and "Kochen"
-/// saves the meal in the Vorrat with the missing rows left open.
+/// saves the meal in the Vorrat with the missing rows left open, then opens
+/// the "Gekocht" step.
 class FreeCookingPage extends ConsumerStatefulWidget {
   /// Creates the page.
   const new({super.key});
@@ -185,25 +187,24 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
       _addText(pending);
     }
     final rows = ref.read(freeCookingRowsProvider(l10n.localeName)).value;
-    final saved =
-        rows != null &&
-        rows.isNotEmpty &&
-        await ref
-            .read(freeCookingControllerProvider.notifier)
-            .cook(name: name, rows: rows);
+    final mealId = rows == null || rows.isEmpty
+        ? null
+        : await ref
+              .read(freeCookingControllerProvider.notifier)
+              .cook(name: name, rows: rows);
     if (!mounted) {
       return;
     }
     setState(() => _isCooking = false);
-    if (!saved) {
+    if (mealId == null) {
       messenger.showAppSnackBar(
         l10n.freeCookingSaveFailed,
         tone: AppSnackBarTone.error,
       );
       return;
     }
-    context.pop();
-    messenger.showAppSnackBar(l10n.freeCookingSaved(name));
+    // Straight on to the "Gekocht" step; closing it leaves the meal in the pot.
+    context.pushReplacement(AppRoutes.homeCookedMealPath(mealId));
   }
 
   @override

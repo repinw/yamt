@@ -11,6 +11,7 @@ templates list and later the cooking flow.
 - The Kochbuch page, its sections, and its cook actions.
 - The "Frei kochen" page: the draft rows of a meal without a recipe, how
   spoken or typed text is cut into rows, and their stock state.
+- The "Gekocht" page: portions, pot, and food weight of a meal in the pot.
 - The overview that sorts saved templates into Vorlagen and recipes and marks
   which foods the Vorrat holds.
 
@@ -32,7 +33,10 @@ templates list and later the cooking flow.
 - A template with recipe ingredients is a recipe; one without is a Vorlage.
 - A food counts as in stock when the ingredient matcher finds a Vorrat item
   that is not used up. Ignored recipe ingredients are left out.
-- "Im Topf" shows meals with open rows and portions left.
+- "Im Topf" shows meals that are still in the pot or have open rows, and
+  have portions left.
+- The food weight is the pot on the scale minus the empty utensil; without
+  weighing, no weight and no empty pot weight are stored.
 - Free cooking cuts text into rows before each amount and at commas, line
   breaks, and "und"/"and". An amount at the end of a row stays with it.
 - A row counts as in stock only when it has an amount in a unit that its

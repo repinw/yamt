@@ -48,5 +48,20 @@ void main() {
 
       expect(overview.openMeals.map((meal) => meal.id), ['newer', 'older']);
     });
+
+    test('lists meals still in the pot without open rows', () {
+      final cooking = preparedMealTestData(id: 'cooking').copyWith(inPot: true);
+
+      final overview = CookbookOverview.fromMeals(
+        savedTemplates: const [],
+        meals: [
+          cooking,
+          preparedMealTestData(id: 'cooked'),
+        ],
+        isInStock: (_) => true,
+      );
+
+      expect(overview.openMeals.single.id, 'cooking');
+    });
   });
 }

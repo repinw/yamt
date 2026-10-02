@@ -82,6 +82,8 @@ class PreparedMeal {
         const <String, RecipeIngredientAmountConversion>{},
     this.pendingRecipeIngredients = const <String>[],
     this.finalNetWeight,
+    this.inPot,
+    this.potTareWeight,
   });
 
   /// Creates a [PreparedMeal] for from json.
@@ -135,6 +137,19 @@ class PreparedMeal {
   /// The cooked net weight in g/ml after tare.
   @JsonKey(fromJson: _readNullableInt)
   final int? finalNetWeight;
+
+  /// `true` from "Kochen" on the free cooking page until the cook marks the
+  /// meal as cooked; absent on every other meal.
+  @JsonKey(includeIfNull: false)
+  final bool? inPot;
+
+  /// Empty weight in grams of the pot the meal was weighed in, so the pot can
+  /// be weighed again when eating.
+  @JsonKey(includeIfNull: false)
+  final int? potTareWeight;
+
+  /// Whether the meal is still cooking.
+  bool get isInPot => inPot ?? false;
 
   /// Remaining cooked net weight in g/ml.
   ///
@@ -205,6 +220,8 @@ class PreparedMeal {
     recipeIngredientAmountConversions,
     List<String>? pendingRecipeIngredients,
     Object? finalNetWeight = _keepValue,
+    Object? inPot = _keepValue,
+    Object? potTareWeight = _keepValue,
     int? totalPortions,
     num? remainingPortions,
     double? totalKcal,
@@ -239,6 +256,10 @@ class PreparedMeal {
       finalNetWeight: finalNetWeight == _keepValue
           ? this.finalNetWeight
           : finalNetWeight as int?,
+      inPot: inPot == _keepValue ? this.inPot : inPot as bool?,
+      potTareWeight: potTareWeight == _keepValue
+          ? this.potTareWeight
+          : potTareWeight as int?,
       totalPortions: totalPortions ?? this.totalPortions,
       remainingPortions: remainingPortions ?? this.remainingPortions,
       totalKcal: totalKcal ?? this.totalKcal,
@@ -348,6 +369,8 @@ class PreparedMeal {
               pendingRecipeIngredients,
             ) &&
             other.finalNetWeight == finalNetWeight &&
+            other.inPot == inPot &&
+            other.potTareWeight == potTareWeight &&
             other.remainingNetWeight == remainingNetWeight &&
             other.totalPortions == totalPortions &&
             other.remainingPortions == remainingPortions &&
@@ -378,6 +401,8 @@ class PreparedMeal {
       const DeepCollectionEquality().hash(recipeIngredientAmountConversions),
       const ListEquality<String>().hash(pendingRecipeIngredients),
       finalNetWeight,
+      inPot,
+      potTareWeight,
       remainingNetWeight,
       totalPortions,
       remainingPortions,

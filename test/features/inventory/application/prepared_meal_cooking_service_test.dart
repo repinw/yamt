@@ -36,11 +36,79 @@ void main() {
     expect(meal.components.single.usedAmount, 200);
     expect(meal.pendingRecipeIngredients.single, contains('Hähnchen'));
     expect(meal.totalKcal, 260);
+    expect(meal.isInPot, isTrue);
     expect(items.items.single.currentAmount, 800);
     expect(
       activity.events.single.type,
       InventoryActivityEventType.itemUsedInPreparedMeal,
     );
+  });
+
+  test('finishCooking sets portions and weights and leaves the pot', () async {
+    final meals = _FakeMealRepository();
+    final service = _service(
+      meals,
+      _FakeInventoryRepository([_rice()]),
+      _FakeActivityRepository(),
+    );
+    await service.cook(
+      name: 'Reis',
+      ingredients: const ['200 g Reis'],
+      assignments: const {
+        '200 g Reis': ['rice'],
+      },
+    );
+    final mealId = meals.saved.single.id;
+
+    await service.finishCooking(
+      mealId: mealId,
+      totalPortions: 4,
+      potTareWeight: 1240,
+      finalNetWeight: 1180,
+    );
+
+    final meal = meals.saved.single;
+    expect(meal.isInPot, isFalse);
+    expect(meal.inPot, isNull);
+    expect(meal.totalPortions, 4);
+    expect(meal.remainingPortions, 4);
+    expect(meal.potTareWeight, 1240);
+    expect(meal.finalNetWeight, 1180);
+    expect(PreparedMeal.fromJson(meal.toJson()), meal);
+  });
+
+  test('finishCooking refuses a meal that is already cooked', () async {
+    final meals = _FakeMealRepository();
+    final service = _service(
+      meals,
+      _FakeInventoryRepository([_rice()]),
+      _FakeActivityRepository(),
+    );
+    await service.cook(
+      name: 'Reis',
+      ingredients: const ['200 g Reis'],
+      assignments: const {
+        '200 g Reis': ['rice'],
+      },
+    );
+    final mealId = meals.saved.single.id;
+    await service.finishCooking(
+      mealId: mealId,
+      totalPortions: 4,
+      potTareWeight: 1240,
+      finalNetWeight: 1180,
+    );
+
+    await expectLater(
+      service.finishCooking(
+        mealId: mealId,
+        totalPortions: 2,
+        potTareWeight: null,
+        finalNetWeight: null,
+      ),
+      throwsStateError,
+    );
+    expect(meals.saved.single.finalNetWeight, 1180);
   });
 
   test(

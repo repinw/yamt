@@ -5476,11 +5476,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get freeCookingCookAction => 'Cook';
 
   @override
-  String freeCookingSaved(String name) {
-    return '$name is in the pot';
-  }
-
-  @override
   String get freeCookingStockLoadFailed => 'Could not load the stock.';
 
   @override
@@ -5550,4 +5545,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get keyboardDoneAction => 'Done';
+
+  @override
+  String get cookedKicker => 'Cooked';
+
+  @override
+  String cookedOpenRows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rows open',
+      one: '1 row open',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookedFillRows => 'Fill';
+
+  @override
+  String get cookedPotTitle => 'Pot';
+
+  @override
+  String get cookedPortions => 'Portions';
+
+  @override
+  String get cookedPortionsLess => 'One portion less';
+
+  @override
+  String get cookedPortionsMore => 'One portion more';
+
+  @override
+  String get cookedUtensil => 'Utensil';
+
+  @override
+  String get cookedNoUtensil => 'None';
+
+  @override
+  String cookedUtensilOption(String name, int grams) {
+    return '$name · $grams g';
+  }
+
+  @override
+  String cookedUtensilWeight(int grams) {
+    return '$grams g';
+  }
+
+  @override
+  String get cookedGrossWeight => 'Pot on the scale';
+
+  @override
+  String get cookedWeighTip => 'Tip: weigh once the food has cooled.';
+
+  @override
+  String cookedNetWeight(int grams) {
+    return '$grams g food';
+  }
+
+  @override
+  String get cookedTooLight => 'Not heavier than the empty pot';
+
+  @override
+  String cookedPerPortionWeighed(int grams, int kcal) {
+    return 'Portion $grams g · $kcal kcal';
+  }
+
+  @override
+  String cookedPerPortion(int kcal) {
+    return '$kcal kcal per portion';
+  }
+
+  @override
+  String get cookedSave => 'To stock';
+
+  @override
+  String cookedSaved(String name) {
+    return '$name is in stock';
+  }
+
+  @override
+  String get cookedLoadFailed => 'Could not load the meal.';
+
+  @override
+  String cookbookInPotSince(String time) {
+    return 'In the pot since $time';
+  }
 }

@@ -50,6 +50,14 @@ class _FakeCookingService implements PreparedMealCookingService {
             PreparedMealCreationFailureReason.mealSaveFailed,
           );
   }
+
+  @override
+  Future<void> finishCooking({
+    required String mealId,
+    required int totalPortions,
+    required int? potTareWeight,
+    required int? finalNetWeight,
+  }) async {}
 }
 
 ProviderContainer _container(_FakeCookingService service) {
@@ -119,7 +127,7 @@ void main() {
 
     final saved = await notifier.cook(name: 'Pfanne', rows: rows);
 
-    expect(saved, isTrue);
+    expect(saved, 'meal');
     expect(service.calls.single.ingredients, ['500 g Hähnchen', 'Salz']);
     expect(service.calls.single.assignments, {
       '500 g Hähnchen': ['hähnchen'],
@@ -135,7 +143,7 @@ void main() {
 
     final saved = await notifier.cook(name: 'Pfanne', rows: rows);
 
-    expect(saved, isFalse);
+    expect(saved, isNull);
     final draft = container.read(freeCookingControllerProvider);
     expect(draft.rows, ['Salz']);
     expect(draft.isCooking, isFalse);

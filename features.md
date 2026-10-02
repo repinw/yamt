@@ -452,10 +452,23 @@ and feature description docs. This is product-facing; architecture rules stay in
   A swipe removes a row.
 - "Kochen" saves one Vorrat meal with one portion: rows in stock take their
   amount from the best Vorrat match, which is used up in the Vorrat; the
-  other rows stay open on the meal, so it appears under "Im Topf". Leaving
-  the page with rows asks before it discards them.
-- "Weiter" on a pot meal opens the meal's detail page, where its open rows
-  are filled. "Neue Vorlage" opens the Vorrat tab for now.
+  other rows stay open on the meal. The meal is "Im Topf" until it is marked
+  as cooked. Leaving the page with rows asks before it discards them.
+- "Kochen" goes straight on to the "Gekocht" page: the ingredients with
+  their amounts and kcal, open rows with "Füllen" (opens the meal's detail
+  page), and the pot: portions (stepper), the utensil from the kitchen
+  utensils (or "Ohne"), and the pot on the scale. The page shows the food
+  weight (pot minus empty utensil) and per portion grams and kcal, or only
+  kcal per portion without weighing. Weighing is optional; a weight that is
+  not above the empty pot shows "Nicht schwerer als der leere Topf" and
+  blocks saving. "In Vorrat" stores portions, the utensil's empty weight,
+  and the food weight, and the meal leaves "Im Topf". Closing the page keeps
+  it in the pot. A meal that does not show up within a few seconds counts as
+  gone, and the page says it could not be loaded.
+- "Weiter" on a pot meal opens its "Gekocht" page while it is still in the
+  pot, otherwise the meal's detail page, where its open rows are filled.
+  The card says "Im Topf seit …" when no row is open. "Neue Vorlage" opens
+  the Vorrat tab for now.
   A recipe or Vorlage opens its template detail.
 - Editing and deleting templates from the Kochbuch is not available until the
   recipe page exists.

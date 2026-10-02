@@ -29,7 +29,7 @@ class CookbookOverview {
   });
 
   /// Sorts saved [savedTemplates] into Vorlagen and recipes and picks the
-  /// meals in [meals] that still have open rows.
+  /// meals in [meals] that are still in the pot or have open rows.
   ///
   /// A template with recipe ingredients is a recipe; one without is a Vorlage
   /// combined from Vorrat foods. [isInStock] tells whether the Vorrat holds a
@@ -69,7 +69,7 @@ class CookbookOverview {
         meals
             .where(
               (meal) =>
-                  meal.pendingRecipeIngredients.isNotEmpty &&
+                  (meal.isInPot || meal.pendingRecipeIngredients.isNotEmpty) &&
                   meal.remainingPortions > 0,
             )
             .toList()
@@ -81,7 +81,8 @@ class CookbookOverview {
     );
   }
 
-  /// Meals in the Vorrat that still have open rows, newest first.
+  /// Meals in the Vorrat that are still in the pot or have open rows, newest
+  /// first.
   final List<PreparedMeal> openMeals;
 
   /// Vorlagen combined from Vorrat foods.

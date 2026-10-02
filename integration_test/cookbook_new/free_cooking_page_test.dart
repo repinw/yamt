@@ -8,7 +8,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_pot_section.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_actions.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -24,6 +27,11 @@ import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/kitchen_utensils/data/'
+    'kitchen_utensil_repository.dart';
+import 'package:yamt/features/kitchen_utensils/data/'
+    'kitchen_utensil_repository_contract.dart';
+import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _startKey = ValueKey<String>('start-free-cooking');
@@ -31,7 +39,7 @@ const _startKey = ValueKey<String>('start-free-cooking');
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('speaks and types rows, then cooks a meal with open rows', (
+  testWidgets('speaks and types rows, cooks, and marks the meal as cooked', (
     tester,
   ) async {
     final meals = _FakeMealRepository();
@@ -68,11 +76,32 @@ void main() {
     await tester.tap(find.byKey(FreeCookingActions.cookKey));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(_startKey), findsOneWidget);
+    // "Kochen" goes straight on to the "Gekocht" step.
+    expect(find.byType(CookedMealPage), findsOneWidget);
     final meal = meals.saved.single;
     expect(meal.name, 'Pfanne');
+    expect(meal.isInPot, isTrue);
     expect(meal.components.single.inventoryItemId, 'rice');
     expect(meal.pendingRecipeIngredients, hasLength(1));
+
+    await tester.tap(find.byKey(CookedMealPotSection.morePortionsKey));
+    await tester.tap(find.byKey(CookedMealPotSection.utensilKey));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(CookedMealPotSection.utensilOptionKey('pot')).last,
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(CookedMealPotSection.grossKey), '1300');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(_startKey), findsOneWidget);
+    final cooked = meals.saved.single;
+    expect(cooked.isInPot, isFalse);
+    expect(cooked.totalPortions, 2);
+    expect(cooked.potTareWeight, 400);
+    expect(cooked.finalNetWeight, 900);
   });
 
   testWidgets('asks before it discards rows', (tester) async {
@@ -117,6 +146,11 @@ Widget _app({
         path: AppRoutes.homeFreeCooking,
         builder: (context, state) => const FreeCookingPage(),
       ),
+      GoRoute(
+        path: AppRoutes.homeCookedMeal,
+        builder: (context, state) =>
+            CookedMealPage(mealId: state.pathParameters['mealId']!),
+      ),
     ],
   );
   addTearDown(router.dispose);
@@ -143,6 +177,9 @@ Widget _app({
       ),
       inventoryActivityActorProvider.overrideWithValue(null),
       voiceSearchServiceProvider.overrideWithValue(voice),
+      kitchenUtensilRepositoryProvider.overrideWithValue(
+        _FakeUtensilRepository(),
+      ),
     ],
   );
   addTearDown(container.dispose);
@@ -200,10 +237,14 @@ class _FakeVoiceService implements VoiceSearchService {
 }
 
 class _FakeMealRepository implements PreparedMealRepository {
+  final _changes = StreamController<List<PreparedMeal>>.broadcast();
   List<PreparedMeal> saved = const [];
 
   @override
-  Stream<List<PreparedMeal>> watchAll() => Stream.value(saved);
+  Stream<List<PreparedMeal>> watchAll() async* {
+    yield saved;
+    yield* _changes.stream;
+  }
 
   @override
   Future<List<PreparedMeal>> readAll() async => saved;
@@ -211,8 +252,27 @@ class _FakeMealRepository implements PreparedMealRepository {
   @override
   Future<bool> saveAll(List<PreparedMeal> meals) async {
     saved = meals;
+    _changes.add(meals);
     return true;
   }
+}
+
+class _FakeUtensilRepository implements KitchenUtensilRepository {
+  @override
+  Stream<List<KitchenUtensil>> watchAll() async* {
+    yield [
+      KitchenUtensil(
+        id: 'pot',
+        name: 'Topf',
+        weightGrams: 400,
+        createdAt: DateTime.utc(2026, 9),
+        updatedAt: DateTime.utc(2026, 9),
+      ),
+    ];
+  }
+
+  @override
+  Object? noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
 class _FakeInventoryRepository implements InventoryItemRepository {

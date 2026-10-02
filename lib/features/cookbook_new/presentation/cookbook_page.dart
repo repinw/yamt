@@ -37,7 +37,13 @@ class CookbookPage extends ConsumerWidget {
         child: CookbookSections(
           overview: overview,
           onContinueMeal: (meal) => unawaited(
-            PreparedMealDetailFlow.open(context: context, ref: ref, meal: meal),
+            meal.isInPot
+                ? context.push(AppRoutes.homeCookedMealPath(meal.id))
+                : PreparedMealDetailFlow.open(
+                    context: context,
+                    ref: ref,
+                    meal: meal,
+                  ),
           ),
           onCreateTemplate: () => context.go(AppRoutes.homeInventory),
           onOpenTemplate: (template) => unawaited(

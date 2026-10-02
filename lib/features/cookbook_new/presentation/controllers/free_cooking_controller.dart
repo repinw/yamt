@@ -63,12 +63,13 @@ class FreeCookingController extends _$FreeCookingController {
 
   /// Saves the meal [name] with [rows] in the Vorrat. Rows in stock take their
   /// amount from the matched item; the others stay open on the meal.
-  Future<bool> cook({
+  /// Returns the id of the saved meal, or `null` when saving failed.
+  Future<String?> cook({
     required String name,
     required List<FreeCookingRow> rows,
   }) async {
     if (state.isCooking || rows.isEmpty) {
-      return false;
+      return null;
     }
     final link = ref.keepAlive();
     state = state.copyWith(isCooking: true);
@@ -88,7 +89,7 @@ class FreeCookingController extends _$FreeCookingController {
             ? const FreeCookingDraft()
             : state.copyWith(isCooking: false);
       }
-      return result.isSuccess;
+      return result.isSuccess ? result.preparedMealId : null;
     } on Object catch (error, stackTrace) {
       log(
         'Failed to cook the free meal.',
@@ -99,7 +100,7 @@ class FreeCookingController extends _$FreeCookingController {
       if (ref.mounted) {
         state = state.copyWith(isCooking: false);
       }
-      return false;
+      return null;
     } finally {
       link.close();
     }
