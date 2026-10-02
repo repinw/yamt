@@ -45,3 +45,17 @@ class ProductFrontDetails {
   /// Barcode digits the AI read, when every digit was certain.
   final String? barcode;
 }
+
+/// Package photos whose upload has started.
+@immutable
+class ProductPhotoUpload {
+  /// Creates the upload.
+  const new({required this.frontAddress, required this.done});
+
+  /// Storage address of the front photo, or null without one.
+  final String? frontAddress;
+
+  /// Completes when the photos are stored; fails when the front photo
+  /// could not be stored.
+  final Future<void> done;
+}

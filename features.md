@@ -369,8 +369,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   barcode or marks "has none". Saving needs a barcode or that mark.
 - On save both photos go to Firebase Storage under
   `product_images/{uid}/{photoId}/`, readable by every signed-in user. The
-  front photo becomes the product image when the product has none. A failed
-  upload saves the product without photos and says so.
+  front photo becomes the product image when the product has none. The
+  save does not wait for the upload: the product keeps the Storage address
+  (`gs://…`) of the front photo, which shows from the local image cache
+  until it is uploaded. A failed upload keeps that address and says so.
+  The shared catalog does not get this photo yet (#414).
 - Nutrition quality handling for unverified AI/OCR/manual estimates.
 - Barcode-less manual and AI-created food saving.
 - "Create" opens an empty product form. Name, unit, and the seven EU label

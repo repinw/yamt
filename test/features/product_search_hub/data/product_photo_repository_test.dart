@@ -1,6 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:file/file.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:yamt/features/product_search_hub/data/'
@@ -15,20 +19,93 @@ final _photo = ProductPhoto(
   mimeType: 'image/jpeg',
 );
 
+class _FakeImageCache extends Fake implements BaseCacheManager {
+  final files = <String, Uint8List>{};
+
+  @override
+  Future<File> putFile(
+    String url,
+    Uint8List fileBytes, {
+    String? key,
+    String? eTag,
+    Duration maxAge = const Duration(days: 30),
+    String fileExtension = 'file',
+  }) async {
+    files[url] = fileBytes;
+    return _FakeFile();
+  }
+}
+
+class _FakeFile extends Fake implements File;
+
+class _FakeStorage extends Fake implements FirebaseStorage {
+  new({this.failingFile});
+
+  final String? failingFile;
+  final uploads = <String>[];
+
+  @override
+  Reference ref([String? path]) => _FakeReference(this, path!);
+}
+
+class _FakeReference extends Fake implements Reference {
+  new(this._storage, this.fullPath);
+
+  final _FakeStorage _storage;
+
+  @override
+  final String fullPath;
+
+  @override
+  String get bucket => 'bucket';
+
+  @override
+  Reference child(String path) => _FakeReference(_storage, '$fullPath/$path');
+
+  @override
+  UploadTask putData(Uint8List data, [SettableMetadata? metadata]) {
+    _storage.uploads.add(fullPath.split('/').last);
+    final fails = fullPath.endsWith('/${_storage.failingFile}');
+    return _FakeUploadTask(
+      fails
+          ? Future.error(FirebaseException(plugin: 'storage'))
+          : Future.value(_FakeSnapshot()),
+    );
+  }
+}
+
+class _FakeSnapshot extends Fake implements TaskSnapshot;
+
+/// Like the SDK task, a Future of TaskSnapshot.
+class _FakeUploadTask extends Fake implements UploadTask {
+  new(this._result);
+
+  final Future<TaskSnapshot> _result;
+
+  @override
+  Future<R> then<R>(
+    FutureOr<R> Function(TaskSnapshot value) onValue, {
+    Function? onError,
+  }) => _result.then(onValue, onError: onError);
+}
+
 ProductPhotoRepository _repository({
+  FirebaseStorage? storage,
+  _FakeImageCache? imageCache,
   String? response,
   String? scannedBarcode,
   void Function(Map<String, Object?> inputs)? onRequest,
 }) {
   return ProductPhotoRepository(
     imagePicker: ImagePicker(),
-    storage: null,
-    ownerId: null,
+    storage: storage,
+    ownerId: storage == null ? null : 'user-1',
     templateClient: (inputs) async {
       onRequest?.call(inputs);
       return response;
     },
     barcodeReader: (_) async => scannedBarcode,
+    imageCache: imageCache ?? _FakeImageCache(),
   );
 }
 
@@ -118,5 +195,58 @@ void main() {
       ),
       throwsStateError,
     );
+  });
+
+  test(
+    'returns the front address before the upload and caches the photo',
+    () async {
+      final storage = _FakeStorage();
+      final cache = _FakeImageCache();
+
+      final upload = await _repository(storage: storage, imageCache: cache)
+          .saveProductPhotos(
+            front: _photo,
+            nutritionTable: _photo,
+            barcode: '4006381333931',
+            name: 'Brot',
+          );
+
+      expect(
+        upload.frontAddress,
+        matches(
+          RegExp(r'^gs://bucket/product_images/user-1/[^/]+/front\.jpg$'),
+        ),
+      );
+      expect(cache.files[upload.frontAddress], _photo.bytes);
+      await upload.done;
+      expect(storage.uploads, ['nutrition_table.jpg', 'front.jpg']);
+    },
+  );
+
+  test('a failed nutrition table upload is only logged', () async {
+    final upload =
+        await _repository(
+          storage: _FakeStorage(failingFile: 'nutrition_table.jpg'),
+        ).saveProductPhotos(
+          front: _photo,
+          nutritionTable: _photo,
+          barcode: '',
+          name: 'Brot',
+        );
+
+    await expectLater(upload.done, completes);
+  });
+
+  test('a failed front upload fails the upload', () async {
+    final upload =
+        await _repository(storage: _FakeStorage(failingFile: 'front.jpg'))
+            .saveProductPhotos(
+              front: _photo,
+              nutritionTable: null,
+              barcode: '',
+              name: 'Brot',
+            );
+
+    await expectLater(upload.done, throwsA(isA<FirebaseException>()));
   });
 }

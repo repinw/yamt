@@ -1,6 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/data/storage_image_cache.dart';
 import 'package:yamt/core/widgets/app_cached_network_image.dart';
 
 Widget _buildHarness(Widget child) {
@@ -28,6 +30,27 @@ void main() {
       find.byType(CachedNetworkImage),
     );
     expect(imageWidget.imageUrl, 'https://images.example.com/item.jpg');
+  });
+
+  testWidgets('loads a Storage address through the Storage image cache', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        const SizedBox(
+          width: 64,
+          height: 64,
+          child: AppCachedNetworkImage(imageUrl: 'gs://bucket/front.jpg'),
+        ),
+      ),
+    );
+
+    final imageWidget = tester.widget<CachedNetworkImage>(
+      find.byType(CachedNetworkImage),
+    );
+    expect(imageWidget.cacheManager, same(storageImageCacheManager));
+    // CachedNetworkImage resizes only through an ImageCacheManager.
+    expect(imageWidget.cacheManager, isA<ImageCacheManager>());
   });
 
   testWidgets('empty url renders compact placeholder without icon', (

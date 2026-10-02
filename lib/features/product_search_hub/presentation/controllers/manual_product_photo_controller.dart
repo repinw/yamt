@@ -134,11 +134,12 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
     }
   }
 
-  /// Stores the photos as shared product images and returns the address of
-  /// the front photo, or null without one.
+  /// Starts storing the photos as shared product images. Returns null
+  /// without a photo.
   ///
-  /// Throws when the upload fails.
-  Future<String?> savePhotos({
+  /// The save does not wait for [ProductPhotoUpload.done]. Throws when the
+  /// upload cannot start.
+  Future<ProductPhotoUpload?> savePhotos({
     required String barcode,
     required String name,
   }) async {

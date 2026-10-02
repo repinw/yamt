@@ -20,6 +20,13 @@ void main() {
     );
   });
 
+  test('keeps Firebase Storage addresses unchanged', () {
+    expect(
+      normalizeCalorieProductImageUrl('gs://bucket/product_images/front.jpg'),
+      'gs://bucket/product_images/front.jpg',
+    );
+  });
+
   test('normalizes protocol-relative URLs to https', () {
     expect(
       normalizeCalorieProductImageUrl('//images.example.com/item.jpg'),

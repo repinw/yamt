@@ -1,6 +1,9 @@
+import 'package:yamt/core/data/storage_image_cache.dart';
+
 const _offImageHost = 'world.openfoodfacts.org';
 
-/// Normalizes product image URLs into absolute HTTPS URLs.
+/// Normalizes product image URLs into absolute HTTPS URLs. A Firebase
+/// Storage address stays as it is.
 String? normalizeProductImageUrl(String? value) {
   if (value == null) {
     return null;
@@ -16,7 +19,9 @@ String? normalizeProductImageUrl(String? value) {
   if (trimmed.startsWith('/')) {
     return 'https://$_offImageHost$trimmed';
   }
-  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+  if (trimmed.startsWith('http://') ||
+      trimmed.startsWith('https://') ||
+      isStorageImageAddress(trimmed)) {
     return trimmed;
   }
   return null;
@@ -36,7 +41,17 @@ bool isPrivateFoodPhotoUrl(String? url) {
 }
 
 /// [url] normalized for the shared catalog, or null for a private food
-/// photo.
+/// photo or a Storage address.
+///
+/// A Storage address can be saved before its upload finishes. If the
+/// upload fails, the catalog would keep a broken image for every user, and
+/// its image can be set only once. The catalog gets the photo only after
+/// a successful upload (#414).
 String? shareableProductImageUrl(String? url) {
-  return isPrivateFoodPhotoUrl(url) ? null : normalizeProductImageUrl(url);
+  if (url == null ||
+      isPrivateFoodPhotoUrl(url) ||
+      isStorageImageAddress(url.trim())) {
+    return null;
+  }
+  return normalizeProductImageUrl(url);
 }

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/data/storage_image_cache.dart';
 
 /// Uses the shared network image cache so remote images stay fast and
 /// consistent across the app.
@@ -21,7 +22,7 @@ class AppCachedNetworkImage extends StatelessWidget {
     this.errorBuilder,
   });
 
-  /// Remote image URL.
+  /// Remote image URL, or a Firebase Storage address (`gs://`).
   final String imageUrl;
 
   /// Target width.
@@ -60,6 +61,9 @@ class AppCachedNetworkImage extends StatelessWidget {
 
     return CachedNetworkImage(
       imageUrl: imageUrl,
+      cacheManager: isStorageImageAddress(imageUrl)
+          ? storageImageCacheManager
+          : null,
       width: width,
       height: height,
       fit: fit,

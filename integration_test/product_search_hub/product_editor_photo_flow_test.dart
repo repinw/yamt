@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,7 +43,7 @@ final Uint8List _pixel = Uint8List.fromList(const [
   0x49, 0x45, 0x4E, 0x44, 0xAE, 0x42, 0x60, 0x82,
 ]);
 
-const _frontUrl = 'https://example.com/product_images/front.jpg';
+const _frontUrl = 'gs://bucket/product_images/user-1/photo-1/front.jpg';
 
 class _FakePhotoRepository implements ProductPhotoRepository {
   var _photoCount = 0;
@@ -74,15 +75,18 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   }
 
   @override
-  Future<String?> saveProductPhotos({
+  Future<ProductPhotoUpload> saveProductPhotos({
     required ProductPhoto? front,
     required ProductPhoto? nutritionTable,
     required String barcode,
     required String name,
   }) async {
-    await Future<void>.delayed(const Duration(milliseconds: 100));
     saved.add(barcode);
-    return front == null ? null : _frontUrl;
+    return ProductPhotoUpload(
+      frontAddress: front == null ? null : _frontUrl,
+      // The upload never ends; the editor saves without waiting for it.
+      done: Completer<void>().future,
+    );
   }
 }
 
