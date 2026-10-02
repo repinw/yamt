@@ -5,6 +5,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -87,7 +88,11 @@ Widget _buildHarness({
   );
   addTearDown(router.dispose);
 
-  final container = ProviderContainer();
+  // Signed out. The flow reads the user profile; without a fake it waits
+  // for Firebase Auth and is still loading when the test disposes it.
+  final container = ProviderContainer(
+    overrides: [userProfileProvider.overrideWith((ref) => Stream.value(null))],
+  );
   addTearDown(container.dispose);
 
   return UncontrolledProviderScope(
