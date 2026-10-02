@@ -105,9 +105,8 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
         unitPrice: widget.item.unitPrice,
       )),
     );
-    final picks = ref.watch(
-      inventoryItemCombineControllerProvider(widget.item.id),
-    );
+    final combine = inventoryItemCombineControllerProvider(widget.item.id);
+    final picks = ref.watch(combine);
     final actions = EatItemActionsCard(
       key: _cardKey,
       isOnShoppingList: isOnShoppingList,
@@ -126,10 +125,7 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
             _run(InventoryItemHubAction.addToShoppingList),
       );
     }
-    ref.listen(inventoryItemCombineControllerProvider(widget.item.id), (
-      _,
-      next,
-    ) {
+    ref.listen(combine, (_, next) {
       if (next.isEmpty && _hubRemoved) {
         setState(() => _hubRemoved = false);
       }
