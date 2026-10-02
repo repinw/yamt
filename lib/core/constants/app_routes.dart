@@ -72,6 +72,12 @@ abstract final class AppRoutes {
   /// Free cooking: a meal without a recipe, filled by voice or typing.
   static const homeFreeCooking = '/home/free-cooking';
 
+  /// The "Gekocht" step of a meal in the pot, with meal id parameter.
+  static const homeCookedMeal = '/home/cooked/:mealId';
+
+  /// Builds the "Gekocht" path of the meal [mealId].
+  static String homeCookedMealPath(String mealId) => '/home/cooked/$mealId';
+
   /// Kitchen utensils route.
   static const homeKitchenUtensils = '/home/kitchen-utensils';
 

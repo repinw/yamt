@@ -5,9 +5,12 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cookbook_open_meal_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_template_strip.dart';
 import 'package:yamt/features/home/home_page.dart';
@@ -22,7 +25,10 @@ import '../../test/support/prepared_meal_test_data.dart';
 GoRoute _placeholder(String path, String label) {
   return GoRoute(
     path: path,
-    builder: (context, state) => Scaffold(body: Center(child: Text(label))),
+    builder: (context, state) => Scaffold(
+      key: ValueKey<String>(path),
+      body: Center(child: Text(label)),
+    ),
   );
 }
 
@@ -57,12 +63,14 @@ Widget _app({
         ],
       ),
       _placeholder(AppRoutes.homeInventoryTemplateDetail, 'Recipe page'),
+      _placeholder(AppRoutes.homeCookedMeal, 'Cooked page'),
     ],
   );
   addTearDown(router.dispose);
 
   final container = ProviderContainer(
     overrides: [
+      clockProvider.overrideWithValue(() => DateTime(2026, 10, 2, 20)),
       cookbookTemplatesProvider.overrideWith((ref) => Stream.value(templates)),
       inventoryQuickEatMealsProvider.overrideWith((ref) => Stream.value(meals)),
       inventoryQuickEatItemsProvider.overrideWith(
@@ -149,5 +157,30 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Vorrat page'), findsOneWidget);
+  });
+
+  testWidgets('continues a meal in the pot on the cooked page', (tester) async {
+    final potMeal = preparedMealTestData(
+      id: 'pot',
+      name: 'Lentil soup',
+    ).copyWith(inPot: true);
+    await tester.pumpWidget(_app(templates: const [], meals: [potMeal]));
+    await tester.pumpAndSettle();
+
+    // Without open rows the meal is in the pot until it is marked cooked.
+    expect(find.byType(CookbookOpenMealCard), findsOneWidget);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(CookbookOpenMealCard),
+        matching: find.byType(FilledButton),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>(AppRoutes.homeCookedMeal)),
+      findsOneWidget,
+    );
   });
 }

@@ -60,10 +60,12 @@ class CookbookOpenMealCard extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    l10n.cookbookOpenMealRows(
-                      meal.pendingRecipeIngredients.length,
-                      since,
-                    ),
+                    meal.hasPendingRecipeIngredients
+                        ? l10n.cookbookOpenMealRows(
+                            meal.pendingRecipeIngredients.length,
+                            since,
+                          )
+                        : l10n.cookbookInPotSince(since),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: textTheme.labelSmall?.copyWith(

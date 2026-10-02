@@ -38,10 +38,12 @@ PreparedMealCookingService preparedMealCookingService(Ref ref) {
   );
 }
 
-/// Creates a Vorrat meal from ingredient rows without a saved recipe.
+/// Creates a Vorrat meal from ingredient rows without a saved recipe and
+/// marks it as cooked later.
 ///
 /// Rows with a Vorrat item take their amount from it; the other rows stay
-/// open on the meal until the user fills them.
+/// open on the meal until the user fills them. The meal stays in the pot
+/// until [PreparedMealCookingService.finishCooking].
 class PreparedMealCookingService {
   /// Creates the service.
   const new({
@@ -127,6 +129,42 @@ class PreparedMealCookingService {
     return result;
   }
 
+  /// Marks the meal [mealId] as cooked: it makes [totalPortions] portions,
+  /// and [potTareWeight] and [finalNetWeight] are set when the cook weighed
+  /// the pot. Portions eaten so far keep their share. Throws when the meal
+  /// is gone or no longer in the pot.
+  Future<void> finishCooking({
+    required String mealId,
+    required int totalPortions,
+    required int? potTareWeight,
+    required int? finalNetWeight,
+  }) async {
+    final meals = await _mealRepository.readAll();
+    final meal = meals.firstWhere(
+      (meal) => meal.id == mealId,
+      orElse: () => throw StateError('Meal $mealId is gone.'),
+    );
+    if (!meal.isInPot) {
+      // Another device already marked it as cooked.
+      throw StateError('Meal $mealId is not in the pot.');
+    }
+    final cooked = meal.copyWith(
+      totalPortions: totalPortions,
+      remainingPortions: meal.remainingRatio * totalPortions,
+      potTareWeight: potTareWeight,
+      finalNetWeight: finalNetWeight,
+      inPot: null,
+      updatedAt: _clock(),
+    );
+    final saved = await _mealRepository.saveAll([
+      for (final other in meals)
+        if (other.id == mealId) cooked else other,
+    ]);
+    if (!saved) {
+      throw StateError('Meal $mealId could not be saved.');
+    }
+  }
+
   PreparedMealWorkflowContext get _context {
     return PreparedMealWorkflowContext(
       loadMeals: _mealRepository.readAll,
@@ -139,11 +177,16 @@ class PreparedMealCookingService {
     );
   }
 
+  /// Saves the meals; the meal that [cook] adds starts in the pot.
   Future<bool> _saveMeals({
     required List<PreparedMeal> previousMeals,
     required List<PreparedMeal> nextMeals,
   }) {
-    return _mealRepository.saveAll(nextMeals);
+    final previousIds = {for (final meal in previousMeals) meal.id};
+    return _mealRepository.saveAll([
+      for (final meal in nextMeals)
+        if (previousIds.contains(meal.id)) meal else meal.copyWith(inPot: true),
+    ]);
   }
 
   Future<void> _restoreInventory({

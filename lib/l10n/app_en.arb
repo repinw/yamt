@@ -3055,14 +3055,6 @@
   "freeCookingTypeHint": "e.g. 200 g rice",
   "freeCookingAddAction": "Add",
   "freeCookingCookAction": "Cook",
-  "freeCookingSaved": "{name} is in the pot",
-  "@freeCookingSaved": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "freeCookingStockLoadFailed": "Could not load the stock.",
   "freeCookingSaveFailed": "Could not save the meal.",
   "freeCookingDiscardTitle": "Discard the meal?",
@@ -3094,5 +3086,88 @@
   "keyboardDoneAction": "Done",
   "@keyboardDoneAction": {
     "description": "Button above the iOS number keyboard that closes the keyboard."
+  },
+  "cookedKicker": "Cooked",
+  "cookedOpenRows": "{count, plural, =1{1 row open} other{{count} rows open}}",
+  "@cookedOpenRows": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedFillRows": "Fill",
+  "cookedPotTitle": "Pot",
+  "cookedPortions": "Portions",
+  "cookedPortionsLess": "One portion less",
+  "cookedPortionsMore": "One portion more",
+  "cookedUtensil": "Utensil",
+  "cookedNoUtensil": "None",
+  "cookedUtensilOption": "{name} · {grams} g",
+  "@cookedUtensilOption": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedUtensilWeight": "{grams} g",
+  "@cookedUtensilWeight": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedGrossWeight": "Pot on the scale",
+  "cookedWeighTip": "Tip: weigh once the food has cooled.",
+  "cookedNetWeight": "{grams} g food",
+  "@cookedNetWeight": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedTooLight": "Not heavier than the empty pot",
+  "cookedPerPortionWeighed": "Portion {grams} g · {kcal} kcal",
+  "@cookedPerPortionWeighed": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      },
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPerPortion": "{kcal} kcal per portion",
+  "@cookedPerPortion": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedSave": "To stock",
+  "cookedSaved": "{name} is in stock",
+  "@cookedSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedLoadFailed": "Could not load the meal.",
+  "cookbookInPotSince": "In the pot since {time}",
+  "@cookbookInPotSince": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
   }
 }

@@ -9279,12 +9279,6 @@ abstract class AppLocalizations {
   /// **'Cook'**
   String get freeCookingCookAction;
 
-  /// No description provided for @freeCookingSaved.
-  ///
-  /// In en, this message translates to:
-  /// **'{name} is in the pot'**
-  String freeCookingSaved(String name);
-
   /// No description provided for @freeCookingStockLoadFailed.
   ///
   /// In en, this message translates to:
@@ -9416,6 +9410,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Done'**
   String get keyboardDoneAction;
+
+  /// No description provided for @cookedKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooked'**
+  String get cookedKicker;
+
+  /// No description provided for @cookedOpenRows.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 row open} other{{count} rows open}}'**
+  String cookedOpenRows(int count);
+
+  /// No description provided for @cookedFillRows.
+  ///
+  /// In en, this message translates to:
+  /// **'Fill'**
+  String get cookedFillRows;
+
+  /// No description provided for @cookedPotTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pot'**
+  String get cookedPotTitle;
+
+  /// No description provided for @cookedPortions.
+  ///
+  /// In en, this message translates to:
+  /// **'Portions'**
+  String get cookedPortions;
+
+  /// No description provided for @cookedPortionsLess.
+  ///
+  /// In en, this message translates to:
+  /// **'One portion less'**
+  String get cookedPortionsLess;
+
+  /// No description provided for @cookedPortionsMore.
+  ///
+  /// In en, this message translates to:
+  /// **'One portion more'**
+  String get cookedPortionsMore;
+
+  /// No description provided for @cookedUtensil.
+  ///
+  /// In en, this message translates to:
+  /// **'Utensil'**
+  String get cookedUtensil;
+
+  /// No description provided for @cookedNoUtensil.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get cookedNoUtensil;
+
+  /// No description provided for @cookedUtensilOption.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {grams} g'**
+  String cookedUtensilOption(String name, int grams);
+
+  /// No description provided for @cookedUtensilWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g'**
+  String cookedUtensilWeight(int grams);
+
+  /// No description provided for @cookedGrossWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Pot on the scale'**
+  String get cookedGrossWeight;
+
+  /// No description provided for @cookedWeighTip.
+  ///
+  /// In en, this message translates to:
+  /// **'Tip: weigh once the food has cooled.'**
+  String get cookedWeighTip;
+
+  /// No description provided for @cookedNetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g food'**
+  String cookedNetWeight(int grams);
+
+  /// No description provided for @cookedTooLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Not heavier than the empty pot'**
+  String get cookedTooLight;
+
+  /// No description provided for @cookedPerPortionWeighed.
+  ///
+  /// In en, this message translates to:
+  /// **'Portion {grams} g · {kcal} kcal'**
+  String cookedPerPortionWeighed(int grams, int kcal);
+
+  /// No description provided for @cookedPerPortion.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal per portion'**
+  String cookedPerPortion(int kcal);
+
+  /// No description provided for @cookedSave.
+  ///
+  /// In en, this message translates to:
+  /// **'To stock'**
+  String get cookedSave;
+
+  /// No description provided for @cookedSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is in stock'**
+  String cookedSaved(String name);
+
+  /// No description provided for @cookedLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the meal.'**
+  String get cookedLoadFailed;
+
+  /// No description provided for @cookbookInPotSince.
+  ///
+  /// In en, this message translates to:
+  /// **'In the pot since {time}'**
+  String cookbookInPotSince(String time);
 }
 
 class _AppLocalizationsDelegate

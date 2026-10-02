@@ -48,7 +48,9 @@ Other features may consume these public Inventory entry points:
   completion from product-search integrations.
 - `application/prepared_meal_cooking_service.dart`: creates a Vorrat meal from
   ingredient rows without a saved recipe; rows with an assigned item use it
-  up, the others stay open on the meal.
+  up, the others stay open on the meal. The meal stays in the pot
+  (`PreparedMeal.inPot`) until `finishCooking` stores its portions, empty pot
+  weight, and food weight.
 - `InventoryItemsController`
 - `PreparedMealsController`
 - `PreparedMealTemplatesController`
