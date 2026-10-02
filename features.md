@@ -378,7 +378,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   the next empty one.
 - The barcode row has a scan button and a "has none" mark. Scanning an
   unknown barcode keeps the entered values.
-- Going back from the eat dialog after "Create" reopens the product form.
+- Going back from the eat dialog after "Create" reopens the product form,
+  with any edit made from the eat page.
+- In the diary, a scanned, searched, or recent food opens on the eat page.
+  "Bearbeiten" there opens the product editor and comes back to the eat
+  page with the edited food; only the user's own copy changes.
 - Eating a newly picked product has no stock limit: the stock is set to the
   eaten amount. A product with g or ml but no package size is eaten in that
   unit. The eat page always shows the per-100 column.

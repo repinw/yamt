@@ -66,9 +66,9 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
     context: context,
     l10n: l10n,
     item: result.item,
-    selectedRequest: inventoryManualAddEatRequestFromSelection(
-      result.eatSelection,
-    ),
+    selectedRequest:
+        result.eatRequest ??
+        inventoryManualAddEatRequestFromSelection(result.eatSelection),
     preselectedMealType: preselectedMealType,
     preselectedLoggedAt: preselectedLoggedAt,
     continueBatchOnConfirm: continueBatchOnConfirm,

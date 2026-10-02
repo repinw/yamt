@@ -41,8 +41,15 @@ const _milk = OffProductSearchResult(
   ),
 );
 
+const _mealFoodArgs = ProductSearchHubRouteArgs(
+  mode: ProductSearchHubMode.mealFood,
+  initialIntent: ProductSearchHubInitialIntent.search,
+);
+
+/// Opens the search for a meal from the combine pick page by default.
 Widget _buildHarness({
-  required ValueChanged<InventoryCombinePickResult?> onDone,
+  required Future<void> Function(BuildContext context) open,
+  ProductSearchHubRouteArgs args = _mealFoodArgs,
 }) {
   final router = GoRouter(
     routes: [
@@ -52,12 +59,7 @@ Widget _buildHarness({
           body: Center(
             child: FilledButton(
               key: _openKey,
-              onPressed: () async => onDone(
-                await showInventoryCombinePickPage(
-                  context,
-                  candidates: const <InventoryItem>[],
-                ),
-              ),
+              onPressed: () => open(context),
               child: const Text('open'),
             ),
           ),
@@ -66,10 +68,7 @@ Widget _buildHarness({
       GoRoute(
         path: AppRoutes.homeFoodPick,
         builder: (context, state) => ProductSearchHubPage(
-          args: const ProductSearchHubRouteArgs(
-            mode: ProductSearchHubMode.mealFood,
-            initialIntent: ProductSearchHubInitialIntent.search,
-          ),
+          args: args,
           lookupProducts: ({
             required query,
             required limit,
@@ -139,6 +138,38 @@ Future<void> _waitForKeyboardClosed(
   await _pumpVisibleStep(tester);
 }
 
+/// Searches for milk and opens the result on its eat page.
+Future<void> _openMilkEatPage(WidgetTester tester) async {
+  expect(find.byType(ProductSearchHubPage), findsOneWidget);
+  await tester.enterText(
+    find.byKey(const Key('product_search_hub_search_field')),
+    'Milch',
+  );
+  // The search key closes the keyboard, so the eat page gets the full
+  // screen.
+  await tester.testTextInput.receiveAction(TextInputAction.search);
+  await _waitForKeyboardClosed(tester);
+  await tester.tap(find.byKey(_resultKey));
+  await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+
+  // The eat page opens, not the product editor.
+  expect(find.byKey(_amountFieldKey), findsOneWidget);
+  expect(find.byKey(ManualProductDetailsForm.saveKey), findsNothing);
+}
+
+/// "Bearbeiten" opens the editor; leaving it comes back to the eat page.
+Future<void> _editAndComeBack(WidgetTester tester) async {
+  await tester.ensureVisible(find.byKey(productSearchHubMealFoodEditKey));
+  await _pumpVisibleStep(tester);
+  await tester.tap(find.byKey(productSearchHubMealFoodEditKey));
+  await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+  expect(find.byKey(ManualProductDetailsForm.saveKey), findsOneWidget);
+
+  await tester.binding.handlePopRoute();
+  await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+  expect(find.byKey(_amountFieldKey), findsOneWidget);
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
@@ -147,40 +178,22 @@ void main() {
     tester,
   ) async {
     InventoryCombinePickResult? result;
-    await tester.pumpWidget(_buildHarness(onDone: (value) => result = value));
+    await tester.pumpWidget(
+      _buildHarness(
+        open: (context) async => result = await showInventoryCombinePickPage(
+          context,
+          candidates: const <InventoryItem>[],
+        ),
+      ),
+    );
     await _pumpVisibleStep(tester);
 
     await tester.tap(find.byKey(_openKey));
     await _pumpVisibleStep(tester);
     await tester.tap(find.byKey(InventoryCombinePickPage.searchKey));
     await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
-    expect(find.byType(ProductSearchHubPage), findsOneWidget);
-
-    await tester.enterText(
-      find.byKey(const Key('product_search_hub_search_field')),
-      'Milch',
-    );
-    // The search key closes the keyboard, so the eat page gets the full
-    // screen.
-    await tester.testTextInput.receiveAction(TextInputAction.search);
-    await _waitForKeyboardClosed(tester);
-    await tester.tap(find.byKey(_resultKey));
-    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
-
-    // The eat page opens, not the product editor.
-    expect(find.byKey(_amountFieldKey), findsOneWidget);
-    expect(find.byKey(ManualProductDetailsForm.saveKey), findsNothing);
-
-    // "Bearbeiten" opens the editor; leaving it comes back to the eat page.
-    await tester.ensureVisible(find.byKey(productSearchHubMealFoodEditKey));
-    await _pumpVisibleStep(tester);
-    await tester.tap(find.byKey(productSearchHubMealFoodEditKey));
-    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
-    expect(find.byKey(ManualProductDetailsForm.saveKey), findsOneWidget);
-
-    await tester.binding.handlePopRoute();
-    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
-    expect(find.byKey(_amountFieldKey), findsOneWidget);
+    await _openMilkEatPage(tester);
+    await _editAndComeBack(tester);
 
     await tester.enterText(find.byKey(_amountFieldKey), '250');
     await tester.testTextInput.receiveAction(TextInputAction.done);
@@ -194,4 +207,25 @@ void main() {
     expect(searched?.request.inventoryAmount, 250);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'a food searched in the diary opens the editor from its eat page',
+    (tester) async {
+      await tester.pumpWidget(
+        _buildHarness(
+          args: const ProductSearchHubRouteArgs.diary(
+            initialIntent: ProductSearchHubInitialIntent.search,
+          ),
+          open: (context) => context.push<void>(AppRoutes.homeFoodPick),
+        ),
+      );
+      await _pumpVisibleStep(tester);
+
+      await tester.tap(find.byKey(_openKey));
+      await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+      await _openMilkEatPage(tester);
+      await _editAndComeBack(tester);
+      expect(tester.takeException(), isNull);
+    },
+  );
 }
