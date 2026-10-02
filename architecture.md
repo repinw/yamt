@@ -534,7 +534,11 @@ strings. Report existing compatibility code in changed files to the user.
 
 ### Gates
 
-1. `dart run build_runner build` if annotated files changed.
+1. `dart run build_runner build` if annotated files changed. On a clean
+   tree, `tool/check_provider_hashes.sh` then finds stale provider hashes;
+   the pre-push hook in `tool/git-hooks` runs it on every push once
+   `git config core.hooksPath tool/git-hooks` is set, and CI runs it on every
+   pull request.
 2. `flutter gen-l10n` if ARB files changed.
 3. `tool/ci_changed_file_lints.sh` reports no new issue, and
    `flutter analyze lib test integration_test` passes. Analyzing a directory

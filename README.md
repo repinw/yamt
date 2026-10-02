@@ -282,6 +282,10 @@ flutter run
 `build_runner`-Lauf. Firebase-Konfiguration und Sicherheitsregeln liegen im
 Wurzelverzeichnis des Repositories.
 
+Einmal pro Klon `git config core.hooksPath tool/git-hooks` setzen. Der
+pre-push-Hook prüft dann vor jedem Push mit `tool/check_provider_hashes.sh`,
+ob die Riverpod-Hashes aktuell sind.
+
 ## Lizenz
 
 Dieses Projekt steht unter der [MIT-Lizenz](LICENSE).

@@ -1,10 +1,10 @@
 name: CI
 
-# Pull requests run only analyze and the unit and widget tests, so they stay
-# fast. The emulator tests run after the merge: a push to master runs the
-# integration tests that the pushed commits affect, and the nightly run, a
-# release tag and a manual run run all of them. A failed run after the merge
-# opens an issue.
+# Pull requests run only analyze, the unit and widget tests and the provider
+# hash check, so they stay fast. The emulator tests run after the merge: a
+# push to master runs the integration tests that the pushed commits affect,
+# and the nightly run, a release tag and a manual run run all of them. A
+# failed run after the merge opens an issue.
 on:
   pull_request:
   push:
@@ -59,6 +59,14 @@ jobs:
 
       - name: Unit and widget tests
         run: flutter test
+
+      # A stale provider hash compiles and passes every test, so only this
+      # step catches it. It runs last because it regenerates the code, and
+      # the steps above must check the generated code that the commits hold.
+      # The pre-push hook in tool/git-hooks runs it too.
+      - name: Provider hashes are current
+        if: ${{ !cancelled() }}
+        run: tool/check_provider_hashes.sh
 
   integration-targets:
     name: List integration tests
