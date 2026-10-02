@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+# Blocks a push whose tip commit has stale provider hashes.
+# Enable once per clone: git config core.hooksPath tool/git-hooks
+set -euo pipefail
+
+# The check regenerates from the working tree, so it can vouch only for HEAD.
+# Tags, deleted branches and up-to-date pushes need no check.
+head="$(git rev-parse HEAD)"
+pushes_head=false
+while read -r local_ref local_sha _ _; do
+  [[ "$local_ref" == refs/tags/* || "$local_sha" =~ ^0+$ ]] && continue
+  if [[ "$local_sha" != "$head" ]]; then
+    echo "pre-push: $local_ref is not checked out. Check it out to push it." >&2
+    exit 1
+  fi
+  pushes_head=true
+done
+"$pushes_head" || exit 0
+
+# Git sets GIT_DIR for hooks. Flutter's dart wrapper then runs its own git
+# commands against this repository instead of the SDK and cannot find the
+# Flutter SDK.
+unset GIT_DIR
+exec tool/check_provider_hashes.sh
