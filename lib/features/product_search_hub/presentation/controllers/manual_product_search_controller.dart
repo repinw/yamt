@@ -228,12 +228,6 @@ class InventoryReceiptManualProductController
     );
   }
 
-  InventoryReceiptManualProductConfig get _config => config;
-
-  String? get _resolvedWeight {
-    return _resolvedManualWeightInput.normalizedWeight;
-  }
-
   ManualProductResolvedWeightInput get _resolvedManualWeightInput {
     return resolveManualProductWeightInput(
       state.weightAmount,
@@ -290,32 +284,30 @@ class InventoryReceiptManualProductController
     final matchedProduct = state.matchedProduct;
     final selectedProduct = state.selectedProduct;
     final resolvedWeightInput = _resolvedManualWeightInput;
-    final globalPackageWeight = _resolvedGlobalPackageWeight(
+    final globalPackageWeight = _resolvedGlobalPackageWeightForSelection(
       action: action,
-      matchedProduct: matchedProduct,
+      selection: matchedProduct,
     );
     final inventoryWeight = resolvedWeightInput.normalizedWeight;
-    final updatedItem = _config.item
+    final updatedItem = config.item
         .copyWith(
           name: _resolvedManualName(
-            fallbackName: matchedProduct?.name ?? _config.item.name,
+            fallbackName: matchedProduct?.name ?? config.item.name,
           ),
-          brand: _resolvedManualBrand(),
+          brand: normalizeManualProductText(state.brandText),
           barcode: barcode,
           imageUrl:
-              _config.item.imageUrl ??
-              matchedProduct?.imageUrl ??
-              photoImageUrl,
+              config.item.imageUrl ?? matchedProduct?.imageUrl ?? photoImageUrl,
           weight: inventoryWeight,
           servingSize:
               matchedProduct?.servingSize ??
               state.ocrDraft?.servingSizeLabel ??
-              _config.item.servingSize,
+              config.item.servingSize,
           servingQuantity:
-              matchedProduct?.servingQuantity ?? _config.item.servingQuantity,
+              matchedProduct?.servingQuantity ?? config.item.servingQuantity,
           servingQuantityUnit:
               matchedProduct?.servingQuantityUnit ??
-              _config.item.servingQuantityUnit,
+              config.item.servingQuantityUnit,
           nutrition: _resolvedSaveNutrition(
             hasNutrition: hasNutrition,
             selectedProduct: selectedProduct,
@@ -333,11 +325,12 @@ class InventoryReceiptManualProductController
         .withResolvedAmount(
           weight: inventoryWeight,
           parsedAmount: resolvedWeightInput.parsedAmount,
-          quantity: _config.item.quantity,
+          quantity: config.item.quantity,
         )
         .withWeightUnitWithoutPackage(state.selectedWeightUnit);
-    final selectedEditKind = _selectedProductEditKindForItem(
-      updatedItem,
+    final selectedEditKind = _selectedProductEditKind(
+      selection: state.selectedProduct,
+      item: updatedItem,
       globalPackageWeight: globalPackageWeight,
     );
     final effectiveSelectedProduct =
@@ -370,8 +363,7 @@ class InventoryReceiptManualProductController
     required double? fat,
     required double? salt,
   }) {
-    final sourceNutrition =
-        selectedProduct?.nutrition ?? _config.item.nutrition;
+    final sourceNutrition = selectedProduct?.nutrition ?? config.item.nutrition;
     if (!hasNutrition) {
       return sourceNutrition;
     }
@@ -405,10 +397,10 @@ class InventoryReceiptManualProductController
     );
     final weightInput = resolveManualProductWeightInput(
       selection.packageWeight,
-      fallbackUnit: _config.item.amountUnit,
+      fallbackUnit: config.item.amountUnit,
     );
     final inventoryWeight = weightInput.normalizedWeight;
-    final nutrition = selection.nutrition ?? _config.item.nutrition;
+    final nutrition = selection.nutrition ?? config.item.nutrition;
     if (action == InventoryReceiptManualProductAction.eatNow) {
       if (!hasRequiredEatNowNutrition(nutrition)) {
         return null;
@@ -420,24 +412,24 @@ class InventoryReceiptManualProductController
       return null;
     }
 
-    final updatedItem = _config.item
+    final updatedItem = config.item
         .copyWith(
           name: selection.name,
           brand: selection.brand,
           barcode: barcode,
-          imageUrl: _config.item.imageUrl ?? selection.imageUrl,
+          imageUrl: config.item.imageUrl ?? selection.imageUrl,
           weight: inventoryWeight,
-          servingSize: selection.servingSize ?? _config.item.servingSize,
+          servingSize: selection.servingSize ?? config.item.servingSize,
           servingQuantity:
-              selection.servingQuantity ?? _config.item.servingQuantity,
+              selection.servingQuantity ?? config.item.servingQuantity,
           servingQuantityUnit:
-              selection.servingQuantityUnit ?? _config.item.servingQuantityUnit,
+              selection.servingQuantityUnit ?? config.item.servingQuantityUnit,
           nutrition: nutrition,
         )
         .withResolvedAmount(
           weight: inventoryWeight,
           parsedAmount: weightInput.parsedAmount,
-          quantity: _config.item.quantity,
+          quantity: config.item.quantity,
         );
     final globalPackageWeight = _resolvedGlobalPackageWeightForSelection(
       action: action,
@@ -536,17 +528,6 @@ class InventoryReceiptManualProductController
     );
   }
 
-  GlobalFoodItemEditKind _selectedProductEditKindForItem(
-    InventoryItem item, {
-    required String? globalPackageWeight,
-  }) {
-    return _selectedProductEditKind(
-      selection: state.selectedProduct,
-      item: item,
-      globalPackageWeight: globalPackageWeight,
-    );
-  }
-
   GlobalFoodItemEditKind _selectedProductEditKind({
     required InventoryReceiptManualProductSelection? selection,
     required InventoryItem item,
@@ -572,32 +553,18 @@ class InventoryReceiptManualProductController
     );
   }
 
-  String? _resolvedGlobalPackageWeight({
-    required InventoryReceiptManualProductAction action,
-    required InventoryReceiptManualProductSelection? matchedProduct,
-  }) {
-    return _resolvedGlobalPackageWeightForSelection(
-      action: action,
-      selection: matchedProduct,
-    );
-  }
-
   String? _resolvedGlobalPackageWeightForSelection({
     required InventoryReceiptManualProductAction action,
     required InventoryReceiptManualProductSelection? selection,
   }) {
     if (action == InventoryReceiptManualProductAction.addToInventory) {
-      return _resolvedWeight;
+      return _resolvedManualWeightInput.normalizedWeight;
     }
-    return selection?.packageWeight ?? _config.item.weight;
+    return selection?.packageWeight ?? config.item.weight;
   }
 
   String _resolvedManualName({required String fallbackName}) {
     return normalizeManualProductText(state.nameText) ?? fallbackName;
-  }
-
-  String? _resolvedManualBrand() {
-    return normalizeManualProductText(state.brandText);
   }
 
   bool _requiresGlobalPersistenceForSelection({
