@@ -204,13 +204,14 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       return null;
     }
     if (widget.args.mode == ProductSearchHubMode.mealFood) {
-      final pick = await pickProductSearchHubMealFood(
+      final picked = await pickProductSearchHubMealFood(
         context: context,
         args: widget.args,
         result: result,
       );
+      final pick = picked.pick;
       if (pick != null && mounted) _closeHub(pick);
-      return pick == null ? result : null;
+      return pick == null ? picked.result : null;
     }
     final reviewed = await reviewProductSearchHubResultBeforeSave(
       context: context,

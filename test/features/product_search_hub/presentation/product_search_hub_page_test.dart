@@ -513,43 +513,47 @@ void main() {
     expect(childArgs.last.item.name, 'Skyr');
   });
 
-  testWidgets('back on the eat page keeps an edit of a created product', (
-    tester,
-  ) async {
-    final childArgs = <ManualProductSearchRouteArgs>[];
+  for (final (mode, args) in [
+    ('diary', _diaryArgs()),
+    ('meal food', _mealFoodArgs),
+  ]) {
+    testWidgets('$mode: back on the eat page keeps an edit of a created '
+        'product', (tester) async {
+      final childArgs = <ManualProductSearchRouteArgs>[];
 
-    await _pumpRouteHarness(
-      tester,
-      args: _diaryArgs(),
-      childRouteResults: [
-        _diarySheetResult(id: 'created-item', name: 'Skyr'),
-        _diarySheetResult(id: 'created-item', name: 'Skyr natur'),
-      ],
-      inventoryController: _SuccessfulInventoryItemsController(),
-      firebaseAuth: _signedInAuth(),
-      commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
-      onChildRouteArgs: childArgs.add,
-    );
+      await _pumpRouteHarness(
+        tester,
+        args: args,
+        childRouteResults: [
+          _diarySheetResult(id: 'created-item', name: 'Skyr'),
+          _diarySheetResult(id: 'created-item', name: 'Skyr natur'),
+        ],
+        inventoryController: _SuccessfulInventoryItemsController(),
+        firebaseAuth: _signedInAuth(),
+        commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+        onChildRouteArgs: childArgs.add,
+      );
 
-    await tester.tap(
-      find.byKey(const Key('product_search_hub_search_create_own_action')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('return_child_result')));
-    await tester.pumpAndSettle();
-    await tester.ensureVisible(find.byKey(productSearchHubEatPageEditKey));
-    await tester.tap(find.byKey(productSearchHubEatPageEditKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('return_child_result')));
-    await tester.pumpAndSettle();
-    expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
+      await tester.tap(
+        find.byKey(const Key('product_search_hub_search_create_own_action')),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('return_child_result')));
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(productSearchHubEatPageEditKey));
+      await tester.tap(find.byKey(productSearchHubEatPageEditKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('return_child_result')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
 
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
 
-    expect(find.text('product search child route'), findsOneWidget);
-    expect(childArgs.last.item.name, 'Skyr natur');
-  });
+      expect(find.text('product search child route'), findsOneWidget);
+      expect(childArgs.last.item.name, 'Skyr natur');
+    });
+  }
 
   testWidgets('diary add-more eat stays on the page with overlay', (
     tester,

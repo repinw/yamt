@@ -23,10 +23,14 @@ const _mealFoodIds = Uuid();
 /// Shows the eat page for a food picked for a meal. "Bearbeiten" there opens
 /// the editor and comes back to the eat page with the edited food.
 ///
-/// Returns the food with the entered amount, or null when the user closes
-/// the page. The food gets a new id: a recent item keeps the id of its stock
-/// item, which may already be part of the meal.
-Future<InventoryMealFoodPick?> pickProductSearchHubMealFood({
+/// Returns the food with the entered amount as `pick`, which is null when
+/// the user closes the page; `result` then holds the last edit. The food
+/// gets a new id: a recent item keeps the id of its stock item, which may
+/// already be part of the meal.
+Future<
+  ({InventoryMealFoodPick? pick, InventoryReceiptManualProductResult result})
+>
+pickProductSearchHubMealFood({
   required BuildContext context,
   required ProductSearchHubRouteArgs args,
   required InventoryReceiptManualProductResult result,
@@ -43,8 +47,10 @@ Future<InventoryMealFoodPick?> pickProductSearchHubMealFood({
     ),
   );
   final eat = picked.eat;
-  if (eat == null) return null;
-  return (result: picked.result, request: eat.request);
+  return (
+    pick: eat == null ? null : (result: picked.result, request: eat.request),
+    result: picked.result,
+  );
 }
 
 /// Shows the eat page for a food picked in the diary. "Bearbeiten" there
