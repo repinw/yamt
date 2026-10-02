@@ -60,27 +60,12 @@ class InventoryReceiptManualProductController
             config.selectedProduct?.servingQuantityUnit ??
             config.item.servingQuantityUnit,
       )),
-      kcalText: formatManualProductDouble(nutrition?.per100Kcal),
-      saturatedFatText: formatManualProductDouble(
-        nutrition?.per100SaturatedFat,
-      ),
-      polyunsaturatedFatText: formatManualProductDouble(
-        nutrition?.per100PolyunsaturatedFat,
-      ),
-      proteinText: formatManualProductDouble(nutrition?.per100Protein),
-      carbsText: formatManualProductDouble(nutrition?.per100Carbs),
-      sugarText: formatManualProductDouble(nutrition?.per100Sugar),
-      fiberText: formatManualProductDouble(nutrition?.per100Fiber),
-      fatText: formatManualProductDouble(nutrition?.per100Fat),
-      saltText: formatManualProductDouble(nutrition?.per100Salt),
-      showPolyunsaturatedFatField: nutrition?.per100PolyunsaturatedFat != null,
-      showFiberField: nutrition?.per100Fiber != null,
       selectedProduct: config.selectedProduct == null
           ? null
           : InventoryReceiptManualProductSelection.fromSearchResult(
               config.selectedProduct!,
             ),
-    );
+    ).withNutrition(nutrition);
   }
 
   /// Update name text.
@@ -491,39 +476,26 @@ class InventoryReceiptManualProductController
       product.packageWeight,
       fallbackUnit: state.selectedWeightUnit,
     );
-    state = state.copyWith(
-      nameText: product.name,
-      brandText: product.brand ?? '',
-      barcode: product.barcode,
-      weightAmount: weightInput.amount,
-      selectedWeightUnit: weightInput.amount.isEmpty
-          ? state.selectedWeightUnit
-          : weightInput.unit,
-      pieceWeightText: manualProductPieceWeightText((
-        size: null,
-        quantity: product.servingQuantity,
-        quantityUnit: product.servingQuantityUnit,
-      )),
-      kcalText: formatManualProductDouble(nutrition?.per100Kcal),
-      saturatedFatText: formatManualProductDouble(
-        nutrition?.per100SaturatedFat,
-      ),
-      polyunsaturatedFatText: formatManualProductDouble(
-        nutrition?.per100PolyunsaturatedFat,
-      ),
-      proteinText: formatManualProductDouble(nutrition?.per100Protein),
-      carbsText: formatManualProductDouble(nutrition?.per100Carbs),
-      sugarText: formatManualProductDouble(nutrition?.per100Sugar),
-      fiberText: formatManualProductDouble(nutrition?.per100Fiber),
-      fatText: formatManualProductDouble(nutrition?.per100Fat),
-      saltText: formatManualProductDouble(nutrition?.per100Salt),
-      showPolyunsaturatedFatField: nutrition?.per100PolyunsaturatedFat != null,
-      showFiberField: nutrition?.per100Fiber != null,
-      selectedProduct: product,
-      barcodeOrigin: null,
-      ocrDraft: null,
-      error: null,
-    );
+    state = state
+        .copyWith(
+          nameText: product.name,
+          brandText: product.brand ?? '',
+          barcode: product.barcode,
+          weightAmount: weightInput.amount,
+          selectedWeightUnit: weightInput.amount.isEmpty
+              ? state.selectedWeightUnit
+              : weightInput.unit,
+          pieceWeightText: manualProductPieceWeightText((
+            size: null,
+            quantity: product.servingQuantity,
+            quantityUnit: product.servingQuantityUnit,
+          )),
+          selectedProduct: product,
+          barcodeOrigin: null,
+          ocrDraft: null,
+          error: null,
+        )
+        .withNutrition(nutrition);
   }
 
   /// Fills the nutrition values, and name, brand, and package size when

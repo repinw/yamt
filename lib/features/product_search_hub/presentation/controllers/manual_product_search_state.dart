@@ -1,4 +1,5 @@
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_nutrition/domain/nutrition_label_ocr_models.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_search_value_utils.dart';
@@ -159,6 +160,30 @@ class InventoryReceiptManualProductState {
       types.add(InventoryReceiptOptionalNutritionType.fiber);
     }
     return types;
+  }
+
+  /// Fills the nutrition inputs from [nutrition], and shows the optional
+  /// rows that it has values for.
+  InventoryReceiptManualProductState withNutrition(
+    GlobalFoodNutrition? nutrition,
+  ) {
+    return copyWith(
+      kcalText: formatManualProductDouble(nutrition?.per100Kcal),
+      saturatedFatText: formatManualProductDouble(
+        nutrition?.per100SaturatedFat,
+      ),
+      polyunsaturatedFatText: formatManualProductDouble(
+        nutrition?.per100PolyunsaturatedFat,
+      ),
+      proteinText: formatManualProductDouble(nutrition?.per100Protein),
+      carbsText: formatManualProductDouble(nutrition?.per100Carbs),
+      sugarText: formatManualProductDouble(nutrition?.per100Sugar),
+      fiberText: formatManualProductDouble(nutrition?.per100Fiber),
+      fatText: formatManualProductDouble(nutrition?.per100Fat),
+      saltText: formatManualProductDouble(nutrition?.per100Salt),
+      showPolyunsaturatedFatField: nutrition?.per100PolyunsaturatedFat != null,
+      showFiberField: nutrition?.per100Fiber != null,
+    );
   }
 
   /// Copy with.
