@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/inventory_item_store.dart';
@@ -223,6 +224,7 @@ class FirestoreInventoryItemRepository
     return _store.replaceAll(
       householdId: householdId,
       documentsById: documentsById,
+      parse: _decode,
     );
   }
 
@@ -245,12 +247,8 @@ class FirestoreInventoryItemRepository
   List<InventoryItem> _decodeDocuments(List<InventoryItemDocument> documents) {
     final items = <InventoryItem>[];
     for (var index = 0; index < documents.length; index++) {
-      final json = Map<String, dynamic>.from(documents[index].data);
-      if ((json['id'] as String?)?.trim().isEmpty ?? true) {
-        json['id'] = documents[index].id;
-      }
       try {
-        items.add(_normalizeItem(InventoryItem.fromJson(json)));
+        items.add(_decode(documents[index].id, documents[index].data));
       } on Object catch (error, stackTrace) {
         log(
           'Skipping corrupted inventory item at index $index.',
@@ -262,6 +260,10 @@ class FirestoreInventoryItemRepository
     }
     return items;
   }
+
+  /// Decodes a stored document; reads and the [saveAll] delete check agree.
+  InventoryItem _decode(String id, Map<String, dynamic> data) =>
+      _normalizeItem(InventoryItem.fromJson(withDocumentId(id, data)));
 
   InventoryItem _normalizeItem(InventoryItem item) {
     final barcode = item.normalizedBarcode;

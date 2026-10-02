@@ -5,7 +5,8 @@ abstract interface class PreparedMealRepository {
   /// Watch all.
   Stream<List<PreparedMeal>> watchAll();
 
-  /// Read all.
+  /// Reads all meals of the household and skips the ones that do
+  /// not parse. Throws when they cannot be read.
   Future<List<PreparedMeal>> readAll();
 
   /// Save all.

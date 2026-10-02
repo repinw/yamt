@@ -32,10 +32,12 @@ abstract interface class InventoryItemStore {
   /// Watch all.
   Stream<List<InventoryItemDocument>> watchAll({required String householdId});
 
-  /// Replace all.
+  /// Replace all. A stored document missing from [documentsById] is
+  /// deleted only when [parse] reads its data without throwing.
   Future<bool> replaceAll({
     required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
+    required void Function(String id, Map<String, dynamic> data) parse,
   });
 
   /// Upsert all.
@@ -115,6 +117,7 @@ class FirestoreInventoryItemStore
   Future<bool> replaceAll({
     required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
+    required void Function(String id, Map<String, dynamic> data) parse,
   }) async {
     try {
       final collection = _collection(householdId);
@@ -122,6 +125,7 @@ class FirestoreInventoryItemStore
       await _atomicReplaceService.replaceAll(
         collection: collection.reference,
         documentsById: await collection.sealAll(documentsById),
+        canDelete: (candidate) => collection.canDeleteStale(candidate, parse),
       );
       return true;
     } on Object catch (error, stackTrace) {

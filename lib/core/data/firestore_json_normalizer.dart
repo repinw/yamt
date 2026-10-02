@@ -8,6 +8,16 @@ Map<String, dynamic> normalizeFirestoreJson(Map<String, dynamic> rawData) {
   );
 }
 
+/// A copy of the stored [data] that holds the document [id] when its own
+/// `id` is missing or empty. Throws when the stored `id` is not a string.
+Map<String, dynamic> withDocumentId(String id, Map<String, dynamic> data) {
+  final json = Map<String, dynamic>.from(data);
+  if ((json['id'] as String?)?.trim().isEmpty ?? true) {
+    json['id'] = id;
+  }
+  return json;
+}
+
 /// Converts nested Firestore values into JSON values.
 dynamic normalizeFirestoreValue(dynamic value) {
   if (value is Timestamp) {

@@ -82,6 +82,7 @@ class _UnavailablePreparedMealTemplateStore
   Future<bool> replaceAll({
     required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
+    required void Function(String id, Map<String, dynamic> data) parse,
   }) async {
     return false;
   }

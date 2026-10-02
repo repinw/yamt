@@ -77,11 +77,15 @@ class _FakeInventoryItemStore
     yield* _controllerFor(householdId).stream;
   }
 
+  void Function(String id, Map<String, dynamic> data)? parse;
+
   @override
   Future<bool> replaceAll({
     required String householdId,
     required Map<String, Map<String, dynamic>> documentsById,
+    required void Function(String id, Map<String, dynamic> data) parse,
   }) async {
+    this.parse = parse;
     if (replaceAllShouldFail) {
       return false;
     }
@@ -331,6 +335,26 @@ void main() {
       'manual-new',
       'manual-middle',
     ]);
+  });
+
+  test('saveAll hands the store a parse check for left-out items', () async {
+    final store = _FakeInventoryItemStore();
+    addTearDown(store.dispose);
+    final repository = FirestoreInventoryItemRepository(
+      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
+      store: store,
+    );
+
+    await repository.saveAll(<InventoryItem>[_item('a')]);
+
+    store.parse!('b', _item('b').toJson());
+    // The list skips a stored item with a non-text id, so the delete check
+    // must not accept it either.
+    expect(
+      () => store.parse!('odd', _item('odd').toJson()..['id'] = 5),
+      throwsA(isA<TypeError>()),
+    );
   });
 
   test('appendAll upserts by id and appends new items', () async {
