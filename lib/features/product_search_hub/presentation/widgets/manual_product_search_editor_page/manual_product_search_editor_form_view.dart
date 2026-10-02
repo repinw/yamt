@@ -121,6 +121,7 @@ class ManualProductSearchEditorFormView extends StatelessWidget {
       ManualProductFormField.brand => controller.updateBrandText,
       ManualProductFormField.name => controller.updateNameText,
       ManualProductFormField.weightAmount => controller.updateWeightAmount,
+      ManualProductFormField.pieceWeight => controller.updatePieceWeightText,
       ManualProductFormField.barcode => controller.updateBarcode,
       ManualProductFormField.kcal => controller.updateKcalText,
       ManualProductFormField.fat => controller.updateFatText,

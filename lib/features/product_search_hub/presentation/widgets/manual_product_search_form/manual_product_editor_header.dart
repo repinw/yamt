@@ -110,6 +110,20 @@ class ManualProductEditorHeader extends StatelessWidget {
               .isEmpty,
           isUnitMissing: unit == null,
         ),
+        // A size in pieces needs the grams of one piece for the calories.
+        if (unit == InventoryAmountUnit.piece)
+          EatInlineAmountField(
+            fieldKey: ManualProductFormField.pieceWeight.key,
+            label: l10n.productPieceWeightLabel,
+            unitLabel: l10n.caloriesUnitGram,
+            controller: texts[ManualProductFormField.pieceWeight]!,
+            focusNode: focusNodes[ManualProductFormField.pieceWeight]!,
+            onChanged: (text) =>
+                onFieldChanged(ManualProductFormField.pieceWeight, text),
+            isAmountMissing: texts[ManualProductFormField.pieceWeight]!.text
+                .trim()
+                .isEmpty,
+          ),
       ],
     );
   }

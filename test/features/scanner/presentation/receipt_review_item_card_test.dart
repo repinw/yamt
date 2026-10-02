@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/presentation/widgets/receipt_review_item_card.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
   group('ReceiptReviewItemCard', () {
@@ -26,6 +28,9 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            locale: const Locale('de'),
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             home: Scaffold(
               body: ReceiptReviewItemCard(
                 item: item,
@@ -57,6 +62,9 @@ void main() {
       var confirmed = false;
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReceiptReviewItemCard(
               item: item,
@@ -89,6 +97,9 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReceiptReviewItemCard(
               item: item,
@@ -113,6 +124,9 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReceiptReviewItemCard(
               item: item,
@@ -150,6 +164,9 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: ReceiptReviewItemCard(
               item: item,
@@ -175,6 +192,51 @@ void main() {
       final proteinX = tester.getTopLeft(find.text('Protein')).dx;
       expect(fatX, lessThan(carbsX));
       expect(carbsX, lessThan(proteinX));
+    });
+
+    testWidgets('names what the matched product lacks', (tester) async {
+      const item = ReceiptLineItem(
+        id: 'i9',
+        rawName: 'EIER 10ST',
+        totalPrice: 2.99,
+        status: ReceiptItemStatus.confirmed,
+        packageWeight: '10 Stück',
+        matchedProduct: ProductCandidate(
+          id: 'p9',
+          name: 'Eier',
+          nutrition: GlobalFoodNutrition(
+            qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+            per100Kcal: 137,
+            per100Fat: 9.3,
+            per100SaturatedFat: 2.7,
+            per100Carbs: 0.7,
+            per100Sugar: 0.7,
+            per100Protein: 12.6,
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('de'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: ReceiptReviewItemCard(
+              item: item,
+              currencyCode: 'EUR',
+              onTap: () {},
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(
+        find.byKey(const Key('receipt_item_missing_values_i9')),
+        findsOneWidget,
+      );
+      expect(find.text('Noch offen: Salz'), findsOneWidget);
     });
   });
 }

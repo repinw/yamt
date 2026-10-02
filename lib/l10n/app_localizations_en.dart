@@ -219,6 +219,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productEditorMissingBarcode => 'Barcode – scan or “Has none”';
 
   @override
+  String productMissingValuesHint(String values) {
+    return 'Missing: $values – add';
+  }
+
+  @override
+  String get productPieceWeightLabel => 'Grams per piece';
+
+  @override
   String get productEditorPhotoReadName => 'Name';
 
   @override

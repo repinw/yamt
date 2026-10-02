@@ -43,9 +43,6 @@ class OffProductSearchPackageWeightResolver {
       rawWeight: rawWeight,
       productQuantity: prodQty,
       productQuantityUnit: prodUnit,
-      servingSize: sSize,
-      servingQuantity: sQty,
-      servingQuantityUnit: sUnit,
     );
 
     return (
@@ -62,9 +59,6 @@ class OffProductSearchPackageWeightResolver {
     required String? rawWeight,
     required double? productQuantity,
     required String? productQuantityUnit,
-    required String? servingSize,
-    required double? servingQuantity,
-    required String? servingQuantityUnit,
   }) {
     if (rawWeight != null && rawWeight.isNotEmpty) {
       final isTrivialPiece = RegExp(
@@ -90,19 +84,8 @@ class OffProductSearchPackageWeightResolver {
       return qtyStr;
     }
 
-    if (servingQuantity != null && servingQuantity > 0) {
-      final unit = servingQuantityUnit?.trim();
-      final qtyStr = formatQuantity(servingQuantity);
-      if (unit != null && unit.isNotEmpty) {
-        return '$qtyStr $unit';
-      }
-      return qtyStr;
-    }
-
-    if (servingSize != null && servingSize.trim().isNotEmpty) {
-      return servingSize.trim();
-    }
-
+    // A serving is no package size. Without one the product stays without a
+    // size, so the pick pages can name it as missing.
     return null;
   }
 

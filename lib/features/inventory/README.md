@@ -87,9 +87,17 @@ already documented as a reusable presentation surface.
   `EatAmountRuler` with `EatRulerMark`, `EatSheetTextField`, `EatWhenMenu`,
   `EatActionCard`, `EatChip`, `EatComponentsList`, `EatImageTile`,
   `EatInlineAmountField`, `EatFramedBox`, `EatLabelTitle`, `EatLabelInputRow`
-  (one editable row of a food label), `EatTextLink`, and `consumedUnitSymbol`
-  (`eat_sheet_l10n.dart`), so later features can show and edit foods in the
-  same food label look.
+  (one editable row of a food label), `EatTextLink`, `EatMissingValuesHint`
+  with `productMissingValuesText` (the line that names a product's missing
+  values), and `consumedUnitSymbol` (`eat_sheet_l10n.dart`), so later
+  features can show and edit foods in the same food label look.
+
+## Rules
+
+- `domain/product_missing_values.dart` is the one completeness check for a
+  product: the seven EU label values, and the package size where stock
+  matters. A size in pieces counts only with grams per piece (a serving in g
+  or ml). Every missing-values hint uses it, and so will the search list.
 
 ## Providers
 

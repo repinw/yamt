@@ -32,6 +32,7 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_missing_values_hint.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/data/'
@@ -420,6 +421,8 @@ void main() {
     expect(inventoryController.addedItems, isEmpty);
     expect(find.byKey(const Key('eat_page_amount_field')), findsOneWidget);
     expect(find.byKey(productSearchHubEatPageEditKey), findsOneWidget);
+    // Eating needs no package, so only the nutrition counts as missing.
+    expect(find.text('Missing: 3 nutrition values – add'), findsOneWidget);
   });
 
   testWidgets('diary eat page edits the food and comes back', (tester) async {
@@ -699,12 +702,44 @@ void main() {
     expect(find.byType(InventoryStockAddPage), findsOneWidget);
     expect(find.text('product search child route'), findsNothing);
 
+    await tester.ensureVisible(find.byKey(InventoryStockAddPage.increaseKey));
     await tester.tap(find.byKey(InventoryStockAddPage.increaseKey));
     await tester.pump();
     expect(find.text('Add to stock (2 packages)'), findsOneWidget);
 
     await tester.ensureVisible(find.byKey(const Key('eat_item_action_edit')));
     await tester.tap(find.byKey(const Key('eat_item_action_edit')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('product search child route'), findsOneWidget);
+    expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+  });
+
+  testWidgets('the Vorrat page names a missing package size and opens the '
+      'editor from it', (tester) async {
+    ManualProductSearchRouteArgs? childArgs;
+
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.search,
+      ),
+      searchResults: [_searchProduct(packageWeight: null)],
+      onChildRouteArgs: (args) => childArgs = args,
+    );
+
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Missing: Package size, 3 nutrition values – add'),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(EatMissingValuesHint.buttonKey));
     await tester.pumpAndSettle();
 
     expect(find.text('product search child route'), findsOneWidget);
@@ -1149,13 +1184,14 @@ InventoryItem _item({
 OffProductSearchResult _searchProduct({
   String code = '4006381333931',
   String name = 'Search Milk',
+  String? packageWeight = '100 g',
 }) {
   return OffProductSearchResult(
     code: code,
     name: name,
     brand: 'Dairy Co',
     score: 1,
-    packageWeight: '100 g',
+    packageWeight: packageWeight,
     nutrition: const GlobalFoodNutrition(
       qualityStatus: GlobalFoodNutritionQualityStatus.verified,
       per100Kcal: 64,

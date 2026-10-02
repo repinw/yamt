@@ -157,6 +157,9 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
             ),
       // In a meal the hub item's row carries its ruler.
       showAmount: meal == null || (includesHub && !hasMealRuler),
+      onCompleteValues: picks.isEmpty
+          ? () => _run(InventoryItemHubAction.edit)
+          : null,
       footer: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: AppSpacing.xxl,

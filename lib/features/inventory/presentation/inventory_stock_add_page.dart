@@ -5,6 +5,7 @@ import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/product_missing_values.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_action.dart';
@@ -12,6 +13,7 @@ import 'package:yamt/features/inventory/presentation/models/inventory_stock_add_
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_count_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_table.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_missing_values_hint.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
@@ -91,6 +93,12 @@ class _InventoryStockAddPageState extends ConsumerState<InventoryStockAddPage> {
               : l10n.receiptReviewPackageSize(weight),
           imageUrl: item.imageUrl,
         ),
+        if (missingItemValues(item, checkPackageSize: true) case final missing
+            when missing.isNotEmpty)
+          EatMissingValuesHint(
+            missing: missing,
+            onPressed: () => _run(InventoryItemHubAction.edit),
+          ),
         if (_packageNutrition(package) case final nutrition?)
           EatLabelTable(
             rows: nutritionFactsRows(

@@ -139,13 +139,13 @@ Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
       expect(results, hasLength(1));
       final item = results.single;
       expect(item.name, 'Deutscher Apfelsaft');
-      expect(item.packageWeight, '200 ml');
+      expect(item.packageWeight, isNull);
       expect(item.nutrition, isNotNull);
       expect(item.nutrition!.per100Kcal, closeTo(100.0, 0.1));
       expect(item.nutrition!.per100Salt, closeTo(0.1, 0.01));
     });
 
-    test('resolves packageWeight from servingSize and parsed portion', () {
+    test('keeps a serving as serving, not as package size', () {
       final results = parser.parse('''
 {
   "results": [
@@ -164,7 +164,7 @@ Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
 
       expect(results, hasLength(1));
       final item = results.single;
-      expect(item.packageWeight, '150 g');
+      expect(item.packageWeight, isNull);
       expect(item.servingSize, '1 Becher (150 g)');
       expect(item.servingQuantity, 150);
       expect(item.servingQuantityUnit, 'g');

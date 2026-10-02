@@ -9,6 +9,8 @@ import 'package:yamt/features/inventory/presentation/inventory_stock_add_flow.da
 import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_stock_add_result.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_missing_values_hint.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _openKey = Key('open_stock_add');
@@ -33,7 +35,30 @@ final InventoryItem _oats = InventoryItem.create(
   ),
 );
 
-Widget _buildHarness({required ValueChanged<InventoryStockAddResult?> onDone}) {
+/// Eggs from OFF: only the "10 Stück" placeholder, no grams per piece, no
+/// salt.
+final InventoryItem _eggs = InventoryItem.create(
+  id: 'item-2',
+  name: 'Eier',
+  entryDate: DateTime.utc(2026, 10, 2),
+  storeName: 'Aldi',
+  quantity: 1,
+  weight: '10 Stück',
+  nutrition: const GlobalFoodNutrition(
+    qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+    per100Kcal: 137,
+    per100Fat: 9.3,
+    per100SaturatedFat: 2.7,
+    per100Carbs: 0.7,
+    per100Sugar: 0.7,
+    per100Protein: 12.6,
+  ),
+);
+
+Widget _buildHarness({
+  required ValueChanged<InventoryStockAddResult?> onDone,
+  InventoryItem? item,
+}) {
   final container = ProviderContainer();
   addTearDown(container.dispose);
 
@@ -49,7 +74,10 @@ Widget _buildHarness({required ValueChanged<InventoryStockAddResult?> onDone}) {
             child: FilledButton(
               key: _openKey,
               onPressed: () async => onDone(
-                await showInventoryStockAddPage(context: context, item: _oats),
+                await showInventoryStockAddPage(
+                  context: context,
+                  item: item ?? _oats,
+                ),
               ),
               child: const Text('open'),
             ),
@@ -96,6 +124,26 @@ void main() {
     expect(find.byType(InventoryStockAddPage), findsNothing);
     expect(result, isA<InventoryStockAddConfirmed>());
     expect((result! as InventoryStockAddConfirmed).packages, 3);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a product without grams per piece names it and opens the '
+      'editor from the line', (tester) async {
+    InventoryStockAddResult? result;
+    await tester.pumpWidget(
+      _buildHarness(onDone: (value) => result = value, item: _eggs),
+    );
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester);
+    expect(find.byKey(EatMissingValuesHint.buttonKey), findsOneWidget);
+
+    await tester.tap(find.byKey(EatMissingValuesHint.buttonKey));
+    await _pumpVisibleStep(tester);
+
+    expect(find.byType(InventoryStockAddPage), findsNothing);
+    expect(result, isA<InventoryStockAddEdit>());
     expect(tester.takeException(), isNull);
   });
 }
