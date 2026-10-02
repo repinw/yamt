@@ -90,15 +90,16 @@ Widget _buildHarness({
   );
   addTearDown(router.dispose);
 
-  // Signed out, as in the diary flow tests. The recent items of the search
-  // read the Vorrat repository, which reaches Firebase Auth and the user
-  // profile; without these fakes they fail or are still loading when the
-  // test disposes the container.
+  // Signed out. The recent items of the search read the Vorrat repository,
+  // which reaches Firebase Auth and the user profile. The fakes start with
+  // their value: a provider first read under the fullscreen eat page starts
+  // paused, so a fake stream would never emit and would still be loading
+  // when the test disposes the container.
   final container = ProviderContainer(
     overrides: [
-      authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(null)),
+      authStateChangesProvider.overrideWithValue(const AsyncData<User?>(null)),
       firebaseFirestoreProvider.overrideWith((ref) => null),
-      userProfileProvider.overrideWith((ref) => Stream.value(null)),
+      userProfileProvider.overrideWithValue(const AsyncData(null)),
     ],
   );
   addTearDown(container.dispose);
