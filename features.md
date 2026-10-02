@@ -467,8 +467,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   gone, and the page says it could not be loaded.
 - "Weiter" on a pot meal opens its "Gekocht" page while it is still in the
   pot, otherwise the meal's detail page, where its open rows are filled.
-  The card says "Im Topf seit …" when no row is open. "Neue Vorlage" opens
-  the Vorrat tab for now.
+  The card says "Im Topf seit …" when no row is open, with the day instead
+  of the time for a pot from an earlier day. "Neue Vorlage" opens the
+  Vorrat tab for now.
   A recipe or Vorlage opens its template detail.
 - Editing and deleting templates from the Kochbuch is not available until the
   recipe page exists.
