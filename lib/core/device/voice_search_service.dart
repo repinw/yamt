@@ -205,7 +205,9 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
   void _handleError(SpeechRecognitionError error) {
     _onListeningStateChanged?.call(false);
 
-    if (!_isInitialized || !error.permanent) {
+    if (!_isInitialized ||
+        !error.permanent ||
+        _isNoSpeechError(error.errorMsg)) {
       return;
     }
 
@@ -224,6 +226,14 @@ class SpeechToTextVoiceSearchService implements VoiceSearchService {
       );
     }
     _onError?.call(failure);
+  }
+
+  /// Whether [message] means the user said nothing, which ends listening
+  /// without a failure.
+  bool _isNoSpeechError(String message) {
+    final normalized = message.toLowerCase();
+    return normalized.contains('speech_timeout') ||
+        normalized.contains('no_match');
   }
 
   VoiceSearchFailure _mapPlatformFailure(PlatformException error) {
