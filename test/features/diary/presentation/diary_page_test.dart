@@ -1157,6 +1157,7 @@ CalorieWeekOverview _dashboardWeekOverviewForPageTest({
   final totalGoalKcal = days.fold<double>(0, (sum, day) => sum + day.goalKcal);
 
   return CalorieWeekOverview(
+    isPreviousDayClosed: false,
     days: days,
     totalConsumedKcal: dayTotal,
     totalGoalKcal: totalGoalKcal,

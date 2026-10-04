@@ -166,6 +166,7 @@ CalorieWeekOverview _weekOverview({
       ),
   ];
   return CalorieWeekOverview(
+    isPreviousDayClosed: false,
     days: days,
     totalConsumedKcal: days.fold<double>(0, (sum, day) => sum + day.totalKcal),
     totalGoalKcal: 2000 * 7,

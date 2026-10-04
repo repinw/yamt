@@ -46,6 +46,9 @@ CalorieWeekOverview _$CalorieWeekOverviewFromJson(
       ? null
       : DateTime.parse(json['next_goal_start_date'] as String),
   futureGoalKcal: (json['future_goal_kcal'] as num?)?.toDouble(),
+  isPreviousDayClosed: json['is_previous_day_closed'] as bool,
+  previousDayCarryoverKcal: (json['previous_day_carryover_kcal'] as num?)
+      ?.toDouble(),
 );
 
 Map<String, dynamic> _$CalorieWeekOverviewToJson(
@@ -61,4 +64,6 @@ Map<String, dynamic> _$CalorieWeekOverviewToJson(
   'goal_starts_in_future': instance.goalStartsInFuture,
   'next_goal_start_date': instance.nextGoalStartDate?.toIso8601String(),
   'future_goal_kcal': instance.futureGoalKcal,
+  'previous_day_carryover_kcal': instance.previousDayCarryoverKcal,
+  'is_previous_day_closed': instance.isPreviousDayClosed,
 };

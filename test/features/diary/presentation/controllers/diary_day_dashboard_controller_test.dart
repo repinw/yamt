@@ -519,6 +519,7 @@ CalorieWeekOverview _weekOverviewWithTodayExtraGoal({
       ),
   ];
   return CalorieWeekOverview(
+    isPreviousDayClosed: false,
     days: days,
     totalConsumedKcal: 0,
     totalGoalKcal: days.fold<double>(0, (sum, day) => sum + day.goalKcal),

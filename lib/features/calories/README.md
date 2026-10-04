@@ -17,6 +17,10 @@ changes.
   the week overview, learned TDEE per day, weekly check-in data and actions,
   the entry mutation stream, and the calorie reactions to weight changes.
   Later features read and change this state.
+- The closed day: today closed early by the signed-in user, saved only on
+  this device, so
+  tomorrow's week overview counts today as finished and gives tomorrow its
+  carryover.
 - The debug dump tooling in `application/` (dump builders), `data/` (text
   file export), and `presentation/`; the Home side menu shows it only in
   debug builds.

@@ -79,6 +79,7 @@ CalorieWeekOverview diaryWeekOverviewForTest({
   );
   final totalGoalKcal = days.fold<double>(0, (sum, day) => sum + day.goalKcal);
   return CalorieWeekOverview(
+    isPreviousDayClosed: false,
     days: days,
     totalConsumedKcal: totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,

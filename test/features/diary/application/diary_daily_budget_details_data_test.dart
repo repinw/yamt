@@ -12,6 +12,7 @@ void main() {
       final wednesday = DateTime(2026, 4, 15);
 
       final weekOverview = CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: [
           CalorieWeekDayOverview(
             date: monday,
@@ -92,6 +93,7 @@ void main() {
       final tuesday = DateTime(2026, 4, 14);
 
       final weekOverview = CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: [
           CalorieWeekDayOverview(
             date: monday,
@@ -153,6 +155,7 @@ void main() {
       final monday = DateTime(2026, 4, 13);
 
       final weekOverview = CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: [
           CalorieWeekDayOverview(
             date: monday,
@@ -204,6 +207,7 @@ void main() {
       final previousRunDay = DateTime(2026, 4, 19);
       final newRunStart = DateTime(2026, 4, 20);
       final weekOverview = CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: [
           CalorieWeekDayOverview(
             date: previousRunDay,
@@ -313,6 +317,7 @@ void main() {
     test('populates calorie cycling fields for a rest day', () {
       final monday = DateTime(2026, 4, 13);
       final weekOverview = CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: [
           CalorieWeekDayOverview(
             date: monday,
@@ -369,6 +374,7 @@ void main() {
     test('populates calorie cycling fields for a training day', () {
       final monday = DateTime(2026, 4, 13);
       final weekOverview = CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: [
           CalorieWeekDayOverview(
             date: monday,

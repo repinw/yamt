@@ -104,6 +104,7 @@ void main() {
 
     test('missed tracking detects untracked past days in current week', () {
       final weekOverview = CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: <CalorieWeekDayOverview>[
           CalorieWeekDayOverview(
             date: DateTime(2026, 4, 20),

@@ -3,14 +3,17 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_consumption_snapshot_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
@@ -24,6 +27,7 @@ import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 
+import '../../../helpers/memory_app_preferences.dart';
 import '../support/fake_calories_repositories.dart';
 
 const _readyHealthStatus = HealthConnectionStatus(
@@ -85,6 +89,56 @@ Future<List<CalorieEntry>> _readLogEntriesForDay(
         })
         .toList(growable: false),
   );
+}
+
+/// Yesterday 1500 and today 800 kcal against 2000, on a clock set to today.
+ProviderContainer _futureDaysContainer({
+  required DateTime today,
+  DateTime? goalStart,
+}) {
+  final yesterday = today.subtract(const Duration(days: 1));
+  final logRepository = FakeCalorieLogRepository(
+    initialEntries: <CalorieEntry>[
+      _entry(
+        'yesterday',
+        loggedAt: yesterday.add(const Duration(hours: 12)),
+        totalKcal: 1500,
+      ),
+      _entry(
+        'today',
+        loggedAt: today.add(const Duration(hours: 8)),
+        totalKcal: 800,
+      ),
+    ],
+  );
+  final settingsRepository = FakeCalorieSettingsRepository(
+    initialSettings: CalorieGoalSettings.single(
+      dailyKcalGoal: 2000,
+      calculatorProfile: null,
+      effectiveDate: goalStart ?? yesterday,
+    ),
+  );
+  addTearDown(logRepository.dispose);
+  addTearDown(settingsRepository.dispose);
+
+  final container = ProviderContainer(
+    overrides: [
+      clockProvider.overrideWithValue(
+        () => today.add(const Duration(hours: 10)),
+      ),
+      appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+      closedDayRepositoryProvider.overrideWithValue(
+        ClosedDayRepository(MemoryAppPreferences(), 'user-1'),
+      ),
+      calorieLogRepositoryProvider.overrideWithValue(logRepository),
+      calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      healthConnectionServiceProvider.overrideWith(
+        (ref) => FakeHealthConnectionService(_readyHealthStatus),
+      ),
+    ],
+  );
+  addTearDown(container.dispose);
+  return container;
 }
 
 Future<CalorieWeekOverview> _readVisibleWeekOverview(
@@ -291,70 +345,81 @@ void main() {
     },
   );
 
-  test(
-    'calorieWeekOverview gives a future day no carryover',
-    () async {
-      final today = DateTime(2026, 4, 10);
-      final yesterday = today.subtract(const Duration(days: 1));
-      final tomorrow = today.add(const Duration(days: 1));
-      final dayAfterTomorrow = today.add(const Duration(days: 2));
-      final logRepository = FakeCalorieLogRepository(
-        initialEntries: <CalorieEntry>[
-          _entry(
-            'yesterday',
-            loggedAt: yesterday.add(const Duration(hours: 12)),
-            totalKcal: 1500,
-          ),
-          _entry(
-            'today',
-            loggedAt: today.add(const Duration(hours: 8)),
-            totalKcal: 800,
-          ),
-        ],
-      );
-      final settingsRepository = FakeCalorieSettingsRepository(
-        initialSettings: CalorieGoalSettings.single(
-          dailyKcalGoal: 2000,
-          calculatorProfile: null,
-          effectiveDate: yesterday,
-        ),
-      );
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
+  final planToday = DateTime(2026, 4, 10);
+  final planTomorrow = planToday.add(const Duration(days: 1));
+  final planDayAfterTomorrow = planToday.add(const Duration(days: 2));
 
-      final container = ProviderContainer(
-        overrides: [
-          clockProvider.overrideWithValue(
-            () => today.add(const Duration(hours: 10)),
-          ),
-          calorieLogRepositoryProvider.overrideWithValue(logRepository),
-          calorieSettingsRepositoryProvider.overrideWithValue(
-            settingsRepository,
-          ),
-          healthConnectionServiceProvider.overrideWith(
-            (ref) => FakeHealthConnectionService(_readyHealthStatus),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
+  test('calorieWeekOverview gives a future day no carryover', () async {
+    final container = _futureDaysContainer(today: planToday);
 
-      final todayOverview = await _readWeekOverviewForWindow(container, today);
-      final tomorrowOverview = await _readWeekOverviewForWindow(
-        container,
-        tomorrow,
-      );
-      final laterOverview = await _readWeekOverviewForWindow(
-        container,
-        dayAfterTomorrow,
-      );
+    final todayOverview = await _readWeekOverviewForWindow(
+      container,
+      planToday,
+    );
+    final tomorrowOverview = await _readWeekOverviewForWindow(
+      container,
+      planTomorrow,
+    );
+    final laterOverview = await _readWeekOverviewForWindow(
+      container,
+      planDayAfterTomorrow,
+    );
 
-      expect(todayOverview.carryoverBeforeTodayKcal, closeTo(83.333, 0.001));
-      expect(tomorrowOverview.carryoverBeforeTodayKcal, 0);
-      expect(tomorrowOverview.todayFlexibleGoalKcal, 2000);
-      expect(laterOverview.carryoverBeforeTodayKcal, 0);
-      expect(laterOverview.todayFlexibleGoalKcal, 2000);
-    },
-  );
+    expect(todayOverview.carryoverBeforeTodayKcal, closeTo(83.333, 0.001));
+    expect(todayOverview.previousDayCarryoverKcal, isNull);
+    expect(tomorrowOverview.carryoverBeforeTodayKcal, 0);
+    expect(tomorrowOverview.todayFlexibleGoalKcal, 2000);
+    expect(laterOverview.carryoverBeforeTodayKcal, 0);
+    expect(laterOverview.todayFlexibleGoalKcal, 2000);
+    expect(laterOverview.previousDayCarryoverKcal, isNull);
+  });
+
+  test('calorieWeekOverview plans tomorrow with the carryover of a closed '
+      'today', () async {
+    final container = _futureDaysContainer(today: planToday);
+    // Yesterday 500 and today 1200 under the goal, spread over the five days
+    // from tomorrow to the end of the run.
+    const carryover = 1700 / 5;
+
+    final open = await _readWeekOverviewForWindow(container, planTomorrow);
+    expect(open.carryoverBeforeTodayKcal, 0);
+    expect(open.previousDayCarryoverKcal, closeTo(carryover, 0.001));
+    expect(open.isPreviousDayClosed, isFalse);
+
+    await _setClosedDay(container, planToday);
+    final closed = await _readWeekOverviewForWindow(container, planTomorrow);
+    final later = await _readWeekOverviewForWindow(
+      container,
+      planDayAfterTomorrow,
+    );
+
+    expect(closed.isPreviousDayClosed, isTrue);
+    expect(closed.carryoverBeforeTodayKcal, closeTo(carryover, 0.001));
+    expect(closed.todayFlexibleGoalKcal, closeTo(2000 + carryover, 0.001));
+    expect(later.carryoverBeforeTodayKcal, 0);
+    expect(later.isPreviousDayClosed, isFalse);
+
+    await _setClosedDay(container, null);
+    final reopened = await _readWeekOverviewForWindow(container, planTomorrow);
+    expect(reopened.carryoverBeforeTodayKcal, 0);
+    expect(reopened.isPreviousDayClosed, isFalse);
+  });
+
+  test('calorieWeekOverview offers no carryover when tomorrow starts a new '
+      'run', () async {
+    // The run started six days ago, so today is its last day.
+    final container = _futureDaysContainer(
+      today: planToday,
+      goalStart: planToday.subtract(const Duration(days: 6)),
+    );
+    await _setClosedDay(container, planToday);
+
+    final tomorrow = await _readWeekOverviewForWindow(container, planTomorrow);
+
+    expect(tomorrow.previousDayCarryoverKcal, isNull);
+    expect(tomorrow.carryoverBeforeTodayKcal, 0);
+    expect(tomorrow.isPreviousDayClosed, isFalse);
+  });
 
   test(
     'calorieWeekOverview anchors the visible window to window controller',
@@ -1303,4 +1368,16 @@ class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {
   }
 
   Future<void> dispose() => _controller.close();
+}
+
+/// Saves or deletes the closed day the way the diary does: through the
+/// repository, then a revision bump.
+Future<void> _setClosedDay(ProviderContainer container, DateTime? day) async {
+  final repository = container.read(closedDayRepositoryProvider);
+  if (day == null) {
+    await repository.deleteClosedDay();
+  } else {
+    await repository.saveClosedDay(day);
+  }
+  container.read(calorieOverviewRevisionProvider.notifier).markChanged();
 }
