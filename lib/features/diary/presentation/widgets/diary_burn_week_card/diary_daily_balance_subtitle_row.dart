@@ -52,7 +52,6 @@ class DiaryDailyBalanceSubtitleText extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
 
     if (data.isPauseDay ||
-        data.isFutureDay ||
         data.bufferAdjustmentLabel != null ||
         data.leftSubtitleParts.isEmpty) {
       return Text(

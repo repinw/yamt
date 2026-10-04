@@ -755,6 +755,21 @@ void main() {
     expect(find.byType(DiaryWeightMissingPromptSection), findsNothing);
   });
 
+  testWidgets('hides the weekly check-in on future days', (tester) async {
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      today: selectedDay.subtract(const Duration(days: 1)),
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
+        windowStartDate: DateTime(2026, 4, 21),
+        shouldAutoOpen: false,
+      ),
+    );
+
+    expect(find.byType(DiaryWeeklyCheckInSection), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.hintCard), findsNothing);
+  });
+
   testWidgets('shows weekly check-in success card for todays learned target', (
     tester,
   ) async {

@@ -2397,6 +2397,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryYesterdayTitle => 'Yesterday';
 
   @override
+  String get diaryTomorrowTitle => 'Tomorrow';
+
+  @override
+  String get diaryDayAfterTomorrowTitle => 'In 2 days';
+
+  @override
   String diaryDayRelativeWeekday(String relative, String weekday) {
     return '$relative · $weekday';
   }
@@ -2521,6 +2527,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get diaryMealsEmptyHint =>
       'Tap “Eat” below to log food by barcode, from the inventory, search, or AI.';
+
+  @override
+  String get diaryMealsPlanEmptyTitle => 'Nothing planned yet';
+
+  @override
+  String get diaryMealsPlanEmptyHint =>
+      'Tap “Eat” below to add what you want to eat on this day.';
 
   @override
   String diaryBalanceEatenAmount(String kcal) {
@@ -2752,7 +2765,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBalanceBaseLabel => 'Base';
 
   @override
-  String get diaryBalancePlannedWithCarryoverLabel => 'Planned with carryover';
+  String get diaryBalancePlannedLabel => 'Planned';
 
   @override
   String diaryBalanceRealEatenLabel(Object kcal) {

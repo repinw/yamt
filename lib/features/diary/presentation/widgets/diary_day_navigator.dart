@@ -29,9 +29,9 @@ abstract final class DiaryDayNavigatorKeys {
   static const label = ValueKey<String>('diary-day-navigator-label');
 }
 
-/// Centered day with previous/next arrows: the weekday, with today or
-/// yesterday, in small capitals over the big date, between leading and
-/// trailing actions.
+/// Centered day with previous/next arrows: the weekday, with yesterday,
+/// today, tomorrow or the day after, in small capitals over the big date,
+/// between leading and trailing actions.
 class DiaryDayNavigator extends StatefulWidget {
   /// Creates a diary day navigator.
   const new({
@@ -225,20 +225,30 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
     );
   }
 
-  /// The weekday, after "today" or "yesterday" when it is one of them.
+  /// The weekday, after a relative name (yesterday up to the day after
+  /// tomorrow) when the day has one.
   String _relativeLabel(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final weekday = DateFormat(
       'EEEE',
       Localizations.localeOf(context).toLanguageTag(),
     ).format(widget.selectedDay);
-    if (isSameCalendarDay(widget.selectedDay, widget.today)) {
-      return l10n.diaryDayRelativeWeekday(l10n.diaryTodayTitle, weekday);
+    final day = widget.selectedDay;
+    final today = widget.today;
+    final tomorrow = nextLocalDay(today);
+    final String relative;
+    if (isSameCalendarDay(day, today)) {
+      relative = l10n.diaryTodayTitle;
+    } else if (isSameCalendarDay(day, previousLocalDay(today))) {
+      relative = l10n.diaryYesterdayTitle;
+    } else if (isSameCalendarDay(day, tomorrow)) {
+      relative = l10n.diaryTomorrowTitle;
+    } else if (isSameCalendarDay(day, nextLocalDay(tomorrow))) {
+      relative = l10n.diaryDayAfterTomorrowTitle;
+    } else {
+      return weekday;
     }
-    if (isSameCalendarDay(widget.selectedDay, previousLocalDay(widget.today))) {
-      return l10n.diaryDayRelativeWeekday(l10n.diaryYesterdayTitle, weekday);
-    }
-    return weekday;
+    return l10n.diaryDayRelativeWeekday(relative, weekday);
   }
 
   Widget _buildTransition(Widget child, Animation<double> animation) {

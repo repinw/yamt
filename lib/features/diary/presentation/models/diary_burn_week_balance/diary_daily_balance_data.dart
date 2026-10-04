@@ -34,8 +34,7 @@ class DiaryDailyBalanceData {
     required this.numberFormat,
     this.leftUnit,
     this.targetAddition,
-    this.baseNumber = '',
-    this.plannedWithCarryoverNumber = '',
+    this.targetNumber = '',
     this.caloriesUnit = '',
     this.bufferAdjustmentLabel,
     this.eatenSubtitle,
@@ -44,8 +43,6 @@ class DiaryDailyBalanceData {
     this.budgetDetails,
     this.isFutureDay = false,
     this.isOverTarget = false,
-    this.baseValue = '',
-    this.plannedWithCarryoverValue = '',
   });
 
   /// Builds daily render data from raw metrics and localization dependencies.
@@ -89,30 +86,15 @@ class DiaryDailyBalanceData {
       l10n: l10n,
     );
 
-    final baseNumber = numberFormat.format(metrics.baseGoalKcal.round());
-    final plannedWithCarryoverNumber = numberFormat.format(
-      metrics.targetKcal.round(),
-    );
     final eatenNumber = numberFormat.format(metrics.eatenKcal.round());
     final targetNumber = numberFormat.format(metrics.targetKcal.round());
     final roundedLeftKcal = metrics.dayLeftKcal.round();
-    final isOverTarget = !isPauseDay && !isFutureDay && roundedLeftKcal < 0;
+    final isOverTarget = !isPauseDay && roundedLeftKcal < 0;
     final leftNumber = isPauseDay
         ? l10n.diaryBalancePauseDayValue
         : numberFormat.format(roundedLeftKcal.abs());
     final leftUnit = isPauseDay ? null : l10n.caloriesUnitKcal;
     final targetAddition = '/ $targetNumber';
-
-    final baseValue = formatDiaryKcal(
-      numberFormat,
-      metrics.baseGoalKcal,
-      l10n.caloriesUnitKcal,
-    );
-    final plannedWithCarryoverValue = formatDiaryKcal(
-      numberFormat,
-      metrics.targetKcal,
-      l10n.caloriesUnitKcal,
-    );
 
     return DiaryDailyBalanceData(
       selectedDay: selectedDay,
@@ -121,8 +103,7 @@ class DiaryDailyBalanceData {
       targetAddition: targetAddition,
       leftValue: leftNumber,
       leftUnit: leftUnit,
-      baseNumber: baseNumber,
-      plannedWithCarryoverNumber: plannedWithCarryoverNumber,
+      targetNumber: targetNumber,
       caloriesUnit: l10n.caloriesUnitKcal,
       isPauseDay: isPauseDay,
       numberFormat: numberFormat,
@@ -133,8 +114,6 @@ class DiaryDailyBalanceData {
       budgetDetails: budgetDetails,
       isFutureDay: isFutureDay,
       isOverTarget: isOverTarget,
-      baseValue: baseValue,
-      plannedWithCarryoverValue: plannedWithCarryoverValue,
     );
   }
 
@@ -163,17 +142,8 @@ class DiaryDailyBalanceData {
   /// amount over the target without a sign.
   final bool isOverTarget;
 
-  /// Base goal value string including unit (e.g. '2,000 kcal').
-  final String baseValue;
-
-  /// Base goal number without unit (e.g. '2,000').
-  final String baseNumber;
-
-  /// Target value including carryover and unit (e.g. '2,150 kcal').
-  final String plannedWithCarryoverValue;
-
-  /// Planned with carryover number without unit (e.g. '2,150').
-  final String plannedWithCarryoverNumber;
+  /// Target number without unit, carryover included (e.g. '2,150').
+  final String targetNumber;
 
   /// Localized calorie unit (e.g. 'kcal').
   final String caloriesUnit;

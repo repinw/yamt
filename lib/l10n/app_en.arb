@@ -1215,6 +1215,8 @@
   "caloriesUnitMilliliter": "ml",
   "diaryTodayTitle": "Today",
   "diaryYesterdayTitle": "Yesterday",
+  "diaryTomorrowTitle": "Tomorrow",
+  "diaryDayAfterTomorrowTitle": "In 2 days",
   "diaryDayRelativeWeekday": "{relative} · {weekday}",
   "@diaryDayRelativeWeekday": {
     "placeholders": {
@@ -1271,6 +1273,8 @@
   "diaryBalanceHideDetails": "Show fewer numbers",
   "diaryMealsEmptyTitle": "Nothing eaten yet",
   "diaryMealsEmptyHint": "Tap “Eat” below to log food by barcode, from the inventory, search, or AI.",
+  "diaryMealsPlanEmptyTitle": "Nothing planned yet",
+  "diaryMealsPlanEmptyHint": "Tap “Eat” below to add what you want to eat on this day.",
   "diaryBalanceEatenAmount": "{kcal} eaten",
   "@diaryBalanceEatenAmount": {
     "placeholders": {
@@ -1544,7 +1548,7 @@
   "progressDayTypeEmpty": "Log a few days to compare training and rest days.",
   "progressLoadFailed": "Could not load this section.",
   "diaryBalanceBaseLabel": "Base",
-  "diaryBalancePlannedWithCarryoverLabel": "Planned with carryover",
+  "diaryBalancePlannedLabel": "Planned",
   "diaryBalanceRealEatenLabel": "Real {kcal}",
   "@diaryBalanceRealEatenLabel": {
     "placeholders": {

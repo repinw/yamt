@@ -8,6 +8,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashed_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -58,7 +59,13 @@ class DiaryMealsSection extends ConsumerWidget {
     );
 
     if (loggedSections.isEmpty) {
-      return const DiaryMealsEmptyState();
+      return DiaryMealsEmptyState(
+        isFutureDay: ref.watch(
+          diaryCalendarControllerProvider.select(
+            (state) => state.isFutureDay(normalizedDay),
+          ),
+        ),
+      );
     }
 
     return DiaryDashedSection(

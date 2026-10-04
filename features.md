@@ -97,10 +97,11 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 - Daily diary page for meals, calorie balance, activity, and weight.
 - Date selection and calendar strip navigation. Swiping the diary slides to
-  the previous or next day. The top bar shows today, yesterday, or the weekday
-  in small capitals over the date, and the day type as a framed chip.
+  the previous or next day. The top bar shows yesterday, today, tomorrow, the
+  day after tomorrow, or the weekday in small capitals over the date, and the
+  day type as a framed chip.
 - A day without logged food shows a short hint that points to the "Essen"
-  button.
+  button. On a future day the hint says that nothing is planned yet.
 - Meal sections for breakfast, lunch, dinner, and snacks.
 - Tapping a logged entry opens its item details in the food label look of
   the eat page: image, brand and name, the nutrition label per 100 g or ml
@@ -126,6 +127,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   big number over a ruler, whose bar has four equal quarters of the target
   that fill in order. It is quiet by default; a tap shows eaten and target,
   base and carryover, and the eaten grams per macro.
+- Future days are shown as a plan: the head reads "Geplant" with the kcal
+  logged for that day and "von" the day's goal. The goal has no carryover,
+  because the days before it are not finished; the training and rest day
+  split still applies. More than the goal shows in the error color like on
+  other days. Future days show no weekly check-in and no budget details.
 - Nutrition bars and macro summaries: each macro shows its label, a bar of four
   segments, and the grams left. A macro above its target shows `+X g over` and
   stripes the overage share at the end of its bar.

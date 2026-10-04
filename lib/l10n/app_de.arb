@@ -1155,6 +1155,8 @@
   "caloriesUnitMilliliter": "ml",
   "diaryTodayTitle": "Heute",
   "diaryYesterdayTitle": "Gestern",
+  "diaryTomorrowTitle": "Morgen",
+  "diaryDayAfterTomorrowTitle": "Übermorgen",
   "diaryDayRelativeWeekday": "{relative} · {weekday}",
   "diaryDayTypeTraining": "Trainingstag",
   "diaryDayTypeRest": "Ruhetag",
@@ -1194,6 +1196,8 @@
   "diaryBalanceHideDetails": "Weniger Zahlen anzeigen",
   "diaryMealsEmptyTitle": "Noch nichts gegessen",
   "diaryMealsEmptyHint": "Über „Essen“ unten per Barcode, Vorrat, Suche oder KI eintragen.",
+  "diaryMealsPlanEmptyTitle": "Noch nichts geplant",
+  "diaryMealsPlanEmptyHint": "Über „Essen“ unten trägst du ein, was du an diesem Tag essen willst.",
   "diaryBalanceEatenAmount": "{kcal} gegessen",
   "diaryBalanceOfTarget": "von {kcal}",
   "diaryBalanceScaleTarget": "Ziel {kcal}",
@@ -1436,7 +1440,7 @@
   "progressDayTypeEmpty": "Trag ein paar Tage ein, dann siehst du Training und Ruhetag im Vergleich.",
   "progressLoadFailed": "Dieser Bereich konnte nicht geladen werden.",
   "diaryBalanceBaseLabel": "Basis",
-  "diaryBalancePlannedWithCarryoverLabel": "Mit Übertrag geplant",
+  "diaryBalancePlannedLabel": "Geplant",
   "diaryBalanceRealEatenLabel": "Echt {kcal}",
   "@diaryBalanceRealEatenLabel": {
     "placeholders": {

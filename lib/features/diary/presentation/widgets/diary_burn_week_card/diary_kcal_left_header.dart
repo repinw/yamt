@@ -4,13 +4,15 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Head of the daily balance: what is left as a big number, and with
 /// details what was eaten out of which target.
 ///
-/// Over the target it shows the overage, future days show the target
-/// planned with carryover, and pause days show a word.
+/// Over the target it shows the overage, future days show the planned
+/// kcal and the target, and pause days show a word. A future pause day shows
+/// the planned kcal and the pause word instead of the target.
 class DiaryKcalLeftHeader extends StatelessWidget {
   /// Creates the head.
   const new({required this.data, required this.showDetails, super.key});
@@ -35,13 +37,11 @@ class DiaryKcalLeftHeader extends StatelessWidget {
         ? colors.ink
         : colors.accentText;
     final label = data.isFutureDay
-        ? l10n.diaryBalancePlannedWithCarryoverLabel
+        ? l10n.diaryBalancePlannedLabel
         : data.isOverTarget
         ? l10n.diaryBalanceOverGoalLabel
         : l10n.diaryBalanceLeftTodayLabel;
-    final value = data.isFutureDay
-        ? data.plannedWithCarryoverNumber
-        : data.leftValue;
+    final value = data.isFutureDay ? data.eatenValue : data.leftValue;
     final unit = data.isFutureDay ? data.caloriesUnit : data.leftUnit;
     final mono = textTheme.labelMedium?.copyWith(fontFamily: AppFonts.mono);
 
@@ -54,6 +54,7 @@ class DiaryKcalLeftHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 label.toUpperCase(),
+                key: DiaryBalanceCardKeys.kcalHeadLabel,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: textTheme.labelSmall?.copyWith(
@@ -85,6 +86,7 @@ class DiaryKcalLeftHeader extends StatelessWidget {
                   children: [
                     Text(
                       value,
+                      key: DiaryBalanceCardKeys.kcalHeadValue,
                       maxLines: 1,
                       style: textTheme.displayLarge?.copyWith(
                         fontWeight: FontWeight.w800,
@@ -98,7 +100,9 @@ class DiaryKcalLeftHeader extends StatelessWidget {
                 ),
               ),
             ),
-            if (showDetails && !data.isPauseDay)
+            // A future day always names its goal: the big number alone
+            // does not say how much is left to plan.
+            if (data.isFutureDay || (showDetails && !data.isPauseDay))
               _EatenOfTarget(data: data, style: mono),
           ],
         ),
@@ -107,7 +111,8 @@ class DiaryKcalLeftHeader extends StatelessWidget {
   }
 }
 
-/// "X eaten" over "of Y", or the base goal on future days.
+/// "X eaten" over "of Y", or only "of Y" (the pause word on a pause day) on
+/// future days.
 class _EatenOfTarget extends StatelessWidget {
   const new({required this.data, required this.style});
 
@@ -125,7 +130,10 @@ class _EatenOfTarget extends StatelessWidget {
       children: [
         if (data.isFutureDay)
           Text(
-            l10n.diaryBalanceBaseGoalShort(data.baseNumber),
+            data.isPauseDay
+                ? l10n.diaryBalancePauseDayValue
+                : l10n.diaryBalanceOfTarget(data.targetNumber),
+            key: DiaryBalanceCardKeys.kcalHeadTarget,
             style: style?.copyWith(color: colors.muted),
           )
         else ...[
@@ -137,7 +145,7 @@ class _EatenOfTarget extends StatelessWidget {
             ),
           ),
           Text(
-            l10n.diaryBalanceOfTarget(data.plannedWithCarryoverNumber),
+            l10n.diaryBalanceOfTarget(data.targetNumber),
             style: style?.copyWith(color: colors.muted),
           ),
           if (eatenSubtitle != null)
