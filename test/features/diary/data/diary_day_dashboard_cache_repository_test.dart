@@ -217,7 +217,7 @@ CalorieWeekOverview _weekOverview(DateTime day) {
 }
 
 String _cacheKey(String userId, DateTime day) {
-  return 'diary_day_dashboard_v2:$userId:${_dayKey(day)}';
+  return 'diary_day_dashboard_v3:$userId:${_dayKey(day)}';
 }
 
 String _dayKey(DateTime day) => diaryDayKey(day);

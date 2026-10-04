@@ -91,7 +91,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Daily budget details'), findsOneWidget);
-      expect(find.text("Today's calculation"), findsOneWidget);
+      expect(find.text("Day's calculation"), findsOneWidget);
 
       // Rows in calculation card
       expect(find.text('Base daily goal'), findsOneWidget);
@@ -105,7 +105,7 @@ void main() {
       expect(find.text('2,350 kcal'), findsOneWidget);
       expect(find.text('Food eaten so far'), findsOneWidget);
       expect(find.text('-650 kcal'), findsOneWidget);
-      expect(find.text('Left today'), findsOneWidget);
+      expect(find.text('Left'), findsOneWidget);
       expect(find.text('1,700 kcal'), findsOneWidget);
 
       // Carryover origin section

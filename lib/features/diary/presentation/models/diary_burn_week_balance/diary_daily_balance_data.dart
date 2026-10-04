@@ -30,6 +30,7 @@ class DiaryDailyBalanceData {
     required this.metrics,
     required this.eatenValue,
     required this.leftValue,
+    required this.leftLabel,
     required this.isPauseDay,
     required this.numberFormat,
     this.leftUnit,
@@ -41,8 +42,10 @@ class DiaryDailyBalanceData {
     this.leftSubtitle,
     this.leftSubtitleParts = const [],
     this.budgetDetails,
-    this.isFutureDay = false,
+    this.isPlanned = false,
     this.isOverTarget = false,
+    this.previousDayCarryoverValue,
+    this.isPreviousDayClosed = false,
   });
 
   /// Builds daily render data from raw metrics and localization dependencies.
@@ -54,6 +57,8 @@ class DiaryDailyBalanceData {
     required AppLocalizations l10n,
     required DateTime now,
     DiaryDailyBudgetDetailsData? budgetDetails,
+    double? previousDayCarryoverKcal,
+    bool isPreviousDayClosed = false,
   }) {
     final adjustmentLabel = metrics.bufferAdjustmentKcal.round() == 0
         ? null
@@ -78,8 +83,14 @@ class DiaryDailyBalanceData {
 
     final today = normalizeDiaryDay(now);
     final isFutureDay = normalizeDiaryDay(selectedDay).isAfter(today);
+    // Only a future day has a day before to close. A cached dashboard from
+    // yesterday may still carry the values after midnight.
+    final previousDayCarryover = isFutureDay ? previousDayCarryoverKcal : null;
+    final isClosed = previousDayCarryover != null && isPreviousDayClosed;
+    // Once the day before is closed, tomorrow counts like a started day.
+    final isPlanned = isFutureDay && !isClosed;
     final resolvedSubtitle = resolveDiaryDailyBalanceSubtitle(
-      isFutureDay: isFutureDay,
+      isPlanned: isPlanned,
       isPauseDay: isPauseDay,
       metrics: metrics,
       numberFormat: numberFormat,
@@ -112,8 +123,19 @@ class DiaryDailyBalanceData {
       leftSubtitle: resolvedSubtitle.text,
       leftSubtitleParts: resolvedSubtitle.parts,
       budgetDetails: budgetDetails,
-      isFutureDay: isFutureDay,
+      isPlanned: isPlanned,
+      leftLabel: isSameDiaryDay(selectedDay, today)
+          ? l10n.diaryBalanceLeftTodayLabel
+          : l10n.diaryBalanceLeftLabel,
       isOverTarget: isOverTarget,
+      previousDayCarryoverValue: previousDayCarryover == null
+          ? null
+          : formatDiarySignedKcal(
+              previousDayCarryover,
+              numberFormat,
+              l10n.caloriesUnitKcal,
+            ),
+      isPreviousDayClosed: isClosed,
     );
   }
 
@@ -135,8 +157,12 @@ class DiaryDailyBalanceData {
   /// Unit for the left value (e.g. 'kcal', or null on pause day).
   final String? leftUnit;
 
-  /// Whether this card represents a future day.
-  final bool isFutureDay;
+  /// Whether this card shows a plan: a future day whose day before is not
+  /// closed yet.
+  final bool isPlanned;
+
+  /// Label over what is left: "today" only on the real today.
+  final String leftLabel;
 
   /// Whether more was eaten than the target. [leftValue] then holds the
   /// amount over the target without a sign.
@@ -168,4 +194,11 @@ class DiaryDailyBalanceData {
 
   /// Detailed budget and carryover breakdown.
   final DiaryDailyBudgetDetailsData? budgetDetails;
+
+  /// Carryover per day from closing the day before, signed with unit
+  /// (e.g. '+218 kcal'). Set only when the day before can be closed.
+  final String? previousDayCarryoverValue;
+
+  /// Whether the day before is closed, so this day counts like a started day.
+  final bool isPreviousDayClosed;
 }

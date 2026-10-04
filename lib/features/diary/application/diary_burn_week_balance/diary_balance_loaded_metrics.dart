@@ -17,6 +17,8 @@ class DiaryBalanceLoadedMetrics {
     required this.weekly,
     required this.state,
     this.budgetDetails,
+    this.previousDayCarryoverKcal,
+    this.isPreviousDayClosed = false,
   });
 
   /// Date represented by the selected-day overview.
@@ -33,6 +35,14 @@ class DiaryBalanceLoadedMetrics {
 
   /// Detailed budget and carryover breakdown for the selected day.
   final DiaryDailyBudgetDetailsData? budgetDetails;
+
+  /// Carryover per day the selected day gets from closing the day before.
+  /// Set only on tomorrow, while its run has earlier days.
+  final double? previousDayCarryoverKcal;
+
+  /// Whether the day before is closed, so the selected day counts like a
+  /// started day instead of a plan.
+  final bool isPreviousDayClosed;
 }
 
 /// Loaded card display state that is not specific to daily or weekly metrics.
@@ -107,6 +117,8 @@ DiaryBalanceLoadedMetrics _buildDiaryBalanceLoadedMetrics(
     weekly: _resolveWeeklyMetrics(context, weekStart),
     state: state,
     budgetDetails: _resolveBudgetDetails(context, weekStart, state, daily),
+    previousDayCarryoverKcal: context.weekOverview.previousDayCarryoverKcal,
+    isPreviousDayClosed: context.weekOverview.isPreviousDayClosed,
   );
 }
 
@@ -140,7 +152,8 @@ DiaryWeeklyBalanceMetrics _resolveWeeklyMetrics(
 );
 
 /// The days before a future day are not finished, so a future day has no
-/// carryover to explain and no budget details.
+/// carryover to explain and no budget details, unless the day before it is
+/// closed.
 DiaryDailyBudgetDetailsData? _resolveBudgetDetails(
   _DiaryBalanceLoadedContext context,
   DateTime weekStart,
@@ -148,7 +161,8 @@ DiaryDailyBudgetDetailsData? _resolveBudgetDetails(
   DiaryDailyBalanceMetrics daily,
 ) =>
     normalizeDiaryDay(context.selectedDayOverview.date)
-        .isAfter(normalizeDiaryDay(context.now))
+            .isAfter(normalizeDiaryDay(context.now)) &&
+        !context.weekOverview.isPreviousDayClosed
     ? null
     : DiaryDailyBudgetDetailsData.from(
         weekOverview: context.weekOverview,
