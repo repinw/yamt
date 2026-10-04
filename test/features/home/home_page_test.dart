@@ -250,6 +250,7 @@ CalorieWeekOverview _weekOverview(DateTime selectedDay) {
   ];
 
   return CalorieWeekOverview(
+    isPreviousDayClosed: false,
     days: days,
     totalConsumedKcal: 0,
     totalGoalKcal: 14000,

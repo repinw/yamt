@@ -21,6 +21,7 @@ void main() {
     () {
       final carryover = resolveBurnWeekCarryoverBeforeTodayKcal(
         weekOverview: CalorieWeekOverview(
+          isPreviousDayClosed: false,
           days: <CalorieWeekDayOverview>[
             CalorieWeekDayOverview(
               date: DateTime(2026, 4, 20),
@@ -59,6 +60,7 @@ void main() {
     final metrics = resolveBurnWeekLiveMetrics(
       now: today,
       weekOverview: CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: <CalorieWeekDayOverview>[
           for (var day = 15; day <= 20; day += 1)
             CalorieWeekDayOverview(
@@ -142,6 +144,7 @@ void main() {
     final metrics = resolveBurnWeekLiveMetrics(
       now: now,
       weekOverview: CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: <CalorieWeekDayOverview>[
           CalorieWeekDayOverview(
             date: DateTime(2026, 4, 21),
@@ -182,6 +185,7 @@ void main() {
     final metrics = resolveBurnWeekLiveMetrics(
       now: now,
       weekOverview: CalorieWeekOverview(
+        isPreviousDayClosed: false,
         days: <CalorieWeekDayOverview>[
           CalorieWeekDayOverview(
             date: DateTime(2026, 4, 21),

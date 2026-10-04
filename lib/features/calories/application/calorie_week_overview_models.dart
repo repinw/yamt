@@ -102,6 +102,8 @@ class CalorieWeekOverview {
     required this.goalStartsInFuture,
     required this.nextGoalStartDate,
     required this.futureGoalKcal,
+    required this.isPreviousDayClosed,
+    this.previousDayCarryoverKcal,
   });
 
   /// Creates data from persisted JSON.
@@ -140,4 +142,14 @@ class CalorieWeekOverview {
 
   /// The active goal kcal shown before official counting starts.
   final double? futureGoalKcal;
+
+  /// Carryover per day that tomorrow gets when today is closed early.
+  ///
+  /// Set only when the window ends tomorrow and tomorrow's run has earlier
+  /// days; a new run starts without carryover. While today is closed, it
+  /// equals [carryoverBeforeTodayKcal].
+  final double? previousDayCarryoverKcal;
+
+  /// Whether today is closed, so tomorrow already counts like a started day.
+  final bool isPreviousDayClosed;
 }

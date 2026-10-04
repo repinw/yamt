@@ -130,6 +130,7 @@ CalorieWeekOverview _weekOverview({required DateTime selectedDay}) {
       ),
   ];
   return CalorieWeekOverview(
+    isPreviousDayClosed: false,
     days: days,
     totalConsumedKcal: days.fold<double>(0, (sum, day) => sum + day.totalKcal),
     totalGoalKcal: days.fold<double>(0, (sum, day) => sum + day.goalKcal),

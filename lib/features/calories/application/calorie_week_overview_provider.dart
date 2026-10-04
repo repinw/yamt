@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/application/calorie_week_cycle_totals.dar
 import 'package:yamt/features/calories/application/calorie_week_overview_log_loader.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
@@ -49,6 +50,9 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       ).future,
     );
     final realToday = normalizeDiaryDay(ref.watch(clockProvider)());
+    // Whoever saves the closed day bumps the overview revision.
+    ref.watch(calorieOverviewRevisionProvider);
+    final closedDayRepository = ref.watch(closedDayRepositoryProvider);
 
     final snapshot = await snapshotFuture;
     if (!ref.mounted) {
@@ -146,18 +150,36 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     final todayBaseGoalKcal = adjustedOverviews.last.baseGoalKcal > 0
         ? adjustedOverviews.last.baseGoalKcal
         : adjustedOverviews.last.goalKcal;
-    // A future day gets no carryover: the days before it are not finished
-    // yet, so a carryover from them would be made up.
-    final carryoverBeforeTodayKcal = isBeforeDay(realToday, today)
+    final distributedCarryoverKcal =
+        CalorieBudgetCalculator.distributeCarryover(
+          carryoverKcal: cycleTotals.carryoverBeforeTodayKcal,
+          remainingDays: resolveRemainingCalorieGoalRunDays(
+            settings: settings,
+            day: today,
+          ),
+          baseGoalKcal: todayBaseGoalKcal,
+        );
+    // Tomorrow can plan with today's carryover once today is closed, unless
+    // it starts a new run or is a pause day.
+    final previousDayCarryoverKcal =
+        isSameDiaryDay(today, nextDiaryDay(realToday)) &&
+            isBeforeDay(carryoverStartDate, today) &&
+            !adjustedOverviews.last.isPauseDay
+        ? distributedCarryoverKcal
+        : null;
+    // Only tomorrow reads the closed day, so a bad stored value cannot break
+    // the other days.
+    final closedDay = previousDayCarryoverKcal == null
+        ? null
+        : closedDayRepository.readClosedDay();
+    final isPreviousDayClosed =
+        closedDay != null && isSameDiaryDay(closedDay, realToday);
+    // Any other future day gets no carryover: the days before it are not
+    // finished yet, so a carryover from them would be made up.
+    final carryoverBeforeTodayKcal =
+        isBeforeDay(realToday, today) && !isPreviousDayClosed
         ? 0.0
-        : CalorieBudgetCalculator.distributeCarryover(
-            carryoverKcal: cycleTotals.carryoverBeforeTodayKcal,
-            remainingDays: resolveRemainingCalorieGoalRunDays(
-              settings: settings,
-              day: today,
-            ),
-            baseGoalKcal: todayBaseGoalKcal,
-          );
+        : distributedCarryoverKcal;
     final todayFlexibleGoalKcal =
         adjustedOverviews.last.goalKcal + carryoverBeforeTodayKcal;
     return CalorieWeekOverview(
@@ -171,6 +193,8 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       goalStartsInFuture: goalStartsInFuture,
       nextGoalStartDate: nextGoalStartDate,
       futureGoalKcal: futureGoalKcal,
+      previousDayCarryoverKcal: previousDayCarryoverKcal,
+      isPreviousDayClosed: isPreviousDayClosed,
     );
   } finally {
     keepAliveLink.close();
