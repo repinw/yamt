@@ -4366,6 +4366,12 @@ abstract class AppLocalizations {
   /// **'Left today'**
   String get diaryBalanceLeftTodayLabel;
 
+  /// No description provided for @diaryBalanceLeftLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Left'**
+  String get diaryBalanceLeftLabel;
+
   /// No description provided for @diaryBalanceOverGoalLabel.
   ///
   /// In en, this message translates to:
@@ -4732,6 +4738,42 @@ abstract class AppLocalizations {
   /// **'Planned'**
   String get diaryBalancePlannedLabel;
 
+  /// No description provided for @diaryPreviousDayCloseAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Close {weekday}'**
+  String diaryPreviousDayCloseAction(String weekday);
+
+  /// No description provided for @diaryPreviousDayCarryoverPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} per day'**
+  String diaryPreviousDayCarryoverPerDay(String kcal);
+
+  /// No description provided for @diaryPreviousDayClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'{weekday} closed'**
+  String diaryPreviousDayClosed(String weekday);
+
+  /// No description provided for @diaryPreviousDayCloseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not close {weekday}.'**
+  String diaryPreviousDayCloseFailed(String weekday);
+
+  /// No description provided for @diaryPreviousDayReopenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not reopen {weekday}.'**
+  String diaryPreviousDayReopenFailed(String weekday);
+
+  /// No description provided for @diaryPreviousDayReopenAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Reopen {weekday}'**
+  String diaryPreviousDayReopenAction(String weekday);
+
   /// No description provided for @diaryBalanceRealEatenLabel.
   ///
   /// In en, this message translates to:
@@ -4789,7 +4831,7 @@ abstract class AppLocalizations {
   /// No description provided for @diaryBudgetDetailsTodaySectionTitle.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s calculation'**
+  /// **'Day\'s calculation'**
   String get diaryBudgetDetailsTodaySectionTitle;
 
   /// No description provided for @diaryBudgetDetailsWeeklyAverageGoalLabel.
@@ -4849,7 +4891,7 @@ abstract class AppLocalizations {
   /// No description provided for @diaryBudgetDetailsLeftLabel.
   ///
   /// In en, this message translates to:
-  /// **'Left today'**
+  /// **'Left'**
   String get diaryBudgetDetailsLeftLabel;
 
   /// No description provided for @diaryBudgetDetailsCarryoverSectionTitle.

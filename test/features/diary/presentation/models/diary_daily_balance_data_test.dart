@@ -167,13 +167,76 @@ void main() {
         now: selectedDay,
       );
 
-      expect(data.isFutureDay, isTrue);
+      expect(data.isPlanned, isTrue);
       expect(data.eatenValue, '600');
       expect(data.targetNumber, '2,000');
       expect(data.caloriesUnit, 'kcal');
       expect(data.isOverTarget, isFalse);
       expect(data.leftSubtitle, isNull);
       expect(data.leftSubtitleParts, isEmpty);
+    });
+
+    test(
+      'counts a future day whose day before is closed like a started day',
+      () {
+        const metrics = DiaryDailyBalanceMetrics(
+          bufferAdjustmentKcal: 0,
+          realEatenKcal: 900,
+          eatenKcal: 900,
+          realDayLeftKcal: 1418,
+          dayLeftKcal: 1418,
+          targetKcal: 2318,
+          baseGoalKcal: 2100,
+          carryoverKcal: 218,
+        );
+
+        final data = DiaryDailyBalanceData.from(
+          selectedDay: selectedDay.add(const Duration(days: 1)),
+          metrics: metrics,
+          isPauseDay: false,
+          numberFormat: numberFormat,
+          l10n: l10n,
+          now: selectedDay,
+          previousDayCarryoverKcal: 218,
+          isPreviousDayClosed: true,
+        );
+
+        expect(data.isPlanned, isFalse);
+        expect(data.leftLabel, 'Left');
+        expect(data.leftValue, '1,418');
+        expect(data.targetNumber, '2,318');
+        expect(data.leftSubtitle, 'Base 2,100 · Carryover +218');
+        expect(data.previousDayCarryoverValue, '+218 kcal');
+      },
+    );
+
+    test('drops the close of the day before once the day is today', () {
+      // A dashboard cached yesterday for this day still has the values.
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 0,
+        eatenKcal: 0,
+        realDayLeftKcal: 2318,
+        dayLeftKcal: 2318,
+        targetKcal: 2318,
+        baseGoalKcal: 2100,
+        carryoverKcal: 218,
+      );
+
+      final data = DiaryDailyBalanceData.from(
+        selectedDay: selectedDay,
+        metrics: metrics,
+        isPauseDay: false,
+        numberFormat: numberFormat,
+        l10n: l10n,
+        now: selectedDay,
+        previousDayCarryoverKcal: 218,
+        isPreviousDayClosed: true,
+      );
+
+      expect(data.previousDayCarryoverValue, isNull);
+      expect(data.isPreviousDayClosed, isFalse);
+      expect(data.leftLabel, 'Left today');
     });
 
     test('marks a future day planned over its goal', () {
@@ -196,7 +259,7 @@ void main() {
         now: selectedDay,
       );
 
-      expect(data.isFutureDay, isTrue);
+      expect(data.isPlanned, isTrue);
       expect(data.isOverTarget, isTrue);
     });
 
@@ -220,7 +283,7 @@ void main() {
         now: selectedDay,
       );
 
-      expect(data.isFutureDay, isTrue);
+      expect(data.isPlanned, isTrue);
       expect(data.leftSubtitle, 'Ignored for learning');
     });
 

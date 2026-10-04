@@ -80,6 +80,9 @@ class DiaryBalanceCard extends ConsumerWidget {
               l10n: l10n,
               now: now,
               budgetDetails: data.loadedMetrics!.budgetDetails,
+              previousDayCarryoverKcal:
+                  data.loadedMetrics!.previousDayCarryoverKcal,
+              isPreviousDayClosed: data.loadedMetrics!.isPreviousDayClosed,
             );
 
       return DiaryDailyBalanceCard(

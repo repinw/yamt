@@ -12,7 +12,7 @@ typedef DiaryDailyBalanceSubtitleResult = ({
 
 /// Resolves the subtitle text and components for a daily balance card.
 DiaryDailyBalanceSubtitleResult resolveDiaryDailyBalanceSubtitle({
-  required bool isFutureDay,
+  required bool isPlanned,
   required bool isPauseDay,
   required DiaryDailyBalanceMetrics metrics,
   required NumberFormat numberFormat,
@@ -24,8 +24,8 @@ DiaryDailyBalanceSubtitleResult resolveDiaryDailyBalanceSubtitle({
       parts: const <DiaryDailyBalanceSubtitlePart>[],
     );
   }
-  // A future day has no carryover, and its head already names the goal.
-  if (isFutureDay) {
+  // A planned day has no carryover, and its head already names the goal.
+  if (isPlanned) {
     return (text: null, parts: const <DiaryDailyBalanceSubtitlePart>[]);
   }
   return _buildSubtitleAdjustments(metrics, numberFormat, l10n);

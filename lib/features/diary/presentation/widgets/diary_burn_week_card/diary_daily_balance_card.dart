@@ -7,6 +7,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/di
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_daily_budget_details_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_kcal_left_header.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_kcal_ruler.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_previous_day_row.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -69,6 +70,16 @@ class DiaryDailyBalanceCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.sm),
             ],
             DiaryKcalLeftHeader(data: data, showDetails: showDetails),
+            if (data.previousDayCarryoverValue != null) ...[
+              const SizedBox(height: AppSpacing.md),
+              // A tap next to the row's buttons must not toggle the details.
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                excludeFromSemantics: true,
+                onTap: () {},
+                child: DiaryPreviousDayRow(data: data),
+              ),
+            ],
             const SizedBox(height: AppSpacing.lg),
             DiaryKcalRuler(
               key: kcalBarKey,

@@ -27,6 +27,21 @@ abstract final class DiaryBalanceCardKeys {
     'diary-balance-kcal-head-target',
   );
 
+  /// Button that closes the day before a planned day.
+  static const previousDayCloseButton = ValueKey<String>(
+    'diary-balance-previous-day-close-button',
+  );
+
+  /// Note that the day before a planned day is closed.
+  static const previousDayClosed = ValueKey<String>(
+    'diary-balance-previous-day-closed',
+  );
+
+  /// Button that opens the closed day before a planned day again.
+  static const previousDayReopenButton = ValueKey<String>(
+    'diary-balance-previous-day-reopen-button',
+  );
+
   /// Practice day card key.
   static const practiceDay = ValueKey<String>('diary-balance-practice-day');
 

@@ -10,8 +10,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Head of the daily balance: what is left as a big number, and with
 /// details what was eaten out of which target.
 ///
-/// Over the target it shows the overage, future days show the planned
-/// kcal and the target, and pause days show a word. A future pause day shows
+/// Over the target it shows the overage, planned days show the planned
+/// kcal and the target, and pause days show a word. A planned pause day shows
 /// the planned kcal and the pause word instead of the target.
 class DiaryKcalLeftHeader extends StatelessWidget {
   /// Creates the head.
@@ -33,16 +33,16 @@ class DiaryKcalLeftHeader extends StatelessWidget {
         ? error
         : data.isPauseDay
         ? colors.muted
-        : data.isFutureDay
+        : data.isPlanned
         ? colors.ink
         : colors.accentText;
-    final label = data.isFutureDay
+    final label = data.isPlanned
         ? l10n.diaryBalancePlannedLabel
         : data.isOverTarget
         ? l10n.diaryBalanceOverGoalLabel
-        : l10n.diaryBalanceLeftTodayLabel;
-    final value = data.isFutureDay ? data.eatenValue : data.leftValue;
-    final unit = data.isFutureDay ? data.caloriesUnit : data.leftUnit;
+        : data.leftLabel;
+    final value = data.isPlanned ? data.eatenValue : data.leftValue;
+    final unit = data.isPlanned ? data.caloriesUnit : data.leftUnit;
     final mono = textTheme.labelMedium?.copyWith(fontFamily: AppFonts.mono);
 
     return Column(
@@ -100,9 +100,9 @@ class DiaryKcalLeftHeader extends StatelessWidget {
                 ),
               ),
             ),
-            // A future day always names its goal: the big number alone
+            // A planned day always names its goal: the big number alone
             // does not say how much is left to plan.
-            if (data.isFutureDay || (showDetails && !data.isPauseDay))
+            if (data.isPlanned || (showDetails && !data.isPauseDay))
               _EatenOfTarget(data: data, style: mono),
           ],
         ),
@@ -112,7 +112,7 @@ class DiaryKcalLeftHeader extends StatelessWidget {
 }
 
 /// "X eaten" over "of Y", or only "of Y" (the pause word on a pause day) on
-/// future days.
+/// planned days.
 class _EatenOfTarget extends StatelessWidget {
   const new({required this.data, required this.style});
 
@@ -128,7 +128,7 @@ class _EatenOfTarget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        if (data.isFutureDay)
+        if (data.isPlanned)
           Text(
             data.isPauseDay
                 ? l10n.diaryBalancePauseDayValue

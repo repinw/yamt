@@ -102,6 +102,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
   bool preparedMealSaveShouldFail = false,
   DateTime? today,
+  DateTime? goalStart,
   List<CalorieEntry> calorieEntries = const <CalorieEntry>[],
 }) {
   final profileController = StreamController<UserProfile?>();
@@ -115,7 +116,8 @@ _DiaryInventoryQuickEatHarness _buildHarness({
     initialSettings: CalorieGoalSettings.single(
       dailyKcalGoal: 2200,
       calculatorProfile: null,
-      effectiveDate: _selectedDay.subtract(const Duration(days: 14)),
+      effectiveDate:
+          goalStart ?? _selectedDay.subtract(const Duration(days: 14)),
     ),
   );
   final router = GoRouter(
@@ -564,6 +566,43 @@ void main() {
     expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '900');
     // The goal without a carryover from today, which is not finished yet.
     expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
+  });
+
+  testWidgets('tomorrow plans with the carryover once the day before is '
+      'closed', (tester) async {
+    final harness = _buildHarness(
+      today: _selectedDay.subtract(const Duration(days: 1)),
+      // The run started on Sunday, so tomorrow is in its middle.
+      goalStart: _selectedDay.subtract(const Duration(days: 10)),
+    );
+    await tester.pumpWidget(harness.app);
+    final closeButton = find.byKey(DiaryBalanceCardKeys.previousDayCloseButton);
+    await _pumpUntilFound(
+      tester,
+      closeButton,
+      description: 'close button of the day before',
+    );
+    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
+
+    await tester.tap(closeButton);
+    // Tomorrow then counts like a started day: what is left, not a plan.
+    await _pumpUntil(
+      tester,
+      () => textOf(DiaryBalanceCardKeys.kcalHeadLabel) == 'ÜBRIG',
+      description: 'started head with the carryover of the closed day',
+    );
+    expect(find.byKey(DiaryBalanceCardKeys.previousDayClosed), findsOneWidget);
+    expect(find.byKey(DiaryBalanceCardKeys.kcalHeadTarget), findsNothing);
+
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.previousDayReopenButton));
+    await _pumpUntil(
+      tester,
+      () => textOf(DiaryBalanceCardKeys.kcalHeadLabel) == 'GEPLANT',
+      description: 'planned head after reopening',
+    );
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
+    expect(closeButton, findsOneWidget);
   });
 
   testWidgets('diary prepared meal quick add shows save failure snackbar', (

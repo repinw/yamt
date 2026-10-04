@@ -14,6 +14,7 @@ import 'package:yamt/features/calories/application/burn_week_run_controller.dart
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -55,6 +56,7 @@ void main() {
 
     await _pumpBalanceCard(
       tester,
+      now: DateTime(2026, 4, 27, 12),
       selectedDay: selectedDay,
       weekStartDate: selectedDay,
       dayTotals: const [0, 0, 0, 0, 0, 0, 1000],
@@ -386,6 +388,115 @@ void main() {
     );
   });
 
+  testWidgets('tomorrow closes the day before and offers undo', (tester) async {
+    final now = DateTime(2026, 4, 26, 20);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+      runState: const BurnWeekRunState.initial(),
+      showDetails: false,
+      previousDayCarryoverKcal: 218,
+    );
+    final repository = _closedDayRepository(tester);
+
+    expect(find.text('Close Sunday'), findsOneWidget);
+    expect(find.text('+218 kcal per day'), findsOneWidget);
+    expect(find.byKey(DiaryBalanceCardKeys.previousDayClosed), findsNothing);
+
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.previousDayCloseButton));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sunday closed'), findsOneWidget);
+    expect(repository.readClosedDay(), DateTime(2026, 4, 26));
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(repository.readClosedDay(), isNull);
+  });
+
+  testWidgets('tomorrow reopens the closed day before', (tester) async {
+    final now = DateTime(2026, 4, 26, 20);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+      runState: const BurnWeekRunState.initial(),
+      showDetails: false,
+      todayFlexibleGoalKcal: 2218,
+      previousDayCarryoverKcal: 218,
+      isPreviousDayClosed: true,
+    );
+    final repository = _closedDayRepository(tester);
+    await repository.saveClosedDay(DateTime(2026, 4, 26));
+
+    expect(find.byKey(DiaryBalanceCardKeys.previousDayClosed), findsOneWidget);
+    expect(find.text('Sunday closed'), findsOneWidget);
+
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.previousDayReopenButton));
+    await tester.pumpAndSettle();
+
+    expect(repository.readClosedDay(), isNull);
+  });
+
+  testWidgets('tomorrow counts like a started day once the day before is '
+      'closed', (tester) async {
+    final now = DateTime(2026, 4, 26, 20);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+      runState: const BurnWeekRunState.initial(),
+      todayFlexibleGoalKcal: 2218,
+      previousDayCarryoverKcal: 218,
+      isPreviousDayClosed: true,
+    );
+
+    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'LEFT');
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '1,318');
+    expect(find.byKey(DiaryBalanceCardKeys.kcalHeadTarget), findsNothing);
+    // Its carryover comes from finished days, so the budget sheet explains it.
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a day without a previous-day carryover offers no close', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 4, 26, 20);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+      runState: const BurnWeekRunState.initial(),
+    );
+
+    expect(
+      find.byKey(DiaryBalanceCardKeys.previousDayCloseButton),
+      findsNothing,
+    );
+  });
+
   testWidgets('quiet card shows only what is left and toggles on tap', (
     tester,
   ) async {
@@ -404,14 +515,15 @@ void main() {
       showDetails: false,
     );
 
-    expect(find.text('LEFT TODAY'), findsOneWidget);
+    // A past day says what was left without "today".
+    expect(find.text('LEFT'), findsOneWidget);
     expect(_findTextContaining(' eaten'), findsNothing);
     expect(
       find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
       findsNothing,
     );
 
-    await tester.tap(find.text('LEFT TODAY'));
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.kcalHeadLabel));
     await tester.pumpAndSettle();
 
     expect(find.text('1,200 eaten'), findsOneWidget);
@@ -420,7 +532,7 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.tap(find.text('LEFT TODAY'));
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.kcalHeadLabel));
     await tester.pumpAndSettle();
 
     expect(_findTextContaining(' eaten'), findsNothing);
@@ -611,6 +723,8 @@ Future<void> _pumpBalanceCard(
   bool weekOverviewThrows = false,
   bool showDetails = true,
   DateTime? now,
+  double? previousDayCarryoverKcal,
+  bool isPreviousDayClosed = false,
 }) async {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final weekOverview = _weekOverview(
@@ -624,6 +738,8 @@ Future<void> _pumpBalanceCard(
     nextGoalStartDate: nextGoalStartDate,
     futureGoalKcal: futureGoalKcal,
     isPauseDay: isPauseDay,
+    previousDayCarryoverKcal: previousDayCarryoverKcal,
+    isPreviousDayClosed: isPreviousDayClosed,
   );
   final selectedDayOverview = weekOverview.days.last;
   final repository = FakeCalorieLogRepository();
@@ -631,17 +747,19 @@ Future<void> _pumpBalanceCard(
   addTearDown(repository.dispose);
   when(() => auth.currentUser).thenReturn(null);
 
+  final preferences = MemoryAppPreferences(
+    initialStrings: showDetails
+        ? const {'diary_balance_details_v1': 'shown'}
+        : null,
+  );
   await tester.pumpWidget(
     ProviderScope(
       observers: observers,
       overrides: [
         if (now != null) clockProvider.overrideWithValue(() => now),
-        appPreferencesProvider.overrideWithValue(
-          MemoryAppPreferences(
-            initialStrings: showDetails
-                ? const {'diary_balance_details_v1': 'shown'}
-                : null,
-          ),
+        appPreferencesProvider.overrideWithValue(preferences),
+        closedDayRepositoryProvider.overrideWithValue(
+          ClosedDayRepository(preferences, 'user-1'),
         ),
         authStateChangesProvider.overrideWith(
           (ref) => Stream<User?>.value(null),
@@ -727,6 +845,8 @@ CalorieWeekOverview _weekOverview({
   DateTime? nextGoalStartDate,
   double? futureGoalKcal,
   bool isPauseDay = false,
+  double? previousDayCarryoverKcal,
+  bool isPreviousDayClosed = false,
 }) {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final days = [
@@ -756,6 +876,8 @@ CalorieWeekOverview _weekOverview({
     goalStartsInFuture: goalStartsInFuture,
     nextGoalStartDate: nextGoalStartDate,
     futureGoalKcal: futureGoalKcal,
+    previousDayCarryoverKcal: previousDayCarryoverKcal,
+    isPreviousDayClosed: isPreviousDayClosed,
   );
 }
 
@@ -781,3 +903,7 @@ class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 Finder _findTextContaining(String text) {
   return find.textContaining(text, findRichText: true);
 }
+
+ClosedDayRepository _closedDayRepository(WidgetTester tester) =>
+    ProviderScope.containerOf(tester.element(find.byType(DiaryBalanceCard)))
+        .read(closedDayRepositoryProvider);

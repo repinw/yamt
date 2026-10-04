@@ -2564,6 +2564,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBalanceLeftTodayLabel => 'Übrig heute';
 
   @override
+  String get diaryBalanceLeftLabel => 'Übrig';
+
+  @override
   String get diaryBalanceOverGoalLabel => 'Über Ziel';
 
   @override
@@ -2820,6 +2823,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBalancePlannedLabel => 'Geplant';
 
   @override
+  String diaryPreviousDayCloseAction(String weekday) {
+    return '$weekday abschließen';
+  }
+
+  @override
+  String diaryPreviousDayCarryoverPerDay(String kcal) {
+    return '$kcal pro Tag';
+  }
+
+  @override
+  String diaryPreviousDayClosed(String weekday) {
+    return '$weekday abgeschlossen';
+  }
+
+  @override
+  String diaryPreviousDayCloseFailed(String weekday) {
+    return '$weekday konnte nicht abgeschlossen werden.';
+  }
+
+  @override
+  String diaryPreviousDayReopenFailed(String weekday) {
+    return '$weekday konnte nicht wieder geöffnet werden.';
+  }
+
+  @override
+  String diaryPreviousDayReopenAction(String weekday) {
+    return '$weekday wieder öffnen';
+  }
+
+  @override
   String diaryBalanceRealEatenLabel(Object kcal) {
     return 'Echt $kcal';
   }
@@ -2857,7 +2890,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBudgetDetailsButtonLabel => 'Details';
 
   @override
-  String get diaryBudgetDetailsTodaySectionTitle => 'Heutige Rechnung';
+  String get diaryBudgetDetailsTodaySectionTitle => 'Tagesrechnung';
 
   @override
   String get diaryBudgetDetailsWeeklyAverageGoalLabel =>
@@ -2890,7 +2923,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryBudgetDetailsEatenLabel => 'Bisher gegessen';
 
   @override
-  String get diaryBudgetDetailsLeftLabel => 'Noch übrig heute';
+  String get diaryBudgetDetailsLeftLabel => 'Noch übrig';
 
   @override
   String get diaryBudgetDetailsCarryoverSectionTitle =>

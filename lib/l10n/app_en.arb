@@ -1268,6 +1268,7 @@
   "diaryNutritionTitle": "Macronutrients",
   "diaryBalanceEatenLabel": "Eaten",
   "diaryBalanceLeftTodayLabel": "Left today",
+  "diaryBalanceLeftLabel": "Left",
   "diaryBalanceOverGoalLabel": "Over goal",
   "diaryBalanceShowDetails": "Show all numbers",
   "diaryBalanceHideDetails": "Show fewer numbers",
@@ -1549,6 +1550,54 @@
   "progressLoadFailed": "Could not load this section.",
   "diaryBalanceBaseLabel": "Base",
   "diaryBalancePlannedLabel": "Planned",
+  "diaryPreviousDayCloseAction": "Close {weekday}",
+  "@diaryPreviousDayCloseAction": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPreviousDayCarryoverPerDay": "{kcal} per day",
+  "@diaryPreviousDayCarryoverPerDay": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPreviousDayClosed": "{weekday} closed",
+  "@diaryPreviousDayClosed": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPreviousDayCloseFailed": "Could not close {weekday}.",
+  "@diaryPreviousDayCloseFailed": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPreviousDayReopenFailed": "Could not reopen {weekday}.",
+  "@diaryPreviousDayReopenFailed": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPreviousDayReopenAction": "Reopen {weekday}",
+  "@diaryPreviousDayReopenAction": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
   "diaryBalanceRealEatenLabel": "Real {kcal}",
   "@diaryBalanceRealEatenLabel": {
     "placeholders": {
@@ -1587,7 +1636,7 @@
   },
   "diaryBudgetDetailsTitle": "Daily budget details",
   "diaryBudgetDetailsButtonLabel": "Details",
-  "diaryBudgetDetailsTodaySectionTitle": "Today's calculation",
+  "diaryBudgetDetailsTodaySectionTitle": "Day's calculation",
   "diaryBudgetDetailsWeeklyAverageGoalLabel": "Base goal (weekly average)",
   "diaryBudgetDetailsTrainingDayAdjustmentLabel": "Training day adjustment",
   "diaryBudgetDetailsRestDayAdjustmentLabel": "Rest day adjustment",
@@ -1597,7 +1646,7 @@
   "diaryBudgetDetailsCarryoverLabel": "Carryover from previous days",
   "diaryBudgetDetailsEffectiveGoalLabel": "Effective daily goal",
   "diaryBudgetDetailsEatenLabel": "Food eaten so far",
-  "diaryBudgetDetailsLeftLabel": "Left today",
+  "diaryBudgetDetailsLeftLabel": "Left",
   "diaryBudgetDetailsCarryoverSectionTitle": "Carryover origin",
   "diaryBudgetDetailsCarryoverExplanation": "Carryover is the balance of completed days spread across the remaining days in this 7-day run.",
   "diaryBudgetDetailsDaySavedLabel": "saved",

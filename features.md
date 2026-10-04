@@ -132,6 +132,14 @@ and feature description docs. This is product-facing; architecture rules stay in
   because the days before it are not finished; the training and rest day
   split still applies. More than the goal shows in the error color like on
   other days. Future days show no weekly check-in and no budget details.
+- Tomorrow can plan with today's carryover: under its number, "<Weekday>
+  abschließen" (with today's weekday) closes today and shows the carryover
+  per day it adds. Tomorrow then counts like a started day: its head shows
+  "Übrig" with the goal plus that carryover instead of the plan, a snack bar
+  offers undo, and "<Weekday> wieder öffnen" reverts it. The carryover stays live:
+  food logged later today or edits to earlier days change it. When tomorrow
+  starts a new 7-day run, it gets no carryover and shows no button. The
+  closed day is saved on the device and counts only until midnight.
 - Nutrition bars and macro summaries: each macro shows its label, a bar of four
   segments, and the grams left. A macro above its target shows `+X g over` and
   stripes the overage share at the end of its bar.
