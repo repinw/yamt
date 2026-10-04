@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_visible_window_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_consumption_snapshot_provider.dart';
@@ -287,6 +288,71 @@ void main() {
 
       expect(overview.carryoverBeforeTodayKcal, closeTo(83.333, 0.001));
       expect(overview.todayFlexibleGoalKcal, closeTo(2083.333, 0.001));
+    },
+  );
+
+  test(
+    'calorieWeekOverview gives a future day no carryover',
+    () async {
+      final today = DateTime(2026, 4, 10);
+      final yesterday = today.subtract(const Duration(days: 1));
+      final tomorrow = today.add(const Duration(days: 1));
+      final dayAfterTomorrow = today.add(const Duration(days: 2));
+      final logRepository = FakeCalorieLogRepository(
+        initialEntries: <CalorieEntry>[
+          _entry(
+            'yesterday',
+            loggedAt: yesterday.add(const Duration(hours: 12)),
+            totalKcal: 1500,
+          ),
+          _entry(
+            'today',
+            loggedAt: today.add(const Duration(hours: 8)),
+            totalKcal: 800,
+          ),
+        ],
+      );
+      final settingsRepository = FakeCalorieSettingsRepository(
+        initialSettings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: yesterday,
+        ),
+      );
+      addTearDown(logRepository.dispose);
+      addTearDown(settingsRepository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          clockProvider.overrideWithValue(
+            () => today.add(const Duration(hours: 10)),
+          ),
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(
+            settingsRepository,
+          ),
+          healthConnectionServiceProvider.overrideWith(
+            (ref) => FakeHealthConnectionService(_readyHealthStatus),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final todayOverview = await _readWeekOverviewForWindow(container, today);
+      final tomorrowOverview = await _readWeekOverviewForWindow(
+        container,
+        tomorrow,
+      );
+      final laterOverview = await _readWeekOverviewForWindow(
+        container,
+        dayAfterTomorrow,
+      );
+
+      expect(todayOverview.carryoverBeforeTodayKcal, closeTo(83.333, 0.001));
+      expect(tomorrowOverview.carryoverBeforeTodayKcal, 0);
+      expect(tomorrowOverview.todayFlexibleGoalKcal, 2000);
+      expect(laterOverview.carryoverBeforeTodayKcal, 0);
+      expect(laterOverview.todayFlexibleGoalKcal, 2000);
     },
   );
 

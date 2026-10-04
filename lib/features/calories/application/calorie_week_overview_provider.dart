@@ -1,4 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
@@ -47,6 +48,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
         ResolvedCalorieGoalDaysRequest.fromDays(visibleDays),
       ).future,
     );
+    final realToday = normalizeDiaryDay(ref.watch(clockProvider)());
 
     final snapshot = await snapshotFuture;
     if (!ref.mounted) {
@@ -144,15 +146,18 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     final todayBaseGoalKcal = adjustedOverviews.last.baseGoalKcal > 0
         ? adjustedOverviews.last.baseGoalKcal
         : adjustedOverviews.last.goalKcal;
-    final carryoverBeforeTodayKcal =
-        CalorieBudgetCalculator.distributeCarryover(
-          carryoverKcal: cycleTotals.carryoverBeforeTodayKcal,
-          remainingDays: resolveRemainingCalorieGoalRunDays(
-            settings: settings,
-            day: today,
-          ),
-          baseGoalKcal: todayBaseGoalKcal,
-        );
+    // A future day gets no carryover: the days before it are not finished
+    // yet, so a carryover from them would be made up.
+    final carryoverBeforeTodayKcal = isBeforeDay(realToday, today)
+        ? 0.0
+        : CalorieBudgetCalculator.distributeCarryover(
+            carryoverKcal: cycleTotals.carryoverBeforeTodayKcal,
+            remainingDays: resolveRemainingCalorieGoalRunDays(
+              settings: settings,
+              day: today,
+            ),
+            baseGoalKcal: todayBaseGoalKcal,
+          );
     final todayFlexibleGoalKcal =
         adjustedOverviews.last.goalKcal + carryoverBeforeTodayKcal;
     return CalorieWeekOverview(
