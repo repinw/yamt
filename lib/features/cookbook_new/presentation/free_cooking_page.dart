@@ -237,6 +237,9 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
       },
       child: Scaffold(
         backgroundColor: colors.paper,
+        // The name field sits at the top, so the keyboard may cover the
+        // voice zone and the actions instead of squeezing them.
+        resizeToAvoidBottomInset: false,
         body: SafeArea(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -280,6 +283,9 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
   }
 
   Future<void> _confirmDiscard() async {
+    // A back gesture opens the dialog without a tap outside the name, which
+    // would otherwise take the focus back when the dialog closes.
+    FocusManager.instance.primaryFocus?.unfocus();
     final discard = await showFreeCookingDiscardDialog(context);
     if (discard && mounted) {
       context.pop();
