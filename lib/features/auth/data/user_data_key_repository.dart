@@ -76,8 +76,7 @@ class UserDataKeyRepository {
     return _saveFlag(_recoveryKeyConfirmedName(uid), value: confirmed);
   }
 
-  /// Whether this device started fresh for [uid] and the household data
-  /// still waits for its clean-up.
+  /// Whether the household clean-up after a fresh start of [uid] is pending.
   Future<bool> loadFreshStartPending(String uid) {
     return _loadFlag(_freshStartPendingName(uid));
   }
@@ -260,6 +259,7 @@ List<String> _privateCollections(String uid) {
   final userPath = '$_usersCollection/$uid';
   return <String>[
     '$userPath/calorie_entries',
+    '$userPath/planned_entries',
     '$userPath/calorie_settings',
     '$userPath/health_weights',
     '$userPath/calorie_product_overrides',

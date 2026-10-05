@@ -1052,6 +1052,14 @@ service cloud.firestore {
         && request.resource.data.logged_at is timestamp;
     }
 
+    // Planned food, kept apart from the calorie entries so no sum counts it.
+    match /users/{uid}/planned_entries/{entryId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && isEncryptedDocument(request.resource.data, ['logged_at'])
+        && request.resource.data.logged_at is timestamp;
+    }
+
     match /users/{uid}/calorie_settings/{settingsId} {
       allow read, delete: if isOwner(uid);
       allow create, update: if isOwner(uid)

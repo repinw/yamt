@@ -21,6 +21,9 @@ changes.
   this device, so
   tomorrow's week overview counts today as finished and gives tomorrow its
   carryover.
+- Plans: food the signed-in user plans to eat on a later day, stored
+  encrypted apart from the calorie entries so no sum counts them, and the
+  actions that save and delete them.
 - The debug dump tooling in `application/` (dump builders), `data/` (text
   file export), and `presentation/`; the Home side menu shows it only in
   debug builds.

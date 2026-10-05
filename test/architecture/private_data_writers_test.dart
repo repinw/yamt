@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// payloads.
 const _privateCollectionNames = <String>[
   'calorie_entries',
+  'planned_entries',
   'calorie_settings',
   'health_weights',
   'calorie_product_overrides',
@@ -26,6 +27,7 @@ const _allowedFiles = <String>{
   'lib/features/calories/data/calorie_log_repository.dart',
   'lib/features/calories/data/calorie_product_cache_repository.dart',
   'lib/features/calories/data/calorie_settings_repository.dart',
+  'lib/features/calories/data/planned_entry_repository.dart',
   'lib/features/health/data/firestore_manual_health_weight_repository.dart',
   'lib/features/household/data/household_key_repository.dart',
   'lib/features/inventory/data/inventory_activity_event_repository.dart',
