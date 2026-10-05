@@ -1,4 +1,6 @@
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
+import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -9,6 +11,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_prepared_meal_eat_request.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
 part 'prepared_meal_eat_sheet_controller.g.dart';
 
@@ -101,6 +104,7 @@ class PreparedMealEatSheetState {
 
   /// Creates a copy with the given fields replaced.
   PreparedMealEatSheetState copyWith({
+    PreparedMealEatCalculator? calculator,
     String? amountText,
     PreparedMealEatAmountMode? mode,
     DateTime? loggedAt,
@@ -108,7 +112,7 @@ class PreparedMealEatSheetState {
     bool? hasAmountError,
   }) {
     return PreparedMealEatSheetState(
-      calculator: calculator,
+      calculator: calculator ?? this.calculator,
       localeName: localeName,
       amountText: amountText ?? this.amountText,
       mode: mode ?? this.mode,
@@ -121,6 +125,10 @@ class PreparedMealEatSheetState {
 }
 
 /// Holds the input of the eat sheet for one prepared meal.
+///
+/// With [followVorrat] the sheet works with [meal] as the Vorrat holds it
+/// now, for example after its open rows were filled, and keeps what the user
+/// entered when it changes.
 @riverpod
 class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
   @override
@@ -129,10 +137,25 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
     required String localeName,
     DateTime? initialLoggedAt,
     MealType? initialMealType,
+    bool followVorrat = false,
   }) {
     final now = ref.watch(clockProvider)();
     final loggedAt = initialLoggedAt ?? now;
-    final calculator = PreparedMealEatCalculator(meal);
+    var current = meal;
+    if (followVorrat) {
+      final live = ref.listen(
+        preparedMealsControllerProvider.select(
+          (meals) => meals.value?.firstWhereOrNull((it) => it.id == meal.id),
+        ),
+        (_, next) {
+          if (next != null) {
+            _follow(next);
+          }
+        },
+      );
+      current = live.read() ?? meal;
+    }
+    final calculator = PreparedMealEatCalculator(current);
     return PreparedMealEatSheetState(
       calculator: calculator,
       localeName: localeName,
@@ -199,9 +222,20 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
       return null;
     }
     return InventoryPreparedMealEatRequest(
+      meal: state.calculator.meal,
       portions: portions,
       mealType: state.mealType,
       loggedDay: state.loggedAt,
+    );
+  }
+
+  void _follow(PreparedMeal meal) {
+    if (meal == state.calculator.meal) {
+      return;
+    }
+    state = state.copyWith(
+      calculator: PreparedMealEatCalculator(meal),
+      hasAmountError: false,
     );
   }
 
