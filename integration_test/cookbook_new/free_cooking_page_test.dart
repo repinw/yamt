@@ -104,6 +104,53 @@ void main() {
     expect(cooked.finalNetWeight, 900);
   });
 
+  testWidgets('fits under the keyboard and lets go of the name focus', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(meals: _FakeMealRepository(), voice: _FakeVoiceService('Salz')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(FreeCookingHeader.nameKey));
+    // A keyboard over most of the screen covers the actions instead of
+    // squeezing them.
+    tester.view.viewInsets = FakeViewPadding(
+      bottom: tester.view.physicalSize.height * 0.6,
+    );
+    addTearDown(tester.view.resetViewInsets);
+    await tester.pumpAndSettle();
+    tester.view.resetViewInsets();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(FreeCookingActions.typeKey));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(FreeCookingTextSheet.fieldKey), 'Salz');
+    await tester.tap(find.byKey(FreeCookingTextSheet.addKey));
+    await tester.pumpAndSettle();
+
+    // The name does not take the focus back, so the keyboard stays closed.
+    final name = tester.widget<EditableText>(
+      find.descendant(
+        of: find.byKey(FreeCookingHeader.nameKey),
+        matching: find.byType(EditableText),
+      ),
+    );
+    expect(name.focusNode.hasFocus, isFalse);
+
+    // Neither after the discard dialog that a back gesture opens.
+    await tester.tap(find.byKey(FreeCookingHeader.nameKey));
+    await tester.pumpAndSettle();
+    expect(name.focusNode.hasFocus, isTrue);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Cancel'));
+    await tester.pumpAndSettle();
+    expect(name.focusNode.hasFocus, isFalse);
+  });
+
   testWidgets('asks before it discards rows', (tester) async {
     await tester.pumpWidget(
       _app(meals: _FakeMealRepository(), voice: _FakeVoiceService('Salz')),
