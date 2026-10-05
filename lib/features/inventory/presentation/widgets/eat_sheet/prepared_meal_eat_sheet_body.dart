@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/hero_tags.dart';
@@ -8,7 +7,6 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
@@ -65,6 +63,8 @@ class _PreparedMealEatSheetBodyState
         localeName: widget.localeName,
         initialLoggedAt: widget.initialLoggedAt,
         initialMealType: widget.initialMealType,
+        // Only the detail page follows the Vorrat; the diary has its own list.
+        followVorrat: widget.actions != null,
       );
   final _amount = EatSheetTextField();
 
@@ -88,12 +88,11 @@ class _PreparedMealEatSheetBodyState
     ref.listen(_provider, (_, next) => _syncText(next));
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(_provider);
-    final meal = widget.meal;
-    // Only the detail page follows the Vorrat; the diary has its own list.
-    final live = widget.actions == null ? meal : _liveMeal();
-    // The portions and nutrition come from the opened copy, so a meal that
-    // was in the pot on either side waits for "Gekocht" and a reopen.
-    final isInPot = meal.isInPot || live.isInPot;
+    // The meal the page shows and logs.
+    final meal = state.calculator.meal;
+    // The entered portions start from the opened copy, so a meal that was in
+    // the pot when the page opened waits for "Gekocht" and a reopen.
+    final isInPot = widget.meal.isInPot || meal.isInPot;
     final nutrition = state.nutrition;
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
     final imageBytes = imageRef == null
@@ -115,7 +114,7 @@ class _PreparedMealEatSheetBodyState
       // meal in the pot gets its portions at "Gekocht" first.
       onConfirm:
           isInPot ||
-              (widget.actions != null && live.hasPendingRecipeIngredients)
+              (widget.actions != null && meal.hasPendingRecipeIngredients)
           ? null
           : _submit,
       cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
@@ -182,18 +181,6 @@ class _PreparedMealEatSheetBodyState
           ),
       ],
     );
-  }
-
-  /// The meal as the Vorrat holds it now, so filled rows and "Gekocht" show
-  /// at once.
-  PreparedMeal _liveMeal() {
-    final live = ref.watch(
-      preparedMealsControllerProvider.select(
-        (meals) =>
-            meals.value?.firstWhereOrNull((meal) => meal.id == widget.meal.id),
-      ),
-    );
-    return live ?? widget.meal;
   }
 
   void _syncText(PreparedMealEatSheetState state) {

@@ -40,7 +40,7 @@ abstract final class PreparedMealEatFlow {
     return await runInventoryQuickEatFlow(context, (scope) async {
       try {
         final entry = await scope.actions.consumePreparedMeal(
-          meal: meal,
+          meal: request.meal,
           consumedPortions: request.portions,
           mealType: request.mealType,
           loggedDay: request.loggedDay,

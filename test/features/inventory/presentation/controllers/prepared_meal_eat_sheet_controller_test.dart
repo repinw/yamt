@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -5,6 +7,8 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_eat_sheet_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'prepared_meals_controller.dart';
 
 import '../../../../support/prepared_meal_test_data.dart';
 
@@ -19,6 +23,36 @@ _setUp(PreparedMeal meal) {
   final provider = preparedMealEatSheetControllerProvider(
     meal: meal,
     localeName: 'en',
+  );
+  container.listen(provider, (_, _) {});
+  return (container: container, provider: provider);
+}
+
+/// The Vorrat meals, replaced by [emit] as a fill or another device would.
+class _Meals extends PreparedMealsController {
+  new(this._initial);
+
+  final List<PreparedMeal> _initial;
+
+  @override
+  FutureOr<List<PreparedMeal>> build() => _initial;
+
+  void emit(List<PreparedMeal> meals) => state = AsyncData(meals);
+}
+
+({ProviderContainer container, PreparedMealEatSheetControllerProvider provider})
+_setUpFollowing(PreparedMeal opened, _Meals meals) {
+  final container = ProviderContainer(
+    overrides: [
+      clockProvider.overrideWithValue(() => _now),
+      preparedMealsControllerProvider.overrideWith(() => meals),
+    ],
+  );
+  addTearDown(container.dispose);
+  final provider = preparedMealEatSheetControllerProvider(
+    meal: opened,
+    localeName: 'en',
+    followVorrat: true,
   );
   container.listen(provider, (_, _) {});
   return (container: container, provider: provider);
@@ -65,6 +99,36 @@ void main() {
 
     expect(request?.portions, 2);
     expect(request?.loggedDay, _now);
+  });
+
+  test('following the Vorrat keeps the input and logs the new meal', () {
+    final opened = _meal().copyWith(pendingRecipeIngredients: ['Salt']);
+    final filled = _meal().copyWith(totalKcal: 800);
+    final meals = _Meals([opened]);
+    final (:container, :provider) = _setUpFollowing(opened, meals);
+    final controller = container.read(provider.notifier)..pickAmount(2);
+
+    meals.emit([filled]);
+
+    final state = container.read(provider);
+    expect(state.amountText, '2');
+    expect(state.nutrition?.eaten.kcal, 400);
+    expect(controller.submit()?.meal, filled);
+  });
+
+  test('following the Vorrat starts from the meal it holds now', () {
+    final opened = _meal().copyWith(pendingRecipeIngredients: ['Salt']);
+    final filled = _meal().copyWith(totalKcal: 800);
+    final (:container, :provider) = _setUpFollowing(opened, _Meals([filled]));
+
+    expect(container.read(provider).calculator.meal, filled);
+  });
+
+  test('without following, the sheet keeps the meal it was opened with', () {
+    final opened = _meal();
+    final (:container, :provider) = _setUp(opened);
+
+    expect(container.read(provider.notifier).submit()?.meal, opened);
   });
 
   test('submit rejects more than what is left', () {

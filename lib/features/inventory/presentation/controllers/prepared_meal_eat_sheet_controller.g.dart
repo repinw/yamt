@@ -9,12 +9,20 @@ part of 'prepared_meal_eat_sheet_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Holds the input of the eat sheet for one prepared meal.
+///
+/// With [followVorrat] the sheet works with [meal] as the Vorrat holds it
+/// now, for example after its open rows were filled, and keeps what the user
+/// entered when it changes.
 
 @ProviderFor(PreparedMealEatSheetController)
 final preparedMealEatSheetControllerProvider =
     PreparedMealEatSheetControllerFamily._();
 
 /// Holds the input of the eat sheet for one prepared meal.
+///
+/// With [followVorrat] the sheet works with [meal] as the Vorrat holds it
+/// now, for example after its open rows were filled, and keeps what the user
+/// entered when it changes.
 final class PreparedMealEatSheetControllerProvider
     extends
         $NotifierProvider<
@@ -22,6 +30,10 @@ final class PreparedMealEatSheetControllerProvider
           PreparedMealEatSheetState
         > {
   /// Holds the input of the eat sheet for one prepared meal.
+  ///
+  /// With [followVorrat] the sheet works with [meal] as the Vorrat holds it
+  /// now, for example after its open rows were filled, and keeps what the user
+  /// entered when it changes.
   PreparedMealEatSheetControllerProvider._({
     required PreparedMealEatSheetControllerFamily super.from,
     required ({
@@ -29,6 +41,7 @@ final class PreparedMealEatSheetControllerProvider
       String localeName,
       DateTime? initialLoggedAt,
       MealType? initialMealType,
+      bool followVorrat,
     })
     super.argument,
   }) : super(
@@ -74,9 +87,13 @@ final class PreparedMealEatSheetControllerProvider
 }
 
 String _$preparedMealEatSheetControllerHash() =>
-    r'93a0c6541d8623c1e847237b9121e371d430fd45';
+    r'09bf35d478089ba9d05bd4622c57ce3b5b4b5e9d';
 
 /// Holds the input of the eat sheet for one prepared meal.
+///
+/// With [followVorrat] the sheet works with [meal] as the Vorrat holds it
+/// now, for example after its open rows were filled, and keeps what the user
+/// entered when it changes.
 
 final class PreparedMealEatSheetControllerFamily extends $Family
     with
@@ -90,6 +107,7 @@ final class PreparedMealEatSheetControllerFamily extends $Family
             String localeName,
             DateTime? initialLoggedAt,
             MealType? initialMealType,
+            bool followVorrat,
           })
         > {
   PreparedMealEatSheetControllerFamily._()
@@ -102,18 +120,24 @@ final class PreparedMealEatSheetControllerFamily extends $Family
       );
 
   /// Holds the input of the eat sheet for one prepared meal.
+  ///
+  /// With [followVorrat] the sheet works with [meal] as the Vorrat holds it
+  /// now, for example after its open rows were filled, and keeps what the user
+  /// entered when it changes.
 
   PreparedMealEatSheetControllerProvider call({
     required PreparedMeal meal,
     required String localeName,
     DateTime? initialLoggedAt,
     MealType? initialMealType,
+    bool followVorrat = false,
   }) => PreparedMealEatSheetControllerProvider._(
     argument: (
       meal: meal,
       localeName: localeName,
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
+      followVorrat: followVorrat,
     ),
     from: this,
   );
@@ -123,6 +147,10 @@ final class PreparedMealEatSheetControllerFamily extends $Family
 }
 
 /// Holds the input of the eat sheet for one prepared meal.
+///
+/// With [followVorrat] the sheet works with [meal] as the Vorrat holds it
+/// now, for example after its open rows were filled, and keeps what the user
+/// entered when it changes.
 
 abstract class _$PreparedMealEatSheetController
     extends $Notifier<PreparedMealEatSheetState> {
@@ -133,17 +161,20 @@ abstract class _$PreparedMealEatSheetController
             String localeName,
             DateTime? initialLoggedAt,
             MealType? initialMealType,
+            bool followVorrat,
           });
   PreparedMeal get meal => _$args.meal;
   String get localeName => _$args.localeName;
   DateTime? get initialLoggedAt => _$args.initialLoggedAt;
   MealType? get initialMealType => _$args.initialMealType;
+  bool get followVorrat => _$args.followVorrat;
 
   PreparedMealEatSheetState build({
     required PreparedMeal meal,
     required String localeName,
     DateTime? initialLoggedAt,
     MealType? initialMealType,
+    bool followVorrat = false,
   });
   @$mustCallSuper
   @override
@@ -165,6 +196,7 @@ abstract class _$PreparedMealEatSheetController
         localeName: _$args.localeName,
         initialLoggedAt: _$args.initialLoggedAt,
         initialMealType: _$args.initialMealType,
+        followVorrat: _$args.followVorrat,
       ),
     );
   }
