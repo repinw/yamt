@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/theme/app_accent.dart';
 import 'package:yamt/features/diary/application/diary_home_widget_summary.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -22,7 +23,12 @@ void main() {
 
   test('returns null when no diary summary is loaded yet', () {
     expect(
-      buildHomeWidgetSnapshot(summary: null, verbose: true, now: now),
+      buildHomeWidgetSnapshot(
+        summary: null,
+        verbose: true,
+        accent: AppAccent.lime,
+        now: now,
+      ),
       isNull,
     );
   });
@@ -31,6 +37,7 @@ void main() {
     final snapshot = buildHomeWidgetSnapshot(
       summary: _summary(),
       verbose: true,
+      accent: AppAccent.lime,
       now: now,
     )!;
 
@@ -50,6 +57,7 @@ void main() {
     final snapshot = buildHomeWidgetSnapshot(
       summary: _summary(),
       verbose: false,
+      accent: AppAccent.lime,
       now: now,
     )!;
 
@@ -60,6 +68,7 @@ void main() {
     final json = buildHomeWidgetSnapshot(
       summary: _summary(),
       verbose: true,
+      accent: AppAccent.lime,
       now: now,
     )!.toJson();
 
@@ -68,5 +77,17 @@ void main() {
     expect(json['target_kcal'], 2000);
     expect(json['protein_goal_grams'], 150);
     expect(json['updated_at'], now.toIso8601String());
+  });
+
+  test('toJson sends the accent text tone as ARGB for light and dark', () {
+    final json = buildHomeWidgetSnapshot(
+      summary: _summary(),
+      verbose: false,
+      accent: AppAccent.pink,
+      now: now,
+    )!.toJson();
+
+    expect(json['accent_light'], 0xFFA8197C);
+    expect(json['accent_dark'], 0xFFF9A3DA);
   });
 }

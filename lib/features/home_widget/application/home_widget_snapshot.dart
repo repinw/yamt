@@ -12,6 +12,8 @@ class HomeWidgetSnapshot {
     required this.proteinGoalGrams,
     required this.carbsGoalGrams,
     required this.fatGoalGrams,
+    required this.accentLight,
+    required this.accentDark,
     required this.updatedAt,
   });
 
@@ -42,6 +44,13 @@ class HomeWidgetSnapshot {
   /// Target fat in grams.
   final double fatGoalGrams;
 
+  /// ARGB of the accent the widget draws the kcal value and bar in, on a
+  /// light home screen.
+  final int accentLight;
+
+  /// ARGB of the accent on a dark home screen.
+  final int accentDark;
+
   /// When this snapshot was built.
   final DateTime updatedAt;
 
@@ -56,6 +65,8 @@ class HomeWidgetSnapshot {
     'protein_goal_grams': proteinGoalGrams,
     'carbs_goal_grams': carbsGoalGrams,
     'fat_goal_grams': fatGoalGrams,
+    'accent_light': accentLight,
+    'accent_dark': accentDark,
     'updated_at': updatedAt.toIso8601String(),
   };
 }

@@ -11,7 +11,6 @@
     <color name="home_widget_outline_variant">#CAC4D0</color>
     <color name="home_widget_on_surface">#1D1B20</color>
     <color name="home_widget_on_surface_variant">#49454F</color>
-    <color name="home_widget_primary">#6750A4</color>
     <color name="home_widget_error">#B3261E</color>
     <color name="home_widget_protein">#DD2251</color>
     <color name="home_widget_carbs">#1B57E4</color>

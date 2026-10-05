@@ -4,6 +4,7 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/theme/app_accent_controller.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_home_widget_summary_provider.dart';
 import 'package:yamt/features/home_widget/application/home_widget_snapshot_mapper.dart';
@@ -17,7 +18,7 @@ part 'home_widget_sync_controller.g.dart';
 const _logName = 'HomeWidgetSyncController';
 
 /// Keeps the home-screen widget's saved snapshot in sync with today's diary
-/// summary and the silent/verbose preference.
+/// summary, the silent/verbose preference and the accent color.
 ///
 /// Auto-dispose like the providers it listens to. `lib/app.dart` holds a
 /// listener on it for the app's lifetime: that keeps it and its `ref.listen`
@@ -36,13 +37,15 @@ class HomeWidgetSyncController extends _$HomeWidgetSyncController {
       ..listen(
         homeWidgetVerboseModeControllerProvider,
         (_, _) => unawaited(_sync()),
-      );
+      )
+      ..listen(appAccentControllerProvider, (_, _) => unawaited(_sync()));
   }
 
   Future<void> _sync() async {
     final snapshot = buildHomeWidgetSnapshot(
       summary: ref.read(diaryHomeWidgetSummaryProvider),
       verbose: ref.read(homeWidgetVerboseModeControllerProvider),
+      accent: ref.read(appAccentControllerProvider),
       now: ref.read(clockProvider)(),
     );
     if (snapshot == null) {

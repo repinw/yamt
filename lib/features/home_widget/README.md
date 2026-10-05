@@ -8,8 +8,9 @@ quick-eat bar.
 
 ## Owns
 
-- The render-ready widget snapshot (`application/home_widget_snapshot.dart`)
-  and the pure mapper that builds it
+- The render-ready widget snapshot (`application/home_widget_snapshot.dart`),
+  including the accent color the user picked, and the pure mapper that
+  builds it
   (`application/home_widget_snapshot_mapper.dart`).
 - The sync controller that keeps the native widget's saved snapshot up to
   date (`presentation/controllers/home_widget_sync_controller.dart`).
@@ -50,8 +51,8 @@ and `homeWidgetClickActionProvider` directly.
 
 - `presentation/controllers/home_widget_sync_controller.dart` —
   `homeWidgetSyncControllerProvider` (`@riverpod`, side effect only: its
-  `ref.listen`s on Diary's summary and the verbose preference write the
-  snapshot through the plugin bridge). `lib/app.dart` holds a listener for
+  `ref.listen`s on Diary's summary, the verbose preference, and the accent
+  color write the snapshot through the plugin bridge). `lib/app.dart` holds a listener for
   the app's lifetime; without one Riverpod pauses its subscriptions and the
   summary gets disposed.
 - `presentation/controllers/home_widget_verbose_mode_controller.dart` —

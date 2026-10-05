@@ -20,7 +20,7 @@ struct BalanceCardContent: View {
   var body: some View {
     let leftKcal = Int((snapshot.targetKcal - snapshot.eatenKcal).rounded())
     let isOverTarget = leftKcal < 0
-    let accent = isOverTarget ? HomeWidgetColors.error : HomeWidgetColors.primary
+    let accent = isOverTarget ? HomeWidgetColors.error : snapshot.accent
     let label = isOverTarget ? localized("home_widget_over_goal") : localized("home_widget_left_today")
 
     VStack(alignment: .leading, spacing: 0) {
@@ -37,7 +37,7 @@ struct BalanceCardContent: View {
         label: localized("home_widget_unit_kcal"),
         totals: nil
       ) {
-        ProgressPill(progress: ratio(snapshot.eatenKcal, snapshot.targetKcal), color: HomeWidgetColors.primary, height: 10)
+        ProgressPill(progress: ratio(snapshot.eatenKcal, snapshot.targetKcal), color: snapshot.accent, height: 10)
       }
       Spacer().frame(height: 12)
       VStack(spacing: macroRowGap) {

@@ -9,7 +9,7 @@ part of 'home_widget_sync_controller.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 /// Keeps the home-screen widget's saved snapshot in sync with today's diary
-/// summary and the silent/verbose preference.
+/// summary, the silent/verbose preference and the accent color.
 ///
 /// Auto-dispose like the providers it listens to. `lib/app.dart` holds a
 /// listener on it for the app's lifetime: that keeps it and its `ref.listen`
@@ -20,7 +20,7 @@ part of 'home_widget_sync_controller.dart';
 final homeWidgetSyncControllerProvider = HomeWidgetSyncControllerProvider._();
 
 /// Keeps the home-screen widget's saved snapshot in sync with today's diary
-/// summary and the silent/verbose preference.
+/// summary, the silent/verbose preference and the accent color.
 ///
 /// Auto-dispose like the providers it listens to. `lib/app.dart` holds a
 /// listener on it for the app's lifetime: that keeps it and its `ref.listen`
@@ -29,7 +29,7 @@ final homeWidgetSyncControllerProvider = HomeWidgetSyncControllerProvider._();
 final class HomeWidgetSyncControllerProvider
     extends $NotifierProvider<HomeWidgetSyncController, void> {
   /// Keeps the home-screen widget's saved snapshot in sync with today's diary
-  /// summary and the silent/verbose preference.
+  /// summary, the silent/verbose preference and the accent color.
   ///
   /// Auto-dispose like the providers it listens to. `lib/app.dart` holds a
   /// listener on it for the app's lifetime: that keeps it and its `ref.listen`
@@ -63,10 +63,10 @@ final class HomeWidgetSyncControllerProvider
 }
 
 String _$homeWidgetSyncControllerHash() =>
-    r'449cfdfd71ee419873679909e6abad315b9a425a';
+    r'd5f8d616ffe6fc29d171715b6427e42d8aa376c7';
 
 /// Keeps the home-screen widget's saved snapshot in sync with today's diary
-/// summary and the silent/verbose preference.
+/// summary, the silent/verbose preference and the accent color.
 ///
 /// Auto-dispose like the providers it listens to. `lib/app.dart` holds a
 /// listener on it for the app's lifetime: that keeps it and its `ref.listen`

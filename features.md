@@ -15,14 +15,14 @@ and feature description docs. This is product-facing; architecture rules stay in
   user into onboarding.
 - Home shell with bottom tabs for Inventory, Diary, Cookbook, and Settings.
   The tab header and the bottom navigation stay in place while a tab
-  scrolls. In the middle of the bar a round lime button opens the actions of
-  the current tab, with a haptic pulse; its word changes per tab
-  ("Hinzufügen", "Essen", "Kochen"). Fortschritt has no button.
+  scrolls. In the middle of the bar a round button in the accent color opens
+  the actions of the current tab, with a haptic pulse; its word changes per
+  tab ("Hinzufügen", "Essen", "Kochen"). Fortschritt has no button.
   The actions open like the side menu, but mirrored: the page slides to the
   left and shrinks, and the actions stand at the bottom right, where the
   thumb is. The app counts on the device how often each action is tapped;
-  the most used action of the panel gets a lime icon tile. The order stays
-  fixed.
+  the most used action of the panel gets an icon tile in the accent color.
+  The order stays fixed.
 - Vorrat actions: barcode, search, AI, an own product, and a receipt as photo
   or upload (the photo only where a camera is available).
 - Responsive page layouts for mobile and wider screens.
@@ -595,8 +595,14 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Household management entry point.
 - Health connection entry point.
 - Calorie goal-start and calorie calculator entry points.
-- Theme mode selection: light, dark, and system.
-- Seed color selection.
+- Light and dark mode follow the system.
+- Accent color: Lime (default), Pink, Violet, Cyan, or Emerald, picked in a
+  sheet under Darstellung. A tap recolors the app at once and the sheet stays
+  open. The choice is saved on the device only. It recolors what is lime by
+  default (main buttons, the tab marker, the kcal number and bar, links,
+  selected chips such as training days) and the home-screen widget's kcal
+  value and bar. Macro, weight, activity, and onboarding chapter colors stay
+  the same.
 - Language display.
 - Notifications and privacy placeholders.
 - About/app version tile.
