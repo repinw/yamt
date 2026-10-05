@@ -27,6 +27,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -315,11 +316,13 @@ Future<_DiaryInventoryQuickEatHarness> _pumpAndOpenInventoryQuickEat(
   List<InventoryItem>? inventoryItems,
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
   bool preparedMealSaveShouldFail = false,
+  DateTime? today,
 }) async {
   final harness = _buildHarness(
     inventoryItems: inventoryItems,
     preparedMeals: preparedMeals,
     preparedMealSaveShouldFail: preparedMealSaveShouldFail,
+    today: today,
   );
   await tester.pumpWidget(harness.app);
   await tester.pump();
@@ -540,6 +543,90 @@ void main() {
       expect(harness.logRepository.entries, isEmpty);
     },
   );
+
+  testWidgets('a Vorrat item on tomorrow is planned and keeps its stock', (
+    tester,
+  ) async {
+    final harness = await _pumpAndOpenInventoryQuickEat(
+      tester,
+      today: _selectedDay.subtract(const Duration(days: 1)),
+    );
+    harness.publishHouseholdProfile();
+    final item = find.byKey(DiaryInventoryFoodPicker.itemKey('broetchen'));
+    await _pumpUntilFound(tester, item, description: 'household item');
+    await _pumpUntilOnScreen(tester, item, description: 'visible item');
+    await tester.tap(item);
+    final confirmButton = find.byKey(_inventoryItemAmountConfirmButtonKey);
+    await _pumpUntilFound(
+      tester,
+      confirmButton,
+      description: 'inventory item eat sheet',
+    );
+    await _pumpUntilOnScreen(
+      tester,
+      confirmButton,
+      description: 'inventory item confirm button',
+    );
+    await tester.tap(confirmButton);
+    await _pumpUntil(
+      tester,
+      () => harness.planRepository.plans.length == 1,
+      description: 'saved plan',
+    );
+
+    final plan = harness.planRepository.plans.single;
+    expect(plan.sourceInventoryItemId, 'broetchen');
+    expect(harness.householdInventoryItems.single.currentAmount, 100);
+    expect(harness.logRepository.entries, isEmpty);
+    await _pumpUntilFound(
+      tester,
+      find.byKey(DiaryMealsSectionKeys.plannedEntryTile(plan.id)),
+      description: 'plan row of the Vorrat item',
+    );
+  });
+
+  testWidgets('a cooked meal on tomorrow is planned and keeps its portions', (
+    tester,
+  ) async {
+    final harness = await _pumpAndOpenInventoryQuickEat(
+      tester,
+      inventoryItems: const <InventoryItem>[],
+      preparedMeals: [_preparedMeal(id: 'meal-1', name: 'Chili sin Carne')],
+      today: _selectedDay.subtract(const Duration(days: 1)),
+    );
+    harness.publishHouseholdProfile();
+    final meal = find.byKey(DiaryInventoryFoodPicker.mealKey('meal-1'));
+    await _pumpUntilFound(tester, meal, description: 'household prepared meal');
+    await _pumpUntilOnScreen(tester, meal, description: 'visible meal');
+    await tester.tap(meal);
+    final confirmButton = find.byKey(_preparedMealConfirmButtonKey);
+    await _pumpUntilFound(
+      tester,
+      confirmButton,
+      description: 'prepared meal eat sheet',
+    );
+    await _pumpUntilOnScreen(
+      tester,
+      confirmButton,
+      description: 'prepared meal confirm button',
+    );
+    await tester.tap(confirmButton);
+    await _pumpUntil(
+      tester,
+      () => harness.planRepository.plans.length == 1,
+      description: 'saved plan',
+    );
+
+    final plan = harness.planRepository.plans.single;
+    expect(plan.bundleSourcePreparedMealId, 'meal-1');
+    expect(harness.householdPreparedMeals.single.remainingPortions, 2);
+    expect(harness.logRepository.entries, isEmpty);
+    await _pumpUntilFound(
+      tester,
+      find.byKey(DiaryMealsSectionKeys.plannedEntryTile(plan.id)),
+      description: 'plan row of the cooked meal',
+    );
+  });
 
   testWidgets('diary shows tomorrow as a plan of its goal', (tester) async {
     final harness = _buildHarness(
