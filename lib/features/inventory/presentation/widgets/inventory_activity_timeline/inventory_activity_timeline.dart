@@ -32,8 +32,10 @@ class InventoryActivityTimeline extends ConsumerWidget {
     final eventsAsync = ref.watch(inventoryActivityEventsProvider);
     return CustomScrollView(
       slivers: [
-        if (includeHomeShellChrome)
+        if (includeHomeShellChrome) ...[
+          const InventoryHomeShellStatusBarSliver(),
           InventoryHomeShellTopChrome(tools: topChromeActions),
+        ],
         switch (eventsAsync) {
           AsyncData(:final value) => _buildDataSliver(
             context: context,

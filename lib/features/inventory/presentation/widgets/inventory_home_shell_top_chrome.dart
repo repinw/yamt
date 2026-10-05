@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/home_header_tool.dart';
 import 'package:yamt/core/widgets/home_shell_chrome.dart';
 import 'package:yamt/core/widgets/home_shell_tab_top_chrome.dart';
+import 'package:yamt/core/widgets/home_shell_top_sliver_chrome.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_selection_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -119,5 +120,25 @@ class InventoryHomeShellTopChrome extends ConsumerWidget {
         label: Text(selectionActionLabel),
       ),
     ];
+  }
+}
+
+/// Strip behind the status bar that goes before [InventoryHomeShellTopChrome]:
+/// the header scrolls away and leaves the content below the status bar.
+/// While a selection pins the header, the header holds the inset itself.
+class InventoryHomeShellStatusBarSliver extends ConsumerWidget {
+  /// Creates the strip.
+  const new({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isSelecting = ref.watch(
+      preparedMealSelectionControllerProvider.select(
+        (state) => state.isSelectionMode,
+      ),
+    );
+    return isSelecting
+        ? const SliverToBoxAdapter()
+        : const HomeShellStatusBarSliver();
   }
 }

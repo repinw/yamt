@@ -21,8 +21,10 @@ class InventoryLoadingView extends StatelessWidget {
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: [
-        if (includeHomeShellChrome)
+        if (includeHomeShellChrome) ...[
+          const InventoryHomeShellStatusBarSliver(),
           InventoryHomeShellTopChrome(tools: topChromeActions),
+        ],
         const SliverFillRemaining(
           hasScrollBody: false,
           child: Center(
