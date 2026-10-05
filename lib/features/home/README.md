@@ -11,11 +11,11 @@ Home owns the tab shell, tab navigation, and shell-level composition.
   shrinks it to a rounded card, and shows the menu behind it. Tapping the
   card, the close button, or system back closes it. The menu lists the
   signed-in user, the app-wide destinations (Profile, goal archive,
-  household, kitchen utensils, shopping list, settings, about), an account
-  entry at the bottom, and in debug builds the Calories debug actions. Only
-  the Diary top bar opens the menu, through `HomeShellMenuButton` from
-  `core/widgets` on its left side. Actions that belong to one tab do not go
-  into the menu.
+  household, kitchen utensils, shopping list, settings, appearance, about),
+  an account entry at the bottom, and in debug builds the Calories debug
+  actions. Only the Diary top bar opens the menu, through
+  `HomeShellMenuButton` from `core/widgets` on its left side. Actions that
+  belong to one tab do not go into the menu.
 - The action button in the middle of the bottom bar and its action panel
   (`presentation/widgets/home_action_panel.dart`). It opens like the side
   menu, mirrored, with the tab's actions at the bottom right. Vorrat,

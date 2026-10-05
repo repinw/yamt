@@ -115,6 +115,16 @@ abstract final class AppRoutes {
   /// Settings route, opened from the home side menu.
   static const homeSettings = '/home/settings';
 
+  /// Query parameter of [homeSettings] that names the section to open at.
+  static const homeSettingsSectionParam = 'section';
+
+  /// [homeSettingsSectionParam] value for the Appearance section.
+  static const homeSettingsSectionAppearance = 'appearance';
+
+  /// Settings opened at the Appearance section.
+  static const homeSettingsAppearance =
+      '$homeSettings?$homeSettingsSectionParam=$homeSettingsSectionAppearance';
+
   /// Profile route, opened from the home side menu.
   static const homeProfile = '/home/profile';
 

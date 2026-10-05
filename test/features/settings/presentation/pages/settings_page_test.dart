@@ -133,6 +133,7 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
   CalorieGoalSettings? calorieSettings,
   _FakeHealthConnectionService? healthService,
   Stream<UserProfile?>? userProfile,
+  bool revealAppearance = false,
 }) async {
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: calorieSettings,
@@ -162,10 +163,10 @@ Future<FakeCalorieSettingsRepository> _pumpSettingsPage(
         if (appVersionOverride != null)
           appVersionProvider.overrideWith(appVersionOverride),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(body: SettingsPage()),
+        home: Scaffold(body: SettingsPage(revealAppearance: revealAppearance)),
       ),
     ),
   );
@@ -193,6 +194,30 @@ Future<void> _scrollToText(
 }
 
 void main() {
+  testWidgets('opens scrolled to the appearance section when asked', (
+    tester,
+  ) async {
+    await _pumpSettingsPage(
+      tester,
+      appVersionOverride: (ref) async => '1.1.0+2',
+      revealAppearance: true,
+    );
+    await tester.pumpAndSettle();
+
+    final scrollable = tester.state<ScrollableState>(
+      find.byType(Scrollable).first,
+    );
+    expect(scrollable.position.pixels, greaterThan(0));
+    expect(
+      tester.getTopLeft(find.text('Appearance')).dy,
+      lessThan(tester.getTopLeft(find.byType(Scrollable).first).dy + 40),
+    );
+    expect(
+      find.byKey(SettingsPageKeys.themeModeTile).hitTestable(),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('SettingsPage renders localized rows', (tester) async {
     await _pumpSettingsPage(
       tester,

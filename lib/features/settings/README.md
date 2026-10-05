@@ -23,7 +23,8 @@ settings.
 
 - `presentation/pages/settings_page.dart` is the main settings page. It is a
   pushed page with its own app bar, opened from the home side menu at
-  `AppRoutes.homeSettings`.
+  `AppRoutes.homeSettings`, or at `AppRoutes.homeSettingsAppearance`, which
+  opens it scrolled to the Appearance section.
 - `presentation/pages/account_page.dart` is the account management page.
 - `presentation/profile_page.dart` is the profile page. It is a pushed page
   with its own app bar, opened from the Home side menu at

@@ -17,10 +17,9 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
-import 'package:yamt/features/settings/presentation/widgets/settings_accent_tile/settings_accent_tile.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_appearance_section/settings_appearance_section.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_home_widget_tile/settings_home_widget_tile.dart';
-import 'package:yamt/features/settings/presentation/widgets/settings_language_tile/settings_language_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_profile_card/settings_profile_card.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
@@ -28,8 +27,12 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Defines settings page.
 class SettingsPage extends ConsumerWidget {
-  /// The settings page.
-  const new({super.key});
+  /// The settings page. With [revealAppearance] it opens scrolled to the
+  /// Appearance section.
+  const new({this.revealAppearance = false, super.key});
+
+  /// Whether the page opens scrolled to the Appearance section.
+  final bool revealAppearance;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -73,13 +76,7 @@ class SettingsPage extends ConsumerWidget {
                             _MacroGoalsTile(),
                           ],
                         ),
-                        SettingsSection(
-                          title: l10n.settingsAppearanceSectionTitle,
-                          children: const [
-                            SettingsLanguageTile(),
-                            SettingsAccentTile(),
-                          ],
-                        ),
+                        SettingsAppearanceSection(reveal: revealAppearance),
                         SettingsSection(
                           title: l10n.settingsAppSectionTitle,
                           children: [

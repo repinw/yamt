@@ -9,6 +9,7 @@ import 'package:yamt/core/provider/app_version_provider.dart';
 import 'package:yamt/core/theme/app_accent.dart';
 import 'package:yamt/core/theme/app_accent_controller.dart';
 import 'package:yamt/core/theme/app_theme.dart';
+import 'package:yamt/core/theme/app_theme_mode_controller.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/health/data/'
@@ -17,17 +18,15 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_accent_tile/settings_accent_sheet.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_theme_mode_tile/settings_theme_mode_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 
-/// Opens the settings page in an app themed by the accent controller, like
-/// `lib/app.dart`.
-Future<MemoryAppPreferences> _pumpSettings(
-  WidgetTester tester,
-  ThemeMode themeMode,
-) async {
+/// Opens the settings page at the Appearance section, in an app themed by
+/// the accent and theme mode controllers, like `lib/app.dart`.
+Future<MemoryAppPreferences> _pumpSettings(WidgetTester tester) async {
   final preferences = MemoryAppPreferences();
   final settingsRepository = FakeCalorieSettingsRepository();
   addTearDown(settingsRepository.dispose);
@@ -58,11 +57,11 @@ Future<MemoryAppPreferences> _pumpSettings(
           return MaterialApp(
             theme: AppTheme.light(accent: accent),
             darkTheme: AppTheme.dark(accent: accent),
-            themeMode: themeMode,
+            themeMode: ref.watch(appThemeModeControllerProvider),
             locale: const Locale('de'),
             localizationsDelegates: appLocalizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
-            home: const Scaffold(body: SettingsPage()),
+            home: const Scaffold(body: SettingsPage(revealAppearance: true)),
           );
         },
       ),
@@ -76,34 +75,39 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   for (final themeMode in [ThemeMode.light, ThemeMode.dark]) {
-    testWidgets('trying every accent recolors the app (${themeMode.name})', (
-      tester,
-    ) async {
-      final preferences = await _pumpSettings(tester, themeMode);
+    testWidgets(
+      'a theme and every accent recolor the app (${themeMode.name})',
+      (tester) async {
+        final preferences = await _pumpSettings(tester);
 
-      final tile = find.byKey(SettingsPageKeys.accentTile);
-      await tester.scrollUntilVisible(tile, 200);
-      await tester.pumpAndSettle();
-      await tester.tap(tile);
-      await tester.pumpAndSettle();
-
-      final sheet = find.byType(SettingsAccentSheet);
-      for (final accent in AppAccent.values) {
-        await tester.tap(find.byKey(SettingsAccentSheet.swatchKey(accent)));
+        final tile = find.byKey(SettingsPageKeys.accentTile);
+        expect(tile.hitTestable(), findsOneWidget);
+        await tester.tap(
+          find.byKey(SettingsThemeModeTile.segmentKey(themeMode)),
+        );
+        await tester.pumpAndSettle();
+        expect(preferences.getStringSync('app_theme_mode_v1'), themeMode.name);
+        await tester.tap(tile);
         await tester.pumpAndSettle();
 
-        final theme = Theme.of(tester.element(sheet));
-        expect(
-          theme.brightness,
-          themeMode == ThemeMode.dark ? Brightness.dark : Brightness.light,
-        );
-        expect(
-          theme.colorScheme.primary,
-          accent.tonesFor(theme.brightness).fill,
-        );
-        expect(preferences.getStringSync('app_accent_v1'), accent.name);
-      }
-      expect(tester.takeException(), isNull);
-    });
+        final sheet = find.byType(SettingsAccentSheet);
+        for (final accent in AppAccent.values) {
+          await tester.tap(find.byKey(SettingsAccentSheet.swatchKey(accent)));
+          await tester.pumpAndSettle();
+
+          final theme = Theme.of(tester.element(sheet));
+          expect(
+            theme.brightness,
+            themeMode == ThemeMode.dark ? Brightness.dark : Brightness.light,
+          );
+          expect(
+            theme.colorScheme.primary,
+            accent.tonesFor(theme.brightness).fill,
+          );
+          expect(preferences.getStringSync('app_accent_v1'), accent.name);
+        }
+        expect(tester.takeException(), isNull);
+      },
+    );
   }
 }

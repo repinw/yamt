@@ -156,7 +156,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Side menu from the diary top bar. The page slides to the right as a
   shrunken card and the menu shows behind it: the user, then Profile, goal
   archive, household (You), kitchen utensils, shopping list (Kitchen),
-  settings, about (App), and "Link account" for guests at the bottom.
+  settings, appearance, about (App), and "Link account" for guests at the
+  bottom. Appearance opens the settings scrolled to the Darstellung section.
   Tapping the card or back closes it.
 - Profile page from the side menu:
   - who the user is (name or email, guest mode);
@@ -595,7 +596,10 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Household management entry point.
 - Health connection entry point.
 - Calorie goal-start and calorie calculator entry points.
-- Light and dark mode follow the system.
+- Theme: System (default), Light, or Dark, as segments under Darstellung
+  above the accent color. A tap switches the app at once. The choice is
+  saved on the device only. The home-screen widget keeps following the
+  system.
 - Accent color: Lime (default), Pink, Violet, Cyan, or Emerald, picked in a
   sheet under Darstellung. A tap recolors the app at once and the sheet stays
   open. The choice is saved on the device only. It recolors what is lime by

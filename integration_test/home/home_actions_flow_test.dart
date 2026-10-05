@@ -6,8 +6,11 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
+import 'package:yamt/core/widgets/home_shell_menu_button.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/home/home_page.dart';
 import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
+import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
 import 'package:yamt/features/scanner/data/receipt_ai_repository.dart';
 import 'package:yamt/features/scanner/data/receipt_gateway_providers.dart';
@@ -18,6 +21,7 @@ import '../../test/features/scanner/fakes/fake_receipt_ai_repository.dart';
 import '../../test/features/scanner/fakes/fake_receipt_product_resolver.dart';
 
 const _hubPageKey = ValueKey<String>('home-actions-test-hub');
+const _settingsPageKey = ValueKey<String>('home-actions-test-settings');
 
 GoRoute _placeholder(String path, {Key? key}) {
   return GoRoute(
@@ -26,16 +30,25 @@ GoRoute _placeholder(String path, {Key? key}) {
   );
 }
 
-Widget _buildHarness() {
+Widget _buildHarness({String initialLocation = AppRoutes.homeInventory}) {
   final router = GoRouter(
-    initialLocation: AppRoutes.homeInventory,
+    initialLocation: initialLocation,
     routes: [
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) =>
             HomePage(navigationShell: navigationShell),
         branches: [
           StatefulShellBranch(routes: [_placeholder(AppRoutes.homeInventory)]),
-          StatefulShellBranch(routes: [_placeholder(AppRoutes.homeDiary)]),
+          StatefulShellBranch(
+            routes: [
+              // The Diary top bar opens the side menu through this button.
+              GoRoute(
+                path: AppRoutes.homeDiary,
+                builder: (context, state) =>
+                    const Scaffold(body: Center(child: HomeShellMenuButton())),
+              ),
+            ],
+          ),
           StatefulShellBranch(
             routes: [_placeholder(AppRoutes.homeInventoryTemplates)],
           ),
@@ -43,6 +56,7 @@ Widget _buildHarness() {
         ],
       ),
       _placeholder(AppRoutes.homeProductSearchHub, key: _hubPageKey),
+      _placeholder(AppRoutes.homeSettings, key: _settingsPageKey),
     ],
   );
   addTearDown(router.dispose);
@@ -52,6 +66,7 @@ Widget _buildHarness() {
   final container = ProviderContainer(
     overrides: [
       receiptCameraSupportedProvider.overrideWithValue(true),
+      userProfileProvider.overrideWithValue(const AsyncData(null)),
       receiptAiRepositoryProvider.overrideWithValue(FakeReceiptAiRepository()),
       receiptProductResolverProvider.overrideWithValue(
         FakeReceiptProductResolver(),
@@ -105,5 +120,27 @@ void main() {
 
     expect(find.byType(HomeActionPanel), findsNothing);
     expect(find.byKey(HomeBottomNavBar.actionKey), findsOneWidget);
+  });
+
+  testWidgets('the side menu opens settings at the appearance section', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _buildHarness(initialLocation: AppRoutes.homeDiary),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(HomeShellMenuButton.buttonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(HomeMenuPanel.appearanceTileKey));
+    await tester.pumpAndSettle();
+
+    final settings = find.byKey(_settingsPageKey);
+    expect(settings, findsOneWidget);
+    expect(
+      GoRouterState.of(tester.element(settings)).uri,
+      Uri.parse(AppRoutes.homeSettingsAppearance),
+    );
+    expect(tester.takeException(), isNull);
   });
 }
