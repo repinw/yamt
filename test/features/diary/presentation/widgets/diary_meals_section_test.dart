@@ -8,6 +8,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashed_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -35,6 +36,22 @@ void main() {
     expect(find.byType(DiaryMealsSkeleton), findsNothing);
     expect(find.byKey(DiaryMealsSectionKeys.emptyState), findsOneWidget);
     expect(find.text('Nothing eaten yet'), findsOneWidget);
+  });
+
+  testWidgets('empty future day speaks of planning', (tester) async {
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        for (final mealType in MealType.sectionOrder)
+          _mealSection(mealType, const []),
+      ],
+      now: selectedDay.subtract(const Duration(hours: 12)),
+    );
+
+    expect(find.byKey(DiaryMealsSectionKeys.emptyState), findsOneWidget);
+    expect(find.text('Nothing planned yet'), findsOneWidget);
+    expect(find.text('Nothing eaten yet'), findsNothing);
   });
 
   testWidgets('logged meals render groups with readable entry rows', (
@@ -332,11 +349,13 @@ Future<void> _pumpMealsSection(
   WidgetTester tester, {
   required DateTime selectedDay,
   required List<DiaryMealSection> sections,
+  DateTime? now,
 }) async {
   await _pumpDiaryWidget(
     tester,
     DiaryMealsSection(selectedDay: selectedDay),
     overrides: [
+      if (now != null) diaryCalendarNowProvider.overrideWithValue(() => now),
       diaryDayDashboardControllerProvider(selectedDay).overrideWithValue(
         diaryDashboardLoadedStateForTest(
           selectedDay: selectedDay,

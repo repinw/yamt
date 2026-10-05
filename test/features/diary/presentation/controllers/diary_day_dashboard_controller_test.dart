@@ -20,6 +20,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
@@ -354,6 +355,48 @@ void main() {
     );
   });
 
+  test('reloads when the day turns from a plan into today', () async {
+    final preferences = MemoryAppPreferences();
+    final logRepository = FakeCalorieLogRepository();
+    addTearDown(logRepository.dispose);
+    var now = selectedDay.subtract(const Duration(hours: 12));
+    var weekOverviewReadCount = 0;
+
+    final container = _dashboardContainer(
+      preferences: preferences,
+      logRepository: logRepository,
+      selectedDay: selectedDay,
+      calendarNow: () => now,
+      weekOverviewBuilder: () {
+        weekOverviewReadCount += 1;
+        return diaryWeekOverviewForTest(selectedDay: selectedDay);
+      },
+    );
+    addTearDown(container.dispose);
+    // The diary page keeps the calendar alive while it shows a day.
+    final calendar = container.listen(
+      diaryCalendarControllerProvider,
+      (_, _) {},
+    );
+    addTearDown(calendar.close);
+
+    final provider = diaryDayDashboardControllerProvider(selectedDay);
+    final subscription = container.listen(
+      provider,
+      (_, _) {},
+      fireImmediately: true,
+    );
+    addTearDown(subscription.close);
+    await _waitForDashboardRefresh(container, selectedDay);
+    expect(weekOverviewReadCount, 1);
+
+    now = selectedDay.add(const Duration(hours: 8));
+    container.read(diaryCalendarControllerProvider.notifier).refreshToday();
+    await _waitForDashboardRefresh(container, selectedDay);
+
+    expect(weekOverviewReadCount, 2);
+  });
+
   test(
     'concurrent refreshAfterMutation calls share in-flight refresh',
     () async {
@@ -415,6 +458,7 @@ ProviderContainer _dashboardContainer({
   FutureOr<CalorieWeekOverview> Function()? weekOverviewBuilder,
   FakeCalorieSettingsRepository? settingsRepository,
   List<ProviderObserver> observers = const <ProviderObserver>[],
+  DateTime Function()? calendarNow,
 }) {
   final auth = _MockFirebaseAuth();
   final user = _MockUser();
@@ -435,6 +479,8 @@ ProviderContainer _dashboardContainer({
         () => _FakeBurnWeekRunController(const BurnWeekRunState.initial()),
       ),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
+      if (calendarNow != null)
+        diaryCalendarNowProvider.overrideWithValue(calendarNow),
       // Without a builder the real week overview pipeline runs, which is what
       // day type changes have to flow through.
       if (weekOverviewBuilder != null)

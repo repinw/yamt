@@ -331,11 +331,11 @@ void main() {
       ),
     );
 
-    expect(_findTextContaining('Base '), findsOneWidget);
+    expect(find.text('PLANNED'), findsOneWidget);
     expect(find.text('LEFT TODAY'), findsNothing);
   });
 
-  testWidgets('quiet future day shows only the target planned with carryover', (
+  testWidgets('quiet future day shows the planned kcal of its goal', (
     tester,
   ) async {
     final now = DateTime(2026, 4, 26, 12);
@@ -353,8 +353,37 @@ void main() {
       showDetails: false,
     );
 
-    expect(find.text('PLANNED WITH CARRYOVER'), findsOneWidget);
+    expect(find.text('PLANNED'), findsOneWidget);
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('of 2,000'), findsOneWidget);
     expect(_findTextContaining('Base '), findsNothing);
+  });
+
+  testWidgets('future pause day shows the pause word instead of the goal', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 4, 26, 12);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay,
+      dayTotals: const [0, 0, 0, 0, 0, 0, 600],
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(selectedDay),
+      ),
+      isPauseDay: true,
+      showDetails: false,
+    );
+
+    expect(find.text('PLANNED'), findsOneWidget);
+    expect(find.text('600'), findsOneWidget);
+    expect(
+      tester.widget<Text>(find.byKey(DiaryBalanceCardKeys.kcalHeadTarget)).data,
+      'Pause day',
+    );
   });
 
   testWidgets('quiet card shows only what is left and toggles on tap', (
@@ -413,8 +442,15 @@ void main() {
       ),
     );
 
-    expect(_findTextContaining('Base '), findsOneWidget);
-    expect(find.text('PLANNED WITH CARRYOVER'), findsOneWidget);
+    expect(find.text('PLANNED'), findsOneWidget);
+    expect(find.text('1,000'), findsOneWidget);
+    expect(find.text('of 2,000'), findsOneWidget);
+    // No carryover on a future day, so nothing to explain.
+    expect(_findTextContaining('Base '), findsNothing);
+    expect(
+      find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsButton),
+      findsNothing,
+    );
     expect(_findTextContaining(' eaten'), findsNothing);
     expect(find.text('LEFT TODAY'), findsNothing);
     expect(find.text('Day 7 of 7'), findsNothing);

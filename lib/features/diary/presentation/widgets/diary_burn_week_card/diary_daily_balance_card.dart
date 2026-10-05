@@ -75,9 +75,7 @@ class DiaryDailyBalanceCard extends StatelessWidget {
               eatenKcal: data.metrics.eatenKcal,
               targetKcal: data.metrics.targetKcal,
               scaleEndLabel: showDetails
-                  ? l10n.diaryBalanceScaleTarget(
-                      data.plannedWithCarryoverNumber,
-                    )
+                  ? l10n.diaryBalanceScaleTarget(data.targetNumber)
                   : null,
             ),
             if (showSubtitle) ...[

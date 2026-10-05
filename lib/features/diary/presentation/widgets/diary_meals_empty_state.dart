@@ -8,10 +8,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Short hint on a day without logged food, between the same dashed lines
 /// that frame the meals. It points to the "Essen" button in the middle of
-/// the home bar.
+/// the home bar. On a future day it speaks of planning instead of eating.
 class DiaryMealsEmptyState extends StatelessWidget {
   /// Creates the empty state.
-  const new({super.key});
+  const new({this.isFutureDay = false, super.key});
+
+  /// Whether the day lies after today.
+  final bool isFutureDay;
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +28,9 @@ class DiaryMealsEmptyState extends StatelessWidget {
         spacing: AppSpacing.xs,
         children: [
           Text(
-            l10n.diaryMealsEmptyTitle,
+            isFutureDay
+                ? l10n.diaryMealsPlanEmptyTitle
+                : l10n.diaryMealsEmptyTitle,
             textAlign: TextAlign.center,
             style: textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.w800,
@@ -33,7 +38,9 @@ class DiaryMealsEmptyState extends StatelessWidget {
             ),
           ),
           Text(
-            l10n.diaryMealsEmptyHint,
+            isFutureDay
+                ? l10n.diaryMealsPlanEmptyHint
+                : l10n.diaryMealsEmptyHint,
             textAlign: TextAlign.center,
             style: textTheme.labelMedium?.copyWith(
               fontFamily: AppFonts.mono,

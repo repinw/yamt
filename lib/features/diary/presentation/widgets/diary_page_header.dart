@@ -12,7 +12,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 
 /// Renders the weekly check-in and today's missing-weight prompt below the
-/// daily balance card.
+/// daily balance card. Future days show neither: they are plans.
 ///
 /// The weight prompt stays hidden while the check-in hint offers its own
 /// missing-weight action, so the diary never asks for a weight twice.
@@ -49,6 +49,11 @@ class DiaryPageHeader extends ConsumerWidget {
         (state) => isSameCalendarDay(state.today, selectedDay),
       ),
     );
+    final isFutureDay = ref.watch(
+      diaryCalendarControllerProvider.select(
+        (state) => state.isFutureDay(selectedDay),
+      ),
+    );
     final showWeightPrompt =
         isSelectedDay && isToday && !_checkInAsksForWeight(ref);
 
@@ -61,9 +66,15 @@ class DiaryPageHeader extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             if (dashboardData != null && isSelectedDay)
-              DiaryWeeklyCheckInSection(
-                key: weeklyCheckInKey,
-                selectedDay: selectedDay,
+              // Hidden, not removed: the section remembers which check-in
+              // it already opened and finishes a running save.
+              Visibility(
+                visible: !isFutureDay,
+                maintainState: true,
+                child: DiaryWeeklyCheckInSection(
+                  key: weeklyCheckInKey,
+                  selectedDay: selectedDay,
+                ),
               ),
             if (showWeightPrompt)
               DiaryWeightMissingPromptSection(day: selectedDay),

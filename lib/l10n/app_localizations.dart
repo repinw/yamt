@@ -4150,6 +4150,18 @@ abstract class AppLocalizations {
   /// **'Yesterday'**
   String get diaryYesterdayTitle;
 
+  /// No description provided for @diaryTomorrowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tomorrow'**
+  String get diaryTomorrowTitle;
+
+  /// No description provided for @diaryDayAfterTomorrowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'In 2 days'**
+  String get diaryDayAfterTomorrowTitle;
+
   /// No description provided for @diaryDayRelativeWeekday.
   ///
   /// In en, this message translates to:
@@ -4383,6 +4395,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tap “Eat” below to log food by barcode, from the inventory, search, or AI.'**
   String get diaryMealsEmptyHint;
+
+  /// No description provided for @diaryMealsPlanEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing planned yet'**
+  String get diaryMealsPlanEmptyTitle;
+
+  /// No description provided for @diaryMealsPlanEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap “Eat” below to add what you want to eat on this day.'**
+  String get diaryMealsPlanEmptyHint;
 
   /// No description provided for @diaryBalanceEatenAmount.
   ///
@@ -4702,11 +4726,11 @@ abstract class AppLocalizations {
   /// **'Base'**
   String get diaryBalanceBaseLabel;
 
-  /// No description provided for @diaryBalancePlannedWithCarryoverLabel.
+  /// No description provided for @diaryBalancePlannedLabel.
   ///
   /// In en, this message translates to:
-  /// **'Planned with carryover'**
-  String get diaryBalancePlannedWithCarryoverLabel;
+  /// **'Planned'**
+  String get diaryBalancePlannedLabel;
 
   /// No description provided for @diaryBalanceRealEatenLabel.
   ///

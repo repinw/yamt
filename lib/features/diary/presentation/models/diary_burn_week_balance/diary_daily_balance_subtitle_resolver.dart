@@ -18,35 +18,17 @@ DiaryDailyBalanceSubtitleResult resolveDiaryDailyBalanceSubtitle({
   required NumberFormat numberFormat,
   required AppLocalizations l10n,
 }) {
-  if (isFutureDay) {
-    return _resolveFutureSubtitle(metrics, numberFormat, l10n);
-  }
   if (isPauseDay) {
     return (
       text: l10n.diaryBalancePauseDaySubtitle,
       parts: const <DiaryDailyBalanceSubtitlePart>[],
     );
   }
-  return _buildSubtitleAdjustments(metrics, numberFormat, l10n);
-}
-
-DiaryDailyBalanceSubtitleResult _resolveFutureSubtitle(
-  DiaryDailyBalanceMetrics metrics,
-  NumberFormat numberFormat,
-  AppLocalizations l10n,
-) {
-  if (metrics.carryoverKcal.round() != 0) {
-    final formatted = formatDiarySignedKcal(
-      metrics.carryoverKcal,
-      numberFormat,
-      l10n.caloriesUnitKcal,
-    );
-    return (
-      text: l10n.diaryBalanceCarryoverShort(formatted),
-      parts: const <DiaryDailyBalanceSubtitlePart>[],
-    );
+  // A future day has no carryover, and its head already names the goal.
+  if (isFutureDay) {
+    return (text: null, parts: const <DiaryDailyBalanceSubtitlePart>[]);
   }
-  return (text: null, parts: const <DiaryDailyBalanceSubtitlePart>[]);
+  return _buildSubtitleAdjustments(metrics, numberFormat, l10n);
 }
 
 DiaryDailyBalanceSubtitleResult _buildSubtitleAdjustments(

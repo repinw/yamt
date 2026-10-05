@@ -12,6 +12,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
@@ -21,11 +22,14 @@ import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart'
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_inventory_food_picker/diary_inventory_food_picker_status.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
@@ -97,12 +101,16 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   List<InventoryItem>? inventoryItems,
   List<PreparedMeal> preparedMeals = const <PreparedMeal>[],
   bool preparedMealSaveShouldFail = false,
+  DateTime? today,
+  List<CalorieEntry> calorieEntries = const <CalorieEntry>[],
 }) {
   final profileController = StreamController<UserProfile?>();
   final user = _MockUser();
   when(() => user.uid).thenReturn(_userId);
   final auth = _MockFirebaseAuth();
-  final logRepository = FakeCalorieLogRepository();
+  final logRepository = FakeCalorieLogRepository(
+    initialEntries: List<CalorieEntry>.of(calorieEntries),
+  );
   final settingsRepository = FakeCalorieSettingsRepository(
     initialSettings: CalorieGoalSettings.single(
       dailyKcalGoal: 2200,
@@ -130,7 +138,9 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   addTearDown(router.dispose);
   addTearDown(logRepository.dispose);
   addTearDown(settingsRepository.dispose);
-  addTearDown(profileController.close);
+  // close() completes only after the stream had a listener, and only the
+  // Vorrat picker listens. Scenarios that never open it would hang here.
+  addTearDown(() => unawaited(profileController.close()));
 
   final inventoryItemsByOwnerId = {
     _householdId:
@@ -155,8 +165,11 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       burnWeekRunStateRepositoryProvider.overrideWithValue(
         const _StaticBurnWeekRunStateRepository(),
       ),
+      clockProvider.overrideWithValue(
+        () => (today ?? _selectedDay).add(const Duration(hours: 12)),
+      ),
       diaryCalendarControllerProvider.overrideWith(
-        () => _StaticDiaryCalendarController(_selectedDay),
+        () => _StaticDiaryCalendarController(_selectedDay, today: today),
       ),
       healthConnectionServiceProvider.overrideWithValue(
         FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
@@ -518,6 +531,41 @@ void main() {
     },
   );
 
+  testWidgets('diary shows tomorrow as a plan of its goal', (tester) async {
+    final harness = _buildHarness(
+      today: _selectedDay.subtract(const Duration(days: 1)),
+      calorieEntries: [
+        CalorieEntry.create(
+          id: 'planned-breakfast',
+          userId: _userId,
+          name: 'Haferflocken',
+          mealType: MealType.breakfast,
+          consumedAmount: 100,
+          consumedUnit: ConsumedUnit.grams,
+          per100Kcal: 900,
+          per100Protein: 10,
+          per100Carbs: 60,
+          per100Fat: 7,
+          loggedAt: _selectedDay.add(const Duration(hours: 8)),
+          createdAt: _selectedDay,
+          updatedAt: _selectedDay,
+        ),
+      ],
+    );
+    await tester.pumpWidget(harness.app);
+    await _pumpUntilFound(
+      tester,
+      find.byKey(DiaryBalanceCardKeys.kcalHeadTarget),
+      description: 'planned head of tomorrow',
+    );
+
+    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'GEPLANT');
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '900');
+    // The goal without a carryover from today, which is not finished yet.
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
+  });
+
   testWidgets('diary prepared meal quick add shows save failure snackbar', (
     tester,
   ) async {
@@ -581,14 +629,20 @@ class _StaticBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
 }
 
 class _StaticDiaryCalendarController extends DiaryCalendarController {
-  new(this.day);
+  new(this.day, {this.today});
 
   final DateTime day;
+
+  /// Today when it differs from the selected [day].
+  final DateTime? today;
 
   @override
   DiaryCalendarState build() {
     final normalizedDay = normalizeDiaryDay(day);
-    return DiaryCalendarState(today: normalizedDay, selectedDay: normalizedDay);
+    return DiaryCalendarState(
+      today: normalizeDiaryDay(today ?? day),
+      selectedDay: normalizedDay,
+    );
   }
 }
 

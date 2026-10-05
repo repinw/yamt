@@ -12,6 +12,21 @@ abstract final class DiaryBalanceCardKeys {
     'diary-balance-daily-progress-eaten-fill',
   );
 
+  /// Label above the big number of the daily head.
+  static const kcalHeadLabel = ValueKey<String>(
+    'diary-balance-kcal-head-label',
+  );
+
+  /// Big number of the daily head.
+  static const kcalHeadValue = ValueKey<String>(
+    'diary-balance-kcal-head-value',
+  );
+
+  /// Goal next to the big number of a future day.
+  static const kcalHeadTarget = ValueKey<String>(
+    'diary-balance-kcal-head-target',
+  );
+
   /// Practice day card key.
   static const practiceDay = ValueKey<String>('diary-balance-practice-day');
 

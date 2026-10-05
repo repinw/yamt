@@ -69,6 +69,20 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('shows Morgen and Übermorgen, then the weekday', (tester) async {
+    await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 28));
+    expect(find.text('MORGEN · DIENSTAG'), findsOneWidget);
+
+    await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 29));
+    await tester.pumpAndSettle();
+    expect(find.text('ÜBERMORGEN · MITTWOCH'), findsOneWidget);
+
+    await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 30));
+    await tester.pumpAndSettle();
+    expect(find.text('DONNERSTAG'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('arrows, swipe and label call their callbacks', (tester) async {
     var previous = 0;
     var next = 0;

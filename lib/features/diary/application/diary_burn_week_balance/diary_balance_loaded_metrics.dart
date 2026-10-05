@@ -2,6 +2,7 @@ import 'package:yamt/features/calories/application/burn_week_live_window_logic.d
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_weekly_balance_metrics.dart';
@@ -138,19 +139,25 @@ DiaryWeeklyBalanceMetrics _resolveWeeklyMetrics(
   now: context.now,
 );
 
-DiaryDailyBudgetDetailsData _resolveBudgetDetails(
+/// The days before a future day are not finished, so a future day has no
+/// carryover to explain and no budget details.
+DiaryDailyBudgetDetailsData? _resolveBudgetDetails(
   _DiaryBalanceLoadedContext context,
   DateTime weekStart,
   DiaryBalanceLoadedState state,
   DiaryDailyBalanceMetrics daily,
-) => DiaryDailyBudgetDetailsData.from(
-  weekOverview: context.weekOverview,
-  selectedDayOverview: context.selectedDayOverview,
-  metrics: daily,
-  isPauseDay: state.isPauseDay,
-  carryoverStartDate: weekStart,
-  carryoverMacroDelta: context.carryoverMacroDelta,
-);
+) =>
+    normalizeDiaryDay(context.selectedDayOverview.date)
+        .isAfter(normalizeDiaryDay(context.now))
+    ? null
+    : DiaryDailyBudgetDetailsData.from(
+        weekOverview: context.weekOverview,
+        selectedDayOverview: context.selectedDayOverview,
+        metrics: daily,
+        isPauseDay: state.isPauseDay,
+        carryoverStartDate: weekStart,
+        carryoverMacroDelta: context.carryoverMacroDelta,
+      );
 
 DiaryBalanceLoadedState _resolveLoadedState(
   _DiaryBalanceLoadedContext context,

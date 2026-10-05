@@ -146,17 +146,15 @@ void main() {
       expect(data.leftSubtitleParts, isEmpty);
     });
 
-    test('formats future day with baseValue, plannedWithCarryoverValue, '
-        'and carryover', () {
+    test('formats a future day as a plan of its goal', () {
       const metrics = DiaryDailyBalanceMetrics(
         bufferAdjustmentKcal: 0,
-        realEatenKcal: 0,
-        eatenKcal: 0,
-        realDayLeftKcal: 2150,
-        dayLeftKcal: 2150,
-        targetKcal: 2150,
+        realEatenKcal: 600,
+        eatenKcal: 600,
+        realDayLeftKcal: 1400,
+        dayLeftKcal: 1400,
+        targetKcal: 2000,
         baseGoalKcal: 2000,
-        carryoverKcal: 150,
       );
 
       final futureDay = selectedDay.add(const Duration(days: 1));
@@ -170,45 +168,61 @@ void main() {
       );
 
       expect(data.isFutureDay, isTrue);
-      expect(data.baseNumber, '2,000');
-      expect(data.plannedWithCarryoverNumber, '2,150');
+      expect(data.eatenValue, '600');
+      expect(data.targetNumber, '2,000');
       expect(data.caloriesUnit, 'kcal');
-      expect(data.baseValue, '2,000 kcal');
-      expect(data.plannedWithCarryoverValue, '2,150 kcal');
-      expect(data.leftSubtitle, 'Carryover +150 kcal');
+      expect(data.isOverTarget, isFalse);
+      expect(data.leftSubtitle, isNull);
       expect(data.leftSubtitleParts, isEmpty);
     });
 
-    test(
-      'formats future day without carryover subtitle when carryover is zero',
-      () {
-        const metrics = DiaryDailyBalanceMetrics(
-          bufferAdjustmentKcal: 0,
-          realEatenKcal: 0,
-          eatenKcal: 0,
-          realDayLeftKcal: 2000,
-          dayLeftKcal: 2000,
-          targetKcal: 2000,
-          baseGoalKcal: 2000,
-        );
+    test('marks a future day planned over its goal', () {
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 2400,
+        eatenKcal: 2400,
+        realDayLeftKcal: -400,
+        dayLeftKcal: -400,
+        targetKcal: 2000,
+        baseGoalKcal: 2000,
+      );
 
-        final futureDay = selectedDay.add(const Duration(days: 1));
-        final data = DiaryDailyBalanceData.from(
-          selectedDay: futureDay,
-          metrics: metrics,
-          isPauseDay: false,
-          numberFormat: numberFormat,
-          l10n: l10n,
-          now: selectedDay,
-        );
+      final data = DiaryDailyBalanceData.from(
+        selectedDay: selectedDay.add(const Duration(days: 2)),
+        metrics: metrics,
+        isPauseDay: false,
+        numberFormat: numberFormat,
+        l10n: l10n,
+        now: selectedDay,
+      );
 
-        expect(data.isFutureDay, isTrue);
-        expect(data.baseValue, '2,000 kcal');
-        expect(data.plannedWithCarryoverValue, '2,000 kcal');
-        expect(data.leftSubtitle, isNull);
-        expect(data.leftSubtitleParts, isEmpty);
-      },
-    );
+      expect(data.isFutureDay, isTrue);
+      expect(data.isOverTarget, isTrue);
+    });
+
+    test('keeps the pause message on a future pause day', () {
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: 0,
+        realEatenKcal: 0,
+        eatenKcal: 0,
+        realDayLeftKcal: 2000,
+        dayLeftKcal: 2000,
+        targetKcal: 2000,
+        baseGoalKcal: 2000,
+      );
+
+      final data = DiaryDailyBalanceData.from(
+        selectedDay: selectedDay.add(const Duration(days: 1)),
+        metrics: metrics,
+        isPauseDay: true,
+        numberFormat: numberFormat,
+        l10n: l10n,
+        now: selectedDay,
+      );
+
+      expect(data.isFutureDay, isTrue);
+      expect(data.leftSubtitle, 'Ignored for learning');
+    });
 
     test('marks today over target and drops the sign of the overage', () {
       const metrics = DiaryDailyBalanceMetrics(
