@@ -97,6 +97,8 @@ void main() {
     final section = DiaryMealSection(
       mealType: MealType.lunch,
       entries: [_entry('oats-1'), _entry('oats-2')],
+      plannedEntries: const [],
+      countsPlans: false,
       totalKcal: 150,
     );
 

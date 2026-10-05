@@ -8,8 +8,11 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
+import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
+import 'package:yamt/features/diary/domain/diary_plan_day.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 
 part 'diary_quick_entry_controller.g.dart';
@@ -78,6 +81,9 @@ class DiaryQuickEntryState {
   /// Whether the entry can be saved: it needs the calories.
   bool get canSave => kcal != null && !isSaving;
 
+  /// Whether the entry is saved as a plan: its day lies after [today].
+  bool get isPlan => isDiaryFutureDay(day: loggedAt, today: today);
+
   /// Copies the state with the given changes.
   DiaryQuickEntryState copyWith({
     String? name,
@@ -143,7 +149,8 @@ class DiaryQuickEntryController extends _$DiaryQuickEntryController {
   }
 
   /// Saves the typed values as a quick entry named [defaultName] when no
-  /// name was typed. Returns the saved entry, or null when saving failed.
+  /// name was typed, as a plan on a future day. Returns the saved entry, or
+  /// null when saving failed.
   Future<CalorieEntry?> save({required String defaultName}) async {
     final kcal = state.kcal;
     final userId = ref.read(firebaseAuthProvider).currentUser?.uid;
@@ -164,10 +171,19 @@ class DiaryQuickEntryController extends _$DiaryQuickEntryController {
       fat: state.valueOf(DiaryQuickEntryValue.fat),
     );
     final saveEntry = ref.read(calorieEntrySaverProvider);
+    final plans = ref.read(plannedEntryRepositoryProvider);
+    final revision = ref.read(calorieOverviewRevisionProvider.notifier);
+    final isPlan = state.isPlan;
     state = state.copyWith(isSaving: true);
-    final result = await AsyncValue.guard(
-      () => saveEntry(entry, isNewEntry: true),
-    );
+    final result = await AsyncValue.guard(() async {
+      if (!isPlan) {
+        return await saveEntry(entry, isNewEntry: true);
+      }
+      await plans.savePlannedEntry(entry);
+      // The diary dashboards learn about the plan from the revision.
+      revision.markChanged();
+      return true;
+    });
     if (result case AsyncError(:final error, :final stackTrace)) {
       log(
         'Failed to save quick entry.',

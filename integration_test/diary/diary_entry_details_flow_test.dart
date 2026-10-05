@@ -15,6 +15,7 @@ import 'package:yamt/core/router/hero_sheet_page.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -24,6 +25,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
+import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 
 class _MockUser extends Mock implements User;
 
@@ -103,6 +105,9 @@ Future<void> _openDetails(
       firebaseFirestoreProvider.overrideWith((ref) => null),
       userProfileProvider.overrideWith((ref) => Stream.value(null)),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
+      plannedEntryRepositoryProvider.overrideWithValue(
+        FakePlannedEntryRepository(),
+      ),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
     ],
   );

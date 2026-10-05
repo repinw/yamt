@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_balance_loaded_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
+import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/application/diary_entries_provider.dart';
 import 'package:yamt/features/diary/application/diary_macro_targets_resolver.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -77,6 +78,7 @@ class DiaryBalanceSource {
     required this._selectedDayEntries,
     required this._runState,
     required this._carryoverMacroDelta,
+    required this._countedPlans,
   });
 
   /// Creates a balance source from cached dashboard data.
@@ -87,6 +89,9 @@ class DiaryBalanceSource {
       selectedDayEntries: data.selectedDayEntries,
       runState: data.runState,
       carryoverMacroDelta: data.carryoverMacroDelta,
+      countedPlans: data.countsPlans
+          ? data.plannedEntries
+          : const <CalorieEntry>[],
     );
   }
 
@@ -95,6 +100,7 @@ class DiaryBalanceSource {
   final List<CalorieEntry> _selectedDayEntries;
   final BurnWeekRunState _runState;
   final DiaryMacroTargets _carryoverMacroDelta;
+  final List<CalorieEntry> _countedPlans;
 
   /// Week overview backing this source.
   CalorieWeekOverview get weekOverview => _weekOverview;
@@ -111,6 +117,10 @@ class DiaryBalanceSource {
   /// Resolves render-ready balance card data for [now].
   DiaryBalanceCardData resolve({required DateTime now}) {
     final selectedDay = _selectedDayOverview.date;
+    final selectedDayOverview = addDiaryPlansToDay(
+      _selectedDayOverview,
+      _countedPlans,
+    );
     final isLiveDay = isSameDiaryDay(selectedDay, now);
     final scheduledRestartDate = resolveDiaryBalanceScheduledRestartDate(
       runState: _runState,
@@ -131,7 +141,7 @@ class DiaryBalanceSource {
     )) {
       final practiceGoalKcal = resolveDiaryDisplayGoalKcal(
         weekOverview: _weekOverview,
-        selectedDayOverview: _selectedDayOverview,
+        selectedDayOverview: selectedDayOverview,
       );
       return DiaryBalanceCardData.practiceDay(
         practiceDay: DiaryBalancePracticeDayData(
@@ -139,7 +149,7 @@ class DiaryBalanceSource {
           futureGoalKcal: _weekOverview.futureGoalKcal,
           daily: resolveDiaryDailyBalanceMetrics(
             flexibleGoalKcal: practiceGoalKcal,
-            totalKcal: _selectedDayOverview.totalKcal,
+            totalKcal: selectedDayOverview.totalKcal,
             goalKcal: practiceGoalKcal,
             baseGoalKcal: practiceGoalKcal,
           ),
@@ -150,7 +160,7 @@ class DiaryBalanceSource {
     return DiaryBalanceCardData.loaded(
       loadedMetrics: resolveDiaryBalanceLoadedMetrics(
         weekOverview: _weekOverview,
-        selectedDayOverview: _selectedDayOverview,
+        selectedDayOverview: selectedDayOverview,
         selectedDayEntries: _selectedDayEntries,
         runState: _runState,
         isLiveDay: isLiveDay,
@@ -187,6 +197,8 @@ Future<DiaryBalanceSource> diaryBalanceSource(
     selectedDayOverview: selectedDayOverview,
     selectedDayEntries: selectedDayEntries,
     runState: runState,
+    // This source reads no plans.
+    countedPlans: const <CalorieEntry>[],
     carryoverMacroDelta: resolveDiaryCarryoverMacroDelta(
       macroResolver,
       day: normalizedSelectedDay,

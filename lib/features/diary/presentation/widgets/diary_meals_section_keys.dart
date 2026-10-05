@@ -14,6 +14,11 @@ abstract final class DiaryMealsSectionKeys {
     return ValueKey<String>('diary-meal-entry-$entryId');
   }
 
+  /// Row key for a plan.
+  static Key plannedEntryTile(String planId) {
+    return ValueKey<String>('diary-meal-plan-$planId');
+  }
+
   /// Button key for a quick-eat source.
   static Key quickEatSource(DiaryQuickEatSource source) {
     return ValueKey<String>('diary-quick-eat-source-${source.name}');

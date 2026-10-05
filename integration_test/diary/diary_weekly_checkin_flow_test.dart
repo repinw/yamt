@@ -10,6 +10,7 @@ import 'package:yamt/features/calories/application/calorie_balance_now_provider.
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -30,6 +31,7 @@ import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
+import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 
 // 2026-09-01 is a Tuesday. The goal counts from it, so its first check-in
@@ -93,6 +95,9 @@ void main() {
           ),
           calorieSettingsRepositoryProvider.overrideWithValue(settings),
           calorieLogRepositoryProvider.overrideWithValue(log),
+          plannedEntryRepositoryProvider.overrideWithValue(
+            FakePlannedEntryRepository(),
+          ),
           burnWeekRunStateRepositoryProvider.overrideWithValue(
             FakeBurnWeekRunStateRepository(),
           ),

@@ -121,7 +121,8 @@ class _DiaryQuickEntryPageState extends ConsumerState<DiaryQuickEntryPage> {
           onChanged: (value, text) => _controller.setValueText(value, text),
           onSubmitted: _focusNext,
         ),
-        if (state.isMissingMacros) _AiHint(onPressed: _openAi),
+        // The AI search saves no plans yet.
+        if (state.isMissingMacros && !state.isPlan) _AiHint(onPressed: _openAi),
       ],
     );
   }
@@ -138,6 +139,7 @@ class _DiaryQuickEntryPageState extends ConsumerState<DiaryQuickEntryPage> {
   Future<void> _save() async {
     FocusManager.instance.primaryFocus?.unfocus();
     final l10n = AppLocalizations.of(context)!;
+    final isPlan = ref.read(_provider).isPlan;
     final entry = await _controller.save(
       defaultName: l10n.diaryQuickEntryDefaultName,
     );
@@ -150,7 +152,7 @@ class _DiaryQuickEntryPageState extends ConsumerState<DiaryQuickEntryPage> {
       ).showAppSnackBar(l10n.caloriesSaveFailed, tone: AppSnackBarTone.error);
       return;
     }
-    Navigator.of(context).pop(DiaryQuickEntrySaved(entry));
+    Navigator.of(context).pop(DiaryQuickEntrySaved(entry, isPlan: isPlan));
   }
 
   void _openAi() {

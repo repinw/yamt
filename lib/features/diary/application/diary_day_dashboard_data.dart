@@ -25,6 +25,8 @@ class DiaryDayDashboardData {
     required this.refreshedAt,
     required this.weekOverview,
     required this.selectedDayEntries,
+    required this.plannedEntries,
+    required this.countsPlans,
     required this.runState,
     required this.mealSections,
     required this.nutritionBars,
@@ -46,6 +48,13 @@ class DiaryDayDashboardData {
 
   /// Entries for [selectedDay].
   final List<CalorieEntry> selectedDayEntries;
+
+  /// Plans for [selectedDay].
+  final List<CalorieEntry> plannedEntries;
+
+  /// Whether [plannedEntries] count toward [selectedDay]: the head, the
+  /// macro bars, and the meal totals add them.
+  final bool countsPlans;
 
   /// Burn Week run state used by diary chrome and balance widgets.
   final BurnWeekRunState runState;
