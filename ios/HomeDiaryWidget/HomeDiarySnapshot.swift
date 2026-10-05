@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// App Group the Runner app and this extension share. Must match
 /// `homeWidgetIOSAppGroupId` in
@@ -27,6 +28,8 @@ struct HomeDiarySnapshot: Decodable {
   let protein: Macro
   let carbs: Macro
   let fat: Macro
+  /// Accent for the kcal value and bar, light and dark.
+  let accent: Color
 
   private enum CodingKeys: String, CodingKey {
     case verbose
@@ -38,10 +41,13 @@ struct HomeDiarySnapshot: Decodable {
     case carbsGoalGrams = "carbs_goal_grams"
     case fatGrams = "fat_grams"
     case fatGoalGrams = "fat_goal_grams"
+    case accentLight = "accent_light"
+    case accentDark = "accent_dark"
   }
 
   init(
-    verbose: Bool, eatenKcal: Double, targetKcal: Double, protein: Macro, carbs: Macro, fat: Macro
+    verbose: Bool, eatenKcal: Double, targetKcal: Double, protein: Macro, carbs: Macro, fat: Macro,
+    accent: Color
   ) {
     self.verbose = verbose
     self.eatenKcal = eatenKcal
@@ -49,6 +55,7 @@ struct HomeDiarySnapshot: Decodable {
     self.protein = protein
     self.carbs = carbs
     self.fat = fat
+    self.accent = accent
   }
 
   init(from decoder: Decoder) throws {
@@ -65,6 +72,12 @@ struct HomeDiarySnapshot: Decodable {
     fat = Macro(
       eaten: try json.decode(Double.self, forKey: .fatGrams),
       target: try json.decode(Double.self, forKey: .fatGoalGrams))
+    // Temporary compatibility, added in 3.6.0: snapshots saved by 3.5.0 and
+    // older have no accent and show the lime text tones until the app syncs
+    // again. Remove in 3.9.0.
+    accent = HomeWidgetColors.dynamic(
+      light: try json.decodeIfPresent(UInt32.self, forKey: .accentLight) ?? 0x4F6A00,
+      dark: try json.decodeIfPresent(UInt32.self, forKey: .accentDark) ?? 0xD4F55F)
   }
 
   /// Last snapshot the app saved, or `nil` before the first sync.
@@ -85,5 +98,6 @@ struct HomeDiarySnapshot: Decodable {
     targetKcal: 2100,
     protein: Macro(eaten: 82, target: 140),
     carbs: Macro(eaten: 130, target: 220),
-    fat: Macro(eaten: 41, target: 70))
+    fat: Macro(eaten: 41, target: 70),
+    accent: HomeWidgetColors.dynamic(light: 0x4F6A00, dark: 0xD4F55F))
 }

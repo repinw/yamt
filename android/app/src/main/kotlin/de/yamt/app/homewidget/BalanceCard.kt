@@ -72,7 +72,7 @@ internal fun BalanceCardContent(context: Context, snapshot: HomeDiarySnapshot) {
   val numbers = NumberFormat.getIntegerInstance()
   val leftKcal = (snapshot.targetKcal - snapshot.eatenKcal).roundToInt()
   val isOverTarget = leftKcal < 0
-  val accent = if (isOverTarget) HomeWidgetColors.error else HomeWidgetColors.primary
+  val accent = if (isOverTarget) HomeWidgetColors.error else snapshot.accent
   val label =
       context.getString(
           if (isOverTarget) R.string.home_widget_over_goal else R.string.home_widget_left_today)
@@ -94,7 +94,7 @@ internal fun BalanceCardContent(context: Context, snapshot: HomeDiarySnapshot) {
     LinearProgressIndicator(
         progress = ratio(snapshot.eatenKcal, snapshot.targetKcal),
         modifier = modifier.height(10.dp).cornerRadius(5.dp),
-        color = HomeWidgetColors.primary,
+        color = snapshot.accent,
         backgroundColor = HomeWidgetColors.surface,
     )
   }

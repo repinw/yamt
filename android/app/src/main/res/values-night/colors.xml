@@ -5,7 +5,6 @@
     <color name="home_widget_outline_variant">#49454F</color>
     <color name="home_widget_on_surface">#E6E0E9</color>
     <color name="home_widget_on_surface_variant">#CAC4D0</color>
-    <color name="home_widget_primary">#D0BCFF</color>
     <color name="home_widget_error">#F2B8B5</color>
     <color name="home_widget_protein">#E96888</color>
     <color name="home_widget_carbs">#608BF1</color>

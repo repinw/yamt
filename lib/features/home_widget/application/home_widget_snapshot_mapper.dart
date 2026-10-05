@@ -1,3 +1,4 @@
+import 'package:yamt/core/theme/app_accent.dart';
 import 'package:yamt/features/diary/application/diary_home_widget_summary.dart';
 import 'package:yamt/features/home_widget/application/home_widget_snapshot.dart';
 
@@ -7,6 +8,7 @@ import 'package:yamt/features/home_widget/application/home_widget_snapshot.dart'
 HomeWidgetSnapshot? buildHomeWidgetSnapshot({
   required DiaryHomeWidgetSummary? summary,
   required bool verbose,
+  required AppAccent accent,
   required DateTime now,
 }) {
   if (summary == null) {
@@ -23,6 +25,10 @@ HomeWidgetSnapshot? buildHomeWidgetSnapshot({
     proteinGoalGrams: macros.goals.protein,
     carbsGoalGrams: macros.goals.carbs,
     fatGoalGrams: macros.goals.fat,
+    // The text tone of the accent reads on the widget's light and dark
+    // surfaces, where the fill would not.
+    accentLight: accent.light.text.toARGB32(),
+    accentDark: accent.dark.text.toARGB32(),
     updatedAt: now,
   );
 }

@@ -2,6 +2,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/theme/app_accent.dart';
+import 'package:yamt/core/theme/app_accent_controller.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
@@ -100,6 +102,26 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(bridge.savedSnapshots.last, contains('"verbose":true'));
+  });
+
+  test('re-syncs when the accent changes', () async {
+    final bridge = FakeHomeWidgetPluginBridge();
+    final container = containerWith(
+      bridge,
+      FakeDiaryDayDashboardController(
+        diaryDashboardLoadedStateForTest(selectedDay: normalizedDay),
+      ),
+    );
+
+    await container
+        .read(appAccentControllerProvider.notifier)
+        .select(AppAccent.violet);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(
+      bridge.savedSnapshots.last,
+      contains('"accent_light":${0xFF6D28D9}'),
+    );
   });
 
   test('a failing platform save does not throw', () async {
