@@ -8,6 +8,8 @@ void main() {
       final section = DiaryMealSection(
         mealType: MealType.lunch,
         totalKcal: 650,
+        plannedEntries: const [],
+        countsPlans: false,
         entries: [
           const DiaryMealEntry(
             id: 'chicken',
@@ -40,6 +42,8 @@ void main() {
         mealType: MealType.dinner,
         totalKcal: 0,
         entries: [],
+        plannedEntries: const [],
+        countsPlans: false,
       );
 
       expect(section.totalProtein, 0);

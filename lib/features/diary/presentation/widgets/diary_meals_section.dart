@@ -1,5 +1,6 @@
 import 'dart:async' show unawaited;
 
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
@@ -9,6 +10,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_plan_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashed_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -31,7 +33,8 @@ class DiaryMealsSection extends ConsumerWidget {
     final dashboardState = ref.watch(
       diaryDayDashboardControllerProvider(normalizedDay),
     );
-    final sections = dashboardState.data?.mealSections;
+    final data = dashboardState.data;
+    final sections = data?.mealSections;
     final l10n = AppLocalizations.of(context)!;
 
     if (sections == null) {
@@ -55,7 +58,8 @@ class DiaryMealsSection extends ConsumerWidget {
     }
 
     final loggedSections = sections.where(
-      (section) => section.entries.isNotEmpty,
+      (section) =>
+          section.entries.isNotEmpty || section.plannedEntries.isNotEmpty,
     );
 
     if (loggedSections.isEmpty) {
@@ -81,6 +85,14 @@ class DiaryMealsSection extends ConsumerWidget {
                   AppRoutes.homeCaloriesEntryDetailsPath(entry.id),
                 ),
               ),
+              onTapPlan: (row) {
+                final plan = data?.plannedEntries.firstWhereOrNull(
+                  (entry) => entry.id == row.id,
+                );
+                if (plan != null) {
+                  unawaited(deleteDiaryPlanFlow(context, ref, plan: plan));
+                }
+              },
             ),
         ],
       ),

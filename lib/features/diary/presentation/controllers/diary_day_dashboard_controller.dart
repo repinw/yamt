@@ -212,7 +212,6 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       if (!_isCurrentRefresh(generation)) {
         return;
       }
-      final selectedDayEntries = liveData.selectedDayEntries;
       final goalKcal = resolveDiaryDisplayGoalKcal(
         weekOverview: liveData.weekOverview,
         selectedDayOverview: liveData.selectedDayOverview,
@@ -233,11 +232,17 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         selectedDay: normalizedDay,
         refreshedAt: ref.read(clockProvider)(),
         weekOverview: liveData.weekOverview,
-        selectedDayEntries: selectedDayEntries,
+        selectedDayEntries: liveData.selectedDayEntries,
+        plannedEntries: liveData.plannedEntries,
+        countsPlans: liveData.countsPlans,
         runState: liveData.runState,
-        mealSections: buildDiaryDashboardMealSections(selectedDayEntries),
+        mealSections: buildDiaryDashboardMealSections(
+          liveData.selectedDayEntries,
+          plannedEntries: liveData.plannedEntries,
+          countsPlans: liveData.countsPlans,
+        ),
         nutritionBars: buildDiaryDashboardNutritionBars(
-          selectedDayEntries,
+          liveData.countedEntries,
           goalKcal,
           macroTargets: macroTargets,
         ),

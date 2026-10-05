@@ -90,8 +90,13 @@ class DiaryMealEntry {
 @JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryMealSection {
   /// Creates a diary meal section.
-  new({required this.mealType, required this.entries, required this.totalKcal})
-    : entryGroups = groupDiaryMealEntries(entries);
+  new({
+    required this.mealType,
+    required this.entries,
+    required this.plannedEntries,
+    required this.countsPlans,
+    required this.totalKcal,
+  }) : entryGroups = groupDiaryMealEntries(entries);
 
   /// Creates data from persisted JSON.
   factory fromJson(Map<String, dynamic> json) =>
@@ -110,8 +115,19 @@ class DiaryMealSection {
   /// Entries in this meal section.
   final List<DiaryMealEntry> entries;
 
-  /// Section kcal total.
+  /// Plans in this meal. They show below [entries] and never merge with them.
+  final List<DiaryMealEntry> plannedEntries;
+
+  /// Whether [plannedEntries] count toward the day and so toward [totalKcal].
+  final bool countsPlans;
+
+  /// Section kcal total, with the plans when they count toward the day.
   final double totalKcal;
+
+  /// How many rows [totalKcal] sums up: the merged entries, and the plans
+  /// when they count.
+  int get countedRowCount =>
+      entryGroups.length + (countsPlans ? plannedEntries.length : 0);
 
   /// [entries] with identical foods merged, computed once.
   @JsonKey(includeFromJson: false, includeToJson: false)

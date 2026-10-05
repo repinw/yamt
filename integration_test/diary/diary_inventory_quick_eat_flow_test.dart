@@ -21,6 +21,7 @@ import 'package:yamt/features/calories/application/calorie_weekly_checkin_provid
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -51,6 +52,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
+import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 import '../../test/helpers/sheet_launcher.dart';
 
@@ -159,6 +161,9 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       firebaseAuthProvider.overrideWithValue(auth),
       userProfileProvider.overrideWith((ref) => profileController.stream),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
+      plannedEntryRepositoryProvider.overrideWithValue(
+        FakePlannedEntryRepository(),
+      ),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       calorieWeeklyCheckInDataProvider.overrideWith(
         (ref) => _emptyWeeklyCheckInData(),

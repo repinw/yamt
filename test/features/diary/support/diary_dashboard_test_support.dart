@@ -13,6 +13,8 @@ DiaryDayDashboardState diaryDashboardLoadedStateForTest({
   required DateTime selectedDay,
   CalorieWeekOverview? weekOverview,
   List<CalorieEntry> selectedDayEntries = const <CalorieEntry>[],
+  List<CalorieEntry> plannedEntries = const <CalorieEntry>[],
+  bool countsPlans = false,
   BurnWeekRunState runState = const BurnWeekRunState.initial(),
   List<DiaryMealSection> mealSections = const <DiaryMealSection>[],
   DiaryNutritionBarsData nutritionBars = const DiaryNutritionBarsData(
@@ -32,6 +34,8 @@ DiaryDayDashboardState diaryDashboardLoadedStateForTest({
       weekOverview:
           weekOverview ?? diaryWeekOverviewForTest(selectedDay: normalizedDay),
       selectedDayEntries: selectedDayEntries,
+      plannedEntries: plannedEntries,
+      countsPlans: countsPlans,
       runState: runState,
       mealSections: mealSections,
       nutritionBars: nutritionBars,
@@ -62,6 +66,7 @@ CalorieWeekOverview diaryWeekOverviewForTest({
   required DateTime selectedDay,
   List<double> dayTotals = const <double>[0, 0, 0, 0, 0, 0, 0],
   double goalKcal = 2000,
+  bool isPreviousDayClosed = false,
 }) {
   final normalizedDay = normalizeDiaryDay(selectedDay);
   final days = [
@@ -79,7 +84,7 @@ CalorieWeekOverview diaryWeekOverviewForTest({
   );
   final totalGoalKcal = days.fold<double>(0, (sum, day) => sum + day.goalKcal);
   return CalorieWeekOverview(
-    isPreviousDayClosed: false,
+    isPreviousDayClosed: isPreviousDayClosed,
     days: days,
     totalConsumedKcal: totalConsumedKcal,
     totalGoalKcal: totalGoalKcal,

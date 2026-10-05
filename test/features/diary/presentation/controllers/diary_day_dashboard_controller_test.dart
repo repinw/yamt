@@ -14,6 +14,7 @@ import 'package:yamt/features/calories/application/calorie_week_overview_models.
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
@@ -24,6 +25,7 @@ import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart'
 
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
+import '../../../calories/support/fake_planned_entry_repository.dart';
 import '../../support/diary_dashboard_test_support.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
@@ -479,6 +481,9 @@ ProviderContainer _dashboardContainer({
         () => _FakeBurnWeekRunController(const BurnWeekRunState.initial()),
       ),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
+      plannedEntryRepositoryProvider.overrideWithValue(
+        FakePlannedEntryRepository(),
+      ),
       if (calendarNow != null)
         diaryCalendarNowProvider.overrideWithValue(calendarNow),
       // Without a builder the real week overview pipeline runs, which is what

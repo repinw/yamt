@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -14,6 +16,7 @@ import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
+import '../../calories/support/fake_planned_entry_repository.dart';
 
 void main() {
   test('combines week overview, run state, and selected day entries', () async {
@@ -34,6 +37,9 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(repository),
+        plannedEntryRepositoryProvider.overrideWithValue(
+          FakePlannedEntryRepository(),
+        ),
         calorieWeekOverviewForWindowProvider(normalizedDay)
             .overrideWith((ref) => weekOverview),
         burnWeekRunControllerProvider.overrideWith(
@@ -65,6 +71,9 @@ void main() {
       observers: [observer],
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(repository),
+        plannedEntryRepositoryProvider.overrideWithValue(
+          FakePlannedEntryRepository(),
+        ),
         calorieWeekOverviewForWindowProvider(normalizedDay).overrideWith((ref) {
           final completer = Completer<CalorieWeekOverview>();
           completions.add(completer);
@@ -93,6 +102,67 @@ void main() {
     expect(data.weekOverview, same(weekOverview));
     expect(observer.failures, isEmpty);
   });
+
+  group('plans', () {
+    final selectedDay = DateTime(2026, 4, 28);
+    final eaten = _entry(id: 'eaten', day: selectedDay);
+    final plan = _entry(id: 'plan', day: selectedDay);
+
+    Future<DiaryDayDashboardLiveData> load({
+      bool closed = false,
+      bool plansFail = false,
+    }) async {
+      final repository = FakeCalorieLogRepository()
+        ..onReadEntriesForDay = (_) async => [eaten];
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          clockProvider.overrideWithValue(() => DateTime(2026, 4, 27, 18)),
+          calorieLogRepositoryProvider.overrideWithValue(repository),
+          plannedEntryRepositoryProvider.overrideWithValue(
+            FakePlannedEntryRepository(plans: [plan])
+              ..loadShouldFail = plansFail,
+          ),
+          calorieWeekOverviewForWindowProvider(selectedDay).overrideWith(
+            (ref) => _weekOverview(
+              selectedDay: selectedDay,
+              isPreviousDayClosed: closed,
+            ),
+          ),
+          burnWeekRunControllerProvider.overrideWith(
+            () => _FakeBurnWeekRunController(const BurnWeekRunState.initial()),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = container.listen(
+        diaryDayDashboardLiveDataProvider(selectedDay).future,
+        (_, _) {},
+      );
+      addTearDown(subscription.close);
+      return await subscription.read();
+    }
+
+    test('a planned day counts its plans', () async {
+      final data = await load();
+
+      expect(data.plannedEntries, [plan]);
+      expect(data.countsPlans, isTrue);
+      expect(data.countedEntries, [eaten, plan]);
+    });
+
+    test('a day whose day before is closed counts only eaten food', () async {
+      final data = await load(closed: true);
+
+      expect(data.plannedEntries, [plan]);
+      expect(data.countsPlans, isFalse);
+      expect(data.countedEntries, [eaten]);
+    });
+
+    test('a failed plan read fails the live data', () async {
+      await expectLater(load(plansFail: true), throwsA(isA<StateError>()));
+    });
+  });
 }
 
 class _FakeBurnWeekRunController extends BurnWeekRunController {
@@ -119,7 +189,10 @@ final class _RecordingProviderObserver extends ProviderObserver {
   }
 }
 
-CalorieWeekOverview _weekOverview({required DateTime selectedDay}) {
+CalorieWeekOverview _weekOverview({
+  required DateTime selectedDay,
+  bool isPreviousDayClosed = false,
+}) {
   final days = [
     for (var offset = 6; offset >= 0; offset -= 1)
       CalorieWeekDayOverview(
@@ -130,7 +203,7 @@ CalorieWeekOverview _weekOverview({required DateTime selectedDay}) {
       ),
   ];
   return CalorieWeekOverview(
-    isPreviousDayClosed: false,
+    isPreviousDayClosed: isPreviousDayClosed,
     days: days,
     totalConsumedKcal: days.fold<double>(0, (sum, day) => sum + day.totalKcal),
     totalGoalKcal: days.fold<double>(0, (sum, day) => sum + day.goalKcal),

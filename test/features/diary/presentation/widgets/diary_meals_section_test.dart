@@ -4,8 +4,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
+import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -17,6 +19,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dar
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../calories/support/fake_planned_entry_repository.dart';
 import '../../support/diary_dashboard_test_support.dart';
 
 void main() {
@@ -53,6 +56,131 @@ void main() {
     expect(find.text('Nothing planned yet'), findsOneWidget);
     expect(find.text('Nothing eaten yet'), findsNothing);
   });
+
+  testWidgets('a plan shows below the eaten food; a tap deletes it', (
+    tester,
+  ) async {
+    final plan = buildQuickCalorieEntry(
+      id: 'plan',
+      userId: 'user-1',
+      name: 'Pasta',
+      mealType: MealType.dinner,
+      loggedAt: selectedDay.add(const Duration(hours: 19)),
+      now: selectedDay,
+      kcal: 700,
+    );
+    final repository = FakePlannedEntryRepository(plans: [plan]);
+    DiaryMealEntry row(String id, String name) => _entry(
+      id: id,
+      day: selectedDay,
+      mealType: MealType.dinner,
+      name: name,
+      kcal: 700,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+    );
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          [row('eaten', 'Soup')],
+          plannedEntries: [row('plan', 'Pasta')],
+        ),
+      ],
+      plannedEntries: [plan],
+      overrides: [plannedEntryRepositoryProvider.overrideWithValue(repository)],
+    );
+
+    final planRow = find.byKey(DiaryMealsSectionKeys.plannedEntryTile('plan'));
+    expect(planRow, findsOneWidget);
+    expect(
+      tester.getTopLeft(planRow).dy,
+      greaterThan(
+        tester
+            .getTopLeft(find.byKey(DiaryMealsSectionKeys.entryTile('eaten')))
+            .dy,
+      ),
+    );
+
+    await tester.tap(planRow);
+    await tester.pumpAndSettle();
+    expect(repository.plans, isEmpty);
+    expect(find.text('Plan deleted'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(repository.plans, [plan]);
+  });
+
+  testWidgets('a day with only plans shows them instead of the hint', (
+    tester,
+  ) async {
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.lunch,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'plan',
+              day: selectedDay,
+              mealType: MealType.lunch,
+              name: 'Rice',
+              kcal: 400,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    expect(find.byKey(DiaryMealsSectionKeys.emptyState), findsNothing);
+    expect(
+      find.byKey(DiaryMealsSectionKeys.plannedEntryTile('plan')),
+      findsOneWidget,
+    );
+  });
+
+  for (final countsPlans in [true, false]) {
+    testWidgets('the meal total adds plans only when they count '
+        '(countsPlans: $countsPlans)', (tester) async {
+      DiaryMealEntry plan(String id, double kcal) => _entry(
+        id: id,
+        day: selectedDay,
+        mealType: MealType.dinner,
+        name: id,
+        kcal: kcal,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+      );
+      await _pumpMealsSection(
+        tester,
+        selectedDay: selectedDay,
+        sections: [
+          _mealSection(
+            MealType.dinner,
+            const [],
+            plannedEntries: [plan('soup', 400), plan('bread', 300)],
+            countsPlans: countsPlans,
+          ),
+        ],
+      );
+
+      expect(
+        find.text('700 kcal'),
+        countsPlans ? findsOneWidget : findsNothing,
+      );
+      expect(find.text('0 kcal'), findsNothing);
+    });
+  }
 
   testWidgets('logged meals render groups with readable entry rows', (
     tester,
@@ -350,6 +478,8 @@ Future<void> _pumpMealsSection(
   required DateTime selectedDay,
   required List<DiaryMealSection> sections,
   DateTime? now,
+  List<CalorieEntry> plannedEntries = const [],
+  List<Override> overrides = const [],
 }) async {
   await _pumpDiaryWidget(
     tester,
@@ -360,8 +490,10 @@ Future<void> _pumpMealsSection(
         diaryDashboardLoadedStateForTest(
           selectedDay: selectedDay,
           mealSections: sections,
+          plannedEntries: plannedEntries,
         ),
       ),
+      ...overrides,
     ],
   );
 }
@@ -392,11 +524,21 @@ Future<void> _pumpMealsSectionWithContainer(
   await tester.pumpAndSettle();
 }
 
-DiaryMealSection _mealSection(MealType mealType, List<DiaryMealEntry> entries) {
+DiaryMealSection _mealSection(
+  MealType mealType,
+  List<DiaryMealEntry> entries, {
+  List<DiaryMealEntry> plannedEntries = const [],
+  bool countsPlans = false,
+}) {
   return DiaryMealSection(
     mealType: mealType,
     entries: entries,
-    totalKcal: entries.fold<double>(0, (sum, entry) => sum + entry.totalKcal),
+    plannedEntries: plannedEntries,
+    countsPlans: countsPlans,
+    totalKcal: [
+      ...entries,
+      if (countsPlans) ...plannedEntries,
+    ].fold<double>(0, (sum, entry) => sum + entry.totalKcal),
   );
 }
 

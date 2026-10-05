@@ -21,6 +21,14 @@ DiaryDayDashboardData _$DiaryDayDashboardDataFromJson(
         ),
       )
       .toList(),
+  plannedEntries: (json['planned_entries'] as List<dynamic>)
+      .map(
+        (e) => const _CachedCalorieEntryConverter().fromJson(
+          e as Map<String, dynamic>,
+        ),
+      )
+      .toList(),
+  countsPlans: json['counts_plans'] as bool,
   runState: BurnWeekRunState.fromJson(
     json['run_state'] as Map<String, dynamic>,
   ),
@@ -44,6 +52,10 @@ Map<String, dynamic> _$DiaryDayDashboardDataToJson(
   'selected_day_entries': instance.selectedDayEntries
       .map(const _CachedCalorieEntryConverter().toJson)
       .toList(),
+  'planned_entries': instance.plannedEntries
+      .map(const _CachedCalorieEntryConverter().toJson)
+      .toList(),
+  'counts_plans': instance.countsPlans,
   'run_state': instance.runState.toJson(),
   'meal_sections': instance.mealSections.map((e) => e.toJson()).toList(),
   'nutrition_bars': instance.nutritionBars.toJson(),

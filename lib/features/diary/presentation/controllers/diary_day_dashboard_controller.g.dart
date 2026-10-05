@@ -65,7 +65,7 @@ final class DiaryDayDashboardControllerProvider
 }
 
 String _$diaryDayDashboardControllerHash() =>
-    r'9ea45a73c1544195cb1523df4203daf3773cde59';
+    r'26b015a1981e6cad62a36d5162cac726273759bb';
 
 /// Loads and caches the render-ready diary dashboard for one day.
 

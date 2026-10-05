@@ -160,10 +160,14 @@ DiaryDayDashboardData _dashboardData(DateTime day) {
     refreshedAt: day.add(const Duration(hours: 9)),
     weekOverview: _weekOverview(day),
     selectedDayEntries: [entry],
+    plannedEntries: const [],
+    countsPlans: false,
     runState: const BurnWeekRunState.initial(),
     mealSections: [
       DiaryMealSection(
         mealType: MealType.breakfast,
+        plannedEntries: const [],
+        countsPlans: false,
         entries: [
           const DiaryMealEntry(
             id: 'entry-1',
@@ -217,7 +221,7 @@ CalorieWeekOverview _weekOverview(DateTime day) {
 }
 
 String _cacheKey(String userId, DateTime day) {
-  return 'diary_day_dashboard_v3:$userId:${_dayKey(day)}';
+  return 'diary_day_dashboard_v4:$userId:${_dayKey(day)}';
 }
 
 String _dayKey(DateTime day) => diaryDayKey(day);

@@ -9,10 +9,13 @@ sealed class DiaryQuickEntryResult {
 /// The typed values were saved as [entry].
 class DiaryQuickEntrySaved extends DiaryQuickEntryResult {
   /// Creates the result.
-  const new(this.entry);
+  const new(this.entry, {required this.isPlan});
 
   /// The saved quick entry.
   final CalorieEntry entry;
+
+  /// Whether [entry] was saved as a plan.
+  final bool isPlan;
 }
 
 /// The user chose the AI estimate instead, for the picked day and meal.

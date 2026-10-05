@@ -2501,6 +2501,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryQuickEntrySaved => 'Added to diary';
 
   @override
+  String get diaryPlanSaved => 'Planned for the day';
+
+  @override
+  String get diaryPlanDeleted => 'Plan deleted';
+
+  @override
+  String get diaryPlanDeleteFailed => 'Plan could not be deleted';
+
+  @override
+  String get diaryPlanSemanticsLabel => 'Plan';
+
+  @override
+  String get diaryPlanDeleteAction => 'Delete plan';
+
+  @override
   String get diaryBalanceLoadFailed => 'Balance could not be loaded';
 
   @override

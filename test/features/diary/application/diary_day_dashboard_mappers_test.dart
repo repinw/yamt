@@ -1,10 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
+import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
 void main() {
   group('buildDiaryDashboardMealSections', () {
@@ -50,7 +52,11 @@ void main() {
         ),
       ];
 
-      final sections = buildDiaryDashboardMealSections(entries);
+      final sections = buildDiaryDashboardMealSections(
+        entries,
+        plannedEntries: const [],
+        countsPlans: false,
+      );
 
       expect(
         sections.map((section) => section.mealType),
@@ -103,7 +109,11 @@ void main() {
         protein: 30,
       );
 
-      final sections = buildDiaryDashboardMealSections([quick]);
+      final sections = buildDiaryDashboardMealSections(
+        [quick],
+        plannedEntries: const [],
+        countsPlans: false,
+      );
       final entry = sections[1].entries.single;
 
       expect(entry.totalKcal, 650);
@@ -112,6 +122,63 @@ void main() {
       expect(entry.consumedUnit, isNull);
       expect(sections[1].totalKcal, 650);
     });
+
+    test('keeps plans apart from entries and counts them in the meal', () {
+      final day = DateTime(2026, 4, 28);
+      final eaten = _entry(
+        id: 'oats',
+        day: day,
+        mealType: MealType.breakfast,
+        name: 'Oats',
+        totalKcal: 300,
+      );
+      final plan = _entry(
+        id: 'plan-oats',
+        day: day,
+        mealType: MealType.breakfast,
+        name: 'Oats',
+        totalKcal: 300,
+      );
+
+      DiaryMealSection breakfast({required bool countsPlans}) =>
+          buildDiaryDashboardMealSections(
+            [eaten],
+            plannedEntries: [plan],
+            countsPlans: countsPlans,
+          ).first;
+
+      final counted = breakfast(countsPlans: true);
+      expect(counted.entries.map((entry) => entry.id), ['oats']);
+      expect(counted.plannedEntries.map((entry) => entry.id), ['plan-oats']);
+      expect(counted.entryGroups.single.entries.single.id, 'oats');
+      expect(counted.totalKcal, 600);
+      expect(breakfast(countsPlans: false).totalKcal, 300);
+    });
+  });
+
+  test('addDiaryPlansToDay adds the plans to the day total', () {
+    final day = DateTime(2026, 4, 28);
+    final plan = _entry(
+      id: 'plan',
+      day: day,
+      mealType: MealType.lunch,
+      name: 'Rice',
+      totalKcal: 420,
+    );
+
+    final withPlans = addDiaryPlansToDay(
+      CalorieWeekDayOverview(
+        date: day,
+        totalKcal: 100,
+        goalKcal: 2000,
+        entryCount: 1,
+      ),
+      [plan],
+    );
+
+    expect(withPlans.totalKcal, 520);
+    expect(withPlans.entryCount, 2);
+    expect(withPlans.goalKcal, 2000);
   });
 
   group('buildDiaryDashboardNutritionBars', () {

@@ -4342,6 +4342,36 @@ abstract class AppLocalizations {
   /// **'Added to diary'**
   String get diaryQuickEntrySaved;
 
+  /// No description provided for @diaryPlanSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned for the day'**
+  String get diaryPlanSaved;
+
+  /// No description provided for @diaryPlanDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan deleted'**
+  String get diaryPlanDeleted;
+
+  /// No description provided for @diaryPlanDeleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan could not be deleted'**
+  String get diaryPlanDeleteFailed;
+
+  /// No description provided for @diaryPlanSemanticsLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get diaryPlanSemanticsLabel;
+
+  /// No description provided for @diaryPlanDeleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete plan'**
+  String get diaryPlanDeleteAction;
+
   /// No description provided for @diaryBalanceLoadFailed.
   ///
   /// In en, this message translates to:

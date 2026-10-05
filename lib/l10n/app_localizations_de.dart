@@ -2551,6 +2551,21 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryQuickEntrySaved => 'Ins Tagebuch eingetragen';
 
   @override
+  String get diaryPlanSaved => 'Für den Tag geplant';
+
+  @override
+  String get diaryPlanDeleted => 'Plan gelöscht';
+
+  @override
+  String get diaryPlanDeleteFailed => 'Plan konnte nicht gelöscht werden';
+
+  @override
+  String get diaryPlanSemanticsLabel => 'Plan';
+
+  @override
+  String get diaryPlanDeleteAction => 'Plan löschen';
+
+  @override
   String get diaryBalanceLoadFailed => 'Balance konnte nicht geladen werden';
 
   @override

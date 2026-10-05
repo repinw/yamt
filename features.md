@@ -114,7 +114,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   combined entries list their foods instead of the ruler.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
   Its actions open from the "Essen" button in the middle of the bar: barcode
-  first, then Vorrat, quick entry, AI, and search.
+  first, then Vorrat, quick entry, AI, and search. A future day hides
+  barcode, AI, and search, because they cannot plan yet; Vorrat there still
+  logs eaten food and takes the stock until it can plan.
 - Quick entry ("Schnell" in the actions) logs calories typed in by hand, without
   a food or a Vorrat item, on a page in the food label look with day and meal
   top right. Only the calories are required; the name defaults to "Quick
@@ -122,21 +124,27 @@ and feature description docs. This is product-facing; architecture rules stay in
   empty. While a macro is empty, a quiet hint points to the more precise AI
   estimate and opens it for the same day and meal. The entry shows no amount
   in the diary, moves between days and meals like any entry, and its amount
-  cannot be edited.
+  cannot be edited. On a future day it saves a plan instead, with undo, and
+  the AI hint is hidden.
 - Daily head in the food label look, without a card frame: the kcal left as a
   big number over a ruler, whose bar has four equal quarters of the target
   that fill in order. It is quiet by default; a tap shows eaten and target,
   base and carryover, and the eaten grams per macro.
+- Plans show in their meal below the eaten food, faded in a dashed frame.
+  Tapping a plan deletes it, with undo. Plans are stored encrypted apart from
+  eaten food, so the carryover, the weekly check-in, and the progress never
+  count them, and a fresh start deletes them.
 - Future days are shown as a plan: the head reads "Geplant" with the kcal
-  logged for that day and "von" the day's goal. The goal has no carryover,
-  because the days before it are not finished; the training and rest day
-  split still applies. More than the goal shows in the error color like on
+  logged and planned for that day and "von" the day's goal; the macro bars
+  count the plans too. The goal has no carryover, because the days before it
+  are not finished; the training and rest day split still applies. More than the goal shows in the error color like on
   other days. Future days show no weekly check-in and no budget details.
 - Tomorrow can plan with today's carryover: under its number, "<Weekday>
   abschließen" (with today's weekday) closes today and shows the carryover
   per day it adds. Tomorrow then counts like a started day: its head shows
-  "Übrig" with the goal plus that carryover instead of the plan, a snack bar
-  offers undo, and "<Weekday> wieder öffnen" reverts it. The carryover stays live:
+  "Übrig" with the goal plus that carryover instead of the plan and counts
+  only eaten food, not its plans; a snack bar offers undo, and "<Weekday>
+  wieder öffnen" reverts it. The carryover stays live:
   food logged later today or edits to earlier days change it. When tomorrow
   starts a new 7-day run, it gets no carryover and shows no button. The
   closed day is saved on the device and counts only until midnight.

@@ -105,8 +105,12 @@ abstract final class AppGraphit {
   /// Smallest height of the voice zone, so it stays easy to hit.
   static const double voiceZoneMinHeight = 220;
 
-  /// Opacity of a row that speech recognition is still writing.
+  /// Opacity of a row that is not real yet: one that speech recognition is
+  /// still writing, or a plan.
   static const double pendingRowOpacity = 0.55;
+
+  /// Line width of the dashed frame around a plan.
+  static const double dashedFrameWidth = 1.5;
 
   /// Opacity of a disabled button.
   static const double disabledOpacity = 0.7;

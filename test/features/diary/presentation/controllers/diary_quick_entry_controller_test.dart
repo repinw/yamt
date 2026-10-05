@@ -7,12 +7,14 @@ import 'package:yamt/features/diary/presentation/controllers/'
     'diary_quick_entry_controller.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';
+import '../../../calories/support/fake_planned_entry_repository.dart';
 import '../../support/diary_quick_entry_test_support.dart';
 
 final _loggedAt = DateTime(2026, 9, 26, 8, 15);
 
 void main() {
   late FakeCalorieLogRepository calorieLog;
+  late FakePlannedEntryRepository plans;
   late ProviderContainer container;
   late List<DiaryQuickEntryState> states;
   final provider = diaryQuickEntryControllerProvider(
@@ -22,7 +24,10 @@ void main() {
 
   setUp(() {
     calorieLog = FakeCalorieLogRepository();
-    container = ProviderContainer(overrides: quickEntryOverrides(calorieLog));
+    plans = FakePlannedEntryRepository();
+    container = ProviderContainer(
+      overrides: quickEntryOverrides(calorieLog, plans: plans),
+    );
     states = [];
     container.listen(
       provider,
@@ -94,6 +99,18 @@ void main() {
     expect(entry.loggedAt, _loggedAt);
     expect(calorieLog.entries.single.id, entry.id);
     expect(states.map((state) => state.isSaving), [true, false]);
+  });
+
+  test('save on a future day stores a plan, not a calorie entry', () async {
+    controller()
+      ..setLoggedDay(DateTime(2026, 9, 29))
+      ..setValueText(DiaryQuickEntryValue.kcal, '650');
+
+    final entry = await controller().save(defaultName: 'Quick entry');
+
+    expect(entry, isNotNull);
+    expect(plans.plans.single.id, entry!.id);
+    expect(calorieLog.entries, isEmpty);
   });
 
   test('save writes nothing without the calories', () async {

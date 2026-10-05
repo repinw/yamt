@@ -81,12 +81,19 @@ DiaryMealSection _$DiaryMealSectionFromJson(Map<String, dynamic> json) =>
       entries: (json['entries'] as List<dynamic>)
           .map((e) => DiaryMealEntry.fromJson(e as Map<String, dynamic>))
           .toList(),
+      plannedEntries: (json['planned_entries'] as List<dynamic>)
+          .map((e) => DiaryMealEntry.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      countsPlans: json['counts_plans'] as bool,
       totalKcal: (json['total_kcal'] as num).toDouble(),
     );
 
-Map<String, dynamic> _$DiaryMealSectionToJson(DiaryMealSection instance) =>
-    <String, dynamic>{
-      'meal_type': _$MealTypeEnumMap[instance.mealType]!,
-      'entries': instance.entries.map((e) => e.toJson()).toList(),
-      'total_kcal': instance.totalKcal,
-    };
+Map<String, dynamic> _$DiaryMealSectionToJson(
+  DiaryMealSection instance,
+) => <String, dynamic>{
+  'meal_type': _$MealTypeEnumMap[instance.mealType]!,
+  'entries': instance.entries.map((e) => e.toJson()).toList(),
+  'planned_entries': instance.plannedEntries.map((e) => e.toJson()).toList(),
+  'counts_plans': instance.countsPlans,
+  'total_kcal': instance.totalKcal,
+};

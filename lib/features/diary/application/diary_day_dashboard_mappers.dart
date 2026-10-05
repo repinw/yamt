@@ -1,34 +1,35 @@
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
-/// Builds diary meal sections from calorie entries.
+/// Builds diary meal sections from calorie entries and plans. The meal
+/// totals add the plans only when [countsPlans].
 List<DiaryMealSection> buildDiaryDashboardMealSections(
-  List<CalorieEntry> entries,
-) {
-  final sectionEntries = <MealType, List<DiaryMealEntry>>{
-    for (final mealType in MealType.sectionOrder) mealType: <DiaryMealEntry>[],
-  };
-  final sectionKcal = <MealType, double>{
-    for (final mealType in MealType.sectionOrder) mealType: 0,
-  };
-
-  for (final entry in entries) {
-    sectionEntries[entry.mealType]?.add(_mealEntryFrom(entry));
-    sectionKcal[entry.mealType] =
-        (sectionKcal[entry.mealType] ?? 0) + entry.totalKcal;
-  }
+  List<CalorieEntry> entries, {
+  required List<CalorieEntry> plannedEntries,
+  required bool countsPlans,
+}) {
+  List<DiaryMealEntry> rowsOf(Iterable<CalorieEntry> source, MealType type) =>
+      List<DiaryMealEntry>.unmodifiable(
+        source.where((entry) => entry.mealType == type).map(_mealEntryFrom),
+      );
 
   return MealType.sectionOrder
       .map((mealType) {
+        final rows = rowsOf(entries, mealType);
+        final plans = rowsOf(plannedEntries, mealType);
         return DiaryMealSection(
           mealType: mealType,
-          entries: List<DiaryMealEntry>.unmodifiable(
-            sectionEntries[mealType] ?? const <DiaryMealEntry>[],
-          ),
-          totalKcal: sectionKcal[mealType] ?? 0,
+          entries: rows,
+          plannedEntries: plans,
+          countsPlans: countsPlans,
+          totalKcal: [
+            ...rows,
+            if (countsPlans) ...plans,
+          ].fold(0, (sum, entry) => sum + entry.totalKcal),
         );
       })
       .toList(growable: false);
@@ -56,6 +57,24 @@ DiaryNutritionBarsData buildDiaryDashboardNutritionBars(
     goals: macroTargets ?? DiaryMacroTargets.fromGoalKcal(goalKcal),
   );
 }
+
+/// [day] with [plannedEntries] added, for a day whose plans count.
+CalorieWeekDayOverview addDiaryPlansToDay(
+  CalorieWeekDayOverview day,
+  List<CalorieEntry> plannedEntries,
+) => plannedEntries.isEmpty
+    ? day
+    : CalorieWeekDayOverview(
+        date: day.date,
+        totalKcal: plannedEntries.fold(
+          day.totalKcal,
+          (sum, entry) => sum + entry.totalKcal,
+        ),
+        goalKcal: day.goalKcal,
+        baseGoalKcal: day.baseGoalKcal,
+        entryCount: day.entryCount + plannedEntries.length,
+        isPauseDay: day.isPauseDay,
+      );
 
 DiaryMealEntry _mealEntryFrom(CalorieEntry entry) {
   // A quick entry counts as 100 g of itself; the row shows no amount for it.

@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dar
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_entry_page.dart';
 import 'package:yamt/features/diary/presentation/models/'
@@ -116,8 +117,8 @@ class DiaryQuickEatFlow {
       return;
     }
     switch (result) {
-      case DiaryQuickEntrySaved(:final entry):
-        _showQuickEntrySaved(context, entry);
+      case DiaryQuickEntrySaved(:final entry, :final isPlan):
+        _showQuickEntrySaved(context, entry, isPlan: isPlan);
       case DiaryQuickEntryAiRequested(:final loggedAt, :final mealType):
         await _openProductSearchHub(
           context: context,
@@ -128,10 +129,23 @@ class DiaryQuickEatFlow {
     }
   }
 
-  static void _showQuickEntrySaved(BuildContext context, CalorieEntry entry) {
+  static void _showQuickEntrySaved(
+    BuildContext context,
+    CalorieEntry entry, {
+    required bool isPlan,
+  }) {
     final container = ProviderScope.containerOf(context, listen: false);
+    final l10n = AppLocalizations.of(context)!;
+    if (isPlan) {
+      ScaffoldMessenger.of(context).showAppSnackBar(
+        l10n.diaryPlanSaved,
+        onUndo: () =>
+            container.read(diaryPlanControllerProvider.notifier).delete(entry),
+      );
+      return;
+    }
     ScaffoldMessenger.of(context).showAppSnackBar(
-      AppLocalizations.of(context)!.diaryQuickEntrySaved,
+      l10n.diaryQuickEntrySaved,
       onUndo: () async {
         final result = await container
             .read(calorieEntryDeleteFlowProvider)
