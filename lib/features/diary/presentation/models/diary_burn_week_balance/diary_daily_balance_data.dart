@@ -82,7 +82,7 @@ class DiaryDailyBalanceData {
         : '$realEatenLabel · $adjustmentLabel';
 
     final today = normalizeDiaryDay(now);
-    final isFutureDay = normalizeDiaryDay(selectedDay).isAfter(today);
+    final isFutureDay = isDiaryFutureDay(day: selectedDay, today: today);
     // Only a future day has a day before to close. A cached dashboard from
     // yesterday may still carry the values after midnight.
     final previousDayCarryover = isFutureDay ? previousDayCarryoverKcal : null;

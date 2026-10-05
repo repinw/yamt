@@ -160,8 +160,10 @@ DiaryDailyBudgetDetailsData? _resolveBudgetDetails(
   DiaryBalanceLoadedState state,
   DiaryDailyBalanceMetrics daily,
 ) =>
-    normalizeDiaryDay(context.selectedDayOverview.date)
-            .isAfter(normalizeDiaryDay(context.now)) &&
+    isDiaryFutureDay(
+          day: context.selectedDayOverview.date,
+          today: context.now,
+        ) &&
         !context.weekOverview.isPreviousDayClosed
     ? null
     : DiaryDailyBudgetDetailsData.from(
