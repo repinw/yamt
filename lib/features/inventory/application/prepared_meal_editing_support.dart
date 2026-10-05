@@ -7,6 +7,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'template_ingredient_unit_mapper.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
@@ -162,14 +163,14 @@ void _reserveInventoryAmount({
   if (amount < 1) {
     return;
   }
-  if (item == null || amount > availableAmount(item)) {
+  if (item == null || amount > item.availableAmount) {
     throw const PreparedMealBuildException(
       PreparedMealCreationFailureReason.insufficientAmount,
     );
   }
 
   final itemIndex = nextItems.indexWhere((entry) => entry.id == itemId);
-  final nextItem = reduceInventoryItem(item: item, amount: amount);
+  final nextItem = item.reducedBy(amount);
   if (itemIndex < 0 || nextItem == null) {
     throw const PreparedMealBuildException(
       PreparedMealCreationFailureReason.insufficientAmount,

@@ -9,6 +9,7 @@ import 'package:yamt/features/inventory/application/'
     'template_ingredient_unit_mapper.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
@@ -62,10 +63,7 @@ buildPreparedMealPendingIngredientFillResult({
       continue;
     }
 
-    final nextItem = reduceInventoryItem(
-      item: currentItem,
-      amount: consumableAmount,
-    );
+    final nextItem = currentItem.reducedBy(consumableAmount);
     if (nextItem == null) {
       continue;
     }

@@ -81,7 +81,6 @@ const _legacyLargeFilesAllowlist = <String>{
   'lib/features/inventory/application/prepared_meal_creation_workflows.dart',
   'lib/features/inventory/application/prepared_meal_editing_support.dart',
   'lib/features/inventory/application/prepared_meal_editing_workflows.dart',
-  'lib/features/inventory/application/prepared_meal_inventory_math.dart',
   'lib/features/inventory/application/serving_suggestion_resolver.dart',
   'lib/features/inventory/data/firestore_global_food_serving_suggestion_repository.dart',
   'lib/features/inventory/data/global_food_item_store.dart',

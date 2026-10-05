@@ -3,6 +3,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 /// Builds a prepared meal from explicit inventory item inputs.
@@ -34,7 +35,7 @@ PreparedMealBuildResult buildPreparedMealCreationResult({
     }
 
     final currentItem = nextItems[itemIndex];
-    final remainingAmount = availableAmount(currentItem);
+    final remainingAmount = currentItem.availableAmount;
     if (input.usedAmount > remainingAmount) {
       throw const PreparedMealBuildException(
         PreparedMealCreationFailureReason.insufficientAmount,
@@ -51,10 +52,7 @@ PreparedMealBuildResult buildPreparedMealCreationResult({
     final sourceItemSnapshot = input.manualNutrition == null
         ? currentItem
         : currentItem.copyWith(nutrition: input.manualNutrition);
-    final nextItem = reduceInventoryItem(
-      item: sourceItemSnapshot,
-      amount: input.usedAmount,
-    );
+    final nextItem = sourceItemSnapshot.reducedBy(input.usedAmount);
     if (nextItem == null) {
       throw const PreparedMealBuildException(
         PreparedMealCreationFailureReason.insufficientAmount,
