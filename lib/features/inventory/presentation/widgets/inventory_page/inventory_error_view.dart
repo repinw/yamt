@@ -37,8 +37,10 @@ class InventoryErrorView extends StatelessWidget {
 
     return CustomScrollView(
       slivers: [
-        if (includeHomeShellChrome)
+        if (includeHomeShellChrome) ...[
+          const InventoryHomeShellStatusBarSliver(),
           InventoryHomeShellTopChrome(tools: topChromeActions),
+        ],
         SliverFillRemaining(
           hasScrollBody: false,
           child: Center(

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/home_top_bar.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
@@ -54,6 +55,36 @@ void main() {
     await tester.pump();
 
     expect(find.text('Alex ate 1 item of Milk.'), findsOneWidget);
+  });
+
+  testWidgets('the header stays below the status bar', (tester) async {
+    tester.view.padding = FakeViewPadding(
+      top: 40 * tester.view.devicePixelRatio,
+    );
+    addTearDown(tester.view.resetPadding);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          inventoryActivityEventRepositoryProvider.overrideWithValue(
+            const _FakeInventoryActivityEventRepository([]),
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: InventoryActivityTimeline(
+              includeHomeShellChrome: true,
+              topChromeActions: <Widget>[],
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(tester.getTopLeft(find.byType(HomeTopBar)).dy, 40);
   });
 }
 
