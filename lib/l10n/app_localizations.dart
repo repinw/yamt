@@ -5292,6 +5292,42 @@ abstract class AppLocalizations {
   /// **'German'**
   String get settingsLanguageGerman;
 
+  /// No description provided for @settingsAccentTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Accent color'**
+  String get settingsAccentTitle;
+
+  /// No description provided for @settingsAccentLime.
+  ///
+  /// In en, this message translates to:
+  /// **'Lime'**
+  String get settingsAccentLime;
+
+  /// No description provided for @settingsAccentPink.
+  ///
+  /// In en, this message translates to:
+  /// **'Pink'**
+  String get settingsAccentPink;
+
+  /// No description provided for @settingsAccentViolet.
+  ///
+  /// In en, this message translates to:
+  /// **'Violet'**
+  String get settingsAccentViolet;
+
+  /// No description provided for @settingsAccentCyan.
+  ///
+  /// In en, this message translates to:
+  /// **'Cyan'**
+  String get settingsAccentCyan;
+
+  /// No description provided for @settingsAccentEmerald.
+  ///
+  /// In en, this message translates to:
+  /// **'Emerald'**
+  String get settingsAccentEmerald;
+
   /// No description provided for @settingsDiaryGoalSetGoalFirst.
   ///
   /// In en, this message translates to:

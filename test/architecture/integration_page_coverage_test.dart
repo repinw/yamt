@@ -27,7 +27,6 @@ const _legacyPagesWithoutIntegrationTest = <String>{
   'lib/features/product_search_hub/presentation/product_search_hub_item_edit_page.dart',
   'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_page.dart',
   'lib/features/product_search_hub/presentation/widgets/product_search_barcode_scanner_page/product_search_barcode_scanner_page.dart',
-  'lib/features/settings/presentation/pages/settings_page.dart',
   'lib/features/settings/presentation/profile_page.dart',
   'lib/features/shoppinglist/presentation/shopping_list_page.dart',
 };

@@ -1,11 +1,12 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/theme/app_accent.dart';
 
 /// Accent colors of the onboarding intro chapters.
 ///
 /// Every chapter owns one accent that tints its kicker, its highlighted words,
 /// its progress segment, and the wash behind the page. The values are
-/// harmonized against the active `colorScheme.primary` and toned per
-/// brightness, so a user-picked theme color still comes through.
+/// harmonized against the lime accent and toned per brightness, so the
+/// chapters look the same whatever accent the user picks.
 class IntroAccentColors extends ThemeExtension<IntroAccentColors> {
   /// Creates intro accent colors.
   const new({
@@ -17,14 +18,15 @@ class IntroAccentColors extends ThemeExtension<IntroAccentColors> {
     required this.rose,
   });
 
-  /// Builds intro accents from the active app color scheme.
+  /// Builds intro accents for the brightness of [colors].
   factory fromColorScheme(ColorScheme colors) {
     final isDark = colors.brightness == Brightness.dark;
     final lightness = isDark ? 0.68 : 0.46;
+    final lime = AppAccent.lime.tonesFor(colors.brightness).fill;
 
     Color accent(Color base) {
       return _tone(
-        Color.lerp(base, colors.primary, _harmonizeAmount)!,
+        Color.lerp(base, lime, _harmonizeAmount)!,
         lightness: lightness,
         minSaturation: 0.6,
       );
@@ -40,7 +42,7 @@ class IntroAccentColors extends ThemeExtension<IntroAccentColors> {
     );
   }
 
-  /// How far each accent is pulled towards the theme's primary color.
+  /// How far each accent is pulled towards lime.
   static const _harmonizeAmount = 0.16;
 
   /// Default intro accents, used before a theme provides them.

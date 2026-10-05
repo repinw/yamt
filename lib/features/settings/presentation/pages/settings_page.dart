@@ -17,6 +17,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_accent_tile/settings_accent_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_home_widget_tile/settings_home_widget_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_language_tile/settings_language_tile.dart';
@@ -74,7 +75,10 @@ class SettingsPage extends ConsumerWidget {
                         ),
                         SettingsSection(
                           title: l10n.settingsAppearanceSectionTitle,
-                          children: const [SettingsLanguageTile()],
+                          children: const [
+                            SettingsLanguageTile(),
+                            SettingsAccentTile(),
+                          ],
                         ),
                         SettingsSection(
                           title: l10n.settingsAppSectionTitle,

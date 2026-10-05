@@ -35,6 +35,9 @@ abstract final class SettingsPageKeys {
   /// Language row.
   static const languageTile = ValueKey<String>('settings-language-tile');
 
+  /// Accent color row.
+  static const accentTile = ValueKey<String>('settings-accent-tile');
+
   /// Notifications row.
   static const notificationsTile = ValueKey<String>(
     'settings-notifications-tile',

@@ -8,6 +8,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/router/app_router.dart';
+import 'package:yamt/core/theme/app_accent_controller.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/widgets/keyboard_done_bar.dart';
 import 'package:yamt/features/home_widget/application/'
@@ -60,12 +61,13 @@ class _YAMTState extends ConsumerState<YAMT> {
   @override
   Widget build(BuildContext context) {
     final router = ref.watch(appRouterProvider);
+    final accent = ref.watch(appAccentControllerProvider);
 
     return MaterialApp.router(
       title: 'YAMT',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light(),
-      darkTheme: AppTheme.dark(),
+      theme: AppTheme.light(accent: accent),
+      darkTheme: AppTheme.dark(accent: accent),
       routerConfig: router,
       builder: (context, child) => KeyboardDoneBar(
         child: SharedReceiptListener(

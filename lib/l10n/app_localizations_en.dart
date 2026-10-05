@@ -3125,6 +3125,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLanguageGerman => 'German';
 
   @override
+  String get settingsAccentTitle => 'Accent color';
+
+  @override
+  String get settingsAccentLime => 'Lime';
+
+  @override
+  String get settingsAccentPink => 'Pink';
+
+  @override
+  String get settingsAccentViolet => 'Violet';
+
+  @override
+  String get settingsAccentCyan => 'Cyan';
+
+  @override
+  String get settingsAccentEmerald => 'Emerald';
+
+  @override
   String get settingsDiaryGoalSetGoalFirst => 'Set a goal first';
 
   @override
