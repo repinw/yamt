@@ -20,16 +20,22 @@ void main() {
           '&& data.payload is string',
         ),
       );
-      expect(
-        compactRules,
-        contains(
-          'match /users/{uid}/calorie_entries/{entryId} { '
-          'allow read, delete: if isOwner(uid); '
-          'allow create, update: if isOwner(uid) '
-          "&& isEncryptedDocument(request.resource.data, ['logged_at']) "
-          '&& request.resource.data.logged_at is timestamp; }',
-        ),
-      );
+      for (final collection in <String>[
+        'calorie_entries/{entryId}',
+        'planned_entries/{entryId}',
+      ]) {
+        expect(
+          compactRules,
+          contains(
+            'match /users/{uid}/$collection { '
+            'allow read, delete: if isOwner(uid); '
+            'allow create, update: if isOwner(uid) '
+            "&& isEncryptedDocument(request.resource.data, ['logged_at']) "
+            '&& request.resource.data.logged_at is timestamp; }',
+          ),
+          reason: collection,
+        );
+      }
       for (final collection in <String>[
         'calorie_settings/{settingsId}',
         'health_weights/{weightId}',
