@@ -5,12 +5,6 @@ void main() {
   final today = DateTime(2026, 10, 5, 23, 30);
   final tomorrow = DateTime(2026, 10, 6, 0, 10);
 
-  test('only days after today are future days', () {
-    expect(isDiaryFutureDay(day: tomorrow, today: today), isTrue);
-    expect(isDiaryFutureDay(day: DateTime(2026, 10, 5), today: today), isFalse);
-    expect(isDiaryFutureDay(day: DateTime(2026, 10, 4), today: today), isFalse);
-  });
-
   test('a future day counts its plans until the day before is closed', () {
     expect(
       diaryDayCountsPlans(

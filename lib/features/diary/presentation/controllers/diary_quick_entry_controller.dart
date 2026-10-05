@@ -11,8 +11,8 @@ import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
-import 'package:yamt/features/diary/domain/diary_plan_day.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 
 part 'diary_quick_entry_controller.g.dart';

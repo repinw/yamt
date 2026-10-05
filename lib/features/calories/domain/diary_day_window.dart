@@ -37,6 +37,10 @@ List<DateTime> buildDiaryVisibleDays({DateTime? anchorDay}) {
   return buildRollingLocalDays(anchorDay: anchorDay);
 }
 
+/// Whether [day] lies after [today], so food added to it is a plan.
+bool isDiaryFutureDay({required DateTime day, required DateTime today}) =>
+    normalizeDiaryDay(day).isAfter(normalizeDiaryDay(today));
+
 /// Returns whether two timestamps belong to the same diary day.
 bool isSameDiaryDay(DateTime left, DateTime right) {
   return isSameLocalDay(left, right);
