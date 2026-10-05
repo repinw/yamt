@@ -115,6 +115,54 @@ void main() {
     expect(repository.plans, [plan]);
   });
 
+  testWidgets('only a plan of a cooked meal carries the Meal Prep tag', (
+    tester,
+  ) async {
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'curry',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Curry',
+              kcal: 540,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+              bundleConsumedPortions: 1,
+              bundleTotalPortions: 5,
+            ),
+            _entry(
+              id: 'bread',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Bread',
+              kcal: 200,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    expect(find.text('MEAL PREP'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(DiaryMealsSectionKeys.plannedEntryTile('curry')),
+        matching: find.text('MEAL PREP'),
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('a day with only plans shows them instead of the hint', (
     tester,
   ) async {
@@ -552,6 +600,8 @@ DiaryMealEntry _entry({
   required double carbs,
   required double fat,
   double? amount,
+  num? bundleConsumedPortions,
+  int? bundleTotalPortions,
 }) {
   return DiaryMealEntry(
     id: id,
@@ -563,6 +613,8 @@ DiaryMealEntry _entry({
     totalFat: fat,
     consumedAmount: amount,
     consumedUnit: amount == null ? null : ConsumedUnit.grams,
+    bundleConsumedPortions: bundleConsumedPortions,
+    bundleTotalPortions: bundleTotalPortions,
   );
 }
 

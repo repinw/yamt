@@ -19,6 +19,7 @@ class DiaryMealEntryTile extends StatelessWidget {
     this.count = 1,
     this.countLabel,
     this.expanded,
+    this.tag,
     super.key,
   });
 
@@ -36,6 +37,9 @@ class DiaryMealEntryTile extends StatelessWidget {
 
   /// Called when the row is tapped.
   final VoidCallback onTap;
+
+  /// Shown under the macros, for example the Meal Prep tag of a plan.
+  final Widget? tag;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +92,10 @@ class DiaryMealEntryTile extends StatelessWidget {
                         carbs: entry.totalCarbs,
                         fat: entry.totalFat,
                       ),
+                      if (tag case final tag?) ...[
+                        const SizedBox(height: AppSpacing.xxs),
+                        tag,
+                      ],
                     ],
                   ),
                 ),

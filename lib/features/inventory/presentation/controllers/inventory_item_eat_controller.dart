@@ -1,6 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
@@ -11,8 +13,8 @@ import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 
 part 'inventory_item_eat_controller.g.dart';
 
-/// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry,
-/// releases a reservation, and undoes an eat.
+/// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry
+/// or the plan, releases a reservation, and undoes an eat or a plan.
 @riverpod
 class InventoryItemEatController extends _$InventoryItemEatController {
   late InventoryPendingConsumptionStore _pendings;
@@ -62,6 +64,20 @@ class InventoryItemEatController extends _$InventoryItemEatController {
           restoreToInventory: true,
         );
         return result.isSuccess;
+      });
+
+  /// Undoes a plan: deletes [plan]. Returns false when it failed.
+  Future<bool> unplan(CalorieEntry plan) =>
+      _whileAlive(plannedEntryRepositoryProvider, (plans) async {
+        final revision = ref.read(calorieOverviewRevisionProvider.notifier);
+        final result = await AsyncValue.guard(
+          () => plans.deletePlannedEntry(plan.id),
+        );
+        if (result.hasError) {
+          return false;
+        }
+        revision.markChanged();
+        return true;
       });
 
   /// Keeps this controller and [provider] alive while [action] runs, so the

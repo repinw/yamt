@@ -10,7 +10,9 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_inventory_entry_save_handler.dart';
+import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
 import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
@@ -21,6 +23,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
+import '../../calories/support/fake_planned_entry_repository.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
@@ -273,6 +276,94 @@ void main() {
       expect(editor.inventoryContext.inventoryAmountToRestore, 250);
       expect(harness.pendings.pendingConsumptionById(pending.id), isNotNull);
       expect(commitStore.entry, isNull);
+    });
+
+    test('a later day saves a plan and releases the stock', () async {
+      final commitStore = _RecordingCommitStore();
+      final plans = FakePlannedEntryRepository();
+      final harness = _harness(
+        commitStore,
+        overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+      );
+      final finalized = <InventoryPendingConsumptionFinalized>[];
+      harness.pendings.finalizations.listen(finalized.add);
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+      final tomorrow = _now.add(const Duration(days: 1));
+
+      final outcome = await harness.service.log(
+        item: _gramItem(),
+        request: InventoryItemEatRequest(
+          inventoryAmount: 250,
+          loggedAt: tomorrow,
+          mealType: MealType.dinner,
+        ),
+        pending: pending,
+      );
+
+      final plan = (outcome as InventoryEatPlanned).entry;
+      expect(plans.plans, [plan]);
+      expect(plan.loggedAt, tomorrow);
+      expect(plan.consumedAmount, 250);
+      expect(plan.sourceInventoryItemId, 'waffles');
+      expect(plan.sourceInventoryAmountToRestore, isNull);
+      expect(commitStore.entry, isNull);
+      expect(harness.pendings.pendingConsumptionById(pending.id), isNull);
+      expect(finalized, isEmpty);
+      expect(harness.container.read(calorieOverviewRevisionProvider), 1);
+    });
+
+    test('a failed plan releases the stock and throws', () async {
+      final plans = FakePlannedEntryRepository()..writeShouldFail = true;
+      final harness = _harness(
+        _RecordingCommitStore(),
+        overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+      );
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+
+      await expectLater(
+        harness.service.log(
+          item: _gramItem(),
+          request: InventoryItemEatRequest(
+            inventoryAmount: 250,
+            loggedAt: _now.add(const Duration(days: 1)),
+            mealType: MealType.dinner,
+          ),
+          pending: pending,
+        ),
+        throwsStateError,
+      );
+
+      expect(plans.plans, isEmpty);
+      expect(harness.pendings.pendingConsumptionById(pending.id), isNull);
+      expect(harness.container.read(calorieOverviewRevisionProvider), 0);
+    });
+
+    test('a later day that needs the editor cannot be planned', () async {
+      final plans = FakePlannedEntryRepository();
+      final harness = _harness(
+        _RecordingCommitStore(),
+        overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+      );
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+
+      final outcome = await harness.service.log(
+        item: _gramItem(),
+        request: InventoryItemEatRequest(
+          inventoryAmount: 250,
+          loggedAt: _now.add(const Duration(days: 1)),
+          mealType: MealType.lunch,
+          calorieAmount: 200,
+          calorieUnit: ConsumedUnit.milliliters,
+        ),
+        pending: pending,
+      );
+
+      expect(
+        (outcome as InventoryEatFailed).failure,
+        InventoryEatFailure.cannotPlan,
+      );
+      expect(plans.plans, isEmpty);
+      expect(harness.pendings.pendingConsumptionById(pending.id), isNull);
     });
 
     test('an eat that throws releases its stock', () async {

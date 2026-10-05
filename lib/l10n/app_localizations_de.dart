@@ -1058,6 +1058,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Aktion fehlgeschlagen. Bitte erneut versuchen.';
 
   @override
+  String get inventoryItemCannotPlan =>
+      'Konnte nicht geplant werden: diese Menge braucht den Kalorien-Editor';
+
+  @override
   String get inventoryBarcodeScanUnsupported =>
       'Barcode-Scan wird aktuell auf Android und iOS unterstützt.';
 
@@ -2564,6 +2568,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get diaryPlanDeleteAction => 'Plan löschen';
+
+  @override
+  String get diaryPlanMealPrepTag => 'Meal Prep';
 
   @override
   String get diaryBalanceLoadFailed => 'Balance konnte nicht geladen werden';

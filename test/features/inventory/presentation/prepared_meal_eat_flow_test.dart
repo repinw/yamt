@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
@@ -19,16 +20,18 @@ import 'package:yamt/features/inventory/presentation/prepared_meal_eat_flow.dart
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../support/prepared_meal_test_data.dart';
+import '../../calories/support/fake_planned_entry_repository.dart';
 
 class _FakeQuickEatActions implements InventoryQuickEatActions {
-  new({this.fail = false});
+  new({this.fail = false, this.plan = false});
 
   final bool fail;
+  final bool plan;
   PreparedMeal? consumedMeal;
   num? consumedPortions;
 
   @override
-  Future<CalorieEntry?> consumePreparedMeal({
+  Future<PreparedMealEatResult?> consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
@@ -39,13 +42,14 @@ class _FakeQuickEatActions implements InventoryQuickEatActions {
     if (fail) {
       return null;
     }
-    return buildConsumedPreparedMealCalorieEntry(
+    final entry = buildConsumedPreparedMealCalorieEntry(
       meal: meal,
       consumedPortions: consumedPortions,
       mealType: mealType,
       now: () => loggedDay,
       nextEntryId: () => 'entry-1',
     );
+    return entry == null ? null : (entry: entry, isPlan: plan);
   }
 }
 
@@ -120,12 +124,16 @@ Future<void> _pumpHarness(
   WidgetTester tester, {
   required _FakeQuickEatActions actions,
   required ValueChanged<CalorieEntry?> onResult,
+  FakePlannedEntryRepository? plans,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
         inventoryQuickEatActionsProvider.overrideWithValue(actions),
         calorieEntryDeleteFlowProvider.overrideWithValue(_deleteFlow()),
+        plannedEntryRepositoryProvider.overrideWithValue(
+          plans ?? FakePlannedEntryRepository(),
+        ),
       ],
       child: MaterialApp(
         locale: const Locale('en'),
@@ -299,5 +307,27 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(_restoredPortions, [(mealId: 'meal-1', portions: 1)]);
+  });
+
+  testWidgets('a plan says so and undo deletes the plan', (tester) async {
+    _restoredPortions.clear();
+    final plans = FakePlannedEntryRepository();
+    CalorieEntry? result;
+
+    await _pumpHarness(
+      tester,
+      actions: _FakeQuickEatActions(plan: true),
+      onResult: (entry) => result = entry,
+      plans: plans,
+    );
+    plans.plans.add(result!);
+
+    expect(find.text('Planned for the day'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+
+    expect(plans.plans, isEmpty);
+    expect(_restoredPortions, isEmpty);
   });
 }

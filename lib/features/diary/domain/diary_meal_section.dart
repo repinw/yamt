@@ -84,6 +84,10 @@ class DiaryMealEntry {
   /// Foods of a combined entry, or null when the entry is one food or a
   /// prepared meal.
   final List<CalorieEntryBundleComponent>? combinedFoods;
+
+  /// Whether the entry is portions of a prepared meal.
+  bool get isPreparedMeal =>
+      combinedFoods == null && (bundleTotalPortions ?? 0) > 0;
 }
 
 /// Diary meal section with entries and kcal total.

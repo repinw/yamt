@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
@@ -13,6 +15,8 @@ import 'package:yamt/features/inventory/application/inventory_pending_consumptio
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_controller.dart';
+
+import '../../../calories/support/fake_planned_entry_repository.dart';
 
 class _MockEatService extends Mock implements InventoryEatService;
 
@@ -134,5 +138,38 @@ void main() {
     expect(undone, isTrue);
     verify(() => deleteFlow.deleteEntry(entry: entry, restoreToInventory: true))
         .called(1);
+  });
+
+  test('unplan deletes the plan and reloads the diary', () async {
+    final plan = _entry();
+    final plans = FakePlannedEntryRepository(plans: [plan]);
+    final container = _container(
+      overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+    );
+
+    final undone = await container
+        .read(inventoryItemEatControllerProvider.notifier)
+        .unplan(plan);
+
+    expect(undone, isTrue);
+    expect(plans.plans, isEmpty);
+    expect(container.read(calorieOverviewRevisionProvider), 1);
+  });
+
+  test('a failed unplan keeps the plan and the diary', () async {
+    final plan = _entry();
+    final plans = FakePlannedEntryRepository(plans: [plan])
+      ..writeShouldFail = true;
+    final container = _container(
+      overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+    );
+
+    final undone = await container
+        .read(inventoryItemEatControllerProvider.notifier)
+        .unplan(plan);
+
+    expect(undone, isFalse);
+    expect(plans.plans, [plan]);
+    expect(container.read(calorieOverviewRevisionProvider), 0);
   });
 }
