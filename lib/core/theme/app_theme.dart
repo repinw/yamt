@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
+import 'package:yamt/core/theme/app_accent.dart';
 import 'package:yamt/core/theme/app_fonts.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
@@ -8,28 +9,35 @@ import 'package:yamt/core/theme/metric_accent_colors.dart';
 /// Centralized app themes for light and dark modes.
 ///
 /// The themes follow the Graphit design language: one font (Plus Jakarta
-/// Sans) where the weight separates names and numbers from text, one lime
-/// main button, and rounded controls on soft surfaces without frames.
+/// Sans) where the weight separates names and numbers from text, one main
+/// button in the user's accent (lime by default), and rounded controls on
+/// soft surfaces without frames.
 abstract final class AppTheme {
-  /// Builds standard light Material 3 theme with Graphit colors.
-  static ThemeData light() {
-    const labelColors = FoodLabelColors.light;
+  /// Builds standard light Material 3 theme with Graphit colors and
+  /// [accent].
+  static ThemeData light({AppAccent accent = AppAccent.lime}) {
+    final tones = accent.light;
+    final labelColors = FoodLabelColors.light.copyWith(
+      accent: tones.fill,
+      onAccent: _onAccent(tones.fill, FoodLabelColors.light.onAccent),
+      accentText: tones.text,
+    );
     final colorScheme = ColorScheme(
       brightness: Brightness.light,
       primary: labelColors.accent,
       onPrimary: labelColors.onAccent,
-      primaryContainer: const Color(0xFFE2F78A),
+      primaryContainer: tones.container,
       onPrimaryContainer: labelColors.ink,
       secondary: labelColors.accentText,
-      onSecondary: const Color(0xFFFFFFFF),
+      onSecondary: _white,
       // A step below the white card, so tonal buttons show on cards, sheets
       // and the paper page alike.
       secondaryContainer: const Color(0xFFDCDCD7),
       onSecondaryContainer: labelColors.ink,
       tertiary: const Color(0xFF3B82F6),
-      onTertiary: const Color(0xFFFFFFFF),
+      onTertiary: _white,
       error: const Color(0xFFBA1A1A),
-      onError: const Color(0xFFFFFFFF),
+      onError: _white,
       errorContainer: const Color(0xFFFFDAD6),
       onErrorContainer: const Color(0xFF410002),
       surface: labelColors.paper,
@@ -48,14 +56,20 @@ abstract final class AppTheme {
     return _theme(colorScheme, labelColors);
   }
 
-  /// Builds standard dark Material 3 theme with Graphit colors.
-  static ThemeData dark() {
-    const labelColors = FoodLabelColors.dark;
+  /// Builds standard dark Material 3 theme with Graphit colors and [accent].
+  static ThemeData dark({AppAccent accent = AppAccent.lime}) {
+    final tones = accent.dark;
+    final labelColors = FoodLabelColors.dark.copyWith(
+      accent: tones.fill,
+      onAccent: _onAccent(tones.fill, FoodLabelColors.dark.onAccent),
+      accentText: tones.text,
+      onTile: tones.fill,
+    );
     final colorScheme = ColorScheme(
       brightness: Brightness.dark,
       primary: labelColors.accent,
       onPrimary: labelColors.onAccent,
-      primaryContainer: const Color(0xFF3B4D00),
+      primaryContainer: tones.container,
       onPrimaryContainer: labelColors.accentText,
       secondary: labelColors.accentText,
       onSecondary: labelColors.onAccent,
@@ -77,11 +91,21 @@ abstract final class AppTheme {
       surfaceContainerHighest: const Color(0xFF333434),
       outline: const Color(0xFF8A8A85),
       outlineVariant: labelColors.rule,
-      shadow: const Color(0xFF000000),
+      shadow: _black,
     );
 
     return _theme(colorScheme, labelColors);
   }
+}
+
+const _white = Color(0xFFFFFFFF);
+const _black = Color(0xFF000000);
+
+/// Text on [fill]: [dark] or white, whichever reads better.
+Color _onAccent(Color fill, Color dark) {
+  return contrastRatio(fill, dark) >= contrastRatio(fill, _white)
+      ? dark
+      : _white;
 }
 
 /// Weights of the Graphit type scale: 800 for titles, names and numbers,
@@ -131,7 +155,7 @@ ThemeData _theme(ColorScheme colorScheme, FoodLabelColors labelColors) {
       scrolledUnderElevation: 0,
       centerTitle: false,
     ),
-    // Colors stay with the defaults, so FilledButton is lime and
+    // Colors stay with the defaults, so FilledButton is the accent and
     // FilledButton.tonal sits on the soft secondaryContainer surface.
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
@@ -159,7 +183,7 @@ ThemeData _theme(ColorScheme colorScheme, FoodLabelColors labelColors) {
         textStyle: buttonLabel,
       ),
     ),
-    // The quiet action: ink text with an underline instead of lime text.
+    // The quiet action: ink text with an underline instead of accent text.
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: colorScheme.onSurface,
@@ -185,7 +209,7 @@ ThemeData _theme(ColorScheme colorScheme, FoodLabelColors labelColors) {
         ),
       ),
     ),
-    // Switches are ink, because lime marks only one thing per screen.
+    // Switches are ink, because the accent marks only one thing per screen.
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith(
         (states) => _switchColor(

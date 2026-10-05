@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/theme/app_accent.dart';
 
 /// Semantic accent colors used by compact metric widgets.
 class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
@@ -18,13 +19,17 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
     required this.stepsDark,
   });
 
-  /// Builds metric accent colors from the active app color scheme.
+  /// Builds metric accent colors for the brightness of [colors].
+  ///
+  /// The data colors are harmonized against the lime accent, so they look
+  /// the same whatever accent the user picks. Only [meal] and [today] follow
+  /// the picked accent through `colors.primary`.
   factory fromColorScheme(ColorScheme colors) {
-    final primary = colors.primary;
-    final warm = _harmonize(const Color(0xFFF97316), primary, 0.14);
-    final warmDark = _harmonize(const Color(0xFFFBBF24), primary, 0.1);
-    final steps = _harmonize(const Color(0xFF6366F1), primary, 0.2);
-    final stepsDark = _harmonize(const Color(0xFF818CF8), primary, 0.16);
+    final lime = AppAccent.lime.tonesFor(colors.brightness).fill;
+    final warm = _harmonize(const Color(0xFFF97316), lime, 0.14);
+    final warmDark = _harmonize(const Color(0xFFFBBF24), lime, 0.1);
+    final steps = _harmonize(const Color(0xFF6366F1), lime, 0.2);
+    final stepsDark = _harmonize(const Color(0xFF818CF8), lime, 0.16);
 
     return MetricAccentColors(
       activity: _tone(warm, lightness: 0.52, minSaturation: 0.68),
@@ -32,27 +37,27 @@ class MetricAccentColors extends ThemeExtension<MetricAccentColors> {
       activityText: _tone(warm, lightness: 0.44, minSaturation: 0.68),
       activityTextDark: _tone(warmDark, lightness: 0.72, minSaturation: 0.72),
       weight: _tone(
-        _harmonize(const Color(0xFF0EA5E9), primary, 0.12),
+        _harmonize(const Color(0xFF0EA5E9), lime, 0.12),
         lightness: colors.brightness == Brightness.dark ? 0.68 : 0.48,
         minSaturation: 0.62,
       ),
       carbs: _tone(
-        _harmonize(const Color(0xFF2563EB), primary, 0.08),
+        _harmonize(const Color(0xFF2563EB), lime, 0.08),
         lightness: colors.brightness == Brightness.dark ? 0.66 : 0.5,
         minSaturation: 0.62,
       ),
       protein: _tone(
-        _harmonize(const Color(0xFFE11D48), primary, 0.08),
+        _harmonize(const Color(0xFFE11D48), lime, 0.08),
         lightness: colors.brightness == Brightness.dark ? 0.66 : 0.5,
         minSaturation: 0.62,
       ),
       fat: _tone(
-        _harmonize(const Color(0xFFF59E0B), primary, 0.08),
+        _harmonize(const Color(0xFFF59E0B), lime, 0.08),
         lightness: colors.brightness == Brightness.dark ? 0.68 : 0.5,
         minSaturation: 0.66,
       ),
-      meal: primary,
-      today: primary,
+      meal: colors.primary,
+      today: colors.primary,
       steps: _tone(steps, lightness: 0.5, minSaturation: 0.58),
       stepsDark: _tone(stepsDark, lightness: 0.7, minSaturation: 0.58),
     );

@@ -3,7 +3,7 @@ import 'package:material_ui/material_ui.dart';
 /// Colors of the food label pages, such as the eat page.
 ///
 /// The pages follow their own "Graphit" look instead of the app's color
-/// scheme: paper, ink and one lime accent.
+/// scheme: paper, ink and one accent (lime unless the user picks another).
 @immutable
 class FoodLabelColors extends ThemeExtension<FoodLabelColors> {
   /// Creates food label colors.

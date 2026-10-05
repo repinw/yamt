@@ -3179,6 +3179,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get settingsLanguageGerman => 'Deutsch';
 
   @override
+  String get settingsAccentTitle => 'Akzentfarbe';
+
+  @override
+  String get settingsAccentLime => 'Limette';
+
+  @override
+  String get settingsAccentPink => 'Pink';
+
+  @override
+  String get settingsAccentViolet => 'Violett';
+
+  @override
+  String get settingsAccentCyan => 'Cyan';
+
+  @override
+  String get settingsAccentEmerald => 'Smaragd';
+
+  @override
   String get settingsDiaryGoalSetGoalFirst => 'Zuerst Ziel setzen';
 
   @override
