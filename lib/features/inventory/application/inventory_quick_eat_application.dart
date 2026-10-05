@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
@@ -75,7 +76,6 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
   final InventoryPendingConsumptionStore _pendingConsumptions;
   final DateTime Function() _now;
   final _mutationQueue = SerializedMutationQueue();
-  int _nextPendingConsumptionNumber = 0;
 
   @override
   Future<String?> stageInventoryItemConsumption({
@@ -167,10 +167,9 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     );
   }
 
-  String _nextPendingConsumptionId() {
-    _nextPendingConsumptionNumber += 1;
-    return 'pending-consumption-$_nextPendingConsumptionNumber';
-  }
+  // The inventory list stages into the same store, so a per-object counter
+  // would repeat its ids.
+  String _nextPendingConsumptionId() => const Uuid().v4();
 
   void _logMutationError(Object error, StackTrace stackTrace) {
     log(

@@ -183,7 +183,6 @@ class InventoryItemsController extends _$InventoryItemsController {
   final _mutationQueue = SerializedMutationQueue();
   _PendingDeletedInventoryItem? _pendingDeletedItem;
   List<InventoryItem>? _persistedItems;
-  int _pendingConsumptionDraftCounter = 0;
   String? _currentDataOwnerUserId;
 
   /// Read in [build], so a mutation that outlives the provider still has it.
@@ -1222,10 +1221,9 @@ class InventoryItemsController extends _$InventoryItemsController {
     return nextItems;
   }
 
-  String _nextPendingConsumptionId() {
-    _pendingConsumptionDraftCounter += 1;
-    return 'pending-consumption-$_pendingConsumptionDraftCounter';
-  }
+  // Quick eat stages into the same store, so a per-object counter would
+  // repeat its ids.
+  String _nextPendingConsumptionId() => _uuid.v4();
 
   InventoryActivityEvent? _buildActivityEvent({
     required InventoryActivityEventType type,
