@@ -132,6 +132,34 @@ void main() {
     expect(pendingStore.staged.single.amount, 3);
   });
 
+  test('does not reuse an id the inventory list staged', () async {
+    // The inventory list stages into the same store.
+    final pendingStore = _FakePendingConsumptionStore()
+      ..stage(
+        const PendingInventoryConsumption(
+          id: 'pending-consumption-1',
+          itemId: 'item-1',
+          amount: 1,
+        ),
+      );
+    final application = _application(
+      repository: _FakePreparedMealRepository(const <PreparedMeal>[]),
+      pendingStore: pendingStore,
+      savedEntries: <CalorieEntry>[],
+    );
+
+    final pendingId = await application.stageInventoryItemConsumption(
+      item: _item(),
+      amount: 1,
+    );
+
+    expect(pendingId, isNot('pending-consumption-1'));
+    expect(
+      pendingStore.staged.map((pending) => pending.id).toSet(),
+      hasLength(2),
+    );
+  });
+
   test('does not stage consumption for an empty item', () async {
     final pendingStore = _FakePendingConsumptionStore();
     final application = _application(
