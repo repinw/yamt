@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/'
@@ -37,64 +38,31 @@ part 'inventory_items_controller.g.dart';
 
 const _controllerLogName = 'InventoryItemsController';
 
-/// Build reduced items.
+/// Takes [amount] out of the item [itemId], capped at what the item holds.
+///
+/// Returns null when the item is missing, empty, or [amount] is below 1.
 @visibleForTesting
 List<InventoryItem>? buildReducedItems({
   required List<InventoryItem> currentItems,
   required String itemId,
   required int amount,
-  DateTime? consumedAt,
+  required DateTime consumedAt,
 }) {
-  if (amount < 1) {
-    return null;
-  }
-
   final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
   if (itemIndex < 0) {
     return null;
   }
 
   final item = currentItems[itemIndex];
-  final maxReducible = _maxReducibleAmount(item);
-  if (maxReducible < 1) {
+  final available = item.availableAmount;
+  final reducedItem = item.reducedBy(
+    amount > available ? available : amount,
+    consumedAt: consumedAt,
+  );
+  if (reducedItem == null) {
     return null;
   }
-  final reducedAmount = amount > maxReducible ? maxReducible : amount;
-  final effectiveConsumedAt = item.latestConsumedAtOr(
-    consumedAt ?? DateTime.now(),
-  );
-
-  final nextItems = List<InventoryItem>.from(currentItems);
-  if (item.usesAmountProgress) {
-    final nextCurrentAmount = item.currentAmount - reducedAmount;
-    final safeCurrentAmount = nextCurrentAmount < 0 ? 0 : nextCurrentAmount;
-    nextItems[itemIndex] = item.copyWith(
-      currentAmount: safeCurrentAmount,
-      quantity: quantityForCurrentAmount(
-        item: item,
-        currentAmount: safeCurrentAmount,
-      ),
-      lastConsumedAt: effectiveConsumedAt,
-    );
-    return nextItems;
-  }
-
-  final nextQuantity = item.quantity - reducedAmount;
-  final safeQuantity = nextQuantity < 0 ? 0 : nextQuantity;
-  nextItems[itemIndex] = item.copyWith(
-    quantity: safeQuantity,
-    lastConsumedAt: effectiveConsumedAt,
-  );
-  return nextItems;
-}
-
-int _maxReducibleAmount(InventoryItem item) {
-  if (item.usesAmountProgress) {
-    final currentAmount = item.currentAmount;
-    return currentAmount > 0 ? currentAmount : 0;
-  }
-  final quantity = item.quantity;
-  return quantity > 0 ? quantity : 0;
+  return List<InventoryItem>.from(currentItems)..[itemIndex] = reducedItem;
 }
 
 /// Builds an edited item while preserving remaining stock for metadata edits.
@@ -159,10 +127,7 @@ List<InventoryItem>? buildRestoredItems({
         : restoredCurrentAmount;
     final restoredItem = item.copyWith(
       currentAmount: safeCurrentAmount,
-      quantity: quantityForCurrentAmount(
-        item: item,
-        currentAmount: safeCurrentAmount,
-      ),
+      quantity: item.quantityForAmount(safeCurrentAmount),
     );
     nextItems[itemIndex] = restoredItem.copyWith(
       lastConsumedAt: restoredItem.isFullyAvailable
@@ -186,29 +151,6 @@ List<InventoryItem>? buildRestoredItems({
         : restoredItem.lastConsumedAt,
   );
   return nextItems;
-}
-
-/// Quantity for current amount.
-@visibleForTesting
-int quantityForCurrentAmount({
-  required InventoryItem item,
-  required int currentAmount,
-}) {
-  final initialAmount = item.initialAmount;
-  final initialQuantity = item.initialQuantity;
-  if (initialAmount < 1 || initialQuantity < 1) {
-    return item.quantity;
-  }
-
-  final ratio = currentAmount / initialAmount;
-  final projectedQuantity = (initialQuantity * ratio).ceil();
-  if (projectedQuantity < 0) {
-    return 0;
-  }
-  if (projectedQuantity > initialQuantity) {
-    return initialQuantity;
-  }
-  return projectedQuantity;
 }
 
 class _PendingDeletedInventoryItem {
@@ -243,10 +185,14 @@ class InventoryItemsController extends _$InventoryItemsController {
   List<InventoryItem>? _persistedItems;
   int _pendingConsumptionDraftCounter = 0;
   String? _currentDataOwnerUserId;
+
+  /// Read in [build], so a mutation that outlives the provider still has it.
+  late DateTime Function() _clock;
   bool _isRecoveringHouseholdAccess = false;
 
   @override
   FutureOr<List<InventoryItem>> build() async {
+    _clock = ref.watch(clockProvider);
     ref
       ..watch(householdDataOwnerUserIdProvider)
       ..watch(inventoryItemRepositoryProvider)
@@ -498,7 +444,7 @@ class InventoryItemsController extends _$InventoryItemsController {
           _buildActivityEvent(
             type: InventoryActivityEventType.itemDeleted,
             item: currentItems[itemIndex],
-            amount: _availableActivityAmount(currentItems[itemIndex]),
+            amount: currentItems[itemIndex].availableAmount,
             beforeItem: currentItems[itemIndex],
           ),
         );
@@ -539,7 +485,7 @@ class InventoryItemsController extends _$InventoryItemsController {
           _buildActivityEvent(
             type: InventoryActivityEventType.itemRestored,
             item: pendingDeletedItem.item,
-            amount: _availableActivityAmount(pendingDeletedItem.item),
+            amount: pendingDeletedItem.item.availableAmount,
             afterItem: pendingDeletedItem.item,
           ),
         );
@@ -584,7 +530,7 @@ class InventoryItemsController extends _$InventoryItemsController {
           currentItems: currentItems,
           itemId: itemId,
           amount: removedAmount,
-          consumedAt: consumedAt,
+          consumedAt: consumedAt ?? _clock(),
         );
         if (nextItems == null) {
           return null;
@@ -646,6 +592,7 @@ class InventoryItemsController extends _$InventoryItemsController {
           currentItems: currentItems,
           itemId: itemId,
           amount: discardedAmount,
+          consumedAt: _clock(),
         );
         if (nextItems == null) {
           return null;
@@ -769,7 +716,7 @@ class InventoryItemsController extends _$InventoryItemsController {
                 currentItems: nextItems,
                 itemId: itemId,
                 amount: removedAmount,
-                consumedAt: consumedAt,
+                consumedAt: consumedAt ?? _clock(),
               );
         if (removedAmount == null || reduced == null) {
           return false;
@@ -956,7 +903,7 @@ class InventoryItemsController extends _$InventoryItemsController {
               .recordSelection(
                 barcode: barcode,
                 globalFoodItem: resolvedProduct,
-                selectedAt: DateTime.now(),
+                selectedAt: _clock(),
               );
         }
       }
@@ -987,7 +934,7 @@ class InventoryItemsController extends _$InventoryItemsController {
             _buildActivityEvent(
               type: InventoryActivityEventType.itemAdded,
               item: item,
-              amount: _availableActivityAmount(item),
+              amount: item.availableAmount,
               afterItem: item,
             ),
           );
@@ -1149,7 +1096,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     required InventoryItem item,
     required int requestedAmount,
   }) {
-    final maxReducible = _maxReducibleAmount(item);
+    final maxReducible = item.availableAmount;
     if (maxReducible < 1) {
       return null;
     }
@@ -1231,7 +1178,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       return null;
     }
 
-    final maxReducible = _maxReducibleAmount(currentItems[itemIndex]);
+    final maxReducible = currentItems[itemIndex].availableAmount;
     if (maxReducible < 1) {
       return null;
     }
@@ -1349,11 +1296,4 @@ InventoryItem? _findItem(List<InventoryItem> items, String itemId) {
     }
   }
   return null;
-}
-
-int _availableActivityAmount(InventoryItem item) {
-  if (item.usesAmountProgress) {
-    return item.currentAmount > 0 ? item.currentAmount : 0;
-  }
-  return item.quantity > 0 ? item.quantity : 0;
 }

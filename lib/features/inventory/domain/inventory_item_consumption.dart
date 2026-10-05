@@ -10,6 +10,63 @@ extension InventoryItemConsumptionExtension on InventoryItem {
     }
     return current;
   }
+
+  /// The stock that can be taken, in the stored amount unit, never below 0.
+  ///
+  /// Items tracked by amount count their current amount. Other items count
+  /// their quantity.
+  int get availableAmount {
+    final amount = usesAmountProgress ? currentAmount : quantity;
+    return amount > 0 ? amount : 0;
+  }
+
+  /// The package quantity that [amount] of stock still fills, rounded up and
+  /// kept between 0 and the initial quantity.
+  ///
+  /// Returns the stored quantity when the item has no initial amount or
+  /// quantity to scale from.
+  int quantityForAmount(int amount) {
+    if (initialAmount < 1 || initialQuantity < 1) {
+      return quantity;
+    }
+
+    final ratio = amount / initialAmount;
+    final projectedQuantity = (initialQuantity * ratio).ceil();
+    if (projectedQuantity < 0) {
+      return 0;
+    }
+    if (projectedQuantity > initialQuantity) {
+      return initialQuantity;
+    }
+    return projectedQuantity;
+  }
+
+  /// This item after [amount] of its stock was taken.
+  ///
+  /// Returns null when [amount] is below 1 or above [availableAmount]; a
+  /// caller that wants to take what is left clamps the amount first. With
+  /// [consumedAt], `lastConsumedAt` moves forward to it; without, it stays.
+  InventoryItem? reducedBy(int amount, {DateTime? consumedAt}) {
+    if (amount < 1 || amount > availableAmount) {
+      return null;
+    }
+
+    final nextLastConsumedAt = consumedAt == null
+        ? lastConsumedAt
+        : latestConsumedAtOr(consumedAt);
+    if (usesAmountProgress) {
+      final nextCurrentAmount = currentAmount - amount;
+      return copyWith(
+        currentAmount: nextCurrentAmount,
+        quantity: quantityForAmount(nextCurrentAmount),
+        lastConsumedAt: nextLastConsumedAt,
+      );
+    }
+    return copyWith(
+      quantity: quantity - amount,
+      lastConsumedAt: nextLastConsumedAt,
+    );
+  }
 }
 
 /// Defines pending inventory consumption.
@@ -32,14 +89,6 @@ class PendingInventoryConsumption {
 /// Items tracked by amount count their current amount. Other items count
 /// their quantity. Returns null when nothing can be eaten.
 int? consumableInventoryAmount(InventoryItem item) {
-  if (item.usesAmountProgress) {
-    if (item.amountUnit == null || item.currentAmount < 1) {
-      return null;
-    }
-    return item.currentAmount;
-  }
-  if (item.quantity < 1) {
-    return null;
-  }
-  return item.quantity;
+  final amount = item.availableAmount;
+  return amount < 1 ? null : amount;
 }

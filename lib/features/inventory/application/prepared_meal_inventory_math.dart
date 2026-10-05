@@ -1,5 +1,6 @@
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 /// Normalizes optional image ids so empty strings are stored as null.
@@ -57,43 +58,6 @@ bool hasCompleteNutrition(GlobalFoodNutrition? nutrition) {
       nutrition.per100Fat != null;
 }
 
-/// Returns available consumable amount for an inventory item.
-int availableAmount(InventoryItem item) {
-  if (item.usesAmountProgress) {
-    return item.currentAmount > 0 ? item.currentAmount : 0;
-  }
-  return item.quantity > 0 ? item.quantity : 0;
-}
-
-/// Reduces an inventory item by a requested amount.
-InventoryItem? reduceInventoryItem({
-  required InventoryItem item,
-  required int amount,
-}) {
-  if (amount < 1) {
-    return null;
-  }
-  if (item.usesAmountProgress) {
-    final nextCurrentAmount = item.currentAmount - amount;
-    if (nextCurrentAmount < 0) {
-      return null;
-    }
-    return item.copyWith(
-      currentAmount: nextCurrentAmount,
-      quantity: _quantityForCurrentAmount(
-        item: item,
-        currentAmount: nextCurrentAmount,
-      ),
-    );
-  }
-
-  final nextQuantity = item.quantity - amount;
-  if (nextQuantity < 0) {
-    return null;
-  }
-  return item.copyWith(quantity: nextQuantity);
-}
-
 /// Returns whether inventory item uses required amount unit directly.
 bool hasCompatibleAmountUnit({
   required InventoryItem item,
@@ -111,7 +75,7 @@ bool hasCompatibleTemplateRequirement({
   required InventoryAmountUnit requiredUnit,
 }) {
   if (requiredUnit == InventoryAmountUnit.piece) {
-    return availableAmount(item) > 0;
+    return item.availableAmount > 0;
   }
   return hasCompatibleAmountUnit(item: item, requiredUnit: requiredUnit);
 }
@@ -126,7 +90,7 @@ int consumableAmountForRequirement({
     return 0;
   }
 
-  final available = availableAmount(item);
+  final available = item.availableAmount;
   if (available < 1) {
     return 0;
   }
@@ -277,10 +241,7 @@ InventoryItem _buildRestoredSnapshotItem({
   if (sourceItem.usesAmountProgress) {
     return sourceItem.copyWith(
       currentAmount: amountToRestore,
-      quantity: _quantityForCurrentAmount(
-        item: sourceItem,
-        currentAmount: amountToRestore,
-      ),
+      quantity: sourceItem.quantityForAmount(amountToRestore),
     );
   }
   return sourceItem.copyWith(quantity: amountToRestore);
@@ -295,10 +256,7 @@ InventoryItem _restoreInventoryItemAmount({
     final nextCurrentAmount = item.currentAmount + amountToRestore;
     return item.copyWith(
       currentAmount: nextCurrentAmount,
-      quantity: _quantityForCurrentAmount(
-        item: sourceItem,
-        currentAmount: nextCurrentAmount,
-      ),
+      quantity: sourceItem.quantityForAmount(nextCurrentAmount),
       nutrition: sourceItem.nutrition,
     );
   }
@@ -306,25 +264,4 @@ InventoryItem _restoreInventoryItemAmount({
     quantity: item.quantity + amountToRestore,
     nutrition: sourceItem.nutrition,
   );
-}
-
-int _quantityForCurrentAmount({
-  required InventoryItem item,
-  required int currentAmount,
-}) {
-  final initialAmount = item.initialAmount;
-  final initialQuantity = item.initialQuantity;
-  if (initialAmount < 1 || initialQuantity < 1) {
-    return item.quantity;
-  }
-
-  final ratio = currentAmount / initialAmount;
-  final projectedQuantity = (initialQuantity * ratio).ceil();
-  if (projectedQuantity < 0) {
-    return 0;
-  }
-  if (projectedQuantity > initialQuantity) {
-    return initialQuantity;
-  }
-  return projectedQuantity;
 }

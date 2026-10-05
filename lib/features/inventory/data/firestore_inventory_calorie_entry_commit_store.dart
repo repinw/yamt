@@ -174,9 +174,8 @@ class FirestoreInventoryCalorieEntryCommitStore
     final currentItem = InventoryItem.fromJson(
       Map<String, dynamic>.from(storedItem)..['id'] = inventorySnapshot.id,
     );
-    final committedItem = mutationBuilder.buildCommittedItem(
-      item: currentItem,
-      amount: pending.amount,
+    final committedItem = currentItem.reducedBy(
+      pending.amount,
       consumedAt: entry.loggedAt,
     );
     if (committedItem == null) {

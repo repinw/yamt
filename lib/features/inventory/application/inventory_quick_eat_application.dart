@@ -85,7 +85,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     if (amount < 1) {
       return null;
     }
-    final availableAmount = _availableAmount(item);
+    final availableAmount = item.availableAmount;
     if (availableAmount < 1) {
       return null;
     }
@@ -185,12 +185,4 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
 bool _canConsumePreparedMeal(PreparedMeal meal, num consumedPortions) {
   return !meal.hasPendingRecipeIngredients &&
       consumedPortions <= meal.remainingPortions;
-}
-
-int _availableAmount(InventoryItem? item) {
-  if (item == null) {
-    return 0;
-  }
-  final amount = item.usesAmountProgress ? item.currentAmount : item.quantity;
-  return amount > 0 ? amount : 0;
 }
