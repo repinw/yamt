@@ -10,7 +10,6 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -620,7 +619,7 @@ class _TestDiaryQuickEatInventoryActions implements InventoryQuickEatActions {
   final bool failConsume;
 
   @override
-  Future<CalorieEntry?> consumePreparedMeal({
+  Future<PreparedMealEatResult?> consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
@@ -629,13 +628,14 @@ class _TestDiaryQuickEatInventoryActions implements InventoryQuickEatActions {
     if (failConsume) {
       return null;
     }
-    return buildConsumedPreparedMealCalorieEntry(
+    final entry = buildConsumedPreparedMealCalorieEntry(
       meal: meal,
       consumedPortions: consumedPortions,
       mealType: mealType,
       now: () => loggedDay,
       nextEntryId: () => 'entry-${meal.id}',
     );
+    return entry == null ? null : (entry: entry, isPlan: false);
   }
 }
 

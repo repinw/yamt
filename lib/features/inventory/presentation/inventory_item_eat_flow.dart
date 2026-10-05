@@ -112,7 +112,8 @@ class InventoryItemEatFlow {
   /// Logs the calorie entry for [request] with its reserved [pending] stock.
   ///
   /// Saves directly when the item has enough nutrition data, and opens the
-  /// calorie editor otherwise. Returns the saved entry, or null.
+  /// calorie editor otherwise. A day after today saves a plan without stock.
+  /// Returns the saved entry or plan, or null.
   static Future<CalorieEntry?> complete({
     required BuildContext context,
     required ProviderContainer container,
@@ -140,11 +141,20 @@ class InventoryItemEatFlow {
             );
           }
           return entry;
+        case InventoryEatPlanned(:final entry):
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showAppSnackBar(
+              l10n.diaryPlanSaved,
+              onUndo: () => undoPlan(container: container, plan: entry),
+            );
+          }
+          return entry;
         case InventoryEatFailed(:final failure):
           if (context.mounted) {
             _showError(context, switch (failure) {
               InventoryEatFailure.noNutrition => l10n.inventoryItemActionFailed,
               InventoryEatFailure.notSaved => l10n.caloriesSaveFailed,
+              InventoryEatFailure.cannotPlan => l10n.inventoryItemCannotPlan,
             });
           }
           return null;
@@ -198,6 +208,13 @@ class InventoryItemEatFlow {
     required ProviderContainer container,
     required CalorieEntry entry,
   }) => container.read(inventoryItemEatControllerProvider.notifier).undo(entry);
+
+  /// Undoes a plan: deletes [plan].
+  static Future<bool> undoPlan({
+    required ProviderContainer container,
+    required CalorieEntry plan,
+  }) =>
+      container.read(inventoryItemEatControllerProvider.notifier).unplan(plan);
 
   static void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context)

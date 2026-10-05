@@ -8,19 +8,19 @@ part of 'inventory_item_eat_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry,
-/// releases a reservation, and undoes an eat.
+/// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry
+/// or the plan, releases a reservation, and undoes an eat or a plan.
 
 @ProviderFor(InventoryItemEatController)
 final inventoryItemEatControllerProvider =
     InventoryItemEatControllerProvider._();
 
-/// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry,
-/// releases a reservation, and undoes an eat.
+/// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry
+/// or the plan, releases a reservation, and undoes an eat or a plan.
 final class InventoryItemEatControllerProvider
     extends $AsyncNotifierProvider<InventoryItemEatController, void> {
-  /// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry,
-  /// releases a reservation, and undoes an eat.
+  /// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry
+  /// or the plan, releases a reservation, and undoes an eat or a plan.
   InventoryItemEatControllerProvider._()
     : super(
         from: null,
@@ -41,10 +41,10 @@ final class InventoryItemEatControllerProvider
 }
 
 String _$inventoryItemEatControllerHash() =>
-    r'bf4487b1624c5dbb1c87569037f61986d33f21b9';
+    r'104f93c4245492646ec9a1d5f6521588bb35df70';
 
-/// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry,
-/// releases a reservation, and undoes an eat.
+/// Eats Vorrat items for the eat flows: reserves stock, logs the diary entry
+/// or the plan, releases a reservation, and undoes an eat or a plan.
 
 abstract class _$InventoryItemEatController extends $AsyncNotifier<void> {
   FutureOr<void> build();

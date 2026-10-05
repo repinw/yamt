@@ -19,7 +19,8 @@ abstract final class PreparedMealEatFlow {
   /// With [actions] the sheet is the meal's detail page from the Vorrat: it
   /// also lists the ingredients and offers the meal actions.
   ///
-  /// Returns the saved entry, or null when the user cancels or saving fails.
+  /// A day after today saves a plan and keeps the portions. Returns the
+  /// saved entry or plan, or null when the user cancels or saving fails.
   static Future<CalorieEntry?> eat({
     required BuildContext context,
     required PreparedMeal meal,
@@ -39,25 +40,33 @@ abstract final class PreparedMealEatFlow {
     }
     return await runInventoryQuickEatFlow(context, (scope) async {
       try {
-        final entry = await scope.actions.consumePreparedMeal(
+        final eaten = await scope.actions.consumePreparedMeal(
           meal: request.meal,
           consumedPortions: request.portions,
           mealType: request.mealType,
           loggedDay: request.loggedDay,
         );
-        if (entry == null) {
+        if (eaten == null) {
           scope.messenger.showAppSnackBar(
             scope.l10n.preparedMealActionFailed,
             tone: AppSnackBarTone.error,
           );
           return null;
         }
+        final (:entry, :isPlan) = eaten;
         scope.messenger.showAppSnackBar(
-          scope.l10n.inventoryManualAddEatSucceeded,
-          onUndo: () => InventoryItemEatFlow.undoEat(
-            container: scope.container,
-            entry: entry,
-          ),
+          isPlan
+              ? scope.l10n.diaryPlanSaved
+              : scope.l10n.inventoryManualAddEatSucceeded,
+          onUndo: () => isPlan
+              ? InventoryItemEatFlow.undoPlan(
+                  container: scope.container,
+                  plan: entry,
+                )
+              : InventoryItemEatFlow.undoEat(
+                  container: scope.container,
+                  entry: entry,
+                ),
         );
         return entry;
       } on Object catch (error, stackTrace) {

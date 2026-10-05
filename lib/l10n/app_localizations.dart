@@ -1792,6 +1792,12 @@ abstract class AppLocalizations {
   /// **'Action failed. Please try again.'**
   String get inventoryItemActionFailed;
 
+  /// No description provided for @inventoryItemCannotPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not plan: this amount needs the calorie editor'**
+  String get inventoryItemCannotPlan;
+
   /// No description provided for @inventoryBarcodeScanUnsupported.
   ///
   /// In en, this message translates to:
@@ -4371,6 +4377,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete plan'**
   String get diaryPlanDeleteAction;
+
+  /// No description provided for @diaryPlanMealPrepTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal Prep'**
+  String get diaryPlanMealPrepTag;
 
   /// No description provided for @diaryBalanceLoadFailed.
   ///

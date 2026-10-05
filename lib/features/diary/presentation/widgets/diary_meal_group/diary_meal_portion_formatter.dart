@@ -14,7 +14,7 @@ String? formatDiaryMealPortionLabel(
   if (combinedFoods != null) {
     return l10n.caloriesCombinedFoodCount(combinedFoods.length);
   }
-  if (entry.bundleTotalPortions != null && entry.bundleTotalPortions! > 0) {
+  if (entry.isPreparedMeal) {
     final consumed = entry.bundleConsumedPortions ?? 0;
     final formattedConsumed = NumberFormat.decimalPattern(
       Localizations.localeOf(context).toLanguageTag(),

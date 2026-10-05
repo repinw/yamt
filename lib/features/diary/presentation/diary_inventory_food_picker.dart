@@ -72,6 +72,14 @@ class DiaryInventoryFoodPicker extends StatelessWidget {
   /// Creates inventory and prepared-meal picker.
   const new({required this.items, required this.meals, super.key});
 
+  /// Row key of the Vorrat item [itemId].
+  static Key itemKey(String itemId) =>
+      ValueKey<String>('diary-inventory-food-item-$itemId');
+
+  /// Row key of the prepared meal [mealId].
+  static Key mealKey(String mealId) =>
+      ValueKey<String>('diary-inventory-food-meal-$mealId');
+
   /// Available inventory items.
   final List<InventoryItem> items;
 
@@ -175,6 +183,7 @@ class _DiaryInventoryFoodPickerContent extends ConsumerWidget {
         if (index < items.length) {
           final item = items[index];
           return DiaryInventoryFoodTile(
+            key: DiaryInventoryFoodPicker.itemKey(item.id),
             fallbackIcon: Icons.kitchen_outlined,
             imageUrl: item.imageUrl,
             title: item.name,
@@ -187,6 +196,7 @@ class _DiaryInventoryFoodPickerContent extends ConsumerWidget {
 
         final meal = meals[index - items.length];
         return DiaryInventoryFoodTile(
+          key: DiaryInventoryFoodPicker.mealKey(meal.id),
           fallbackIcon: Icons.restaurant_menu_rounded,
           imageUrl: meal.imageUrl,
           imageBytes: _storedMealImageBytes(ref, meal),

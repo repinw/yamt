@@ -1,5 +1,7 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
@@ -7,6 +9,8 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+
+import '../../calories/support/fake_planned_entry_repository.dart';
 
 class _FakePreparedMealRepository implements PreparedMealRepository {
   new(this._meals);
@@ -52,7 +56,13 @@ InventoryQuickEatApplication _application({
   required _FakePreparedMealRepository repository,
   required List<CalorieEntry> savedEntries,
   bool atomic = true,
+  FakePlannedEntryRepository? plans,
+  ProviderContainer? container,
 }) {
+  final revisionContainer = container ?? ProviderContainer();
+  if (container == null) {
+    addTearDown(revisionContainer.dispose);
+  }
   Future<bool> saveEntry(CalorieEntry entry) async {
     savedEntries.add(entry);
     return true;
@@ -60,6 +70,10 @@ InventoryQuickEatApplication _application({
 
   return InventoryQuickEatApplication(
     preparedMealRepository: repository,
+    plans: plans ?? FakePlannedEntryRepository(),
+    overviewRevision: revisionContainer.read(
+      calorieOverviewRevisionProvider.notifier,
+    ),
     now: () => DateTime(2026, 9, 19, 12),
     calorieLogBridge: PreparedMealCalorieLogBridge(
       saveEntry: saveEntry,
@@ -118,5 +132,58 @@ void main() {
     ]);
     expect(repository.meals.first.remainingPortions, 3);
     expect(repository.meals.last.remainingPortions, 4);
+  });
+
+  test('a later day saves a plan and keeps the portions', () async {
+    final repository = _FakePreparedMealRepository(<PreparedMeal>[
+      _meal(id: 'meal-1'),
+    ]);
+    final savedEntries = <CalorieEntry>[];
+    final plans = FakePlannedEntryRepository();
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final application = _application(
+      repository: repository,
+      savedEntries: savedEntries,
+      plans: plans,
+      container: container,
+    );
+
+    final saved = await application.consumePreparedMeal(
+      meal: _meal(id: 'meal-1'),
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      loggedDay: DateTime(2026, 9, 20),
+    );
+
+    expect(saved?.isPlan, isTrue);
+    expect(plans.plans.single.bundleSourcePreparedMealId, 'meal-1');
+    expect(plans.plans.single.loggedAt.day, 20);
+    expect(savedEntries, isEmpty);
+    expect(repository.meals.single.remainingPortions, 4);
+    expect(container.read(calorieOverviewRevisionProvider), 1);
+  });
+
+  test('a failed plan saves nothing and keeps the portions', () async {
+    final repository = _FakePreparedMealRepository(<PreparedMeal>[
+      _meal(id: 'meal-1'),
+    ]);
+    final plans = FakePlannedEntryRepository()..writeShouldFail = true;
+    final application = _application(
+      repository: repository,
+      savedEntries: <CalorieEntry>[],
+      plans: plans,
+    );
+
+    final saved = await application.consumePreparedMeal(
+      meal: _meal(id: 'meal-1'),
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      loggedDay: DateTime(2026, 9, 20),
+    );
+
+    expect(saved, isNull);
+    expect(plans.plans, isEmpty);
+    expect(repository.meals.single.remainingPortions, 4);
   });
 }

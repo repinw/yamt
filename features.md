@@ -115,8 +115,7 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
   Its actions open from the "Essen" button in the middle of the bar: barcode
   first, then Vorrat, quick entry, AI, and search. A future day hides
-  barcode, AI, and search, because they cannot plan yet; Vorrat there still
-  logs eaten food and takes the stock until it can plan.
+  barcode, AI, and search, because they cannot plan yet.
 - Quick entry ("Schnell" in the actions) logs calories typed in by hand, without
   a food or a Vorrat item, on a page in the food label look with day and meal
   top right. Only the calories are required; the name defaults to "Quick
@@ -130,15 +129,20 @@ and feature description docs. This is product-facing; architecture rules stay in
   big number over a ruler, whose bar has four equal quarters of the target
   that fill in order. It is quiet by default; a tap shows eaten and target,
   base and carryover, and the eaten grams per macro.
+- On a future day, a Vorrat item or a cooked meal is saved as a plan, with
+  undo: it takes no stock and no portions until it is eaten. An item whose
+  amount needs the calorie editor cannot be planned yet.
 - Plans show in their meal below the eaten food, faded in a dashed frame.
-  Tapping a plan deletes it, with undo. Plans are stored encrypted apart from
-  eaten food, so the carryover, the weekly check-in, and the progress never
-  count them, and a fresh start deletes them.
+  A plan of a cooked meal carries the tag "Meal Prep". Tapping a plan
+  deletes it, with undo. Plans are stored encrypted apart from eaten food,
+  so the carryover, the weekly check-in, and the progress never count them,
+  and a fresh start deletes them.
 - Future days are shown as a plan: the head reads "Geplant" with the kcal
   logged and planned for that day and "von" the day's goal; the macro bars
   count the plans too. The goal has no carryover, because the days before it
-  are not finished; the training and rest day split still applies. More than the goal shows in the error color like on
-  other days. Future days show no weekly check-in and no budget details.
+  are not finished; the training and rest day split still applies. More
+  than the goal shows in the error color like on other days. Future days
+  show no weekly check-in and no budget details.
 - Tomorrow can plan with today's carryover: under its number, "<Weekday>
   abschließen" (with today's weekday) closes today and shows the carryover
   per day it adds. Tomorrow then counts like a started day: its head shows

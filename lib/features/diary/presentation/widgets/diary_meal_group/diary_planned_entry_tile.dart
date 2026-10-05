@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/app_fonts.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_entry_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
@@ -36,8 +38,39 @@ class DiaryPlannedEntryTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
             child: Opacity(
               opacity: AppGraphit.pendingRowOpacity,
-              child: DiaryMealEntryTile(entry: plan, onTap: onTap),
+              child: DiaryMealEntryTile(
+                entry: plan,
+                onTap: onTap,
+                tag: plan.isPreparedMeal ? const _MealPrepTag() : null,
+              ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Marks a plan that eats portions of a prepared meal.
+class _MealPrepTag extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    final color = FoodLabelColors.of(context).accentText;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(AppRadius.xs),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+        child: Text(
+          AppLocalizations.of(context)!.diaryPlanMealPrepTag.toUpperCase(),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            fontFamily: AppFonts.mono,
+            color: color,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),

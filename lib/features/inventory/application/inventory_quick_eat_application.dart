@@ -1,10 +1,14 @@
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
+import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
 import 'package:yamt/features/inventory/application/'
@@ -20,9 +24,15 @@ InventoryQuickEatApplication inventoryQuickEatApplication(Ref ref) {
   return InventoryQuickEatApplication(
     preparedMealRepository: ref.watch(preparedMealRepositoryProvider),
     calorieLogBridge: ref.watch(preparedMealCalorieLogBridgeProvider),
+    plans: ref.watch(plannedEntryRepositoryProvider),
+    overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
     now: ref.watch(clockProvider),
   );
 }
+
+/// A saved eat of a prepared meal: the diary entry, or a plan when its day
+/// lies after today.
+typedef PreparedMealEatResult = ({CalorieEntry entry, bool isPlan});
 
 /// Provides application-level quick-eat mutations for Inventory callers.
 @riverpod
@@ -37,8 +47,8 @@ InventoryQuickEatActions inventoryQuickEatActions(Ref ref) {
 /// when it writes.
 abstract interface class InventoryQuickEatActions {
   /// Consumes one prepared meal and returns the saved calorie entry, or null
-  /// when it failed.
-  Future<CalorieEntry?> consumePreparedMeal({
+  /// when it failed. A day after today saves a plan and keeps the portions.
+  Future<PreparedMealEatResult?> consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
@@ -52,22 +62,26 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
   new({
     required this._preparedMealRepository,
     required this._calorieLogBridge,
+    required this._plans,
+    required this._overviewRevision,
     required this._now,
   });
 
   final PreparedMealRepository _preparedMealRepository;
   final PreparedMealCalorieLogBridge _calorieLogBridge;
+  final PlannedEntryRepository _plans;
+  final CalorieOverviewRevision _overviewRevision;
   final DateTime Function() _now;
   final _mutationQueue = SerializedMutationQueue();
 
   @override
-  Future<CalorieEntry?> consumePreparedMeal({
+  Future<PreparedMealEatResult?> consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
   }) {
-    return _mutationQueue.run<CalorieEntry?>(
+    return _mutationQueue.run<PreparedMealEatResult?>(
       operation: () => _consumePreparedMeal(
         meal: meal,
         consumedPortions: consumedPortions,
@@ -79,7 +93,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     );
   }
 
-  Future<CalorieEntry?> _consumePreparedMeal({
+  Future<PreparedMealEatResult?> _consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
@@ -89,6 +103,14 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
         !_canConsumePreparedMeal(meal, consumedPortions)) {
       return null;
     }
+    if (isDiaryFutureDay(day: loggedDay, today: _now())) {
+      return await _planPreparedMeal(
+        meal: meal,
+        consumedPortions: consumedPortions,
+        mealType: mealType,
+        loggedDay: loggedDay,
+      );
+    }
     final currentMeals = <PreparedMeal>[meal];
     final nextMeals = applyPreparedMealPortionReduction(
       currentMeals: currentMeals,
@@ -97,7 +119,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
       updatedAt: _now(),
       keepDepletedMeal: true,
     );
-    return await _calorieLogBridge.consumePreparedMeal(
+    final entry = await _calorieLogBridge.consumePreparedMeal(
       currentMeals: currentMeals,
       nextMeals: nextMeals,
       meal: meal,
@@ -107,6 +129,31 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
       publishMeals: (_) {},
       saveMeals: (_, updatedMeals) => _replaceMeal(updatedMeals.single),
     );
+    return entry == null ? null : (entry: entry, isPlan: false);
+  }
+
+  /// Saves the plan to eat [consumedPortions] of [meal]. The meal keeps its
+  /// portions until the plan is eaten.
+  Future<PreparedMealEatResult?> _planPreparedMeal({
+    required PreparedMeal meal,
+    required num consumedPortions,
+    required MealType mealType,
+    required DateTime loggedDay,
+  }) async {
+    final plan = buildConsumedPreparedMealCalorieEntry(
+      meal: meal,
+      consumedPortions: consumedPortions,
+      mealType: mealType,
+      now: _now,
+      nextEntryId: const Uuid().v4,
+      loggedDay: loggedDay,
+    );
+    if (plan == null) {
+      return null;
+    }
+    await _plans.savePlannedEntry(plan);
+    _overviewRevision.markChanged();
+    return (entry: plan, isPlan: true);
   }
 
   /// Writes one meal into the stored list. Only the bridge fallback without
