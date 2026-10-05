@@ -73,7 +73,12 @@ InventoryItem _item(String id, String name, double kcal, {double? sugar}) {
   );
 }
 
-InventoryCombinedFood _food(InventoryItem item, int amount, {int? staged}) {
+InventoryCombinedFood _food(
+  InventoryPendingConsumptionStore pendings,
+  InventoryItem item,
+  int amount, {
+  int? staged,
+}) {
   return (
     item: item,
     request: InventoryItemEatRequest(
@@ -81,11 +86,7 @@ InventoryCombinedFood _food(InventoryItem item, int amount, {int? staged}) {
       loggedAt: _now,
       mealType: MealType.lunch,
     ),
-    pending: PendingInventoryConsumption(
-      id: 'pending-${item.id}',
-      itemId: item.id,
-      amount: staged ?? amount,
-    ),
+    pending: pendings.stage(item, staged ?? amount)!,
   );
 }
 
@@ -125,12 +126,18 @@ void main() {
   test('saves the foods as one entry with their stock sources', () async {
     final commitStore = _RecordingCommitStore();
     final (service, pendingStore) = await _service(_container(commitStore));
-    final bread = _food(_item('bread', 'Bread', 250, sugar: 2), 80);
+    final bread = _food(
+      pendingStore,
+      _item('bread', 'Bread', 250, sugar: 2),
+      80,
+    );
     // The stock capped the gouda at 50 of the wanted 60.
-    final gouda = _food(_item('gouda', 'Gouda', 361, sugar: 0), 60, staged: 50);
-    pendingStore
-      ..stage(bread.pending)
-      ..stage(gouda.pending);
+    final gouda = _food(
+      pendingStore,
+      _item('gouda', 'Gouda', 361, sugar: 0),
+      60,
+      staged: 50,
+    );
 
     final entry = await service.save(
       foods: [bread, gouda],
@@ -146,8 +153,8 @@ void main() {
     expect(entry?.bundleComponents.last.sourceInventoryItemId, 'gouda');
     expect(entry?.bundleComponents.last.sourceInventoryAmountToRestore, 50);
     expect(commitStore.pendings?.map((p) => p.itemId), ['bread', 'gouda']);
-    expect(pendingStore.pendingConsumptionById('pending-bread'), isNull);
-    expect(pendingStore.pendingConsumptionById('pending-gouda'), isNull);
+    expect(pendingStore.pendingConsumptionById(bread.pending.id), isNull);
+    expect(pendingStore.pendingConsumptionById(gouda.pending.id), isNull);
   });
 
   test(
@@ -155,11 +162,8 @@ void main() {
     () async {
       final commitStore = _RecordingCommitStore(fails: true);
       final (service, pendingStore) = await _service(_container(commitStore));
-      final bread = _food(_item('bread', 'Bread', 250), 80);
-      final gouda = _food(_item('gouda', 'Gouda', 361), 60);
-      pendingStore
-        ..stage(bread.pending)
-        ..stage(gouda.pending);
+      final bread = _food(pendingStore, _item('bread', 'Bread', 250), 80);
+      final gouda = _food(pendingStore, _item('gouda', 'Gouda', 361), 60);
 
       final entry = await service.save(
         foods: [bread, gouda],
@@ -168,7 +172,7 @@ void main() {
       );
 
       expect(entry, isNull);
-      expect(pendingStore.pendingConsumptionById('pending-bread'), isNotNull);
+      expect(pendingStore.pendingConsumptionById(bread.pending.id), isNotNull);
     },
   );
 

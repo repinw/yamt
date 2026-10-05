@@ -9,6 +9,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
@@ -299,52 +300,9 @@ void main() {
     expect(find.text('No available food in inventory.'), findsNothing);
   });
 
-  testWidgets('inventory item stage failure shows action failed snackbar', (
-    tester,
-  ) async {
-    _stageCallCount = 0;
-    _discardedPendingIds.clear();
-    await _pumpInventoryFlowHarness(
-      tester,
-      inventoryItems: [
-        _inventoryItem(
-          id: 'item-1',
-          name: 'Stage Failure Food',
-          initialAmount: 100,
-          currentAmount: 100,
-          amountUnit: InventoryAmountUnit.gram,
-        ),
-      ],
-      preparedMeals: const <PreparedMeal>[],
-      failInventoryStage: true,
-    );
-
-    await tester.tap(find.byKey(_openInventoryFlowButtonKey));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Stage Failure Food'));
-    await tester.pumpAndSettle();
-    await tester.enterText(
-      find.byKey(const Key('eat_page_amount_field')),
-      '100',
-    );
-    await tester.pump();
-    final confirmButton = find.byKey(
-      const Key('inventory_item_amount_dialog_confirm_button'),
-    );
-    await tester.ensureVisible(confirmButton);
-    await tester.tap(confirmButton);
-    await tester.pump();
-    await tester.pump(const Duration(seconds: 1));
-
-    expect(_stageCallCount, 1);
-    expect(find.textContaining('Action failed'), findsOneWidget);
-  });
-
   testWidgets(
-    'inventory quick eat uses staged consumption from page container',
+    'inventory quick eat of a food without nutrition shows action failed',
     (tester) async {
-      _stageCallCount = 0;
-      _discardedPendingIds.clear();
       await _pumpInventoryFlowHarness(
         tester,
         inventoryItems: [
@@ -377,8 +335,6 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
 
-      expect(_stageCallCount, 1);
-      expect(_discardedPendingIds, <String>['pending-item-1']);
       expect(find.textContaining('Action failed'), findsOneWidget);
     },
   );
@@ -435,8 +391,6 @@ const _openFlowButtonKey = Key('open_quick_eat_flow');
 const _openPickerButtonKey = Key('open_inventory_picker');
 const _openInventoryFlowButtonKey = Key('open_inventory_quick_eat_flow');
 final _inventoryFlowDay = DateTime(2026, 4, 27);
-int _stageCallCount = 0;
-final _discardedPendingIds = <String>[];
 
 class _RouteHarness extends StatelessWidget {
   const new({required this.source, required this.selectedDay, this.overrides});
@@ -539,11 +493,16 @@ Future<void> _pumpPickerHarness(
   await tester.pumpAndSettle();
 }
 
+FakeCalorieLogRepository _inventoryFlowCalorieLog() {
+  final calorieLog = FakeCalorieLogRepository();
+  addTearDown(calorieLog.dispose);
+  return calorieLog;
+}
+
 Future<void> _pumpInventoryFlowHarness(
   WidgetTester tester, {
   required List<InventoryItem> inventoryItems,
   required List<PreparedMeal> preparedMeals,
-  bool failInventoryStage = false,
   bool failPreparedMealConsume = false,
   DiaryDayDashboardState? Function(int retryCount)? onDashboardRetry,
 }) async {
@@ -557,9 +516,11 @@ Future<void> _pumpInventoryFlowHarness(
         inventoryQuickEatActionsProvider.overrideWithValue(
           _TestDiaryQuickEatInventoryActions(
             failConsume: failPreparedMealConsume,
-            failStage: failInventoryStage,
           ),
         ),
+        // The real eat service runs; only its repositories are fakes.
+        ...quickEntryOverrides(_inventoryFlowCalorieLog()),
+        firebaseFirestoreProvider.overrideWith((ref) => null),
       ],
       child: const MaterialApp(
         locale: Locale('en'),
@@ -654,29 +615,9 @@ Override _dashboardOverrideFor(
 }
 
 class _TestDiaryQuickEatInventoryActions implements InventoryQuickEatActions {
-  const new({this.failConsume = false, this.failStage = false});
+  const new({this.failConsume = false});
 
   final bool failConsume;
-  final bool failStage;
-
-  @override
-  Future<String?> stageInventoryItemConsumption({
-    required InventoryItem item,
-    required int amount,
-  }) async {
-    _stageCallCount += 1;
-    if (failStage) {
-      return null;
-    }
-    return 'pending-${item.id}';
-  }
-
-  @override
-  Future<void> discardInventoryItemConsumption(
-    String pendingConsumptionId,
-  ) async {
-    _discardedPendingIds.add(pendingConsumptionId);
-  }
 
   @override
   Future<CalorieEntry?> consumePreparedMeal({

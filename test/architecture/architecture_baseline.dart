@@ -238,8 +238,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/application/calorie_entry_delete_flow.dart': 1,
     'lib/features/calories/application/calorie_goal_seed_weight_flow.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,
-    'lib/features/inventory/application/inventory_backed_calorie_entry_save_flow.dart':
-        1,
     'lib/features/inventory/application/inventory_calorie_bridge_flow.dart': 1,
     'lib/features/onboarding/application/calorie_goal_onboarding_finish_flow.dart':
         1,
@@ -253,7 +251,7 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/domain/calorie_goal_settings_queries.dart': 1,
     'lib/features/calories/domain/tdee_cycle_resolver.dart': 1,
     'lib/features/cooking_flow/application/cooking_flow_finalize_logic.dart': 2,
-    'lib/features/inventory/application/inventory_calorie_bridge_flow.dart': 3,
+    'lib/features/inventory/application/inventory_calorie_bridge_flow.dart': 2,
     'lib/features/inventory/application/inventory_shopping_suggestions.dart': 1,
     'lib/features/inventory/application/off_product_candidate_source.dart': 1,
     'lib/features/inventory/domain/global_barcode_candidate.dart': 1,
@@ -352,8 +350,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/application/calorie_inventory_entry_save_handler.dart':
         2,
     'lib/features/calories/presentation/controllers/calorie_entry_editor_controller.dart':
-        1,
-    'lib/features/inventory/application/inventory_backed_calorie_entry_save_flow.dart':
         1,
     'lib/features/inventory/application/inventory_calorie_entry_post_persist_hook.dart':
         1,

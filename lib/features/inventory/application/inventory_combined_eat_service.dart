@@ -9,8 +9,7 @@ import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dar
 import 'package:yamt/features/calories/domain/calorie_nutrient_details.dart';
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_calorie_bridge_flow.dart';
-import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
-import 'package:yamt/features/inventory/data/inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
@@ -29,8 +28,7 @@ typedef InventoryCombinedFood = ({
 InventoryCombinedEatService inventoryCombinedEatService(Ref ref) {
   return InventoryCombinedEatService(
     saver: ref.watch(calorieEntrySaverProvider),
-    commitStore: ref.watch(inventoryCalorieEntryCommitStoreProvider),
-    pendingStore: ref.watch(inventoryPendingConsumptionStoreProvider),
+    eatService: ref.watch(inventoryEatServiceProvider),
     userId: ref.watch(firebaseAuthProvider).currentUser?.uid,
     clock: ref.watch(clockProvider),
   );
@@ -44,8 +42,7 @@ class InventoryCombinedEatService {
   /// Creates the service.
   const new({
     required this._saver,
-    required this._commitStore,
-    required this._pendingStore,
+    required this._eatService,
     required this._userId,
     required this._clock,
   });
@@ -53,8 +50,7 @@ class InventoryCombinedEatService {
   static const _uuid = Uuid();
 
   final CalorieEntrySaver _saver;
-  final InventoryCalorieEntryCommitStore _commitStore;
-  final InventoryPendingConsumptionStore _pendingStore;
+  final InventoryEatService _eatService;
   final String? _userId;
   final DateTime Function() _clock;
 
@@ -92,32 +88,10 @@ class InventoryCombinedEatService {
     final saved = await _saver(
       entry,
       isNewEntry: true,
-      persistEntry: (entry) => _commit(entry, foods),
+      persistEntry: (entry) =>
+          _eatService.commit(entry, [for (final food in foods) food.pending]),
     );
     return saved ? entry : null;
-  }
-
-  Future<bool> _commit(
-    CalorieEntry entry,
-    List<InventoryCombinedFood> foods,
-  ) async {
-    final results = await _commitStore.commitEntryAndInventoryItems(
-      entry: entry,
-      pendingConsumptions: [for (final food in foods) food.pending],
-    );
-    if (results == null) {
-      return false;
-    }
-    for (final (index, result) in results.indexed) {
-      await _pendingStore.finalize(
-        id: foods[index].pending.id,
-        itemId: result.itemId,
-        quantity: result.quantity,
-        currentAmount: result.currentAmount,
-        consumedAt: entry.loggedAt,
-      );
-    }
-    return true;
   }
 
   /// The diary component for eating [request] of [item], as the combine

@@ -953,7 +953,9 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
-  /// Stage pending consumption.
+  /// Reserves [amount] of the item [itemId] as the list shows it now, so
+  /// the reservation is capped at the newest stock. Returns null when the
+  /// item is missing or empty.
   Future<PendingInventoryConsumption?> stagePendingConsumption(
     String itemId,
     int amount,
@@ -963,42 +965,13 @@ class InventoryItemsController extends _$InventoryItemsController {
     }
     return _runSerializedTask<PendingInventoryConsumption?>(
       operation: () async {
-        final visibleItems = await _currentVisibleItems();
-        final draft = _createPendingConsumption(
-          currentItems: visibleItems,
-          itemId: itemId,
-          requestedAmount: amount,
-        );
+        final pendings = ref.read(inventoryPendingConsumptionStoreProvider);
+        final item = _findItem(await _currentVisibleItems(), itemId);
+        final draft = item == null ? null : pendings.stage(item, amount);
         _publishVisibleItems();
         return draft;
       },
       fallbackValue: null,
-    );
-  }
-
-  /// Pending consumption by id.
-  PendingInventoryConsumption? pendingConsumptionById(String draftId) {
-    return ref
-        .read(inventoryPendingConsumptionStoreProvider)
-        .pendingConsumptionById(draftId);
-  }
-
-  /// Has pending consumption.
-  bool hasPendingConsumption(String draftId) {
-    return pendingConsumptionById(draftId) != null;
-  }
-
-  /// Discard pending consumption.
-  Future<bool> discardPendingConsumption(String draftId) {
-    return _runSerializedTask<bool>(
-      operation: () async {
-        final removed = await ref
-            .read(inventoryPendingConsumptionStoreProvider)
-            .discard(draftId);
-        _publishVisibleItems();
-        return removed;
-      },
-      fallbackValue: false,
     );
   }
 
@@ -1184,29 +1157,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     return requestedAmount > maxReducible ? maxReducible : requestedAmount;
   }
 
-  PendingInventoryConsumption? _createPendingConsumption({
-    required List<InventoryItem> currentItems,
-    required String itemId,
-    required int requestedAmount,
-  }) {
-    final effectiveAmount = _resolveEffectiveConsumptionAmount(
-      currentItems: currentItems,
-      itemId: itemId,
-      requestedAmount: requestedAmount,
-    );
-    if (effectiveAmount == null) {
-      return null;
-    }
-
-    final draft = PendingInventoryConsumption(
-      id: _nextPendingConsumptionId(),
-      itemId: itemId,
-      amount: effectiveAmount,
-    );
-    ref.read(inventoryPendingConsumptionStoreProvider).stage(draft);
-    return draft;
-  }
-
   List<InventoryItem> _mergePersistedItem({
     required List<InventoryItem> currentItems,
     required InventoryItem item,
@@ -1220,10 +1170,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     nextItems[itemIndex] = item;
     return nextItems;
   }
-
-  // Quick eat stages into the same store, so a per-object counter would
-  // repeat its ids.
-  String _nextPendingConsumptionId() => _uuid.v4();
 
   InventoryActivityEvent? _buildActivityEvent({
     required InventoryActivityEventType type,

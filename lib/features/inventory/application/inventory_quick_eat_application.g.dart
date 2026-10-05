@@ -60,7 +60,7 @@ final class InventoryQuickEatApplicationProvider
 }
 
 String _$inventoryQuickEatApplicationHash() =>
-    r'5ef207bcca03a7dcdb1088989c2edf521c41ceb0';
+    r'7af3b41afd25481b9af1ed677f83a71c09f197e9';
 
 /// Provides application-level quick-eat mutations for Inventory callers.
 

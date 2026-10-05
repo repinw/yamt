@@ -8,6 +8,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
@@ -50,6 +51,7 @@ Future<bool> completeInventoryManualAddEatFlow({
     final inventoryController = container.read(
       inventoryItemsControllerProvider.notifier,
     );
+    final eating = container.read(inventoryItemEatControllerProvider.notifier);
     await inventoryReady;
     if (!context.mounted) {
       return false;
@@ -72,19 +74,16 @@ Future<bool> completeInventoryManualAddEatFlow({
       return false;
     }
     if (!context.mounted) {
-      await inventoryController.discardPendingConsumption(
-        pendingConsumption.id,
-      );
+      await eating.discard(pendingConsumption.id);
       return false;
     }
 
     final entry = await InventoryItemEatFlow.complete(
       context: context,
       container: container,
-      itemBeforeMutation: item,
+      item: item,
       request: request,
-      pendingConsumptionId: pendingConsumption.id,
-      pendingConsumption: pendingConsumption,
+      pending: pendingConsumption,
       onDirectCalorieEntrySaved: onDirectCalorieEntrySaved,
     );
     return entry != null;

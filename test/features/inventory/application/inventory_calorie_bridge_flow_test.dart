@@ -1,133 +1,14 @@
-import 'dart:async';
-
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:material_ui/material_ui.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
-    'calorie_inventory_create_context.dart';
-import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_calorie_entry_commit_store.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-
-import '../../calories/support/fake_calories_repositories.dart';
-
-class _MockFirebaseAuth extends Mock implements FirebaseAuth;
-
-class _MockUser extends Mock implements User;
-
-class _FakeInventoryItemRepository implements InventoryItemRepository {
-  new({required List<InventoryItem> initialItems})
-    : _items = List<InventoryItem>.from(initialItems);
-
-  final StreamController<List<InventoryItem>> _controller =
-      StreamController<List<InventoryItem>>.broadcast();
-  List<InventoryItem> _items;
-
-  @override
-  Future<bool> appendAll(List<InventoryItem> items) async {
-    return true;
-  }
-
-  @override
-  Future<List<InventoryItem>> readAll() async {
-    return List<InventoryItem>.from(_items);
-  }
-
-  @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
-    _items = List<InventoryItem>.from(items);
-    _controller.add(List<InventoryItem>.from(_items));
-    return true;
-  }
-
-  @override
-  Stream<List<InventoryItem>> watchAll() {
-    return Stream<List<InventoryItem>>.multi((controller) {
-      controller.add(List<InventoryItem>.from(_items));
-      final subscription = _controller.stream.listen(controller.add);
-      controller.onCancel = () {
-        unawaited(subscription.cancel());
-      };
-    });
-  }
-
-  Future<void> dispose() {
-    return _controller.close();
-  }
-}
-
-class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
-  PendingInventoryConsumption? pendingConsumption;
-  CalorieEntry? entry;
-
-  @override
-  Future<List<InventoryCalorieEntryCommitResult>?>
-  commitEntryAndInventoryItems({
-    required CalorieEntry entry,
-    required List<PendingInventoryConsumption> pendingConsumptions,
-  }) async {
-    this.entry = entry;
-    pendingConsumption = pendingConsumptions.single;
-    return [
-      const InventoryCalorieEntryCommitResult(
-        itemId: 'inventory-1',
-        quantity: 1,
-        currentAmount: 500,
-      ),
-    ];
-  }
-}
-
-class _SaveDirectEntryButton extends ConsumerWidget {
-  const new({
-    required this.profile,
-    required this.inventoryContext,
-    required this.loggedAt,
-    required this.mealType,
-    required this.onCompleted,
-  });
-
-  final CalorieProductProfile profile;
-  final CalorieInventoryCreateContext inventoryContext;
-  final DateTime loggedAt;
-  final MealType mealType;
-  final ValueChanged<bool> onCompleted;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ElevatedButton(
-      onPressed: () async {
-        final saved = await InventoryCalorieBridgeFlow.saveDirectEntry(
-          container: ProviderScope.containerOf(context, listen: false),
-          profile: profile,
-          inventoryContext: inventoryContext,
-          scannedSourceRef: null,
-          loggedAt: loggedAt,
-          mealType: mealType,
-        );
-        onCompleted(saved != null);
-      },
-      child: const Text('save'),
-    );
-  }
-}
 
 InventoryItem _amountItemWithNutrition({
   String id = 'inventory-1',
@@ -187,18 +68,6 @@ InventoryItem _itemWithoutNutrition() {
     currentAmount: 750,
     amountUnit: InventoryAmountUnit.gram,
   );
-}
-
-ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
-  ProviderContainer container,
-) {
-  return container.listen(inventoryItemsControllerProvider, (_, _) {});
-}
-
-ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
-  ProviderContainer container,
-) {
-  return container.listen(calorieEntriesControllerProvider, (_, _) {});
 }
 
 void main() {
@@ -408,98 +277,5 @@ void main() {
       ),
       throwsStateError,
     );
-  });
-
-  testWidgets('saveDirectEntry persists through commit flow and clears pending '
-      'consumption', (tester) async {
-    final item = _amountItemWithNutrition();
-    final repository = _FakeInventoryItemRepository(
-      initialItems: <InventoryItem>[item],
-    );
-    final calorieLogRepository = FakeCalorieLogRepository();
-    final commitStore = _RecordingCommitStore();
-    final auth = _MockFirebaseAuth();
-    final user = _MockUser();
-    var saved = false;
-    addTearDown(repository.dispose);
-    addTearDown(calorieLogRepository.dispose);
-
-    when(() => user.uid).thenReturn('user-1');
-    when(() => auth.currentUser).thenReturn(user);
-
-    final container = ProviderContainer(
-      overrides: [
-        inventoryItemRepositoryProvider.overrideWithValue(repository),
-        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
-        calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
-        firebaseAuthProvider.overrideWithValue(auth),
-      ],
-    );
-    addTearDown(container.dispose);
-    final inventorySubscription = _keepInventoryAlive(container);
-    final caloriesSubscription = _keepCaloriesAlive(container);
-    addTearDown(inventorySubscription.close);
-    addTearDown(caloriesSubscription.close);
-
-    await container.read(inventoryItemsControllerProvider.future);
-    final pendingConsumption = await container
-        .read(inventoryItemsControllerProvider.notifier)
-        .stagePendingConsumption(item.id, 250);
-
-    final request = InventoryItemEatRequest(
-      inventoryAmount: 250,
-      loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
-      mealType: MealType.lunch,
-    );
-    final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
-      item,
-    )!;
-    final inventoryContext = InventoryCalorieBridgeFlow.buildInventoryContext(
-      item: item,
-      pendingConsumptionId: pendingConsumption!.id,
-      request: request,
-    );
-
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          home: Scaffold(
-            body: _SaveDirectEntryButton(
-              profile: profile,
-              inventoryContext: inventoryContext,
-              loggedAt: request.loggedAt,
-              mealType: request.mealType,
-              onCompleted: (value) {
-                saved = value;
-              },
-            ),
-          ),
-        ),
-      ),
-    );
-
-    await tester.tap(find.text('save'));
-    await tester.pumpAndSettle();
-
-    expect(saved, isTrue);
-    expect(commitStore.pendingConsumption?.id, pendingConsumption.id);
-    expect(commitStore.pendingConsumption?.amount, 250);
-    expect(commitStore.entry?.name, item.name);
-    expect(commitStore.entry?.userId, 'user-1');
-    expect(commitStore.entry?.mealType, MealType.lunch);
-    expect(commitStore.entry?.consumedAmount, 250);
-    expect(commitStore.entry?.consumedUnit, ConsumedUnit.grams);
-    expect(
-      container
-          .read(inventoryItemsControllerProvider.notifier)
-          .hasPendingConsumption(pendingConsumption.id),
-      isFalse,
-    );
-    expect(
-      container.read(inventoryItemsControllerProvider).value?.single.quantity,
-      1,
-    );
-    expect(commitStore.entry?.sourceInventoryItemId, item.id);
   });
 }

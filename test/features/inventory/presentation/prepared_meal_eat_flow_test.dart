@@ -9,7 +9,6 @@ import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_eat_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -40,19 +39,6 @@ class _FakeQuickEatActions implements InventoryQuickEatActions {
       now: () => loggedDay,
       nextEntryId: () => 'entry-1',
     );
-  }
-
-  @override
-  Future<void> discardInventoryItemConsumption(String pendingConsumptionId) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<String?> stageInventoryItemConsumption({
-    required InventoryItem item,
-    required int amount,
-  }) {
-    throw UnimplementedError();
   }
 }
 

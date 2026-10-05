@@ -60,4 +60,4 @@ final class InventoryCombinedEatServiceProvider
 }
 
 String _$inventoryCombinedEatServiceHash() =>
-    r'ac893ae2c7dde2f5aea99c73ce44d59d851f249c';
+    r'493c629b4fdcab1b15e121bd2bd683b4d2c59624';

@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 
 part 'inventory_pending_consumption_store.g.dart';
@@ -32,13 +34,17 @@ final class InventoryPendingConsumptionFinalized {
   final DateTime? consumedAt;
 }
 
-/// Pending-consumption state shared by inventory-backed completion flows.
+/// Stock reserved for eats that are not saved yet.
+///
+/// The reservation lives here, outside the screens, because the calorie
+/// editor saves it after the eat page has closed.
 abstract interface class InventoryPendingConsumptionStore {
   /// Emits application-level finalizations for observers such as controllers.
   Stream<InventoryPendingConsumptionFinalized> get finalizations;
 
-  /// Stores a newly staged inventory consumption.
-  void stage(PendingInventoryConsumption pending);
+  /// Reserves [amount] of [item], capped at its stock, under a new id.
+  /// Returns null when [item] holds nothing or [amount] is below 1.
+  PendingInventoryConsumption? stage(InventoryItem item, int amount);
 
   /// Finds a staged inventory consumption.
   PendingInventoryConsumption? pendingConsumptionById(String id);
@@ -46,8 +52,9 @@ abstract interface class InventoryPendingConsumptionStore {
   /// Discards a staged inventory consumption.
   Future<bool> discard(String id);
 
-  /// Removes a staged consumption after atomic persistence completed.
-  Future<bool> finalize({
+  /// Removes the consumption [id] after its write went through and tells
+  /// [finalizations] the stock the item has now.
+  void finalize({
     required String id,
     required String itemId,
     required int quantity,
@@ -79,8 +86,19 @@ final class _InventoryPendingConsumptionRegistry
       _finalizationController.stream;
 
   @override
-  void stage(PendingInventoryConsumption pending) {
+  PendingInventoryConsumption? stage(InventoryItem item, int amount) {
+    final available = item.availableAmount;
+    final stagedAmount = amount > available ? available : amount;
+    if (stagedAmount < 1) {
+      return null;
+    }
+    final pending = PendingInventoryConsumption(
+      id: const Uuid().v4(),
+      itemId: item.id,
+      amount: stagedAmount,
+    );
     _pendingById[pending.id] = pending;
+    return pending;
   }
 
   @override
@@ -94,16 +112,14 @@ final class _InventoryPendingConsumptionRegistry
   }
 
   @override
-  Future<bool> finalize({
+  void finalize({
     required String id,
     required String itemId,
     required int quantity,
     required int currentAmount,
     DateTime? consumedAt,
-  }) async {
-    if (_pendingById.remove(id) == null) {
-      return false;
-    }
+  }) {
+    _pendingById.remove(id);
     _finalizationController.add(
       InventoryPendingConsumptionFinalized(
         id: id,
@@ -113,7 +129,6 @@ final class _InventoryPendingConsumptionRegistry
         consumedAt: consumedAt,
       ),
     );
-    return true;
   }
 
   Future<void> dispose() async {
