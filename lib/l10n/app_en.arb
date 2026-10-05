@@ -213,6 +213,7 @@
       }
     }
   },
+  "inventoryMealInPot": "In the pot",
   "inventoryRowMealMissing": "{count, plural, =1{1 ingredient missing} other{{count} ingredients missing}}",
   "@inventoryRowMealMissing": {
     "placeholders": {
@@ -3026,15 +3027,21 @@
       "count": {"type": "int"}
     }
   },
-  "cookbookOpenMealsTitle": "In the pot",
-  "cookbookOpenMealRows": "{count, plural, =1{1 row open} other{{count} rows open}} · since {time}",
+  "cookbookOpenMealsTitle": "Open",
+  "cookbookOpenMealRows": "In stock · {count, plural, =1{1 row open} other{{count} rows open}}",
   "@cookbookOpenMealRows": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "cookbookContinueAction": "Continue",
+  "cookbookInPotOpenRows": "In the pot since {time} · {count, plural, =1{1 row open} other{{count} rows open}}",
+  "@cookbookInPotOpenRows": {
     "placeholders": {
       "count": {"type": "int"},
       "time": {"type": "String"}
     }
   },
-  "cookbookContinueAction": "Continue",
   "cookbookTemplatesTitle": "Templates",
   "cookbookTemplatesCaption": "Combined from stock",
   "cookbookNewTemplateTitle": "New template",

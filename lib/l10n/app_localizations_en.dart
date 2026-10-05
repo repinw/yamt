@@ -371,6 +371,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get inventoryMealInPot => 'In the pot';
+
+  @override
   String inventoryRowMealMissing(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
@@ -5403,21 +5406,32 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get cookbookOpenMealsTitle => 'In the pot';
+  String get cookbookOpenMealsTitle => 'Open';
 
   @override
-  String cookbookOpenMealRows(int count, String time) {
+  String cookbookOpenMealRows(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
       other: '$count rows open',
       one: '1 row open',
     );
-    return '$_temp0 · since $time';
+    return 'In stock · $_temp0';
   }
 
   @override
   String get cookbookContinueAction => 'Continue';
+
+  @override
+  String cookbookInPotOpenRows(int count, String time) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rows open',
+      one: '1 row open',
+    );
+    return 'In the pot since $time · $_temp0';
+  }
 
   @override
   String get cookbookTemplatesTitle => 'Templates';

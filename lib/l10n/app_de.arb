@@ -185,6 +185,7 @@
       }
     }
   },
+  "inventoryMealInPot": "Im Topf",
   "inventoryRowMealMissing": "{count, plural, =1{1 Zutat fehlt} other{{count} Zutaten fehlen}}",
   "@inventoryRowMealMissing": {
     "placeholders": {
@@ -2530,9 +2531,10 @@
   "homeMenuDebugSection": "Debug",
   "diaryCheckInFixedDaysHint": "Vergangene Tage und Pausentage bleiben, wie sie sind.",
   "cookbookRecipeCount": "{count, plural, =1{1 Rezept} other{{count} Rezepte}}",
-  "cookbookOpenMealsTitle": "Im Topf",
-  "cookbookOpenMealRows": "{count, plural, =1{1 Zeile offen} other{{count} Zeilen offen}} · seit {time}",
+  "cookbookOpenMealsTitle": "Offen",
+  "cookbookOpenMealRows": "Im Vorrat · {count, plural, =1{1 Zeile offen} other{{count} Zeilen offen}}",
   "cookbookContinueAction": "Weiter",
+  "cookbookInPotOpenRows": "Im Topf seit {time} · {count, plural, =1{1 Zeile offen} other{{count} Zeilen offen}}",
   "cookbookTemplatesTitle": "Vorlagen",
   "cookbookTemplatesCaption": "Aus dem Vorrat kombiniert",
   "cookbookNewTemplateTitle": "Neue Vorlage",

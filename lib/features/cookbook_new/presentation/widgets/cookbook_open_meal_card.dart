@@ -10,16 +10,17 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Framed card of a meal that is still in the pot: its picture, its name,
-/// how many rows are open since when, and "Weiter".
+/// Framed card of a meal that is still in the pot or has open rows: its
+/// picture, its name, where it is and how many rows are open, and "Weiter"
+/// back to the pot or "Füllen" for a meal already in the Vorrat.
 class CookbookOpenMealCard extends ConsumerWidget {
   /// Creates the card for [meal].
   const new({required this.meal, required this.onContinue, super.key});
 
-  /// The meal with open rows.
+  /// The meal in the pot or with open rows.
   final PreparedMeal meal;
 
-  /// Opens the meal to fill its open rows.
+  /// Opens the pot, or the meal to fill its open rows.
   final VoidCallback onContinue;
 
   @override
@@ -33,6 +34,12 @@ class CookbookOpenMealCard extends ConsumerWidget {
     final since = DateUtils.isSameDay(created, ref.watch(clockProvider)())
         ? localizations.formatTimeOfDay(TimeOfDay.fromDateTime(created))
         : localizations.formatShortMonthDay(created);
+    final openRows = meal.pendingRecipeIngredients.length;
+    final status = !meal.isInPot
+        ? l10n.cookbookOpenMealRows(openRows)
+        : openRows > 0
+        ? l10n.cookbookInPotOpenRows(openRows, since)
+        : l10n.cookbookInPotSince(since);
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -66,12 +73,7 @@ class CookbookOpenMealCard extends ConsumerWidget {
                     ),
                   ),
                   Text(
-                    meal.hasPendingRecipeIngredients
-                        ? l10n.cookbookOpenMealRows(
-                            meal.pendingRecipeIngredients.length,
-                            since,
-                          )
-                        : l10n.cookbookInPotSince(since),
+                    status,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: textTheme.labelSmall?.copyWith(
@@ -84,7 +86,11 @@ class CookbookOpenMealCard extends ConsumerWidget {
             ),
             FilledButton.tonal(
               onPressed: onContinue,
-              child: Text(l10n.cookbookContinueAction),
+              child: Text(
+                meal.isInPot
+                    ? l10n.cookbookContinueAction
+                    : l10n.cookedFillRows,
+              ),
             ),
           ],
         ),

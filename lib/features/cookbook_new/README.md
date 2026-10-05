@@ -33,7 +33,7 @@ templates list and later the cooking flow.
 - A template with recipe ingredients is a recipe; one without is a Vorlage.
 - A food counts as in stock when the ingredient matcher finds a Vorrat item
   that is not used up. Ignored recipe ingredients are left out.
-- "Im Topf" shows meals that are still in the pot or have open rows, and
+- "Offen" shows meals that are still in the pot or have open rows, and
   have portions left.
 - The food weight is the pot on the scale minus the empty utensil; without
   weighing, no weight and no empty pot weight are stored.

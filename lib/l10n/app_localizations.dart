@@ -692,6 +692,12 @@ abstract class AppLocalizations {
   /// **'Combined · {left} of {total} portions'**
   String inventoryRowMealCombined(String left, int total);
 
+  /// No description provided for @inventoryMealInPot.
+  ///
+  /// In en, this message translates to:
+  /// **'In the pot'**
+  String get inventoryMealInPot;
+
   /// No description provided for @inventoryRowMealMissing.
   ///
   /// In en, this message translates to:
@@ -9156,20 +9162,26 @@ abstract class AppLocalizations {
   /// No description provided for @cookbookOpenMealsTitle.
   ///
   /// In en, this message translates to:
-  /// **'In the pot'**
+  /// **'Open'**
   String get cookbookOpenMealsTitle;
 
   /// No description provided for @cookbookOpenMealRows.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 row open} other{{count} rows open}} · since {time}'**
-  String cookbookOpenMealRows(int count, String time);
+  /// **'In stock · {count, plural, =1{1 row open} other{{count} rows open}}'**
+  String cookbookOpenMealRows(int count);
 
   /// No description provided for @cookbookContinueAction.
   ///
   /// In en, this message translates to:
   /// **'Continue'**
   String get cookbookContinueAction;
+
+  /// No description provided for @cookbookInPotOpenRows.
+  ///
+  /// In en, this message translates to:
+  /// **'In the pot since {time} · {count, plural, =1{1 row open} other{{count} rows open}}'**
+  String cookbookInPotOpenRows(int count, String time);
 
   /// No description provided for @cookbookTemplatesTitle.
   ///

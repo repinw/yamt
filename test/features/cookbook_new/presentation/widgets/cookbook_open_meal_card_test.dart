@@ -9,9 +9,17 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../support/prepared_meal_test_data.dart';
 
-Future<void> _pumpCard(WidgetTester tester, DateTime createdAt) {
-  final meal = preparedMealTestData(id: 'pot')
-      .copyWith(inPot: true, createdAt: createdAt);
+Future<void> _pumpCard(
+  WidgetTester tester,
+  DateTime createdAt, {
+  bool inPot = true,
+  List<String> openRows = const [],
+}) {
+  final meal = preparedMealTestData(id: 'pot').copyWith(
+    inPot: inPot,
+    createdAt: createdAt,
+    pendingRecipeIngredients: openRows,
+  );
   return tester.pumpWidget(
     ProviderScope(
       overrides: [
@@ -40,5 +48,30 @@ void main() {
     await _pumpCard(tester, DateTime(2026, 9, 28, 18, 30));
 
     expect(find.text('In the pot since Sep 28'), findsOneWidget);
+  });
+
+  testWidgets('a pot with open rows names both and continues', (tester) async {
+    await _pumpCard(
+      tester,
+      DateTime(2026, 10, 2, 18, 30),
+      openRows: const ['40 g Butter', '200 g Rice'],
+    );
+
+    expect(find.text('In the pot since 6:30 PM · 2 rows open'), findsOneWidget);
+    expect(find.text('Continue'), findsOneWidget);
+  });
+
+  testWidgets('a cooked meal with open rows is in stock and fills', (
+    tester,
+  ) async {
+    await _pumpCard(
+      tester,
+      DateTime(2026, 10, 2, 18, 30),
+      inPot: false,
+      openRows: const ['40 g Butter'],
+    );
+
+    expect(find.text('In stock · 1 row open'), findsOneWidget);
+    expect(find.text('Fill'), findsOneWidget);
   });
 }

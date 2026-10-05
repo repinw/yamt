@@ -443,9 +443,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 
 ## Cookbook
 
-- The Kochbuch tab shows three sections: "Im Topf" lists Vorrat meals that
-  still have open rows, newest first, with the open row count and the start
-  time; "Vorlagen" is a horizontal strip of templates combined from Vorrat
+- The Kochbuch tab shows three sections: "Offen" lists Vorrat meals that
+  are still in the pot or have open rows, newest first; "Vorlagen" is a horizontal strip of templates combined from Vorrat
   foods, led by a "Neue Vorlage" tile; "Rezepte" is a two-column grid of
   recipe templates.
 - A template with recipe ingredients counts as a recipe; one without is a
@@ -476,14 +475,18 @@ and feature description docs. This is product-facing; architecture rules stay in
   kcal per portion without weighing. Weighing is optional; a weight that is
   not above the empty pot shows "Nicht schwerer als der leere Topf" and
   blocks saving. "In Vorrat" stores portions, the utensil's empty weight,
-  and the food weight, and the meal leaves "Im Topf". Closing the page keeps
+  and the food weight, and the meal leaves the pot. Closing the page keeps
   it in the pot. A meal that does not show up within a few seconds counts as
   gone, and the page says it could not be loaded.
-- "Weiter" on a pot meal opens its "Gekocht" page while it is still in the
-  pot, otherwise the meal's detail page, where its open rows are filled.
-  The card says "Im Topf seit …" when no row is open, with the day instead
-  of the time for a pot from an earlier day. "Neue Vorlage" opens the
-  Vorrat tab for now.
+- A meal in the pot shows "Im Topf" in the Vorrat list. Its detail page
+  says "Im Topf" and keeps the meal actions, but blocks "Eintragen", and the
+  diary does not offer the meal, because its portions are set at "Gekocht".
+  Saving a diary entry for a meal in the pot fails as well.
+- A card under "Offen" says "Im Topf seit …" (with "· N Zeilen offen" when
+  rows are open) and "Weiter" opens the "Gekocht" page; the time becomes the
+  day for a pot from an earlier day. A cooked meal with open rows says
+  "Im Vorrat · N Zeilen offen" and "Füllen" opens its detail page, where the
+  rows are filled. "Neue Vorlage" opens the Vorrat tab for now.
   A recipe or Vorlage opens its template detail.
 - Editing and deleting templates from the Kochbuch is not available until the
   recipe page exists.

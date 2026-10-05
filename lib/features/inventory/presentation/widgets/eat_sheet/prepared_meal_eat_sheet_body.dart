@@ -89,6 +89,11 @@ class _PreparedMealEatSheetBodyState
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(_provider);
     final meal = widget.meal;
+    // Only the detail page follows the Vorrat; the diary has its own list.
+    final live = widget.actions == null ? meal : _liveMeal();
+    // The portions and nutrition come from the opened copy, so a meal that
+    // was in the pot on either side waits for "Gekocht" and a reopen.
+    final isInPot = meal.isInPot || live.isInPot;
     final nutrition = state.nutrition;
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
     final imageBytes = imageRef == null
@@ -106,15 +111,20 @@ class _PreparedMealEatSheetBodyState
       kcal: nutrition?.eaten.kcal,
       confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),
       // On the detail page a meal with missing ingredients can be logged
-      // only when they are filled or ignored, as on the old meal card.
-      onConfirm: widget.actions != null && _hasMissingIngredients()
+      // only when they are filled or ignored, as on the old meal card. A
+      // meal in the pot gets its portions at "Gekocht" first.
+      onConfirm:
+          isInPot ||
+              (widget.actions != null && live.hasPendingRecipeIngredients)
           ? null
           : _submit,
       cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
       children: [
         EatPageHeader(
           title: meal.name,
-          caption: l10n.eatPageInStock(state.stockLabel(l10n)),
+          caption: isInPot
+              ? l10n.inventoryMealInPot
+              : l10n.eatPageInStock(state.stockLabel(l10n)),
           imageUrl: meal.imageUrl,
           imageBytes: imageBytes,
           collageImageUrls: [
@@ -174,15 +184,16 @@ class _PreparedMealEatSheetBodyState
     );
   }
 
-  /// Whether the live meal still misses recipe ingredients.
-  bool _hasMissingIngredients() {
+  /// The meal as the Vorrat holds it now, so filled rows and "Gekocht" show
+  /// at once.
+  PreparedMeal _liveMeal() {
     final live = ref.watch(
       preparedMealsControllerProvider.select(
         (meals) =>
             meals.value?.firstWhereOrNull((meal) => meal.id == widget.meal.id),
       ),
     );
-    return (live ?? widget.meal).hasPendingRecipeIngredients;
+    return live ?? widget.meal;
   }
 
   void _syncText(PreparedMealEatSheetState state) {
