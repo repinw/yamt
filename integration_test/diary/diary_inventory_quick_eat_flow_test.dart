@@ -74,6 +74,7 @@ class _DiaryInventoryQuickEatHarness {
     required this.logRepository,
     required this.inventoryItemsByOwnerId,
     required this.preparedMealsByOwnerId,
+    required this.planRepository,
   });
 
   final Widget app;
@@ -81,6 +82,7 @@ class _DiaryInventoryQuickEatHarness {
   final FakeCalorieLogRepository logRepository;
   final Map<String, List<InventoryItem>> inventoryItemsByOwnerId;
   final Map<String, List<PreparedMeal>> preparedMealsByOwnerId;
+  final FakePlannedEntryRepository planRepository;
 
   List<InventoryItem> get householdInventoryItems {
     return inventoryItemsByOwnerId[_householdId] ?? const <InventoryItem>[];
@@ -106,8 +108,10 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   DateTime? today,
   DateTime? goalStart,
   List<CalorieEntry> calorieEntries = const <CalorieEntry>[],
+  List<CalorieEntry> plans = const <CalorieEntry>[],
 }) {
   final profileController = StreamController<UserProfile?>();
+  final planRepository = FakePlannedEntryRepository(plans: List.of(plans));
   final user = _MockUser();
   when(() => user.uid).thenReturn(_userId);
   final auth = _MockFirebaseAuth();
@@ -161,9 +165,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       firebaseAuthProvider.overrideWithValue(auth),
       userProfileProvider.overrideWith((ref) => profileController.stream),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
-      plannedEntryRepositoryProvider.overrideWithValue(
-        FakePlannedEntryRepository(),
-      ),
+      plannedEntryRepositoryProvider.overrideWithValue(planRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       calorieWeeklyCheckInDataProvider.overrideWith(
         (ref) => _emptyWeeklyCheckInData(),
@@ -209,6 +211,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
     logRepository: logRepository,
     inventoryItemsByOwnerId: inventoryItemsByOwnerId,
     preparedMealsByOwnerId: preparedMealsByOwnerId,
+    planRepository: planRepository,
     app: UncontrolledProviderScope(
       container: container,
       child: MaterialApp.router(
@@ -571,6 +574,50 @@ void main() {
     expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '900');
     // The goal without a carryover from today, which is not finished yet.
     expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
+  });
+
+  testWidgets('a plan on tomorrow counts in its head and a tap deletes it', (
+    tester,
+  ) async {
+    final planRow = find.byKey(
+      DiaryMealsSectionKeys.plannedEntryTile('plan-dinner'),
+    );
+    final harness = _buildHarness(
+      today: _selectedDay.subtract(const Duration(days: 1)),
+      plans: [
+        CalorieEntry.create(
+          id: 'plan-dinner',
+          userId: _userId,
+          name: 'Nudeln',
+          mealType: MealType.dinner,
+          consumedAmount: 100,
+          consumedUnit: ConsumedUnit.grams,
+          per100Kcal: 600,
+          per100Protein: 20,
+          per100Carbs: 90,
+          per100Fat: 10,
+          loggedAt: _selectedDay.add(const Duration(hours: 19)),
+          createdAt: _selectedDay,
+          updatedAt: _selectedDay,
+        ),
+      ],
+    );
+    await tester.pumpWidget(harness.app);
+    await _pumpUntilFound(tester, planRow, description: 'plan row of tomorrow');
+
+    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'GEPLANT');
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '600');
+
+    await tester.ensureVisible(planRow);
+    await tester.tap(planRow);
+    await _pumpUntil(
+      tester,
+      () => textOf(DiaryBalanceCardKeys.kcalHeadValue) == '0',
+      description: 'head without the deleted plan',
+    );
+    expect(planRow, findsNothing);
+    expect(harness.planRepository.plans, isEmpty);
   });
 
   testWidgets('tomorrow plans with the carryover once the day before is '
