@@ -48,6 +48,11 @@ class HomeMenuPanel extends ConsumerWidget {
   /// Stable key of the settings entry.
   static const settingsTileKey = ValueKey<String>('home-menu-settings-tile');
 
+  /// Stable key of the appearance entry.
+  static const appearanceTileKey = ValueKey<String>(
+    'home-menu-appearance-tile',
+  );
+
   /// Stable key of the about entry.
   static const aboutTileKey = ValueKey<String>('home-menu-about-tile');
 
@@ -151,6 +156,12 @@ class HomeMenuPanel extends ConsumerWidget {
                           icon: Icons.tune_rounded,
                           label: l10n.homeSettings,
                           onTap: () => open(AppRoutes.homeSettings),
+                        ),
+                        HomeMenuEntry(
+                          key: appearanceTileKey,
+                          icon: Icons.palette_outlined,
+                          label: l10n.settingsAppearanceSectionTitle,
+                          onTap: () => open(AppRoutes.homeSettingsAppearance),
                         ),
                         HomeMenuEntry(
                           key: aboutTileKey,

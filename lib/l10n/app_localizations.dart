@@ -5292,6 +5292,30 @@ abstract class AppLocalizations {
   /// **'German'**
   String get settingsLanguageGerman;
 
+  /// No description provided for @settingsThemeModeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get settingsThemeModeTitle;
+
+  /// No description provided for @settingsThemeModeSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get settingsThemeModeSystem;
+
+  /// No description provided for @settingsThemeModeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get settingsThemeModeLight;
+
+  /// No description provided for @settingsThemeModeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get settingsThemeModeDark;
+
   /// No description provided for @settingsAccentTitle.
   ///
   /// In en, this message translates to:

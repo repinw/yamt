@@ -624,6 +624,31 @@ void main() {
     expect(find.text('Settings route'), findsOneWidget);
   });
 
+  testWidgets('diary menu opens settings at the appearance section', (
+    tester,
+  ) async {
+    final repository = FakeCalorieSettingsRepository();
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      _buildHarness(
+        settingsRepository: repository,
+        branchBody: _diaryTopChromeBranchBody(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(HomeShellMenuButton.buttonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(HomeMenuPanel.appearanceTileKey));
+    await tester.pumpAndSettle();
+
+    expect(
+      GoRouterState.of(tester.element(find.text('Settings route'))).uri,
+      Uri.parse(AppRoutes.homeSettingsAppearance),
+    );
+  });
+
   testWidgets('diary menu lists the profile first and opens it', (
     tester,
   ) async {
@@ -679,7 +704,14 @@ void main() {
     expect(debugPreview, findsNothing);
 
     final debugSection = find.byKey(HomeMenuPanel.debugSectionKey);
-    await tester.ensureVisible(debugSection);
+    await tester.scrollUntilVisible(
+      debugSection,
+      100,
+      scrollable: find.descendant(
+        of: find.byType(HomeMenuPanel),
+        matching: find.byType(Scrollable),
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(debugSection);
     await tester.pumpAndSettle();

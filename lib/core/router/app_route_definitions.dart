@@ -108,7 +108,11 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     ),
     GoRoute(
       path: AppRoutes.homeSettings,
-      builder: (context, state) => const SettingsPage(),
+      builder: (context, state) => SettingsPage(
+        revealAppearance:
+            state.uri.queryParameters[AppRoutes.homeSettingsSectionParam] ==
+            AppRoutes.homeSettingsSectionAppearance,
+      ),
     ),
     GoRoute(
       path: AppRoutes.homeProfile,

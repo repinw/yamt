@@ -50,6 +50,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_route_args.dart';
+import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
 import '../../helpers/auth_user_data_key_session.dart';
@@ -375,6 +376,40 @@ void main() {
     expect(
       container.read(appRouterProvider).state.uri.path,
       AppRoutes.calorieGoalSetup,
+    );
+  });
+
+  testWidgets('the appearance path opens settings at that section', (
+    tester,
+  ) async {
+    final authController = StreamController<User?>();
+    addTearDown(() {
+      unawaited(authController.close());
+    });
+    final container = _createContainerWithAuth(
+      authController.stream,
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    authController.add(_authenticatedUser());
+    await tester.pump();
+    await _pumpRouterTransition(tester);
+    container.read(appRouterProvider).go(AppRoutes.homeSettings);
+    await _pumpRouterTransition(tester);
+    expect(
+      tester.widget<SettingsPage>(find.byType(SettingsPage)).revealAppearance,
+      isFalse,
+    );
+
+    container.read(appRouterProvider).go(AppRoutes.homeSettingsAppearance);
+    await _pumpRouterTransition(tester);
+
+    expect(
+      tester.widget<SettingsPage>(find.byType(SettingsPage)).revealAppearance,
+      isTrue,
     );
   });
 

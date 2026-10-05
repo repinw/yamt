@@ -35,6 +35,9 @@ abstract final class SettingsPageKeys {
   /// Language row.
   static const languageTile = ValueKey<String>('settings-language-tile');
 
+  /// Theme row (System, Light, Dark).
+  static const themeModeTile = ValueKey<String>('settings-theme-mode-tile');
+
   /// Accent color row.
   static const accentTile = ValueKey<String>('settings-accent-tile');
 

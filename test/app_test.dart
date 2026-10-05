@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/app.dart';
+import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -11,9 +12,12 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_items
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
 import 'features/calories/support/fake_calories_repositories.dart';
+import 'helpers/memory_app_preferences.dart';
 
 void main() {
-  testWidgets('YAMT builds router app from provider', (tester) async {
+  testWidgets('YAMT builds router app from provider in the saved theme', (
+    tester,
+  ) async {
     final router = GoRouter(
       initialLocation: '/',
       routes: [
@@ -31,6 +35,9 @@ void main() {
       ProviderScope(
         overrides: [
           appRouterProvider.overrideWithValue(router),
+          appPreferencesProvider.overrideWithValue(
+            MemoryAppPreferences(initialStrings: {'app_theme_mode_v1': 'dark'}),
+          ),
           calorieSettingsRepositoryProvider.overrideWithValue(
             settingsRepository,
           ),
@@ -48,6 +55,10 @@ void main() {
     await tester.pump();
 
     expect(find.text('root'), findsOneWidget);
+    expect(
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
+      ThemeMode.dark,
+    );
   });
 }
 
