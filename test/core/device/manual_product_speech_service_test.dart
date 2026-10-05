@@ -164,4 +164,43 @@ void main() {
     expect(startFailure, isNull);
     expect(failures, <VoiceSearchFailure>[VoiceSearchFailure.permissionDenied]);
   });
+
+  for (final message in <String>['error_speech_timeout', 'error_no_match']) {
+    test('$message stops listening without a failure', () async {
+      final speechToText = _FakeSpeechToText();
+      final service = SpeechToTextVoiceSearchService(
+        speechToText: speechToText,
+      );
+      final failures = <VoiceSearchFailure>[];
+      final listeningStates = <bool>[];
+
+      await service.startListening(
+        onResult: (_) {},
+        onListeningStateChanged: listeningStates.add,
+        onError: failures.add,
+      );
+
+      speechToText.emitError(message);
+
+      expect(failures, isEmpty);
+      expect(listeningStates.last, isFalse);
+      expect(service.isListening, isFalse);
+    });
+  }
+
+  test('maps other permanent recognition errors to error', () async {
+    final speechToText = _FakeSpeechToText();
+    final service = SpeechToTextVoiceSearchService(speechToText: speechToText);
+    final failures = <VoiceSearchFailure>[];
+
+    await service.startListening(
+      onResult: (_) {},
+      onListeningStateChanged: (_) {},
+      onError: failures.add,
+    );
+
+    speechToText.emitError('error_audio');
+
+    expect(failures, <VoiceSearchFailure>[VoiceSearchFailure.error]);
+  });
 }
