@@ -99,7 +99,11 @@ InventoryEntryTexts _meal(PreparedMeal meal, AppLocalizations l10n) {
     meal.remainingPortions.toDouble(),
   );
   final missing = meal.pendingRecipeIngredients.length;
-  final info = missing > 0
+  // Until "Gekocht", the pot matters more than its open rows.
+  final isMissingShown = !meal.isInPot && missing > 0;
+  final info = meal.isInPot
+      ? l10n.inventoryMealInPot
+      : isMissingShown
       ? l10n.inventoryRowMealMissing(missing)
       : meal.recipeIngredients.isNotEmpty
       ? l10n.inventoryRowMealFromRecipe(portionsLeft, meal.totalPortions)
@@ -116,7 +120,7 @@ InventoryEntryTexts _meal(PreparedMeal meal, AppLocalizations l10n) {
         l10n.inventoryEatSheetAmountWithUnit('$netWeight', gram),
       ),
       info: info,
-      infoIsWarning: missing > 0,
+      infoIsWarning: isMissingShown,
     );
   }
   final portions = l10n.eatPagePortionsUnit;
@@ -127,6 +131,6 @@ InventoryEntryTexts _meal(PreparedMeal meal, AppLocalizations l10n) {
       l10n.inventoryEatSheetAmountWithUnit('${meal.totalPortions}', portions),
     ),
     info: info,
-    infoIsWarning: missing > 0,
+    infoIsWarning: isMissingShown,
   );
 }

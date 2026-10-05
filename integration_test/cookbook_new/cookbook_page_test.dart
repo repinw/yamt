@@ -124,9 +124,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('1 RECIPE'), findsOneWidget);
-    expect(find.text('IN THE POT'), findsOneWidget);
+    expect(find.text('OPEN'), findsOneWidget);
     expect(find.text('Chicken with rice'), findsOneWidget);
-    expect(find.textContaining('2 rows open'), findsOneWidget);
+    expect(find.text('In stock · 2 rows open'), findsOneWidget);
     expect(find.text('Rice bowl'), findsOneWidget);
     expect(find.text('One-pan pasta'), findsOneWidget);
     // The pasta recipe lacks tomato sauce; the rice bowl lacks rice.

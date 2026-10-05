@@ -13,8 +13,8 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Sections of the Kochbuch: "Im Topf" when meals have open rows, the
-/// Vorlagen strip, and the recipe grid.
+/// Sections of the Kochbuch: "Offen" when meals are in the pot or have open
+/// rows, the Vorlagen strip, and the recipe grid.
 class CookbookSections extends StatelessWidget {
   /// Creates the sections of [overview].
   const new({
@@ -28,7 +28,7 @@ class CookbookSections extends StatelessWidget {
   /// What the Kochbuch shows.
   final CookbookOverview overview;
 
-  /// Opens a meal that still has open rows.
+  /// Opens a meal that is in the pot or still has open rows.
   final ValueChanged<PreparedMeal> onContinueMeal;
 
   /// Starts combining a new Vorlage.

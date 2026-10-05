@@ -36,7 +36,8 @@ DiaryQuickEatInventoryData _filterDiaryQuickEatInventory(
         .where(canDiaryQuickEatInventoryItem)
         .toList(growable: false),
     meals: inventory.meals
-        .where((meal) => !meal.isDepleted)
+        // A meal in the pot gets its portions at "Gekocht" first.
+        .where((meal) => !meal.isDepleted && !meal.isInPot)
         .toList(growable: false),
   );
 }

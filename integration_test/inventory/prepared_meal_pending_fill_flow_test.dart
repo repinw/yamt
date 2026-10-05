@@ -12,6 +12,8 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_fill_sheet.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
@@ -38,9 +40,13 @@ class _StaticInventoryItemsController extends InventoryItemsController {
 
 /// Records the fill and ignore calls instead of saving them.
 class _RecordingPreparedMealsController extends PreparedMealsController {
-  new(this.calls);
+  new(this.calls, {required this.inPot});
 
   final List<String> calls;
+
+  /// Whether the meal is still in the pot, without open rows; otherwise it
+  /// is cooked with one open row.
+  final bool inPot;
 
   @override
   FutureOr<List<PreparedMeal>> build() => [
@@ -57,7 +63,8 @@ class _RecordingPreparedMealsController extends PreparedMealsController {
       updatedAt: DateTime(2026, 10),
       components: const <PreparedMealComponent>[],
       recipeIngredients: const [_row],
-      pendingRecipeIngredients: const [_row],
+      pendingRecipeIngredients: inPot ? const <String>[] : const [_row],
+      inPot: inPot ? true : null,
     ),
   ];
 
@@ -86,14 +93,14 @@ class _StaticShoppingListController extends ShoppingListController {
   Future<List<ShoppingListItem>> build() async => const <ShoppingListItem>[];
 }
 
-Widget _harness(List<String> calls) {
+Widget _harness(List<String> calls, {bool inPot = false}) {
   final container = ProviderContainer(
     overrides: [
       inventoryItemsControllerProvider.overrideWith(
         _StaticInventoryItemsController.new,
       ),
       preparedMealsControllerProvider.overrideWith(
-        () => _RecordingPreparedMealsController(calls),
+        () => _RecordingPreparedMealsController(calls, inPot: inPot),
       ),
       shoppingListControllerProvider.overrideWith(
         _StaticShoppingListController.new,
@@ -156,6 +163,32 @@ void main() {
     await _settle(tester);
 
     expect(calls, ['ignore pan $_row']);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a meal in the pot says so and waits for "Gekocht"', (
+    tester,
+  ) async {
+    await tester.pumpWidget(_harness(<String>[], inPot: true));
+    await _settle(tester);
+
+    expect(find.text('Im Topf'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('inventory_entry_row_pan')));
+    await _settle(tester);
+
+    // The detail page keeps its actions, but "Eintragen" stays off.
+    expect(
+      find.descendant(
+        of: find.byType(EatPageHeader),
+        matching: find.text('Im Topf'),
+      ),
+      findsOneWidget,
+    );
+    final confirm = tester.widget<FilledButton>(
+      find.byKey(const Key('prepared_meal_eat_confirm_button')),
+    );
+    expect(confirm.onPressed, isNull);
     expect(tester.takeException(), isNull);
   });
 }

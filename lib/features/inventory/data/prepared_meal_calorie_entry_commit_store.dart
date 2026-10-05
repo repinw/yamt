@@ -113,6 +113,13 @@ class FirestorePreparedMealCalorieEntryCommitStore
         );
         return false;
       }
+      if (currentMeal.isInPot) {
+        log(
+          'Prepared meal $preparedMealId is still in the pot.',
+          name: _commitStoreLogName,
+        );
+        return false;
+      }
       if (currentMeal.remainingPortions < consumedPortions) {
         log(
           'Prepared meal $preparedMealId has only '

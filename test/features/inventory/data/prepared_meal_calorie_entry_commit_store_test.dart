@@ -312,6 +312,29 @@ void main() {
     expect(savedMeal['remaining_portions'], 4);
   });
 
+  test(
+    'commitEntryAndPreparedMeal returns false for meals in the pot',
+    () async {
+      final firestore = FakeFirebaseFirestore();
+      await _putMeal(firestore, _meal().copyWith(inPot: true).toJson());
+
+      final store = FirestorePreparedMealCalorieEntryCommitStore(
+        firestore: firestore,
+        dataCipher: _signedIn('user-1'),
+        householdCipher: _household('household-1'),
+      );
+
+      final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
+
+      expect(saved, isFalse);
+      final savedEntry = await _entryCollection(firestore: firestore)
+          .doc('entry-1')
+          .get();
+      expect(savedEntry.exists, isFalse);
+      expect((await _openMeal(firestore))['remaining_portions'], 4);
+    },
+  );
+
   test('commitEntryAndPreparedMeal writes the meal to the household and '
       'the entry to the user', () async {
     final firestore = FakeFirebaseFirestore();

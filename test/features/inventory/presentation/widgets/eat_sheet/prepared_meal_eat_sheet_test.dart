@@ -285,4 +285,16 @@ void main() {
 
     expect(find.text('66.7 g'), findsOneWidget);
   });
+
+  testWidgets('a meal in the pot cannot be logged before "Gekocht"', (
+    tester,
+  ) async {
+    await _openEat(tester, _meal().copyWith(inPot: true));
+
+    expect(find.text('In the pot'), findsOneWidget);
+    expect(
+      tester.widget<FilledButton>(find.byKey(_confirmKey)).onPressed,
+      isNull,
+    );
+  });
 }
