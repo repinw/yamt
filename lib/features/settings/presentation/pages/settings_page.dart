@@ -124,17 +124,12 @@ class _SettingsIntro extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.settingsManagePreferencesSubtitle,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-            color: colors.onSurfaceVariant,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+    return Text(
+      l10n.settingsManagePreferencesSubtitle,
+      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+        color: colors.onSurfaceVariant,
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 }
