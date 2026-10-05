@@ -18,6 +18,7 @@ import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
+import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
@@ -258,6 +259,32 @@ class _RecordingPreparedMealRepository implements PreparedMealRepository {
   }
 }
 
+/// Fakes the repositories the eat service writes to, signed in.
+List<Override> _eatServiceOverrides() {
+  final auth = _MockFirebaseAuth();
+  final user = _MockUser();
+  when(() => user.uid).thenReturn('user-1');
+  when(() => auth.currentUser).thenReturn(user);
+  final calorieLog = FakeCalorieLogRepository();
+  addTearDown(calorieLog.dispose);
+  return [
+    firebaseAuthProvider.overrideWithValue(auth),
+    calorieLogRepositoryProvider.overrideWithValue(calorieLog),
+    inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+      _RecordingCommitStore(),
+    ),
+  ];
+}
+
+/// The real store a fake controller staged into, and what it reserved.
+class _StageRecord {
+  InventoryPendingConsumptionStore? store;
+  PendingInventoryConsumption? pending;
+
+  /// Whether the reservation is gone from the store again.
+  bool get isReleased => store!.pendingConsumptionById(pending!.id) == null;
+}
+
 class _DelayedStageInventoryItemsController extends InventoryItemsController {
   new({
     required this._initialItems,
@@ -268,29 +295,24 @@ class _DelayedStageInventoryItemsController extends InventoryItemsController {
   final List<InventoryItem> _initialItems;
   final Future<void> Function() _waitForStage;
   final VoidCallback? onStageStarted;
-  final List<String> discardedPendingIds = <String>[];
 
   @override
   FutureOr<List<InventoryItem>> build() => _initialItems;
+
+  /// The real store and what this controller reserved in it.
+  final record = _StageRecord();
 
   @override
   Future<PendingInventoryConsumption?> stagePendingConsumption(
     String itemId,
     int amount,
   ) async {
+    final store = ref.read(inventoryPendingConsumptionStoreProvider);
+    record.store = store;
     onStageStarted?.call();
     await _waitForStage();
-    return PendingInventoryConsumption(
-      id: 'pending-delayed',
-      itemId: itemId,
-      amount: amount,
-    );
-  }
-
-  @override
-  Future<bool> discardPendingConsumption(String draftId) async {
-    discardedPendingIds.add(draftId);
-    return true;
+    final item = _initialItems.firstWhere((item) => item.id == itemId);
+    return record.pending = store.stage(item, amount);
   }
 }
 
@@ -298,7 +320,9 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
   new({required this._initialItems});
 
   final List<InventoryItem> _initialItems;
-  final List<String> discardedPendingIds = <String>[];
+
+  /// The real store and what this controller reserved in it.
+  final record = _StageRecord();
 
   @override
   FutureOr<List<InventoryItem>> build() => _initialItems;
@@ -308,17 +332,10 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
     String itemId,
     int amount,
   ) async {
-    return PendingInventoryConsumption(
-      id: 'pending-recorded',
-      itemId: itemId,
-      amount: amount,
-    );
-  }
-
-  @override
-  Future<bool> discardPendingConsumption(String draftId) async {
-    discardedPendingIds.add(draftId);
-    return true;
+    final store = ref.read(inventoryPendingConsumptionStoreProvider);
+    record.store = store;
+    final item = _initialItems.firstWhere((item) => item.id == itemId);
+    return record.pending = store.stage(item, amount);
   }
 }
 
@@ -1540,6 +1557,7 @@ void main() {
         tester,
         repository,
         overrides: <Override>[
+          ..._eatServiceOverrides(),
           inventoryItemsControllerProvider.overrideWith(() => controller),
         ],
       );
@@ -1553,7 +1571,7 @@ void main() {
 
       await _tapAmountDialogConfirm(tester);
 
-      expect(controller.discardedPendingIds, <String>['pending-recorded']);
+      expect(controller.record.isReleased, isTrue);
       expect(find.text('Action failed. Please try again.'), findsOneWidget);
     },
   );
@@ -1611,7 +1629,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    expect(controller.discardedPendingIds, <String>['pending-delayed']);
+    expect(controller.record.isReleased, isTrue);
   });
 
   testWidgets('item hub puts an available item on the shopping list', (

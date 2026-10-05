@@ -4,8 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/inventory/application/inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_quick_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
@@ -54,7 +54,7 @@ abstract final class PreparedMealEatFlow {
         }
         scope.messenger.showAppSnackBar(
           scope.l10n.inventoryManualAddEatSucceeded,
-          onUndo: () => InventoryCalorieBridgeFlow.undoEat(
+          onUndo: () => InventoryItemEatFlow.undoEat(
             container: scope.container,
             entry: entry,
           ),

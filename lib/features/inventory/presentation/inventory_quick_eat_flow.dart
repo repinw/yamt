@@ -16,7 +16,7 @@ class InventoryQuickEatFlowScope {
   /// Container of the page that opened the sheet.
   final ProviderContainer container;
 
-  /// Actions that stage and log the food.
+  /// Actions that log prepared meals.
   final InventoryQuickEatActions actions;
 
   /// Messenger for the result snack bars.

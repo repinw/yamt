@@ -27,55 +27,22 @@ import 'package:yamt/features/calories/presentation/models/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_editor_content.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User;
 
-class _RecordingInventorySaveFlow
-    implements InventoryBackedCalorieEntrySaveFlow {
+class _RecordingInventorySave {
   CalorieEntry? entry;
   String? pendingConsumptionId;
 
-  @override
   Future<bool> saveEntry({
     required CalorieEntry entry,
     required String pendingConsumptionId,
-    PendingInventoryConsumption? pendingConsumption,
-    InventoryItemsController? inventoryController,
   }) async {
     this.entry = entry;
     this.pendingConsumptionId = pendingConsumptionId;
-    return true;
-  }
-}
-
-class _DiscardRecordingInventoryItemsController
-    extends InventoryItemsController {
-  var _hasPendingConsumption = true;
-
-  @override
-  FutureOr<List<InventoryItem>> build() {
-    return <InventoryItem>[_inventoryItem()];
-  }
-
-  @override
-  bool hasPendingConsumption(String draftId) {
-    return _hasPendingConsumption && draftId == 'pending-1';
-  }
-
-  @override
-  Future<bool> discardPendingConsumption(String draftId) async {
-    if (!hasPendingConsumption(draftId)) {
-      return false;
-    }
-    _hasPendingConsumption = false;
     return true;
   }
 }
@@ -116,17 +83,6 @@ class _AutoOpenRoutePageState extends State<_AutoOpenRoutePage> {
   }
 }
 
-InventoryItem _inventoryItem({int quantity = 3}) {
-  return InventoryItem.create(
-    id: 'inventory-1',
-    name: 'Milk',
-    entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
-    storeName: 'Store',
-    quantity: quantity,
-    initialQuantity: 3,
-  );
-}
-
 Widget _buildHarness({
   required FakeCalorieLogRepository logRepository,
   required FakeCalorieSettingsRepository settingsRepository,
@@ -135,6 +91,7 @@ Widget _buildHarness({
   ProviderContainer? container,
   List<Override> additionalOverrides = const <Override>[],
   Override? pendingConsumptionDiscarderOverride,
+  CalorieInventoryEntrySaveHandler? inventorySaveHandler,
   bool openCreateFromRoot = false,
 }) {
   final router = GoRouter(
@@ -203,17 +160,15 @@ Widget _buildHarness({
       userProfileProvider.overrideWith((ref) => Stream.value(null)),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      calorieInventoryEntrySaveHandlerProvider.overrideWith((ref) {
-        return ref.read(inventoryBackedCalorieEntrySaveFlowProvider).saveEntry;
-      }),
+      calorieInventoryEntrySaveHandlerProvider.overrideWith(
+        (ref) =>
+            inventorySaveHandler ??
+            ({required entry, required pendingConsumptionId}) async => false,
+      ),
       pendingConsumptionDiscarderOverride ??
-          calorieInventoryPendingConsumptionDiscarderProvider.overrideWith((
-            ref,
-          ) {
-            return ref
-                .read(inventoryItemsControllerProvider.notifier)
-                .discardPendingConsumption;
-          }),
+          calorieInventoryPendingConsumptionDiscarderProvider.overrideWith(
+            (ref) => (pendingConsumptionId) async {},
+          ),
       ...additionalOverrides,
     ],
   );
@@ -270,9 +225,6 @@ void main() {
       overrides: [
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-        inventoryItemsControllerProvider.overrideWith(
-          _DiscardRecordingInventoryItemsController.new,
-        ),
       ],
     );
     addTearDown(container.dispose);
@@ -575,12 +527,10 @@ void main() {
   ) async {
     final logRepository = FakeCalorieLogRepository();
     final settingsRepository = FakeCalorieSettingsRepository();
-    final inventoryController = _DiscardRecordingInventoryItemsController();
     addTearDown(logRepository.dispose);
     addTearDown(settingsRepository.dispose);
 
-    String? discardedPendingConsumptionId;
-    Future<bool>? discardFuture;
+    final discardedPendingConsumptionIds = <String>[];
     final user = _MockUser();
     when(() => user.uid).thenReturn('user-1');
 
@@ -593,19 +543,11 @@ void main() {
         userProfileProvider.overrideWith((ref) => Stream.value(null)),
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-        inventoryItemsControllerProvider.overrideWith(
-          () => inventoryController,
+        calorieInventoryPendingConsumptionDiscarderProvider.overrideWith(
+          (ref) => (pendingConsumptionId) async {
+            discardedPendingConsumptionIds.add(pendingConsumptionId);
+          },
         ),
-        calorieInventoryPendingConsumptionDiscarderProvider.overrideWith((ref) {
-          final discardPendingConsumption = ref
-              .read(inventoryItemsControllerProvider.notifier)
-              .discardPendingConsumption;
-          return (pendingConsumptionId) {
-            discardedPendingConsumptionId = pendingConsumptionId;
-            discardFuture = discardPendingConsumption(pendingConsumptionId);
-            return discardFuture!;
-          };
-        }),
       ],
     );
     addTearDown(container.dispose);
@@ -643,7 +585,7 @@ void main() {
     });
     await tester.pump();
 
-    expect(inventoryController.hasPendingConsumption('pending-1'), isTrue);
+    expect(discardedPendingConsumptionIds, isEmpty);
 
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump();
@@ -653,13 +595,7 @@ void main() {
     });
     await tester.pump();
 
-    expect(discardedPendingConsumptionId, 'pending-1');
-    await tester.runAsync(() async {
-      await discardFuture;
-    });
-    await tester.pump();
-
-    expect(inventoryController.hasPendingConsumption('pending-1'), isFalse);
+    expect(discardedPendingConsumptionIds, ['pending-1']);
   });
 
   testWidgets('pending inventory discard no-ops when handler is null', (
@@ -754,7 +690,7 @@ void main() {
     (tester) async {
       final logRepository = FakeCalorieLogRepository();
       final settingsRepository = FakeCalorieSettingsRepository();
-      final saveFlow = _RecordingInventorySaveFlow();
+      final saveFlow = _RecordingInventorySave();
       addTearDown(logRepository.dispose);
       addTearDown(settingsRepository.dispose);
 
@@ -777,11 +713,7 @@ void main() {
               consumedUnit: ConsumedUnit.grams,
             ),
           ),
-          additionalOverrides: [
-            inventoryBackedCalorieEntrySaveFlowProvider.overrideWithValue(
-              saveFlow,
-            ),
-          ],
+          inventorySaveHandler: saveFlow.saveEntry,
         ),
       );
       await tester.pumpAndSettle();
@@ -825,7 +757,7 @@ void main() {
           return const <CalorieEntry>[];
         };
       final settingsRepository = FakeCalorieSettingsRepository();
-      final saveFlow = _RecordingInventorySaveFlow();
+      final saveFlow = _RecordingInventorySave();
       addTearDown(logRepository.dispose);
       addTearDown(settingsRepository.dispose);
 
@@ -848,11 +780,7 @@ void main() {
               consumedUnit: ConsumedUnit.grams,
             ),
           ),
-          additionalOverrides: [
-            inventoryBackedCalorieEntrySaveFlowProvider.overrideWithValue(
-              saveFlow,
-            ),
-          ],
+          inventorySaveHandler: saveFlow.saveEntry,
           openCreateFromRoot: true,
         ),
       );

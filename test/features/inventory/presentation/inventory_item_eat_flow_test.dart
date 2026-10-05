@@ -17,6 +17,8 @@ import 'package:yamt/features/calories/presentation/controllers/calorie_day_cont
 import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_args.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -35,6 +37,12 @@ import '../../calories/support/fake_calories_repositories.dart';
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 class _MockUser extends Mock implements User;
+
+User _signedInUser() {
+  final user = _MockUser();
+  when(() => user.uid).thenReturn('user-1');
+  return user;
+}
 
 class _FakeInventoryItemRepository implements InventoryItemRepository {
   new({required List<InventoryItem> initialItems})
@@ -99,44 +107,56 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   }
 }
 
-class _RecordingInventoryItemsController extends InventoryItemsController {
-  new({List<InventoryItem>? initialItems})
-    : _initialItems = initialItems ?? const <InventoryItem>[];
-
-  final List<InventoryItem> _initialItems;
-  final List<String> discardedPendingIds = <String>[];
-
-  @override
-  Future<List<InventoryItem>> build() async => _initialItems;
-
-  @override
-  Future<bool> discardPendingConsumption(String draftId) async {
-    discardedPendingIds.add(draftId);
-    return true;
-  }
+/// Fakes the repositories the eat service writes to, signed in as [user].
+List<Override> _eatServiceOverrides({User? user}) {
+  final auth = _MockFirebaseAuth();
+  when(() => auth.currentUser).thenReturn(user);
+  final calorieLogRepository = FakeCalorieLogRepository();
+  addTearDown(calorieLogRepository.dispose);
+  return [
+    firebaseAuthProvider.overrideWithValue(auth),
+    calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+    inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+      _RecordingCommitStore(),
+    ),
+  ];
 }
+
+/// The real store and what was reserved in it before the eat.
+typedef _Staged = ({
+  InventoryPendingConsumptionStore store,
+  PendingInventoryConsumption pending,
+});
 
 class _CompleteEatFlowButton extends ConsumerWidget {
   const new({
     required this.item,
     required this.request,
-    this.pendingConsumptionId = 'pending-1',
+    this.pending,
+    this.onStaged,
   });
 
   final InventoryItem item;
   final InventoryItemEatRequest request;
-  final String pendingConsumptionId;
+
+  /// Reserved by the caller; without it the button reserves the stock.
+  final PendingInventoryConsumption? pending;
+  final ValueChanged<_Staged>? onStaged;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ElevatedButton(
       onPressed: () async {
+        final container = ProviderScope.containerOf(context, listen: false);
+        final store = container.read(inventoryPendingConsumptionStoreProvider);
+        final staged = pending ?? store.stage(item, request.inventoryAmount)!;
+        onStaged?.call((store: store, pending: staged));
         await InventoryItemEatFlow.complete(
           context: context,
-          container: ProviderScope.containerOf(context, listen: false),
-          itemBeforeMutation: item,
+          container: container,
+          item: item,
           request: request,
-          pendingConsumptionId: pendingConsumptionId,
+          pending: staged,
         );
       },
       child: const Text('eat'),
@@ -312,7 +332,7 @@ class _DirectSaveFlowHarness {
               body: _CompleteEatFlowButton(
                 item: item,
                 request: request,
-                pendingConsumptionId: harness.pendingConsumption.id,
+                pending: harness.pendingConsumption,
               ),
             );
           },
@@ -407,7 +427,7 @@ void main() {
     'complete discards pending consumption and shows feedback without '
     'nutrition',
     (tester) async {
-      final inventoryController = _RecordingInventoryItemsController();
+      _Staged? staged;
       final router = GoRouter(
         routes: <RouteBase>[
           GoRoute(
@@ -415,6 +435,7 @@ void main() {
             builder: (context, state) {
               return Scaffold(
                 body: _CompleteEatFlowButton(
+                  onStaged: (value) => staged = value,
                   item: _itemWithoutNutrition(),
                   request: InventoryItemEatRequest(
                     inventoryAmount: 250,
@@ -431,18 +452,14 @@ void main() {
       await tester.pumpWidget(
         routerApp(
           router: router,
-          overrides: [
-            inventoryItemsControllerProvider.overrideWith(
-              () => inventoryController,
-            ),
-          ],
+          overrides: _eatServiceOverrides(user: _signedInUser()),
         ),
       );
 
       await tester.tap(find.text('eat'));
       await tester.pumpAndSettle();
 
-      expect(inventoryController.discardedPendingIds, <String>['pending-1']);
+      expect(staged!.store.pendingConsumptionById(staged!.pending.id), isNull);
       expect(
         find.text('Aktion fehlgeschlagen. Bitte erneut versuchen.'),
         findsOneWidget,
@@ -454,8 +471,7 @@ void main() {
     'complete discards pending consumption and shows save error when direct '
     'save fails',
     (tester) async {
-      final inventoryController = _RecordingInventoryItemsController();
-      final auth = _MockFirebaseAuth();
+      _Staged? staged;
       final router = GoRouter(
         routes: <RouteBase>[
           GoRoute(
@@ -463,6 +479,7 @@ void main() {
             builder: (context, state) {
               return Scaffold(
                 body: _CompleteEatFlowButton(
+                  onStaged: (value) => staged = value,
                   item: _amountItemWithNutrition(),
                   request: InventoryItemEatRequest(
                     inventoryAmount: 250,
@@ -475,24 +492,14 @@ void main() {
           ),
         ],
       );
-      when(() => auth.currentUser).thenReturn(null);
-
       await tester.pumpWidget(
-        routerApp(
-          router: router,
-          overrides: [
-            firebaseAuthProvider.overrideWithValue(auth),
-            inventoryItemsControllerProvider.overrideWith(
-              () => inventoryController,
-            ),
-          ],
-        ),
+        routerApp(router: router, overrides: _eatServiceOverrides()),
       );
 
       await tester.tap(find.text('eat'));
       await tester.pumpAndSettle();
 
-      expect(inventoryController.discardedPendingIds, <String>['pending-1']);
+      expect(staged!.store.pendingConsumptionById(staged!.pending.id), isNull);
       expect(
         find.text('Eintrag konnte nicht gespeichert werden.'),
         findsOneWidget,
@@ -527,9 +534,9 @@ void main() {
       expect(harness.commitStore.entry?.consumedAmount, 250);
       expect(
         harness.container
-            .read(inventoryItemsControllerProvider.notifier)
-            .hasPendingConsumption(harness.pendingConsumption.id),
-        isFalse,
+            .read(inventoryPendingConsumptionStoreProvider)
+            .pendingConsumptionById(harness.pendingConsumption.id),
+        isNull,
       );
       expect(
         harness.container
@@ -557,6 +564,7 @@ void main() {
       final item = _amountItemWithNutrition();
       final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');
       CalorieEntryCreateArgs? openedArgs;
+      _Staged? staged;
       final router = GoRouter(
         routes: <RouteBase>[
           GoRoute(
@@ -564,6 +572,7 @@ void main() {
             builder: (context, state) {
               return Scaffold(
                 body: _CompleteEatFlowButton(
+                  onStaged: (value) => staged = value,
                   item: item,
                   request: InventoryItemEatRequest(
                     inventoryAmount: 1,
@@ -607,14 +616,22 @@ void main() {
         ],
       );
 
-      await tester.pumpWidget(routerApp(router: router));
+      await tester.pumpWidget(
+        routerApp(
+          router: router,
+          overrides: _eatServiceOverrides(user: _signedInUser()),
+        ),
+      );
 
       await tester.tap(find.text('eat'));
       await tester.pumpAndSettle();
 
       expect(openedArgs?.preselectedMealType, MealType.lunch);
       expect(openedArgs?.preselectedLoggedAt, loggedAt);
-      expect(openedArgs?.inventoryContext?.pendingConsumptionId, 'pending-1');
+      expect(
+        openedArgs?.inventoryContext?.pendingConsumptionId,
+        staged!.pending.id,
+      );
 
       await tester.tap(find.text('save'));
       await tester.pumpAndSettle();

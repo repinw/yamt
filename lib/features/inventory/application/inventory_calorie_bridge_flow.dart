@@ -1,26 +1,14 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
-import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
-import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
 import 'package:yamt/features/inventory/application/inventory_calorie_nutrient_details.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 
 /// Defines inventory calorie bridge flow.
 class InventoryCalorieBridgeFlow {
   const new _();
-
-  static const _uuid = Uuid();
 
   /// Build profile from inventory item.
   static CalorieProductProfile? buildProfileFromInventoryItem(
@@ -117,87 +105,5 @@ class InventoryCalorieBridgeFlow {
       return normalizedId;
     }
     return null;
-  }
-
-  /// Saves the entry without the editor and returns it, or null on failure.
-  static Future<CalorieEntry?> saveDirectEntry({
-    required ProviderContainer container,
-    required CalorieProductProfile profile,
-    required CalorieInventoryCreateContext inventoryContext,
-    required CalorieScannedSourceRef? scannedSourceRef,
-    required DateTime loggedAt,
-    required MealType mealType,
-    PendingInventoryConsumption? pendingConsumption,
-    void Function(String calorieEntryId)? onDirectCalorieEntrySaved,
-  }) async {
-    final user = container.read(firebaseAuthProvider).currentUser;
-    if (user == null) {
-      return null;
-    }
-
-    final now = DateTime.now();
-    final entry = CalorieEntry.create(
-      id: _uuid.v4(),
-      userId: user.uid,
-      name: profile.name,
-      brand: profile.brand,
-      imageUrl: profile.imageUrl,
-      mealType: mealType,
-      consumedAmount: inventoryContext.consumedAmount,
-      consumedUnit: inventoryContext.consumedUnit,
-      per100Kcal: profile.per100Kcal,
-      per100Protein: profile.per100Protein,
-      per100Carbs: profile.per100Carbs,
-      per100Fat: profile.per100Fat,
-      sourceInventoryItemId: inventoryContext.inventoryItemId,
-      sourceInventoryAmountToRestore: inventoryContext.inventoryAmountToRestore,
-      nutrientDetails: profile.nutrientDetails,
-      loggedAt: loggedAt,
-      createdAt: now,
-      updatedAt: now,
-    );
-
-    // The saver is auto-dispose and uses its ref after the save, so it must
-    // stay alive for the whole call.
-    final saverSubscription = container.listen(
-      calorieEntrySaverProvider,
-      (_, _) {},
-    );
-    final bool saved;
-    try {
-      saved = await saverSubscription.read()(
-        entry,
-        isNewEntry: true,
-        inventoryContext: inventoryContext,
-        scannedSourceRef: scannedSourceRef,
-        persistEntry: (entry) {
-          return container
-              .read(inventoryBackedCalorieEntrySaveFlowProvider)
-              .saveEntry(
-                entry: entry,
-                pendingConsumptionId: inventoryContext.pendingConsumptionId,
-                pendingConsumption: pendingConsumption,
-              );
-        },
-      );
-    } finally {
-      saverSubscription.close();
-    }
-    if (!saved) {
-      return null;
-    }
-    onDirectCalorieEntrySaved?.call(entry.id);
-    return entry;
-  }
-
-  /// Undoes an eat: deletes [entry] and returns its amount to the inventory.
-  static Future<bool> undoEat({
-    required ProviderContainer container,
-    required CalorieEntry entry,
-  }) async {
-    final result = await container
-        .read(calorieEntryDeleteFlowProvider)
-        .deleteEntry(entry: entry, restoreToInventory: true);
-    return result.isSuccess;
   }
 }

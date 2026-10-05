@@ -18,11 +18,11 @@ import 'package:yamt/features/calories/application/'
 import 'package:yamt/features/diary/presentation/'
     'diary_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/application/'
-    'inventory_backed_calorie_entry_save_flow.dart';
-import 'package:yamt/features/inventory/application/'
     'inventory_calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/inventory/application/'
-    'inventory_quick_eat_application.dart';
+    'inventory_eat_service.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_calorie_entry_delete_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -61,17 +61,12 @@ Future<void> main() async {
         calorieInventoryStockAdjusterProvider.overrideWith(
           (ref) => ref.watch(inventoryCalorieStockAdjusterProvider),
         ),
-        calorieInventoryEntrySaveHandlerProvider.overrideWith((ref) {
-          final saveFlow = ref.watch(
-            inventoryBackedCalorieEntrySaveFlowProvider,
-          );
-          return saveFlow.saveEntry;
-        }),
-        calorieInventoryPendingConsumptionDiscarderProvider.overrideWith((ref) {
-          return ref
-              .watch(inventoryQuickEatActionsProvider)
-              .discardInventoryItemConsumption;
-        }),
+        calorieInventoryEntrySaveHandlerProvider.overrideWith(
+          (ref) => ref.watch(inventoryEatServiceProvider).commitStaged,
+        ),
+        calorieInventoryPendingConsumptionDiscarderProvider.overrideWith(
+          (ref) => ref.watch(inventoryPendingConsumptionStoreProvider).discard,
+        ),
         inventoryManualProductSearchLauncherProvider.overrideWith(
           (ref) => buildInventoryProductSearchHubManualProductSearchLauncher(),
         ),

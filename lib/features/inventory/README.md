@@ -35,11 +35,19 @@ Other features may consume these public Inventory entry points:
 - `InventoryShoppingListPage` (finished shopping surface with stock suggestions)
 - `application/inventory_quick_eat_data_providers.dart` for repository-backed
   quick-eat inventory data used by integrating features.
-- `application/inventory_quick_eat_application.dart` for quick-eat mutations
-  used by integrating features. Callers pass the `InventoryItem` or
-  `PreparedMeal` they show, so no server read delays the save. The calorie
-  entry commit stores read the stock local-first and queue a batch, so eating
-  also works offline. Item upserts and activity events also queue their
+- `application/inventory_eat_service.dart`: eats a Vorrat item into the
+  diary. `InventoryPendingConsumptionStore.stage` reserves the stock (capped
+  at what the item holds), `InventoryEatService.log` saves the entry with it
+  or hands it to the calorie editor, and `commit` writes a diary entry
+  together with the item stock it takes, for single, combined, and calorie
+  editor eats. A failed eat releases its reservation. The eat flows call no
+  service or store themselves; they go through `InventoryItemEatController`
+  and `InventoryItemsController`.
+- `application/inventory_quick_eat_application.dart` for eating prepared
+  meals from integrating features. Callers pass the `PreparedMeal` they
+  show, so no server read delays the save. The calorie entry commit stores
+  read the stock local-first and queue a batch, so eating also works
+  offline. Item upserts and activity events also queue their
   batches without waiting for the server. The Diary "eat food" flow sizes a
   new item to the eaten amount before its only write and saves the shared
   catalog product and barcode selection in the background.

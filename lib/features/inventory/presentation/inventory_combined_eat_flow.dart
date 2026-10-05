@@ -4,13 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
-import 'package:yamt/features/inventory/application/inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_manual_add_amount_service.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
+import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_product_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_hub_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_save_outcome.dart';
@@ -40,10 +41,9 @@ abstract final class InventoryCombinedEatFlow {
     final messenger = ScaffoldMessenger.of(context);
     final container = ref.container;
     final inventory = container.read(inventoryItemsControllerProvider.notifier);
-    final serviceSubscription = container.listen(
-      inventoryCombinedEatServiceProvider,
-      (_, _) {},
-    );
+    // Read before the awaits: releasing the stock still works when the page
+    // is gone after them.
+    final eating = container.read(inventoryItemEatControllerProvider.notifier);
     final foods = <InventoryCombinedFood>[];
     final added = <InventoryItem>[];
     try {
@@ -67,18 +67,22 @@ abstract final class InventoryCombinedEatFlow {
         }
         foods.add((item: item, request: request, pending: pending));
       }
-      final entry = await serviceSubscription.read().save(
-        foods: foods,
-        loggedAt: request.loggedAt,
-        mealType: request.mealType,
-      );
+      // Read again: the controller may have been disposed while the user
+      // added found foods.
+      final entry = await container
+          .read(inventoryItemEatControllerProvider.notifier)
+          .logCombined(
+            foods: foods,
+            loggedAt: request.loggedAt,
+            mealType: request.mealType,
+          );
       if (entry == null) {
         throw StateError('The combined entry was not saved.');
       }
       messenger.showAppSnackBar(
         l10n.eatPageCombineSaved,
         onUndo: () async {
-          final undone = await InventoryCalorieBridgeFlow.undoEat(
+          final undone = await InventoryItemEatFlow.undoEat(
             container: container,
             entry: entry,
           );
@@ -96,15 +100,13 @@ abstract final class InventoryCombinedEatFlow {
         stackTrace: stackTrace,
       );
       for (final food in foods) {
-        await inventory.discardPendingConsumption(food.pending.id);
+        await eating.discard(food.pending.id);
       }
       await _deleteAll(inventory, added);
       messenger.showAppSnackBar(
         l10n.eatPageCombineFailed,
         tone: AppSnackBarTone.error,
       );
-    } finally {
-      serviceSubscription.close();
     }
   }
 

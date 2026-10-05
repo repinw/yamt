@@ -3,6 +3,7 @@ import 'dart:collection';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -812,41 +813,40 @@ void main() {
     },
   );
 
-  test(
-    'discardPendingConsumption keeps visible stock unchanged without saving',
-    () async {
-      final repository = _FakeFridgeItemRepository(
-        onReadAll: () async => <InventoryItem>[
-          _item('a').copyWith(quantity: 3),
-        ],
-      );
-      addTearDown(repository.dispose);
-      final container = ProviderContainer(
-        overrides: [
-          inventoryItemRepositoryProvider.overrideWithValue(repository),
-        ],
-      );
-      addTearDown(container.dispose);
-      final controllerSubscription = _keepControllerAlive(container);
-      addTearDown(controllerSubscription.close);
+  test('a finalized eat shows its new stock without a save', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a').copyWith(quantity: 3)],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+    await container.read(inventoryItemsControllerProvider.future);
+    final pending = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .stagePendingConsumption('a', 2);
+    final consumedAt = DateTime.parse('2026-02-20T12:00:00Z');
 
-      await container.read(inventoryItemsControllerProvider.future);
-      final pendingConsumption = await container
-          .read(inventoryItemsControllerProvider.notifier)
-          .stagePendingConsumption('a', 2);
+    container
+        .read(inventoryPendingConsumptionStoreProvider)
+        .finalize(
+          id: pending!.id,
+          itemId: 'a',
+          quantity: 1,
+          currentAmount: 0,
+          consumedAt: consumedAt,
+        );
 
-      final discarded = await container
-          .read(inventoryItemsControllerProvider.notifier)
-          .discardPendingConsumption(pendingConsumption!.id);
-
-      expect(discarded, isTrue);
-      expect(
-        container.read(inventoryItemsControllerProvider).value?.single.quantity,
-        3,
-      );
-      expect(repository.savedItems, isEmpty);
-    },
-  );
+    final item = container.read(inventoryItemsControllerProvider).value?.single;
+    expect(item?.quantity, 1);
+    expect(item?.lastConsumedAt, consumedAt);
+    expect(repository.savedItems, isEmpty);
+  });
 
   test('eatItem rolls back quantity change when save throws', () async {
     final repository =

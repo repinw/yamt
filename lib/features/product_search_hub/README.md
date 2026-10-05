@@ -38,7 +38,7 @@ Das Feature führt keine fremden Controller-Mutationen selbst durch. Die fachlic
 - **Inventory-Modus**:
   Titel ist "Zum Vorrat hinzufügen". Delegiert via `productSearchHubCompletionHandlerProvider` an `InventoryProductSearchHubCompletionHandler` (`features/inventory`), welcher `InventoryItemsController` aktualisiert.
 - **Diary-Modus**:
-  Titel ist "Lebensmittel essen". Delegiert via `productSearchHubCompletionHandlerProvider` an `DiaryProductSearchHubCompletionHandler` (`features/diary`), welcher `inventoryBackedCalorieEntrySaveFlow` ausführt.
+  Titel ist "Lebensmittel essen". Delegiert via `productSearchHubCompletionHandlerProvider` an `DiaryProductSearchHubCompletionHandler` (`features/diary`), welcher den Eintrag über `InventoryEatService` zusammen mit dem Bestand speichert.
 - **Selection-Modus**:
   Titel ist "Produkt hinzufügen". Verwendet den Standard-Handler (`DefaultProductSearchHubCompletionHandler`), schließt die Ansicht (`pop`) und gibt das Resultat an den Aufrufer zurück.
 - **MealFood-Modus** (`AppRoutes.homeFoodPick`, "Kombinieren" im Artikel-Hub):
