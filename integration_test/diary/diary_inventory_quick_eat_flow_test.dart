@@ -50,6 +50,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
@@ -596,6 +597,37 @@ void main() {
       find.byKey(DiaryMealsSectionKeys.plannedEntryTile(plan.id)),
       description: 'plan row of the Vorrat item',
     );
+  });
+
+  testWidgets('the plan button plans a Vorrat item on today', (tester) async {
+    final harness = await _pumpAndOpenInventoryQuickEat(tester);
+    harness.publishHouseholdProfile();
+    final item = find.byKey(DiaryInventoryFoodPicker.itemKey('broetchen'));
+    await _pumpUntilFound(tester, item, description: 'household item');
+    await _pumpUntilOnScreen(tester, item, description: 'visible item');
+    await tester.tap(item);
+    final planButton = find.byKey(EatPageScaffold.planButtonKey);
+    await _pumpUntilFound(tester, planButton, description: 'plan button');
+    await tester.tap(planButton);
+    // The day picker starts on the selected day; OK plans on it.
+    final ok = find.text('OK');
+    await _pumpUntilFound(tester, ok, description: 'plan day picker');
+    await _pumpUntilOnScreen(tester, ok.last, description: 'picker OK button');
+    // Let the picker finish opening, so the tap lands on the button.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(ok.last);
+    await _pumpUntil(
+      tester,
+      () => harness.planRepository.plans.length == 1,
+      description: 'saved plan',
+    );
+
+    expect(
+      harness.planRepository.plans.single.sourceInventoryItemId,
+      'broetchen',
+    );
+    expect(harness.householdInventoryItems.single.currentAmount, 100);
+    expect(harness.logRepository.entries, isEmpty);
   });
 
   testWidgets('a cooked meal on tomorrow is planned and keeps its portions', (
