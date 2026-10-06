@@ -8,6 +8,8 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_flow.dart';
@@ -71,6 +73,14 @@ class DiaryMealsSection extends ConsumerWidget {
       );
     }
 
+    CalorieEntry? planOf(DiaryMealEntry row) =>
+        data?.plannedEntries.firstWhereOrNull((entry) => entry.id == row.id);
+    // A plan is eaten from its own day on.
+    final canAccept = !ref.watch(
+      diaryCalendarControllerProvider.select(
+        (state) => state.isFutureDay(normalizedDay),
+      ),
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.xxl,
@@ -84,13 +94,24 @@ class DiaryMealsSection extends ConsumerWidget {
               ),
             ),
             onTapPlan: (row) {
-              final plan = data?.plannedEntries.firstWhereOrNull(
-                (entry) => entry.id == row.id,
-              );
-              if (plan != null) {
-                unawaited(deleteDiaryPlanFlow(context, ref, plan: plan));
+              if (planOf(row) case final plan?) {
+                unawaited(
+                  openDiaryPlanFlow(
+                    context,
+                    ref,
+                    plan: plan,
+                    canAccept: canAccept,
+                  ),
+                );
               }
             },
+            onAcceptPlan: canAccept
+                ? (row) {
+                    if (planOf(row) case final plan?) {
+                      unawaited(acceptDiaryPlanFlow(context, ref, plan: plan));
+                    }
+                  }
+                : null,
           ),
       ],
     );

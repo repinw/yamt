@@ -16,6 +16,7 @@ class DiaryMealGroup extends StatelessWidget {
     required this.section,
     required this.onTapEntry,
     required this.onTapPlan,
+    this.onAcceptPlan,
     super.key,
   });
 
@@ -27,6 +28,9 @@ class DiaryMealGroup extends StatelessWidget {
 
   /// Called when a plan row is tapped.
   final ValueChanged<DiaryMealEntry> onTapPlan;
+
+  /// Eats a plan as planned. Without it, plan rows have no check button.
+  final ValueChanged<DiaryMealEntry>? onAcceptPlan;
 
   @override
   Widget build(BuildContext context) {
@@ -79,6 +83,10 @@ class DiaryMealGroup extends StatelessWidget {
             child: DiaryPlannedEntryTile(
               plan: plan,
               onTap: () => onTapPlan(plan),
+              onAccept: switch (onAcceptPlan) {
+                final accept? => () => accept(plan),
+                null => null,
+              },
             ),
           ),
       ],

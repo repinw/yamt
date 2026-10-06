@@ -8,22 +8,28 @@ part of 'diary_plan_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Deletes plans from the diary and brings them back on undo.
+/// Accepts and deletes plans in the diary, and undoes both.
+///
+/// Kept alive, so it remembers the plans it ate until the diary reloads.
 
 @ProviderFor(DiaryPlanController)
 final diaryPlanControllerProvider = DiaryPlanControllerProvider._();
 
-/// Deletes plans from the diary and brings them back on undo.
+/// Accepts and deletes plans in the diary, and undoes both.
+///
+/// Kept alive, so it remembers the plans it ate until the diary reloads.
 final class DiaryPlanControllerProvider
     extends $AsyncNotifierProvider<DiaryPlanController, void> {
-  /// Deletes plans from the diary and brings them back on undo.
+  /// Accepts and deletes plans in the diary, and undoes both.
+  ///
+  /// Kept alive, so it remembers the plans it ate until the diary reloads.
   DiaryPlanControllerProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
         name: r'diaryPlanControllerProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -37,9 +43,11 @@ final class DiaryPlanControllerProvider
 }
 
 String _$diaryPlanControllerHash() =>
-    r'18dc3e7040bb23e9081daf47188fb1df27fc119b';
+    r'3ad7bfac63803fcd3ff456f92ecf2d108ba7ef79';
 
-/// Deletes plans from the diary and brings them back on undo.
+/// Accepts and deletes plans in the diary, and undoes both.
+///
+/// Kept alive, so it remembers the plans it ate until the diary reloads.
 
 abstract class _$DiaryPlanController extends $AsyncNotifier<void> {
   FutureOr<void> build();

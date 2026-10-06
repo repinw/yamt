@@ -11,6 +11,7 @@ import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashed_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -57,7 +58,7 @@ void main() {
     expect(find.text('Nothing eaten yet'), findsNothing);
   });
 
-  testWidgets('a plan shows below the eaten food; a tap deletes it', (
+  testWidgets('a plan shows below the eaten food; its details remove it', (
     tester,
   ) async {
     final plan = buildQuickCalorieEntry(
@@ -107,12 +108,49 @@ void main() {
 
     await tester.tap(planRow);
     await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryPlanDetailsPage.removeKey));
+    await tester.pumpAndSettle();
     expect(repository.plans, isEmpty);
     expect(find.text('Plan deleted'), findsOneWidget);
 
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
     expect(repository.plans, [plan]);
+  });
+
+  testWidgets('a plan before its day has no check button', (tester) async {
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      now: selectedDay.subtract(const Duration(days: 1)),
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'plan',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Pasta',
+              kcal: 700,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+            ),
+          ],
+        ),
+      ],
+    );
+
+    expect(
+      find.byKey(DiaryMealsSectionKeys.plannedEntryTile('plan')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(DiaryMealsSectionKeys.planAcceptButton('plan')),
+      findsNothing,
+    );
   });
 
   testWidgets('only a plan of a cooked meal carries the Meal Prep tag', (

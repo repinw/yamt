@@ -146,6 +146,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   deletes it, with undo. Plans are stored encrypted apart from eaten food,
   so the carryover, the weekly check-in, and the progress never count them,
   and a fresh start deletes them.
+- From its day on, a plan has a check button: one tap logs it as planned,
+  on its own day and meal, with undo. A Vorrat food takes its stock from a
+  pack of the same food, opened packs first, then the oldest; a cooked meal
+  takes its portions. When the Vorrat no longer has it, the food is logged
+  without stock and the snackbar says "nicht mehr im Vorrat".
 - Future days are shown as a plan: the head reads "Geplant" with the kcal
   logged and planned for that day and "von" the day's goal; the macro bars
   count the plans too. The goal has no carryover, because the days before it
