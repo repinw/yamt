@@ -14,11 +14,15 @@ import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/diary/presentation/diary_product_search_hub_completion_handler.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_manual_product_eat_coordinator.dart';
+import 'package:yamt/features/inventory/presentation/inventory_product_search_hub_completion_handler.dart';
+import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/product_search_hub/application/product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
@@ -306,8 +310,92 @@ void main() {
     expect(find.byKey(_openKey), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('a food searched in the diary goes into the Vorrat instead', (
+    tester,
+  ) async {
+    final plans = FakePlannedEntryRepository();
+    final items = _FakeItems();
+    final user = _MockUser();
+    when(() => user.uid).thenReturn('user-1');
+    final auth = _MockFirebaseAuth();
+    when(() => auth.currentUser).thenReturn(user);
+    await tester.pumpWidget(
+      _buildHarness(
+        args: ProductSearchHubRouteArgs.diary(
+          initialIntent: ProductSearchHubInitialIntent.search,
+          preselectedMealType: MealType.lunch,
+          preselectedLoggedAt: DateTime(2026, 5, 13, 12),
+        ),
+        open: (context) => context.push<void>(AppRoutes.homeFoodPick),
+        overrides: [
+          firebaseAuthProvider.overrideWithValue(auth),
+          plannedEntryRepositoryProvider.overrideWithValue(plans),
+          inventoryItemRepositoryProvider.overrideWithValue(items),
+          clockProvider.overrideWithValue(() => DateTime(2026, 5, 13, 20)),
+          // Wired in main.dart for the app.
+          productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
+            final container = ref.container;
+            return (mode) => switch (mode) {
+              ProductSearchHubMode.inventory =>
+                InventoryProductSearchHubCompletionHandler(
+                  container: container,
+                ),
+              _ => DiaryProductSearchHubCompletionHandler(
+                container: container,
+                eatCoordinator: container.read(
+                  inventoryManualProductEatCoordinatorProvider,
+                ),
+              ),
+            };
+          }),
+        ],
+      ),
+    );
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+    await _openMilkEatPage(tester);
+    await tester.tap(find.byKey(EatPageScaffold.storeButtonKey));
+    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+
+    // The Vorrat page takes over, as from the Vorrat search.
+    expect(find.byKey(InventoryStockAddPage.confirmKey), findsOneWidget);
+    await tester.tap(find.byKey(InventoryStockAddPage.confirmKey));
+    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+
+    expect(items.items.single.name, 'Vollmilch');
+    expect(plans.plans, isEmpty);
+    // It ends like one eaten food: the search closes.
+    expect(find.byKey(_openKey), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
+
+/// Vorrat repository that keeps what the test saves.
+class _FakeItems implements InventoryItemRepository {
+  List<InventoryItem> items = const [];
+
+  @override
+  Stream<List<InventoryItem>> watchAll() => Stream.value(items);
+
+  @override
+  Future<List<InventoryItem>> readAll() async => items;
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async {
+    this.items = items;
+    return true;
+  }
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async {
+    this.items = [...this.items, ...items];
+    return true;
+  }
+}
 
 class _MockUser extends Mock implements User;

@@ -578,6 +578,12 @@ abstract class AppLocalizations {
   /// **'Add'**
   String get productSearchHubCartAddAction;
 
+  /// No description provided for @productSearchHubStoredInVorrat.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is in stock'**
+  String productSearchHubStoredInVorrat(String name);
+
   /// No description provided for @productSearchHubCartRemoveAction.
   ///
   /// In en, this message translates to:
@@ -1395,6 +1401,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Plan'**
   String get eatPagePlanIconTooltip;
+
+  /// No description provided for @eatPageStoreIconTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'To stock'**
+  String get eatPageStoreIconTooltip;
 
   /// No description provided for @inventoryItemEatSheetAddMoreAction.
   ///

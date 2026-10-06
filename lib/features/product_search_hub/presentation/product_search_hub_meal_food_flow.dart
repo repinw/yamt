@@ -58,9 +58,15 @@ pickProductSearchHubMealFood({
 ///
 /// Returns the food with the entered eat request and whether the user wants
 /// to add more. When the user closes the page, `closed` is true and the
-/// result holds the last edit.
+/// result holds the last edit. `toStock` is true when the user puts the food
+/// into the Vorrat instead of eating it.
 Future<
-  ({InventoryReceiptManualProductResult result, bool closed, bool addMore})
+  ({
+    InventoryReceiptManualProductResult result,
+    bool closed,
+    bool addMore,
+    bool toStock,
+  })
 >
 eatProductSearchHubDiaryFood({
   required BuildContext context,
@@ -83,25 +89,35 @@ eatProductSearchHubDiaryFood({
           : l10n.inventoryItemEatSheetAddMoreAction,
       initialLoggedAt: args.preselectedLoggedAt,
       initialMealType: args.preselectedMealType,
+      canStore: true,
     ),
   );
   final eat = picked.eat;
-  if (eat == null) return (result: picked.result, closed: true, addMore: false);
+  if (eat == null) {
+    return (
+      result: picked.result,
+      closed: !picked.toStock,
+      addMore: false,
+      toStock: picked.toStock,
+    );
+  }
   return (
     result: picked.result.withEatRequest(eat.request),
     closed: false,
     addMore: eat.addMoreRequested,
+    toStock: false,
   );
 }
 
 typedef _EatWithEditResult = ({
   InventoryReceiptManualProductResult result,
   InventoryItemEatSheetResult? eat,
+  bool toStock,
 });
 
 /// Loops between the eat page and the editor until the user eats on the
-/// page or closes it. Without `eat`, the page was closed; the result still
-/// holds the last edit.
+/// page, puts the food into the Vorrat (`toStock`), or closes it. Without
+/// `eat`, the food was not eaten; the result still holds the last edit.
 Future<_EatWithEditResult> _eatWithEdit({
   required BuildContext context,
   required ProductSearchHubRouteArgs args,
@@ -118,11 +134,13 @@ Future<_EatWithEditResult> _eatWithEdit({
           ),
         );
     if (!context.mounted || step == null) {
-      return (result: current, eat: null);
+      return (result: current, eat: null, toStock: false);
     }
     switch (step) {
       case _EatSubmitted(:final result):
-        return (result: current, eat: result);
+        return (result: current, eat: result, toStock: false);
+      case _EatStore():
+        return (result: current, eat: null, toStock: true);
       case _EatEdit():
         final edited = await openProductSearchHubCustomProductEditor(
           context: context,
@@ -130,7 +148,7 @@ Future<_EatWithEditResult> _eatWithEdit({
           args: args,
         );
         if (!context.mounted) {
-          return (result: current, eat: null);
+          return (result: current, eat: null, toStock: false);
         }
         if (edited != null) {
           current = edited;
@@ -153,6 +171,10 @@ final class _EatEdit extends _EatStep {
   const new();
 }
 
+final class _EatStore extends _EatStep {
+  const new();
+}
+
 /// Eat page of a picked food with a "Bearbeiten" line. The food has no stock
 /// yet, so its amount is open.
 class _EditableEatPage extends StatelessWidget {
@@ -163,6 +185,7 @@ class _EditableEatPage extends StatelessWidget {
     this.addMoreActionText,
     this.initialLoggedAt,
     this.initialMealType,
+    this.canStore = false,
   });
 
   final InventoryItem item;
@@ -171,6 +194,7 @@ class _EditableEatPage extends StatelessWidget {
   final String? addMoreActionText;
   final DateTime? initialLoggedAt;
   final MealType? initialMealType;
+  final bool canStore;
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +213,9 @@ class _EditableEatPage extends StatelessWidget {
       confirmLabel: confirmLabel,
       onSubmitted: (result) => Navigator.of(context).pop(_EatSubmitted(result)),
       onCompleteValues: () => Navigator.of(context).pop(const _EatEdit()),
+      onStore: canStore
+          ? () => Navigator.of(context).pop(const _EatStore())
+          : null,
       footer: EatActionCard(
         title: l10n.eatPageItemTitle,
         actions: [

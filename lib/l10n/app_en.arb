@@ -143,6 +143,14 @@
   "productSearchHubCreateProductAction": "Create product",
   "productSearchHubCartTitle": "Selected products",
   "productSearchHubCartAddAction": "Add",
+  "productSearchHubStoredInVorrat": "{name} is in stock",
+  "@productSearchHubStoredInVorrat": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "productSearchHubCartRemoveAction": "Remove",
   "productSearchHubRecentlySelectedTab": "Recently selected",
   "productSearchHubRecentlySelectedLoading": "Loading recent products",
@@ -449,6 +457,7 @@
   "inventoryItemEatSheetInedibleAmountError": "The deducted amount must be smaller than the eaten amount.",
   "inventoryItemEatSheetConfirmAction": "To diary",
   "eatPagePlanIconTooltip": "Plan",
+  "eatPageStoreIconTooltip": "To stock",
   "inventoryItemEatSheetAddMoreAction": "+ More",
   "eatPagePlanAction": "Plan",
   "eatPageNutritionTitle": "Nutrition",

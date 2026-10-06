@@ -96,6 +96,42 @@ void main() {
     expect(selection.item.id, inventoryController.addedItems.single.id);
   });
 
+  testWidgets('a diary food put into the Vorrat closes the hub alone', (
+    tester,
+  ) async {
+    final inventoryController = _RecordingInventoryItemsController();
+    ProductSearchHubCompletionResult? completion;
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        onRun: (context, container, l10n) async {
+          completion = await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.diary(),
+            mode: ProductSearchHubMode.inventory,
+            sourceKey: '4006381333931',
+            result: _manualResult(),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+
+    expect(inventoryController.addedItems, hasLength(1));
+    // It does not join the diary selection, and the hub closes.
+    expect(completion?.selection, isNull);
+    expect(completion?.shouldCloseHub, isTrue);
+    expect(
+      find.text('${inventoryController.addedItems.single.name} is in stock'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('inventory mode waits for inventory controller before saving', (
     tester,
   ) async {

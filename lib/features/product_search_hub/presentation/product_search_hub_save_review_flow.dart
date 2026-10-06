@@ -13,12 +13,14 @@ import 'package:yamt/features/product_search_hub/presentation/'
 ///
 /// Returns the reviewed result and whether the diary batch goes on. When the
 /// user closes the page, `closed` is true and the result holds the last edit
-/// of the diary eat page.
+/// of the diary eat page. `toStock` is true when a food picked in the diary
+/// goes into the Vorrat instead, through the Vorrat page.
 Future<
   ({
     InventoryReceiptManualProductResult result,
     bool closed,
     bool continuesBatch,
+    bool toStock,
   })
 >
 reviewProductSearchHubResultBeforeSave({
@@ -38,6 +40,7 @@ reviewProductSearchHubResultBeforeSave({
         result: reviewed ?? result,
         closed: reviewed == null,
         continuesBatch: continuesBatch,
+        toStock: false,
       );
     // A food from the AI page was already eaten there.
     case ProductSearchHubMode.diary when result.eatSelection == null:
@@ -47,12 +50,31 @@ reviewProductSearchHubResultBeforeSave({
         result: result,
         continuesBatch: continuesBatch,
       );
+      if (eaten.toStock && context.mounted) {
+        final stocked = await reviewProductSearchHubStockResult(
+          context: context,
+          args: args,
+          result: eaten.result,
+        );
+        return (
+          result: stocked ?? eaten.result,
+          closed: stocked == null,
+          continuesBatch: continuesBatch,
+          toStock: true,
+        );
+      }
       return (
         result: eaten.result,
         closed: eaten.closed,
         continuesBatch: eaten.addMore,
+        toStock: false,
       );
     case _:
-      return (result: result, closed: false, continuesBatch: continuesBatch);
+      return (
+        result: result,
+        closed: false,
+        continuesBatch: continuesBatch,
+        toStock: false,
+      );
   }
 }

@@ -16,6 +16,9 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_amount_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_label_section.dart';
 
+const _confirmKey = Key('inventory_item_amount_dialog_confirm_button');
+const _addMoreKey = Key('inventory_item_amount_dialog_add_more_button');
+
 /// Amount and log time chosen on the eat page so far.
 typedef InventoryItemEatSelection = ({
   int? inventoryAmount,
@@ -38,6 +41,7 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.onSubmitted,
     this.confirmLabel,
     this.canPlan = true,
+    this.onStore,
     this.mealKcal,
     this.secondaryIntent = InventoryItemEatSheetIntent.addMore,
     this.onSecondary,
@@ -85,14 +89,16 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
   /// Called with the entered result. Pops the page with it when null.
   final ValueChanged<InventoryItemEatSheetResult>? onSubmitted;
 
-  /// Text of the confirm button. Defaults to "Log".
+  /// Text of the confirm button. Defaults to "Ins Tagebuch".
   final String? confirmLabel;
 
   /// Whether the page offers to plan; off where the result drops the plan.
   final bool canPlan;
 
-  /// Calories of the whole meal, shown on the button in place of the
-  /// item's own when other foods are picked.
+  /// Shows the "In den Vorrat" button, which runs this instead of eating.
+  final VoidCallback? onStore;
+
+  /// Calories of the whole meal on the button, when other foods are picked.
   final double? mealKcal;
 
   /// Intent of the second button.
@@ -119,9 +125,8 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
   /// Whether the page shows its amount ruler.
   final bool showAmount;
 
-  /// Opens the editor from the line that names the item's missing values.
-  /// The line is hidden when null. A stock item also checks its package
-  /// size; a newly picked product does not, since eating needs no package.
+  /// Opens the editor from the line naming missing values (hidden when null).
+  /// Only a stock item checks its package size; eating needs no package.
   final VoidCallback? onCompleteValues;
 
   @override
@@ -195,16 +200,13 @@ class _InventoryItemEatSheetBodyState
       isPlan: state.isPlan,
       kcal: widget.mealKcal ?? nutrition?.eaten.kcal,
       confirmLabel: widget.confirmLabel,
-      confirmButtonKey: const Key(
-        'inventory_item_amount_dialog_confirm_button',
-      ),
+      confirmButtonKey: _confirmKey,
       onConfirm: () => _submit(widget.confirmIntent),
       onPlan: _canPlan ? _plan : null,
+      onStore: widget.onStore,
       cancelButtonKey: const Key('inventory_item_amount_dialog_cancel_button'),
       secondaryLabel: addMoreText,
-      secondaryButtonKey: const Key(
-        'inventory_item_amount_dialog_add_more_button',
-      ),
+      secondaryButtonKey: _addMoreKey,
       onSecondary: addMoreText == null
           ? null
           : widget.onSecondary ?? () => _submit(widget.secondaryIntent),

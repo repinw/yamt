@@ -440,7 +440,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   with any edit made from the eat page.
 - In the diary, a scanned, searched, or recent food opens on the eat page.
   "Bearbeiten" there opens the product editor and comes back to the eat
-  page with the edited food; only the user's own copy changes.
+  page with the edited food; only the user's own copy changes. The Vorrat
+  icon next to the main button puts the food into the Vorrat instead of
+  eating it: the Vorrat page opens (packages, package size), as from the
+  Vorrat search, and no diary entry is made.
 - Eating a newly picked product has no stock limit: the stock is set to the
   eaten amount. A product with g or ml but no package size is eaten in that
   unit. The eat page always shows the per-100 column.

@@ -205,6 +205,31 @@ void main() {
     expect(find.text('Plan'), findsOneWidget);
   });
 
+  testWidgets('page scaffold offers the Vorrat only with onStore', (
+    tester,
+  ) async {
+    var stored = 0;
+    Widget page({VoidCallback? onStore}) => _TestApp(
+      child: EatPageScaffold(
+        whenControl: const SizedBox(),
+        kcal: null,
+        confirmButtonKey: const Key('confirm'),
+        onConfirm: () {},
+        cancelButtonKey: const Key('close'),
+        onStore: onStore,
+        children: const [Text('Body')],
+      ),
+    );
+
+    await tester.pumpWidget(page());
+    expect(find.byKey(EatPageScaffold.storeButtonKey), findsNothing);
+
+    await tester.pumpWidget(page(onStore: () => stored += 1));
+    await tester.tap(find.byKey(EatPageScaffold.storeButtonKey));
+    expect(stored, 1);
+    expect(find.byTooltip('To stock'), findsOneWidget);
+  });
+
   testWidgets('page scaffold shows the calories and closes', (tester) async {
     var confirmTapCount = 0;
     var secondaryTapCount = 0;
