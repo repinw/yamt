@@ -2,8 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_inventory_entry_save_handler.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
@@ -111,11 +109,6 @@ void main() {
       container.dispose();
     });
 
-    test('initial state is not saving', () {
-      final state = container.read(calorieEntryEditorControllerProvider);
-      expect(state, isFalse);
-    });
-
     test('saveEntry saves entry via entries controller', () async {
       final now = DateTime.now();
       final entry = CalorieEntry.create(
@@ -140,53 +133,6 @@ void main() {
 
       expect(result, isTrue);
       expect(savedEntry?.id, 'entry-1');
-      expect(container.read(calorieEntryEditorControllerProvider), isFalse);
-    });
-
-    test('saveEntry delegates to saveHandler when pending exists', () async {
-      var saveHandlerCalled = false;
-      final customContainer = ProviderContainer(
-        overrides: [
-          calorieEntriesControllerProvider.overrideWith(
-            () => entriesController,
-          ),
-          calorieInventoryEntrySaveHandlerProvider.overrideWithValue(({
-            required entry,
-            required pendingConsumptionId,
-          }) async {
-            saveHandlerCalled = true;
-            return true;
-          }),
-        ],
-      );
-      addTearDown(customContainer.dispose);
-
-      final now = DateTime.now();
-      final entry = CalorieEntry.create(
-        id: 'entry-2',
-        userId: 'user-1',
-        name: 'Apple',
-        mealType: MealType.snack,
-        consumedAmount: 150,
-        consumedUnit: ConsumedUnit.grams,
-        per100Kcal: 52,
-        per100Protein: 0.3,
-        per100Carbs: 14,
-        per100Fat: 0.2,
-        createdAt: now,
-        updatedAt: now,
-      );
-
-      final controller = customContainer.read(
-        calorieEntryEditorControllerProvider.notifier,
-      );
-      final result = await controller.saveEntry(
-        entry: entry,
-        pendingConsumptionId: 'pending-123',
-      );
-
-      expect(result, isTrue);
-      expect(saveHandlerCalled, isTrue);
     });
 
     test('canRestoreSource queries delete flow', () async {
@@ -289,27 +235,6 @@ void main() {
 
       expect(undone, isTrue);
       expect(deleteFlow.takenBackEntry, isNull);
-    });
-
-    test('discardPendingInventory invokes discarder', () async {
-      var discardedId = '';
-      final customContainer = ProviderContainer(
-        overrides: [
-          calorieInventoryPendingConsumptionDiscarderProvider.overrideWithValue(
-            (id) async {
-              discardedId = id;
-            },
-          ),
-        ],
-      );
-      addTearDown(customContainer.dispose);
-
-      final controller = customContainer.read(
-        calorieEntryEditorControllerProvider.notifier,
-      );
-      await controller.discardPendingInventory('pending-456');
-
-      expect(discardedId, 'pending-456');
     });
   });
 }

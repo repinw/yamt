@@ -1,7 +1,5 @@
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 
 /// Defines calorie entry create prefill.
@@ -24,10 +22,13 @@ class CalorieEntryCreatePrefill {
   /// Creates a [CalorieEntryCreatePrefill] for from args.
   factory fromArgs({
     required CalorieProductProfile? prefilledProfile,
-    required CalorieInventoryCreateContext? inventoryContext,
+    required double? prefilledAmount,
+    required ConsumedUnit? prefilledUnit,
     required MealType? preselectedMealType,
     required DateTime? preselectedLoggedAt,
   }) {
+    final consumedAmount = prefilledAmount ?? 100;
+    final consumedUnit = prefilledUnit ?? ConsumedUnit.grams;
     final loggedAt = preselectedLoggedAt ?? DateTime.now();
     final mealType =
         preselectedMealType ?? MealType.defaultForDateTime(loggedAt);
@@ -35,19 +36,20 @@ class CalorieEntryCreatePrefill {
     return CalorieEntryCreatePrefill(
       initializationKey: _buildInitializationKey(
         prefilledProfile: prefilledProfile,
-        inventoryContext: inventoryContext,
+        consumedAmount: consumedAmount,
+        consumedUnit: consumedUnit,
         mealType: mealType,
         loggedAt: loggedAt,
       ),
       name: prefilledProfile?.name ?? '',
       brand: prefilledProfile?.brand ?? '',
-      consumedAmount: inventoryContext?.consumedAmount ?? 100,
+      consumedAmount: consumedAmount,
       per100Kcal: prefilledProfile?.per100Kcal ?? 0,
       per100Protein: prefilledProfile?.per100Protein ?? 0,
       per100Carbs: prefilledProfile?.per100Carbs ?? 0,
       per100Fat: prefilledProfile?.per100Fat ?? 0,
       mealType: mealType,
-      consumedUnit: inventoryContext?.consumedUnit ?? ConsumedUnit.grams,
+      consumedUnit: consumedUnit,
       loggedAt: loggedAt,
     );
   }
@@ -87,17 +89,16 @@ class CalorieEntryCreatePrefill {
 
   static String _buildInitializationKey({
     required CalorieProductProfile? prefilledProfile,
-    required CalorieInventoryCreateContext? inventoryContext,
+    required double consumedAmount,
+    required ConsumedUnit consumedUnit,
     required MealType mealType,
     required DateTime loggedAt,
   }) {
     return '__new_entry__'
         '${prefilledProfile?.barcode ?? ''}_'
         '${prefilledProfile?.source.jsonValue ?? 'none'}_'
-        '${inventoryContext?.inventoryItemId ?? ''}'
-        '${inventoryContext?.pendingConsumptionId ?? ''}'
-        '${inventoryContext?.consumedAmount ?? 100}'
-        '${inventoryContext?.consumedUnit.jsonValue ?? 'g'}'
+        '$consumedAmount'
+        '${consumedUnit.jsonValue}'
         '${mealType.jsonValue}'
         '${loggedAt.toIso8601String()}';
   }

@@ -7,7 +7,6 @@ class CalorieInventoryCreateContext {
     required this.inventoryItemId,
     required this.foodFingerprint,
     required this.globalFoodItemId,
-    required this.pendingConsumptionId,
     required this.inventoryAmountToRestore,
     required this.itemName,
     required this.itemBrand,
@@ -27,9 +26,6 @@ class CalorieInventoryCreateContext {
 
   /// The global food item id.
   final String globalFoodItemId;
-
-  /// The pending consumption id.
-  final String pendingConsumptionId;
 
   /// The inventory amount to restore.
   final int inventoryAmountToRestore;

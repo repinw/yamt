@@ -4,9 +4,13 @@ import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dar
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_inventory_create_context.dart';
+import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
 import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
+import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
@@ -42,6 +46,23 @@ class InventoryItemEatController extends _$InventoryItemEatController {
   }) => _whileAlive(
     inventoryEatServiceProvider,
     (service) => service.log(item: item, request: request, pending: pending),
+  );
+
+  /// Logs [entry] as the calorie editor returned it, with its reserved
+  /// [pending] stock.
+  Future<InventoryEatOutcome> logEdited({
+    required CalorieEntry entry,
+    required PendingInventoryConsumption pending,
+    required CalorieInventoryCreateContext inventoryContext,
+    CalorieScannedSourceRef? scannedSourceRef,
+  }) => _whileAlive(
+    inventoryEatServiceProvider,
+    (service) => service.logEdited(
+      entry: entry,
+      pending: pending,
+      inventoryContext: inventoryContext,
+      scannedSourceRef: scannedSourceRef,
+    ),
   );
 
   /// Logs [foods] as one combined diary entry. Returns null when nothing was

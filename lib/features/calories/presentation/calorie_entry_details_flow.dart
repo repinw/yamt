@@ -115,10 +115,7 @@ abstract final class CalorieEntryDetailsFlow {
       return;
     }
     if (saved) {
-      CalorieEntryEditorFlowHandler.maybePopRootNavigator(
-        context,
-        isEditing: true,
-      );
+      CalorieEntryEditorFlowHandler.maybePopRootNavigator(context);
     }
     _showResult(
       messenger,
@@ -149,10 +146,8 @@ abstract final class CalorieEntryDetailsFlow {
         context,
         entry: entry,
         controller: controller,
-        onDeleted: () => CalorieEntryEditorFlowHandler.maybePopRootNavigator(
-          context,
-          isEditing: true,
-        ),
+        onDeleted: () =>
+            CalorieEntryEditorFlowHandler.maybePopRootNavigator(context),
       );
       return;
     }
@@ -167,10 +162,7 @@ abstract final class CalorieEntryDetailsFlow {
       return;
     }
     if (result.isSuccess) {
-      CalorieEntryEditorFlowHandler.maybePopRootNavigator(
-        context,
-        isEditing: true,
-      );
+      CalorieEntryEditorFlowHandler.maybePopRootNavigator(context);
     }
     _showResult(
       messenger,

@@ -36,8 +36,9 @@ changes.
 - Diary page ordering, date navigation, or diary-level composition.
 - Activity card layout or activity-owned action orchestration.
 - Inventory item storage, prepared meal storage, or household scope state.
-  Inventory-backed save and delete run through calorie-owned ports that
-  inventory implements, so Calories does not depend on Inventory.
+  Inventory-backed delete and stock adjustment run through calorie-owned
+  ports that inventory implements. Inventory saves the entry that the
+  calorie editor returns itself. So Calories does not depend on Inventory.
 
 ## Public UI
 
@@ -59,6 +60,9 @@ changes.
   Onboarding and the weekly check-in use them.
 - Calorie entry editors, goal dialogs, calculator sheets, the consumed-unit
   labels, and the debug menu section of the Home side menu.
+- `showCalorieEntryEditor` opens the new-entry editor on the root navigator.
+  It saves nothing: it completes with the entry on save and with null when
+  the editor closes any other way, and the caller saves the entry.
 
 ## Rules
 

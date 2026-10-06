@@ -136,12 +136,10 @@ void main() {
 
     final context = InventoryCalorieBridgeFlow.buildInventoryContext(
       item: item,
-      pendingConsumptionId: 'pending-1',
       request: request,
     );
 
     expect(context.inventoryItemId, 'inventory-1');
-    expect(context.pendingConsumptionId, 'pending-1');
     expect(context.inventoryAmountToRestore, 250);
     expect(context.consumedAmount, 250);
     expect(context.consumedUnit, ConsumedUnit.grams);
@@ -150,7 +148,6 @@ void main() {
   test('buildInventoryContext restores the staged amount, not the wish', () {
     final context = InventoryCalorieBridgeFlow.buildInventoryContext(
       item: _amountItemWithNutrition(),
-      pendingConsumptionId: 'pending-1',
       request: InventoryItemEatRequest(
         inventoryAmount: 250,
         loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
@@ -175,7 +172,6 @@ void main() {
 
     final context = InventoryCalorieBridgeFlow.buildInventoryContext(
       item: item,
-      pendingConsumptionId: 'pending-1',
       request: request,
     );
 
@@ -199,7 +195,6 @@ void main() {
 
       final context = InventoryCalorieBridgeFlow.buildInventoryContext(
         item: item,
-        pendingConsumptionId: 'pending-1',
         request: request,
       );
 
@@ -223,7 +218,6 @@ void main() {
 
     final context = InventoryCalorieBridgeFlow.buildInventoryContext(
       item: item,
-      pendingConsumptionId: 'pending-1',
       request: request,
     );
 
@@ -250,7 +244,6 @@ void main() {
 
     final context = InventoryCalorieBridgeFlow.buildInventoryContext(
       item: item,
-      pendingConsumptionId: 'pending-1',
       request: request,
     );
 
@@ -272,7 +265,6 @@ void main() {
     expect(
       () => InventoryCalorieBridgeFlow.buildInventoryContext(
         item: item,
-        pendingConsumptionId: 'pending-1',
         request: request,
       ),
       throwsStateError,

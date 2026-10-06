@@ -2,15 +2,12 @@ import 'dart:async';
 import 'dart:developer' as developer;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
-import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
+import 'package:yamt/features/calories/presentation/calorie_entry_editor_flow.dart';
+import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
@@ -167,24 +164,43 @@ class InventoryItemEatFlow {
             await eating.discard(pending.id);
             return null;
           }
-          final savedEntry = await context.push<CalorieEntry>(
-            AppRoutes.homeCaloriesEntryCreate,
-            extra: CalorieEntryCreateArgs(
-              prefilledProfile: profile,
-              scannedSourceRef: scannedSourceRef,
-              inventoryContext: inventoryContext,
-              preselectedMealType: request.mealType,
-              preselectedLoggedAt: request.loggedAt,
-            ),
+          final messenger = ScaffoldMessenger.of(context);
+          final edited = await showCalorieEntryEditor(
+            context,
+            prefilledProfile: profile,
+            prefilledAmount: inventoryContext.consumedAmount,
+            prefilledUnit: inventoryContext.consumedUnit,
+            preselectedMealType: request.mealType,
+            preselectedLoggedAt: request.loggedAt,
           );
-          if (savedEntry != null && context.mounted) {
+          if (edited == null) {
+            await eating.discard(pending.id);
+            return null;
+          }
+          // Read again: the controller may be gone while the editor was open.
+          final saved = await container
+              .read(inventoryItemEatControllerProvider.notifier)
+              .logEdited(
+                entry: edited,
+                pending: pending,
+                inventoryContext: inventoryContext,
+                scannedSourceRef: scannedSourceRef,
+              );
+          if (saved is! InventoryEatLogged) {
+            messenger.showAppSnackBar(
+              l10n.caloriesSaveFailed,
+              tone: AppSnackBarTone.error,
+            );
+            return null;
+          }
+          if (context.mounted) {
             _showEatenSnackBar(
               context: context,
               container: container,
-              entry: savedEntry,
+              entry: saved.entry,
             );
           }
-          return savedEntry;
+          return saved.entry;
       }
     } on Object catch (error, stackTrace) {
       developer.log(

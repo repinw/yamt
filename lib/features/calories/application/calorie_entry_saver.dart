@@ -4,14 +4,12 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_entry_mutations.dart';
-import 'package:yamt/features/calories/application/calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_mutation.dart';
-import 'package:yamt/features/calories/domain/calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 
 part 'calorie_entry_saver.g.dart';
@@ -22,7 +20,6 @@ const _entrySaverLogName = 'CalorieEntrySaver';
 typedef CalorieEntrySaver = Future<bool> Function(
   CalorieEntry entry, {
   bool isNewEntry,
-  CalorieInventoryCreateContext? inventoryContext,
   CalorieScannedSourceRef? scannedSourceRef,
   Future<bool> Function(CalorieEntry entry)? persistEntry,
 });
@@ -34,20 +31,13 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
   final mutations = ref.watch(calorieEntryMutationsProvider);
   final overviewRevision = ref.read(calorieOverviewRevisionProvider.notifier);
   final cacheRepository = ref.read(calorieProductCacheRepositoryProvider);
-  final postPersistHook = ref.read(calorieEntryPostPersistHookProvider);
   final clock = ref.read(clockProvider);
   // Taken before the save: recording the mutation rebuilds this provider, so
   // its ref is no longer usable afterwards. Watched so the goal controller
   // stays alive for the follow-up writes.
   final goalController = ref.watch(calorieGoalControllerProvider.notifier);
 
-  return (
-    entry, {
-    isNewEntry = false,
-    inventoryContext,
-    scannedSourceRef,
-    persistEntry,
-  }) async {
+  return (entry, {isNewEntry = false, scannedSourceRef, persistEntry}) async {
     final bool saved;
     if (persistEntry != null) {
       saved = await persistEntry(entry);
@@ -97,15 +87,6 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
         ),
       );
     }
-
-    _runInBackground(
-      'Post-persist hook failed.',
-      () => postPersistHook(
-        entry: entry,
-        inventoryContext: inventoryContext,
-        scannedSourceRef: scannedSourceRef,
-      ),
-    );
 
     return true;
   };

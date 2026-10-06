@@ -1,4 +1,3 @@
-import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
@@ -9,10 +8,7 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/data_key_page.dart';
 import 'package:yamt/features/auth/presentation/recovery_key_page.dart';
 import 'package:yamt/features/auth/presentation/welcome_page.dart';
-import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_goal_archive_page.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
 import 'package:yamt/features/calories/presentation/tdee_analytics_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
@@ -135,11 +131,6 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       redirect: (context, state) => AppRoutes.homeSettingsHousehold,
     ),
     GoRoute(
-      path: AppRoutes.homeCaloriesEntryCreate,
-      redirect: _redirectCalorieEntryCreate,
-      builder: _buildCalorieEntryCreate,
-    ),
-    GoRoute(
       path: AppRoutes.homeCaloriesEntryDetails,
       pageBuilder: (context, state) => HeroSheetPage<void>(
         key: state.pageKey,
@@ -211,23 +202,4 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     ),
     buildHomeShellRoute(),
   ];
-}
-
-String? _redirectCalorieEntryCreate(BuildContext context, GoRouterState state) {
-  final args = state.extra;
-  if (args is! CalorieEntryCreateArgs || args.inventoryContext == null) {
-    return AppRoutes.homeInventory;
-  }
-  return null;
-}
-
-Widget _buildCalorieEntryCreate(BuildContext context, GoRouterState state) {
-  final args = state.extra! as CalorieEntryCreateArgs;
-  return CalorieEntryEditorPage(
-    prefilledProfile: args.prefilledProfile,
-    scannedSourceRef: args.scannedSourceRef,
-    inventoryContext: args.inventoryContext,
-    preselectedMealType: args.preselectedMealType,
-    preselectedLoggedAt: args.preselectedLoggedAt,
-  );
 }

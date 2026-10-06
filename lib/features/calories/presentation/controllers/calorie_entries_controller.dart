@@ -3,17 +3,12 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_entry_mutations.dart';
-import 'package:yamt/features/calories/application/calorie_entry_post_persist_hook.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_mutation.dart';
-import 'package:yamt/features/calories/domain/calorie_inventory_create_context.dart';
-import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/controllers/calorie_day_controller.dart';
 import 'package:yamt/features/calories/presentation/controllers/calorie_entries_mutation_steps.dart';
 
@@ -55,20 +50,12 @@ class CalorieEntriesController extends _$CalorieEntriesController {
   }
 
   /// Save entry.
-  Future<bool> saveEntry(
-    CalorieEntry entry, {
-    bool isNewEntry = false,
-    CalorieInventoryCreateContext? inventoryContext,
-    CalorieScannedSourceRef? scannedSourceRef,
-    Future<bool> Function(CalorieEntry entry)? persistEntry,
-  }) {
+  Future<bool> saveEntry(CalorieEntry entry, {bool isNewEntry = false}) {
     final selectedDay = ref.read(calorieDayControllerProvider);
     final calorieLogRepository = ref.read(calorieLogRepositoryProvider);
     log(
       'Starting save for calorie entry ${entry.id} '
-      '(selectedDay=$selectedDay, '
-      'customPersist=${persistEntry != null}, '
-      'scannedSource=${scannedSourceRef != null}).',
+      '(selectedDay=$selectedDay).',
       name: _entriesControllerLogName,
     );
     return _runOptimisticMutation(
@@ -77,11 +64,7 @@ class CalorieEntriesController extends _$CalorieEntriesController {
         entry: entry,
         selectedDay: selectedDay,
       ),
-      persist: () => persistCalorieEntry(
-        entry: entry,
-        repository: calorieLogRepository,
-        persistEntry: persistEntry,
-      ),
+      persist: () => calorieLogRepository.saveEntry(entry),
       failureLogMessage: 'Failed to persist calorie entry ${entry.id}.',
       followUp: (previousEntries) {
         _recordMutation(
@@ -97,13 +80,6 @@ class CalorieEntriesController extends _$CalorieEntriesController {
           () => ref
               .read(calorieGoalControllerProvider.notifier)
               .clearSkippedIntakeDay(entry.loggedAt),
-          if (scannedSourceRef != null)
-            () => saveCalorieUserProductOverride(
-              repository: ref.read(calorieProductCacheRepositoryProvider),
-              entry: entry,
-              scannedSourceRef: scannedSourceRef,
-              now: ref.read(clockProvider)(),
-            ),
           () => _invalidateSnapshotsFromDay(
             earliestCalorieDiaryDay(
               entry.loggedAt,
@@ -112,11 +88,6 @@ class CalorieEntriesController extends _$CalorieEntriesController {
                   .firstOrNull
                   ?.loggedAt,
             ),
-          ),
-          () => ref.read(calorieEntryPostPersistHookProvider)(
-            entry: entry,
-            inventoryContext: inventoryContext,
-            scannedSourceRef: scannedSourceRef,
           ),
         ]);
       },

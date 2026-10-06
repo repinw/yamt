@@ -61,7 +61,6 @@ class InventoryCalorieBridgeFlow {
   /// the request when the stock ran low; deleting the entry returns that.
   static CalorieInventoryCreateContext buildInventoryContext({
     required InventoryItem item,
-    required String pendingConsumptionId,
     required InventoryItemEatRequest request,
     int? stagedAmount,
   }) {
@@ -83,7 +82,6 @@ class InventoryCalorieBridgeFlow {
       inventoryItemId: item.id,
       foodFingerprint: item.resolvedFoodFingerprint,
       globalFoodItemId: item.globalFoodItemId,
-      pendingConsumptionId: pendingConsumptionId,
       inventoryAmountToRestore: stagedAmount ?? request.inventoryAmount,
       itemName: item.name,
       itemBrand: item.brand,

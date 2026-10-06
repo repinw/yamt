@@ -1,212 +1,162 @@
-import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:riverpod/src/framework.dart' show Override;
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_inventory_entry_save_handler.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
-    'calorie_inventory_create_context.dart';
-import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/presentation/calorie_entry_editor_flow.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_editor_content.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../support/fake_calories_repositories.dart';
-
 class _MockUser extends Mock implements User;
 
-class _RecordingInventorySave {
+User _user() {
+  final user = _MockUser();
+  when(() => user.uid).thenReturn('user-1');
+  return user;
+}
+
+const _openKey = Key('open_editor');
+const _otherPath = '/other';
+
+/// What the editor popped, once it closed.
+class _EditorResult {
   CalorieEntry? entry;
-  String? pendingConsumptionId;
-
-  Future<bool> saveEntry({
-    required CalorieEntry entry,
-    required String pendingConsumptionId,
-  }) async {
-    this.entry = entry;
-    this.pendingConsumptionId = pendingConsumptionId;
-    return true;
-  }
+  bool returned = false;
+  late GoRouter router;
 }
 
-class _AutoOpenRoutePage extends StatefulWidget {
-  const new({required this.location, this.extra});
-
-  final String location;
-  final Object? extra;
-
-  @override
-  State<_AutoOpenRoutePage> createState() => _AutoOpenRoutePageState();
-}
-
-class _AutoOpenRoutePageState extends State<_AutoOpenRoutePage> {
-  var _didOpenRoute = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_didOpenRoute) {
-      return;
-    }
-    _didOpenRoute = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) {
-        return;
-      }
-      unawaited(
-        GoRouter.of(context).push(widget.location, extra: widget.extra),
-      );
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: SizedBox.shrink());
-  }
-}
-
-Widget _buildHarness({
-  required FakeCalorieLogRepository logRepository,
-  required FakeCalorieSettingsRepository settingsRepository,
-  required String initialLocation,
-  Object? createExtra,
-  ProviderContainer? container,
-  List<Override> additionalOverrides = const <Override>[],
-  Override? pendingConsumptionDiscarderOverride,
-  CalorieInventoryEntrySaveHandler? inventorySaveHandler,
-  bool openCreateFromRoot = false,
-}) {
-  final router = GoRouter(
-    initialLocation: initialLocation,
-    initialExtra: createExtra,
+/// Opens the editor from a root page, as the Vorrat eat flow does, and keeps
+/// what it returns.
+Future<_EditorResult> _openEditor(
+  WidgetTester tester, {
+  CalorieProductProfile? prefilledProfile,
+  double? prefilledAmount,
+  ConsumedUnit? prefilledUnit,
+  MealType? preselectedMealType,
+}) async {
+  final result = _EditorResult();
+  result.router = GoRouter(
     routes: <RouteBase>[
       GoRoute(
         path: '/',
-        builder: (context, state) {
-          if (openCreateFromRoot) {
-            return _AutoOpenRoutePage(
-              location: AppRoutes.homeCaloriesEntryCreate,
-              extra: createExtra,
-            );
-          }
-          return const Scaffold(body: Text('Root'));
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.homeCaloriesEntryCreate,
-        builder: (context, state) {
-          final args = state.extra is CalorieEntryCreateArgs
-              ? state.extra! as CalorieEntryCreateArgs
-              : null;
-          return CalorieEntryEditorPage(
-            prefilledProfile: args?.prefilledProfile,
-            scannedSourceRef: args?.scannedSourceRef,
-            inventoryContext: args?.inventoryContext,
-            preselectedMealType: args?.preselectedMealType,
-          );
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.homeInventory,
-        builder: (context, state) {
-          return const Scaffold(body: Text('Inventory Home'));
-        },
-      ),
-      GoRoute(
-        path: AppRoutes.homeCalories,
-        builder: (context, state) {
-          return const Scaffold(body: Text('Calories Home'));
-        },
-      ),
-    ],
-  );
-
-  final user = _MockUser();
-  when(() => user.uid).thenReturn('user-1');
-
-  final app = MaterialApp.router(
-    locale: const Locale('en'),
-    routerConfig: router,
-    localizationsDelegates: appLocalizationsDelegates,
-    supportedLocales: AppLocalizations.supportedLocales,
-  );
-
-  if (container != null) {
-    return UncontrolledProviderScope(container: container, child: app);
-  }
-
-  final providerContainer = ProviderContainer(
-    overrides: [
-      authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
-      firebaseFirestoreProvider.overrideWith((ref) => null),
-      userProfileProvider.overrideWith((ref) => Stream.value(null)),
-      calorieLogRepositoryProvider.overrideWithValue(logRepository),
-      calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      calorieInventoryEntrySaveHandlerProvider.overrideWith(
-        (ref) =>
-            inventorySaveHandler ??
-            ({required entry, required pendingConsumptionId}) async => false,
-      ),
-      pendingConsumptionDiscarderOverride ??
-          calorieInventoryPendingConsumptionDiscarderProvider.overrideWith(
-            (ref) => (pendingConsumptionId) async {},
+        builder: (context, state) => Scaffold(
+          body: TextButton(
+            key: _openKey,
+            onPressed: () async {
+              final entry = await showCalorieEntryEditor(
+                context,
+                prefilledProfile: prefilledProfile,
+                prefilledAmount: prefilledAmount,
+                prefilledUnit: prefilledUnit,
+                preselectedMealType: preselectedMealType,
+              );
+              result
+                ..entry = entry
+                ..returned = true;
+            },
+            child: const Text('Root'),
           ),
-      ...additionalOverrides,
+        ),
+      ),
+      GoRoute(
+        path: _otherPath,
+        builder: (context, state) => const Scaffold(body: Text('Other')),
+      ),
     ],
   );
-  addTearDown(providerContainer.dispose);
-  return UncontrolledProviderScope(container: providerContainer, child: app);
+  final user = _user();
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(user),
+        ),
+      ],
+      child: MaterialApp.router(
+        locale: const Locale('en'),
+        routerConfig: result.router,
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  await tester.tap(find.byKey(_openKey));
+  await tester.pumpAndSettle();
+  return result;
 }
 
-Widget _buildDirectEditorHarness({
-  required ProviderContainer container,
-  required User user,
+Future<void> _fillGreekYogurt(WidgetTester tester) async {
+  await tester.enterText(
+    find.byKey(CalorieEntryEditorKeys.nameField),
+    'Greek Yogurt',
+  );
+  await tester.enterText(
+    find.byKey(CalorieEntryEditorKeys.per100KcalField),
+    '95',
+  );
+  await tester.enterText(
+    find.byKey(CalorieEntryEditorKeys.per100ProteinField),
+    '9.8',
+  );
+  await tester.enterText(
+    find.byKey(CalorieEntryEditorKeys.per100CarbsField),
+    '4.1',
+  );
+  await tester.enterText(
+    find.byKey(CalorieEntryEditorKeys.per100FatField),
+    '0.5',
+  );
+}
+
+Future<void> _save(WidgetTester tester) async {
+  await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+  await tester.pumpAndSettle();
+}
+
+CalorieProductProfile _yogurt({
+  String barcode = '4006381333931',
+  String? imageUrl,
+}) {
+  return CalorieProductProfile(
+    barcode: barcode,
+    name: 'Greek Yogurt',
+    brand: 'Test Brand',
+    per100Kcal: 95,
+    per100Protein: 9.8,
+    per100Carbs: 4.1,
+    per100Fat: 0.5,
+    source: CalorieProductSource.offBarcode,
+    offProductId: 'off-$barcode',
+    imageUrl: imageUrl,
+    createdAt: DateTime(2026, 2, 25, 8),
+    updatedAt: DateTime(2026, 2, 25, 8),
+  );
+}
+
+Widget _directEditor({
   required String barcode,
   required MealType mealType,
   required DateTime loggedAt,
 }) {
-  return UncontrolledProviderScope(
-    container: container,
-    child: MaterialApp(
-      localizationsDelegates: appLocalizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: CalorieEntryEditorContent(
-        key: const ValueKey('editor-content'),
-        user: user,
-        prefilledProfile: CalorieProductProfile(
-          barcode: barcode,
-          name: 'Greek Yogurt',
-          brand: 'Test Brand',
-          per100Kcal: 95,
-          per100Protein: 9.8,
-          per100Carbs: 4.1,
-          per100Fat: 0.5,
-          source: CalorieProductSource.offBarcode,
-          offProductId: 'off-$barcode',
-          createdAt: DateTime(2026, 2, 25, 8),
-          updatedAt: DateTime(2026, 2, 25, 8),
-        ),
-        preselectedMealType: mealType,
-        preselectedLoggedAt: loggedAt,
-      ),
+  return MaterialApp(
+    localizationsDelegates: appLocalizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: CalorieEntryEditorContent(
+      key: const ValueKey('editor-content'),
+      user: _user(),
+      prefilledProfile: _yogurt(barcode: barcode),
+      preselectedMealType: mealType,
+      preselectedLoggedAt: loggedAt,
     ),
   );
 }
@@ -215,24 +165,8 @@ void main() {
   testWidgets('create editor refreshes draft when create context changes', (
     tester,
   ) async {
-    final logRepository = FakeCalorieLogRepository();
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-    final user = _MockUser();
-    when(() => user.uid).thenReturn('user-1');
-    final container = ProviderContainer(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(logRepository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
-    );
-    addTearDown(container.dispose);
-
     await tester.pumpWidget(
-      _buildDirectEditorHarness(
-        container: container,
-        user: user,
+      _directEditor(
         barcode: '4006381333931',
         mealType: MealType.lunch,
         loggedAt: DateTime(2026, 2, 25, 12),
@@ -243,9 +177,7 @@ void main() {
     expect(find.text('Greek Yogurt'), findsOneWidget);
 
     await tester.pumpWidget(
-      _buildDirectEditorHarness(
-        container: container,
-        user: user,
+      _directEditor(
         barcode: '4012345678901',
         mealType: MealType.snack,
         loggedAt: DateTime(2026, 2, 26, 15),
@@ -257,565 +189,106 @@ void main() {
     expect(find.text('Greek Yogurt'), findsOneWidget);
   });
 
-  testWidgets('create flow saves a new entry and pops back', (tester) async {
-    final logRepository = FakeCalorieLogRepository();
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
+  testWidgets('save returns the new entry to the caller', (tester) async {
+    final result = await _openEditor(tester);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryCreate,
-      ),
-    );
-    await tester.pumpAndSettle();
+    await _fillGreekYogurt(tester);
+    await _save(tester);
 
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.nameField),
-      'Greek Yogurt',
-    );
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.per100KcalField),
-      '95',
-    );
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.per100ProteinField),
-      '9.8',
-    );
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.per100CarbsField),
-      '4.1',
-    );
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.per100FatField),
-      '0.5',
-    );
-
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
-    await tester.pumpAndSettle();
-
-    expect(logRepository.entries, hasLength(1));
-    expect(logRepository.entries.single.name, 'Greek Yogurt');
-    expect(find.text('Inventory Home'), findsOneWidget);
+    expect(result.returned, isTrue);
+    expect(result.entry?.name, 'Greek Yogurt');
+    expect(result.entry?.userId, 'user-1');
+    expect(result.entry?.per100Kcal, 95);
+    expect(result.entry?.sourceInventoryItemId, isNull);
+    expect(find.byKey(_openKey), findsOneWidget);
   });
 
-  testWidgets('create flow closes before the save completes', (tester) async {
-    final saveGate = Completer<void>();
-    final logRepository = FakeCalorieLogRepository()
-      ..saveGate = saveGate.future;
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryCreate,
+  testWidgets('the prefill fills the amount and the profile', (tester) async {
+    final result = await _openEditor(
+      tester,
+      prefilledProfile: _yogurt(
+        imageUrl: 'https://images.example.com/yogurt.jpg',
       ),
+      prefilledAmount: 150,
+      prefilledUnit: ConsumedUnit.milliliters,
+      preselectedMealType: MealType.breakfast,
     );
-    await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.nameField),
-      'Greek Yogurt',
-    );
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.per100KcalField),
-      '95',
-    );
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
-    await tester.pumpAndSettle();
+    await _save(tester);
 
-    expect(find.text('Inventory Home'), findsOneWidget);
-    expect(logRepository.entries, isEmpty);
-
-    saveGate.complete();
-    await tester.pumpAndSettle();
-
-    expect(logRepository.entries.single.name, 'Greek Yogurt');
+    expect(result.entry?.name, 'Greek Yogurt');
+    expect(result.entry?.consumedAmount, 150);
+    expect(result.entry?.consumedUnit, ConsumedUnit.milliliters);
+    expect(result.entry?.mealType, MealType.breakfast);
+    expect(result.entry?.imageUrl, 'https://images.example.com/yogurt.jpg');
   });
 
-  testWidgets('create flow reports a failed save after closing', (
-    tester,
-  ) async {
-    final logRepository = FakeCalorieLogRepository()..saveShouldFail = true;
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
+  testWidgets('back returns nothing', (tester) async {
+    final result = await _openEditor(tester);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryCreate,
-      ),
-    );
+    await tester.pageBack();
     await tester.pumpAndSettle();
 
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.nameField),
-      'Greek Yogurt',
-    );
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.per100KcalField),
-      '95',
-    );
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    expect(result.returned, isTrue);
+    expect(result.entry, isNull);
+  });
+
+  testWidgets('a jump to another page returns nothing', (tester) async {
+    final result = await _openEditor(tester);
+
+    result.router.go(_otherPath);
     await tester.pumpAndSettle();
 
-    expect(find.text('Inventory Home'), findsOneWidget);
-    expect(find.text('Could not save entry.'), findsOneWidget);
-    expect(logRepository.entries, isEmpty);
+    expect(find.text('Other'), findsOneWidget);
+    expect(result.returned, isTrue);
+    expect(result.entry, isNull);
   });
 
   testWidgets('validation blocks save for empty name', (tester) async {
-    final logRepository = FakeCalorieLogRepository();
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryCreate,
-      ),
-    );
-    await tester.pumpAndSettle();
+    final result = await _openEditor(tester);
 
     await tester.enterText(find.byKey(CalorieEntryEditorKeys.nameField), '');
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
-    await tester.pumpAndSettle();
+    await _save(tester);
 
     expect(find.text('This field is required.'), findsOneWidget);
-    expect(logRepository.entries, isEmpty);
+    expect(result.returned, isFalse);
   });
 
   testWidgets('validation blocks save for negative consumed amount', (
     tester,
   ) async {
-    final logRepository = FakeCalorieLogRepository();
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
+    final result = await _openEditor(tester);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryCreate,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.nameField),
-      'Greek Yogurt',
-    );
+    await _fillGreekYogurt(tester);
     await tester.enterText(
       find.byKey(CalorieEntryEditorKeys.amountField),
       '-10',
     );
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.per100KcalField),
-      '95',
-    );
-
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
-    await tester.pumpAndSettle();
+    await _save(tester);
 
     expect(
       find.text('Please enter a number greater than zero.'),
       findsOneWidget,
     );
-    expect(logRepository.entries, isEmpty);
+    expect(result.returned, isFalse);
   });
 
   testWidgets('validation blocks save for invalid number characters', (
     tester,
   ) async {
-    final logRepository = FakeCalorieLogRepository();
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
+    final result = await _openEditor(tester);
 
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryCreate,
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.nameField),
-      'Greek Yogurt',
-    );
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.amountField),
-      '200',
-    );
-    await tester.enterText(
-      find.byKey(CalorieEntryEditorKeys.per100KcalField),
-      '95',
-    );
+    await _fillGreekYogurt(tester);
     await tester.enterText(
       find.byKey(CalorieEntryEditorKeys.per100ProteinField),
       'abc',
     );
-
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
-    await tester.pumpAndSettle();
+    await _save(tester);
 
     expect(
       find.text('Please enter a number equal to or greater than zero.'),
       findsOneWidget,
     );
-    expect(logRepository.entries, isEmpty);
+    expect(result.returned, isFalse);
   });
-
-  testWidgets('create flow keeps imageUrl from prefilled profile', (
-    tester,
-  ) async {
-    final logRepository = FakeCalorieLogRepository();
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryCreate,
-        createExtra: CalorieEntryCreateArgs(
-          prefilledProfile: CalorieProductProfile(
-            barcode: '4006381333931',
-            name: 'Greek Yogurt',
-            brand: 'Test Brand',
-            per100Kcal: 95,
-            per100Protein: 9.8,
-            per100Carbs: 4.1,
-            per100Fat: 0.5,
-            source: CalorieProductSource.offBarcode,
-            offProductId: 'off-123',
-            imageUrl: 'https://images.example.com/yogurt.jpg',
-            createdAt: DateTime(2026, 2, 25, 8),
-            updatedAt: DateTime(2026, 2, 25, 8),
-          ),
-          preselectedMealType: MealType.breakfast,
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
-    await tester.pumpAndSettle();
-
-    expect(logRepository.entries, hasLength(1));
-    expect(
-      logRepository.entries.single.imageUrl,
-      'https://images.example.com/yogurt.jpg',
-    );
-  });
-
-  testWidgets('back navigation discards pending inventory consumption', (
-    tester,
-  ) async {
-    final logRepository = FakeCalorieLogRepository();
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final discardedPendingConsumptionIds = <String>[];
-    final user = _MockUser();
-    when(() => user.uid).thenReturn('user-1');
-
-    final container = ProviderContainer(
-      overrides: [
-        authStateChangesProvider.overrideWith(
-          (ref) => Stream<User?>.value(user),
-        ),
-        firebaseFirestoreProvider.overrideWith((ref) => null),
-        userProfileProvider.overrideWith((ref) => Stream.value(null)),
-        calorieLogRepositoryProvider.overrideWithValue(logRepository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-        calorieInventoryPendingConsumptionDiscarderProvider.overrideWith(
-          (ref) => (pendingConsumptionId) async {
-            discardedPendingConsumptionIds.add(pendingConsumptionId);
-          },
-        ),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.root,
-        createExtra: const CalorieEntryCreateArgs(
-          prefilledProfile: null,
-          inventoryContext: CalorieInventoryCreateContext(
-            inventoryItemId: 'inventory-1',
-            foodFingerprint: 'milk',
-            globalFoodItemId: 'off-milk',
-            pendingConsumptionId: 'pending-1',
-            inventoryAmountToRestore: 2,
-            itemName: 'Milk',
-            itemBrand: null,
-            consumedAmount: 100,
-            consumedUnit: ConsumedUnit.grams,
-          ),
-        ),
-        container: container,
-        openCreateFromRoot: true,
-      ),
-    );
-    await tester.pumpAndSettle(
-      const Duration(milliseconds: 50),
-      EnginePhase.sendSemanticsUpdate,
-      const Duration(seconds: 5),
-    );
-    await tester.runAsync(() async {
-      await Future<void>.delayed(Duration.zero);
-    });
-    await tester.pump();
-
-    expect(discardedPendingConsumptionIds, isEmpty);
-
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
-    await tester.runAsync(() async {
-      await Future<void>.delayed(Duration.zero);
-    });
-    await tester.pump();
-
-    expect(discardedPendingConsumptionIds, ['pending-1']);
-  });
-
-  testWidgets('pending inventory discard no-ops when handler is null', (
-    tester,
-  ) async {
-    final logRepository = FakeCalorieLogRepository();
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryCreate,
-        createExtra: const CalorieEntryCreateArgs(
-          prefilledProfile: null,
-          inventoryContext: CalorieInventoryCreateContext(
-            inventoryItemId: 'inventory-1',
-            foodFingerprint: 'milk',
-            globalFoodItemId: 'off-milk',
-            pendingConsumptionId: 'pending-1',
-            inventoryAmountToRestore: 2,
-            itemName: 'Milk',
-            itemBrand: null,
-            consumedAmount: 100,
-            consumedUnit: ConsumedUnit.grams,
-          ),
-        ),
-        pendingConsumptionDiscarderOverride:
-            calorieInventoryPendingConsumptionDiscarderProvider.overrideWith(
-              (ref) => null,
-            ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets('pending inventory discard catches handler errors', (
-    tester,
-  ) async {
-    final logRepository = FakeCalorieLogRepository();
-    final settingsRepository = FakeCalorieSettingsRepository();
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    await tester.pumpWidget(
-      _buildHarness(
-        logRepository: logRepository,
-        settingsRepository: settingsRepository,
-        initialLocation: AppRoutes.homeCaloriesEntryCreate,
-        createExtra: const CalorieEntryCreateArgs(
-          prefilledProfile: null,
-          inventoryContext: CalorieInventoryCreateContext(
-            inventoryItemId: 'inventory-1',
-            foodFingerprint: 'milk',
-            globalFoodItemId: 'off-milk',
-            pendingConsumptionId: 'pending-1',
-            inventoryAmountToRestore: 2,
-            itemName: 'Milk',
-            itemBrand: null,
-            consumedAmount: 100,
-            consumedUnit: ConsumedUnit.grams,
-          ),
-        ),
-        pendingConsumptionDiscarderOverride:
-            calorieInventoryPendingConsumptionDiscarderProvider.overrideWith((
-              ref,
-            ) {
-              return (pendingConsumptionId) async {
-                throw StateError('container disposed');
-              };
-            }),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
-
-    expect(tester.takeException(), isNull);
-  });
-
-  testWidgets(
-    'create flow delegates inventory-backed save when pending exists',
-    (tester) async {
-      final logRepository = FakeCalorieLogRepository();
-      final settingsRepository = FakeCalorieSettingsRepository();
-      final saveFlow = _RecordingInventorySave();
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
-
-      await tester.pumpWidget(
-        _buildHarness(
-          logRepository: logRepository,
-          settingsRepository: settingsRepository,
-          initialLocation: AppRoutes.homeCaloriesEntryCreate,
-          createExtra: const CalorieEntryCreateArgs(
-            prefilledProfile: null,
-            inventoryContext: CalorieInventoryCreateContext(
-              inventoryItemId: 'inventory-1',
-              foodFingerprint: 'milk',
-              globalFoodItemId: 'off-milk',
-              pendingConsumptionId: 'pending-1',
-              inventoryAmountToRestore: 2,
-              itemName: 'Milk',
-              itemBrand: null,
-              consumedAmount: 100,
-              consumedUnit: ConsumedUnit.grams,
-            ),
-          ),
-          inventorySaveHandler: saveFlow.saveEntry,
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.nameField),
-        'Greek Yogurt',
-      );
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.per100KcalField),
-        '95',
-      );
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.per100ProteinField),
-        '9.8',
-      );
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.per100CarbsField),
-        '4.1',
-      );
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.per100FatField),
-        '0.5',
-      );
-
-      await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
-      await tester.pumpAndSettle();
-
-      expect(saveFlow.pendingConsumptionId, 'pending-1');
-      expect(saveFlow.entry?.sourceInventoryItemId, 'inventory-1');
-      expect(logRepository.entries, isEmpty);
-    },
-  );
-
-  testWidgets(
-    'inventory-backed save does not use widget ref after page unmount',
-    (tester) async {
-      final logRepository = FakeCalorieLogRepository()
-        ..onReadEntriesForDay = (day) async {
-          await Future<void>.delayed(const Duration(milliseconds: 50));
-          return const <CalorieEntry>[];
-        };
-      final settingsRepository = FakeCalorieSettingsRepository();
-      final saveFlow = _RecordingInventorySave();
-      addTearDown(logRepository.dispose);
-      addTearDown(settingsRepository.dispose);
-
-      await tester.pumpWidget(
-        _buildHarness(
-          logRepository: logRepository,
-          settingsRepository: settingsRepository,
-          initialLocation: AppRoutes.root,
-          createExtra: const CalorieEntryCreateArgs(
-            prefilledProfile: null,
-            inventoryContext: CalorieInventoryCreateContext(
-              inventoryItemId: 'inventory-1',
-              foodFingerprint: 'milk',
-              globalFoodItemId: 'off-milk',
-              pendingConsumptionId: 'pending-1',
-              inventoryAmountToRestore: 2,
-              itemName: 'Milk',
-              itemBrand: null,
-              consumedAmount: 100,
-              consumedUnit: ConsumedUnit.grams,
-            ),
-          ),
-          inventorySaveHandler: saveFlow.saveEntry,
-          openCreateFromRoot: true,
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.nameField),
-        'Greek Yogurt',
-      );
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.per100KcalField),
-        '95',
-      );
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.per100ProteinField),
-        '9.8',
-      );
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.per100CarbsField),
-        '4.1',
-      );
-      await tester.enterText(
-        find.byKey(CalorieEntryEditorKeys.per100FatField),
-        '0.5',
-      );
-
-      await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
-      await tester.pump();
-      await tester.pageBack();
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 60));
-
-      expect(saveFlow.pendingConsumptionId, 'pending-1');
-      expect(saveFlow.entry?.sourceInventoryItemId, 'inventory-1');
-      expect(tester.takeException(), isNull);
-    },
-  );
 }

@@ -21,14 +21,7 @@ import 'package:yamt/features/auth/domain/user_data_key_state.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_inventory_create_context.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calories_page_keys.dart';
 import 'package:yamt/features/cookbook_new/presentation/cookbook_page.dart';
 import 'package:yamt/features/household/domain/household_invite.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -256,21 +249,6 @@ _MockUser _guestUser({
   when(() => user.metadata).thenReturn(metadata);
   return user;
 }
-
-const _inventoryBackedCreateArgs = CalorieEntryCreateArgs(
-  prefilledProfile: null,
-  inventoryContext: CalorieInventoryCreateContext(
-    inventoryItemId: 'inventory-1',
-    foodFingerprint: 'milk',
-    globalFoodItemId: 'off-milk',
-    pendingConsumptionId: 'pending-1',
-    inventoryAmountToRestore: 2,
-    itemName: 'Milk',
-    itemBrand: null,
-    consumedAmount: 100,
-    consumedUnit: ConsumedUnit.grams,
-  ),
-);
 
 void _disableAnimations(WidgetTester tester) {
   tester.binding.platformDispatcher.accessibilityFeaturesTestValue =
@@ -981,41 +959,26 @@ void main() {
     expect(container.read(appRouterProvider), same(stubRouter));
   });
 
-  testWidgets(
-    'inventory-backed create opens a page and details route opens a sheet',
-    (tester) async {
-      final container = _createContainerWithAuth(
-        Stream<User?>.value(_authenticatedUser()),
-        completedCalorieGoalOnboardingUserIds: {'uid-123'},
-      );
+  testWidgets('the details route opens a sheet', (tester) async {
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(_authenticatedUser()),
+      completedCalorieGoalOnboardingUserIds: {'uid-123'},
+    );
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(container: container, child: const YAMT()),
-      );
-      await _pumpRouterTransition(tester);
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    await _pumpRouterTransition(tester);
 
-      final router = container.read(appRouterProvider)
-        ..go(
-          AppRoutes.homeCaloriesEntryCreate,
-          extra: _inventoryBackedCreateArgs,
-        );
-      await _pumpRouterTransition(tester);
-      await _pumpRouterTransition(tester);
-      expect(find.text('Add calorie entry'), findsOneWidget);
-      expect(find.byKey(CalorieEntryEditorKeys.nameField), findsOneWidget);
-
-      router.go(AppRoutes.homeCaloriesEntryCreate);
-      await _pumpRouterTransition(tester);
-      expect(router.state.uri.path, AppRoutes.homeInventory);
-
-      router.go(AppRoutes.homeCaloriesEntryDetailsPath('missing-entry'));
-      await _pumpRouterTransition(tester);
-      await _pumpRouterTransition(tester);
-      expect(find.text('Calorie entry details'), findsOneWidget);
-      expect(find.text('Entry not found.'), findsOneWidget);
-      expect(find.byType(ModalBarrier), findsOneWidget);
-    },
-  );
+    container
+        .read(appRouterProvider)
+        .go(AppRoutes.homeCaloriesEntryDetailsPath('missing-entry'));
+    await _pumpRouterTransition(tester);
+    await _pumpRouterTransition(tester);
+    expect(find.text('Calorie entry details'), findsOneWidget);
+    expect(find.text('Entry not found.'), findsOneWidget);
+    expect(find.byType(ModalBarrier), findsOneWidget);
+  });
 
   testWidgets('product search hub route renders search page', (tester) async {
     final container = _createContainerWithAuth(

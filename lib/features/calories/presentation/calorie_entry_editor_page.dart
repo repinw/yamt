@@ -3,21 +3,21 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_inventory_create_context.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_entry_editor_content.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Defines calorie entry editor page.
+/// Editor for a new calorie entry. Returns the entry by popping its route;
+/// the caller saves it.
 class CalorieEntryEditorPage extends ConsumerStatefulWidget {
   /// The calorie entry editor page.
   const new({
     super.key,
     this.prefilledProfile,
-    this.scannedSourceRef,
-    this.inventoryContext,
+    this.prefilledAmount,
+    this.prefilledUnit,
     this.preselectedMealType,
     this.preselectedLoggedAt,
   });
@@ -25,11 +25,11 @@ class CalorieEntryEditorPage extends ConsumerStatefulWidget {
   /// The prefilled profile.
   final CalorieProductProfile? prefilledProfile;
 
-  /// The scanned source ref.
-  final CalorieScannedSourceRef? scannedSourceRef;
+  /// The prefilled consumed amount.
+  final double? prefilledAmount;
 
-  /// The inventory context.
-  final CalorieInventoryCreateContext? inventoryContext;
+  /// The unit of [prefilledAmount].
+  final ConsumedUnit? prefilledUnit;
 
   /// The preselected meal type.
   final MealType? preselectedMealType;
@@ -74,8 +74,8 @@ class _CalorieEntryEditorPageState
     return CalorieEntryEditorContent(
       user: user,
       prefilledProfile: widget.prefilledProfile,
-      scannedSourceRef: widget.scannedSourceRef,
-      inventoryContext: widget.inventoryContext,
+      prefilledAmount: widget.prefilledAmount,
+      prefilledUnit: widget.prefilledUnit,
       preselectedMealType: widget.preselectedMealType,
       preselectedLoggedAt: widget.preselectedLoggedAt,
     );

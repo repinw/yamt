@@ -12,6 +12,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
 import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
+import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_controller.dart';
