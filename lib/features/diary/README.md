@@ -32,9 +32,10 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   in the food label look of the Inventory eat page: header, nutrition label
   for the eaten amount, and the amount ruler. The confirm button saves a
   changed amount and closes the page; a move to another meal or day, "log
-  again", and remove save at once. All changes run through the Calories
-  `CalorieEntryDetailsFlow`, so inventory stock follows and every change has
-  an undo. Bundles (prepared meals and combined foods) show their foods
+  again", and remove save at once, each with an undo. Changes run through
+  the Calories `CalorieEntryDetailsFlow`, so inventory stock follows.
+  Remove runs through `DiaryEntryDeleteFlow`, which asks whether an entry
+  that took stock gives it back to the Vorrat. Bundles (prepared meals and combined foods) show their foods
   instead of the ruler.
 - `presentation/widgets/diary_macro_strip/` owns the compact kcal and macro
   strip pinned under the top bar. `diary_macro_strip_trigger.dart` reveals it

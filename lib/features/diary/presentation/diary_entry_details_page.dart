@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_details_flow.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_state.dart';
+import 'package:yamt/features/diary/presentation/diary_entry_delete_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_actions_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
@@ -143,7 +144,7 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
                 )
               : null,
           onRemove: () => unawaited(
-            _run(() => CalorieEntryDetailsFlow.remove(context, entry: entry)),
+            _run(() => DiaryEntryDeleteFlow.remove(context, entry: entry)),
           ),
         ),
       ],

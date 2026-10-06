@@ -115,42 +115,11 @@ List<InventoryItem>? buildRestoredItems({
     return null;
   }
 
-  final item = currentItems[itemIndex];
-  final nextItems = List<InventoryItem>.from(currentItems);
-  if (item.usesAmountProgress) {
-    final restoredCurrentAmount = item.currentAmount + amount;
-    final maxAmount = item.initialAmount > 0
-        ? item.initialAmount
-        : restoredCurrentAmount;
-    final safeCurrentAmount = restoredCurrentAmount > maxAmount
-        ? maxAmount
-        : restoredCurrentAmount;
-    final restoredItem = item.copyWith(
-      currentAmount: safeCurrentAmount,
-      quantity: item.quantityForAmount(safeCurrentAmount),
-    );
-    nextItems[itemIndex] = restoredItem.copyWith(
-      lastConsumedAt: restoredItem.isFullyAvailable
-          ? null
-          : restoredItem.lastConsumedAt,
-    );
-    return nextItems;
+  final restored = currentItems[itemIndex].restoredBy(amount);
+  if (restored == null) {
+    return null;
   }
-
-  final restoredQuantity = item.quantity + amount;
-  final maxQuantity = item.initialQuantity > 0
-      ? item.initialQuantity
-      : restoredQuantity;
-  final safeQuantity = restoredQuantity > maxQuantity
-      ? maxQuantity
-      : restoredQuantity;
-  final restoredItem = item.copyWith(quantity: safeQuantity);
-  nextItems[itemIndex] = restoredItem.copyWith(
-    lastConsumedAt: restoredItem.isFullyAvailable
-        ? null
-        : restoredItem.lastConsumedAt,
-  );
-  return nextItems;
+  return List<InventoryItem>.from(currentItems)..[itemIndex] = restored;
 }
 
 class _PendingDeletedInventoryItem {

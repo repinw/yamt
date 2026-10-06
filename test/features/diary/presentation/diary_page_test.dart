@@ -18,7 +18,6 @@ import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_we
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_balance_now_provider.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
@@ -70,6 +69,7 @@ import 'package:yamt/features/health/data/manual_health_weight_repository_provid
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/inventory/application/inventory_entry_delete_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
@@ -150,7 +150,7 @@ void main() {
     );
 
     expect(providerObserver.diaryQuickEatInventoryAddCount, 0);
-    expect(providerObserver.calorieEntryDeleteFlowAddCount, 0);
+    expect(providerObserver.entryDeleteServiceAddCount, 0);
   });
 
   testWidgets('shows day type toggle while diary dashboard refreshes', (
@@ -1182,13 +1182,13 @@ Future<void> _tapDiaryCardAction(WidgetTester tester, Finder finder) async {
 }
 
 final class _RecordingProviderObserver extends ProviderObserver {
-  int calorieEntryDeleteFlowAddCount = 0;
+  int entryDeleteServiceAddCount = 0;
   int diaryQuickEatInventoryAddCount = 0;
 
   @override
   void didAddProvider(ProviderObserverContext context, Object? value) {
-    if (context.provider == calorieEntryDeleteFlowProvider) {
-      calorieEntryDeleteFlowAddCount += 1;
+    if (context.provider == inventoryEntryDeleteServiceProvider) {
+      entryDeleteServiceAddCount += 1;
     }
     if (context.provider == diaryQuickEatInventoryProvider) {
       diaryQuickEatInventoryAddCount += 1;

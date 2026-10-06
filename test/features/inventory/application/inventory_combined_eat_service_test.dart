@@ -48,6 +48,12 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
         ),
     ];
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) => throw UnimplementedError();
 }
 
 final DateTime _now = DateTime.parse('2026-09-26T12:00:00Z');

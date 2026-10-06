@@ -810,6 +810,12 @@ class _SuccessfulInventoryCalorieEntryCommitStore
       ),
     ];
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) => throw UnimplementedError();
 }
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;

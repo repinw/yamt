@@ -12,4 +12,13 @@ abstract interface class InventoryCalorieEntryCommitStore {
     required CalorieEntry entry,
     required List<PendingInventoryConsumption> pendingConsumptions,
   });
+
+  /// Deletes [entry] and gives each item of [amountsByItemId] its amount
+  /// back in one write. Items that no longer exist are skipped. Returns the
+  /// new stock of the restored items, an empty list when no item exists (then
+  /// nothing was written), or null when nothing was written.
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  });
 }

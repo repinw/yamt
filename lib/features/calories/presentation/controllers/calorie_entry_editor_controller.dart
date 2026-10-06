@@ -5,16 +5,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_entry_amount_edit_flow.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
 
 part 'calorie_entry_editor_controller.g.dart';
 
 const _controllerLogName = 'CalorieEntryEditorController';
 
-/// Controller managing save and delete of calorie entries from the diary.
+/// Saves, changes, and deletes logged calorie entries for the details page.
 @riverpod
 class CalorieEntryEditorController extends _$CalorieEntryEditorController {
   @override
@@ -56,39 +54,10 @@ class CalorieEntryEditorController extends _$CalorieEntryEditorController {
     );
   }
 
-  /// Checks if entry source can be restored to inventory.
-  Future<bool> canRestoreSource(CalorieEntry entry) async {
-    final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
-    return await deleteFlow.canRestoreSource(entry);
-  }
-
-  /// Deletes or returns entry to inventory.
-  Future<CalorieEntryDeleteResult> deleteEntry({
-    required CalorieEntry entry,
-    required bool restoreToInventory,
-  }) async {
-    final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
-    return await deleteFlow.deleteEntry(
-      entry: entry,
-      restoreToInventory: restoreToInventory,
-    );
-  }
-
-  /// Undoes [deleteEntry]: saves [entry] again and, when the delete returned
-  /// its stock, takes that stock out of the inventory again.
-  Future<bool> undoDelete(
-    CalorieEntry entry, {
-    required bool restoredToInventory,
-  }) async {
-    final saved = await saveEntry(entry: entry);
-    if (!saved || !restoredToInventory) {
-      return saved;
-    }
-    final deleteFlow = ref.read(calorieEntryDeleteFlowProvider);
-    if (await deleteFlow.takeBackRestored(entry)) {
-      return true;
-    }
-    await deleteFlow.deleteEntry(entry: entry, restoreToInventory: false);
-    return false;
+  /// Deletes [entry] from the diary. Returns whether it was deleted.
+  Future<bool> deleteEntry(CalorieEntry entry) {
+    return ref
+        .read(calorieEntriesControllerProvider.notifier)
+        .deleteEntry(entry.id);
   }
 }

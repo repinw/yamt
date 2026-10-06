@@ -7,10 +7,10 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_entry_delete_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_entry_page.dart';
@@ -148,8 +148,8 @@ class DiaryQuickEatFlow {
       l10n.diaryQuickEntrySaved,
       onUndo: () async {
         final result = await container
-            .read(calorieEntryDeleteFlowProvider)
-            .deleteEntry(entry: entry, restoreToInventory: false);
+            .read(diaryEntryDeleteControllerProvider.notifier)
+            .delete(entry, restoreToInventory: false);
         return result.isSuccess;
       },
     );

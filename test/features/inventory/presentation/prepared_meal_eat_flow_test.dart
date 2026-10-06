@@ -5,13 +5,17 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
+import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_calorie_log_bridge.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
@@ -20,6 +24,7 @@ import 'package:yamt/features/inventory/presentation/prepared_meal_eat_flow.dart
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../support/prepared_meal_test_data.dart';
+import '../../calories/support/fake_calories_repositories.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
 
 class _FakeQuickEatActions implements InventoryQuickEatActions {
@@ -100,24 +105,24 @@ PreparedMealActions _detailActions() {
 
 final _restoredPortions = <({String mealId, num portions})>[];
 
-CalorieEntryDeleteFlow _deleteFlow() {
-  return CalorieEntryDeleteFlow(
-    deleteEntryById: (_) async => true,
-    restoreConsumedItem: (_, _) async => true,
-    rollbackRestoredItem: (_, _, {consumedAt}) async => true,
-    restoreConsumedItems: (_) async => true,
-    rollbackRestoredItems: (_, {consumedAt}) async => true,
-    sourceInventoryItemExists: (_) async => true,
-    restorePreparedMealPortions: ({required mealId, required portions}) async {
-      _restoredPortions.add((mealId: mealId, portions: portions));
-      return true;
-    },
-    rollbackRestoredPreparedMeal: ({
-      required mealId,
-      required discardedPortions,
-    }) async => true,
-    sourcePreparedMealExists: (_) async => true,
-  );
+/// Gives the portions of a deleted entry back and records them.
+class _MealStore implements PreparedMealCalorieEntryCommitStore {
+  const new();
+
+  @override
+  Future<CalorieEntryDeleteResult> deleteEntryAndRestorePreparedMeal({
+    required CalorieEntry entry,
+  }) async {
+    _restoredPortions.add((
+      mealId: entry.bundleSourcePreparedMealId!,
+      portions: entry.bundleConsumedPortions!,
+    ));
+    return const CalorieEntryDeleteResult.success(restoredToInventory: true);
+  }
+
+  @override
+  Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry}) =>
+      throw UnimplementedError();
 }
 
 Future<void> _pumpHarness(
@@ -130,7 +135,13 @@ Future<void> _pumpHarness(
     ProviderScope(
       overrides: [
         inventoryQuickEatActionsProvider.overrideWithValue(actions),
-        calorieEntryDeleteFlowProvider.overrideWithValue(_deleteFlow()),
+        firebaseFirestoreProvider.overrideWith((ref) => null),
+        calorieSettingsRepositoryProvider.overrideWithValue(
+          FakeCalorieSettingsRepository(),
+        ),
+        preparedMealCalorieEntryCommitStoreProvider.overrideWithValue(
+          const _MealStore(),
+        ),
         plannedEntryRepositoryProvider.overrideWithValue(
           plans ?? FakePlannedEntryRepository(),
         ),

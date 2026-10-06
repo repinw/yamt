@@ -138,8 +138,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/calories/application/burn_week_live_overview_logic.dart': 1,
     'lib/features/calories/application/burn_week_live_window_logic.dart': 1,
-    'lib/features/calories/application/calorie_entry_inventory_restore_coordinator.dart':
-        1,
     'lib/features/calories/data/calorie_entry_document_codec.dart': 1,
     'lib/features/calories/data/calorie_log_repository_contract.dart': 1,
     'lib/features/calories/data/calorie_product_cache_document_codec.dart': 1,
@@ -233,7 +231,6 @@ const architectureBaseline = <String, Map<String, int>>{
   },
   'flow-placement': {
     'lib/features/calories/application/calorie_entry_amount_edit_flow.dart': 1,
-    'lib/features/calories/application/calorie_entry_delete_flow.dart': 1,
     'lib/features/calories/application/calorie_goal_seed_weight_flow.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,
     'lib/features/inventory/application/inventory_calorie_bridge_flow.dart': 1,
@@ -343,10 +340,7 @@ const architectureBaseline = <String, Map<String, int>>{
   'bare-keep-alive': {
     'lib/features/calories/application/burn_week_live_sync_provider.dart': 1,
     'lib/features/calories/application/calorie_entry_amount_edit_flow.dart': 2,
-    'lib/features/calories/application/calorie_entry_delete_flow.dart': 1,
     'lib/features/calories/presentation/controllers/calorie_entry_editor_controller.dart':
-        1,
-    'lib/features/inventory/presentation/inventory_calorie_entry_delete_flow.dart':
         1,
     'lib/features/inventory/presentation/inventory_calorie_stock_adjuster.dart':
         1,

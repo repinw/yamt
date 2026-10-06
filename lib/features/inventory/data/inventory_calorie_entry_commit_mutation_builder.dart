@@ -16,8 +16,9 @@ class InventoryCalorieEntryCommitMutationBuilder {
     };
   }
 
-  /// Builds the activity event record for the consumption stock change.
+  /// Builds the activity event record for a stock change of [type].
   InventoryActivityEvent? buildActivityEvent({
+    required InventoryActivityEventType type,
     required InventoryActivityActor? actor,
     required InventoryItem beforeItem,
     required InventoryItem afterItem,
@@ -30,7 +31,7 @@ class InventoryCalorieEntryCommitMutationBuilder {
 
     return InventoryActivityEvent.fromStockChange(
       id: _newActivityEventId(),
-      type: InventoryActivityEventType.itemConsumed,
+      type: type,
       actor: actor,
       item: beforeItem,
       amount: amount,

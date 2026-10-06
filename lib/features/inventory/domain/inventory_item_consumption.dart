@@ -67,6 +67,35 @@ extension InventoryItemConsumptionExtension on InventoryItem {
       lastConsumedAt: nextLastConsumedAt,
     );
   }
+
+  /// This item after [amount] of stock came back, capped at its initial
+  /// stock. A fully stocked item forgets when it was last eaten.
+  ///
+  /// Returns null when [amount] is below 1.
+  InventoryItem? restoredBy(int amount) {
+    if (amount < 1) {
+      return null;
+    }
+    final InventoryItem restored;
+    if (usesAmountProgress) {
+      final nextAmount = currentAmount + amount;
+      final maxAmount = initialAmount > 0 ? initialAmount : nextAmount;
+      final safeAmount = nextAmount > maxAmount ? maxAmount : nextAmount;
+      restored = copyWith(
+        currentAmount: safeAmount,
+        quantity: quantityForAmount(safeAmount),
+      );
+    } else {
+      final nextQuantity = quantity + amount;
+      final maxQuantity = initialQuantity > 0 ? initialQuantity : nextQuantity;
+      restored = copyWith(
+        quantity: nextQuantity > maxQuantity ? maxQuantity : nextQuantity,
+      );
+    }
+    return restored.isFullyAvailable
+        ? restored.copyWith(lastConsumedAt: null)
+        : restored;
+  }
 }
 
 /// Defines pending inventory consumption.

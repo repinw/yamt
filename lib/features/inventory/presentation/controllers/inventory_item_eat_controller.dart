@@ -1,6 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -9,6 +8,7 @@ import 'package:yamt/features/calories/domain/'
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
 import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
+import 'package:yamt/features/inventory/application/inventory_entry_delete_service.dart';
 import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -79,11 +79,8 @@ class InventoryItemEatController extends _$InventoryItemEatController {
 
   /// Undoes an eat: deletes [entry] and returns its amount to the stock.
   Future<bool> undo(CalorieEntry entry) =>
-      _whileAlive(calorieEntryDeleteFlowProvider, (deleteFlow) async {
-        final result = await deleteFlow.deleteEntry(
-          entry: entry,
-          restoreToInventory: true,
-        );
+      _whileAlive(inventoryEntryDeleteServiceProvider, (service) async {
+        final result = await service.delete(entry, restoreToInventory: true);
         return result.isSuccess;
       });
 

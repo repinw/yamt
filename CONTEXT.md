@@ -17,7 +17,9 @@ names are in parentheses.
 - **Eintrag mit Vorrat-Abzug** (stock-taking entry): a diary entry that took
   stock from the Vorrat. It keeps the amount it took
   (`sourceInventoryAmountToRestore`), so deleting it can give the stock
-  back. `InventoryEatService` owns these entries: it saves them together
-  with their stock in one write.
+  back. Inventory owns these entries: `InventoryEatService` saves them
+  together with their stock in one write, and
+  `InventoryEntryDeleteService` deletes them together with their
+  Rückbuchung.
 - **Rückbuchung** (restore): giving the stock of a deleted or reduced
   stock-taking entry back to the Vorrat.

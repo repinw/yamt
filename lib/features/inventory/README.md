@@ -42,7 +42,12 @@ Other features may consume these public Inventory entry points:
   returns, and `commit` writes a diary entry together with the item stock it
   takes, for single, combined, and calorie editor eats. A failed eat
   releases its reservation. After a save the service learns the eaten
-  serving for the food. The eat flows call no
+  serving for the food.
+- `application/inventory_entry_delete_service.dart`: deletes any diary entry.
+  For an entry that took stock it can give the stock or the portions back,
+  and the delete and the stock change are one write through the commit
+  stores. Its undo saves the entry and takes the stock again in one write.
+  The new stock goes to the Vorrat list at once. The eat flows call no
   service or store themselves; they go through `InventoryItemEatController`
   and `InventoryItemsController`.
 - `application/inventory_quick_eat_application.dart` for eating prepared
@@ -116,7 +121,7 @@ already documented as a reusable presentation surface.
 - Repository providers live in `data/`.
 - Use-case/service providers live in `application/`.
 - Controller providers live in `presentation/controllers/`.
-- Controller-wired calorie save/delete/bridge adapters live in `presentation/`
+- Controller-wired calorie adapters live in `presentation/`
   because they coordinate presentation controllers with inventory persistence.
   `presentation/inventory_calorie_stock_adjuster.dart` implements the calories
   `CalorieInventoryStockAdjuster` port: when a logged amount changes, items
@@ -160,8 +165,8 @@ Inventory currently has explicit dependencies on:
 - `calories` for meal type, calorie entry handoff, and prepared meal calorie
   logging. `application/inventory_calorie_nutrient_details.dart` maps an
   item's label nutrients into the calories `CalorieNutrientDetails` so logged
-  entries keep them. Inventory implements the calorie-owned ports
-  `CalorieEntryDeleteFlow` and `CalorieInventoryStockAdjuster`.
+  entries keep them. Inventory implements the calorie-owned port
+  `CalorieInventoryStockAdjuster`.
 - `shoppinglist` for add-to-shopping-list actions from inventory rows.
 - `recipes` for template ingredient parsing.
 

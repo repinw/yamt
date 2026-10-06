@@ -65,9 +65,7 @@ class FirestoreInventoryCalorieEntryCommitStore
     final household = householdCipher;
     if (cipher == null || household == null) {
       log(
-        'Cannot commit calorie entry ${entry.id}: no data key or household '
-        'key (userId=${cipher?.uid}, '
-        'householdId=${household?.householdId}).',
+        'Cannot commit calorie entry ${entry.id}: no data or household key.',
         name: _commitStoreLogName,
       );
       return null;
@@ -78,18 +76,11 @@ class FirestoreInventoryCalorieEntryCommitStore
         pendingConsumptions.any((pending) => pending.amount < 1)) {
       log(
         'Cannot commit calorie entry ${entry.id}: invalid pending '
-        'consumptions ${pendingConsumptions.map(_describe).join(', ')}.',
+        'consumptions $itemIds.',
         name: _commitStoreLogName,
       );
       return null;
     }
-
-    log(
-      'Committing calorie entry ${entry.id} with inventory items '
-      '${pendingConsumptions.map(_describe).join(', ')} for household '
-      '${household.householdId}.',
-      name: _commitStoreLogName,
-    );
 
     // A batch instead of a transaction: Firestore queues batches while
     // offline, but transactions fail. The stock is computed from the local
@@ -114,11 +105,17 @@ class FirestoreInventoryCalorieEntryCommitStore
         );
       final results = <InventoryCalorieEntryCommitResult>[];
       for (final pending in pendingConsumptions) {
-        final result = await _addItemCommit(
+        final result = await _addItemChange(
           batch: batch,
           household: household,
-          entry: normalizedEntry,
-          pending: pending,
+          itemId: pending.itemId,
+          amount: pending.amount,
+          type: InventoryActivityEventType.itemConsumed,
+          happenedAt: normalizedEntry.loggedAt,
+          change: (item) => item.reducedBy(
+            pending.amount,
+            consumedAt: normalizedEntry.loggedAt,
+          ),
         );
         if (result == null) {
           return null;
@@ -131,11 +128,6 @@ class FirestoreInventoryCalorieEntryCommitStore
             'Server rejected calorie entry ${entry.id} with inventory items '
             '${itemIds.join(', ')}.',
         logName: _commitStoreLogName,
-      );
-      log(
-        'Batch queued for calorie entry ${entry.id} '
-        '(${results.length} inventory items).',
-        name: _commitStoreLogName,
       );
       return results;
     } on Object catch (error, stackTrace) {
@@ -150,22 +142,80 @@ class FirestoreInventoryCalorieEntryCommitStore
     }
   }
 
-  /// Adds the stock change of [pending] and its activity event to [batch].
-  /// Returns null when the item is gone or has too little stock.
-  Future<InventoryCalorieEntryCommitResult?> _addItemCommit({
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async {
+    final cipher = dataCipher;
+    final household = householdCipher;
+    if (cipher == null ||
+        household == null ||
+        amountsByItemId.values.any((amount) => amount < 1)) {
+      log(
+        'Cannot delete calorie entry ${entry.id} with its stock: no data key, '
+        'no household key, or an amount below 1 ($amountsByItemId).',
+        name: _commitStoreLogName,
+      );
+      return null;
+    }
+    try {
+      final batch = firestore.batch()
+        ..delete(_calorieEntriesCollectionRef(cipher.uid).doc(entry.id));
+      final results = <InventoryCalorieEntryCommitResult>[];
+      for (final MapEntry(key: itemId, value: amount)
+          in amountsByItemId.entries) {
+        final result = await _addItemChange(
+          batch: batch,
+          household: household,
+          itemId: itemId,
+          amount: amount,
+          type: InventoryActivityEventType.itemRestored,
+          happenedAt: DateTime.now(),
+          change: (item) => item.restoredBy(amount),
+        );
+        // A missing item is skipped: the rest of the stock still comes back.
+        if (result != null) {
+          results.add(result);
+        }
+      }
+      if (results.isNotEmpty) {
+        commitBatchInBackground(
+          batch,
+          failureMessage: 'Server rejected deleting entry ${entry.id}.',
+          logName: _commitStoreLogName,
+        );
+      }
+      return results;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to delete calorie entry ${entry.id} with its stock.',
+        name: _commitStoreLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return null;
+    }
+  }
+
+  /// Adds the stock change of item [itemId] and its activity event to
+  /// [batch]. Returns null when the item is gone or [change] rejects it.
+  Future<InventoryCalorieEntryCommitResult?> _addItemChange({
     required WriteBatch batch,
     required HouseholdCipher household,
-    required CalorieEntry entry,
-    required PendingInventoryConsumption pending,
+    required String itemId,
+    required int amount,
+    required InventoryActivityEventType type,
+    required DateTime happenedAt,
+    required InventoryItem? Function(InventoryItem item) change,
   }) async {
     final inventoryCollection = _inventoryCollection(household);
-    final inventoryRef = inventoryCollection.reference.doc(pending.itemId);
+    final inventoryRef = inventoryCollection.reference.doc(itemId);
     final inventorySnapshot = await readDocumentLocalFirst(inventoryRef);
     final storedItem = await inventoryCollection.open(inventorySnapshot);
     if (storedItem == null) {
       log(
-        'Inventory item ${pending.itemId} no longer exists while committing '
-        'calorie entry ${entry.id}.',
+        'Inventory item $itemId no longer exists.',
         name: _commitStoreLogName,
       );
       return null;
@@ -174,18 +224,12 @@ class FirestoreInventoryCalorieEntryCommitStore
     final currentItem = InventoryItem.fromJson(
       Map<String, dynamic>.from(storedItem)..['id'] = inventorySnapshot.id,
     );
-    final committedItem = currentItem.reducedBy(
-      pending.amount,
-      consumedAt: entry.loggedAt,
-    );
-    if (committedItem == null) {
+    final changedItem = change(currentItem);
+    if (changedItem == null) {
       log(
-        'Inventory commit rejected for calorie entry ${entry.id} '
-        '(itemId=${currentItem.id}, '
-        'quantity=${currentItem.quantity}, '
-        'currentAmount=${currentItem.currentAmount}, '
-        'requestedAmount=${pending.amount}, '
-        'usesAmountProgress=${currentItem.usesAmountProgress}).',
+        'Stock change of $amount rejected for item ${currentItem.id} '
+        '(quantity=${currentItem.quantity}, '
+        'currentAmount=${currentItem.currentAmount}).',
         name: _commitStoreLogName,
       );
       return null;
@@ -197,15 +241,16 @@ class FirestoreInventoryCalorieEntryCommitStore
       inventoryRef,
       await inventoryCollection.seal(inventoryRef.id, {
         ...storedItem,
-        ...mutationBuilder.buildInventoryUpdate(committedItem),
+        ...mutationBuilder.buildInventoryUpdate(changedItem),
       }),
     );
     final activityEvent = mutationBuilder.buildActivityEvent(
+      type: type,
       actor: actor,
       beforeItem: currentItem,
-      afterItem: committedItem,
-      amount: pending.amount,
-      happenedAt: entry.loggedAt,
+      afterItem: changedItem,
+      amount: amount,
+      happenedAt: happenedAt,
     );
     if (activityEvent != null) {
       final activityCollection = _activityEventsCollection(household);
@@ -215,14 +260,10 @@ class FirestoreInventoryCalorieEntryCommitStore
       );
     }
     return InventoryCalorieEntryCommitResult(
-      itemId: committedItem.id,
-      quantity: committedItem.quantity,
-      currentAmount: committedItem.currentAmount,
+      itemId: changedItem.id,
+      quantity: changedItem.quantity,
+      currentAmount: changedItem.currentAmount,
     );
-  }
-
-  static String _describe(PendingInventoryConsumption pending) {
-    return '${pending.itemId} x ${pending.amount}';
   }
 
   SealedCollection _inventoryCollection(HouseholdCipher household) {
