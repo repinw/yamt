@@ -50,6 +50,17 @@ Other features may consume these public Inventory entry points:
   The new stock goes to the Vorrat list at once. The eat flows call no
   service or store themselves; they go through `InventoryItemEatController`
   and `InventoryItemsController`.
+- `application/inventory_plan_service.dart`: saves a plan, a diary entry
+  for a later day (or an explicit plan today) that takes no stock yet but
+  keeps the stock amount it will take. It reports the plan's day to
+  `LastPlannedDay`, so the diary opens that day.
+- `application/inventory_plan_accept_service.dart`: eats a plan on its own
+  day and meal. A Vorrat food takes its stock from a pack of the same food
+  (`domain/inventory_plan_pack.dart`: the planned pack, or one with the same
+  name and brand in the plan's unit; opened packs first, then the oldest);
+  a cooked meal takes its portions. Without stock left the food is logged
+  without stock. The plan is deleted first and comes back when the eat
+  fails; `undo` deletes the entry with its stock and saves the plan again.
 - `application/inventory_quick_eat_application.dart` for eating prepared
   meals from integrating features. Callers pass the `PreparedMeal` they
   show, so no server read delays the save. The calorie entry commit stores
