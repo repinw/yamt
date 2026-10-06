@@ -2,15 +2,18 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_product_search_hub_completion_handler.dart';
@@ -43,6 +46,8 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_completion_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../calories/support/fake_planned_entry_repository.dart';
 
 void main() {
   late _MockFirebaseAuth firebaseAuth;
@@ -308,6 +313,103 @@ void main() {
     expect(inventoryController.addedItems, hasLength(1));
     expect(selection.item.id, inventoryController.addedItems.single.id);
     expect(inventoryController.stagedConsumptions, hasLength(1));
+  });
+
+  testWidgets('diary mode plans a later day and adds nothing to the Vorrat', (
+    tester,
+  ) async {
+    final inventoryController = _SuccessfulInventoryItemsController();
+    final plans = FakePlannedEntryRepository();
+    final barcodeRepository = _RecordingGlobalBarcodeCandidateRepository();
+    ProductSearchHubCompletionResult? completion;
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        firebaseAuth: firebaseAuth,
+        barcodeRepository: barcodeRepository,
+        overrides: [
+          plannedEntryRepositoryProvider.overrideWithValue(plans),
+          clockProvider.overrideWithValue(() => DateTime(2026, 4, 12, 20)),
+        ],
+        onRun: (context, container, l10n) async {
+          completion = await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.diary(),
+            sourceKey: '4006381333931',
+            result: _manualResult(
+              item: _manualItemWithNutrition().copyWith(
+                barcode: '4006381333931',
+              ),
+              eatSelection: EatSelection(
+                inventoryAmount: 200,
+                loggedAt: DateTime(2026, 4, 13, 12),
+                mealType: MealType.lunch,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+
+    expect(completion?.shouldCloseHub, isTrue);
+    expect(completion?.selection, isNull);
+    final plan = plans.plans.single;
+    expect(plan.consumedAmount, 200);
+    expect(plan.sourceInventoryItemId, isNull);
+    expect(plan.sourceInventoryAmountToRestore, isNull);
+    expect(inventoryController.addedItems, isEmpty);
+    expect(inventoryController.stagedConsumptions, isEmpty);
+    // The shared catalog still learns the product.
+    expect(barcodeRepository.recordedBarcodes, ['4006381333931']);
+    expect(find.text('Planned for the day'), findsOneWidget);
+  });
+
+  testWidgets('a failed plan says the entry was not saved', (tester) async {
+    final inventoryController = _SuccessfulInventoryItemsController();
+    final plans = FakePlannedEntryRepository()..writeShouldFail = true;
+    ProductSearchHubCompletionResult? completion;
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        firebaseAuth: firebaseAuth,
+        overrides: [
+          plannedEntryRepositoryProvider.overrideWithValue(plans),
+          clockProvider.overrideWithValue(() => DateTime(2026, 4, 12, 20)),
+        ],
+        onRun: (context, container, l10n) async {
+          completion = await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.diary(),
+            sourceKey: '4006381333931',
+            result: _manualResult(
+              item: _manualItemWithNutrition(),
+              eatSelection: EatSelection(
+                inventoryAmount: 200,
+                loggedAt: DateTime(2026, 4, 13, 12),
+                mealType: MealType.lunch,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+
+    expect(completion?.shouldCloseHub, isFalse);
+    expect(plans.plans, isEmpty);
+    expect(inventoryController.addedItems, isEmpty);
+    expect(find.text('Could not save entry.'), findsOneWidget);
   });
 
   testWidgets('diary mode saves the item already sized to the eaten amount', (
@@ -597,11 +699,13 @@ Widget _buildCompletionHarness({
       const _NoopGlobalBarcodeCandidateRepository(),
   FirebaseAuth? firebaseAuth,
   InventoryCalorieEntryCommitStore? commitStore,
+  List<Override> overrides = const <Override>[],
 }) {
   final container = ProviderContainer(
     overrides: [
-      if (firebaseAuth != null)
-        firebaseAuthProvider.overrideWithValue(firebaseAuth),
+      firebaseAuthProvider.overrideWithValue(
+        firebaseAuth ?? _MockFirebaseAuth(),
+      ),
       inventoryItemsControllerProvider.overrideWith(() => inventoryController),
       productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
         final container = ref.container;
@@ -623,6 +727,7 @@ Widget _buildCompletionHarness({
       ),
       if (commitStore != null)
         inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
+      ...overrides,
     ],
   );
   addTearDown(container.dispose);

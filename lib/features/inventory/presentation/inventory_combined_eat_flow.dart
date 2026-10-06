@@ -228,6 +228,8 @@ abstract final class InventoryCombinedEatFlow {
           parts.add((stockItem, pick.request));
         case InventoryManualProductSaveStatus.saved:
         case InventoryManualProductSaveStatus.failed:
+        // Only the diary eat flow plans.
+        case InventoryManualProductSaveStatus.planned:
           throw StateError('Adding ${pick.item.name} to the stock failed.');
       }
     }

@@ -121,8 +121,7 @@ class _DiaryQuickEntryPageState extends ConsumerState<DiaryQuickEntryPage> {
           onChanged: (value, text) => _controller.setValueText(value, text),
           onSubmitted: _focusNext,
         ),
-        // The AI search saves no plans yet.
-        if (state.isMissingMacros && !state.isPlan) _AiHint(onPressed: _openAi),
+        if (state.isMissingMacros) _AiHint(onPressed: _openAi),
       ],
     );
   }

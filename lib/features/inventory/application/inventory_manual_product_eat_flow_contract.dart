@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
@@ -34,6 +36,8 @@ class InventoryManualProductEatOutcome {
     this.item,
     this.calorieEntryId,
     this.addMoreRequested = false,
+    this.plan,
+    this.planFailure,
   });
 
   /// Outcome status.
@@ -47,12 +51,21 @@ class InventoryManualProductEatOutcome {
 
   /// Whether another product should be added after this one.
   final bool addMoreRequested;
+
+  /// The saved plan, when the day lies after today.
+  final CalorieEntry? plan;
+
+  /// Why the plan failed, when a plan failed.
+  final InventoryEatFailure? planFailure;
 }
 
 /// Status of the manual product eat flow.
 enum InventoryManualProductEatStatus {
   /// The product and consumption were saved.
   saved,
+
+  /// The day lies after today: a plan was saved, and no product.
+  planned,
 
   /// The user canceled the flow.
   canceled,

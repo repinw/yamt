@@ -88,7 +88,8 @@ already documented as a reusable presentation surface.
 
 - `presentation/inventory_item_eat_flow.dart`: `InventoryItemEatFlow.eat` opens
   the eat sheet for an inventory item, stages the stock from the item the
-  caller shows, and logs the calorie entry.
+  caller shows, and logs the calorie entry. `undoPlan` deletes a plan for an
+  undo, and `failureMessage` names what failed for an eat failure.
 - `presentation/inventory_combined_eat_flow.dart`: `InventoryCombinedEatFlow.eat`
   logs a stock item together with other stock items as one combined calorie
   entry, written in one batch with every stock change.

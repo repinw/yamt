@@ -56,6 +56,8 @@ class _InventoryManualProductEatCoordinator
       status: switch (outcome.status) {
         InventoryManualProductSaveStatus.saved =>
           InventoryManualProductEatStatus.saved,
+        InventoryManualProductSaveStatus.planned =>
+          InventoryManualProductEatStatus.planned,
         InventoryManualProductSaveStatus.canceled =>
           InventoryManualProductEatStatus.canceled,
         InventoryManualProductSaveStatus.failed =>
@@ -64,6 +66,8 @@ class _InventoryManualProductEatCoordinator
       item: outcome.item,
       calorieEntryId: outcome.calorieEntryId,
       addMoreRequested: outcome.addMoreRequested,
+      plan: outcome.plan,
+      planFailure: outcome.planFailure,
     );
   }
 

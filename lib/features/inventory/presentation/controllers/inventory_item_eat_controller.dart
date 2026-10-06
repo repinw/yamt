@@ -83,6 +83,20 @@ class InventoryItemEatController extends _$InventoryItemEatController {
         return result.isSuccess;
       });
 
+  /// Whether [request] lies on a day after today, so it becomes a plan.
+  bool isPlan(InventoryItemEatRequest request) =>
+      ref.read(inventoryPlanServiceProvider).isPlan(request);
+
+  /// Plans [request] for [item], a food that is not in the Vorrat, such as
+  /// a search result.
+  Future<InventoryEatOutcome> planNew({
+    required InventoryItem item,
+    required InventoryItemEatRequest request,
+  }) => _whileAlive(
+    inventoryPlanServiceProvider,
+    (planner) => planner.plan(item: item, request: request, inVorrat: false),
+  );
+
   /// Undoes a plan: deletes [plan]. Returns false when it failed.
   Future<bool> unplan(CalorieEntry plan) => _whileAlive(
     inventoryPlanServiceProvider,

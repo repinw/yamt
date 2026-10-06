@@ -9,6 +9,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_manual_product_eat_flow_contract.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
+import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_handler.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -52,6 +53,18 @@ class DiaryProductSearchHubCompletionHandler
     if (!context.mounted) {
       return const ProductSearchHubCompletionResult.none();
     }
+    if (outcome.status == InventoryManualProductEatStatus.planned) {
+      final plan = outcome.plan!;
+      final container = ProviderScope.containerOf(context, listen: false);
+      ScaffoldMessenger.of(context).showAppSnackBar(
+        l10n.diaryPlanSaved,
+        onUndo: () =>
+            InventoryItemEatFlow.undoPlan(container: container, plan: plan),
+      );
+      return outcome.addMoreRequested
+          ? const ProductSearchHubCompletionResult.none()
+          : const ProductSearchHubCompletionResult.closeHub();
+    }
     if (outcome.status != InventoryManualProductEatStatus.saved ||
         outcome.item == null) {
       log(
@@ -61,7 +74,10 @@ class DiaryProductSearchHubCompletionHandler
       );
       if (outcome.status == InventoryManualProductEatStatus.failed) {
         ScaffoldMessenger.of(context).showAppSnackBar(
-          l10n.inventoryManualAddSaveFailed,
+          switch (outcome.planFailure) {
+            null => l10n.inventoryManualAddSaveFailed,
+            final failure => InventoryItemEatFlow.failureMessage(l10n, failure),
+          },
           tone: AppSnackBarTone.error,
         );
       }
