@@ -95,6 +95,12 @@ class _ItemStore implements InventoryCalorieEntryCommitStore {
   final restoredAmounts = <Map<String, int>>[];
 
   @override
+  Future<List<InventoryCalorieEntryCommitResult>?> saveEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async => null;
+
+  @override
   Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
     required CalorieEntry entry,
     required Map<String, int> amountsByItemId,

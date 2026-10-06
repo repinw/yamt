@@ -122,14 +122,10 @@ already documented as a reusable presentation surface.
 - Repository providers live in `data/`.
 - Use-case/service providers live in `application/`.
 - Controller providers live in `presentation/controllers/`.
-- Controller-wired calorie adapters live in `presentation/`
-  because they coordinate presentation controllers with inventory persistence.
-  `presentation/inventory_calorie_stock_adjuster.dart` implements the calories
-  `CalorieInventoryStockAdjuster` port: when a logged amount changes, items
-  measured in grams or milliliters consume or return the difference, while
-  items counted in pieces keep their stock. They share
-  `presentation/inventory_controller_access.dart`, which runs an operation on
-  the loaded `InventoryItemsController`.
+- `application/inventory_entry_amount_service.dart` changes the amount of a
+  diary entry: items measured in grams or milliliters consume or return the
+  difference in the same write as the entry, while items counted in pieces
+  keep their stock.
 - `provider/` is legacy and should stay empty; do not add new files there.
 
 ## Inventory Activity
@@ -166,8 +162,7 @@ Inventory currently has explicit dependencies on:
 - `calories` for meal type, calorie entry handoff, and prepared meal calorie
   logging. `application/inventory_calorie_nutrient_details.dart` maps an
   item's label nutrients into the calories `CalorieNutrientDetails` so logged
-  entries keep them. Inventory implements the calorie-owned port
-  `CalorieInventoryStockAdjuster`.
+  entries keep them.
 - `shoppinglist` for add-to-shopping-list actions from inventory rows.
 - `recipes` for template ingredient parsing.
 

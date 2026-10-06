@@ -1,32 +1,13 @@
-import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
-import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_editor_draft.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Closing the calorie editor and the entry details page.
+/// Closing the calorie editor with its new entry.
 abstract final class CalorieEntryEditorFlowHandler {
-  /// Handles popping with root fallback.
-  static void maybePopRootNavigator(BuildContext context) {
-    final rootNavigator = Navigator.of(context, rootNavigator: true);
-    if (rootNavigator.canPop()) {
-      rootNavigator.pop();
-      return;
-    }
-
-    final localNavigator = Navigator.of(context);
-    if (!identical(localNavigator, rootNavigator) && localNavigator.canPop()) {
-      localNavigator.pop();
-      return;
-    }
-
-    GoRouter.of(context).go(AppRoutes.homeCalories);
-  }
-
   /// Displays error snackbar.
   static void showFailureSnackBar(
     ScaffoldMessengerState messenger,

@@ -233,6 +233,12 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
   }
 
   @override
+  Future<List<InventoryCalorieEntryCommitResult>?> saveEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async => null;
+
+  @override
   Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
     required CalorieEntry entry,
     required Map<String, int> amountsByItemId,

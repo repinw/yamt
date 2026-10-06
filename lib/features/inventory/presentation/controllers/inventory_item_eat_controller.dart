@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/ref_while_alive.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
@@ -42,7 +43,7 @@ class InventoryItemEatController extends _$InventoryItemEatController {
     required InventoryItem item,
     required InventoryItemEatRequest request,
     required PendingInventoryConsumption pending,
-  }) => _whileAlive(
+  }) => ref.whileAlive(
     inventoryEatServiceProvider,
     (service) => service.log(item: item, request: request, pending: pending),
   );
@@ -54,7 +55,7 @@ class InventoryItemEatController extends _$InventoryItemEatController {
     required PendingInventoryConsumption pending,
     required CalorieInventoryCreateContext inventoryContext,
     CalorieScannedSourceRef? scannedSourceRef,
-  }) => _whileAlive(
+  }) => ref.whileAlive(
     inventoryEatServiceProvider,
     (service) => service.logEdited(
       entry: entry,
@@ -70,7 +71,7 @@ class InventoryItemEatController extends _$InventoryItemEatController {
     required List<InventoryCombinedFood> foods,
     required DateTime loggedAt,
     required MealType mealType,
-  }) => _whileAlive(
+  }) => ref.whileAlive(
     inventoryCombinedEatServiceProvider,
     (service) =>
         service.save(foods: foods, loggedAt: loggedAt, mealType: mealType),
@@ -78,7 +79,7 @@ class InventoryItemEatController extends _$InventoryItemEatController {
 
   /// Undoes an eat: deletes [entry] and returns its amount to the stock.
   Future<bool> undo(CalorieEntry entry) =>
-      _whileAlive(inventoryEntryDeleteServiceProvider, (service) async {
+      ref.whileAlive(inventoryEntryDeleteServiceProvider, (service) async {
         final result = await service.delete(entry, restoreToInventory: true);
         return result.isSuccess;
       });
@@ -92,31 +93,15 @@ class InventoryItemEatController extends _$InventoryItemEatController {
   Future<InventoryEatOutcome> planNew({
     required InventoryItem item,
     required InventoryItemEatRequest request,
-  }) => _whileAlive(
+  }) => ref.whileAlive(
     inventoryPlanServiceProvider,
     (planner) => planner.plan(item: item, request: request, inVorrat: false),
   );
 
   /// Undoes a plan: deletes [plan]. Returns false when it failed.
-  Future<bool> unplan(CalorieEntry plan) => _whileAlive(
+  Future<bool> unplan(CalorieEntry plan) => ref.whileAlive(
     inventoryPlanServiceProvider,
     (planner) async =>
         !(await AsyncValue.guard(() => planner.unplan(plan))).hasError,
   );
-
-  /// Keeps this controller and [provider] alive while [action] runs, so the
-  /// write finishes after its screen closes.
-  Future<T> _whileAlive<S, T>(
-    ProviderListenable<S> provider,
-    Future<T> Function(S value) action,
-  ) async {
-    final link = ref.keepAlive();
-    final subscription = ref.listen(provider, (_, _) {});
-    try {
-      return await action(subscription.read());
-    } finally {
-      subscription.close();
-      link.close();
-    }
-  }
 }

@@ -21,4 +21,12 @@ abstract interface class InventoryCalorieEntryCommitStore {
     required CalorieEntry entry,
     required Map<String, int> amountsByItemId,
   });
+
+  /// Saves [entry] and gives each item of [amountsByItemId] its amount back
+  /// in one write. Items that no longer exist are skipped. Returns like
+  /// [deleteEntryAndRestoreItems].
+  Future<List<InventoryCalorieEntryCommitResult>?> saveEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  });
 }

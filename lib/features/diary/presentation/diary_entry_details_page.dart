@@ -6,10 +6,10 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
-import 'package:yamt/features/calories/presentation/calorie_entry_details_flow.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_state.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_delete_flow.dart';
+import 'package:yamt/features/diary/presentation/diary_entry_details_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_actions_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
@@ -138,8 +138,7 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
           onEatAgain: canRepeatCalorieEntry(entry)
               ? () => unawaited(
                   _run(
-                    () =>
-                        CalorieEntryDetailsFlow.eatAgain(context, entry: entry),
+                    () => DiaryEntryDetailsFlow.eatAgain(context, entry: entry),
                   ),
                 )
               : null,
@@ -165,7 +164,7 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
       if (move == null) {
         return;
       }
-      final saved = await CalorieEntryDetailsFlow.saveChange(
+      final saved = await DiaryEntryDetailsFlow.saveChange(
         context,
         previous: move.previous,
         updated: move.updated,
@@ -186,7 +185,7 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
         context.pop();
         return;
       }
-      final saved = await CalorieEntryDetailsFlow.changeAmount(
+      final saved = await DiaryEntryDetailsFlow.changeAmount(
         context,
         entry: state.entry,
         amount: amount,
