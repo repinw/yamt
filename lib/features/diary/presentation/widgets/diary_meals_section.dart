@@ -11,7 +11,6 @@ import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_flow.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_dashed_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
@@ -19,7 +18,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_meals_empty_state
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Meals logged on the selected diary day, between dashed lines.
+/// Meals logged on the selected diary day.
 class DiaryMealsSection extends ConsumerWidget {
   /// Creates the diary meals section.
   const new({required this.selectedDay, super.key});
@@ -72,30 +71,28 @@ class DiaryMealsSection extends ConsumerWidget {
       );
     }
 
-    return DiaryDashedSection(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: AppSpacing.xxl,
-        children: [
-          for (final section in loggedSections)
-            DiaryMealGroup(
-              section: section,
-              onTapEntry: (entry) => unawaited(
-                context.push<void>(
-                  AppRoutes.homeCaloriesEntryDetailsPath(entry.id),
-                ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: AppSpacing.xxl,
+      children: [
+        for (final section in loggedSections)
+          DiaryMealGroup(
+            section: section,
+            onTapEntry: (entry) => unawaited(
+              context.push<void>(
+                AppRoutes.homeCaloriesEntryDetailsPath(entry.id),
               ),
-              onTapPlan: (row) {
-                final plan = data?.plannedEntries.firstWhereOrNull(
-                  (entry) => entry.id == row.id,
-                );
-                if (plan != null) {
-                  unawaited(deleteDiaryPlanFlow(context, ref, plan: plan));
-                }
-              },
             ),
-        ],
-      ),
+            onTapPlan: (row) {
+              final plan = data?.plannedEntries.firstWhereOrNull(
+                (entry) => entry.id == row.id,
+              );
+              if (plan != null) {
+                unawaited(deleteDiaryPlanFlow(context, ref, plan: plan));
+              }
+            },
+          ),
+      ],
     );
   }
 }
