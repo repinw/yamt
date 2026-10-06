@@ -144,6 +144,16 @@
   "productSearchHubCartTitle": "Selected products",
   "productSearchHubCartAddAction": "Add",
   "productSearchHubStoredInVorrat": "{name} is in stock",
+  "inventoryRestToStockQuestion": "Put the rest ({amount}) into stock?",
+  "@inventoryRestToStockQuestion": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "inventoryRestToStockNo": "No",
+  "inventoryRestToStockYes": "To stock",
   "@productSearchHubStoredInVorrat": {
     "placeholders": {
       "name": {

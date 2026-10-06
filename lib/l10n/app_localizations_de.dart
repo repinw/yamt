@@ -304,6 +304,17 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String inventoryRestToStockQuestion(String amount) {
+    return 'Soll der Rest ($amount) in den Vorrat?';
+  }
+
+  @override
+  String get inventoryRestToStockNo => 'Nein';
+
+  @override
+  String get inventoryRestToStockYes => 'In den Vorrat';
+
+  @override
   String get productSearchHubCartRemoveAction => 'Entfernen';
 
   @override

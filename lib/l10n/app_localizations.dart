@@ -584,6 +584,24 @@ abstract class AppLocalizations {
   /// **'{name} is in stock'**
   String productSearchHubStoredInVorrat(String name);
 
+  /// No description provided for @inventoryRestToStockQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Put the rest ({amount}) into stock?'**
+  String inventoryRestToStockQuestion(String amount);
+
+  /// No description provided for @inventoryRestToStockNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get inventoryRestToStockNo;
+
+  /// No description provided for @inventoryRestToStockYes.
+  ///
+  /// In en, this message translates to:
+  /// **'To stock'**
+  String get inventoryRestToStockYes;
+
   /// No description provided for @productSearchHubCartRemoveAction.
   ///
   /// In en, this message translates to:

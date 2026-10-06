@@ -445,7 +445,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   eating it: the Vorrat page opens (packages, package size), as from the
   Vorrat search, and no diary entry is made.
 - Eating a newly picked product has no stock limit: the stock is set to the
-  eaten amount. A product with g or ml but no package size is eaten in that
+  eaten amount. When the package size is known and less than the package is
+  eaten, the app asks "Soll der Rest (300 g) in den Vorrat?"; "In den Vorrat"
+  keeps the whole package in the Vorrat with the eaten amount taken off. A product with g or ml but no package size is eaten in that
   unit. The eat page always shows the per-100 column.
 - Recent manual items (up to 20) shown while the search query is empty.
 - Several products can be added in one visit; a counter overlay shows them.

@@ -34,6 +34,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_eat_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_product_search_hub_completion_handler.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_rest_to_stock_dialog.dart';
 import 'package:yamt/features/product_search_hub/application/product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
@@ -480,8 +482,53 @@ void main() {
 
     await tester.tap(find.text('run'));
     await tester.pumpAndSettle();
+    // 300 g of the 500 g package stay; "No" keeps only the eaten amount.
+    expect(find.text('Put the rest (300 g) into stock?'), findsOneWidget);
+    await tester.tap(find.text('No'));
+    await tester.pumpAndSettle();
 
     expect(inventoryController.addedItems.single.currentAmount, 200);
+    expect(inventoryController.updatedItems, isEmpty);
+    expect(inventoryController.stagedConsumptions.single.amount, 200);
+  });
+
+  testWidgets('diary mode keeps the rest of the package in the Vorrat on yes', (
+    tester,
+  ) async {
+    final inventoryController = _SuccessfulInventoryItemsController();
+
+    await tester.pumpWidget(
+      _buildCompletionHarness(
+        inventoryController: inventoryController,
+        firebaseAuth: firebaseAuth,
+        commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+        onRun: (context, container, l10n) async {
+          await completeProductSearchHubResult(
+            context: context,
+            container: container,
+            l10n: l10n,
+            args: const ProductSearchHubRouteArgs.diary(),
+            sourceKey: '4006381333931',
+            result: _manualResult(
+              item: _manualItemWithNutrition(),
+              eatSelection: EatSelection(
+                inventoryAmount: 200,
+                loggedAt: DateTime.utc(2026, 4, 13, 12),
+                mealType: MealType.lunch,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+
+    await tester.tap(find.text('run'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(inventoryRestToStockYesKey));
+    await tester.pumpAndSettle();
+
+    // The whole package goes into the Vorrat, and 200 g of it are eaten.
+    expect(inventoryController.addedItems.single.currentAmount, 500);
     expect(inventoryController.updatedItems, isEmpty);
     expect(inventoryController.stagedConsumptions.single.amount, 200);
   });
