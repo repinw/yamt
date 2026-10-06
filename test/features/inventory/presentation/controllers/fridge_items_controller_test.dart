@@ -764,13 +764,13 @@ void main() {
     final consumedAt = DateTime.parse('2026-02-20T12:00:00Z');
     final updated = await container
         .read(inventoryItemsControllerProvider.notifier)
-        .eatItem('a', 2, consumedAt: consumedAt);
+        .eatItemDetailed('a', 2, consumedAt: consumedAt);
     await _waitForItems(
       container,
       (items) => items.length == 1 && items.single.quantity == 1,
     );
 
-    expect(updated, isTrue);
+    expect(updated, isNotNull);
     expect(repository.savedItems, hasLength(1));
     expect(repository.savedItems.single.quantity, 1);
     expect(repository.savedItems.single.lastConsumedAt, consumedAt);
@@ -872,7 +872,7 @@ void main() {
     await container.read(inventoryItemsControllerProvider.future);
     final eatFuture = container
         .read(inventoryItemsControllerProvider.notifier)
-        .eatItem('a', 1);
+        .eatItemDetailed('a', 1);
     await _waitForItems(
       container,
       (items) => items.length == 1 && items.single.quantity == 2,
@@ -886,7 +886,7 @@ void main() {
     expect(optimisticItems?.single.quantity, 2);
 
     final updated = await eatFuture;
-    expect(updated, isFalse);
+    expect(updated, isNull);
 
     final rolledBackItems = container
         .read(inventoryItemsControllerProvider)
@@ -920,7 +920,7 @@ void main() {
     await container.read(inventoryItemsControllerProvider.future);
     final eatFuture = container
         .read(inventoryItemsControllerProvider.notifier)
-        .eatItem('a', 1);
+        .eatItemDetailed('a', 1);
     await _waitForItems(
       container,
       (items) => items.length == 1 && items.single.quantity == 0,
@@ -934,7 +934,7 @@ void main() {
     expect(optimisticItems?.single.quantity, 0);
 
     final updated = await eatFuture;
-    expect(updated, isFalse);
+    expect(updated, isNull);
 
     final rolledBackItems = container
         .read(inventoryItemsControllerProvider)
@@ -966,13 +966,13 @@ void main() {
       await container.read(inventoryItemsControllerProvider.future);
       final updated = await container
           .read(inventoryItemsControllerProvider.notifier)
-          .eatItem('a', 99);
+          .eatItemDetailed('a', 99);
       await _waitForItems(
         container,
         (items) => items.length == 1 && items.single.quantity == 0,
       );
 
-      expect(updated, isTrue);
+      expect(updated, isNotNull);
       expect(repository.savedItems, hasLength(1));
       expect(repository.savedItems.single.quantity, 0);
       expect(

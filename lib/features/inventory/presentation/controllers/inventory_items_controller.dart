@@ -463,15 +463,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
-  /// Eat item.
-  Future<bool> eatItem(String itemId, int amount, {DateTime? consumedAt}) {
-    return eatItemDetailed(
-      itemId,
-      amount,
-      consumedAt: consumedAt,
-    ).then((result) => result != null);
-  }
-
   /// Eat item and return the actual reduced amount.
   Future<InventoryItemReductionResult?> eatItemDetailed(
     String itemId,
@@ -650,64 +641,6 @@ class InventoryItemsController extends _$InventoryItemsController {
               amount: amount,
               beforeItem: beforeItem,
               afterItem: afterItem,
-            ),
-          );
-        }
-      }
-      return saved;
-    });
-  }
-
-  /// Takes several amounts out of their items in one write, each capped at
-  /// what its item holds. Nothing changes when an item is missing or empty.
-  Future<bool> eatItems(
-    Map<String, int> amountsByItemId, {
-    DateTime? consumedAt,
-  }) {
-    if (amountsByItemId.isEmpty) {
-      return Future<bool>.value(false);
-    }
-    return _runSerializedMutation(() async {
-      final currentItems = await _currentPersistedItems();
-      var nextItems = currentItems;
-      final removedAmounts = <String, int>{};
-      for (final MapEntry(key: itemId, value: amount)
-          in amountsByItemId.entries) {
-        final removedAmount = _resolveEffectiveConsumptionAmount(
-          currentItems: nextItems,
-          itemId: itemId,
-          requestedAmount: amount,
-        );
-        final reduced = removedAmount == null
-            ? null
-            : buildReducedItems(
-                currentItems: nextItems,
-                itemId: itemId,
-                amount: removedAmount,
-                consumedAt: consumedAt ?? _clock(),
-              );
-        if (removedAmount == null || reduced == null) {
-          return false;
-        }
-        removedAmounts[itemId] = removedAmount;
-        nextItems = reduced;
-      }
-      final saved = await _saveItems(
-        previousItems: currentItems,
-        nextItems: nextItems,
-      );
-      if (saved) {
-        for (final MapEntry(key: itemId, value: amount)
-            in removedAmounts.entries) {
-          final beforeItem = _findItem(currentItems, itemId);
-          await _recordActivityEvent(
-            _buildActivityEvent(
-              type: InventoryActivityEventType.itemConsumed,
-              item: beforeItem,
-              amount: amount,
-              beforeItem: beforeItem,
-              afterItem: _findItem(nextItems, itemId),
-              happenedAt: consumedAt,
             ),
           );
         }

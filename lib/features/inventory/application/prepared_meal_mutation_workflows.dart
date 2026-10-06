@@ -218,24 +218,6 @@ class PreparedMealMutationWorkflows {
         );
   }
 
-  /// Restores previously removed prepared meal portions.
-  Future<bool> restorePreparedMealPortions({
-    required String mealId,
-    required num portions,
-  }) {
-    return PreparedMealEditingWorkflows(context: _context)
-        .restorePreparedMealPortions(mealId: mealId, portions: portions);
-  }
-
-  /// Takes restored portions out of a prepared meal again.
-  Future<bool> takePreparedMealPortions({
-    required String mealId,
-    required num portions,
-  }) {
-    return PreparedMealEditingWorkflows(context: _context)
-        .takePreparedMealPortions(mealId: mealId, portions: portions);
-  }
-
   /// Restores all remaining ingredients from a prepared meal back to inventory.
   Future<bool> unbundlePreparedMeal({
     required String mealId,
