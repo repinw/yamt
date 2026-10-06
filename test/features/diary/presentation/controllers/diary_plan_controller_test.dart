@@ -145,4 +145,36 @@ void main() {
     expect(await controller.undoAccept(plan, plan), isFalse);
     expect(states.last.hasError, isTrue);
   });
+
+  test('accepts all open plans and skips eaten ones', () async {
+    final service = _FakeAcceptService();
+    final (container, _) = setUpContainer(
+      FakePlannedEntryRepository(plans: [plan]),
+      acceptService: service,
+    );
+    final controller = container.read(diaryPlanControllerProvider.notifier);
+    final second = plan.copyWith(id: 'plan-2');
+    await controller.accept(plan);
+
+    final (:eaten, :failed) = await controller.acceptAll([plan, second]);
+
+    expect(eaten.map((it) => it.plan.id), ['plan-2']);
+    expect(failed, 0);
+    expect(service.accepted.map((it) => it.id), ['plan', 'plan-2']);
+  });
+
+  test('counts the plans that fail while accepting all', () async {
+    final service = _FakeAcceptService()..fails = true;
+    final (container, _) = setUpContainer(
+      FakePlannedEntryRepository(plans: [plan]),
+      acceptService: service,
+    );
+
+    final (:eaten, :failed) = await container
+        .read(diaryPlanControllerProvider.notifier)
+        .acceptAll([plan, plan.copyWith(id: 'plan-2')]);
+
+    expect(eaten, isEmpty);
+    expect(failed, 2);
+  });
 }

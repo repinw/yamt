@@ -105,6 +105,17 @@ class DiaryMealsSection extends ConsumerWidget {
                 );
               }
             },
+            onAcceptAllPlans: canAccept
+                ? () => unawaited(
+                    acceptAllDiaryPlansFlow(
+                      context,
+                      ref,
+                      plans: [
+                        for (final row in section.plannedEntries) ?planOf(row),
+                      ],
+                    ),
+                  )
+                : null,
             onAcceptPlan: canAccept
                 ? (row) {
                     if (planOf(row) case final plan?) {

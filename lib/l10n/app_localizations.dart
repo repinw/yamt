@@ -4444,6 +4444,30 @@ abstract class AppLocalizations {
   /// **'From the planned day on'**
   String get diaryPlanAcceptLaterHint;
 
+  /// No description provided for @diaryPlanAcceptAllAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Eat all as planned'**
+  String get diaryPlanAcceptAllAction;
+
+  /// No description provided for @diaryPlansAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 plan eaten} other{{count} plans eaten}}'**
+  String diaryPlansAccepted(int count);
+
+  /// No description provided for @diaryPlansAcceptedPartly.
+  ///
+  /// In en, this message translates to:
+  /// **'{eaten} of {total} plans eaten'**
+  String diaryPlansAcceptedPartly(int eaten, int total);
+
+  /// No description provided for @diaryPlansAcceptedWithoutStock.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 plan eaten – not all in stock} other{{count} plans eaten – not all in stock}}'**
+  String diaryPlansAcceptedWithoutStock(int count);
+
   /// No description provided for @diaryPlanMealPrepTag.
   ///
   /// In en, this message translates to:

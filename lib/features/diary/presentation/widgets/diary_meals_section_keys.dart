@@ -19,6 +19,11 @@ abstract final class DiaryMealsSectionKeys {
     return ValueKey<String>('diary-meal-plan-$planId');
   }
 
+  /// Key of the button that eats every plan of [mealType].
+  static Key planAcceptAllButton(MealType mealType) {
+    return ValueKey<String>('diary-meal-plan-accept-all-${mealType.name}');
+  }
+
   /// Key of the check button that eats a plan.
   static Key planAcceptButton(String planId) {
     return ValueKey<String>('diary-meal-plan-accept-$planId');

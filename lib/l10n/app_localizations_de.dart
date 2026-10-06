@@ -2606,6 +2606,36 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryPlanAcceptLaterHint => 'Ab dem geplanten Tag';
 
   @override
+  String get diaryPlanAcceptAllAction => 'Alle wie geplant gegessen';
+
+  @override
+  String diaryPlansAccepted(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Pläne gegessen',
+      one: '1 Plan gegessen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryPlansAcceptedPartly(int eaten, int total) {
+    return '$eaten von $total Plänen gegessen';
+  }
+
+  @override
+  String diaryPlansAcceptedWithoutStock(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Pläne gegessen – nicht alles aus dem Vorrat',
+      one: '1 Plan gegessen – nicht alles aus dem Vorrat',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get diaryPlanMealPrepTag => 'Meal Prep';
 
   @override

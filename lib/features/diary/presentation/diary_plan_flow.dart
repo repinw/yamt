@@ -93,3 +93,43 @@ Future<void> acceptDiaryPlanFlow(
         .undoAccept(entry, plan),
   );
 }
+
+/// Eats every plan of [plans] that is not eaten yet and offers one undo for
+/// all of them.
+Future<void> acceptAllDiaryPlansFlow(
+  BuildContext context,
+  WidgetRef ref, {
+  required List<CalorieEntry> plans,
+}) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final l10n = AppLocalizations.of(context)!;
+  final container = ProviderScope.containerOf(context, listen: false);
+  final controller = ref.read(diaryPlanControllerProvider.notifier);
+  final (:eaten, :failed) = await controller.acceptAll(plans);
+  if (eaten.isEmpty) {
+    if (failed > 0) {
+      messenger.showAppSnackBar(
+        l10n.diaryPlanAcceptFailed,
+        tone: AppSnackBarTone.error,
+      );
+    }
+    return;
+  }
+  final missedStock = eaten.any((it) => it.result.missedStock);
+  messenger.showAppSnackBar(
+    failed > 0
+        ? l10n.diaryPlansAcceptedPartly(eaten.length, eaten.length + failed)
+        : missedStock
+        ? l10n.diaryPlansAcceptedWithoutStock(eaten.length)
+        : l10n.diaryPlansAccepted(eaten.length),
+    tone: failed > 0 ? AppSnackBarTone.error : AppSnackBarTone.success,
+    onUndo: () async {
+      final undo = container.read(diaryPlanControllerProvider.notifier);
+      var undone = true;
+      for (final (:plan, :result) in eaten) {
+        undone = await undo.undoAccept(result.entry, plan) && undone;
+      }
+      return undone;
+    },
+  );
+}

@@ -17,6 +17,7 @@ class DiaryMealGroup extends StatelessWidget {
     required this.onTapEntry,
     required this.onTapPlan,
     this.onAcceptPlan,
+    this.onAcceptAllPlans,
     super.key,
   });
 
@@ -31,6 +32,9 @@ class DiaryMealGroup extends StatelessWidget {
 
   /// Eats a plan as planned. Without it, plan rows have no check button.
   final ValueChanged<DiaryMealEntry>? onAcceptPlan;
+
+  /// Eats every plan of the meal. Shown only with more than one plan.
+  final VoidCallback? onAcceptAllPlans;
 
   @override
   Widget build(BuildContext context) {
@@ -68,6 +72,16 @@ class DiaryMealGroup extends StatelessWidget {
                 style: labelStyle,
               ),
             ],
+            if (onAcceptAllPlans case final acceptAll?
+                when section.plannedEntries.length > 1)
+              IconButton(
+                key: DiaryMealsSectionKeys.planAcceptAllButton(
+                  section.mealType,
+                ),
+                tooltip: l10n.diaryPlanAcceptAllAction,
+                onPressed: acceptAll,
+                icon: const Icon(Icons.done_all_rounded),
+              ),
           ],
         ),
         const SizedBox(height: AppSpacing.xxs),

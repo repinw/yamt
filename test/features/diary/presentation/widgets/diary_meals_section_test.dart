@@ -118,6 +118,52 @@ void main() {
     expect(repository.plans, [plan]);
   });
 
+  group('eat all plans of a meal', () {
+    DiaryMealEntry row(String id) => _entry(
+      id: id,
+      day: selectedDay,
+      mealType: MealType.dinner,
+      name: id,
+      kcal: 300,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+    );
+    final acceptAll = find.byKey(
+      DiaryMealsSectionKeys.planAcceptAllButton(MealType.dinner),
+    );
+    Future<void> pump(
+      WidgetTester tester,
+      List<DiaryMealEntry> plans,
+      DateTime now,
+    ) => _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      now: now,
+      sections: [
+        _mealSection(MealType.dinner, const [], plannedEntries: plans),
+      ],
+    );
+
+    testWidgets('shows with several plans on their day', (tester) async {
+      await pump(tester, [row('a'), row('b')], selectedDay);
+      expect(acceptAll, findsOneWidget);
+    });
+
+    testWidgets('hides with a single plan', (tester) async {
+      await pump(tester, [row('a')], selectedDay);
+      expect(acceptAll, findsNothing);
+    });
+
+    testWidgets("hides before the plans' day", (tester) async {
+      await pump(tester, [
+        row('a'),
+        row('b'),
+      ], selectedDay.subtract(const Duration(days: 1)));
+      expect(acceptAll, findsNothing);
+    });
+  });
+
   testWidgets('a plan before its day has no check button', (tester) async {
     await _pumpMealsSection(
       tester,
