@@ -1,237 +1,12 @@
-import 'package:cryptography/cryptography.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:yamt/core/data/payload_cipher.dart';
-import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
-import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
-import 'package:yamt/features/household/data/household_key_repository.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_entry_amount_service.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_entry_delete_service.dart';
-import 'package:yamt/features/inventory/application/'
-    'inventory_pending_consumption_store.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_calorie_entry_commit_store.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'prepared_meal_calorie_entry_commit_store.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
-import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
-const _householdId = 'household-1';
-final _loggedAt = DateTime(2026, 3, 27, 8);
-
-late PayloadCipher _dataCipher;
-
-ProviderContainer _container() {
-  final container = ProviderContainer();
-  addTearDown(container.dispose);
-  return container;
-}
-
-late SecretKey _householdKey;
-
-/// Lists the items that the Vorrat holds, for the source checks.
-class _Items implements InventoryItemRepository {
-  new(this.items);
-
-  List<InventoryItem> items;
-  Error? readError;
-
-  @override
-  Future<List<InventoryItem>> readAll() async {
-    if (readError case final error?) throw error;
-    return items;
-  }
-
-  @override
-  Stream<List<InventoryItem>> watchAll() => Stream.value(items);
-
-  @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
-
-  @override
-  Future<bool> appendAll(List<InventoryItem> items) async => true;
-}
-
-class _Meals implements PreparedMealRepository {
-  new(this.meals);
-
-  List<PreparedMeal> meals;
-
-  @override
-  Future<List<PreparedMeal>> readAll() async => meals;
-
-  @override
-  Stream<List<PreparedMeal>> watchAll() => Stream.value(meals);
-
-  @override
-  Future<bool> saveAll(List<PreparedMeal> meals) async => true;
-}
-
-/// The service on one fake Firestore, with the real commit stores and the
-/// real diary repository.
-class _World {
-  new() {
-    final household = (
-      householdId: _householdId,
-      key: _householdKey,
-      cipher: PayloadCipher(_householdKey),
-    );
-    final dataCipher = (uid: 'user-1', cipher: _dataCipher);
-    diary = FirestoreCalorieLogRepository(
-      dataCipher: dataCipher,
-      firestore: firestore,
-    );
-    final itemStore = FirestoreInventoryCalorieEntryCommitStore(
-      firestore: firestore,
-      dataCipher: dataCipher,
-      householdCipher: household,
-      actor: null,
-    );
-    amounts = InventoryEntryAmountService(
-      saver: _save,
-      itemStore: itemStore,
-      items: items,
-      pendings: pendings,
-      now: () => _loggedAt,
-    );
-    service = InventoryEntryDeleteService(
-      diary: diary,
-      saver: _save,
-      dayChange: (day) async => changedDays.add(day),
-      itemStore: itemStore,
-      mealStore: FirestorePreparedMealCalorieEntryCommitStore(
-        firestore: firestore,
-        dataCipher: dataCipher,
-        householdCipher: household,
-      ),
-      items: items,
-      meals: meals,
-      pendings: pendings,
-    );
-    pendings.finalizations.listen(reportedStock.add);
-  }
-
-  final InventoryPendingConsumptionStore pendings = _container().read(
-    inventoryPendingConsumptionStoreProvider,
-  );
-  final reportedStock = <InventoryPendingConsumptionFinalized>[];
-
-  final firestore = FakeFirebaseFirestore();
-  final items = _Items([]);
-  final meals = _Meals([]);
-  final changedDays = <DateTime>[];
-  late final FirestoreCalorieLogRepository diary;
-  late final InventoryEntryDeleteService service;
-  late final InventoryEntryAmountService amounts;
-
-  Future<CalorieEntry> entry(String id) async => (await diary.getById(id))!;
-
-  Future<bool> _save(
-    CalorieEntry entry, {
-    bool isNewEntry = false,
-    CalorieScannedSourceRef? scannedSourceRef,
-    Future<bool> Function(CalorieEntry entry)? persistEntry,
-  }) => persistEntry?.call(entry) ?? diary.saveEntry(entry);
-
-  SealedCollection get _itemCollection => SealedCollection(
-    firestore
-        .collection('households')
-        .doc(_householdId)
-        .collection('inventory_items'),
-    cipher: PayloadCipher(_householdKey),
-    plaintextFields: inventoryItemPlaintextFields,
-  );
-
-  SealedCollection get _mealCollection => SealedCollection(
-    firestore
-        .collection('households')
-        .doc(_householdId)
-        .collection('prepared_meals'),
-    cipher: PayloadCipher(_householdKey),
-  );
-
-  Future<void> putItem(InventoryItem item) async {
-    items.items = [...items.items, item];
-    final ref = _itemCollection.reference.doc(item.id);
-    await ref.set(await _itemCollection.seal(item.id, item.toJson()));
-  }
-
-  Future<InventoryItem> item(String id) async {
-    final snapshot = await _itemCollection.reference.doc(id).get();
-    return InventoryItem.fromJson({
-      ...?await _itemCollection.open(snapshot),
-      'id': id,
-    });
-  }
-
-  Future<void> putMeal(PreparedMeal meal) async {
-    meals.meals = [...meals.meals, meal];
-    final ref = _mealCollection.reference.doc(meal.id);
-    await ref.set(await _mealCollection.seal(meal.id, meal.toJson()));
-  }
-
-  Future<PreparedMeal> meal(String id) async {
-    final snapshot = await _mealCollection.reference.doc(id).get();
-    return PreparedMeal.fromJson({
-      ...?await _mealCollection.open(snapshot),
-      'id': id,
-    });
-  }
-
-  Future<bool> hasEntry(String id) async {
-    final snapshot = await firestore
-        .collection('users')
-        .doc('user-1')
-        .collection('calorie_entries')
-        .doc(id)
-        .get();
-    return snapshot.exists;
-  }
-}
-
-InventoryItem _milk({String id = 'milk', int currentAmount = 750}) {
-  return InventoryItem.create(
-    id: id,
-    name: 'Milch',
-    entryDate: DateTime(2026, 3, 20),
-    storeName: 'Aldi',
-    quantity: 1,
-    initialAmount: 1000,
-    currentAmount: currentAmount,
-    amountUnit: InventoryAmountUnit.milliliter,
-  );
-}
-
-CalorieEntry _milkEntry() {
-  return CalorieEntry.create(
-    id: 'entry-1',
-    userId: 'user-1',
-    name: 'Milch',
-    mealType: MealType.breakfast,
-    consumedAmount: 250,
-    consumedUnit: ConsumedUnit.milliliters,
-    per100Kcal: 60,
-    per100Protein: 3.2,
-    per100Carbs: 4.8,
-    per100Fat: 1.5,
-    sourceInventoryItemId: 'milk',
-    sourceInventoryAmountToRestore: 250,
-    loggedAt: _loggedAt,
-    createdAt: _loggedAt,
-    updatedAt: _loggedAt,
-  );
-}
+import '../support/inventory_entry_world.dart';
 
 CalorieEntryBundleComponent _food(String itemId, int amount) {
   return CalorieEntryBundleComponent(
@@ -251,8 +26,8 @@ CalorieEntry _combinedEntry() {
     id: 'entry-1',
     userId: 'user-1',
     mealType: MealType.breakfast,
-    loggedAt: _loggedAt,
-    now: _loggedAt,
+    loggedAt: entryLoggedAt,
+    now: entryLoggedAt,
     components: [_food('milk', 200), _food('oat-milk', 100)],
   );
 }
@@ -287,26 +62,23 @@ CalorieEntry _chiliEntry() {
     bundleConsumedPortions: 1,
     bundleTotalPortions: 4,
     bundleComponents: const <CalorieEntryBundleComponent>[],
-    loggedAt: _loggedAt,
-    createdAt: _loggedAt,
-    updatedAt: _loggedAt,
+    loggedAt: entryLoggedAt,
+    createdAt: entryLoggedAt,
+    updatedAt: entryLoggedAt,
   );
 }
 
 void main() {
-  setUpAll(() async {
-    _dataCipher = PayloadCipher(await PayloadCipher.newDataKey());
-    _householdKey = await PayloadCipher.newDataKey();
-  });
+  setUpAll(setUpInventoryEntryKeys);
 
   group('delete', () {
     test('gives the stock back and deletes the entry in one write', () async {
-      final world = _World();
-      await world.putItem(_milk());
-      await world.diary.saveEntry(_milkEntry());
+      final world = InventoryEntryWorld();
+      await world.putItem(milkItem());
+      await world.diary.saveEntry(milkEntry());
 
       final result = await world.service.delete(
-        _milkEntry(),
+        milkEntry(),
         restoreToInventory: true,
       );
       await pumpEventQueue();
@@ -316,15 +88,15 @@ void main() {
       expect(await world.hasEntry('entry-1'), isFalse);
       expect((await world.item('milk')).currentAmount, 1000);
       expect(world.reportedStock.single.currentAmount, 1000);
-      expect(world.changedDays, [_loggedAt]);
+      expect(world.changedDays, [entryLoggedAt]);
     });
 
     test('a missing item keeps the entry', () async {
-      final world = _World();
-      await world.diary.saveEntry(_milkEntry());
+      final world = InventoryEntryWorld();
+      await world.diary.saveEntry(milkEntry());
 
       final result = await world.service.delete(
-        _milkEntry(),
+        milkEntry(),
         restoreToInventory: true,
       );
       await pumpEventQueue();
@@ -338,12 +110,12 @@ void main() {
     });
 
     test('without restore the stock stays', () async {
-      final world = _World();
-      await world.putItem(_milk());
-      await world.diary.saveEntry(_milkEntry());
+      final world = InventoryEntryWorld();
+      await world.putItem(milkItem());
+      await world.diary.saveEntry(milkEntry());
 
       final result = await world.service.delete(
-        _milkEntry(),
+        milkEntry(),
         restoreToInventory: false,
       );
       await pumpEventQueue();
@@ -352,12 +124,12 @@ void main() {
       expect(result.restoredToInventory, isFalse);
       expect(await world.hasEntry('entry-1'), isFalse);
       expect((await world.item('milk')).currentAmount, 750);
-      expect(world.changedDays, [_loggedAt]);
+      expect(world.changedDays, [entryLoggedAt]);
     });
 
     test('a combined entry gives stock to the foods that exist', () async {
-      final world = _World();
-      await world.putItem(_milk());
+      final world = InventoryEntryWorld();
+      await world.putItem(milkItem());
       await world.diary.saveEntry(_combinedEntry());
 
       final result = await world.service.delete(
@@ -372,7 +144,7 @@ void main() {
     });
 
     test('a cooked meal gets its portions back', () async {
-      final world = _World();
+      final world = InventoryEntryWorld();
       await world.putMeal(_chili());
       await world.diary.saveEntry(_chiliEntry());
 
@@ -388,7 +160,7 @@ void main() {
     });
 
     test('a cooked meal with all portions left takes none back', () async {
-      final world = _World();
+      final world = InventoryEntryWorld();
       await world.putMeal(_chili(remainingPortions: 4));
       await world.diary.saveEntry(_chiliEntry());
 
@@ -408,14 +180,14 @@ void main() {
 
   group('undoDelete', () {
     test('saves the entry and takes the given-back stock again', () async {
-      final world = _World();
-      await world.putItem(_milk());
-      await world.diary.saveEntry(_milkEntry());
-      await world.service.delete(_milkEntry(), restoreToInventory: true);
+      final world = InventoryEntryWorld();
+      await world.putItem(milkItem());
+      await world.diary.saveEntry(milkEntry());
+      await world.service.delete(milkEntry(), restoreToInventory: true);
       await pumpEventQueue();
 
       final undone = await world.service.undoDelete(
-        _milkEntry(),
+        milkEntry(),
         restoredToInventory: true,
       );
       await pumpEventQueue();
@@ -427,7 +199,7 @@ void main() {
     });
 
     test('takes the portions of a cooked meal again', () async {
-      final world = _World();
+      final world = InventoryEntryWorld();
       await world.putMeal(_chili());
       await world.diary.saveEntry(_chiliEntry());
       await world.service.delete(_chiliEntry(), restoreToInventory: true);
@@ -445,11 +217,11 @@ void main() {
     });
 
     test('a single entry whose item is gone stays deleted', () async {
-      final world = _World();
-      await world.diary.saveEntry(_milkEntry());
+      final world = InventoryEntryWorld();
+      await world.diary.saveEntry(milkEntry());
 
       final undone = await world.service.undoDelete(
-        _milkEntry(),
+        milkEntry(),
         restoredToInventory: true,
       );
       await pumpEventQueue();
@@ -458,11 +230,11 @@ void main() {
     });
 
     test('takes at most the stock that the item holds now', () async {
-      final world = _World();
-      await world.putItem(_milk(currentAmount: 100));
+      final world = InventoryEntryWorld();
+      await world.putItem(milkItem(currentAmount: 100));
 
       final undone = await world.service.undoDelete(
-        _milkEntry(),
+        milkEntry(),
         restoredToInventory: true,
       );
       await pumpEventQueue();
@@ -473,11 +245,11 @@ void main() {
     });
 
     test('a failed item read reports the undo as failed', () async {
-      final world = _World();
+      final world = InventoryEntryWorld();
       world.items.readError = StateError('read failed');
 
       final undone = await world.service.undoDelete(
-        _milkEntry(),
+        milkEntry(),
         restoredToInventory: true,
       );
 
@@ -487,75 +259,15 @@ void main() {
   });
 
   test('canRestoreSource checks that the stock source still exists', () async {
-    final world = _World();
-    expect(await world.service.canRestoreSource(_milkEntry()), isFalse);
+    final world = InventoryEntryWorld();
+    expect(await world.service.canRestoreSource(milkEntry()), isFalse);
     expect(await world.service.canRestoreSource(_chiliEntry()), isFalse);
 
-    await world.putItem(_milk());
+    await world.putItem(milkItem());
     await world.putMeal(_chili());
 
-    expect(await world.service.canRestoreSource(_milkEntry()), isTrue);
+    expect(await world.service.canRestoreSource(milkEntry()), isTrue);
     expect(await world.service.canRestoreSource(_combinedEntry()), isTrue);
     expect(await world.service.canRestoreSource(_chiliEntry()), isTrue);
-  });
-
-  group('changeAmount', () {
-    Future<(InventoryEntryAmountChange, _World)> change(
-      double amount, {
-      int stock = 750,
-      bool withItem = true,
-    }) async {
-      final world = _World();
-      if (withItem) {
-        await world.putItem(_milk(currentAmount: stock));
-      }
-      await world.diary.saveEntry(_milkEntry());
-      final result = await world.amounts.changeAmount(_milkEntry(), amount);
-      await pumpEventQueue();
-      return (result, world);
-    }
-
-    test('a larger amount takes more stock in the same write', () async {
-      final (result, world) = await change(400);
-
-      expect(result.saved, isTrue);
-      expect(result.stock, InventoryEntryStockChange.applied);
-      final stored = await world.entry('entry-1');
-      expect(stored.consumedAmount, 400);
-      expect(stored.sourceInventoryAmountToRestore, 400);
-      expect((await world.item('milk')).currentAmount, 600);
-      expect(world.reportedStock.last.currentAmount, 600);
-      expect(world.reportedStock.last.consumedAt, _loggedAt);
-    });
-
-    test('a smaller amount gives the difference back', () async {
-      final (result, world) = await change(100);
-
-      expect(result.stock, InventoryEntryStockChange.applied);
-      final stored = await world.entry('entry-1');
-      expect(stored.consumedAmount, 100);
-      expect(stored.sourceInventoryAmountToRestore, 100);
-      expect((await world.item('milk')).currentAmount, 900);
-    });
-
-    test('takes only the stock that is left', () async {
-      final (result, world) = await change(400, stock: 50);
-
-      expect(result.stock, InventoryEntryStockChange.stockExhausted);
-      final stored = await world.entry('entry-1');
-      expect(stored.consumedAmount, 400);
-      expect(stored.sourceInventoryAmountToRestore, 300);
-      expect((await world.item('milk')).currentAmount, 0);
-    });
-
-    test('a missing item changes only the entry', () async {
-      final (result, world) = await change(400, withItem: false);
-
-      expect(result.saved, isTrue);
-      expect(result.stock, InventoryEntryStockChange.sourceMissing);
-      final stored = await world.entry('entry-1');
-      expect(stored.consumedAmount, 400);
-      expect(stored.sourceInventoryAmountToRestore, 250);
-    });
   });
 }
