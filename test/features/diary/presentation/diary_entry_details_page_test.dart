@@ -14,15 +14,11 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/router/hero_sheet_page.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_entry_amount_edit_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_inventory_stock_adjustment.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -54,22 +50,26 @@ class _ItemStore implements InventoryCalorieEntryCommitStore {
   final List<(String, int)> takenBack;
 
   @override
+  Future<List<InventoryCalorieEntryCommitResult>?> saveEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async {
+    await diary.saveEntry(entry);
+    return _restore(amountsByItemId);
+  }
+
+  @override
   Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
     required CalorieEntry entry,
     required Map<String, int> amountsByItemId,
   }) async {
     await diary.deleteEntry(entry.id);
-    restored.addAll([
-      for (final e in amountsByItemId.entries) (e.key, e.value),
-    ]);
-    return [
-      for (final itemId in amountsByItemId.keys)
-        InventoryCalorieEntryCommitResult(
-          itemId: itemId,
-          quantity: 1,
-          currentAmount: 500,
-        ),
-    ];
+    return _restore(amountsByItemId);
+  }
+
+  List<InventoryCalorieEntryCommitResult> _restore(Map<String, int> amounts) {
+    restored.addAll([for (final e in amounts.entries) (e.key, e.value)]);
+    return [for (final itemId in amounts.keys) _result(itemId)];
   }
 
   @override
@@ -83,9 +83,16 @@ class _ItemStore implements InventoryCalorieEntryCommitStore {
       for (final pending in pendingConsumptions)
         (pending.itemId, pending.amount),
     ]);
-    return const [];
+    return [for (final pending in pendingConsumptions) _result(pending.itemId)];
   }
 }
+
+InventoryCalorieEntryCommitResult _result(String itemId) =>
+    InventoryCalorieEntryCommitResult(
+      itemId: itemId,
+      quantity: 1,
+      currentAmount: 500,
+    );
 
 class _Items implements InventoryItemRepository {
   const new(this.ids);
@@ -372,7 +379,8 @@ void main() {
   testWidgets('a changed amount moves the stock of an inventory entry', (
     tester,
   ) async {
-    final adjustedAmounts = <double>[];
+    final restored = <(String, int)>[];
+    final takenBack = <(String, int)>[];
     final repository = await _open(
       tester,
       [
@@ -382,19 +390,16 @@ void main() {
         ),
       ],
       overrides: [
-        calorieInventoryStockAdjusterProvider.overrideWith((ref) {
-          return ({
-            required itemId,
-            required reservedAmount,
-            required consumedAmount,
-          }) async {
-            adjustedAmounts.add(consumedAmount);
-            return CalorieInventoryStockAdjustment(
-              status: CalorieInventoryStockAdjustmentStatus.applied,
-              reservedAmount: consumedAmount.round(),
-            );
-          };
-        }),
+        inventoryItemRepositoryProvider.overrideWithValue(
+          const _Items(['inventory-1']),
+        ),
+        inventoryCalorieEntryCommitStoreProvider.overrideWith(
+          (ref) => _ItemStore(
+            ref.watch(calorieLogRepositoryProvider),
+            restored: restored,
+            takenBack: takenBack,
+          ),
+        ),
       ],
     );
 
@@ -405,13 +410,13 @@ void main() {
 
     expect(repository.entries.single.consumedAmount, 300);
     expect(repository.entries.single.sourceInventoryAmountToRestore, 300);
-    expect(adjustedAmounts, <double>[300]);
+    expect(takenBack, [('inventory-1', 100)]);
 
     await _tapUndo(tester);
 
     expect(repository.entries.single.consumedAmount, 200);
     expect(repository.entries.single.sourceInventoryAmountToRestore, 200);
-    expect(adjustedAmounts, <double>[300, 200]);
+    expect(restored, [('inventory-1', 100)]);
   });
 
   testWidgets('removes the entry, closes, and can undo it', (tester) async {

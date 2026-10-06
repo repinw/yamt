@@ -39,16 +39,11 @@ changes.
 - Diary page ordering, date navigation, or diary-level composition.
 - Activity card layout or activity-owned action orchestration.
 - Inventory item storage, prepared meal storage, or household scope state.
-  Inventory saves the entry that the calorie editor returns and deletes
-  entries that took stock. Only the stock adjustment of a changed amount
-  still runs through a calorie-owned port that inventory implements. So
-  Calories does not depend on Inventory.
+  Inventory saves, changes, and deletes the entries that took stock, so
+  Calories does not depend on Inventory and has no port for it.
 
 ## Public UI
 
-- `CalorieEntryDetailsFlow` for the entry details page, which Diary owns. It
-  saves a meal or day change, changes the amount, and logs an entry again,
-  each at once with an undo snack bar.
 - The TDEE analytics page (`AppRoutes.homeCaloriesAnalytics`) for expenditure,
   the flux range corridor, and goal anticipation. It can preselect goal cycles
   through `AppRoutes.homeCaloriesAnalyticsCyclesParam`.

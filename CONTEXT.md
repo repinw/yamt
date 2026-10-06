@@ -18,8 +18,9 @@ names are in parentheses.
   stock from the Vorrat. It keeps the amount it took
   (`sourceInventoryAmountToRestore`), so deleting it can give the stock
   back. Inventory owns these entries: `InventoryEatService` saves them
-  together with their stock in one write, and
-  `InventoryEntryDeleteService` deletes them together with their
+  together with their stock in one write,
+  `InventoryEntryAmountService` changes their amount together with the
+  stock, and `InventoryEntryDeleteService` deletes them together with their
   Rückbuchung.
 - **Rückbuchung** (restore): giving the stock of a deleted or reduced
   stock-taking entry back to the Vorrat.

@@ -13,6 +13,8 @@ import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/application/'
+    'inventory_entry_amount_service.dart';
+import 'package:yamt/features/inventory/application/'
     'inventory_entry_delete_service.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
@@ -90,16 +92,24 @@ class _World {
       dataCipher: dataCipher,
       firestore: firestore,
     );
+    final itemStore = FirestoreInventoryCalorieEntryCommitStore(
+      firestore: firestore,
+      dataCipher: dataCipher,
+      householdCipher: household,
+      actor: null,
+    );
+    amounts = InventoryEntryAmountService(
+      saver: _save,
+      itemStore: itemStore,
+      items: items,
+      pendings: pendings,
+      now: () => _loggedAt,
+    );
     service = InventoryEntryDeleteService(
       diary: diary,
       saver: _save,
       dayChange: (day) async => changedDays.add(day),
-      itemStore: FirestoreInventoryCalorieEntryCommitStore(
-        firestore: firestore,
-        dataCipher: dataCipher,
-        householdCipher: household,
-        actor: null,
-      ),
+      itemStore: itemStore,
       mealStore: FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
         dataCipher: dataCipher,
@@ -123,6 +133,9 @@ class _World {
   final changedDays = <DateTime>[];
   late final FirestoreCalorieLogRepository diary;
   late final InventoryEntryDeleteService service;
+  late final InventoryEntryAmountService amounts;
+
+  Future<CalorieEntry> entry(String id) async => (await diary.getById(id))!;
 
   Future<bool> _save(
     CalorieEntry entry, {
@@ -484,5 +497,65 @@ void main() {
     expect(await world.service.canRestoreSource(_milkEntry()), isTrue);
     expect(await world.service.canRestoreSource(_combinedEntry()), isTrue);
     expect(await world.service.canRestoreSource(_chiliEntry()), isTrue);
+  });
+
+  group('changeAmount', () {
+    Future<(InventoryEntryAmountChange, _World)> change(
+      double amount, {
+      int stock = 750,
+      bool withItem = true,
+    }) async {
+      final world = _World();
+      if (withItem) {
+        await world.putItem(_milk(currentAmount: stock));
+      }
+      await world.diary.saveEntry(_milkEntry());
+      final result = await world.amounts.changeAmount(_milkEntry(), amount);
+      await pumpEventQueue();
+      return (result, world);
+    }
+
+    test('a larger amount takes more stock in the same write', () async {
+      final (result, world) = await change(400);
+
+      expect(result.saved, isTrue);
+      expect(result.stock, InventoryEntryStockChange.applied);
+      final stored = await world.entry('entry-1');
+      expect(stored.consumedAmount, 400);
+      expect(stored.sourceInventoryAmountToRestore, 400);
+      expect((await world.item('milk')).currentAmount, 600);
+      expect(world.reportedStock.last.currentAmount, 600);
+      expect(world.reportedStock.last.consumedAt, _loggedAt);
+    });
+
+    test('a smaller amount gives the difference back', () async {
+      final (result, world) = await change(100);
+
+      expect(result.stock, InventoryEntryStockChange.applied);
+      final stored = await world.entry('entry-1');
+      expect(stored.consumedAmount, 100);
+      expect(stored.sourceInventoryAmountToRestore, 100);
+      expect((await world.item('milk')).currentAmount, 900);
+    });
+
+    test('takes only the stock that is left', () async {
+      final (result, world) = await change(400, stock: 50);
+
+      expect(result.stock, InventoryEntryStockChange.stockExhausted);
+      final stored = await world.entry('entry-1');
+      expect(stored.consumedAmount, 400);
+      expect(stored.sourceInventoryAmountToRestore, 300);
+      expect((await world.item('milk')).currentAmount, 0);
+    });
+
+    test('a missing item changes only the entry', () async {
+      final (result, world) = await change(400, withItem: false);
+
+      expect(result.saved, isTrue);
+      expect(result.stock, InventoryEntryStockChange.sourceMissing);
+      final stored = await world.entry('entry-1');
+      expect(stored.consumedAmount, 400);
+      expect(stored.sourceInventoryAmountToRestore, 250);
+    });
   });
 }

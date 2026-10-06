@@ -86,9 +86,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/formatters/inventory_nutrition_format.dart':
         1,
     'lib/features/inventory/presentation/inventory_amount_unit_l10n.dart': 1,
-    'lib/features/inventory/presentation/inventory_calorie_stock_adjuster.dart':
-        1,
-    'lib/features/inventory/presentation/inventory_controller_access.dart': 1,
     'lib/features/inventory/presentation/inventory_manual_product_eat_coordinator.dart':
         1,
     'lib/features/inventory/presentation/inventory_manual_product_search_launcher.dart':
@@ -230,7 +227,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
   },
   'flow-placement': {
-    'lib/features/calories/application/calorie_entry_amount_edit_flow.dart': 1,
     'lib/features/calories/application/calorie_goal_seed_weight_flow.dart': 1,
     'lib/features/home/widgets/inventory_action_sheet_flow.dart': 1,
     'lib/features/inventory/application/inventory_calorie_bridge_flow.dart': 1,
@@ -339,11 +335,6 @@ const architectureBaseline = <String, Map<String, int>>{
   },
   'bare-keep-alive': {
     'lib/features/calories/application/burn_week_live_sync_provider.dart': 1,
-    'lib/features/calories/application/calorie_entry_amount_edit_flow.dart': 2,
-    'lib/features/calories/presentation/controllers/calorie_entry_editor_controller.dart':
-        1,
-    'lib/features/inventory/presentation/inventory_calorie_stock_adjuster.dart':
-        1,
   },
   'export': {
     'lib/core/widgets/text_voice_search_bar/text_voice_search_bar.dart': 1,

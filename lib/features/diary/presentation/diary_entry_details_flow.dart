@@ -1,28 +1,27 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_inventory_stock_adjustment.dart';
-import 'package:yamt/features/calories/presentation/controllers/'
-    'calorie_entry_editor_controller.dart';
-import 'package:yamt/features/calories/presentation/widgets/'
-    'calorie_entry_editor_flow_handler.dart';
+import 'package:yamt/features/diary/presentation/controllers/'
+    'diary_entry_change_controller.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_entry_amount_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Changes of a logged entry from its details page. Each one saves at once
 /// and offers an undo in a snack bar.
 ///
-/// The flow uses the keep-alive editor controller of the page's container.
-/// Undo callbacks may run after the page closed, so they never use the
-/// page's `ref` or `context`. Entries logged from the inventory move their
-/// stock with a changed amount.
-abstract final class CalorieEntryDetailsFlow {
+/// Undo callbacks may run after the page closed, so they read the
+/// controller from the page's container, never through the page's `ref` or
+/// `context`. Entries logged from the Vorrat move their stock with a
+/// changed amount.
+abstract final class DiaryEntryDetailsFlow {
   /// Saves [updated] in place of [previous]. Returns whether it saved.
   ///
   /// [onUndone] runs after the undo restored [previous].
@@ -32,10 +31,11 @@ abstract final class CalorieEntryDetailsFlow {
     required CalorieEntry updated,
     required VoidCallback onUndone,
   }) async {
-    final controller = _controller(context);
+    final container = ProviderScope.containerOf(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
-    final saved = await controller.saveEntry(entry: updated, isEditing: true);
+    final saved = await _controller(container)
+        .save(updated, previousDay: previous.loggedAt);
     if (!context.mounted) {
       return saved;
     }
@@ -45,10 +45,8 @@ abstract final class CalorieEntryDetailsFlow {
       successMessage: l10n.caloriesEntryUpdatedMessage,
       failureMessage: l10n.caloriesSaveFailed,
       onUndo: () async {
-        final restored = await controller.saveEntry(
-          entry: previous,
-          isEditing: true,
-        );
+        final restored = await _controller(container)
+            .save(previous, previousDay: updated.loggedAt);
         if (restored) {
           onUndone();
         }
@@ -61,7 +59,7 @@ abstract final class CalorieEntryDetailsFlow {
   /// Changes the consumed amount of [entry] to [amount]. Returns whether it
   /// saved.
   ///
-  /// The snackbar reports how far the inventory stock could follow, and the
+  /// The snackbar reports how far the Vorrat stock could follow, and the
   /// undo puts both the entry and the stock back.
   static Future<bool> changeAmount(
     BuildContext context, {
@@ -69,23 +67,21 @@ abstract final class CalorieEntryDetailsFlow {
     required double amount,
     required VoidCallback onUndone,
   }) async {
-    final controller = _controller(context);
+    final container = ProviderScope.containerOf(context, listen: false);
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
-    final result = await controller.changeAmount(entry: entry, amount: amount);
+    final result = await _controller(container).changeAmount(entry, amount);
     if (!context.mounted) {
       return result.saved;
     }
     _showResult(
       messenger,
       succeeded: result.saved,
-      successMessage: _amountChangeMessage(l10n, result.status),
+      successMessage: _amountChangeMessage(l10n, result.stock),
       failureMessage: l10n.caloriesSaveFailed,
       onUndo: () async {
-        final undo = await controller.changeAmount(
-          entry: result.entry,
-          amount: entry.consumedAmount,
-        );
+        final undo = await _controller(container)
+            .changeAmount(result.entry, entry.consumedAmount);
         if (undo.saved) {
           onUndone();
         }
@@ -102,7 +98,6 @@ abstract final class CalorieEntryDetailsFlow {
     required CalorieEntry entry,
   }) async {
     final container = ProviderScope.containerOf(context, listen: false);
-    final controller = _controller(context);
     final repeated = repeatCalorieEntry(
       entry,
       id: const Uuid().v4(),
@@ -110,40 +105,39 @@ abstract final class CalorieEntryDetailsFlow {
     );
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
-    final saved = await controller.saveEntry(entry: repeated);
+    final saved = await _controller(container).save(repeated, isNew: true);
     if (!context.mounted) {
       return;
     }
     if (saved) {
-      CalorieEntryEditorFlowHandler.maybePopRootNavigator(context);
+      context.pop();
     }
     _showResult(
       messenger,
       succeeded: saved,
       successMessage: l10n.caloriesEatAgainDoneMessage,
       failureMessage: l10n.caloriesSaveFailed,
-      onUndo: () => controller.deleteEntry(repeated),
+      onUndo: () async => (await _controller(
+        container,
+      ).delete(repeated, restoreToInventory: false)).isSuccess,
     );
   }
 
-  static CalorieEntryEditorController _controller(BuildContext context) {
-    return ProviderScope.containerOf(
-      context,
-      listen: false,
-    ).read(calorieEntryEditorControllerProvider.notifier);
+  static DiaryEntryChangeController _controller(ProviderContainer container) {
+    return container.read(diaryEntryChangeControllerProvider.notifier);
   }
 
   static String _amountChangeMessage(
     AppLocalizations l10n,
-    CalorieInventoryStockAdjustmentStatus status,
+    InventoryEntryStockChange stock,
   ) {
-    return switch (status) {
-      CalorieInventoryStockAdjustmentStatus.stockExhausted =>
+    return switch (stock) {
+      InventoryEntryStockChange.stockExhausted =>
         l10n.caloriesEntryAmountStockExhaustedMessage,
-      CalorieInventoryStockAdjustmentStatus.sourceMissing =>
+      InventoryEntryStockChange.sourceMissing =>
         l10n.caloriesEntryAmountSourceMissingMessage,
-      CalorieInventoryStockAdjustmentStatus.applied ||
-      CalorieInventoryStockAdjustmentStatus.stockUnchanged =>
+      InventoryEntryStockChange.applied ||
+      InventoryEntryStockChange.stockUnchanged =>
         l10n.caloriesEntryUpdatedMessage,
     };
   }

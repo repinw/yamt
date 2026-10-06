@@ -58,4 +58,12 @@ class _UnavailableInventoryCalorieEntryCommitStore
   }) async {
     return null;
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> saveEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async {
+    return null;
+  }
 }

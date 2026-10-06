@@ -33,9 +33,11 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   for the eaten amount, and the amount ruler. The confirm button saves a
   changed amount and closes the page; a move to another meal or day, "log
   again", and remove save at once, each with an undo. Changes run through
-  the Calories `CalorieEntryDetailsFlow`, so inventory stock follows.
+  `DiaryEntryDetailsFlow`; a changed amount goes through the Inventory
+  `InventoryEntryAmountService`, so the stock follows in the same write.
   Remove runs through `DiaryEntryDeleteFlow`, which asks whether an entry
-  that took stock gives it back to the Vorrat. Bundles (prepared meals and combined foods) show their foods
+  that took stock gives it back to the Vorrat. Both use
+  `DiaryEntryChangeController`. Bundles (prepared meals and combined foods) show their foods
   instead of the ruler.
 - `presentation/widgets/diary_macro_strip/` owns the compact kcal and macro
   strip pinned under the top bar. `diary_macro_strip_trigger.dart` reveals it
@@ -128,7 +130,7 @@ Main application adapters and mappers:
   check-in sheet opens the public new-goal sheet
   (`presentation/widgets/calorie_new_goal_flow.dart`) when the active goal was
   reached. The entry details page saves its changes through
-  `presentation/calorie_entry_details_flow.dart`.
+  the Calories `calorieEntrySaverProvider`.
 - `features/health` for connection status and connection actions through
   `health_connection_actions.dart`.
 - `features/inventory` for repository-backed quick-eat data, the public

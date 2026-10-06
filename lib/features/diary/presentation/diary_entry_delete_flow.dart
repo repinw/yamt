@@ -5,7 +5,7 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
-    'diary_entry_delete_controller.dart';
+    'diary_entry_change_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_entry_delete_dialogs.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -102,7 +102,7 @@ abstract final class DiaryEntryDeleteFlow {
       }, tone: AppSnackBarTone.error);
   }
 
-  static DiaryEntryDeleteController _controller(ProviderContainer container) {
-    return container.read(diaryEntryDeleteControllerProvider.notifier);
+  static DiaryEntryChangeController _controller(ProviderContainer container) {
+    return container.read(diaryEntryChangeControllerProvider.notifier);
   }
 }

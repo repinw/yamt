@@ -41,12 +41,10 @@ class FirestoreInventoryCalorieEntryCommitStore
   /// The Firestore instance.
   final FirebaseFirestore firestore;
 
-  /// The signed-in user and the cipher for their diary, or `null` while the
-  /// data key is not ready.
+  /// The user's diary cipher, or `null` while the data key is not ready.
   final UserDataCipher? dataCipher;
 
-  /// The active household and its key, or `null` while the household key is
-  /// not ready.
+  /// The household cipher, or `null` while its key is not ready.
   final HouseholdCipher? householdCipher;
 
   /// The inventory activity actor.
@@ -61,15 +59,6 @@ class FirestoreInventoryCalorieEntryCommitStore
     required CalorieEntry entry,
     required List<PendingInventoryConsumption> pendingConsumptions,
   }) async {
-    final cipher = dataCipher;
-    final household = householdCipher;
-    if (cipher == null || household == null) {
-      log(
-        'Cannot commit calorie entry ${entry.id}: no data or household key.',
-        name: _commitStoreLogName,
-      );
-      return null;
-    }
     final itemIds = pendingConsumptions.map((pending) => pending.itemId);
     if (pendingConsumptions.isEmpty ||
         itemIds.toSet().length != pendingConsumptions.length ||
@@ -81,115 +70,131 @@ class FirestoreInventoryCalorieEntryCommitStore
       );
       return null;
     }
-
-    // A batch instead of a transaction: Firestore queues batches while
-    // offline, but transactions fail. The stock is computed from the local
-    // copy, so two offline consumptions of the same item may overwrite each
-    // other.
-    try {
-      final normalizedEntry = entry.copyWith(
-        userId: cipher.uid,
-        imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
-        updatedAt: DateTime.now(),
-      );
-      final entryRef = _calorieEntriesCollectionRef(cipher.uid)
-          .doc(normalizedEntry.id);
-      final batch = firestore.batch()
-        ..set(
-          entryRef,
-          await encodeCalorieEntryDocument(
-            normalizedEntry,
-            reference: entryRef,
-            cipher: cipher.cipher,
-          ),
-        );
-      final results = <InventoryCalorieEntryCommitResult>[];
-      for (final pending in pendingConsumptions) {
-        final result = await _addItemChange(
-          batch: batch,
-          household: household,
-          itemId: pending.itemId,
-          amount: pending.amount,
-          type: InventoryActivityEventType.itemConsumed,
-          happenedAt: normalizedEntry.loggedAt,
-          change: (item) => item.reducedBy(
+    return await _write(
+      entry,
+      keepEntry: true,
+      skipMissingItems: false,
+      type: InventoryActivityEventType.itemConsumed,
+      happenedAt: entry.loggedAt,
+      changes: {
+        for (final pending in pendingConsumptions)
+          pending.itemId: (
             pending.amount,
-            consumedAt: normalizedEntry.loggedAt,
+            (item) =>
+                item.reducedBy(pending.amount, consumedAt: entry.loggedAt),
           ),
-        );
-        if (result == null) {
-          return null;
-        }
-        results.add(result);
-      }
-      commitBatchInBackground(
-        batch,
-        failureMessage:
-            'Server rejected calorie entry ${entry.id} with inventory items '
-            '${itemIds.join(', ')}.',
-        logName: _commitStoreLogName,
-      );
-      return results;
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to commit calorie entry ${entry.id} with inventory items '
-        '${itemIds.join(', ')}.',
-        name: _commitStoreLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return null;
-    }
+      },
+    );
   }
 
   @override
   Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
     required CalorieEntry entry,
     required Map<String, int> amountsByItemId,
+  }) => _restore(entry, amountsByItemId, keepEntry: false);
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> saveEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) => _restore(entry, amountsByItemId, keepEntry: true);
+
+  Future<List<InventoryCalorieEntryCommitResult>?> _restore(
+    CalorieEntry entry,
+    Map<String, int> amounts, {
+    required bool keepEntry,
+  }) async {
+    if (amounts.values.any((amount) => amount < 1)) {
+      log(
+        'Cannot restore stock for entry ${entry.id}: $amounts.',
+        name: _commitStoreLogName,
+      );
+      return null;
+    }
+    return await _write(
+      entry,
+      keepEntry: keepEntry,
+      // A missing item is skipped: the rest of the stock still comes back.
+      skipMissingItems: true,
+      type: InventoryActivityEventType.itemRestored,
+      happenedAt: DateTime.now(),
+      changes: {
+        for (final MapEntry(key: itemId, value: amount) in amounts.entries)
+          itemId: (amount, (item) => item.restoredBy(amount)),
+      },
+    );
+  }
+
+  /// Saves [entry] with [keepEntry] or deletes it otherwise, and applies
+  /// [changes] to their items, all in one batch: Firestore queues batches
+  /// offline, but transactions fail. The stock comes from the local copy, so
+  /// two offline writes to the same item may overwrite each other.
+  Future<List<InventoryCalorieEntryCommitResult>?> _write(
+    CalorieEntry entry, {
+    required bool keepEntry,
+    required bool skipMissingItems,
+    required InventoryActivityEventType type,
+    required DateTime happenedAt,
+    required Map<String, (int, InventoryItem? Function(InventoryItem))> changes,
   }) async {
     final cipher = dataCipher;
     final household = householdCipher;
-    if (cipher == null ||
-        household == null ||
-        amountsByItemId.values.any((amount) => amount < 1)) {
+    if (cipher == null || household == null) {
       log(
-        'Cannot delete calorie entry ${entry.id} with its stock: no data key, '
-        'no household key, or an amount below 1 ($amountsByItemId).',
+        'Cannot write calorie entry ${entry.id}: no data or household key.',
         name: _commitStoreLogName,
       );
       return null;
     }
     try {
-      final batch = firestore.batch()
-        ..delete(_calorieEntriesCollectionRef(cipher.uid).doc(entry.id));
+      final entryRef = _calorieEntriesCollectionRef(cipher.uid).doc(entry.id);
+      final batch = firestore.batch();
+      if (keepEntry) {
+        final stored = entry.copyWith(
+          userId: cipher.uid,
+          imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
+          updatedAt: DateTime.now(),
+        );
+        batch.set(
+          entryRef,
+          await encodeCalorieEntryDocument(
+            stored,
+            reference: entryRef,
+            cipher: cipher.cipher,
+          ),
+        );
+      } else {
+        batch.delete(entryRef);
+      }
       final results = <InventoryCalorieEntryCommitResult>[];
-      for (final MapEntry(key: itemId, value: amount)
-          in amountsByItemId.entries) {
+      for (final MapEntry(key: itemId, value: (amount, change))
+          in changes.entries) {
         final result = await _addItemChange(
           batch: batch,
           household: household,
           itemId: itemId,
           amount: amount,
-          type: InventoryActivityEventType.itemRestored,
-          happenedAt: DateTime.now(),
-          change: (item) => item.restoredBy(amount),
+          type: type,
+          happenedAt: happenedAt,
+          change: change,
         );
-        // A missing item is skipped: the rest of the stock still comes back.
         if (result != null) {
           results.add(result);
+        } else if (!skipMissingItems) {
+          return null;
         }
       }
       if (results.isNotEmpty) {
         commitBatchInBackground(
           batch,
-          failureMessage: 'Server rejected deleting entry ${entry.id}.',
+          failureMessage: 'Server rejected entry ${entry.id} with its stock.',
           logName: _commitStoreLogName,
         );
       }
       return results;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to delete calorie entry ${entry.id} with its stock.',
+        'Failed to write calorie entry ${entry.id} with its stock.',
         name: _commitStoreLogName,
         error: error,
         stackTrace: stackTrace,
@@ -213,23 +218,17 @@ class FirestoreInventoryCalorieEntryCommitStore
     final inventoryRef = inventoryCollection.reference.doc(itemId);
     final inventorySnapshot = await readDocumentLocalFirst(inventoryRef);
     final storedItem = await inventoryCollection.open(inventorySnapshot);
-    if (storedItem == null) {
+    final currentItem = storedItem == null
+        ? null
+        : InventoryItem.fromJson(
+            Map<String, dynamic>.from(storedItem)
+              ..['id'] = inventorySnapshot.id,
+          );
+    final changedItem = currentItem == null ? null : change(currentItem);
+    if (storedItem == null || currentItem == null || changedItem == null) {
       log(
-        'Inventory item $itemId no longer exists.',
-        name: _commitStoreLogName,
-      );
-      return null;
-    }
-
-    final currentItem = InventoryItem.fromJson(
-      Map<String, dynamic>.from(storedItem)..['id'] = inventorySnapshot.id,
-    );
-    final changedItem = change(currentItem);
-    if (changedItem == null) {
-      log(
-        'Stock change of $amount rejected for item ${currentItem.id} '
-        '(quantity=${currentItem.quantity}, '
-        'currentAmount=${currentItem.currentAmount}).',
+        'Stock change of $amount rejected for item $itemId: the item is gone '
+        'or its stock does not allow it.',
         name: _commitStoreLogName,
       );
       return null;
