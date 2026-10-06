@@ -339,7 +339,7 @@ void main() {
     expect(find.text('Kalbfleisch'), findsOneWidget);
     expect(find.text('800 kcal'), findsWidgets);
 
-    await tester.tap(find.text('Log'));
+    await tester.tap(find.text('To diary'));
     await tester.pumpAndSettle();
 
     expect(pageResult?.action, InventoryReceiptManualProductAction.eatNow);
@@ -361,7 +361,7 @@ void main() {
     await tester.pumpAndSettle();
     await _analyze(tester);
 
-    await tester.tap(find.text('Log'));
+    await tester.tap(find.text('To diary'));
     await tester.pumpAndSettle();
 
     expect(repository.savedPhotos, hasLength(1));
@@ -381,7 +381,7 @@ void main() {
     await tester.pumpAndSettle();
     await _analyze(tester);
 
-    await tester.tap(find.text('Log'));
+    await tester.tap(find.text('To diary'));
     await tester.pump();
 
     expect(

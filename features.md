@@ -130,6 +130,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   big number over a ruler, whose bar has four equal quarters of the target
   that fill in order. It is quiet by default; a tap shows eaten and target,
   base and carryover, and the eaten grams per macro.
+- The main button of the eat page says "Ins Tagebuch", and "Einplanen" on a
+  future day.
 - On a future day, a Vorrat item or a cooked meal is saved as a plan, with
   undo: it takes no stock and no portions until it is eaten. An item whose
   amount needs the calorie editor cannot be planned yet.
@@ -317,7 +319,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   nutrition label for the whole meal, per 100 g and in total ("–" when one
   food lacks a value; no per-100 column when grams and milliliters mix),
   and the main button "In Vorrat" keeps the picked foods in stock as one
-  prepared meal "A + B" with one portion. The grey "Mahlzeit eintragen"
+  prepared meal "A + B" with one portion. The grey "Mahlzeit ins Tagebuch"
   saves one combined diary entry named "A + B" instead. The entry and
   every stock change are written together. A combined entry cannot change its
   amount or be eaten again; deleting it can return the stock of every food.
@@ -504,7 +506,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   Vorrat. Closing the page keeps it in the pot. A meal that does not show up within a few seconds counts as
   gone, and the page says it could not be loaded.
 - A meal in the pot shows "Im Topf" in the Vorrat list. Its detail page
-  says "Im Topf" and keeps the meal actions, but blocks "Eintragen", and the
+  says "Im Topf" and keeps the meal actions, but blocks "Ins Tagebuch", and the
   diary does not offer the meal, because its portions are set at "Gekocht".
   Saving a diary entry for a meal in the pot fails as well.
 - A card under "Offen" says "Im Topf seit …" (with "· N Zeilen offen" when

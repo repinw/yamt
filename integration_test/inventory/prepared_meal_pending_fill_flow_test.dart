@@ -177,7 +177,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('inventory_entry_row_pan')));
     await _settle(tester);
 
-    // The detail page keeps its actions, but "Eintragen" stays off.
+    // The detail page keeps its actions, but "Ins Tagebuch" stays off.
     expect(
       find.descendant(
         of: find.byType(EatPageHeader),

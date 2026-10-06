@@ -107,6 +107,7 @@ class _PreparedMealEatSheetBodyState
         onDayPicked: _controller.setLoggedDay,
         onMealTypeChanged: _controller.setMealType,
       ),
+      isPlan: state.isPlan,
       kcal: nutrition?.eaten.kcal,
       confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),
       // On the detail page a meal with missing ingredients can be logged

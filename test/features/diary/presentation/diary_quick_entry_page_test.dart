@@ -33,7 +33,7 @@ void main() {
   });
   tearDown(() => calorieLog.dispose());
 
-  Future<void> openPage(WidgetTester tester) async {
+  Future<void> openPage(WidgetTester tester, {DateTime? loggedAt}) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: quickEntryOverrides(calorieLog),
@@ -51,7 +51,7 @@ void main() {
                       .push<DiaryQuickEntryResult>(
                         MaterialPageRoute(
                           builder: (_) => DiaryQuickEntryPage(
-                            initialLoggedAt: _loggedAt,
+                            initialLoggedAt: loggedAt ?? _loggedAt,
                             initialMealType: MealType.breakfast,
                           ),
                         ),
@@ -114,8 +114,16 @@ void main() {
     expect(confirmAction(tester), isNotNull);
     expect(find.byKey(_confirmHintKey), findsNothing);
     expect(kcalFrameColor(tester), isNot(colors.accent));
-    expect(find.text('Log'), findsOneWidget);
+    expect(find.text('To diary'), findsOneWidget);
     expect(find.text('350 kcal'), findsOneWidget);
+  });
+
+  testWidgets('says "Plan" on a later day', (tester) async {
+    await openPage(tester, loggedAt: DateTime(2026, 9, 29, 8));
+    await type(tester, DiaryQuickEntryValue.kcal, '350');
+
+    expect(find.text('Plan'), findsOneWidget);
+    expect(find.text('To diary'), findsNothing);
   });
 
   testWidgets('points to the AI estimate while a macro is missing', (

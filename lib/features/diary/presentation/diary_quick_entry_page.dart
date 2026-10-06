@@ -102,6 +102,7 @@ class _DiaryQuickEntryPageState extends ConsumerState<DiaryQuickEntryPage> {
         onMealTypeChanged: (mealType) => _controller.setMealType(mealType),
       ),
       kcal: state.kcal,
+      isPlan: state.isPlan,
       confirmButtonKey: DiaryQuickEntryPage.confirmKey,
       onConfirm: state.canSave ? _save : null,
       confirmHint: state.kcal == null ? l10n.diaryQuickEntryKcalMissing : null,

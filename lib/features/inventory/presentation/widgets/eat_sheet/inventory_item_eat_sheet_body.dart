@@ -187,6 +187,7 @@ class _InventoryItemEatSheetBodyState
         onDayPicked: _controller.setLoggedDay,
         onMealTypeChanged: _controller.setMealType,
       ),
+      isPlan: state.isPlan,
       kcal: widget.mealKcal ?? nutrition?.eaten.kcal,
       confirmLabel: widget.confirmLabel,
       confirmButtonKey: const Key(

@@ -183,6 +183,28 @@ void main() {
     expect(find.byKey(EatRememberPortion.linkKey), findsOneWidget);
   });
 
+  testWidgets('page scaffold logs to the diary, or plans a later day', (
+    tester,
+  ) async {
+    Widget page({required bool isPlan}) => _TestApp(
+      child: EatPageScaffold(
+        whenControl: const SizedBox(),
+        kcal: null,
+        confirmButtonKey: const Key('confirm'),
+        onConfirm: () {},
+        cancelButtonKey: const Key('close'),
+        isPlan: isPlan,
+        children: const [Text('Body')],
+      ),
+    );
+
+    await tester.pumpWidget(page(isPlan: false));
+    expect(find.text('To diary'), findsOneWidget);
+
+    await tester.pumpWidget(page(isPlan: true));
+    expect(find.text('Plan'), findsOneWidget);
+  });
+
   testWidgets('page scaffold shows the calories and closes', (tester) async {
     var confirmTapCount = 0;
     var secondaryTapCount = 0;
