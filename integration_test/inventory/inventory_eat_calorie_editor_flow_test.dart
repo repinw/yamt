@@ -109,6 +109,12 @@ class _MemoryCommitStore implements InventoryCalorieEntryCommitStore {
       ),
     ];
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) => throw UnimplementedError();
 }
 
 typedef _Harness = ({

@@ -24,6 +24,9 @@ changes.
 - Plans: food the signed-in user plans to eat on a later day, stored
   encrypted apart from the calorie entries so no sum counts them, and the
   actions that save and delete them.
+- `calorieEntryDayChange`: a write outside Calories, such as a delete with
+  its stock, reports the entry's day. Calories then refreshes the diary
+  overview and marks the weekly check-ins from that day as stale.
 - The debug dump tooling in `application/` (dump builders), `data/` (text
   file export), and `presentation/`; the Home side menu shows it only in
   debug builds.
@@ -36,16 +39,16 @@ changes.
 - Diary page ordering, date navigation, or diary-level composition.
 - Activity card layout or activity-owned action orchestration.
 - Inventory item storage, prepared meal storage, or household scope state.
-  Inventory-backed delete and stock adjustment run through calorie-owned
-  ports that inventory implements. Inventory saves the entry that the
-  calorie editor returns itself. So Calories does not depend on Inventory.
+  Inventory saves the entry that the calorie editor returns and deletes
+  entries that took stock. Only the stock adjustment of a changed amount
+  still runs through a calorie-owned port that inventory implements. So
+  Calories does not depend on Inventory.
 
 ## Public UI
 
 - `CalorieEntryDetailsFlow` for the entry details page, which Diary owns. It
-  saves a meal or day change, changes the amount, logs an entry again, and
-  removes it, each at once with an undo snack bar. Removing an entry with stock
-  asks whether it goes back to the inventory.
+  saves a meal or day change, changes the amount, and logs an entry again,
+  each at once with an undo snack bar.
 - The TDEE analytics page (`AppRoutes.homeCaloriesAnalytics`) for expenditure,
   the flux range corridor, and goal anticipation. It can preselect goal cycles
   through `AppRoutes.homeCaloriesAnalyticsCyclesParam`.

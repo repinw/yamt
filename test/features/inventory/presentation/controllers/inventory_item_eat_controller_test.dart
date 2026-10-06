@@ -5,12 +5,12 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
+import 'package:yamt/features/inventory/application/inventory_entry_delete_service.dart';
 import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -21,7 +21,7 @@ import '../../../calories/support/fake_planned_entry_repository.dart';
 
 class _MockEatService extends Mock implements InventoryEatService;
 
-class _MockDeleteFlow extends Mock implements CalorieEntryDeleteFlow;
+class _MockDeleteService extends Mock implements InventoryEntryDeleteService;
 
 final DateTime _now = DateTime.parse('2026-10-05T12:00:00Z');
 
@@ -121,15 +121,17 @@ void main() {
   );
 
   test('undo deletes the entry and returns its stock', () async {
-    final deleteFlow = _MockDeleteFlow();
+    final deleteService = _MockDeleteService();
     final entry = _entry();
-    when(() => deleteFlow.deleteEntry(entry: entry, restoreToInventory: true))
+    when(() => deleteService.delete(entry, restoreToInventory: true))
         .thenAnswer(
           (_) async =>
               const CalorieEntryDeleteResult.success(restoredToInventory: true),
         );
     final container = _container(
-      overrides: [calorieEntryDeleteFlowProvider.overrideWithValue(deleteFlow)],
+      overrides: [
+        inventoryEntryDeleteServiceProvider.overrideWithValue(deleteService),
+      ],
     );
 
     final undone = await container
@@ -137,7 +139,7 @@ void main() {
         .undo(entry);
 
     expect(undone, isTrue);
-    verify(() => deleteFlow.deleteEntry(entry: entry, restoreToInventory: true))
+    verify(() => deleteService.delete(entry, restoreToInventory: true))
         .called(1);
   });
 

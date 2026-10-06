@@ -11,15 +11,24 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
-import 'package:yamt/features/calories/presentation/calorie_entry_details_flow.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
+import 'package:yamt/features/diary/presentation/diary_entry_delete_flow.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_calorie_entry_commit_store.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../support/fake_calories_repositories.dart';
+import '../../calories/support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User;
 
@@ -77,29 +86,119 @@ CalorieEntry _preparedMeal() {
   );
 }
 
-CalorieEntryDeleteFlow _deleteFlow(
-  Ref ref, {
-  Future<bool> Function(String itemId, int amount)? restoreConsumedItem,
-  Future<bool> Function(String itemId)? sourceInventoryItemExists,
-  Future<bool> Function({required String mealId, required num portions})?
-  restorePreparedMealPortions,
+/// Gives stock back as [restored] says: the new stock per item, an empty
+/// list when the items are gone, or null when the write fails.
+class _ItemStore implements InventoryCalorieEntryCommitStore {
+  new({this.restored = const []});
+
+  final List<InventoryCalorieEntryCommitResult>? restored;
+  final restoredAmounts = <Map<String, int>>[];
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async {
+    restoredAmounts.add(amountsByItemId);
+    return restored;
+  }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) => throw UnimplementedError();
+}
+
+class _MealStore implements PreparedMealCalorieEntryCommitStore {
+  const new(this.result);
+
+  final CalorieEntryDeleteResult result;
+
+  @override
+  Future<CalorieEntryDeleteResult> deleteEntryAndRestorePreparedMeal({
+    required CalorieEntry entry,
+  }) async => result;
+
+  @override
+  Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry}) =>
+      throw UnimplementedError();
+}
+
+class _Items implements InventoryItemRepository {
+  const new(this.ids);
+
+  final List<String> ids;
+
+  @override
+  Future<List<InventoryItem>> readAll() async => [
+    for (final id in ids)
+      InventoryItem.create(
+        id: id,
+        name: 'Skyr',
+        entryDate: DateTime(2026, 2, 20),
+        storeName: 'Aldi',
+        quantity: 4,
+      ),
+  ];
+
+  @override
+  Stream<List<InventoryItem>> watchAll() => Stream.fromFuture(readAll());
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
+}
+
+class _Meals implements PreparedMealRepository {
+  const new();
+
+  @override
+  Future<List<PreparedMeal>> readAll() async => [
+    PreparedMeal(
+      id: 'prepared-1',
+      name: 'Chili',
+      totalPortions: 4,
+      remainingPortions: 2,
+      totalKcal: 840,
+      totalProtein: 56,
+      totalCarbs: 70,
+      totalFat: 36,
+      createdAt: DateTime(2026, 2, 24),
+      updatedAt: DateTime(2026, 2, 24),
+      components: const <PreparedMealComponent>[],
+    ),
+  ];
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() => Stream.fromFuture(readAll());
+
+  @override
+  Future<bool> saveAll(List<PreparedMeal> meals) async => true;
+}
+
+/// Fakes the Vorrat behind the delete: the items that exist and the
+/// stores that write the delete with its stock.
+List<Override> _vorrat({
+  List<String> itemIds = const ['inventory-1'],
+  _ItemStore? itemStore,
+  CalorieEntryDeleteResult mealResult = const CalorieEntryDeleteResult.success(
+    restoredToInventory: true,
+  ),
 }) {
-  return CalorieEntryDeleteFlow(
-    deleteEntryById: ref.read(calorieLogRepositoryProvider).deleteEntry,
-    restoreConsumedItem: restoreConsumedItem ?? (_, _) async => true,
-    rollbackRestoredItem: (_, _, {consumedAt}) async => true,
-    restoreConsumedItems: (_) async => true,
-    rollbackRestoredItems: (_, {consumedAt}) async => true,
-    sourceInventoryItemExists: sourceInventoryItemExists ?? (_) async => true,
-    restorePreparedMealPortions:
-        restorePreparedMealPortions ??
-        ({required mealId, required portions}) async => true,
-    rollbackRestoredPreparedMeal: ({
-      required mealId,
-      required discardedPortions,
-    }) async => true,
-    sourcePreparedMealExists: (_) async => true,
-  );
+  return [
+    inventoryItemRepositoryProvider.overrideWithValue(_Items(itemIds)),
+    preparedMealRepositoryProvider.overrideWithValue(const _Meals()),
+    inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+      itemStore ?? _ItemStore(),
+    ),
+    preparedMealCalorieEntryCommitStoreProvider.overrideWithValue(
+      _MealStore(mealResult),
+    ),
+  ];
 }
 
 /// Page below the details stand-in, which it opens on its first frame.
@@ -140,7 +239,7 @@ class _DetailsHost extends StatelessWidget {
         child: TextButton(
           key: _removeKey,
           onPressed: () =>
-              unawaited(CalorieEntryDetailsFlow.remove(context, entry: entry)),
+              unawaited(DiaryEntryDeleteFlow.remove(context, entry: entry)),
           child: const Text('Remove'),
         ),
       ),
@@ -206,21 +305,11 @@ void main() {
   testWidgets('deletes only the diary entry when chosen in the dialog', (
     tester,
   ) async {
-    final restored = <String>[];
+    final itemStore = _ItemStore();
     final repository = await _open(
       tester,
       _stockEntry(),
-      overrides: [
-        calorieEntryDeleteFlowProvider.overrideWith(
-          (ref) => _deleteFlow(
-            ref,
-            restoreConsumedItem: (itemId, amount) async {
-              restored.add(itemId);
-              return true;
-            },
-          ),
-        ),
-      ],
+      overrides: _vorrat(itemStore: itemStore),
     );
 
     await _remove(tester);
@@ -234,7 +323,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(repository.entries, isEmpty);
-    expect(restored, isEmpty);
+    expect(itemStore.restoredAmounts, isEmpty);
     expect(_isHostOpen(), isFalse);
     expect(find.text('Entry removed'), findsOneWidget);
   });
@@ -243,11 +332,7 @@ void main() {
     final repository = await _open(
       tester,
       _stockEntry(),
-      overrides: [
-        calorieEntryDeleteFlowProvider.overrideWith(
-          (ref) => _deleteFlow(ref, restoreConsumedItem: (_, _) async => false),
-        ),
-      ],
+      overrides: _vorrat(itemStore: _ItemStore(restored: null)),
     );
 
     await _remove(tester);
@@ -268,12 +353,7 @@ void main() {
     final repository = await _open(
       tester,
       _stockEntry(itemId: 'missing-item'),
-      overrides: [
-        calorieEntryDeleteFlowProvider.overrideWith(
-          (ref) =>
-              _deleteFlow(ref, sourceInventoryItemExists: (_) async => false),
-        ),
-      ],
+      overrides: _vorrat(itemIds: const []),
     );
 
     await _remove(tester);
@@ -297,21 +377,12 @@ void main() {
   testWidgets('asks again when the stock item disappears while returning', (
     tester,
   ) async {
-    var sourceChecks = 0;
+    // The item exists when the page asks, but is gone when the delete
+    // writes.
     final repository = await _open(
       tester,
       _stockEntry(),
-      overrides: [
-        calorieEntryDeleteFlowProvider.overrideWith(
-          (ref) => _deleteFlow(
-            ref,
-            sourceInventoryItemExists: (_) async {
-              sourceChecks += 1;
-              return sourceChecks == 1;
-            },
-          ),
-        ),
-      ],
+      overrides: _vorrat(itemStore: _ItemStore()),
     );
 
     await _remove(tester);
@@ -333,17 +404,11 @@ void main() {
     final repository = await _open(
       tester,
       _preparedMeal(),
-      overrides: [
-        calorieEntryDeleteFlowProvider.overrideWith(
-          (ref) => _deleteFlow(
-            ref,
-            restorePreparedMealPortions: ({
-              required mealId,
-              required portions,
-            }) async => false,
-          ),
+      overrides: _vorrat(
+        mealResult: const CalorieEntryDeleteResult.failure(
+          CalorieEntryDeleteFailureReason.restoreFailed,
         ),
-      ],
+      ),
     );
 
     await _remove(tester);

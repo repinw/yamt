@@ -16,8 +16,8 @@ import 'package:yamt/core/router/hero_sheet_page.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_entry_amount_edit_flow.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
@@ -29,6 +29,11 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_entry_actions_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_entry_label_section.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -38,6 +43,79 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User;
+
+/// Writes the delete and its stock change to the diary fake and records the
+/// stock that went back and came out again.
+class _ItemStore implements InventoryCalorieEntryCommitStore {
+  const new(this.diary, {required this.restored, required this.takenBack});
+
+  final CalorieLogRepositoryContract diary;
+  final List<(String, int)> restored;
+  final List<(String, int)> takenBack;
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async {
+    await diary.deleteEntry(entry.id);
+    restored.addAll([
+      for (final e in amountsByItemId.entries) (e.key, e.value),
+    ]);
+    return [
+      for (final itemId in amountsByItemId.keys)
+        InventoryCalorieEntryCommitResult(
+          itemId: itemId,
+          quantity: 1,
+          currentAmount: 500,
+        ),
+    ];
+  }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) async {
+    await diary.saveEntry(entry);
+    takenBack.addAll([
+      for (final pending in pendingConsumptions)
+        (pending.itemId, pending.amount),
+    ]);
+    return const [];
+  }
+}
+
+class _Items implements InventoryItemRepository {
+  const new(this.ids);
+
+  final List<String> ids;
+
+  @override
+  Future<List<InventoryItem>> readAll() async => [
+    for (final id in ids)
+      InventoryItem.create(
+        id: id,
+        name: 'Skyr',
+        entryDate: DateTime(2026, 2, 20),
+        storeName: 'Aldi',
+        quantity: 1,
+        initialAmount: 500,
+        currentAmount: 500,
+        amountUnit: InventoryAmountUnit.gram,
+      ),
+  ];
+
+  @override
+  Stream<List<InventoryItem>> watchAll() => Stream.fromFuture(readAll());
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
+}
 
 final _now = DateTime(2026, 2, 26, 9, 30);
 const _diaryText = 'Diary below';
@@ -364,29 +442,14 @@ void main() {
         ),
       ],
       overrides: [
-        calorieEntryDeleteFlowProvider.overrideWith(
-          (ref) => CalorieEntryDeleteFlow(
-            deleteEntryById: ref.read(calorieLogRepositoryProvider).deleteEntry,
-            restoreConsumedItem: (itemId, amount) async {
-              restored.add((itemId, amount));
-              return true;
-            },
-            rollbackRestoredItem: (itemId, amount, {consumedAt}) async {
-              takenBack.add((itemId, amount));
-              return true;
-            },
-            restoreConsumedItems: (_) async => true,
-            rollbackRestoredItems: (_, {consumedAt}) async => true,
-            sourceInventoryItemExists: (_) async => true,
-            restorePreparedMealPortions: ({
-              required mealId,
-              required portions,
-            }) async => true,
-            rollbackRestoredPreparedMeal: ({
-              required mealId,
-              required discardedPortions,
-            }) async => true,
-            sourcePreparedMealExists: (_) async => true,
+        inventoryItemRepositoryProvider.overrideWithValue(
+          const _Items(['inventory-1']),
+        ),
+        inventoryCalorieEntryCommitStoreProvider.overrideWith(
+          (ref) => _ItemStore(
+            ref.watch(calorieLogRepositoryProvider),
+            restored: restored,
+            takenBack: takenBack,
           ),
         ),
       ],

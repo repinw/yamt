@@ -11,11 +11,8 @@ import 'package:yamt/core/debug/app_provider_observer.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_entry_amount_edit_flow.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_product_search_hub_completion_handler.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_calorie_entry_delete_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_calorie_stock_adjuster.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -43,9 +40,6 @@ Future<void> main() async {
           : const <ProviderObserver>[],
       overrides: [
         appPreferencesProvider.overrideWithValue(appPreferences),
-        calorieEntryDeleteFlowProvider.overrideWith(
-          (ref) => ref.watch(inventoryCalorieEntryDeleteFlowProvider),
-        ),
         calorieInventoryStockAdjusterProvider.overrideWith(
           (ref) => ref.watch(inventoryCalorieStockAdjusterProvider),
         ),

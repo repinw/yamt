@@ -11,7 +11,6 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
@@ -35,7 +34,6 @@ import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/inventory_calorie_entry_delete_flow.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
@@ -230,6 +228,22 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
           itemId: pending.itemId,
           quantity: 1,
           currentAmount: 1000 - pending.amount,
+        ),
+    ];
+  }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async {
+    await calorieLog?.deleteEntry(entry.id);
+    return [
+      for (final itemId in amountsByItemId.keys)
+        InventoryCalorieEntryCommitResult(
+          itemId: itemId,
+          quantity: 1,
+          currentAmount: 1000,
         ),
     ];
   }
@@ -472,10 +486,6 @@ Future<void> _pumpTestApp(
         inventoryItemRepositoryProvider.overrideWithValue(repository),
         inventoryDiscardEventRepositoryProvider.overrideWithValue(
           discardEventRepository ?? _FakeInventoryDiscardEventRepository(),
-        ),
-        // As in main.dart: deleting an entry returns its stock.
-        calorieEntryDeleteFlowProvider.overrideWith(
-          (ref) => ref.watch(inventoryCalorieEntryDeleteFlowProvider),
         ),
         ...overrides,
       ],

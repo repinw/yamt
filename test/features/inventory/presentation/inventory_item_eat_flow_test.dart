@@ -105,6 +105,12 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
       ),
     ];
   }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) => throw UnimplementedError();
 }
 
 /// Fakes the repositories the eat service writes to, signed in as [user].

@@ -20,8 +20,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 ///
 /// The flow uses the keep-alive editor controller of the page's container.
 /// Undo callbacks may run after the page closed, so they never use the
-/// page's `ref` or `context`. Entries logged from the inventory move or
-/// return their stock the same way the entry editor does.
+/// page's `ref` or `context`. Entries logged from the inventory move their
+/// stock with a changed amount.
 abstract final class CalorieEntryDetailsFlow {
   /// Saves [updated] in place of [previous]. Returns whether it saved.
   ///
@@ -122,54 +122,7 @@ abstract final class CalorieEntryDetailsFlow {
       succeeded: saved,
       successMessage: l10n.caloriesEatAgainDoneMessage,
       failureMessage: l10n.caloriesSaveFailed,
-      onUndo: () async {
-        final result = await controller.deleteEntry(
-          entry: repeated,
-          restoreToInventory: false,
-        );
-        return result.isSuccess;
-      },
-    );
-  }
-
-  /// Removes [entry] and closes the page. Entries with stock to return ask
-  /// first whether the stock goes back to the inventory.
-  static Future<void> remove(
-    BuildContext context, {
-    required CalorieEntry entry,
-  }) async {
-    final controller = _controller(context);
-    if (entry.canRestoreToInventory ||
-        entry.canReturnPreparedMealToInventory ||
-        entry.canReturnCombinedToInventory) {
-      await CalorieEntryEditorFlowHandler.returnEntryToInventory(
-        context,
-        entry: entry,
-        controller: controller,
-        onDeleted: () =>
-            CalorieEntryEditorFlowHandler.maybePopRootNavigator(context),
-      );
-      return;
-    }
-
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final result = await controller.deleteEntry(
-      entry: entry,
-      restoreToInventory: false,
-    );
-    if (!context.mounted) {
-      return;
-    }
-    if (result.isSuccess) {
-      CalorieEntryEditorFlowHandler.maybePopRootNavigator(context);
-    }
-    _showResult(
-      messenger,
-      succeeded: result.isSuccess,
-      successMessage: l10n.caloriesEntryDeletedMessage,
-      failureMessage: l10n.caloriesDeleteFailed,
-      onUndo: () => controller.saveEntry(entry: entry),
+      onUndo: () => controller.deleteEntry(repeated),
     );
   }
 

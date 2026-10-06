@@ -8,16 +8,16 @@ part of 'calorie_entry_editor_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Controller managing save and delete of calorie entries from the diary.
+/// Saves, changes, and deletes logged calorie entries for the details page.
 
 @ProviderFor(CalorieEntryEditorController)
 final calorieEntryEditorControllerProvider =
     CalorieEntryEditorControllerProvider._();
 
-/// Controller managing save and delete of calorie entries from the diary.
+/// Saves, changes, and deletes logged calorie entries for the details page.
 final class CalorieEntryEditorControllerProvider
     extends $NotifierProvider<CalorieEntryEditorController, void> {
-  /// Controller managing save and delete of calorie entries from the diary.
+  /// Saves, changes, and deletes logged calorie entries for the details page.
   CalorieEntryEditorControllerProvider._()
     : super(
         from: null,
@@ -46,9 +46,9 @@ final class CalorieEntryEditorControllerProvider
 }
 
 String _$calorieEntryEditorControllerHash() =>
-    r'201df562e86711ddb0544728b55a2f1f6a2daa77';
+    r'0743ae1c8cc32ea165251f26ba11398ac42c95c3';
 
-/// Controller managing save and delete of calorie entries from the diary.
+/// Saves, changes, and deletes logged calorie entries for the details page.
 
 abstract class _$CalorieEntryEditorController extends $Notifier<void> {
   void build();
