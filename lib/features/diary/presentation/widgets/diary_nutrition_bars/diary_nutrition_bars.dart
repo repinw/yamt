@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_after_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars_content.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_bars_skeleton.dart';
@@ -51,7 +52,9 @@ class DiaryNutritionBars extends ConsumerWidget {
     final dashboardState = ref.watch(
       diaryDayDashboardControllerProvider(normalizedDay),
     );
-    final data = dashboardState.data?.nutritionBars;
+    final dashboard = dashboardState.data;
+    final data = dashboard?.nutritionBars;
+    final openPlans = ref.watch(diaryOpenPlansProvider(normalizedDay));
     final l10n = AppLocalizations.of(context)!;
     final showError = data == null && dashboardState.showError;
 
@@ -70,6 +73,7 @@ class DiaryNutritionBars extends ConsumerWidget {
               data: data,
               showTitle: _showTitle,
               showTotals: showTotals,
+              openPlans: openPlans,
             ),
     );
 

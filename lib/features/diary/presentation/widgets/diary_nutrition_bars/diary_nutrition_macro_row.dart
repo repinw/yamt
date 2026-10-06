@@ -23,6 +23,8 @@ class DiaryNutritionMacroRow extends StatelessWidget {
     required this.color,
     required this.numberFormat,
     this.showTotal = true,
+    this.planned = 0,
+    this.countsPlanned = false,
     super.key,
   });
 
@@ -44,13 +46,19 @@ class DiaryNutritionMacroRow extends StatelessWidget {
   /// Whether eaten and target grams are shown under the number.
   final bool showTotal;
 
+  /// Planned grams not eaten yet, striped after the eaten part.
+  final double planned;
+
+  /// Whether the grams left count [planned].
+  final bool countsPlanned;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
     final colors = FoodLabelColors.of(context);
     final error = Theme.of(context).colorScheme.error;
-    final remaining = target - current;
+    final remaining = target - current - (countsPlanned ? planned : 0);
     final isOverTarget = remaining < -0.5;
     final amount = numberFormat.format(
       isOverTarget ? -remaining.round() : math.max(0, remaining.round()),
@@ -85,6 +93,7 @@ class DiaryNutritionMacroRow extends StatelessWidget {
             color: color,
             trackColor: colors.rule,
             overflowColor: error,
+            planned: planned,
             height: AppFoodLabel.macroBar,
           ),
         ),

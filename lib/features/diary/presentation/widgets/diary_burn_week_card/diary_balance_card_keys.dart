@@ -22,6 +22,16 @@ abstract final class DiaryBalanceCardKeys {
     'diary-balance-kcal-head-value',
   );
 
+  /// Chip that counts the open plans of the day in the head.
+  static const afterPlanChip = ValueKey<String>(
+    'diary-balance-after-plan-chip',
+  );
+
+  /// What is left without the plans, under the big number after plan.
+  static const kcalHeadWithoutPlan = ValueKey<String>(
+    'diary-balance-kcal-head-without-plan',
+  );
+
   /// Goal next to the big number of a future day.
   static const kcalHeadTarget = ValueKey<String>(
     'diary-balance-kcal-head-target',

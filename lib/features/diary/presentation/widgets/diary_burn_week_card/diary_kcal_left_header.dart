@@ -15,7 +15,12 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// the planned kcal and the pause word instead of the target.
 class DiaryKcalLeftHeader extends StatelessWidget {
   /// Creates the head.
-  const new({required this.data, required this.showDetails, super.key});
+  const new({
+    required this.data,
+    required this.showDetails,
+    this.onToggleAfterPlan,
+    super.key,
+  });
 
   /// Render-ready card data.
   final DiaryDailyBalanceData data;
@@ -23,13 +28,19 @@ class DiaryKcalLeftHeader extends StatelessWidget {
   /// Whether eaten and target are shown next to the number.
   final bool showDetails;
 
+  /// Called when the chip that counts the open plans is tapped.
+  final VoidCallback? onToggleAfterPlan;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final textTheme = Theme.of(context).textTheme;
     final colors = FoodLabelColors.of(context);
     final error = Theme.of(context).colorScheme.error;
-    final accent = data.isOverTarget
+    final isOverTarget = data.isOverTarget;
+    final countsOpenPlans = data.countsOpenPlans;
+    final withoutPlanValue = data.withoutPlanValue;
+    final accent = isOverTarget
         ? error
         : data.isPauseDay
         ? colors.muted
@@ -38,7 +49,7 @@ class DiaryKcalLeftHeader extends StatelessWidget {
         : colors.accentText;
     final label = data.isPlanned
         ? l10n.diaryBalancePlannedLabel
-        : data.isOverTarget
+        : isOverTarget
         ? l10n.diaryBalanceOverGoalLabel
         : data.leftLabel;
     final value = data.isPlanned ? data.eatenValue : data.leftValue;
@@ -59,11 +70,18 @@ class DiaryKcalLeftHeader extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: textTheme.labelSmall?.copyWith(
                   fontFamily: AppFonts.mono,
-                  color: data.isOverTarget ? error : colors.muted,
+                  color: isOverTarget ? error : colors.muted,
                   letterSpacing: AppFoodLabel.brandTracking,
                 ),
               ),
             ),
+            if (countsOpenPlans != null)
+              FilterChip(
+                key: DiaryBalanceCardKeys.afterPlanChip,
+                label: Text(l10n.diaryBalanceAfterPlanChip),
+                selected: countsOpenPlans,
+                onSelected: (_) => onToggleAfterPlan?.call(),
+              ),
             // Shows that a tap opens or closes the details.
             AnimatedRotation(
               turns: showDetails ? 0.5 : 0,
@@ -106,6 +124,12 @@ class DiaryKcalLeftHeader extends StatelessWidget {
               _EatenOfTarget(data: data, style: mono),
           ],
         ),
+        if (withoutPlanValue != null)
+          Text(
+            withoutPlanValue,
+            key: DiaryBalanceCardKeys.kcalHeadWithoutPlan,
+            style: mono?.copyWith(color: colors.muted),
+          ),
       ],
     );
   }

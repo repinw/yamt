@@ -147,12 +147,18 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Tomorrow can plan with today's carryover: under its number, "<Weekday>
   abschließen" (with today's weekday) closes today and shows the carryover
   per day it adds. Tomorrow then counts like a started day: its head shows
-  "Übrig" with the goal plus that carryover instead of the plan and counts
-  only eaten food, not its plans; a snack bar offers undo, and "<Weekday>
+  "Übrig" with the goal plus that carryover instead of the plan, like
+  today; a snack bar offers undo, and "<Weekday>
   wieder öffnen" reverts it. The carryover stays live:
   food logged later today or edits to earlier days change it. When tomorrow
   starts a new 7-day run, it gets no carryover and shows no button. The
   closed day is saved on the device and counts only until midnight.
+- Plans on today, or on a closed tomorrow, are striped after the eaten share
+  in the kcal ruler and the macro bars. The chip "Nach Plan" in the head,
+  on by default, counts them: the head then reads "Übrig nach Plan" with
+  "<kcal> ohne Plan" under the number, and each macro shows the grams left
+  after the plans. The choice is saved on the device. Plans of past days
+  never count.
 - Nutrition bars and macro summaries: each macro shows its label, a bar of four
   segments, and the grams left. A macro above its target shows `+X g over` and
   stripes the overage share at the end of its bar.

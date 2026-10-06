@@ -2,6 +2,8 @@ import 'package:intl/intl.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
+import 'package:yamt/features/diary/application/diary_open_plans.dart';
+import 'package:yamt/features/diary/domain/diary_plan_day.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_subtitle_resolver.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -46,6 +48,9 @@ class DiaryDailyBalanceData {
     this.isOverTarget = false,
     this.previousDayCarryoverValue,
     this.isPreviousDayClosed = false,
+    this.plannedKcal = 0,
+    this.countsOpenPlans,
+    this.withoutPlanValue,
   });
 
   /// Builds daily render data from raw metrics and localization dependencies.
@@ -59,6 +64,7 @@ class DiaryDailyBalanceData {
     DiaryDailyBudgetDetailsData? budgetDetails,
     double? previousDayCarryoverKcal,
     bool isPreviousDayClosed = false,
+    DiaryOpenPlans? openPlans,
   }) {
     final adjustmentLabel = metrics.bufferAdjustmentKcal.round() == 0
         ? null
@@ -87,8 +93,14 @@ class DiaryDailyBalanceData {
     // yesterday may still carry the values after midnight.
     final previousDayCarryover = isFutureDay ? previousDayCarryoverKcal : null;
     final isClosed = previousDayCarryover != null && isPreviousDayClosed;
-    // Once the day before is closed, tomorrow counts like a started day.
-    final isPlanned = isFutureDay && !isClosed;
+    final isPlanned = diaryDayIsPlanned(
+      day: selectedDay,
+      today: today,
+      isPreviousDayClosed: isPreviousDayClosed,
+      previousDayCarryoverKcal: previousDayCarryover,
+    );
+    final plans = isPlanned || isPauseDay ? null : openPlans;
+    final countsPlans = plans?.counted ?? false;
     final resolvedSubtitle = resolveDiaryDailyBalanceSubtitle(
       isPlanned: isPlanned,
       isPauseDay: isPauseDay,
@@ -99,7 +111,10 @@ class DiaryDailyBalanceData {
 
     final eatenNumber = numberFormat.format(metrics.eatenKcal.round());
     final targetNumber = numberFormat.format(metrics.targetKcal.round());
-    final roundedLeftKcal = metrics.dayLeftKcal.round();
+    final roundedLeftWithoutPlan = metrics.dayLeftKcal.round();
+    final roundedLeftKcal = countsPlans
+        ? (metrics.dayLeftKcal - plans!.kcal).round()
+        : roundedLeftWithoutPlan;
     final isOverTarget = !isPauseDay && roundedLeftKcal < 0;
     final leftNumber = isPauseDay
         ? l10n.diaryBalancePauseDayValue
@@ -124,7 +139,9 @@ class DiaryDailyBalanceData {
       leftSubtitleParts: resolvedSubtitle.parts,
       budgetDetails: budgetDetails,
       isPlanned: isPlanned,
-      leftLabel: isSameDiaryDay(selectedDay, today)
+      leftLabel: countsPlans
+          ? l10n.diaryBalanceLeftAfterPlanLabel
+          : isSameDiaryDay(selectedDay, today)
           ? l10n.diaryBalanceLeftTodayLabel
           : l10n.diaryBalanceLeftLabel,
       isOverTarget: isOverTarget,
@@ -136,6 +153,17 @@ class DiaryDailyBalanceData {
               l10n.caloriesUnitKcal,
             ),
       isPreviousDayClosed: isClosed,
+      plannedKcal: plans?.kcal ?? 0,
+      countsOpenPlans: plans?.counted,
+      withoutPlanValue: !countsPlans
+          ? null
+          : roundedLeftWithoutPlan < 0
+          ? l10n.diaryBalanceOverWithoutPlan(
+              numberFormat.format(-roundedLeftWithoutPlan),
+            )
+          : l10n.diaryBalanceWithoutPlan(
+              numberFormat.format(roundedLeftWithoutPlan),
+            ),
     );
   }
 
@@ -201,4 +229,14 @@ class DiaryDailyBalanceData {
 
   /// Whether the day before is closed, so this day counts like a started day.
   final bool isPreviousDayClosed;
+
+  /// Kcal of the open plans, striped on the ruler; 0 without any.
+  final double plannedKcal;
+
+  /// Whether the head counts the open plans ("Nach Plan"); null when the
+  /// day offers none, so no chip shows.
+  final bool? countsOpenPlans;
+
+  /// What is left without the open plans, when the head counts them.
+  final String? withoutPlanValue;
 }
