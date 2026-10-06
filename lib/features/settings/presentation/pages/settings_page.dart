@@ -17,7 +17,7 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_dialog.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
-import 'package:yamt/features/settings/presentation/widgets/settings_appearance_section/settings_appearance_section.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_appearance_section.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_health_connect_tile/settings_health_connect_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_home_widget_tile/settings_home_widget_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_macro_goals_sheet/settings_macro_goals_sheet.dart';

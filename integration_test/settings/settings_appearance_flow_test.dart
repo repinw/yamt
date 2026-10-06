@@ -18,7 +18,7 @@ import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 import 'package:yamt/features/settings/presentation/pages/settings_page_keys.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_accent_tile/settings_accent_sheet.dart';
-import 'package:yamt/features/settings/presentation/widgets/settings_theme_mode_tile/settings_theme_mode_tile.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_theme_mode_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';

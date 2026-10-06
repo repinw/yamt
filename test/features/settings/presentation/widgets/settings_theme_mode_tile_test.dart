@@ -5,10 +5,10 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_mode_controller.dart';
-import 'package:yamt/features/settings/presentation/widgets/settings_theme_mode_tile/settings_theme_mode_tile.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_theme_mode_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-import '../../../../../helpers/memory_app_preferences.dart';
+import '../../../../helpers/memory_app_preferences.dart';
 
 void main() {
   testWidgets('a segment switches the app brightness and saves the choice', (

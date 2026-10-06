@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_accent_tile/settings_accent_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_language_tile/settings_language_tile.dart';
-import 'package:yamt/features/settings/presentation/widgets/settings_theme_mode_tile/settings_theme_mode_tile.dart';
+import 'package:yamt/features/settings/presentation/widgets/settings_theme_mode_tile.dart';
 import 'package:yamt/features/settings/presentation/widgets/settings_tiles/settings_tiles.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
