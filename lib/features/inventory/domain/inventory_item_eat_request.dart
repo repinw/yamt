@@ -14,6 +14,7 @@ class InventoryItemEatRequest {
     this.portionBaseUnit,
     this.portionCount,
     this.portionLabel,
+    this.isPlan = false,
   }) : assert(
          (calorieAmount == null) == (calorieUnit == null),
          'calorieAmount and calorieUnit must either both be null or set.',
@@ -54,6 +55,10 @@ class InventoryItemEatRequest {
 
   /// The user-facing portion label.
   final String? portionLabel;
+
+  /// Whether the user plans the food instead of eating it, even on today.
+  /// A day after today is always a plan.
+  final bool isPlan;
 
   /// Whether manual calorie portion.
   bool get hasManualCaloriePortion {

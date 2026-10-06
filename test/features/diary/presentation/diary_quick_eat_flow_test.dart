@@ -624,6 +624,7 @@ class _TestDiaryQuickEatInventoryActions implements InventoryQuickEatActions {
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
+    bool asPlan = false,
   }) async {
     if (failConsume) {
       return null;

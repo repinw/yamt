@@ -79,6 +79,8 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
     final estimate = widget.estimate;
     final description = widget.description.trim();
     return InventoryItemEatSheetBody(
+      // Its result keeps no plan flag; a later day still plans by its date.
+      canPlan: false,
       key: ValueKey(_generation),
       item: _item(estimate.portionGrams.round()),
       confirmIntent: InventoryItemEatSheetIntent.logOnly,

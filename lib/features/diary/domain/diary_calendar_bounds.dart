@@ -1,8 +1,9 @@
 import 'package:meta/meta.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 /// Number of future days selectable for meal prep.
-const int diaryCalendarFutureDayCount = 14;
+const int diaryCalendarFutureDayCount = diaryPlanAheadDayCount;
 
 /// Selectable day range of the diary calendar.
 @immutable

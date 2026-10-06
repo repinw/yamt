@@ -72,6 +72,9 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
   // back as soon as the meal is empty again.
   var _hubRemoved = false;
 
+  InventoryItemEatSheetControllerProvider get _sheet =>
+      inventoryItemEatSheetControllerProvider(item: widget.item);
+
   @override
   void initState() {
     super.initState();
@@ -83,13 +86,10 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       if (!mounted) {
         return;
       }
-      widget.initialPicks.forEach(
-        ref
-            .read(
-              inventoryItemCombineControllerProvider(widget.item.id).notifier,
-            )
-            .addWithDefaultAmount,
+      final combine = ref.read(
+        inventoryItemCombineControllerProvider(widget.item.id).notifier,
       );
+      widget.initialPicks.forEach(combine.addWithDefaultAmount);
     });
   }
 
@@ -126,7 +126,10 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
       );
     }
     ref.listen(combine, (_, next) {
-      if (next.isEmpty && _hubRemoved) {
+      if (next.isNotEmpty) {
+        // A meal is eaten or stored, never planned.
+        ref.read(_sheet.notifier).leavePlanDay();
+      } else if (_hubRemoved) {
         setState(() => _hubRemoved = false);
       }
     });
@@ -184,16 +187,13 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
     );
   }
 
-  /// Nutrients of [picks], with the hub item's entered amount when
-  /// [includesHub]. An empty hub amount counts as unknown, so the totals
-  /// show "–".
+  /// Nutrients of [picks], with the hub item's amount when [includesHub]. An
+  /// empty hub amount counts as unknown, so the totals show "–".
   EatMealNutrition _meal(
     List<InventoryCombinePick> picks, {
     required bool includesHub,
   }) {
-    final hub = ref.watch(
-      inventoryItemEatSheetControllerProvider(item: widget.item),
-    );
+    final hub = ref.watch(_sheet);
     final nutrition = hub.nutrition;
     return EatMealNutrition.combine([
       if (includesHub)

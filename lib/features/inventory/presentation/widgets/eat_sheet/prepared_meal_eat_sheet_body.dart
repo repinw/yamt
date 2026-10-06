@@ -106,6 +106,7 @@ class _PreparedMealEatSheetBodyState
         mealType: state.mealType,
         onDayPicked: _controller.setLoggedDay,
         onMealTypeChanged: _controller.setMealType,
+        allowsPlanDays: !isInPot,
       ),
       isPlan: state.isPlan,
       kcal: nutrition?.eaten.kcal,
@@ -118,6 +119,11 @@ class _PreparedMealEatSheetBodyState
               (widget.actions != null && meal.hasPendingRecipeIngredients)
           ? null
           : _submit,
+      onPlan:
+          isInPot ||
+              (widget.actions != null && meal.hasPendingRecipeIngredients)
+          ? null
+          : _plan,
       cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
       children: [
         EatPageHeader(
@@ -188,8 +194,20 @@ class _PreparedMealEatSheetBodyState
     _amount.sync(state.amountText);
   }
 
-  void _submit() {
-    final request = _controller.submit();
+  Future<void> _plan() async {
+    final state = ref.read(_provider);
+    final day = await showEatPlanDayPicker(
+      context,
+      today: state.today,
+      loggedAt: state.loggedAt,
+    );
+    if (day == null || !mounted) return;
+    _controller.setLoggedDay(day);
+    _submit(asPlan: true);
+  }
+
+  void _submit({bool asPlan = false}) {
+    final request = _controller.submit(asPlan: asPlan);
     if (request == null) {
       return;
     }

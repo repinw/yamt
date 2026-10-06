@@ -20,6 +20,7 @@ class EatPageScaffold extends StatelessWidget {
     this.onSecondary,
     this.hasOwnMessenger = true,
     this.confirmHint,
+    this.onPlan,
     this.isPlan = false,
     super.key,
   });
@@ -67,6 +68,13 @@ class EatPageScaffold extends StatelessWidget {
 
   /// Small grey line above the buttons, such as what is still missing.
   final String? confirmHint;
+
+  /// Called by the plan button left of the confirm button. Without it, the
+  /// page has no plan button.
+  final VoidCallback? onPlan;
+
+  /// Key of the plan button.
+  static const planButtonKey = Key('eat_page_plan_button');
 
   @override
   Widget build(BuildContext context) {
@@ -155,6 +163,13 @@ class EatPageScaffold extends StatelessWidget {
                 Row(
                   spacing: AppSpacing.xs,
                   children: [
+                    if (onPlan case final plan?)
+                      IconButton.filledTonal(
+                        key: planButtonKey,
+                        tooltip: l10n.eatPagePlanIconTooltip,
+                        onPressed: plan,
+                        icon: const Icon(Icons.event_rounded),
+                      ),
                     if (secondary != null)
                       FilledButton.tonal(
                         key: secondaryButtonKey,

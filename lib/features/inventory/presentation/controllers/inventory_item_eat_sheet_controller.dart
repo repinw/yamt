@@ -219,13 +219,24 @@ class InventoryItemEatSheetController
     );
   }
 
+  /// Moves a later day back to today, for what can only be eaten.
+  void leavePlanDay() {
+    if (state.isPlan) {
+      setLoggedDay(state.today);
+    }
+  }
+
   /// Sets the meal the food is logged to.
   void setMealType(MealType mealType) {
     _update(state.copyWith(mealType: mealType));
   }
 
-  /// Validates the input for [intent].
-  InventoryItemEatSubmitOutcome submit(InventoryItemEatSheetIntent intent) {
+  /// Validates the input for [intent]. [asPlan] plans the food, even on
+  /// today.
+  InventoryItemEatSubmitOutcome submit(
+    InventoryItemEatSheetIntent intent, {
+    bool asPlan = false,
+  }) {
     final draft = buildInventoryItemEatDraft(state);
     if (draft.hasValidationErrors) {
       _update(applyInventoryItemEatDraftErrors(state, draft));
@@ -238,6 +249,7 @@ class InventoryItemEatSheetController
           state,
           draft,
           namedPortions: namedPortions(state, _resolution(state)),
+          isPlan: asPlan,
         ),
       ),
     );

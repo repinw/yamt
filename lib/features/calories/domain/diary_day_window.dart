@@ -37,6 +37,9 @@ List<DateTime> buildDiaryVisibleDays({DateTime? anchorDay}) {
   return buildRollingLocalDays(anchorDay: anchorDay);
 }
 
+/// Number of days after today that can be planned.
+const int diaryPlanAheadDayCount = 14;
+
 /// Whether [day] lies after [today], so food added to it is a plan.
 bool isDiaryFutureDay({required DateTime day, required DateTime today}) =>
     normalizeDiaryDay(day).isAfter(normalizeDiaryDay(today));

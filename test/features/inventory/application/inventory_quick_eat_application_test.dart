@@ -164,6 +164,32 @@ void main() {
     expect(container.read(calorieOverviewRevisionProvider), 1);
   });
 
+  test('an explicit plan on today keeps the portions', () async {
+    final repository = _FakePreparedMealRepository(<PreparedMeal>[
+      _meal(id: 'meal-1'),
+    ]);
+    final savedEntries = <CalorieEntry>[];
+    final plans = FakePlannedEntryRepository();
+    final application = _application(
+      repository: repository,
+      savedEntries: savedEntries,
+      plans: plans,
+    );
+
+    final saved = await application.consumePreparedMeal(
+      meal: _meal(id: 'meal-1'),
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      loggedDay: DateTime(2026, 9, 19),
+      asPlan: true,
+    );
+
+    expect(saved?.isPlan, isTrue);
+    expect(plans.plans, hasLength(1));
+    expect(savedEntries, isEmpty);
+    expect(repository.meals.single.remainingPortions, 4);
+  });
+
   test('a failed plan saves nothing and keeps the portions', () async {
     final repository = _FakePreparedMealRepository(<PreparedMeal>[
       _meal(id: 'meal-1'),

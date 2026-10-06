@@ -219,7 +219,8 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
   }
 
   /// Returns the eat request, or null and shows an error for a bad amount.
-  InventoryPreparedMealEatRequest? submit() {
+  /// [asPlan] plans the meal, even on today.
+  InventoryPreparedMealEatRequest? submit({bool asPlan = false}) {
     final portions = state.calculator.validPortions(state.amount, state.mode);
     if (portions == null) {
       state = state.copyWith(hasAmountError: true);
@@ -230,6 +231,7 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
       portions: portions,
       mealType: state.mealType,
       loggedDay: state.loggedAt,
+      isPlan: asPlan,
     );
   }
 

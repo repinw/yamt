@@ -476,4 +476,19 @@ void main() {
 
     expect(container.read(provider).loggedAt, DateTime(2026, 5, 10, 12, 30));
   });
+
+  test('leaving a plan day goes back to today', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setLoggedDay(DateTime(2026, 5, 15))
+      ..leavePlanDay();
+
+    expect(container.read(provider).loggedAt, _now);
+
+    controller
+      ..setLoggedDay(DateTime(2026, 5, 10))
+      ..leavePlanDay();
+
+    expect(container.read(provider).loggedAt, DateTime(2026, 5, 10, 12, 30));
+  });
 }

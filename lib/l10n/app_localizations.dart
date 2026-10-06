@@ -1390,6 +1390,12 @@ abstract class AppLocalizations {
   /// **'To diary'**
   String get inventoryItemEatSheetConfirmAction;
 
+  /// No description provided for @eatPagePlanIconTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get eatPagePlanIconTooltip;
+
   /// No description provided for @inventoryItemEatSheetAddMoreAction.
   ///
   /// In en, this message translates to:

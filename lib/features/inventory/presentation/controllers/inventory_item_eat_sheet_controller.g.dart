@@ -75,7 +75,7 @@ final class InventoryItemEatSheetControllerProvider
 }
 
 String _$inventoryItemEatSheetControllerHash() =>
-    r'f7be0421f49eb369922d194f0178458cd1d3b71a';
+    r'10770e9374fe93998978637b9013476311ebe65b';
 
 /// Holds the input of the eat sheet for one inventory item.
 

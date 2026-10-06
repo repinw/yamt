@@ -135,6 +135,12 @@ and feature description docs. This is product-facing; architecture rules stay in
 - On a future day, a Vorrat item or a cooked meal is saved as a plan, with
   undo: it takes no stock and no portions until it is eaten. An item whose
   amount needs the calorie editor cannot be planned yet.
+- The eat page of a Vorrat item, a cooked meal, or a found food has a plan
+  button ("Planen") next to "Ins Tagebuch": it asks for today or one of the
+  next 14 days and saves the food as a plan, also for today. The day menu at
+  the top also offers the next 14 days; a later day turns the main button
+  into "Einplanen".
+  Adding a food to a meal has no plan button.
 - Plans show in their meal below the eaten food, faded in a dashed frame.
   A plan of a cooked meal carries the tag "Meal Prep". Tapping a plan
   deletes it, with undo. Plans are stored encrypted apart from eaten food,

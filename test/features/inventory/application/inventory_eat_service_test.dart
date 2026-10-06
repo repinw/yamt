@@ -385,6 +385,31 @@ void main() {
       expect(harness.container.read(calorieOverviewRevisionProvider), 1);
     });
 
+    test('an explicit plan on today saves a plan', () async {
+      final commitStore = _RecordingCommitStore();
+      final plans = FakePlannedEntryRepository();
+      final harness = _harness(
+        commitStore,
+        overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+      );
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+
+      final outcome = await harness.service.log(
+        item: _gramItem(),
+        request: InventoryItemEatRequest(
+          inventoryAmount: 250,
+          loggedAt: _now,
+          mealType: MealType.dinner,
+          isPlan: true,
+        ),
+        pending: pending,
+      );
+
+      expect(outcome, isA<InventoryEatPlanned>());
+      expect(plans.plans, hasLength(1));
+      expect(commitStore.entry, isNull);
+    });
+
     test('a failed plan releases the stock and throws', () async {
       final plans = FakePlannedEntryRepository()..writeShouldFail = true;
       final harness = _harness(

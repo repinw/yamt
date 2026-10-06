@@ -47,12 +47,14 @@ InventoryQuickEatActions inventoryQuickEatActions(Ref ref) {
 /// when it writes.
 abstract interface class InventoryQuickEatActions {
   /// Consumes one prepared meal and returns the saved calorie entry, or null
-  /// when it failed. A day after today saves a plan and keeps the portions.
+  /// when it failed. [asPlan], or a day after today, saves a plan and keeps
+  /// the portions.
   Future<PreparedMealEatResult?> consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
+    bool asPlan,
   });
 }
 
@@ -80,6 +82,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
+    bool asPlan = false,
   }) {
     return _mutationQueue.run<PreparedMealEatResult?>(
       operation: () => _consumePreparedMeal(
@@ -87,6 +90,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
         consumedPortions: consumedPortions,
         mealType: mealType,
         loggedDay: loggedDay,
+        asPlan: asPlan,
       ),
       fallbackValue: null,
       onError: _logMutationError,
@@ -98,12 +102,13 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
+    required bool asPlan,
   }) async {
     if (consumedPortions <= 0 ||
         !_canConsumePreparedMeal(meal, consumedPortions)) {
       return null;
     }
-    if (isDiaryFutureDay(day: loggedDay, today: _now())) {
+    if (asPlan || isDiaryFutureDay(day: loggedDay, today: _now())) {
       return await _planPreparedMeal(
         meal: meal,
         consumedPortions: consumedPortions,
