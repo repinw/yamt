@@ -270,6 +270,18 @@ Future<void> _pumpUntilFound(
   );
 }
 
+/// Waits until the day head shows once: while a slow device switches the
+/// head, the old and the new one are both on screen for a moment.
+Future<void> _pumpUntilOneHead(WidgetTester tester) {
+  return _pumpUntil(
+    tester,
+    () =>
+        find.byKey(DiaryBalanceCardKeys.kcalHeadLabel).evaluate().length == 1 &&
+        find.byKey(DiaryBalanceCardKeys.kcalHeadValue).evaluate().length == 1,
+    description: 'one day head',
+  );
+}
+
 Future<void> _pumpUntilOnScreen(
   WidgetTester tester,
   Finder finder, {
@@ -657,6 +669,7 @@ void main() {
       description: 'planned head of tomorrow',
     );
 
+    await _pumpUntilOneHead(tester);
     String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
     expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'GEPLANT');
     expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '900');
@@ -693,6 +706,7 @@ void main() {
     await tester.pumpWidget(harness.app);
     await _pumpUntilFound(tester, planRow, description: 'plan row of tomorrow');
 
+    await _pumpUntilOneHead(tester);
     String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
     expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'GEPLANT');
     expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '600');
@@ -722,6 +736,7 @@ void main() {
       closeButton,
       description: 'close button of the day before',
     );
+    await _pumpUntilOneHead(tester);
     String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
     expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
 
