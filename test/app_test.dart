@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -18,6 +19,17 @@ void main() {
   testWidgets('YAMT builds router app from provider in the saved theme', (
     tester,
   ) async {
+    final nativeModes = <Object?>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('de.yamt.app/theme_mode'),
+      (call) async => nativeModes.add(call.arguments),
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        const MethodChannel('de.yamt.app/theme_mode'),
+        null,
+      ),
+    );
     final router = GoRouter(
       initialLocation: '/',
       routes: [
@@ -59,6 +71,7 @@ void main() {
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode,
       ThemeMode.dark,
     );
+    expect(nativeModes, ['dark']);
   });
 }
 
