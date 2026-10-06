@@ -279,6 +279,7 @@ jobs:
       # The build takes its version from pubspec.yaml, so a tag pushed before
       # the version bump would ship the old version under the new tag.
       - name: Check that the tag matches the pubspec version
+        id: version
         env:
           TAG: ${{ github.ref_name }}
         run: |
@@ -287,6 +288,23 @@ jobs:
             echo "Tag $TAG does not match pubspec version $version" >&2
             exit 1
           fi
+          echo "notes=distribution/$version" >>"$GITHUB_OUTPUT"
+
+      # /build-release writes the notes of a version into distribution/<version>/
+      # with its bump, so a later tag never reuses them. Google Play rejects a
+      # "What's new" text over 500 characters, so check before anything ships.
+      - name: Check the release notes
+        env:
+          NOTES: ${{ steps.version.outputs.notes }}
+        run: |
+          for file in "$NOTES"/whatsnew/whatsnew-*; do
+            [ -e "$file" ] || continue
+            length=$(wc -m <"$file")
+            if [ "$length" -gt 500 ]; then
+              echo "$file has $length characters; Google Play allows 500" >&2
+              exit 1
+            fi
+          done
 
       - uses: actions/setup-java@v6
         with:
@@ -333,13 +351,19 @@ jobs:
       # The GitHub release comes first and can run again, because Play rejects
       # a second upload of the same versionCode. A failed job can then be
       # re-run until the Play upload is done.
+      # Without notes for this version, GitHub generates them from the PRs.
       - name: Attach the APK to a GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.ref_name }}
+          NOTES: ${{ steps.version.outputs.notes }}
         run: |
           cp build/app/outputs/flutter-apk/app-release.apk "yamt-$TAG.apk"
-          gh release create "$TAG" "yamt-$TAG.apk" --title "$TAG" --generate-notes ||
+          notes=(--generate-notes)
+          if [ -f "$NOTES/release_notes.md" ]; then
+            notes=(--notes-file "$NOTES/release_notes.md")
+          fi
+          gh release create "$TAG" "yamt-$TAG.apk" --title "$TAG" "${notes[@]}" ||
             gh release upload "$TAG" "yamt-$TAG.apk" --clobber
 
       - name: Upload the AAB to Google Play
@@ -349,3 +373,5 @@ jobs:
           packageName: de.yamt.app
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: internal
+          # whatsnew-<locale> files of this version; without them, no notes.
+          whatsNewDirectory: ${{ hashFiles(format('{0}/whatsnew/*', steps.version.outputs.notes)) != '' && format('{0}/whatsnew', steps.version.outputs.notes) || '' }}
