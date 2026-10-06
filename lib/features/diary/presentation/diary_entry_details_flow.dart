@@ -105,7 +105,7 @@ abstract final class DiaryEntryDetailsFlow {
     );
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
-    final saved = await _controller(container).save(repeated, isNew: true);
+    final saved = await _controller(container).save(repeated);
     if (!context.mounted) {
       return;
     }

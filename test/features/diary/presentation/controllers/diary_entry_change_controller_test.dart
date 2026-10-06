@@ -32,8 +32,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         calorieEntrySaverProvider.overrideWithValue(
-          (entry, {isNewEntry = false, scannedSourceRef, persistEntry}) async =>
-              true,
+          (entry, {scannedSourceRef, persistEntry}) async => true,
         ),
         calorieEntryDayChangeProvider.overrideWithValue(
           (day) async => changedDays.add(day),

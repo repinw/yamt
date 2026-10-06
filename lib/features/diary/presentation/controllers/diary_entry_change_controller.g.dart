@@ -41,7 +41,7 @@ final class DiaryEntryChangeControllerProvider
 }
 
 String _$diaryEntryChangeControllerHash() =>
-    r'e88f113680c8596da7e7495986e4c1f5885f3355';
+    r'68bf8aa2259bdb00d97d412d960eeea7ad970083';
 
 /// Saves, changes, and deletes logged diary entries. An entry that took
 /// stock moves it with a changed amount and can give it back on delete.

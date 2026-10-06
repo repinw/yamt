@@ -14,8 +14,6 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
-import 'package:yamt/features/calories/presentation/controllers/calorie_day_controller.dart';
-import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
 import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
@@ -271,12 +269,6 @@ ProviderSubscription<AsyncValue<List<InventoryItem>>> _keepInventoryAlive(
   return container.listen(inventoryItemsControllerProvider, (_, _) {});
 }
 
-ProviderSubscription<AsyncValue<List<CalorieEntry>>> _keepCaloriesAlive(
-  ProviderContainer container,
-) {
-  return container.listen(calorieEntriesControllerProvider, (_, _) {});
-}
-
 class _DirectSaveFlowHarness {
   new _({
     required this.item,
@@ -317,13 +309,8 @@ class _DirectSaveFlowHarness {
       ],
     );
     addTearDown(container.dispose);
-    container
-        .read(calorieDayControllerProvider.notifier)
-        .setDay(request.loggedAt);
     final inventorySubscription = _keepInventoryAlive(container);
-    final caloriesSubscription = _keepCaloriesAlive(container);
     addTearDown(inventorySubscription.close);
-    addTearDown(caloriesSubscription.close);
 
     await container.read(inventoryItemsControllerProvider.future);
     final pendingConsumption = await container
@@ -551,14 +538,7 @@ void main() {
             .currentAmount,
         500,
       );
-      expect(
-        harness.container
-            .read(calorieEntriesControllerProvider)
-            .value
-            ?.single
-            .name,
-        item.name,
-      );
+      expect(harness.commitStore.entry?.name, item.name);
       expect(find.text('Ins Tagebuch eingetragen'), findsOneWidget);
     },
   );

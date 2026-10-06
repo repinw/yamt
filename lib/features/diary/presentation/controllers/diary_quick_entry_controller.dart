@@ -177,7 +177,7 @@ class DiaryQuickEntryController extends _$DiaryQuickEntryController {
     state = state.copyWith(isSaving: true);
     final result = await AsyncValue.guard(() async {
       if (!isPlan) {
-        return await saveEntry(entry, isNewEntry: true);
+        return await saveEntry(entry);
       }
       await plans.savePlannedEntry(entry);
       // The diary dashboards learn about the plan from the revision.
