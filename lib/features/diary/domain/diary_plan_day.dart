@@ -8,3 +8,14 @@ bool diaryDayCountsPlans({
   required DateTime today,
   required bool isPreviousDayClosed,
 }) => isDiaryFutureDay(day: day, today: today) && !isPreviousDayClosed;
+
+/// Whether [day] shows as a plan: a future day whose day before is not
+/// closed with its carryover. Otherwise it counts like a started day.
+bool diaryDayIsPlanned({
+  required DateTime day,
+  required DateTime today,
+  required bool isPreviousDayClosed,
+  required double? previousDayCarryoverKcal,
+}) =>
+    isDiaryFutureDay(day: day, today: today) &&
+    !(isPreviousDayClosed && previousDayCarryoverKcal != null);

@@ -2544,6 +2544,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryBalanceOverGoalLabel => 'Over goal';
 
   @override
+  String get diaryBalanceAfterPlanChip => 'After plan';
+
+  @override
+  String get diaryBalanceLeftAfterPlanLabel => 'Left after plan';
+
+  @override
+  String diaryBalanceWithoutPlan(String kcal) {
+    return '$kcal without plan';
+  }
+
+  @override
+  String diaryBalanceOverWithoutPlan(String kcal) {
+    return '$kcal over without plan';
+  }
+
+  @override
   String get diaryBalanceShowDetails => 'Show all numbers';
 
   @override

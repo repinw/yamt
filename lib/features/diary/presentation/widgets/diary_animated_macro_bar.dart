@@ -17,12 +17,16 @@ class DiaryAnimatedMacroBar extends StatelessWidget {
     required this.trackColor,
     required this.handoffTag,
     this.overflowColor,
+    this.planned = 0,
     this.height = 6.0,
     super.key,
   });
 
   /// Amount eaten.
   final double current;
+
+  /// Planned amount not eaten yet, striped after [current].
+  final double planned;
 
   /// Target amount.
   final double target;
@@ -55,6 +59,7 @@ class DiaryAnimatedMacroBar extends StatelessWidget {
           current: animatedCurrent,
           target: target,
         ),
+        planned: target <= 0 ? 0 : planned / target,
         color: color,
         trackColor: trackColor,
         overflowColor: overflowColor,

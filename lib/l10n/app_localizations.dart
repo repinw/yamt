@@ -4426,6 +4426,30 @@ abstract class AppLocalizations {
   /// **'Over goal'**
   String get diaryBalanceOverGoalLabel;
 
+  /// No description provided for @diaryBalanceAfterPlanChip.
+  ///
+  /// In en, this message translates to:
+  /// **'After plan'**
+  String get diaryBalanceAfterPlanChip;
+
+  /// No description provided for @diaryBalanceLeftAfterPlanLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Left after plan'**
+  String get diaryBalanceLeftAfterPlanLabel;
+
+  /// No description provided for @diaryBalanceWithoutPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} without plan'**
+  String diaryBalanceWithoutPlan(String kcal);
+
+  /// No description provided for @diaryBalanceOverWithoutPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} over without plan'**
+  String diaryBalanceOverWithoutPlan(String kcal);
+
   /// No description provided for @diaryBalanceShowDetails.
   ///
   /// In en, this message translates to:

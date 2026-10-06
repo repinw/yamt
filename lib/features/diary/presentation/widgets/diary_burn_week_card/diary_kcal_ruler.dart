@@ -7,6 +7,7 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/food_label_ruler_ticks.dart';
 import 'package:yamt/core/widgets/visible_value_animation_builder.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_segmented_progress_bar.dart';
 
 const Duration _progressAnimationDuration = Duration(milliseconds: 1000);
 const Curve _progressAnimationCurve = Curves.easeOut;
@@ -23,6 +24,7 @@ class DiaryKcalRuler extends StatelessWidget {
   const new({
     required this.eatenKcal,
     required this.targetKcal,
+    this.plannedKcal = 0,
     this.scaleEndLabel,
     super.key,
   });
@@ -33,6 +35,9 @@ class DiaryKcalRuler extends StatelessWidget {
   /// Target kcal of the selected day.
   final double targetKcal;
 
+  /// Planned kcal not eaten yet, striped after the eaten share.
+  final double plannedKcal;
+
   /// Label under the right end of the bar. Without it, no scale is shown.
   final String? scaleEndLabel;
 
@@ -41,6 +46,9 @@ class DiaryKcalRuler extends StatelessWidget {
     final colors = FoodLabelColors.of(context);
     final target = math.max<double>(0, targetKcal);
     final eatenRatio = target <= 0 ? 0.0 : (eatenKcal / target).clamp(0.0, 1.0);
+    final plannedRatio = target <= 0
+        ? 0.0
+        : (plannedKcal / target).clamp(0.0, 1.0);
     final endLabel = scaleEndLabel;
 
     return Column(
@@ -72,7 +80,7 @@ class DiaryKcalRuler extends StatelessWidget {
                   ),
                 ),
               ),
-              _QuarterBar(ratio: ratio),
+              _QuarterBar(ratio: ratio, plannedRatio: plannedRatio),
             ],
           ),
         ),
@@ -88,9 +96,12 @@ class DiaryKcalRuler extends StatelessWidget {
 
 /// Bar of four equal quarters under the ruler.
 class _QuarterBar extends StatelessWidget {
-  const new({required this.ratio});
+  const new({required this.ratio, required this.plannedRatio});
 
   final double ratio;
+
+  /// Share of the target that is planned, striped after [ratio].
+  final double plannedRatio;
 
   @override
   Widget build(BuildContext context) {
@@ -120,18 +131,36 @@ class _QuarterBar extends StatelessWidget {
               Expanded(
                 child: ColoredBox(
                   color: colors.card,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: FractionallySizedBox(
-                      key: i == 0
-                          ? DiaryBalanceCardKeys.dailyProgressEatenFill
-                          : null,
-                      widthFactor: (ratio * alphas.length - i).clamp(0.0, 1.0),
-                      heightFactor: 1,
-                      child: ColoredBox(
-                        color: colors.accent.withValues(alpha: alphas[i]),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: FractionallySizedBox(
+                          key: i == 0
+                              ? DiaryBalanceCardKeys.dailyProgressEatenFill
+                              : null,
+                          widthFactor: (ratio * alphas.length - i).clamp(
+                            0.0,
+                            1.0,
+                          ),
+                          heightFactor: 1,
+                          child: ColoredBox(
+                            color: colors.accent.withValues(alpha: alphas[i]),
+                          ),
+                        ),
                       ),
-                    ),
+                      if (plannedRatio > 0)
+                        DiaryStripedSpan(
+                          from: (ratio * alphas.length - i).clamp(0.0, 1.0),
+                          to: ((ratio + plannedRatio) * alphas.length - i)
+                              .clamp(0.0, 1.0),
+                          color: colors.accent.withValues(
+                            alpha: diaryPlannedStripeAlpha,
+                          ),
+                          background: colors.card,
+                        ),
+                    ],
                   ),
                 ),
               ),

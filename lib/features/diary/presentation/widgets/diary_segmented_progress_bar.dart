@@ -12,6 +12,7 @@ class DiarySegmentedProgressBar extends StatelessWidget {
     required this.trackColor,
     this.overflowColor,
     this.overflow = 0.0,
+    this.planned = 0.0,
     this.segmentCount = 4,
     this.height = 6.0,
     this.spacing = 3.0,
@@ -24,6 +25,10 @@ class DiarySegmentedProgressBar extends StatelessWidget {
   /// Share of the bar, from its right end, that is striped to mark an
   /// overage. Between 0.0 and 1.0.
   final double overflow;
+
+  /// Share of the bar after [progress] that is striped to mark plans not
+  /// eaten yet. Between 0.0 and 1.0.
+  final double planned;
 
   /// Active fill color.
   final Color color;
@@ -56,6 +61,17 @@ class DiarySegmentedProgressBar extends StatelessWidget {
               0.0,
               1.0,
             );
+        final plannedEnd = math.min<double>(1, progress + planned);
+        final plannedFrom =
+            ((math.max(progress, segmentStart) - segmentStart) * count).clamp(
+              0.0,
+              1.0,
+            );
+        final plannedTo =
+            ((math.min(plannedEnd, segmentEnd) - segmentStart) * count).clamp(
+              0.0,
+              1.0,
+            );
         final stripedFill =
             ((segmentEnd - math.max(segmentStart, 1 - overflow)) /
                     (segmentEnd - segmentStart))
@@ -78,6 +94,13 @@ class DiarySegmentedProgressBar extends StatelessWidget {
                       child: ColoredBox(color: color),
                     ),
                   ),
+                  if (plannedTo > plannedFrom)
+                    DiaryStripedSpan(
+                      from: plannedFrom,
+                      to: plannedTo,
+                      color: color.withValues(alpha: diaryPlannedStripeAlpha),
+                      background: trackColor,
+                    ),
                   if (stripedFill > 0)
                     Align(
                       alignment: Alignment.centerRight,
@@ -87,7 +110,7 @@ class DiarySegmentedProgressBar extends StatelessWidget {
                         // zero height.
                         heightFactor: 1,
                         child: CustomPaint(
-                          painter: _OverflowStripePainter(
+                          painter: DiaryStripePainter(
                             color: overflowColor ?? color,
                             background: trackColor,
                           ),
@@ -104,11 +127,63 @@ class DiarySegmentedProgressBar extends StatelessWidget {
   }
 }
 
+/// Alpha of the stripes that mark plans in a bar.
+const double diaryPlannedStripeAlpha = 0.45;
+
+/// [color] stripes on [background] between the fractions [from] and [to] of
+/// the available width.
+class DiaryStripedSpan extends StatelessWidget {
+  /// Creates the striped span.
+  const new({
+    required this.from,
+    required this.to,
+    required this.color,
+    required this.background,
+    super.key,
+  });
+
+  /// Start of the span, as a share of the width.
+  final double from;
+
+  /// End of the span, as a share of the width.
+  final double to;
+
+  /// Stripe color.
+  final Color color;
+
+  /// Color between the stripes.
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) {
+    if (to <= from) return const SizedBox.shrink();
+    return LayoutBuilder(
+      builder: (context, constraints) => Stack(
+        children: [
+          Positioned(
+            left: constraints.maxWidth * from,
+            width: constraints.maxWidth * (to - from),
+            top: 0,
+            bottom: 0,
+            child: CustomPaint(
+              painter: DiaryStripePainter(color: color, background: background),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 /// Paints diagonal [color] stripes on [background].
-class _OverflowStripePainter extends CustomPainter {
+class DiaryStripePainter extends CustomPainter {
+  /// Creates the painter.
   const new({required this.color, required this.background});
 
+  /// Stripe color.
   final Color color;
+
+  /// Color between the stripes.
   final Color background;
 
   @override
@@ -131,6 +206,6 @@ class _OverflowStripePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_OverflowStripePainter oldDelegate) =>
+  bool shouldRepaint(DiaryStripePainter oldDelegate) =>
       oldDelegate.color != color || oldDelegate.background != background;
 }

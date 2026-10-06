@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
+import 'package:yamt/features/diary/application/diary_open_plans.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_nutrition_bars/diary_nutrition_macro_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -16,6 +17,7 @@ class DiaryNutritionBarsContent extends StatelessWidget {
     required this.data,
     required this.showTitle,
     required this.showTotals,
+    this.openPlans,
     super.key,
   });
 
@@ -28,6 +30,9 @@ class DiaryNutritionBarsContent extends StatelessWidget {
   /// Whether each row shows eaten and target grams next to its bar.
   final bool showTotals;
 
+  /// Open plans of the day, striped in the bars.
+  final DiaryOpenPlans? openPlans;
+
   @override
   Widget build(BuildContext context) {
     final numberFormat = NumberFormat.decimalPattern(
@@ -35,6 +40,8 @@ class DiaryNutritionBarsContent extends StatelessWidget {
     );
     final l10n = AppLocalizations.of(context)!;
     final accentColors = MetricAccentColors.of(context);
+    final plans = openPlans;
+    final counted = plans?.counted ?? false;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,6 +67,8 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               color: accentColors.protein,
               numberFormat: numberFormat,
               showTotal: showTotals,
+              planned: plans?.protein ?? 0,
+              countsPlanned: counted,
             ),
             const SizedBox(height: diaryMacroRowGap),
             DiaryNutritionMacroRow(
@@ -69,6 +78,8 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               color: accentColors.carbs,
               numberFormat: numberFormat,
               showTotal: showTotals,
+              planned: plans?.carbs ?? 0,
+              countsPlanned: counted,
             ),
             const SizedBox(height: diaryMacroRowGap),
             DiaryNutritionMacroRow(
@@ -78,6 +89,8 @@ class DiaryNutritionBarsContent extends StatelessWidget {
               color: accentColors.fat,
               numberFormat: numberFormat,
               showTotal: showTotals,
+              planned: plans?.fat ?? 0,
+              countsPlanned: counted,
             ),
           ],
         ),

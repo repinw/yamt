@@ -1278,6 +1278,24 @@
   "diaryBalanceLeftTodayLabel": "Left today",
   "diaryBalanceLeftLabel": "Left",
   "diaryBalanceOverGoalLabel": "Over goal",
+  "diaryBalanceAfterPlanChip": "After plan",
+  "diaryBalanceLeftAfterPlanLabel": "Left after plan",
+  "diaryBalanceWithoutPlan": "{kcal} without plan",
+  "diaryBalanceOverWithoutPlan": "{kcal} over without plan",
+  "@diaryBalanceOverWithoutPlan": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "@diaryBalanceWithoutPlan": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
   "diaryBalanceShowDetails": "Show all numbers",
   "diaryBalanceHideDetails": "Show fewer numbers",
   "diaryMealsEmptyTitle": "Nothing eaten yet",

@@ -25,6 +25,7 @@ class DiaryDailyBalanceCard extends StatelessWidget {
     this.kcalBarKey,
     this.macroBarsKey,
     this.practiceStartDate,
+    this.onToggleAfterPlan,
     super.key,
   });
 
@@ -45,6 +46,9 @@ class DiaryDailyBalanceCard extends StatelessWidget {
 
   /// First counting day when the selected day is a practice day before it.
   final DateTime? practiceStartDate;
+
+  /// Called when the chip that counts the open plans is tapped.
+  final VoidCallback? onToggleAfterPlan;
 
   @override
   Widget build(BuildContext context) {
@@ -69,7 +73,11 @@ class DiaryDailyBalanceCard extends StatelessWidget {
               DiaryBalancePracticeDayBadge(startDate: startDate),
               const SizedBox(height: AppSpacing.sm),
             ],
-            DiaryKcalLeftHeader(data: data, showDetails: showDetails),
+            DiaryKcalLeftHeader(
+              data: data,
+              showDetails: showDetails,
+              onToggleAfterPlan: onToggleAfterPlan,
+            ),
             if (data.previousDayCarryoverValue != null) ...[
               const SizedBox(height: AppSpacing.md),
               // A tap next to the row's buttons must not toggle the details.
@@ -85,6 +93,7 @@ class DiaryDailyBalanceCard extends StatelessWidget {
               key: kcalBarKey,
               eatenKcal: data.metrics.eatenKcal,
               targetKcal: data.metrics.targetKcal,
+              plannedKcal: data.plannedKcal,
               scaleEndLabel: showDetails
                   ? l10n.diaryBalanceScaleTarget(data.targetNumber)
                   : null,

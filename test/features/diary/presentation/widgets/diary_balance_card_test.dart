@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -15,7 +16,9 @@ import 'package:yamt/features/calories/application/calorie_week_overview_models.
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card.dart';
@@ -29,6 +32,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../helpers/memory_app_preferences.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
+import '../../../calories/support/fake_planned_entry_repository.dart';
 
 void main() {
   testWidgets('loading skeleton reserves daily balance card', (tester) async {
@@ -476,6 +480,60 @@ void main() {
     );
   });
 
+  testWidgets('a closed tomorrow counts its plans until the chip is off', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 4, 26, 20);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+      runState: const BurnWeekRunState.initial(),
+      todayFlexibleGoalKcal: 2218,
+      previousDayCarryoverKcal: 218,
+      isPreviousDayClosed: true,
+      showDetails: false,
+      plans: [
+        CalorieEntry.create(
+          id: 'plan-breakfast',
+          userId: 'user-1',
+          name: 'Brötchen',
+          mealType: MealType.breakfast,
+          consumedAmount: 100,
+          consumedUnit: ConsumedUnit.grams,
+          per100Kcal: 300,
+          per100Protein: 10,
+          per100Carbs: 50,
+          per100Fat: 5,
+          loggedAt: selectedDay.add(const Duration(hours: 8)),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ],
+    );
+
+    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'LEFT AFTER PLAN');
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '1,018');
+    expect(
+      textOf(DiaryBalanceCardKeys.kcalHeadWithoutPlan),
+      '1,318 without plan',
+    );
+
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.afterPlanChip));
+    await tester.pumpAndSettle();
+
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'LEFT');
+    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '1,318');
+    expect(find.byKey(DiaryBalanceCardKeys.kcalHeadWithoutPlan), findsNothing);
+    // The chip does not open the details.
+    expect(_findTextContaining(' eaten'), findsNothing);
+  });
+
   testWidgets('a day without a previous-day carryover offers no close', (
     tester,
   ) async {
@@ -725,6 +783,7 @@ Future<void> _pumpBalanceCard(
   DateTime? now,
   double? previousDayCarryoverKcal,
   bool isPreviousDayClosed = false,
+  List<CalorieEntry> plans = const <CalorieEntry>[],
 }) async {
   final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final weekOverview = _weekOverview(
@@ -766,6 +825,9 @@ Future<void> _pumpBalanceCard(
         ),
         firebaseAuthProvider.overrideWithValue(auth),
         calorieLogRepositoryProvider.overrideWithValue(repository),
+        plannedEntryRepositoryProvider.overrideWithValue(
+          FakePlannedEntryRepository(plans: plans),
+        ),
         burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
         burnWeekLiveSyncProvider.overrideWith((ref) {
           onBurnWeekLiveSyncWatch?.call();
