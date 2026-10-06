@@ -463,10 +463,7 @@ void main() {
     expect(result?.inventoryAmount, 120);
     expect(result?.mealType, targetMealType);
     expect(result?.calorieAmount, isNull);
-    expect(
-      DateUtils.dateOnly(result!.loggedAt),
-      DateUtils.dateOnly(_now),
-    );
+    expect(DateUtils.dateOnly(result!.loggedAt), DateUtils.dateOnly(_now));
     expect(find.byKey(EatAmountRuler.fieldKey), findsNothing);
   });
 
@@ -523,10 +520,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(result?.isPlan, isTrue);
-    expect(
-      DateUtils.dateOnly(result!.loggedAt),
-      DateUtils.dateOnly(_now),
-    );
+    expect(DateUtils.dateOnly(result!.loggedAt), DateUtils.dateOnly(_now));
   });
 
   testWidgets('a later day from the when menu turns the confirm into a plan', (

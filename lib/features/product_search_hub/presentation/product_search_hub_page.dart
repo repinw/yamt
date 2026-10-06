@@ -228,6 +228,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       args: widget.args,
       sourceKey: sourceKey,
       result: reviewed.result,
+      mode: reviewed.toStock ? ProductSearchHubMode.inventory : null,
       continueDiaryBatch: reviewed.continuesBatch,
     );
     if (!context.mounted) {

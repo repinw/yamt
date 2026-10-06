@@ -21,6 +21,7 @@ class EatPageScaffold extends StatelessWidget {
     this.hasOwnMessenger = true,
     this.confirmHint,
     this.onPlan,
+    this.onStore,
     this.isPlan = false,
     super.key,
   });
@@ -75,6 +76,13 @@ class EatPageScaffold extends StatelessWidget {
 
   /// Key of the plan button.
   static const planButtonKey = Key('eat_page_plan_button');
+
+  /// Called by the "In den Vorrat" button next to the plan button, which
+  /// puts the food into the Vorrat instead. Without it, the button is hidden.
+  final VoidCallback? onStore;
+
+  /// Key of the "In den Vorrat" button.
+  static const storeButtonKey = Key('eat_page_store_button');
 
   @override
   Widget build(BuildContext context) {
@@ -169,6 +177,13 @@ class EatPageScaffold extends StatelessWidget {
                         tooltip: l10n.eatPagePlanIconTooltip,
                         onPressed: plan,
                         icon: const Icon(Icons.event_rounded),
+                      ),
+                    if (onStore case final store?)
+                      IconButton.filledTonal(
+                        key: storeButtonKey,
+                        tooltip: l10n.eatPageStoreIconTooltip,
+                        onPressed: store,
+                        icon: const Icon(Icons.inventory_2_rounded),
                       ),
                     if (secondary != null)
                       FilledButton.tonal(

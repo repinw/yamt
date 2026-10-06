@@ -293,6 +293,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productSearchHubCartAddAction => 'Add';
 
   @override
+  String productSearchHubStoredInVorrat(String name) {
+    return '$name is in stock';
+  }
+
+  @override
   String get productSearchHubCartRemoveAction => 'Remove';
 
   @override
@@ -790,6 +795,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get eatPagePlanIconTooltip => 'Plan';
+
+  @override
+  String get eatPageStoreIconTooltip => 'To stock';
 
   @override
   String get inventoryItemEatSheetAddMoreAction => '+ More';
