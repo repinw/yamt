@@ -378,7 +378,8 @@ void main() {
       expect(plan.loggedAt, tomorrow);
       expect(plan.consumedAmount, 250);
       expect(plan.sourceInventoryItemId, 'waffles');
-      expect(plan.sourceInventoryAmountToRestore, isNull);
+      // Kept for the accept, which takes the stock then.
+      expect(plan.sourceInventoryAmountToRestore, 250);
       expect(commitStore.entry, isNull);
       expect(harness.pendings.pendingConsumptionById(pending.id), isNull);
       expect(finalized, isEmpty);

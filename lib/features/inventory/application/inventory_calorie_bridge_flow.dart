@@ -98,9 +98,9 @@ class InventoryCalorieBridgeFlow {
   /// Builds the diary entry for [request] from [profile] and
   /// [inventoryContext].
   ///
-  /// A plan sets [takesStock] to false, so a delete gives nothing back. A
-  /// food that is not in the Vorrat sets [inVorrat] to false and names no
-  /// Vorrat item.
+  /// A plan keeps the stock amount it takes once it is accepted. A food that
+  /// is not in the Vorrat sets [inVorrat] to false and names no Vorrat item
+  /// and no amount.
   static CalorieEntry buildCalorieEntry({
     required String id,
     required String userId,
@@ -108,7 +108,6 @@ class InventoryCalorieBridgeFlow {
     required CalorieInventoryCreateContext inventoryContext,
     required InventoryItemEatRequest request,
     required DateTime now,
-    bool takesStock = true,
     bool inVorrat = true,
   }) {
     return CalorieEntry.create(
@@ -125,7 +124,7 @@ class InventoryCalorieBridgeFlow {
       per100Carbs: profile.per100Carbs,
       per100Fat: profile.per100Fat,
       sourceInventoryItemId: inVorrat ? inventoryContext.inventoryItemId : null,
-      sourceInventoryAmountToRestore: takesStock
+      sourceInventoryAmountToRestore: inVorrat
           ? inventoryContext.inventoryAmountToRestore
           : null,
       nutrientDetails: profile.nutrientDetails,

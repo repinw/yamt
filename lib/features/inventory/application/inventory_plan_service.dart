@@ -83,7 +83,6 @@ class InventoryPlanService {
       request: request,
       now: _clock(),
       inVorrat: inVorrat,
-      takesStock: false,
     );
     await _plans.savePlannedEntry(entry);
     _overviewRevision.markChanged();

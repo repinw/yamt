@@ -245,7 +245,8 @@ class CalorieEntry {
   /// The source inventory item id.
   final String? sourceInventoryItemId;
 
-  /// The source inventory amount to restore.
+  /// The source inventory amount to restore. On a plan, the stock amount it
+  /// takes once it is accepted.
   final int? sourceInventoryAmountToRestore;
 
   /// The bundle source prepared meal id.
