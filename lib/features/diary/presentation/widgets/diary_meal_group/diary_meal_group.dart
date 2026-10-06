@@ -75,7 +75,7 @@ class DiaryMealGroup extends StatelessWidget {
           ),
         for (final plan in section.plannedEntries)
           Padding(
-            padding: const EdgeInsets.only(top: AppSpacing.xxs),
+            padding: const EdgeInsets.only(top: AppSpacing.xs),
             child: DiaryPlannedEntryTile(
               plan: plan,
               onTap: () => onTapPlan(plan),
