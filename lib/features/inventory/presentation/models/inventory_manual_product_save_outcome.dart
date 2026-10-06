@@ -1,9 +1,14 @@
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 /// Manual product inventory save status.
 enum InventoryManualProductSaveStatus {
   /// Product was saved.
   saved,
+
+  /// The day lies after today: a plan was saved, and no product.
+  planned,
 
   /// User canceled a required save step.
   canceled,
@@ -19,6 +24,8 @@ class InventoryManualProductSaveOutcome {
     this.item,
     this.calorieEntryId,
     this.addMoreRequested = false,
+    this.plan,
+    this.planFailure,
   });
 
   /// Saved outcome.
@@ -34,6 +41,22 @@ class InventoryManualProductSaveOutcome {
       addMoreRequested: addMoreRequested,
     );
   }
+
+  /// Planned outcome: [plan] was saved instead of the product.
+  factory planned(CalorieEntry plan, {bool addMoreRequested = false}) {
+    return InventoryManualProductSaveOutcome._(
+      status: InventoryManualProductSaveStatus.planned,
+      plan: plan,
+      addMoreRequested: addMoreRequested,
+    );
+  }
+
+  /// Failed outcome of a plan, for [planFailure].
+  const new planFailed(InventoryEatFailure planFailure)
+    : this._(
+        status: InventoryManualProductSaveStatus.failed,
+        planFailure: planFailure,
+      );
 
   /// Canceled outcome.
   const new canceled()
@@ -53,4 +76,10 @@ class InventoryManualProductSaveOutcome {
 
   /// Whether user asked to add another food after this save.
   final bool addMoreRequested;
+
+  /// The saved plan, when the day lies after today.
+  final CalorieEntry? plan;
+
+  /// Why the plan failed, when a plan failed.
+  final InventoryEatFailure? planFailure;
 }

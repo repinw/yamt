@@ -148,11 +148,7 @@ class InventoryItemEatFlow {
           return entry;
         case InventoryEatFailed(:final failure):
           if (context.mounted) {
-            _showError(context, switch (failure) {
-              InventoryEatFailure.noNutrition => l10n.inventoryItemActionFailed,
-              InventoryEatFailure.notSaved => l10n.caloriesSaveFailed,
-              InventoryEatFailure.cannotPlan => l10n.inventoryItemCannotPlan,
-            });
+            _showError(context, failureMessage(l10n, failure));
           }
           return null;
         case InventoryEatNeedsEditor(
@@ -231,6 +227,16 @@ class InventoryItemEatFlow {
     required CalorieEntry plan,
   }) =>
       container.read(inventoryItemEatControllerProvider.notifier).unplan(plan);
+
+  /// The message that names what failed for [failure].
+  static String failureMessage(
+    AppLocalizations l10n,
+    InventoryEatFailure failure,
+  ) => switch (failure) {
+    InventoryEatFailure.noNutrition => l10n.inventoryItemActionFailed,
+    InventoryEatFailure.notSaved => l10n.caloriesSaveFailed,
+    InventoryEatFailure.cannotPlan => l10n.inventoryItemCannotPlan,
+  };
 
   static void _showError(BuildContext context, String message) {
     ScaffoldMessenger.of(context)

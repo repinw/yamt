@@ -114,8 +114,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   combined entries list their foods instead of the ruler.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
   Its actions open from the "Essen" button in the middle of the bar: barcode
-  first, then Vorrat, quick entry, AI, and search. A future day hides
-  barcode, AI, and search, because they cannot plan yet.
+  first, then Vorrat, quick entry, AI, and search. On a future day a food
+  found by barcode, AI, or search is saved as a plan with undo, and it does
+  not go into the Vorrat.
 - Quick entry ("Schnell" in the actions) logs calories typed in by hand, without
   a food or a Vorrat item, on a page in the food label look with day and meal
   top right. Only the calories are required; the name defaults to "Quick

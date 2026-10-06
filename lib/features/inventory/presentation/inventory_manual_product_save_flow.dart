@@ -29,13 +29,16 @@ const _inventoryManualProductSaveLogName = 'InventoryManualProductSaveFlow';
 /// Saves edited manual product result using inventory persistence rules.
 ///
 /// [adjustItem] changes the built item before its only write, for example to
-/// size it to the eaten amount.
+/// size it to the eaten amount. Without [addToInventory], the item is only
+/// built and returned, for a plan: the shared catalog still learns the
+/// product, but the Vorrat does not get it.
 Future<InventoryManualProductSaveOutcome> saveManualProductResultToInventory({
   required BuildContext context,
   required ProviderContainer container,
   required AppLocalizations l10n,
   required InventoryReceiptManualProductResult result,
   InventoryItem Function(InventoryItem item)? adjustItem,
+  bool addToInventory = true,
 }) async {
   try {
     return await _saveManualProductResultToInventory(
@@ -44,6 +47,7 @@ Future<InventoryManualProductSaveOutcome> saveManualProductResultToInventory({
       l10n: l10n,
       result: result,
       adjustItem: adjustItem,
+      addToInventory: addToInventory,
     );
   } on Object catch (error, stackTrace) {
     log(
@@ -62,6 +66,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultToInventory({
   required AppLocalizations l10n,
   required InventoryReceiptManualProductResult result,
   required InventoryItem Function(InventoryItem item)? adjustItem,
+  required bool addToInventory,
 }) async {
   final promptResult = result.skipMissingBarcodePrompt
       ? _ManualBarcodePromptResult(
@@ -74,6 +79,17 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultToInventory({
   }
 
   final now = DateTime.now();
+  if (!addToInventory) {
+    return await _saveManualProductWithReadyInventory(
+      container: container,
+      l10n: l10n,
+      result: result,
+      promptResult: promptResult,
+      now: now,
+      inventoryItemsController: null,
+      adjustItem: adjustItem,
+    );
+  }
   final inventorySubscription = container.listen(
     inventoryItemsControllerProvider,
     (_, _) {},
@@ -122,13 +138,16 @@ Future<void> _waitForInitializedInventory(ProviderContainer container) async {
   }
 }
 
+/// Builds the item and the shared catalog product for [promptResult], adds
+/// the item to the Vorrat through [inventoryItemsController] when there is
+/// one, and writes the catalog product in the background.
 Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
   required ProviderContainer container,
   required AppLocalizations l10n,
   required InventoryReceiptManualProductResult result,
   required _ManualBarcodePromptResult promptResult,
   required DateTime now,
-  required InventoryItemsController inventoryItemsController,
+  required InventoryItemsController? inventoryItemsController,
   required InventoryItem Function(InventoryItem item)? adjustItem,
 }) async {
   final globalProduct = buildInventoryManualAddGlobalFoodItem(
@@ -152,7 +171,8 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     imageUrl: normalizeProductImageUrl(promptResult.item.imageUrl),
   );
   final savedItem = adjustItem?.call(builtItem) ?? builtItem;
-  final inventorySaved = await inventoryItemsController.addItem(savedItem);
+  final inventorySaved =
+      await inventoryItemsController?.addItem(savedItem) ?? true;
   if (!inventorySaved) {
     log(
       'Inventory rejected manual product ${savedItem.id} '

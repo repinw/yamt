@@ -3,11 +3,14 @@ import 'dart:developer' show log;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_item_eat_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
@@ -16,6 +19,7 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_eat_selection_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_save_flow.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_save_outcome.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -81,6 +85,10 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
     );
     return const InventoryManualProductSaveOutcome.canceled();
   }
+  final eating = container.read(inventoryItemEatControllerProvider.notifier);
+  if (eating.isPlan(eatResult.request)) {
+    return await _plan(context, container, l10n, result, eatResult);
+  }
 
   final inventorySubscription = container.listen(
     inventoryItemsControllerProvider,
@@ -136,6 +144,60 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
   } finally {
     inventorySubscription.close();
   }
+}
+
+/// Plans [eatResult] for the found product. A plan takes no stock, so the
+/// product does not go into the Vorrat; the shared catalog still learns it.
+Future<InventoryManualProductSaveOutcome> _plan(
+  BuildContext context,
+  ProviderContainer container,
+  AppLocalizations l10n,
+  InventoryReceiptManualProductResult result,
+  InventoryItemEatSheetResult eatResult,
+) async {
+  final built = await saveManualProductResultToInventory(
+    context: context,
+    container: container,
+    l10n: l10n,
+    result: result,
+    adjustItem: (item) => resizeInventoryManualAddItemToConsumedAmount(
+      item: item,
+      inventoryAmount: eatResult.request.inventoryAmount,
+    ),
+    addToInventory: false,
+  );
+  final item = built.item;
+  if (built.status != InventoryManualProductSaveStatus.saved || item == null) {
+    return built;
+  }
+  final InventoryEatOutcome outcome;
+  try {
+    outcome = await container
+        .read(inventoryItemEatControllerProvider.notifier)
+        .planNew(item: item, request: eatResult.request);
+  } on Object catch (error, stackTrace) {
+    log(
+      'Failed to save the plan for ${item.name}.',
+      name: _inventoryManualProductEatFlowLogName,
+      error: error,
+      stackTrace: stackTrace,
+    );
+    return const InventoryManualProductSaveOutcome.planFailed(
+      InventoryEatFailure.notSaved,
+    );
+  }
+  return switch (outcome) {
+    InventoryEatPlanned(:final entry) =>
+      InventoryManualProductSaveOutcome.planned(
+        entry,
+        addMoreRequested: eatResult.addMoreRequested,
+      ),
+    InventoryEatFailed(:final failure) =>
+      InventoryManualProductSaveOutcome.planFailed(failure),
+    InventoryEatLogged() || InventoryEatNeedsEditor() => throw StateError(
+      'A plan never logs or needs the editor.',
+    ),
+  };
 }
 
 Future<void> _deleteSavedItem(

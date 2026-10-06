@@ -61,6 +61,8 @@ abstract final class PreparedMealPendingFoodFlow {
         return filled;
       case InventoryManualProductSaveStatus.saved:
       case InventoryManualProductSaveStatus.failed:
+      // Only the diary eat flow plans.
+      case InventoryManualProductSaveStatus.planned:
         return false;
     }
   }

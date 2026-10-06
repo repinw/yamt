@@ -77,8 +77,8 @@ void main() {
       day: quickEntryNow.add(const Duration(days: 1)),
     );
 
-    // The product search saves no plans yet.
-    expect(find.byKey(DiaryQuickEntryPage.aiHintKey), findsNothing);
+    // The AI search plans on a future day too, so the hint shows.
+    expect(find.byKey(DiaryQuickEntryPage.aiHintKey), findsOneWidget);
     await tester.enterText(
       find.byKey(DiaryQuickEntryLabel.valueKey(DiaryQuickEntryValue.kcal)),
       '700',
