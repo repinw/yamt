@@ -91,8 +91,9 @@ class _DashedFramePainter extends CustomPainter {
       ..strokeWidth = AppGraphit.dashedFrameWidth;
     final frame = Path()
       ..addRRect(
+        // Inside the row, so the frames of two rows never touch.
         RRect.fromRectAndRadius(
-          Offset.zero & size,
+          (Offset.zero & size).deflate(AppGraphit.dashedFrameWidth / 2),
           const Radius.circular(AppRadius.md),
         ),
       );
