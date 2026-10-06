@@ -1,3 +1,4 @@
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
@@ -91,6 +92,46 @@ class InventoryCalorieBridgeFlow {
       portionBaseUnit: request.portionBaseUnit,
       portionCount: request.portionCount,
       portionLabel: request.portionLabel,
+    );
+  }
+
+  /// Builds the diary entry for [request] from [profile] and
+  /// [inventoryContext].
+  ///
+  /// A plan sets [takesStock] to false, so a delete gives nothing back. A
+  /// food that is not in the Vorrat sets [inVorrat] to false and names no
+  /// Vorrat item.
+  static CalorieEntry buildCalorieEntry({
+    required String id,
+    required String userId,
+    required CalorieProductProfile profile,
+    required CalorieInventoryCreateContext inventoryContext,
+    required InventoryItemEatRequest request,
+    required DateTime now,
+    bool takesStock = true,
+    bool inVorrat = true,
+  }) {
+    return CalorieEntry.create(
+      id: id,
+      userId: userId,
+      name: profile.name,
+      brand: profile.brand,
+      imageUrl: profile.imageUrl,
+      mealType: request.mealType,
+      consumedAmount: inventoryContext.consumedAmount,
+      consumedUnit: inventoryContext.consumedUnit,
+      per100Kcal: profile.per100Kcal,
+      per100Protein: profile.per100Protein,
+      per100Carbs: profile.per100Carbs,
+      per100Fat: profile.per100Fat,
+      sourceInventoryItemId: inVorrat ? inventoryContext.inventoryItemId : null,
+      sourceInventoryAmountToRestore: takesStock
+          ? inventoryContext.inventoryAmountToRestore
+          : null,
+      nutrientDetails: profile.nutrientDetails,
+      loggedAt: request.loggedAt,
+      createdAt: now,
+      updatedAt: now,
     );
   }
 

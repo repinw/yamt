@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -145,6 +148,7 @@ Future<void> _pumpHarness(
         plannedEntryRepositoryProvider.overrideWithValue(
           plans ?? FakePlannedEntryRepository(),
         ),
+        firebaseAuthProvider.overrideWithValue(_MockFirebaseAuth()),
       ],
       child: MaterialApp(
         locale: const Locale('en'),
@@ -342,3 +346,5 @@ void main() {
     expect(_restoredPortions, isEmpty);
   });
 }
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;

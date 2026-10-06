@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -147,7 +149,10 @@ void main() {
     final plan = _entry();
     final plans = FakePlannedEntryRepository(plans: [plan]);
     final container = _container(
-      overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+      overrides: [
+        plannedEntryRepositoryProvider.overrideWithValue(plans),
+        firebaseAuthProvider.overrideWithValue(_MockFirebaseAuth()),
+      ],
     );
 
     final undone = await container
@@ -164,7 +169,10 @@ void main() {
     final plans = FakePlannedEntryRepository(plans: [plan])
       ..writeShouldFail = true;
     final container = _container(
-      overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+      overrides: [
+        plannedEntryRepositoryProvider.overrideWithValue(plans),
+        firebaseAuthProvider.overrideWithValue(_MockFirebaseAuth()),
+      ],
     );
 
     final undone = await container
@@ -176,3 +184,5 @@ void main() {
     expect(container.read(calorieOverviewRevisionProvider), 0);
   });
 }
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
