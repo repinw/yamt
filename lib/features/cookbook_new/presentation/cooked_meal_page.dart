@@ -14,12 +14,16 @@ import 'package:yamt/features/cookbook_new/domain/cooked_pot.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cooked_meal_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_destination_section.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_pot_section.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_summary.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_detail_flow.dart';
+import 'package:yamt/features/inventory/presentation/'
+    'prepared_meal_eat_flow.dart';
 import 'package:yamt/features/kitchen_utensils/application/'
     'kitchen_utensil_list_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
@@ -30,12 +34,13 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _mealArrivalWait = Duration(seconds: 5);
 
 /// "Gekocht": the cook sets the portions of a meal in the pot, picks the
-/// pot, and may weigh it; "In Vorrat" marks the meal as cooked.
+/// pot, and may weigh it. Saving marks the meal as cooked; with "Ins
+/// Tagebuch" the eat page opens next for the first portion.
 class CookedMealPage extends ConsumerStatefulWidget {
   /// Creates the page for the meal [mealId].
   const new({required this.mealId, super.key});
 
-  /// Key of the "In Vorrat" button.
+  /// Key of the save button.
   static const saveKey = ValueKey<String>('cooked-save');
 
   /// The meal in the pot.
@@ -49,6 +54,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   final _grossController = TextEditingController();
   int? _portions;
   String? _utensilId;
+  CookedMealDestination _destination = CookedMealDestination.stock;
 
   late final Timer _arrivalTimer;
 
@@ -75,12 +81,13 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   Future<void> _save(
     PreparedMeal meal,
     int portions, {
+    required bool toDiary,
     required int? tareWeight,
     required int? netWeight,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
-    final saved = await ref
+    final cooked = await ref
         .read(cookedMealControllerProvider(widget.mealId).notifier)
         .save(
           totalPortions: portions,
@@ -90,15 +97,24 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     if (!mounted) {
       return;
     }
-    if (!saved) {
+    if (cooked == null) {
       messenger.showAppSnackBar(
         l10n.freeCookingSaveFailed,
         tone: AppSnackBarTone.error,
       );
       return;
     }
+    if (toDiary) {
+      // The eat page shows its own result.
+      await PreparedMealEatFlow.eat(context: context, meal: cooked);
+      if (!mounted) {
+        return;
+      }
+    }
     context.pop();
-    messenger.showAppSnackBar(l10n.cookedSaved(meal.name));
+    if (!toDiary) {
+      messenger.showAppSnackBar(l10n.cookedSaved(meal.name));
+    }
   }
 
   @override
@@ -173,12 +189,17 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     final textTheme = Theme.of(context).textTheme;
     final portions = _portions ?? meal.totalPortions;
     final utensilsAsync = ref.watch(kitchenUtensilListProvider);
-    final utensil = utensilsAsync.value?.firstWhereOrNull(
-      (item) => item.id == _utensilId,
-    );
+    final utensils = utensilsAsync.value ?? const <KitchenUtensil>[];
+    final utensil = utensils.firstWhereOrNull((item) => item.id == _utensilId);
+    final canEat = meal.pendingRecipeIngredients.isEmpty;
+    // Rows opened after the pick send the meal to the Vorrat again.
+    final destination = canEat ? _destination : CookedMealDestination.stock;
     final pot = CookedPot(
-      grossInput: _grossController.text,
-      tareWeight: utensil?.weightGrams ?? 0,
+      // The section hides the scale without a pot to pick.
+      grossInput: utensilsAsync.hasError || utensils.isEmpty
+          ? ''
+          : _grossController.text,
+      tareWeight: utensil?.weightGrams,
       portions: portions,
       totalKcal: meal.totalKcal,
     );
@@ -204,13 +225,14 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
               CookedMealPotSection(
                 portions: portions,
                 onPortionsChanged: (value) => setState(() => _portions = value),
-                utensils: utensilsAsync.value ?? const <KitchenUtensil>[],
+                utensils: utensils,
                 utensilsFailed: utensilsAsync.hasError,
                 utensilId: utensil?.id,
                 onUtensilChanged: (id) => setState(() => _utensilId = id),
                 grossController: _grossController,
                 result: switch (pot.netWeight) {
                   final grams? => l10n.cookedNetWeight(grams),
+                  null when pot.needsUtensil => l10n.cookedNeedsUtensil,
                   null when pot.isTooLight => l10n.cookedTooLight,
                   null => '',
                 },
@@ -223,6 +245,12 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                 ),
                 null => l10n.cookedPerPortion(pot.kcalPerPortion),
               }, style: textTheme.bodyMedium?.copyWith(color: colors.muted)),
+              const SizedBox(height: AppSpacing.xxl),
+              CookedMealDestinationSection(
+                selected: destination,
+                canEat: canEat,
+                onChanged: (value) => setState(() => _destination = value),
+              ),
             ],
           ),
         ),
@@ -230,12 +258,13 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
           padding: const EdgeInsets.all(AppSpacing.xl),
           child: FilledButton(
             key: CookedMealPage.saveKey,
-            onPressed: isSaving || pot.isTooLight
+            onPressed: isSaving || pot.needsUtensil || pot.isTooLight
                 ? null
                 : () => unawaited(
                     _save(
                       meal,
                       portions,
+                      toDiary: destination == CookedMealDestination.diary,
                       tareWeight: utensil?.weightGrams,
                       netWeight: pot.netWeight,
                     ),
@@ -245,7 +274,10 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
               foregroundColor: colors.onAccent,
               minimumSize: const Size.fromHeight(AppGraphit.buttonHeight),
             ),
-            child: Text(l10n.cookedSave),
+            child: Text(switch (destination) {
+              CookedMealDestination.diary => l10n.cookedToDiary,
+              CookedMealDestination.stock => l10n.cookedSave,
+            }),
           ),
         ),
       ],

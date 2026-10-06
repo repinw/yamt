@@ -5676,7 +5676,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookedFillRows => 'Fill';
 
   @override
-  String get cookedPotTitle => 'Pot';
+  String get cookedPotTitle => 'Split';
 
   @override
   String get cookedPortions => 'Portions';
@@ -5688,10 +5688,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookedPortionsMore => 'One portion more';
 
   @override
-  String get cookedUtensil => 'Utensil';
+  String get cookedUtensil => 'Container';
 
   @override
-  String get cookedNoUtensil => 'None';
+  String get cookedPickUtensil => 'Pick';
 
   @override
   String cookedUtensilOption(String name, int grams) {
@@ -5704,7 +5704,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get cookedGrossWeight => 'Pot on the scale';
+  String get cookedGrossWeight => 'On the scale';
 
   @override
   String get cookedWeighTip => 'Tip: weigh once the food has cooled.';
@@ -5715,7 +5715,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get cookedTooLight => 'Not heavier than the empty pot';
+  String get cookedTooLight => 'Not heavier than the empty container';
 
   @override
   String cookedPerPortionWeighed(int grams, int kcal) {
@@ -5729,6 +5729,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cookedSave => 'To stock';
+
+  @override
+  String get cookedNeedsUtensil => 'Pick the container first';
+
+  @override
+  String get cookedNextTitle => 'What’s next';
+
+  @override
+  String get cookedToDiary => 'To diary';
+
+  @override
+  String get cookedToDiaryNote =>
+      'Next you log your portion; the rest stays in stock.';
 
   @override
   String cookedSaved(String name) {

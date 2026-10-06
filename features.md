@@ -482,14 +482,19 @@ and feature description docs. This is product-facing; architecture rules stay in
   as cooked. Leaving the page with rows asks before it discards them.
 - "Kochen" goes straight on to the "Gekocht" page: the ingredients with
   their amounts and kcal, open rows with "Füllen" (opens the meal's detail
-  page), and the pot: portions (stepper), the utensil from the kitchen
-  utensils (or "Ohne"), and the pot on the scale. The page shows the food
-  weight (pot minus empty utensil) and per portion grams and kcal, or only
-  kcal per portion without weighing. Weighing is optional; a weight that is
-  not above the empty pot shows "Nicht schwerer als der leere Topf" and
-  blocks saving. "In Vorrat" stores portions, the utensil's empty weight,
-  and the food weight, and the meal leaves the pot. Closing the page keeps
-  it in the pot. A meal that does not show up within a few seconds counts as
+  page), and "Aufteilen": portions (stepper), the "Behälter" from the
+  kitchen utensils, and "Auf der Waage". The page shows the food weight
+  (pot minus empty container) and per portion grams and kcal, or only kcal
+  per portion without weighing. Weighing is optional, but a weight needs a
+  picked container ("Erst den Behälter wählen" blocks saving); without
+  kitchen utensils, or when they fail to load, the scale row is hidden. A
+  weight that is not above the empty container shows "Nicht schwerer als
+  der leere Behälter" and blocks saving. "Wie geht's weiter" picks the
+  destination, and the main button follows it: "In den Vorrat" (default)
+  stores portions, the container's empty weight, and the food weight, and
+  the meal leaves the pot; "Ins Tagebuch" does the same and then opens the
+  eat page for the first portion. A meal with open rows can only go to the
+  Vorrat. Closing the page keeps it in the pot. A meal that does not show up within a few seconds counts as
   gone, and the page says it could not be loaded.
 - A meal in the pot shows "Im Topf" in the Vorrat list. Its detail page
   says "Im Topf" and keeps the meal actions, but blocks "Eintragen", and the

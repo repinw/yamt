@@ -10,6 +10,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 InventoryItem _item(String name) {
   return InventoryItem.create(
@@ -52,12 +53,12 @@ class _FakeCookingService implements PreparedMealCookingService {
   }
 
   @override
-  Future<void> finishCooking({
+  Future<PreparedMeal> finishCooking({
     required String mealId,
     required int totalPortions,
     required int? potTareWeight,
     required int? finalNetWeight,
-  }) async {}
+  }) => throw UnimplementedError();
 }
 
 ProviderContainer _container(_FakeCookingService service) {
