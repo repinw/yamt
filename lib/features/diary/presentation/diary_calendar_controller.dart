@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
@@ -57,6 +58,12 @@ class DiaryCalendarState {
 class DiaryCalendarController extends _$DiaryCalendarController {
   @override
   DiaryCalendarState build() {
+    // A new plan opens its day.
+    ref.listen(lastPlannedDayProvider, (_, planned) {
+      if (planned != null) {
+        selectDay(planned.day);
+      }
+    });
     final today = _currentToday();
     return DiaryCalendarState(today: today, selectedDay: today);
   }
