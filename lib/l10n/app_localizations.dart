@@ -9854,6 +9854,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'In the pot since {time}'**
   String cookbookInPotSince(String time);
+
+  /// Title of the page that blocks an app older than the minimum version.
+  ///
+  /// In en, this message translates to:
+  /// **'Update yamt'**
+  String get appUpdateRequiredTitle;
+
+  /// Body of the page that blocks an app older than the minimum version.
+  ///
+  /// In en, this message translates to:
+  /// **'This version of yamt is too old for your data. Update the app to go on.'**
+  String get appUpdateRequiredBody;
+
+  /// Button and snackbar action that opens Google Play or TestFlight.
+  ///
+  /// In en, this message translates to:
+  /// **'Update'**
+  String get appUpdateAction;
+
+  /// Snackbar shown once per newer app version.
+  ///
+  /// In en, this message translates to:
+  /// **'yamt {version} is available'**
+  String appUpdateAvailable(String version);
+
+  /// Snackbar when neither the store nor TestFlight opens.
+  ///
+  /// In en, this message translates to:
+  /// **'The store could not be opened.'**
+  String get appUpdateStoreOpenFailed;
 }
 
 class _AppLocalizationsDelegate

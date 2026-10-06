@@ -25,7 +25,7 @@ final class AppVersionProvider
         argument: null,
         retry: null,
         name: r'appVersionProvider',
-        isAutoDispose: true,
+        isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
@@ -44,4 +44,4 @@ final class AppVersionProvider
   }
 }
 
-String _$appVersionHash() => r'93420a261f67556700957a3f4036fe343948256b';
+String _$appVersionHash() => r'265b0692efd6ccab3d81e1d519ab99fe5bab509d';

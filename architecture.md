@@ -283,10 +283,11 @@ A feature owns its data access, domain, services, providers, and presentation.
 A feature may import only features that come earlier in this list:
 
 ```text
-shared (legacy), auth, household, health, product_nutrition, recipes,
-shoppinglist, calories, inventory, kitchen_utensils, product_search_hub,
-scanner, ai_chef, cooking_flow, meal_templates, cookbook_new, activity, diary,
-progress, onboarding, home_widget, settings, home
+shared (legacy), auth, app_update, household, health, product_nutrition,
+recipes, shoppinglist, calories, inventory, kitchen_utensils,
+product_search_hub, scanner, ai_chef, cooking_flow, meal_templates,
+cookbook_new, activity, diary, progress, onboarding, home_widget, settings,
+home
 ```
 
 - From an earlier feature, import only `domain/`, `data/`, `application/`,
@@ -428,6 +429,11 @@ NEVER move a feature type into `lib/core` to avoid an ownership decision.
   migration that rewrites the stored data into the new shape. The app has
   real users, so their data MUST survive every release. Start the doc
   comment of the migration with `Temporary migration, added in <version>`.
+  A migration runs only once `appUpdateStatusProvider`
+  (`lib/core/data/app_version_config_repository.dart`) has a value that is
+  not `AppUpdateRequired`: an app older than the minimum version MUST NOT
+  rewrite data that a newer app migrated. A release with a migration raises the minimum version once it is
+  live in both stores.
 - Prefer a migration over backward-compatibility code: tolerant parsers (for
   example a string accepted as a number or a date), default values for
   fields that older documents lack, and special cases for data created

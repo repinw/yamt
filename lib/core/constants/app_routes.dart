@@ -19,6 +19,9 @@ abstract final class AppRoutes {
   /// Data key route: shows a new recovery key or asks for it on a new device.
   static const dataKey = '/data-key';
 
+  /// Shown instead of the app while it is older than the minimum version.
+  static const updateRequired = '/update-required';
+
   /// Home shell route.
   static const home = '/home';
 

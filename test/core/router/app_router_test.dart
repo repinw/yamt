@@ -9,12 +9,15 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/app.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/recovery_key.dart';
+import 'package:yamt/core/domain/app_update_status.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
+import 'package:yamt/features/app_update/presentation/update_required_page.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
@@ -166,6 +169,7 @@ ProviderContainer _createContainerWithAuth(
   UserDataKeyState? dataKeyState,
   Exception? dataKeyError,
   Exception? calorieSettingsReadError,
+  Stream<AppUpdateStatus>? updateStatus,
 }) {
   final calorieLogRepository = FakeCalorieLogRepository();
   final calorieSettingsRepository = FakeCalorieSettingsRepository(
@@ -203,6 +207,9 @@ ProviderContainer _createContainerWithAuth(
         const _FakePreparedMealRepository(),
       ),
       burnWeekLiveSyncProvider.overrideWith((ref) => null),
+      appUpdateStatusProvider.overrideWith(
+        (ref) => updateStatus ?? Stream.value(const AppUpToDate()),
+      ),
       userDataKeySessionProvider.overrideWith(switch ((
         dataKeyState,
         dataKeyError,
@@ -336,6 +343,38 @@ void main() {
       AppRoutes.calorieGoalSetup,
     );
     expect(find.text('Welcome to YAMT'), findsOneWidget);
+  });
+
+  testWidgets('an app below the minimum version opens only the update '
+      'page until the minimum allows it', (tester) async {
+    final updateStatus = StreamController<AppUpdateStatus>.broadcast();
+    addTearDown(updateStatus.close);
+    final container = _createContainerWithAuth(
+      Stream<User?>.value(null),
+      updateStatus: updateStatus.stream,
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(container: container, child: const YAMT()),
+    );
+    updateStatus.add(const AppUpdateRequired());
+    await _pumpRouterTransition(tester);
+
+    expect(find.byType(UpdateRequiredPage), findsOneWidget);
+    container.read(appRouterProvider).go(AppRoutes.home);
+    await _pumpRouterTransition(tester);
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.updateRequired,
+    );
+
+    updateStatus.add(const AppUpToDate());
+    await _pumpRouterTransition(tester);
+
+    expect(
+      container.read(appRouterProvider).state.uri.path,
+      AppRoutes.calorieGoalSetup,
+    );
   });
 
   testWidgets('redirects a signed-out user from home to onboarding', (

@@ -13,6 +13,10 @@ import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_mode_controller.dart';
 import 'package:yamt/core/theme/native_theme_mode.dart';
 import 'package:yamt/core/widgets/keyboard_done_bar.dart';
+import 'package:yamt/features/app_update/application/'
+    'app_client_version_record.dart';
+import 'package:yamt/features/app_update/presentation/widgets/'
+    'app_update_hint_listener.dart';
 import 'package:yamt/features/home_widget/application/'
     'home_widget_click_action_provider.dart';
 import 'package:yamt/features/home_widget/presentation/controllers/'
@@ -44,12 +48,18 @@ class _YAMTState extends ConsumerState<YAMT> {
   _homeWidgetClickSubscription;
   ProviderSubscription<void>? _homeWidgetSyncSubscription;
   ProviderSubscription<ThemeMode>? _nativeThemeModeSubscription;
+  ProviderSubscription<AsyncValue<void>>? _clientVersionSubscription;
 
   @override
   void initState() {
     super.initState();
     _startInventoryWarmup();
     _startHomeWidgetSync();
+    // Saves the app version of this device for every signed-in user.
+    _clientVersionSubscription ??= ref.listenManual<AsyncValue<void>>(
+      appClientVersionRecordProvider,
+      _keepProviderWarm,
+    );
     // Once at start, for a choice saved before the launch screen followed it,
     // and on every change.
     _nativeThemeModeSubscription ??= ref.listenManual<ThemeMode>(
@@ -66,6 +76,7 @@ class _YAMTState extends ConsumerState<YAMT> {
     _homeWidgetClickSubscription?.close();
     _homeWidgetSyncSubscription?.close();
     _nativeThemeModeSubscription?.close();
+    _clientVersionSubscription?.close();
     super.dispose();
   }
 
@@ -82,10 +93,12 @@ class _YAMTState extends ConsumerState<YAMT> {
       themeMode: ref.watch(appThemeModeControllerProvider),
       routerConfig: router,
       builder: (context, child) => KeyboardDoneBar(
-        child: SharedReceiptListener(
-          onReceiptSaved: () =>
-              ref.invalidate(inventoryItemsControllerProvider),
-          child: child ?? const SizedBox.shrink(),
+        child: AppUpdateHintListener(
+          child: SharedReceiptListener(
+            onReceiptSaved: () =>
+                ref.invalidate(inventoryItemsControllerProvider),
+            child: child ?? const SizedBox.shrink(),
+          ),
         ),
       ),
       localizationsDelegates: appLocalizationsDelegates,

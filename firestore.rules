@@ -768,6 +768,13 @@ service cloud.firestore {
         && data.updated_at is string;
     }
 
+    // Minimum and latest app version. Only the release writes it, with
+    // admin access; every client reads it, also signed out.
+    match /config/app_version {
+      allow read: if true;
+      allow write: if false;
+    }
+
     match /calorie_product_catalog/{barcode} {
       allow read: if isSignedIn();
       allow create, update, delete: if false;
@@ -1037,6 +1044,21 @@ service cloud.firestore {
       allow delete: if isOwner(uid);
     }
 
+    // App version of each device, so a release can count old devices before
+    // it removes a migration. Plaintext: version and platform are no health
+    // data.
+    match /users/{uid}/clients/{installId} {
+      allow read, delete: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys()
+          .hasOnly(['app_version', 'platform', 'last_seen_at'])
+        && request.resource.data.app_version is string
+        && request.resource.data.app_version.size() <= 32
+        && request.resource.data.platform is string
+        && request.resource.data.platform.size() <= 16
+        && request.resource.data.last_seen_at is timestamp;
+    }
+
     // Backup of the data key, wrapped with the recovery key of the user.
     match /users/{uid}/private/data_key {
       allow read, delete: if isOwner(uid);
@@ -1140,13 +1162,17 @@ service cloud.firestore {
 
     // TODO: Replace this generic owner-based rule once all collection
     // schemas are stable and covered with explicit rules.
+    // config/ holds documents that only the release writes; the userId rule
+    // below must not open them.
     match /{document=**} {
       allow create: if isSignedIn()
         && isOutsideHouseholds(document)
+        && document[0] != 'config'
         && 'userId' in request.resource.data
         && request.resource.data.userId == request.auth.uid;
       allow read, update, delete: if isSignedIn()
         && isOutsideHouseholds(document)
+        && document[0] != 'config'
         && 'userId' in resource.data
         && resource.data.userId == request.auth.uid;
     }

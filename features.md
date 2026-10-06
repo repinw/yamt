@@ -25,6 +25,15 @@ and feature description docs. This is product-facing; architecture rules stay in
   The order stays fixed.
 - Vorrat actions: barcode, search, AI, an own product, and a receipt as photo
   or upload (the photo only where a camera is available).
+- App updates: the release sets a minimum and a latest version in
+  `config/app_version`. An app older than the minimum shows only an "Update
+  yamt" page; while the check loads, fails, or no version is set, the app
+  opens. Migrations added from now on wait for the check. An app older than the latest version
+  shows a snackbar "yamt <version> is available" once per version. "Update"
+  opens Google Play on Android and TestFlight on iOS.
+- Each device saves its app version, platform, and last start (at most once a
+  day) in `users/{uid}/clients/{installId}`, so a release can count the
+  devices that still run an old version before it removes a migration.
 - Responsive page layouts for mobile and wider screens.
 - English and German localization.
 
