@@ -19,6 +19,11 @@ abstract final class DiaryMealsSectionKeys {
     return ValueKey<String>('diary-meal-plan-$planId');
   }
 
+  /// Key of the check button that eats a plan.
+  static Key planAcceptButton(String planId) {
+    return ValueKey<String>('diary-meal-plan-accept-$planId');
+  }
+
   /// Button key for a quick-eat source.
   static Key quickEatSource(DiaryQuickEatSource source) {
     return ValueKey<String>('diary-quick-eat-source-${source.name}');

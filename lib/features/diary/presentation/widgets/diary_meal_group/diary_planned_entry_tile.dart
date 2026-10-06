@@ -10,10 +10,15 @@ import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_key
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// One plan: a faded food row in a dashed frame, so it reads as not eaten
-/// yet.
+/// yet, with a check button once its day has come.
 class DiaryPlannedEntryTile extends StatelessWidget {
   /// Creates the row for [plan].
-  const new({required this.plan, required this.onTap, super.key});
+  const new({
+    required this.plan,
+    required this.onTap,
+    this.onAccept,
+    super.key,
+  });
 
   /// Plan to display.
   final DiaryMealEntry plan;
@@ -21,30 +26,45 @@ class DiaryPlannedEntryTile extends StatelessWidget {
   /// Called when the row is tapped.
   final VoidCallback onTap;
 
+  /// Eats the plan as planned. Without it, the row has no check button.
+  final VoidCallback? onAccept;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    // One node, so a screen reader names the row a plan and its tap a delete.
-    return MergeSemantics(
+    return CustomPaint(
       key: DiaryMealsSectionKeys.plannedEntryTile(plan.id),
-      child: Semantics(
-        label: l10n.diaryPlanSemanticsLabel,
-        onTapHint: l10n.diaryPlanDeleteAction,
-        child: CustomPaint(
-          foregroundPainter: _DashedFramePainter(
-            Theme.of(context).colorScheme.outlineVariant,
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
-            child: Opacity(
-              opacity: AppGraphit.pendingRowOpacity,
-              child: DiaryMealEntryTile(
-                entry: plan,
-                onTap: onTap,
-                tag: plan.isPreparedMeal ? const _MealPrepTag() : null,
+      foregroundPainter: _DashedFramePainter(
+        Theme.of(context).colorScheme.outlineVariant,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+        child: Row(
+          children: [
+            Expanded(
+              // One node, so a screen reader names the row a plan.
+              child: MergeSemantics(
+                child: Semantics(
+                  label: l10n.diaryPlanSemanticsLabel,
+                  child: Opacity(
+                    opacity: AppGraphit.pendingRowOpacity,
+                    child: DiaryMealEntryTile(
+                      entry: plan,
+                      onTap: onTap,
+                      tag: plan.isPreparedMeal ? const _MealPrepTag() : null,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+            if (onAccept case final accept?)
+              IconButton.filledTonal(
+                key: DiaryMealsSectionKeys.planAcceptButton(plan.id),
+                tooltip: l10n.diaryPlanAcceptAction,
+                onPressed: accept,
+                icon: const Icon(Icons.check_rounded),
+              ),
+          ],
         ),
       ),
     );

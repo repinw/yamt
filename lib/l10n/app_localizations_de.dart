@@ -2592,7 +2592,23 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryPlanSemanticsLabel => 'Plan';
 
   @override
-  String get diaryPlanDeleteAction => 'Plan löschen';
+  String get diaryPlanAcceptAction => 'Wie geplant gegessen';
+
+  @override
+  String get diaryPlanAccepted => 'Wie geplant gegessen';
+
+  @override
+  String get diaryPlanAcceptedWithoutStock =>
+      'Eingetragen – nicht mehr im Vorrat';
+
+  @override
+  String get diaryPlanAcceptFailed => 'Plan konnte nicht eingetragen werden';
+
+  @override
+  String get diaryPlanRemoveAction => 'Aus Plan entfernen';
+
+  @override
+  String get diaryPlanAcceptLaterHint => 'Ab dem geplanten Tag';
 
   @override
   String get diaryPlanMealPrepTag => 'Meal Prep';

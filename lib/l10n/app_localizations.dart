@@ -4414,11 +4414,41 @@ abstract class AppLocalizations {
   /// **'Plan'**
   String get diaryPlanSemanticsLabel;
 
-  /// No description provided for @diaryPlanDeleteAction.
+  /// No description provided for @diaryPlanAcceptAction.
   ///
   /// In en, this message translates to:
-  /// **'Delete plan'**
-  String get diaryPlanDeleteAction;
+  /// **'Eaten as planned'**
+  String get diaryPlanAcceptAction;
+
+  /// No description provided for @diaryPlanAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Eaten as planned'**
+  String get diaryPlanAccepted;
+
+  /// No description provided for @diaryPlanAcceptedWithoutStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Logged – no longer in stock'**
+  String get diaryPlanAcceptedWithoutStock;
+
+  /// No description provided for @diaryPlanAcceptFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan could not be logged'**
+  String get diaryPlanAcceptFailed;
+
+  /// No description provided for @diaryPlanRemoveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from plan'**
+  String get diaryPlanRemoveAction;
+
+  /// No description provided for @diaryPlanAcceptLaterHint.
+  ///
+  /// In en, this message translates to:
+  /// **'From the planned day on'**
+  String get diaryPlanAcceptLaterHint;
 
   /// No description provided for @diaryPlanMealPrepTag.
   ///
