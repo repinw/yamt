@@ -172,7 +172,6 @@ void main() {
         createdAt: day,
         updatedAt: day,
       ),
-      isNewEntry: true,
     );
     await pumpEventQueue();
 

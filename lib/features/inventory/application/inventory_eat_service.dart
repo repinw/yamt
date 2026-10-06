@@ -206,7 +206,6 @@ class InventoryEatService {
   }) async {
     final saved = await _saver(
       entry,
-      isNewEntry: true,
       scannedSourceRef: scannedSourceRef,
       persistEntry: (entry) => commit(entry, [pending]),
     );

@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_entry_day_change.dart';
+import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/calorie_visible_window_controller.dart';
@@ -21,8 +23,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/calories/presentation/controllers/calorie_day_controller.dart';
-import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
 import 'package:yamt/features/health/data/'
     'health_connection_service_provider.dart';
 import 'package:yamt/features/health/domain/health_connection_models.dart';
@@ -465,8 +465,6 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-
-      container.read(calorieDayControllerProvider.notifier).setDay(selectedDay);
       container
           .read(calorieVisibleWindowControllerProvider.notifier)
           .setWindowEnd(selectedDay);
@@ -479,51 +477,6 @@ void main() {
       expect(overview.totalConsumedKcal, 1000);
     },
   );
-
-  test('calorieWeekOverview does not shift visible window '
-      'when only selected day changes', () async {
-    final today = normalizeDiaryDay(DateTime.now());
-    final yesterday = today.subtract(const Duration(days: 1));
-    final firstVisibleDay = today.subtract(const Duration(days: 6));
-    final logRepository = FakeCalorieLogRepository(
-      initialEntries: <CalorieEntry>[
-        _entry(
-          'today',
-          loggedAt: today.add(const Duration(hours: 8)),
-          totalKcal: 600,
-        ),
-        _entry(
-          'first-visible-day',
-          loggedAt: firstVisibleDay.add(const Duration(hours: 12)),
-          totalKcal: 400,
-        ),
-      ],
-    );
-    final settingsRepository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2000,
-        calculatorProfile: null,
-        effectiveDate: firstVisibleDay,
-      ),
-    );
-    addTearDown(logRepository.dispose);
-    addTearDown(settingsRepository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieLogRepositoryProvider.overrideWithValue(logRepository),
-        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    container.read(calorieDayControllerProvider.notifier).setDay(yesterday);
-    await container.read(calorieGoalControllerProvider.future);
-    final overview = await _readVisibleWeekOverview(container);
-
-    expect(overview.days.last.date, today);
-    expect(overview.days.first.date, firstVisibleDay);
-  });
 
   test(
     'calorieWeekOverview falls back when visible range read throws',
@@ -780,28 +733,15 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final daySubscription = container.listen(
-        calorieDayControllerProvider,
-        (_, _) {},
-      );
       final windowSubscription = container.listen(
         calorieVisibleWindowControllerProvider,
         (_, _) {},
       );
-      addTearDown(daySubscription.close);
       addTearDown(windowSubscription.close);
-
-      container.read(calorieDayControllerProvider.notifier).setDay(windowEnd);
       container
           .read(calorieVisibleWindowControllerProvider.notifier)
           .setWindowEnd(windowEnd);
       await container.read(calorieGoalControllerProvider.future);
-      final entriesSubscription = container.listen(
-        calorieEntriesControllerProvider,
-        (_, _) {},
-      );
-      addTearDown(entriesSubscription.close);
-      await container.read(calorieEntriesControllerProvider.future);
 
       final initialDayOverview = await _readDayOverviewForDate(
         container,
@@ -812,15 +752,13 @@ void main() {
       expect(initialDayOverview.totalKcal, 400);
       expect(initialWeekOverview.totalConsumedKcal, 400);
 
-      final saved = await container
-          .read(calorieEntriesControllerProvider.notifier)
-          .saveEntry(
-            _entry(
-              'new-entry',
-              loggedAt: mutatedDay.add(const Duration(hours: 12)),
-              totalKcal: 500,
-            ),
-          );
+      final saved = await container.read(calorieEntrySaverProvider)(
+        _entry(
+          'new-entry',
+          loggedAt: mutatedDay.add(const Duration(hours: 12)),
+          totalKcal: 500,
+        ),
+      );
 
       expect(saved, isTrue);
 
@@ -834,9 +772,8 @@ void main() {
       expect(updatedDayOverview.entryCount, 2);
       expect(updatedWeekOverview.totalConsumedKcal, 900);
 
-      final deleted = await container
-          .read(calorieEntriesControllerProvider.notifier)
-          .deleteEntry('new-entry');
+      final deleted = await logRepository.deleteEntry('new-entry');
+      await container.read(calorieEntryDayChangeProvider)(mutatedDay);
 
       expect(deleted, isTrue);
 

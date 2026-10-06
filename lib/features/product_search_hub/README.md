@@ -18,7 +18,7 @@ Einheitliche Produktsuche, Produkteditor, KI-Drafterstellung und Barcode-Assiste
 
 - Vorrats-Persistenz und Repository (`inventory`).
 - Tagebuch- und Kalorien-Persistenz (`diary`, `calories`).
-- Ausführung von fachlichen Seiteneffekten fremder Features (keine direkten Controller-Imports wie `InventoryItemsController` oder `CalorieEntriesController`).
+- Ausführung von fachlichen Seiteneffekten fremder Features (keine direkten Controller-Imports wie `InventoryItemsController`).
 - Kamera- und generische Barcode-Overlay-Engine (`core/widgets/barcode_scanner/`).
 - Nährwert-Etiketten-OCR (`product_nutrition`).
 

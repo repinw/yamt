@@ -59,4 +59,4 @@ final class CalorieEntryDeleterProvider
 }
 
 String _$calorieEntryDeleterHash() =>
-    r'0e9773721c780a244f4d1d50a98c7ce5bc11133f';
+    r'19e522ad7808b621889d42432fe07df0b93dd4cc';

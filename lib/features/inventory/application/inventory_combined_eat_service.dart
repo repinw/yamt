@@ -87,7 +87,6 @@ class InventoryCombinedEatService {
 
     final saved = await _saver(
       entry,
-      isNewEntry: true,
       persistEntry: (entry) =>
           _eatService.commit(entry, [for (final food in foods) food.pending]),
     );

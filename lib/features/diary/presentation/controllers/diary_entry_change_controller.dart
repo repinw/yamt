@@ -18,21 +18,21 @@ class DiaryEntryChangeController extends _$DiaryEntryChangeController {
   @override
   FutureOr<void> build() {}
 
-  /// Saves [entry]; [isNew] for an entry that was not stored before.
+  /// Saves [entry].
   ///
   /// [previousDay] is the day the entry was logged on before; when it is
   /// earlier than the new day, the days from it on count as changed too.
-  Future<bool> save(
-    CalorieEntry entry, {
-    bool isNew = false,
-    DateTime? previousDay,
-  }) => ref.whileAlive(calorieEntrySaverProvider, (saver) async {
-    final saved = await saver(entry, isNewEntry: isNew);
-    if (saved && previousDay != null && previousDay.isBefore(entry.loggedAt)) {
-      await ref.read(calorieEntryDayChangeProvider)(previousDay);
-    }
-    return saved;
-  });
+  Future<bool> save(CalorieEntry entry, {DateTime? previousDay}) =>
+      ref.whileAlive(calorieEntrySaverProvider, (saver) async {
+        final dayChange = ref.read(calorieEntryDayChangeProvider);
+        final saved = await saver(entry);
+        if (saved &&
+            previousDay != null &&
+            previousDay.isBefore(entry.loggedAt)) {
+          await dayChange(previousDay);
+        }
+        return saved;
+      });
 
   /// Stores [entry] with [amount] and moves its stock with it.
   Future<InventoryEntryAmountChange> changeAmount(

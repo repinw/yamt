@@ -3,13 +3,11 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/calories/application/calorie_entry_mutations.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_product_cache_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_entry_mutation.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 
 part 'calorie_entry_saver.g.dart';
@@ -19,7 +17,6 @@ const _entrySaverLogName = 'CalorieEntrySaver';
 /// Saves a calorie entry through the Calories application boundary.
 typedef CalorieEntrySaver = Future<bool> Function(
   CalorieEntry entry, {
-  bool isNewEntry,
   CalorieScannedSourceRef? scannedSourceRef,
   Future<bool> Function(CalorieEntry entry)? persistEntry,
 });
@@ -28,16 +25,13 @@ typedef CalorieEntrySaver = Future<bool> Function(
 @riverpod
 CalorieEntrySaver calorieEntrySaver(Ref ref) {
   final repository = ref.watch(calorieLogRepositoryProvider);
-  final mutations = ref.watch(calorieEntryMutationsProvider);
   final overviewRevision = ref.read(calorieOverviewRevisionProvider.notifier);
   final cacheRepository = ref.read(calorieProductCacheRepositoryProvider);
   final clock = ref.read(clockProvider);
-  // Taken before the save: recording the mutation rebuilds this provider, so
-  // its ref is no longer usable afterwards. Watched so the goal controller
-  // stays alive for the follow-up writes.
+  // Watched so the goal controller stays alive for the follow-up writes.
   final goalController = ref.watch(calorieGoalControllerProvider.notifier);
 
-  return (entry, {isNewEntry = false, scannedSourceRef, persistEntry}) async {
+  return (entry, {scannedSourceRef, persistEntry}) async {
     final bool saved;
     if (persistEntry != null) {
       saved = await persistEntry(entry);
@@ -49,15 +43,6 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
     }
 
     overviewRevision.markChanged();
-    mutations.record(
-      CalorieEntryMutation(
-        kind: isNewEntry
-            ? CalorieEntryMutationKind.created
-            : CalorieEntryMutationKind.updated,
-        entryId: entry.id,
-        entry: entry,
-      ),
-    );
 
     // Follow-up writes run in the background so the caller returns at once.
     // Both rewrite the settings, so they run one after the other.

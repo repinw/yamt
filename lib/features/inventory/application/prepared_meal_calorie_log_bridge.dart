@@ -27,17 +27,14 @@ typedef PreparedMealSaveCallback = Future<bool> Function(
 @riverpod
 PreparedMealCalorieLogBridge preparedMealCalorieLogBridge(Ref ref) {
   final commitStore = ref.watch(preparedMealCalorieEntryCommitStoreProvider);
-  // The saver, not the auto-dispose entries controller: nothing listens to
-  // the controller here, so it could be disposed while it still loads.
   final saveCalorieEntry = ref.watch(calorieEntrySaverProvider);
   return PreparedMealCalorieLogBridge(
-    saveEntry: (entry) => saveCalorieEntry(entry, isNewEntry: true),
+    saveEntry: saveCalorieEntry,
     saveEntryAtomically: commitStore == null
         ? null
         : (entry) {
             return saveCalorieEntry(
               entry,
-              isNewEntry: true,
               persistEntry: (persistedEntry) {
                 return commitStore.commitEntryAndPreparedMeal(
                   entry: persistedEntry,
