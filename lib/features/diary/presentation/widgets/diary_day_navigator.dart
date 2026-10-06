@@ -177,6 +177,7 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
     final textTheme = Theme.of(context).textTheme;
     final colors = FoodLabelColors.of(context);
     final locale = Localizations.localeOf(context).toLanguageTag();
+    final weekday = DateFormat('EEEE', locale).format(widget.selectedDay);
 
     return AppInkWell(
       key: DiaryDayNavigatorKeys.label,
@@ -196,15 +197,18 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
                   key: ValueKey<DateTime>(dateOnly(widget.selectedDay)),
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      _relativeLabel(context).toUpperCase(),
-                      maxLines: 1,
-                      style: textTheme.labelSmall?.copyWith(
-                        fontFamily: AppFonts.mono,
-                        color: colors.muted,
-                        letterSpacing: AppFoodLabel.brandTracking,
+                    // A relative name sits on its own line above the
+                    // weekday, so a long one stays readable.
+                    for (final line in [?_relativeName(context), weekday])
+                      Text(
+                        line.toUpperCase(),
+                        maxLines: 1,
+                        style: textTheme.labelSmall?.copyWith(
+                          fontFamily: AppFonts.mono,
+                          color: colors.muted,
+                          letterSpacing: AppFoodLabel.brandTracking,
+                        ),
                       ),
-                    ),
                     Text(
                       DateFormat('d. MMM', locale).format(widget.selectedDay),
                       maxLines: 1,
@@ -225,30 +229,26 @@ class _DiaryDayNavigatorState extends State<DiaryDayNavigator> {
     );
   }
 
-  /// The weekday, after a relative name (yesterday up to the day after
-  /// tomorrow) when the day has one.
-  String _relativeLabel(BuildContext context) {
+  /// The relative name of the day, from yesterday up to the day after
+  /// tomorrow, or null.
+  String? _relativeName(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final weekday = DateFormat(
-      'EEEE',
-      Localizations.localeOf(context).toLanguageTag(),
-    ).format(widget.selectedDay);
     final day = widget.selectedDay;
     final today = widget.today;
     final tomorrow = nextLocalDay(today);
-    final String relative;
     if (isSameCalendarDay(day, today)) {
-      relative = l10n.diaryTodayTitle;
-    } else if (isSameCalendarDay(day, previousLocalDay(today))) {
-      relative = l10n.diaryYesterdayTitle;
-    } else if (isSameCalendarDay(day, tomorrow)) {
-      relative = l10n.diaryTomorrowTitle;
-    } else if (isSameCalendarDay(day, nextLocalDay(tomorrow))) {
-      relative = l10n.diaryDayAfterTomorrowTitle;
-    } else {
-      return weekday;
+      return l10n.diaryTodayTitle;
     }
-    return l10n.diaryDayRelativeWeekday(relative, weekday);
+    if (isSameCalendarDay(day, previousLocalDay(today))) {
+      return l10n.diaryYesterdayTitle;
+    }
+    if (isSameCalendarDay(day, tomorrow)) {
+      return l10n.diaryTomorrowTitle;
+    }
+    if (isSameCalendarDay(day, nextLocalDay(tomorrow))) {
+      return l10n.diaryDayAfterTomorrowTitle;
+    }
+    return null;
   }
 
   Widget _buildTransition(Widget child, Animation<double> animation) {

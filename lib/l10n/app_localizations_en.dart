@@ -2435,11 +2435,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryDayAfterTomorrowTitle => 'In 2 days';
 
   @override
-  String diaryDayRelativeWeekday(String relative, String weekday) {
-    return '$relative · $weekday';
-  }
-
-  @override
   String get diaryDayTypeTraining => 'Training day';
 
   @override
