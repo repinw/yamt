@@ -15,11 +15,11 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cooked_meal_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_pot_section.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_summary.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_detail_flow.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
-    'eat_components_list.dart';
 import 'package:yamt/features/kitchen_utensils/application/'
     'kitchen_utensil_list_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
@@ -37,9 +37,6 @@ class CookedMealPage extends ConsumerStatefulWidget {
 
   /// Key of the "In Vorrat" button.
   static const saveKey = ValueKey<String>('cooked-save');
-
-  /// Key of the button that fills the open rows.
-  static const fillKey = ValueKey<String>('cooked-fill');
 
   /// The meal in the pot.
   final String mealId;
@@ -185,7 +182,6 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
       portions: portions,
       totalKcal: meal.totalKcal,
     );
-    final openRows = meal.pendingRecipeIngredients.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -194,55 +190,16 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
           child: ListView(
             padding: const EdgeInsets.all(AppSpacing.xxl),
             children: [
-              Text(
-                meal.name,
-                style: textTheme.headlineSmall?.copyWith(
-                  color: colors.ink,
-                  fontWeight: FontWeight.w800,
+              CookedMealSummary(
+                meal: meal,
+                onFill: () => unawaited(
+                  PreparedMealDetailFlow.open(
+                    context: context,
+                    ref: ref,
+                    meal: meal,
+                  ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.lg),
-              if (meal.components.isNotEmpty)
-                EatComponentsList(
-                  initiallyExpanded: true,
-                  components: [
-                    for (final component in meal.components)
-                      (
-                        name: component.name,
-                        amount: eatComponentAmount(
-                          l10n,
-                          preparedMealComponentDisplayAmount(component),
-                          component.usedUnit,
-                        ),
-                        kcal: component.totalKcal,
-                      ),
-                  ],
-                ),
-              if (openRows > 0)
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.cookedOpenRows(openRows),
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: colors.low,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    TextButton(
-                      key: CookedMealPage.fillKey,
-                      onPressed: () => unawaited(
-                        PreparedMealDetailFlow.open(
-                          context: context,
-                          ref: ref,
-                          meal: meal,
-                        ),
-                      ),
-                      child: Text(l10n.cookedFillRows),
-                    ),
-                  ],
-                ),
               const SizedBox(height: AppSpacing.xxl),
               CookedMealPotSection(
                 portions: portions,
