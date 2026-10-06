@@ -9,6 +9,7 @@ import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -173,6 +174,7 @@ class DiaryQuickEntryController extends _$DiaryQuickEntryController {
     final saveEntry = ref.read(calorieEntrySaverProvider);
     final plans = ref.read(plannedEntryRepositoryProvider);
     final revision = ref.read(calorieOverviewRevisionProvider.notifier);
+    final plannedDay = ref.read(lastPlannedDayProvider.notifier);
     final isPlan = state.isPlan;
     state = state.copyWith(isSaving: true);
     final result = await AsyncValue.guard(() async {
@@ -182,6 +184,7 @@ class DiaryQuickEntryController extends _$DiaryQuickEntryController {
       await plans.savePlannedEntry(entry);
       // The diary dashboards learn about the plan from the revision.
       revision.markChanged();
+      plannedDay.planned(entry.loggedAt);
       return true;
     });
     if (result case AsyncError(:final error, :final stackTrace)) {

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 
@@ -151,5 +152,25 @@ void main() {
     expect(copied.today, state.today);
     expect(copied.selectedDay, DateTime(2026, 4, 29));
     expect(copied.isSelectedToday, isFalse);
+  });
+
+  test('a new plan opens its day, also when it is planned again', () {
+    final container = _container(now: () => DateTime(2026, 4, 27, 10));
+    final calendar = container.read(diaryCalendarControllerProvider.notifier);
+    final plannedDay = container.read(lastPlannedDayProvider.notifier)
+      ..planned(DateTime(2026, 4, 29, 19));
+
+    expect(
+      container.read(diaryCalendarControllerProvider).selectedDay,
+      DateTime(2026, 4, 29),
+    );
+
+    calendar.selectDay(DateTime(2026, 4, 27));
+    plannedDay.planned(DateTime(2026, 4, 29, 8));
+
+    expect(
+      container.read(diaryCalendarControllerProvider).selectedDay,
+      DateTime(2026, 4, 29),
+    );
   });
 }

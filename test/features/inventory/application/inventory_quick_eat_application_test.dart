@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
@@ -74,6 +75,7 @@ InventoryQuickEatApplication _application({
     overviewRevision: revisionContainer.read(
       calorieOverviewRevisionProvider.notifier,
     ),
+    lastPlannedDay: revisionContainer.read(lastPlannedDayProvider.notifier),
     now: () => DateTime(2026, 9, 19, 12),
     calorieLogBridge: PreparedMealCalorieLogBridge(
       saveEntry: saveEntry,

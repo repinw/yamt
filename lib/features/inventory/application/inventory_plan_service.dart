@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -21,6 +22,7 @@ InventoryPlanService inventoryPlanService(Ref ref) {
   return InventoryPlanService(
     plans: ref.watch(plannedEntryRepositoryProvider),
     overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
+    lastPlannedDay: ref.watch(lastPlannedDayProvider.notifier),
     userId: ref.watch(firebaseAuthProvider).currentUser?.uid,
     clock: ref.watch(clockProvider),
   );
@@ -32,6 +34,7 @@ class InventoryPlanService {
   const new({
     required this._plans,
     required this._overviewRevision,
+    required this._lastPlannedDay,
     required this._userId,
     required this._clock,
   });
@@ -40,6 +43,7 @@ class InventoryPlanService {
 
   final PlannedEntryRepository _plans;
   final CalorieOverviewRevision _overviewRevision;
+  final LastPlannedDay _lastPlannedDay;
   final String? _userId;
   final DateTime Function() _clock;
 
@@ -86,6 +90,7 @@ class InventoryPlanService {
     );
     await _plans.savePlannedEntry(entry);
     _overviewRevision.markChanged();
+    _lastPlannedDay.planned(entry.loggedAt);
     return InventoryEatPlanned(entry);
   }
 

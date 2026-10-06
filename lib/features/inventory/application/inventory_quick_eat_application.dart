@@ -6,6 +6,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -26,6 +27,7 @@ InventoryQuickEatApplication inventoryQuickEatApplication(Ref ref) {
     calorieLogBridge: ref.watch(preparedMealCalorieLogBridgeProvider),
     plans: ref.watch(plannedEntryRepositoryProvider),
     overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
+    lastPlannedDay: ref.watch(lastPlannedDayProvider.notifier),
     now: ref.watch(clockProvider),
   );
 }
@@ -66,6 +68,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     required this._calorieLogBridge,
     required this._plans,
     required this._overviewRevision,
+    required this._lastPlannedDay,
     required this._now,
   });
 
@@ -73,6 +76,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
   final PreparedMealCalorieLogBridge _calorieLogBridge;
   final PlannedEntryRepository _plans;
   final CalorieOverviewRevision _overviewRevision;
+  final LastPlannedDay _lastPlannedDay;
   final DateTime Function() _now;
   final _mutationQueue = SerializedMutationQueue();
 
@@ -158,6 +162,7 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     }
     await _plans.savePlannedEntry(plan);
     _overviewRevision.markChanged();
+    _lastPlannedDay.planned(plan.loggedAt);
     return (entry: plan, isPlan: true);
   }
 
