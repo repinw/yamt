@@ -7,12 +7,14 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Small top-right control for the day and meal of a food log.
 ///
 /// Shows "TODAY · SNACK" and opens a menu with the meal types and a date
-/// picker from 2000 up to [today].
+/// picker from 2000 up to [today], or up to the last day that can be planned
+/// when [allowsPlanDays] is set, for a page whose save plans a later day.
 class EatWhenMenu extends StatelessWidget {
   /// Creates the day and meal control.
   const new({
@@ -21,6 +23,7 @@ class EatWhenMenu extends StatelessWidget {
     required this.mealType,
     required this.onMealTypeChanged,
     required this.onDayPicked,
+    this.allowsPlanDays = false,
     super.key,
   });
 
@@ -46,6 +49,10 @@ class EatWhenMenu extends StatelessWidget {
 
   /// Called with the picked day at date-only precision.
   final ValueChanged<DateTime> onDayPicked;
+
+  /// Whether days after [today] can be picked, because the page saves them
+  /// as plans.
+  final bool allowsPlanDays;
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +134,7 @@ class EatWhenMenu extends StatelessWidget {
   }
 
   Future<void> _pickDay(BuildContext context) async {
-    final lastDay = dateOnly(today);
+    final lastDay = allowsPlanDays ? _lastPlanDay(today) : dateOnly(today);
     final loggedDay = dateOnly(loggedAt);
     final picked = await showDatePicker(
       context: context,
@@ -139,6 +146,34 @@ class EatWhenMenu extends StatelessWidget {
       onDayPicked(dateOnly(picked));
     }
   }
+}
+
+/// Asks for the day to plan on: today or one of the days after it that can
+/// be planned. Returns the day at date-only precision, or null.
+Future<DateTime?> showEatPlanDayPicker(
+  BuildContext context, {
+  required DateTime today,
+  required DateTime loggedAt,
+}) async {
+  final firstDay = dateOnly(today);
+  final lastDay = _lastPlanDay(today);
+  final loggedDay = dateOnly(loggedAt);
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: loggedDay.isBefore(firstDay)
+        ? firstDay
+        : loggedDay.isAfter(lastDay)
+        ? lastDay
+        : loggedDay,
+    firstDate: firstDay,
+    lastDate: lastDay,
+  );
+  return picked == null ? null : dateOnly(picked);
+}
+
+DateTime _lastPlanDay(DateTime today) {
+  final day = dateOnly(today);
+  return DateTime(day.year, day.month, day.day + diaryPlanAheadDayCount);
 }
 
 /// Menu entry that opens the date picker.

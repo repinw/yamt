@@ -195,6 +195,26 @@ void main() {
     expect(find.byType(DiaryQuickEntryPage), findsNothing);
   });
 
+  testWidgets('a later day labels the button "Plan"', (tester) async {
+    await openPage(tester);
+
+    await tester.tap(find.byKey(EatWhenMenu.buttonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(EatWhenMenu.pickDayKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('29'));
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(
+        of: find.byKey(DiaryQuickEntryPage.confirmKey),
+        matching: find.text('Plan'),
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('names an entry without a name "Quick entry"', (tester) async {
     await openPage(tester);
 

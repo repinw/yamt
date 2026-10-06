@@ -420,6 +420,7 @@
   "inventoryItemEatSheetInedibleAmountFieldLabel": "Nicht essbarer Anteil",
   "inventoryItemEatSheetInedibleAmountError": "Der Abzug muss kleiner als die verzehrte Menge sein.",
   "inventoryItemEatSheetConfirmAction": "Ins Tagebuch",
+  "eatPagePlanIconTooltip": "Planen",
   "inventoryItemEatSheetAddMoreAction": "+ Mehr",
   "eatPagePlanAction": "Einplanen",
   "eatPageNutritionTitle": "Nährwerte",

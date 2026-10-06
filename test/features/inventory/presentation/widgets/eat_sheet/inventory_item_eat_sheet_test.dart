@@ -18,6 +18,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_inedible_line.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_remember_portion.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_ruler.dart';
@@ -26,6 +28,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+final _now = DateTime(2026, 5, 13, 12, 30);
 
 InventoryItem _amountItem() {
   return InventoryItem.create(
@@ -261,14 +265,15 @@ Widget _buildTestApp({
   Locale locale = const Locale('en'),
   DateTime? now,
 }) {
+  final overrides = [
+    clockProvider.overrideWithValue(() => now ?? _now),
+    if (servingSuggestionRepository != null)
+      globalFoodServingSuggestionRepositoryProvider.overrideWithValue(
+        servingSuggestionRepository,
+      ),
+  ];
   return ProviderScope(
-    overrides: [
-      if (now != null) clockProvider.overrideWithValue(() => now),
-      if (servingSuggestionRepository != null)
-        globalFoodServingSuggestionRepositoryProvider.overrideWithValue(
-          servingSuggestionRepository,
-        ),
-    ],
+    overrides: overrides,
     child: MaterialApp(
       locale: locale,
       localizationsDelegates: appLocalizationsDelegates,
@@ -327,7 +332,7 @@ Future<void> _openWhenMenu(WidgetTester tester) async {
 }
 
 DateTime _targetLoggedAtDate() {
-  final today = DateUtils.dateOnly(DateTime.now());
+  final today = DateUtils.dateOnly(_now);
   if (today.day > 1) {
     return today.subtract(const Duration(days: 1));
   }
@@ -339,7 +344,7 @@ Future<void> _pickLoggedAtDate(WidgetTester tester, DateTime targetDate) async {
   await tester.tap(find.byKey(EatWhenMenu.pickDayKey));
   await tester.pumpAndSettle();
 
-  final today = DateUtils.dateOnly(DateTime.now());
+  final today = DateUtils.dateOnly(_now);
   if (targetDate.year != today.year || targetDate.month != today.month) {
     await tester.tap(find.byTooltip('Previous month'));
     await tester.pumpAndSettle();
@@ -436,7 +441,7 @@ void main() {
       onResult: (value) => result = value,
     );
     final targetMealType = MealType.sectionOrder.firstWhere(
-      (mealType) => mealType != MealType.defaultForDateTime(DateTime.now()),
+      (mealType) => mealType != MealType.defaultForDateTime(_now),
     );
 
     await _enterAmount(tester, '120');
@@ -460,7 +465,7 @@ void main() {
     expect(result?.calorieAmount, isNull);
     expect(
       DateUtils.dateOnly(result!.loggedAt),
-      DateUtils.dateOnly(DateTime.now()),
+      DateUtils.dateOnly(_now),
     );
     expect(find.byKey(EatAmountRuler.fieldKey), findsNothing);
   });
@@ -499,6 +504,63 @@ void main() {
       DateUtils.dateOnly(result!.loggedAt),
       DateUtils.dateOnly(targetDate),
     );
+  });
+
+  testWidgets('the plan button plans the food on the picked day', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    await _pumpSheet(
+      tester,
+      _amountItem(),
+      onResult: (value) => result = value,
+    );
+
+    await tester.tap(find.byKey(EatPageScaffold.planButtonKey));
+    await tester.pumpAndSettle();
+    // The picker starts on today, which can be planned too.
+    await tester.tap(find.text('OK').last);
+    await tester.pumpAndSettle();
+
+    expect(result?.isPlan, isTrue);
+    expect(
+      DateUtils.dateOnly(result!.loggedAt),
+      DateUtils.dateOnly(_now),
+    );
+  });
+
+  testWidgets('a later day from the when menu turns the confirm into a plan', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    await _pumpSheet(
+      tester,
+      _amountItem(),
+      onResult: (value) => result = value,
+    );
+    final today = DateUtils.dateOnly(_now);
+    final tomorrow = DateTime(today.year, today.month, today.day + 1);
+
+    await _openWhenMenu(tester);
+    await tester.tap(find.byKey(EatWhenMenu.pickDayKey));
+    await tester.pumpAndSettle();
+    if (tomorrow.month != today.month) {
+      await tester.tap(find.byTooltip('Next month'));
+      await tester.pumpAndSettle();
+    }
+    await tester.tap(find.text('${tomorrow.day}').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(of: find.byKey(_confirmKey), matching: find.text('Plan')),
+      findsOneWidget,
+    );
+    await _tapConfirmButton(tester);
+    expect(DateUtils.dateOnly(result!.loggedAt), tomorrow);
+    // A later day is a plan anyway; the flag marks only an explicit plan.
+    expect(result?.isPlan, isFalse);
   });
 
   testWidgets('an amount above the stock shows an error and stays open', (

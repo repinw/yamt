@@ -100,6 +100,8 @@ class _DiaryQuickEntryPageState extends ConsumerState<DiaryQuickEntryPage> {
         mealType: state.mealType,
         onDayPicked: (day) => _controller.setLoggedDay(day),
         onMealTypeChanged: (mealType) => _controller.setMealType(mealType),
+        // A later day saves a plan.
+        allowsPlanDays: true,
       ),
       kcal: state.kcal,
       isPlan: state.isPlan,

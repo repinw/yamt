@@ -789,6 +789,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatSheetConfirmAction => 'To diary';
 
   @override
+  String get eatPagePlanIconTooltip => 'Plan';
+
+  @override
   String get inventoryItemEatSheetAddMoreAction => '+ More';
 
   @override

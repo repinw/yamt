@@ -448,6 +448,7 @@
   "inventoryItemEatSheetInedibleAmountFieldLabel": "Inedible amount",
   "inventoryItemEatSheetInedibleAmountError": "The deducted amount must be smaller than the eaten amount.",
   "inventoryItemEatSheetConfirmAction": "To diary",
+  "eatPagePlanIconTooltip": "Plan",
   "inventoryItemEatSheetAddMoreAction": "+ More",
   "eatPagePlanAction": "Plan",
   "eatPageNutritionTitle": "Nutrition",

@@ -43,8 +43,10 @@ class InventoryPlanService {
   final String? _userId;
   final DateTime Function() _clock;
 
-  /// Whether [request] lies on a day after today, so it becomes a plan.
+  /// Whether [request] becomes a plan: the user plans it, or its day lies
+  /// after today.
   bool isPlan(InventoryItemEatRequest request) =>
+      request.isPlan ||
       isDiaryFutureDay(day: request.loggedAt, today: _clock());
 
   /// Saves [request] of [item] as a plan.

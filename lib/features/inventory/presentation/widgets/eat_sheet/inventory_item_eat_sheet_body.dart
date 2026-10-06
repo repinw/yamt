@@ -37,6 +37,7 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.footer,
     this.onSubmitted,
     this.confirmLabel,
+    this.canPlan = true,
     this.mealKcal,
     this.secondaryIntent = InventoryItemEatSheetIntent.addMore,
     this.onSecondary,
@@ -86,6 +87,9 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
 
   /// Text of the confirm button. Defaults to "Log".
   final String? confirmLabel;
+
+  /// Whether the page offers to plan; off where the result drops the plan.
+  final bool canPlan;
 
   /// Calories of the whole meal, shown on the button in place of the
   /// item's own when other foods are picked.
@@ -186,6 +190,7 @@ class _InventoryItemEatSheetBodyState
         mealType: state.mealType,
         onDayPicked: _controller.setLoggedDay,
         onMealTypeChanged: _controller.setMealType,
+        allowsPlanDays: _canPlan,
       ),
       isPlan: state.isPlan,
       kcal: widget.mealKcal ?? nutrition?.eaten.kcal,
@@ -194,6 +199,7 @@ class _InventoryItemEatSheetBodyState
         'inventory_item_amount_dialog_confirm_button',
       ),
       onConfirm: () => _submit(widget.confirmIntent),
+      onPlan: _canPlan ? _plan : null,
       cancelButtonKey: const Key('inventory_item_amount_dialog_cancel_button'),
       secondaryLabel: addMoreText,
       secondaryButtonKey: const Key(
@@ -230,6 +236,8 @@ class _InventoryItemEatSheetBodyState
     );
   }
 
+  // A page with its own confirm, such as adding to a meal, plans nothing.
+  bool get _canPlan => widget.canPlan && widget.confirmLabel == null;
   List<ProductMissingValue>? get _missingValues {
     if (widget.onCompleteValues == null || widget.header != null) {
       return null;
@@ -260,8 +268,20 @@ class _InventoryItemEatSheetBodyState
     });
   }
 
-  void _submit(InventoryItemEatSheetIntent intent) {
-    switch (_controller.submit(intent)) {
+  Future<void> _plan() async {
+    final state = ref.read(_provider);
+    final day = await showEatPlanDayPicker(
+      context,
+      today: state.today,
+      loggedAt: state.loggedAt,
+    );
+    if (day == null || !mounted) return;
+    _controller.setLoggedDay(day);
+    _submit(widget.confirmIntent, asPlan: true);
+  }
+
+  void _submit(InventoryItemEatSheetIntent intent, {bool asPlan = false}) {
+    switch (_controller.submit(intent, asPlan: asPlan)) {
       case InventoryItemEatSubmitted(:final result):
         FocusManager.instance.primaryFocus?.unfocus();
         final onSubmitted = widget.onSubmitted;

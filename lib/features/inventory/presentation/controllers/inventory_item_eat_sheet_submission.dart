@@ -71,6 +71,7 @@ InventoryItemEatRequest buildInventoryItemEatRequest(
   InventoryItemEatSheetState state,
   InventoryItemEatSubmissionDraft draft, {
   List<InventoryItemEatPortion> namedPortions = const [],
+  bool isPlan = false,
 }) {
   final calculator = state.calculator;
   final manual = calculator.requiresManualCaloriePortion;
@@ -91,6 +92,7 @@ InventoryItemEatRequest buildInventoryItemEatRequest(
           portionBaseUnit: portion.unit,
           portionCount: count.roundToDouble(),
           portionLabel: portion.label,
+          isPlan: isPlan,
         );
       }
     }
@@ -109,5 +111,6 @@ InventoryItemEatRequest buildInventoryItemEatRequest(
     portionBaseUnit: portionMode ? state.portionUnit : null,
     portionCount: portionMode ? draft.portionCount : null,
     portionLabel: portionMode ? state.portionLabel : null,
+    isPlan: isPlan,
   );
 }

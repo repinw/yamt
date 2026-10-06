@@ -44,6 +44,7 @@ class _FakeQuickEatActions implements InventoryQuickEatActions {
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
+    bool asPlan = false,
   }) async {
     consumedMeal = meal;
     this.consumedPortions = consumedPortions;
