@@ -281,8 +281,8 @@ void main() {
       find.byKey(DiaryMealsSectionKeys.mealGroup(MealType.breakfast)),
       findsOneWidget,
     );
-    // The same dashed lines as on an empty day frame the meals.
-    expect(find.byType(DiaryDashedSection), findsOneWidget);
+    // Only the empty day sits between dashed lines.
+    expect(find.byType(DiaryDashedSection), findsNothing);
     expect(
       find.byKey(DiaryMealsSectionKeys.mealGroup(MealType.dinner)),
       findsOneWidget,
