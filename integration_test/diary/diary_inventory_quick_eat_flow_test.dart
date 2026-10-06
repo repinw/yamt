@@ -29,6 +29,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_inventory_food_picker.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
+import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
 import 'package:yamt/features/diary/presentation/diary_quick_eat_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
@@ -45,10 +46,12 @@ import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
 import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/inventory/data/inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -197,6 +200,9 @@ _DiaryInventoryQuickEatHarness _buildHarness({
           ownerId: ref.watch(activeHouseholdIdProvider),
           itemsByOwnerId: inventoryItemsByOwnerId,
         ),
+      ),
+      inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
+        _MemoryCommitStore(inventoryItemsByOwnerId, logRepository),
       ),
       preparedMealRepositoryProvider.overrideWith(
         (ref) => _OwnerScopedPreparedMealRepository(
@@ -599,7 +605,8 @@ void main() {
     );
   });
 
-  testWidgets('the plan button plans a Vorrat item on today', (tester) async {
+  testWidgets('the plan button plans a Vorrat item on today, and the check '
+      'button eats it', (tester) async {
     final harness = await _pumpAndOpenInventoryQuickEat(tester);
     harness.publishHouseholdProfile();
     final item = find.byKey(DiaryInventoryFoodPicker.itemKey('broetchen'));
@@ -622,12 +629,45 @@ void main() {
       description: 'saved plan',
     );
 
-    expect(
-      harness.planRepository.plans.single.sourceInventoryItemId,
-      'broetchen',
-    );
+    final plan = harness.planRepository.plans.single;
+    expect(plan.sourceInventoryItemId, 'broetchen');
     expect(harness.householdInventoryItems.single.currentAmount, 100);
     expect(harness.logRepository.entries, isEmpty);
+
+    // On its day the check button eats the plan from the Vorrat.
+    final accept = find.byKey(DiaryMealsSectionKeys.planAcceptButton(plan.id));
+    await _pumpUntilFound(tester, accept, description: 'accept button');
+    await _pumpUntilOnScreen(tester, accept, description: 'visible accept');
+    await tester.tap(accept);
+    await _pumpUntil(
+      tester,
+      () => harness.logRepository.entries.length == 1,
+      description: 'accepted entry',
+    );
+    expect(harness.planRepository.plans, isEmpty);
+    expect(
+      harness.logRepository.entries.single.sourceInventoryItemId,
+      'broetchen',
+    );
+    await _pumpUntil(
+      tester,
+      () => harness.householdInventoryItems.single.currentAmount < 100,
+      description: 'stock taken',
+    );
+
+    // Undo gives the stock back and brings the plan back.
+    final undo = find.byType(SnackBarAction).last;
+    await _pumpUntilOnScreen(tester, undo, description: 'undo button');
+    // Let the snack bar finish sliding in, so the tap lands on the button.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(undo);
+    await _pumpUntil(
+      tester,
+      () => harness.planRepository.plans.length == 1,
+      description: 'plan back after undo',
+    );
+    expect(harness.logRepository.entries, isEmpty);
+    expect(harness.householdInventoryItems.single.currentAmount, 100);
   });
 
   testWidgets('a cooked meal on tomorrow is planned and keeps its portions', (
@@ -709,50 +749,67 @@ void main() {
     expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
   });
 
-  testWidgets('a plan on tomorrow counts in its head and a tap deletes it', (
-    tester,
-  ) async {
-    final planRow = find.byKey(
-      DiaryMealsSectionKeys.plannedEntryTile('plan-dinner'),
-    );
-    final harness = _buildHarness(
-      today: _selectedDay.subtract(const Duration(days: 1)),
-      plans: [
-        CalorieEntry.create(
-          id: 'plan-dinner',
-          userId: _userId,
-          name: 'Nudeln',
-          mealType: MealType.dinner,
-          consumedAmount: 100,
-          consumedUnit: ConsumedUnit.grams,
-          per100Kcal: 600,
-          per100Protein: 20,
-          per100Carbs: 90,
-          per100Fat: 10,
-          loggedAt: _selectedDay.add(const Duration(hours: 19)),
-          createdAt: _selectedDay,
-          updatedAt: _selectedDay,
-        ),
-      ],
-    );
-    await tester.pumpWidget(harness.app);
-    await _pumpUntilFound(tester, planRow, description: 'plan row of tomorrow');
+  testWidgets(
+    'a plan on tomorrow counts in its head and its details remove it',
+    (tester) async {
+      final planRow = find.byKey(
+        DiaryMealsSectionKeys.plannedEntryTile('plan-dinner'),
+      );
+      final harness = _buildHarness(
+        today: _selectedDay.subtract(const Duration(days: 1)),
+        plans: [
+          CalorieEntry.create(
+            id: 'plan-dinner',
+            userId: _userId,
+            name: 'Nudeln',
+            mealType: MealType.dinner,
+            consumedAmount: 100,
+            consumedUnit: ConsumedUnit.grams,
+            per100Kcal: 600,
+            per100Protein: 20,
+            per100Carbs: 90,
+            per100Fat: 10,
+            loggedAt: _selectedDay.add(const Duration(hours: 19)),
+            createdAt: _selectedDay,
+            updatedAt: _selectedDay,
+          ),
+        ],
+      );
+      await tester.pumpWidget(harness.app);
+      await _pumpUntilFound(
+        tester,
+        planRow,
+        description: 'plan row of tomorrow',
+      );
 
-    await _pumpUntilOneHead(tester);
-    String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'GEPLANT');
-    expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '600');
+      await _pumpUntilOneHead(tester);
+      String textOf(Key key) => tester.widget<Text>(find.byKey(key)).data!;
+      expect(textOf(DiaryBalanceCardKeys.kcalHeadLabel), 'GEPLANT');
+      expect(textOf(DiaryBalanceCardKeys.kcalHeadValue), '600');
 
-    await tester.ensureVisible(planRow);
-    await tester.tap(planRow);
-    await _pumpUntil(
-      tester,
-      () => textOf(DiaryBalanceCardKeys.kcalHeadValue) == '0',
-      description: 'head without the deleted plan',
-    );
-    expect(planRow, findsNothing);
-    expect(harness.planRepository.plans, isEmpty);
-  });
+      await tester.ensureVisible(planRow);
+      await tester.tap(planRow);
+      // Before its day the plan cannot be eaten yet.
+      final remove = find.byKey(DiaryPlanDetailsPage.removeKey);
+      await _pumpUntilFound(tester, remove, description: 'plan details');
+      expect(
+        tester
+            .widget<FilledButton>(
+              find.byKey(DiaryPlanDetailsPage.acceptButtonKey),
+            )
+            .onPressed,
+        isNull,
+      );
+      await tester.tap(remove);
+      await _pumpUntil(
+        tester,
+        () => textOf(DiaryBalanceCardKeys.kcalHeadValue) == '0',
+        description: 'head without the deleted plan',
+      );
+      expect(planRow, findsNothing);
+      expect(harness.planRepository.plans, isEmpty);
+    },
+  );
 
   testWidgets('tomorrow plans with the carryover once the day before is '
       'closed', (tester) async {
@@ -897,6 +954,69 @@ class _StaticDiaryCalendarController extends DiaryCalendarController {
       today: normalizeDiaryDay(today ?? day),
       selectedDay: normalizedDay,
     );
+  }
+}
+
+/// Takes the stock of an eat from the household's items and saves the
+/// entry, like the one Firestore batch does.
+class _MemoryCommitStore implements InventoryCalorieEntryCommitStore {
+  const new(this.itemsByOwnerId, this.diary);
+
+  final Map<String, List<InventoryItem>> itemsByOwnerId;
+  final FakeCalorieLogRepository diary;
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) async {
+    final items = itemsByOwnerId[_householdId]!;
+    final results = <InventoryCalorieEntryCommitResult>[];
+    for (final pending in pendingConsumptions) {
+      final index = items.indexWhere((item) => item.id == pending.itemId);
+      final reduced = items[index].reducedBy(pending.amount)!;
+      items[index] = reduced;
+      results.add(
+        InventoryCalorieEntryCommitResult(
+          itemId: reduced.id,
+          quantity: reduced.quantity,
+          currentAmount: reduced.currentAmount,
+        ),
+      );
+    }
+    await diary.saveEntry(entry);
+    return results;
+  }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> saveEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async => null;
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async {
+    final items = itemsByOwnerId[_householdId]!;
+    final results = <InventoryCalorieEntryCommitResult>[];
+    for (final MapEntry(key: itemId, value: amount)
+        in amountsByItemId.entries) {
+      final index = items.indexWhere((item) => item.id == itemId);
+      final restored = items[index].restoredBy(amount)!;
+      items[index] = restored;
+      results.add(
+        InventoryCalorieEntryCommitResult(
+          itemId: restored.id,
+          quantity: restored.quantity,
+          currentAmount: restored.currentAmount,
+        ),
+      );
+    }
+    await diary.deleteEntry(entry.id);
+    return results;
   }
 }
 
