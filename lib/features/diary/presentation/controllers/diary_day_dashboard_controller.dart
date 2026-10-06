@@ -112,7 +112,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
   }
 
   /// Refreshes after a calorie mutation that may need backend settling time.
-  Future<DiaryDayDashboardState> refreshAfterMutation() async {
+  Future<void> refreshAfterMutation() async {
     final Future<void> refresh;
     if (_mutationRefreshInFlight != null) {
       refresh = _mutationRefreshInFlight!;
@@ -132,8 +132,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       }
       unawaited(_refreshSelectedDay(forceRefresh: true));
     });
+    // The page may close meanwhile; the state is not read afterwards.
     await refresh;
-    return state;
   }
 
   Future<void> _refreshSelectedDay({

@@ -445,10 +445,12 @@ void main() {
 
       completer.complete(diaryWeekOverviewForTest(selectedDay: selectedDay));
 
-      final results = await Future.wait([first, second]);
+      await Future.wait([first, second]);
       expect(weekOverviewReadCount, 2);
-      expect(results[0].data?.selectedDayEntries.single.name, 'Shared oats');
-      expect(results[1].data?.selectedDayEntries.single.name, 'Shared oats');
+      expect(
+        container.read(provider).data?.selectedDayEntries.single.name,
+        'Shared oats',
+      );
     },
   );
 }
