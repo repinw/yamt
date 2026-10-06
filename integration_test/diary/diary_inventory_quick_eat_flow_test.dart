@@ -728,6 +728,23 @@ void main() {
       today: _selectedDay.subtract(const Duration(days: 1)),
       // The run started on Sunday, so tomorrow is in its middle.
       goalStart: _selectedDay.subtract(const Duration(days: 10)),
+      plans: [
+        CalorieEntry.create(
+          id: 'plan-breakfast',
+          userId: _userId,
+          name: 'Brötchen',
+          mealType: MealType.breakfast,
+          consumedAmount: 100,
+          consumedUnit: ConsumedUnit.grams,
+          per100Kcal: 300,
+          per100Protein: 10,
+          per100Carbs: 50,
+          per100Fat: 5,
+          loggedAt: _selectedDay.add(const Duration(hours: 8)),
+          createdAt: _selectedDay,
+          updatedAt: _selectedDay,
+        ),
+      ],
     );
     await tester.pumpWidget(harness.app);
     final closeButton = find.byKey(DiaryBalanceCardKeys.previousDayCloseButton);
@@ -741,11 +758,22 @@ void main() {
     expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
 
     await tester.tap(closeButton);
-    // Tomorrow then counts like a started day: what is left, not a plan.
+    // Tomorrow then counts like a started day, and its plan still counts.
+    await _pumpUntil(
+      tester,
+      () => textOf(DiaryBalanceCardKeys.kcalHeadLabel) == 'ÜBRIG NACH PLAN',
+      description: 'started head after its plan',
+    );
+    expect(
+      find.byKey(DiaryBalanceCardKeys.kcalHeadWithoutPlan),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.afterPlanChip));
     await _pumpUntil(
       tester,
       () => textOf(DiaryBalanceCardKeys.kcalHeadLabel) == 'ÜBRIG',
-      description: 'started head with the carryover of the closed day',
+      description: 'started head without its plan',
     );
     expect(find.byKey(DiaryBalanceCardKeys.previousDayClosed), findsOneWidget);
     expect(find.byKey(DiaryBalanceCardKeys.kcalHeadTarget), findsNothing);
