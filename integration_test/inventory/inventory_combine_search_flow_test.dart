@@ -1,17 +1,25 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
+import 'package:yamt/features/diary/presentation/diary_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
+import 'package:yamt/features/inventory/presentation/inventory_manual_product_eat_coordinator.dart';
+import 'package:yamt/features/product_search_hub/application/product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -23,6 +31,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 
 const _openKey = Key('open_combine_pick');
 const _amountFieldKey = Key('eat_page_amount_field');
@@ -53,6 +63,7 @@ const _mealFoodArgs = ProductSearchHubRouteArgs(
 Widget _buildHarness({
   required Future<void> Function(BuildContext context) open,
   ProductSearchHubRouteArgs args = _mealFoodArgs,
+  List<Override> overrides = const <Override>[],
 }) {
   final router = GoRouter(
     routes: [
@@ -100,6 +111,7 @@ Widget _buildHarness({
       authStateChangesProvider.overrideWithValue(const AsyncData<User?>(null)),
       firebaseFirestoreProvider.overrideWith((ref) => null),
       userProfileProvider.overrideWithValue(const AsyncData(null)),
+      ...overrides,
     ],
   );
   addTearDown(container.dispose);
@@ -242,4 +254,60 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  testWidgets('a food searched for tomorrow becomes a plan', (tester) async {
+    final plans = FakePlannedEntryRepository();
+    final user = _MockUser();
+    when(() => user.uid).thenReturn('user-1');
+    final auth = _MockFirebaseAuth();
+    when(() => auth.currentUser).thenReturn(user);
+    await tester.pumpWidget(
+      _buildHarness(
+        args: ProductSearchHubRouteArgs.diary(
+          initialIntent: ProductSearchHubInitialIntent.search,
+          preselectedMealType: MealType.lunch,
+          preselectedLoggedAt: DateTime(2026, 5, 14, 12),
+        ),
+        open: (context) => context.push<void>(AppRoutes.homeFoodPick),
+        overrides: [
+          firebaseAuthProvider.overrideWithValue(auth),
+          plannedEntryRepositoryProvider.overrideWithValue(plans),
+          clockProvider.overrideWithValue(() => DateTime(2026, 5, 13, 20)),
+          // Wired in main.dart for the app.
+          productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
+            final container = ref.container;
+            return (mode) => DiaryProductSearchHubCompletionHandler(
+              container: container,
+              eatCoordinator: container.read(
+                inventoryManualProductEatCoordinatorProvider,
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+    await _openMilkEatPage(tester);
+    await tester.enterText(find.byKey(_amountFieldKey), '250');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await _waitForKeyboardClosed(tester);
+    await tester.tap(find.byKey(_addKey));
+    await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
+
+    final plan = plans.plans.single;
+    expect(plan.name, 'Vollmilch');
+    expect(plan.consumedAmount, 250);
+    expect(plan.loggedAt, DateTime(2026, 5, 14, 12));
+    // The food stays out of the Vorrat, so the plan names no Vorrat item.
+    expect(plan.sourceInventoryItemId, isNull);
+    expect(find.byKey(_openKey), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
+
+class _MockUser extends Mock implements User;
