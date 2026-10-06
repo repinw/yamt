@@ -52,6 +52,31 @@ class DiaryPlanController extends _$DiaryPlanController {
     return result;
   }
 
+  /// Eats [plans] one after another, skipping those that are eaten or
+  /// being eaten elsewhere. Returns the eaten ones with their entries, and
+  /// how many failed; a plan that fails stays.
+  Future<
+    ({
+      List<({CalorieEntry plan, InventoryPlanAcceptResult result})> eaten,
+      int failed,
+    })
+  >
+  acceptAll(List<CalorieEntry> plans) async {
+    final eaten = <({CalorieEntry plan, InventoryPlanAcceptResult result})>[];
+    var failed = 0;
+    for (final plan in plans) {
+      if (isAccepted(plan)) {
+        continue;
+      }
+      if (await accept(plan) case final result?) {
+        eaten.add((plan: plan, result: result));
+      } else {
+        failed += 1;
+      }
+    }
+    return (eaten: eaten, failed: failed);
+  }
+
   /// Whether [plan] is being eaten or was eaten, so a second tap waits.
   bool isAccepted(CalorieEntry plan) => _accepted.contains(plan.id);
 

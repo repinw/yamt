@@ -749,6 +749,43 @@ void main() {
     expect(textOf(DiaryBalanceCardKeys.kcalHeadTarget), 'von 2.200');
   });
 
+  testWidgets('eat all plans of a meal at once', (tester) async {
+    CalorieEntry plan(String id, String name) => CalorieEntry.create(
+      id: id,
+      userId: _userId,
+      name: name,
+      mealType: MealType.dinner,
+      consumedAmount: 100,
+      consumedUnit: ConsumedUnit.grams,
+      per100Kcal: 300,
+      per100Protein: 10,
+      per100Carbs: 40,
+      per100Fat: 10,
+      loggedAt: _selectedDay.add(const Duration(hours: 19)),
+      createdAt: _selectedDay,
+      updatedAt: _selectedDay,
+    );
+    final harness = _buildHarness(
+      plans: [plan('plan-pasta', 'Nudeln'), plan('plan-salad', 'Salat')],
+    );
+    await tester.pumpWidget(harness.app);
+    // Eating a plan reads the Vorrat, which waits for the household.
+    harness.publishHouseholdProfile();
+    final acceptAll = find.byKey(
+      DiaryMealsSectionKeys.planAcceptAllButton(MealType.dinner),
+    );
+    await _pumpUntilFound(tester, acceptAll, description: 'eat all button');
+    await _pumpUntilOnScreen(tester, acceptAll, description: 'visible button');
+
+    await tester.tap(acceptAll);
+    await _pumpUntil(
+      tester,
+      () => harness.logRepository.entries.length == 2,
+      description: 'both plans eaten',
+    );
+    expect(harness.planRepository.plans, isEmpty);
+  });
+
   testWidgets(
     'a plan on tomorrow counts in its head and its details remove it',
     (tester) async {

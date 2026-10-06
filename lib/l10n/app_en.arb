@@ -1285,6 +1285,34 @@
   "diaryPlanAcceptFailed": "Plan could not be logged",
   "diaryPlanRemoveAction": "Remove from plan",
   "diaryPlanAcceptLaterHint": "From the planned day on",
+  "diaryPlanAcceptAllAction": "Eat all as planned",
+  "diaryPlansAccepted": "{count, plural, =1{1 plan eaten} other{{count} plans eaten}}",
+  "@diaryPlansAccepted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPlansAcceptedPartly": "{eaten} of {total} plans eaten",
+  "@diaryPlansAcceptedPartly": {
+    "placeholders": {
+      "eaten": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPlansAcceptedWithoutStock": "{count, plural, =1{1 plan eaten – not all in stock} other{{count} plans eaten – not all in stock}}",
+  "@diaryPlansAcceptedWithoutStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "diaryPlanMealPrepTag": "Meal Prep",
   "diaryBalanceLoadFailed": "Balance could not be loaded",
   "diaryNutritionLoadFailed": "Nutrition could not be loaded",
