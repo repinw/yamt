@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
 import 'package:yamt/core/router/app_route_definitions.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/router/app_router_redirect.dart';
@@ -24,6 +25,10 @@ Raw<AppRouterRefreshListenable> appRouterRefreshListenable(Ref ref) {
   final listenable = AppRouterRefreshListenable();
   ref
     ..onDispose(listenable.dispose)
+    // The status has value equality, so only a changed status refreshes.
+    ..listen(appUpdateStatusProvider, (previous, next) {
+      listenable.refresh();
+    })
     ..listen(authStateChangesProvider, (previous, next) {
       listenable.refresh();
     })

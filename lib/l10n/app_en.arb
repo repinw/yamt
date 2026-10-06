@@ -3283,5 +3283,31 @@
         "type": "String"
       }
     }
+  },
+  "appUpdateRequiredTitle": "Update yamt",
+  "@appUpdateRequiredTitle": {
+    "description": "Title of the page that blocks an app older than the minimum version."
+  },
+  "appUpdateRequiredBody": "This version of yamt is too old for your data. Update the app to go on.",
+  "@appUpdateRequiredBody": {
+    "description": "Body of the page that blocks an app older than the minimum version."
+  },
+  "appUpdateAction": "Update",
+  "@appUpdateAction": {
+    "description": "Button and snackbar action that opens Google Play or TestFlight."
+  },
+  "appUpdateAvailable": "yamt {version} is available",
+  "@appUpdateAvailable": {
+    "description": "Snackbar shown once per newer app version.",
+    "placeholders": {
+      "version": {
+        "type": "String",
+        "example": "3.6.0"
+      }
+    }
+  },
+  "appUpdateStoreOpenFailed": "The store could not be opened.",
+  "@appUpdateStoreOpenFailed": {
+    "description": "Snackbar when neither the store nor TestFlight opens."
   }
 }

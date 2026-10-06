@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/data/app_version_config_repository.dart';
+import 'package:yamt/core/domain/app_update_status.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/auth/domain/user_data_key_state.dart';
@@ -17,6 +19,11 @@ String? appRouterRedirect(Ref ref, GoRouterState state) {
     // The sign-in and onboarding redirects may come first, so the invite
     // waits until the household page opens.
     ref.read(pendingHouseholdInviteProvider.notifier).invite = invite;
+  }
+  // An app older than the minimum version must not open. While the check
+  // loads or fails, the app opens: a lost connection must not lock anyone out.
+  if (ref.read(appUpdateStatusProvider).value is AppUpdateRequired) {
+    return path == AppRoutes.updateRequired ? null : AppRoutes.updateRequired;
   }
   final authState = ref.read(authStateChangesProvider);
   if (authState.isLoading) {
@@ -120,7 +127,10 @@ String? _redirectForCalorieGoal(
   required bool isAnonymous,
   required String homeRoute,
 }) {
-  final isStartup = path == AppRoutes.root || path == AppRoutes.splash;
+  final isStartup =
+      path == AppRoutes.root ||
+      path == AppRoutes.splash ||
+      path == AppRoutes.updateRequired;
   if (calorieState.hasError) {
     // An offline read must not send a user with a goal into onboarding.
     // Checked before loading and value: Riverpod keeps the error while it
@@ -148,6 +158,7 @@ String? _redirectForCalorieGoal(
 bool _isTerminalRoute(String path) {
   return path == AppRoutes.root ||
       path == AppRoutes.splash ||
+      path == AppRoutes.updateRequired ||
       path == AppRoutes.dataKey ||
       path == AppRoutes.calorieGoalLoadFailed ||
       path == AppRoutes.calorieGoalSetup;

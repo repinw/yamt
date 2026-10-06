@@ -2642,5 +2642,10 @@
   "cookedToDiaryNote": "Gleich trägst du deine Portion ein, der Rest bleibt im Vorrat.",
   "cookedSaved": "{name} ist im Vorrat",
   "cookedLoadFailed": "Die Mahlzeit konnte nicht geladen werden.",
-  "cookbookInPotSince": "Im Topf seit {time}"
+  "cookbookInPotSince": "Im Topf seit {time}",
+  "appUpdateRequiredTitle": "yamt aktualisieren",
+  "appUpdateRequiredBody": "Diese Version von yamt ist zu alt für deine Daten. Aktualisiere die App, um weiterzumachen.",
+  "appUpdateAction": "Aktualisieren",
+  "appUpdateAvailable": "yamt {version} ist verfügbar",
+  "appUpdateStoreOpenFailed": "Der Store konnte nicht geöffnet werden."
 }

@@ -4,6 +4,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/router/hero_sheet_page.dart';
 import 'package:yamt/core/router/home_shell_routes.dart';
 import 'package:yamt/core/router/route_page_helpers.dart';
+import 'package:yamt/features/app_update/presentation/update_required_page.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/presentation/data_key_page.dart';
 import 'package:yamt/features/auth/presentation/recovery_key_page.dart';
@@ -71,6 +72,10 @@ List<RouteBase> buildAppRoutes(Ref ref) {
     GoRoute(
       path: AppRoutes.dataKey,
       builder: (context, state) => const DataKeyPage(),
+    ),
+    GoRoute(
+      path: AppRoutes.updateRequired,
+      builder: (context, state) => const UpdateRequiredPage(),
     ),
     GoRoute(
       path: AppRoutes.home,

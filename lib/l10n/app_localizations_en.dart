@@ -5806,4 +5806,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String cookbookInPotSince(String time) {
     return 'In the pot since $time';
   }
+
+  @override
+  String get appUpdateRequiredTitle => 'Update yamt';
+
+  @override
+  String get appUpdateRequiredBody =>
+      'This version of yamt is too old for your data. Update the app to go on.';
+
+  @override
+  String get appUpdateAction => 'Update';
+
+  @override
+  String appUpdateAvailable(String version) {
+    return 'yamt $version is available';
+  }
+
+  @override
+  String get appUpdateStoreOpenFailed => 'The store could not be opened.';
 }
