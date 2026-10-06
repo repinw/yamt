@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
@@ -19,7 +20,16 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_entry_actions_card.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_entry_delete_dialogs.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
     'diary_entry_label_section.dart';
+import 'package:yamt/features/inventory/data/'
+    'inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -29,9 +39,66 @@ import '../../test/features/calories/support/fake_planned_entry_repository.dart'
 
 class _MockUser extends Mock implements User;
 
+/// Deletes the entry from the diary fake and records the stock that went
+/// back, like the Firestore batch does.
+class _ItemStore implements InventoryCalorieEntryCommitStore {
+  new(this.diary);
+
+  final FakeCalorieLogRepository diary;
+  final restored = <String, int>{};
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async {
+    await diary.deleteEntry(entry.id);
+    restored.addAll(amountsByItemId);
+    return [
+      for (final itemId in amountsByItemId.keys)
+        InventoryCalorieEntryCommitResult(
+          itemId: itemId,
+          quantity: 1,
+          currentAmount: 500,
+        ),
+    ];
+  }
+
+  @override
+  Future<List<InventoryCalorieEntryCommitResult>?>
+  commitEntryAndInventoryItems({
+    required CalorieEntry entry,
+    required List<PendingInventoryConsumption> pendingConsumptions,
+  }) => throw UnimplementedError();
+}
+
+class _Items implements InventoryItemRepository {
+  const new();
+
+  @override
+  Future<List<InventoryItem>> readAll() async => [
+    InventoryItem.create(
+      id: 'skyr',
+      name: 'Skyr',
+      entryDate: DateTime(2026, 5, 10),
+      storeName: 'Lidl',
+      quantity: 1,
+    ),
+  ];
+
+  @override
+  Stream<List<InventoryItem>> watchAll() => Stream.fromFuture(readAll());
+
+  @override
+  Future<bool> saveAll(List<InventoryItem> items) async => true;
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) async => true;
+}
+
 const _openButtonKey = Key('diary_entry_details_flow_open');
 
-CalorieEntry _entry() {
+CalorieEntry _entry({String? sourceItemId}) {
   final loggedAt = DateTime(2026, 5, 13, 8);
   return CalorieEntry.create(
     id: 'entry-1',
@@ -44,6 +111,8 @@ CalorieEntry _entry() {
     per100Protein: 10,
     per100Carbs: 5,
     per100Fat: 1,
+    sourceInventoryItemId: sourceItemId,
+    sourceInventoryAmountToRestore: sourceItemId == null ? null : 200,
     loggedAt: loggedAt,
     createdAt: loggedAt,
     updatedAt: loggedAt,
@@ -63,8 +132,9 @@ Future<void> _pumpUntilFound(WidgetTester tester, Finder finder) async {
 /// Opens the details page of [_entry] from a start page.
 Future<void> _openDetails(
   WidgetTester tester,
-  FakeCalorieLogRepository logRepository,
-) async {
+  FakeCalorieLogRepository logRepository, {
+  List<Override> overrides = const [],
+}) async {
   final settingsRepository = FakeCalorieSettingsRepository();
   addTearDown(settingsRepository.dispose);
   final user = _MockUser();
@@ -109,6 +179,7 @@ Future<void> _openDetails(
         FakePlannedEntryRepository(),
       ),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+      ...overrides,
     ],
   );
   addTearDown(container.dispose);
@@ -173,5 +244,39 @@ void main() {
 
     expect(find.byType(DiaryEntryDetailsPage), findsNothing);
     expect(logRepository.entries.single.consumedAmount, 150);
+  });
+
+  testWidgets('removing an entry gives its stock back to the Vorrat', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: [_entry(sourceItemId: 'skyr')],
+    );
+    addTearDown(logRepository.dispose);
+    final itemStore = _ItemStore(logRepository);
+    await _openDetails(
+      tester,
+      logRepository,
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(const _Items()),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(itemStore),
+      ],
+    );
+
+    final remove = find.byKey(DiaryEntryActionsCard.removeKey);
+    await tester.ensureVisible(remove);
+    await tester.pumpAndSettle();
+    await tester.tap(remove);
+    await _pumpUntilFound(
+      tester,
+      find.byKey(diaryEntryReturnToInventoryButtonKey),
+    );
+    await tester.tap(find.byKey(diaryEntryReturnToInventoryButtonKey));
+    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryEntryDetailsPage), findsNothing);
+    expect(logRepository.entries, isEmpty);
+    expect(itemStore.restored, {'skyr': 200});
   });
 }
