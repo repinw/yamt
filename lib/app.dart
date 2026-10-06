@@ -11,6 +11,7 @@ import 'package:yamt/core/router/app_router.dart';
 import 'package:yamt/core/theme/app_accent_controller.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_mode_controller.dart';
+import 'package:yamt/core/theme/native_theme_mode.dart';
 import 'package:yamt/core/widgets/keyboard_done_bar.dart';
 import 'package:yamt/features/home_widget/application/'
     'home_widget_click_action_provider.dart';
@@ -42,12 +43,20 @@ class _YAMTState extends ConsumerState<YAMT> {
   ProviderSubscription<AsyncValue<ProductSearchHubInitialIntent>>?
   _homeWidgetClickSubscription;
   ProviderSubscription<void>? _homeWidgetSyncSubscription;
+  ProviderSubscription<ThemeMode>? _nativeThemeModeSubscription;
 
   @override
   void initState() {
     super.initState();
     _startInventoryWarmup();
     _startHomeWidgetSync();
+    // Once at start, for a choice saved before the launch screen followed it,
+    // and on every change.
+    _nativeThemeModeSubscription ??= ref.listenManual<ThemeMode>(
+      appThemeModeControllerProvider,
+      (_, mode) => unawaited(applyNativeThemeMode(mode)),
+      fireImmediately: true,
+    );
   }
 
   @override
@@ -56,6 +65,7 @@ class _YAMTState extends ConsumerState<YAMT> {
     _preparedMealsWarmupSubscription?.close();
     _homeWidgetClickSubscription?.close();
     _homeWidgetSyncSubscription?.close();
+    _nativeThemeModeSubscription?.close();
     super.dispose();
   }
 
