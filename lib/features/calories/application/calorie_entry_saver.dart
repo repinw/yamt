@@ -72,9 +72,8 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
     );
 
     if (scannedSourceRef != null) {
-      _runInBackground(
-        'Failed to save user override.',
-        () => cacheRepository.saveUserOverride(
+      _runInBackground('Failed to save user override.', () async {
+        final saved = await cacheRepository.saveUserOverride(
           profile: CalorieProductProfile.fromEntry(
             entry: entry,
             barcode: scannedSourceRef.barcode,
@@ -84,8 +83,14 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
             now: clock(),
           ),
           reason: 'user_edit_after_scan',
-        ),
-      );
+        );
+        if (!saved) {
+          log(
+            'Failed to save user override for ${scannedSourceRef.barcode}.',
+            name: _entrySaverLogName,
+          );
+        }
+      });
     }
 
     return true;
@@ -93,14 +98,18 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
 }
 
 void _runInBackground(String failureMessage, Future<void> Function() action) {
-  unawaited(
-    Future<void>.sync(action).catchError((Object error, StackTrace stackTrace) {
+  // A try block, not catchError: [action] may return a Future<bool>, whose
+  // catchError handler would have to return a bool.
+  unawaited(() async {
+    try {
+      await action();
+    } on Object catch (error, stackTrace) {
       log(
         failureMessage,
         name: _entrySaverLogName,
         error: error,
         stackTrace: stackTrace,
       );
-    }),
-  );
+    }
+  }());
 }

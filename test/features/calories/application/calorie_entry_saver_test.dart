@@ -109,6 +109,16 @@ void main() {
       expect(saved, isFalse);
       expect(cache.saveUserOverrideCallCount, 0);
     });
+
+    test('a failed override still reports the save', () async {
+      final cache = FakeCalorieProductCacheRepository()
+        ..saveUserOverrideShouldThrow = true;
+
+      final saved = await _saveScanned(_yogurt(), cache: cache);
+
+      expect(saved, isTrue);
+      expect(cache.saveUserOverrideCallCount, 1);
+    });
   });
 
   test('an entry on a checked-in day marks that check-in stale', () async {
