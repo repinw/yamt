@@ -153,12 +153,17 @@ class _EatenOfTarget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         if (data.isPlanned)
+          // Large, because on a planned day the goal is half of the head.
           Text(
             data.isPauseDay
                 ? l10n.diaryBalancePauseDayValue
                 : l10n.diaryBalanceOfTarget(data.targetNumber),
             key: DiaryBalanceCardKeys.kcalHeadTarget,
-            style: style?.copyWith(color: colors.muted),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              fontFamily: AppFonts.mono,
+              fontWeight: FontWeight.w700,
+              color: colors.muted,
+            ),
           )
         else ...[
           Text(

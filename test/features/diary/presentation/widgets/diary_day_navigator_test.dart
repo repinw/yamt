@@ -46,17 +46,19 @@ void main() {
     );
   }
 
-  testWidgets('shows Heute, Gestern or the weekday over the date', (
+  testWidgets('shows Heute or Gestern over the weekday over the date', (
     tester,
   ) async {
     await pumpNavigator(tester, selectedDay: today);
-    expect(find.text('HEUTE · MONTAG'), findsOneWidget);
+    expect(find.text('HEUTE'), findsOneWidget);
+    expect(find.text('MONTAG'), findsOneWidget);
     expect(find.text(DateFormat('d. MMM', 'de').format(today)), findsOne);
     expect(find.text('🏋️'), findsOneWidget);
 
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 26));
     await tester.pumpAndSettle();
-    expect(find.text('GESTERN · SONNTAG'), findsOneWidget);
+    expect(find.text('GESTERN'), findsOneWidget);
+    expect(find.text('SONNTAG'), findsOneWidget);
 
     final earlier = DateTime(2026, 4, 5);
     await pumpNavigator(tester, selectedDay: earlier);
@@ -71,11 +73,13 @@ void main() {
 
   testWidgets('shows Morgen and Übermorgen, then the weekday', (tester) async {
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 28));
-    expect(find.text('MORGEN · DIENSTAG'), findsOneWidget);
+    expect(find.text('MORGEN'), findsOneWidget);
+    expect(find.text('DIENSTAG'), findsOneWidget);
 
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 29));
     await tester.pumpAndSettle();
-    expect(find.text('ÜBERMORGEN · MITTWOCH'), findsOneWidget);
+    expect(find.text('ÜBERMORGEN'), findsOneWidget);
+    expect(find.text('MITTWOCH'), findsOneWidget);
 
     await pumpNavigator(tester, selectedDay: DateTime(2026, 4, 30));
     await tester.pumpAndSettle();

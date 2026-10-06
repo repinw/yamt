@@ -1240,17 +1240,6 @@
   "diaryYesterdayTitle": "Yesterday",
   "diaryTomorrowTitle": "Tomorrow",
   "diaryDayAfterTomorrowTitle": "In 2 days",
-  "diaryDayRelativeWeekday": "{relative} · {weekday}",
-  "@diaryDayRelativeWeekday": {
-    "placeholders": {
-      "relative": {
-        "type": "String"
-      },
-      "weekday": {
-        "type": "String"
-      }
-    }
-  },
   "diaryDayTypeTraining": "Training day",
   "diaryDayTypeRest": "Rest day",
   "diaryDayTypePause": "Pause day",

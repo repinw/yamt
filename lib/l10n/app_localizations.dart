@@ -4216,12 +4216,6 @@ abstract class AppLocalizations {
   /// **'In 2 days'**
   String get diaryDayAfterTomorrowTitle;
 
-  /// No description provided for @diaryDayRelativeWeekday.
-  ///
-  /// In en, this message translates to:
-  /// **'{relative} · {weekday}'**
-  String diaryDayRelativeWeekday(String relative, String weekday);
-
   /// No description provided for @diaryDayTypeTraining.
   ///
   /// In en, this message translates to:

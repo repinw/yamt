@@ -1166,7 +1166,6 @@
   "diaryYesterdayTitle": "Gestern",
   "diaryTomorrowTitle": "Morgen",
   "diaryDayAfterTomorrowTitle": "Übermorgen",
-  "diaryDayRelativeWeekday": "{relative} · {weekday}",
   "diaryDayTypeTraining": "Trainingstag",
   "diaryDayTypeRest": "Ruhetag",
   "diaryDayTypePause": "Pausentag",

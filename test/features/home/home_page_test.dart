@@ -509,7 +509,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(DiaryDayNavigator), findsOneWidget);
-    expect(find.textContaining('TODAY · '), findsOneWidget);
+    expect(find.text('TODAY'), findsOneWidget);
     expect(
       find.descendant(
         of: find.byType(HomeShellTabTopChrome),
