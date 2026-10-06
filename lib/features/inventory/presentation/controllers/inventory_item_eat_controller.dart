@@ -1,7 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
@@ -10,6 +8,7 @@ import 'package:yamt/features/inventory/application/inventory_combined_eat_servi
 import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
 import 'package:yamt/features/inventory/application/inventory_entry_delete_service.dart';
 import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -85,18 +84,11 @@ class InventoryItemEatController extends _$InventoryItemEatController {
       });
 
   /// Undoes a plan: deletes [plan]. Returns false when it failed.
-  Future<bool> unplan(CalorieEntry plan) =>
-      _whileAlive(plannedEntryRepositoryProvider, (plans) async {
-        final revision = ref.read(calorieOverviewRevisionProvider.notifier);
-        final result = await AsyncValue.guard(
-          () => plans.deletePlannedEntry(plan.id),
-        );
-        if (result.hasError) {
-          return false;
-        }
-        revision.markChanged();
-        return true;
-      });
+  Future<bool> unplan(CalorieEntry plan) => _whileAlive(
+    inventoryPlanServiceProvider,
+    (planner) async =>
+        !(await AsyncValue.guard(() => planner.unplan(plan))).hasError,
+  );
 
   /// Keeps this controller and [provider] alive while [action] runs, so the
   /// write finishes after its screen closes.

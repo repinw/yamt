@@ -59,4 +59,4 @@ final class InventoryEatServiceProvider
 }
 
 String _$inventoryEatServiceHash() =>
-    r'45b7b7f71afaa1afd56a729f238724719aa74b84';
+    r'f440b756075fe6de8aac89094dc374c53649d267';

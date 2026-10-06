@@ -5,17 +5,15 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
-import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
     'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_service.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_serving_suggestion_service.dart';
 import 'package:yamt/features/inventory/data/'
@@ -35,8 +33,7 @@ InventoryEatService inventoryEatService(Ref ref) {
     saver: ref.watch(calorieEntrySaverProvider),
     commitStore: ref.watch(inventoryCalorieEntryCommitStoreProvider),
     pendings: ref.watch(inventoryPendingConsumptionStoreProvider),
-    plans: ref.watch(plannedEntryRepositoryProvider),
-    overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
+    planner: ref.watch(inventoryPlanServiceProvider),
     servings: ref.watch(inventoryServingSuggestionServiceProvider),
     userId: ref.watch(firebaseAuthProvider).currentUser?.uid,
     clock: ref.watch(clockProvider),
@@ -51,8 +48,7 @@ class InventoryEatService {
     required this._saver,
     required this._commitStore,
     required this._pendings,
-    required this._plans,
-    required this._overviewRevision,
+    required this._planner,
     required this._servings,
     required this._userId,
     required this._clock,
@@ -63,8 +59,7 @@ class InventoryEatService {
   final CalorieEntrySaver _saver;
   final InventoryCalorieEntryCommitStore _commitStore;
   final InventoryPendingConsumptionStore _pendings;
-  final PlannedEntryRepository _plans;
-  final CalorieOverviewRevision _overviewRevision;
+  final InventoryPlanService _planner;
   final InventoryServingSuggestionService _servings;
   final String? _userId;
   final DateTime Function() _clock;
@@ -96,7 +91,7 @@ class InventoryEatService {
   }
 
   /// Logs [request] of [item] with its reserved [pending] stock, or plans
-  /// it when its day lies after today.
+  /// it through [InventoryPlanService] when its day lies after today.
   ///
   /// Releases [pending] when the eat fails or throws, and after a plan. Keeps
   /// it reserved when the calorie editor has to finish the eat.
@@ -157,6 +152,9 @@ class InventoryEatService {
     InventoryItemEatRequest request,
     PendingInventoryConsumption pending,
   ) async {
+    if (_planner.isPlan(request)) {
+      return await _planner.plan(item: item, request: request);
+    }
     final profile = InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(
       item,
     );
@@ -172,11 +170,7 @@ class InventoryEatService {
       item: item,
       profile: profile,
     );
-    final isPlan = isDiaryFutureDay(day: request.loggedAt, today: _clock());
     if (!canDirectlySaveInventoryItemEatRequest(item, request)) {
-      if (isPlan) {
-        return const InventoryEatFailed(InventoryEatFailure.cannotPlan);
-      }
       return InventoryEatNeedsEditor(
         profile: profile,
         scannedSourceRef: scannedSourceRef,
@@ -188,35 +182,14 @@ class InventoryEatService {
     if (userId == null) {
       return const InventoryEatFailed(InventoryEatFailure.notSaved);
     }
-    final now = _clock();
-    final entry = CalorieEntry.create(
+    final entry = InventoryCalorieBridgeFlow.buildCalorieEntry(
       id: _uuid.v4(),
       userId: userId,
-      name: profile.name,
-      brand: profile.brand,
-      imageUrl: profile.imageUrl,
-      mealType: request.mealType,
-      consumedAmount: inventoryContext.consumedAmount,
-      consumedUnit: inventoryContext.consumedUnit,
-      per100Kcal: profile.per100Kcal,
-      per100Protein: profile.per100Protein,
-      per100Carbs: profile.per100Carbs,
-      per100Fat: profile.per100Fat,
-      sourceInventoryItemId: inventoryContext.inventoryItemId,
-      // A plan takes no stock, so a delete has nothing to give back.
-      sourceInventoryAmountToRestore: isPlan
-          ? null
-          : inventoryContext.inventoryAmountToRestore,
-      nutrientDetails: profile.nutrientDetails,
-      loggedAt: request.loggedAt,
-      createdAt: now,
-      updatedAt: now,
+      profile: profile,
+      inventoryContext: inventoryContext,
+      request: request,
+      now: _clock(),
     );
-    if (isPlan) {
-      await _plans.savePlannedEntry(entry);
-      _overviewRevision.markChanged();
-      return InventoryEatPlanned(entry);
-    }
     return await _save(
       entry,
       pending: pending,
