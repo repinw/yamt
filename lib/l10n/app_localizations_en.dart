@@ -298,6 +298,17 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String inventoryRestToStockQuestion(String amount) {
+    return 'Put the rest ($amount) into stock?';
+  }
+
+  @override
+  String get inventoryRestToStockNo => 'No';
+
+  @override
+  String get inventoryRestToStockYes => 'To stock';
+
+  @override
   String get productSearchHubCartRemoveAction => 'Remove';
 
   @override

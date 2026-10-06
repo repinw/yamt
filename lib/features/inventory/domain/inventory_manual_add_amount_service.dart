@@ -47,6 +47,20 @@ InventoryItem resizeInventoryManualAddItemToConsumedAmount({
   );
 }
 
+/// What stays of a newly picked product's package when [inventoryAmount]
+/// of it is eaten, in its inventory unit, or null without a package size or
+/// when nothing stays.
+int? inventoryManualAddRestAmount({
+  required InventoryItem item,
+  required int inventoryAmount,
+}) {
+  if (!item.usesAmountProgress || inventoryAmount < 1) {
+    return null;
+  }
+  final rest = item.currentAmount - inventoryAmount;
+  return rest > 0 ? rest : null;
+}
+
 /// Resolves initial amount for the immediate-eat sheet.
 int? resolveInventoryManualAddInitialConsumedAmount({
   required InventoryItem item,

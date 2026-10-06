@@ -14,6 +14,8 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
+    'inventory_amount_unit_l10n.dart';
+import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_eat_selection_flow.dart';
@@ -21,6 +23,8 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_save_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_save_outcome.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_rest_to_stock_dialog.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryManualProductEatFlowLogName =
@@ -90,6 +94,13 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
     return await _plan(context, container, l10n, result, eatResult);
   }
 
+  // A rest of a known package may stay in the Vorrat instead of being
+  // dropped with the resize to the eaten amount.
+  final keepsRest = await _askKeepRest(context, result.item, eatResult);
+  if (!context.mounted) {
+    return const InventoryManualProductSaveOutcome.canceled();
+  }
+
   final inventorySubscription = container.listen(
     inventoryItemsControllerProvider,
     (_, _) {},
@@ -101,10 +112,12 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
       container: container,
       l10n: l10n,
       result: result,
-      adjustItem: (item) => resizeInventoryManualAddItemToConsumedAmount(
-        item: item,
-        inventoryAmount: eatResult.request.inventoryAmount,
-      ),
+      adjustItem: (item) => keepsRest
+          ? item
+          : resizeInventoryManualAddItemToConsumedAmount(
+              item: item,
+              inventoryAmount: eatResult.request.inventoryAmount,
+            ),
     );
     final savedItem = saveOutcome.item;
     if (saveOutcome.status != InventoryManualProductSaveStatus.saved ||
@@ -198,6 +211,36 @@ Future<InventoryManualProductSaveOutcome> _plan(
       'A plan never logs or needs the editor.',
     ),
   };
+}
+
+/// Asks whether the rest of [item]'s package goes into the Vorrat, when its
+/// package size is known and [eatResult] does not eat all of it.
+Future<bool> _askKeepRest(
+  BuildContext context,
+  InventoryItem item,
+  InventoryItemEatSheetResult eatResult,
+) async {
+  final rest = inventoryManualAddRestAmount(
+    item: item,
+    inventoryAmount: eatResult.request.inventoryAmount,
+  );
+  final unit = item.amountUnit;
+  if (rest == null || unit == null) {
+    return false;
+  }
+  final amount = formatInventoryAmountValue(
+    amount: rest,
+    unit: unit,
+    scale: item.amountScale,
+  );
+  final l10n = AppLocalizations.of(context)!;
+  return await showInventoryRestToStockDialog(
+    context,
+    rest: l10n.inventoryEatSheetAmountWithUnit(
+      amount,
+      unit.localizedName(l10n),
+    ),
+  );
 }
 
 Future<void> _deleteSavedItem(

@@ -5,6 +5,30 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_manual_add_amount_service.dart';
 
 void main() {
+  test('the rest of a package is what eating leaves, if any', () {
+    final milk = _amountItem(
+      globalFoodItemId: 'off-milk',
+      weight: '1 l',
+      amountUnit: InventoryAmountUnit.milliliter,
+      initialAmount: 1000,
+      currentAmount: 1000,
+    );
+
+    expect(inventoryManualAddRestAmount(item: milk, inventoryAmount: 300), 700);
+    expect(
+      inventoryManualAddRestAmount(item: milk, inventoryAmount: 1000),
+      isNull,
+    );
+    expect(
+      inventoryManualAddRestAmount(item: milk, inventoryAmount: 1200),
+      isNull,
+    );
+    expect(
+      inventoryManualAddRestAmount(item: milk, inventoryAmount: 0),
+      isNull,
+    );
+  });
+
   test('resize immediate amount keeps identity and shrinks stock', () {
     final item = _amountItem(
       globalFoodItemId: 'off-milk',
