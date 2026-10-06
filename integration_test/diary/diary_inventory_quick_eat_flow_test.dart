@@ -116,6 +116,7 @@ _DiaryInventoryQuickEatHarness _buildHarness({
   final user = _MockUser();
   when(() => user.uid).thenReturn(_userId);
   final auth = _MockFirebaseAuth();
+  when(() => auth.currentUser).thenReturn(user);
   final logRepository = FakeCalorieLogRepository(
     initialEntries: List<CalorieEntry>.of(calorieEntries),
   );
