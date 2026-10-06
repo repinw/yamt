@@ -36,9 +36,10 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
   final cacheRepository = ref.read(calorieProductCacheRepositoryProvider);
   final postPersistHook = ref.read(calorieEntryPostPersistHookProvider);
   final clock = ref.read(clockProvider);
-  // Read before the save: recording the mutation rebuilds this provider, so
-  // its ref is no longer usable afterwards.
-  final goalController = ref.read(calorieGoalControllerProvider.notifier);
+  // Taken before the save: recording the mutation rebuilds this provider, so
+  // its ref is no longer usable afterwards. Watched so the goal controller
+  // stays alive for the follow-up writes.
+  final goalController = ref.watch(calorieGoalControllerProvider.notifier);
 
   return (
     entry, {
@@ -69,9 +70,15 @@ CalorieEntrySaver calorieEntrySaver(Ref ref) {
     );
 
     // Follow-up writes run in the background so the caller returns at once.
+    // Both rewrite the settings, so they run one after the other.
     _runInBackground(
-      'Failed to clear skipped intake day.',
-      () => goalController.clearSkippedIntakeDay(entry.loggedAt),
+      'Failed to update the settings for the entry day.',
+      () async {
+        await goalController.clearSkippedIntakeDay(entry.loggedAt);
+        await goalController.invalidateWeeklyCheckInSnapshotsFromDay(
+          entry.loggedAt,
+        );
+      },
     );
 
     if (scannedSourceRef != null) {
