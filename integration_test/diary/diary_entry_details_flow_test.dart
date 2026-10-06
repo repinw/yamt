@@ -39,8 +39,8 @@ import '../../test/features/calories/support/fake_planned_entry_repository.dart'
 
 class _MockUser extends Mock implements User;
 
-/// Deletes the entry from the diary fake and records the stock that went
-/// back, like the Firestore batch does.
+/// Deletes or saves the entry in the diary fake and records the stock that
+/// went back, like the Firestore batch does.
 class _ItemStore implements InventoryCalorieEntryCommitStore {
   new(this.diary);
 
@@ -48,14 +48,27 @@ class _ItemStore implements InventoryCalorieEntryCommitStore {
   final restored = <String, int>{};
 
   @override
+  Future<List<InventoryCalorieEntryCommitResult>?> saveEntryAndRestoreItems({
+    required CalorieEntry entry,
+    required Map<String, int> amountsByItemId,
+  }) async {
+    await diary.saveEntry(entry);
+    return _restore(amountsByItemId);
+  }
+
+  @override
   Future<List<InventoryCalorieEntryCommitResult>?> deleteEntryAndRestoreItems({
     required CalorieEntry entry,
     required Map<String, int> amountsByItemId,
   }) async {
     await diary.deleteEntry(entry.id);
-    restored.addAll(amountsByItemId);
+    return _restore(amountsByItemId);
+  }
+
+  List<InventoryCalorieEntryCommitResult> _restore(Map<String, int> amounts) {
+    restored.addAll(amounts);
     return [
-      for (final itemId in amountsByItemId.keys)
+      for (final itemId in amounts.keys)
         InventoryCalorieEntryCommitResult(
           itemId: itemId,
           quantity: 1,
@@ -83,6 +96,9 @@ class _Items implements InventoryItemRepository {
       entryDate: DateTime(2026, 5, 10),
       storeName: 'Lidl',
       quantity: 1,
+      initialAmount: 500,
+      currentAmount: 300,
+      amountUnit: InventoryAmountUnit.gram,
     ),
   ];
 
@@ -278,5 +294,33 @@ void main() {
     expect(find.byType(DiaryEntryDetailsPage), findsNothing);
     expect(logRepository.entries, isEmpty);
     expect(itemStore.restored, {'skyr': 200});
+  });
+
+  testWidgets('a smaller amount gives the difference back to the Vorrat', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository(
+      initialEntries: [_entry(sourceItemId: 'skyr')],
+    );
+    addTearDown(logRepository.dispose);
+    final itemStore = _ItemStore(logRepository);
+    await _openDetails(
+      tester,
+      logRepository,
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(const _Items()),
+        inventoryCalorieEntryCommitStoreProvider.overrideWithValue(itemStore),
+      ],
+    );
+
+    await tester.enterText(find.byKey(EatAmountRuler.fieldKey), '150');
+    await tester.pump();
+    await tester.tap(find.byKey(DiaryEntryDetailsPage.saveButtonKey));
+    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(logRepository.entries.single.consumedAmount, 150);
+    expect(logRepository.entries.single.sourceInventoryAmountToRestore, 150);
+    expect(itemStore.restored, {'skyr': 50});
   });
 }
