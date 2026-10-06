@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/data/'
     'global_food_serving_suggestion_repository.dart';
@@ -258,9 +259,11 @@ Widget _buildTestApp({
   DateTime? initialLoggedAt,
   MealType? initialMealType,
   Locale locale = const Locale('en'),
+  DateTime? now,
 }) {
   return ProviderScope(
     overrides: [
+      if (now != null) clockProvider.overrideWithValue(() => now),
       if (servingSuggestionRepository != null)
         globalFoodServingSuggestionRepositoryProvider.overrideWithValue(
           servingSuggestionRepository,
@@ -829,6 +832,24 @@ void main() {
     expect(result, isNull);
     expect(
       find.text('The deducted amount must be smaller than the eaten amount.'),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('says "Plan" on a later day', (tester) async {
+    await tester.pumpWidget(
+      _buildTestApp(
+        item: _amountItem(),
+        onResult: (_) {},
+        now: DateTime(2026, 9, 26, 12),
+        initialLoggedAt: DateTime(2026, 9, 28, 8),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.descendant(of: find.byKey(_confirmKey), matching: find.text('Plan')),
       findsOneWidget,
     );
   });

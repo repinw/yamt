@@ -786,10 +786,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'The deducted amount must be smaller than the eaten amount.';
 
   @override
-  String get inventoryItemEatSheetConfirmAction => 'Log';
+  String get inventoryItemEatSheetConfirmAction => 'To diary';
 
   @override
   String get inventoryItemEatSheetAddMoreAction => '+ More';
+
+  @override
+  String get eatPagePlanAction => 'Plan';
 
   @override
   String get eatPageNutritionTitle => 'Nutrition';
@@ -878,7 +881,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageMealUnknownValue => '–';
 
   @override
-  String get eatPageCombineConfirm => 'Log meal';
+  String get eatPageCombineConfirm => 'Meal to diary';
 
   @override
   String get eatPageCombineRemove => 'Remove from the list';

@@ -5,6 +5,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/domain/eat_amount_step.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -49,6 +50,9 @@ class PreparedMealEatSheetState {
 
   /// The current day.
   final DateTime today;
+
+  /// Whether the food is saved as a plan: its day lies after [today].
+  bool get isPlan => isDiaryFutureDay(day: loggedAt, today: today);
 
   /// Meal the food is logged to.
   final MealType mealType;

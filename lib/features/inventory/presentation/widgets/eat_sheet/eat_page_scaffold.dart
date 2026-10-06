@@ -20,6 +20,7 @@ class EatPageScaffold extends StatelessWidget {
     this.onSecondary,
     this.hasOwnMessenger = true,
     this.confirmHint,
+    this.isPlan = false,
     super.key,
   });
 
@@ -39,8 +40,12 @@ class EatPageScaffold extends StatelessWidget {
   /// Called by the confirm button. The button is disabled when null.
   final VoidCallback? onConfirm;
 
-  /// Text of the confirm button. Defaults to "Log".
+  /// Text of the confirm button. Defaults to "Ins Tagebuch", or "Einplanen"
+  /// when [isPlan] is set.
   final String? confirmLabel;
+
+  /// Whether the confirm button saves a plan for a later day.
+  final bool isPlan;
 
   /// Key of the close button. The button closes the page like the system
   /// back button, so a `PopScope` around the page applies to it.
@@ -161,7 +166,9 @@ class EatPageScaffold extends StatelessWidget {
                         buttonKey: confirmButtonKey,
                         label:
                             confirmLabel ??
-                            l10n.inventoryItemEatSheetConfirmAction,
+                            (isPlan
+                                ? l10n.eatPagePlanAction
+                                : l10n.inventoryItemEatSheetConfirmAction),
                         trailing: kcalValue == null
                             ? null
                             : l10n.eatPageKcal(kcalValue.round()),

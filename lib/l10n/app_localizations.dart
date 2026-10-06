@@ -1387,7 +1387,7 @@ abstract class AppLocalizations {
   /// No description provided for @inventoryItemEatSheetConfirmAction.
   ///
   /// In en, this message translates to:
-  /// **'Log'**
+  /// **'To diary'**
   String get inventoryItemEatSheetConfirmAction;
 
   /// No description provided for @inventoryItemEatSheetAddMoreAction.
@@ -1395,6 +1395,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'+ More'**
   String get inventoryItemEatSheetAddMoreAction;
+
+  /// No description provided for @eatPagePlanAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan'**
+  String get eatPagePlanAction;
 
   /// No description provided for @eatPageNutritionTitle.
   ///
@@ -1543,7 +1549,7 @@ abstract class AppLocalizations {
   /// No description provided for @eatPageCombineConfirm.
   ///
   /// In en, this message translates to:
-  /// **'Log meal'**
+  /// **'Meal to diary'**
   String get eatPageCombineConfirm;
 
   /// No description provided for @eatPageCombineRemove.

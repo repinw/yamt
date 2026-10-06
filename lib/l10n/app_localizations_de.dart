@@ -796,10 +796,13 @@ class AppLocalizationsDe extends AppLocalizations {
       'Der Abzug muss kleiner als die verzehrte Menge sein.';
 
   @override
-  String get inventoryItemEatSheetConfirmAction => 'Eintragen';
+  String get inventoryItemEatSheetConfirmAction => 'Ins Tagebuch';
 
   @override
   String get inventoryItemEatSheetAddMoreAction => '+ Mehr';
+
+  @override
+  String get eatPagePlanAction => 'Einplanen';
 
   @override
   String get eatPageNutritionTitle => 'Nährwerte';
@@ -888,7 +891,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageMealUnknownValue => '–';
 
   @override
-  String get eatPageCombineConfirm => 'Mahlzeit eintragen';
+  String get eatPageCombineConfirm => 'Mahlzeit ins Tagebuch';
 
   @override
   String get eatPageCombineRemove => 'Aus der Liste nehmen';
