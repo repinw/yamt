@@ -293,34 +293,6 @@ class PreparedMealsController extends _$PreparedMealsController {
     ).whenComplete(keepAliveLink.close);
   }
 
-  /// Restore prepared meal portions.
-  Future<bool> restorePreparedMealPortions({
-    required String mealId,
-    required num portions,
-  }) {
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(
-      () => _mutationWorkflows.restorePreparedMealPortions(
-        mealId: mealId,
-        portions: portions,
-      ),
-    ).whenComplete(keepAliveLink.close);
-  }
-
-  /// Takes restored portions out of a prepared meal again.
-  Future<bool> takePreparedMealPortions({
-    required String mealId,
-    required num portions,
-  }) {
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(
-      () => _mutationWorkflows.takePreparedMealPortions(
-        mealId: mealId,
-        portions: portions,
-      ),
-    ).whenComplete(keepAliveLink.close);
-  }
-
   /// Unbundle prepared meal.
   Future<bool> unbundlePreparedMeal(String mealId) {
     final keepAliveLink = ref.keepAlive();

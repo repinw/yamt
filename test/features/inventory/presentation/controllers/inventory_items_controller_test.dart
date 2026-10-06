@@ -505,42 +505,6 @@ void main() {
     },
   );
 
-  test('eatItems takes several amounts out in one write', () async {
-    final consumedAt = DateTime.utc(2026, 9, 27, 12);
-    final repository = _FakeInventoryItemRepository(
-      initialItems: <InventoryItem>[
-        _item(id: 'a', weight: '500g').copyWith(currentAmount: 108),
-        _item(id: 'b', weight: '500g').copyWith(currentAmount: 39),
-      ],
-    );
-    final activityRepository = _FakeInventoryActivityEventRepository();
-    addTearDown(repository.dispose);
-
-    final container = _controllerContainer(
-      itemRepository: repository,
-      activityRepository: activityRepository,
-    );
-    addTearDown(container.dispose);
-    final subscription = _keepControllerAlive(container);
-    addTearDown(subscription.close);
-
-    await container.read(inventoryItemsControllerProvider.future);
-    final savesBefore = repository.saveHistory.length;
-    final eaten = await container
-        .read(inventoryItemsControllerProvider.notifier)
-        .eatItems({'a': 100, 'b': 1}, consumedAt: consumedAt);
-
-    expect(eaten, isTrue);
-    expect(repository.saveHistory.length, savesBefore + 1);
-    final items = repository.saveHistory.last;
-    expect(items.singleWhere((item) => item.id == 'a').currentAmount, 8);
-    expect(items.singleWhere((item) => item.id == 'b').currentAmount, 38);
-    expect(activityRepository.events.map((event) => event.type).toSet(), {
-      InventoryActivityEventType.itemConsumed,
-    });
-    expect(activityRepository.events.first.happenedAt, consumedAt);
-  });
-
   test('addItem replaces an existing item with the same id', () async {
     final repository = _FakeInventoryItemRepository(
       initialItems: <InventoryItem>[_item(id: 'a')],
