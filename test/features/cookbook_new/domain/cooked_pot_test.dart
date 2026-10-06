@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/cookbook_new/domain/cooked_pot.dart';
 
-CookedPot _pot(String grossInput, {int tareWeight = 1240}) => CookedPot(
+CookedPot _pot(String grossInput, {int? tareWeight = 1240}) => CookedPot(
   grossInput: grossInput,
   tareWeight: tareWeight,
   portions: 4,
@@ -33,5 +33,15 @@ void main() {
     expect(_pot('900').isTooLight, isTrue);
     expect(_pot('0', tareWeight: 0).isTooLight, isTrue);
     expect(_pot('900').netWeight, isNull);
+  });
+
+  test('a weighed pot needs the picked pot', () {
+    final pot = _pot('2420', tareWeight: null);
+
+    expect(pot.needsUtensil, isTrue);
+    expect(pot.isTooLight, isFalse);
+    expect(pot.netWeight, isNull);
+    expect(_pot('', tareWeight: null).needsUtensil, isFalse);
+    expect(_pot('2420').needsUtensil, isFalse);
   });
 }

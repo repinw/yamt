@@ -5,7 +5,8 @@ import 'package:meta/meta.dart';
 @immutable
 class CookedPot {
   /// Creates the numbers for the typed pot weight [grossInput], the empty pot
-  /// [tareWeight] (0 without a pot), [portions], and the meal's [totalKcal].
+  /// [tareWeight] (`null` without a pot), [portions], and the meal's
+  /// [totalKcal].
   const new({
     required this.grossInput,
     required this.tareWeight,
@@ -16,8 +17,8 @@ class CookedPot {
   /// The typed weight of the pot on the scale; empty when it was not weighed.
   final String grossInput;
 
-  /// The weight of the empty pot in grams.
-  final int tareWeight;
+  /// The weight of the empty pot in grams, or `null` when no pot is picked.
+  final int? tareWeight;
 
   /// The number of portions; at least 1.
   final int portions;
@@ -29,15 +30,21 @@ class CookedPot {
   int? get grossWeight => int.tryParse(grossInput);
 
   /// The food weight: the pot on the scale minus the empty pot, or `null`
-  /// when the pot was not weighed or is not heavier than the empty pot.
-  int? get netWeight => switch (grossWeight) {
-    final gross? when gross > tareWeight => gross - tareWeight,
+  /// when the pot was not weighed, no pot is picked, or it is not heavier
+  /// than the empty pot.
+  int? get netWeight => switch ((grossWeight, tareWeight)) {
+    (final gross?, final tare?) when gross > tare => gross - tare,
     _ => null,
   };
 
+  /// Whether the pot was weighed without picking the pot. Without its weight
+  /// the food weight would be wrong, so the step cannot be saved then.
+  bool get needsUtensil => grossWeight != null && tareWeight == null;
+
   /// Whether the pot was weighed but is not heavier than the empty pot. The
   /// step cannot be saved then.
-  bool get isTooLight => grossWeight != null && netWeight == null;
+  bool get isTooLight =>
+      grossWeight != null && tareWeight != null && netWeight == null;
 
   /// Grams of food per portion, or `null` without a food weight.
   int? get gramsPerPortion => switch (netWeight) {

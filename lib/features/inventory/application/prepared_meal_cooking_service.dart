@@ -131,9 +131,9 @@ class PreparedMealCookingService {
 
   /// Marks the meal [mealId] as cooked: it makes [totalPortions] portions,
   /// and [potTareWeight] and [finalNetWeight] are set when the cook weighed
-  /// the pot. Portions eaten so far keep their share. Throws when the meal
-  /// is gone or no longer in the pot.
-  Future<void> finishCooking({
+  /// the pot. Portions eaten so far keep their share. Returns the cooked
+  /// meal. Throws when the meal is gone or no longer in the pot.
+  Future<PreparedMeal> finishCooking({
     required String mealId,
     required int totalPortions,
     required int? potTareWeight,
@@ -163,6 +163,7 @@ class PreparedMealCookingService {
     if (!saved) {
       throw StateError('Meal $mealId could not be saved.');
     }
+    return cooked;
   }
 
   PreparedMealWorkflowContext get _context {

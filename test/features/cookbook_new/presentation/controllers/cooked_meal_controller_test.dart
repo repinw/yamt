@@ -6,6 +6,7 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_cooking_service.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 class _FakeCookingService implements PreparedMealCookingService {
   new({this.fails = false});
@@ -21,7 +22,7 @@ class _FakeCookingService implements PreparedMealCookingService {
   }) => throw UnimplementedError();
 
   @override
-  Future<void> finishCooking({
+  Future<PreparedMeal> finishCooking({
     required String mealId,
     required int totalPortions,
     required int? potTareWeight,
@@ -31,7 +32,25 @@ class _FakeCookingService implements PreparedMealCookingService {
       throw StateError('offline');
     }
     calls.add((mealId, totalPortions, potTareWeight, finalNetWeight));
+    return _meal(mealId, totalPortions);
   }
+}
+
+PreparedMeal _meal(String id, int portions) {
+  final now = DateTime.utc(2026, 10, 6);
+  return PreparedMeal(
+    id: id,
+    name: 'Pfanne',
+    totalPortions: portions,
+    remainingPortions: portions,
+    totalKcal: 800,
+    totalProtein: 40,
+    totalCarbs: 80,
+    totalFat: 30,
+    createdAt: now,
+    updatedAt: now,
+    components: const <PreparedMealComponent>[],
+  );
 }
 
 /// The container and the states that the controller goes through.
@@ -51,7 +70,7 @@ class _FakeCookingService implements PreparedMealCookingService {
 }
 
 void main() {
-  test('save passes portions and weights to the service', () async {
+  test('save passes portions and weights and returns the meal', () async {
     final service = _FakeCookingService();
     final (container, states) = _container(service);
 
@@ -59,7 +78,7 @@ void main() {
         .read(cookedMealControllerProvider('pan').notifier)
         .save(totalPortions: 4, potTareWeight: 1240, netWeight: 1180);
 
-    expect(saved, isTrue);
+    expect(saved?.id, 'pan');
     expect(service.calls.single, ('pan', 4, 1240, 1180));
     expect(states, [isA<AsyncLoading<void>>(), isA<AsyncData<void>>()]);
   });
@@ -82,7 +101,7 @@ void main() {
         .read(cookedMealControllerProvider('pan').notifier)
         .save(totalPortions: 2, potTareWeight: null, netWeight: null);
 
-    expect(saved, isFalse);
+    expect(saved, isNull);
     expect(states, [isA<AsyncLoading<void>>(), isA<AsyncError<void>>()]);
   });
 }

@@ -3174,12 +3174,12 @@
     }
   },
   "cookedFillRows": "Fill",
-  "cookedPotTitle": "Pot",
+  "cookedPotTitle": "Split",
   "cookedPortions": "Portions",
   "cookedPortionsLess": "One portion less",
   "cookedPortionsMore": "One portion more",
-  "cookedUtensil": "Utensil",
-  "cookedNoUtensil": "None",
+  "cookedUtensil": "Container",
+  "cookedPickUtensil": "Pick",
   "cookedUtensilOption": "{name} · {grams} g",
   "@cookedUtensilOption": {
     "placeholders": {
@@ -3199,7 +3199,7 @@
       }
     }
   },
-  "cookedGrossWeight": "Pot on the scale",
+  "cookedGrossWeight": "On the scale",
   "cookedWeighTip": "Tip: weigh once the food has cooled.",
   "cookedNetWeight": "{grams} g food",
   "@cookedNetWeight": {
@@ -3209,7 +3209,7 @@
       }
     }
   },
-  "cookedTooLight": "Not heavier than the empty pot",
+  "cookedTooLight": "Not heavier than the empty container",
   "cookedPerPortionWeighed": "Portion {grams} g · {kcal} kcal",
   "@cookedPerPortionWeighed": {
     "placeholders": {
@@ -3230,6 +3230,10 @@
     }
   },
   "cookedSave": "To stock",
+  "cookedNeedsUtensil": "Pick the container first",
+  "cookedNextTitle": "What’s next",
+  "cookedToDiary": "To diary",
+  "cookedToDiaryNote": "Next you log your portion; the rest stays in stock.",
   "cookedSaved": "{name} is in stock",
   "@cookedSaved": {
     "placeholders": {

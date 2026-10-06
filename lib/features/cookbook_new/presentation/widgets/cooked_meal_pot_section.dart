@@ -56,7 +56,7 @@ class CookedMealPotSection extends StatelessWidget {
   /// Whether the kitchen utensils could not be loaded.
   final bool utensilsFailed;
 
-  /// Id of the pot, or `null` when the food is weighed without one.
+  /// Id of the pot, or `null` while none is picked.
   final String? utensilId;
 
   /// Picks the pot by its id.
@@ -145,12 +145,12 @@ class CookedMealPotSection extends StatelessWidget {
                         key: utensilKey,
                         initialValue: utensilId,
                         isExpanded: true,
+                        hint: Text(l10n.cookedPickUtensil),
                         decoration: const InputDecoration(
                           border: InputBorder.none,
                         ),
                         onChanged: onUtensilChanged,
                         items: [
-                          DropdownMenuItem(child: Text(l10n.cookedNoUtensil)),
                           for (final item in utensils)
                             DropdownMenuItem(
                               key: utensilOptionKey(item.id),
@@ -169,25 +169,27 @@ class CookedMealPotSection extends StatelessWidget {
                       ),
               ),
             ),
-            row(
-              Text(l10n.cookedGrossWeight, style: label),
-              SizedBox(
-                width: AppGraphit.numberField,
-                child: TextField(
-                  key: grossKey,
-                  controller: grossController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.digitsOnly,
-                    LengthLimitingTextInputFormatter(_maxWeightDigits),
-                  ],
-                  textAlign: TextAlign.center,
-                  decoration: InputDecoration(
-                    suffixText: l10n.inventoryUnitGram,
+            // Without a pot to pick the food weight cannot be told.
+            if (!utensilsFailed && utensils.isNotEmpty)
+              row(
+                Text(l10n.cookedGrossWeight, style: label),
+                SizedBox(
+                  width: AppGraphit.numberField,
+                  child: TextField(
+                    key: grossKey,
+                    controller: grossController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(_maxWeightDigits),
+                    ],
+                    textAlign: TextAlign.center,
+                    decoration: InputDecoration(
+                      suffixText: l10n.inventoryUnitGram,
+                    ),
                   ),
                 ),
               ),
-            ),
             row(
               Text(
                 l10n.cookedWeighTip,

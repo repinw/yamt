@@ -60,7 +60,7 @@ void main() {
     );
     final mealId = meals.saved.single.id;
 
-    await service.finishCooking(
+    final returned = await service.finishCooking(
       mealId: mealId,
       totalPortions: 4,
       potTareWeight: 1240,
@@ -68,6 +68,7 @@ void main() {
     );
 
     final meal = meals.saved.single;
+    expect(returned, meal);
     expect(meal.isInPot, isFalse);
     expect(meal.inPot, isNull);
     expect(meal.totalPortions, 4);

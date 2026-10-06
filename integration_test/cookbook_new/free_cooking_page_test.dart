@@ -11,6 +11,8 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_destination_section.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_pot_section.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_actions.dart';
@@ -27,6 +29,8 @@ import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -84,14 +88,21 @@ void main() {
     expect(meal.components.single.inventoryItemId, 'rice');
     expect(meal.pendingRecipeIngredients, hasLength(1));
 
+    // The open chicken row keeps the meal out of the diary.
+    await _showDestination(tester);
+    expect(_segment(tester, CookedMealDestination.diary).enabled, isFalse);
+
+    // A weight without the pot cannot be saved.
+    await tester.enterText(find.byKey(CookedMealPotSection.grossKey), '1300');
+    await tester.pumpAndSettle();
+    expect(_saveButton(tester).onPressed, isNull);
+
     await tester.tap(find.byKey(CookedMealPotSection.morePortionsKey));
     await tester.tap(find.byKey(CookedMealPotSection.utensilKey));
     await tester.pumpAndSettle();
     await tester.tap(
       find.byKey(CookedMealPotSection.utensilOptionKey('pot')).last,
     );
-    await tester.pumpAndSettle();
-    await tester.enterText(find.byKey(CookedMealPotSection.grossKey), '1300');
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(CookedMealPage.saveKey));
     await tester.pumpAndSettle();
@@ -102,6 +113,43 @@ void main() {
     expect(cooked.totalPortions, 2);
     expect(cooked.potTareWeight, 400);
     expect(cooked.finalNetWeight, 900);
+  });
+
+  testWidgets('"To diary" cooks the meal and opens the eat page', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(meals: meals, voice: _FakeVoiceService('200 g Reis')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(FreeCookingHeader.nameKey), 'Reis');
+    await tester.tap(find.byKey(FreeCookingActions.cookKey));
+    await tester.pumpAndSettle();
+
+    await _showDestination(tester);
+    await tester.tap(
+      find.byKey(
+        CookedMealDestinationSection.segmentKey(CookedMealDestination.diary),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(meals.saved.single.isInPot, isFalse);
+    expect(find.byType(PreparedMealEatSheetBody), findsOneWidget);
+
+    // Closing the eat page leaves the meal in the Vorrat and the step.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byKey(_startKey), findsOneWidget);
   });
 
   testWidgets('fits under the keyboard and lets go of the name focus', (
@@ -169,6 +217,31 @@ void main() {
     expect(find.byKey(_startKey), findsOneWidget);
   });
 }
+
+/// Scrolls the "Gekocht" step down to the destination switch.
+Future<void> _showDestination(WidgetTester tester) => tester.scrollUntilVisible(
+  find.byType(CookedMealDestinationSection),
+  200,
+  scrollable: find
+      .descendant(
+        of: find.byType(CookedMealPage),
+        matching: find.byType(Scrollable),
+      )
+      .first,
+);
+
+ButtonSegment<CookedMealDestination> _segment(
+  WidgetTester tester,
+  CookedMealDestination value,
+) => tester
+    .widget<SegmentedButton<CookedMealDestination>>(
+      find.byType(SegmentedButton<CookedMealDestination>),
+    )
+    .segments
+    .singleWhere((segment) => segment.value == value);
+
+FilledButton _saveButton(WidgetTester tester) =>
+    tester.widget<FilledButton>(find.byKey(CookedMealPage.saveKey));
 
 Widget _app({
   required _FakeMealRepository meals,

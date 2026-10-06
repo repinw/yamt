@@ -9612,7 +9612,7 @@ abstract class AppLocalizations {
   /// No description provided for @cookedPotTitle.
   ///
   /// In en, this message translates to:
-  /// **'Pot'**
+  /// **'Split'**
   String get cookedPotTitle;
 
   /// No description provided for @cookedPortions.
@@ -9636,14 +9636,14 @@ abstract class AppLocalizations {
   /// No description provided for @cookedUtensil.
   ///
   /// In en, this message translates to:
-  /// **'Utensil'**
+  /// **'Container'**
   String get cookedUtensil;
 
-  /// No description provided for @cookedNoUtensil.
+  /// No description provided for @cookedPickUtensil.
   ///
   /// In en, this message translates to:
-  /// **'None'**
-  String get cookedNoUtensil;
+  /// **'Pick'**
+  String get cookedPickUtensil;
 
   /// No description provided for @cookedUtensilOption.
   ///
@@ -9660,7 +9660,7 @@ abstract class AppLocalizations {
   /// No description provided for @cookedGrossWeight.
   ///
   /// In en, this message translates to:
-  /// **'Pot on the scale'**
+  /// **'On the scale'**
   String get cookedGrossWeight;
 
   /// No description provided for @cookedWeighTip.
@@ -9678,7 +9678,7 @@ abstract class AppLocalizations {
   /// No description provided for @cookedTooLight.
   ///
   /// In en, this message translates to:
-  /// **'Not heavier than the empty pot'**
+  /// **'Not heavier than the empty container'**
   String get cookedTooLight;
 
   /// No description provided for @cookedPerPortionWeighed.
@@ -9698,6 +9698,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'To stock'**
   String get cookedSave;
+
+  /// No description provided for @cookedNeedsUtensil.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick the container first'**
+  String get cookedNeedsUtensil;
+
+  /// No description provided for @cookedNextTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What’s next'**
+  String get cookedNextTitle;
+
+  /// No description provided for @cookedToDiary.
+  ///
+  /// In en, this message translates to:
+  /// **'To diary'**
+  String get cookedToDiary;
+
+  /// No description provided for @cookedToDiaryNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Next you log your portion; the rest stays in stock.'**
+  String get cookedToDiaryNote;
 
   /// No description provided for @cookedSaved.
   ///

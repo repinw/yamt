@@ -26,8 +26,8 @@ class CookedMealController extends _$CookedMealController {
 
   /// Marks the meal as cooked with [totalPortions], and with the pot's
   /// [potTareWeight] and the food's [netWeight] when it was weighed. Returns
-  /// whether it worked.
-  Future<bool> save({
+  /// the cooked meal, or `null` when it failed.
+  Future<PreparedMeal?> save({
     required int totalPortions,
     required int? potTareWeight,
     required int? netWeight,
@@ -56,7 +56,7 @@ class CookedMealController extends _$CookedMealController {
       if (ref.mounted) {
         state = result;
       }
-      return !result.hasError;
+      return result.value;
     } finally {
       link.close();
     }
