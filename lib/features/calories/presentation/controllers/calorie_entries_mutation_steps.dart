@@ -2,11 +2,8 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
-import 'package:yamt/features/calories/data/calorie_product_cache_repository_contract.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_mutation.dart';
-import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 const _logName = 'CalorieEntriesController';
@@ -123,36 +120,6 @@ Future<void> runCalorieEntryFollowUps(
   }
 }
 
-/// Persists [entry] through [persistEntry] or else through [repository].
-Future<bool> persistCalorieEntry({
-  required CalorieEntry entry,
-  required CalorieLogRepositoryContract repository,
-  Future<bool> Function(CalorieEntry entry)? persistEntry,
-}) async {
-  if (persistEntry != null) {
-    log(
-      'Persisting calorie entry ${entry.id} via custom save flow.',
-      name: _logName,
-    );
-    final saved = await persistEntry(entry);
-    log(
-      'Custom save flow for calorie entry ${entry.id} returned $saved.',
-      name: _logName,
-    );
-    return saved;
-  }
-  log(
-    'Persisting calorie entry ${entry.id} via calorie log repository.',
-    name: _logName,
-  );
-  final saved = await repository.saveEntry(entry);
-  log(
-    'Calorie log repository save for ${entry.id} returned $saved.',
-    name: _logName,
-  );
-  return saved;
-}
-
 /// Returns [entries] after [mutation], limited to [selectedDay].
 List<CalorieEntry> applyCalorieEntryMutation({
   required List<CalorieEntry> entries,
@@ -210,31 +177,4 @@ DateTime earliestCalorieDiaryDay(DateTime day, DateTime? otherDay) {
   return normalizedDay.isBefore(normalizedOtherDay)
       ? normalizedDay
       : normalizedOtherDay;
-}
-
-/// Saves the edited nutrition of a scanned product as the user's override.
-Future<void> saveCalorieUserProductOverride({
-  required CalorieProductCacheRepositoryContract repository,
-  required CalorieEntry entry,
-  required CalorieScannedSourceRef scannedSourceRef,
-  required DateTime now,
-}) async {
-  final saved = await repository.saveUserOverride(
-    profile: CalorieProductProfile.fromEntry(
-      entry: entry,
-      barcode: scannedSourceRef.barcode,
-      source: scannedSourceRef.source,
-      offProductId: scannedSourceRef.offProductId,
-      imageUrl: entry.imageUrl,
-      now: now,
-    ),
-    reason: 'user_edit_after_scan',
-  );
-  if (!saved) {
-    log(
-      'Failed to persist user calorie override '
-      'for ${scannedSourceRef.barcode}.',
-      name: _logName,
-    );
-  }
 }

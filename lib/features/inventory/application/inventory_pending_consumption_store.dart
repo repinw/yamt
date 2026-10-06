@@ -36,8 +36,9 @@ final class InventoryPendingConsumptionFinalized {
 
 /// Stock reserved for eats that are not saved yet.
 ///
-/// The reservation lives here, outside the screens, because the calorie
-/// editor saves it after the eat page has closed.
+/// The reservation lives here, outside the screens, because the eat flow
+/// may log it after the eat page has closed, once the calorie editor returns
+/// its entry.
 abstract interface class InventoryPendingConsumptionStore {
   /// Emits application-level finalizations for observers such as controllers.
   Stream<InventoryPendingConsumptionFinalized> get finalizations;

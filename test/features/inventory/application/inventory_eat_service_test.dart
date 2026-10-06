@@ -8,16 +8,20 @@ import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/application/'
-    'calorie_inventory_entry_save_handler.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/'
+    'calorie_inventory_create_context.dart';
 import 'package:yamt/features/inventory/application/inventory_eat_service.dart';
 import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_food_serving_suggestion_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
+import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
+import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
@@ -59,6 +63,37 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
           currentAmount: 500,
         ),
     ];
+  }
+}
+
+typedef _Serving = ({double amount, ConsumedUnit unit, String? label});
+
+/// Records the servings the eat service learns.
+class _RecordingServings implements GlobalFoodServingSuggestionRepository {
+  new({this.gate});
+
+  /// Holds a recording open until it completes.
+  final Future<void>? gate;
+  final calls = <_Serving>[];
+
+  @override
+  Future<GlobalFoodServingSuggestionSet> readSuggestions({
+    required String foodFingerprint,
+    String? globalFoodItemId,
+    int limit = 5,
+  }) async => const GlobalFoodServingSuggestionSet.empty();
+
+  @override
+  Future<void> recordSelection({
+    required String foodFingerprint,
+    required double amount,
+    required ConsumedUnit unit,
+    required DateTime selectedAt,
+    String? globalFoodItemId,
+    String? label,
+  }) async {
+    await gate;
+    calls.add((amount: amount, unit: unit, label: label));
   }
 }
 
@@ -125,16 +160,41 @@ InventoryItemEatRequest _request(int amount) {
   );
 }
 
+/// What the calorie editor needs to finish an eat of 250 g of waffles,
+/// picked as [portionCount] slices of 50 g when given.
+CalorieInventoryCreateContext _editorContext(
+  PendingInventoryConsumption pending, {
+  double? portionCount,
+}) {
+  return CalorieInventoryCreateContext(
+    inventoryItemId: 'waffles',
+    foodFingerprint: 'waffles__aldi',
+    globalFoodItemId: 'off-waffles',
+    inventoryAmountToRestore: pending.amount,
+    itemName: 'Waffles',
+    itemBrand: null,
+    consumedAmount: 250,
+    consumedUnit: ConsumedUnit.grams,
+    portionBaseAmount: portionCount == null ? null : 50,
+    portionBaseUnit: portionCount == null ? null : ConsumedUnit.grams,
+    portionCount: portionCount,
+    portionLabel: portionCount == null ? null : 'Scheibe',
+  );
+}
+
 typedef _Harness = ({
   ProviderContainer container,
   InventoryEatService service,
   InventoryPendingConsumptionStore pendings,
+  _RecordingServings servings,
 });
 
 _Harness _harness(
   _RecordingCommitStore commitStore, {
+  _RecordingServings? servings,
   List<Override> overrides = const <Override>[],
 }) {
+  final learned = servings ?? _RecordingServings();
   final auth = _MockFirebaseAuth();
   final user = _MockUser();
   when(() => user.uid).thenReturn('user-1');
@@ -147,6 +207,7 @@ _Harness _harness(
       calorieLogRepositoryProvider.overrideWithValue(calorieLog),
       firebaseAuthProvider.overrideWithValue(auth),
       clockProvider.overrideWithValue(() => _now),
+      globalFoodServingSuggestionRepositoryProvider.overrideWithValue(learned),
       ...overrides,
     ],
   );
@@ -157,6 +218,7 @@ _Harness _harness(
     container: container,
     service: subscription.read(),
     pendings: container.read(inventoryPendingConsumptionStoreProvider),
+    servings: learned,
   );
 }
 
@@ -271,7 +333,6 @@ void main() {
       final editor = outcome as InventoryEatNeedsEditor;
       expect(editor.profile.name, 'Waffles');
       expect(editor.scannedSourceRef?.barcode, '4061458029995');
-      expect(editor.inventoryContext.pendingConsumptionId, pending.id);
       expect(editor.inventoryContext.consumedUnit, ConsumedUnit.milliliters);
       expect(editor.inventoryContext.inventoryAmountToRestore, 250);
       expect(harness.pendings.pendingConsumptionById(pending.id), isNotNull);
@@ -406,56 +467,121 @@ void main() {
     expect(finalized.single.currentAmount, 500);
   });
 
-  test('the calorie editor seams commit and release through the store, '
-      'wired as in main.dart', () async {
-    final commitStore = _RecordingCommitStore();
-    final harness = _harness(
-      commitStore,
-      overrides: [
-        calorieInventoryEntrySaveHandlerProvider.overrideWith(
-          (ref) => ref.watch(inventoryEatServiceProvider).commitStaged,
-        ),
-        calorieInventoryPendingConsumptionDiscarderProvider.overrideWith(
-          (ref) => ref.watch(inventoryPendingConsumptionStoreProvider).discard,
-        ),
-      ],
-    );
-    final saved = harness.pendings.stage(_gramItem(), 250)!;
-    final canceled = harness.pendings.stage(_gramItem(), 100)!;
-
-    final committed = await harness.container.read(
-      calorieInventoryEntrySaveHandlerProvider,
-    )!(entry: _entry(), pendingConsumptionId: saved.id);
-    await harness.container.read(
-      calorieInventoryPendingConsumptionDiscarderProvider,
-    )!(canceled.id);
-
-    expect(committed, isTrue);
-    expect(commitStore.pendings?.single.id, saved.id);
-    expect(harness.pendings.pendingConsumptionById(saved.id), isNull);
-    expect(harness.pendings.pendingConsumptionById(canceled.id), isNull);
-  });
-
-  group('commitStaged', () {
-    test('commits the consumption staged under the id', () async {
+  group('logEdited', () {
+    test('saves the edited entry with its Vorrat source and stock', () async {
       final commitStore = _RecordingCommitStore();
       final harness = _harness(commitStore);
       final pending = harness.pendings.stage(_gramItem(), 250)!;
-      final entry = _entry();
 
-      final saved = await harness.service.commitStaged(
-        entry: entry,
-        pendingConsumptionId: pending.id,
-      );
-      final unknown = await harness.service.commitStaged(
-        entry: entry,
-        pendingConsumptionId: 'unknown',
+      final outcome = await harness.service.logEdited(
+        entry: _entry(),
+        pending: pending,
+        inventoryContext: _editorContext(pending),
       );
 
-      expect(saved, isTrue);
+      final entry = (outcome as InventoryEatLogged).entry;
+      expect(entry.sourceInventoryItemId, 'waffles');
+      expect(entry.sourceInventoryAmountToRestore, 250);
+      expect(commitStore.entry?.sourceInventoryItemId, 'waffles');
       expect(commitStore.pendings?.single.id, pending.id);
       expect(harness.pendings.pendingConsumptionById(pending.id), isNull);
-      expect(unknown, isFalse);
+    });
+
+    test('a failed save releases the stock', () async {
+      final harness = _harness(_RecordingCommitStore(fails: true));
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+
+      final outcome = await harness.service.logEdited(
+        entry: _entry(),
+        pending: pending,
+        inventoryContext: _editorContext(pending),
+      );
+
+      expect(outcome, isA<InventoryEatFailed>());
+      expect(harness.pendings.pendingConsumptionById(pending.id), isNull);
+    });
+
+    test('a released stock saves nothing', () async {
+      final commitStore = _RecordingCommitStore();
+      final harness = _harness(commitStore);
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+      await harness.pendings.discard(pending.id);
+
+      final outcome = await harness.service.logEdited(
+        entry: _entry(),
+        pending: pending,
+        inventoryContext: _editorContext(pending),
+      );
+
+      expect(outcome, isA<InventoryEatFailed>());
+      expect(commitStore.entry, isNull);
+    });
+  });
+
+  group('learned serving', () {
+    test('an eat records its amount as the next serving', () async {
+      final harness = _harness(_RecordingCommitStore());
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+
+      await harness.service.log(
+        item: _gramItem(),
+        request: _request(250),
+        pending: pending,
+      );
+      await pumpEventQueue();
+
+      expect(harness.servings.calls, [
+        (amount: 250.0, unit: ConsumedUnit.grams, label: null),
+      ]);
+    });
+
+    test('an untouched portion is learned with its label', () async {
+      final harness = _harness(_RecordingCommitStore());
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+
+      await harness.service.logEdited(
+        entry: _entry(),
+        pending: pending,
+        inventoryContext: _editorContext(pending, portionCount: 5),
+      );
+      await pumpEventQueue();
+
+      expect(harness.servings.calls, [
+        (amount: 50.0, unit: ConsumedUnit.grams, label: 'Scheibe'),
+      ]);
+    });
+
+    test('a failed save learns nothing', () async {
+      final harness = _harness(_RecordingCommitStore(fails: true));
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+
+      await harness.service.log(
+        item: _gramItem(),
+        request: _request(250),
+        pending: pending,
+      );
+      await pumpEventQueue();
+
+      expect(harness.servings.calls, isEmpty);
+    });
+
+    test('the eat does not wait for the serving to be recorded', () async {
+      final recording = Completer<void>();
+      final harness = _harness(
+        _RecordingCommitStore(),
+        servings: _RecordingServings(gate: recording.future),
+      );
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+
+      final outcome = await harness.service.log(
+        item: _gramItem(),
+        request: _request(250),
+        pending: pending,
+      );
+
+      expect(outcome, isA<InventoryEatLogged>());
+      expect(harness.servings.calls, isEmpty);
+      recording.complete();
     });
   });
 }

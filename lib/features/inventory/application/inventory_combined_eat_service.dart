@@ -129,7 +129,6 @@ class InventoryCombinedEatService {
     }
     final context = InventoryCalorieBridgeFlow.buildInventoryContext(
       item: food.item,
-      pendingConsumptionId: food.pending.id,
       request: food.request,
     );
     final amount = context.consumedAmount;

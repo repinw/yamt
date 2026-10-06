@@ -93,9 +93,6 @@ abstract final class AppRoutes {
   /// Legacy calorie tab route alias.
   static const String homeCalories = homeDiary;
 
-  /// Calorie entry creation route.
-  static const homeCaloriesEntryCreate = '/home/calories/entry/create';
-
   /// Calorie entry details route with entry id parameter.
   static const homeCaloriesEntryDetails =
       '/home/calories/entry/:entryId/details';

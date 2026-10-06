@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
@@ -7,8 +5,6 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
-import 'package:yamt/features/calories/domain/'
-    'calorie_inventory_create_context.dart';
 import 'package:yamt/features/calories/domain/calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/controllers/'
     'calorie_entry_editor_controller.dart';
@@ -157,27 +153,20 @@ abstract final class CalorieEntryEditorFlowHandler {
   }
 
   /// Handles popping with root fallback.
-  static void maybePopRootNavigator(
-    BuildContext context, {
-    required bool isEditing,
-    Object? result,
-  }) {
+  static void maybePopRootNavigator(BuildContext context) {
     final rootNavigator = Navigator.of(context, rootNavigator: true);
     if (rootNavigator.canPop()) {
-      rootNavigator.pop(result);
+      rootNavigator.pop();
       return;
     }
 
     final localNavigator = Navigator.of(context);
     if (!identical(localNavigator, rootNavigator) && localNavigator.canPop()) {
-      localNavigator.pop(result);
+      localNavigator.pop();
       return;
     }
 
-    final fallbackCloseRoute = !isEditing
-        ? AppRoutes.homeInventory
-        : AppRoutes.homeCalories;
-    GoRouter.of(context).go(fallbackCloseRoute);
+    GoRouter.of(context).go(AppRoutes.homeCalories);
   }
 
   /// Displays error snackbar.
@@ -188,22 +177,14 @@ abstract final class CalorieEntryEditorFlowHandler {
     messenger.showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 
-  /// Validates and builds a new entry, closes the editor, and saves it.
-  ///
-  /// The editor closes before the save completes: the entry appears in the
-  /// diary at once through the optimistic state. If the save fails, the entry
-  /// is removed again, a pending inventory consumption is discarded, and a
-  /// snackbar reports the failure.
-  static Future<void> saveNewEntry(
+  /// Validates and builds a new entry and closes the editor with it. The
+  /// caller saves the entry.
+  static void returnNewEntry(
     BuildContext context, {
     required CalorieEntryEditorDraft draft,
     required String userId,
-    required CalorieEntryEditorController controller,
     required CalorieProductProfile? prefilledProfile,
-    required CalorieInventoryCreateContext? inventoryContext,
-    required CalorieScannedSourceRef? scannedSourceRef,
-    required VoidCallback onCommitted,
-  }) async {
+  }) {
     final formState = draft.formKey.currentState;
     if (formState == null || !formState.validate()) {
       return;
@@ -225,29 +206,7 @@ abstract final class CalorieEntryEditorFlowHandler {
       parsedDraft: parsedDraft,
       imageUrl: prefilledProfile?.imageUrl,
       nutrientDetails: prefilledProfile?.nutrientDetails,
-      sourceInventoryItemId: inventoryContext?.inventoryItemId,
-      sourceInventoryAmountToRestore:
-          inventoryContext?.inventoryAmountToRestore,
     );
-
-    final messenger = ScaffoldMessenger.of(context);
-    final failureMessage = AppLocalizations.of(context)!.caloriesSaveFailed;
-    final pendingConsumptionId = inventoryContext?.pendingConsumptionId;
-    final save = controller.saveEntry(
-      entry: entry,
-      inventoryContext: inventoryContext,
-      scannedSourceRef: scannedSourceRef,
-      pendingConsumptionId: pendingConsumptionId,
-    );
-    onCommitted();
-    maybePopRootNavigator(context, isEditing: false, result: entry);
-
-    if (await save) {
-      return;
-    }
-    if (pendingConsumptionId != null) {
-      await controller.discardPendingInventory(pendingConsumptionId);
-    }
-    showFailureSnackBar(messenger, failureMessage);
+    Navigator.of(context).pop(entry);
   }
 }

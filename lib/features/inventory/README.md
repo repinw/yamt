@@ -38,9 +38,11 @@ Other features may consume these public Inventory entry points:
 - `application/inventory_eat_service.dart`: eats a Vorrat item into the
   diary. `InventoryPendingConsumptionStore.stage` reserves the stock (capped
   at what the item holds), `InventoryEatService.log` saves the entry with it
-  or hands it to the calorie editor, and `commit` writes a diary entry
-  together with the item stock it takes, for single, combined, and calorie
-  editor eats. A failed eat releases its reservation. The eat flows call no
+  or hands it to the calorie editor, `logEdited` saves the entry the editor
+  returns, and `commit` writes a diary entry together with the item stock it
+  takes, for single, combined, and calorie editor eats. A failed eat
+  releases its reservation. After a save the service learns the eaten
+  serving for the food. The eat flows call no
   service or store themselves; they go through `InventoryItemEatController`
   and `InventoryItemsController`.
 - `application/inventory_quick_eat_application.dart` for eating prepared

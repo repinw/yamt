@@ -13,7 +13,6 @@ class CalorieEntryEditorFormScaffold extends StatelessWidget {
   /// Creates calorie entry form scaffold.
   const new({
     required this.formKey,
-    required this.isSaving,
     required this.nameController,
     required this.brandController,
     required this.amountController,
@@ -36,9 +35,6 @@ class CalorieEntryEditorFormScaffold extends StatelessWidget {
 
   /// The form key.
   final GlobalKey<FormState> formKey;
-
-  /// Whether save in progress.
-  final bool isSaving;
 
   /// Name controller.
   final TextEditingController nameController;
@@ -101,7 +97,7 @@ class CalorieEntryEditorFormScaffold extends StatelessWidget {
         actions: <Widget>[
           TextButton(
             key: CalorieEntryEditorKeys.saveButton,
-            onPressed: isSaving ? null : onSave,
+            onPressed: onSave,
             child: Text(l10n.caloriesSaveEntryAction),
           ),
         ],

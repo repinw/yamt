@@ -13,10 +13,10 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/calories/presentation/controllers/calorie_day_controller.dart';
 import 'package:yamt/features/calories/presentation/controllers/calorie_entries_controller.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/presentation/widgets/calories_page_keys.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/data/'
@@ -108,7 +108,10 @@ class _RecordingCommitStore implements InventoryCalorieEntryCommitStore {
 }
 
 /// Fakes the repositories the eat service writes to, signed in as [user].
-List<Override> _eatServiceOverrides({User? user}) {
+List<Override> _eatServiceOverrides({
+  User? user,
+  _RecordingCommitStore? commitStore,
+}) {
   final auth = _MockFirebaseAuth();
   when(() => auth.currentUser).thenReturn(user);
   final calorieLogRepository = FakeCalorieLogRepository();
@@ -117,7 +120,7 @@ List<Override> _eatServiceOverrides({User? user}) {
     firebaseAuthProvider.overrideWithValue(auth),
     calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
     inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
-      _RecordingCommitStore(),
+      commitStore ?? _RecordingCommitStore(),
     ),
   ];
 }
@@ -274,7 +277,6 @@ class _DirectSaveFlowHarness {
   final ProviderContainer container;
   final _RecordingCommitStore commitStore;
   final PendingInventoryConsumption pendingConsumption;
-  CalorieEntryCreateArgs? openedArgs;
 
   static Future<_DirectSaveFlowHarness> pump({
     required WidgetTester tester,
@@ -335,13 +337,6 @@ class _DirectSaveFlowHarness {
                 pending: harness.pendingConsumption,
               ),
             );
-          },
-        ),
-        GoRoute(
-          path: AppRoutes.homeCaloriesEntryCreate,
-          builder: (context, state) {
-            harness.openedArgs = state.extra as CalorieEntryCreateArgs?;
-            return const Scaffold(body: Text('editor'));
           },
         ),
       ],
@@ -409,8 +404,7 @@ void main() {
 
       await harness.complete(tester);
 
-      expect(find.text('editor'), findsNothing);
-      expect(harness.openedArgs, isNull);
+      expect(find.byType(CalorieEntryEditorPage), findsNothing);
       expect(
         harness.commitStore.pendingConsumption?.id,
         harness.pendingConsumption.id,
@@ -523,8 +517,7 @@ void main() {
 
       await harness.complete(tester);
 
-      expect(find.text('editor'), findsNothing);
-      expect(harness.openedArgs, isNull);
+      expect(find.byType(CalorieEntryEditorPage), findsNothing);
       expect(
         harness.commitStore.pendingConsumption?.id,
         harness.pendingConsumption.id,
@@ -558,86 +551,99 @@ void main() {
     },
   );
 
-  testWidgets(
-    'complete opens calorie editor and shows feedback when editor saves',
-    (tester) async {
-      final item = _amountItemWithNutrition();
-      final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');
-      CalorieEntryCreateArgs? openedArgs;
-      _Staged? staged;
-      final router = GoRouter(
-        routes: <RouteBase>[
-          GoRoute(
-            path: AppRoutes.root,
-            builder: (context, state) {
-              return Scaffold(
-                body: _CompleteEatFlowButton(
-                  onStaged: (value) => staged = value,
-                  item: item,
-                  request: InventoryItemEatRequest(
-                    inventoryAmount: 1,
-                    loggedAt: loggedAt,
-                    mealType: MealType.lunch,
-                    calorieAmount: 120,
-                    calorieUnit: ConsumedUnit.milliliters,
-                  ),
-                ),
-              );
-            },
-          ),
-          GoRoute(
-            path: AppRoutes.homeCaloriesEntryCreate,
-            builder: (context, state) {
-              openedArgs = state.extra as CalorieEntryCreateArgs?;
-              return Scaffold(
-                body: ElevatedButton(
-                  onPressed: () => context.pop(
-                    CalorieEntry.create(
-                      id: 'entry-1',
-                      userId: 'user-1',
-                      name: 'Milk',
-                      mealType: MealType.lunch,
-                      consumedAmount: 120,
-                      consumedUnit: ConsumedUnit.milliliters,
-                      per100Kcal: 60,
-                      per100Protein: 3.2,
-                      per100Carbs: 4.8,
-                      per100Fat: 1.5,
-                      loggedAt: loggedAt,
-                      createdAt: loggedAt,
-                      updatedAt: loggedAt,
-                    ),
-                  ),
-                  child: const Text('save'),
-                ),
-              );
-            },
-          ),
-        ],
-      );
+  testWidgets('the calorie editor returns the entry and the flow saves it '
+      'with its stock', (tester) async {
+    final commitStore = _RecordingCommitStore();
+    final editor = await _openCalorieEditor(tester, commitStore: commitStore);
 
-      await tester.pumpWidget(
-        routerApp(
-          router: router,
-          overrides: _eatServiceOverrides(user: _signedInUser()),
-        ),
-      );
+    expect(editor.page.preselectedMealType, MealType.lunch);
+    expect(editor.page.preselectedLoggedAt, _editorLoggedAt);
+    expect(editor.page.prefilledAmount, 120);
+    expect(editor.page.prefilledUnit, ConsumedUnit.milliliters);
 
-      await tester.tap(find.text('eat'));
-      await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CalorieEntryEditorKeys.saveButton));
+    await tester.pumpAndSettle();
 
-      expect(openedArgs?.preselectedMealType, MealType.lunch);
-      expect(openedArgs?.preselectedLoggedAt, loggedAt);
-      expect(
-        openedArgs?.inventoryContext?.pendingConsumptionId,
-        staged!.pending.id,
-      );
+    final staged = editor.staged!;
+    expect(commitStore.entry?.name, 'Waffelhörnchen Haselnuss-Vanille');
+    expect(commitStore.entry?.consumedAmount, 120);
+    expect(commitStore.entry?.sourceInventoryItemId, staged.pending.itemId);
+    expect(
+      commitStore.entry?.sourceInventoryAmountToRestore,
+      staged.pending.amount,
+    );
+    expect(commitStore.pendingConsumption?.id, staged.pending.id);
+    expect(staged.store.pendingConsumptionById(staged.pending.id), isNull);
+    expect(find.text('Ins Tagebuch eingetragen'), findsOneWidget);
+    expect(find.text('Rückgängig'), findsOneWidget);
+  });
 
-      await tester.tap(find.text('save'));
-      await tester.pumpAndSettle();
+  testWidgets('leaving the calorie editor releases the stock', (tester) async {
+    final commitStore = _RecordingCommitStore();
+    final editor = await _openCalorieEditor(tester, commitStore: commitStore);
 
-      expect(find.text('Ins Tagebuch eingetragen'), findsOneWidget);
-      expect(find.text('Rückgängig'), findsOneWidget);
-    },
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    final staged = editor.staged!;
+    expect(commitStore.entry, isNull);
+    expect(staged.store.pendingConsumptionById(staged.pending.id), isNull);
+    expect(find.text('Ins Tagebuch eingetragen'), findsNothing);
+  });
+}
+
+final DateTime _editorLoggedAt = DateTime.parse('2026-04-06T12:30:00Z');
+
+/// What the eat flow staged and the calorie editor it opened.
+class _OpenedEditor {
+  _Staged? staged;
+  late CalorieEntryEditorPage page;
+}
+
+/// Eats 120 ml of an item the eat page cannot log directly, so the flow
+/// opens the real calorie editor.
+Future<_OpenedEditor> _openCalorieEditor(
+  WidgetTester tester, {
+  required _RecordingCommitStore commitStore,
+}) async {
+  final opened = _OpenedEditor();
+  final user = _signedInUser();
+  final router = GoRouter(
+    routes: <RouteBase>[
+      GoRoute(
+        path: AppRoutes.root,
+        builder: (context, state) {
+          return Scaffold(
+            body: _CompleteEatFlowButton(
+              onStaged: (value) => opened.staged = value,
+              item: _amountItemWithNutrition(),
+              request: InventoryItemEatRequest(
+                inventoryAmount: 1,
+                loggedAt: _editorLoggedAt,
+                mealType: MealType.lunch,
+                calorieAmount: 120,
+                calorieUnit: ConsumedUnit.milliliters,
+              ),
+            ),
+          );
+        },
+      ),
+    ],
   );
+
+  await tester.pumpWidget(
+    routerApp(
+      router: router,
+      overrides: [
+        ..._eatServiceOverrides(user: user, commitStore: commitStore),
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(user),
+        ),
+      ],
+    ),
+  );
+  await tester.tap(find.text('eat'));
+  await tester.pumpAndSettle();
+  opened.page = tester.widget(find.byType(CalorieEntryEditorPage));
+  return opened;
 }

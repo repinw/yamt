@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -14,8 +16,11 @@ import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_serving_suggestion_service.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
+import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
@@ -32,74 +37,10 @@ InventoryEatService inventoryEatService(Ref ref) {
     pendings: ref.watch(inventoryPendingConsumptionStoreProvider),
     plans: ref.watch(plannedEntryRepositoryProvider),
     overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
+    servings: ref.watch(inventoryServingSuggestionServiceProvider),
     userId: ref.watch(firebaseAuthProvider).currentUser?.uid,
     clock: ref.watch(clockProvider),
   );
-}
-
-/// Why an eat from the Vorrat was not logged.
-enum InventoryEatFailure {
-  /// The item has no nutrition values to log.
-  noNutrition,
-
-  /// The diary entry and the stock change were not saved.
-  notSaved,
-
-  /// The amount needs the calorie editor, which saves eaten food, not plans.
-  cannotPlan,
-}
-
-/// What happened to an eat from the Vorrat.
-sealed class InventoryEatOutcome {
-  const new();
-}
-
-/// The diary entry and the stock change were saved together.
-final class InventoryEatLogged extends InventoryEatOutcome {
-  /// Creates the outcome.
-  const new(this.entry);
-
-  /// The saved diary entry.
-  final CalorieEntry entry;
-}
-
-/// The day lies after today, so [entry] was saved as a plan. A plan takes
-/// no stock; the reserved stock was released.
-final class InventoryEatPlanned extends InventoryEatOutcome {
-  /// Creates the outcome.
-  const new(this.entry);
-
-  /// The saved plan.
-  final CalorieEntry entry;
-}
-
-/// The amount cannot be logged without the calorie editor. The stock stays
-/// reserved; the editor saves or discards it.
-final class InventoryEatNeedsEditor extends InventoryEatOutcome {
-  /// Creates the outcome.
-  const new({
-    required this.profile,
-    required this.scannedSourceRef,
-    required this.inventoryContext,
-  });
-
-  /// The item's nutrition as a calorie product.
-  final CalorieProductProfile profile;
-
-  /// The barcode source of the item, if it has one.
-  final CalorieScannedSourceRef? scannedSourceRef;
-
-  /// The amounts and the reserved stock for the editor.
-  final CalorieInventoryCreateContext inventoryContext;
-}
-
-/// Nothing was saved and the reserved stock was released.
-final class InventoryEatFailed extends InventoryEatOutcome {
-  /// Creates the outcome.
-  const new(this.failure);
-
-  /// Why it failed.
-  final InventoryEatFailure failure;
 }
 
 /// Eats from the Vorrat into the diary: saves each diary entry together
@@ -112,6 +53,7 @@ class InventoryEatService {
     required this._pendings,
     required this._plans,
     required this._overviewRevision,
+    required this._servings,
     required this._userId,
     required this._clock,
   });
@@ -123,6 +65,7 @@ class InventoryEatService {
   final InventoryPendingConsumptionStore _pendings;
   final PlannedEntryRepository _plans;
   final CalorieOverviewRevision _overviewRevision;
+  final InventoryServingSuggestionService _servings;
   final String? _userId;
   final DateTime Function() _clock;
 
@@ -152,20 +95,6 @@ class InventoryEatService {
     return true;
   }
 
-  /// Commits [entry] with the stock reserved under [pendingConsumptionId],
-  /// for the calorie editor. Returns false when nothing is reserved under
-  /// that id any more.
-  Future<bool> commitStaged({
-    required CalorieEntry entry,
-    required String pendingConsumptionId,
-  }) async {
-    final pending = _pendings.pendingConsumptionById(pendingConsumptionId);
-    if (pending == null) {
-      return false;
-    }
-    return await commit(entry, [pending]);
-  }
-
   /// Logs [request] of [item] with its reserved [pending] stock, or plans
   /// it when its day lies after today.
   ///
@@ -175,9 +104,44 @@ class InventoryEatService {
     required InventoryItem item,
     required InventoryItemEatRequest request,
     required PendingInventoryConsumption pending,
+  }) => _releasingOnFailure(pending, () => _log(item, request, pending));
+
+  /// Logs [entry] as the calorie editor returned it, after [log] handed the
+  /// eat to the editor, with the [pending] stock reserved for it.
+  ///
+  /// Adds the Vorrat source of [inventoryContext] to [entry]. Fails when
+  /// [pending] is no longer reserved. Releases [pending] when the save fails
+  /// or throws.
+  Future<InventoryEatOutcome> logEdited({
+    required CalorieEntry entry,
+    required PendingInventoryConsumption pending,
+    required CalorieInventoryCreateContext inventoryContext,
+    CalorieScannedSourceRef? scannedSourceRef,
   }) async {
+    if (_pendings.pendingConsumptionById(pending.id) == null) {
+      return const InventoryEatFailed(InventoryEatFailure.notSaved);
+    }
+    return await _releasingOnFailure(
+      pending,
+      () => _save(
+        entry.copyWith(
+          sourceInventoryItemId: inventoryContext.inventoryItemId,
+          sourceInventoryAmountToRestore:
+              inventoryContext.inventoryAmountToRestore,
+        ),
+        pending: pending,
+        inventoryContext: inventoryContext,
+        scannedSourceRef: scannedSourceRef,
+      ),
+    );
+  }
+
+  Future<InventoryEatOutcome> _releasingOnFailure(
+    PendingInventoryConsumption pending,
+    Future<InventoryEatOutcome> Function() eat,
+  ) async {
     try {
-      final outcome = await _log(item, request, pending);
+      final outcome = await eat();
       if (outcome is InventoryEatFailed || outcome is InventoryEatPlanned) {
         await _pendings.discard(pending.id);
       }
@@ -201,7 +165,6 @@ class InventoryEatService {
     }
     final inventoryContext = InventoryCalorieBridgeFlow.buildInventoryContext(
       item: item,
-      pendingConsumptionId: pending.id,
       request: request,
       stagedAmount: pending.amount,
     );
@@ -254,16 +217,79 @@ class InventoryEatService {
       _overviewRevision.markChanged();
       return InventoryEatPlanned(entry);
     }
+    return await _save(
+      entry,
+      pending: pending,
+      inventoryContext: inventoryContext,
+      scannedSourceRef: scannedSourceRef,
+    );
+  }
+
+  Future<InventoryEatOutcome> _save(
+    CalorieEntry entry, {
+    required PendingInventoryConsumption pending,
+    required CalorieInventoryCreateContext inventoryContext,
+    required CalorieScannedSourceRef? scannedSourceRef,
+  }) async {
     final saved = await _saver(
       entry,
       isNewEntry: true,
-      inventoryContext: inventoryContext,
       scannedSourceRef: scannedSourceRef,
       persistEntry: (entry) => commit(entry, [pending]),
     );
     if (!saved) {
       return const InventoryEatFailed(InventoryEatFailure.notSaved);
     }
+    _recordServing(entry, inventoryContext);
     return InventoryEatLogged(entry);
   }
+
+  /// Remembers the eaten amount as the food's next suggested serving, in the
+  /// background. A failure is logged and never fails the eat.
+  void _recordServing(
+    CalorieEntry entry,
+    CalorieInventoryCreateContext inventoryContext,
+  ) {
+    if (entry.consumedAmount <= 0) {
+      return;
+    }
+    final serving = _learnedServing(entry, inventoryContext);
+    unawaited(
+      _servings.recordSelection(
+        foodFingerprint: inventoryContext.foodFingerprint,
+        globalFoodItemId: inventoryContext.globalFoodItemId,
+        amount: serving.amount,
+        unit: serving.unit,
+        label: serving.label,
+        selectedAt: entry.updatedAt,
+      ),
+    );
+  }
+}
+
+/// The serving to suggest next time: the portion the user picked, or the
+/// amount of [entry] when the user changed it.
+({double amount, ConsumedUnit unit, String? label}) _learnedServing(
+  CalorieEntry entry,
+  CalorieInventoryCreateContext inventoryContext,
+) {
+  final baseAmount = inventoryContext.portionBaseAmount;
+  final baseUnit = inventoryContext.portionBaseUnit;
+  final count = inventoryContext.portionCount;
+  if (baseAmount == null ||
+      baseUnit == null ||
+      count == null ||
+      entry.consumedUnit != baseUnit ||
+      (entry.consumedAmount - baseAmount * count).abs() > 0.001) {
+    return (
+      amount: entry.consumedAmount,
+      unit: entry.consumedUnit,
+      label: null,
+    );
+  }
+  return (
+    amount: baseAmount,
+    unit: baseUnit,
+    label: inventoryContext.portionLabel,
+  );
 }

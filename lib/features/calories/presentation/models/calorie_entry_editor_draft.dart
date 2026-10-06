@@ -170,8 +170,6 @@ class CalorieEntryEditorDraft {
     required String userId,
     required CalorieEntryEditorParsedDraft parsedDraft,
     String? imageUrl,
-    String? sourceInventoryItemId,
-    int? sourceInventoryAmountToRestore,
     CalorieNutrientDetails? nutrientDetails,
   }) {
     final now = DateTime.now();
@@ -188,8 +186,6 @@ class CalorieEntryEditorDraft {
       per100Protein: parsedDraft.per100Protein,
       per100Carbs: parsedDraft.per100Carbs,
       per100Fat: parsedDraft.per100Fat,
-      sourceInventoryItemId: sourceInventoryItemId,
-      sourceInventoryAmountToRestore: sourceInventoryAmountToRestore,
       nutrientDetails: nutrientDetails,
       loggedAt: parsedDraft.loggedAt,
       createdAt: now,

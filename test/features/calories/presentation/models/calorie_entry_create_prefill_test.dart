@@ -2,8 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/'
-    'calorie_inventory_create_context.dart';
-import 'package:yamt/features/calories/domain/'
     'calorie_product_lookup_models.dart';
 import 'package:yamt/features/calories/presentation/models/'
     'calorie_entry_create_prefill.dart';
@@ -25,31 +23,14 @@ CalorieProductProfile _profile() {
   );
 }
 
-CalorieInventoryCreateContext _inventoryContext({
-  double consumedAmount = 250,
-  ConsumedUnit consumedUnit = ConsumedUnit.grams,
-  String pendingConsumptionId = 'pending-1',
-}) {
-  return CalorieInventoryCreateContext(
-    inventoryItemId: 'inventory-1',
-    foodFingerprint: 'milk-1l',
-    globalFoodItemId: 'off-milk',
-    pendingConsumptionId: pendingConsumptionId,
-    inventoryAmountToRestore: 250,
-    itemName: 'Milk',
-    itemBrand: 'Brand',
-    consumedAmount: consumedAmount,
-    consumedUnit: consumedUnit,
-  );
-}
-
 void main() {
   test('uses provided args to build the create prefill', () {
     final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');
 
     final prefill = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: _profile(),
-      inventoryContext: _inventoryContext(),
+      prefilledAmount: 250,
+      prefilledUnit: ConsumedUnit.grams,
       preselectedMealType: MealType.lunch,
       preselectedLoggedAt: loggedAt,
     );
@@ -67,7 +48,8 @@ void main() {
     final before = DateTime.now();
     final prefill = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: null,
-      inventoryContext: null,
+      prefilledAmount: null,
+      prefilledUnit: null,
       preselectedMealType: null,
       preselectedLoggedAt: null,
     );
@@ -87,13 +69,15 @@ void main() {
 
     final first = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: _profile(),
-      inventoryContext: _inventoryContext(),
+      prefilledAmount: 250,
+      prefilledUnit: ConsumedUnit.grams,
       preselectedMealType: MealType.breakfast,
       preselectedLoggedAt: loggedAt,
     );
     final second = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: _profile(),
-      inventoryContext: _inventoryContext(),
+      prefilledAmount: 250,
+      prefilledUnit: ConsumedUnit.grams,
       preselectedMealType: MealType.breakfast,
       preselectedLoggedAt: loggedAt,
     );
@@ -106,13 +90,15 @@ void main() {
 
     final lunch = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: _profile(),
-      inventoryContext: _inventoryContext(),
+      prefilledAmount: 250,
+      prefilledUnit: ConsumedUnit.grams,
       preselectedMealType: MealType.lunch,
       preselectedLoggedAt: loggedAt,
     );
     final dinner = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: _profile(),
-      inventoryContext: _inventoryContext(),
+      prefilledAmount: 250,
+      prefilledUnit: ConsumedUnit.grams,
       preselectedMealType: MealType.dinner,
       preselectedLoggedAt: loggedAt,
     );
@@ -123,13 +109,15 @@ void main() {
   test('initialization key changes when loggedAt changes', () {
     final first = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: _profile(),
-      inventoryContext: _inventoryContext(),
+      prefilledAmount: 250,
+      prefilledUnit: ConsumedUnit.grams,
       preselectedMealType: MealType.lunch,
       preselectedLoggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
     );
     final second = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: _profile(),
-      inventoryContext: _inventoryContext(),
+      prefilledAmount: 250,
+      prefilledUnit: ConsumedUnit.grams,
       preselectedMealType: MealType.lunch,
       preselectedLoggedAt: DateTime.parse('2026-04-06T18:45:00Z'),
     );
@@ -137,19 +125,21 @@ void main() {
     expect(first.initializationKey, isNot(second.initializationKey));
   });
 
-  test('initialization key changes with inventory context '
+  test('initialization key changes with the prefilled amount '
       'even without a profile', () {
     final loggedAt = DateTime.parse('2026-04-06T12:30:00Z');
 
     final first = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: null,
-      inventoryContext: _inventoryContext(),
+      prefilledAmount: 250,
+      prefilledUnit: ConsumedUnit.grams,
       preselectedMealType: MealType.lunch,
       preselectedLoggedAt: loggedAt,
     );
     final second = CalorieEntryCreatePrefill.fromArgs(
       prefilledProfile: null,
-      inventoryContext: _inventoryContext(pendingConsumptionId: 'pending-2'),
+      prefilledAmount: 300,
+      prefilledUnit: ConsumedUnit.grams,
       preselectedMealType: MealType.lunch,
       preselectedLoggedAt: loggedAt,
     );

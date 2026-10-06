@@ -140,8 +140,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/calories/application/burn_week_live_window_logic.dart': 1,
     'lib/features/calories/application/calorie_entry_inventory_restore_coordinator.dart':
         1,
-    'lib/features/calories/application/calorie_inventory_entry_save_handler.dart':
-        1,
     'lib/features/calories/data/calorie_entry_document_codec.dart': 1,
     'lib/features/calories/data/calorie_log_repository_contract.dart': 1,
     'lib/features/calories/data/calorie_product_cache_document_codec.dart': 1,
@@ -342,16 +340,11 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/shared/widgets/auth_form_components.dart': 1,
   },
-  'route-extra-cast': {'lib/core/router/app_route_definitions.dart': 1},
   'bare-keep-alive': {
     'lib/features/calories/application/burn_week_live_sync_provider.dart': 1,
     'lib/features/calories/application/calorie_entry_amount_edit_flow.dart': 2,
     'lib/features/calories/application/calorie_entry_delete_flow.dart': 1,
-    'lib/features/calories/application/calorie_inventory_entry_save_handler.dart':
-        2,
     'lib/features/calories/presentation/controllers/calorie_entry_editor_controller.dart':
-        1,
-    'lib/features/inventory/application/inventory_calorie_entry_post_persist_hook.dart':
         1,
     'lib/features/inventory/presentation/inventory_calorie_entry_delete_flow.dart':
         1,

@@ -14,8 +14,7 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_delete_flow.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/presentation/models/'
-    'calorie_entry_create_args.dart';
+import 'package:yamt/features/calories/presentation/calorie_entry_editor_page.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/application/inventory_pending_consumption_store.dart';
@@ -1020,7 +1019,6 @@ void main() {
     final auth = _MockFirebaseAuth();
     final user = _MockUser();
     final expectedMealType = MealType.defaultForDateTime(DateTime.now());
-    CalorieEntryCreateArgs? openedArgs;
     addTearDown(repository.dispose);
     addTearDown(calorieLogRepository.dispose);
 
@@ -1030,13 +1028,6 @@ void main() {
     await _pumpTestApp(
       tester,
       repository,
-      calorieEntryRoute: GoRoute(
-        path: AppRoutes.homeCaloriesEntryCreate,
-        builder: (context, state) {
-          openedArgs = state.extra as CalorieEntryCreateArgs?;
-          return const Scaffold(body: Text('editor'));
-        },
-      ),
       overrides: <Override>[
         calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
         inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
@@ -1061,8 +1052,7 @@ void main() {
 
     await _tapAmountDialogConfirm(tester);
 
-    expect(find.text('editor'), findsNothing);
-    expect(openedArgs, isNull);
+    expect(find.byType(CalorieEntryEditorPage), findsNothing);
     expect(commitStore.pendingConsumption?.amount, 120);
     expect(commitStore.entry?.consumedAmount, 120);
     expect(commitStore.entry?.mealType, expectedMealType);
@@ -1504,7 +1494,6 @@ void main() {
     final commitStore = _RecordingCommitStore();
     final auth = _MockFirebaseAuth();
     final user = _MockUser();
-    CalorieEntryCreateArgs? openedArgs;
     addTearDown(repository.dispose);
     addTearDown(calorieLogRepository.dispose);
 
@@ -1514,13 +1503,6 @@ void main() {
     await _pumpTestApp(
       tester,
       repository,
-      calorieEntryRoute: GoRoute(
-        path: AppRoutes.homeCaloriesEntryCreate,
-        builder: (context, state) {
-          openedArgs = state.extra as CalorieEntryCreateArgs?;
-          return const Scaffold(body: Text('editor'));
-        },
-      ),
       overrides: <Override>[
         calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
         inventoryCalorieEntryCommitStoreProvider.overrideWithValue(commitStore),
@@ -1535,8 +1517,7 @@ void main() {
 
     await _tapAmountDialogConfirm(tester);
 
-    expect(find.text('editor'), findsNothing);
-    expect(openedArgs, isNull);
+    expect(find.byType(CalorieEntryEditorPage), findsNothing);
     expect(commitStore.pendingConsumption?.amount, 1000);
     expect(commitStore.entry?.consumedAmount, 1000);
   });
