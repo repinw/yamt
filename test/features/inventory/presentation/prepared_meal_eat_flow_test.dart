@@ -134,6 +134,7 @@ Future<void> _pumpHarness(
   required _FakeQuickEatActions actions,
   required ValueChanged<CalorieEntry?> onResult,
   FakePlannedEntryRepository? plans,
+  PreparedMeal? meal,
 }) async {
   await tester.pumpWidget(
     ProviderScope(
@@ -162,7 +163,7 @@ Future<void> _pumpHarness(
                 onResult(
                   await PreparedMealEatFlow.eat(
                     context: context,
-                    meal: preparedMealTestData(),
+                    meal: meal ?? preparedMealTestData(),
                   ),
                 );
               },
@@ -194,6 +195,22 @@ void main() {
 
     expect(actions.consumedPortions, 1);
     expect(result?.bundleSourcePreparedMealId, 'meal-1');
+  });
+
+  testWidgets('a meal with open rows cannot be logged from any page', (
+    tester,
+  ) async {
+    final actions = _FakeQuickEatActions();
+
+    await _pumpHarness(
+      tester,
+      actions: actions,
+      onResult: (_) {},
+      meal: preparedMealTestData().copyWith(pendingRecipeIngredients: ['Salt']),
+    );
+
+    expect(actions.consumedPortions, isNull);
+    expect(find.text('1 row open'), findsOneWidget);
   });
 
   testWidgets('the detail page logs the meal as the Vorrat holds it now', (

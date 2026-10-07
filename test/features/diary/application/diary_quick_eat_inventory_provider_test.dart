@@ -8,7 +8,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 void main() {
   test(
-    'filters selectable inventory items, depleted meals and meals in the pot',
+    'filters selectable inventory items and meals that cannot be eaten',
     () async {
       final availableItem = _item(id: 'normal-available', quantity: 2);
       final emptyItem = _item(id: 'normal-empty', quantity: 0);
@@ -31,12 +31,16 @@ void main() {
         id: 'pot-meal',
         remainingPortions: 1,
       ).copyWith(inPot: true);
+      final openRowsMeal = _meal(
+        id: 'open-rows-meal',
+        remainingPortions: 1,
+      ).copyWith(pendingRecipeIngredients: ['Salz']);
       final container = ProviderContainer(
         overrides: [
           inventoryQuickEatInventoryProvider.overrideWith((ref) async {
             return InventoryQuickEatInventoryData(
               items: [availableItem, emptyItem, amountItem, depletedAmountItem],
-              meals: [readyMeal, depletedMeal, potMeal],
+              meals: [readyMeal, depletedMeal, potMeal, openRowsMeal],
             );
           }),
         ],

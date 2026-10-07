@@ -130,8 +130,8 @@ already documented as a reusable presentation surface.
 - `domain/prepared_meal_rules.dart` is the one place that decides what a
   Vorrat meal allows now: eat and plan only when it is out of the pot, has no
   open rows and has portions left; ingredients stay editable until the first
-  portion is gone. The editor, the Kochbuch, quick eat and the commit store
-  ask it instead of combining the meal's flags.
+  portion is gone. Sheets, the Kochbuch, the diary picker, plan accept and the
+  commit store ask it instead of combining the meal's flags.
 
 ## Providers
 

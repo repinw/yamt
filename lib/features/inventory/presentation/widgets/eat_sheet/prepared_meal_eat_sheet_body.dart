@@ -6,6 +6,7 @@ import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
@@ -93,16 +94,13 @@ class _PreparedMealEatSheetBodyState
     // The entered portions start from the opened copy, so a meal that was in
     // the pot when the page opened waits for "Gekocht" and a reopen.
     final isInPot = widget.meal.isInPot || meal.isInPot;
-    // A meal plans with kcal once every row is filled or ignored, also from
-    // the pot; eating it waits for "Gekocht". A pot cooked while the page is
-    // open waits for a reopen, as the entered share would turn into
-    // portions.
+    // A meal plans once every row is filled or ignored, also from the pot;
+    // eating it waits for "Gekocht". A pot cooked while the page is open
+    // waits for a reopen, as the entered share would turn into portions.
     final canPlan =
-        !meal.hasPendingRecipeIngredients &&
+        meal.allows(PreparedMealAction.plan) &&
         widget.meal.isInPot == meal.isInPot;
-    final canEat =
-        !isInPot &&
-        (widget.actions == null || !meal.hasPendingRecipeIngredients);
+    final canEat = !isInPot && meal.allows(PreparedMealAction.eat);
     final nutrition = state.nutrition;
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
     final imageBytes = imageRef == null
@@ -121,9 +119,7 @@ class _PreparedMealEatSheetBodyState
       isPlan: state.isPlan,
       kcal: nutrition?.eaten.kcal,
       confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),
-      // On the detail page a meal with missing ingredients can be logged
-      // only when they are filled or ignored, as on the old meal card. A
-      // meal in the pot can only be planned, a share of the pot.
+      // A meal in the pot can only be planned, a share of the pot.
       onConfirm: canEat || (canPlan && state.isPlan) ? _submit : null,
       onPlan: canPlan ? _plan : null,
       cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
@@ -132,6 +128,8 @@ class _PreparedMealEatSheetBodyState
           title: meal.name,
           caption: isInPot
               ? l10n.inventoryMealInPot
+              : meal.hasPendingRecipeIngredients
+              ? l10n.cookedOpenRows(meal.pendingRecipeIngredients.length)
               : l10n.eatPageInStock(state.stockLabel(l10n)),
           imageUrl: meal.imageUrl,
           imageBytes: imageBytes,
