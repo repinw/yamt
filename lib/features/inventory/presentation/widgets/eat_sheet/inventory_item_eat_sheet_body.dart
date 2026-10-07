@@ -15,16 +15,10 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_amount_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_label_section.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_selection.dart';
 
 const _confirmKey = Key('inventory_item_amount_dialog_confirm_button');
 const _addMoreKey = Key('inventory_item_amount_dialog_add_more_button');
-
-/// Amount and log time chosen on the eat page so far.
-typedef InventoryItemEatSelection = ({
-  int? inventoryAmount,
-  DateTime loggedAt,
-  MealType mealType,
-});
 
 /// Eat page content for an inventory item.
 class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
