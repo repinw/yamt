@@ -24,6 +24,18 @@ class FakePlannedEntryRepository extends PlannedEntryRepository {
   }
 
   @override
+  Future<Set<DateTime>> loadPlannedDays(DateTime first, DateTime last) async {
+    final from = normalizeDiaryDay(first);
+    final to = normalizeDiaryDay(last);
+    return {
+      for (final plan in plans)
+        if (!normalizeDiaryDay(plan.loggedAt).isBefore(from) &&
+            !normalizeDiaryDay(plan.loggedAt).isAfter(to))
+          normalizeDiaryDay(plan.loggedAt),
+    };
+  }
+
+  @override
   Future<void> savePlannedEntry(CalorieEntry entry) async {
     _throwIfFailing();
     plans
