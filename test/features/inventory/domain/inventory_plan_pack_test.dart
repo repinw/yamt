@@ -79,7 +79,7 @@ void main() {
       pickInventoryItemForPlan(_plan, [
         _pack('older', entryDate: DateTime(2026, 8)),
         opened,
-      ]),
+      ])?.item,
       opened,
     );
   });
@@ -87,7 +87,10 @@ void main() {
   test('takes the oldest of the full packs', () {
     final older = _pack('older', entryDate: DateTime(2026, 8));
 
-    expect(pickInventoryItemForPlan(_plan, [_pack('newer'), older]), older);
+    expect(
+      pickInventoryItemForPlan(_plan, [_pack('newer'), older])?.item,
+      older,
+    );
   });
 
   test('skips other foods, empty packs, and packs in another unit', () {
@@ -154,9 +157,43 @@ void main() {
         pickInventoryItemForPlan(
           _plan.copyWith(sourceInventoryItemId: 'gone-too'),
           [_piecePack(pieceGrams: 30)],
-        )?.id,
+        )?.item.id,
         'pieces',
       );
     });
+  });
+
+  test(
+    'a planned pack whose amount cannot be told yields to the same food',
+    () {
+      final plan = _plan.copyWith(
+        sourceInventoryItemId: 'eggs',
+        sourceInventoryAmountToRestore: null,
+      );
+
+      final pack = pickInventoryItemForPlan(plan, [
+        _piecePack(id: 'eggs'),
+        _pack('oats'),
+      ]);
+
+      expect(pack?.item.id, 'oats');
+      expect(pack?.amount, 60);
+    },
+  );
+
+  test('a gram pack without a tracked amount takes no grams', () {
+    final plan = _plan.copyWith(sourceInventoryAmountToRestore: null);
+    final untracked = InventoryItem.create(
+      id: 'untracked',
+      name: 'Oats',
+      brand: 'Kölln',
+      nutrition: _nutrition,
+      entryDate: DateTime(2026, 9),
+      storeName: 'Rewe',
+      quantity: 3,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+
+    expect(inventoryAmountForPlan(plan, untracked), isNull);
   });
 }

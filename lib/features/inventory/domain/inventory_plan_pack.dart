@@ -5,31 +5,32 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 
-/// The pack [plan] eats from: a pack of the planned food with stock left,
-/// opened packs first, then the oldest. Returns null when the Vorrat has
-/// none.
+/// The pack [plan] eats from, with the stock amount it takes there: a pack
+/// of the planned food with stock left, opened packs first, then the oldest.
+/// Returns null when the Vorrat has none.
 ///
 /// The same food is the planned pack, or a pack with the same name and
-/// brand whose stock amount [inventoryAmountForPlan] can tell.
-InventoryItem? pickInventoryItemForPlan(
+/// brand. Either way [inventoryAmountForPlan] must tell its amount.
+({InventoryItem item, int amount})? pickInventoryItemForPlan(
   CalorieEntry plan,
   List<InventoryItem> items,
 ) {
   String key(String name, String? brand) =>
       '${name.trim().toLowerCase()}|${brand?.trim().toLowerCase() ?? ''}';
   final planKey = key(plan.name, plan.brand);
-  final packs = items.where(
-    (item) =>
-        (item.id == plan.sourceInventoryItemId ||
-            (key(item.name, item.brand) == planKey &&
-                inventoryAmountForPlan(plan, item) != null)) &&
-        consumableInventoryAmount(item) != null,
-  );
+  final packs = [
+    for (final item in items)
+      if ((item.id == plan.sourceInventoryItemId ||
+              key(item.name, item.brand) == planKey) &&
+          consumableInventoryAmount(item) != null)
+        if (inventoryAmountForPlan(plan, item) case final amount?)
+          (item: item, amount: amount),
+  ];
   return packs.sorted((a, b) {
-    if (a.isFullyAvailable != b.isFullyAvailable) {
-      return a.isFullyAvailable ? 1 : -1;
+    if (a.item.isFullyAvailable != b.item.isFullyAvailable) {
+      return a.item.isFullyAvailable ? 1 : -1;
     }
-    return a.entryDate.compareTo(b.entryDate);
+    return a.item.entryDate.compareTo(b.item.entryDate);
   }).firstOrNull;
 }
 
@@ -44,7 +45,12 @@ int? inventoryAmountForPlan(CalorieEntry plan, InventoryItem item) {
   }
   final unit = inventoryItemConsumedUnit(item);
   if (unit != null) {
-    return unit == plan.consumedUnit ? plan.consumedAmount.round() : null;
+    // A pack without a tracked amount counts whole packs, not grams.
+    if (unit != plan.consumedUnit || !item.usesAmountProgress) {
+      return null;
+    }
+    final amount = (plan.consumedAmount * item.amountScale).round();
+    return amount < 1 ? null : amount;
   }
   // A pack without a size counts whole packs; its serving is no piece.
   if (item.amountUnit != InventoryAmountUnit.piece) {

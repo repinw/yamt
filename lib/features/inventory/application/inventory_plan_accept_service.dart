@@ -144,14 +144,14 @@ class InventoryPlanAcceptService {
     if (plan.sourceInventoryItemId == null) {
       return await _saveWithoutStock(plan, missedStock: false);
     }
-    final item = pickInventoryItemForPlan(plan, items);
-    final amount = item == null ? null : inventoryAmountForPlan(plan, item);
-    final pending = item == null || amount == null
+    final pack = pickInventoryItemForPlan(plan, items);
+    final pending = pack == null
         ? null
-        : _pendings.stage(item, amount);
-    if (item == null || pending == null) {
+        : _pendings.stage(pack.item, pack.amount);
+    if (pack == null || pending == null) {
       return await _saveWithoutStock(plan);
     }
+    final item = pack.item;
     final outcome = await _eatService.log(
       item: item,
       request: InventoryItemEatRequest(
@@ -164,7 +164,8 @@ class InventoryPlanAcceptService {
       pending: pending,
     );
     if (outcome case InventoryEatLogged(:final entry)) {
-      return (entry: entry, missedStock: false);
+      // The stage takes at most the stock the pack has left.
+      return (entry: entry, missedStock: pending.amount < pack.amount);
     }
     // The calorie editor keeps the stock reserved; accepting has no editor.
     await _pendings.discard(pending.id);
