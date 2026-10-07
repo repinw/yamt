@@ -46,7 +46,7 @@ final class CookingFlowControllerProvider
 }
 
 String _$cookingFlowControllerHash() =>
-    r'b36bca0bbf2284569bd4486c8f3726cec5195860';
+    r'31d103073c2aa09b7d130551d7fe100deec232e2';
 
 /// Controls cookflow business actions.
 

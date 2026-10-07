@@ -3,16 +3,16 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_workflow_context.dart';
+    'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 /// Fills an open row of a meal with a chosen amount of one Vorrat item.
 class PreparedMealPendingItemFill {
   /// Creates the workflows.
-  const new({required this._context});
+  const new({required this._writer});
 
-  final PreparedMealWorkflowContext _context;
+  final PreparedMealWriter _writer;
 
   /// Uses [usedAmount] of the item [itemId] for the open row [ingredient] of
   /// the meal [mealId] and closes the row. Returns whether it worked.
@@ -27,7 +27,7 @@ class PreparedMealPendingItemFill {
     required int usedAmount,
     required InventoryItemRepository inventoryRepository,
   }) async {
-    final currentMeals = await _context.loadMeals();
+    final currentMeals = await _writer.loadMeals();
     final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
     if (mealIndex < 0) {
       return false;
@@ -46,14 +46,14 @@ class PreparedMealPendingItemFill {
       built = buildPreparedMealCreationResult(
         currentItems: currentItems,
         preparedMealId: meal.id,
-        now: _context.buildNow(),
+        now: _writer.buildNow(),
         name: meal.name,
         imageAssetId: meal.imageAssetId,
         totalPortions: meal.totalPortions,
         inputs: [PreparedMealItemInput(itemId: itemId, usedAmount: usedAmount)],
       );
     } on PreparedMealBuildException catch (error) {
-      _context.logMessage('Could not fill an open row: ${error.reason}.');
+      _writer.logMessage('Could not fill an open row: ${error.reason}.');
       return false;
     }
 
@@ -75,16 +75,16 @@ class PreparedMealPendingItemFill {
       totalProtein: totals.totalProtein,
       totalCarbs: totals.totalCarbs,
       totalFat: totals.totalFat,
-      updatedAt: _context.buildNow(),
+      updatedAt: _writer.buildNow(),
     );
-    if (await _context.saveMeals(
+    if (await _writer.saveMeals(
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     )) {
       return true;
     }
 
-    await _context.restoreInventory(
+    await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
       previousItems: currentItems,
     );

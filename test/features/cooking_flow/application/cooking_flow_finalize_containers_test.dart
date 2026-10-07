@@ -7,7 +7,8 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_mutation_workflows.dart';
+    'prepared_meal_creation_workflows.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -16,6 +17,9 @@ import 'package:yamt/features/recipes/application/template_ingredient_parser.dar
 
 /// Replays the 2026-09-27 device run: a two-portion recipe scaled to four
 /// portions, split into two containers.
+
+import '../../../helpers/fake_prepared_meal_repository.dart';
+
 void main() {
   test('every assigned row lands in its container meal', () async {
     final repository = _FakeInventoryItemRepository(<InventoryItem>[
@@ -24,7 +28,7 @@ void main() {
       _gramItem(id: 'butter', name: 'Butter', grams: 250, per100Kcal: 741),
       _gramItem(id: 'tomatoes', name: 'Tomaten', grams: 500, per100Kcal: 18),
     ]);
-    final savedMeals = <PreparedMeal>[];
+    final meals = FakePreparedMealRepository();
 
     final savePlan = buildCookingFlowFinalizeSavePlan(
       template: _template(),
@@ -44,7 +48,7 @@ void main() {
         'template:200 g kleine Tomaten': 'container-2',
       },
     );
-    final result = await _workflows(savedMeals)
+    final result = await _workflows(meals)
         .createPreparedMealsFromTemplateContainers(
           template: savePlan.template,
           totalPortions: savePlan.template.totalPortions,
@@ -59,6 +63,7 @@ void main() {
         );
 
     expect(result.isSuccess, isTrue);
+    final savedMeals = meals.meals;
     expect(savedMeals, hasLength(2));
 
     final first = savedMeals[0];
@@ -150,24 +155,15 @@ const _containers = <CookingFlowFinalizeStorageContainerInput>[
   ),
 ];
 
-PreparedMealMutationWorkflows _workflows(List<PreparedMeal> savedMeals) {
+PreparedMealCreationWorkflows _workflows(FakePreparedMealRepository meals) {
   var nextId = 0;
-  return PreparedMealMutationWorkflows(
-    loadMeals: () async => const <PreparedMeal>[],
-    saveMeals: ({required previousMeals, required nextMeals}) async {
-      savedMeals
-        ..clear()
-        ..addAll(nextMeals);
-      return true;
-    },
-    restoreInventory: ({
-      required inventoryRepository,
-      required previousItems,
-    }) async {},
-    publishMeals: (_) {},
-    buildId: () => 'meal-${nextId++}',
-    buildNow: () => DateTime(2026, 9, 27),
-    logName: 'test',
+  return PreparedMealCreationWorkflows(
+    writer: PreparedMealWriter(
+      meals: meals,
+      clock: () => DateTime(2026, 9, 27),
+      logName: 'test',
+      newId: () => 'meal-${nextId++}',
+    ),
   );
 }
 

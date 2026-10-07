@@ -23,4 +23,13 @@ class SerializedMutationQueue {
     });
     return result.future;
   }
+
+  /// Runs [operation] after all previously queued mutations complete and
+  /// passes its result or error on; a failed mutation does not stop the
+  /// ones after it.
+  Future<T> enqueue<T>(Future<T> Function() operation) {
+    final result = _queue.then((_) => operation());
+    _queue = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
+  }
 }

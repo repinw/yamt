@@ -16,18 +16,19 @@ import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/widgets/'
     'cooking_flow_progress_indicator.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 import 'package:yamt/features/kitchen_utensils/application/'
     'kitchen_utensil_list_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/fake_prepared_meal_repository.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _FakeCookingFlowSessionLocalStore
@@ -114,63 +115,6 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
     return true;
-  }
-}
-
-class _CapturingPreparedMealsController extends PreparedMealsController {
-  new({required this._result});
-
-  final PreparedMealCreationResult _result;
-  Map<String, List<String>>? _capturedAssignments;
-  List<PreparedMealContainerInput>? _capturedContainers;
-  int? _capturedFinalNetWeight;
-  int? _capturedTotalPortions;
-  int? _capturedTemplatePortions;
-
-  @override
-  FutureOr<List<PreparedMeal>> build() {
-    return const <PreparedMeal>[];
-  }
-
-  @override
-  Future<PreparedMealCreationResult> createPreparedMealFromTemplate({
-    required PreparedMeal template,
-    required int totalPortions,
-    required Map<String, List<String>> recipeIngredientAssignments,
-    required Map<String, RecipeIngredientAmountConversion>
-    recipeIngredientAmountConversions,
-    List<PreparedMealItemInput> additionalItems =
-        const <PreparedMealItemInput>[],
-    int? finalNetWeight,
-    Map<String, String> sourceKeysByIngredient = const <String, String>{},
-  }) async {
-    _capturedAssignments = recipeIngredientAssignments;
-    _capturedFinalNetWeight = finalNetWeight;
-    _capturedTotalPortions = totalPortions;
-    _capturedTemplatePortions = template.totalPortions;
-    return _result;
-  }
-
-  @override
-  Future<PreparedMealCreationResult> createPreparedMealsFromTemplateContainers({
-    required PreparedMeal template,
-    required int totalPortions,
-    required Map<String, List<String>> recipeIngredientAssignments,
-    required Map<String, RecipeIngredientAmountConversion>
-    recipeIngredientAmountConversions,
-    required List<PreparedMealContainerInput> containers,
-    required Map<String, String> sourceKeysByIngredient,
-    List<PreparedMealItemInput> additionalItems =
-        const <PreparedMealItemInput>[],
-  }) async {
-    _capturedAssignments = recipeIngredientAssignments;
-    _capturedContainers = containers;
-    _capturedFinalNetWeight = containers.isEmpty
-        ? null
-        : containers.first.finalNetWeight;
-    _capturedTotalPortions = totalPortions;
-    _capturedTemplatePortions = template.totalPortions;
-    return _result;
   }
 }
 
@@ -279,16 +223,8 @@ Widget _buildHarness({
   List<InventoryItem> inventoryItems = const <InventoryItem>[],
   List<KitchenUtensil> kitchenUtensils = const <KitchenUtensil>[],
   VoiceSearchService? voiceSearchService,
-  _CapturingPreparedMealsController? preparedMealsController,
+  FakePreparedMealRepository? meals,
 }) {
-  final controller =
-      preparedMealsController ??
-      _CapturingPreparedMealsController(
-        result: const PreparedMealCreationResult.failure(
-          PreparedMealCreationFailureReason.invalidInput,
-        ),
-      );
-
   final container = ProviderContainer(
     overrides: [
       cookingFlowSessionLocalStoreProvider.overrideWithValue(sessionStore),
@@ -301,7 +237,9 @@ Widget _buildHarness({
       inventoryItemRepositoryProvider.overrideWithValue(
         _FakeInventoryItemRepository(inventoryItems),
       ),
-      preparedMealsControllerProvider.overrideWith(() => controller),
+      preparedMealRepositoryProvider.overrideWithValue(
+        meals ?? FakePreparedMealRepository(),
+      ),
       cookingFlowControllerProvider.overrideWith(CookingFlowController.new),
       kitchenUtensilListProvider.overrideWith(
         (ref) => Stream.value(List<KitchenUtensil>.of(kitchenUtensils)),
@@ -341,12 +279,8 @@ Widget _buildRouterHarness({
       inventoryItemRepositoryProvider.overrideWithValue(
         _FakeInventoryItemRepository(const <InventoryItem>[]),
       ),
-      preparedMealsControllerProvider.overrideWith(
-        () => _CapturingPreparedMealsController(
-          result: const PreparedMealCreationResult.failure(
-            PreparedMealCreationFailureReason.invalidInput,
-          ),
-        ),
+      preparedMealRepositoryProvider.overrideWithValue(
+        FakePreparedMealRepository(),
       ),
       cookingFlowControllerProvider.overrideWith(CookingFlowController.new),
       kitchenUtensilListProvider.overrideWith(
@@ -1387,9 +1321,7 @@ void main() {
       name: 'Tomaten, passiert',
       amount: 800,
     );
-    final preparedMealsController = _CapturingPreparedMealsController(
-      result: const PreparedMealCreationResult.success('meal-1'),
-    );
+    final meals = FakePreparedMealRepository();
     final sessionStore = _FakeCookingFlowSessionLocalStore(
       initialSession: const CookingFlowSession(
         templateId: 'template-1',
@@ -1429,7 +1361,7 @@ void main() {
           ),
         ],
         inventoryItems: <InventoryItem>[inventoryItem],
-        preparedMealsController: preparedMealsController,
+        meals: meals,
       ),
     );
     await tester.pumpAndSettle();
@@ -1437,11 +1369,11 @@ void main() {
     await tester.tap(find.text('Mahlzeit speichern'));
     await tester.pumpAndSettle();
 
-    expect(preparedMealsController._capturedAssignments, <String, List<String>>{
+    final meal = meals.meals.single;
+    expect(meal.recipeIngredientAssignments, <String, List<String>>{
       '600g Tomaten, passiert': <String>['tomatoes'],
     });
-    expect(preparedMealsController._capturedTotalPortions, 3);
-    expect(preparedMealsController._capturedTemplatePortions, 3);
+    expect(meal.totalPortions, 3);
   });
 
   testWidgets('finalize save success clears session and shows success page', (
@@ -1452,9 +1384,7 @@ void main() {
       name: 'Linsen',
       amount: 300,
     );
-    final preparedMealsController = _CapturingPreparedMealsController(
-      result: const PreparedMealCreationResult.success('meal-1'),
-    );
+    final meals = FakePreparedMealRepository();
     final sessionStore = _FakeCookingFlowSessionLocalStore(
       initialSession: const CookingFlowSession(
         templateId: 'template-1',
@@ -1487,7 +1417,7 @@ void main() {
         sessionStore: sessionStore,
         templates: <PreparedMeal>[_template(id: 'template-1')],
         inventoryItems: <InventoryItem>[inventoryItem],
-        preparedMealsController: preparedMealsController,
+        meals: meals,
       ),
     );
     await tester.pumpAndSettle();
@@ -1498,8 +1428,9 @@ void main() {
     expect(find.text('MAHLZEIT GESPEICHERT'), findsOneWidget);
     expect(find.text('Herzhafter Linseneintopf'), findsOneWidget);
     expect(sessionStore.clearCallCount, 1);
-    expect(preparedMealsController._capturedFinalNetWeight, 1500);
-    expect(preparedMealsController._capturedAssignments, <String, List<String>>{
+    final meal = meals.meals.single;
+    expect(meal.finalNetWeight, 1500);
+    expect(meal.recipeIngredientAssignments, <String, List<String>>{
       '300g Linsen': <String>['item-1'],
     });
   });
@@ -1512,9 +1443,7 @@ void main() {
         name: 'Linsen',
         amount: 300,
       );
-      final preparedMealsController = _CapturingPreparedMealsController(
-        result: const PreparedMealCreationResult.success('meal-1'),
-      );
+      final meals = FakePreparedMealRepository();
       final sessionStore = _FakeCookingFlowSessionLocalStore(
         initialSession: const CookingFlowSession(
           templateId: 'template-1',
@@ -1547,7 +1476,7 @@ void main() {
           sessionStore: sessionStore,
           templates: <PreparedMeal>[_template(id: 'template-1')],
           inventoryItems: <InventoryItem>[inventoryItem],
-          preparedMealsController: preparedMealsController,
+          meals: meals,
         ),
       );
       await tester.pumpAndSettle();
@@ -1555,13 +1484,9 @@ void main() {
       await tester.tap(find.text('Mahlzeit speichern'));
       await tester.pumpAndSettle();
 
-      expect(preparedMealsController._capturedFinalNetWeight, 1500);
-      expect(preparedMealsController._capturedTotalPortions, 3);
-      expect(preparedMealsController._capturedTemplatePortions, 3);
-      expect(
-        preparedMealsController._capturedContainers?.single.totalPortions,
-        3,
-      );
+      final meal = meals.meals.single;
+      expect(meal.finalNetWeight, 1500);
+      expect(meal.totalPortions, 3);
     },
   );
 }

@@ -8,6 +8,7 @@ import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/cooking_flow/presentation/controllers/cooking_flow_controller.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_mutation_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -19,8 +20,8 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         inventoryItemRepositoryProvider.overrideWithValue(inventoryRepository),
-        preparedMealsControllerProvider.overrideWith(
-          _SuccessPreparedMealsController.new,
+        preparedMealMutationServiceProvider.overrideWith(
+          (ref) => _SuccessMealMutationService(),
         ),
         cookingFlowSessionLocalStoreProvider.overrideWithValue(
           _FakeCookingFlowSessionLocalStore(),
@@ -146,12 +147,8 @@ class _BlockingInventoryItemRepository implements InventoryItemRepository {
   }
 }
 
-class _SuccessPreparedMealsController extends PreparedMealsController {
-  @override
-  FutureOr<List<PreparedMeal>> build() {
-    return const <PreparedMeal>[];
-  }
-
+class _SuccessMealMutationService extends Fake
+    implements PreparedMealMutationService {
   @override
   Future<PreparedMealCreationResult> createPreparedMealsFromTemplateContainers({
     required PreparedMeal template,

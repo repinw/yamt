@@ -7,7 +7,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_pending_ingredient_support.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_workflow_context.dart';
+    'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -16,9 +16,9 @@ import 'package:yamt/features/recipes/application/template_ingredient_parser.dar
 /// Handles prepared meal editing and inventory reconciliation workflows.
 class PreparedMealEditingWorkflows {
   /// Creates editing workflows.
-  const new({required this._context});
+  const new({required this._writer});
 
-  final PreparedMealWorkflowContext _context;
+  final PreparedMealWriter _writer;
 
   /// Updates a prepared meal's editable details.
   Future<bool> updatePreparedMealDetails({
@@ -35,7 +35,7 @@ class PreparedMealEditingWorkflows {
       return false;
     }
 
-    final currentMeals = await _context.loadMeals();
+    final currentMeals = await _writer.loadMeals();
     final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
     if (mealIndex < 0) {
       return false;
@@ -94,7 +94,7 @@ class PreparedMealEditingWorkflows {
     }
 
     final nextMeals = List<PreparedMeal>.from(currentMeals);
-    final updatedAt = _context.buildNow();
+    final updatedAt = _writer.buildNow();
     nextMeals[mealIndex] = imageChanged
         ? currentMeal.copyWith(
             name: name,
@@ -102,10 +102,7 @@ class PreparedMealEditingWorkflows {
             updatedAt: updatedAt,
           )
         : currentMeal.copyWith(name: name, updatedAt: updatedAt);
-    return _context.saveMeals(
-      previousMeals: currentMeals,
-      nextMeals: nextMeals,
-    );
+    return _writer.saveMeals(previousMeals: currentMeals, nextMeals: nextMeals);
   }
 
   Future<bool> _updatePreparedMealContent({
@@ -157,7 +154,7 @@ class PreparedMealEditingWorkflows {
 
     final nextMeals = List<PreparedMeal>.from(currentMeals);
     nextMeals[mealIndex] = buildResult.preparedMeal;
-    final mealsSaved = await _context.saveMeals(
+    final mealsSaved = await _writer.saveMeals(
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     );
@@ -165,7 +162,7 @@ class PreparedMealEditingWorkflows {
       return true;
     }
 
-    await _context.restoreInventory(
+    await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
       previousItems: currentItems,
     );
@@ -185,7 +182,7 @@ class PreparedMealEditingWorkflows {
       return buildPreparedMealEditResult(
         currentMeal: currentMeal,
         currentItems: currentItems,
-        now: _context.buildNow(),
+        now: _writer.buildNow(),
         name: name,
         imageChanged: imageChanged,
         imageAssetId: imageAssetId,
@@ -250,7 +247,7 @@ class PreparedMealEditingWorkflows {
       return false;
     }
 
-    final currentMeals = await _context.loadMeals();
+    final currentMeals = await _writer.loadMeals();
     final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
     if (mealIndex < 0) {
       return false;
@@ -305,10 +302,10 @@ class PreparedMealEditingWorkflows {
       totalProtein: nutritionTotals.totalProtein,
       totalCarbs: nutritionTotals.totalCarbs,
       totalFat: nutritionTotals.totalFat,
-      updatedAt: _context.buildNow(),
+      updatedAt: _writer.buildNow(),
     );
 
-    final mealsSaved = await _context.saveMeals(
+    final mealsSaved = await _writer.saveMeals(
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     );
@@ -316,7 +313,7 @@ class PreparedMealEditingWorkflows {
       return true;
     }
 
-    await _context.restoreInventory(
+    await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
       previousItems: currentItems,
     );
@@ -333,7 +330,7 @@ class PreparedMealEditingWorkflows {
       return false;
     }
 
-    final currentMeals = await _context.loadMeals();
+    final currentMeals = await _writer.loadMeals();
     final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
     if (mealIndex < 0) {
       return false;
@@ -351,9 +348,9 @@ class PreparedMealEditingWorkflows {
     final nextMeals = List<PreparedMeal>.from(currentMeals);
     nextMeals[mealIndex] = currentMeal.copyWith(
       pendingRecipeIngredients: nextPendingIngredients,
-      updatedAt: _context.buildNow(),
+      updatedAt: _writer.buildNow(),
     );
-    return await _context.saveMeals(
+    return await _writer.saveMeals(
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     );
@@ -364,7 +361,7 @@ class PreparedMealEditingWorkflows {
     required String mealId,
     required InventoryItemRepository inventoryRepository,
   }) async {
-    final currentMeals = await _context.loadMeals();
+    final currentMeals = await _writer.loadMeals();
     final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
     if (mealIndex < 0) {
       return false;
@@ -384,7 +381,7 @@ class PreparedMealEditingWorkflows {
 
     final nextMeals = List<PreparedMeal>.from(currentMeals)
       ..removeAt(mealIndex);
-    final mealsSaved = await _context.saveMeals(
+    final mealsSaved = await _writer.saveMeals(
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     );
@@ -392,7 +389,7 @@ class PreparedMealEditingWorkflows {
       return true;
     }
 
-    await _context.restoreInventory(
+    await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
       previousItems: currentItems,
     );
