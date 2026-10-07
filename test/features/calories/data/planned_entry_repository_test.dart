@@ -79,6 +79,36 @@ void main() {
     expect(plans.map((plan) => plan.id), ['early', 'late']);
   });
 
+  test('loads the days that hold plans within a range', () async {
+    final repository = PlannedEntryRepository(
+      dataCipher: signedIn,
+      firestore: FakeFirebaseFirestore(),
+    );
+    await repository.savePlannedEntry(
+      _plan('before', loggedAt: DateTime(2026, 10, 4, 23)),
+    );
+    await repository.savePlannedEntry(
+      _plan('first', loggedAt: DateTime(2026, 10, 5, 8)),
+    );
+    await repository.savePlannedEntry(
+      _plan('second', loggedAt: DateTime(2026, 10, 5, 19)),
+    );
+    await repository.savePlannedEntry(
+      _plan('last', loggedAt: DateTime(2026, 10, 9, 23, 59)),
+    );
+    await repository.savePlannedEntry(
+      _plan('after', loggedAt: DateTime(2026, 10, 10)),
+    );
+    await pumpEventQueue();
+
+    final days = await repository.loadPlannedDays(
+      DateTime(2026, 10, 5),
+      DateTime(2026, 10, 9),
+    );
+
+    expect(days, {DateTime(2026, 10, 5), DateTime(2026, 10, 9)});
+  });
+
   test('deletes a plan', () async {
     final repository = PlannedEntryRepository(
       dataCipher: signedIn,
@@ -102,6 +132,10 @@ void main() {
     final plan = _plan('a', loggedAt: DateTime(2026, 10, 6, 8));
 
     expect(await repository.loadPlannedEntriesForDay(plan.loggedAt), isEmpty);
+    expect(
+      await repository.loadPlannedDays(plan.loggedAt, plan.loggedAt),
+      isEmpty,
+    );
     await expectLater(
       repository.savePlannedEntry(plan),
       throwsA(isA<StateError>()),

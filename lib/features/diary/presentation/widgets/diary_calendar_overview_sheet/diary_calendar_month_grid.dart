@@ -7,7 +7,7 @@ import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 
 const double _cellHeight = 44;
 const double _dayCircleSize = 38;
-const double _todayDotSize = 4;
+const double _dotSize = 4;
 const int _maxWeekRows = 6;
 
 /// Localized Monday-to-Sunday weekday labels above the month grid.
@@ -53,8 +53,13 @@ class DiaryCalendarMonthGrid extends StatelessWidget {
     required this.today,
     required this.bounds,
     required this.onSelectDay,
+    this.planDays = const {},
     super.key,
   });
+
+  /// Key of the dot under [day], shown for today and for days with plans.
+  static ValueKey<String> dotKey(DateTime day) =>
+      ValueKey('diary-calendar-dot-${day.year}-${day.month}-${day.day}');
 
   /// Fixed grid height so every month page has the same size.
   static const double height = _cellHeight * _maxWeekRows;
@@ -70,6 +75,10 @@ class DiaryCalendarMonthGrid extends StatelessWidget {
 
   /// Selectable range.
   final DiaryCalendarBounds bounds;
+
+  /// Days with open plans. They get a faint dot, or a warning dot once the
+  /// day is over and the plan was never eaten.
+  final Set<DateTime> planDays;
 
   /// Called when a selectable day is tapped.
   final ValueChanged<DateTime> onSelectDay;
@@ -111,22 +120,31 @@ class DiaryCalendarMonthGrid extends StatelessWidget {
       day: day,
       isSelected: isSameCalendarDay(day, selectedDay),
       isToday: isSameCalendarDay(day, today),
+      plan: !planDays.contains(day)
+          ? null
+          : day.isBefore(today)
+          ? _DayPlan.overdue
+          : _DayPlan.open,
       onTap: bounds.contains(day) ? () => onSelectDay(day) : null,
     );
   }
 }
+
+enum _DayPlan { open, overdue }
 
 class _DiaryCalendarDayCell extends StatelessWidget {
   const new({
     required this.day,
     required this.isSelected,
     required this.isToday,
+    required this.plan,
     required this.onTap,
   });
 
   final DateTime day;
   final bool isSelected;
   final bool isToday;
+  final _DayPlan? plan;
   final VoidCallback? onTap;
 
   @override
@@ -139,6 +157,15 @@ class _DiaryCalendarDayCell extends StatelessWidget {
         : onTap != null
         ? colors.onSurface
         : colors.onSurface.withValues(alpha: 0.3);
+    final dotColor = switch ((isSelected, plan)) {
+      (true, null) => null,
+      (true, _) => colors.onPrimary,
+      (false, _DayPlan.overdue) => colors.error,
+      // Today's own dot also stands for its plans.
+      _ when isToday => accent,
+      (false, _DayPlan.open) => colors.onSurfaceVariant,
+      (false, null) => null,
+    };
 
     return Center(
       child: Material(
@@ -161,14 +188,15 @@ class _DiaryCalendarDayCell extends StatelessWidget {
                         : FontWeight.w600,
                   ),
                 ),
-                if (isToday && !isSelected)
+                if (dotColor != null)
                   Positioned(
                     bottom: AppSpacing.xxs * 2,
                     child: SizedBox.square(
-                      dimension: _todayDotSize,
+                      key: DiaryCalendarMonthGrid.dotKey(day),
+                      dimension: _dotSize,
                       child: DecoratedBox(
                         decoration: BoxDecoration(
-                          color: accent,
+                          color: dotColor,
                           shape: BoxShape.circle,
                         ),
                       ),
