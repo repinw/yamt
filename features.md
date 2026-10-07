@@ -426,7 +426,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   ingredient), the Vorrat page after a pick also has "Planen" and
   "Ins Tagebuch" icons next to "In Vorrat": "Ins Tagebuch" opens the eat page
   and eats the product instead of storing it; "Planen" asks for the day first
-  and opens the eat page on it, where the button says "Einplanen".
+  (from today on, like every plan button) and opens the eat page on it, where
+  the button says "Einplanen" and plans the food, also for today.
 - A package size in pieces ("10 Stück") shows a "Grams per piece" input.
   The grams become the product's serving, so the eat page offers one piece
   in grams; an OFF serving such as "1 Ei (60 g)" fills it.

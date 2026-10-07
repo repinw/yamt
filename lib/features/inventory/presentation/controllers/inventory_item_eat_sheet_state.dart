@@ -119,14 +119,16 @@ class InventoryItemEatSheetState {
   /// Whether the food is saved as a plan: its day lies after [today].
   bool get isPlan => isDiaryFutureDay(day: loggedAt, today: today);
 
+  /// Whether the food is logged on a day before [today].
+  bool get isPastDay => isDiaryFutureDay(day: today, today: loggedAt);
+
   /// Meal the food is logged to.
   final MealType mealType;
 
   /// Marks on the amount ruler, in the unit of the amount field.
   final List<InventoryItemEatMarker> markers;
 
-  /// Portions the user named in this sheet, or piece sizes in portion
-  /// mode. They are saved with the food.
+  /// Portions named in this sheet, or piece sizes in portion mode; saved.
   final List<InventoryItemEatPortion> rememberedPortions;
 
   /// Known weights of one piece in portion mode, such as egg sizes.
@@ -167,8 +169,7 @@ class InventoryItemEatSheetState {
     );
   }
 
-  /// Largest value of the amount ruler: the stock, in pieces in portion
-  /// mode.
+  /// Largest value of the amount ruler: the stock (pieces in portion mode).
   double get amountMax {
     final max = calculator.rulerMax.toDouble();
     return usesPortionMode ? max / calculator.inventoryAmountScale : max;

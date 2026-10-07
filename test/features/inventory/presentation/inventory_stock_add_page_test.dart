@@ -75,18 +75,18 @@ void main() {
     expect(results.single, isA<InventoryStockAddEat>());
   });
 
-  testWidgets('"Planen" plans for a later day at the time of now', (
+  testWidgets('"Planen" plans from today on, at the time of now', (
     tester,
   ) async {
     final results = await _open(tester, offersEat: true);
 
     await tester.tap(find.byKey(EatPageScaffold.planButtonKey));
     await tester.pumpAndSettle();
-    // The picker starts tomorrow; today cannot be planned from here.
+    // The picker starts on today, like every plan button.
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
     final plan = results.single! as InventoryStockAddPlan;
-    expect(plan.day, DateTime(2026, 5, 14, 12, 30));
+    expect(plan.day, _now);
   });
 }

@@ -61,7 +61,8 @@ pickProductSearchHubMealFood({
 /// result holds the last edit. `toStock` is true when the user puts the food
 /// into the Vorrat instead of eating it, which [canStore] offers. [loggedAt]
 /// replaces the route's preselected day. Without [canAddMore] the page has
-/// no button to add more.
+/// no button to add more. With [plans], the page's button says "Einplanen"
+/// and the food is planned for its day, also for today.
 Future<
   ({
     InventoryReceiptManualProductResult result,
@@ -78,6 +79,7 @@ eatProductSearchHubDiaryFood({
   DateTime? loggedAt,
   bool canStore = true,
   bool canAddMore = true,
+  bool plans = false,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final picked = await _eatWithEdit(
@@ -95,6 +97,7 @@ eatProductSearchHubDiaryFood({
       initialLoggedAt: loggedAt ?? args.preselectedLoggedAt,
       initialMealType: args.preselectedMealType,
       canStore: canStore,
+      plansOnly: plans,
     ),
   );
   final eat = picked.eat;
@@ -191,6 +194,7 @@ class _EditableEatPage extends StatelessWidget {
     this.initialLoggedAt,
     this.initialMealType,
     this.canStore = false,
+    this.plansOnly = false,
   });
 
   final InventoryItem item;
@@ -200,6 +204,7 @@ class _EditableEatPage extends StatelessWidget {
   final DateTime? initialLoggedAt;
   final MealType? initialMealType;
   final bool canStore;
+  final bool plansOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -216,6 +221,7 @@ class _EditableEatPage extends StatelessWidget {
       addMoreActionText: addMoreActionText,
       hasOpenStock: true,
       confirmLabel: confirmLabel,
+      plansOnly: plansOnly,
       onSubmitted: (result) => Navigator.of(context).pop(_EatSubmitted(result)),
       onCompleteValues: () => Navigator.of(context).pop(const _EatEdit()),
       onStore: canStore

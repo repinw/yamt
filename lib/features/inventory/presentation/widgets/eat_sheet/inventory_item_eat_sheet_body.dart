@@ -35,6 +35,7 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.onSubmitted,
     this.confirmLabel,
     this.canPlan = true,
+    this.plansOnly = false,
     this.onStore,
     this.mealKcal,
     this.secondaryIntent = InventoryItemEatSheetIntent.addMore,
@@ -88,6 +89,10 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
 
   /// Whether the page offers to plan; off where the result drops the plan.
   final bool canPlan;
+
+  /// Whether the main button plans the food, also for today ("Einplanen").
+  /// A day before today is logged.
+  final bool plansOnly;
 
   /// Shows the "In den Vorrat" button, which runs this instead of eating.
   final VoidCallback? onStore;
@@ -181,6 +186,7 @@ class _InventoryItemEatSheetBodyState
     final addMoreText = widget.addMoreActionText;
     final amountField = state.usesPortionMode ? _pieceCount : _inventoryAmount;
     final footer = widget.footer;
+    final plansOnly = widget.plansOnly && !state.isPastDay;
 
     return EatPageScaffold(
       whenControl: EatWhenMenu(
@@ -191,12 +197,12 @@ class _InventoryItemEatSheetBodyState
         onMealTypeChanged: _controller.setMealType,
         allowsPlanDays: _canPlan,
       ),
-      isPlan: state.isPlan,
+      isPlan: state.isPlan || plansOnly,
       kcal: widget.mealKcal ?? nutrition?.eaten.kcal,
       confirmLabel: widget.confirmLabel,
       confirmButtonKey: _confirmKey,
-      onConfirm: () => _submit(widget.confirmIntent),
-      onPlan: _canPlan ? _plan : null,
+      onConfirm: () => _submit(widget.confirmIntent, asPlan: plansOnly),
+      onPlan: _canPlan && !widget.plansOnly ? _plan : null,
       onStore: widget.onStore,
       cancelButtonKey: const Key('inventory_item_amount_dialog_cancel_button'),
       secondaryLabel: addMoreText,

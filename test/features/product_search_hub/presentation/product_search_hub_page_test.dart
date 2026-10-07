@@ -754,6 +754,41 @@ void main() {
     );
   });
 
+  testWidgets('the Vorrat page plans the product from its plan icon', (
+    tester,
+  ) async {
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.search,
+        offersEatInstead: true,
+      ),
+      searchResults: [_searchProduct()],
+    );
+
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(EatPageScaffold.planButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    // The eat page plans the food, also for today.
+    expect(find.byType(InventoryItemEatSheetBody), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(
+          const Key('inventory_item_amount_dialog_confirm_button'),
+        ),
+        matching: find.text('Plan'),
+      ),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('the Vorrat page names a missing package size and opens the '
       'editor from it', (tester) async {
     ManualProductSearchRouteArgs? childArgs;
