@@ -36,6 +36,7 @@ class ProductSearchHubRouteArgs {
     this.preselectedMealType,
     this.preselectedLoggedAt,
     this.autofocusSearchField = true,
+    this.offersEatInstead = false,
   });
 
   /// Inventory add route args.
@@ -47,6 +48,7 @@ class ProductSearchHubRouteArgs {
     bool includeStoreInSearch = true,
     bool includeWeightInSearch = true,
     bool autofocusSearchField = true,
+    bool offersEatInstead = false,
   }) : this(
          mode: ProductSearchHubMode.inventory,
          initialIntent: initialIntent,
@@ -55,6 +57,7 @@ class ProductSearchHubRouteArgs {
          includeStoreInSearch: includeStoreInSearch,
          includeWeightInSearch: includeWeightInSearch,
          autofocusSearchField: autofocusSearchField,
+         offersEatInstead: offersEatInstead,
        );
 
   /// Diary eat route args.
@@ -125,6 +128,11 @@ class ProductSearchHubRouteArgs {
 
   /// Whether the search intent opens the keyboard.
   final bool autofocusSearchField;
+
+  /// Whether the Vorrat page after a pick also offers to eat or plan the
+  /// food instead. Only the Vorrat's own add sheet sets it; a hub that picks
+  /// an ingredient, such as the cooking flow's, must not eat it.
+  final bool offersEatInstead;
 
   /// Whether the hub is running in diary mode.
   bool get isDiary => mode == ProductSearchHubMode.diary;

@@ -96,7 +96,10 @@ class InventoryActionSheetFlow {
   }) async {
     await context.push<void>(
       AppRoutes.homeProductSearchHub,
-      extra: ProductSearchHubRouteArgs.inventory(initialIntent: initialIntent),
+      extra: ProductSearchHubRouteArgs.inventory(
+        initialIntent: initialIntent,
+        offersEatInstead: true,
+      ),
     );
   }
 }

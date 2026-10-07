@@ -11,11 +11,16 @@ import 'package:yamt/features/product_search_hub/presentation/'
 /// opens the editor and comes back to the page with the edited product.
 ///
 /// Returns [result] with the picked package count, or null when the user
-/// closes the page.
-Future<InventoryReceiptManualProductResult?> reviewProductSearchHubStockResult({
+/// closes the page. With [offersEat], the user may eat the product instead
+/// (`eats`), on the picked day `eatOn` when it is planned.
+Future<
+  ({InventoryReceiptManualProductResult result, bool eats, DateTime? eatOn})?
+>
+reviewProductSearchHubStockResult({
   required BuildContext context,
   required ProductSearchHubRouteArgs args,
   required InventoryReceiptManualProductResult result,
+  bool offersEat = false,
 }) async {
   var current = result;
   var packages = 1;
@@ -24,6 +29,7 @@ Future<InventoryReceiptManualProductResult?> reviewProductSearchHubStockResult({
       context: context,
       item: current.item,
       initialPackages: packages,
+      offersEat: offersEat,
     );
     if (!context.mounted) {
       return null;
@@ -33,12 +39,20 @@ Future<InventoryReceiptManualProductResult?> reviewProductSearchHubStockResult({
         return null;
       case InventoryStockAddConfirmed(:final packages):
         final item = current.item;
-        return current.withItem(
-          item.withDerivedAmount(
-            quantity: packages,
-            fallbackUnit: item.amountUnit,
+        return (
+          result: current.withItem(
+            item.withDerivedAmount(
+              quantity: packages,
+              fallbackUnit: item.amountUnit,
+            ),
           ),
+          eats: false,
+          eatOn: null,
         );
+      case InventoryStockAddEat():
+        return (result: current, eats: true, eatOn: null);
+      case InventoryStockAddPlan(:final day):
+        return (result: current, eats: true, eatOn: day);
       case InventoryStockAddEdit(packages: final count):
         packages = count;
         // An edit keeps the user's own copy; the catalog product stays.

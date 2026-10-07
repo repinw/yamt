@@ -1,7 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -26,7 +31,12 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// since the product is not in the Vorrat yet.
 class InventoryStockAddPage extends ConsumerStatefulWidget {
   /// Creates the page for [item].
-  const new({required this.item, this.initialPackages = 1, super.key});
+  const new({
+    required this.item,
+    this.initialPackages = 1,
+    this.offersEat = false,
+    super.key,
+  });
 
   /// Key of the confirm button.
   static const confirmKey = Key('inventory_stock_add_confirm');
@@ -46,6 +56,9 @@ class InventoryStockAddPage extends ConsumerStatefulWidget {
   /// Number of packages to start with, at least one.
   final int initialPackages;
 
+  /// Whether the page also offers to eat or plan the product instead.
+  final bool offersEat;
+
   @override
   ConsumerState<InventoryStockAddPage> createState() =>
       _InventoryStockAddPageState();
@@ -56,6 +69,24 @@ class _InventoryStockAddPageState extends ConsumerState<InventoryStockAddPage> {
   // shows the shopping list hint on this page.
   final GlobalKey _cardKey = GlobalKey();
   late int _packages = widget.initialPackages;
+
+  /// Asks for a later day, then plans the product for it at the time of day
+  /// of now, so the eat page picks the meal for that time. Today is left
+  /// out: the eat page there would log the food instead of planning it.
+  void _plan() => unawaited(() async {
+    final now = ref.read(clockProvider)();
+    final tomorrow = addDiaryDays(dateOnly(now), 1);
+    final day = await showDatePicker(
+      context: context,
+      initialDate: tomorrow,
+      firstDate: tomorrow,
+      lastDate: addDiaryDays(dateOnly(now), diaryPlanAheadDayCount),
+    );
+    if (day != null && mounted) {
+      Navigator.of(context)
+          .pop(InventoryStockAddPlan(loggedAtOnDay(day, now: now)));
+    }
+  }());
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +115,10 @@ class _InventoryStockAddPageState extends ConsumerState<InventoryStockAddPage> {
       onConfirm: () =>
           Navigator.of(context).pop(InventoryStockAddConfirmed(_packages)),
       cancelButtonKey: const Key('inventory_stock_add_close'),
+      onPlan: widget.offersEat ? _plan : null,
+      onDiary: widget.offersEat
+          ? () => Navigator.of(context).pop(const InventoryStockAddEat())
+          : null,
       children: [
         EatPageHeader(
           title: item.name,

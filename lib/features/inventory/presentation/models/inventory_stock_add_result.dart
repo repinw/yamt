@@ -21,3 +21,18 @@ final class InventoryStockAddEdit extends InventoryStockAddResult {
   /// Number of packages picked so far.
   final int packages;
 }
+
+/// Eat the product instead of putting it into the Vorrat.
+final class InventoryStockAddEat extends InventoryStockAddResult {
+  /// Creates the result.
+  const new();
+}
+
+/// Plan the product for [day] instead of putting it into the Vorrat.
+final class InventoryStockAddPlan extends InventoryStockAddResult {
+  /// Creates the result.
+  const new(this.day);
+
+  /// The picked day.
+  final DateTime day;
+}
