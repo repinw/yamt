@@ -99,8 +99,7 @@ class InventoryItemEatSheetController
     if (withSteppedPortions(state, up: up) case final next?) _update(next);
   }
 
-  /// Moves the amount to the next whole package up, or down when [up] is
-  /// false.
+  /// Moves the amount one whole package up, or down when [up] is false.
   void stepPackages({required bool up}) {
     if (withSteppedPackages(state, up: up) case final next?) _update(next);
   }
@@ -232,23 +231,30 @@ class InventoryItemEatSheetController
   }
 
   /// Validates the input for [intent]. [asPlan] plans the food, even on
-  /// today.
+  /// today; [planDay] plans it on that day without showing it first, unless
+  /// the input is rejected and the page stays open.
   InventoryItemEatSubmitOutcome submit(
     InventoryItemEatSheetIntent intent, {
     bool asPlan = false,
+    DateTime? planDay,
   }) {
-    final draft = buildInventoryItemEatDraft(state);
+    final source = planDay == null
+        ? state
+        : state.copyWith(
+            loggedAt: loggedAtOnDay(planDay, now: ref.read(clockProvider)()),
+          );
+    final draft = buildInventoryItemEatDraft(source);
     if (draft.hasValidationErrors) {
-      _update(applyInventoryItemEatDraftErrors(state, draft));
+      _update(applyInventoryItemEatDraftErrors(source, draft));
       return const InventoryItemEatRejected();
     }
     return InventoryItemEatSubmitted(
       InventoryItemEatSheetResult(
         intent: intent,
         request: buildInventoryItemEatRequest(
-          state,
+          source,
           draft,
-          namedPortions: namedPortions(state, _resolution(state)),
+          namedPortions: namedPortions(source, _resolution(source)),
           isPlan: asPlan,
         ),
       ),

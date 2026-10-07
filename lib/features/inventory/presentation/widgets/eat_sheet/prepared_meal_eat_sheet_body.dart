@@ -202,12 +202,13 @@ class _PreparedMealEatSheetBodyState
       loggedAt: state.loggedAt,
     );
     if (day == null || !mounted) return;
-    _controller.setLoggedDay(day);
-    _submit(asPlan: true);
+    // The page closes as it is; showing the day first would rename the
+    // main button to "Einplanen" for a frame.
+    _submit(asPlan: true, planDay: day);
   }
 
-  void _submit({bool asPlan = false}) {
-    final request = _controller.submit(asPlan: asPlan);
+  void _submit({bool asPlan = false, DateTime? planDay}) {
+    final request = _controller.submit(asPlan: asPlan, planDay: planDay);
     if (request == null) {
       return;
     }

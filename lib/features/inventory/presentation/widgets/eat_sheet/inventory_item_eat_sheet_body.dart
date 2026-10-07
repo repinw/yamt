@@ -270,16 +270,18 @@ class _InventoryItemEatSheetBodyState
       loggedAt: state.loggedAt,
     );
     if (day == null || !mounted) return;
-    _controller.setLoggedDay(day);
-    _submit(widget.confirmIntent, asPlan: true);
+    // The page closes as it is; showing the day first would rename the
+    // main button to "Einplanen" for a frame.
+    _submit(widget.confirmIntent, asPlan: true, planDay: day);
   }
 
   void _submit(
     InventoryItemEatSheetIntent intent, {
     bool asPlan = false,
+    DateTime? planDay,
     ValueChanged<InventoryItemEatSheetResult>? to,
   }) {
-    switch (_controller.submit(intent, asPlan: asPlan)) {
+    switch (_controller.submit(intent, asPlan: asPlan, planDay: planDay)) {
       case InventoryItemEatSubmitted(:final result):
         FocusManager.instance.primaryFocus?.unfocus();
         final onSubmitted = to ?? widget.onSubmitted;

@@ -1283,6 +1283,16 @@
   "diaryQuickEntryAiHint": "Missing macros count as 0 g. The AI estimate is more precise.",
   "diaryQuickEntryAiAction": "Estimate with AI instead",
   "diaryQuickEntrySaved": "Added to diary",
+  "diaryPlanSavedFor": "Planned for {day}",
+  "@diaryPlanSavedFor": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPlanSavedToday": "today",
+  "diaryPlanSavedTomorrow": "tomorrow",
   "diaryPlanSaved": "Planned for the day",
   "diaryPlanDeleted": "Plan deleted",
   "diaryPlanDeleteFailed": "Plan could not be deleted",

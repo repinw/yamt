@@ -1202,6 +1202,16 @@
   "diaryQuickEntryAiHint": "Fehlende Makros zählen als 0 g. Die KI-Schätzung ist genauer.",
   "diaryQuickEntryAiAction": "Lieber mit KI schätzen",
   "diaryQuickEntrySaved": "Ins Tagebuch eingetragen",
+  "diaryPlanSavedFor": "Für {day} geplant",
+  "@diaryPlanSavedFor": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPlanSavedToday": "heute",
+  "diaryPlanSavedTomorrow": "morgen",
   "diaryPlanSaved": "Für den Tag geplant",
   "diaryPlanDeleted": "Plan gelöscht",
   "diaryPlanDeleteFailed": "Plan konnte nicht gelöscht werden",
