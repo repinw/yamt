@@ -7,8 +7,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
 import 'package:yamt/features/calories/domain/daily_nutrition_target_resolver.dart';
-import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
-import 'package:yamt/features/calories/domain/macro_carryover_calculator.dart';
 import 'package:yamt/features/calories/domain/macro_day_targets.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 
@@ -38,16 +36,14 @@ class DailyNutritionTargetResolverService
         settings?.goalEntryForDay(day)?.calculatorProfile ?? profile;
     final isTraining = settings?.isTrainingDay(day) ?? false;
     final macroWeightKg = settings?.macroWeightKgForDay(day);
-    final weightKg = macroCountedWeightKg(
-      profile: profile,
-      macroWeightKg: macroWeightKg,
-    );
 
-    final baseResult = resolveMacroDayTargets(
+    // The carryover follows the same rules as the day's own kcal: the macros
+    // of goal plus carryover. Protein keeps the weekly average as its base.
+    final macros = resolveMacroDayTargets(
       macroSettings: macroSettings,
       profile: profile,
       macroWeightKg: macroWeightKg,
-      goalKcal: goalKcal,
+      goalKcal: goalKcal + carryoverKcal,
       baseGoalKcal: settings?.baseGoalKcalForDay(day) ?? goalKcal,
       // A training day set only for this day counts too, not only the
       // weekly schedule.
@@ -56,21 +52,14 @@ class DailyNutritionTargetResolverService
       isLosingWeight: dayProfile?.goalMode == CalorieGoalMode.lose,
     );
 
-    final adjustedMacros = _applyCarryoverIfNeeded(
-      baseResult: baseResult,
-      carryoverKcal: carryoverKcal,
-      weightKg: weightKg,
-      goalKcal: goalKcal,
-    );
-
     final isPause = settings?.isPauseDay(day) ?? false;
 
     return DailyNutritionTarget(
       date: day,
-      goalKcal: goalKcal,
-      carbsGrams: adjustedMacros.carbs,
-      proteinGrams: adjustedMacros.protein,
-      fatGrams: adjustedMacros.fat,
+      goalKcal: goalKcal + carryoverKcal,
+      carbsGrams: macros.carbs,
+      proteinGrams: macros.protein,
+      fatGrams: macros.fat,
       baseGoalKcal: settings?.dailyKcalGoal ?? goalKcal,
       isTrainingDay: isTraining,
       isPauseDay: isPause,
@@ -83,29 +72,6 @@ class DailyNutritionTargetResolverService
     required double goalKcal,
   }) {
     return resolveTarget(day: day, goalKcal: goalKcal);
-  }
-
-  MacroCalculationResult _applyCarryoverIfNeeded({
-    required MacroCalculationResult baseResult,
-    required double carryoverKcal,
-    required double weightKg,
-    required double goalKcal,
-  }) {
-    if (carryoverKcal == 0.0) {
-      return baseResult;
-    }
-    final delta = MacroCarryoverCalculator.calculateCarryoverDelta(
-      baseCarbs: baseResult.carbs,
-      baseFat: baseResult.fat,
-      carryoverKcal: carryoverKcal,
-      weightKg: weightKg,
-      baseGoalKcal: goalKcal,
-    );
-    return MacroCalculationResult(
-      carbs: baseResult.carbs + delta.carbsGrams,
-      protein: baseResult.protein + delta.proteinGrams,
-      fat: baseResult.fat + delta.fatGrams,
-    );
   }
 }
 

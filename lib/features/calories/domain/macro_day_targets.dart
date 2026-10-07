@@ -18,7 +18,8 @@ double macroCountedWeightKg({
   );
 }
 
-/// Macro targets of one day before any carryover.
+/// Macro targets of one day for [goalKcal], which includes the day's
+/// carryover.
 ///
 /// Protein and fat count against [macroCountedWeightKg]. Protein also
 /// depends on [baseGoalKcal], training, and a weight loss goal.

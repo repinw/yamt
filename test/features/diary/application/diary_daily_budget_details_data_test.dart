@@ -279,15 +279,15 @@ void main() {
         remainingRunDays: 2,
         previousDays: const [],
         carryoverMacroDelta: const DiaryMacroTargets(
-          carbs: -64,
+          carbs: -87.5,
           protein: 0,
-          fat: -9.4,
+          fat: 0,
         ),
       );
 
       expect(cappedData.wasSafetyCapActive, isTrue);
-      expect(cappedData.carryoverCarbsDeltaGrams, -64);
-      expect(cappedData.carryoverFatDeltaGrams, -9.4);
+      expect(cappedData.carryoverCarbsDeltaGrams, -87.5);
+      expect(cappedData.carryoverFatDeltaGrams, 0);
 
       // Positive carryover +100 kcal: cap is false, positive macro deltas
       final positiveData = DiaryDailyBudgetDetailsData(
@@ -304,14 +304,14 @@ void main() {
         carryoverMacroDelta: const DiaryMacroTargets(
           carbs: 10,
           protein: 0,
-          fat: 6.3,
+          fat: 60 / 9,
         ),
       );
 
       // The deltas come from the macro target rule, not from a fixed split.
       expect(positiveData.wasSafetyCapActive, isFalse);
       expect(positiveData.carryoverCarbsDeltaGrams, 10);
-      expect(positiveData.carryoverFatDeltaGrams, 6.3);
+      expect(positiveData.carryoverFatDeltaGrams, 60 / 9);
     });
 
     test('populates calorie cycling fields for a rest day', () {

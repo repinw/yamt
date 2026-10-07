@@ -76,8 +76,8 @@ void main() {
           ),
         ],
         carryoverMacroDelta: const DiaryMacroTargets(
-          carbs: 0,
-          protein: 0,
+          carbs: 37.5,
+          protein: -2.4,
           fat: 0,
         ),
       );
@@ -88,6 +88,11 @@ void main() {
 
       expect(
         find.byKey(DiaryBalanceCardKeys.dailyBudgetDetailsSheet),
+        findsOneWidget,
+      );
+      // The carryover can move protein too.
+      expect(
+        find.text('Macro impact: Protein -2 g · Carbs +38 g · Fat ±0 g'),
         findsOneWidget,
       );
       expect(find.text('Daily budget details'), findsOneWidget);
