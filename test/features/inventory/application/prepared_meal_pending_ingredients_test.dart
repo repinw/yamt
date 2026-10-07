@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_pending_ingredient_support.dart';
+    'prepared_meal_pending_ingredients.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 

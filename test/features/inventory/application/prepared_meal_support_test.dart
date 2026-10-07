@@ -1,16 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_creation_support.dart';
+    'prepared_meal_edit.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_editing_support.dart';
+    'prepared_meal_from_items.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_from_template.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_pending_ingredient_support.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_template_creation_support.dart';
+    'prepared_meal_pending_ingredients.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';

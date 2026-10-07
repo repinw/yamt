@@ -7,7 +7,7 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_creation_workflows.dart';
+    'prepared_meal_creation.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -155,9 +155,9 @@ const _containers = <CookingFlowFinalizeStorageContainerInput>[
   ),
 ];
 
-PreparedMealCreationWorkflows _workflows(FakePreparedMealRepository meals) {
+PreparedMealCreation _workflows(FakePreparedMealRepository meals) {
   var nextId = 0;
-  return PreparedMealCreationWorkflows(
+  return PreparedMealCreation(
     writer: PreparedMealWriter(
       meals: meals,
       clock: () => DateTime(2026, 9, 27),

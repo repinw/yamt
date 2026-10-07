@@ -1,16 +1,12 @@
 import 'package:yamt/features/inventory/application/'
-    'ingredient_inventory_matcher.dart';
-import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
-    'template_ingredient_unit_mapper.dart';
+    'prepared_meal_pending_ingredients.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
-import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 /// Builds edited prepared meal and reconciled inventory state.
 PreparedMealBuildResult buildPreparedMealEditResult({
@@ -62,7 +58,7 @@ PreparedMealBuildResult buildPreparedMealEditResult({
       totalProtein: nutritionTotals.totalProtein,
       totalCarbs: nutritionTotals.totalCarbs,
       totalFat: nutritionTotals.totalFat,
-      pendingRecipeIngredients: _reconciledPendingRecipeIngredients(
+      pendingRecipeIngredients: reconciledPendingRecipeIngredients(
         currentMeal: currentMeal,
         components: components,
       ),
@@ -216,113 +212,4 @@ InventoryItem? _findInventoryItem(List<InventoryItem> items, String itemId) {
 num _consumedPortions(PreparedMeal meal) {
   final consumed = meal.totalPortions - meal.remainingPortions;
   return consumed < 0 ? 0 : consumed;
-}
-
-List<String> _reconciledPendingRecipeIngredients({
-  required PreparedMeal currentMeal,
-  required List<PreparedMealComponent> components,
-}) {
-  final pendingIngredients = currentMeal.pendingRecipeIngredients;
-  if (pendingIngredients.isEmpty) {
-    return pendingIngredients;
-  }
-
-  final coverages = _newComponentCoverages(
-    previousComponents: currentMeal.components,
-    components: components,
-  );
-  if (coverages.isEmpty) {
-    return pendingIngredients;
-  }
-
-  final nextPendingIngredients = <String>[];
-  for (final ingredient in pendingIngredients) {
-    final requirement = _parsePendingRequirement(ingredient);
-    if (requirement == null) {
-      nextPendingIngredients.add(ingredient);
-      continue;
-    }
-
-    final coverage = _matchingCoverage(
-      coverages: coverages,
-      requirement: requirement,
-    );
-    if (coverage == null) {
-      nextPendingIngredients.add(ingredient);
-      continue;
-    }
-    coverage.remainingAmount -= requirement.amount;
-  }
-  return nextPendingIngredients;
-}
-
-List<_PendingIngredientCoverage> _newComponentCoverages({
-  required List<PreparedMealComponent> previousComponents,
-  required List<PreparedMealComponent> components,
-}) {
-  final previousComponentsByItemId = _componentLookup(previousComponents);
-  return components
-      .map((component) {
-        final previousComponent =
-            previousComponentsByItemId[component.inventoryItemId];
-        final previousAmount = previousComponent?.usedUnit == component.usedUnit
-            ? previousComponent?.usedAmount ?? 0
-            : 0;
-        final remainingAmount = component.usedAmount - previousAmount;
-        if (remainingAmount < 1) {
-          return null;
-        }
-        return _PendingIngredientCoverage(
-          component: component,
-          remainingAmount: remainingAmount,
-        );
-      })
-      .whereType<_PendingIngredientCoverage>()
-      .toList(growable: false);
-}
-
-_PendingIngredientCoverage? _matchingCoverage({
-  required List<_PendingIngredientCoverage> coverages,
-  required TemplateIngredientRequirement requirement,
-}) {
-  for (final coverage in coverages) {
-    if (_coverageSatisfiesRequirement(
-      coverage: coverage,
-      requirement: requirement,
-    )) {
-      return coverage;
-    }
-  }
-  return null;
-}
-
-bool _coverageSatisfiesRequirement({
-  required _PendingIngredientCoverage coverage,
-  required TemplateIngredientRequirement requirement,
-}) {
-  final component = coverage.component;
-  if (component.usedUnit != requirement.inventoryUnit ||
-      coverage.remainingAmount < requirement.amount) {
-    return false;
-  }
-  return ingredientInventoryMatchScore(
-        ingredient: requirement.name,
-        item: component.sourceItemSnapshot,
-      ) >
-      0;
-}
-
-TemplateIngredientRequirement? _parsePendingRequirement(String ingredient) {
-  return const TemplateIngredientParser().parseRequirement(
-    ingredient: ingredient,
-    selectedPortions: 1,
-    basePortions: 1,
-  );
-}
-
-class _PendingIngredientCoverage {
-  new({required this.component, required this.remainingAmount});
-
-  final PreparedMealComponent component;
-  int remainingAmount;
 }

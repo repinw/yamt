@@ -153,18 +153,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/application/inventory_pending_consumption_store.dart':
         1,
-    'lib/features/inventory/application/prepared_meal_consumption_workflows.dart':
-        1,
-    'lib/features/inventory/application/prepared_meal_creation_support.dart': 1,
-    'lib/features/inventory/application/prepared_meal_creation_workflows.dart':
-        1,
-    'lib/features/inventory/application/prepared_meal_editing_support.dart': 1,
-    'lib/features/inventory/application/prepared_meal_editing_workflows.dart':
-        1,
-    'lib/features/inventory/application/prepared_meal_pending_ingredient_support.dart':
-        1,
-    'lib/features/inventory/application/prepared_meal_template_creation_support.dart':
-        1,
     'lib/features/inventory/application/recipe_ingredient_assignment_support.dart':
         1,
     'lib/features/inventory/data/firestore_inventory_calorie_entry_commit_store.dart':

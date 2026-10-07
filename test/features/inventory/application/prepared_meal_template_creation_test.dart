@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_creation_workflows.dart';
+    'prepared_meal_creation.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
@@ -14,8 +14,8 @@ import '../../../helpers/fake_prepared_meal_repository.dart';
 
 /// The creation part over [meals], for the template creation that the
 /// cooking service uses.
-PreparedMealCreationWorkflows _creation(FakePreparedMealRepository meals) {
-  return PreparedMealCreationWorkflows(
+PreparedMealCreation _creation(FakePreparedMealRepository meals) {
+  return PreparedMealCreation(
     writer: PreparedMealWriter(
       meals: meals,
       clock: () => DateTime(2026, 4, 19),

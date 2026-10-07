@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_creation_workflows.dart';
+    'prepared_meal_creation.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
@@ -84,16 +84,15 @@ class PreparedMealCookingService {
       activity: _activityRepository,
       actor: _actor,
       operation: (inventory) =>
-          PreparedMealCreationWorkflows(writer: _writer)
-              .createPreparedMealFromTemplate(
-                template: recipe,
-                totalPortions: 1,
-                recipeIngredientAssignments: assignments,
-                recipeIngredientAmountConversions:
-                    const <String, RecipeIngredientAmountConversion>{},
-                inventoryRepository: inventory,
-                ingredientParser: _ingredientParser,
-              ),
+          PreparedMealCreation(writer: _writer).createPreparedMealFromTemplate(
+            template: recipe,
+            totalPortions: 1,
+            recipeIngredientAssignments: assignments,
+            recipeIngredientAmountConversions:
+                const <String, RecipeIngredientAmountConversion>{},
+            inventoryRepository: inventory,
+            ingredientParser: _ingredientParser,
+          ),
       succeeded: (result) => result.isSuccess,
     );
   }
