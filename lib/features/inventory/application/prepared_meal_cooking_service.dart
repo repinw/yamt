@@ -156,10 +156,7 @@ class PreparedMealCookingService {
       inPot: null,
       updatedAt: _clock(),
     );
-    final saved = await _mealRepository.saveAll([
-      for (final other in meals)
-        if (other.id == mealId) cooked else other,
-    ]);
+    final saved = await _mealRepository.save(cooked);
     if (!saved) {
       throw StateError('Meal $mealId could not be saved.');
     }
@@ -184,10 +181,16 @@ class PreparedMealCookingService {
     required List<PreparedMeal> nextMeals,
   }) {
     final previousIds = {for (final meal in previousMeals) meal.id};
-    return _mealRepository.saveAll([
-      for (final meal in nextMeals)
-        if (previousIds.contains(meal.id)) meal else meal.copyWith(inPot: true),
-    ]);
+    return _mealRepository.saveChanges(
+      previous: previousMeals,
+      next: [
+        for (final meal in nextMeals)
+          if (previousIds.contains(meal.id))
+            meal
+          else
+            meal.copyWith(inPot: true),
+      ],
+    );
   }
 
   Future<void> _restoreInventory({

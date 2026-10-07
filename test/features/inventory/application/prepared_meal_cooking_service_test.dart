@@ -235,7 +235,19 @@ class _FakeMealRepository implements PreparedMealRepository {
   }
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> meals) async {
+  Future<bool> save(PreparedMeal meal) => _saveAll([
+    for (final stored in saved)
+      if (stored.id != meal.id) stored,
+    meal,
+  ]);
+
+  @override
+  Future<bool> delete(String mealId) => _saveAll([
+    for (final stored in saved)
+      if (stored.id != mealId) stored,
+  ]);
+
+  Future<bool> _saveAll(List<PreparedMeal> meals) async {
     saveCount += 1;
     if (throwsOnSave) {
       throw StateError('offline');

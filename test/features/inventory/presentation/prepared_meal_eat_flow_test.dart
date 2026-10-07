@@ -81,7 +81,19 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   Future<List<PreparedMeal>> readAll() async => _meals;
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> meals) async {
+  Future<bool> save(PreparedMeal meal) => _saveAll([
+    for (final stored in _meals)
+      if (stored.id != meal.id) stored,
+    meal,
+  ]);
+
+  @override
+  Future<bool> delete(String mealId) => _saveAll([
+    for (final stored in _meals)
+      if (stored.id != mealId) stored,
+  ]);
+
+  Future<bool> _saveAll(List<PreparedMeal> meals) async {
     emit(meals);
     return true;
   }

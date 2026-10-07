@@ -415,7 +415,7 @@ class PreparedMealsController extends _$PreparedMealsController {
     try {
       final saved = await ref
           .read(preparedMealRepositoryProvider)
-          .saveAll(nextMeals);
+          .saveChanges(previous: previousMeals, next: nextMeals);
       if (!saved && ref.mounted) {
         state = AsyncData(previousMeals);
       }
