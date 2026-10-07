@@ -432,4 +432,24 @@ void main() {
     expect(result.missedStock, isFalse);
     verify(() => pendings.stage(eggs, 2)).called(1);
   });
+
+  test('a pack with less stock than planned eats it and says so', () async {
+    logsWithStock();
+    // The stage takes at most what the pack has left.
+    when(() => pendings.stage(any(), any())).thenReturn(
+      const PendingInventoryConsumption(
+        id: 'pending-1',
+        itemId: 'oats-1',
+        amount: 20,
+      ),
+    );
+
+    final result = await service.accept(
+      _itemPlan(),
+      items: [_oats(id: 'oats-1', currentAmount: 20)],
+      meals: const [],
+    );
+
+    expect(result.missedStock, isTrue);
+  });
 }
