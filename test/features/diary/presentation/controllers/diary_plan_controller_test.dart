@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
@@ -108,6 +109,32 @@ void main() {
     expect(states.last.hasError, isTrue);
     expect(repository.plans, [plan]);
     expect(container.read(calorieOverviewRevisionProvider), 0);
+  });
+
+  test('saves a new plan and lets the diary open its day', () async {
+    final repository = FakePlannedEntryRepository();
+    final (container, _) = setUpContainer(repository);
+
+    final saved = await container
+        .read(diaryPlanControllerProvider.notifier)
+        .plan(plan);
+
+    expect(saved, isTrue);
+    expect(repository.plans, [plan]);
+    expect(container.read(lastPlannedDayProvider)?.day, plan.loggedAt);
+  });
+
+  test('a failed new plan leaves the diary on its day', () async {
+    final repository = FakePlannedEntryRepository()..writeShouldFail = true;
+    final (container, states) = setUpContainer(repository);
+
+    final saved = await container
+        .read(diaryPlanControllerProvider.notifier)
+        .plan(plan);
+
+    expect(saved, isFalse);
+    expect(states.last.hasError, isTrue);
+    expect(container.read(lastPlannedDayProvider), isNull);
   });
 
   test('accepts a plan once until its undo', () async {

@@ -1,4 +1,5 @@
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 
 /// Whether the consumed amount of [entry] can change after logging.
@@ -48,5 +49,33 @@ CalorieEntry repeatCalorieEntry(
       for (final component in entry.bundleComponents)
         component.withoutStockSource(),
     ],
+  );
+}
+
+/// A plan with [id] for the same food and amount as [entry] on [day], in the
+/// entry's meal and at its time of day, made at [now].
+///
+/// A Vorrat food keeps its Vorrat item and stock amount, so eating the plan
+/// takes stock like a plan from the eat page, also for packs counted in
+/// cans or pieces that the eaten amount cannot tell. The entry took less
+/// stock than it ate only when the pack ran empty, and the stock amount
+/// applies to that pack alone. A combined entry keeps no stock source,
+/// since the stock of its foods was never taken.
+CalorieEntry planCalorieEntryAgain(
+  CalorieEntry entry, {
+  required String id,
+  required DateTime day,
+  required DateTime now,
+}) {
+  final plan = repeatCalorieEntry(entry, id: id, now: now).copyWith(
+    mealType: entry.mealType,
+    loggedAt: loggedAtOnDay(day, now: entry.loggedAt),
+  );
+  if (entry.isCombined) {
+    return plan;
+  }
+  return plan.copyWith(
+    sourceInventoryItemId: entry.sourceInventoryItemId,
+    sourceInventoryAmountToRestore: entry.sourceInventoryAmountToRestore,
   );
 }

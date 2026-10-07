@@ -17,12 +17,11 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
+import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_entry_actions_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_entry_label_section.dart';
 import 'package:yamt/features/inventory/data/'
@@ -33,10 +32,13 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
+import '../../calories/support/fake_planned_entry_repository.dart';
 
 class _MockUser extends Mock implements User;
 
@@ -281,6 +283,10 @@ Future<FakeCalorieLogRepository> _open(
 
 Finder get _saveButton => find.byKey(DiaryEntryDetailsPage.saveButtonKey);
 
+/// The main button, to read its label and whether it is enabled.
+FilledButton _main(WidgetTester tester) =>
+    tester.widget<FilledButton>(_saveButton);
+
 bool _isPageOpen() => find.byType(DiaryEntryDetailsPage).evaluate().isNotEmpty;
 
 /// Taps the undo of the top snack bar. The diary below the page shows the
@@ -317,8 +323,96 @@ void main() {
     expect(field.controller?.text, '200');
     expect(find.text('FEB 25 · BREAKFAST'), findsOneWidget);
     expect(find.text('200 kcal'), findsOneWidget);
-    expect(find.byKey(DiaryEntryActionsCard.eatAgainKey), findsOneWidget);
-    expect(find.byKey(DiaryEntryActionsCard.removeKey), findsOneWidget);
+    // "Nochmal" leads, delete and plan sit beside it.
+    expect(
+      find.descendant(of: _saveButton, matching: find.text('Again')),
+      findsOneWidget,
+    );
+    expect(find.byKey(EatPageScaffold.deleteButtonKey), findsOneWidget);
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsOneWidget);
+  });
+
+  testWidgets('a changed amount turns "Nochmal" into "Speichern"', (
+    tester,
+  ) async {
+    await _open(tester, [_skyr()]);
+
+    await tester.enterText(find.byKey(EatAmountRuler.fieldKey), '150');
+    await tester.pump();
+
+    expect(
+      find.descendant(of: _saveButton, matching: find.text('Save')),
+      findsOneWidget,
+    );
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsNothing);
+  });
+
+  testWidgets('an invalid amount keeps "Speichern" and hides plan', (
+    tester,
+  ) async {
+    await _open(tester, [_skyr()]);
+
+    await tester.enterText(find.byKey(EatAmountRuler.fieldKey), '');
+    await tester.pump();
+
+    expect(
+      find.descendant(of: _saveButton, matching: find.text('Save')),
+      findsOneWidget,
+    );
+    expect(_main(tester).onPressed, isNull);
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsNothing);
+  });
+
+  testWidgets('plans the same food for a later day and closes', (tester) async {
+    final plans = FakePlannedEntryRepository();
+    final repository = await _open(
+      tester,
+      [_skyr()],
+      overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+    );
+
+    await tester.tap(find.byKey(EatPageScaffold.planButtonKey));
+    await tester.pumpAndSettle();
+    // The picker starts on tomorrow.
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    final plan = plans.plans.single;
+    expect(plan.id, isNot('entry-1'));
+    expect(plan.consumedAmount, 200);
+    // Same meal and time of day as the entry, on the picked day.
+    expect(plan.mealType, MealType.breakfast);
+    expect(plan.loggedAt.day, 27);
+    expect(plan.loggedAt.hour, repository.entries.single.loggedAt.hour);
+    expect(repository.entries, hasLength(1));
+    expect(_isPageOpen(), isFalse);
+  });
+
+  testWidgets('a plan of a Vorrat entry keeps its Vorrat stock', (
+    tester,
+  ) async {
+    final plans = FakePlannedEntryRepository();
+    await _open(
+      tester,
+      [
+        _skyr(
+          sourceInventoryItemId: 'inventory-1',
+          sourceInventoryAmountToRestore: 200,
+        ),
+      ],
+      overrides: [plannedEntryRepositoryProvider.overrideWithValue(plans)],
+    );
+
+    await tester.tap(find.byKey(EatPageScaffold.planButtonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    // Eating the plan takes the same stock from this item, like a plan from
+    // the eat page.
+    final plan = plans.plans.single;
+    expect(plan.sourceInventoryItemId, 'inventory-1');
+    expect(plan.sourceInventoryAmountToRestore, 200);
   });
 
   testWidgets('saves a changed amount, closes, and can undo it', (
@@ -348,19 +442,6 @@ void main() {
 
     expect(repository.entries.single.consumedAmount, 200);
     expect(repository.entries.single.totalKcal, 200);
-  });
-
-  testWidgets('saving an unchanged amount only closes the page', (
-    tester,
-  ) async {
-    final repository = await _open(tester, [_skyr()]);
-    final stored = repository.entries.single;
-
-    await tester.tap(_saveButton);
-    await tester.pumpAndSettle();
-
-    expect(_isPageOpen(), isFalse);
-    expect(identical(repository.entries.single, stored), isTrue);
   });
 
   testWidgets('an invalid amount disables saving', (tester) async {
@@ -422,7 +503,7 @@ void main() {
   testWidgets('removes the entry, closes, and can undo it', (tester) async {
     final repository = await _open(tester, [_skyr()]);
 
-    await _tapCardLine(tester, DiaryEntryActionsCard.removeKey);
+    await _tapCardLine(tester, EatPageScaffold.deleteButtonKey);
 
     expect(repository.entries, isEmpty);
     expect(_isPageOpen(), isFalse);
@@ -460,7 +541,7 @@ void main() {
       ],
     );
 
-    await _tapCardLine(tester, DiaryEntryActionsCard.removeKey);
+    await _tapCardLine(tester, EatPageScaffold.deleteButtonKey);
     await tester.tap(find.text('Return to inventory'));
     await tester.pumpAndSettle();
 
@@ -508,7 +589,7 @@ void main() {
   testWidgets('logs the same food again and closes', (tester) async {
     final repository = await _open(tester, [_skyr()]);
 
-    await _tapCardLine(tester, DiaryEntryActionsCard.eatAgainKey);
+    await _tapCardLine(tester, DiaryEntryDetailsPage.saveButtonKey);
 
     expect(repository.entries, hasLength(2));
     final repeated = repository.entries.last;
@@ -531,8 +612,13 @@ void main() {
     expect(find.byKey(EatAmountRuler.fieldKey), findsNothing);
     expect(find.text('Beans'), findsOneWidget);
     expect(find.text('150 g'), findsOneWidget);
-    expect(find.byKey(DiaryEntryActionsCard.eatAgainKey), findsNothing);
-    expect(find.byKey(DiaryEntryActionsCard.removeKey), findsOneWidget);
+    // A meal's portions cannot repeat: no plan, and the button only closes.
+    expect(
+      find.descendant(of: _saveButton, matching: find.text('Speichern')),
+      findsOneWidget,
+    );
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsNothing);
+    expect(find.byKey(EatPageScaffold.deleteButtonKey), findsOneWidget);
   });
 
   testWidgets('shows a quick entry with its typed values only', (tester) async {
@@ -543,7 +629,7 @@ void main() {
     expect(find.textContaining('Je 100'), findsNothing);
     expect(find.text('100 g'), findsNothing);
     expect(find.byKey(EatAmountRuler.fieldKey), findsNothing);
-    expect(find.byKey(DiaryEntryActionsCard.eatAgainKey), findsOneWidget);
+    expect(_main(tester).onPressed, isNotNull);
   });
 
   testWidgets('shows a message for a missing entry', (tester) async {

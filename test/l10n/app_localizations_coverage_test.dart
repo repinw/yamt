@@ -269,7 +269,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.caloriesEntryUpdatedMessage,
     l10n.caloriesEatAgainDoneMessage,
     l10n.caloriesEntryDeletedMessage,
-    l10n.caloriesEatAgainAction,
+    l10n.diaryEntryAgainAction,
     l10n.caloriesEntryPer100Label('g'),
     l10n.caloriesEntryAmountStockExhaustedMessage,
     l10n.caloriesEntryAmountSourceMissingMessage,

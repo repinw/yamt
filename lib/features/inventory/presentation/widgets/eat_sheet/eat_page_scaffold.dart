@@ -24,6 +24,7 @@ class EatPageScaffold extends StatelessWidget {
     this.onPlan,
     this.onStore,
     this.onDiary,
+    this.onDelete,
     this.isPlan = false,
     super.key,
   });
@@ -92,6 +93,13 @@ class EatPageScaffold extends StatelessWidget {
 
   /// Key of the "Ins Tagebuch" button.
   static const diaryButtonKey = Key('eat_page_diary_button');
+
+  /// Called by the delete button, left of all others. Without it, the
+  /// button is hidden.
+  final VoidCallback? onDelete;
+
+  /// Key of the delete button.
+  static const deleteButtonKey = Key('eat_page_delete_button');
 
   @override
   Widget build(BuildContext context) {
@@ -180,6 +188,13 @@ class EatPageScaffold extends StatelessWidget {
                 Row(
                   spacing: AppSpacing.xs,
                   children: [
+                    if (onDelete case final delete?)
+                      IconButton.filledTonal(
+                        key: deleteButtonKey,
+                        tooltip: l10n.caloriesRemoveEntryAction,
+                        onPressed: delete,
+                        icon: const Icon(Icons.delete_outline_rounded),
+                      ),
                     if (onPlan case final plan?)
                       IconButton.filledTonal(
                         key: planButtonKey,

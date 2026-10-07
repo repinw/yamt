@@ -2375,7 +2375,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get caloriesEatAgainDoneMessage => 'Nochmal eingetragen';
 
   @override
-  String get caloriesEatAgainAction => 'Nochmal essen';
+  String get diaryEntryAgainAction => 'Nochmal';
 
   @override
   String caloriesEntryPer100Label(String unit) {
@@ -2527,9 +2527,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get diaryDayTypePauseSubtitle =>
       'Neutraler Tag (Urlaub, Krankheit). Kein Streak-Bruch.';
-
-  @override
-  String get diaryEntryDetailsCardTitle => 'Eintrag';
 
   @override
   String get diaryMealsLoadFailed => 'Mahlzeiten konnten nicht geladen werden';

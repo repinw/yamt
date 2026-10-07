@@ -114,11 +114,13 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Meal sections for breakfast, lunch, dinner, and snacks.
 - Tapping a logged entry opens its item details in the food label look of
   the eat page: image, brand and name, the nutrition label per 100 g or ml
-  and for the eaten amount, and the amount on the ruler. "Save" stores a
-  changed amount, with totals from the entry's per-100 values, and closes
-  the page. The day and meal menu top right moves the entry at once. The
-  "Entry" card logs the food again or removes the entry; an entry from the
-  Vorrat asks whether its stock goes back. A changed amount moves the stock
+  and for the eaten amount, and the amount on the ruler. The main button
+  "Nochmal" logs the food again; once the amount changed it reads
+  "Speichern" and stores the amount, with totals from the entry's per-100
+  values, and closes the page. Icons beside it remove the entry (an entry
+  from the Vorrat asks whether its stock goes back) and plan the food again
+  for a picked day; a prepared meal's portions offer only removing. The day
+  and meal menu top right moves the entry at once. A changed amount moves the stock
   of a Vorrat entry too, and every change offers an undo. Prepared meals and
   combined entries list their foods instead of the ruler.
 - Quick-eat flow from inventory, prepared meals, or AI/manual product entry.
