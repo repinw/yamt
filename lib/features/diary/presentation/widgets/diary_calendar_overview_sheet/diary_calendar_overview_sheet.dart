@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/diary/application/diary_plan_days_provider.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_calendar_overview_sheet/diary_calendar_month_grid.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -41,10 +43,14 @@ Future<DateTime?> showDiaryCalendarOverviewSheet({
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
     ),
-    builder: (_) => DiaryCalendarOverview(
-      selectedDay: selectedDay,
-      today: today,
-      bounds: bounds,
+    builder: (_) => Consumer(
+      builder: (context, ref, _) => DiaryCalendarOverview(
+        selectedDay: selectedDay,
+        today: today,
+        bounds: bounds,
+        // The dots only decorate the days; until the plans load, none show.
+        planDays: ref.watch(diaryPlanDaysProvider(bounds)).value ?? const {},
+      ),
     ),
   );
 }
@@ -56,6 +62,7 @@ class DiaryCalendarOverview extends StatefulWidget {
     required this.selectedDay,
     required this.today,
     required this.bounds,
+    this.planDays = const {},
     super.key,
   });
 
@@ -67,6 +74,9 @@ class DiaryCalendarOverview extends StatefulWidget {
 
   /// Selectable range.
   final DiaryCalendarBounds bounds;
+
+  /// Days with open plans.
+  final Set<DateTime> planDays;
 
   @override
   State<DiaryCalendarOverview> createState() => _DiaryCalendarOverviewState();
@@ -138,6 +148,7 @@ class _DiaryCalendarOverviewState extends State<DiaryCalendarOverview> {
                   selectedDay: widget.selectedDay,
                   today: widget.today,
                   bounds: widget.bounds,
+                  planDays: widget.planDays,
                   onSelectDay: (day) => Navigator.of(context).pop(day),
                 ),
               ),

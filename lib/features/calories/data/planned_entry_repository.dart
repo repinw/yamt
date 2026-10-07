@@ -54,6 +54,32 @@ class PlannedEntryRepository {
     );
   }
 
+  /// The days from [first] to [last] that hold plans, or none while signed
+  /// out. Reads only the readable `logged_at`, so nothing is decrypted.
+  Future<Set<DateTime>> loadPlannedDays(DateTime first, DateTime last) async {
+    final dataCipher = this.dataCipher;
+    final firestore = this.firestore;
+    if (dataCipher == null || firestore == null) {
+      return const <DateTime>{};
+    }
+    final snapshot = await _collection(firestore, dataCipher.uid)
+        .where(
+          calorieEntryLoggedAtField,
+          isGreaterThanOrEqualTo: diaryDayBounds(first).startInclusive,
+        )
+        .where(
+          calorieEntryLoggedAtField,
+          isLessThan: diaryDayBounds(last).endExclusive,
+        )
+        .get();
+    return {
+      for (final doc in snapshot.docs)
+        normalizeDiaryDay(
+          (doc.data()[calorieEntryLoggedAtField] as Timestamp).toDate(),
+        ),
+    };
+  }
+
   /// Saves [entry] as a plan. Throws while signed out.
   ///
   /// Firestore applies the write to its local cache at once and queues it for
