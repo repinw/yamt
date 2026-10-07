@@ -207,7 +207,7 @@ class EatPageScaffold extends StatelessWidget {
                         key: diaryButtonKey,
                         tooltip: l10n.inventoryItemEatSheetConfirmAction,
                         onPressed: diary,
-                        icon: const Icon(Icons.menu_book_rounded),
+                        icon: const Icon(Icons.restaurant_rounded),
                       ),
                     if (onStore case final store?)
                       IconButton.filledTonal(
