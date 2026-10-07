@@ -1,0 +1,32 @@
+{
+  "de": {
+    "new": [
+      "Essen vorplanen: für heute und die nächsten 14 Tage, mit einem Tipp gegessen",
+      "Akzentfarbe und Hell, Dunkel oder System wählen",
+      "Nach dem Kochen direkt ins Tagebuch oder in den Vorrat"
+    ],
+    "improved": [
+      "Zukünftige Tage zeigen, was geplant ist",
+      "Gesuchte Produkte und Packungsreste direkt in den Vorrat"
+    ],
+    "fixed": [
+      "Mahlzeiten im Topf und gekochte Mahlzeiten getrennt",
+      "Startbildschirm im gewählten Theme (Android 12+)"
+    ]
+  },
+  "en": {
+    "new": [
+      "Plan meals ahead: for today and the next 14 days, eaten with one tap",
+      "Pick an accent color and light, dark, or system mode",
+      "After cooking, go straight to the diary or the pantry"
+    ],
+    "improved": [
+      "Future days show what is planned",
+      "Put searched products and package leftovers straight into the pantry"
+    ],
+    "fixed": [
+      "Meals in the pot and cooked meals are kept apart",
+      "Launch screen in the chosen theme (Android 12+)"
+    ]
+  }
+}
