@@ -165,6 +165,13 @@ Future<void> executeEditorSave({
     onPhotosNotSaved();
   }
 
+  // Validate before the upload starts, so a form that cannot be saved leaves
+  // no photos in Storage; Storage rules forbid deleting them afterwards.
+  // Today the save gate above already rules this out; this keeps it so if
+  // the two rules ever differ.
+  if (controller.buildSavePayload(action: selectedAction) == null) {
+    return;
+  }
   ProductPhotoUpload? upload;
   try {
     upload = await ref
@@ -175,6 +182,9 @@ Future<void> executeEditorSave({
   }
   unawaited(upload?.done.then((_) {}, onError: photosFailed));
   if (!isMounted()) return;
+  // Built again with the photo address, which can change how the product is
+  // stored. Null means the form changed while savePhotos started the upload:
+  // nothing is saved.
   final payload = controller.buildSavePayload(
     action: selectedAction,
     photoImageUrl: upload?.frontAddress,
