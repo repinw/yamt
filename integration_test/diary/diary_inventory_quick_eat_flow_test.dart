@@ -54,6 +54,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
@@ -847,6 +848,55 @@ void main() {
       expect(harness.planRepository.plans, isEmpty);
     },
   );
+
+  testWidgets('the plan details move a plan of tomorrow to lunch', (
+    tester,
+  ) async {
+    final planRow = find.byKey(
+      DiaryMealsSectionKeys.plannedEntryTile('plan-dinner'),
+    );
+    final harness = _buildHarness(
+      today: _selectedDay.subtract(const Duration(days: 1)),
+      plans: [
+        CalorieEntry.create(
+          id: 'plan-dinner',
+          userId: _userId,
+          name: 'Nudeln',
+          mealType: MealType.dinner,
+          consumedAmount: 100,
+          consumedUnit: ConsumedUnit.grams,
+          per100Kcal: 600,
+          per100Protein: 20,
+          per100Carbs: 90,
+          per100Fat: 10,
+          loggedAt: _selectedDay.add(const Duration(hours: 19)),
+          createdAt: _selectedDay,
+          updatedAt: _selectedDay,
+        ),
+      ],
+    );
+    await tester.pumpWidget(harness.app);
+    await _pumpUntilFound(tester, planRow, description: 'plan row of tomorrow');
+
+    await tester.ensureVisible(planRow);
+    await tester.tap(planRow);
+    final menu = find.byKey(EatWhenMenu.buttonKey);
+    await _pumpUntilFound(tester, menu, description: 'plan details');
+    // The details page slides in; the menu takes taps once it is in place.
+    await tester.pumpAndSettle();
+    await tester.tap(menu);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(EatWhenMenu.mealKey(MealType.lunch)));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryPlanDetailsPage.acceptButtonKey));
+    await _pumpUntil(
+      tester,
+      () => harness.planRepository.plans.single.mealType == MealType.lunch,
+      description: 'plan moved to lunch',
+    );
+    await _pumpUntilFound(tester, planRow, description: 'moved plan row');
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets('tomorrow plans with the carryover once the day before is '
       'closed', (tester) async {

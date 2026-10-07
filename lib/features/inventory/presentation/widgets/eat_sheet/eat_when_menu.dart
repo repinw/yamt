@@ -24,11 +24,15 @@ class EatWhenMenu extends StatelessWidget {
     required this.onMealTypeChanged,
     required this.onDayPicked,
     this.allowsPlanDays = false,
+    this.onlyPlanDays = false,
     super.key,
   });
 
   /// Key of the button that opens the menu.
   static const buttonKey = Key('eat_page_when_button');
+
+  /// Key of the menu entry for [type].
+  static Key mealKey(MealType type) => Key('eat_page_when_meal_${type.name}');
 
   /// Key of the menu entry that opens the date picker.
   static const pickDayKey = Key('eat_page_when_pick_day');
@@ -54,6 +58,10 @@ class EatWhenMenu extends StatelessWidget {
   /// as plans.
   final bool allowsPlanDays;
 
+  /// Whether only today and the days that can be planned can be picked,
+  /// because the page moves a plan.
+  final bool onlyPlanDays;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -78,6 +86,7 @@ class EatWhenMenu extends StatelessWidget {
       itemBuilder: (context) => [
         for (final type in MealType.sectionOrder)
           CheckedPopupMenuItem<Object>(
+            key: mealKey(type),
             value: type,
             checked: type == mealType,
             child: Text(type.localizedName(l10n)),
@@ -134,6 +143,17 @@ class EatWhenMenu extends StatelessWidget {
   }
 
   Future<void> _pickDay(BuildContext context) async {
+    if (onlyPlanDays) {
+      final picked = await showEatPlanDayPicker(
+        context,
+        today: today,
+        loggedAt: loggedAt,
+      );
+      if (picked != null) {
+        onDayPicked(picked);
+      }
+      return;
+    }
     final lastDay = allowsPlanDays ? _lastPlanDay(today) : dateOnly(today);
     final loggedDay = dateOnly(loggedAt);
     final picked = await showDatePicker(

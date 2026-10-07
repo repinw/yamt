@@ -4402,6 +4402,24 @@ abstract class AppLocalizations {
   /// **'Plan could not be deleted'**
   String get diaryPlanDeleteFailed;
 
+  /// No description provided for @diaryPlanSaveAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save plan'**
+  String get diaryPlanSaveAction;
+
+  /// No description provided for @diaryPlanChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan changed'**
+  String get diaryPlanChanged;
+
+  /// No description provided for @diaryPlanChangeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Plan could not be changed'**
+  String get diaryPlanChangeFailed;
+
   /// No description provided for @diaryPlanSemanticsLabel.
   ///
   /// In en, this message translates to:

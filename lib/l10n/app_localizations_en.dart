@@ -2534,6 +2534,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryPlanDeleteFailed => 'Plan could not be deleted';
 
   @override
+  String get diaryPlanSaveAction => 'Save plan';
+
+  @override
+  String get diaryPlanChanged => 'Plan changed';
+
+  @override
+  String get diaryPlanChangeFailed => 'Plan could not be changed';
+
+  @override
   String get diaryPlanSemanticsLabel => 'Plan';
 
   @override
