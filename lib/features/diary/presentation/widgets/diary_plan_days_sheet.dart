@@ -1,16 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
-import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/application/diary_plan_days_provider.dart';
-import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_calendar_overview_sheet/diary_calendar_month_grid.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_grid.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The days and the meal picked in the [showDiaryPlanDaysSheet].
@@ -48,8 +43,7 @@ class DiaryPlanDaysSheet extends ConsumerStatefulWidget {
   static const confirmKey = Key('diary_plan_days_confirm');
 
   /// Key of the cell of [day].
-  static Key dayKey(DateTime day) =>
-      Key('diary_plan_days_${day.year}-${day.month}-${day.day}');
+  static Key dayKey(DateTime day) => DiaryPlanDaysGrid.dayKey(day);
 
   /// Key of the chip of [type].
   static Key mealKey(MealType type) => Key('diary_plan_days_meal_${type.name}');
@@ -70,28 +64,14 @@ class _DiaryPlanDaysSheetState extends ConsumerState<DiaryPlanDaysSheet> {
 
   DateTime get _today => dateOnly(widget.today);
 
-  DateTime get _lastDay => addLocalDays(_today, diaryPlanAheadDayCount);
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
-    final localeName = Localizations.localeOf(context).toLanguageTag();
     final kick = theme.textTheme.labelSmall?.copyWith(
       color: theme.colorScheme.onSurfaceVariant,
       fontWeight: FontWeight.w700,
     );
-    final planDays =
-        ref
-            .watch(
-              diaryPlanDaysProvider(
-                DiaryCalendarBounds(earliestDay: _today, latestDay: _lastDay),
-              ),
-            )
-            .value ??
-        const <DateTime>{};
-    final first = startOfCalendarWeek(_today);
-    final dayCount = diaryDaysBetween(first, _lastDay) + 1;
     final kcal = widget.plan.totalKcal * _days.length;
 
     return SafeArea(
@@ -126,46 +106,12 @@ class _DiaryPlanDaysSheetState extends ConsumerState<DiaryPlanDaysSheet> {
                 ),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  l10n
-                      .diaryPlanCopyRange(
-                        DateFormat.MMMM(localeName).format(_today),
-                      )
-                      .toUpperCase(),
-                  style: kick,
-                ),
-                Text(
-                  l10n.diaryPlanCopyPlannedLegend.toUpperCase(),
-                  style: kick,
-                ),
-              ],
-            ),
-            Column(
-              children: [
-                DiaryCalendarWeekdayRow(referenceDay: _today),
-                GridView.count(
-                  crossAxisCount: DateTime.daysPerWeek,
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  children: [
-                    for (var index = 0; index < dayCount; index++)
-                      _DayCell(
-                        day: addLocalDays(first, index),
-                        today: _today,
-                        isSelected: _days.contains(addLocalDays(first, index)),
-                        hasPlans: planDays.contains(addLocalDays(first, index)),
-                        onToggle: (day) => setState(
-                          () => _days.contains(day)
-                              ? _days.remove(day)
-                              : _days.add(day),
-                        ),
-                      ),
-                  ],
-                ),
-              ],
+            DiaryPlanDaysGrid(
+              today: _today,
+              selected: _days,
+              onToggle: (day) => setState(
+                () => _days.contains(day) ? _days.remove(day) : _days.add(day),
+              ),
             ),
             Text(l10n.diaryPlanCopyMealLabel.toUpperCase(), style: kick),
             Wrap(
@@ -196,34 +142,6 @@ class _DiaryPlanDaysSheetState extends ConsumerState<DiaryPlanDaysSheet> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _DayCell extends StatelessWidget {
-  const new({
-    required this.day,
-    required this.today,
-    required this.isSelected,
-    required this.hasPlans,
-    required this.onToggle,
-  });
-
-  final DateTime day;
-  final DateTime today;
-  final bool isSelected;
-  final bool hasPlans;
-  final ValueChanged<DateTime> onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    return DiaryCalendarDayCell(
-      key: DiaryPlanDaysSheet.dayKey(day),
-      day: day,
-      isSelected: isSelected,
-      isToday: isSameCalendarDay(day, today),
-      plan: hasPlans ? DiaryCalendarDayPlan.open : null,
-      onTap: day.isBefore(today) ? null : () => onToggle(day),
     );
   }
 }
