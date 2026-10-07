@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_controller.dart';
 import 'package:yamt/features/settings/presentation/controllers/account_link_conflict_controller.dart';
@@ -730,7 +731,7 @@ void main() {
     expect(find.text('Please log in again to continue.'), findsOneWidget);
 
     final signOutAction = find.descendant(
-      of: find.byType(SnackBar),
+      of: find.byType(AppSnackBarView),
       matching: find.text('Sign out'),
     );
     expect(signOutAction, findsOneWidget);

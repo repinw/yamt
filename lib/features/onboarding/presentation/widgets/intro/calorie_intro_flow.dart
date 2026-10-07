@@ -49,7 +49,6 @@ class CalorieIntroFlow extends ConsumerStatefulWidget {
 class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
   final GlobalKey<IntroductionScreenState> _introKey =
       GlobalKey<IntroductionScreenState>();
-  final GlobalKey _finishActionKey = GlobalKey();
 
   CalorieGoalCalculatorFormControllerProvider get _formProvider =>
       calorieGoalCalculatorFormControllerProvider(
@@ -130,11 +129,7 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
       CalorieIntroFinishResult.failed => l10n.caloriesCalculatorSaveFailed,
     };
     if (failureMessage != null) {
-      messenger.showAppSnackBar(
-        failureMessage,
-        tone: AppSnackBarTone.error,
-        margin: _snackBarMarginAboveControls(),
-      );
+      messenger.showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
       return;
     }
     if (router.canPop()) {
@@ -142,19 +137,6 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
     } else {
       router.go(AppRoutes.homeDiary);
     }
-  }
-
-  /// Keeps a failure snack bar above the finish button, so the user can try
-  /// again right away.
-  EdgeInsets _snackBarMarginAboveControls() {
-    const margin = AppInsets.snackBarMargin;
-    final button = _finishActionKey.currentContext?.findRenderObject();
-    if (button is! RenderBox || !button.hasSize) {
-      return margin;
-    }
-    final buttonTop = button.localToGlobal(Offset.zero).dy;
-    final screenHeight = MediaQuery.sizeOf(context).height;
-    return margin.copyWith(bottom: screenHeight - buttonTop + AppSpacing.sm);
   }
 
   @override
@@ -204,28 +186,25 @@ class _CalorieIntroFlowState extends ConsumerState<CalorieIntroFlow> {
             ),
             onChange: _introController.syncPage,
             freeze: true,
-            overrideDone: (context, _) => KeyedSubtree(
-              key: _finishActionKey,
-              child: FilledButton(
-                key: CalorieGoalOnboardingKeys.introFinishAction,
-                style: FilledButton.styleFrom(
-                  backgroundColor: accent,
-                  minimumSize: const Size.fromHeight(AppSizes.minTapTarget),
-                ),
-                onPressed: isSaving ? null : () => unawaited(_handleFinish()),
-                child: isSaving
-                    ? SizedBox.square(
-                        dimension: AppSizes.inlineProgressIndicator,
-                        child: CircularProgressIndicator(
-                          strokeWidth: AppSizes.progressStrokeWidth,
-                          color: colors.onPrimary,
-                        ),
-                      )
-                    : FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(finishLabel, maxLines: 1),
-                      ),
+            overrideDone: (context, _) => FilledButton(
+              key: CalorieGoalOnboardingKeys.introFinishAction,
+              style: FilledButton.styleFrom(
+                backgroundColor: accent,
+                minimumSize: const Size.fromHeight(AppSizes.minTapTarget),
               ),
+              onPressed: isSaving ? null : () => unawaited(_handleFinish()),
+              child: isSaving
+                  ? SizedBox.square(
+                      dimension: AppSizes.inlineProgressIndicator,
+                      child: CircularProgressIndicator(
+                        strokeWidth: AppSizes.progressStrokeWidth,
+                        color: colors.onPrimary,
+                      ),
+                    )
+                  : FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(finishLabel, maxLines: 1),
+                    ),
             ),
             showBackButton: introState.showsBackAction,
             showNextButton: introState.showsNextAction,

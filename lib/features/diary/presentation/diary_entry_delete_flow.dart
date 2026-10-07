@@ -89,17 +89,15 @@ abstract final class DiaryEntryDeleteFlow {
       await _delete(context, entry: entry, restoreToInventory: false);
       return;
     }
-    messenger
-      ..hideCurrentSnackBar()
-      ..showAppSnackBar(switch (result.failureReason) {
-        CalorieEntryDeleteFailureReason.restoreFailed =>
-          entry.canReturnPreparedMealToInventory
-              ? l10n.caloriesReturnPreparedMealFailed
-              : l10n.caloriesDeleteRestoreFailed,
-        CalorieEntryDeleteFailureReason.sourceMissing ||
-        CalorieEntryDeleteFailureReason.deleteFailed ||
-        null => l10n.caloriesDeleteFailed,
-      }, tone: AppSnackBarTone.error);
+    messenger.showAppSnackBar(switch (result.failureReason) {
+      CalorieEntryDeleteFailureReason.restoreFailed =>
+        entry.canReturnPreparedMealToInventory
+            ? l10n.caloriesReturnPreparedMealFailed
+            : l10n.caloriesDeleteRestoreFailed,
+      CalorieEntryDeleteFailureReason.sourceMissing ||
+      CalorieEntryDeleteFailureReason.deleteFailed ||
+      null => l10n.caloriesDeleteFailed,
+    }, tone: AppSnackBarTone.error);
   }
 
   static DiaryEntryChangeController _controller(ProviderContainer container) {

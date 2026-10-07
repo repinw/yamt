@@ -93,6 +93,9 @@ abstract final class AppRadius {
 
 /// Shared animation durations.
 abstract final class AppDurations {
+  /// How long a snack bar stays on screen.
+  static const Duration snackBar = Duration(seconds: 4);
+
   /// Expansion duration for compact metric controls.
   static const Duration compactMetricExpansion = Duration(milliseconds: 220);
 
@@ -111,6 +114,9 @@ abstract final class AppDurations {
 
 /// Shared opacity values.
 abstract final class AppOpacities {
+  /// Opacity of the snack bar handle on the snack bar color.
+  static const double snackBarHandle = 0.3;
+
   /// Divider opacity for compact metric cards.
   static const double compactMetricDivider = 0.42;
 

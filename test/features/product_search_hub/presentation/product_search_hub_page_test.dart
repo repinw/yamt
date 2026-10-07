@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
@@ -615,6 +616,9 @@ void main() {
     await tester.tap(find.byKey(const Key('return_child_result')));
     await tester.pumpAndSettle();
     await _tapAddMore(tester);
+    // The "added" snack bar covers the top of the fake child page.
+    await tester.pump(AppDurations.snackBar);
+    await tester.pumpAndSettle();
 
     await tester.tap(
       find.byKey(const Key('product_search_hub_search_create_own_action')),

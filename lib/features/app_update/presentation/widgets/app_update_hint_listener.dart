@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/app_version.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/app_update/presentation/app_update_store_flow.dart';
 import 'package:yamt/features/app_update/presentation/controllers/app_update_hint_controller.dart';
 import 'package:yamt/features/app_update/presentation/widgets/app_update_keys.dart';
@@ -30,14 +31,14 @@ class AppUpdateHintListener extends ConsumerWidget {
 
   void _showHint(BuildContext context, WidgetRef ref, AppVersion version) {
     final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        key: AppUpdateKeys.availableSnackBar,
-        content: Text(l10n.appUpdateAvailable(version.toString())),
-        action: SnackBarAction(
-          label: l10n.appUpdateAction,
-          onPressed: () => unawaited(openAppUpdateStore(context)),
-        ),
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      l10n.appUpdateAvailable(version.toString()),
+      key: AppUpdateKeys.availableSnackBar,
+      tone: AppSnackBarTone.info,
+      staysUntilClosed: true,
+      action: (
+        label: l10n.appUpdateAction,
+        onPressed: () => unawaited(openAppUpdateStore(context)),
       ),
     );
     unawaited(

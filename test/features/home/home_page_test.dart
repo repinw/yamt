@@ -11,6 +11,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/router/app_route_observer.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/core/widgets/content_visibility.dart';
 import 'package:yamt/core/widgets/home_bottom_nav_bar.dart';
 import 'package:yamt/core/widgets/home_header_tool.dart';
@@ -1181,8 +1182,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final homeContext = tester.element(find.byType(HomePage));
-    ScaffoldMessenger.of(homeContext)
-        .showSnackBar(const SnackBar(content: Text('Saved')));
+    ScaffoldMessenger.of(homeContext).showAppSnackBar('Saved');
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
@@ -1198,29 +1198,30 @@ void main() {
       <InventoryItem>[_inventoryItem('item-1')],
     ),
   ]) {
-    testWidgets('app snack bar stays above the bottom navigation on $label', (
-      tester,
-    ) async {
-      final repository = FakeCalorieSettingsRepository();
-      addTearDown(repository.dispose);
+    testWidgets(
+      'app snack bar sits at the top, clear of the bottom bar on $label',
+      (tester) async {
+        final repository = FakeCalorieSettingsRepository();
+        addTearDown(repository.dispose);
 
-      await tester.pumpWidget(
-        _buildHarness(
-          settingsRepository: repository,
-          initialLocation: location,
-          inventoryRepository: _FakeInventoryItemRepository(inventoryItems),
-        ),
-      );
-      await tester.pumpAndSettle();
+        await tester.pumpWidget(
+          _buildHarness(
+            settingsRepository: repository,
+            initialLocation: location,
+            inventoryRepository: _FakeInventoryItemRepository(inventoryItems),
+          ),
+        );
+        await tester.pumpAndSettle();
 
-      ScaffoldMessenger.of(tester.element(find.byType(HomePage)))
-          .showAppSnackBar('Saved');
-      await tester.pumpAndSettle();
+        ScaffoldMessenger.of(tester.element(find.byType(HomePage)))
+            .showAppSnackBar('Saved');
+        await tester.pumpAndSettle();
 
-      final snackBarBottom = tester.getRect(find.byType(SnackBar)).bottom;
-      final navTop = tester.getRect(find.byType(HomeBottomNavBar)).top;
-      expect(snackBarBottom, lessThanOrEqualTo(navTop));
-    });
+        final snackBar = tester.getRect(find.byType(AppSnackBarView));
+        final navTop = tester.getRect(find.byType(HomeBottomNavBar)).top;
+        expect(snackBar.bottom, lessThan(navTop / 2));
+      },
+    );
   }
 
   testWidgets('inventory action opens the add actions', (tester) async {

@@ -13,6 +13,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/l10n/meal_type_l10n.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/domain/user_profile.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
@@ -733,7 +734,10 @@ void main() {
     );
 
     // Undo gives the stock back and brings the plan back.
-    final undo = find.byType(SnackBarAction).last;
+    final undo = find.descendant(
+      of: find.byType(AppSnackBarView),
+      matching: find.byType(TextButton),
+    );
     await _pumpUntilOnScreen(tester, undo, description: 'undo button');
     // Let the snack bar finish sliding in, so the tap lands on the button.
     await tester.pump(const Duration(milliseconds: 500));

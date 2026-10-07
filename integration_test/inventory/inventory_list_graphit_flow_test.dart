@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -174,7 +175,10 @@ void main() {
     // The save message shows on the meal page, not on the hidden list.
     expect(find.byType(EatMealDetailSections), findsOneWidget);
     expect(
-      find.descendant(of: find.byType(SnackBar), matching: find.byType(Text)),
+      find.descendant(
+        of: find.byType(AppSnackBarView),
+        matching: find.byType(Text),
+      ),
       findsWidgets,
     );
 
