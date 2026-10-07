@@ -38,7 +38,6 @@ Future<InventoryManualProductSaveOutcome> saveManualProductResultForEatFlow({
   required InventoryReceiptManualProductResult result,
   MealType? preselectedMealType,
   DateTime? preselectedLoggedAt,
-  bool continueBatchOnConfirm = false,
 }) async {
   try {
     return await _saveManualProductResultForEatFlow(
@@ -48,7 +47,6 @@ Future<InventoryManualProductSaveOutcome> saveManualProductResultForEatFlow({
       result: result,
       preselectedMealType: preselectedMealType,
       preselectedLoggedAt: preselectedLoggedAt,
-      continueBatchOnConfirm: continueBatchOnConfirm,
     );
   } on Object catch (error, stackTrace) {
     log(
@@ -68,7 +66,6 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
   required InventoryReceiptManualProductResult result,
   required MealType? preselectedMealType,
   required DateTime? preselectedLoggedAt,
-  required bool continueBatchOnConfirm,
 }) async {
   final eatResult = await InventoryManualProductEatSelectionFlow.resolve(
     context: context,
@@ -79,7 +76,6 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
         inventoryManualAddEatRequestFromSelection(result.eatSelection),
     preselectedMealType: preselectedMealType,
     preselectedLoggedAt: preselectedLoggedAt,
-    continueBatchOnConfirm: continueBatchOnConfirm,
   );
   if (!context.mounted || eatResult == null) {
     log(
@@ -133,12 +129,10 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
       return saveOutcome;
     }
 
-    String? savedCalorieEntryId;
     final completedEatFlow = await completeInventoryManualAddEatFlow(
       context: context,
       item: savedItem,
       request: eatResult.request,
-      onDirectCalorieEntrySaved: (entryId) => savedCalorieEntryId = entryId,
     );
     if (!completedEatFlow) {
       log(
@@ -149,11 +143,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultForEatFlow({
       await _deleteSavedItem(container, savedItem);
       return const InventoryManualProductSaveOutcome.canceled();
     }
-    return InventoryManualProductSaveOutcome.saved(
-      savedItem,
-      calorieEntryId: savedCalorieEntryId,
-      addMoreRequested: eatResult.addMoreRequested,
-    );
+    return InventoryManualProductSaveOutcome.saved(savedItem);
   } finally {
     inventorySubscription.close();
   }
@@ -201,10 +191,7 @@ Future<InventoryManualProductSaveOutcome> _plan(
   }
   return switch (outcome) {
     InventoryEatPlanned(:final entry) =>
-      InventoryManualProductSaveOutcome.planned(
-        entry,
-        addMoreRequested: eatResult.addMoreRequested,
-      ),
+      InventoryManualProductSaveOutcome.planned(entry),
     InventoryEatFailed(:final failure) =>
       InventoryManualProductSaveOutcome.planFailed(failure),
     InventoryEatLogged() || InventoryEatNeedsEditor() => throw StateError(

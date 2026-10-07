@@ -38,7 +38,6 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.onStore,
     this.onEatInstead,
     this.mealKcal,
-    this.secondaryIntent = InventoryItemEatSheetIntent.addMore,
     this.onSecondary,
     this.headerBrand,
     this.headerCaption,
@@ -105,10 +104,7 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
   /// Calories of the whole meal on the button, when other foods are picked.
   final double? mealKcal;
 
-  /// Intent of the second button.
-  final InventoryItemEatSheetIntent secondaryIntent;
-
-  /// Runs in place of submitting [secondaryIntent].
+  /// Runs in place of logging the food from the second button.
   final VoidCallback? onSecondary;
 
   /// Line above the name in place of the item's brand.
@@ -209,7 +205,8 @@ class _InventoryItemEatSheetBodyState
       secondaryButtonKey: _addMoreKey,
       onSecondary: addMoreText == null
           ? null
-          : widget.onSecondary ?? () => _submit(widget.secondaryIntent),
+          : widget.onSecondary ??
+                () => _submit(InventoryItemEatSheetIntent.logOnly),
       children: [
         widget.header ??
             InventoryItemEatLabelSection(

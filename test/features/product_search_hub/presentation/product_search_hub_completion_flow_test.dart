@@ -11,8 +11,6 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/data/calorie_log_repository_contract.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/'
@@ -41,8 +39,6 @@ import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -87,15 +83,9 @@ void main() {
     await tester.tap(find.text('run'));
     await tester.pumpAndSettle();
 
-    final selection = completion?.selection;
-    expect(selection, isNotNull);
-    if (selection == null) {
-      fail('Expected saved selection.');
-    }
+    expect(completion?.saved, isTrue);
     expect(completion?.shouldCloseHub, isTrue);
-    expect(selection.sourceKey, '4006381333931');
     expect(inventoryController.addedItems, hasLength(1));
-    expect(selection.item.id, inventoryController.addedItems.single.id);
   });
 
   testWidgets('a diary food put into the Vorrat closes the hub alone', (
@@ -126,7 +116,7 @@ void main() {
 
     expect(inventoryController.addedItems, hasLength(1));
     // It does not join the diary selection, and the hub closes.
-    expect(completion?.selection, isNull);
+    expect(completion?.saved, isFalse);
     expect(completion?.shouldCloseHub, isTrue);
     expect(
       find.text('${inventoryController.addedItems.single.name} is in stock'),
@@ -170,7 +160,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(inventoryController._addCalledBeforeBuild, isFalse);
-    expect(completion?.selection, isNotNull);
+    expect(completion?.saved, isTrue);
     expect(completion?.shouldCloseHub, isTrue);
     expect(inventoryController.addedItems, hasLength(1));
   });
@@ -206,7 +196,7 @@ void main() {
     await tester.tap(find.text('run'));
     await tester.pumpAndSettle();
 
-    expect(completion?.selection, isNull);
+    expect(completion?.saved, isFalse);
     expect(completion?.shouldCloseHub, isFalse);
     expect(inventoryController.addedItems, hasLength(1));
     expect(
@@ -257,7 +247,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(inventoryController._addCalledBeforeBuild, isFalse);
-    expect(completion?.selection, isNull);
+    expect(completion?.saved, isFalse);
     expect(completion?.shouldCloseHub, isFalse);
     expect(inventoryController.addedItems, hasLength(1));
     expect(
@@ -340,16 +330,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(completion?.shouldCloseHub, isTrue);
-    final selection = completion?.selection;
-    expect(selection, isNotNull);
-    if (selection == null) {
-      fail('Expected saved selection.');
-    }
-    expect(selection.sourceKey, '4006381333931');
-    expect(selection.calorieEntryId, isNotNull);
-    expect(selection.calorieEntryId, isNotEmpty);
+    expect(completion?.saved, isTrue);
     expect(inventoryController.addedItems, hasLength(1));
-    expect(selection.item.id, inventoryController.addedItems.single.id);
     expect(inventoryController.stagedConsumptions, hasLength(1));
   });
 
@@ -396,7 +378,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(completion?.shouldCloseHub, isTrue);
-    expect(completion?.selection, isNull);
+    expect(completion?.saved, isFalse);
     final plan = plans.plans.single;
     expect(plan.consumedAmount, 200);
     expect(plan.sourceInventoryItemId, isNull);
@@ -533,44 +515,6 @@ void main() {
     expect(inventoryController.stagedConsumptions.single.amount, 200);
   });
 
-  test(
-    'removing diary selection deletes diary entry and inventory item',
-    () async {
-      final inventoryController = _RecordingInventoryItemsController();
-      final calorieRepository = _RecordingCalorieLogRepository();
-      final container = ProviderContainer(
-        overrides: [
-          inventoryItemsControllerProvider.overrideWith(
-            () => inventoryController,
-          ),
-          productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
-            return (_) => DiaryProductSearchHubCompletionHandler(
-              container: ref.container,
-              eatCoordinator: ref.container.read(
-                inventoryManualProductEatCoordinatorProvider,
-              ),
-            );
-          }),
-          calorieLogRepositoryProvider.overrideWithValue(calorieRepository),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final deleted = await removeProductSearchHubSelection(
-        container: container,
-        selection: ProductSearchHubSavedSelection(
-          item: _manualItem(),
-          sourceKey: '4006381333931',
-          calorieEntryId: 'entry-1',
-        ),
-      );
-
-      expect(deleted, isTrue);
-      expect(calorieRepository.deletedEntryIds, ['entry-1']);
-      expect(inventoryController.deletedItemIds, ['manual-item']);
-    },
-  );
-
   testWidgets('selection mode returns no overlay selection and does not save', (
     tester,
   ) async {
@@ -596,7 +540,7 @@ void main() {
     await tester.tap(find.text('run'));
     await tester.pumpAndSettle();
 
-    expect(completion?.selection, isNull);
+    expect(completion?.saved, isFalse);
     expect(completion?.shouldCloseHub, isFalse);
     expect(inventoryController.addedItems, isEmpty);
     expect(inventoryController.deletedItemIds, isEmpty);
@@ -640,7 +584,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(completion?.selection, isNotNull);
+    expect(completion?.saved, isTrue);
     expect(completion?.shouldCloseHub, isTrue);
     expect(
       inventoryController.addedItems.single.normalizedBarcode,
@@ -680,7 +624,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(completion?.selection, isNotNull);
+    expect(completion?.saved, isTrue);
     expect(completion?.shouldCloseHub, isTrue);
     expect(inventoryController.addedItems.single.normalizedBarcode, isNull);
     expect(barcodeRepository.recordedBarcodes, isEmpty);
@@ -715,7 +659,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(completion?.selection, isNull);
+    expect(completion?.saved, isFalse);
     expect(completion?.shouldCloseHub, isFalse);
     expect(inventoryController.addedItems, isEmpty);
   });
@@ -745,9 +689,8 @@ Widget _buildCompletionHarness({
         final container = ref.container;
         return (mode) => switch (mode) {
           ProductSearchHubMode.inventory =>
-            InventoryProductSearchHubCompletionHandler(container: container),
+            const InventoryProductSearchHubCompletionHandler(),
           ProductSearchHubMode.diary => DiaryProductSearchHubCompletionHandler(
-            container: container,
             eatCoordinator: container.read(
               inventoryManualProductEatCoordinatorProvider,
             ),
@@ -871,57 +814,6 @@ class _SuccessfulInventoryItemsController
     );
     stagedConsumptions.add(pendingConsumption);
     return pendingConsumption;
-  }
-}
-
-class _RecordingCalorieLogRepository implements CalorieLogRepositoryContract {
-  final deletedEntryIds = <String>[];
-
-  @override
-  Stream<List<CalorieEntry>> watchEntriesForDay(DateTime day) {
-    return Stream<List<CalorieEntry>>.value(const <CalorieEntry>[]);
-  }
-
-  @override
-  Future<List<CalorieEntry>> readEntriesForDay(DateTime day) async {
-    return const <CalorieEntry>[];
-  }
-
-  @override
-  Future<List<CalorieEntry>> readEntriesInRange({
-    required DateTime startInclusive,
-    required DateTime endExclusive,
-  }) async {
-    return const <CalorieEntry>[];
-  }
-
-  @override
-  Future<DateTime?> readFirstEntryDate() async {
-    return null;
-  }
-
-  @override
-  Future<bool> saveEntry(CalorieEntry entry) async {
-    return false;
-  }
-
-  @override
-  Future<bool> saveEntryForCurrentUser(CalorieEntry entry) async {
-    return false;
-  }
-
-  @override
-  Future<bool> deleteEntry(String entryId) async {
-    deletedEntryIds.add(entryId);
-    return true;
-  }
-
-  @override
-  CalorieEntry? cachedById(String entryId) => null;
-
-  @override
-  Future<CalorieEntry?> getById(String entryId) async {
-    return null;
   }
 }
 

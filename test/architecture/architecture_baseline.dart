@@ -10,7 +10,7 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/inventory_manual_product_search_launcher.dart':
         1,
     'lib/features/inventory/presentation/inventory_product_search_hub_completion_handler.dart':
-        3,
+        2,
   },
   'foreign-presentation': {
     'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_dialog.dart':
@@ -114,8 +114,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/product_search_hub/presentation/product_search_hub_search_entry_launcher.dart':
         1,
     'lib/features/product_search_hub/presentation/product_search_hub_search_lookup.dart':
-        1,
-    'lib/features/product_search_hub/presentation/product_search_hub_selection_state.dart':
         1,
     'lib/features/scanner/presentation/flow/receipt_camera_supported.dart': 1,
     'lib/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart':

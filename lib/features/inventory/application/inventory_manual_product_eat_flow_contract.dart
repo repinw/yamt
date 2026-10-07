@@ -18,39 +18,19 @@ abstract interface class InventoryManualProductEatCoordinator {
     required InventoryReceiptManualProductResult result,
     MealType? preselectedMealType,
     DateTime? preselectedLoggedAt,
-    bool continueBatchOnConfirm,
-  });
-
-  /// Deletes an inventory item created by the flow.
-  Future<bool> deleteItem({
-    required ProviderContainer container,
-    required String itemId,
   });
 }
 
 /// Result returned by the manual product eat presentation flow.
 class InventoryManualProductEatOutcome {
   /// Creates an outcome.
-  const new({
-    required this.status,
-    this.item,
-    this.calorieEntryId,
-    this.addMoreRequested = false,
-    this.plan,
-    this.planFailure,
-  });
+  const new({required this.status, this.item, this.plan, this.planFailure});
 
   /// Outcome status.
   final InventoryManualProductEatStatus status;
 
   /// The saved inventory item, when saving succeeded.
   final InventoryItem? item;
-
-  /// The directly saved calorie entry id, when one was created.
-  final String? calorieEntryId;
-
-  /// Whether another product should be added after this one.
-  final bool addMoreRequested;
 
   /// The saved plan, when the day lies after today.
   final CalorieEntry? plan;

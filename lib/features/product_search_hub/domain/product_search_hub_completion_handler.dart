@@ -4,10 +4,8 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_saved_selection.dart';
 
-/// Contract for completing and persisting product search hub selections.
+/// Contract for completing a product picked in the product search hub.
 abstract interface class ProductSearchHubCompletionHandler {
   /// Handles completion and persistence of an edited product result.
   Future<ProductSearchHubCompletionResult> completeResult({
@@ -16,9 +14,5 @@ abstract interface class ProductSearchHubCompletionHandler {
     required InventoryReceiptManualProductResult result,
     MealType? preselectedMealType,
     DateTime? preselectedLoggedAt,
-    bool continueDiaryBatch = false,
   });
-
-  /// Removes a saved selection from caller persistence.
-  Future<bool> removeSavedSelection(ProductSearchHubSavedSelection selection);
 }

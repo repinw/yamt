@@ -1,10 +1,8 @@
-import 'package:yamt/features/product_search_hub/domain/product_search_hub_saved_selection.dart';
-
 /// Result of completing a hub product result.
 class ProductSearchHubCompletionResult {
   const new _({
     required this.shouldCloseHub,
-    this.selection,
+    this.saved = false,
     this.wasCanceled = false,
   });
 
@@ -14,19 +12,16 @@ class ProductSearchHubCompletionResult {
   /// The user canceled the follow-up dialog.
   const new canceled() : this._(shouldCloseHub: false, wasCanceled: true);
 
-  /// Close the hub after a direct save.
-  const new closeHub({ProductSearchHubSavedSelection? selection})
-    : this._(shouldCloseHub: true, selection: selection);
-
-  /// Show saved item in the hub overlay.
-  const new showOverlay(ProductSearchHubSavedSelection selection)
-    : this._(shouldCloseHub: false, selection: selection);
+  /// Close the hub after a direct save; [saved] when the food was saved
+  /// rather than planned.
+  const new closeHub({bool saved = false})
+    : this._(shouldCloseHub: true, saved: saved);
 
   /// Whether hub should close after completion.
   final bool shouldCloseHub;
 
-  /// Saved selection to show in overlay.
-  final ProductSearchHubSavedSelection? selection;
+  /// Whether the food was saved, to the Vorrat or with a diary entry.
+  final bool saved;
 
   /// Whether the user canceled the follow-up dialog.
   final bool wasCanceled;

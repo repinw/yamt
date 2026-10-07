@@ -5,8 +5,6 @@ import 'package:yamt/features/inventory/application/'
     'inventory_manual_product_eat_flow_contract.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
-import 'package:yamt/features/inventory/presentation/controllers/'
-    'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_eat_completion_flow.dart'
     as internal_eat_flow;
@@ -35,7 +33,6 @@ class _InventoryManualProductEatCoordinator
     required InventoryReceiptManualProductResult result,
     MealType? preselectedMealType,
     DateTime? preselectedLoggedAt,
-    bool continueBatchOnConfirm = false,
   }) async {
     final outcome = await internal_eat_flow.saveManualProductResultForEatFlow(
       context: context,
@@ -44,7 +41,6 @@ class _InventoryManualProductEatCoordinator
       result: result,
       preselectedMealType: preselectedMealType,
       preselectedLoggedAt: preselectedLoggedAt,
-      continueBatchOnConfirm: continueBatchOnConfirm,
     );
     return _toEatOutcome(outcome);
   }
@@ -64,20 +60,8 @@ class _InventoryManualProductEatCoordinator
           InventoryManualProductEatStatus.failed,
       },
       item: outcome.item,
-      calorieEntryId: outcome.calorieEntryId,
-      addMoreRequested: outcome.addMoreRequested,
       plan: outcome.plan,
       planFailure: outcome.planFailure,
     );
-  }
-
-  @override
-  Future<bool> deleteItem({
-    required ProviderContainer container,
-    required String itemId,
-  }) {
-    return container
-        .read(inventoryItemsControllerProvider.notifier)
-        .deleteItem(itemId);
   }
 }

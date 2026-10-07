@@ -566,18 +566,6 @@ abstract class AppLocalizations {
   /// **'Create product'**
   String get productSearchHubCreateProductAction;
 
-  /// No description provided for @productSearchHubCartTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Selected products'**
-  String get productSearchHubCartTitle;
-
-  /// No description provided for @productSearchHubCartAddAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Add'**
-  String get productSearchHubCartAddAction;
-
   /// No description provided for @productSearchHubStoredInVorrat.
   ///
   /// In en, this message translates to:
@@ -601,12 +589,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'To stock'**
   String get inventoryRestToStockYes;
-
-  /// No description provided for @productSearchHubCartRemoveAction.
-  ///
-  /// In en, this message translates to:
-  /// **'Remove'**
-  String get productSearchHubCartRemoveAction;
 
   /// No description provided for @productSearchHubRecentlySelectedTab.
   ///

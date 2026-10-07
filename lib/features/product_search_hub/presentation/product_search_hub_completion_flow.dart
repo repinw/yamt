@@ -11,17 +11,15 @@ import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Completes a product search hub editor result for the active route mode,
 /// or for [mode] in its place. A food that goes elsewhere through [mode]
-/// ends like one eaten food: it closes the hub and does not join the hub's
-/// selection. A diary food put into the Vorrat says so in a message; the
-/// diary shows its own for a Vorrat food eaten instead.
+/// ends like one eaten food and closes the hub. A diary food put into the
+/// Vorrat says so in a message; the diary shows its own for a Vorrat food
+/// eaten instead.
 Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   required BuildContext context,
   required ProductSearchHubRouteArgs args,
@@ -31,7 +29,6 @@ Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   ProductSearchHubCompletionHandler? handler,
   ProviderContainer? container,
   AppLocalizations? l10n,
-  bool continueDiaryBatch = false,
 }) async {
   final effectiveMode = mode ?? args.mode;
   final ProductSearchHubCompletionHandler resolvedHandler;
@@ -53,11 +50,8 @@ Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
     result: result,
     preselectedMealType: args.preselectedMealType,
     preselectedLoggedAt: args.preselectedLoggedAt,
-    continueDiaryBatch: continueDiaryBatch,
   );
-  if (effectiveMode == args.mode ||
-      completion.selection == null ||
-      !context.mounted) {
+  if (effectiveMode == args.mode || !completion.saved || !context.mounted) {
     return completion;
   }
   if (effectiveMode == ProductSearchHubMode.inventory) {
@@ -68,27 +62,4 @@ Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
     );
   }
   return const ProductSearchHubCompletionResult.closeHub();
-}
-
-/// Removes a saved hub selection from caller persistence.
-Future<bool> removeProductSearchHubSelection({
-  required ProductSearchHubSavedSelection selection,
-  ProductSearchHubCompletionHandler? handler,
-  ProviderContainer? container,
-  ProductSearchHubMode? mode,
-}) {
-  final effectiveMode =
-      mode ??
-      (selection.calorieEntryId != null
-          ? ProductSearchHubMode.diary
-          : ProductSearchHubMode.inventory);
-  final resolvedHandler =
-      handler ??
-      container?.read(productSearchHubCompletionHandlerProvider(effectiveMode));
-  if (resolvedHandler == null) {
-    throw ArgumentError(
-      'Either handler or container must be provided to remove selection.',
-    );
-  }
-  return resolvedHandler.removeSavedSelection(selection);
 }

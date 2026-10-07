@@ -281,7 +281,6 @@ void main() {
           productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
             final container = ref.container;
             return (mode) => DiaryProductSearchHubCompletionHandler(
-              container: container,
               eatCoordinator: container.read(
                 inventoryManualProductEatCoordinatorProvider,
               ),
@@ -338,11 +337,8 @@ void main() {
             final container = ref.container;
             return (mode) => switch (mode) {
               ProductSearchHubMode.inventory =>
-                InventoryProductSearchHubCompletionHandler(
-                  container: container,
-                ),
+                const InventoryProductSearchHubCompletionHandler(),
               _ => DiaryProductSearchHubCompletionHandler(
-                container: container,
                 eatCoordinator: container.read(
                   inventoryManualProductEatCoordinatorProvider,
                 ),

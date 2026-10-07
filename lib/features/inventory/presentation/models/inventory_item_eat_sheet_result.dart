@@ -6,9 +6,6 @@ enum InventoryItemEatSheetIntent {
   /// Log the item and finish the current flow.
   logOnly,
 
-  /// Log the item and continue adding more foods.
-  addMore,
-
   /// Keep the item hub's foods in stock as a prepared meal instead of
   /// logging them.
   storeAsMeal,
@@ -25,7 +22,4 @@ class InventoryItemEatSheetResult {
 
   /// User continuation intent.
   final InventoryItemEatSheetIntent intent;
-
-  /// Whether user wants to add more foods after logging this one.
-  bool get addMoreRequested => intent == InventoryItemEatSheetIntent.addMore;
 }

@@ -13,9 +13,6 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_results/product_search_hub_search_results.dart';
 
-// Keeps the last list rows above the selection overlay.
-const _productSearchHubSelectionOverlayClearance = 92.0;
-
 /// Visual shell for the product search hub page.
 class ProductSearchHubSearchPageContent extends StatelessWidget {
   /// Creates search page content.
@@ -29,7 +26,6 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
     required this.hasSearchQuery,
     required this.searchResults,
     required this.hasSearchFailed,
-    required this.selectedProductKeys,
     required this.onBackPressed,
     required this.onSearchChanged,
     required this.onClear,
@@ -39,7 +35,6 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
     required this.onRetry,
     required this.onResultSelected,
     required this.onRecentItemPressed,
-    this.bottomOverlay,
     super.key,
   });
 
@@ -70,12 +65,6 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
   /// Whether search failed.
   final bool hasSearchFailed;
 
-  /// Source keys of the products selected so far.
-  final Set<String> selectedProductKeys;
-
-  /// Selection overlay shown above the bottom edge.
-  final Widget? bottomOverlay;
-
   /// Back callback.
   final VoidCallback onBackPressed;
 
@@ -105,53 +94,33 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final overlay = bottomOverlay;
-
     return Scaffold(
       appBar: AppBar(
         leading: BackButton(onPressed: onBackPressed),
         title: Text(title),
       ),
       body: SafeArea(
-        child: Stack(
-          children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.xl,
-                AppSpacing.xl,
-                overlay == null
-                    ? AppSpacing.xl
-                    : _productSearchHubSelectionOverlayClearance,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            children: [
+              ProductSearchHubSearchBar(
+                controller: searchController,
+                focusNode: searchFocusNode,
+                isSearching: isSearching,
+                voiceSearchService: voiceSearchService,
+                voiceSearchController: voiceSearchController,
+                onChanged: onSearchChanged,
+                onClear: onClear,
               ),
-              child: Column(
-                children: [
-                  ProductSearchHubSearchBar(
-                    controller: searchController,
-                    focusNode: searchFocusNode,
-                    isSearching: isSearching,
-                    voiceSearchService: voiceSearchService,
-                    voiceSearchController: voiceSearchController,
-                    onChanged: onSearchChanged,
-                    onClear: onClear,
-                  ),
-                  ProductSearchHubSearchActionSection(
-                    onBarcodePressed: onBarcodePressed,
-                    onAiPressed: onAiPressed,
-                    onCreateOwnPressed: onCreateOwnPressed,
-                  ),
-                  Expanded(child: _buildContent()),
-                ],
+              ProductSearchHubSearchActionSection(
+                onBarcodePressed: onBarcodePressed,
+                onAiPressed: onAiPressed,
+                onCreateOwnPressed: onCreateOwnPressed,
               ),
-            ),
-            if (overlay != null)
-              Positioned(
-                left: AppSpacing.xl,
-                right: AppSpacing.xl,
-                bottom: AppSpacing.xl,
-                child: overlay,
-              ),
-          ],
+              Expanded(child: _buildContent()),
+            ],
+          ),
         ),
       ),
     );
@@ -160,7 +129,6 @@ class ProductSearchHubSearchPageContent extends StatelessWidget {
   Widget _buildContent() {
     if (!hasSearchQuery) {
       return ProductSearchHubSearchRecentSection(
-        selectedProductKeys: selectedProductKeys,
         onProductPressed: onRecentItemPressed,
       );
     }

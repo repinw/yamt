@@ -44,14 +44,7 @@ class ProductSearchHubSearchActionSection extends StatelessWidget {
 /// Recently selected products shown while the search query is empty.
 class ProductSearchHubSearchRecentSection extends StatelessWidget {
   /// Creates the recent products section.
-  const new({
-    required this.selectedProductKeys,
-    required this.onProductPressed,
-    super.key,
-  });
-
-  /// Source keys of the products selected so far.
-  final Set<String> selectedProductKeys;
+  const new({required this.onProductPressed, super.key});
 
   /// Called when a recent product is selected.
   final ValueChanged<InventoryItem> onProductPressed;
@@ -72,7 +65,6 @@ class ProductSearchHubSearchRecentSection extends StatelessWidget {
         ),
         Expanded(
           child: ProductSearchHubRecentlySelectedTab(
-            selectedProductKeys: selectedProductKeys,
             onProductPressed: onProductPressed,
           ),
         ),
