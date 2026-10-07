@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
 part 'diary_quick_eat_inventory_provider.g.dart';
 
@@ -36,8 +37,7 @@ DiaryQuickEatInventoryData _filterDiaryQuickEatInventory(
         .where(canDiaryQuickEatInventoryItem)
         .toList(growable: false),
     meals: inventory.meals
-        // A meal in the pot gets its portions at "Gekocht" first.
-        .where((meal) => !meal.isDepleted && !meal.isInPot)
+        .where((meal) => meal.allows(PreparedMealAction.eat))
         .toList(growable: false),
   );
 }

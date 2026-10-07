@@ -16,6 +16,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
 part 'inventory_plan_accept_service.g.dart';
 
@@ -125,7 +126,8 @@ class InventoryPlanAcceptService {
         );
       }
       final portions = meal == null ? 0 : _mealPortions(plan, meal);
-      if (meal != null && portions > 0 && meal.remainingPortions >= portions) {
+      if (meal != null &&
+          meal.allowsPortions(PreparedMealAction.eat, portions)) {
         final eaten = await _quickEat.consumePreparedMeal(
           meal: meal,
           consumedPortions: portions,

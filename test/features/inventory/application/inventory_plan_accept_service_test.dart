@@ -283,6 +283,19 @@ void main() {
     expect(saved.single.bundleSourcePreparedMealId, isNull);
   });
 
+  test('a meal with open rows logs the plan without portions', () async {
+    final result = await service.accept(
+      _mealPlan(),
+      items: const [],
+      meals: [
+        _meal().copyWith(pendingRecipeIngredients: ['Salz']),
+      ],
+    );
+
+    expect(result.missedStock, isTrue);
+    expect(saved.single.bundleSourcePreparedMealId, isNull);
+  });
+
   test('a failed eat keeps the plan and releases the stock', () async {
     when(
       () => eatService.log(
