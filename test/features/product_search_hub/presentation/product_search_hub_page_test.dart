@@ -976,6 +976,35 @@ void main() {
     );
   });
 
+  testWidgets('"Add to stock" on the AI page stores without a second page', (
+    tester,
+  ) async {
+    final controller = _RecordingInventoryItemsController();
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.ai,
+        offersEatInstead: true,
+      ),
+      inventoryController: controller,
+      foodEstimateRepository: _FakeFoodEstimateRepository(),
+    );
+
+    await tester.enterText(
+      find.byKey(ManualProductAiSearchPage.descriptionKey),
+      'Apfel',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(ManualProductAiSearchPage.analyzeKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Add to stock'));
+    await tester.pumpAndSettle();
+
+    // The AI page was the confirmation; the Vorrat page does not follow.
+    expect(find.byType(InventoryStockAddPage), findsNothing);
+    expect(controller.addedItems.map((item) => item.name), ['Apfel']);
+  });
+
   testWidgets('cancelled AI initial intent returns to the caller', (
     tester,
   ) async {

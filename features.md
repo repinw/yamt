@@ -420,8 +420,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - The AI result opens on the eat page: photo, name, nutrition label, amount
   ruler with the estimated portion, the ingredients with grams and kcal, and
   lean / normal / rich chips that shift the energy. Confirm logs the food
-  when opened from the diary and adds it to the Vorrat otherwise; "Analyze
-  again" returns to the input.
+  when opened from the diary and adds it to the Vorrat otherwise, with no
+  Vorrat page after it; "Analyze again" returns to the input.
 - The product editor looks like the eat page: image, brand and name as
   inputs, package size with a unit switch, and the nutrition label with an
   input per 100 g. All seven values of the EU label (energy, fat, saturates,
