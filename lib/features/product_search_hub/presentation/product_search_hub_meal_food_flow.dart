@@ -56,44 +56,30 @@ pickProductSearchHubMealFood({
 /// Shows the eat page for a food picked in the diary. "Bearbeiten" there
 /// opens the editor and comes back to the eat page with the edited food.
 ///
-/// Returns the food with the entered eat request and whether the user wants
-/// to add more. When the user closes the page, `closed` is true and the
+/// Returns the food with the entered eat request. One food is logged per
+/// pick (#519). When the user closes the page, `closed` is true and the
 /// result holds the last edit. `toStock` is true when the user puts the food
 /// into the Vorrat instead of eating it, which [canStore] offers. [loggedAt]
-/// replaces the route's preselected day. Without [canAddMore] the page has
-/// no button to add more. With [plans], the page's button says "Einplanen"
-/// and the food is planned for its day, also for today.
+/// replaces the route's preselected day. With [plans], the page's button says
+/// "Einplanen" and the food is planned for its day, also for today.
 Future<
-  ({
-    InventoryReceiptManualProductResult result,
-    bool closed,
-    bool addMore,
-    bool toStock,
-  })
+  ({InventoryReceiptManualProductResult result, bool closed, bool toStock})
 >
 eatProductSearchHubDiaryFood({
   required BuildContext context,
   required ProductSearchHubRouteArgs args,
   required InventoryReceiptManualProductResult result,
-  required bool continuesBatch,
   DateTime? loggedAt,
   bool canStore = true,
-  bool canAddMore = true,
   bool plans = false,
 }) async {
-  final l10n = AppLocalizations.of(context)!;
   final picked = await _eatWithEdit(
     context: context,
     args: args,
     result: result,
     page: (item) => _EditableEatPage(
       item: item,
-      confirmIntent: continuesBatch
-          ? InventoryItemEatSheetIntent.addMore
-          : InventoryItemEatSheetIntent.logOnly,
-      addMoreActionText: continuesBatch || !canAddMore
-          ? null
-          : l10n.inventoryItemEatSheetAddMoreAction,
+      confirmIntent: InventoryItemEatSheetIntent.logOnly,
       initialLoggedAt: loggedAt ?? args.preselectedLoggedAt,
       initialMealType: args.preselectedMealType,
       canStore: canStore,
@@ -105,14 +91,12 @@ eatProductSearchHubDiaryFood({
     return (
       result: picked.result,
       closed: !picked.toStock,
-      addMore: false,
       toStock: picked.toStock,
     );
   }
   return (
     result: picked.result.withEatRequest(eat.request),
     closed: false,
-    addMore: eat.addMoreRequested,
     toStock: false,
   );
 }
@@ -190,7 +174,6 @@ class _EditableEatPage extends StatelessWidget {
     required this.item,
     required this.confirmIntent,
     this.confirmLabel,
-    this.addMoreActionText,
     this.initialLoggedAt,
     this.initialMealType,
     this.canStore = false,
@@ -200,7 +183,6 @@ class _EditableEatPage extends StatelessWidget {
   final InventoryItem item;
   final InventoryItemEatSheetIntent confirmIntent;
   final String? confirmLabel;
-  final String? addMoreActionText;
   final DateTime? initialLoggedAt;
   final MealType? initialMealType;
   final bool canStore;
@@ -218,7 +200,6 @@ class _EditableEatPage extends StatelessWidget {
       ),
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
-      addMoreActionText: addMoreActionText,
       hasOpenStock: true,
       confirmLabel: confirmLabel,
       plansOnly: plansOnly,

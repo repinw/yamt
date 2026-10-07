@@ -1432,12 +1432,6 @@ abstract class AppLocalizations {
   /// **'To stock'**
   String get eatPageStoreIconTooltip;
 
-  /// No description provided for @inventoryItemEatSheetAddMoreAction.
-  ///
-  /// In en, this message translates to:
-  /// **'+ More'**
-  String get inventoryItemEatSheetAddMoreAction;
-
   /// No description provided for @eatPagePotUnit.
   ///
   /// In en, this message translates to:
