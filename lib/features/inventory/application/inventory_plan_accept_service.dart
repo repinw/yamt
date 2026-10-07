@@ -13,7 +13,6 @@ import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -144,7 +143,7 @@ class InventoryPlanAcceptService {
       return await _saveWithoutStock(plan, missedStock: false);
     }
     final item = pickInventoryItemForPlan(plan, items);
-    final amount = item == null ? null : _inventoryAmount(plan, item);
+    final amount = item == null ? null : inventoryAmountForPlan(plan, item);
     final pending = item == null || amount == null
         ? null
         : _pendings.stage(item, amount);
@@ -180,18 +179,6 @@ class InventoryPlanAcceptService {
       return planned;
     }
     return planned * meal.totalPortions / plannedTotal;
-  }
-
-  /// The stock amount [plan] takes from [item]: the planned amount from the
-  /// planned pack, else the eaten amount when it is in the item's unit.
-  static int? _inventoryAmount(CalorieEntry plan, InventoryItem item) {
-    final planned = plan.sourceInventoryAmountToRestore;
-    if (item.id == plan.sourceInventoryItemId && planned != null) {
-      return planned;
-    }
-    return plan.consumedUnit == inventoryItemConsumedUnit(item)
-        ? plan.consumedAmount.round()
-        : null;
   }
 
   Future<InventoryPlanAcceptResult> _saveWithoutStock(

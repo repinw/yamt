@@ -395,4 +395,28 @@ void main() {
     );
     expect(plans.plans.map((plan) => plan.id), contains('plan-2'));
   });
+
+  test('a piece pack gives the pieces the eaten grams weigh', () async {
+    logsWithStock();
+    final eggs = InventoryItem.create(
+      id: 'eggs',
+      name: 'Eggs',
+      nutrition: _nutrition,
+      entryDate: DateTime(2026, 9),
+      storeName: 'Rewe',
+      quantity: 6,
+      amountUnit: InventoryAmountUnit.piece,
+      servingQuantity: 60,
+      servingQuantityUnit: 'g',
+    );
+    final plan = _itemPlan(
+      itemId: 'eggs',
+      amount: null,
+    ).copyWith(name: 'Eggs', consumedAmount: 120);
+
+    final result = await service.accept(plan, items: [eggs], meals: const []);
+
+    expect(result.missedStock, isFalse);
+    verify(() => pendings.stage(eggs, 2)).called(1);
+  });
 }

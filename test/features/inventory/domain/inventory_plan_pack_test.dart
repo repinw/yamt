@@ -52,15 +52,23 @@ InventoryItem _pack(
   amountUnit: InventoryAmountUnit.gram,
 );
 
-/// The same food, counted in pieces.
-InventoryItem _piecePack() => InventoryItem.create(
-  id: 'pieces',
+/// The same food, counted in pieces, with [pieceGrams] per piece when
+/// known. A pack without [amountUnit] has no size and counts whole packs.
+InventoryItem _piecePack({
+  String id = 'pieces',
+  double? pieceGrams,
+  InventoryAmountUnit? amountUnit = InventoryAmountUnit.piece,
+}) => InventoryItem.create(
+  id: id,
   name: 'Oats',
   brand: 'Kölln',
   nutrition: _nutrition,
   entryDate: DateTime(2026, 9),
   storeName: 'Rewe',
   quantity: 6,
+  amountUnit: amountUnit,
+  servingQuantity: pieceGrams,
+  servingQuantityUnit: pieceGrams == null ? null : 'g',
 );
 
 void main() {
@@ -91,5 +99,64 @@ void main() {
       ]),
       isNull,
     );
+  });
+
+  group('inventoryAmountForPlan', () {
+    test('takes the planned amount from the planned pack', () {
+      expect(
+        inventoryAmountForPlan(_plan, _pack('gone', currentAmount: 10)),
+        60,
+      );
+    });
+
+    test('takes the eaten grams from another gram pack', () {
+      expect(
+        inventoryAmountForPlan(
+          _plan.copyWith(sourceInventoryAmountToRestore: 25),
+          _pack('other'),
+        ),
+        60,
+      );
+    });
+
+    test('converts the eaten grams into pieces by the piece weight', () {
+      final plan = _plan.copyWith(
+        sourceInventoryItemId: 'eggs',
+        sourceInventoryAmountToRestore: null,
+        consumedAmount: 120,
+      );
+
+      expect(
+        inventoryAmountForPlan(plan, _piecePack(id: 'eggs', pieceGrams: 60)),
+        2,
+      );
+      expect(inventoryAmountForPlan(plan, _piecePack(id: 'eggs')), isNull);
+    });
+
+    test('a pack without a size takes no stock by its serving', () {
+      final plan = _plan.copyWith(
+        sourceInventoryItemId: 'eggs',
+        sourceInventoryAmountToRestore: null,
+        consumedAmount: 120,
+      );
+
+      expect(
+        inventoryAmountForPlan(
+          plan,
+          _piecePack(id: 'eggs', pieceGrams: 60, amountUnit: null),
+        ),
+        isNull,
+      );
+    });
+
+    test('a same named piece pack with a piece weight is the food', () {
+      expect(
+        pickInventoryItemForPlan(
+          _plan.copyWith(sourceInventoryItemId: 'gone-too'),
+          [_piecePack(pieceGrams: 30)],
+        )?.id,
+        'pieces',
+      );
+    });
   });
 }
