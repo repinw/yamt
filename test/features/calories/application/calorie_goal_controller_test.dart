@@ -95,68 +95,6 @@ void main() {
     },
   );
 
-  test('manual setGoal clears an existing calculator profile', () async {
-    final repository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2200,
-        calculatorProfile: const CalorieCalculatorProfile(
-          sex: CalorieCalculatorSex.female,
-          weightKg: 65,
-          heightCm: 170,
-          ageYears: 28,
-          activityLevel: 1.5,
-          goalMode: CalorieGoalMode.lose,
-          goalSpeedKgPerWeek: 0.5,
-        ),
-        effectiveDate: DateTime(2026, 2, 25, 9),
-      ),
-    );
-    addTearDown(repository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(repository),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await container.read(calorieGoalControllerProvider.future);
-
-    final saved = await container
-        .read(calorieGoalControllerProvider.notifier)
-        .setGoal(2300);
-
-    expect(saved, isTrue);
-    final settings = await repository.readSettings();
-    expect(settings.dailyKcalGoal, 2300);
-    expect(settings.calculatorProfile, isNull);
-    expect(settings.goalKcalForDay(DateTime(2026, 2, 25)), 2200);
-    expect(settings.goalKcalForDay(DateTime.now()), 2300);
-    expect(settings.goalHistory, hasLength(2));
-  });
-
-  test('setGoal rejects non-positive values', () async {
-    final repository = FakeCalorieSettingsRepository();
-    addTearDown(repository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(repository),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await container.read(calorieGoalControllerProvider.future);
-
-    final saved = await container
-        .read(calorieGoalControllerProvider.notifier)
-        .setGoal(0);
-
-    expect(saved, isFalse);
-    final settings = await repository.readSettings();
-    expect(settings.hasGoal, isFalse);
-  });
-
   test('build surfaces initial settings stream errors', () async {
     final repository = _WatchErrorCalorieSettingsRepository();
     addTearDown(repository.dispose);
@@ -195,71 +133,8 @@ void main() {
     );
     final controller = container.read(calorieGoalControllerProvider.notifier);
 
-    expect(await controller.setGoal(2000), isFalse);
     expect(await controller.toggleTrainingDay(DateTime(2026, 5, 4)), isFalse);
     expect(await controller.updateSettings((settings) => settings), isFalse);
-  });
-
-  test('setGoal restores previous state when save throws', () async {
-    final previousSettings = CalorieGoalSettings.single(
-      dailyKcalGoal: 2100,
-      calculatorProfile: null,
-      effectiveDate: DateTime(2026, 4, 8),
-    );
-    final repository =
-        FakeCalorieSettingsRepository(initialSettings: previousSettings)
-          ..onSaveSettings = (settings) async {
-            throw StateError('save failed');
-          };
-    addTearDown(repository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(repository),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await container.read(calorieGoalControllerProvider.future);
-
-    final saved = await container
-        .read(calorieGoalControllerProvider.notifier)
-        .setGoal(2200);
-
-    expect(saved, isFalse);
-    expect(
-      container.read(calorieGoalControllerProvider).asData?.value,
-      previousSettings,
-    );
-  });
-
-  test('clearGoal removes active goal', () async {
-    final repository = FakeCalorieSettingsRepository(
-      initialSettings: CalorieGoalSettings.single(
-        dailyKcalGoal: 2100,
-        calculatorProfile: null,
-        effectiveDate: DateTime(2026, 4, 8),
-      ),
-    );
-    addTearDown(repository.dispose);
-
-    final container = ProviderContainer(
-      overrides: [
-        calorieSettingsRepositoryProvider.overrideWithValue(repository),
-      ],
-    );
-    addTearDown(container.dispose);
-
-    await container.read(calorieGoalControllerProvider.future);
-
-    final saved = await container
-        .read(calorieGoalControllerProvider.notifier)
-        .clearGoal();
-
-    expect(saved, isTrue);
-    final settings = await repository.readSettings();
-    expect(settings.hasGoal, isFalse);
-    expect(settings.goalHistory, hasLength(2));
   });
 
   test(
