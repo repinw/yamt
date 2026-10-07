@@ -115,6 +115,16 @@ Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
 }
 
+Future<void> _pumpUntilAbsent(WidgetTester tester, Finder finder) async {
+  final end = tester.binding.clock.fromNowBy(const Duration(seconds: 8));
+  while (finder.evaluate().isNotEmpty) {
+    if (tester.binding.clock.now().isAfter(end)) {
+      throw TestFailure('Timed out waiting for $finder to go away.');
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
@@ -170,8 +180,10 @@ void main() {
       findsOneWidget,
     );
     await tester.tap(find.byKey(PreparedMealEditPage.saveKey));
+    // The editor closes with its route animation, which can take longer than
+    // one settle on a slow runner.
+    await _pumpUntilAbsent(tester, find.byKey(PreparedMealEditPage.saveKey));
     await _settle(tester);
-    expect(find.byKey(PreparedMealEditPage.saveKey), findsNothing);
     // The save message shows on the meal page, not on the hidden list.
     expect(find.byType(EatMealDetailSections), findsOneWidget);
     expect(
