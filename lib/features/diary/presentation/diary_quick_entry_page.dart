@@ -93,7 +93,6 @@ class _DiaryQuickEntryPageState extends ConsumerState<DiaryQuickEntryPage> {
 
     return EatPageScaffold(
       // A failed save shows its snack bar on this page.
-      hasOwnMessenger: false,
       whenControl: EatWhenMenu(
         loggedAt: state.loggedAt,
         today: state.today,
