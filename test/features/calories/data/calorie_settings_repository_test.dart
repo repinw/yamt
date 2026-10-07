@@ -222,4 +222,22 @@ void main() {
       throwsStateError,
     );
   });
+
+  test('only a missing document from the cache needs a server check', () {
+    expect(settingsNeedServerCheck(exists: false, isFromCache: true), isTrue);
+    expect(settingsNeedServerCheck(exists: false, isFromCache: false), isFalse);
+    expect(settingsNeedServerCheck(exists: true, isFromCache: true), isFalse);
+    expect(settingsNeedServerCheck(exists: true, isFromCache: false), isFalse);
+  });
+
+  test('an existing document allows saves', () async {
+    final firestore = FakeFirebaseFirestore();
+    await seedSettings(firestore, goalSettings(2100).toJson());
+    final repository = repositoryFor(firestore);
+
+    expect((await repository.watchSettings().first).dailyKcalGoal, 2100);
+    await repository.saveSettings(goalSettings(2200));
+
+    expect((await repository.readSettings()).dailyKcalGoal, 2200);
+  });
 }

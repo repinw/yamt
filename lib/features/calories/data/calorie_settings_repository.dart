@@ -28,12 +28,19 @@ abstract interface class CalorieSettingsRepository {
 /// The settings hold body data, so the document is stored encrypted with the
 /// data key of the user. Reads and writes throw on failure, so an offline
 /// read never looks like a user without a goal.
+///
+/// Offline, a missing document from the local cache may only mean that the
+/// cache never held it. Such a snapshot still reads as empty settings, but
+/// the next save first asks the server: it goes ahead only when the server
+/// has no settings either, so a goal action cannot replace the stored goal
+/// with one built on empty settings. Offline that save throws.
 class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
   /// Creates an instance.
   new({required this._dataCipher, required this._firestore});
 
   final UserDataCipher? _dataCipher;
   final FirebaseFirestore _firestore;
+  var _waitsForServerSettings = false;
 
   @override
   Stream<CalorieGoalSettings> watchSettings() {
@@ -63,9 +70,21 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
     if (dataCipher == null) {
       throw StateError('Cannot save calorie settings while signed out.');
     }
+    final reference = _document(dataCipher.uid);
+    if (_waitsForServerSettings) {
+      final server = await reference.get(
+        const GetOptions(source: Source.server),
+      );
+      if (server.exists) {
+        throw StateError(
+          'Calorie settings were built on a cache miss, but the server has '
+          'settings.',
+        );
+      }
+      _waitsForServerSettings = false;
+    }
 
     final normalizedSettings = settings.copyWith(updatedAt: DateTime.now());
-    final reference = _document(dataCipher.uid);
     await reference.set(<String, dynamic>{
       encryptedPayloadField: await dataCipher.cipher.encryptJson(
         normalizedSettings.toJson(),
@@ -85,22 +104,38 @@ class FirestoreCalorieSettingsRepository implements CalorieSettingsRepository {
   Future<CalorieGoalSettings> _decodeSnapshot(
     DocumentSnapshot<Map<String, dynamic>> snapshot,
   ) async {
-    if (!snapshot.exists) {
-      return const CalorieGoalSettings.empty();
-    }
+    final settings = snapshot.exists
+        ? CalorieGoalSettings.fromJson(
+            await _dataCipher!.cipher.decryptJson(
+              _payload(snapshot),
+              aad: snapshot.reference.path,
+            ),
+          )
+        : const CalorieGoalSettings.empty();
+    // Set only once the settings are decoded, so a save still built on the
+    // previous snapshot keeps the server check.
+    _waitsForServerSettings = settingsNeedServerCheck(
+      exists: snapshot.exists,
+      isFromCache: snapshot.metadata.isFromCache,
+    );
+    return settings;
+  }
 
+  String _payload(DocumentSnapshot<Map<String, dynamic>> snapshot) {
     final payload = snapshot.data()?[encryptedPayloadField];
     if (payload is! String) {
       throw FormatException('Calorie settings ${snapshot.id} has no payload.');
     }
-    return CalorieGoalSettings.fromJson(
-      await _dataCipher!.cipher.decryptJson(
-        payload,
-        aad: snapshot.reference.path,
-      ),
-    );
+    return payload;
   }
 }
+
+/// Whether settings read from this snapshot may only be empty because the
+/// local cache never held the document, so a save must ask the server first.
+bool settingsNeedServerCheck({
+  required bool exists,
+  required bool isFromCache,
+}) => !exists && isFromCache;
 
 /// Calorie settings repository.
 @Riverpod(keepAlive: true)
