@@ -1328,6 +1328,9 @@
       }
     }
   },
+  "diaryMealCopyAction": "Copy as plan",
+  "diaryMealCopyPickMeal": "Pick a meal",
+  "diaryMealCopyDaysLabel": "To which days",
   "diaryPlanCopyFailed": "Plans could not be saved",
   "diaryPlanSemanticsLabel": "Plan",
   "diaryPlanAcceptAction": "Eaten as planned",

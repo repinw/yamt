@@ -3,11 +3,11 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_plan_accept_service.dart';
 import 'package:yamt/features/inventory/application/'
@@ -32,24 +32,26 @@ class DiaryPlanController extends _$DiaryPlanController {
   Future<bool> restore(CalorieEntry plan) =>
       _write((repository) => repository.savePlannedEntry(plan));
 
-  /// Plans [plan] on [days] too: one copy per day in [mealType], at the
-  /// plan's time of day, with a new id. Returns the copies, or null when
-  /// saving failed; the copies saved before the failure are removed again.
+  /// Plans [entries] on [days] too: one copy of each per day, in
+  /// [mealType] or else the entry's own meal, at the entry's time of day,
+  /// with a new id (see [planCalorieEntryAgain]). Returns the copies, or
+  /// null when saving failed; the copies saved before the failure are
+  /// removed again.
   Future<List<CalorieEntry>?> copyToDays(
-    CalorieEntry plan, {
+    List<CalorieEntry> entries, {
     required List<DateTime> days,
-    required MealType mealType,
+    MealType? mealType,
   }) async {
     final now = ref.read(clockProvider)();
     final copies = [
       for (final day in days)
-        plan.copyWith(
-          id: const Uuid().v4(),
-          mealType: mealType,
-          loggedAt: loggedAtOnDay(day, now: plan.loggedAt),
-          createdAt: now,
-          updatedAt: now,
-        ),
+        for (final entry in entries)
+          planCalorieEntryAgain(
+            entry,
+            id: const Uuid().v4(),
+            day: day,
+            now: now,
+          ).copyWith(mealType: mealType ?? entry.mealType),
     ];
     final saved = await _write((repository) async {
       final written = <CalorieEntry>[];

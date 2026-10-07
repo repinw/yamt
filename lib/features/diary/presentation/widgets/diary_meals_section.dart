@@ -93,6 +93,20 @@ class DiaryMealsSection extends ConsumerWidget {
           DiaryMealGroup(
             section: section,
             shortPlanIds: shortPlanIds,
+            onCopy: data == null
+                ? null
+                : () => unawaited(
+                    copyDiaryMealFlow(
+                      context,
+                      ref,
+                      day: normalizedDay,
+                      mealType: section.mealType,
+                      entries: [
+                        ...data.selectedDayEntries,
+                        ...data.plannedEntries,
+                      ],
+                    ),
+                  ),
             onTapEntry: (entry) => unawaited(
               context.push<void>(
                 AppRoutes.homeCaloriesEntryDetailsPath(entry.id),

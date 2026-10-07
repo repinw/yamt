@@ -2599,6 +2599,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get diaryMealCopyAction => 'Copy as plan';
+
+  @override
+  String get diaryMealCopyPickMeal => 'Pick a meal';
+
+  @override
+  String get diaryMealCopyDaysLabel => 'To which days';
+
+  @override
   String get diaryPlanCopyFailed => 'Plans could not be saved';
 
   @override

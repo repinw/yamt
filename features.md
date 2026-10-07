@@ -165,6 +165,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   more than one plan has a button in its heading that eats all of them at
   once, with one undo; its snackbar says when not all of them came from
   the Vorrat.
+- Each meal heading has a copy icon. It opens "Als Plan kopieren" with that
+  meal ticked; other meals of the day can be ticked too, so a whole day can
+  be copied. The two-week calendar picks the days, and the button plans every
+  food of the ticked meals once per day, in its own meal, with one undo for
+  all copies. Copies are always plans, also of eaten food; a combined entry
+  keeps no stock source.
 - Future days are shown as a plan: the head reads "Geplant" with the kcal
   logged and planned for that day and "von" the day's goal; the macro bars
   count the plans too. The goal has no carryover, because the days before it

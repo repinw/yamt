@@ -43,7 +43,7 @@ final class DiaryPlanControllerProvider
 }
 
 String _$diaryPlanControllerHash() =>
-    r'3d9b576a10462b833a420335eb8652ac70e77662';
+    r'5ecb08bf82329d64940446c1481ac1f0a8ef7a37';
 
 /// Accepts and deletes plans in the diary, and undoes both.
 ///

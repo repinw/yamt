@@ -19,6 +19,7 @@ class DiaryMealGroup extends StatelessWidget {
     this.onAcceptPlan,
     this.onAcceptAllPlans,
     this.shortPlanIds = const {},
+    this.onCopy,
     super.key,
   });
 
@@ -39,6 +40,9 @@ class DiaryMealGroup extends StatelessWidget {
 
   /// Plans the Vorrat cannot cover in full.
   final Set<String> shortPlanIds;
+
+  /// Copies the meal as plans to other days. Without it, no copy icon.
+  final VoidCallback? onCopy;
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +80,18 @@ class DiaryMealGroup extends StatelessWidget {
                 style: labelStyle,
               ),
             ],
+            if (onCopy case final copy?)
+              IconButton(
+                key: DiaryMealsSectionKeys.mealCopyButton(section.mealType),
+                tooltip: l10n.diaryMealCopyAction,
+                onPressed: copy,
+                // Keeps the heading as low as a heading without the icon.
+                visualDensity: VisualDensity.compact,
+                style: IconButton.styleFrom(
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                icon: const Icon(Icons.content_copy_rounded),
+              ),
             if (onAcceptAllPlans case final acceptAll?
                 when section.plannedEntries.length > 1)
               IconButton(

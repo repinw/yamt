@@ -14,11 +14,13 @@ import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_dashed_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_copy_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meal_group/diary_meal_group.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_grid.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
@@ -256,7 +258,7 @@ void main() {
       today.add(const Duration(days: 3)),
     ];
     for (final day in days) {
-      await tester.tap(find.byKey(DiaryPlanDaysSheet.dayKey(day)));
+      await tester.tap(find.byKey(DiaryPlanDaysGrid.dayKey(day)));
       await tester.pump();
     }
     await tester.tap(find.byKey(DiaryPlanDaysSheet.mealKey(MealType.lunch)));
@@ -274,6 +276,75 @@ void main() {
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
     expect(repository.plans, [plan]);
+  });
+
+  testWidgets('the copy icon plans the ticked meals on more days, with undo', (
+    tester,
+  ) async {
+    CalorieEntry eaten(String id, MealType mealType, int hour) =>
+        buildQuickCalorieEntry(
+          id: id,
+          userId: 'user-1',
+          name: id,
+          mealType: mealType,
+          loggedAt: selectedDay.add(Duration(hours: hour)),
+          now: selectedDay,
+          kcal: 300,
+        );
+    final oats = eaten('oats', MealType.breakfast, 8);
+    final soup = eaten('soup', MealType.lunch, 12);
+    final repository = FakePlannedEntryRepository();
+    DiaryMealEntry row(CalorieEntry entry) => _entry(
+      id: entry.id,
+      day: selectedDay,
+      mealType: entry.mealType,
+      name: entry.name,
+      kcal: 300,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+    );
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(MealType.breakfast, [row(oats)]),
+        _mealSection(MealType.lunch, [row(soup)]),
+      ],
+      selectedDayEntries: [oats, soup],
+      overrides: [plannedEntryRepositoryProvider.overrideWithValue(repository)],
+    );
+    final today = ProviderScope.containerOf(
+      tester.element(find.byType(DiaryMealsSection)),
+    ).read(diaryCalendarControllerProvider).today;
+
+    await tester.tap(
+      find.byKey(DiaryMealsSectionKeys.mealCopyButton(MealType.breakfast)),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryMealCopySheet.mealKey(MealType.lunch)));
+    await tester.pump();
+    final day = today.add(const Duration(days: 2));
+    await tester.ensureVisible(find.byKey(DiaryPlanDaysGrid.dayKey(day)));
+    await tester.tap(find.byKey(DiaryPlanDaysGrid.dayKey(day)));
+    await tester.pump();
+    await tester.ensureVisible(find.byKey(DiaryMealCopySheet.confirmKey));
+    await tester.tap(find.byKey(DiaryMealCopySheet.confirmKey));
+    await tester.pumpAndSettle();
+
+    final copies = repository.plans.toList()
+      ..sort((a, b) => a.loggedAt.compareTo(b.loggedAt));
+    expect(copies.map((it) => it.mealType), [
+      MealType.breakfast,
+      MealType.lunch,
+    ]);
+    expect(copies.map((it) => dateOnly(it.loggedAt)), everyElement(day));
+    expect(copies.map((it) => it.id), isNot(contains('oats')));
+    expect(find.text('Planned on 1 more day'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(repository.plans, isEmpty);
   });
 
   testWidgets('the plan details change the amount of a plan', (tester) async {
@@ -952,6 +1023,7 @@ Future<void> _pumpMealsSection(
   required List<DiaryMealSection> sections,
   DateTime? now,
   List<CalorieEntry> plannedEntries = const [],
+  List<CalorieEntry> selectedDayEntries = const [],
   Set<String> shortPlanIds = const {},
   List<Override> overrides = const [],
 }) async {
@@ -965,6 +1037,7 @@ Future<void> _pumpMealsSection(
           selectedDay: selectedDay,
           mealSections: sections,
           plannedEntries: plannedEntries,
+          selectedDayEntries: selectedDayEntries,
         ),
       ),
       _planDemand(shortPlanIds: shortPlanIds),

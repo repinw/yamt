@@ -4474,6 +4474,24 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Planned on 1 more day} other{Planned on {count} more days}}'**
   String diaryPlanCopied(int count);
 
+  /// No description provided for @diaryMealCopyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy as plan'**
+  String get diaryMealCopyAction;
+
+  /// No description provided for @diaryMealCopyPickMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a meal'**
+  String get diaryMealCopyPickMeal;
+
+  /// No description provided for @diaryMealCopyDaysLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'To which days'**
+  String get diaryMealCopyDaysLabel;
+
   /// No description provided for @diaryPlanCopyFailed.
   ///
   /// In en, this message translates to:

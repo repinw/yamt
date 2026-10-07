@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_copy_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_plan_accept_service.dart';
@@ -63,12 +65,53 @@ Future<void> _copyDiaryPlanFlow(
   if (choice == null || !context.mounted) {
     return;
   }
+  await _planCopies(
+    context,
+    ref,
+    entries: [plan],
+    days: choice.days,
+    mealType: choice.mealType,
+  );
+}
+
+/// Asks which meals of [day] to copy as plans and on which days, plans the
+/// copies, and offers one undo for all of them. [entries] are the eaten
+/// foods and plans of [day]; [mealType] is ticked at first.
+Future<void> copyDiaryMealFlow(
+  BuildContext context,
+  WidgetRef ref, {
+  required DateTime day,
+  required MealType mealType,
+  required List<CalorieEntry> entries,
+}) async {
+  final choice = await showDiaryMealCopySheet(
+    context: context,
+    day: day,
+    mealType: mealType,
+    entries: entries,
+    today: ref.read(diaryCalendarControllerProvider).today,
+  );
+  if (choice == null || !context.mounted) {
+    return;
+  }
+  await _planCopies(context, ref, entries: choice.entries, days: choice.days);
+}
+
+/// Plans [entries] on [days], in [mealType] or their own meals, and offers
+/// one undo for all copies.
+Future<void> _planCopies(
+  BuildContext context,
+  WidgetRef ref, {
+  required List<CalorieEntry> entries,
+  required List<DateTime> days,
+  MealType? mealType,
+}) async {
   final messenger = ScaffoldMessenger.of(context);
   final l10n = AppLocalizations.of(context)!;
   final container = ProviderScope.containerOf(context, listen: false);
   final copies = await ref
       .read(diaryPlanControllerProvider.notifier)
-      .copyToDays(plan, days: choice.days, mealType: choice.mealType);
+      .copyToDays(entries, days: days, mealType: mealType);
   if (copies == null) {
     messenger.showAppSnackBar(
       l10n.diaryPlanCopyFailed,
@@ -77,7 +120,7 @@ Future<void> _copyDiaryPlanFlow(
     return;
   }
   messenger.showAppSnackBar(
-    l10n.diaryPlanCopied(copies.length),
+    l10n.diaryPlanCopied(days.length),
     onUndo: () =>
         container.read(diaryPlanControllerProvider.notifier).deleteAll(copies),
   );
