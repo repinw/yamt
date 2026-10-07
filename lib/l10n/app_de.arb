@@ -147,6 +147,14 @@
       }
     }
   },
+  "inventoryRowPlanned": "{amount} verplant",
+  "@inventoryRowPlanned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryRowLow": "fast leer",
   "inventoryRowInfo": "{first} · {second}",
   "@inventoryRowInfo": {
@@ -1221,6 +1229,7 @@
   "diaryPlansAcceptedPartly": "{eaten} von {total} Plänen gegessen",
   "diaryPlansAcceptedWithoutStock": "{count, plural, =1{1 Plan gegessen – nicht alles aus dem Vorrat} other{{count} Pläne gegessen – nicht alles aus dem Vorrat}}",
   "diaryPlanAcceptMealInPot": "Erst das Gericht als „Gekocht“ eintragen",
+  "diaryPlanShortTag": "Fehlt im Vorrat",
   "diaryPlanMealPrepTag": "Meal Prep",
   "diaryBalanceLoadFailed": "Balance konnte nicht geladen werden",
   "diaryNutritionLoadFailed": "Nährwerte konnten nicht geladen werden",

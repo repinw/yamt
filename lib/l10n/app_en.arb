@@ -189,6 +189,14 @@
       }
     }
   },
+  "inventoryRowPlanned": "{amount} planned",
+  "@inventoryRowPlanned": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryRowLow": "almost empty",
   "inventoryRowInfo": "{first} · {second}",
   "@inventoryRowInfo": {
@@ -1357,6 +1365,7 @@
     }
   },
   "diaryPlanAcceptMealInPot": "Mark the meal as cooked first",
+  "diaryPlanShortTag": "Not in stock",
   "diaryPlanMealPrepTag": "Meal Prep",
   "diaryBalanceLoadFailed": "Balance could not be loaded",
   "diaryNutritionLoadFailed": "Nutrition could not be loaded",

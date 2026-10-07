@@ -173,4 +173,31 @@ void main() {
         .toList();
     expect(factors, [1, 1, 0.5, 0]);
   });
+
+  testWidgets('a food that plans take names the planned amount and draws it '
+      'in the stock bar', (tester) async {
+    await _pump(
+      tester,
+      InventoryEntryRow(
+        entry: InventoryFoodEntry(_food(left: 400)),
+        tiltLeft: true,
+        planned: 250,
+      ),
+    );
+
+    expect(find.text('250 verplant'), findsOneWidget);
+    expect(find.text('von 500 g'), findsNothing);
+    final bar = tester.widget<GraphitStockBar>(find.byType(GraphitStockBar));
+    expect(bar.share, 0.8);
+    expect(bar.plannedShare, 0.5);
+    final colors = tester
+        .widgetList<ColoredBox>(
+          find.descendant(
+            of: find.byType(GraphitStockBar),
+            matching: find.byType(ColoredBox),
+          ),
+        )
+        .map((box) => box.color);
+    expect(colors, contains(FoodLabelColors.dark.accent));
+  });
 }

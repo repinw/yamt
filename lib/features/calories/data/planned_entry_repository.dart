@@ -33,19 +33,29 @@ class PlannedEntryRepository {
   final FirebaseFirestore? firestore;
 
   /// The plans of [day] in time order, or none while signed out.
-  Future<List<CalorieEntry>> loadPlannedEntriesForDay(DateTime day) async {
+  Future<List<CalorieEntry>> loadPlannedEntriesForDay(DateTime day) =>
+      loadPlannedEntries(day, day);
+
+  /// The plans of the days from [first] to [last] in time order, or none
+  /// while signed out.
+  Future<List<CalorieEntry>> loadPlannedEntries(
+    DateTime first,
+    DateTime last,
+  ) async {
     final dataCipher = this.dataCipher;
     final firestore = this.firestore;
     if (dataCipher == null || firestore == null) {
       return const <CalorieEntry>[];
     }
-    final bounds = diaryDayBounds(day);
     final snapshot = await _collection(firestore, dataCipher.uid)
         .where(
           calorieEntryLoggedAtField,
-          isGreaterThanOrEqualTo: bounds.startInclusive,
+          isGreaterThanOrEqualTo: diaryDayBounds(first).startInclusive,
         )
-        .where(calorieEntryLoggedAtField, isLessThan: bounds.endExclusive)
+        .where(
+          calorieEntryLoggedAtField,
+          isLessThan: diaryDayBounds(last).endExclusive,
+        )
         .orderBy(calorieEntryLoggedAtField)
         .get();
     return await decodeCalorieEntrySnapshot(

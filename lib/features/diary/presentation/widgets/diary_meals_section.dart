@@ -18,6 +18,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_empty_state.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Meals logged on the selected diary day.
@@ -81,6 +82,9 @@ class DiaryMealsSection extends ConsumerWidget {
         (state) => state.isFutureDay(normalizedDay),
       ),
     );
+    final shortPlanIds =
+        ref.watch(openPlanDemandProvider).value?.shortPlanIds ??
+        const <String>{};
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: AppSpacing.xxl,
@@ -88,6 +92,7 @@ class DiaryMealsSection extends ConsumerWidget {
         for (final section in loggedSections)
           DiaryMealGroup(
             section: section,
+            shortPlanIds: shortPlanIds,
             onTapEntry: (entry) => unawaited(
               context.push<void>(
                 AppRoutes.homeCaloriesEntryDetailsPath(entry.id),

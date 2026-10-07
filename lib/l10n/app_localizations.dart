@@ -686,6 +686,12 @@ abstract class AppLocalizations {
   /// **'of {amount}'**
   String inventoryRowOfAmount(String amount);
 
+  /// No description provided for @inventoryRowPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} planned'**
+  String inventoryRowPlanned(String amount);
+
   /// No description provided for @inventoryRowLow.
   ///
   /// In en, this message translates to:
@@ -4545,6 +4551,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Mark the meal as cooked first'**
   String get diaryPlanAcceptMealInPot;
+
+  /// No description provided for @diaryPlanShortTag.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in stock'**
+  String get diaryPlanShortTag;
 
   /// No description provided for @diaryPlanMealPrepTag.
   ///

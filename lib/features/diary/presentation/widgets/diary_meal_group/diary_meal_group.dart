@@ -18,6 +18,7 @@ class DiaryMealGroup extends StatelessWidget {
     required this.onTapPlan,
     this.onAcceptPlan,
     this.onAcceptAllPlans,
+    this.shortPlanIds = const {},
     super.key,
   });
 
@@ -35,6 +36,9 @@ class DiaryMealGroup extends StatelessWidget {
 
   /// Eats every plan of the meal. Shown only with more than one plan.
   final VoidCallback? onAcceptAllPlans;
+
+  /// Plans the Vorrat cannot cover in full.
+  final Set<String> shortPlanIds;
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +100,7 @@ class DiaryMealGroup extends StatelessWidget {
             padding: const EdgeInsets.only(top: AppSpacing.xs),
             child: DiaryPlannedEntryTile(
               plan: plan,
+              isShort: shortPlanIds.contains(plan.id),
               onTap: () => onTapPlan(plan),
               onAccept: switch (onAcceptPlan) {
                 final accept? => () => accept(plan),

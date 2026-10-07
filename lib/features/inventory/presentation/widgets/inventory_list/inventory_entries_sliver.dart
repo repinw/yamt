@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_responsive_viewport.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_hub_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/'
@@ -135,6 +136,9 @@ class InventoryEntriesSliver extends ConsumerWidget {
         ),
       );
     }
+    final planned =
+        ref.watch(openPlanDemandProvider).value?.plannedByItemId ??
+        const <String, int>{};
     return SliverPadding(
       key: listKey,
       padding: padding,
@@ -150,6 +154,7 @@ class InventoryEntriesSliver extends ConsumerWidget {
             isSelected: selectedItemIds.contains(entry.id),
             onTap: onTap(entry),
             onLongPress: onLongPress(entry),
+            planned: planned[entry.id] ?? 0,
           );
         },
       ),

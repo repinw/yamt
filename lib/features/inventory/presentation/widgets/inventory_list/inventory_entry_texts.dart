@@ -19,19 +19,30 @@ class InventoryEntryTexts {
     this.infoIsWarning = false,
   });
 
-  /// Texts of [entry].
-  factory of(InventoryListEntry entry, AppLocalizations l10n) {
+  /// Texts of [entry]. A food that open plans take [planned] of, in its
+  /// stored unit, names that amount in place of the full amount.
+  factory of(
+    InventoryListEntry entry,
+    AppLocalizations l10n, {
+    int planned = 0,
+  }) {
     final texts = switch (entry) {
       InventoryFoodEntry(:final item) => _food(item, l10n),
       InventoryMealEntry(:final meal) => _meal(meal, l10n),
     };
-    if (!entry.isLow) {
+    final ofFull = switch (entry) {
+      InventoryFoodEntry(:final item) when planned > 0 =>
+        l10n.inventoryRowPlanned(_stored(item, planned)),
+      _ when entry.isLow => l10n.inventoryRowLow,
+      _ => null,
+    };
+    if (ofFull == null) {
       return texts;
     }
     return InventoryEntryTexts(
       amount: texts.amount,
       unit: texts.unit,
-      ofFull: l10n.inventoryRowLow,
+      ofFull: ofFull,
       info: texts.info,
       infoIsWarning: texts.infoIsWarning,
     );
@@ -92,6 +103,19 @@ InventoryEntryTexts _food(InventoryItem item, AppLocalizations l10n) {
     ),
     info: info,
   );
+}
+
+/// [amount] of [item]'s stored unit as the row shows it.
+String _stored(InventoryItem item, int amount) {
+  final unit = item.amountUnit;
+  if (item.usesAmountProgress && unit != null) {
+    return formatInventoryAmountValue(
+      amount: amount,
+      unit: unit,
+      scale: item.amountScale,
+    );
+  }
+  return '$amount';
 }
 
 InventoryEntryTexts _meal(PreparedMeal meal, AppLocalizations l10n) {

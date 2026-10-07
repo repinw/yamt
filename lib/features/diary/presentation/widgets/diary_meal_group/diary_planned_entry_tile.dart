@@ -17,6 +17,7 @@ class DiaryPlannedEntryTile extends StatelessWidget {
     required this.plan,
     required this.onTap,
     this.onAccept,
+    this.isShort = false,
     super.key,
   });
 
@@ -28,6 +29,9 @@ class DiaryPlannedEntryTile extends StatelessWidget {
 
   /// Eats the plan as planned. Without it, the row has no check button.
   final VoidCallback? onAccept;
+
+  /// Whether the Vorrat cannot cover the plan in full.
+  final bool isShort;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +55,11 @@ class DiaryPlannedEntryTile extends StatelessWidget {
                     child: DiaryMealEntryTile(
                       entry: plan,
                       onTap: onTap,
-                      tag: plan.isPreparedMeal ? const _MealPrepTag() : null,
+                      tag: plan.isPreparedMeal
+                          ? const _MealPrepTag()
+                          : isShort
+                          ? const _ShortTag()
+                          : null,
                     ),
                   ),
                 ),
@@ -93,6 +101,23 @@ class _MealPrepTag extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Marks a plan that the Vorrat cannot cover in full.
+class _ShortTag extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      AppLocalizations.of(context)!.diaryPlanShortTag,
+      key: DiaryMealsSectionKeys.planShortTag,
+      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+        color: FoodLabelColors.of(context).low,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
