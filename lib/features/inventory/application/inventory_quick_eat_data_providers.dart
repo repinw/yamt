@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -54,4 +55,13 @@ Future<List<PreparedMeal>> _readQuickEatMeals(Ref ref) async {
   return state.asData?.value ??
       await ref.watch(inventoryQuickEatMealsProvider.future) ??
       const <PreparedMeal>[];
+}
+
+/// The Vorrat meal [mealId] as it is stored now, or `null` while the Vorrat
+/// has no meal with that id. Every meal page reads its meal here.
+@riverpod
+AsyncValue<PreparedMeal?> livePreparedMeal(Ref ref, String mealId) {
+  return ref
+      .watch(inventoryQuickEatMealsProvider)
+      .whenData((meals) => meals.firstWhereOrNull((meal) => meal.id == mealId));
 }

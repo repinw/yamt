@@ -3305,6 +3305,7 @@
     }
   },
   "cookedLoadFailed": "Could not load the meal.",
+  "preparedMealGone": "Meal is no longer in stock",
   "cookbookInPotSince": "In the pot since {time}",
   "@cookbookInPotSince": {
     "placeholders": {

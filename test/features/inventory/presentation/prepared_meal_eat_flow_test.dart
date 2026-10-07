@@ -213,6 +213,54 @@ void main() {
     expect(find.text('1 row open'), findsOneWidget);
   });
 
+  testWidgets('the eat page closes and says so when the meal is gone', (
+    tester,
+  ) async {
+    final meal = preparedMealTestData();
+    final repository = _FakePreparedMealRepository([meal]);
+    addTearDown(repository.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          inventoryQuickEatActionsProvider.overrideWithValue(
+            _FakeQuickEatActions(),
+          ),
+          preparedMealRepositoryProvider.overrideWithValue(repository),
+        ],
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () =>
+                    PreparedMealEatFlow.eat(context: context, meal: meal),
+                child: const Text('eat'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('eat'));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const Key('prepared_meal_eat_confirm_button')),
+      findsOneWidget,
+    );
+
+    repository.emit(const []);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const Key('prepared_meal_eat_confirm_button')),
+      findsNothing,
+    );
+    expect(find.text('Meal is no longer in stock'), findsOneWidget);
+  });
+
   testWidgets('the detail page logs the meal as the Vorrat holds it now', (
     tester,
   ) async {

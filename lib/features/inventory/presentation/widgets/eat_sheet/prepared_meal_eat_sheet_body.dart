@@ -10,6 +10,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
+import 'package:yamt/features/inventory/presentation/prepared_meal_gone_flow.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label_table.dart';
@@ -64,8 +65,6 @@ class _PreparedMealEatSheetBodyState
         localeName: widget.localeName,
         initialLoggedAt: widget.initialLoggedAt,
         initialMealType: widget.initialMealType,
-        // Only the detail page follows the Vorrat; the diary has its own list.
-        followVorrat: widget.actions != null,
       );
   final _amount = EatSheetTextField();
 
@@ -87,6 +86,7 @@ class _PreparedMealEatSheetBodyState
   @override
   Widget build(BuildContext context) {
     ref.listen(_provider, (_, next) => _syncText(next));
+    PreparedMealGoneFlow.closeWhenGone(ref, context, widget.meal.id);
     final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(_provider);
     // The meal the page shows and logs.
