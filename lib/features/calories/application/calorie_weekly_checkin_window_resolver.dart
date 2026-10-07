@@ -1,6 +1,7 @@
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_build_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
@@ -28,25 +29,12 @@ PendingCalorieGoalWeeklyCheckIn? resolveLatestCompletedCalorieWeeklyCheckIn({
     anchorEntry,
   );
   while (true) {
-    final countedDayCount =
-        CalorieWeeklyWindowResolver.windowLengthDaysForStart(
-          anchorEntry: anchorEntry,
-          windowStartDate: windowStartDate,
-        );
-    final windowEndDate = resolveCalorieWeeklyWindowEndDate(
-      windowStartDate: windowStartDate,
-      countedDayCount: countedDayCount,
-    );
-    final dueDate = nextDiaryDay(windowEndDate);
-    if (dueDate.isAfter(today)) {
+    final window = _windowFrom(anchorEntry, windowStartDate);
+    if (window.dueDate.isAfter(today)) {
       return latestWindow;
     }
-    latestWindow = PendingCalorieGoalWeeklyCheckIn(
-      windowStartDate: windowStartDate,
-      windowEndDate: windowEndDate,
-      dueDate: dueDate,
-    );
-    windowStartDate = nextDiaryDay(windowEndDate);
+    latestWindow = window;
+    windowStartDate = window.dueDate;
   }
 }
 
@@ -86,41 +74,43 @@ PendingCalorieGoalWeeklyCheckIn? resolvePendingCalorieWeeklyCheckIn({
   }
 
   final persistedPending = settings.pendingWeeklyCheckIn;
-  var windowStartDate = firstWindowStartDate;
-  while (true) {
-    final countedDayCount =
-        CalorieWeeklyWindowResolver.windowLengthDaysForStart(
-          anchorEntry: anchorEntry,
-          windowStartDate: windowStartDate,
-        );
-    final windowEndDate = resolveCalorieWeeklyWindowEndDate(
-      windowStartDate: windowStartDate,
-      countedDayCount: countedDayCount,
-    );
-    final dueDate = nextDiaryDay(windowEndDate);
-    if (dueDate.isAfter(today)) {
-      return null;
+  var window = _windowFrom(anchorEntry, firstWindowStartDate);
+  while (!window.dueDate.isAfter(today)) {
+    final nextWindow = _windowFrom(anchorEntry, window.dueDate);
+    final isPersistedPending = persistedPending?.windowKey == window.windowKey;
+    if (!resolvedWindowKeys.contains(window.windowKey)) {
+      return isPersistedPending ? persistedPending : window;
     }
-    final windowKey = calorieWeeklyCheckInWindowKey(
-      windowStartDate,
-      windowEndDate,
-    );
-    if (resolvedWindowKeys.contains(windowKey)) {
-      windowStartDate = nextDiaryDay(windowEndDate);
-      continue;
-    }
-    final isPersistedPending =
-        persistedPending != null && persistedPending.windowKey == windowKey;
-    if (isPersistedPending) {
+    // The latest due check-in stays open until the user decides, even when
+    // an older app already saved a snapshot of its window.
+    if (isPersistedPending &&
+        !persistedPending!.isDismissed &&
+        nextWindow.dueDate.isAfter(today)) {
       return persistedPending;
     }
-
-    return PendingCalorieGoalWeeklyCheckIn(
-      windowStartDate: windowStartDate,
-      windowEndDate: windowEndDate,
-      dueDate: dueDate,
-    );
+    window = nextWindow;
   }
+  return null;
+}
+
+/// The check-in window that starts on [windowStartDate]. It is due on the
+/// day after its end.
+PendingCalorieGoalWeeklyCheckIn _windowFrom(
+  CalorieGoalHistoryEntry anchorEntry,
+  DateTime windowStartDate,
+) {
+  final windowEndDate = resolveCalorieWeeklyWindowEndDate(
+    windowStartDate: windowStartDate,
+    countedDayCount: CalorieWeeklyWindowResolver.windowLengthDaysForStart(
+      anchorEntry: anchorEntry,
+      windowStartDate: windowStartDate,
+    ),
+  );
+  return PendingCalorieGoalWeeklyCheckIn(
+    windowStartDate: windowStartDate,
+    windowEndDate: windowEndDate,
+    dueDate: nextDiaryDay(windowEndDate),
+  );
 }
 
 /// Resolves whether learned TDEE data is fresh enough.

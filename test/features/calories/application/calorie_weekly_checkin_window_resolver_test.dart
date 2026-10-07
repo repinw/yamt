@@ -145,6 +145,42 @@ void main() {
     expect(pending, isNull);
   });
 
+  test(
+    'returns open persisted pending even when its window has a snapshot',
+    () {
+      final start = DateTime(2026, 2, 27);
+      final today = DateTime(2026, 3, 6);
+      final pendingWeeklyCheckIn = PendingCalorieGoalWeeklyCheckIn(
+        windowStartDate: start,
+        windowEndDate: DateTime(2026, 3, 5),
+        dueDate: today,
+      );
+      final settings = _settings(start)
+          .applyGoalChange(
+            dailyKcalGoal: 2050,
+            calculatorProfile: null,
+            changedAt: today,
+            source: CalorieGoalSource.weeklyCheckIn,
+            weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+              windowStartDate: start,
+              windowEndDate: DateTime(2026, 3, 5),
+              trendWeightChangePerDay: 0,
+              calculatedTdeeKcal: 2050,
+              baseGoalKcal: 2050,
+              lowConfidence: false,
+            ),
+          )
+          .copyWithPendingWeeklyCheckIn(pendingWeeklyCheckIn);
+
+      final pending = resolvePendingCalorieWeeklyCheckIn(
+        settings: settings,
+        today: today,
+      );
+
+      expect(pending?.windowKey, pendingWeeklyCheckIn.windowKey);
+    },
+  );
+
   test('dirty snapshot is not treated as resolved', () {
     final start = DateTime(2026, 2, 27);
     final today = DateTime(2026, 3, 6);
