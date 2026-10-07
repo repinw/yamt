@@ -19,7 +19,6 @@ class EatPageScaffold extends StatelessWidget {
     this.secondaryLabel,
     this.secondaryButtonKey,
     this.onSecondary,
-    this.hasOwnMessenger = true,
     this.confirmHint,
     this.onPlan,
     this.onStore,
@@ -65,11 +64,6 @@ class EatPageScaffold extends StatelessWidget {
   /// Called by the second button.
   final VoidCallback? onSecondary;
 
-  /// Whether the page shows only its own snack bars. Without an own
-  /// messenger, snack bars that the caller shows through the route's
-  /// context appear on this page.
-  final bool hasOwnMessenger;
-
   /// Small grey line above the buttons, such as what is still missing.
   final String? confirmHint;
 
@@ -108,7 +102,7 @@ class EatPageScaffold extends StatelessWidget {
     final secondary = secondaryLabel;
     final kcalValue = kcal;
 
-    final scaffold = Scaffold(
+    return Scaffold(
       backgroundColor: colors.paper,
       body: SafeArea(
         bottom: false,
@@ -244,7 +238,5 @@ class EatPageScaffold extends StatelessWidget {
         ),
       ),
     );
-    // An own messenger keeps snack bars of earlier entries off this page.
-    return hasOwnMessenger ? ScaffoldMessenger(child: scaffold) : scaffold;
   }
 }

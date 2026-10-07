@@ -162,7 +162,6 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
 
     return EatPageScaffold(
       // Snack bars of the editor come through the route's context.
-      hasOwnMessenger: false,
       whenControl: const SizedBox.shrink(),
       kcal: null,
       confirmButtonKey: ManualProductDetailsForm.saveKey,

@@ -309,41 +309,6 @@ void main() {
     expect(find.text('Body'), findsOneWidget);
   });
 
-  testWidgets('page scaffold keeps earlier snack bars off the page', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      _TestApp(
-        child: Builder(
-          builder: (context) => TextButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(const SnackBar(content: Text('Logged')));
-              Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => EatPageScaffold(
-                    whenControl: const SizedBox(),
-                    kcal: null,
-                    confirmButtonKey: const Key('confirm'),
-                    onConfirm: () {},
-                    cancelButtonKey: const Key('close'),
-                    children: const [Text('Body')],
-                  ),
-                ),
-              );
-            },
-            child: const Text('Open'),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('Open'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Body'), findsOneWidget);
-    expect(find.text('Logged'), findsNothing);
-  });
-
   testWidgets('food label colors follow the brightness', (tester) async {
     late FoodLabelColors colors;
     await tester.pumpWidget(

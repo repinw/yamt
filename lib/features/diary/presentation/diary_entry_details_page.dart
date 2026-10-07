@@ -91,7 +91,6 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
     return EatPageScaffold(
       // The snack bars of the changes use the app's messenger, so they
       // stay on the diary after the page closes.
-      hasOwnMessenger: false,
       whenControl: EatWhenMenu(
         loggedAt: entry.loggedAt,
         today: state.today,
