@@ -36,6 +36,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_burn_week_card/diary_balance_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_inventory_food_picker/diary_inventory_food_picker_status.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_inventory_food_picker/diary_inventory_food_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_actions.dart';
@@ -60,6 +61,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
@@ -152,6 +154,12 @@ _DiaryInventoryQuickEatHarness _buildHarness({
             ),
           );
         },
+      ),
+      // Stands in for the "Gekocht" page that an open meal leads to.
+      GoRoute(
+        path: AppRoutes.homeCookedMeal,
+        builder: (context, state) =>
+            Scaffold(body: Text('cooked:${state.pathParameters['mealId']}')),
       ),
     ],
   );
@@ -492,6 +500,61 @@ void main() {
     expect(harness.logRepository.entries, hasLength(1));
     expect(harness.logRepository.entries.single.name, 'Chili sin Carne');
     expect(harness.logRepository.entries.single.mealType, _currentMealType());
+  });
+
+  testWidgets('a meal in the pot shows greyed out and opens Gekocht', (
+    tester,
+  ) async {
+    final harness = await _pumpAndOpenInventoryQuickEat(
+      tester,
+      inventoryItems: const <InventoryItem>[],
+      preparedMeals: [
+        _preparedMeal(id: 'pot-1', name: 'Linsensuppe').copyWith(inPot: true),
+      ],
+    );
+    harness.publishHouseholdProfile();
+    final row = find.byKey(DiaryInventoryFoodPicker.mealKey('pot-1'));
+    await _pumpUntilFound(tester, row, description: 'meal in the pot');
+
+    expect(tester.widget<DiaryInventoryFoodTile>(row).isMuted, isTrue);
+    expect(find.text('Im Topf'), findsOneWidget);
+
+    await tester.tap(row);
+    await _pumpUntilFound(
+      tester,
+      find.text('cooked:pot-1'),
+      description: 'Gekocht page of the meal',
+    );
+    expect(harness.logRepository.entries, isEmpty);
+  });
+
+  testWidgets('a meal with open rows opens its detail page to fill them', (
+    tester,
+  ) async {
+    final harness = await _pumpAndOpenInventoryQuickEat(
+      tester,
+      inventoryItems: const <InventoryItem>[],
+      preparedMeals: [
+        _preparedMeal(
+          id: 'rows-1',
+          name: 'Curry',
+        ).copyWith(pendingRecipeIngredients: ['Reis']),
+      ],
+    );
+    harness.publishHouseholdProfile();
+    final row = find.byKey(DiaryInventoryFoodPicker.mealKey('rows-1'));
+    await _pumpUntilFound(tester, row, description: 'meal with open rows');
+
+    expect(tester.widget<DiaryInventoryFoodTile>(row).isMuted, isTrue);
+    expect(find.text('1 Zeile offen'), findsOneWidget);
+
+    await tester.tap(row);
+    await _pumpUntilFound(
+      tester,
+      find.byType(PreparedMealEatSheetBody),
+      description: 'detail page of the meal',
+    );
+    expect(harness.logRepository.entries, isEmpty);
   });
 
   testWidgets(
