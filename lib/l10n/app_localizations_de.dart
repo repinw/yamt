@@ -2593,6 +2593,60 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryPlanChangeFailed => 'Plan konnte nicht geändert werden';
 
   @override
+  String get diaryPlanCopyAction => 'Auch planen für…';
+
+  @override
+  String get diaryPlanCopyTitle => 'Auch planen für';
+
+  @override
+  String diaryPlanCopyRange(String month) {
+    return '$month · 2 Wochen';
+  }
+
+  @override
+  String get diaryPlanCopyPlannedLegend => '• schon geplant';
+
+  @override
+  String get diaryPlanCopyMealLabel => 'Mahlzeit';
+
+  @override
+  String diaryPlanCopyConfirm(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tage planen',
+      one: '1 Tag planen',
+      zero: 'Tage wählen',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String diaryPlanCopyConfirmKcal(int count, int kcal) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Tage planen',
+      one: '1 Tag planen',
+    );
+    return '$_temp0 · $kcal kcal';
+  }
+
+  @override
+  String diaryPlanCopied(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'An $count weiteren Tagen geplant',
+      one: 'An 1 weiteren Tag geplant',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get diaryPlanCopyFailed => 'Pläne konnten nicht gespeichert werden';
+
+  @override
   String get diaryPlanSemanticsLabel => 'Plan';
 
   @override

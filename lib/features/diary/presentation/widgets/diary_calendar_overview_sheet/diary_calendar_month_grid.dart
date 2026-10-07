@@ -116,35 +116,55 @@ class DiaryCalendarMonthGrid extends StatelessWidget {
       return const SizedBox.shrink();
     }
     final day = DateTime(month.year, month.month, dayNumber);
-    return _DiaryCalendarDayCell(
+    return DiaryCalendarDayCell(
       day: day,
       isSelected: isSameCalendarDay(day, selectedDay),
       isToday: isSameCalendarDay(day, today),
       plan: !planDays.contains(day)
           ? null
           : day.isBefore(today)
-          ? _DayPlan.overdue
-          : _DayPlan.open,
+          ? DiaryCalendarDayPlan.overdue
+          : DiaryCalendarDayPlan.open,
       onTap: bounds.contains(day) ? () => onSelectDay(day) : null,
     );
   }
 }
 
-enum _DayPlan { open, overdue }
+/// The plans a calendar day holds.
+enum DiaryCalendarDayPlan {
+  /// Plans that are still to come.
+  open,
 
-class _DiaryCalendarDayCell extends StatelessWidget {
+  /// Plans of a day that is over and were never eaten.
+  overdue,
+}
+
+/// One day of a diary calendar: its number in a circle that fills when
+/// selected, and a dot for today and for days with plans.
+class DiaryCalendarDayCell extends StatelessWidget {
+  /// Creates the cell of [day].
   const new({
     required this.day,
     required this.isSelected,
     required this.isToday,
     required this.plan,
     required this.onTap,
+    super.key,
   });
 
+  /// The day.
   final DateTime day;
+
+  /// Whether the day is picked.
   final bool isSelected;
+
+  /// Whether the day is today.
   final bool isToday;
-  final _DayPlan? plan;
+
+  /// The plans of the day, or null without plans.
+  final DiaryCalendarDayPlan? plan;
+
+  /// Called on a tap; null when the day cannot be picked.
   final VoidCallback? onTap;
 
   @override
@@ -160,10 +180,10 @@ class _DiaryCalendarDayCell extends StatelessWidget {
     final dotColor = switch ((isSelected, plan)) {
       (true, null) => null,
       (true, _) => colors.onPrimary,
-      (false, _DayPlan.overdue) => colors.error,
+      (false, DiaryCalendarDayPlan.overdue) => colors.error,
       // Today's own dot also stands for its plans.
       _ when isToday => accent,
-      (false, _DayPlan.open) => colors.onSurfaceVariant,
+      (false, DiaryCalendarDayPlan.open) => colors.onSurfaceVariant,
       (false, null) => null,
     };
 

@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_action_card.dart';
@@ -21,6 +22,12 @@ final class DiaryPlanAccept extends DiaryPlanDetailsAction {
 
 /// Remove the plan.
 final class DiaryPlanRemove extends DiaryPlanDetailsAction {
+  /// Creates the action.
+  const new();
+}
+
+/// Plan the food on more days.
+final class DiaryPlanCopy extends DiaryPlanDetailsAction {
   /// Creates the action.
   const new();
 }
@@ -53,6 +60,9 @@ class DiaryPlanDetailsPage extends StatefulWidget {
 
   /// Key of the line that removes the plan.
   static const removeKey = Key('diary_plan_details_remove');
+
+  /// Key of the line that plans the food on more days.
+  static const copyKey = Key('diary_plan_details_copy');
 
   /// Key of the close button.
   static const closeButtonKey = Key('diary_plan_details_close_button');
@@ -136,6 +146,13 @@ class _DiaryPlanDetailsPageState extends State<DiaryPlanDetailsPage> {
         EatActionCard(
           title: l10n.diaryPlanSemanticsLabel,
           actions: [
+            (
+              key: DiaryPlanDetailsPage.copyKey,
+              icon: Icons.event_repeat_rounded,
+              label: l10n.diaryPlanCopyAction,
+              color: FoodLabelColors.of(context).ink,
+              onPressed: () => pop(const DiaryPlanCopy()),
+            ),
             (
               key: DiaryPlanDetailsPage.removeKey,
               icon: Icons.event_busy_rounded,

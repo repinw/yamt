@@ -36,6 +36,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_inventory_food_picker/diary_inventory_food_picker_status.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_actions.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
 import 'package:yamt/features/health/data/health_weight_service_provider.dart';
@@ -838,10 +839,18 @@ void main() {
             .onPressed,
         isNull,
       );
+      await tester.ensureVisible(remove);
+      await tester.pumpAndSettle();
       await tester.tap(remove);
       await _pumpUntil(
         tester,
-        () => textOf(DiaryBalanceCardKeys.kcalHeadValue) == '0',
+        // The diary is offstage until the details page has closed.
+        () =>
+            find
+                .byKey(DiaryBalanceCardKeys.kcalHeadValue)
+                .evaluate()
+                .isNotEmpty &&
+            textOf(DiaryBalanceCardKeys.kcalHeadValue) == '0',
         description: 'head without the deleted plan',
       );
       expect(planRow, findsNothing);
@@ -895,6 +904,67 @@ void main() {
       description: 'plan moved to lunch',
     );
     await _pumpUntilFound(tester, planRow, description: 'moved plan row');
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the plan details plan a plan of tomorrow on one more day', (
+    tester,
+  ) async {
+    final today = _selectedDay.subtract(const Duration(days: 1));
+    final planRow = find.byKey(
+      DiaryMealsSectionKeys.plannedEntryTile('plan-dinner'),
+    );
+    final harness = _buildHarness(
+      today: today,
+      plans: [
+        CalorieEntry.create(
+          id: 'plan-dinner',
+          userId: _userId,
+          name: 'Nudeln',
+          mealType: MealType.dinner,
+          consumedAmount: 100,
+          consumedUnit: ConsumedUnit.grams,
+          per100Kcal: 600,
+          per100Protein: 20,
+          per100Carbs: 90,
+          per100Fat: 10,
+          loggedAt: _selectedDay.add(const Duration(hours: 19)),
+          createdAt: _selectedDay,
+          updatedAt: _selectedDay,
+        ),
+      ],
+    );
+    await tester.pumpWidget(harness.app);
+    await _pumpUntilFound(tester, planRow, description: 'plan row of tomorrow');
+
+    await tester.ensureVisible(planRow);
+    await tester.tap(planRow);
+    final copy = find.byKey(DiaryPlanDetailsPage.copyKey);
+    await _pumpUntilFound(tester, copy, description: 'plan details');
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(copy);
+    await tester.pumpAndSettle();
+    await tester.tap(copy);
+    final dayAfter = DateTime(today.year, today.month, today.day + 2);
+    final dayCell = find.byKey(DiaryPlanDaysSheet.dayKey(dayAfter));
+    await _pumpUntilFound(tester, dayCell, description: 'days sheet');
+    await tester.pumpAndSettle();
+    await tester.tap(dayCell);
+    await tester.pump();
+    await tester.tap(find.byKey(DiaryPlanDaysSheet.confirmKey));
+    await _pumpUntil(
+      tester,
+      () => harness.planRepository.plans.length == 2,
+      description: 'copy saved',
+    );
+    final copied = harness.planRepository.plans.firstWhere(
+      (plan) => plan.id != 'plan-dinner',
+    );
+    expect(
+      copied.loggedAt,
+      DateTime(dayAfter.year, dayAfter.month, dayAfter.day, 19),
+    );
+    expect(copied.mealType, MealType.dinner);
     expect(tester.takeException(), isNull);
   });
 

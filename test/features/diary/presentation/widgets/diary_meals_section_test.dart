@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
@@ -18,6 +19,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -109,6 +111,8 @@ void main() {
 
     await tester.tap(planRow);
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(DiaryPlanDetailsPage.removeKey));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(DiaryPlanDetailsPage.removeKey));
     await tester.pumpAndSettle();
     expect(repository.plans, isEmpty);
@@ -187,6 +191,80 @@ void main() {
     expect(repository.plans.single.mealType, MealType.lunch);
     expect(repository.plans.single.loggedAt, plan.loggedAt);
     expect(find.text('Plan changed'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(repository.plans, [plan]);
+  });
+
+  testWidgets('the plan details plan the food on more days, with undo', (
+    tester,
+  ) async {
+    final plan = buildQuickCalorieEntry(
+      id: 'plan',
+      userId: 'user-1',
+      name: 'Pasta',
+      mealType: MealType.dinner,
+      loggedAt: selectedDay.add(const Duration(hours: 19)),
+      now: selectedDay,
+      kcal: 700,
+    );
+    final repository = FakePlannedEntryRepository(plans: [plan]);
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'plan',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Pasta',
+              kcal: 700,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+            ),
+          ],
+        ),
+      ],
+      plannedEntries: [plan],
+      overrides: [plannedEntryRepositoryProvider.overrideWithValue(repository)],
+    );
+    await tester.tap(
+      find.byKey(DiaryMealsSectionKeys.plannedEntryTile('plan')),
+    );
+    await tester.pumpAndSettle();
+    final today = ProviderScope.containerOf(
+      tester.element(find.byType(DiaryPlanDetailsPage)),
+    ).read(diaryCalendarControllerProvider).today;
+
+    await tester.ensureVisible(find.byKey(DiaryPlanDetailsPage.copyKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryPlanDetailsPage.copyKey));
+    await tester.pumpAndSettle();
+    final days = [
+      today.add(const Duration(days: 1)),
+      today.add(const Duration(days: 3)),
+    ];
+    for (final day in days) {
+      await tester.tap(find.byKey(DiaryPlanDaysSheet.dayKey(day)));
+      await tester.pump();
+    }
+    await tester.tap(find.byKey(DiaryPlanDaysSheet.mealKey(MealType.lunch)));
+    await tester.pump();
+    await tester.tap(find.byKey(DiaryPlanDaysSheet.confirmKey));
+    await tester.pumpAndSettle();
+
+    final copies = repository.plans.where((it) => it.id != 'plan').toList()
+      ..sort((a, b) => a.loggedAt.compareTo(b.loggedAt));
+    expect(copies.map((it) => dateOnly(it.loggedAt)), days);
+    expect(copies.map((it) => it.mealType), everyElement(MealType.lunch));
+    expect(copies.map((it) => it.loggedAt.hour), everyElement(19));
+    expect(find.text('Planned on 2 more days'), findsOneWidget);
 
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
