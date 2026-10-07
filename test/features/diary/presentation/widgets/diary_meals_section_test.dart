@@ -20,6 +20,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
+import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -269,6 +270,80 @@ void main() {
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
     expect(repository.plans, [plan]);
+  });
+
+  testWidgets('the plan details change the amount of a plan', (tester) async {
+    final plan = CalorieEntry.create(
+      id: 'plan',
+      userId: 'user-1',
+      name: 'Pasta',
+      mealType: MealType.dinner,
+      consumedAmount: 200,
+      consumedUnit: ConsumedUnit.grams,
+      per100Kcal: 150,
+      per100Protein: 5,
+      per100Carbs: 30,
+      per100Fat: 1,
+      sourceInventoryItemId: 'pasta',
+      sourceInventoryAmountToRestore: 200,
+      loggedAt: selectedDay.add(const Duration(hours: 19)),
+      createdAt: selectedDay,
+      updatedAt: selectedDay,
+    );
+    final repository = FakePlannedEntryRepository(plans: [plan]);
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'plan',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Pasta',
+              kcal: 300,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+            ),
+          ],
+        ),
+      ],
+      plannedEntries: [plan],
+      overrides: [
+        plannedEntryRepositoryProvider.overrideWithValue(repository),
+        inventoryQuickEatInventoryProvider.overrideWith(
+          (ref) async =>
+              const InventoryQuickEatInventoryData(items: [], meals: []),
+        ),
+      ],
+    );
+    await tester.tap(
+      find.byKey(DiaryMealsSectionKeys.plannedEntryTile('plan')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.descendant(
+        of: find.byKey(DiaryPlanDetailsPage.amountKey),
+        matching: find.byType(TextField),
+      ),
+      '300',
+    );
+    await tester.pump();
+    expect(find.text('Save plan'), findsOneWidget);
+    await tester.tap(find.byKey(DiaryPlanDetailsPage.acceptButtonKey));
+    await tester.pumpAndSettle();
+
+    final saved = repository.plans.single;
+    expect(saved.consumedAmount, 300);
+    expect(saved.totalKcal, 450);
+    expect(saved.sourceInventoryItemId, 'pasta');
+    // The pack is not in the Vorrat, so the saved stock scales.
+    expect(saved.sourceInventoryAmountToRestore, 300);
   });
 
   group('eat all plans of a meal', () {

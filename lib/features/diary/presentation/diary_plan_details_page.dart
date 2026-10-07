@@ -2,10 +2,15 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_state.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_action_card.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -64,6 +69,9 @@ class DiaryPlanDetailsPage extends StatefulWidget {
   /// Key of the line that plans the food on more days.
   static const copyKey = Key('diary_plan_details_copy');
 
+  /// Key of the amount ruler.
+  static const amountKey = Key('diary_plan_details_amount');
+
   /// Key of the close button.
   static const closeButtonKey = Key('diary_plan_details_close_button');
 
@@ -83,14 +91,49 @@ class DiaryPlanDetailsPage extends StatefulWidget {
 class _DiaryPlanDetailsPageState extends State<DiaryPlanDetailsPage> {
   late DateTime _loggedAt = widget.plan.loggedAt;
   late MealType _mealType = widget.plan.mealType;
+  // Holds the typed amount; the entry details use the same rules.
+  late DiaryEntryDetailsState _amountState = DiaryEntryDetailsState(
+    entry: widget.plan,
+    amountText: diaryEntryAmountText(widget.plan.consumedAmount),
+    today: widget.today,
+  );
+  final _amount = EatSheetTextField();
 
+  // An invalid amount counts as changed, so the plan is not eaten as is.
   bool get _isChanged =>
-      _loggedAt != widget.plan.loggedAt || _mealType != widget.plan.mealType;
+      _loggedAt != widget.plan.loggedAt ||
+      _mealType != widget.plan.mealType ||
+      _amountState.changedAmount != null ||
+      _amountState.hasAmountError;
+
+  @override
+  void initState() {
+    super.initState();
+    _amount.sync(_amountState.amountText);
+  }
+
+  @override
+  void dispose() {
+    _amount.dispose();
+    super.dispose();
+  }
+
+  void _setAmountText(String text) =>
+      setState(() => _amountState = _amountState.copyWith(amountText: text));
+
+  CalorieEntry get _changed {
+    final plan = widget.plan.copyWith(loggedAt: _loggedAt, mealType: _mealType);
+    final amount = _amountState.changedAmount;
+    return amount == null
+        ? plan
+        : rescaleCalorieEntry(plan, amount: amount, now: plan.updatedAt);
+  }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final plan = widget.plan;
+    final preview = _amountState.preview;
     void pop(DiaryPlanDetailsAction action) =>
         Navigator.of(context).pop(action);
     return EatPageScaffold(
@@ -111,17 +154,15 @@ class _DiaryPlanDetailsPageState extends State<DiaryPlanDetailsPage> {
           ),
         ),
       ),
-      kcal: plan.totalKcal,
+      kcal: preview.totalKcal,
       confirmLabel: _isChanged
           ? l10n.diaryPlanSaveAction
           : l10n.diaryPlanAcceptAction,
       confirmButtonKey: DiaryPlanDetailsPage.acceptButtonKey,
-      onConfirm: _isChanged
-          ? () => pop(
-              DiaryPlanChange(
-                plan.copyWith(loggedAt: _loggedAt, mealType: _mealType),
-              ),
-            )
+      onConfirm: _amountState.hasAmountError
+          ? null
+          : _isChanged
+          ? () => pop(DiaryPlanChange(_changed))
           : widget.canAccept
           ? () => pop(const DiaryPlanAccept())
           : null,
@@ -130,7 +171,28 @@ class _DiaryPlanDetailsPageState extends State<DiaryPlanDetailsPage> {
           : l10n.diaryPlanAcceptLaterHint,
       cancelButtonKey: DiaryPlanDetailsPage.closeButtonKey,
       children: [
-        DiaryEntryLabelSection(entry: plan),
+        DiaryEntryLabelSection(entry: preview),
+        if (_amountState.canEditAmount)
+          EatAmountRuler(
+            key: DiaryPlanDetailsPage.amountKey,
+            controller: _amount.controller,
+            focusNode: _amount.focusNode,
+            unitLabel: consumedUnitSymbol(l10n, plan.consumedUnit),
+            value: _amountState.rulerValue,
+            max: _amountState.rulerMax,
+            step: _amountState.rulerStep,
+            marks: const [],
+            allowFractionalInput: true,
+            errorText: _amountState.hasAmountError
+                ? l10n.caloriesPositiveNumberValidation
+                : null,
+            onTextChanged: _setAmountText,
+            onSliderChanged: (amount) {
+              final text = diaryEntryAmountText(amount);
+              _amount.sync(text);
+              _setAmountText(text);
+            },
+          ),
         if (plan.isBundle)
           EatComponentsList(
             initiallyExpanded: true,

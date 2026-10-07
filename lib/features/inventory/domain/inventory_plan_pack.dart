@@ -34,6 +34,34 @@ import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
   }).firstOrNull;
 }
 
+/// The stock amount to save with [changed], a plan whose eaten amount
+/// changed from that of [previous]: none when [item], the planned pack, can
+/// work it out from the new amount once eaten, else the saved amount
+/// scaled to the new amount, at least one.
+///
+/// Working it out again keeps rounding from stacking up over several
+/// edits; a pack counted without a size can only scale.
+int? inventoryStockForChangedPlan({
+  required CalorieEntry previous,
+  required CalorieEntry changed,
+  required InventoryItem? item,
+}) {
+  final stock = previous.sourceInventoryAmountToRestore;
+  if (stock == null) {
+    return null;
+  }
+  final unsaved = changed.copyWith(sourceInventoryAmountToRestore: null);
+  if (item != null && inventoryAmountForPlan(unsaved, item) != null) {
+    return null;
+  }
+  if (previous.consumedAmount <= 0) {
+    return stock;
+  }
+  final scaled = (stock * changed.consumedAmount / previous.consumedAmount)
+      .round();
+  return scaled < 1 ? 1 : scaled;
+}
+
 /// The stock amount [plan] takes from [item], in the item's stored unit:
 /// the planned amount from the planned pack, else the eaten amount in the
 /// pack's unit. A pack counted in pieces converts through the weight of one

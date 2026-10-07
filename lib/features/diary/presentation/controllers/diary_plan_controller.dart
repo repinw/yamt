@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -11,6 +12,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_plan_accept_service.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/domain/inventory_plan_pack.dart';
 
 part 'diary_plan_controller.g.dart';
 
@@ -74,6 +76,32 @@ class DiaryPlanController extends _$DiaryPlanController {
           await repository.deletePlannedEntry(plan.id);
         }
       });
+
+  /// [changed] with the stock amount it saves after its eaten amount changed
+  /// from that of [previous] (see [inventoryStockForChangedPlan]). Without
+  /// the Vorrat loaded the saved amount scales.
+  Future<CalorieEntry> withPlanStock(
+    CalorieEntry previous,
+    CalorieEntry changed,
+  ) async {
+    if (previous.sourceInventoryAmountToRestore == null ||
+        changed.consumedAmount == previous.consumedAmount) {
+      return changed;
+    }
+    final inventory = await _guard(
+      () => _using(inventoryQuickEatInventoryProvider.future, (load) => load),
+    );
+    final item = inventory?.items.firstWhereOrNull(
+      (item) => item.id == previous.sourceInventoryItemId,
+    );
+    return changed.copyWith(
+      sourceInventoryAmountToRestore: inventoryStockForChangedPlan(
+        previous: previous,
+        changed: changed,
+        item: item,
+      ),
+    );
+  }
 
   /// Saves the new [plan] and lets the diary open its day. Returns false
   /// when it failed.
