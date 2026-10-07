@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_controller.dart';
+import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_plan_accept_service.dart';
@@ -16,25 +17,61 @@ Future<void> openDiaryPlanFlow(
   required CalorieEntry plan,
   required bool canAccept,
 }) async {
+  final today = ref.read(diaryCalendarControllerProvider).today;
   final action = await Navigator.of(context, rootNavigator: true)
       .push<DiaryPlanDetailsAction>(
         MaterialPageRoute(
           fullscreenDialog: true,
-          builder: (_) =>
-              DiaryPlanDetailsPage(plan: plan, canAccept: canAccept),
+          builder: (_) => DiaryPlanDetailsPage(
+            plan: plan,
+            canAccept: canAccept,
+            today: today,
+          ),
         ),
       );
   if (!context.mounted) {
     return;
   }
   switch (action) {
-    case DiaryPlanDetailsAction.accept:
+    case DiaryPlanAccept():
       await acceptDiaryPlanFlow(context, ref, plan: plan);
-    case DiaryPlanDetailsAction.remove:
+    case DiaryPlanRemove():
       await deleteDiaryPlanFlow(context, ref, plan: plan);
+    case DiaryPlanChange(plan: final changed):
+      await _changeDiaryPlanFlow(context, ref, plan: plan, changed: changed);
     case null:
       return;
   }
+}
+
+/// Saves [changed] in place of [plan], opens its day, and offers undo.
+Future<void> _changeDiaryPlanFlow(
+  BuildContext context,
+  WidgetRef ref, {
+  required CalorieEntry plan,
+  required CalorieEntry changed,
+}) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final l10n = AppLocalizations.of(context)!;
+  final container = ProviderScope.containerOf(context, listen: false);
+  final controller = ref.read(diaryPlanControllerProvider.notifier);
+  // An eaten plan is gone; saving it again would bring it back.
+  if (controller.isAccepted(plan)) {
+    return;
+  }
+  // The plan keeps its id, so saving it overwrites the old one.
+  if (!await controller.plan(changed)) {
+    messenger.showAppSnackBar(
+      l10n.diaryPlanChangeFailed,
+      tone: AppSnackBarTone.error,
+    );
+    return;
+  }
+  messenger.showAppSnackBar(
+    l10n.diaryPlanChanged,
+    onUndo: () =>
+        container.read(diaryPlanControllerProvider.notifier).plan(plan),
+  );
 }
 
 /// Deletes [plan] and offers undo in a snack bar.

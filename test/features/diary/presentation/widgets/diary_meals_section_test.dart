@@ -18,6 +18,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_meal_group/diary_meals_skeleton.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../calories/support/fake_planned_entry_repository.dart';
@@ -112,6 +113,80 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.plans, isEmpty);
     expect(find.text('Plan deleted'), findsOneWidget);
+
+    await tester.tap(find.text('Undo'));
+    await tester.pumpAndSettle();
+    expect(repository.plans, [plan]);
+  });
+
+  testWidgets('the plan details move a plan to another meal, with undo', (
+    tester,
+  ) async {
+    final plan = buildQuickCalorieEntry(
+      id: 'plan',
+      userId: 'user-1',
+      name: 'Pasta',
+      mealType: MealType.dinner,
+      loggedAt: selectedDay.add(const Duration(hours: 19)),
+      now: selectedDay,
+      kcal: 700,
+    );
+    final repository = FakePlannedEntryRepository(plans: [plan]);
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'plan',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Pasta',
+              kcal: 700,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+            ),
+          ],
+        ),
+      ],
+      plannedEntries: [plan],
+      overrides: [plannedEntryRepositoryProvider.overrideWithValue(repository)],
+    );
+
+    await tester.tap(
+      find.byKey(DiaryMealsSectionKeys.plannedEntryTile('plan')),
+    );
+    await tester.pumpAndSettle();
+    // A plan moves only to today or a later day that can be planned.
+    await tester.tap(find.byKey(EatWhenMenu.buttonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(EatWhenMenu.pickDayKey));
+    await tester.pumpAndSettle();
+    final today = ProviderScope.containerOf(
+      tester.element(find.byType(DiaryPlanDetailsPage)),
+    ).read(diaryCalendarControllerProvider).today;
+    expect(
+      tester.widget<DatePickerDialog>(find.byType(DatePickerDialog)).firstDate,
+      today,
+    );
+    await tester.tapAt(Offset.zero);
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(EatWhenMenu.buttonKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(EatWhenMenu.mealKey(MealType.lunch)));
+    await tester.pumpAndSettle();
+    expect(find.text('Save plan'), findsOneWidget);
+
+    await tester.tap(find.byKey(DiaryPlanDetailsPage.acceptButtonKey));
+    await tester.pumpAndSettle();
+    expect(repository.plans.single.mealType, MealType.lunch);
+    expect(repository.plans.single.loggedAt, plan.loggedAt);
+    expect(find.text('Plan changed'), findsOneWidget);
 
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
