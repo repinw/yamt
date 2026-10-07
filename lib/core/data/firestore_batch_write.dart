@@ -45,3 +45,26 @@ class FirestoreBatchChunker {
     }
   }
 }
+
+/// Deletes the documents that [collections] hold when this reads them, in
+/// batches of at most [maxBatchSize] deletes. A document written after the
+/// read stays.
+Future<void> deleteFirestoreCollections(
+  FirebaseFirestore firestore,
+  Iterable<CollectionReference<Map<String, dynamic>>> collections, {
+  int maxBatchSize = 400,
+}) async {
+  final references = <DocumentReference<Map<String, dynamic>>>[];
+  for (final collection in collections) {
+    final snapshot = await collection.get();
+    references.addAll(snapshot.docs.map((document) => document.reference));
+  }
+  for (final chunk in FirestoreBatchChunker.chunk(
+    operations: references,
+    maxChunkSize: maxBatchSize,
+  )) {
+    final batch = firestore.batch();
+    chunk.forEach(batch.delete);
+    await batch.commit();
+  }
+}

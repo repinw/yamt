@@ -22,7 +22,6 @@ const _privateCollection = 'private';
 const _backupDocumentId = 'data_key';
 const _wrappedKeyField = 'wrapped_key';
 const _storedFlagValue = 'true';
-const _maxBatchSize = 400;
 
 /// Stores the data key of a user: on the device in secure storage, and as a
 /// backup in Firestore that only the recovery key can open.
@@ -217,19 +216,10 @@ class UserDataKeyRepository {
 
   /// Deletes all private data of [uid] that the data key encrypts.
   Future<void> deletePrivateData(String uid) async {
-    final references = <DocumentReference<Map<String, dynamic>>>[];
-    for (final collection in _privateCollections(uid)) {
-      final snapshot = await _firestore.collection(collection).get();
-      references.addAll(snapshot.docs.map((document) => document.reference));
-    }
-    for (final chunk in FirestoreBatchChunker.chunk(
-      operations: references,
-      maxChunkSize: _maxBatchSize,
-    )) {
-      final batch = _firestore.batch();
-      chunk.forEach(batch.delete);
-      await batch.commit();
-    }
+    await deleteFirestoreCollections(
+      _firestore,
+      _privateCollections(uid).map(_firestore.collection),
+    );
     for (final field in _privateFields(uid)) {
       await _firestore.doc(field.documentPath).set(<String, dynamic>{
         field.field: FieldValue.delete(),
