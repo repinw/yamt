@@ -1005,6 +1005,37 @@ void main() {
     expect(controller.addedItems.map((item) => item.name), ['Apfel']);
   });
 
+  testWidgets('the AI page in the Vorrat eats the food from its diary icon', (
+    tester,
+  ) async {
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.ai,
+        offersEatInstead: true,
+      ),
+      inventoryController: _SuccessfulInventoryItemsController(),
+      firebaseAuth: _signedInAuth(),
+      commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
+      foodEstimateRepository: _FakeFoodEstimateRepository(),
+    );
+
+    await tester.enterText(
+      find.byKey(ManualProductAiSearchPage.descriptionKey),
+      'Apfel',
+    );
+    await tester.pump();
+    await tester.tap(find.byKey(ManualProductAiSearchPage.analyzeKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(EatPageScaffold.diaryButtonKey));
+    await tester.pumpAndSettle();
+
+    // The food is eaten like one from the diary; no Vorrat page follows.
+    expect(find.byType(InventoryStockAddPage), findsNothing);
+    expect(find.text('caller'), findsOneWidget);
+    expect(find.textContaining('is in stock'), findsNothing);
+  });
+
   testWidgets('cancelled AI initial intent returns to the caller', (
     tester,
   ) async {

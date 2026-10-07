@@ -96,7 +96,12 @@ reviewProductSearchHubResultBeforeSave({
         result: result,
         closed: false,
         continuesBatch: continuesBatch,
-        mode: null,
+        // The AI page in the Vorrat can eat or plan the food instead.
+        mode:
+            args.mode == ProductSearchHubMode.inventory &&
+                result.eatSelection != null
+            ? ProductSearchHubMode.diary
+            : null,
       );
   }
 }

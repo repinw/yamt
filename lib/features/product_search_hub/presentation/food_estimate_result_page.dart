@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -34,6 +35,7 @@ class FoodEstimateResultPage extends StatefulWidget {
     required this.description,
     required this.initialLoggedAt,
     required this.initialMealType,
+    this.offersEatInstead = false,
     this.imageBytes,
     super.key,
   });
@@ -46,6 +48,10 @@ class FoodEstimateResultPage extends StatefulWidget {
 
   /// Whether confirming logs the food; otherwise it goes to the Vorrat.
   final bool eatsNow;
+
+  /// Whether a Vorrat page offers to eat or plan the food instead, as the
+  /// Vorrat's own add sheet does; a picked ingredient does not.
+  final bool offersEatInstead;
 
   /// The user's description, shown under the name.
   final String description;
@@ -79,8 +85,12 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
     final estimate = widget.estimate;
     final description = widget.description.trim();
     return InventoryItemEatSheetBody(
-      // Its result keeps no plan flag; a later day still plans by its date.
-      canPlan: false,
+      // Where the Vorrat offers it, the icons eat or plan the food instead
+      // of storing it.
+      canPlan: widget.eatsNow || widget.offersEatInstead,
+      onEatInstead: !widget.eatsNow && widget.offersEatInstead
+          ? _eatInstead
+          : null,
       key: ValueKey(_generation),
       item: _item(estimate.portionGrams.round()),
       confirmIntent: InventoryItemEatSheetIntent.logOnly,
@@ -155,21 +165,50 @@ class _FoodEstimateResultPageState extends State<FoodEstimateResultPage> {
 
   void _submit(InventoryItemEatSheetResult result) {
     final request = result.request;
-    final grams = request.inventoryAmount;
+    // A plan eats the food later, also from the Vorrat.
+    final eats = widget.eatsNow || request.isPlan;
+    _pop(
+      request.inventoryAmount,
+      eats: eats,
+      loggedAt: request.loggedAt,
+      mealType: request.mealType,
+      eatRequest: eats ? request : null,
+    );
+  }
+
+  void _eatInstead(InventoryItemEatSheetResult result) {
+    final request = result.request;
+    _pop(
+      request.inventoryAmount,
+      eats: true,
+      loggedAt: request.loggedAt,
+      mealType: request.mealType,
+      eatRequest: request,
+    );
+  }
+
+  void _pop(
+    int grams, {
+    required bool eats,
+    required DateTime loggedAt,
+    required MealType mealType,
+    InventoryItemEatRequest? eatRequest,
+  }) {
     Navigator.of(context).pop(
       ManualProductAiSearchResult(
         item: _item(grams),
-        action: widget.eatsNow
+        action: eats
             ? InventoryReceiptManualProductAction.eatNow
             : InventoryReceiptManualProductAction.addToInventory,
         globalPackageWeight: '$grams g',
-        eatSelection: widget.eatsNow
+        eatSelection: eats
             ? EatSelection(
                 inventoryAmount: grams,
-                loggedAt: request.loggedAt,
-                mealType: request.mealType,
+                loggedAt: loggedAt,
+                mealType: mealType,
               )
             : null,
+        eatRequest: eatRequest,
       ),
     );
   }

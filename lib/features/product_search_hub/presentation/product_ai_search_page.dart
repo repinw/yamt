@@ -43,6 +43,7 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
     this.initialPrompt = '',
     this.quickEatConfig = InventoryManualAddQuickEatConfig.standard,
     this.initialAction = InventoryReceiptManualProductAction.addToInventory,
+    this.offersEatInstead = false,
     this.onResult,
   });
 
@@ -66,6 +67,9 @@ class ManualProductAiSearchPage extends ConsumerStatefulWidget {
 
   /// Whether the result is logged or goes to the Vorrat.
   final InventoryReceiptManualProductAction initialAction;
+
+  /// Whether the Vorrat estimate offers to eat or plan the food instead.
+  final bool offersEatInstead;
 
   /// Receives the chosen food in place of popping the page's route, when the
   /// page is the content of another route.
@@ -225,6 +229,7 @@ class _ManualProductAiSearchPageState
                   widget.initialAction ==
                       InventoryReceiptManualProductAction.eatNow,
               description: description,
+              offersEatInstead: widget.offersEatInstead,
               initialLoggedAt: loggedAt,
               initialMealType:
                   quickEat.preselectedMealType ??
@@ -275,6 +280,7 @@ class _ManualProductAiSearchPageState
       action: result.action,
       globalPackageWeight: result.globalPackageWeight,
       eatSelection: result.eatSelection,
+      eatRequest: result.eatRequest,
     );
   }
 }

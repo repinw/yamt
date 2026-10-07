@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_manual_add_quick_eat_config.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'food_estimate_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
@@ -145,6 +146,7 @@ Future<void> _pumpPage(
   required FoodEstimateRepository repository,
   required ValueChanged<ManualProductAiSearchResult?> onResult,
   bool fromDiary = true,
+  bool offersEatInstead = false,
   String initialPrompt = '',
   VoiceSearchService? voice,
 }) async {
@@ -164,7 +166,7 @@ Future<void> _pumpPage(
                     args: ManualProductSearchRouteArgs.aiSearch(
                       item: _placeholderItem(),
                       initialPrompt: initialPrompt,
-                      showEatImmediatelyOption: fromDiary,
+                      showEatImmediatelyOption: fromDiary || offersEatInstead,
                       initialAction:
                           InventoryReceiptManualProductAction.addToInventory,
                       quickEatConfig: InventoryManualAddQuickEatConfig(
@@ -430,6 +432,55 @@ void main() {
       InventoryReceiptManualProductAction.addToInventory,
     );
     expect(pageResult?.eatSelection, isNull);
+  });
+
+  testWidgets('a picked ingredient offers no eat or plan icon', (tester) async {
+    await _pumpPage(
+      tester,
+      repository: _FakeFoodEstimateRepository((_) async => _doener),
+      onResult: (_) {},
+      fromDiary: false,
+      initialPrompt: 'Döner',
+    );
+    await _analyze(tester);
+
+    expect(find.byKey(EatPageScaffold.diaryButtonKey), findsNothing);
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsNothing);
+  });
+
+  testWidgets('from the Vorrat the icons eat or plan the food instead', (
+    tester,
+  ) async {
+    final results = <ManualProductAiSearchResult?>[];
+    for (final icon in [
+      EatPageScaffold.diaryButtonKey,
+      EatPageScaffold.planButtonKey,
+    ]) {
+      await _pumpPage(
+        tester,
+        repository: _FakeFoodEstimateRepository((_) async => _doener),
+        onResult: results.add,
+        fromDiary: false,
+        offersEatInstead: true,
+        initialPrompt: 'Döner',
+      );
+      await _analyze(tester);
+      await tester.tap(find.byKey(icon));
+      await tester.pumpAndSettle();
+      if (icon == EatPageScaffold.planButtonKey) {
+        // The day picker starts on today.
+        await tester.tap(find.text('OK'));
+        await tester.pumpAndSettle();
+      }
+    }
+
+    final [eaten, planned] = results;
+    expect(eaten?.action, InventoryReceiptManualProductAction.eatNow);
+    expect(eaten?.eatSelection?.inventoryAmount, 400);
+    expect(eaten?.eatRequest?.isPlan, isFalse);
+    expect(planned?.action, InventoryReceiptManualProductAction.eatNow);
+    // The plan flag survives, so a plan for today stays a plan.
+    expect(planned?.eatRequest?.isPlan, isTrue);
   });
 
   testWidgets('analyze again returns to the input', (tester) async {
