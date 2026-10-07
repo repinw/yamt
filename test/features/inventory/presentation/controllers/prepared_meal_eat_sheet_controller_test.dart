@@ -108,6 +108,19 @@ void main() {
     expect(request?.loggedDay, _now);
   });
 
+  test('a plan day goes into the request but not into the page', () {
+    final (:container, :provider) = _setUp(_meal());
+    final tomorrow = _now.add(const Duration(days: 1));
+
+    final request = container
+        .read(provider.notifier)
+        .submit(asPlan: true, planDay: tomorrow);
+
+    expect(request?.loggedDay.day, tomorrow.day);
+    expect(request?.isPlan, isTrue);
+    expect(container.read(provider).loggedAt, _now);
+  });
+
   test('following the Vorrat keeps the input and logs the new meal', () async {
     final opened = _meal().copyWith(pendingRecipeIngredients: ['Salt']);
     final filled = _meal().copyWith(totalKcal: 800);

@@ -2,6 +2,7 @@ import 'dart:developer' as developer;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -9,6 +10,7 @@ import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dar
 import 'package:yamt/features/inventory/presentation/inventory_quick_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 
 /// Eats portions of a prepared meal and logs them as one calorie entry.
 abstract final class PreparedMealEatFlow {
@@ -57,7 +59,11 @@ abstract final class PreparedMealEatFlow {
         final (:entry, :isPlan) = eaten;
         scope.messenger.showAppSnackBar(
           isPlan
-              ? scope.l10n.diaryPlanSaved
+              ? planSavedMessage(
+                  scope.l10n,
+                  day: entry.loggedAt,
+                  today: scope.container.read(clockProvider)(),
+                )
               : scope.l10n.inventoryManualAddEatSucceeded,
           onUndo: () => isPlan
               ? InventoryItemEatFlow.undoPlan(

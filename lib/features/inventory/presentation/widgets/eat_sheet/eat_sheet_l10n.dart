@@ -1,4 +1,7 @@
+import 'package:intl/intl.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
@@ -35,6 +38,21 @@ String consumedUnitSymbol(AppLocalizations l10n, ConsumedUnit unit) {
     ConsumedUnit.grams => l10n.caloriesUnitGram,
     ConsumedUnit.milliliters => l10n.caloriesUnitMilliliter,
   };
+}
+
+/// The snack bar after a plan was saved for [day]: "Für heute geplant",
+/// "Für morgen geplant", or the date.
+String planSavedMessage(
+  AppLocalizations l10n, {
+  required DateTime day,
+  required DateTime today,
+}) {
+  final days = diaryDaysBetween(dateOnly(today), dateOnly(day));
+  return l10n.diaryPlanSavedFor(switch (days) {
+    0 => l10n.diaryPlanSavedToday,
+    1 => l10n.diaryPlanSavedTomorrow,
+    _ => DateFormat.MMMEd(l10n.localeName).format(day),
+  });
 }
 
 /// Texts of the inventory item eat page.

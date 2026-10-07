@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -152,6 +153,7 @@ Future<void> _pumpHarness(
     ProviderScope(
       overrides: [
         inventoryQuickEatApplicationProvider.overrideWithValue(actions),
+        clockProvider.overrideWithValue(() => DateTime(2026, 10, 8, 12)),
         firebaseFirestoreProvider.overrideWith((ref) => null),
         calorieSettingsRepositoryProvider.overrideWithValue(
           FakeCalorieSettingsRepository(),
@@ -415,7 +417,7 @@ void main() {
     );
     plans.plans.add(result!);
 
-    expect(find.text('Planned for the day'), findsOneWidget);
+    expect(find.text('Planned for today'), findsOneWidget);
 
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();

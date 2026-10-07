@@ -2580,6 +2580,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryQuickEntrySaved => 'Ins Tagebuch eingetragen';
 
   @override
+  String diaryPlanSavedFor(String day) {
+    return 'Für $day geplant';
+  }
+
+  @override
+  String get diaryPlanSavedToday => 'heute';
+
+  @override
+  String get diaryPlanSavedTomorrow => 'morgen';
+
+  @override
   String get diaryPlanSaved => 'Für den Tag geplant';
 
   @override

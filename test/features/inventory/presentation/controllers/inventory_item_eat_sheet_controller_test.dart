@@ -192,6 +192,40 @@ void main() {
     expect(request.portionCount, isNull);
   });
 
+  test('a plan day goes into the request but not into the page', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)..setAmountText('120');
+    final tomorrow = _now.add(const Duration(days: 1));
+
+    final outcome = controller.submit(
+      InventoryItemEatSheetIntent.logOnly,
+      asPlan: true,
+      planDay: tomorrow,
+    );
+
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.loggedAt.day, tomorrow.day);
+    expect(request.isPlan, isTrue);
+    // The main button keeps its label while the page closes.
+    expect(container.read(provider).loggedAt, _now);
+    expect(container.read(provider).isPlan, isFalse);
+  });
+
+  test('a rejected plan keeps the picked day on the page', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)..setAmountText('');
+    final tomorrow = _now.add(const Duration(days: 1));
+
+    final outcome = controller.submit(
+      InventoryItemEatSheetIntent.logOnly,
+      asPlan: true,
+      planDay: tomorrow,
+    );
+
+    expect(outcome, isA<InventoryItemEatRejected>());
+    expect(container.read(provider).loggedAt.day, tomorrow.day);
+  });
+
   test('submits a valid amount', () {
     final (:container, :provider) = _setUp(_gramItem());
     final controller = container.read(provider.notifier)..setAmountText('120');

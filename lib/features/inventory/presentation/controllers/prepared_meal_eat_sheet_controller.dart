@@ -208,10 +208,18 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
   }
 
   /// Returns the eat request, or null and shows an error for a bad amount.
-  /// [asPlan] plans the meal, even on today.
-  InventoryPreparedMealEatRequest? submit({bool asPlan = false}) {
+  /// [asPlan] plans the meal, even on today; [planDay] plans it on that day
+  /// at the current time of day, without showing the day first.
+  InventoryPreparedMealEatRequest? submit({
+    bool asPlan = false,
+    DateTime? planDay,
+  }) {
     final portions = state.calculator.validPortions(state.amount, state.mode);
     if (portions == null) {
+      // The page stays open, so it shows the picked day with the error.
+      if (planDay != null) {
+        setLoggedDay(planDay);
+      }
       state = state.copyWith(hasAmountError: true);
       return null;
     }
@@ -219,7 +227,9 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
       meal: state.calculator.meal,
       portions: portions,
       mealType: state.mealType,
-      loggedDay: state.loggedAt,
+      loggedDay: planDay == null
+          ? state.loggedAt
+          : loggedAtOnDay(planDay, now: ref.read(clockProvider)()),
       isPlan: asPlan,
     );
   }

@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/presentation/calorie_entry_editor_flow.dart';
@@ -16,6 +17,7 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Eats an inventory item: reserves the stock and logs the calorie entry.
@@ -141,7 +143,11 @@ class InventoryItemEatFlow {
         case InventoryEatPlanned(:final entry):
           if (context.mounted) {
             ScaffoldMessenger.of(context).showAppSnackBar(
-              l10n.diaryPlanSaved,
+              planSavedMessage(
+                l10n,
+                day: entry.loggedAt,
+                today: container.read(clockProvider)(),
+              ),
               onUndo: () => undoPlan(container: container, plan: entry),
             );
           }

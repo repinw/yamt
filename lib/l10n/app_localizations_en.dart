@@ -2530,6 +2530,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryQuickEntrySaved => 'Added to diary';
 
   @override
+  String diaryPlanSavedFor(String day) {
+    return 'Planned for $day';
+  }
+
+  @override
+  String get diaryPlanSavedToday => 'today';
+
+  @override
+  String get diaryPlanSavedTomorrow => 'tomorrow';
+
+  @override
   String get diaryPlanSaved => 'Planned for the day';
 
   @override

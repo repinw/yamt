@@ -4390,6 +4390,24 @@ abstract class AppLocalizations {
   /// **'Added to diary'**
   String get diaryQuickEntrySaved;
 
+  /// No description provided for @diaryPlanSavedFor.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned for {day}'**
+  String diaryPlanSavedFor(String day);
+
+  /// No description provided for @diaryPlanSavedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get diaryPlanSavedToday;
+
+  /// No description provided for @diaryPlanSavedTomorrow.
+  ///
+  /// In en, this message translates to:
+  /// **'tomorrow'**
+  String get diaryPlanSavedTomorrow;
+
   /// No description provided for @diaryPlanSaved.
   ///
   /// In en, this message translates to:
