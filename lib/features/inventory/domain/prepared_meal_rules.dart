@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 /// What a cook can do with a Vorrat meal.
@@ -37,4 +39,11 @@ extension PreparedMealRules on PreparedMeal {
   /// rows, and not eaten up.
   bool get isOpen =>
       (isInPot || hasPendingRecipeIngredients) && remainingPortions > 0;
+
+  /// The meal after [portions] left it at [at], never below zero. Negative
+  /// [portions] come back.
+  PreparedMeal withPortionsTaken(num portions, DateTime at) => copyWith(
+    remainingPortions: math.max(0, remainingPortions - portions),
+    updatedAt: at,
+  );
 }

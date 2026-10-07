@@ -60,4 +60,13 @@ void main() {
     expect(inPot.allowsPortions(eat, 1), isFalse);
     expect(inPot.allowsPortions(plan, 1), isTrue);
   });
+
+  test('withPortionsTaken never goes below zero and takes portions back', () {
+    final at = DateTime(2026, 10, 8);
+
+    expect(_meal().withPortionsTaken(1, at).remainingPortions, 2);
+    expect(_meal().withPortionsTaken(5, at).remainingPortions, 0);
+    expect(_meal().withPortionsTaken(-1, at).remainingPortions, 4);
+    expect(_meal().withPortionsTaken(1, at).updatedAt, at);
+  });
 }

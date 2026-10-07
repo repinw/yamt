@@ -306,7 +306,6 @@ void main() {
         mealIndex: 0,
         removedPortions: 0.5,
         updatedAt: now,
-        keepDepletedMeal: true,
       );
 
       expect(nextMeals.single.remainingPortions, 0.5);
