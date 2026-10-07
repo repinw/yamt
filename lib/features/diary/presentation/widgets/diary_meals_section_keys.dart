@@ -24,6 +24,11 @@ abstract final class DiaryMealsSectionKeys {
     return ValueKey<String>('diary-meal-plan-accept-all-${mealType.name}');
   }
 
+  /// Key of the icon that copies the meal [mealType] as plans.
+  static Key mealCopyButton(MealType mealType) {
+    return ValueKey<String>('diary-meal-copy-${mealType.name}');
+  }
+
   /// Key of the "fehlt" tag on a plan the Vorrat cannot cover.
   static const planShortTag = Key('diary-meal-plan-short');
 

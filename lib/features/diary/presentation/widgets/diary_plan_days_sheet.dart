@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -35,15 +34,12 @@ Future<DiaryPlanDaysChoice?> showDiaryPlanDaysSheet({
 
 /// The "Auch planen für" sheet: two weeks to pick days in, the meal, and
 /// the button that plans them.
-class DiaryPlanDaysSheet extends ConsumerStatefulWidget {
+class DiaryPlanDaysSheet extends StatefulWidget {
   /// Creates the sheet for [plan].
   const new({required this.plan, required this.today, super.key});
 
   /// Key of the button that plans the picked days.
   static const confirmKey = Key('diary_plan_days_confirm');
-
-  /// Key of the cell of [day].
-  static Key dayKey(DateTime day) => DiaryPlanDaysGrid.dayKey(day);
 
   /// Key of the chip of [type].
   static Key mealKey(MealType type) => Key('diary_plan_days_meal_${type.name}');
@@ -55,10 +51,10 @@ class DiaryPlanDaysSheet extends ConsumerStatefulWidget {
   final DateTime today;
 
   @override
-  ConsumerState<DiaryPlanDaysSheet> createState() => _DiaryPlanDaysSheetState();
+  State<DiaryPlanDaysSheet> createState() => _DiaryPlanDaysSheetState();
 }
 
-class _DiaryPlanDaysSheetState extends ConsumerState<DiaryPlanDaysSheet> {
+class _DiaryPlanDaysSheetState extends State<DiaryPlanDaysSheet> {
   final _days = <DateTime>{};
   late MealType _mealType = widget.plan.mealType;
 

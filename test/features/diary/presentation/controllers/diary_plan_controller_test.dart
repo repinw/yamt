@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/application/calorie_overview_revision_pro
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_controller.dart';
 import 'package:yamt/features/inventory/application/'
@@ -158,7 +159,7 @@ void main() {
     final days = [DateTime(2026, 10, 8), DateTime(2026, 10, 10)];
 
     final copies = await controller.copyToDays(
-      plan,
+      [plan],
       days: days,
       mealType: MealType.lunch,
     );
@@ -181,6 +182,51 @@ void main() {
     expect(states.map((state) => state.isLoading), [true, false, true, false]);
   });
 
+  test('copies a meal as plans, each food in its own meal', () async {
+    final repository = FakePlannedEntryRepository();
+    final (container, _) = setUpContainer(repository);
+    final bread = plan.copyWith(id: 'bread', mealType: MealType.breakfast);
+
+    final copies = await container
+        .read(diaryPlanControllerProvider.notifier)
+        .copyToDays([plan, bread], days: [DateTime(2026, 10, 8)]);
+
+    expect(copies!.map((copy) => copy.mealType), [
+      plan.mealType,
+      MealType.breakfast,
+    ]);
+    expect(copies.map((copy) => copy.loggedAt.day), everyElement(8));
+    expect(repository.plans, copies);
+  });
+
+  test('a copy of a combined entry keeps no stock of its foods', () async {
+    final repository = FakePlannedEntryRepository();
+    final (container, _) = setUpContainer(repository);
+    final combined = plan.copyWith(
+      bundleComponents: const [
+        CalorieEntryBundleComponent(
+          name: 'Oats',
+          amountLabel: '50 g',
+          totalKcal: 190,
+          totalProtein: 6,
+          totalCarbs: 30,
+          totalFat: 3,
+          sourceInventoryItemId: 'oats',
+          sourceInventoryAmountToRestore: 50,
+        ),
+      ],
+    );
+
+    final copies = await container
+        .read(diaryPlanControllerProvider.notifier)
+        .copyToDays([combined], days: [DateTime(2026, 10, 8)]);
+
+    final component = copies!.single.bundleComponents.single;
+    expect(component.name, 'Oats');
+    expect(component.canRestoreToInventory, isFalse);
+    expect(component.sourceInventoryItemId, isNull);
+  });
+
   test('a copy that fails partway removes the copies saved before', () async {
     final repository = _FailingSecondSave();
     final (container, states) = setUpContainer(repository);
@@ -188,7 +234,7 @@ void main() {
     final copies = await container
         .read(diaryPlanControllerProvider.notifier)
         .copyToDays(
-          plan,
+          [plan],
           days: [DateTime(2026, 10, 8), DateTime(2026, 10, 9)],
           mealType: MealType.dinner,
         );

@@ -2649,6 +2649,15 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get diaryMealCopyAction => 'Als Plan kopieren';
+
+  @override
+  String get diaryMealCopyPickMeal => 'Mahlzeit wählen';
+
+  @override
+  String get diaryMealCopyDaysLabel => 'Auf welche Tage';
+
+  @override
   String get diaryPlanCopyFailed => 'Pläne konnten nicht gespeichert werden';
 
   @override

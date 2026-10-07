@@ -37,7 +37,9 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_inventory_food_picker/diary_inventory_food_picker_status.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_inventory_food_picker/diary_inventory_food_tile.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_meal_copy_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_grid.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_quick_eat_actions.dart';
 import 'package:yamt/features/health/data/health_connection_service_provider.dart';
@@ -713,6 +715,12 @@ void main() {
     // On its day the check button eats the plan from the Vorrat.
     final accept = find.byKey(DiaryMealsSectionKeys.planAcceptButton(plan.id));
     await _pumpUntilFound(tester, accept, description: 'accept button');
+    // In the small test view the bottom dock covers the end of the list.
+    await tester.drag(
+      find.byType(CustomScrollView).first,
+      const Offset(0, -200),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
     await _pumpUntilOnScreen(tester, accept, description: 'visible accept');
     await tester.tap(accept);
     await _pumpUntil(
@@ -1020,7 +1028,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(copy);
     final dayAfter = DateTime(today.year, today.month, today.day + 2);
-    final dayCell = find.byKey(DiaryPlanDaysSheet.dayKey(dayAfter));
+    final dayCell = find.byKey(DiaryPlanDaysGrid.dayKey(dayAfter));
     await _pumpUntilFound(tester, dayCell, description: 'days sheet');
     await tester.pumpAndSettle();
     await tester.tap(dayCell);
@@ -1039,6 +1047,77 @@ void main() {
       DateTime(dayAfter.year, dayAfter.month, dayAfter.day, 19),
     );
     expect(copied.mealType, MealType.dinner);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the copy icon plans two meals of tomorrow on one more day', (
+    tester,
+  ) async {
+    final today = _selectedDay.subtract(const Duration(days: 1));
+    CalorieEntry plan(String id, MealType mealType, int hour) =>
+        CalorieEntry.create(
+          id: id,
+          userId: _userId,
+          name: id,
+          mealType: mealType,
+          consumedAmount: 100,
+          consumedUnit: ConsumedUnit.grams,
+          per100Kcal: 300,
+          per100Protein: 10,
+          per100Carbs: 40,
+          per100Fat: 10,
+          loggedAt: _selectedDay.add(Duration(hours: hour)),
+          createdAt: _selectedDay,
+          updatedAt: _selectedDay,
+        );
+    final harness = _buildHarness(
+      today: today,
+      plans: [
+        plan('oats', MealType.breakfast, 8),
+        plan('pasta', MealType.dinner, 19),
+      ],
+    );
+    await tester.pumpWidget(harness.app);
+    final copyIcon = find.byKey(
+      DiaryMealsSectionKeys.mealCopyButton(MealType.dinner),
+    );
+    await _pumpUntilFound(tester, copyIcon, description: 'copy icon');
+    await _pumpUntilOnScreen(tester, copyIcon, description: 'visible icon');
+
+    await tester.tap(copyIcon);
+    final breakfast = find.byKey(
+      DiaryMealCopySheet.mealKey(MealType.breakfast),
+    );
+    await _pumpUntilFound(tester, breakfast, description: 'copy sheet');
+    await tester.pumpAndSettle();
+    await tester.tap(breakfast);
+    await tester.pump();
+    final dayAfter = DateTime(today.year, today.month, today.day + 2);
+    final dayCell = find.byKey(DiaryPlanDaysGrid.dayKey(dayAfter));
+    await tester.ensureVisible(dayCell);
+    await tester.tap(dayCell);
+    await tester.pump();
+    final confirm = find.byKey(DiaryMealCopySheet.confirmKey);
+    await tester.ensureVisible(confirm);
+    await tester.tap(confirm);
+    await _pumpUntil(
+      tester,
+      () => harness.planRepository.plans.length == 4,
+      description: 'copies saved',
+    );
+    final copies = harness.planRepository.plans
+        .where((it) => it.id != 'oats' && it.id != 'pasta')
+        .toList();
+    expect(copies.map((it) => it.mealType).toSet(), {
+      MealType.breakfast,
+      MealType.dinner,
+    });
+    expect(
+      copies.map(
+        (it) => DateTime(it.loggedAt.year, it.loggedAt.month, it.loggedAt.day),
+      ),
+      everyElement(dayAfter),
+    );
     expect(tester.takeException(), isNull);
   });
 
