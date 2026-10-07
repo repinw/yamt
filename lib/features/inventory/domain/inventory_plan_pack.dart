@@ -14,6 +14,14 @@ import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 ({InventoryItem item, int amount})? pickInventoryItemForPlan(
   CalorieEntry plan,
   List<InventoryItem> items,
+) => inventoryPacksForPlan(plan, items).firstOrNull;
+
+/// The packs of the food [plan] eats that have stock left, with the stock
+/// amount it takes from each, in the order [pickInventoryItemForPlan] takes
+/// them.
+List<({InventoryItem item, int amount})> inventoryPacksForPlan(
+  CalorieEntry plan,
+  List<InventoryItem> items,
 ) {
   String key(String name, String? brand) =>
       '${name.trim().toLowerCase()}|${brand?.trim().toLowerCase() ?? ''}';
@@ -31,7 +39,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
       return a.item.isFullyAvailable ? 1 : -1;
     }
     return a.item.entryDate.compareTo(b.item.entryDate);
-  }).firstOrNull;
+  });
 }
 
 /// The stock amount to save with [changed], a plan whose eaten amount
