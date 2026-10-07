@@ -306,13 +306,10 @@ class PreparedMealsController extends _$PreparedMealsController {
     ).whenComplete(keepAliveLink.close);
   }
 
-  Future<List<PreparedMeal>> _currentMeals() async {
-    final currentData = state.asData?.value;
-    if (currentData != null) {
-      return currentData;
-    }
-    return await future;
-  }
+  /// The stored meals. A change writes single meals, so it starts from the
+  /// stored copy and not from the list on screen, which may be older.
+  Future<List<PreparedMeal>> _currentMeals() =>
+      ref.read(preparedMealRepositoryProvider).readAll();
 
   Future<List<PreparedMeal>> _restartSubscription() async {
     final initialMeals = Completer<List<PreparedMeal>>();
@@ -408,18 +405,11 @@ class PreparedMealsController extends _$PreparedMealsController {
     required List<PreparedMeal> previousMeals,
     required List<PreparedMeal> nextMeals,
   }) async {
-    if (ref.mounted) {
-      state = AsyncData(nextMeals);
-    }
-
+    // The meal stream shows a written change at once, also offline.
     try {
-      final saved = await ref
+      return await ref
           .read(preparedMealRepositoryProvider)
           .saveChanges(previous: previousMeals, next: nextMeals);
-      if (!saved && ref.mounted) {
-        state = AsyncData(previousMeals);
-      }
-      return saved;
     } on Object catch (error, stackTrace) {
       log(
         'Failed to persist prepared meal mutation.',
@@ -427,9 +417,6 @@ class PreparedMealsController extends _$PreparedMealsController {
         error: error,
         stackTrace: stackTrace,
       );
-      if (ref.mounted) {
-        state = AsyncData(previousMeals);
-      }
       return false;
     }
   }
