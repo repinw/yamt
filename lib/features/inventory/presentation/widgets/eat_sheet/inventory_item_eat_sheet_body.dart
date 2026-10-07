@@ -6,16 +6,15 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/product_missing_values.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_submission.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_missing_values_hint.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_amount_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_label_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_selection.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/inventory_item_eat_sheet_fields.dart';
 
 const _confirmKey = Key('inventory_item_amount_dialog_confirm_button');
 const _addMoreKey = Key('inventory_item_amount_dialog_add_more_button');
@@ -143,10 +142,7 @@ class _InventoryItemEatSheetBodyState
         initialMealType: widget.initialMealType,
         hasOpenStock: widget.hasOpenStock,
       );
-  final _inventoryAmount = EatSheetTextField();
-  final _pieceCount = EatSheetTextField();
-  final _pieceWeight = EatSheetTextField();
-  final _inedibleAmount = EatSheetTextField();
+  final _fields = InventoryItemEatSheetFields();
 
   InventoryItemEatSheetController get _controller =>
       ref.read(_provider.notifier);
@@ -154,26 +150,19 @@ class _InventoryItemEatSheetBodyState
   @override
   void initState() {
     super.initState();
-    _syncText(ref.read(_provider));
+    _fields.sync(ref.read(_provider));
   }
 
   @override
   void dispose() {
-    for (final field in [
-      _inventoryAmount,
-      _pieceCount,
-      _pieceWeight,
-      _inedibleAmount,
-    ]) {
-      field.dispose();
-    }
+    _fields.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen(_provider, (_, next) {
-      _syncText(next);
+      _fields.sync(next);
       widget.onSelectionChanged?.call((
         inventoryAmount: next.enteredInventoryAmount,
         loggedAt: next.loggedAt,
@@ -184,7 +173,9 @@ class _InventoryItemEatSheetBodyState
     final item = widget.item;
     final nutrition = state.nutrition;
     final addMoreText = widget.addMoreActionText;
-    final amountField = state.usesPortionMode ? _pieceCount : _inventoryAmount;
+    final amountField = state.usesPortionMode
+        ? _fields.pieceCount
+        : _fields.inventoryAmount;
     final footer = widget.footer;
     final plansOnly = widget.plansOnly && !state.isPastDay;
 
@@ -229,8 +220,8 @@ class _InventoryItemEatSheetBodyState
             state: state,
             controller: _controller,
             amountField: amountField,
-            pieceWeight: _pieceWeight,
-            inedibleAmount: _inedibleAmount,
+            pieceWeight: _fields.pieceWeight,
+            inedibleAmount: _fields.inedibleAmount,
             onToggleInedible: _toggleInedible,
           ),
         ?footer,
@@ -250,22 +241,15 @@ class _InventoryItemEatSheetBodyState
     );
   }
 
-  void _syncText(InventoryItemEatSheetState state) {
-    _inventoryAmount.sync(state.inventoryAmountText);
-    _pieceCount.sync(state.portionCountText);
-    _pieceWeight.sync(state.portionAmountText);
-    _inedibleAmount.sync(state.inedibleAmountText);
-  }
-
   void _toggleInedible() {
     _controller.toggleInedible();
     if (!ref.read(_provider).isInedibleExpanded) {
-      _inedibleAmount.focusNode.unfocus();
+      _fields.inedibleAmount.focusNode.unfocus();
       return;
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        _inedibleAmount.focusNode.requestFocus();
+        _fields.inedibleAmount.focusNode.requestFocus();
       }
     });
   }
