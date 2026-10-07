@@ -542,8 +542,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   Vorrat. Closing the page keeps it in the pot. A meal that does not show up within a few seconds counts as
   gone, and the page says it could not be loaded.
 - A meal in the pot shows "Im Topf" in the Vorrat list. Its detail page
-  says "Im Topf" and keeps the meal actions, but blocks "Ins Tagebuch", and the
-  diary does not offer the meal, because its portions are set at "Gekocht".
+  says "Im Topf" and keeps the meal actions, but blocks "Ins Tagebuch",
+  because its portions are set at "Gekocht". The diary's "Aus Vorrat essen"
+  list shows such a meal greyed out under the eatable foods, with "Im Topf"
+  or "N Zeilen offen"; a tap opens the "Gekocht" page for a pot and the
+  meal's detail page for open rows, as the Kochbuch's "Offen" cards do.
   Saving a diary entry for a meal in the pot fails as well. Once no row is
   open, the meal can be planned from its detail page as a share of the pot
   (the ruler counts in "Topf"; the whole pot is 1). Accepting such a plan

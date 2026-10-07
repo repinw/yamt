@@ -38,6 +38,7 @@ List<HomeActionSection> diaryQuickEatActions(
       onSelected: () => unawaited(
         DiaryQuickEatFlow.openSource(
           context: context,
+          ref: ref,
           source: source,
           selectedDay: selectedDay,
         ),

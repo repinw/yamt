@@ -39,6 +39,16 @@ class DiaryPreparedMealFoodSelection extends DiaryInventoryFoodSelection {
   final PreparedMeal meal;
 }
 
+/// Vorrat meal picked from the diary quick-eat picker that still waits for
+/// the cook, in the pot or with open rows. The diary opens it to finish.
+class DiaryOpenPreparedMealSelection extends DiaryInventoryFoodSelection {
+  /// Creates an open meal selection.
+  const new(this.meal);
+
+  /// Selected meal in the pot or with open rows.
+  final PreparedMeal meal;
+}
+
 /// Lazily loads inventory and prepared meals inside the quick-eat sheet.
 class DiaryInventoryFoodPickerSheet extends ConsumerWidget {
   /// Creates lazy diary inventory picker sheet.
@@ -60,6 +70,7 @@ class DiaryInventoryFoodPickerSheet extends ConsumerWidget {
           return _DiaryInventoryFoodPickerContent(
             items: inventoryData.items,
             meals: inventoryData.meals,
+            openMeals: inventoryData.openMeals,
           );
         },
       ),
@@ -70,7 +81,12 @@ class DiaryInventoryFoodPickerSheet extends ConsumerWidget {
 /// Inventory and prepared-meal picker used by diary quick eat.
 class DiaryInventoryFoodPicker extends StatelessWidget {
   /// Creates inventory and prepared-meal picker.
-  const new({required this.items, required this.meals, super.key});
+  const new({
+    required this.items,
+    required this.meals,
+    this.openMeals = const <PreparedMeal>[],
+    super.key,
+  });
 
   /// Row key of the Vorrat item [itemId].
   static Key itemKey(String itemId) =>
@@ -86,10 +102,17 @@ class DiaryInventoryFoodPicker extends StatelessWidget {
   /// Available prepared meals.
   final List<PreparedMeal> meals;
 
+  /// Meals in the pot or with open rows, shown greyed out.
+  final List<PreparedMeal> openMeals;
+
   @override
   Widget build(BuildContext context) {
     return _DiaryInventoryFoodPickerShell(
-      child: _DiaryInventoryFoodPickerContent(items: items, meals: meals),
+      child: _DiaryInventoryFoodPickerContent(
+        items: items,
+        meals: meals,
+        openMeals: openMeals,
+      ),
     );
   }
 }
@@ -158,15 +181,21 @@ class _DiaryInventoryFoodPickerShell extends StatelessWidget {
 }
 
 class _DiaryInventoryFoodPickerContent extends ConsumerWidget {
-  const new({required this.items, required this.meals});
+  const new({
+    required this.items,
+    required this.meals,
+    required this.openMeals,
+  });
 
   final List<InventoryItem> items;
   final List<PreparedMeal> meals;
+  final List<PreparedMeal> openMeals;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final visibleCount = items.length + meals.length;
+    final mealCount = items.length + meals.length;
+    final visibleCount = mealCount + openMeals.length;
 
     if (visibleCount == 0) {
       return Center(
@@ -191,6 +220,24 @@ class _DiaryInventoryFoodPickerContent extends ConsumerWidget {
             onTap: () =>
                 Navigator.of(context)
                     .pop(DiaryInventoryItemFoodSelection(item)),
+          );
+        }
+
+        if (index >= mealCount) {
+          final meal = openMeals[index - mealCount];
+          return DiaryInventoryFoodTile(
+            key: DiaryInventoryFoodPicker.mealKey(meal.id),
+            fallbackIcon: Icons.restaurant_menu_rounded,
+            imageUrl: meal.imageUrl,
+            imageBytes: _storedMealImageBytes(ref, meal),
+            title: meal.name,
+            // The pot comes first, as in the Vorrat list and on the tap.
+            subtitle: meal.isInPot
+                ? l10n.inventoryMealInPot
+                : l10n.cookedOpenRows(meal.pendingRecipeIngredients.length),
+            isMuted: true,
+            onTap: () =>
+                Navigator.of(context).pop(DiaryOpenPreparedMealSelection(meal)),
           );
         }
 

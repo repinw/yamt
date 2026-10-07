@@ -447,14 +447,14 @@ class _RouteHarness extends StatelessWidget {
   }
 }
 
-class _QuickEatRouteLauncher extends StatelessWidget {
+class _QuickEatRouteLauncher extends ConsumerWidget {
   const new({required this.source, required this.selectedDay});
 
   final DiaryQuickEatSource source;
   final DateTime selectedDay;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: TextButton(
         key: _openFlowButtonKey,
@@ -462,6 +462,7 @@ class _QuickEatRouteLauncher extends StatelessWidget {
           unawaited(
             DiaryQuickEatFlow.openSource(
               context: context,
+              ref: ref,
               source: source,
               selectedDay: selectedDay,
             ),
@@ -574,14 +575,15 @@ DiaryQuickEatInventoryData _diaryQuickEatInventoryData(
     meals: preparedMeals
         .where((meal) => !meal.isDepleted)
         .toList(growable: false),
+    openMeals: const <PreparedMeal>[],
   );
 }
 
-class _InventoryFlowHarness extends StatelessWidget {
+class _InventoryFlowHarness extends ConsumerWidget {
   const new();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       body: TextButton(
         key: _openInventoryFlowButtonKey,
@@ -589,6 +591,7 @@ class _InventoryFlowHarness extends StatelessWidget {
           unawaited(
             DiaryQuickEatFlow.openSource(
               context: context,
+              ref: ref,
               source: DiaryQuickEatSource.inventory,
               selectedDay: _inventoryFlowDay,
             ),
@@ -688,6 +691,8 @@ class _PickerHarnessState extends State<_PickerHarness> {
           'selected:item:${item.id}',
         DiaryPreparedMealFoodSelection(:final meal) =>
           'selected:meal:${meal.id}',
+        DiaryOpenPreparedMealSelection(:final meal) =>
+          'selected:open:${meal.id}',
       };
     });
   }
