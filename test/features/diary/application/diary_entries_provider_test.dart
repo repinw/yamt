@@ -9,7 +9,6 @@ import 'package:yamt/features/calories/application/calorie_week_overview_provide
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_entries_provider.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
@@ -47,16 +46,11 @@ void main() {
       diaryEntriesForDayProvider(selectedDay),
       (_, _) {},
     );
-    final balanceSubscription = container.listen(
-      diaryBalanceSourceProvider(selectedDay),
-      (_, _) {},
-    );
     final secondEntriesSubscription = container.listen(
       diaryEntriesForDayProvider(selectedDay),
       (_, _) {},
     );
     addTearDown(entriesSubscription.close);
-    addTearDown(balanceSubscription.close);
     addTearDown(secondEntriesSubscription.close);
 
     await container.pump();
@@ -69,12 +63,8 @@ void main() {
     final entries = await container.read(
       diaryEntriesForDayProvider(selectedDay).future,
     );
-    final balance = await container.read(
-      diaryBalanceSourceProvider(selectedDay).future,
-    );
 
     expect(entries, hasLength(1));
-    expect(balance.selectedDayEntries, hasLength(1));
     expect(readCount, 1);
   });
 

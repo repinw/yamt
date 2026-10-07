@@ -1,7 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
-import 'package:yamt/features/calories/domain/burn_week_mock_logic.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
@@ -189,10 +188,9 @@ class BurnWeekRunController extends _$BurnWeekRunController {
     required BurnWeekRunState current,
     required String nextWeekStartDayKey,
   }) {
-    final earnedStar = resolveBurnWeekEarnedStar(
-      starBrokeThisWeek: current.starBrokeThisWeek,
-      missedTrackingThisWeek: current.missedTrackingThisWeek,
-    );
+    // A week earns a star when no star broke and no day went untracked.
+    final earnedStar =
+        !current.starBrokeThisWeek && !current.missedTrackingThisWeek;
     final nextStarCount = current.starCount + (earnedStar ? 1 : 0);
     return current.copyWith(
       currentWeekStartDayKey: nextWeekStartDayKey,

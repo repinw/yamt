@@ -38,7 +38,7 @@ class DiaryBalanceCardData {
   const new practiceDay({required DiaryBalancePracticeDayData practiceDay})
     : this._(practiceDay: practiceDay);
 
-  /// Loaded daily and weekly metrics.
+  /// Loaded daily metrics.
   final DiaryBalanceLoadedMetrics? loadedMetrics;
 
   /// Scheduled restart date, when shown instead of metrics.
@@ -75,7 +75,6 @@ class DiaryBalanceSource {
   const new _({
     required this._weekOverview,
     required this._selectedDayOverview,
-    required this._selectedDayEntries,
     required this._runState,
     required this._carryoverMacroDelta,
     required this._countedPlans,
@@ -86,7 +85,6 @@ class DiaryBalanceSource {
     return DiaryBalanceSource._(
       weekOverview: data.weekOverview,
       selectedDayOverview: data.weekOverview.days.last,
-      selectedDayEntries: data.selectedDayEntries,
       runState: data.runState,
       carryoverMacroDelta: data.carryoverMacroDelta,
       countedPlans: data.countsPlans
@@ -97,7 +95,6 @@ class DiaryBalanceSource {
 
   final CalorieWeekOverview _weekOverview;
   final CalorieWeekDayOverview _selectedDayOverview;
-  final List<CalorieEntry> _selectedDayEntries;
   final BurnWeekRunState _runState;
   final DiaryMacroTargets _carryoverMacroDelta;
   final List<CalorieEntry> _countedPlans;
@@ -107,9 +104,6 @@ class DiaryBalanceSource {
 
   /// Selected-day overview backing this source.
   CalorieWeekDayOverview get selectedDayOverview => _selectedDayOverview;
-
-  /// Selected-day entries backing this source.
-  List<CalorieEntry> get selectedDayEntries => _selectedDayEntries;
 
   /// Burn Week run state backing this source.
   BurnWeekRunState get runState => _runState;
@@ -161,7 +155,6 @@ class DiaryBalanceSource {
       loadedMetrics: resolveDiaryBalanceLoadedMetrics(
         weekOverview: _weekOverview,
         selectedDayOverview: selectedDayOverview,
-        selectedDayEntries: _selectedDayEntries,
         runState: _runState,
         isLiveDay: isLiveDay,
         now: now,
@@ -181,21 +174,16 @@ Future<DiaryBalanceSource> diaryBalanceSource(
   final weekOverviewFuture = ref.watch(
     calorieWeekOverviewForWindowProvider(normalizedSelectedDay).future,
   );
-  final selectedDayEntriesFuture = ref.watch(
-    diaryEntriesForDayProvider(normalizedSelectedDay).future,
-  );
   final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
   final macroResolver = ref.watch(dailyNutritionTargetResolverProvider);
   final today = normalizeDiaryDay(ref.watch(clockProvider)());
   final weekOverview = await weekOverviewFuture;
-  final selectedDayEntries = await selectedDayEntriesFuture;
   final runState = await runStateFuture;
   final selectedDayOverview = weekOverview.days.last;
 
   return DiaryBalanceSource._(
     weekOverview: weekOverview,
     selectedDayOverview: selectedDayOverview,
-    selectedDayEntries: selectedDayEntries,
     runState: runState,
     // This source reads no plans.
     countedPlans: const <CalorieEntry>[],

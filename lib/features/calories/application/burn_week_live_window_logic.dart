@@ -5,11 +5,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart
 import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
-/// Day compare helper for Burn Week date math.
-bool isBeforeBurnWeekDay(DateTime left, DateTime right) {
-  return normalizeDiaryDay(left).isBefore(normalizeDiaryDay(right));
-}
-
 /// Parses persisted Burn Week day key into a normalized day.
 DateTime? tryParseBurnWeekDayKey(String? dayKey) {
   final normalizedDayKey = dayKey?.trim();

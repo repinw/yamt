@@ -7,23 +7,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 
 void main() {
   group('burn_week_live_window_logic', () {
-    test('isBeforeBurnWeekDay compares diary days normalized', () {
-      expect(
-        isBeforeBurnWeekDay(
-          DateTime(2026, 4, 20, 23, 59),
-          DateTime(2026, 4, 21, 0, 1),
-        ),
-        isTrue,
-      );
-      expect(
-        isBeforeBurnWeekDay(
-          DateTime(2026, 4, 21, 1),
-          DateTime(2026, 4, 21, 23),
-        ),
-        isFalse,
-      );
-    });
-
     test('tryParseBurnWeekDayKey parses valid day key or returns null', () {
       expect(tryParseBurnWeekDayKey('2026-04-20'), DateTime(2026, 4, 20));
       expect(tryParseBurnWeekDayKey('2026-4-8'), DateTime(2026, 4, 8));

@@ -1,11 +1,9 @@
 import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
-import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_weekly_balance_metrics.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 /// Derived values needed to render the loaded Burn Week balance card.
@@ -14,7 +12,6 @@ class DiaryBalanceLoadedMetrics {
   const new({
     required this.selectedDay,
     required this.daily,
-    required this.weekly,
     required this.state,
     this.budgetDetails,
     this.previousDayCarryoverKcal,
@@ -26,9 +23,6 @@ class DiaryBalanceLoadedMetrics {
 
   /// Derived values for the daily card.
   final DiaryDailyBalanceMetrics daily;
-
-  /// Derived values for the weekly pacing card.
-  final DiaryWeeklyBalanceMetrics weekly;
 
   /// Loaded card display state.
   final DiaryBalanceLoadedState state;
@@ -45,7 +39,7 @@ class DiaryBalanceLoadedMetrics {
   final bool isPreviousDayClosed;
 }
 
-/// Loaded card display state that is not specific to daily or weekly metrics.
+/// Loaded card display state that is not specific to the daily metrics.
 class DiaryBalanceLoadedState {
   /// Creates loaded-card display state.
   const new({
@@ -67,7 +61,6 @@ class DiaryBalanceLoadedState {
 typedef _DiaryBalanceLoadedContext = ({
   CalorieWeekOverview weekOverview,
   CalorieWeekDayOverview selectedDayOverview,
-  List<CalorieEntry> selectedDayEntries,
   BurnWeekRunState runState,
   bool isLiveDay,
   DateTime now,
@@ -78,7 +71,6 @@ typedef _DiaryBalanceLoadedContext = ({
 DiaryBalanceLoadedMetrics resolveDiaryBalanceLoadedMetrics({
   required CalorieWeekOverview weekOverview,
   required CalorieWeekDayOverview selectedDayOverview,
-  required List<CalorieEntry> selectedDayEntries,
   required BurnWeekRunState runState,
   required bool isLiveDay,
   required DateTime now,
@@ -87,7 +79,6 @@ DiaryBalanceLoadedMetrics resolveDiaryBalanceLoadedMetrics({
   final context = (
     weekOverview: weekOverview,
     selectedDayOverview: selectedDayOverview,
-    selectedDayEntries: selectedDayEntries,
     runState: runState,
     isLiveDay: isLiveDay,
     now: now,
@@ -101,7 +92,7 @@ DiaryBalanceLoadedMetrics _resolveDiaryBalanceLoadedMetrics(
 ) {
   final weekStart = _resolveCurrentWeekStartDate(context);
   final state = _resolveLoadedState(context);
-  final daily = _resolveDailyMetrics(context, state);
+  final daily = _resolveDailyMetrics(context);
   return _buildDiaryBalanceLoadedMetrics(context, weekStart, state, daily);
 }
 
@@ -114,7 +105,6 @@ DiaryBalanceLoadedMetrics _buildDiaryBalanceLoadedMetrics(
   return DiaryBalanceLoadedMetrics(
     selectedDay: context.selectedDayOverview.date,
     daily: daily,
-    weekly: _resolveWeeklyMetrics(context, weekStart),
     state: state,
     budgetDetails: _resolveBudgetDetails(context, weekStart, state, daily),
     previousDayCarryoverKcal: context.weekOverview.previousDayCarryoverKcal,
@@ -131,24 +121,11 @@ DateTime _resolveCurrentWeekStartDate(_DiaryBalanceLoadedContext context) =>
 
 DiaryDailyBalanceMetrics _resolveDailyMetrics(
   _DiaryBalanceLoadedContext context,
-  DiaryBalanceLoadedState state,
 ) => resolveDiaryDailyBalanceMetrics(
   flexibleGoalKcal: context.weekOverview.todayFlexibleGoalKcal,
   totalKcal: context.selectedDayOverview.totalKcal,
   goalKcal: context.selectedDayOverview.goalKcal,
   baseGoalKcal: context.selectedDayOverview.goalKcal,
-);
-
-DiaryWeeklyBalanceMetrics _resolveWeeklyMetrics(
-  _DiaryBalanceLoadedContext context,
-  DateTime weekStart,
-) => resolveDiaryWeeklyBalanceMetrics(
-  weekOverview: context.weekOverview,
-  selectedDayOverview: context.selectedDayOverview,
-  selectedDayEntries: context.selectedDayEntries,
-  currentWeekStartDate: weekStart,
-  runState: context.runState,
-  now: context.now,
 );
 
 /// The days before a future day are not finished, so a future day has no

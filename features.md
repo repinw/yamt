@@ -189,7 +189,7 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Nutrition bars and macro summaries: each macro shows its label, a bar of four
   segments, and the grams left. A macro above its target shows `+X g over` and
   stripes the overage share at the end of its bar.
-- Burn Week balance cards with daily and weekly progress.
+- Burn Week balance card with the daily progress.
 - Weekly check-in prompts and success/hint cards.
 - Side menu from the diary top bar. The page slides to the right as a
   shrunken card and the menu shows behind it: the user, then Profile, goal

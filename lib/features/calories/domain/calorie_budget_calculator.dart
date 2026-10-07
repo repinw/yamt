@@ -17,14 +17,6 @@ class CalorieCarryoverDay {
 
 /// Shared calorie carryover math.
 abstract final class CalorieBudgetCalculator {
-  /// Calculate canonical carryover from finished days.
-  static double calculateCarryover(Iterable<CalorieCarryoverDay> days) {
-    return days.fold<double>(
-      0,
-      (sum, day) => sum + day.goalKcal - day.consumedKcal,
-    );
-  }
-
   /// Spread carryover across remaining days in the active goal run.
   ///
   /// For negative carryover (overeating), Schutzregel C caps the daily
