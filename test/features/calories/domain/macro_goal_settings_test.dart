@@ -332,11 +332,28 @@ void main() {
       },
     );
 
-    test('reduces protein when fat reaches floor to guarantee carbs floor', () {
-      // 1000 kcal goal for 90kg person (2.0 P, 1.0 F):
+    test('cuts protein for the carbs floor down to its own floor', () {
+      // 1300 kcal goal for 90kg person (2.0 P, 1.0 F):
       // Fat floor: 90 * 0.6 = 54g (486 kcal).
       // Carbs floor: 100g (400 kcal).
-      // Remainder for protein: 1000 - 486 - 400 = 114 kcal -> 28.5g protein.
+      // Remainder for protein: 1300 - 486 - 400 = 414 kcal -> 103.5g,
+      // above the protein floor of 90 * 0.8 = 72g.
+      final targets = MacroBudgetCalculator.calculate(
+        goalKcal: 1300,
+        weightKg: 90,
+        proteinGramsPerKg: 2,
+        fatGramsPerKg: 1,
+      );
+
+      expect(targets.protein, 103.5);
+      expect(targets.fat, 54.0);
+      expect(targets.carbs, 100.0);
+    });
+
+    test('keeps the protein floor before the carbs floor', () {
+      // 1000 kcal goal for 90kg person (2.0 P, 1.0 F):
+      // Fat floor 54g (486 kcal), protein floor 90 * 0.8 = 72g (288 kcal).
+      // Carbs get the rest: (1000 - 486 - 288) / 4 = 56.5g.
       final targets = MacroBudgetCalculator.calculate(
         goalKcal: 1000,
         weightKg: 90,
@@ -344,9 +361,24 @@ void main() {
         fatGramsPerKg: 1,
       );
 
-      expect(targets.protein, 28.5);
+      expect(targets.protein, 72.0);
       expect(targets.fat, 54.0);
-      expect(targets.carbs, 100.0);
+      expect(targets.carbs, 56.5);
+    });
+
+    test('never raises protein that is below its floor', () {
+      // 0.5 g/kg protein at 80kg is 40g, below the 64g floor; it stays.
+      // Fat floor 48g (432 kcal), carbs get (900 - 160 - 432) / 4 = 77g.
+      final targets = MacroBudgetCalculator.calculate(
+        goalKcal: 900,
+        weightKg: 80,
+        proteinGramsPerKg: 0.5,
+        fatGramsPerKg: 1,
+      );
+
+      expect(targets.protein, 40.0);
+      expect(targets.fat, 48.0);
+      expect(targets.carbs, 77.0);
     });
 
     test('clamps all macros to zero when goalKcal <= 0', () {

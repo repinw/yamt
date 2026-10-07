@@ -38,11 +38,14 @@ class MacroCalculationResult {
 ///
 /// Protein and fat start from their targets. Carbs get the rest, but at most
 /// [maximumCarbsKcalShare] of the kcal; what lies above that cap goes to fat.
-/// On a small budget carbs keep at least [minimumCarbsFloorGrams].
+/// On a small budget carbs keep [minimumCarbsFloorGrams] first: fat drops to
+/// its floor, then protein to [minimumProteinFloorGramsPerKg]; below that,
+/// carbs get the rest.
 ///
 /// The default protein target already takes the share above the cap from the
 /// weekly average (see `MacroGoalSettings.resolveProteinGrams`), so protein
-/// stays the same on every day of the week.
+/// stays the same on every day of the week unless a day's budget is that
+/// small.
 abstract final class MacroBudgetCalculator {
   /// Minimum carbs floor in grams to prevent ketosis / hypoglycemia.
   static const double minimumCarbsFloorGrams = 100;
@@ -55,6 +58,10 @@ abstract final class MacroBudgetCalculator {
 
   /// Minimum fat percentage of daily calories.
   static const double minimumFatCalorieFraction = 0.20;
+
+  /// Minimum protein in g/kg body weight. On a small budget protein is cut
+  /// for the carb floor only down to this.
+  static const double minimumProteinFloorGramsPerKg = 0.8;
 
   /// Energy density for carbs in standard daily calculation.
   static const double standardCarbKcalPerGram = 4;
@@ -74,8 +81,8 @@ abstract final class MacroBudgetCalculator {
     );
   }
 
-  /// Calculates balanced macros, capping carbs and ensuring at least 100 g
-  /// carbs when possible.
+  /// Calculates balanced macros, capping carbs and keeping the carb, fat and
+  /// protein floors as far as the kcal allow.
   static MacroCalculationResult calculate({
     required double goalKcal,
     required double weightKg,
@@ -174,6 +181,7 @@ abstract final class MacroBudgetCalculator {
 
     final remainingDeficit = deficitKcal - fatAdjustment.savedKcal;
     final adjustedProteinGrams = _reduceProteinForDeficit(
+      safeWeight: safeWeight,
       targetProteinGrams: targetProteinGrams,
       deficitKcal: remainingDeficit,
     );
@@ -211,14 +219,21 @@ abstract final class MacroBudgetCalculator {
   }
 
   static double _reduceProteinForDeficit({
+    required double safeWeight,
     required double targetProteinGrams,
     required double deficitKcal,
   }) {
     if (deficitKcal <= 0) {
       return targetProteinGrams;
     }
-    final proteinKcal = targetProteinGrams * standardProteinKcalPerGram;
-    final reductionKcal = math.min<double>(proteinKcal, deficitKcal);
+    // Protein goes down to its floor at most; protein already below it stays.
+    final proteinFloorGrams = math.min<double>(
+      targetProteinGrams,
+      safeWeight * minimumProteinFloorGramsPerKg,
+    );
+    final maxReductionKcal =
+        (targetProteinGrams - proteinFloorGrams) * standardProteinKcalPerGram;
+    final reductionKcal = math.min<double>(maxReductionKcal, deficitKcal);
     return targetProteinGrams - (reductionKcal / standardProteinKcalPerGram);
   }
 }

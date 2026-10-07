@@ -306,6 +306,34 @@ void main() {
       expect(targets.fat, closeTo(48, 0.01));
       expect(targets.protein, closeTo((1100 - 400 - 48 * 9) / 4, 0.01));
     });
+
+    test('a large negative carryover keeps the protein floor', () {
+      final preferences = MemoryAppPreferences();
+      final container = ProviderContainer(
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
+      );
+      addTearDown(container.dispose);
+
+      final targets = container
+          .listen(
+            Provider(
+              (ref) => resolveDiaryMacroTargets(
+                ref,
+                day: _day,
+                goalKcal: 1400,
+                carryoverKcal: -550,
+              ),
+            ),
+            (_, _) {},
+          )
+          .read();
+
+      // The day counts like an 850 kcal day: fat stays at 48 g, protein at
+      // its floor of 80 kg * 0.8 = 64 g, and carbs get the rest below 100 g.
+      expect(targets.fat, closeTo(48, 0.01));
+      expect(targets.protein, closeTo(64, 0.01));
+      expect(targets.carbs, closeTo((850 - 48 * 9 - 64 * 4) / 4, 0.01));
+    });
   });
 }
 
