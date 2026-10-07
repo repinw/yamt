@@ -250,7 +250,7 @@ void main() {
       expect(delta.fat, closeTo(60 / 9, 0.01));
     });
 
-    test('applies negative carryover (Schutzregeln A & B)', () {
+    test('applies a negative carryover like a smaller day goal', () {
       final preferences = MemoryAppPreferences();
       final container = ProviderContainer(
         overrides: [appPreferencesProvider.overrideWithValue(preferences)],
@@ -271,14 +271,40 @@ void main() {
           )
           .read();
 
-      // Base: 80kg male, 2000 kcal: 156g protein, 64g fat, 200g carbs.
-      // Carryover -200 kcal:
-      // Protein: unchanged (156.0)
-      // Fat: 64 - (50 / 9) = 58.4
-      // Carbs: 200 - (150 / 4) = 162.5
+      // The day counts like a 1800 kcal day: protein 156 g and fat 64 g
+      // stay, carbs get the rest (150 g), below the 40 % cap of 180 g.
       expect(targets.protein, closeTo(156, 0.001));
-      expect(targets.fat, closeTo(64.0 - (50.0 / 9), 0.01));
-      expect(targets.carbs, closeTo(162.5, 0.01));
+      expect(targets.fat, closeTo(64, 0.01));
+      expect(targets.carbs, closeTo(150, 0.01));
+    });
+
+    test('a negative carryover below the floors cuts protein', () {
+      final preferences = MemoryAppPreferences();
+      final container = ProviderContainer(
+        overrides: [appPreferencesProvider.overrideWithValue(preferences)],
+      );
+      addTearDown(container.dispose);
+
+      final targets = container
+          .listen(
+            Provider(
+              (ref) => resolveDiaryMacroTargets(
+                ref,
+                day: _day,
+                goalKcal: 1400,
+                carryoverKcal: -300,
+              ),
+            ),
+            (_, _) {},
+          )
+          .read();
+
+      // The day counts like a 1100 kcal day, as in the base budget: carbs
+      // keep their 100 g floor, fat drops to its floor of 80 kg * 0.6 = 48 g,
+      // and protein gets the rest.
+      expect(targets.carbs, closeTo(100, 0.01));
+      expect(targets.fat, closeTo(48, 0.01));
+      expect(targets.protein, closeTo((1100 - 400 - 48 * 9) / 4, 0.01));
     });
   });
 }

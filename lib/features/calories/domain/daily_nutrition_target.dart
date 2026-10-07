@@ -22,7 +22,7 @@ class DailyNutritionTarget {
   /// Effective daily calorie goal (including cycling offset and carryover).
   final double goalKcal;
 
-  /// Carbs target in grams (mind. 100g floor protected).
+  /// Carbs target in grams.
   final double carbsGrams;
 
   /// Protein target in grams.

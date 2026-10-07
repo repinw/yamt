@@ -37,16 +37,18 @@ class DiaryDailyBudgetCarryoverFormulaBox extends StatelessWidget {
 
     final hasCarryover = data.carryoverKcal.round() != 0;
 
-    final proteinStr = '±0 ${l10n.caloriesUnitGram}';
-    final carbsDelta = data.carryoverCarbsDeltaGrams;
-    final carbsSign = carbsDelta >= 0 ? '+' : '';
-    final carbsFormatted = numberFormat.format(carbsDelta.round());
-    final carbsStr = '$carbsSign$carbsFormatted ${l10n.caloriesUnitGram}';
+    String gramsDelta(double grams) {
+      final rounded = grams.round();
+      if (rounded == 0) {
+        return '±0 ${l10n.caloriesUnitGram}';
+      }
+      final sign = rounded > 0 ? '+' : '';
+      return '$sign${numberFormat.format(rounded)} ${l10n.caloriesUnitGram}';
+    }
 
-    final fatDelta = data.carryoverFatDeltaGrams;
-    final fatSign = fatDelta >= 0 ? '+' : '';
-    final fatFormatted = numberFormat.format(fatDelta.round());
-    final fatStr = '$fatSign$fatFormatted ${l10n.caloriesUnitGram}';
+    final proteinStr = gramsDelta(data.carryoverProteinDeltaGrams);
+    final carbsStr = gramsDelta(data.carryoverCarbsDeltaGrams);
+    final fatStr = gramsDelta(data.carryoverFatDeltaGrams);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
