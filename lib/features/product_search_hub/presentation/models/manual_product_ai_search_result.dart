@@ -1,5 +1,6 @@
 import 'package:yamt/core/domain/eat_selection.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 
@@ -11,6 +12,7 @@ class ManualProductAiSearchResult {
     required this.action,
     required this.globalPackageWeight,
     this.eatSelection,
+    this.eatRequest,
   });
 
   /// Built inventory item.
@@ -24,4 +26,8 @@ class ManualProductAiSearchResult {
 
   /// Generic eat selection for callers that continue into an eat flow.
   final EatSelection? eatSelection;
+
+  /// Eat request entered on the AI page, such as a plan. It wins over
+  /// [eatSelection].
+  final InventoryItemEatRequest? eatRequest;
 }

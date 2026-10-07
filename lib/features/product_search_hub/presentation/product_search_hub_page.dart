@@ -97,6 +97,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
         item: aiDraftItem,
         quickEatConfig: productSearchHubQuickEatConfig(widget.args),
         initialAction: widget.args.initialManualProductAction,
+        offersEatInstead: widget.args.offersEatInstead,
         onResult: (result) => _runWhenIdle(() => _completeAiResult(result)),
       );
     }

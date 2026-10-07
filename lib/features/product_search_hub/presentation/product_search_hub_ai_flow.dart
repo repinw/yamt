@@ -25,7 +25,8 @@ Future<InventoryReceiptManualProductResult?> openProductSearchHubAiFlow({
     args: ManualProductSearchRouteArgs.aiSearch(
       item: draftItem,
       initialPrompt: initialPrompt,
-      showEatImmediatelyOption: args.isDiary,
+      // The Vorrat's own add sheet offers eating instead, too.
+      showEatImmediatelyOption: args.isDiary || args.offersEatInstead,
       initialAction: args.initialManualProductAction,
       quickEatConfig: productSearchHubQuickEatConfig(args),
     ),
@@ -45,5 +46,6 @@ InventoryReceiptManualProductResult productSearchHubAiResult(
     // The AI page has its own "In Vorrat" and eat buttons.
     confirmed: true,
     eatSelection: result.eatSelection,
+    eatRequest: result.eatRequest,
   );
 }

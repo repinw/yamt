@@ -33,9 +33,10 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
     this.footer,
     this.onSubmitted,
     this.confirmLabel,
-    this.canPlan = true,
+    this.canPlan,
     this.plansOnly = false,
     this.onStore,
+    this.onEatInstead,
     this.mealKcal,
     this.secondaryIntent = InventoryItemEatSheetIntent.addMore,
     this.onSecondary,
@@ -87,7 +88,8 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
   final String? confirmLabel;
 
   /// Whether the page offers to plan; off where the result drops the plan.
-  final bool canPlan;
+  /// By default only a page without its own [confirmLabel] plans.
+  final bool? canPlan;
 
   /// Whether the main button plans the food, also for today ("Einplanen").
   /// A day before today is logged.
@@ -95,6 +97,10 @@ class InventoryItemEatSheetBody extends ConsumerStatefulWidget {
 
   /// Shows the "In den Vorrat" button, which runs this instead of eating.
   final VoidCallback? onStore;
+
+  /// Shows the "Ins Tagebuch" icon, which submits the entered values to
+  /// this instead of [onSubmitted], to eat the food instead.
+  final ValueChanged<InventoryItemEatSheetResult>? onEatInstead;
 
   /// Calories of the whole meal on the button, when other foods are picked.
   final double? mealKcal;
@@ -195,6 +201,9 @@ class _InventoryItemEatSheetBodyState
       onConfirm: () => _submit(widget.confirmIntent, asPlan: plansOnly),
       onPlan: _canPlan && !widget.plansOnly ? _plan : null,
       onStore: widget.onStore,
+      onDiary: widget.onEatInstead == null
+          ? null
+          : () => _submit(widget.confirmIntent, to: widget.onEatInstead),
       cancelButtonKey: const Key('inventory_item_amount_dialog_cancel_button'),
       secondaryLabel: addMoreText,
       secondaryButtonKey: _addMoreKey,
@@ -229,8 +238,7 @@ class _InventoryItemEatSheetBodyState
     );
   }
 
-  // A page with its own confirm, such as adding to a meal, plans nothing.
-  bool get _canPlan => widget.canPlan && widget.confirmLabel == null;
+  bool get _canPlan => widget.canPlan ?? widget.confirmLabel == null;
   List<ProductMissingValue>? get _missingValues {
     if (widget.onCompleteValues == null || widget.header != null) {
       return null;
@@ -266,11 +274,15 @@ class _InventoryItemEatSheetBodyState
     _submit(widget.confirmIntent, asPlan: true);
   }
 
-  void _submit(InventoryItemEatSheetIntent intent, {bool asPlan = false}) {
+  void _submit(
+    InventoryItemEatSheetIntent intent, {
+    bool asPlan = false,
+    ValueChanged<InventoryItemEatSheetResult>? to,
+  }) {
     switch (_controller.submit(intent, asPlan: asPlan)) {
       case InventoryItemEatSubmitted(:final result):
         FocusManager.instance.primaryFocus?.unfocus();
-        final onSubmitted = widget.onSubmitted;
+        final onSubmitted = to ?? widget.onSubmitted;
         if (onSubmitted != null) {
           onSubmitted(result);
           return;
