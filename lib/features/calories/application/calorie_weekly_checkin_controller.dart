@@ -1,9 +1,13 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_window_resolver.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_snapshot_rules.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 part 'calorie_weekly_checkin_controller.g.dart';
@@ -51,13 +55,11 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       if (!ref.mounted) {
         return false;
       }
-      final currentPending = settings.pendingWeeklyCheckIn;
-      if (currentPending != null &&
-          currentPending.windowKey == pendingWeeklyCheckIn.windowKey &&
-          currentPending.dismissedAt == pendingWeeklyCheckIn.dismissedAt) {
-        return true;
-      }
-      return await goalController.setPendingWeeklyCheckIn(pendingWeeklyCheckIn);
+      return !pendingWeeklyCheckInNeedsSave(
+            settings: settings,
+            pendingWeeklyCheckIn: pendingWeeklyCheckIn,
+          ) ||
+          await goalController.setPendingWeeklyCheckIn(pendingWeeklyCheckIn);
     });
   }
 
@@ -84,55 +86,59 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     });
   }
 
-  /// Sync learned TDEE cache for a ready weekly check in.
+  /// Persists a ready pending check-in and saves what
+  /// [CalorieWeeklyCheckInData.snapshotToSaveUndecided] names.
   Future<bool> syncLearnedTdeeCache(CalorieWeeklyCheckInData checkInData) {
     return _keepAliveDuring((goalController) async {
       final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn;
-      final cacheWeeklyCheckIn =
-          checkInData.cacheWeeklyCheckIn ?? pendingWeeklyCheckIn;
-      final calculation = checkInData.calculation;
-      if (cacheWeeklyCheckIn == null ||
-          calculation == null ||
-          checkInData.isBlocked) {
-        return true;
+      final synced =
+          !checkInData.isReady ||
+          await syncPendingWeeklyCheckIn(pendingWeeklyCheckIn!);
+      if (!synced || !ref.mounted) {
+        return false;
       }
-
-      if (pendingWeeklyCheckIn != null &&
-          pendingWeeklyCheckIn.windowKey == cacheWeeklyCheckIn.windowKey) {
-        final synced = await syncPendingWeeklyCheckIn(pendingWeeklyCheckIn);
-        if (!ref.mounted) {
-          return false;
-        }
-        if (!synced) {
-          return false;
-        }
-      }
-
-      final weeklyCheckInSnapshot = checkInData.snapshotFor(cacheWeeklyCheckIn);
       final settings = await goalController.currentSettings();
       if (!ref.mounted) {
         return false;
       }
-      if (hasRejectedWeeklyCheckInSnapshot(
+      final save = checkInData.snapshotToSaveUndecided(
         settings: settings,
-        weeklyCheckIn: cacheWeeklyCheckIn,
-      )) {
-        return true;
-      }
-      if (hasMatchingWeeklyCheckInSnapshot(
-        settings: settings,
-        dailyKcalGoal: calculation.newGoalKcal,
-        weeklyCheckInSnapshot: weeklyCheckInSnapshot,
-      )) {
-        return true;
-      }
-
-      return await goalController.saveWeeklyCheckInGoal(
-        completedAt: cacheWeeklyCheckIn.dueDate,
-        dailyKcalGoal: calculation.newGoalKcal,
-        weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+        latestDueWindow: resolveLatestCompletedCalorieWeeklyCheckIn(
+          settings: settings,
+          today: normalizeDiaryDay(ref.read(calorieBalanceNowProvider)()),
+        ),
       );
+      return save == null ||
+          await _saveLearnedTdeeSnapshot(
+            goalController,
+            save.window,
+            save.snapshot,
+          );
     });
+  }
+
+  /// Saves the goal of [weeklyCheckInSnapshot], unless the history already
+  /// holds it.
+  Future<bool> _saveLearnedTdeeSnapshot(
+    CalorieGoalController goalController,
+    PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
+    CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshot,
+  ) async {
+    final dailyKcalGoal = weeklyCheckInSnapshot.baseGoalKcal;
+    final settings = await goalController.currentSettings();
+    if (!ref.mounted) {
+      return false;
+    }
+    return hasMatchingWeeklyCheckInSnapshot(
+          settings: settings,
+          dailyKcalGoal: dailyKcalGoal,
+          weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+        ) ||
+        await goalController.saveWeeklyCheckInGoal(
+          completedAt: weeklyCheckIn.dueDate,
+          dailyKcalGoal: dailyKcalGoal,
+          weeklyCheckInSnapshot: weeklyCheckInSnapshot,
+        );
   }
 
   /// Syncs the pending check-in before the user's decision is applied.
@@ -208,7 +214,12 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         return false;
       }
 
-      final savedSnapshot = await syncLearnedTdeeCache(checkInData);
+      final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn!;
+      final savedSnapshot = await _saveLearnedTdeeSnapshot(
+        goalController,
+        pendingWeeklyCheckIn,
+        checkInData.snapshotFor(pendingWeeklyCheckIn, checkInData.calculation!),
+      );
 
       if (!ref.mounted) {
         return savedSnapshot;
@@ -256,7 +267,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       );
 
       final rejectedSnapshot = checkInData
-          .snapshotFor(pendingWeeklyCheckIn)
+          .snapshotFor(pendingWeeklyCheckIn, checkInData.calculation!)
           .copyWith(isRejected: true);
 
       final savedGoal = await goalController.saveWeeklyCheckInGoal(

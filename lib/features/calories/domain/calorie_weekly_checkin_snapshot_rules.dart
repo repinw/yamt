@@ -9,21 +9,46 @@ bool hasRejectedWeeklyCheckInSnapshot({
   required CalorieGoalSettings settings,
   required PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
 }) {
-  for (final entry in settings.sortedGoalHistory) {
-    final snapshot = entry.weeklyCheckInSnapshot;
-    if (snapshot == null) {
-      continue;
-    }
-    if (isSameDiaryDay(
-          snapshot.windowStartDate,
-          weeklyCheckIn.windowStartDate,
-        ) &&
-        isSameDiaryDay(snapshot.windowEndDate, weeklyCheckIn.windowEndDate) &&
-        snapshot.isRejected) {
-      return true;
-    }
+  return _windowSnapshots(
+    settings,
+    weeklyCheckIn,
+  ).any((snapshot) => snapshot.isRejected);
+}
+
+/// Whether [pendingWeeklyCheckIn] differs from the persisted pending
+/// check-in. A window that the user already decided (its snapshot is still
+/// valid) is never persisted again, so data loaded before the decision does
+/// not bring the check-in back.
+bool pendingWeeklyCheckInNeedsSave({
+  required CalorieGoalSettings settings,
+  required PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+}) {
+  final current = settings.pendingWeeklyCheckIn;
+  if (current == null) {
+    return !_windowSnapshots(
+      settings,
+      pendingWeeklyCheckIn,
+    ).any((snapshot) => !snapshot.isInputDirty);
   }
-  return false;
+  return current.windowKey != pendingWeeklyCheckIn.windowKey ||
+      current.dismissedAt != pendingWeeklyCheckIn.dismissedAt;
+}
+
+Iterable<CalorieGoalWeeklyCheckInSnapshot> _windowSnapshots(
+  CalorieGoalSettings settings,
+  PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
+) {
+  return settings.sortedGoalHistory
+      .map((entry) => entry.weeklyCheckInSnapshot)
+      .nonNulls
+      .where(
+        (snapshot) =>
+            isSameDiaryDay(
+              snapshot.windowStartDate,
+              weeklyCheckIn.windowStartDate,
+            ) &&
+            isSameDiaryDay(snapshot.windowEndDate, weeklyCheckIn.windowEndDate),
+      );
 }
 
 /// The goal that was active before the check-in window that starts on

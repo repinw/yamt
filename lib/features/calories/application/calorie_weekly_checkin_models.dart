@@ -1,5 +1,7 @@
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_snapshot_rules.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 /// Defines calorie weekly check in blocked reason.
@@ -151,12 +153,43 @@ class CalorieWeeklyCheckInData {
         freshness == CalorieLearnedTdeeFreshness.urgent;
   }
 
-  /// The snapshot that a decision on [weeklyCheckIn] stores. Needs a
-  /// [calculation].
+  /// The window and snapshot that loading this data saves without a user
+  /// decision, or `null`.
+  ///
+  /// The [latestDueWindow] waits for the user's decision, so closing the
+  /// sheet keeps it open. Older missed windows are saved on the way, so a
+  /// returning user decides only the current one. A rejected window keeps
+  /// its rejection.
+  ({
+    PendingCalorieGoalWeeklyCheckIn window,
+    CalorieGoalWeeklyCheckInSnapshot snapshot,
+  })?
+  snapshotToSaveUndecided({
+    required CalorieGoalSettings settings,
+    required PendingCalorieGoalWeeklyCheckIn? latestDueWindow,
+  }) {
+    final window = cacheWeeklyCheckIn ?? pendingWeeklyCheckIn;
+    final calculation = this.calculation;
+    if (window == null ||
+        calculation == null ||
+        isBlocked ||
+        (window.windowKey == pendingWeeklyCheckIn?.windowKey &&
+            window.windowKey == latestDueWindow?.windowKey) ||
+        hasRejectedWeeklyCheckInSnapshot(
+          settings: settings,
+          weeklyCheckIn: window,
+        )) {
+      return null;
+    }
+    return (window: window, snapshot: snapshotFor(window, calculation));
+  }
+
+  /// The snapshot that a decision on [weeklyCheckIn] with [calculation]
+  /// stores.
   CalorieGoalWeeklyCheckInSnapshot snapshotFor(
     PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
+    CalorieWeeklyCheckInCalculation calculation,
   ) {
-    final calculation = this.calculation!;
     return CalorieGoalWeeklyCheckInSnapshot(
       windowStartDate: weeklyCheckIn.windowStartDate,
       windowEndDate: weeklyCheckIn.windowEndDate,
