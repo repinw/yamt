@@ -1,7 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {
@@ -36,7 +38,47 @@ void main() {
 
     expect(find.text('Saved'), findsOneWidget);
     expect(find.byIcon(Icons.check_circle), findsOneWidget);
-    expect(find.byType(SnackBarAction), findsNothing);
+    expect(find.byType(TextButton), findsNothing);
+  });
+
+  testWidgets('sits at the top of the screen', (tester) async {
+    final messenger = await pumpMessenger(tester);
+
+    messenger.showAppSnackBar('Saved');
+    await tester.pumpAndSettle();
+
+    final screen = tester.getSize(find.byType(MaterialApp));
+    expect(
+      tester.getRect(find.byType(AppSnackBarView)).bottom,
+      lessThan(screen.height / 2),
+    );
+  });
+
+  testWidgets('a messenger inside a route shows it in the root overlay', (
+    tester,
+  ) async {
+    await pumpMessenger(tester);
+    late ScaffoldMessengerState inner;
+    Navigator.of(tester.element(find.byType(Scaffold)))
+        .push(
+          MaterialPageRoute<void>(
+            builder: (_) => ScaffoldMessenger(
+              child: Builder(
+                builder: (context) {
+                  inner = ScaffoldMessenger.of(context);
+                  return const Scaffold();
+                },
+              ),
+            ),
+          ),
+        )
+        .ignore();
+    await tester.pumpAndSettle();
+
+    inner.showAppSnackBar('Saved');
+    await tester.pump();
+
+    expect(find.text('Saved'), findsOneWidget);
   });
 
   testWidgets('replaces the current snack bar and shows the error style', (
@@ -44,7 +86,7 @@ void main() {
   ) async {
     final messenger = await pumpMessenger(tester);
 
-    messenger.showAppSnackBar('First');
+    final first = messenger.showAppSnackBar('First');
     await tester.pump();
     messenger.showAppSnackBar('Failed', tone: AppSnackBarTone.error);
     await tester.pumpAndSettle();
@@ -52,35 +94,40 @@ void main() {
     expect(find.text('First'), findsNothing);
     expect(find.text('Failed'), findsOneWidget);
     expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
+    expect(await first.closed, isFalse);
   });
 
-  testWidgets('undo runs the callback', (tester) async {
+  testWidgets('undo runs the callback and closes as an action', (tester) async {
     final messenger = await pumpMessenger(tester);
     var undone = false;
 
-    messenger.showAppSnackBar('Deleted', onUndo: () async => undone = true);
+    final shown = messenger.showAppSnackBar(
+      'Deleted',
+      onUndo: () async => undone = true,
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('Undo'));
     await tester.pumpAndSettle();
 
     expect(undone, isTrue);
+    expect(await shown.closed, isTrue);
+    expect(find.text('Deleted'), findsNothing);
     expect(find.text('Could not undo.'), findsNothing);
   });
 
-  testWidgets('the undo action keeps the snack bar one row high', (
-    tester,
-  ) async {
+  testWidgets('a long message wraps beside the undo action', (tester) async {
     await tester.binding.setSurfaceSize(const Size(360, 640));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     final messenger = await pumpMessenger(tester, locale: const Locale('de'));
 
-    messenger.showAppSnackBar('Gone');
-    await tester.pumpAndSettle();
-    final plainHeight = tester.getSize(find.byType(SnackBar)).height;
-    messenger.showAppSnackBar('Gone', onUndo: () async => true);
+    messenger.showAppSnackBar(
+      'Die Mahlzeit konnte nicht zurück in den Vorrat gelegt werden.',
+      onUndo: () async => true,
+    );
     await tester.pumpAndSettle();
 
-    expect(tester.getSize(find.byType(SnackBar)).height, plainHeight);
+    expect(tester.takeException(), isNull);
+    expect(find.text('Rückgängig'), findsOneWidget);
   });
 
   testWidgets('a failed undo shows the failure snack bar', (tester) async {
@@ -100,13 +147,62 @@ void main() {
   ) async {
     final messenger = await pumpMessenger(tester);
 
-    messenger.showAppSnackBar('Deleted', onUndo: () async => true);
+    final shown = messenger.showAppSnackBar(
+      'Deleted',
+      onUndo: () async => true,
+    );
     await tester.pumpAndSettle();
     expect(find.text('Deleted'), findsOneWidget);
 
-    await tester.pump(const Duration(seconds: 4));
+    await tester.pump(AppDurations.snackBar);
     await tester.pumpAndSettle();
 
     expect(find.text('Deleted'), findsNothing);
+    expect(await shown.closed, isFalse);
+  });
+
+  testWidgets('a swipe up closes it', (tester) async {
+    final messenger = await pumpMessenger(tester);
+
+    final shown = messenger.showAppSnackBar('Saved');
+    await tester.pumpAndSettle();
+    await tester.fling(find.text('Saved'), const Offset(0, -200), 1000);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Saved'), findsNothing);
+    expect(await shown.closed, isFalse);
+  });
+
+  testWidgets('hideAppSnackBar removes it right away', (tester) async {
+    final messenger = await pumpMessenger(tester);
+
+    final shown = messenger.showAppSnackBar('Saved');
+    await tester.pumpAndSettle();
+    messenger.hideAppSnackBar();
+    await tester.pump();
+
+    expect(find.text('Saved'), findsNothing);
+    expect(await shown.closed, isFalse);
+  });
+
+  testWidgets('staysUntilClosed keeps it after the timeout', (tester) async {
+    final messenger = await pumpMessenger(tester);
+
+    messenger.showAppSnackBar('Update', staysUntilClosed: true);
+    await tester.pumpAndSettle();
+    await tester.pump(AppDurations.snackBar * 2);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Update'), findsOneWidget);
+  });
+
+  testWidgets('closed completes when the app goes away', (tester) async {
+    final messenger = await pumpMessenger(tester);
+
+    final shown = messenger.showAppSnackBar('Saved');
+    await tester.pumpAndSettle();
+    await tester.pumpWidget(const SizedBox.shrink());
+
+    expect(await shown.closed, isFalse);
   });
 }

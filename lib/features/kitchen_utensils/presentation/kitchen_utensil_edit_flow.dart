@@ -148,8 +148,8 @@ abstract final class KitchenUtensilEditFlow {
       return;
     }
     unawaited(
-      snackBar.closed.then((reason) {
-        if (reason != SnackBarClosedReason.action) {
+      snackBar.closed.then((undone) {
+        if (!undone) {
           unawaited(controller().discardImage(staleImagePath));
         }
       }),

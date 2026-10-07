@@ -5,6 +5,7 @@ import 'package:flutter/services.dart' show PlatformException;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Android gets the update from Google Play. iOS gets it from TestFlight, so
@@ -25,7 +26,7 @@ Future<void> openAppUpdateStore(BuildContext context) async {
   final message = AppLocalizations.of(context)!.appUpdateStoreOpenFailed;
   final opened = await _launch(_storeUri) || await _launch(_webStoreUri);
   if (!opened) {
-    messenger.showSnackBar(SnackBar(content: Text(message)));
+    messenger.showAppSnackBar(message, tone: AppSnackBarTone.error);
   }
 }
 

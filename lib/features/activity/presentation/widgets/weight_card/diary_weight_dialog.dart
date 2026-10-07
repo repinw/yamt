@@ -84,7 +84,7 @@ Future<void> _showDiaryWeightEntryDialog({
     return;
   }
 
-  final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+  final messenger = ScaffoldMessenger.of(context)..hideAppSnackBar();
   switch (result.action) {
     case WeightEntryDialogAction.save:
       final weightKg = result.weightKg;

@@ -33,6 +33,18 @@ abstract final class AppSizes {
   /// Icon size in snack bars.
   static const double snackBarIcon = 20;
 
+  /// Elevation of a snack bar over the page.
+  static const double snackBarElevation = 6;
+
+  /// How far a hidden snack bar sits above its place, in card heights.
+  static const double snackBarHiddenSlide = -1.5;
+
+  /// Width of the handle that shows a snack bar can be swiped up.
+  static const double snackBarHandleWidth = 32;
+
+  /// Height of the snack bar handle.
+  static const double snackBarHandleHeight = 4;
+
   /// Height of the selected-item indicator in the home bottom navigation.
   static const double homeBottomNavIndicatorHeight = 3;
 

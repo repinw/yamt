@@ -37,8 +37,6 @@ abstract final class PreparedMealGoneFlow {
     navigator
       ..popUntil((top) => top == route)
       ..pop();
-    messenger
-      ..hideCurrentSnackBar()
-      ..showAppSnackBar(message);
+    messenger.showAppSnackBar(message);
   }
 }
