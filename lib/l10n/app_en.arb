@@ -1335,6 +1335,17 @@
   "diaryPlanAcceptedWithoutStock": "Logged – no longer in stock",
   "diaryPlanAcceptFailed": "Plan could not be logged",
   "diaryPlanRemoveAction": "Remove from plan",
+  "diaryOverduePlansHint": "{count, plural, =1{Open plans from {day}} other{Open plans on {count} days, last {day}}}",
+  "@diaryOverduePlansHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "diaryPlanAcceptLaterHint": "From the planned day on",
   "diaryPlanAcceptAllAction": "Eat all as planned",
   "diaryPlansAccepted": "{count, plural, =1{1 plan eaten} other{{count} plans eaten}}",

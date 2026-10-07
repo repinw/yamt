@@ -1223,6 +1223,17 @@
   "diaryPlanAcceptedWithoutStock": "Eingetragen – nicht mehr im Vorrat",
   "diaryPlanAcceptFailed": "Plan konnte nicht eingetragen werden",
   "diaryPlanRemoveAction": "Aus Plan entfernen",
+  "diaryOverduePlansHint": "{count, plural, =1{Offene Pläne vom {day}} other{Offene Pläne an {count} Tagen, zuletzt {day}}}",
+  "@diaryOverduePlansHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
   "diaryPlanAcceptLaterHint": "Ab dem geplanten Tag",
   "diaryPlanAcceptAllAction": "Alle wie geplant gegessen",
   "diaryPlansAccepted": "{count, plural, =1{1 Plan gegessen} other{{count} Pläne gegessen}}",

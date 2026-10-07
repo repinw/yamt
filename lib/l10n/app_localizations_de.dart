@@ -2671,6 +2671,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get diaryPlanRemoveAction => 'Aus Plan entfernen';
 
   @override
+  String diaryOverduePlansHint(int count, String day) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Offene Pläne an $count Tagen, zuletzt $day',
+      one: 'Offene Pläne vom $day',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get diaryPlanAcceptLaterHint => 'Ab dem geplanten Tag';
 
   @override
