@@ -5,8 +5,9 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 
-/// The snack bar card: slides in from the top, hides itself after [timeout],
-/// and closes on a swipe up or on its action.
+/// The snack bar card: slides in from the top, hides itself after [timeout]
+/// (with a screen reader on, only when it has no action), and closes on a
+/// swipe up or on its action.
 class AppSnackBarView extends StatefulWidget {
   /// Creates the card.
   const new({
@@ -71,10 +72,20 @@ class _AppSnackBarViewState extends State<AppSnackBarView>
     unawaited(
       _slide.forward().then((_) {
         if (timeout != null && mounted) {
-          _timeout = Timer(timeout, () => unawaited(_hide()));
+          _timeout = Timer(timeout, _onTimeout);
         }
       }),
     );
+  }
+
+  void _onTimeout() {
+    // Like the Material snack bar: with a screen reader on, a card with an
+    // action stays until the user reaches and uses or closes it.
+    if (widget.actionLabel != null &&
+        MediaQuery.accessibleNavigationOf(context)) {
+      return;
+    }
+    unawaited(_hide());
   }
 
   @override

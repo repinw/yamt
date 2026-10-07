@@ -205,4 +205,25 @@ void main() {
 
     expect(await shown.closed, isFalse);
   });
+
+  testWidgets('with a screen reader on, a card with an action stays', (
+    tester,
+  ) async {
+    final messenger = await pumpMessenger(tester);
+    tester.platformDispatcher.accessibilityFeaturesTestValue =
+        const FakeAccessibilityFeatures(accessibleNavigation: true);
+    addTearDown(tester.platformDispatcher.clearAccessibilityFeaturesTestValue);
+
+    messenger.showAppSnackBar('Deleted', onUndo: () async => true);
+    await tester.pumpAndSettle();
+    await tester.pump(AppDurations.snackBar * 2);
+    await tester.pumpAndSettle();
+    expect(find.text('Deleted'), findsOneWidget);
+
+    messenger.showAppSnackBar('Saved');
+    await tester.pumpAndSettle();
+    await tester.pump(AppDurations.snackBar);
+    await tester.pumpAndSettle();
+    expect(find.text('Saved'), findsNothing);
+  });
 }
