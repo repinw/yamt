@@ -28,7 +28,7 @@ class _MockEatService extends Mock implements InventoryEatService;
 
 class _MockPendings extends Mock implements InventoryPendingConsumptionStore;
 
-class _MockQuickEat extends Mock implements InventoryQuickEatActions;
+class _MockQuickEat extends Mock implements InventoryQuickEatApplication;
 
 class _MockDeleteService extends Mock implements InventoryEntryDeleteService;
 
@@ -158,7 +158,7 @@ void main() {
         ),
         inventoryEatServiceProvider.overrideWithValue(eatService),
         inventoryPendingConsumptionStoreProvider.overrideWithValue(pendings),
-        inventoryQuickEatActionsProvider.overrideWithValue(quickEat),
+        inventoryQuickEatApplicationProvider.overrideWithValue(quickEat),
         inventoryEntryDeleteServiceProvider.overrideWithValue(deleter),
         calorieEntrySaverProvider.overrideWithValue((
           entry, {

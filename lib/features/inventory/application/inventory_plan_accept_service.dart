@@ -47,7 +47,7 @@ InventoryPlanAcceptService inventoryPlanAcceptService(Ref ref) {
     plans: ref.watch(plannedEntryRepositoryProvider),
     eatService: ref.watch(inventoryEatServiceProvider),
     pendings: ref.watch(inventoryPendingConsumptionStoreProvider),
-    quickEat: ref.watch(inventoryQuickEatActionsProvider),
+    quickEat: ref.watch(inventoryQuickEatApplicationProvider),
     saver: ref.watch(calorieEntrySaverProvider),
     deleter: ref.watch(inventoryEntryDeleteServiceProvider),
     overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
@@ -71,7 +71,7 @@ class InventoryPlanAcceptService {
   final PlannedEntryRepository _plans;
   final InventoryEatService _eatService;
   final InventoryPendingConsumptionStore _pendings;
-  final InventoryQuickEatActions _quickEat;
+  final InventoryQuickEatApplication _quickEat;
   final CalorieEntrySaver _saver;
   final InventoryEntryDeleteService _deleter;
   final CalorieOverviewRevision _overviewRevision;

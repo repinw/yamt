@@ -159,8 +159,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/application/inventory_pending_consumption_store.dart':
         1,
-    'lib/features/inventory/application/prepared_meal_calorie_log_bridge.dart':
-        1,
     'lib/features/inventory/application/prepared_meal_consumption_workflows.dart':
         1,
     'lib/features/inventory/application/prepared_meal_creation_support.dart': 1,
