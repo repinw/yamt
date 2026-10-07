@@ -11,6 +11,7 @@ import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_stage.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_trigger.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_overdue_plans_hint.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_page_header.dart';
 
 /// Scrollable content of one diary day: daily card, header, and meals.
@@ -102,6 +103,9 @@ class _DiaryDayViewState extends ConsumerState<DiaryDayView> {
                     selectedDay: widget.day,
                     dashboardData: dashboardData,
                     weeklyCheckInKey: widget.weeklyCheckInKey,
+                  ),
+                  _NarrowContent(
+                    child: DiaryOverduePlansHint(selectedDay: widget.day),
                   ),
                   _NarrowContent(
                     child: DiaryMealsSection(selectedDay: widget.day),

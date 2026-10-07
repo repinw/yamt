@@ -186,6 +186,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   "<kcal> ohne Plan" under the number, and each macro shows the grams left
   after the plans. The choice is saved on the device. Plans of past days
   never count.
+- Plans of the last week that were never eaten or removed stay on their
+  day. Today shows a line above the meals that names those days ("Offene
+  Pläne vom <day>"); a tap opens the last of them, and the close button
+  hides the line until a later day has plans left, saved on the device.
+  Days before the first goal are left out, since the calendar cannot open
+  them.
 - Nutrition bars and macro summaries: each macro shows its label, a bar of four
   segments, and the grams left. A macro above its target shows `+X g over` and
   stripes the overage share at the end of its bar.

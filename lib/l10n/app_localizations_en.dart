@@ -2620,6 +2620,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diaryPlanRemoveAction => 'Remove from plan';
 
   @override
+  String diaryOverduePlansHint(int count, String day) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Open plans on $count days, last $day',
+      one: 'Open plans from $day',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get diaryPlanAcceptLaterHint => 'From the planned day on';
 
   @override

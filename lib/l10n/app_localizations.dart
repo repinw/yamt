@@ -4516,6 +4516,12 @@ abstract class AppLocalizations {
   /// **'Remove from plan'**
   String get diaryPlanRemoveAction;
 
+  /// No description provided for @diaryOverduePlansHint.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Open plans from {day}} other{Open plans on {count} days, last {day}}}'**
+  String diaryOverduePlansHint(int count, String day);
+
   /// No description provided for @diaryPlanAcceptLaterHint.
   ///
   /// In en, this message translates to:
