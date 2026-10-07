@@ -6,6 +6,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/app_snack_bar_view.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -38,24 +39,53 @@ class _StaticInventoryItemsController extends InventoryItemsController {
   ];
 }
 
+final _chili = PreparedMeal(
+  id: 'chili',
+  name: 'Chili sin Carne',
+  totalPortions: 4,
+  remainingPortions: 3,
+  totalKcal: 1840,
+  totalProtein: 96,
+  totalCarbs: 212,
+  totalFat: 52,
+  createdAt: DateTime(2026, 9, 28),
+  updatedAt: DateTime(2026, 9, 28),
+  components: const <PreparedMealComponent>[],
+  pendingRecipeIngredients: const ['Reis'],
+);
+
 class _StaticPreparedMealsController extends PreparedMealsController {
   @override
-  FutureOr<List<PreparedMeal>> build() => [
-    PreparedMeal(
-      id: 'chili',
-      name: 'Chili sin Carne',
-      totalPortions: 4,
-      remainingPortions: 3,
-      totalKcal: 1840,
-      totalProtein: 96,
-      totalCarbs: 212,
-      totalFat: 52,
-      createdAt: DateTime(2026, 9, 28),
-      updatedAt: DateTime(2026, 9, 28),
-      components: const <PreparedMealComponent>[],
-      pendingRecipeIngredients: const ['Reis'],
-    ),
-  ];
+  FutureOr<List<PreparedMeal>> build() => [_chili];
+}
+
+/// The stored meals that the meal editor reads and writes.
+class _StaticPreparedMealRepository implements PreparedMealRepository {
+  List<PreparedMeal> meals = [_chili];
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() => Stream.value(meals);
+
+  @override
+  Future<List<PreparedMeal>> readAll() async => meals;
+
+  @override
+  Future<bool> save(PreparedMeal meal) async {
+    meals = [
+      for (final stored in meals)
+        if (stored.id == meal.id) meal else stored,
+    ];
+    return true;
+  }
+
+  @override
+  Future<bool> delete(String mealId) async {
+    meals = [
+      for (final stored in meals)
+        if (stored.id != mealId) stored,
+    ];
+    return true;
+  }
 }
 
 class _StaticShoppingListController extends ShoppingListController {
@@ -91,6 +121,9 @@ Widget _buildHarness() {
       ),
       preparedMealsControllerProvider.overrideWith(
         _StaticPreparedMealsController.new,
+      ),
+      preparedMealRepositoryProvider.overrideWithValue(
+        _StaticPreparedMealRepository(),
       ),
       shoppingListControllerProvider.overrideWith(
         _StaticShoppingListController.new,

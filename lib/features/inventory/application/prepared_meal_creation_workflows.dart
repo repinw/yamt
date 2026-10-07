@@ -5,7 +5,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_template_creation_support.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_workflow_context.dart';
+    'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -14,9 +14,9 @@ import 'package:yamt/features/recipes/application/template_ingredient_parser.dar
 /// Handles prepared meal creation workflows.
 class PreparedMealCreationWorkflows {
   /// Creates creation workflows.
-  const new({required this._context});
+  const new({required this._writer});
 
-  final PreparedMealWorkflowContext _context;
+  final PreparedMealWriter _writer;
 
   /// Creates a prepared meal from explicit inventory selections.
   Future<PreparedMealCreationResult> createPreparedMeal({
@@ -33,14 +33,14 @@ class PreparedMealCreationWorkflows {
       );
     }
 
-    final currentMeals = await _context.loadMeals();
+    final currentMeals = await _writer.loadMeals();
     final currentItems = await inventoryRepository.readAll();
 
     try {
       final creationResult = buildPreparedMealCreationResult(
         currentItems: currentItems,
-        preparedMealId: _context.buildId(),
-        now: _context.buildNow(),
+        preparedMealId: _writer.buildId(),
+        now: _writer.buildNow(),
         name: trimmedName,
         imageAssetId: imageAssetId,
         totalPortions: totalPortions,
@@ -77,14 +77,14 @@ class PreparedMealCreationWorkflows {
       );
     }
 
-    final currentMeals = await _context.loadMeals();
+    final currentMeals = await _writer.loadMeals();
     final currentItems = await inventoryRepository.readAll();
 
     try {
       var creationResult = buildPreparedMealCreationFromTemplateResult(
         currentItems: currentItems,
-        preparedMealId: _context.buildId(),
-        now: _context.buildNow(),
+        preparedMealId: _writer.buildId(),
+        now: _writer.buildNow(),
         template: template,
         totalPortions: totalPortions,
         recipeIngredientAssignments: recipeIngredientAssignments,
@@ -96,8 +96,8 @@ class PreparedMealCreationWorkflows {
         creationResult = _appendAdditionalItemsToTemplateMeal(
           creationResult: creationResult,
           additionalItems: additionalItems,
-          now: _context.buildNow(),
-          buildId: _context.buildId,
+          now: _writer.buildNow(),
+          buildId: _writer.buildId,
           template: template,
           totalPortions: totalPortions,
         );
@@ -148,14 +148,14 @@ class PreparedMealCreationWorkflows {
       );
     }
 
-    final currentMeals = await _context.loadMeals();
+    final currentMeals = await _writer.loadMeals();
     final currentItems = await inventoryRepository.readAll();
 
     try {
       var creationResult = buildPreparedMealCreationFromTemplateResult(
         currentItems: currentItems,
-        preparedMealId: _context.buildId(),
-        now: _context.buildNow(),
+        preparedMealId: _writer.buildId(),
+        now: _writer.buildNow(),
         template: template,
         totalPortions: totalPortions,
         recipeIngredientAssignments: recipeIngredientAssignments,
@@ -167,8 +167,8 @@ class PreparedMealCreationWorkflows {
         creationResult = _appendAdditionalItemsToTemplateMeal(
           creationResult: creationResult,
           additionalItems: additionalItems,
-          now: _context.buildNow(),
-          buildId: _context.buildId,
+          now: _writer.buildNow(),
+          buildId: _writer.buildId,
           template: template,
           totalPortions: totalPortions,
         );
@@ -237,7 +237,7 @@ class PreparedMealCreationWorkflows {
 
     final nextMeals = List<PreparedMeal>.from(currentMeals)
       ..addAll(preparedMeals);
-    final mealsSaved = await _context.saveMeals(
+    final mealsSaved = await _writer.saveMeals(
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     );
@@ -247,7 +247,7 @@ class PreparedMealCreationWorkflows {
       );
     }
 
-    await _context.restoreInventory(
+    await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
       previousItems: currentItems,
     );
@@ -371,7 +371,7 @@ class PreparedMealCreationWorkflows {
       );
       meals.add(
         baseMeal.copyWith(
-          id: _context.buildId(),
+          id: _writer.buildId(),
           name: name,
           recipeIngredients: recipeIngredients,
           recipeIngredientAssignments: _assignmentsForIngredients(

@@ -10,9 +10,9 @@ import 'package:yamt/features/cooking_flow/application/'
 import 'package:yamt/features/cooking_flow/data/'
     'cooking_flow_session_local_store.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_mutation_service.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
 part 'cooking_flow_controller.g.dart';
 
@@ -110,7 +110,7 @@ class CookingFlowController extends _$CookingFlowController {
       }
 
       final result = await ref
-          .read(preparedMealsControllerProvider.notifier)
+          .read(preparedMealMutationServiceProvider)
           .createPreparedMealsFromTemplateContainers(
             template: savePlan.template,
             totalPortions: savePlan.template.totalPortions,

@@ -2,24 +2,12 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
-import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_household_recovery.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_mutation_models.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_mutation_workflows.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_pending_ingredient_support.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_stock_activity.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_activity_event_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_discard_event_repository.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_mutation_models.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_mutation_service.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_pending_ingredient_support.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -45,26 +33,8 @@ class PreparedMealsController extends _$PreparedMealsController {
   // ignore: cancel_subscriptions
   StreamSubscription<List<PreparedMeal>>? _mealsSubscription;
   int _subscriptionGeneration = 0;
-  final _mutationQueue = SerializedMutationQueue();
   String? _currentDataOwnerUserId;
   bool _isRecoveringHouseholdAccess = false;
-
-  PreparedMealMutationWorkflows get _mutationWorkflows {
-    return PreparedMealMutationWorkflows(
-      loadMeals: _currentMeals,
-      saveMeals: _saveMeals,
-      restoreInventory: _restoreInventory,
-      publishMeals: (meals) {
-        if (!ref.mounted) {
-          return;
-        }
-        state = AsyncData(meals);
-      },
-      buildId: _newId,
-      buildNow: DateTime.now,
-      logName: _preparedMealsControllerLogName,
-    );
-  }
 
   @override
   FutureOr<List<PreparedMeal>> build() async {
@@ -92,92 +62,25 @@ class PreparedMealsController extends _$PreparedMealsController {
     state = next;
   }
 
-  /// Create prepared meal.
+  /// Creates a meal from explicit Vorrat selections.
   Future<PreparedMealCreationResult> createPreparedMeal({
     required String name,
     required int totalPortions,
     required List<PreparedMealItemInput> items,
     String? imageAssetId,
-  }) {
-    return _runCreationMutation(
-      operation: () => _runInventoryTrackedCreation(
-        (inventoryRepository) => _mutationWorkflows.createPreparedMeal(
-          name: name,
-          totalPortions: totalPortions,
-          items: items,
-          imageAssetId: imageAssetId,
-          inventoryRepository: inventoryRepository,
-        ),
-      ),
-      unexpectedErrorMessage: 'Unexpected prepared meal creation error.',
-    );
-  }
+  }) => _keptAlive(
+    (service) => service.createPreparedMeal(
+      name: name,
+      totalPortions: totalPortions,
+      items: items,
+      imageAssetId: imageAssetId,
+    ),
+    failed: const PreparedMealCreationResult.failure(
+      PreparedMealCreationFailureReason.mealSaveFailed,
+    ),
+  );
 
-  /// Create prepared meal from template.
-  Future<PreparedMealCreationResult> createPreparedMealFromTemplate({
-    required PreparedMeal template,
-    required int totalPortions,
-    required Map<String, List<String>> recipeIngredientAssignments,
-    required Map<String, RecipeIngredientAmountConversion>
-    recipeIngredientAmountConversions,
-    List<PreparedMealItemInput> additionalItems =
-        const <PreparedMealItemInput>[],
-    int? finalNetWeight,
-    Map<String, String> sourceKeysByIngredient = const <String, String>{},
-  }) {
-    return _runCreationMutation(
-      operation: () => _runInventoryTrackedCreation(
-        (inventoryRepository) =>
-            _mutationWorkflows.createPreparedMealFromTemplate(
-              template: template,
-              totalPortions: totalPortions,
-              recipeIngredientAssignments: recipeIngredientAssignments,
-              recipeIngredientAmountConversions:
-                  recipeIngredientAmountConversions,
-              inventoryRepository: inventoryRepository,
-              ingredientParser: ref.read(templateIngredientParserProvider),
-              additionalItems: additionalItems,
-              finalNetWeight: finalNetWeight,
-              sourceKeysByIngredient: sourceKeysByIngredient,
-            ),
-      ),
-      unexpectedErrorMessage: 'Unexpected template meal creation error.',
-    );
-  }
-
-  /// Create prepared meals from a template split into storage containers.
-  Future<PreparedMealCreationResult> createPreparedMealsFromTemplateContainers({
-    required PreparedMeal template,
-    required int totalPortions,
-    required Map<String, List<String>> recipeIngredientAssignments,
-    required Map<String, RecipeIngredientAmountConversion>
-    recipeIngredientAmountConversions,
-    required List<PreparedMealContainerInput> containers,
-    required Map<String, String> sourceKeysByIngredient,
-    List<PreparedMealItemInput> additionalItems =
-        const <PreparedMealItemInput>[],
-  }) {
-    return _runCreationMutation(
-      operation: () => _runInventoryTrackedCreation(
-        (inventoryRepository) =>
-            _mutationWorkflows.createPreparedMealsFromTemplateContainers(
-              template: template,
-              totalPortions: totalPortions,
-              recipeIngredientAssignments: recipeIngredientAssignments,
-              recipeIngredientAmountConversions:
-                  recipeIngredientAmountConversions,
-              inventoryRepository: inventoryRepository,
-              ingredientParser: ref.read(templateIngredientParserProvider),
-              containers: containers,
-              sourceKeysByIngredient: sourceKeysByIngredient,
-              additionalItems: additionalItems,
-            ),
-      ),
-      unexpectedErrorMessage: 'Unexpected split template meal creation error.',
-    );
-  }
-
-  /// Update prepared meal details.
+  /// Changes a meal's name, image, portions or ingredients.
   Future<bool> updatePreparedMealDetails({
     required String mealId,
     required String name,
@@ -185,43 +88,31 @@ class PreparedMealsController extends _$PreparedMealsController {
     String? imageAssetId,
     int? totalPortions,
     List<PreparedMealItemInput>? items,
-  }) {
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(
-      () => _runInventoryTrackedBool(
-        (inventoryRepository) => _mutationWorkflows.updatePreparedMealDetails(
-          mealId: mealId,
-          name: name,
-          imageChanged: imageChanged,
-          imageAssetId: imageAssetId,
-          totalPortions: totalPortions,
-          items: items,
-          inventoryRepository: inventoryRepository,
-        ),
-      ),
-    ).whenComplete(keepAliveLink.close);
-  }
+  }) => _keptAlive(
+    (service) => service.updatePreparedMealDetails(
+      mealId: mealId,
+      name: name,
+      imageChanged: imageChanged,
+      imageAssetId: imageAssetId,
+      totalPortions: totalPortions,
+      items: items,
+    ),
+    failed: false,
+  );
 
-  /// Fill prepared meal pending ingredient.
+  /// Fills the open row [ingredient] with the Vorrat items [inventoryItemIds].
   Future<bool> fillPreparedMealPendingIngredient({
     required String mealId,
     required String ingredient,
     required List<String> inventoryItemIds,
-  }) {
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(
-      () => _runInventoryTrackedBool(
-        (inventoryRepository) =>
-            _mutationWorkflows.fillPreparedMealPendingIngredient(
-              mealId: mealId,
-              ingredient: ingredient,
-              inventoryItemIds: inventoryItemIds,
-              inventoryRepository: inventoryRepository,
-              ingredientParser: ref.read(templateIngredientParserProvider),
-            ),
-      ),
-    ).whenComplete(keepAliveLink.close);
-  }
+  }) => _keptAlive(
+    (service) => service.fillPreparedMealPendingIngredient(
+      mealId: mealId,
+      ingredient: ingredient,
+      inventoryItemIds: inventoryItemIds,
+    ),
+    failed: false,
+  );
 
   /// The best item of [inventoryItems] that can fill the open row
   /// [ingredient] with the row's own amount.
@@ -244,72 +135,72 @@ class PreparedMealsController extends _$PreparedMealsController {
     required String ingredient,
     required String itemId,
     required int usedAmount,
-  }) {
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(
-      () => _runInventoryTrackedBool(
-        (inventoryRepository) =>
-            _mutationWorkflows.fillPreparedMealPendingIngredientWithItem(
-              mealId: mealId,
-              ingredient: ingredient,
-              itemId: itemId,
-              usedAmount: usedAmount,
-              inventoryRepository: inventoryRepository,
-            ),
-      ),
-    ).whenComplete(keepAliveLink.close);
-  }
+  }) => _keptAlive(
+    (service) => service.fillPreparedMealPendingIngredientWithItem(
+      mealId: mealId,
+      ingredient: ingredient,
+      itemId: itemId,
+      usedAmount: usedAmount,
+    ),
+    failed: false,
+  );
 
-  /// Ignore prepared meal pending ingredient.
+  /// Marks the open row [ingredient] as left out on purpose.
   Future<bool> ignorePreparedMealPendingIngredient({
     required String mealId,
     required String ingredient,
-  }) {
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(
-      () => _mutationWorkflows.ignorePreparedMealPendingIngredient(
-        mealId: mealId,
-        ingredient: ingredient,
-      ),
-    ).whenComplete(keepAliveLink.close);
-  }
+  }) => _keptAlive(
+    (service) => service.ignorePreparedMealPendingIngredient(
+      mealId: mealId,
+      ingredient: ingredient,
+    ),
+    failed: false,
+  );
 
-  /// Throw away prepared meal.
+  /// Throws away [discardedPortions] of a meal and records why.
   Future<bool> throwAwayPreparedMeal({
     required String mealId,
     required num discardedPortions,
     required InventoryDiscardReason reason,
-  }) {
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(
-      () => _mutationWorkflows.throwAwayPreparedMeal(
-        mealId: mealId,
-        discardedPortions: discardedPortions,
-        reason: reason,
-        discardEventRepository: ref.read(
-          inventoryDiscardEventRepositoryProvider,
-        ),
-      ),
-    ).whenComplete(keepAliveLink.close);
-  }
+  }) => _keptAlive(
+    (service) => service.throwAwayPreparedMeal(
+      mealId: mealId,
+      discardedPortions: discardedPortions,
+      reason: reason,
+    ),
+    failed: false,
+  );
 
-  /// Unbundle prepared meal.
-  Future<bool> unbundlePreparedMeal(String mealId) {
-    final keepAliveLink = ref.keepAlive();
-    return _runSerializedMutation(
-      () => _runInventoryTrackedBool(
-        (inventoryRepository) => _mutationWorkflows.unbundlePreparedMeal(
-          mealId: mealId,
-          inventoryRepository: inventoryRepository,
-        ),
-      ),
-    ).whenComplete(keepAliveLink.close);
-  }
+  /// Gives the remaining ingredients of a meal back to the Vorrat.
+  Future<bool> unbundlePreparedMeal(String mealId) => _keptAlive(
+    (service) => service.unbundlePreparedMeal(mealId),
+    failed: false,
+  );
 
-  /// The stored meals. A change writes single meals, so it starts from the
-  /// stored copy and not from the list on screen, which may be older.
-  Future<List<PreparedMeal>> _currentMeals() =>
-      ref.read(preparedMealRepositoryProvider).readAll();
+  /// Runs [mutation] on the meal service and keeps this controller and the
+  /// service alive until it completes. A thrown error is logged and ends as
+  /// [failed].
+  Future<T> _keptAlive<T>(
+    Future<T> Function(PreparedMealMutationService service) mutation, {
+    required T failed,
+  }) async {
+    final keepAliveLink = ref.keepAlive();
+    final service = ref.listen(preparedMealMutationServiceProvider, (_, _) {});
+    try {
+      return await mutation(service.read());
+    } on Object catch (error, stackTrace) {
+      log(
+        'Prepared meal change failed.',
+        name: _preparedMealsControllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return failed;
+    } finally {
+      service.close();
+      keepAliveLink.close();
+    }
+  }
 
   Future<List<PreparedMeal>> _restartSubscription() async {
     final initialMeals = Completer<List<PreparedMeal>>();
@@ -399,139 +290,5 @@ class PreparedMealsController extends _$PreparedMealsController {
       logName: _preparedMealsControllerLogName,
       showLoading: showLoading,
     );
-  }
-
-  Future<bool> _saveMeals({
-    required List<PreparedMeal> previousMeals,
-    required List<PreparedMeal> nextMeals,
-  }) async {
-    // The meal stream shows a written change at once, also offline.
-    try {
-      return await ref
-          .read(preparedMealRepositoryProvider)
-          .saveChanges(previous: previousMeals, next: nextMeals);
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to persist prepared meal mutation.',
-        name: _preparedMealsControllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
-  }
-
-  Future<void> _restoreInventory({
-    required InventoryItemRepository inventoryRepository,
-    required List<InventoryItem> previousItems,
-  }) async {
-    try {
-      await inventoryRepository.saveAll(previousItems);
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to restore inventory after prepared meal rollback.',
-        name: _preparedMealsControllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-    }
-  }
-
-  Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
-    return _mutationQueue.run<bool>(
-      operation: mutation,
-      fallbackValue: false,
-      onError: (error, stackTrace) {
-        log(
-          'Unexpected prepared meal mutation error.',
-          name: _preparedMealsControllerLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-      },
-    );
-  }
-
-  Future<PreparedMealCreationResult> _runInventoryTrackedCreation(
-    Future<PreparedMealCreationResult> Function(
-      InventoryItemRepository inventoryRepository,
-    )
-    operation,
-  ) async {
-    final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
-    final beforeItems = await inventoryRepository.readAll();
-    final trackingRepository = PreparedMealStockTrackingRepository(
-      delegate: inventoryRepository,
-      initialItems: beforeItems,
-    );
-    final result = await operation(trackingRepository);
-    if (result.isSuccess) {
-      await _recordPreparedMealInventoryDiff(
-        beforeItems: beforeItems,
-        afterItems: trackingRepository.latestItems,
-      );
-    }
-    return result;
-  }
-
-  Future<bool> _runInventoryTrackedBool(
-    Future<bool> Function(InventoryItemRepository inventoryRepository)
-    operation,
-  ) async {
-    final inventoryRepository = ref.read(inventoryItemRepositoryProvider);
-    final beforeItems = await inventoryRepository.readAll();
-    final trackingRepository = PreparedMealStockTrackingRepository(
-      delegate: inventoryRepository,
-      initialItems: beforeItems,
-    );
-    final saved = await operation(trackingRepository);
-    if (saved) {
-      await _recordPreparedMealInventoryDiff(
-        beforeItems: beforeItems,
-        afterItems: trackingRepository.latestItems,
-      );
-    }
-    return saved;
-  }
-
-  Future<void> _recordPreparedMealInventoryDiff({
-    required List<InventoryItem> beforeItems,
-    required List<InventoryItem> afterItems,
-  }) {
-    return recordPreparedMealStockActivity(
-      actor: ref.read(inventoryActivityActorProvider),
-      activityRepository: ref.read(inventoryActivityEventRepositoryProvider),
-      beforeItems: beforeItems,
-      afterItems: afterItems,
-      buildId: _newId,
-      logName: _preparedMealsControllerLogName,
-    );
-  }
-
-  Future<PreparedMealCreationResult> _runCreationMutation({
-    required Future<PreparedMealCreationResult> Function() operation,
-    required String unexpectedErrorMessage,
-  }) {
-    final keepAliveLink = ref.keepAlive();
-    return _mutationQueue
-        .run<PreparedMealCreationResult>(
-          operation: operation,
-          fallbackValue: const PreparedMealCreationResult.failure(
-            PreparedMealCreationFailureReason.mealSaveFailed,
-          ),
-          onError: (error, stackTrace) {
-            log(
-              unexpectedErrorMessage,
-              name: _preparedMealsControllerLogName,
-              error: error,
-              stackTrace: stackTrace,
-            );
-          },
-        )
-        .whenComplete(keepAliveLink.close);
-  }
-
-  String _newId() {
-    return const Uuid().v4();
   }
 }

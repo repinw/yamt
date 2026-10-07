@@ -1,7 +1,7 @@
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_workflow_context.dart';
+    'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
@@ -9,9 +9,9 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 /// Handles prepared meal consumption and discard workflows.
 class PreparedMealConsumptionWorkflows {
   /// Creates consumption workflows.
-  const new({required this._context});
+  const new({required this._writer});
 
-  final PreparedMealWorkflowContext _context;
+  final PreparedMealWriter _writer;
 
   /// Discards prepared meal portions and persists a discard event.
   Future<bool> throwAwayPreparedMeal({
@@ -21,28 +21,28 @@ class PreparedMealConsumptionWorkflows {
     required InventoryDiscardEventRepository discardEventRepository,
   }) async {
     if (discardedPortions <= 0) {
-      _context.logMessage(
+      _writer.logMessage(
         'throwAwayPreparedMeal(): invalid discardedPortions='
         '$discardedPortions',
       );
       return false;
     }
 
-    _context.logMessage(
+    _writer.logMessage(
       'throwAwayPreparedMeal(): starting '
       '(mealId=$mealId, discardedPortions=$discardedPortions, '
       'reason=${reason.name})',
     );
-    final currentMeals = await _context.loadMeals();
+    final currentMeals = await _writer.loadMeals();
     final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
     if (mealIndex < 0) {
-      _context.logMessage('throwAwayPreparedMeal(): meal not found ($mealId)');
+      _writer.logMessage('throwAwayPreparedMeal(): meal not found ($mealId)');
       return false;
     }
 
     final meal = currentMeals[mealIndex];
     if (discardedPortions > meal.remainingPortions) {
-      _context.logMessage(
+      _writer.logMessage(
         'throwAwayPreparedMeal(): discardedPortions exceed remaining '
         '($discardedPortions > ${meal.remainingPortions})',
       );
@@ -53,40 +53,40 @@ class PreparedMealConsumptionWorkflows {
       currentMeals: currentMeals,
       mealIndex: mealIndex,
       removedPortions: discardedPortions,
-      updatedAt: _context.buildNow(),
+      updatedAt: _writer.buildNow(),
     );
-    final savedMeals = await _context.saveMeals(
+    final savedMeals = await _writer.saveMeals(
       previousMeals: currentMeals,
       nextMeals: nextMeals,
     );
     if (!savedMeals) {
-      _context.logMessage('throwAwayPreparedMeal(): saveMeals returned false');
+      _writer.logMessage('throwAwayPreparedMeal(): saveMeals returned false');
       return false;
     }
-    _context.logMessage(
+    _writer.logMessage(
       'throwAwayPreparedMeal(): prepared meals saved, '
       'persisting discard event',
     );
 
     final discardEvent = InventoryDiscardEvent.fromPreparedMeal(
-      id: _context.buildId(),
+      id: _writer.buildId(),
       meal: meal,
       discardedPortions: discardedPortions,
       reason: reason,
     );
     final eventSaved = await discardEventRepository.saveEvent(discardEvent);
     if (eventSaved) {
-      _context.logMessage(
+      _writer.logMessage(
         'throwAwayPreparedMeal(): discard event saved (${discardEvent.id})',
       );
       return true;
     }
 
-    _context.logMessage(
+    _writer.logMessage(
       'throwAwayPreparedMeal(): discard event save failed, '
       'restoring previous meal state',
     );
-    await _context.saveMeals(previousMeals: nextMeals, nextMeals: currentMeals);
+    await _writer.saveMeals(previousMeals: nextMeals, nextMeals: currentMeals);
     return false;
   }
 }

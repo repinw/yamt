@@ -84,4 +84,22 @@ void main() {
       );
     },
   );
+
+  test('enqueue passes the error on and keeps the order', () async {
+    final queue = SerializedMutationQueue();
+    final order = <String>[];
+
+    final failing = queue.enqueue<void>(() async {
+      order.add('first');
+      throw StateError('write failed');
+    });
+    final next = queue.enqueue(() async {
+      order.add('second');
+      return 2;
+    });
+
+    await expectLater(failing, throwsStateError);
+    expect(await next, 2);
+    expect(order, ['first', 'second']);
+  });
 }

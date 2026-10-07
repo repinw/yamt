@@ -2,11 +2,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_pending_item_fill.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_workflow_context.dart';
+    'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+
+import '../../../helpers/fake_prepared_meal_repository.dart';
 
 final _now = DateTime.utc(2026, 10, 1, 19);
 
@@ -24,7 +26,7 @@ void main() {
     );
 
     expect(filled, isTrue);
-    final meal = harness.meals.single;
+    final meal = harness.stored.single;
     expect(meal.pendingRecipeIngredients, ['200 g Reis']);
     expect(meal.components.single.usedAmount, 5);
     expect(meal.totalKcal, 0);
@@ -46,7 +48,7 @@ void main() {
 
     expect(filled, isFalse);
     expect(items.items.single.currentAmount, 500);
-    expect(harness.meals.single.pendingRecipeIngredients, hasLength(2));
+    expect(harness.stored.single.pendingRecipeIngredients, hasLength(2));
   });
 
   test('fails for a row that is not open', () async {
@@ -105,27 +107,24 @@ class _Harness {
     ),
   ];
 
+  late final _repository = FakePreparedMealRepository(
+    meals: meals,
+    writeResults: [saves],
+  );
+
   PreparedMealPendingItemFill get fill {
     return PreparedMealPendingItemFill(
-      context: PreparedMealWorkflowContext(
-        loadMeals: () async => meals,
-        saveMeals: ({required previousMeals, required nextMeals}) async {
-          if (saves) {
-            meals = nextMeals;
-          }
-          return saves;
-        },
-        restoreInventory:
-            ({required inventoryRepository, required previousItems}) async {
-              await inventoryRepository.saveAll(previousItems);
-            },
-        publishMeals: (_) {},
-        buildId: () => 'id',
-        buildNow: () => _now,
+      writer: PreparedMealWriter(
+        meals: _repository,
+        clock: () => _now,
         logName: 'test',
+        newId: () => 'id',
       ),
     );
   }
+
+  /// The stored meals after the fill.
+  List<PreparedMeal> get stored => _repository.meals;
 }
 
 class _FakeInventoryRepository implements InventoryItemRepository {

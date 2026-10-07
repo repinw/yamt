@@ -124,7 +124,11 @@ void main() {
     final changed = preparedMealTestData(id: 'changed');
 
     await repository.saveChanges(
-      previous: [kept, changed, preparedMealTestData(id: 'gone')],
+      previous: [
+        kept,
+        changed,
+        preparedMealTestData(id: 'gone'),
+      ],
       next: [
         kept,
         changed.copyWith(remainingPortions: 1),

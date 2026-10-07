@@ -30,8 +30,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/auth/presentation/widgets/welcome_page_editorial_aside/welcome_page_editorial_aside.dart':
         1,
-    'lib/features/cooking_flow/presentation/controllers/cooking_flow_controller.dart':
-        1,
     'lib/features/cooking_flow/presentation/controllers/cooking_flow_shopping_controller.dart':
         1,
     'lib/features/cooking_flow/presentation/cooking_flow_cooking_page.dart': 1,
@@ -164,8 +162,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/application/prepared_meal_editing_support.dart': 1,
     'lib/features/inventory/application/prepared_meal_editing_workflows.dart':
-        1,
-    'lib/features/inventory/application/prepared_meal_mutation_workflows.dart':
         1,
     'lib/features/inventory/application/prepared_meal_pending_ingredient_support.dart':
         1,
