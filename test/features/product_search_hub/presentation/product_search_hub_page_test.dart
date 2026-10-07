@@ -33,6 +33,10 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_missing_values_hint.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'inventory_item_eat_sheet_body.dart';
 import 'package:yamt/features/product_search_hub/application/'
     'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/data/'
@@ -701,6 +705,8 @@ void main() {
 
     expect(find.byType(InventoryStockAddPage), findsOneWidget);
     expect(find.text('product search child route'), findsNothing);
+    // Without offersEatInstead, as for a cooking ingredient, it only stores.
+    expect(find.byKey(EatPageScaffold.diaryButtonKey), findsNothing);
 
     await tester.ensureVisible(find.byKey(InventoryStockAddPage.increaseKey));
     await tester.tap(find.byKey(InventoryStockAddPage.increaseKey));
@@ -713,6 +719,39 @@ void main() {
 
     expect(find.text('product search child route'), findsOneWidget);
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+  });
+
+  testWidgets('the Vorrat page eats the product instead from its diary icon', (
+    tester,
+  ) async {
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.search,
+        offersEatInstead: true,
+      ),
+      searchResults: [_searchProduct()],
+    );
+
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsOneWidget);
+
+    await tester.tap(find.byKey(EatPageScaffold.diaryButtonKey));
+    await tester.pumpAndSettle();
+
+    // The eat page opens; it offers no way back into the Vorrat.
+    expect(find.byType(InventoryStockAddPage), findsNothing);
+    expect(find.byType(InventoryItemEatSheetBody), findsOneWidget);
+    expect(find.byKey(EatPageScaffold.storeButtonKey), findsNothing);
+    // It ends like one eaten food, so it adds no more.
+    expect(
+      find.byKey(const Key('inventory_item_amount_dialog_add_more_button')),
+      findsNothing,
+    );
   });
 
   testWidgets('the Vorrat page names a missing package size and opens the '

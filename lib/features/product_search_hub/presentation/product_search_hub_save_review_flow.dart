@@ -13,14 +13,15 @@ import 'package:yamt/features/product_search_hub/presentation/'
 ///
 /// Returns the reviewed result and whether the diary batch goes on. When the
 /// user closes the page, `closed` is true and the result holds the last edit
-/// of the diary eat page. `toStock` is true when a food picked in the diary
-/// goes into the Vorrat instead, through the Vorrat page.
+/// of the diary eat page. `mode` names the mode that saves the food when it
+/// is not the route's: the Vorrat for a diary food put into the Vorrat
+/// instead, the diary for a Vorrat food eaten or planned instead.
 Future<
   ({
     InventoryReceiptManualProductResult result,
     bool closed,
     bool continuesBatch,
-    bool toStock,
+    ProductSearchHubMode? mode,
   })
 >
 reviewProductSearchHubResultBeforeSave({
@@ -35,12 +36,31 @@ reviewProductSearchHubResultBeforeSave({
         context: context,
         args: args,
         result: result,
+        offersEat: args.offersEatInstead,
       );
+      if (reviewed != null && reviewed.eats && context.mounted) {
+        final eaten = await eatProductSearchHubDiaryFood(
+          context: context,
+          args: args,
+          result: reviewed.result,
+          continuesBatch: false,
+          loggedAt: reviewed.eatOn,
+          canStore: false,
+          // It ends like one eaten food, so it adds no more.
+          canAddMore: false,
+        );
+        return (
+          result: eaten.result,
+          closed: eaten.closed,
+          continuesBatch: continuesBatch,
+          mode: ProductSearchHubMode.diary,
+        );
+      }
       return (
-        result: reviewed ?? result,
+        result: reviewed?.result ?? result,
         closed: reviewed == null,
         continuesBatch: continuesBatch,
-        toStock: false,
+        mode: null,
       );
     // A food from the AI page was already eaten there.
     case ProductSearchHubMode.diary when result.eatSelection == null:
@@ -57,24 +77,24 @@ reviewProductSearchHubResultBeforeSave({
           result: eaten.result,
         );
         return (
-          result: stocked ?? eaten.result,
+          result: stocked?.result ?? eaten.result,
           closed: stocked == null,
           continuesBatch: continuesBatch,
-          toStock: true,
+          mode: ProductSearchHubMode.inventory,
         );
       }
       return (
         result: eaten.result,
         closed: eaten.closed,
         continuesBatch: eaten.addMore,
-        toStock: false,
+        mode: null,
       );
     case _:
       return (
         result: result,
         closed: false,
         continuesBatch: continuesBatch,
-        toStock: false,
+        mode: null,
       );
   }
 }

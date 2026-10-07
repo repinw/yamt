@@ -59,7 +59,9 @@ pickProductSearchHubMealFood({
 /// Returns the food with the entered eat request and whether the user wants
 /// to add more. When the user closes the page, `closed` is true and the
 /// result holds the last edit. `toStock` is true when the user puts the food
-/// into the Vorrat instead of eating it.
+/// into the Vorrat instead of eating it, which [canStore] offers. [loggedAt]
+/// replaces the route's preselected day. Without [canAddMore] the page has
+/// no button to add more.
 Future<
   ({
     InventoryReceiptManualProductResult result,
@@ -73,6 +75,9 @@ eatProductSearchHubDiaryFood({
   required ProductSearchHubRouteArgs args,
   required InventoryReceiptManualProductResult result,
   required bool continuesBatch,
+  DateTime? loggedAt,
+  bool canStore = true,
+  bool canAddMore = true,
 }) async {
   final l10n = AppLocalizations.of(context)!;
   final picked = await _eatWithEdit(
@@ -84,12 +89,12 @@ eatProductSearchHubDiaryFood({
       confirmIntent: continuesBatch
           ? InventoryItemEatSheetIntent.addMore
           : InventoryItemEatSheetIntent.logOnly,
-      addMoreActionText: continuesBatch
+      addMoreActionText: continuesBatch || !canAddMore
           ? null
           : l10n.inventoryItemEatSheetAddMoreAction,
-      initialLoggedAt: args.preselectedLoggedAt,
+      initialLoggedAt: loggedAt ?? args.preselectedLoggedAt,
       initialMealType: args.preselectedMealType,
-      canStore: true,
+      canStore: canStore,
     ),
   );
   final eat = picked.eat;

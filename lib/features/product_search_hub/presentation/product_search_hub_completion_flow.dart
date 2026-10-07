@@ -18,9 +18,10 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Completes a product search hub editor result for the active route mode,
-/// or for [mode] in its place. A food that goes elsewhere through [mode],
-/// such as a diary food put into the Vorrat, ends like one eaten food: it
-/// closes the hub with a message and does not join the hub's selection.
+/// or for [mode] in its place. A food that goes elsewhere through [mode]
+/// ends like one eaten food: it closes the hub and does not join the hub's
+/// selection. A diary food put into the Vorrat says so in a message; the
+/// diary shows its own for a Vorrat food eaten instead.
 Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
   required BuildContext context,
   required ProductSearchHubRouteArgs args,
@@ -59,11 +60,13 @@ Future<ProductSearchHubCompletionResult> completeProductSearchHubResult({
       !context.mounted) {
     return completion;
   }
-  ScaffoldMessenger.of(context).showAppSnackBar(
-    (l10n ?? AppLocalizations.of(context)!).productSearchHubStoredInVorrat(
-      result.item.name,
-    ),
-  );
+  if (effectiveMode == ProductSearchHubMode.inventory) {
+    ScaffoldMessenger.of(context).showAppSnackBar(
+      (l10n ?? AppLocalizations.of(context)!).productSearchHubStoredInVorrat(
+        result.item.name,
+      ),
+    );
+  }
   return const ProductSearchHubCompletionResult.closeHub();
 }
 
