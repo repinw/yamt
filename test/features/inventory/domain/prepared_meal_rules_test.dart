@@ -1,4 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
@@ -68,5 +70,46 @@ void main() {
     expect(_meal().withPortionsTaken(5, at).remainingPortions, 0);
     expect(_meal().withPortionsTaken(-1, at).remainingPortions, 4);
     expect(_meal().withPortionsTaken(1, at).updatedAt, at);
+  });
+
+  group('plan portions', () {
+    // A plan of 1 of 4 portions.
+    final mealPlan = buildConsumedPreparedMealCalorieEntry(
+      meal: _meal(),
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      now: () => DateTime(2026, 10, 7, 12),
+      nextEntryId: () => 'plan',
+    )!;
+
+    PreparedMeal portioned(int total) => PreparedMeal(
+      id: 'chili',
+      name: 'Chili',
+      totalPortions: total,
+      remainingPortions: total,
+      totalKcal: 2000,
+      totalProtein: 100,
+      totalCarbs: 200,
+      totalFat: 80,
+      createdAt: DateTime(2026, 10, 7),
+      updatedAt: DateTime(2026, 10, 7),
+      components: const <PreparedMealComponent>[],
+    );
+
+    test('count in portions of the meal as it is now', () {
+      expect(preparedMealPlanPortions(mealPlan, _meal()), 1);
+      expect(preparedMealPlanPortions(mealPlan, portioned(8)), 2);
+    });
+
+    test('are unknown when the share is no whole portion', () {
+      // 1 of 4 is half of 2 portions.
+      expect(preparedMealPlanPortions(mealPlan, portioned(2)), isNull);
+      expect(preparedMealPlanPortions(mealPlan, portioned(1)), isNull);
+    });
+
+    test('go up to what is left, never below the plan', () {
+      expect(preparedMealPlanMaxPortions(_meal(remaining: 2.5), 1), 2);
+      expect(preparedMealPlanMaxPortions(_meal(remaining: 0), 3), 3);
+    });
   });
 }

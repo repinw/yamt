@@ -1,13 +1,15 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_state.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_plan_details_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_action_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
@@ -37,12 +39,12 @@ final class DiaryPlanCopy extends DiaryPlanDetailsAction {
   const new();
 }
 
-/// Save the plan with another day or meal.
+/// Save the plan with another day, meal, amount or number of portions.
 final class DiaryPlanChange extends DiaryPlanDetailsAction {
   /// Creates the action for the changed [plan].
   const new(this.plan);
 
-  /// The plan with its new day and meal.
+  /// The plan with its new day, meal, amount or portions.
   final CalorieEntry plan;
 }
 
@@ -51,7 +53,7 @@ final class DiaryPlanChange extends DiaryPlanDetailsAction {
 /// The day and meal can change; the main button then saves the plan.
 /// Pops with the chosen [DiaryPlanDetailsAction], or null on close. The
 /// caller runs it, so its snack bar shows on the diary.
-class DiaryPlanDetailsPage extends StatefulWidget {
+class DiaryPlanDetailsPage extends ConsumerStatefulWidget {
   /// Creates the page for [plan].
   const new({
     required this.plan,
@@ -85,31 +87,24 @@ class DiaryPlanDetailsPage extends StatefulWidget {
   final DateTime today;
 
   @override
-  State<DiaryPlanDetailsPage> createState() => _DiaryPlanDetailsPageState();
+  ConsumerState<DiaryPlanDetailsPage> createState() =>
+      _DiaryPlanDetailsPageState();
 }
 
-class _DiaryPlanDetailsPageState extends State<DiaryPlanDetailsPage> {
-  late DateTime _loggedAt = widget.plan.loggedAt;
-  late MealType _mealType = widget.plan.mealType;
-  // Holds the typed amount; the entry details use the same rules.
-  late DiaryEntryDetailsState _amountState = DiaryEntryDetailsState(
-    entry: widget.plan,
-    amountText: diaryEntryAmountText(widget.plan.consumedAmount),
-    today: widget.today,
-  );
+class _DiaryPlanDetailsPageState extends ConsumerState<DiaryPlanDetailsPage> {
   final _amount = EatSheetTextField();
 
-  // An invalid amount counts as changed, so the plan is not eaten as is.
-  bool get _isChanged =>
-      _loggedAt != widget.plan.loggedAt ||
-      _mealType != widget.plan.mealType ||
-      _amountState.changedAmount != null ||
-      _amountState.hasAmountError;
+  late final DiaryPlanDetailsControllerProvider _provider =
+      diaryPlanDetailsControllerProvider(
+        widget.plan.id,
+        normalizeLocalDay(widget.plan.loggedAt),
+        widget.today,
+      );
 
   @override
   void initState() {
     super.initState();
-    _amount.sync(_amountState.amountText);
+    _amount.sync(diaryEntryAmountText(widget.plan.consumedAmount));
   }
 
   @override
@@ -118,86 +113,88 @@ class _DiaryPlanDetailsPageState extends State<DiaryPlanDetailsPage> {
     super.dispose();
   }
 
-  void _setAmountText(String text) =>
-      setState(() => _amountState = _amountState.copyWith(amountText: text));
-
-  CalorieEntry get _changed {
-    final plan = widget.plan.copyWith(loggedAt: _loggedAt, mealType: _mealType);
-    final amount = _amountState.changedAmount;
-    return amount == null
-        ? plan
-        : rescaleCalorieEntry(plan, amount: amount, now: plan.updatedAt);
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final plan = widget.plan;
-    final preview = _amountState.preview;
+    // A plan eaten or removed elsewhere closes its page.
+    ref.listen(_provider, (previous, next) {
+      // The page may be closing already, after its own action removed it.
+      if (previous != null &&
+          next == null &&
+          (ModalRoute.of(context)?.isCurrent ?? false)) {
+        Navigator.of(context).pop();
+      }
+    });
+    final state = ref.watch(_provider);
+    if (state == null) {
+      // Closed above when it went away; a route on top kept it open.
+      return Scaffold(appBar: AppBar());
+    }
+    final controller = ref.read(_provider.notifier);
+    final amountState = state.amount;
+    final preview = state.preview;
+    final isChanged = state.isChanged;
     void pop(DiaryPlanDetailsAction action) =>
         Navigator.of(context).pop(action);
     return EatPageScaffold(
       whenControl: EatWhenMenu(
-        loggedAt: _loggedAt,
+        loggedAt: state.loggedAt,
         today: widget.today,
-        mealType: _mealType,
+        mealType: state.mealType,
         onlyPlanDays: true,
-        onMealTypeChanged: (type) => setState(() => _mealType = type),
-        // The plan keeps its time of day.
-        onDayPicked: (day) => setState(
-          () => _loggedAt = DateTime(
-            day.year,
-            day.month,
-            day.day,
-            _loggedAt.hour,
-            _loggedAt.minute,
-          ),
-        ),
+        onMealTypeChanged: controller.setMealType,
+        onDayPicked: controller.setDay,
       ),
       kcal: preview.totalKcal,
-      confirmLabel: _isChanged
+      confirmLabel: isChanged
           ? l10n.diaryPlanSaveAction
           : l10n.diaryPlanAcceptAction,
       confirmButtonKey: DiaryPlanDetailsPage.acceptButtonKey,
-      onConfirm: _amountState.hasAmountError
+      onConfirm: amountState.hasAmountError
           ? null
-          : _isChanged
-          ? () => pop(DiaryPlanChange(_changed))
+          : isChanged
+          ? () => pop(DiaryPlanChange(state.changed))
           : widget.canAccept
           ? () => pop(const DiaryPlanAccept())
           : null,
-      confirmHint: _isChanged || widget.canAccept
+      confirmHint: isChanged || widget.canAccept
           ? null
           : l10n.diaryPlanAcceptLaterHint,
       cancelButtonKey: DiaryPlanDetailsPage.closeButtonKey,
       children: [
         DiaryEntryLabelSection(entry: preview),
-        if (_amountState.canEditAmount)
+        if (amountState.canEditAmount)
           EatAmountRuler(
             key: DiaryPlanDetailsPage.amountKey,
             controller: _amount.controller,
             focusNode: _amount.focusNode,
-            unitLabel: consumedUnitSymbol(l10n, plan.consumedUnit),
-            value: _amountState.rulerValue,
-            max: _amountState.rulerMax,
-            step: _amountState.rulerStep,
+            unitLabel: consumedUnitSymbol(l10n, widget.plan.consumedUnit),
+            value: amountState.rulerValue,
+            max: amountState.rulerMax,
+            step: amountState.rulerStep,
             marks: const [],
             allowFractionalInput: true,
-            errorText: _amountState.hasAmountError
+            errorText: amountState.hasAmountError
                 ? l10n.caloriesPositiveNumberValidation
                 : null,
-            onTextChanged: _setAmountText,
+            onTextChanged: controller.setAmountText,
             onSliderChanged: (amount) {
               final text = diaryEntryAmountText(amount);
               _amount.sync(text);
-              _setAmountText(text);
+              controller.setAmountText(text);
             },
           ),
-        if (plan.isBundle)
+        if (state.portions case final portions?)
+          EatMealPortionsRow(
+            portions: portions,
+            max: state.maxPortions,
+            onChanged: controller.setPortions,
+          ),
+        if (preview.isBundle)
           EatComponentsList(
             initiallyExpanded: true,
             components: [
-              for (final food in plan.bundleComponents)
+              for (final food in preview.bundleComponents)
                 (
                   name: food.name,
                   amount: food.amountLabel,

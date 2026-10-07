@@ -22,6 +22,9 @@ import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_key
 import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -345,6 +348,82 @@ void main() {
     expect(saved.sourceInventoryItemId, 'pasta');
     // The pack is not in the Vorrat, so the saved stock scales.
     expect(saved.sourceInventoryAmountToRestore, 300);
+  });
+
+  testWidgets('the plan details change the portions of a meal plan', (
+    tester,
+  ) async {
+    final meal = PreparedMeal(
+      id: 'chili',
+      name: 'Chili',
+      totalPortions: 3,
+      remainingPortions: 3,
+      totalKcal: 600,
+      totalProtein: 30,
+      totalCarbs: 60,
+      totalFat: 15,
+      createdAt: selectedDay,
+      updatedAt: selectedDay,
+      components: const [],
+    );
+    final plan = buildConsumedPreparedMealCalorieEntry(
+      meal: meal,
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      now: () => selectedDay.add(const Duration(hours: 19)),
+      nextEntryId: () => 'plan',
+      loggedDay: selectedDay,
+    )!.copyWith(userId: 'user-1');
+    final repository = FakePlannedEntryRepository(plans: [plan]);
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [
+            _entry(
+              id: 'plan',
+              day: selectedDay,
+              mealType: MealType.dinner,
+              name: 'Chili',
+              kcal: 200,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+            ),
+          ],
+        ),
+      ],
+      plannedEntries: [plan],
+      overrides: [
+        plannedEntryRepositoryProvider.overrideWithValue(repository),
+        inventoryQuickEatMealsProvider.overrideWith(
+          (ref) => Stream.value([meal]),
+        ),
+      ],
+    );
+    await tester.tap(
+      find.byKey(DiaryMealsSectionKeys.plannedEntryTile('plan')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byKey(EatMealPortionsRow.increaseKey));
+    await tester.pumpAndSettle();
+    // Three portions are left, so a third tap adds nothing.
+    for (var tap = 0; tap < 3; tap++) {
+      await tester.tap(find.byKey(EatMealPortionsRow.increaseKey));
+      await tester.pump();
+    }
+    expect(find.text('Save plan'), findsOneWidget);
+    await tester.tap(find.byKey(DiaryPlanDetailsPage.acceptButtonKey));
+    await tester.pumpAndSettle();
+
+    final saved = repository.plans.single;
+    expect(saved.id, 'plan');
+    expect(saved.bundleConsumedPortions, 3);
+    expect(saved.totalKcal, 600);
   });
 
   group('eat all plans of a meal', () {

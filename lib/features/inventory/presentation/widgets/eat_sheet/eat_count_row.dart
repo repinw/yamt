@@ -35,8 +35,8 @@ class EatCountRow extends StatelessWidget {
   /// Called by the minus button, or null when the count cannot drop.
   final VoidCallback? onDecrease;
 
-  /// Called by the plus button.
-  final VoidCallback onIncrease;
+  /// Called by the plus button; null leaves the button without effect.
+  final VoidCallback? onIncrease;
 
   /// Key of the minus button.
   final Key? decreaseKey;
@@ -84,7 +84,7 @@ class EatCountRow extends StatelessWidget {
             key: increaseKey,
             label: '+',
             isSelected: false,
-            onPressed: onIncrease,
+            onPressed: onIncrease ?? () {},
           ),
         ),
       ],

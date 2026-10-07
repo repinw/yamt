@@ -225,4 +225,43 @@ void main() {
     expect(entry.loggedAt.minute, 45);
     expect(entry.createdAt, DateTime(2026, 4, 2, 18, 45, 30));
   });
+
+  test('a plan with other portions keeps its id, user, day and meal', () {
+    final meal = PreparedMeal(
+      id: 'chili',
+      name: 'Chili',
+      totalPortions: 3,
+      remainingPortions: 3,
+      totalKcal: 600,
+      totalProtein: 30,
+      totalCarbs: 60,
+      totalFat: 15,
+      createdAt: DateTime(2026, 10, 5),
+      updatedAt: DateTime(2026, 10, 5),
+      components: const [],
+    );
+    final plan = buildConsumedPreparedMealCalorieEntry(
+      meal: meal,
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      now: () => DateTime(2026, 10, 5, 12),
+      nextEntryId: () => 'meal-plan',
+      loggedDay: DateTime(2026, 10, 6),
+    )!.copyWith(userId: 'user-1');
+
+    final resized = preparedMealPlanWithPortions(
+      plan,
+      meal,
+      2,
+      now: () => DateTime(2026, 10, 5, 13),
+    );
+
+    expect(resized?.id, plan.id);
+    expect(resized?.userId, 'user-1');
+    expect(resized?.loggedAt, plan.loggedAt);
+    expect(resized?.createdAt, plan.createdAt);
+    expect(resized?.mealType, MealType.dinner);
+    expect(resized?.bundleConsumedPortions, 2);
+    expect(resized?.totalKcal, 400);
+  });
 }
