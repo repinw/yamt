@@ -248,11 +248,14 @@ and feature description docs. This is product-facing; architecture rules stay in
   with training; 0.8 g fat for men, 0.9 g for women. The training days decide
   until the user sets sport in the macro settings. Carbs get the rest of the
   kcal, but at most 40 percent. What lies above that on the weekly average
-  goes to protein up to 2.0 g/kg, so protein stays the same every day; the
-  rest goes to fat. A custom protein value stays as set. A carryover counts
+  goes to protein up to 2.0 g/kg, so protein stays the same every day unless
+  a day's budget is very small (see below); the rest goes to fat. A custom protein value stays as set. A carryover counts
   like a change of the day's kcal: the macros follow the same rules for the
-  goal plus the carryover, down to the carb and fat floors and a protein cut
-  below them. Above a BMI of 25 only 40 percent
+  goal plus the carryover. On a small budget carbs keep 100 g first: fat
+  drops to its floor (0.6 g/kg or 20 percent of the kcal), then protein to
+  its floor of 0.8 g/kg; below that, carbs get the rest. When even the fat
+  and protein floors need more kcal than the day has, the targets add up to
+  more than the goal. Above a BMI of 25 only 40 percent
   of the extra weight counts (adjusted body weight), so heavy users get
   realistic targets. Those users see the adjusted weight and a medical
   disclaimer on the onboarding summary and in the macro settings. No training
