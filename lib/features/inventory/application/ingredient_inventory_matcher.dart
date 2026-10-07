@@ -19,6 +19,26 @@ List<InventoryItem> resolveInventoryItemsById({
       .toList(growable: false);
 }
 
+/// Whether [inventoryItems] hold a food that matches [ingredient]: the same
+/// answer as [matchInventoryItemsForIngredient] being non-empty, without
+/// ranking every item.
+bool hasInventoryItemForIngredient({
+  required String ingredient,
+  required List<InventoryItem> inventoryItems,
+  String? localeCode,
+}) {
+  return inventoryItems.any(
+    (item) =>
+        !item.isFullyConsumed &&
+        ingredientInventoryMatchScore(
+              ingredient: ingredient,
+              item: item,
+              localeCode: localeCode,
+            ) >
+            0,
+  );
+}
+
 /// Match inventory items for ingredient.
 List<InventoryItem> matchInventoryItemsForIngredient({
   required String ingredient,
@@ -261,13 +281,20 @@ Set<String> _ingredientMatchCandidates(
   return candidates;
 }
 
+final _nonMatchCharacters = RegExp('[^a-z0-9äöüß]+');
+final _whitespace = RegExp(r'\s+');
+final _localeSeparator = RegExp('[-_]');
+final _quantityPrefix = RegExp(
+  r'^(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?)\s*(.+)$',
+);
+
 String _normalizeMatchText(String value) {
-  return value.toLowerCase().replaceAll(RegExp('[^a-z0-9äöüß]+'), ' ').trim();
+  return value.toLowerCase().replaceAll(_nonMatchCharacters, ' ').trim();
 }
 
 Set<String> _matchTokens(String value, _IngredientMatcherLexicon lexicon) {
   return value
-      .split(RegExp(r'\s+'))
+      .split(_whitespace)
       .map((token) => _canonicalMatchToken(token.trim(), lexicon))
       .where(
         (token) =>
@@ -283,15 +310,13 @@ String _stripIngredientPrefix(
   String ingredient,
   _IngredientMatcherLexicon lexicon,
 ) {
-  final quantityMatch = RegExp(
-    r'^(\d+\s+\d+/\d+|\d+/\d+|\d+(?:[.,]\d+)?)\s*(.+)$',
-  ).firstMatch(ingredient);
+  final quantityMatch = _quantityPrefix.firstMatch(ingredient);
   final tail = quantityMatch?.group(2)?.trim() ?? ingredient.trim();
   if (tail.isEmpty) {
     return ingredient;
   }
 
-  final tokens = tail.split(RegExp(r'\s+')).toList(growable: true);
+  final tokens = tail.split(_whitespace).toList(growable: true);
   while (tokens.isNotEmpty) {
     final normalizedToken = _normalizeMatchText(tokens.first)
         .replaceAll(' ', '');
@@ -366,7 +391,7 @@ String _normalizedLocaleCode(String? localeCode) {
   if (trimmed.isEmpty) {
     return '';
   }
-  return trimmed.split(RegExp('[-_]')).first;
+  return trimmed.split(_localeSeparator).first;
 }
 
 const _fallbackIngredientMatcherLexicon = _IngredientMatcherLexicon(
