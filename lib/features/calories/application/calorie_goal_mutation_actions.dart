@@ -7,39 +7,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings_lifecycle.da
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
-/// Sets a manual daily calorie goal.
-Future<bool> setManualCalorieGoal({
-  required CalorieGoalController controller,
-  required double dailyKcalGoal,
-  required DateTime now,
-}) async {
-  if (dailyKcalGoal <= 0) {
-    return false;
-  }
-  final previous = await controller.currentSettings();
-  final nextSettings = previous.applyGoalChange(
-    changedAt: now,
-    dailyKcalGoal: dailyKcalGoal,
-    calculatorProfile: null,
-  );
-  return await controller.persistSettings(nextSettings);
-}
-
-/// Clears the active calorie goal.
-Future<bool> clearCalorieGoal({
-  required CalorieGoalController controller,
-  required DateTime now,
-}) async {
-  final previous = await controller.currentSettings();
-  return await controller.persistSettings(
-    previous.applyGoalChange(
-      changedAt: now,
-      dailyKcalGoal: null,
-      calculatorProfile: null,
-    ),
-  );
-}
-
 /// Persists target completion and reports whether it was newly reached.
 Future<bool> markCalorieGoalReachedIfNeeded({
   required CalorieGoalController controller,

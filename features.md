@@ -223,7 +223,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   milliliters.
 - Barcode-based calorie entry lookup.
 - Nutrition label scan handoff when barcode products are missing nutrition.
-- Calorie goal setup, manual goal edits, and goal-start shifting.
+- Calorie goal setup and goal-start shifting.
 - Calorie calculator using sex, weight, height, age, activity level, goal mode,
   and goal speed. Once the body data is known, setting a new goal lists sex,
   height, and age as a plain list with "Edit in profile" instead of asking

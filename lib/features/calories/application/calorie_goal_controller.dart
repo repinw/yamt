@@ -50,15 +50,6 @@ class CalorieGoalController extends _$CalorieGoalController {
     return initial.future;
   }
 
-  /// Set goal.
-  Future<bool> setGoal(double dailyKcalGoal) => _guarded(
-    () => setManualCalorieGoal(
-      controller: this,
-      dailyKcalGoal: dailyKcalGoal,
-      now: ref.read(clockProvider)(),
-    ),
-  );
-
   /// Save calculated goal.
   Future<bool> saveCalculatedGoal(
     CalorieCalculatorProfile profile, {
@@ -86,11 +77,6 @@ class CalorieGoalController extends _$CalorieGoalController {
       goalStartDate: goalStartDate,
       now: ref.read(clockProvider)(),
     ),
-  );
-
-  /// Clear goal.
-  Future<bool> clearGoal() => _guarded(
-    () => clearCalorieGoal(controller: this, now: ref.read(clockProvider)()),
   );
 
   /// Persists target completion and reports whether it was newly reached.
