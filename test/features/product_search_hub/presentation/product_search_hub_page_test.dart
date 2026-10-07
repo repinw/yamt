@@ -721,6 +721,34 @@ void main() {
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
   });
 
+  testWidgets('a stored product closes the hub back to the Vorrat', (
+    tester,
+  ) async {
+    final controller = _RecordingInventoryItemsController();
+    await _pumpRouteHarness(
+      tester,
+      args: const ProductSearchHubRouteArgs.inventory(
+        initialIntent: ProductSearchHubInitialIntent.search,
+        offersEatInstead: true,
+      ),
+      searchResults: [_searchProduct()],
+      inventoryController: controller,
+    );
+
+    await _searchFor(tester, 'Milk');
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_result_4006381333931')),
+    );
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(InventoryStockAddPage.confirmKey));
+    await tester.tap(find.byKey(InventoryStockAddPage.confirmKey));
+    await tester.pumpAndSettle();
+
+    // One confirmation per food (#532): no selection waits for more.
+    expect(controller.addedItems, hasLength(1));
+    expect(find.text('caller'), findsOneWidget);
+  });
+
   testWidgets('the Vorrat page eats the product instead from its diary icon', (
     tester,
   ) async {

@@ -62,7 +62,7 @@ void main() {
     when(() => firebaseAuth.currentUser).thenReturn(user);
   });
 
-  testWidgets('inventory mode saves result and returns overlay selection', (
+  testWidgets('inventory mode saves result and closes back to the Vorrat', (
     tester,
   ) async {
     final inventoryController = _RecordingInventoryItemsController();
@@ -92,7 +92,7 @@ void main() {
     if (selection == null) {
       fail('Expected saved selection.');
     }
-    expect(completion?.shouldCloseHub, isFalse);
+    expect(completion?.shouldCloseHub, isTrue);
     expect(selection.sourceKey, '4006381333931');
     expect(inventoryController.addedItems, hasLength(1));
     expect(selection.item.id, inventoryController.addedItems.single.id);
@@ -171,7 +171,7 @@ void main() {
 
     expect(inventoryController._addCalledBeforeBuild, isFalse);
     expect(completion?.selection, isNotNull);
-    expect(completion?.shouldCloseHub, isFalse);
+    expect(completion?.shouldCloseHub, isTrue);
     expect(inventoryController.addedItems, hasLength(1));
   });
 
@@ -690,7 +690,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(completion?.selection, isNotNull);
-    expect(completion?.shouldCloseHub, isFalse);
+    expect(completion?.shouldCloseHub, isTrue);
     expect(
       inventoryController.addedItems.single.normalizedBarcode,
       '4006381333931',
@@ -730,7 +730,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(completion?.selection, isNotNull);
-    expect(completion?.shouldCloseHub, isFalse);
+    expect(completion?.shouldCloseHub, isTrue);
     expect(inventoryController.addedItems.single.normalizedBarcode, isNull);
     expect(barcodeRepository.recordedBarcodes, isEmpty);
   });

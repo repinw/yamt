@@ -73,8 +73,10 @@ class InventoryProductSearchHubCompletionHandler
       }
       return const ProductSearchHubCompletionResult.none();
     }
-    return ProductSearchHubCompletionResult.showOverlay(
-      ProductSearchHubSavedSelection(
+    // One food per add (#532): the hub closes back to the Vorrat. Several
+    // foods at once come from the receipt scan.
+    return ProductSearchHubCompletionResult.closeHub(
+      selection: ProductSearchHubSavedSelection(
         item: outcome.item!,
         sourceKey: sourceKey,
         calorieEntryId: outcome.calorieEntryId,
