@@ -6,15 +6,6 @@ import 'package:yamt/features/calories/domain/macro_carryover_calculator.dart';
 
 part 'diary_macro_targets.g.dart';
 
-/// Minimum carbs in grams (Ketose- / Unterzuckerungsschutz).
-const minimumCarbsFloorGrams = 100.0;
-
-/// Minimum fat in grams per kg body weight (Schutzregel B - Fat Floor).
-const minimumFatFloorGramsPerKg = 0.6;
-
-/// Minimum fat percentage of daily calories (Schutzregel B - Fat Floor).
-const minimumFatCalorieFraction = 0.20;
-
 /// Represents the delta applied to base macros due to carryover.
 typedef DiaryMacroCarryoverDelta = MacroCarryoverDelta;
 
