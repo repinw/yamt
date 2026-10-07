@@ -17,7 +17,7 @@ class InventoryQuickEatFlowScope {
   final ProviderContainer container;
 
   /// Actions that log prepared meals.
-  final InventoryQuickEatActions actions;
+  final InventoryQuickEatApplication actions;
 
   /// Messenger for the result snack bars.
   final ScaffoldMessengerState messenger;
@@ -34,14 +34,14 @@ Future<T> runInventoryQuickEatFlow<T>(
 ) async {
   final container = ProviderScope.containerOf(context, listen: false);
   final subscription = container.listen(
-    inventoryQuickEatActionsProvider,
+    inventoryQuickEatApplicationProvider,
     (_, _) {},
   );
   try {
     return await body(
       InventoryQuickEatFlowScope(
         container: container,
-        actions: container.read(inventoryQuickEatActionsProvider),
+        actions: container.read(inventoryQuickEatApplicationProvider),
         messenger: ScaffoldMessenger.of(context),
         l10n: AppLocalizations.of(context)!,
       ),

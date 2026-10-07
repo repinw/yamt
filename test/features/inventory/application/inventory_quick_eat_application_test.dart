@@ -3,38 +3,32 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_calorie_log_bridge.dart';
-import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
+import '../../calories/support/fake_calories_repositories.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
 
-class _FakePreparedMealRepository implements PreparedMealRepository {
-  new(this._meals);
-
-  List<PreparedMeal> _meals;
-  int readAllCallCount = 0;
-
-  List<PreparedMeal> get meals => _meals;
+/// Records the entries that the batch writes with their meal.
+class _FakeCommitStore implements PreparedMealCalorieEntryCommitStore {
+  final committed = <CalorieEntry>[];
 
   @override
-  Future<List<PreparedMeal>> readAll() async {
-    readAllCallCount += 1;
-    return List<PreparedMeal>.from(_meals);
-  }
-
-  @override
-  Future<bool> saveAll(List<PreparedMeal> meals) async {
-    _meals = List<PreparedMeal>.from(meals);
+  Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry}) async {
+    committed.add(entry);
     return true;
   }
 
   @override
-  Stream<List<PreparedMeal>> watchAll() => Stream.value(_meals);
+  Future<CalorieEntryDeleteResult> deleteEntryAndRestorePreparedMeal({
+    required CalorieEntry entry,
+  }) => throw UnimplementedError();
 }
 
 PreparedMeal _meal({required String id}) {
@@ -54,9 +48,7 @@ PreparedMeal _meal({required String id}) {
 }
 
 InventoryQuickEatApplication _application({
-  required _FakePreparedMealRepository repository,
-  required List<CalorieEntry> savedEntries,
-  bool atomic = true,
+  _FakeCommitStore? commitStore,
   FakePlannedEntryRepository? plans,
   ProviderContainer? container,
 }) {
@@ -64,37 +56,27 @@ InventoryQuickEatApplication _application({
   if (container == null) {
     addTearDown(revisionContainer.dispose);
   }
-  Future<bool> saveEntry(CalorieEntry entry) async {
-    savedEntries.add(entry);
-    return true;
-  }
-
   return InventoryQuickEatApplication(
-    preparedMealRepository: repository,
+    saveEntry: (entry, {scannedSourceRef, persistEntry}) async =>
+        persistEntry != null && await persistEntry(entry),
+    commitStore: commitStore ?? _FakeCommitStore(),
     plans: plans ?? FakePlannedEntryRepository(),
     overviewRevision: revisionContainer.read(
       calorieOverviewRevisionProvider.notifier,
     ),
     lastPlannedDay: revisionContainer.read(lastPlannedDayProvider.notifier),
     now: () => DateTime(2026, 9, 19, 12),
-    calorieLogBridge: PreparedMealCalorieLogBridge(
-      saveEntry: saveEntry,
-      saveEntryAtomically: atomic ? saveEntry : null,
-      now: () => DateTime(2026, 9, 19, 12),
-      nextEntryId: () => 'entry-1',
-    ),
   );
 }
 
 void main() {
-  test('consumes a prepared meal without reading all meals', () async {
-    final repository = _FakePreparedMealRepository(<PreparedMeal>[
-      _meal(id: 'meal-1'),
-    ]);
-    final savedEntries = <CalorieEntry>[];
+  test('eating writes the entry with its meal in one batch', () async {
+    final commitStore = _FakeCommitStore();
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
     final application = _application(
-      repository: repository,
-      savedEntries: savedEntries,
+      commitStore: commitStore,
+      container: container,
     );
 
     final saved = await application.consumePreparedMeal(
@@ -104,49 +86,51 @@ void main() {
       loggedDay: DateTime(2026, 9, 19),
     );
 
-    expect(saved, isNotNull);
-    expect(savedEntries.single.bundleSourcePreparedMealId, 'meal-1');
-    expect(repository.readAllCallCount, 0);
+    expect(saved?.isPlan, isFalse);
+    expect(commitStore.committed.single.bundleSourcePreparedMealId, 'meal-1');
+    expect(commitStore.committed.single.bundleConsumedPortions, 1);
   });
 
-  test('fallback without atomic store only updates the eaten meal', () async {
-    final repository = _FakePreparedMealRepository(<PreparedMeal>[
-      _meal(id: 'meal-1'),
-      _meal(id: 'meal-2'),
-    ]);
-    final application = _application(
-      repository: repository,
-      savedEntries: <CalorieEntry>[],
-      atomic: false,
-    );
+  test(
+    'eating still saves after unused calorie providers were disposed',
+    () async {
+      final calorieLogRepository = FakeCalorieLogRepository();
+      addTearDown(calorieLogRepository.dispose);
+      final commitStore = _FakeCommitStore();
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(calorieLogRepository),
+          preparedMealCalorieEntryCommitStoreProvider.overrideWithValue(
+            commitStore,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
 
-    final saved = await application.consumePreparedMeal(
-      meal: _meal(id: 'meal-1'),
-      consumedPortions: 1,
-      mealType: MealType.lunch,
-      loggedDay: DateTime(2026, 9, 19),
-    );
+      // Nothing listens, so auto-dispose providers read while building the
+      // application are gone before the save.
+      final application = container.read(inventoryQuickEatApplicationProvider);
+      await pumpEventQueue();
 
-    expect(saved, isNotNull);
-    expect(repository.meals.map((meal) => meal.id), <String>[
-      'meal-1',
-      'meal-2',
-    ]);
-    expect(repository.meals.first.remainingPortions, 3);
-    expect(repository.meals.last.remainingPortions, 4);
-  });
+      final saved = await application.consumePreparedMeal(
+        meal: _meal(id: 'meal-1'),
+        consumedPortions: 1,
+        mealType: MealType.breakfast,
+        loggedDay: DateTime(2026, 9, 19),
+      );
+
+      expect(saved, isNotNull);
+      expect(commitStore.committed, hasLength(1));
+    },
+  );
 
   test('a later day saves a plan and keeps the portions', () async {
-    final repository = _FakePreparedMealRepository(<PreparedMeal>[
-      _meal(id: 'meal-1'),
-    ]);
-    final savedEntries = <CalorieEntry>[];
+    final commitStore = _FakeCommitStore();
     final plans = FakePlannedEntryRepository();
     final container = ProviderContainer();
     addTearDown(container.dispose);
     final application = _application(
-      repository: repository,
-      savedEntries: savedEntries,
+      commitStore: commitStore,
       plans: plans,
       container: container,
     );
@@ -161,22 +145,14 @@ void main() {
     expect(saved?.isPlan, isTrue);
     expect(plans.plans.single.bundleSourcePreparedMealId, 'meal-1');
     expect(plans.plans.single.loggedAt.day, 20);
-    expect(savedEntries, isEmpty);
-    expect(repository.meals.single.remainingPortions, 4);
+    expect(commitStore.committed, isEmpty);
     expect(container.read(calorieOverviewRevisionProvider), 1);
   });
 
   test('an explicit plan on today keeps the portions', () async {
-    final repository = _FakePreparedMealRepository(<PreparedMeal>[
-      _meal(id: 'meal-1'),
-    ]);
-    final savedEntries = <CalorieEntry>[];
+    final commitStore = _FakeCommitStore();
     final plans = FakePlannedEntryRepository();
-    final application = _application(
-      repository: repository,
-      savedEntries: savedEntries,
-      plans: plans,
-    );
+    final application = _application(commitStore: commitStore, plans: plans);
 
     final saved = await application.consumePreparedMeal(
       meal: _meal(id: 'meal-1'),
@@ -188,20 +164,14 @@ void main() {
 
     expect(saved?.isPlan, isTrue);
     expect(plans.plans, hasLength(1));
-    expect(savedEntries, isEmpty);
-    expect(repository.meals.single.remainingPortions, 4);
+    expect(commitStore.committed, isEmpty);
   });
 
   test('a share of a meal in the pot is planned, not eaten', () async {
     final inPot = _meal(id: 'meal-1').copyWith(inPot: true);
-    final repository = _FakePreparedMealRepository(<PreparedMeal>[inPot]);
-    final savedEntries = <CalorieEntry>[];
+    final commitStore = _FakeCommitStore();
     final plans = FakePlannedEntryRepository();
-    final application = _application(
-      repository: repository,
-      savedEntries: savedEntries,
-      plans: plans,
-    );
+    final application = _application(commitStore: commitStore, plans: plans);
 
     final eaten = await application.consumePreparedMeal(
       meal: inPot,
@@ -220,19 +190,13 @@ void main() {
     expect(eaten, isNull);
     expect(planned?.isPlan, isTrue);
     expect(plans.plans, hasLength(1));
-    expect(savedEntries, isEmpty);
+    expect(commitStore.committed, isEmpty);
   });
 
   test('a failed plan saves nothing and keeps the portions', () async {
-    final repository = _FakePreparedMealRepository(<PreparedMeal>[
-      _meal(id: 'meal-1'),
-    ]);
+    final commitStore = _FakeCommitStore();
     final plans = FakePlannedEntryRepository()..writeShouldFail = true;
-    final application = _application(
-      repository: repository,
-      savedEntries: <CalorieEntry>[],
-      plans: plans,
-    );
+    final application = _application(commitStore: commitStore, plans: plans);
 
     final saved = await application.consumePreparedMeal(
       meal: _meal(id: 'meal-1'),
@@ -243,6 +207,6 @@ void main() {
 
     expect(saved, isNull);
     expect(plans.plans, isEmpty);
-    expect(repository.meals.single.remainingPortions, 4);
+    expect(commitStore.committed, isEmpty);
   });
 }

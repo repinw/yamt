@@ -16,7 +16,7 @@ import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_calorie_log_bridge.dart';
+    'prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
@@ -30,7 +30,7 @@ import '../../../support/prepared_meal_test_data.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
 
-class _FakeQuickEatActions implements InventoryQuickEatActions {
+class _FakeQuickEatActions implements InventoryQuickEatApplication {
   new({this.fail = false, this.plan = false});
 
   final bool fail;
@@ -139,7 +139,7 @@ Future<void> _pumpHarness(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
-        inventoryQuickEatActionsProvider.overrideWithValue(actions),
+        inventoryQuickEatApplicationProvider.overrideWithValue(actions),
         firebaseFirestoreProvider.overrideWith((ref) => null),
         calorieSettingsRepositoryProvider.overrideWithValue(
           FakeCalorieSettingsRepository(),
@@ -223,7 +223,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryQuickEatActionsProvider.overrideWithValue(
+          inventoryQuickEatApplicationProvider.overrideWithValue(
             _FakeQuickEatActions(),
           ),
           preparedMealRepositoryProvider.overrideWithValue(repository),
@@ -276,7 +276,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryQuickEatActionsProvider.overrideWithValue(actions),
+          inventoryQuickEatApplicationProvider.overrideWithValue(actions),
           preparedMealRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(
@@ -325,7 +325,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          inventoryQuickEatActionsProvider.overrideWithValue(actions),
+          inventoryQuickEatApplicationProvider.overrideWithValue(actions),
           preparedMealRepositoryProvider.overrideWithValue(repository),
         ],
         child: MaterialApp(

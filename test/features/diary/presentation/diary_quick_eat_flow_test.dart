@@ -23,7 +23,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_calorie_log_bridge.dart';
+    'prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -512,7 +512,7 @@ Future<void> _pumpInventoryFlowHarness(
         diaryQuickEatInventoryProvider.overrideWith(
           (ref) => _diaryQuickEatInventoryData(inventoryItems, preparedMeals),
         ),
-        inventoryQuickEatActionsProvider.overrideWithValue(
+        inventoryQuickEatApplicationProvider.overrideWithValue(
           _TestDiaryQuickEatInventoryActions(
             failConsume: failPreparedMealConsume,
           ),
@@ -548,7 +548,7 @@ Future<void> _pumpDelayedInventoryFlowHarness(
           await mealsGate.future;
           return _diaryQuickEatInventoryData(inventoryItems, preparedMeals);
         }),
-        inventoryQuickEatActionsProvider.overrideWithValue(
+        inventoryQuickEatApplicationProvider.overrideWithValue(
           const _TestDiaryQuickEatInventoryActions(),
         ),
       ],
@@ -613,7 +613,8 @@ Override _dashboardOverrideFor(
   );
 }
 
-class _TestDiaryQuickEatInventoryActions implements InventoryQuickEatActions {
+class _TestDiaryQuickEatInventoryActions
+    implements InventoryQuickEatApplication {
   const new({this.failConsume = false});
 
   final bool failConsume;
