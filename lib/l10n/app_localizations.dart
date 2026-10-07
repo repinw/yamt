@@ -4420,6 +4420,60 @@ abstract class AppLocalizations {
   /// **'Plan could not be changed'**
   String get diaryPlanChangeFailed;
 
+  /// No description provided for @diaryPlanCopyAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Also plan for…'**
+  String get diaryPlanCopyAction;
+
+  /// No description provided for @diaryPlanCopyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Also plan for'**
+  String get diaryPlanCopyTitle;
+
+  /// No description provided for @diaryPlanCopyRange.
+  ///
+  /// In en, this message translates to:
+  /// **'{month} · 2 weeks'**
+  String diaryPlanCopyRange(String month);
+
+  /// No description provided for @diaryPlanCopyPlannedLegend.
+  ///
+  /// In en, this message translates to:
+  /// **'• already planned'**
+  String get diaryPlanCopyPlannedLegend;
+
+  /// No description provided for @diaryPlanCopyMealLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal'**
+  String get diaryPlanCopyMealLabel;
+
+  /// No description provided for @diaryPlanCopyConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Pick days} =1{Plan 1 day} other{Plan {count} days}}'**
+  String diaryPlanCopyConfirm(int count);
+
+  /// No description provided for @diaryPlanCopyConfirmKcal.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Plan 1 day} other{Plan {count} days}} · {kcal} kcal'**
+  String diaryPlanCopyConfirmKcal(int count, int kcal);
+
+  /// No description provided for @diaryPlanCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Planned on 1 more day} other{Planned on {count} more days}}'**
+  String diaryPlanCopied(int count);
+
+  /// No description provided for @diaryPlanCopyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Plans could not be saved'**
+  String get diaryPlanCopyFailed;
+
   /// No description provided for @diaryPlanSemanticsLabel.
   ///
   /// In en, this message translates to:

@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
+import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_plan_accept_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -37,11 +38,49 @@ Future<void> openDiaryPlanFlow(
       await acceptDiaryPlanFlow(context, ref, plan: plan);
     case DiaryPlanRemove():
       await deleteDiaryPlanFlow(context, ref, plan: plan);
+    case DiaryPlanCopy():
+      await _copyDiaryPlanFlow(context, ref, plan: plan, today: today);
     case DiaryPlanChange(plan: final changed):
       await _changeDiaryPlanFlow(context, ref, plan: plan, changed: changed);
     case null:
       return;
   }
+}
+
+/// Asks for more days to plan the food of [plan] on, plans a copy on each,
+/// and offers one undo for all of them.
+Future<void> _copyDiaryPlanFlow(
+  BuildContext context,
+  WidgetRef ref, {
+  required CalorieEntry plan,
+  required DateTime today,
+}) async {
+  final choice = await showDiaryPlanDaysSheet(
+    context: context,
+    plan: plan,
+    today: today,
+  );
+  if (choice == null || !context.mounted) {
+    return;
+  }
+  final messenger = ScaffoldMessenger.of(context);
+  final l10n = AppLocalizations.of(context)!;
+  final container = ProviderScope.containerOf(context, listen: false);
+  final copies = await ref
+      .read(diaryPlanControllerProvider.notifier)
+      .copyToDays(plan, days: choice.days, mealType: choice.mealType);
+  if (copies == null) {
+    messenger.showAppSnackBar(
+      l10n.diaryPlanCopyFailed,
+      tone: AppSnackBarTone.error,
+    );
+    return;
+  }
+  messenger.showAppSnackBar(
+    l10n.diaryPlanCopied(copies.length),
+    onUndo: () =>
+        container.read(diaryPlanControllerProvider.notifier).deleteAll(copies),
+  );
 }
 
 /// Saves [changed] in place of [plan], opens its day, and offers undo.

@@ -44,6 +44,17 @@ class _FakeAcceptService implements InventoryPlanAcceptService {
   }
 }
 
+/// Saves the first plan, then fails, like a write that breaks partway.
+class _FailingSecondSave extends FakePlannedEntryRepository {
+  @override
+  Future<void> savePlannedEntry(CalorieEntry entry) async {
+    if (plans.isNotEmpty) {
+      throw StateError('Plan write failed.');
+    }
+    await super.savePlannedEntry(entry);
+  }
+}
+
 void main() {
   final plan = buildQuickCalorieEntry(
     id: 'plan',
@@ -135,6 +146,54 @@ void main() {
     expect(saved, isFalse);
     expect(states.last.hasError, isTrue);
     expect(container.read(lastPlannedDayProvider), isNull);
+  });
+
+  test('copies a plan to more days and deletes the copies again', () async {
+    final repository = FakePlannedEntryRepository(plans: [plan]);
+    final (container, states) = setUpContainer(repository);
+    final controller = container.read(diaryPlanControllerProvider.notifier);
+    final days = [DateTime(2026, 10, 8), DateTime(2026, 10, 10)];
+
+    final copies = await controller.copyToDays(
+      plan,
+      days: days,
+      mealType: MealType.lunch,
+    );
+
+    expect(copies, hasLength(2));
+    expect(copies!.map((copy) => copy.id).toSet(), hasLength(2));
+    expect(copies.map((copy) => copy.id), isNot(contains(plan.id)));
+    expect(copies.map((copy) => copy.loggedAt), [
+      DateTime(2026, 10, 8, 19),
+      DateTime(2026, 10, 10, 19),
+    ]);
+    expect(copies.map((copy) => copy.mealType), everyElement(MealType.lunch));
+    expect(copies.map((copy) => copy.totalKcal), everyElement(plan.totalKcal));
+    expect(repository.plans, [plan, ...copies]);
+    expect(container.read(calorieOverviewRevisionProvider), 1);
+
+    expect(await controller.deleteAll(copies), isTrue);
+    expect(repository.plans, [plan]);
+    expect(container.read(calorieOverviewRevisionProvider), 2);
+    expect(states.map((state) => state.isLoading), [true, false, true, false]);
+  });
+
+  test('a copy that fails partway removes the copies saved before', () async {
+    final repository = _FailingSecondSave();
+    final (container, states) = setUpContainer(repository);
+
+    final copies = await container
+        .read(diaryPlanControllerProvider.notifier)
+        .copyToDays(
+          plan,
+          days: [DateTime(2026, 10, 8), DateTime(2026, 10, 9)],
+          mealType: MealType.dinner,
+        );
+
+    expect(copies, isNull);
+    expect(states.last.hasError, isTrue);
+    expect(repository.plans, isEmpty);
+    expect(container.read(calorieOverviewRevisionProvider), 0);
   });
 
   test('accepts a plan once until its undo', () async {

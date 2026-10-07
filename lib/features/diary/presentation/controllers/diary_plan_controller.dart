@@ -1,4 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:uuid/uuid.dart';
+import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
@@ -25,6 +29,51 @@ class DiaryPlanController extends _$DiaryPlanController {
   /// Saves [plan] again after a delete. Returns false when it failed.
   Future<bool> restore(CalorieEntry plan) =>
       _write((repository) => repository.savePlannedEntry(plan));
+
+  /// Plans [plan] on [days] too: one copy per day in [mealType], at the
+  /// plan's time of day, with a new id. Returns the copies, or null when
+  /// saving failed; the copies saved before the failure are removed again.
+  Future<List<CalorieEntry>?> copyToDays(
+    CalorieEntry plan, {
+    required List<DateTime> days,
+    required MealType mealType,
+  }) async {
+    final now = ref.read(clockProvider)();
+    final copies = [
+      for (final day in days)
+        plan.copyWith(
+          id: const Uuid().v4(),
+          mealType: mealType,
+          loggedAt: loggedAtOnDay(day, now: plan.loggedAt),
+          createdAt: now,
+          updatedAt: now,
+        ),
+    ];
+    final saved = await _write((repository) async {
+      final written = <CalorieEntry>[];
+      try {
+        for (final copy in copies) {
+          await repository.savePlannedEntry(copy);
+          written.add(copy);
+        }
+      } on Object {
+        // Copies saved before the failure would stay hidden without undo.
+        for (final copy in written) {
+          await repository.deletePlannedEntry(copy.id);
+        }
+        rethrow;
+      }
+    });
+    return saved ? copies : null;
+  }
+
+  /// Deletes [plans] together. Returns false when it failed.
+  Future<bool> deleteAll(List<CalorieEntry> plans) =>
+      _write((repository) async {
+        for (final plan in plans) {
+          await repository.deletePlannedEntry(plan.id);
+        }
+      });
 
   /// Saves the new [plan] and lets the diary open its day. Returns false
   /// when it failed.

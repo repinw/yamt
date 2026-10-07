@@ -1281,6 +1281,46 @@
   "diaryPlanSaveAction": "Save plan",
   "diaryPlanChanged": "Plan changed",
   "diaryPlanChangeFailed": "Plan could not be changed",
+  "diaryPlanCopyAction": "Also plan for…",
+  "diaryPlanCopyTitle": "Also plan for",
+  "diaryPlanCopyRange": "{month} · 2 weeks",
+  "@diaryPlanCopyRange": {
+    "placeholders": {
+      "month": {
+        "type": "String"
+      }
+    }
+  },
+  "diaryPlanCopyPlannedLegend": "• already planned",
+  "diaryPlanCopyMealLabel": "Meal",
+  "diaryPlanCopyConfirm": "{count, plural, =0{Pick days} =1{Plan 1 day} other{Plan {count} days}}",
+  "@diaryPlanCopyConfirm": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPlanCopyConfirmKcal": "{count, plural, =1{Plan 1 day} other{Plan {count} days}} · {kcal} kcal",
+  "@diaryPlanCopyConfirmKcal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPlanCopied": "{count, plural, =1{Planned on 1 more day} other{Planned on {count} more days}}",
+  "@diaryPlanCopied": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "diaryPlanCopyFailed": "Plans could not be saved",
   "diaryPlanSemanticsLabel": "Plan",
   "diaryPlanAcceptAction": "Eaten as planned",
   "diaryPlanAccepted": "Eaten as planned",
