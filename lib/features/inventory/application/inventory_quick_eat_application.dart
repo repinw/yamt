@@ -16,6 +16,7 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
 part 'inventory_quick_eat_application.g.dart';
 
@@ -108,11 +109,12 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
     required DateTime loggedDay,
     required bool asPlan,
   }) async {
-    if (consumedPortions <= 0 ||
-        !_canConsumePreparedMeal(meal, consumedPortions)) {
+    final isPlan = asPlan || isDiaryFutureDay(day: loggedDay, today: _now());
+    final action = isPlan ? PreparedMealAction.plan : PreparedMealAction.eat;
+    if (!meal.allowsPortions(action, consumedPortions)) {
       return null;
     }
-    if (asPlan || isDiaryFutureDay(day: loggedDay, today: _now())) {
+    if (isPlan) {
       return await _planPreparedMeal(
         meal: meal,
         consumedPortions: consumedPortions,
@@ -185,9 +187,4 @@ final class InventoryQuickEatApplication implements InventoryQuickEatActions {
       stackTrace: stackTrace,
     );
   }
-}
-
-bool _canConsumePreparedMeal(PreparedMeal meal, num consumedPortions) {
-  return !meal.hasPendingRecipeIngredients &&
-      consumedPortions <= meal.remainingPortions;
 }

@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
 /// A saved Vorlage or recipe with the stock state of each of its foods.
 @immutable
@@ -65,15 +66,8 @@ class CookbookOverview {
         );
       }
     }
-    final openMeals =
-        meals
-            .where(
-              (meal) =>
-                  (meal.isInPot || meal.pendingRecipeIngredients.isNotEmpty) &&
-                  meal.remainingPortions > 0,
-            )
-            .toList()
-          ..sort((left, right) => right.createdAt.compareTo(left.createdAt));
+    final openMeals = meals.where((meal) => meal.isOpen).toList()
+      ..sort((left, right) => right.createdAt.compareTo(left.createdAt));
     return CookbookOverview(
       openMeals: List.unmodifiable(openMeals),
       templates: List.unmodifiable(templates),

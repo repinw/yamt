@@ -192,6 +192,37 @@ void main() {
     expect(repository.meals.single.remainingPortions, 4);
   });
 
+  test('a share of a meal in the pot is planned, not eaten', () async {
+    final inPot = _meal(id: 'meal-1').copyWith(inPot: true);
+    final repository = _FakePreparedMealRepository(<PreparedMeal>[inPot]);
+    final savedEntries = <CalorieEntry>[];
+    final plans = FakePlannedEntryRepository();
+    final application = _application(
+      repository: repository,
+      savedEntries: savedEntries,
+      plans: plans,
+    );
+
+    final eaten = await application.consumePreparedMeal(
+      meal: inPot,
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      loggedDay: DateTime(2026, 9, 19),
+    );
+    final planned = await application.consumePreparedMeal(
+      meal: inPot,
+      consumedPortions: 1,
+      mealType: MealType.dinner,
+      loggedDay: DateTime(2026, 9, 19),
+      asPlan: true,
+    );
+
+    expect(eaten, isNull);
+    expect(planned?.isPlan, isTrue);
+    expect(plans.plans, hasLength(1));
+    expect(savedEntries, isEmpty);
+  });
+
   test('a failed plan saves nothing and keeps the portions', () async {
     final repository = _FakePreparedMealRepository(<PreparedMeal>[
       _meal(id: 'meal-1'),
