@@ -150,6 +150,7 @@ Future<void> _openDetails(
   WidgetTester tester,
   FakeCalorieLogRepository logRepository, {
   List<Override> overrides = const [],
+  FakePlannedEntryRepository? plans,
 }) async {
   final settingsRepository = FakeCalorieSettingsRepository();
   addTearDown(settingsRepository.dispose);
@@ -192,7 +193,7 @@ Future<void> _openDetails(
       userProfileProvider.overrideWith((ref) => Stream.value(null)),
       calorieLogRepositoryProvider.overrideWithValue(logRepository),
       plannedEntryRepositoryProvider.overrideWithValue(
-        FakePlannedEntryRepository(),
+        plans ?? FakePlannedEntryRepository(),
       ),
       calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
       ...overrides,
@@ -234,6 +235,47 @@ void main() {
     expect(find.byType(DiaryEntryDetailsPage), findsNothing);
     expect(logRepository.entries.single.consumedAmount, 150);
     expect(logRepository.entries.single.totalKcal, 150);
+  });
+
+  testWidgets('"Nochmal" logs the food a second time', (tester) async {
+    final logRepository = FakeCalorieLogRepository(initialEntries: [_entry()]);
+    addTearDown(logRepository.dispose);
+    await _openDetails(tester, logRepository);
+
+    // An unchanged amount leaves "Nochmal" as the main button.
+    expect(find.text('Nochmal'), findsOneWidget);
+    await tester.tap(find.byKey(DiaryEntryDetailsPage.saveButtonKey));
+    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryEntryDetailsPage), findsNothing);
+    expect(logRepository.entries, hasLength(2));
+    expect(logRepository.entries.map((entry) => entry.name), ['Skyr', 'Skyr']);
+    expect(logRepository.entries.last.consumedAmount, 200);
+  });
+
+  testWidgets('the plan icon plans the food again for a picked day', (
+    tester,
+  ) async {
+    final logRepository = FakeCalorieLogRepository(initialEntries: [_entry()]);
+    addTearDown(logRepository.dispose);
+    final plans = FakePlannedEntryRepository();
+    await _openDetails(tester, logRepository, plans: plans);
+
+    final plan = find.byKey(EatPageScaffold.planButtonKey);
+    await tester.ensureVisible(plan);
+    await tester.pumpAndSettle();
+    await tester.tap(plan);
+    await _pumpUntilFound(tester, find.text('OK'));
+    await tester.tap(find.text('OK'));
+    await _pumpUntilFound(tester, find.byKey(_openButtonKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(DiaryEntryDetailsPage), findsNothing);
+    expect(logRepository.entries, hasLength(1));
+    expect(plans.plans.single.name, 'Skyr');
+    expect(plans.plans.single.mealType, MealType.breakfast);
+    expect(plans.plans.single.consumedAmount, 200);
   });
 
   testWidgets('diary entry details stay open on close while saving', (
