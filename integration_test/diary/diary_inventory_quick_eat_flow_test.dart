@@ -979,6 +979,56 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('the plan details change the amount of a plan of tomorrow', (
+    tester,
+  ) async {
+    final planRow = find.byKey(
+      DiaryMealsSectionKeys.plannedEntryTile('plan-dinner'),
+    );
+    final harness = _buildHarness(
+      today: _selectedDay.subtract(const Duration(days: 1)),
+      plans: [
+        CalorieEntry.create(
+          id: 'plan-dinner',
+          userId: _userId,
+          name: 'Nudeln',
+          mealType: MealType.dinner,
+          consumedAmount: 100,
+          consumedUnit: ConsumedUnit.grams,
+          per100Kcal: 600,
+          per100Protein: 20,
+          per100Carbs: 90,
+          per100Fat: 10,
+          loggedAt: _selectedDay.add(const Duration(hours: 19)),
+          createdAt: _selectedDay,
+          updatedAt: _selectedDay,
+        ),
+      ],
+    );
+    await tester.pumpWidget(harness.app);
+    await _pumpUntilFound(tester, planRow, description: 'plan row of tomorrow');
+
+    await tester.ensureVisible(planRow);
+    await tester.tap(planRow);
+    final amount = find.descendant(
+      of: find.byKey(DiaryPlanDetailsPage.amountKey),
+      matching: find.byType(TextField),
+    );
+    await _pumpUntilFound(tester, amount, description: 'plan amount');
+    await tester.pumpAndSettle();
+    await tester.enterText(amount, '150');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryPlanDetailsPage.acceptButtonKey));
+    await _pumpUntil(
+      tester,
+      () => harness.planRepository.plans.single.consumedAmount == 150,
+      description: 'plan amount saved',
+    );
+    expect(harness.planRepository.plans.single.totalKcal, 900);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('tomorrow plans with the carryover once the day before is '
       'closed', (tester) async {
     final harness = _buildHarness(

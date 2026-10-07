@@ -69,6 +69,8 @@ void main() {
   (ProviderContainer, List<AsyncValue<void>>) setUpContainer(
     FakePlannedEntryRepository repository, {
     _FakeAcceptService? acceptService,
+    List<InventoryItem> items = const [],
+    bool inventoryFails = false,
   }) {
     final container = ProviderContainer(
       overrides: [
@@ -77,8 +79,9 @@ void main() {
           acceptService ?? _FakeAcceptService(),
         ),
         inventoryQuickEatInventoryProvider.overrideWith(
-          (ref) async =>
-              const InventoryQuickEatInventoryData(items: [], meals: []),
+          (ref) async => inventoryFails
+              ? throw StateError('Vorrat failed to load.')
+              : InventoryQuickEatInventoryData(items: items, meals: const []),
         ),
       ],
     );
@@ -194,6 +197,67 @@ void main() {
     expect(states.last.hasError, isTrue);
     expect(repository.plans, isEmpty);
     expect(container.read(calorieOverviewRevisionProvider), 0);
+  });
+
+  group('withPlanStock', () {
+    final previous = plan.copyWith(
+      consumedAmount: 200,
+      sourceInventoryItemId: 'pasta',
+      sourceInventoryAmountToRestore: 200,
+    );
+    final changed = previous.copyWith(consumedAmount: 300);
+    final pack = InventoryItem.create(
+      id: 'pasta',
+      name: 'Pasta',
+      entryDate: DateTime(2026, 9),
+      storeName: 'Rewe',
+      quantity: 1,
+      initialAmount: 500,
+      currentAmount: 500,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+
+    test('a pack that can tell the grams drops the saved stock', () async {
+      final (container, _) = setUpContainer(
+        FakePlannedEntryRepository(),
+        items: [pack],
+      );
+
+      final result = await container
+          .read(diaryPlanControllerProvider.notifier)
+          .withPlanStock(previous, changed);
+
+      expect(result.consumedAmount, 300);
+      expect(result.sourceInventoryAmountToRestore, isNull);
+    });
+
+    test('a failed Vorrat load shows the error and scales the stock', () async {
+      final (container, states) = setUpContainer(
+        FakePlannedEntryRepository(),
+        inventoryFails: true,
+      );
+
+      final result = await container
+          .read(diaryPlanControllerProvider.notifier)
+          .withPlanStock(previous, changed);
+
+      expect(result.sourceInventoryAmountToRestore, 300);
+      expect(states.last.hasError, isTrue);
+    });
+
+    test('an unchanged amount keeps the plan and loads nothing', () async {
+      final (container, states) = setUpContainer(
+        FakePlannedEntryRepository(),
+        inventoryFails: true,
+      );
+
+      final result = await container
+          .read(diaryPlanControllerProvider.notifier)
+          .withPlanStock(previous, previous.copyWith(mealType: MealType.lunch));
+
+      expect(result.sourceInventoryAmountToRestore, 200);
+      expect(states, isEmpty);
+    });
   });
 
   test('accepts a plan once until its undo', () async {

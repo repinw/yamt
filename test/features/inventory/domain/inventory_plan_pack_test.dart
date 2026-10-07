@@ -196,4 +196,47 @@ void main() {
 
     expect(inventoryAmountForPlan(plan, untracked), isNull);
   });
+
+  group('inventoryStockForChangedPlan', () {
+    final previous = _plan.copyWith(
+      sourceInventoryItemId: 'oats',
+      sourceInventoryAmountToRestore: 60,
+    );
+    final changed = previous.copyWith(consumedAmount: 90);
+
+    test('a pack that can tell the grams works the stock out again', () {
+      expect(
+        inventoryStockForChangedPlan(
+          previous: previous,
+          changed: changed,
+          item: _pack('oats'),
+        ),
+        isNull,
+      );
+    });
+
+    test('a pack without a size scales the saved stock', () {
+      final whole = previous.copyWith(sourceInventoryAmountToRestore: 2);
+
+      expect(
+        inventoryStockForChangedPlan(
+          previous: whole,
+          changed: whole.copyWith(consumedAmount: 90),
+          item: _piecePack(id: 'oats', amountUnit: null),
+        ),
+        3,
+      );
+    });
+
+    test('a plan without saved stock saves none', () {
+      expect(
+        inventoryStockForChangedPlan(
+          previous: previous.copyWith(sourceInventoryAmountToRestore: null),
+          changed: changed,
+          item: null,
+        ),
+        isNull,
+      );
+    });
+  });
 }

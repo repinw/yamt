@@ -94,12 +94,14 @@ Future<void> _changeDiaryPlanFlow(
   final l10n = AppLocalizations.of(context)!;
   final container = ProviderScope.containerOf(context, listen: false);
   final controller = ref.read(diaryPlanControllerProvider.notifier);
-  // An eaten plan is gone; saving it again would bring it back.
+  final toSave = await controller.withPlanStock(plan, changed);
+  // An eaten plan is gone; saving it again would bring it back. It may have
+  // been eaten from its row while the Vorrat loaded.
   if (controller.isAccepted(plan)) {
     return;
   }
   // The plan keeps its id, so saving it overwrites the old one.
-  if (!await controller.plan(changed)) {
+  if (!await controller.plan(toSave)) {
     messenger.showAppSnackBar(
       l10n.diaryPlanChangeFailed,
       tone: AppSnackBarTone.error,
