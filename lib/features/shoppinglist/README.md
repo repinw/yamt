@@ -26,6 +26,11 @@ saved favorites, and products that come back on a schedule.
   slot with its own suggestions and composes the finished page.
 - `ShoppingListSuggestions` renders `ShoppingSuggestion` values and hides
   products that are already on the list.
+- `ShoppingListPlanNeeds` renders the "Für deinen Plan" block from
+  `ShoppingPlanNeedGroup` values, with one add button per food, and an error
+  line with a retry when the needs fail to load. `groupShoppingPlanNeeds`
+  (application) groups `ShoppingPlanNeed` values by day and meal and drops
+  foods that are already on the list.
 
 ## Rules
 

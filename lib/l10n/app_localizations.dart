@@ -7905,6 +7905,48 @@ abstract class AppLocalizations {
   /// **'F'**
   String get caloriesFatShortLetter;
 
+  /// No description provided for @shoppingListPlanNeedMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} missing'**
+  String shoppingListPlanNeedMissing(String amount);
+
+  /// No description provided for @shoppingListPlanNeedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} {unit}'**
+  String shoppingListPlanNeedAmount(String amount, String unit);
+
+  /// No description provided for @shoppingListPlanNeedGroup.
+  ///
+  /// In en, this message translates to:
+  /// **'{day} · {meal}'**
+  String shoppingListPlanNeedGroup(String day, String meal);
+
+  /// No description provided for @shoppingListPlanNeedBrand.
+  ///
+  /// In en, this message translates to:
+  /// **'{brand} · {amount}'**
+  String shoppingListPlanNeedBrand(String brand, String amount);
+
+  /// No description provided for @shoppingListPlanNeedsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The needs of your plans could not be loaded'**
+  String get shoppingListPlanNeedsLoadFailed;
+
+  /// No description provided for @shoppingListPlanNeedsRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload plan needs'**
+  String get shoppingListPlanNeedsRetry;
+
+  /// No description provided for @shoppingListPlanNeedsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'For your plan'**
+  String get shoppingListPlanNeedsTitle;
+
   /// No description provided for @shoppingListSuggestionsTitle.
   ///
   /// In en, this message translates to:

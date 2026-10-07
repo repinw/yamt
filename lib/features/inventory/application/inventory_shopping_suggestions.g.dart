@@ -109,3 +109,60 @@ final class InventoryShoppingSuggestionsProvider
 
 String _$inventoryShoppingSuggestionsHash() =>
     r'c38cb70171abf04a1df05460f4a8c158d7c594ae';
+
+/// What to buy for the open plans the Vorrat cannot cover, grouped by day
+/// and meal, without the foods already on the shopping list.
+// ponytail: plans of found foods and cooked meals are left out like in the
+// demand; add them when the demand counts them.
+
+@ProviderFor(inventoryShoppingPlanNeedGroups)
+final inventoryShoppingPlanNeedGroupsProvider =
+    InventoryShoppingPlanNeedGroupsProvider._();
+
+/// What to buy for the open plans the Vorrat cannot cover, grouped by day
+/// and meal, without the foods already on the shopping list.
+// ponytail: plans of found foods and cooked meals are left out like in the
+// demand; add them when the demand counts them.
+
+final class InventoryShoppingPlanNeedGroupsProvider
+    extends
+        $FunctionalProvider<
+          AsyncValue<List<ShoppingPlanNeedGroup>>,
+          List<ShoppingPlanNeedGroup>,
+          FutureOr<List<ShoppingPlanNeedGroup>>
+        >
+    with
+        $FutureModifier<List<ShoppingPlanNeedGroup>>,
+        $FutureProvider<List<ShoppingPlanNeedGroup>> {
+  /// What to buy for the open plans the Vorrat cannot cover, grouped by day
+  /// and meal, without the foods already on the shopping list.
+  // ponytail: plans of found foods and cooked meals are left out like in the
+  // demand; add them when the demand counts them.
+  InventoryShoppingPlanNeedGroupsProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'inventoryShoppingPlanNeedGroupsProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$inventoryShoppingPlanNeedGroupsHash();
+
+  @$internal
+  @override
+  $FutureProviderElement<List<ShoppingPlanNeedGroup>> $createElement(
+    $ProviderPointer pointer,
+  ) => $FutureProviderElement(pointer);
+
+  @override
+  FutureOr<List<ShoppingPlanNeedGroup>> create(Ref ref) {
+    return inventoryShoppingPlanNeedGroups(ref);
+  }
+}
+
+String _$inventoryShoppingPlanNeedGroupsHash() =>
+    r'7b6ae1ee7c08c553a5545c0154ddff07dd7bf13e';

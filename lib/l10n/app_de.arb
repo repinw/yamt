@@ -2259,6 +2259,50 @@
   "caloriesProteinShortLetter": "P",
   "caloriesCarbsShortLetter": "K",
   "caloriesFatShortLetter": "F",
+  "shoppingListPlanNeedMissing": "{amount} fehlen",
+  "@shoppingListPlanNeedMissing": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListPlanNeedAmount": "{amount} {unit}",
+  "@shoppingListPlanNeedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListPlanNeedGroup": "{day} · {meal}",
+  "@shoppingListPlanNeedGroup": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListPlanNeedBrand": "{brand} · {amount}",
+  "@shoppingListPlanNeedBrand": {
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListPlanNeedsLoadFailed": "Der Bedarf deiner Pläne konnte nicht geladen werden",
+  "shoppingListPlanNeedsRetry": "Bedarf neu laden",
+  "shoppingListPlanNeedsTitle": "Für deinen Plan",
   "shoppingListSuggestionsTitle": "Vorschläge",
   "shoppingListSuggestionsExplanation": "Fast leere Vorräte und häufig gekaufte Artikel aus deinen Belegen.",
   "shoppingListSuggestionsEmpty": "Noch keine Vorschläge. Sie erscheinen bei niedrigem Vorrat oder wiederholten Käufen auf verschiedenen Belegen.",

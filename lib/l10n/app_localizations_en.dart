@@ -4671,6 +4671,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesFatShortLetter => 'F';
 
   @override
+  String shoppingListPlanNeedMissing(String amount) {
+    return '$amount missing';
+  }
+
+  @override
+  String shoppingListPlanNeedAmount(String amount, String unit) {
+    return '$amount $unit';
+  }
+
+  @override
+  String shoppingListPlanNeedGroup(String day, String meal) {
+    return '$day · $meal';
+  }
+
+  @override
+  String shoppingListPlanNeedBrand(String brand, String amount) {
+    return '$brand · $amount';
+  }
+
+  @override
+  String get shoppingListPlanNeedsLoadFailed =>
+      'The needs of your plans could not be loaded';
+
+  @override
+  String get shoppingListPlanNeedsRetry => 'Reload plan needs';
+
+  @override
+  String get shoppingListPlanNeedsTitle => 'For your plan';
+
+  @override
   String get shoppingListSuggestionsTitle => 'Suggestions';
 
   @override

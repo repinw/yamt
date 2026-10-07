@@ -12,8 +12,9 @@ typedef InventoryPlanDemand = ({
   /// ("verplant").
   Map<String, int> plannedByItemId,
 
-  /// Plans the Vorrat cannot cover in full ("fehlt").
-  Set<String> shortPlanIds,
+  /// Plans the Vorrat cannot cover in full ("fehlt"): the share of each
+  /// that no stock covers, from above 0 to 1, by plan id.
+  Map<String, double> missingShareByPlanId,
 });
 
 /// Walks [plans] by their day and takes each one's stock from [items] the
@@ -32,7 +33,7 @@ InventoryPlanDemand inventoryPlanDemand(
     for (final item in items) item.id: consumableInventoryAmount(item) ?? 0,
   };
   final planned = <String, int>{};
-  final short = <String>{};
+  final missing = <String, double>{};
   for (final plan in plans.sortedBy((plan) => plan.loggedAt)) {
     if (plan.sourceInventoryItemId == null) {
       continue;
@@ -42,7 +43,7 @@ InventoryPlanDemand inventoryPlanDemand(
       items,
     ).firstWhereOrNull((pack) => left[pack.item.id]! > 0);
     if (pack == null) {
-      short.add(plan.id);
+      missing[plan.id] = 1;
       continue;
     }
     final available = left[pack.item.id]!;
@@ -50,8 +51,8 @@ InventoryPlanDemand inventoryPlanDemand(
     left[pack.item.id] = available - taken;
     planned.update(pack.item.id, (sum) => sum + taken, ifAbsent: () => taken);
     if (taken < pack.amount) {
-      short.add(plan.id);
+      missing[plan.id] = (pack.amount - taken) / pack.amount;
     }
   }
-  return (plannedByItemId: planned, shortPlanIds: short);
+  return (plannedByItemId: planned, missingShareByPlanId: missing);
 }

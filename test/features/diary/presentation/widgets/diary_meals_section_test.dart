@@ -1143,6 +1143,8 @@ Future<void> _pumpDiaryWidget(
 
 Override _planDemand({Set<String> shortPlanIds = const {}}) =>
     openPlanDemandProvider.overrideWith(
-      (ref) async =>
-          (plannedByItemId: <String, int>{}, shortPlanIds: shortPlanIds),
+      (ref) async => (
+        plannedByItemId: <String, int>{},
+        missingShareByPlanId: {for (final id in shortPlanIds) id: 1.0},
+      ),
     );
