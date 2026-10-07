@@ -19,11 +19,13 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_pot_section.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_summary.dart';
+import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_detail_flow.dart';
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/prepared_meal_gone_flow.dart';
 import 'package:yamt/features/kitchen_utensils/application/'
     'kitchen_utensil_list_provider.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
@@ -58,7 +60,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
 
   late final Timer _arrivalTimer;
 
-  /// Whether a missing meal counts as gone instead of not arrived yet.
+  /// Whether a missing meal counts as not found instead of not arrived yet.
   var _waitedForMeal = false;
 
   @override
@@ -107,7 +109,8 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     if (toDiary) {
       // The eat page shows its own result.
       await PreparedMealEatFlow.eat(context: context, meal: cooked);
-      if (!mounted) {
+      // A meal gone meanwhile closed this page already.
+      if (!mounted || ModalRoute.of(context)?.isCurrent != true) {
         return;
       }
     }
@@ -121,7 +124,8 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
-    final mealAsync = ref.watch(cookedMealProvider(widget.mealId));
+    PreparedMealGoneFlow.closeWhenGone(ref, context, widget.mealId);
+    final mealAsync = ref.watch(livePreparedMealProvider(widget.mealId));
     final isSaving = ref
         .watch(cookedMealControllerProvider(widget.mealId))
         .isLoading;
@@ -137,6 +141,8 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
               child: mealAsync.when(
                 data: (meal) => switch (meal) {
                   final meal? => _body(context, meal, isSaving: isSaving),
+                  // A meal saved just now may still be on its way. A meal
+                  // that was here and is gone closes the page instead.
                   null when _waitedForMeal => Center(
                     child: Text(l10n.cookedLoadFailed),
                   ),

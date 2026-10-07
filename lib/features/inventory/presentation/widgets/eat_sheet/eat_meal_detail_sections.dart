@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -55,29 +55,14 @@ class EatMealDetailSections extends ConsumerStatefulWidget {
 class _EatMealDetailSectionsState extends ConsumerState<EatMealDetailSections> {
   var _isWorking = false;
 
-  PreparedMeal? _liveMeal(List<PreparedMeal>? meals) =>
-      meals?.firstWhereOrNull((meal) => meal.id == widget.meal.id);
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
-    ref.listen(
-      preparedMealsControllerProvider.select(
-        (value) => value.hasValue && _liveMeal(value.value) == null,
-      ),
-      (_, isGone) {
-        if (isGone) {
-          Navigator.of(context).pop();
-        }
-      },
-    );
+    // The page closes when the meal is gone; until then it shows the meal as
+    // the Vorrat holds it now.
     final meal =
-        ref.watch(
-          preparedMealsControllerProvider.select(
-            (value) => _liveMeal(value.value),
-          ),
-        ) ??
+        ref.watch(livePreparedMealProvider(widget.meal.id)).value ??
         widget.meal;
     final enabled = !_isWorking;
 

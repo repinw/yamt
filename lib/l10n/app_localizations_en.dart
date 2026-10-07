@@ -5839,6 +5839,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookedLoadFailed => 'Could not load the meal.';
 
   @override
+  String get preparedMealGone => 'Meal is no longer in stock';
+
+  @override
   String cookbookInPotSince(String time) {
     return 'In the pot since $time';
   }

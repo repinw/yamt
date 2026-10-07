@@ -9861,6 +9861,12 @@ abstract class AppLocalizations {
   /// **'Could not load the meal.'**
   String get cookedLoadFailed;
 
+  /// No description provided for @preparedMealGone.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal is no longer in stock'**
+  String get preparedMealGone;
+
   /// No description provided for @cookbookInPotSince.
   ///
   /// In en, this message translates to:

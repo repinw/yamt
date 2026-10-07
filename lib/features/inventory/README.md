@@ -34,7 +34,9 @@ Other features may consume these public Inventory entry points:
 - `InventoryPage`
 - `InventoryShoppingListPage` (finished shopping surface with stock suggestions)
 - `application/inventory_quick_eat_data_providers.dart` for repository-backed
-  quick-eat inventory data used by integrating features.
+  quick-eat inventory data used by integrating features, and
+  `livePreparedMealProvider`, the one live source of a Vorrat meal by id: the
+  stored meal, which every meal page reads.
 - `application/inventory_eat_service.dart`: eats a Vorrat item into the
   diary. `InventoryPendingConsumptionStore.stage` reserves the stock (capped
   at what the item holds), `InventoryEatService.log` saves the entry with it
@@ -106,6 +108,10 @@ already documented as a reusable presentation surface.
   entry, written in one batch with every stock change.
 - `presentation/prepared_meal_detail_flow.dart`: `PreparedMealDetailFlow.open`
   opens the detail page of a Vorrat meal with its open rows and meal actions.
+- `presentation/prepared_meal_gone_flow.dart`:
+  `PreparedMealGoneFlow.closeWhenGone` closes a meal page with "Mahlzeit nicht
+  mehr im Vorrat" when its meal leaves the Vorrat; every meal page, including
+  the Kochbuch's "Gekocht" page, uses it.
 - `presentation/prepared_meal_eat_flow.dart`: `PreparedMealEatFlow.eat` opens
   the eat sheet for a prepared meal and logs the eaten portions as one bundle
   entry.
