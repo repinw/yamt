@@ -70,7 +70,7 @@ final class DiaryPlanDetailsControllerProvider
 }
 
 String _$diaryPlanDetailsControllerHash() =>
-    r'58edcc59721d6c2de461076959c04a773cf44b61';
+    r'038317a1e38a1851a7eedd9501a475480df23330';
 
 /// Controller of the details page of the plan [planId] on [planDay]: holds
 /// the day, meal, amount and portions the user picks until they save. Null

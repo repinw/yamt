@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_details_controller.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
@@ -158,5 +159,125 @@ void main() {
       ),
       isNull,
     );
+  });
+
+  group('the day changes while the page is open', () {
+    late FakeDiaryDayDashboardController day;
+    late ProviderContainer container;
+    final provider = diaryPlanDetailsControllerProvider(
+      'meal-plan',
+      DateTime(2026, 10, 6),
+      DateTime(2026, 10, 5),
+    );
+
+    void setUpDay(PreparedMeal meal) {
+      day = FakeDiaryDayDashboardController(
+        diaryDashboardLoadedStateForTest(
+          selectedDay: planDay,
+          plannedEntries: [plan],
+        ),
+      );
+      container = ProviderContainer(
+        overrides: [
+          clockProvider.overrideWithValue(() => DateTime(2026, 10, 5, 13)),
+          inventoryQuickEatMealsProvider.overrideWith(
+            (ref) => Stream.value([meal]),
+          ),
+          diaryDayDashboardControllerProvider(planDay).overrideWith(() => day),
+        ],
+      );
+      addTearDown(container.dispose);
+      container.listen(provider, (_, _) {});
+    }
+
+    test('a reload without data keeps the page and its picks', () async {
+      setUpDay(_meal());
+      await pumpEventQueue();
+      container.read(provider.notifier).setPortions(2);
+
+      replaceFakeDiaryDashboardState(
+        day,
+        const DiaryDayDashboardState(
+          data: null,
+          isFromCache: false,
+          isRefreshing: true,
+          error: null,
+        ),
+      );
+
+      expect(container.read(provider)?.portions, 2);
+    });
+
+    test('a plan moved elsewhere moves the page along', () async {
+      setUpDay(_meal());
+      await pumpEventQueue();
+
+      final moved = plan.copyWith(mealType: MealType.lunch);
+      replaceFakeDiaryDashboardState(
+        day,
+        diaryDashboardLoadedStateForTest(
+          selectedDay: planDay,
+          plannedEntries: [moved],
+        ),
+      );
+
+      final state = container.read(provider)!;
+      expect(state.mealType, MealType.lunch);
+      expect(state.isChanged, isFalse);
+    });
+
+    test('picked portions never exceed what the meal has left', () async {
+      setUpDay(_meal(remaining: 1));
+      await pumpEventQueue();
+
+      container.read(provider.notifier).setPortions(3);
+
+      expect(container.read(provider)?.portions, 1);
+    });
+  });
+
+  test('an amount the user did not type follows the plan', () {
+    CalorieEntry oats(double grams) => CalorieEntry.create(
+      id: 'oats',
+      userId: 'user-1',
+      name: 'Oats',
+      mealType: MealType.breakfast,
+      consumedAmount: grams,
+      consumedUnit: ConsumedUnit.grams,
+      per100Kcal: 370,
+      per100Protein: 13,
+      per100Carbs: 59,
+      per100Fat: 7,
+      loggedAt: DateTime(2026, 10, 6, 8),
+      createdAt: DateTime(2026, 10, 5),
+      updatedAt: DateTime(2026, 10, 5),
+    );
+    final day = FakeDiaryDayDashboardController(
+      diaryDashboardLoadedStateForTest(
+        selectedDay: planDay,
+        plannedEntries: [oats(200)],
+      ),
+    );
+    final container = ProviderContainer(
+      overrides: [
+        clockProvider.overrideWithValue(() => DateTime(2026, 10, 5, 13)),
+        diaryDayDashboardControllerProvider(planDay).overrideWith(() => day),
+      ],
+    );
+    addTearDown(container.dispose);
+    final provider = diaryPlanDetailsControllerProvider('oats', planDay, today);
+    container.listen(provider, (_, _) {});
+
+    replaceFakeDiaryDashboardState(
+      day,
+      diaryDashboardLoadedStateForTest(
+        selectedDay: planDay,
+        plannedEntries: [oats(300)],
+      ),
+    );
+
+    final state = container.read(provider)!;
+    expect(state.amount.amountText, '300');
+    expect(state.isChanged, isFalse);
   });
 }

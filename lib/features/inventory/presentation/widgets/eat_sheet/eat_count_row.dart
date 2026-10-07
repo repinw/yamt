@@ -67,7 +67,7 @@ class EatCountRow extends StatelessWidget {
             key: decreaseKey,
             label: '−',
             isSelected: false,
-            onPressed: onDecrease ?? () {},
+            onPressed: onDecrease,
           ),
         ),
         Text(
@@ -84,7 +84,7 @@ class EatCountRow extends StatelessWidget {
             key: increaseKey,
             label: '+',
             isSelected: false,
-            onPressed: onIncrease ?? () {},
+            onPressed: onIncrease,
           ),
         ),
       ],

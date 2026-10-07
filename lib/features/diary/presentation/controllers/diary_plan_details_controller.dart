@@ -21,13 +21,21 @@ class DiaryPlanDetailsController extends _$DiaryPlanDetailsController {
     DateTime planDay,
     DateTime today,
   ) {
-    final plan = ref.watch(
+    final day = ref.watch(
       diaryDayDashboardControllerProvider(planDay).select(
-        (state) => state.data?.plannedEntries.firstWhereOrNull(
-          (entry) => entry.id == planId,
+        (state) => (
+          isLoaded: state.data != null,
+          plan: state.data?.plannedEntries.firstWhereOrNull(
+            (entry) => entry.id == planId,
+          ),
         ),
       ),
     );
+    // A day that reloads without data keeps the page as it is.
+    if (!day.isLoaded) {
+      return stateOrNull;
+    }
+    final plan = day.plan;
     if (plan == null) {
       return null;
     }
@@ -39,21 +47,34 @@ class DiaryPlanDetailsController extends _$DiaryPlanDetailsController {
     final now = ref.watch(clockProvider)();
     // The picks stay when the plan or its meal changes.
     final previous = stateOrNull;
-    return DiaryPlanDetailsState(
-      // The plan as stored now, with the amount the user typed.
+    final previousText = previous?.amount.amountText;
+    final next = DiaryPlanDetailsState(
+      // The plan as stored now. An amount the user did not type follows it.
       amount: DiaryEntryDetailsState(
         entry: plan,
         amountText:
-            previous?.amount.amountText ??
-            diaryEntryAmountText(plan.consumedAmount),
+            previousText == null ||
+                previousText ==
+                    diaryEntryAmountText(previous!.plan.consumedAmount)
+            ? diaryEntryAmountText(plan.consumedAmount)
+            : previousText,
         today: today,
       ),
-      loggedAt: previous?.loggedAt ?? plan.loggedAt,
-      mealType: previous?.mealType ?? plan.mealType,
+      // A day or meal the user did not pick follows the plan.
+      loggedAt: previous == null || previous.loggedAt == previous.plan.loggedAt
+          ? plan.loggedAt
+          : previous.loggedAt,
+      mealType: previous == null || previous.mealType == previous.plan.mealType
+          ? plan.mealType
+          : previous.mealType,
       now: previous?.now ?? now,
       meal: meal,
       pickedPortions: previous?.pickedPortions,
     );
+    // A pick above what the meal has left now drops to it for good.
+    return previous?.pickedPortions == null
+        ? next
+        : next.copyWith(pickedPortions: next.portions);
   }
 
   /// Takes a typed amount.
