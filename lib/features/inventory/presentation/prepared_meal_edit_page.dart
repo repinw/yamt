@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_combine_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
@@ -76,7 +77,7 @@ class _PreparedMealEditPageState extends ConsumerState<PreparedMealEditPage>
 
   PreparedMeal get _meal => widget.meal;
 
-  bool get _isLocked => _meal.remainingPortions < _meal.totalPortions;
+  bool get _isLocked => !_meal.allows(PreparedMealAction.editIngredients);
 
   @override
   void initState() {

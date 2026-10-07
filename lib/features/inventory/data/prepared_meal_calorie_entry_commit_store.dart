@@ -14,6 +14,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
 part 'prepared_meal_calorie_entry_commit_store.g.dart';
 
@@ -104,25 +105,15 @@ class FirestorePreparedMealCalorieEntryCommitStore
         return false;
       }
       final (:storedMeal, meal: currentMeal) = stored;
-      if (currentMeal.hasPendingRecipeIngredients) {
+      if (!currentMeal.allowsPortions(
+        PreparedMealAction.eat,
+        consumedPortions,
+      )) {
         log(
-          'Prepared meal $preparedMealId still has pending ingredients.',
-          name: _commitStoreLogName,
-        );
-        return false;
-      }
-      if (currentMeal.isInPot) {
-        log(
-          'Prepared meal $preparedMealId is still in the pot.',
-          name: _commitStoreLogName,
-        );
-        return false;
-      }
-      if (currentMeal.remainingPortions < consumedPortions) {
-        log(
-          'Prepared meal $preparedMealId has only '
-          '${currentMeal.remainingPortions} remaining portions, '
-          'requested $consumedPortions.',
+          'Prepared meal $preparedMealId cannot give $consumedPortions '
+          'portions (inPot=${currentMeal.isInPot}, '
+          'openRows=${currentMeal.pendingRecipeIngredients.length}, '
+          'remaining=${currentMeal.remainingPortions}).',
           name: _commitStoreLogName,
         );
         return false;
