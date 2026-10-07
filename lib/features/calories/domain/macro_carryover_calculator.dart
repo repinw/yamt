@@ -15,15 +15,6 @@ const carryoverCarbFraction = 0.75;
 /// Proportion of carryover allocated to fat (25%).
 const carryoverFatFraction = 0.25;
 
-/// Minimum carbs in grams (Ketose- / Unterzuckerungsschutz).
-const minimumCarbsFloorGrams = 100.0;
-
-/// Minimum fat in grams per kg body weight (Schutzregel B - Fat Floor).
-const minimumFatFloorGramsPerKg = 0.6;
-
-/// Minimum fat percentage of daily calories (Schutzregel B - Fat Floor).
-const minimumFatCalorieFraction = 0.20;
-
 /// Represents the delta applied to base macros due to carryover.
 @immutable
 class MacroCarryoverDelta {
@@ -200,12 +191,16 @@ abstract final class MacroCarryoverCalculator {
     required double carbsReductionKcal,
   }) {
     final reductionGrams = carbsReductionKcal / carbEnergyDensityKcalPerGram;
-    final minCarbs = math.min<double>(baseCarbs, minimumCarbsFloorGrams);
+    final minCarbs = math.min<double>(
+      baseCarbs,
+      MacroBudgetCalculator.minimumCarbsFloorGrams,
+    );
     final newCarbs = math.max<double>(minCarbs, baseCarbs - reductionGrams);
     final delta = newCarbs - baseCarbs;
     final wasFloorApplied =
-        newCarbs == minimumCarbsFloorGrams ||
-        (baseCarbs < minimumCarbsFloorGrams && delta == 0);
+        newCarbs == MacroBudgetCalculator.minimumCarbsFloorGrams ||
+        (baseCarbs < MacroBudgetCalculator.minimumCarbsFloorGrams &&
+            delta == 0);
     return (delta: delta, wasFloorApplied: wasFloorApplied);
   }
 
@@ -218,9 +213,10 @@ abstract final class MacroCarryoverCalculator {
     final effectiveDayKcal = baseGoalKcal != null
         ? math.max<double>(0, baseGoalKcal - reductionKcal)
         : 0.0;
-    final fatFloorByWeight = safeWeight * minimumFatFloorGramsPerKg;
+    final fatFloorByWeight =
+        safeWeight * MacroBudgetCalculator.minimumFatFloorGramsPerKg;
     final fatFloorByCalories = effectiveDayKcal > 0
-        ? (effectiveDayKcal * minimumFatCalorieFraction) /
+        ? (effectiveDayKcal * MacroBudgetCalculator.minimumFatCalorieFraction) /
               fatEnergyDensityKcalPerGram
         : 0.0;
     return math.max<double>(fatFloorByWeight, fatFloorByCalories);
