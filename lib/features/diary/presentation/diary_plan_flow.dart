@@ -4,6 +4,8 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_plan_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_plan_details_page.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_plan_accept_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Opens the details of [plan] and runs what the user picks there. With
@@ -78,7 +80,9 @@ Future<void> acceptDiaryPlanFlow(
   final result = await controller.accept(plan);
   if (result == null) {
     messenger.showAppSnackBar(
-      l10n.diaryPlanAcceptFailed,
+      _isMealInPot(container)
+          ? l10n.diaryPlanAcceptMealInPot
+          : l10n.diaryPlanAcceptFailed,
       tone: AppSnackBarTone.error,
     );
     return;
@@ -133,3 +137,10 @@ Future<void> acceptAllDiaryPlansFlow(
     },
   );
 }
+
+/// Whether the last accept failed because its meal is still in the pot.
+bool _isMealInPot(ProviderContainer container) =>
+    switch (container.read(diaryPlanControllerProvider).error) {
+      InventoryPlanAcceptException(:final isMealInPot) => isMealInPot,
+      _ => false,
+    };

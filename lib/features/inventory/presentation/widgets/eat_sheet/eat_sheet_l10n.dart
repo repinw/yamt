@@ -189,6 +189,10 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
 extension PreparedMealEatSheetTexts on PreparedMealEatSheetState {
   /// Unit after the amount.
   String amountUnit(AppLocalizations l10n) {
+    // In the pot the meal is one portion: the whole pot.
+    if (calculator.meal.isInPot) {
+      return l10n.eatPagePotUnit;
+    }
     return switch (mode) {
       PreparedMealEatAmountMode.portions => l10n.eatPagePortionsUnit,
       PreparedMealEatAmountMode.grams => l10n.inventoryUnitGram,

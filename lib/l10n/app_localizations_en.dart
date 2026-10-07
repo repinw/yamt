@@ -814,6 +814,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryItemEatSheetAddMoreAction => '+ More';
 
   @override
+  String get eatPagePotUnit => 'pot';
+
+  @override
   String get eatPagePlanAction => 'Plan';
 
   @override
@@ -2583,6 +2586,9 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get diaryPlanAcceptMealInPot => 'Mark the meal as cooked first';
 
   @override
   String get diaryPlanMealPrepTag => 'Meal Prep';

@@ -27,10 +27,14 @@ typedef InventoryPlanAcceptResult = ({CalorieEntry entry, bool missedStock});
 /// Thrown when a plan could not be eaten or its eat could not be undone.
 class InventoryPlanAcceptException implements Exception {
   /// Creates the exception for [message].
-  const new(this.message);
+  const new(this.message, {this.isMealInPot = false});
 
   /// What failed.
   final String message;
+
+  /// Whether the planned meal is still in the pot, so it can be eaten once
+  /// "Gekocht" has given it its portions.
+  final bool isMealInPot;
 
   @override
   String toString() => 'InventoryPlanAcceptException: $message';
@@ -115,8 +119,14 @@ class InventoryPlanAcceptService {
   ) async {
     if (plan.bundleSourcePreparedMealId case final mealId?) {
       final meal = meals.firstWhereOrNull((meal) => meal.id == mealId);
-      final portions = plan.bundleConsumedPortions ?? 0;
-      if (meal != null && !meal.isInPot && meal.remainingPortions >= portions) {
+      if (meal != null && meal.isInPot) {
+        throw InventoryPlanAcceptException(
+          'The meal $mealId is still in the pot.',
+          isMealInPot: true,
+        );
+      }
+      final portions = meal == null ? 0 : _mealPortions(plan, meal);
+      if (meal != null && portions > 0 && meal.remainingPortions >= portions) {
         final eaten = await _quickEat.consumePreparedMeal(
           meal: meal,
           consumedPortions: portions,
@@ -158,6 +168,18 @@ class InventoryPlanAcceptService {
     // The calorie editor keeps the stock reserved; accepting has no editor.
     await _pendings.discard(pending.id);
     throw InventoryPlanAcceptException('The plan ${plan.id} was not eaten.');
+  }
+
+  /// The portions of [meal] that [plan] eats: the same share of the meal as
+  /// when it was planned. A meal planned in the pot was one portion then and
+  /// has its real portions now.
+  static num _mealPortions(CalorieEntry plan, PreparedMeal meal) {
+    final planned = plan.bundleConsumedPortions ?? 0;
+    final plannedTotal = plan.bundleTotalPortions;
+    if (plannedTotal == null || plannedTotal <= 0) {
+      return planned;
+    }
+    return planned * meal.totalPortions / plannedTotal;
   }
 
   /// The stock amount [plan] takes from [item]: the planned amount from the

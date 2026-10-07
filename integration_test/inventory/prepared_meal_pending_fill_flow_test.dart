@@ -14,6 +14,7 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_header.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_fill_sheet.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
@@ -166,9 +167,8 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a meal in the pot says so and waits for "Gekocht"', (
-    tester,
-  ) async {
+  testWidgets('a meal in the pot says so, waits for "Gekocht", and plans a '
+      'share of the pot', (tester) async {
     await tester.pumpWidget(_harness(<String>[], inPot: true));
     await _settle(tester);
 
@@ -189,6 +189,14 @@ void main() {
       find.byKey(const Key('prepared_meal_eat_confirm_button')),
     );
     expect(confirm.onPressed, isNull);
+    // Its rows are filled, so it plans with kcal, measured in pots.
+    expect(
+      tester
+          .widget<IconButton>(find.byKey(EatPageScaffold.planButtonKey))
+          .onPressed,
+      isNotNull,
+    );
+    expect(find.text('Topf'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 }

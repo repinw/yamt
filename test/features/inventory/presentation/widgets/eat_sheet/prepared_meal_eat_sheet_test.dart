@@ -7,6 +7,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_components_list.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -286,15 +287,16 @@ void main() {
     expect(find.text('66.7 g'), findsOneWidget);
   });
 
-  testWidgets('a meal in the pot cannot be logged before "Gekocht"', (
-    tester,
-  ) async {
+  testWidgets('a meal in the pot cannot be logged before "Gekocht", only '
+      'planned as a share of the pot', (tester) async {
     await _openEat(tester, _meal().copyWith(inPot: true));
 
     expect(find.text('In the pot'), findsOneWidget);
+    expect(find.text('pot'), findsOneWidget);
     expect(
       tester.widget<FilledButton>(find.byKey(_confirmKey)).onPressed,
       isNull,
     );
+    expect(find.byKey(EatPageScaffold.planButtonKey), findsOneWidget);
   });
 }

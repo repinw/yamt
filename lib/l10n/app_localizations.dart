@@ -1432,6 +1432,12 @@ abstract class AppLocalizations {
   /// **'+ More'**
   String get inventoryItemEatSheetAddMoreAction;
 
+  /// No description provided for @eatPagePotUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'pot'**
+  String get eatPagePotUnit;
+
   /// No description provided for @eatPagePlanAction.
   ///
   /// In en, this message translates to:
@@ -4467,6 +4473,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{1 plan eaten – not all in stock} other{{count} plans eaten – not all in stock}}'**
   String diaryPlansAcceptedWithoutStock(int count);
+
+  /// No description provided for @diaryPlanAcceptMealInPot.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark the meal as cooked first'**
+  String get diaryPlanAcceptMealInPot;
 
   /// No description provided for @diaryPlanMealPrepTag.
   ///
