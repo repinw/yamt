@@ -21,12 +21,12 @@ class ReceiptItemMissingValuesLine extends StatelessWidget {
     if (product == null || item.status == ReceiptItemStatus.ignored) {
       return const SizedBox.shrink();
     }
-    // A receipt product carries no serving, so grams per piece are unknown
-    // here, not missing. The Vorrat pages name them.
+    // Only the package size is named here; the Vorrat pages ask for the
+    // grams per piece.
     final size = missingPackageSize(
       packageSize: item.packageWeight ?? product.packageSize,
-      servingQuantity: null,
-      servingQuantityUnit: null,
+      servingQuantity: product.servingQuantity,
+      servingQuantityUnit: product.servingQuantityUnit,
     );
     final missing = [
       if (size == ProductMissingValue.packageSize) size!,
