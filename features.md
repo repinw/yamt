@@ -426,7 +426,8 @@ and feature description docs. This is product-facing; architecture rules stay in
 - One product search page with barcode, AI, and own-product actions, and the product editor.
 - Adding to the Vorrat takes one food per add, from the Vorrat's add button:
   one confirmation stores it, and the page closes back to the Vorrat.
-  Several foods at once come from the receipt scan.
+  Several foods at once come from the receipt scan. The diary search works
+  the same way: no "+ Mehr", one food per pick.
 - Barcode scan lookup with multiple-candidate picker and not-found handling.
 - Voice search for manual product text where supported.
 - AI food creation from photos and/or a description (one of both is
@@ -497,7 +498,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   keeps the whole package in the Vorrat with the eaten amount taken off. A product with g or ml but no package size is eaten in that
   unit. The eat page always shows the per-100 column.
 - Recent manual items (up to 20) shown while the search query is empty.
-- Several products can be added in one visit; a counter overlay shows them.
+- One product per visit, in the diary as in the Vorrat: one confirmation
+  logs or stores it and the page closes (#519, #532).
 
 ## Product Nutrition OCR
 

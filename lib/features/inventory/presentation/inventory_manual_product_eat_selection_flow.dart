@@ -72,9 +72,6 @@ abstract final class InventoryManualProductEatSelectionFlow {
       ),
       initialLoggedAt: preselectedLoggedAt,
       initialMealType: preselectedMealType,
-      addMoreActionText: continueBatchOnConfirm
-          ? null
-          : l10n.inventoryItemEatSheetAddMoreAction,
       hasOpenStock: true,
     );
   }

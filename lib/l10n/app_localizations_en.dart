@@ -816,9 +816,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageStoreIconTooltip => 'To stock';
 
   @override
-  String get inventoryItemEatSheetAddMoreAction => '+ More';
-
-  @override
   String get eatPagePotUnit => 'pot';
 
   @override

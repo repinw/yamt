@@ -6,7 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/domain/eat_selection.dart';
@@ -290,22 +289,6 @@ _MockFirebaseAuth _signedInAuth() {
   return firebaseAuth;
 }
 
-Future<void> _tapAddMore(WidgetTester tester) async {
-  final addMoreButton = find.byKey(
-    const Key('inventory_item_amount_dialog_add_more_button'),
-  );
-  await tester.ensureVisible(addMoreButton);
-  await tester.tap(addMoreButton);
-  await tester.pumpAndSettle();
-  await _pumpUntil(
-    tester,
-    () => find
-        .byKey(const Key('product_search_hub_selection_overlay'))
-        .evaluate()
-        .isNotEmpty,
-  );
-}
-
 void main() {
   testWidgets('renders search page with actions and recent products', (
     tester,
@@ -563,7 +546,7 @@ void main() {
     });
   }
 
-  testWidgets('diary add-more eat stays on the page with overlay', (
+  testWidgets('a diary food logs once and closes back to the diary', (
     tester,
   ) async {
     final inventoryController = _SuccessfulInventoryItemsController();
@@ -582,81 +565,20 @@ void main() {
       find.byKey(const Key('product_search_hub_search_result_4006381333931')),
     );
     await tester.pumpAndSettle();
-    await _tapAddMore(tester);
 
-    expect(find.text('Eat food'), findsOneWidget);
-    expect(
-      find.byKey(const Key('product_search_hub_selection_overlay')),
-      findsOneWidget,
-    );
-    expect(inventoryController.addedItems, hasLength(1));
-  });
-
-  testWidgets('diary batch mode makes next add continue to overlay', (
-    tester,
-  ) async {
-    final inventoryController = _SuccessfulInventoryItemsController();
-
-    await _pumpRouteHarness(
-      tester,
-      args: _diaryArgs(),
-      childRouteResults: [
-        _diarySheetResult(id: 'manual-item-1', name: 'Milk'),
-        _diarySheetResult(id: 'manual-item-2', name: 'Bread'),
-      ],
-      inventoryController: inventoryController,
-      firebaseAuth: _signedInAuth(),
-      commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
-    );
-
-    await tester.tap(
-      find.byKey(const Key('product_search_hub_search_create_own_action')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('return_child_result')));
-    await tester.pumpAndSettle();
-    await _tapAddMore(tester);
-    // The "added" snack bar covers the top of the fake child page.
-    await tester.pump(AppDurations.snackBar);
-    await tester.pumpAndSettle();
-
-    await tester.tap(
-      find.byKey(const Key('product_search_hub_search_create_own_action')),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('return_child_result')));
-    await tester.pump();
-
-    final addButton = find.byKey(
-      const Key('inventory_item_amount_dialog_confirm_button'),
-    );
-    await _pumpUntil(tester, () => addButton.evaluate().isNotEmpty);
-    await tester.pump(const Duration(milliseconds: 500));
+    // One food per pick (#519): the eat page has no "+ Mehr".
     expect(
       find.byKey(const Key('inventory_item_amount_dialog_add_more_button')),
       findsNothing,
     );
-
-    expect(addButton, findsOneWidget);
-    await tester.ensureVisible(addButton);
-    await tester.tap(addButton);
-    await tester.pump();
-    await _pumpUntil(
-      tester,
-      () => find
-          .byKey(const Key('product_search_hub_selection_overlay'))
-          .evaluate()
-          .isNotEmpty,
+    final confirm = find.byKey(
+      const Key('inventory_item_amount_dialog_confirm_button'),
     );
+    await tester.ensureVisible(confirm);
+    await tester.tap(confirm);
+    await tester.pumpAndSettle();
 
-    expect(
-      find.descendant(
-        of: find.byKey(const Key('product_search_hub_cart_count_button')),
-        matching: find.text('2'),
-      ),
-      findsOneWidget,
-    );
-    expect(inventoryController.addedItems, hasLength(2));
+    expect(find.text('caller'), findsOneWidget);
   });
 
   testWidgets('selection mode returns the edited product to the caller', (
@@ -1234,12 +1156,6 @@ void main() {
     );
     expect(find.byIcon(Icons.content_copy_rounded), findsNothing);
   });
-}
-
-Future<void> _pumpUntil(WidgetTester tester, bool Function() condition) async {
-  for (var attempts = 0; attempts < 20 && !condition(); attempts++) {
-    await tester.pump(const Duration(milliseconds: 50));
-  }
 }
 
 class _FakeInventoryItemRepository

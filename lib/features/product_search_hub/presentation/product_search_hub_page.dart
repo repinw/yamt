@@ -218,7 +218,6 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       context: context,
       args: widget.args,
       result: result,
-      continuesBatch: _selectionState.selections.isNotEmpty,
     );
     if (reviewed.closed || !mounted) return reviewed.result;
 
@@ -230,7 +229,6 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       sourceKey: sourceKey,
       result: reviewed.result,
       mode: reviewed.mode,
-      continueDiaryBatch: reviewed.continuesBatch,
     );
     if (!context.mounted) {
       return null;

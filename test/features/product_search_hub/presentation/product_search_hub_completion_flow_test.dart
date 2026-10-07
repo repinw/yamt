@@ -533,55 +533,6 @@ void main() {
     expect(inventoryController.stagedConsumptions.single.amount, 200);
   });
 
-  testWidgets('diary mode add-more eat returns overlay selection', (
-    tester,
-  ) async {
-    final inventoryController = _SuccessfulInventoryItemsController();
-    ProductSearchHubCompletionResult? completion;
-
-    await tester.pumpWidget(
-      _buildCompletionHarness(
-        inventoryController: inventoryController,
-        firebaseAuth: firebaseAuth,
-        commitStore: const _SuccessfulInventoryCalorieEntryCommitStore(),
-        onRun: (context, container, l10n) async {
-          completion = await completeProductSearchHubResult(
-            context: context,
-            container: container,
-            l10n: l10n,
-            args: const ProductSearchHubRouteArgs.diary(),
-            sourceKey: '4006381333931',
-            result: _manualResult(item: _manualItemWithNutrition()),
-          );
-        },
-      ),
-    );
-
-    await tester.tap(find.text('run'));
-    await tester.pumpAndSettle();
-    final addMoreButton = find.byKey(
-      const Key('inventory_item_amount_dialog_add_more_button'),
-    );
-    await tester.ensureVisible(addMoreButton);
-    await tester.tap(addMoreButton);
-    await tester.pumpAndSettle();
-    await _pumpUntil(tester, () => completion != null);
-
-    expect(completion, isNotNull);
-    expect(completion?.shouldCloseHub, isFalse);
-    final selection = completion?.selection;
-    expect(selection, isNotNull);
-    if (selection == null) {
-      fail('Expected saved selection.');
-    }
-    expect(selection.sourceKey, '4006381333931');
-    expect(inventoryController.addedItems, hasLength(1));
-    expect(inventoryController.stagedConsumptions, hasLength(1));
-    expect(selection.item.id, inventoryController.addedItems.single.id);
-    expect(selection.calorieEntryId, isNotNull);
-    expect(selection.calorieEntryId, isNotEmpty);
-  });
-
   test(
     'removing diary selection deletes diary entry and inventory item',
     () async {
@@ -876,12 +827,6 @@ class _RecordingInventoryItemsController extends InventoryItemsController {
     int amount,
   ) async {
     return null;
-  }
-}
-
-Future<void> _pumpUntil(WidgetTester tester, bool Function() condition) async {
-  for (var attempts = 0; attempts < 20 && !condition(); attempts++) {
-    await tester.pump(const Duration(milliseconds: 50));
   }
 }
 
