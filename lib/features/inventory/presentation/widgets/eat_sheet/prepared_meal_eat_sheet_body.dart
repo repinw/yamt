@@ -93,6 +93,16 @@ class _PreparedMealEatSheetBodyState
     // The entered portions start from the opened copy, so a meal that was in
     // the pot when the page opened waits for "Gekocht" and a reopen.
     final isInPot = widget.meal.isInPot || meal.isInPot;
+    // A meal plans with kcal once every row is filled or ignored, also from
+    // the pot; eating it waits for "Gekocht". A pot cooked while the page is
+    // open waits for a reopen, as the entered share would turn into
+    // portions.
+    final canPlan =
+        !meal.hasPendingRecipeIngredients &&
+        widget.meal.isInPot == meal.isInPot;
+    final canEat =
+        !isInPot &&
+        (widget.actions == null || !meal.hasPendingRecipeIngredients);
     final nutrition = state.nutrition;
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
     final imageBytes = imageRef == null
@@ -106,24 +116,16 @@ class _PreparedMealEatSheetBodyState
         mealType: state.mealType,
         onDayPicked: _controller.setLoggedDay,
         onMealTypeChanged: _controller.setMealType,
-        allowsPlanDays: !isInPot,
+        allowsPlanDays: canPlan,
       ),
       isPlan: state.isPlan,
       kcal: nutrition?.eaten.kcal,
       confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),
       // On the detail page a meal with missing ingredients can be logged
       // only when they are filled or ignored, as on the old meal card. A
-      // meal in the pot gets its portions at "Gekocht" first.
-      onConfirm:
-          isInPot ||
-              (widget.actions != null && meal.hasPendingRecipeIngredients)
-          ? null
-          : _submit,
-      onPlan:
-          isInPot ||
-              (widget.actions != null && meal.hasPendingRecipeIngredients)
-          ? null
-          : _plan,
+      // meal in the pot can only be planned, a share of the pot.
+      onConfirm: canEat || (canPlan && state.isPlan) ? _submit : null,
+      onPlan: canPlan ? _plan : null,
       cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
       children: [
         EatPageHeader(

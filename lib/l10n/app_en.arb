@@ -469,6 +469,7 @@
   "eatPagePlanIconTooltip": "Plan",
   "eatPageStoreIconTooltip": "To stock",
   "inventoryItemEatSheetAddMoreAction": "+ More",
+  "eatPagePotUnit": "pot",
   "eatPagePlanAction": "Plan",
   "eatPageNutritionTitle": "Nutrition",
   "eatPageItemTitle": "Item",
@@ -1313,6 +1314,7 @@
       }
     }
   },
+  "diaryPlanAcceptMealInPot": "Mark the meal as cooked first",
   "diaryPlanMealPrepTag": "Meal Prep",
   "diaryBalanceLoadFailed": "Balance could not be loaded",
   "diaryNutritionLoadFailed": "Nutrition could not be loaded",

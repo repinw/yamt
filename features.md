@@ -541,7 +541,11 @@ and feature description docs. This is product-facing; architecture rules stay in
 - A meal in the pot shows "Im Topf" in the Vorrat list. Its detail page
   says "Im Topf" and keeps the meal actions, but blocks "Ins Tagebuch", and the
   diary does not offer the meal, because its portions are set at "Gekocht".
-  Saving a diary entry for a meal in the pot fails as well.
+  Saving a diary entry for a meal in the pot fails as well. Once no row is
+  open, the meal can be planned from its detail page as a share of the pot
+  (the ruler counts in "Topf"; the whole pot is 1). Accepting such a plan
+  after "Gekocht" eats the same share of the cooked portions; before
+  "Gekocht" the check button says to mark the meal as cooked first.
 - A card under "Offen" says "Im Topf seit …" (with "· N Zeilen offen" when
   rows are open) and "Weiter" opens the "Gekocht" page; the time becomes the
   day for a pot from an earlier day. A cooked meal with open rows says

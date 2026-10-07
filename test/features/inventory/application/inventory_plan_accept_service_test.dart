@@ -349,4 +349,50 @@ void main() {
 
     verify(() => pendings.stage(any(), 60)).called(1);
   });
+
+  test('a meal planned in the pot eats the same share once cooked', () async {
+    when(
+      () => quickEat.consumePreparedMeal(
+        meal: any(named: 'meal'),
+        consumedPortions: any(named: 'consumedPortions'),
+        mealType: any(named: 'mealType'),
+        loggedDay: any(named: 'loggedDay'),
+      ),
+    ).thenAnswer((_) async => (entry: _mealPlan(), isPlan: false));
+    // Half of the pot, which was one portion when it was planned.
+    final plan = _mealPlan().copyWith(
+      bundleConsumedPortions: 0.5,
+      bundleTotalPortions: 1,
+    );
+    final cooked = _meal(remaining: 4);
+
+    await service.accept(plan, items: const [], meals: [cooked]);
+
+    verify(
+      () => quickEat.consumePreparedMeal(
+        meal: cooked,
+        consumedPortions: 2,
+        mealType: MealType.dinner,
+        loggedDay: _planDay,
+      ),
+    ).called(1);
+  });
+
+  test('a meal still in the pot cannot be eaten yet', () async {
+    await expectLater(
+      service.accept(
+        _mealPlan(),
+        items: const [],
+        meals: [_meal().copyWith(inPot: true)],
+      ),
+      throwsA(
+        isA<InventoryPlanAcceptException>().having(
+          (error) => error.isMealInPot,
+          'isMealInPot',
+          isTrue,
+        ),
+      ),
+    );
+    expect(plans.plans.map((plan) => plan.id), contains('plan-2'));
+  });
 }
