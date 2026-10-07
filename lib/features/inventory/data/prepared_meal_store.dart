@@ -1,7 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:yamt/core/data/firestore_atomic_replace_service.dart';
+import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 
@@ -29,13 +29,16 @@ abstract interface class PreparedMealStore {
   /// Watch all.
   Stream<List<PreparedMealDocument>> watchAll({required String householdId});
 
-  /// Replace all. A stored document missing from [documentsById] is
-  /// deleted only when [parse] reads its data without throwing.
-  Future<bool> replaceAll({
+  /// Writes the meal [id] with [data], sealed, without waiting for the
+  /// server. Other meals stay untouched.
+  Future<bool> save({
     required String householdId,
-    required Map<String, Map<String, dynamic>> documentsById,
-    required void Function(String id, Map<String, dynamic> data) parse,
+    required String id,
+    required Map<String, dynamic> data,
   });
+
+  /// Deletes the meal [id] without waiting for the server.
+  Future<bool> delete({required String householdId, required String id});
 }
 
 /// Stores prepared meals encrypted with the household key [_cipher].
@@ -45,10 +48,6 @@ class FirestorePreparedMealStore implements PreparedMealStore {
 
   final FirebaseFirestore _firestore;
   final PayloadCipher _cipher;
-
-  FirestoreAtomicReplaceService get _atomicReplaceService {
-    return FirestoreAtomicReplaceService(firestore: _firestore);
-  }
 
   @override
   Future<List<PreparedMealDocument>> readAll({
@@ -69,29 +68,39 @@ class FirestorePreparedMealStore implements PreparedMealStore {
   }
 
   @override
-  Future<bool> replaceAll({
+  Future<bool> save({
     required String householdId,
-    required Map<String, Map<String, dynamic>> documentsById,
-    required void Function(String id, Map<String, dynamic> data) parse,
+    required String id,
+    required Map<String, dynamic> data,
   }) async {
     try {
       final collection = _collection(householdId);
-      await collection.ensureAllSealed();
-      await _atomicReplaceService.replaceAll(
-        collection: collection.reference,
-        documentsById: await collection.sealAll(documentsById),
-        canDelete: (candidate) => collection.canDeleteStale(candidate, parse),
+      final sealed = await collection.seal(id, data);
+      commitBatchInBackground(
+        _firestore.batch()..set(collection.reference.doc(id), sealed),
+        failureMessage: 'Server rejected prepared meal $id.',
+        logName: _storeLogName,
       );
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to replace prepared meals for household $householdId.',
+        'Failed to save prepared meal $id for household $householdId.',
         name: _storeLogName,
         error: error,
         stackTrace: stackTrace,
       );
       return false;
     }
+  }
+
+  @override
+  Future<bool> delete({required String householdId, required String id}) async {
+    commitBatchInBackground(
+      _firestore.batch()..delete(_collection(householdId).reference.doc(id)),
+      failureMessage: 'Server rejected deleting prepared meal $id.',
+      logName: _storeLogName,
+    );
+    return true;
   }
 
   SealedCollection _collection(String householdId) {

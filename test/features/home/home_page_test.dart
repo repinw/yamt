@@ -106,7 +106,10 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   }
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> meals) async => true;
+  Future<bool> save(PreparedMeal meal) async => true;
+
+  @override
+  Future<bool> delete(String mealId) async => true;
 }
 
 class _LoadingInventoryItemsController extends InventoryItemsController {

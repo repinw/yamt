@@ -5,25 +5,29 @@ import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_store.dart';
 
 void main() {
-  late PayloadCipher cipher;
+  late FakeFirebaseFirestore firestore;
+  late FirestorePreparedMealStore store;
 
   setUp(() async {
-    cipher = PayloadCipher(await PayloadCipher.newDataKey());
+    firestore = FakeFirebaseFirestore();
+    store = FirestorePreparedMealStore(
+      firestore: firestore,
+      cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+    );
   });
 
-  test('replaceAll stores sealed meals under the household', () async {
-    final firestore = FakeFirebaseFirestore();
-    final store = FirestorePreparedMealStore(
-      firestore: firestore,
-      cipher: cipher,
-    );
+  Future<List<String>> storedIds() async {
+    final raw = await firestore
+        .collection('households/household-1/prepared_meals')
+        .get();
+    return raw.docs.map((document) => document.id).toList();
+  }
 
-    final saved = await store.replaceAll(
-      parse: (_, _) {},
+  test('save stores one sealed meal under the household', () async {
+    final saved = await store.save(
       householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'meal-1': <String, dynamic>{'name': 'Lunch box'},
-      },
+      id: 'meal-1',
+      data: <String, dynamic>{'name': 'Lunch box'},
     );
 
     expect(saved, isTrue);
@@ -32,75 +36,47 @@ void main() {
         .get();
     expect(raw.data()!.keys, <String>[encryptedPayloadField]);
     final documents = await store.readAll(householdId: 'household-1');
-    expect(documents.single.id, 'meal-1');
     expect(documents.single.data['name'], 'Lunch box');
   });
 
-  test('replaceAll deletes a left-out meal only when it parses', () async {
-    final firestore = FakeFirebaseFirestore();
-    final store = FirestorePreparedMealStore(
-      firestore: firestore,
-      cipher: cipher,
-    );
-    await store.replaceAll(
-      parse: (_, _) {},
-      householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'eaten': <String, dynamic>{'name': 'Soup'},
-        'broken': <String, dynamic>{'name': 'Broken'},
-      },
+  test('save and delete leave the other meals alone', () async {
+    for (final id in ['soup', 'rice', 'chili']) {
+      await store.save(
+        householdId: 'household-1',
+        id: id,
+        data: <String, dynamic>{'name': id},
+      );
+    }
+    // A meal another device wrote and this one never read.
+    await firestore.doc('households/household-1/prepared_meals/foreign').set(
+      <String, dynamic>{'payload': 'other key'},
     );
 
-    await store.replaceAll(
-      parse: (_, data) {
-        if (data['name'] == 'Broken') {
-          throw const FormatException('broken');
-        }
-      },
+    await store.save(
       householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'new': <String, dynamic>{'name': 'Rice'},
-      },
+      id: 'rice',
+      data: <String, dynamic>{'name': 'More rice'},
     );
+    await store.delete(householdId: 'household-1', id: 'soup');
 
-    final documents = await store.readAll(householdId: 'household-1');
-    expect(
-      documents.map((document) => document.id),
-      unorderedEquals(<String>['new', 'broken']),
-    );
+    expect(await storedIds(), unorderedEquals(['rice', 'chili', 'foreign']));
   });
 
-  test('replaceAll keeps a left-out meal that does not open', () async {
-    final firestore = FakeFirebaseFirestore();
-    final otherKey = PayloadCipher(await PayloadCipher.newDataKey());
-    await FirestorePreparedMealStore(
-      firestore: firestore,
-      cipher: otherKey,
-    ).replaceAll(
-      parse: (_, _) {},
-      householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'foreign': <String, dynamic>{'name': 'Soup'},
-      },
-    );
+  test(
+    'the meal list shows a saved meal before the server confirms it',
+    () async {
+      final meals = store.watchAll(householdId: 'household-1');
+      final names = meals
+          .map((documents) => documents.map((d) => d.data['name']).toList())
+          .firstWhere((names) => names.contains('Soup'));
 
-    await FirestorePreparedMealStore(
-      firestore: firestore,
-      cipher: cipher,
-    ).replaceAll(
-      parse: (_, _) {},
-      householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'new': <String, dynamic>{'name': 'Rice'},
-      },
-    );
+      await store.save(
+        householdId: 'household-1',
+        id: 'soup',
+        data: <String, dynamic>{'name': 'Soup'},
+      );
 
-    final raw = await firestore
-        .collection('households/household-1/prepared_meals')
-        .get();
-    expect(
-      raw.docs.map((document) => document.id),
-      unorderedEquals(<String>['foreign', 'new']),
-    );
-  });
+      expect(await names, ['Soup']);
+    },
+  );
 }

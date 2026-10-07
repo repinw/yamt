@@ -72,7 +72,10 @@ class FakeEntryMeals implements PreparedMealRepository {
   Stream<List<PreparedMeal>> watchAll() => Stream.value(meals);
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> meals) async => true;
+  Future<bool> save(PreparedMeal meal) async => true;
+
+  @override
+  Future<bool> delete(String mealId) async => true;
 }
 
 /// The service on one fake Firestore, with the real commit stores and the

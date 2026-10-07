@@ -183,7 +183,10 @@ class _Meals implements PreparedMealRepository {
   Stream<List<PreparedMeal>> watchAll() => Stream.fromFuture(readAll());
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> meals) async => true;
+  Future<bool> save(PreparedMeal meal) async => true;
+
+  @override
+  Future<bool> delete(String mealId) async => true;
 }
 
 /// Fakes the Vorrat behind the delete: the items that exist and the

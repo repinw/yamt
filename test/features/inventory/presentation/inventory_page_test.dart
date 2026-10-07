@@ -270,7 +270,19 @@ class _RecordingPreparedMealRepository implements PreparedMealRepository {
   Future<List<PreparedMeal>> readAll() async => saved;
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> meals) async {
+  Future<bool> save(PreparedMeal meal) => _saveAll([
+    for (final stored in saved)
+      if (stored.id != meal.id) stored,
+    meal,
+  ]);
+
+  @override
+  Future<bool> delete(String mealId) => _saveAll([
+    for (final stored in saved)
+      if (stored.id != mealId) stored,
+  ]);
+
+  Future<bool> _saveAll(List<PreparedMeal> meals) async {
     final outcome = onSave;
     if (outcome != null) return await outcome();
     saved = meals;

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/firestore_prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_repository_contract.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_store.dart';
 
 import '../../../support/prepared_meal_test_data.dart';
@@ -19,7 +20,8 @@ class _FakeInventoryUserSession implements InventoryUserSession {
 class _FakePreparedMealStore implements PreparedMealStore {
   Exception? readAllError;
   Exception? watchAllError;
-  void Function(String id, Map<String, dynamic> data)? parse;
+  final saved = <String, Map<String, dynamic>>{};
+  final deleted = <String>[];
   final StreamController<List<PreparedMealDocument>> _controller =
       StreamController<List<PreparedMealDocument>>.broadcast();
 
@@ -34,12 +36,18 @@ class _FakePreparedMealStore implements PreparedMealStore {
   }
 
   @override
-  Future<bool> replaceAll({
+  Future<bool> save({
     required String householdId,
-    required Map<String, Map<String, dynamic>> documentsById,
-    required void Function(String id, Map<String, dynamic> data) parse,
+    required String id,
+    required Map<String, dynamic> data,
   }) async {
-    this.parse = parse;
+    saved[id] = data;
+    return true;
+  }
+
+  @override
+  Future<bool> delete({required String householdId, required String id}) async {
+    deleted.add(id);
     return true;
   }
 
@@ -89,7 +97,7 @@ void main() {
     },
   );
 
-  test('saveAll lets the store keep meals that do not parse', () async {
+  test('save and delete touch only the one meal', () async {
     final store = _FakePreparedMealStore();
     final repository = FirestorePreparedMealRepository(
       session: const _FakeInventoryUserSession(householdId: 'household-1'),
@@ -97,22 +105,35 @@ void main() {
       store: store,
     );
 
-    await repository.saveAll([preparedMealTestData(id: 'new')]);
+    await repository.save(preparedMealTestData(id: 'new'));
+    await repository.delete('old');
 
-    store.parse!('old', preparedMealTestData(id: 'old').toJson());
-    expect(
-      () => store.parse!('bad', <String, dynamic>{'components': 42}),
-      throwsA(isA<TypeError>()),
+    expect(store.saved.keys, ['new']);
+    expect(store.saved['new']!['name'], preparedMealTestData().name);
+    expect(store.deleted, ['old']);
+  });
+
+  test('saveChanges writes only what changed in the list', () async {
+    final store = _FakePreparedMealStore();
+    final repository = FirestorePreparedMealRepository(
+      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      sessionShutdownSignal: SessionShutdownSignal(),
+      store: store,
     );
-    // The list skips a stored entry with a non-text id, so the delete check
-    // must not accept it either.
-    expect(
-      () => store.parse!(
-        'odd',
-        preparedMealTestData(id: 'odd').toJson()..['id'] = 5,
-      ),
-      throwsA(isA<TypeError>()),
+    final kept = preparedMealTestData(id: 'kept');
+    final changed = preparedMealTestData(id: 'changed');
+
+    await repository.saveChanges(
+      previous: [kept, changed, preparedMealTestData(id: 'gone')],
+      next: [
+        kept,
+        changed.copyWith(remainingPortions: 1),
+        preparedMealTestData(id: 'added'),
+      ],
     );
+
+    expect(store.saved.keys, unorderedEquals(['changed', 'added']));
+    expect(store.deleted, ['gone']);
   });
 
   test('watchAll rethrows firestore permission denied errors', () async {

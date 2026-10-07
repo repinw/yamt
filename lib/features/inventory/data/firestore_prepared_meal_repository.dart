@@ -43,13 +43,28 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
   }
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> meals) {
+  Future<bool> save(PreparedMeal meal) {
     final householdId = _currentHouseholdId();
     if (householdId == null) {
       return Future<bool>.value(false);
     }
     return _runExclusiveWrite(
-      () => _replaceAllForHousehold(householdId, meals),
+      () => _store.save(
+        householdId: householdId,
+        id: meal.id,
+        data: meal.toJson(),
+      ),
+    );
+  }
+
+  @override
+  Future<bool> delete(String mealId) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
+      return Future<bool>.value(false);
+    }
+    return _runExclusiveWrite(
+      () => _store.delete(householdId: householdId, id: mealId),
     );
   }
 
@@ -117,23 +132,8 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
         error: error,
         stackTrace: stackTrace,
       );
-      // Callers write the whole list back; no meals would delete them all.
       rethrow;
     }
-  }
-
-  Future<bool> _replaceAllForHousehold(
-    String householdId,
-    List<PreparedMeal> meals,
-  ) {
-    final documentsById = <String, Map<String, dynamic>>{
-      for (final meal in meals) meal.id: meal.toJson(),
-    };
-    return _store.replaceAll(
-      householdId: householdId,
-      documentsById: documentsById,
-      parse: _decode,
-    );
   }
 
   List<PreparedMeal> _decodeDocuments(List<PreparedMealDocument> documents) {
@@ -153,7 +153,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     return meals;
   }
 
-  /// Decodes a stored document; reads and the [saveAll] delete check agree.
+  /// Decodes a stored document.
   PreparedMeal _decode(String id, Map<String, dynamic> data) =>
       PreparedMeal.fromJson(withDocumentId(id, data));
 
