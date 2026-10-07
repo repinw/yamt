@@ -2,17 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_budget_calculator.dart';
 
 void main() {
-  test('calculates canonical carryover from finished day goals', () {
-    final carryover = CalorieBudgetCalculator.calculateCarryover(
-      const <CalorieCarryoverDay>[
-        CalorieCarryoverDay(goalKcal: 2100, consumedKcal: 1900),
-        CalorieCarryoverDay(goalKcal: 1800, consumedKcal: 2200),
-      ],
-    );
-
-    expect(carryover, -200);
-  });
-
   test('spreads carryover across remaining run days', () {
     final dailyAdjustment = CalorieBudgetCalculator.distributeCarryover(
       carryoverKcal: -1200,

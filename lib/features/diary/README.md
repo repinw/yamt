@@ -57,7 +57,7 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
 - `presentation/widgets/diary_meals_empty_state.dart` points to the "Essen"
   button on a day without logged food.
 - `presentation/widgets/diary_burn_week_card/diary_balance_card.dart` owns the
-  diary-facing daily and weekly calorie balance UI.
+  diary-facing daily calorie balance UI.
   The daily card uses the food label look (`FoodLabelColors`, `AppFonts`)
   without a frame: a big kcal-left number, a ruler with four equal quarters,
   and the macro rows. It is quiet by default (kcal and grams left only) and

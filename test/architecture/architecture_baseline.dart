@@ -133,14 +133,12 @@ const architectureBaseline = <String, Map<String, int>>{
   'file-roles': {
     'lib/features/calories/application/burn_week_live_mutation_coordinator.dart':
         1,
-    'lib/features/calories/application/burn_week_live_overview_logic.dart': 1,
     'lib/features/calories/application/burn_week_live_window_logic.dart': 1,
     'lib/features/calories/data/calorie_entry_document_codec.dart': 1,
     'lib/features/calories/data/calorie_log_repository_contract.dart': 1,
     'lib/features/calories/data/calorie_product_cache_document_codec.dart': 1,
     'lib/features/calories/data/calorie_product_cache_repository_contract.dart':
         1,
-    'lib/features/calories/domain/burn_week_mock_logic.dart': 1,
     'lib/features/calories/domain/calorie_goal_transition_helpers.dart': 1,
     'lib/features/calories/presentation/widgets/calorie_entry_editor_flow_handler.dart':
         1,

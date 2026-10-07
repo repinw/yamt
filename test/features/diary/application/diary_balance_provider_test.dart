@@ -89,35 +89,34 @@ void main() {
       expect(data.practiceDay, isNull);
       expect(data.loadedMetrics?.selectedDay, selectedDay);
       expect(data.loadedMetrics?.daily.realEatenKcal, 800);
-      expect(data.loadedMetrics?.weekly.progressDay, 1);
       expect(data.loadedMetrics?.state.runWeekNumber, 2);
     },
   );
 
-  test(
-    'resolve starts fresh weekly metrics when stored run week expired',
-    () async {
-      final selectedDay = DateTime(2026, 4, 15);
-      final expiredWeekStart = DateTime(2026, 4, 8);
-      final data = await _resolveBalanceData(
+  test('resolve starts a fresh run week when the stored one expired', () async {
+    final selectedDay = DateTime(2026, 4, 15);
+    final expiredWeekStart = DateTime(2026, 4, 8);
+    final data = await _resolveBalanceData(
+      selectedDay: selectedDay,
+      now: selectedDay.add(const Duration(hours: 12)),
+      runState: const BurnWeekRunState.initial().copyWith(
+        currentWeekStartDayKey: diaryDayKey(expiredWeekStart),
+        runWeekNumber: 2,
+      ),
+      weekOverview: _weekOverview(
         selectedDay: selectedDay,
-        now: selectedDay.add(const Duration(hours: 12)),
-        runState: const BurnWeekRunState.initial().copyWith(
-          currentWeekStartDayKey: diaryDayKey(expiredWeekStart),
-          runWeekNumber: 2,
-        ),
-        weekOverview: _weekOverview(
-          selectedDay: selectedDay,
-          balanceStartDate: expiredWeekStart,
-          dayTotals: const <double>[2500, 2600, 2550, 2700, 2600, 2830, 0],
-          goalKcal: 2600,
-        ),
-      );
+        balanceStartDate: expiredWeekStart,
+        dayTotals: const <double>[2500, 2600, 2550, 2700, 2600, 2830, 0],
+        goalKcal: 2600,
+      ),
+    );
 
-      expect(data.loadedMetrics?.weekly.pacing.consumedKcal, 0);
-      expect(data.loadedMetrics?.weekly.progressDay, 1);
-    },
-  );
+    // The expired week start would explain the carryover with the seven
+    // days before; the fresh week starts on the selected day.
+    final details = data.loadedMetrics?.budgetDetails;
+    expect(details, isNotNull);
+    expect(details!.previousDays, isEmpty);
+  });
 
   test(
     'source waits for run state instead of falling back to initial',
