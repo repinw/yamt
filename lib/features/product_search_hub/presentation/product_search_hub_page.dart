@@ -158,7 +158,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   }
 
   /// Completes the food from the AI page. When the page stays open, for
-  /// example to add more to the Vorrat, it continues with the search.
+  /// example after a canceled save, it continues with the search.
   Future<void> _completeAiResult(ManualProductAiSearchResult result) async {
     await _completeCreatedEntry(productSearchHubAiEntryResult(result));
     if (!mounted || !(ModalRoute.of(context)?.isCurrent ?? false)) return;

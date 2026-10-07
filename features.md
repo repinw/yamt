@@ -418,6 +418,9 @@ and feature description docs. This is product-facing; architecture rules stay in
 ## Product Search And Manual Add
 
 - One product search page with barcode, AI, and own-product actions, and the product editor.
+- Adding to the Vorrat takes one food per add, from the Vorrat's add button:
+  one confirmation stores it, and the page closes back to the Vorrat.
+  Several foods at once come from the receipt scan.
 - Barcode scan lookup with multiple-candidate picker and not-found handling.
 - Voice search for manual product text where supported.
 - AI food creation from photos and/or a description (one of both is
