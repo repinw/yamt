@@ -134,9 +134,10 @@ already documented as a reusable presentation surface.
   matters. A size in pieces counts only with grams per piece (a serving in g
   or ml). Every missing-values hint uses it, and so will the search list.
 - `domain/prepared_meal_rules.dart` is the one place that decides what a
-  Vorrat meal allows now: eat and plan only when it is out of the pot, has no
-  open rows and has portions left; ingredients stay editable until the first
-  portion is gone. Sheets, the Kochbuch, the diary picker, plan accept and the
+  Vorrat meal allows now: eat only when it is out of the pot, has no open
+  rows and has portions left; plan when it has no open rows and portions
+  left, also as a share of a meal in the pot; ingredients stay editable until
+  the first portion is gone. Sheets, the Kochbuch, the diary picker, plan accept and the
   commit store ask it instead of combining the meal's flags.
 
 ## Providers
