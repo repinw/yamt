@@ -42,6 +42,8 @@ InventoryReceiptManualProductResult productSearchHubAiResult(
     action: result.action,
     globalPackageWeight: result.globalPackageWeight,
     skipMissingBarcodePrompt: true,
+    // The AI page has its own "In Vorrat" and eat buttons.
+    confirmed: true,
     eatSelection: result.eatSelection,
   );
 }

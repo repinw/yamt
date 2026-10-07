@@ -38,6 +38,7 @@ class InventoryReceiptManualProductResult {
     this.requiresGlobalPersistence = true,
     this.globalPackageWeight,
     this.skipMissingBarcodePrompt = false,
+    this.confirmed = false,
     this.eatSelection,
     this.eatRequest,
   });
@@ -62,6 +63,10 @@ class InventoryReceiptManualProductResult {
 
   /// Whether missing barcode prompt should be skipped.
   final bool skipMissingBarcodePrompt;
+
+  /// Whether the page that made the food already confirmed [action], such
+  /// as "In Vorrat" on the AI page, so no review page follows.
+  final bool confirmed;
 
   /// Generic eat selection to complete after saving.
   final EatSelection? eatSelection;
@@ -94,6 +99,7 @@ class InventoryReceiptManualProductResult {
       requiresGlobalPersistence: requiresGlobalPersistence,
       globalPackageWeight: globalPackageWeight,
       skipMissingBarcodePrompt: skipMissingBarcodePrompt,
+      confirmed: confirmed,
       eatSelection: eatSelection,
       eatRequest: eatRequest,
     );

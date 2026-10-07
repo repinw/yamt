@@ -31,7 +31,8 @@ reviewProductSearchHubResultBeforeSave({
   required bool continuesBatch,
 }) async {
   switch (args.mode) {
-    case ProductSearchHubMode.inventory:
+    // A food from the AI page was already put into the Vorrat there.
+    case ProductSearchHubMode.inventory when !result.confirmed:
       final reviewed = await reviewProductSearchHubStockResult(
         context: context,
         args: args,
