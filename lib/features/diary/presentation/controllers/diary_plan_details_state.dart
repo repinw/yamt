@@ -52,7 +52,13 @@ class DiaryPlanDetailsState {
   /// Portions the counter shows, or null when it is hidden.
   int? get portions {
     final planned = plannedPortions;
-    return planned == null ? null : pickedPortions ?? planned;
+    if (planned == null) {
+      return null;
+    }
+    final picked = pickedPortions ?? planned;
+    // The meal may have shrunk since the pick.
+    final max = maxPortions;
+    return max != null && picked > max ? max : picked;
   }
 
   /// Most portions the counter allows.

@@ -22,7 +22,7 @@ class EatChip extends StatelessWidget {
   final bool isSelected;
 
   /// Called when the chip is tapped.
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +54,11 @@ class EatChip extends StatelessWidget {
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   decoration: TextDecoration.none,
-                  color: isSelected ? colors.paper : colors.ink,
+                  color: isSelected
+                      ? colors.paper
+                      : onPressed == null
+                      ? colors.muted
+                      : colors.ink,
                 ),
               ),
             ),

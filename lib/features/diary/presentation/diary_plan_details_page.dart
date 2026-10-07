@@ -118,6 +118,11 @@ class _DiaryPlanDetailsPageState extends ConsumerState<DiaryPlanDetailsPage> {
     final l10n = AppLocalizations.of(context)!;
     // A plan eaten or removed elsewhere closes its page.
     ref.listen(_provider, (previous, next) {
+      // An amount that follows the plan shows in the field too.
+      final text = next?.amount.amountText;
+      if (text != null && text != _amount.controller.text) {
+        _amount.sync(text);
+      }
       // The page may be closing already, after its own action removed it.
       if (previous != null &&
           next == null &&
