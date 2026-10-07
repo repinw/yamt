@@ -112,6 +112,20 @@ void main() {
       expect(delta.wasCarbsFloorApplied, isFalse);
     });
 
+    test('negative carryover never raises fat that is below its floor', () {
+      // Fat floor 48 g; 40 g of fat stay, carbs take the whole 200 kcal.
+      final delta = MacroCarryoverCalculator.calculateCarryoverDelta(
+        baseCarbs: baseCarbs,
+        baseFat: 40,
+        carryoverKcal: -200,
+        weightKg: weightKg,
+      );
+
+      expect(delta.fatGrams, 0.0);
+      expect(delta.wasFatFloorApplied, isTrue);
+      expect(delta.carbsGrams, closeTo(-50, 0.001));
+    });
+
     test('carbs floor flag is set only when it limits the reduction', () {
       final limited = MacroCarryoverCalculator.calculateCarryoverDelta(
         baseCarbs: 110,
