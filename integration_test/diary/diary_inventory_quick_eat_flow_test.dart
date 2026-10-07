@@ -24,6 +24,7 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -49,11 +50,14 @@ import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/data/inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -205,6 +209,13 @@ _DiaryInventoryQuickEatHarness _buildHarness({
       ),
       inventoryCalorieEntryCommitStoreProvider.overrideWithValue(
         _MemoryCommitStore(inventoryItemsByOwnerId, logRepository),
+      ),
+      preparedMealCalorieEntryCommitStoreProvider.overrideWithValue(
+        _MemoryMealCommitStore(
+          preparedMealsByOwnerId,
+          logRepository,
+          saveShouldFail: preparedMealSaveShouldFail,
+        ),
       ),
       preparedMealRepositoryProvider.overrideWith(
         (ref) => _OwnerScopedPreparedMealRepository(
@@ -1175,6 +1186,40 @@ class _MemoryCommitStore implements InventoryCalorieEntryCommitStore {
     await diary.deleteEntry(entry.id);
     return results;
   }
+}
+
+/// Writes an eaten meal entry with its portions, as the Firestore batch
+/// does.
+class _MemoryMealCommitStore implements PreparedMealCalorieEntryCommitStore {
+  const new(this.mealsByOwnerId, this.diary, {required this.saveShouldFail});
+
+  final Map<String, List<PreparedMeal>> mealsByOwnerId;
+  final FakeCalorieLogRepository diary;
+  final bool saveShouldFail;
+
+  @override
+  Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry}) async {
+    final meals = mealsByOwnerId[_householdId]!;
+    final index = meals.indexWhere(
+      (meal) => meal.id == entry.bundleSourcePreparedMealId,
+    );
+    final portions = entry.bundleConsumedPortions ?? 0;
+    if (saveShouldFail ||
+        index < 0 ||
+        !meals[index].allowsPortions(PreparedMealAction.eat, portions)) {
+      return false;
+    }
+    meals[index] = meals[index].withPortionsTaken(portions, entry.updatedAt);
+    await diary.saveEntry(entry);
+    return true;
+  }
+
+  @override
+  Future<CalorieEntryDeleteResult> deleteEntryAndRestorePreparedMeal({
+    required CalorieEntry entry,
+  }) async => const CalorieEntryDeleteResult.failure(
+    CalorieEntryDeleteFailureReason.sourceMissing,
+  );
 }
 
 class _OwnerScopedInventoryItemRepository implements InventoryItemRepository {
