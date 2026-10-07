@@ -1,5 +1,6 @@
 import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_from_items.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_inventory_math.dart';
 import 'package:yamt/features/inventory/application/'
@@ -219,4 +220,44 @@ RecipeIngredientAmountConversion? _assignmentAmountConversionForIngredient(
     return null;
   }
   return conversions[normalizedIngredient];
+}
+
+/// Adds the Vorrat [additionalItems] to the meal of [creationResult].
+PreparedMealBuildResult appendItemsToTemplateMeal({
+  required PreparedMealBuildResult creationResult,
+  required List<PreparedMealItemInput> additionalItems,
+  required DateTime now,
+  required String Function() buildId,
+  required PreparedMeal template,
+  required int totalPortions,
+}) {
+  final extraItemsResult = buildPreparedMealCreationResult(
+    currentItems: creationResult.nextItems,
+    preparedMealId: buildId(),
+    now: now,
+    name: template.name,
+    imageAssetId: template.imageAssetId,
+    totalPortions: totalPortions,
+    inputs: additionalItems,
+  );
+  final baseMeal = creationResult.preparedMeal;
+  final extraMeal = extraItemsResult.preparedMeal;
+  return PreparedMealBuildResult(
+    nextItems: extraItemsResult.nextItems,
+    componentSourceKeys: <String>[
+      ...creationResult.componentSourceKeys,
+      ...extraItemsResult.componentSourceKeys,
+    ],
+    pendingIngredientSourceKeys: creationResult.pendingIngredientSourceKeys,
+    preparedMeal: baseMeal.copyWith(
+      totalKcal: baseMeal.totalKcal + extraMeal.totalKcal,
+      totalProtein: baseMeal.totalProtein + extraMeal.totalProtein,
+      totalCarbs: baseMeal.totalCarbs + extraMeal.totalCarbs,
+      totalFat: baseMeal.totalFat + extraMeal.totalFat,
+      components: <PreparedMealComponent>[
+        ...baseMeal.components,
+        ...extraMeal.components,
+      ],
+    ),
+  );
 }

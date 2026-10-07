@@ -12,11 +12,11 @@ import 'package:yamt/features/cooking_flow/application/'
     'cooking_flow_summary_models.dart';
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_creation_support.dart';
+    'prepared_meal_from_items.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_from_template.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_template_creation_support.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';

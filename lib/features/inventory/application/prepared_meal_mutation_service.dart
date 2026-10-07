@@ -2,13 +2,14 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_consumption_workflows.dart';
+    'prepared_meal_creation.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_creation_workflows.dart';
+    'prepared_meal_discard.dart';
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_editing_workflows.dart';
+    'prepared_meal_editing.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_open_rows.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_pending_item_fill.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_writer.dart';
@@ -89,14 +90,13 @@ class PreparedMealMutationService {
     required List<PreparedMealItemInput> items,
     String? imageAssetId,
   }) => _create(
-    (inventory) =>
-        PreparedMealCreationWorkflows(writer: _writer).createPreparedMeal(
-          name: name,
-          totalPortions: totalPortions,
-          items: items,
-          imageAssetId: imageAssetId,
-          inventoryRepository: inventory,
-        ),
+    (inventory) => PreparedMealCreation(writer: _writer).createPreparedMeal(
+      name: name,
+      totalPortions: totalPortions,
+      items: items,
+      imageAssetId: imageAssetId,
+      inventoryRepository: inventory,
+    ),
   );
 
   /// Creates meals from one template, split into storage containers.
@@ -111,7 +111,7 @@ class PreparedMealMutationService {
     List<PreparedMealItemInput> additionalItems =
         const <PreparedMealItemInput>[],
   }) => _create(
-    (inventory) => PreparedMealCreationWorkflows(writer: _writer)
+    (inventory) => PreparedMealCreation(writer: _writer)
         .createPreparedMealsFromTemplateContainers(
           template: template,
           totalPortions: totalPortions,
@@ -135,7 +135,7 @@ class PreparedMealMutationService {
     List<PreparedMealItemInput>? items,
   }) => _change(
     (inventory) =>
-        PreparedMealEditingWorkflows(writer: _writer).updatePreparedMealDetails(
+        PreparedMealEditing(writer: _writer).updatePreparedMealDetails(
           mealId: mealId,
           name: name,
           imageChanged: imageChanged,
@@ -153,14 +153,13 @@ class PreparedMealMutationService {
     required List<String> inventoryItemIds,
   }) => _change(
     (inventory) =>
-        PreparedMealEditingWorkflows(writer: _writer)
-            .fillPreparedMealPendingIngredient(
-              mealId: mealId,
-              ingredient: ingredient,
-              inventoryItemIds: inventoryItemIds,
-              inventoryRepository: inventory,
-              ingredientParser: _ingredientParser,
-            ),
+        PreparedMealOpenRows(writer: _writer).fillPreparedMealPendingIngredient(
+          mealId: mealId,
+          ingredient: ingredient,
+          inventoryItemIds: inventoryItemIds,
+          inventoryRepository: inventory,
+          ingredientParser: _ingredientParser,
+        ),
   );
 
   /// Fills the open row [ingredient] with [usedAmount] of the item [itemId].
@@ -184,7 +183,7 @@ class PreparedMealMutationService {
     required String mealId,
     required String ingredient,
   }) => _run(
-    () => PreparedMealEditingWorkflows(writer: _writer)
+    () => PreparedMealOpenRows(writer: _writer)
         .ignorePreparedMealPendingIngredient(
           mealId: mealId,
           ingredient: ingredient,
@@ -197,18 +196,17 @@ class PreparedMealMutationService {
     required num discardedPortions,
     required InventoryDiscardReason reason,
   }) => _run(
-    () =>
-        PreparedMealConsumptionWorkflows(writer: _writer).throwAwayPreparedMeal(
-          mealId: mealId,
-          discardedPortions: discardedPortions,
-          reason: reason,
-          discardEventRepository: _discardEvents,
-        ),
+    () => PreparedMealDiscard(writer: _writer).throwAwayPreparedMeal(
+      mealId: mealId,
+      discardedPortions: discardedPortions,
+      reason: reason,
+      discardEventRepository: _discardEvents,
+    ),
   );
 
   /// Gives the remaining ingredients of a meal back to the Vorrat.
   Future<bool> unbundlePreparedMeal(String mealId) => _change(
-    (inventory) => PreparedMealEditingWorkflows(writer: _writer)
+    (inventory) => PreparedMealEditing(writer: _writer)
         .unbundlePreparedMeal(mealId: mealId, inventoryRepository: inventory),
   );
 

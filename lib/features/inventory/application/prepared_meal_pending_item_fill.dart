@@ -1,5 +1,5 @@
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_creation_support.dart';
+    'prepared_meal_from_items.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'

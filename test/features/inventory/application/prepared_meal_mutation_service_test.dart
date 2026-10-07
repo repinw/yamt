@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/inventory/application/prepared_meal_creation_workflows.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_creation.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
@@ -989,7 +989,7 @@ class _WorkflowHarness {
 
   /// The creation part alone, for the template creation that only the
   /// cooking service uses.
-  PreparedMealCreationWorkflows creation() => PreparedMealCreationWorkflows(
+  PreparedMealCreation creation() => PreparedMealCreation(
     writer: PreparedMealWriter(
       meals: meals,
       clock: () => DateTime(2026, 4, 19),

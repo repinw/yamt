@@ -7,7 +7,7 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_household_recovery.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_mutation_service.dart';
-import 'package:yamt/features/inventory/application/prepared_meal_pending_ingredient_support.dart';
+import 'package:yamt/features/inventory/application/prepared_meal_pending_ingredients.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';

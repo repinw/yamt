@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 
 /// Consumes inventory to fill one pending template ingredient entry.
 PreparedMealPendingIngredientFillResult?
@@ -139,4 +140,118 @@ InventoryItem? findPendingIngredientStockMatch({
       requiredUnit: requirement.inventoryUnit,
     ),
   );
+}
+
+/// The open rows of [currentMeal] that the newly added amounts of
+/// [components] do not fill yet.
+List<String> reconciledPendingRecipeIngredients({
+  required PreparedMeal currentMeal,
+  required List<PreparedMealComponent> components,
+}) {
+  final pendingIngredients = currentMeal.pendingRecipeIngredients;
+  if (pendingIngredients.isEmpty) {
+    return pendingIngredients;
+  }
+
+  final coverages = _newComponentCoverages(
+    previousComponents: currentMeal.components,
+    components: components,
+  );
+  if (coverages.isEmpty) {
+    return pendingIngredients;
+  }
+
+  final nextPendingIngredients = <String>[];
+  for (final ingredient in pendingIngredients) {
+    final requirement = _parsePendingRequirement(ingredient);
+    if (requirement == null) {
+      nextPendingIngredients.add(ingredient);
+      continue;
+    }
+
+    final coverage = _matchingCoverage(
+      coverages: coverages,
+      requirement: requirement,
+    );
+    if (coverage == null) {
+      nextPendingIngredients.add(ingredient);
+      continue;
+    }
+    coverage.remainingAmount -= requirement.amount;
+  }
+  return nextPendingIngredients;
+}
+
+List<_PendingIngredientCoverage> _newComponentCoverages({
+  required List<PreparedMealComponent> previousComponents,
+  required List<PreparedMealComponent> components,
+}) {
+  final previousComponentsByItemId = {
+    for (final component in previousComponents)
+      component.inventoryItemId: component,
+  };
+  return components
+      .map((component) {
+        final previousComponent =
+            previousComponentsByItemId[component.inventoryItemId];
+        final previousAmount = previousComponent?.usedUnit == component.usedUnit
+            ? previousComponent?.usedAmount ?? 0
+            : 0;
+        final remainingAmount = component.usedAmount - previousAmount;
+        if (remainingAmount < 1) {
+          return null;
+        }
+        return _PendingIngredientCoverage(
+          component: component,
+          remainingAmount: remainingAmount,
+        );
+      })
+      .whereType<_PendingIngredientCoverage>()
+      .toList(growable: false);
+}
+
+_PendingIngredientCoverage? _matchingCoverage({
+  required List<_PendingIngredientCoverage> coverages,
+  required TemplateIngredientRequirement requirement,
+}) {
+  for (final coverage in coverages) {
+    if (_coverageSatisfiesRequirement(
+      coverage: coverage,
+      requirement: requirement,
+    )) {
+      return coverage;
+    }
+  }
+  return null;
+}
+
+bool _coverageSatisfiesRequirement({
+  required _PendingIngredientCoverage coverage,
+  required TemplateIngredientRequirement requirement,
+}) {
+  final component = coverage.component;
+  if (component.usedUnit != requirement.inventoryUnit ||
+      coverage.remainingAmount < requirement.amount) {
+    return false;
+  }
+  return ingredientInventoryMatchScore(
+        ingredient: requirement.name,
+        item: component.sourceItemSnapshot,
+      ) >
+      0;
+}
+
+TemplateIngredientRequirement? _parsePendingRequirement(String ingredient) {
+  return const TemplateIngredientParser().parseRequirement(
+    ingredient: ingredient,
+    selectedPortions: 1,
+    basePortions: 1,
+  );
+}
+
+class _PendingIngredientCoverage {
+  new({required this.component, required this.remainingAmount});
+
+  final PreparedMealComponent component;
+  int remainingAmount;
 }

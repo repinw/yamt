@@ -1,9 +1,11 @@
 import 'package:yamt/features/inventory/application/'
-    'prepared_meal_creation_support.dart';
+    'prepared_meal_containers.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_from_items.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_from_template.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_template_creation_support.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -12,7 +14,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 /// Handles prepared meal creation workflows.
-class PreparedMealCreationWorkflows {
+class PreparedMealCreation {
   /// Creates creation workflows.
   const new({required this._writer});
 
@@ -81,27 +83,16 @@ class PreparedMealCreationWorkflows {
     final currentItems = await inventoryRepository.readAll();
 
     try {
-      var creationResult = buildPreparedMealCreationFromTemplateResult(
+      final creationResult = _templateMeal(
         currentItems: currentItems,
-        preparedMealId: _writer.buildId(),
-        now: _writer.buildNow(),
         template: template,
         totalPortions: totalPortions,
         recipeIngredientAssignments: recipeIngredientAssignments,
         recipeIngredientAmountConversions: recipeIngredientAmountConversions,
         ingredientParser: ingredientParser,
         sourceKeysByIngredient: sourceKeysByIngredient,
+        additionalItems: additionalItems,
       );
-      if (additionalItems.isNotEmpty) {
-        creationResult = _appendAdditionalItemsToTemplateMeal(
-          creationResult: creationResult,
-          additionalItems: additionalItems,
-          now: _writer.buildNow(),
-          buildId: _writer.buildId,
-          template: template,
-          totalPortions: totalPortions,
-        );
-      }
       final preparedMeal = finalNetWeight == null || finalNetWeight < 1
           ? creationResult.preparedMeal
           : creationResult.preparedMeal.copyWith(
@@ -142,7 +133,7 @@ class PreparedMealCreationWorkflows {
         PreparedMealCreationFailureReason.invalidInput,
       );
     }
-    if (containers.any(_hasInvalidContainerInput)) {
+    if (containers.any(hasInvalidContainerInput)) {
       return const PreparedMealCreationResult.failure(
         PreparedMealCreationFailureReason.invalidInput,
       );
@@ -152,29 +143,19 @@ class PreparedMealCreationWorkflows {
     final currentItems = await inventoryRepository.readAll();
 
     try {
-      var creationResult = buildPreparedMealCreationFromTemplateResult(
+      final creationResult = _templateMeal(
         currentItems: currentItems,
-        preparedMealId: _writer.buildId(),
-        now: _writer.buildNow(),
         template: template,
         totalPortions: totalPortions,
         recipeIngredientAssignments: recipeIngredientAssignments,
         recipeIngredientAmountConversions: recipeIngredientAmountConversions,
         ingredientParser: ingredientParser,
         sourceKeysByIngredient: sourceKeysByIngredient,
+        additionalItems: additionalItems,
       );
-      if (additionalItems.isNotEmpty) {
-        creationResult = _appendAdditionalItemsToTemplateMeal(
-          creationResult: creationResult,
-          additionalItems: additionalItems,
-          now: _writer.buildNow(),
-          buildId: _writer.buildId,
-          template: template,
-          totalPortions: totalPortions,
-        );
-      }
 
-      final preparedMeals = _splitTemplateMealIntoContainers(
+      final preparedMeals = splitTemplateMealIntoContainers(
+        buildId: _writer.buildId,
         creationResult: creationResult,
         template: template,
         recipeIngredientAssignments: recipeIngredientAssignments,
@@ -256,193 +237,40 @@ class PreparedMealCreationWorkflows {
     );
   }
 
-  PreparedMealBuildResult _appendAdditionalItemsToTemplateMeal({
-    required PreparedMealBuildResult creationResult,
-    required List<PreparedMealItemInput> additionalItems,
-    required DateTime now,
-    required String Function() buildId,
+  /// Builds the meal of [template] from the Vorrat, with [additionalItems]
+  /// added on top.
+  PreparedMealBuildResult _templateMeal({
+    required List<InventoryItem> currentItems,
     required PreparedMeal template,
     required int totalPortions,
-  }) {
-    final extraItemsResult = buildPreparedMealCreationResult(
-      currentItems: creationResult.nextItems,
-      preparedMealId: buildId(),
-      now: now,
-      name: template.name,
-      imageAssetId: template.imageAssetId,
-      totalPortions: totalPortions,
-      inputs: additionalItems,
-    );
-    final baseMeal = creationResult.preparedMeal;
-    final extraMeal = extraItemsResult.preparedMeal;
-    return PreparedMealBuildResult(
-      nextItems: extraItemsResult.nextItems,
-      componentSourceKeys: <String>[
-        ...creationResult.componentSourceKeys,
-        ...extraItemsResult.componentSourceKeys,
-      ],
-      pendingIngredientSourceKeys: creationResult.pendingIngredientSourceKeys,
-      preparedMeal: baseMeal.copyWith(
-        totalKcal: baseMeal.totalKcal + extraMeal.totalKcal,
-        totalProtein: baseMeal.totalProtein + extraMeal.totalProtein,
-        totalCarbs: baseMeal.totalCarbs + extraMeal.totalCarbs,
-        totalFat: baseMeal.totalFat + extraMeal.totalFat,
-        components: <PreparedMealComponent>[
-          ...baseMeal.components,
-          ...extraMeal.components,
-        ],
-      ),
-    );
-  }
-
-  bool _hasInvalidContainerInput(PreparedMealContainerInput container) {
-    return container.id.trim().isEmpty ||
-        container.totalPortions < 1 ||
-        container.finalNetWeight < 1 ||
-        container.sourceKeys.isEmpty;
-  }
-
-  List<PreparedMeal> _splitTemplateMealIntoContainers({
-    required PreparedMealBuildResult creationResult,
-    required PreparedMeal template,
     required Map<String, List<String>> recipeIngredientAssignments,
     required Map<String, RecipeIngredientAmountConversion>
     recipeIngredientAmountConversions,
+    required TemplateIngredientParser ingredientParser,
     required Map<String, String> sourceKeysByIngredient,
-    required List<PreparedMealContainerInput> containers,
+    required List<PreparedMealItemInput> additionalItems,
   }) {
-    final baseMeal = creationResult.preparedMeal;
-    final sourceKeys = creationResult.componentSourceKeys;
-    final pendingSourceKeys = creationResult.pendingIngredientSourceKeys;
-    if (sourceKeys.length != baseMeal.components.length ||
-        pendingSourceKeys.length != baseMeal.pendingRecipeIngredients.length) {
-      return const <PreparedMeal>[];
-    }
-
-    final assignedContainerIdsBySourceKey = <String, String>{};
-    for (final container in containers) {
-      for (final sourceKey in container.sourceKeys) {
-        final key = sourceKey.trim();
-        if (key.isEmpty || assignedContainerIdsBySourceKey.containsKey(key)) {
-          return const <PreparedMeal>[];
-        }
-        assignedContainerIdsBySourceKey[key] = container.id;
-      }
-    }
-
-    final containerCount = containers.length;
-    final meals = <PreparedMeal>[];
-    for (final container in containers) {
-      final containerSourceKeys = container.sourceKeys
-          .map((key) => key.trim())
-          .where((key) => key.isNotEmpty)
-          .toSet();
-      final components = <PreparedMealComponent>[];
-      for (var index = 0; index < baseMeal.components.length; index++) {
-        final sourceKey = sourceKeys[index].trim();
-        if (!assignedContainerIdsBySourceKey.containsKey(sourceKey)) {
-          return const <PreparedMeal>[];
-        }
-        if (containerSourceKeys.contains(sourceKey)) {
-          components.add(baseMeal.components[index]);
-        }
-      }
-      // Rows the stock could not cover stay visible as pending ingredients
-      // of their container instead of disappearing from the saved meal.
-      final pendingIngredients = <String>[
-        for (var index = 0; index < pendingSourceKeys.length; index++)
-          if (containerSourceKeys.contains(pendingSourceKeys[index].trim()))
-            baseMeal.pendingRecipeIngredients[index],
-      ];
-      if (components.isEmpty && pendingIngredients.isEmpty) {
-        return const <PreparedMeal>[];
-      }
-
-      final nutritionTotals = components.nutritionTotals;
-      final recipeIngredients = _recipeIngredientsForContainer(
-        template: template,
-        sourceKeysByIngredient: sourceKeysByIngredient,
-        containerSourceKeys: containerSourceKeys,
-      );
-      final name = _containerMealName(
-        templateName: template.name,
-        containerLabel: container.label,
-        containerCount: containerCount,
-      );
-      meals.add(
-        baseMeal.copyWith(
-          id: _writer.buildId(),
-          name: name,
-          recipeIngredients: recipeIngredients,
-          recipeIngredientAssignments: _assignmentsForIngredients(
-            recipeIngredientAssignments,
-            recipeIngredients,
-          ),
-          recipeIngredientAmountConversions: _conversionsForIngredients(
-            recipeIngredientAmountConversions,
-            recipeIngredients,
-          ),
-          pendingRecipeIngredients: pendingIngredients,
-          totalPortions: container.totalPortions,
-          remainingPortions: container.totalPortions,
-          finalNetWeight: container.finalNetWeight,
-          totalKcal: nutritionTotals.totalKcal,
-          totalProtein: nutritionTotals.totalProtein,
-          totalCarbs: nutritionTotals.totalCarbs,
-          totalFat: nutritionTotals.totalFat,
-          components: components,
-        ),
-      );
-    }
-    return meals;
-  }
-
-  String _containerMealName({
-    required String templateName,
-    required String containerLabel,
-    required int containerCount,
-  }) {
-    final trimmedTemplateName = templateName.trim();
-    if (containerCount <= 1) {
-      return trimmedTemplateName;
-    }
-    final trimmedContainerLabel = containerLabel.trim();
-    if (trimmedContainerLabel.isEmpty) {
-      return trimmedTemplateName;
-    }
-    return '$trimmedTemplateName - $trimmedContainerLabel';
-  }
-
-  List<String> _recipeIngredientsForContainer({
-    required PreparedMeal template,
-    required Map<String, String> sourceKeysByIngredient,
-    required Set<String> containerSourceKeys,
-  }) {
-    return template.recipeIngredients
-        .where(
-          (ingredient) =>
-              containerSourceKeys.contains(sourceKeysByIngredient[ingredient]),
-        )
-        .toList(growable: false);
-  }
-
-  Map<String, List<String>> _assignmentsForIngredients(
-    Map<String, List<String>> assignments,
-    List<String> ingredients,
-  ) {
-    final ingredientSet = ingredients.toSet();
-    return Map<String, List<String>>.fromEntries(
-      assignments.entries.where((entry) => ingredientSet.contains(entry.key)),
+    final creationResult = buildPreparedMealCreationFromTemplateResult(
+      currentItems: currentItems,
+      preparedMealId: _writer.buildId(),
+      now: _writer.buildNow(),
+      template: template,
+      totalPortions: totalPortions,
+      recipeIngredientAssignments: recipeIngredientAssignments,
+      recipeIngredientAmountConversions: recipeIngredientAmountConversions,
+      ingredientParser: ingredientParser,
+      sourceKeysByIngredient: sourceKeysByIngredient,
     );
-  }
-
-  Map<String, RecipeIngredientAmountConversion> _conversionsForIngredients(
-    Map<String, RecipeIngredientAmountConversion> conversions,
-    List<String> ingredients,
-  ) {
-    final ingredientSet = ingredients.toSet();
-    return Map<String, RecipeIngredientAmountConversion>.fromEntries(
-      conversions.entries.where((entry) => ingredientSet.contains(entry.key)),
+    if (additionalItems.isEmpty) {
+      return creationResult;
+    }
+    return appendItemsToTemplateMeal(
+      creationResult: creationResult,
+      additionalItems: additionalItems,
+      now: _writer.buildNow(),
+      buildId: _writer.buildId,
+      template: template,
+      totalPortions: totalPortions,
     );
   }
 }
