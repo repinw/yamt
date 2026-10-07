@@ -141,8 +141,6 @@
   "productEditorPhotosNotSaved": "The photos could not be stored. The product is saved without them.",
   "productEditorTakeNutritionTablePhoto": "Photograph the nutrition table",
   "productSearchHubCreateProductAction": "Create product",
-  "productSearchHubCartTitle": "Selected products",
-  "productSearchHubCartAddAction": "Add",
   "productSearchHubStoredInVorrat": "{name} is in stock",
   "inventoryRestToStockQuestion": "Put the rest ({amount}) into stock?",
   "@inventoryRestToStockQuestion": {
@@ -161,7 +159,6 @@
       }
     }
   },
-  "productSearchHubCartRemoveAction": "Remove",
   "productSearchHubRecentlySelectedTab": "Recently selected",
   "productSearchHubRecentlySelectedLoading": "Loading recent products",
   "productSearchHubRecentlySelectedLoadFailed": "Could not load recent products.",

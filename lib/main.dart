@@ -43,10 +43,9 @@ Future<void> main() async {
           final container = ref.container;
           return (mode) => switch (mode) {
             ProductSearchHubMode.inventory =>
-              InventoryProductSearchHubCompletionHandler(container: container),
+              const InventoryProductSearchHubCompletionHandler(),
             ProductSearchHubMode.diary =>
               DiaryProductSearchHubCompletionHandler(
-                container: container,
                 eatCoordinator: container.read(
                   inventoryManualProductEatCoordinatorProvider,
                 ),

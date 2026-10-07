@@ -119,7 +119,6 @@ class InventoryItemEatFlow {
     required InventoryItem item,
     required InventoryItemEatRequest request,
     required PendingInventoryConsumption pending,
-    void Function(String calorieEntryId)? onDirectCalorieEntrySaved,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final eating = container.read(inventoryItemEatControllerProvider.notifier);
@@ -131,7 +130,6 @@ class InventoryItemEatFlow {
       );
       switch (outcome) {
         case InventoryEatLogged(:final entry):
-          onDirectCalorieEntrySaved?.call(entry.id);
           if (context.mounted) {
             _showEatenSnackBar(
               context: context,

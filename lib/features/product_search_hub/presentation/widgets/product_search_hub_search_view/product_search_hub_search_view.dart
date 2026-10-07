@@ -39,13 +39,11 @@ class ProductSearchHubSearchView extends ConsumerStatefulWidget {
   const new({
     required this.args,
     required this.isBusy,
-    required this.selectedProductKeys,
     required this.onBackPressed,
     required this.onProductSelected,
     required this.onRecentItemPressed,
     required this.onEntryResult,
     required this.onInitialIntentCancelled,
-    this.bottomOverlay,
     this.lookupProducts,
     super.key,
   });
@@ -55,9 +53,6 @@ class ProductSearchHubSearchView extends ConsumerStatefulWidget {
 
   /// Whether a picked product is still being saved.
   final bool isBusy;
-
-  /// Source keys of the products selected so far.
-  final Set<String> selectedProductKeys;
 
   /// Back callback.
   final VoidCallback onBackPressed;
@@ -73,9 +68,6 @@ class ProductSearchHubSearchView extends ConsumerStatefulWidget {
 
   /// Called when the initial barcode scan or AI entry is cancelled.
   final VoidCallback onInitialIntentCancelled;
-
-  /// Selection overlay shown above the bottom edge.
-  final Widget? bottomOverlay;
 
   /// Optional lookup override for widget tests.
   final ProductSearchHubSearchLookup? lookupProducts;
@@ -196,8 +188,6 @@ class _ProductSearchHubSearchViewState
       hasSearchQuery: _searchCoordinator.hasSearchQuery,
       searchResults: _searchCoordinator.results,
       hasSearchFailed: _searchCoordinator.hasFailed,
-      selectedProductKeys: widget.selectedProductKeys,
-      bottomOverlay: widget.bottomOverlay,
       onBackPressed: widget.onBackPressed,
       onSearchChanged: _searchCoordinator.handleSearchChanged,
       onClear: _clearSearch,

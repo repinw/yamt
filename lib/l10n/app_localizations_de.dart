@@ -293,12 +293,6 @@ class AppLocalizationsDe extends AppLocalizations {
   String get productSearchHubCreateProductAction => 'Produkt erstellen';
 
   @override
-  String get productSearchHubCartTitle => 'Ausgewählte Produkte';
-
-  @override
-  String get productSearchHubCartAddAction => 'Eintragen';
-
-  @override
   String productSearchHubStoredInVorrat(String name) {
     return '$name ist im Vorrat';
   }
@@ -313,9 +307,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get inventoryRestToStockYes => 'In den Vorrat';
-
-  @override
-  String get productSearchHubCartRemoveAction => 'Entfernen';
 
   @override
   String get productSearchHubRecentlySelectedTab => 'Zuletzt ausgewählt';

@@ -6,8 +6,6 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'product_search_hub_recent_items.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_recent_item_key.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_candidate_widgets.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -18,14 +16,7 @@ const _productSearchHubRecentlySelectedLogName =
 /// Recently selected manual products for the product search hub.
 class ProductSearchHubRecentlySelectedTab extends ConsumerWidget {
   /// Creates recently selected product tab.
-  const new({
-    required this.selectedProductKeys,
-    required this.onProductPressed,
-    super.key,
-  });
-
-  /// Selected product keys.
-  final Set<String> selectedProductKeys;
+  const new({required this.onProductPressed, super.key});
 
   /// Called when a recent product is selected.
   final ValueChanged<InventoryItem> onProductPressed;
@@ -61,7 +52,6 @@ class ProductSearchHubRecentlySelectedTab extends ConsumerWidget {
                 )
               : _ProductSearchHubRecentlySelectedList(
                   items: items,
-                  selectedProductKeys: selectedProductKeys,
                   onProductPressed: onProductPressed,
                 ),
         );
@@ -141,14 +131,9 @@ class _ProductSearchHubRecentlySelectedEmpty extends StatelessWidget {
 }
 
 class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
-  const new({
-    required this.items,
-    required this.selectedProductKeys,
-    required this.onProductPressed,
-  });
+  const new({required this.items, required this.onProductPressed});
 
   final List<InventoryItem> items;
-  final Set<String> selectedProductKeys;
   final ValueChanged<InventoryItem> onProductPressed;
 
   @override
@@ -163,9 +148,6 @@ class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
       },
       itemBuilder: (context, index) {
         final item = items[index];
-        final isSelected = selectedProductKeys.contains(
-          productSearchHubRecentItemSelectionKey(item),
-        );
         return SizedBox(
           width: double.infinity,
           child: InventoryProductCandidateTile(
@@ -175,14 +157,6 @@ class _ProductSearchHubRecentlySelectedList extends StatelessWidget {
             imageUrl: item.imageUrl,
             packageWeight: item.weight,
             nutrition: item.nutrition,
-            trailing: isSelected
-                ? const Icon(
-                    Icons.check_circle_rounded,
-                    key: Key(
-                      'product_search_hub_recently_selected_selected_icon',
-                    ),
-                  )
-                : null,
             onTap: () {
               onProductPressed(item);
             },

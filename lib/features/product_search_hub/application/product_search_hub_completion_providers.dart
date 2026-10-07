@@ -9,8 +9,6 @@ import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_mode.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_saved_selection.dart';
 
 part 'product_search_hub_completion_providers.g.dart';
 
@@ -27,16 +25,8 @@ class SelectionProductSearchHubCompletionHandler
     required InventoryReceiptManualProductResult result,
     MealType? preselectedMealType,
     DateTime? preselectedLoggedAt,
-    bool continueDiaryBatch = false,
   }) async {
     return const ProductSearchHubCompletionResult.none();
-  }
-
-  @override
-  Future<bool> removeSavedSelection(
-    ProductSearchHubSavedSelection selection,
-  ) async {
-    return true;
   }
 }
 

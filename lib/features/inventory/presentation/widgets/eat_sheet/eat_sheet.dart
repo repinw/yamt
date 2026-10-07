@@ -32,23 +32,19 @@ Future<InventoryItemEatRequest?> showInventoryItemEatSheet({
 Future<InventoryItemEatSheetResult?> showInventoryItemEatSheetResult({
   required BuildContext context,
   required InventoryItem item,
-  InventoryItemEatSheetIntent confirmIntent =
-      InventoryItemEatSheetIntent.logOnly,
   int? initialInventoryAmount,
   DateTime? initialLoggedAt,
   MealType? initialMealType,
-  String? addMoreActionText,
   bool hasOpenStock = false,
 }) {
   return _showEatSheet(
     context,
     InventoryItemEatSheetBody(
       item: item,
-      confirmIntent: confirmIntent,
+      confirmIntent: InventoryItemEatSheetIntent.logOnly,
       initialInventoryAmount: initialInventoryAmount,
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
-      addMoreActionText: addMoreActionText,
       hasOpenStock: hasOpenStock,
     ),
   );

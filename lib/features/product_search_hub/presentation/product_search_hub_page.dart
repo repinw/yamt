@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/features/inventory/data/'
     'off_product_search_repository.dart';
@@ -10,8 +9,6 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
 import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_saved_selection.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_ai_search_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -34,22 +31,14 @@ import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_save_review_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_lookup.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_selection_state.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_view/product_search_hub_search_view.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_search_hub_selection_overlay/'
-    'product_search_hub_selection_overlay.dart';
-import 'package:yamt/features/product_search_hub/presentation/widgets/'
-    'product_search_hub_selection_overlay/'
-    'product_search_hub_selection_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Product search page shared by inventory, diary, and product pickers.
 ///
-/// The search view handles input. This page completes picked products for the
-/// route mode and keeps the products saved so far.
+/// The search view handles input. This page completes a picked product for
+/// the route mode and closes; one product per visit (#519, #532).
 class ProductSearchHubPage extends StatefulWidget {
   /// Creates a product search hub page.
   const new({
@@ -69,8 +58,7 @@ class ProductSearchHubPage extends StatefulWidget {
 }
 
 class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
-  var _selectionState = const ProductSearchHubSelectionState.empty();
-  var _isMutatingSelection = false;
+  var _isSaving = false;
 
   // Opened for AI, the page shows the AI page itself, so back leaves straight
   // to the caller instead of passing the search page.
@@ -101,21 +89,10 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
         onResult: (result) => _runWhenIdle(() => _completeAiResult(result)),
       );
     }
-    final selections = _selectionState.selections;
-
     return ProductSearchHubSearchView(
       args: widget.args,
-      isBusy: _isMutatingSelection,
+      isBusy: _isSaving,
       lookupProducts: widget.lookupProducts,
-      selectedProductKeys: _selectionState.sourceKeys,
-      bottomOverlay: selections.isEmpty
-          ? null
-          : ProductSearchHubSelectionOverlay(
-              productCount: selections.length,
-              isSaving: _isMutatingSelection,
-              onCountPressed: _openSelectedProductsSheet,
-              onSubmitPressed: _closeHub,
-            ),
       // Back never waits for a save: an offline write may not finish.
       onBackPressed: () =>
           popProductSearchHubRoute(context: context, isBlocked: false),
@@ -128,7 +105,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   }
 
   void _runWhenIdle(Future<void> Function() action) {
-    if (!_isMutatingSelection) {
+    if (!_isSaving) {
       unawaited(action());
     }
   }
@@ -153,9 +130,8 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     ),
   );
 
-  bool _isSourceBlocked(String sourceKey) {
-    return _selectionState.containsSourceKey(sourceKey) || _isMutatingSelection;
-  }
+  // A save in progress blocks the next pick.
+  bool _isSourceBlocked(String _) => _isSaving;
 
   /// Completes the food from the AI page. When the page stays open, for
   /// example after a canceled save, it continues with the search.
@@ -194,8 +170,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
   }) async {
     if (_isSourceBlocked(sourceKey)) {
       log(
-        'Ignoring product search hub result $sourceKey: already selected '
-        'or a save is running (saving=$_isMutatingSelection).',
+        'Ignoring product search hub result $sourceKey: a save is running.',
         name: 'ProductSearchHubPage',
       );
       return null;
@@ -221,7 +196,7 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     );
     if (reviewed.closed || !mounted) return reviewed.result;
 
-    setState(() => _isMutatingSelection = true);
+    setState(() => _isSaving = true);
 
     final completion = await completeProductSearchHubResult(
       context: context,
@@ -233,63 +208,17 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
     if (!context.mounted) {
       return null;
     }
-    final shouldContinueBatch =
-        completion.shouldCloseHub && _selectionState.selections.isNotEmpty;
-    setState(() {
-      _isMutatingSelection = false;
-      final selection = completion.selection;
-      if (selection != null &&
-          (!completion.shouldCloseHub || shouldContinueBatch)) {
-        _selectionState = _selectionState.add(selection);
-      }
-    });
-    if (completion.shouldCloseHub && !shouldContinueBatch) {
+    setState(() => _isSaving = false);
+    if (completion.shouldCloseHub) {
       _closeHub(true);
     }
     return completion.wasCanceled ? reviewed.result : null;
   }
 
-  Future<void> _removeSavedSelection(
-    ProductSearchHubSavedSelection selection,
-  ) async {
-    if (_isMutatingSelection) {
-      return;
-    }
-    setState(() => _isMutatingSelection = true);
-    final deleted = await removeProductSearchHubSelection(
-      container: ProviderScope.containerOf(context, listen: false),
-      selection: selection,
-    );
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      _isMutatingSelection = false;
-      if (deleted) {
-        _selectionState = _selectionState.removeItemId(selection.item.id);
-      }
-    });
-    if (!deleted) {
-      showProductSearchHubSnackBar(
-        context,
-        AppLocalizations.of(context)!.inventoryItemActionFailed,
-      );
-    }
-  }
-
-  void _openSelectedProductsSheet() => unawaited(
-    showProductSearchHubSelectionSheet(
-      context: context,
-      selections: () => _selectionState.selections,
-      isSaving: () => _isMutatingSelection,
-      onRemoveSelection: _removeSavedSelection,
-    ),
-  );
-
   void _closeHub([Object? result]) {
     popProductSearchHubRoute(
       context: context,
-      isBlocked: _isMutatingSelection,
+      isBlocked: _isSaving,
       result: result,
     );
   }

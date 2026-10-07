@@ -26,11 +26,11 @@ abstract final class InventoryManualProductEatSelectionFlow {
     required InventoryItemEatRequest? selectedRequest,
     required MealType? preselectedMealType,
     required DateTime? preselectedLoggedAt,
-    required bool continueBatchOnConfirm,
   }) {
-    final intent = _confirmIntent(continueBatchOnConfirm);
     if (selectedRequest != null) {
-      return Future.value(selectedRequest.asSheetResult(intent));
+      return Future.value(
+        selectedRequest.asSheetResult(InventoryItemEatSheetIntent.logOnly),
+      );
     }
     return _showEatSheet(
       context: context,
@@ -38,7 +38,6 @@ abstract final class InventoryManualProductEatSelectionFlow {
       item: item,
       preselectedMealType: preselectedMealType,
       preselectedLoggedAt: preselectedLoggedAt,
-      continueBatchOnConfirm: continueBatchOnConfirm,
     );
   }
 
@@ -48,7 +47,6 @@ abstract final class InventoryManualProductEatSelectionFlow {
     required InventoryItem item,
     required MealType? preselectedMealType,
     required DateTime? preselectedLoggedAt,
-    required bool continueBatchOnConfirm,
   }) async {
     if (consumableInventoryAmount(item) == null) {
       log(
@@ -65,7 +63,6 @@ abstract final class InventoryManualProductEatSelectionFlow {
     return await showInventoryItemEatSheetResult(
       context: context,
       item: item,
-      confirmIntent: _confirmIntent(continueBatchOnConfirm),
       initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
         item: item,
         rawWeight: item.weight,
@@ -74,14 +71,6 @@ abstract final class InventoryManualProductEatSelectionFlow {
       initialMealType: preselectedMealType,
       hasOpenStock: true,
     );
-  }
-
-  static InventoryItemEatSheetIntent _confirmIntent(
-    bool continueBatchOnConfirm,
-  ) {
-    return continueBatchOnConfirm
-        ? InventoryItemEatSheetIntent.addMore
-        : InventoryItemEatSheetIntent.logOnly;
   }
 }
 

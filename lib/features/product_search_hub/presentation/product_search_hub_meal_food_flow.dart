@@ -40,11 +40,8 @@ pickProductSearchHubMealFood({
     context: context,
     args: args,
     result: result.withItem(result.item.copyWith(id: _mealFoodIds.v4())),
-    page: (item) => _EditableEatPage(
-      item: item,
-      confirmIntent: InventoryItemEatSheetIntent.logOnly,
-      confirmLabel: l10n.eatPageCombineAddFood,
-    ),
+    page: (item) =>
+        _EditableEatPage(item: item, confirmLabel: l10n.eatPageCombineAddFood),
   );
   final eat = picked.eat;
   return (
@@ -79,7 +76,6 @@ eatProductSearchHubDiaryFood({
     result: result,
     page: (item) => _EditableEatPage(
       item: item,
-      confirmIntent: InventoryItemEatSheetIntent.logOnly,
       initialLoggedAt: loggedAt ?? args.preselectedLoggedAt,
       initialMealType: args.preselectedMealType,
       canStore: canStore,
@@ -172,7 +168,6 @@ final class _EatStore extends _EatStep {
 class _EditableEatPage extends StatelessWidget {
   const new({
     required this.item,
-    required this.confirmIntent,
     this.confirmLabel,
     this.initialLoggedAt,
     this.initialMealType,
@@ -181,7 +176,6 @@ class _EditableEatPage extends StatelessWidget {
   });
 
   final InventoryItem item;
-  final InventoryItemEatSheetIntent confirmIntent;
   final String? confirmLabel;
   final DateTime? initialLoggedAt;
   final MealType? initialMealType;
@@ -193,7 +187,7 @@ class _EditableEatPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     return InventoryItemEatSheetBody(
       item: item,
-      confirmIntent: confirmIntent,
+      confirmIntent: InventoryItemEatSheetIntent.logOnly,
       initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
         item: item,
         rawWeight: item.weight,

@@ -4,7 +4,7 @@ Einheitliche Produktsuche, Produkteditor, KI-Drafterstellung und Barcode-Assiste
 
 ## Owns
 
-- Eine Produktsuche-Seite (`ProductSearchHubPage`) mit Suchfeld, Barcode-, KI- und Eigenes-Produkt-Aktionen, zuletzt ausgewählten Produkten und Auswahl-Overlay.
+- Eine Produktsuche-Seite (`ProductSearchHubPage`) mit Suchfeld, Barcode-, KI- und Eigenes-Produkt-Aktionen, zuletzt ausgewählten Produkten; ein Produkt pro Besuch (#519, #532).
 - Manueller Produkteditor (`InventoryReceiptManualProductEditorPage`) im Etikett-Look der Eat-Seite: Kopf mit Bild, Marke, Name und Packung, darunter zwei Foto-Kacheln (Vorderseite, Nährwerttabelle) mit Barcode-Zeile und das Nährwertetikett mit Eingaben je 100 g. Die sieben EU-Pflichtwerte sind Pflicht.
 - Produktfotos (`ProductPhotoRepository`, `ManualProductPhotoController`): Kamera, Barcode-Suche im Foto (`mobile_scanner`), KI-Lesen der Vorderseite über das Server-Template `product-front-template`, Upload nach Firebase Storage `product_images/{uid}/{photoId}/` als geteiltes Produktbild.
 - KI-Schätzung von Essen aus Fotos und/oder Beschreibung (`ManualProductAiSearchPage`, `FoodEstimateController`, `FoodEstimateRepository` mit dem Firebase-AI-Server-Template `food-estimate-template`). Das Ergebnis öffnet im Eat-Dialog aus `inventory` (`FoodEstimateResultPage`).
@@ -26,7 +26,7 @@ Einheitliche Produktsuche, Produkteditor, KI-Drafterstellung und Barcode-Assiste
 
 - `ProductSearchHubPage` für alle Such- und Auswahlrouten.
 - `ManualProductSearchRouteArgs`, `buildManualProductSearchRoutePage` für Kind-Flows.
-- `ProductSearchHubSavedSelection` und `ProductSearchHubCompletionResult` für Entkopplung und typsichere Resultate.
+- `ProductSearchHubCompletionResult` für Entkopplung und typsichere Resultate.
 - `ProductSearchHubCompletionHandler` (`abstract interface class`) für modusspezifische Abschlusslogik.
 - `productSearchHubCompletionHandlerProvider` & `productSearchGatewayProvider` zur Bereitstellung der Handler und Gateways.
 - `InventoryReceiptManualProductResult` für Rückgabewerte bearbeiteter Artikel.
