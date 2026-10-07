@@ -216,10 +216,10 @@ void main() {
       // Carryover +100 kcal:
       // Protein: unchanged (160.0)
       // Carbs: 40 % of 2500 kcal allow 250g, so only +10g.
-      // Fat: base + the other 59 kcal.
+      // Fat: base + the other 60 kcal.
       expect(targets.protein, closeTo(160, 0.001));
       expect(targets.carbs, closeTo(250, 0.01));
-      expect(targets.fat, closeTo(64.0 + 224 / 9 + (59 / 9.3), 0.01));
+      expect(targets.fat, closeTo(64.0 + 224 / 9 + (60 / 9), 0.01));
     });
 
     test('resolves the carryover delta from the same rule', () {
@@ -244,10 +244,10 @@ void main() {
           .read();
 
       // Same case as the positive carryover test: carbs +10g up to the cap,
-      // the other 59 kcal go to fat, protein stays.
+      // the other 60 kcal go to fat, protein stays.
       expect(delta.protein, closeTo(0, 0.001));
       expect(delta.carbs, closeTo(10, 0.01));
-      expect(delta.fat, closeTo(59 / 9.3, 0.01));
+      expect(delta.fat, closeTo(60 / 9, 0.01));
     });
 
     test('applies negative carryover (Schutzregeln A & B)', () {
@@ -274,11 +274,11 @@ void main() {
       // Base: 80kg male, 2000 kcal: 156g protein, 64g fat, 200g carbs.
       // Carryover -200 kcal:
       // Protein: unchanged (156.0)
-      // Fat: 64 - (50 / 9.3)
-      // Carbs: 200 - (150 / 4.1)
+      // Fat: 64 - (50 / 9) = 58.4
+      // Carbs: 200 - (150 / 4) = 162.5
       expect(targets.protein, closeTo(156, 0.001));
-      expect(targets.fat, closeTo(64.0 - (50.0 / 9.3), 0.01));
-      expect(targets.carbs, closeTo(200.0 - (150.0 / 4.1), 0.01));
+      expect(targets.fat, closeTo(64.0 - (50.0 / 9), 0.01));
+      expect(targets.carbs, closeTo(162.5, 0.01));
     });
   });
 }

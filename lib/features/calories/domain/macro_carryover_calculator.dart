@@ -3,12 +3,6 @@ import 'dart:math' as math;
 import 'package:meta/meta.dart';
 import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 
-/// Conversion factor: Carbs kcal per gram (sports nutrition standard).
-const carbEnergyDensityKcalPerGram = 4.1;
-
-/// Conversion factor: Fat kcal per gram (sports nutrition standard).
-const fatEnergyDensityKcalPerGram = 9.3;
-
 /// Proportion of carryover allocated to carbs (75%).
 const carryoverCarbFraction = 0.75;
 
@@ -105,7 +99,8 @@ abstract final class MacroCarryoverCalculator {
     double? baseGoalKcal,
   }) {
     final plannedCarbsGrams =
-        (carryoverKcal * carryoverCarbFraction) / carbEnergyDensityKcalPerGram;
+        (carryoverKcal * carryoverCarbFraction) /
+        MacroBudgetCalculator.standardCarbKcalPerGram;
     final carbsGrams = baseGoalKcal == null
         ? plannedCarbsGrams
         : math.min<double>(
@@ -118,11 +113,13 @@ abstract final class MacroCarryoverCalculator {
                   baseCarbs,
             ),
           );
-    final fatKcal = carryoverKcal - carbsGrams * carbEnergyDensityKcalPerGram;
+    final fatKcal =
+        carryoverKcal -
+        carbsGrams * MacroBudgetCalculator.standardCarbKcalPerGram;
     return MacroCarryoverDelta(
       proteinGrams: 0,
       carbsGrams: carbsGrams,
-      fatGrams: fatKcal / fatEnergyDensityKcalPerGram,
+      fatGrams: fatKcal / MacroBudgetCalculator.standardFatKcalPerGram,
     );
   }
 
@@ -165,7 +162,8 @@ abstract final class MacroCarryoverCalculator {
     required double fatFloor,
   }) {
     final plannedReduction =
-        (reductionKcal * carryoverFatFraction) / fatEnergyDensityKcalPerGram;
+        (reductionKcal * carryoverFatFraction) /
+        MacroBudgetCalculator.standardFatKcalPerGram;
     if (baseFat - plannedReduction >= fatFloor) {
       return (
         delta: -plannedReduction,
@@ -178,7 +176,8 @@ abstract final class MacroCarryoverCalculator {
       math.min<double>(baseFat, fatFloor),
     );
     final actualDelta = newFat - baseFat;
-    final savedKcal = actualDelta.abs() * fatEnergyDensityKcalPerGram;
+    final savedKcal =
+        actualDelta.abs() * MacroBudgetCalculator.standardFatKcalPerGram;
     return (
       delta: actualDelta,
       remainingReductionKcal: math.max<double>(0, reductionKcal - savedKcal),
@@ -190,17 +189,15 @@ abstract final class MacroCarryoverCalculator {
     required double baseCarbs,
     required double carbsReductionKcal,
   }) {
-    final reductionGrams = carbsReductionKcal / carbEnergyDensityKcalPerGram;
+    final reductionGrams =
+        carbsReductionKcal / MacroBudgetCalculator.standardCarbKcalPerGram;
     final minCarbs = math.min<double>(
       baseCarbs,
       MacroBudgetCalculator.minimumCarbsFloorGrams,
     );
     final newCarbs = math.max<double>(minCarbs, baseCarbs - reductionGrams);
     final delta = newCarbs - baseCarbs;
-    final wasFloorApplied =
-        newCarbs == MacroBudgetCalculator.minimumCarbsFloorGrams ||
-        (baseCarbs < MacroBudgetCalculator.minimumCarbsFloorGrams &&
-            delta == 0);
+    final wasFloorApplied = newCarbs > baseCarbs - reductionGrams;
     return (delta: delta, wasFloorApplied: wasFloorApplied);
   }
 
@@ -209,16 +206,12 @@ abstract final class MacroCarryoverCalculator {
     required double reductionKcal,
     double? baseGoalKcal,
   }) {
-    final safeWeight = weightKg > 0 ? weightKg : 70.0;
     final effectiveDayKcal = baseGoalKcal != null
-        ? math.max<double>(0, baseGoalKcal - reductionKcal)
+        ? baseGoalKcal - reductionKcal
         : 0.0;
-    final fatFloorByWeight =
-        safeWeight * MacroBudgetCalculator.minimumFatFloorGramsPerKg;
-    final fatFloorByCalories = effectiveDayKcal > 0
-        ? (effectiveDayKcal * MacroBudgetCalculator.minimumFatCalorieFraction) /
-              fatEnergyDensityKcalPerGram
-        : 0.0;
-    return math.max<double>(fatFloorByWeight, fatFloorByCalories);
+    return MacroBudgetCalculator.fatFloorGrams(
+      goalKcal: effectiveDayKcal,
+      weightKg: weightKg,
+    );
   }
 }

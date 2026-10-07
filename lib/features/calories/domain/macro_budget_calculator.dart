@@ -74,6 +74,22 @@ abstract final class MacroBudgetCalculator {
     );
   }
 
+  /// Smallest fat target in grams: [minimumFatFloorGramsPerKg] of the body
+  /// weight (70 kg when unknown) or [minimumFatCalorieFraction] of [goalKcal],
+  /// whichever is larger.
+  static double fatFloorGrams({
+    required double goalKcal,
+    required double weightKg,
+  }) {
+    final safeWeight = weightKg > 0 ? weightKg : 70.0;
+    return math.max<double>(
+      safeWeight * minimumFatFloorGramsPerKg,
+      math.max<double>(0, goalKcal) *
+          minimumFatCalorieFraction /
+          standardFatKcalPerGram,
+    );
+  }
+
   /// Calculates balanced macros, capping carbs and ensuring at least 100 g
   /// carbs when possible.
   static MacroCalculationResult calculate({
@@ -196,12 +212,9 @@ abstract final class MacroBudgetCalculator {
     required double targetFatGrams,
     required double deficitKcal,
   }) {
-    final fatFloorGrams = math.max<double>(
-      safeWeight * minimumFatFloorGramsPerKg,
-      (goalKcal * minimumFatCalorieFraction) / standardFatKcalPerGram,
-    );
+    final fatFloor = fatFloorGrams(goalKcal: goalKcal, weightKg: safeWeight);
     final initialFatKcal = targetFatGrams * standardFatKcalPerGram;
-    final fatFloorKcal = fatFloorGrams * standardFatKcalPerGram;
+    final fatFloorKcal = fatFloor * standardFatKcalPerGram;
     final maxFatReduction = math.max<double>(0, initialFatKcal - fatFloorKcal);
     final fatReductionKcal = math.min<double>(deficitKcal, maxFatReduction);
     final finalFatGrams =
