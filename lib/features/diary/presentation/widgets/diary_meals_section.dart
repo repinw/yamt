@@ -83,7 +83,12 @@ class DiaryMealsSection extends ConsumerWidget {
       ),
     );
     final shortPlanIds =
-        ref.watch(openPlanDemandProvider).value?.shortPlanIds ??
+        ref
+            .watch(openPlanDemandProvider)
+            .value
+            ?.missingShareByPlanId
+            .keys
+            .toSet() ??
         const <String>{};
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

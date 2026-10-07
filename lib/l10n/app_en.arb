@@ -2524,6 +2524,50 @@
   "caloriesProteinShortLetter": "P",
   "caloriesCarbsShortLetter": "C",
   "caloriesFatShortLetter": "F",
+  "shoppingListPlanNeedMissing": "{amount} missing",
+  "@shoppingListPlanNeedMissing": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListPlanNeedAmount": "{amount} {unit}",
+  "@shoppingListPlanNeedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListPlanNeedGroup": "{day} · {meal}",
+  "@shoppingListPlanNeedGroup": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListPlanNeedBrand": "{brand} · {amount}",
+  "@shoppingListPlanNeedBrand": {
+    "placeholders": {
+      "brand": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "shoppingListPlanNeedsLoadFailed": "The needs of your plans could not be loaded",
+  "shoppingListPlanNeedsRetry": "Reload plan needs",
+  "shoppingListPlanNeedsTitle": "For your plan",
   "shoppingListSuggestionsTitle": "Suggestions",
   "shoppingListSuggestionsExplanation": "Low stock and frequently purchased products from your receipts.",
   "shoppingListSuggestionsEmpty": "No suggestions yet. Low stock or repeated purchases on different receipts will appear here.",

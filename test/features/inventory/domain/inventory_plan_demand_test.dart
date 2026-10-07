@@ -67,7 +67,7 @@ void main() {
     );
 
     expect(demand.plannedByItemId, {'oats': 500});
-    expect(demand.shortPlanIds, {'later'});
+    expect(demand.missingShareByPlanId.keys, ['later']);
   });
 
   test('a plan takes from one pack, as accepting does', () {
@@ -82,7 +82,7 @@ void main() {
     // The opened pack covers only part of the first plan; the second plan
     // takes the next pack once the opened one is empty.
     expect(demand.plannedByItemId, {'opened': 200, 'full': 100});
-    expect(demand.shortPlanIds, {'first'});
+    expect(demand.missingShareByPlanId, {'first': 1 / 3});
   });
 
   test('a plan without stock falls short; a found food counts nowhere', () {
@@ -92,6 +92,6 @@ void main() {
     ], const []);
 
     expect(demand.plannedByItemId, isEmpty);
-    expect(demand.shortPlanIds, {'vorrat'});
+    expect(demand.missingShareByPlanId, {'vorrat': 1});
   });
 }

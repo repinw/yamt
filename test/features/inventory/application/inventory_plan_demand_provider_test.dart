@@ -62,6 +62,6 @@ void main() {
     final demand = await container.read(openPlanDemandProvider.future);
 
     expect(demand.plannedByItemId, {'oats': 150});
-    expect(demand.shortPlanIds, {'tomorrow'});
+    expect(demand.missingShareByPlanId, {'tomorrow': 0.5});
   });
 }
