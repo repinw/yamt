@@ -10,6 +10,8 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_entry_change_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/'
+    'diary_plan_controller.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_entry_amount_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -120,6 +122,39 @@ abstract final class DiaryEntryDetailsFlow {
       onUndo: () async => (await _controller(
         container,
       ).delete(repeated, restoreToInventory: false)).isSuccess,
+    );
+  }
+
+  /// Plans the food of [entry] again for [day] (see [planCalorieEntryAgain])
+  /// and closes the page.
+  static Future<void> planAgain(
+    BuildContext context, {
+    required CalorieEntry entry,
+    required DateTime day,
+  }) async {
+    final container = ProviderScope.containerOf(context, listen: false);
+    final plan = planCalorieEntryAgain(
+      entry,
+      id: const Uuid().v4(),
+      day: day,
+      now: container.read(clockProvider)(),
+    );
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final plans = container.read(diaryPlanControllerProvider.notifier);
+    final saved = await plans.plan(plan);
+    if (!context.mounted) {
+      return;
+    }
+    if (saved) {
+      context.pop();
+    }
+    _showResult(
+      messenger,
+      succeeded: saved,
+      successMessage: l10n.diaryPlanSaved,
+      failureMessage: l10n.caloriesSaveFailed,
+      onUndo: () => plans.delete(plan),
     );
   }
 

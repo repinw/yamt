@@ -131,6 +131,36 @@ void main() {
     expect(repeated.canReturnCombinedToInventory, isFalse);
   });
 
+  test('a plan again keeps meal, time of day, and the Vorrat item', () {
+    final now = DateTime(2026, 2, 25, 19, 30);
+    final plan = planCalorieEntryAgain(
+      entry(sourceInventoryItemId: 'skyr'),
+      id: 'plan-1',
+      day: DateTime(2026, 2, 27),
+      now: now,
+    );
+
+    expect(plan.id, 'plan-1');
+    expect(plan.mealType, MealType.breakfast);
+    expect(plan.loggedAt, DateTime(2026, 2, 27, 8));
+    expect(plan.createdAt, now);
+    expect(plan.consumedAmount, 200);
+    expect(plan.sourceInventoryItemId, 'skyr');
+    expect(plan.sourceInventoryAmountToRestore, 2);
+  });
+
+  test('a plan again of a combined entry has no stock source', () {
+    final plan = planCalorieEntryAgain(
+      _combined(),
+      id: 'plan-1',
+      day: DateTime(2026, 9, 28),
+      now: DateTime(2026, 9, 27, 12),
+    );
+
+    expect(plan.sourceInventoryItemId, isNull);
+    expect(plan.canReturnCombinedToInventory, isFalse);
+  });
+
   test('nutrient details survive JSON and edits', () {
     final withDetails = CalorieEntry.fromJson(<String, dynamic>{
       ...entry().toJson(),

@@ -4012,11 +4012,11 @@ abstract class AppLocalizations {
   /// **'Logged again'**
   String get caloriesEatAgainDoneMessage;
 
-  /// No description provided for @caloriesEatAgainAction.
+  /// No description provided for @diaryEntryAgainAction.
   ///
   /// In en, this message translates to:
-  /// **'Log again'**
-  String get caloriesEatAgainAction;
+  /// **'Again'**
+  String get diaryEntryAgainAction;
 
   /// No description provided for @caloriesEntryPer100Label.
   ///
@@ -4293,12 +4293,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Neutral day (vacation, illness). Doesn\'t break your streak.'**
   String get diaryDayTypePauseSubtitle;
-
-  /// No description provided for @diaryEntryDetailsCardTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Entry'**
-  String get diaryEntryDetailsCardTitle;
 
   /// No description provided for @diaryMealsLoadFailed.
   ///

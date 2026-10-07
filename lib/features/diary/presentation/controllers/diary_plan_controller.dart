@@ -1,5 +1,6 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/'
@@ -24,6 +25,17 @@ class DiaryPlanController extends _$DiaryPlanController {
   /// Saves [plan] again after a delete. Returns false when it failed.
   Future<bool> restore(CalorieEntry plan) =>
       _write((repository) => repository.savePlannedEntry(plan));
+
+  /// Saves the new [plan] and lets the diary open its day. Returns false
+  /// when it failed.
+  Future<bool> plan(CalorieEntry plan) async {
+    final planned = ref.read(lastPlannedDayProvider.notifier);
+    final saved = await restore(plan);
+    if (saved) {
+      planned.planned(plan.loggedAt);
+    }
+    return saved;
+  }
 
   /// Eats [plan] as planned, with stock from the Vorrat when it has the
   /// food. Returns null when it failed; the plan then stays.

@@ -20,8 +20,6 @@ import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
-    'diary_entry_actions_card.dart';
-import 'package:yamt/features/diary/presentation/widgets/'
     'diary_entry_delete_dialogs.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_entry_label_section.dart';
@@ -32,6 +30,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_page_scaffold.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
@@ -279,7 +279,7 @@ void main() {
       ],
     );
 
-    final remove = find.byKey(DiaryEntryActionsCard.removeKey);
+    final remove = find.byKey(EatPageScaffold.deleteButtonKey);
     await tester.ensureVisible(remove);
     await tester.pumpAndSettle();
     await tester.tap(remove);

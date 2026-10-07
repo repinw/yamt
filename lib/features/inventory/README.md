@@ -113,7 +113,8 @@ already documented as a reusable presentation surface.
 - `presentation/widgets/eat_sheet/`: `InventoryItemEatSheetBody` (the eat
   page for one item, with header overrides, a custom second action, and a
   selection callback), `EatPageScaffold`, `EatPageHeader`, `EatLabelTable`,
-  `EatAmountRuler` with `EatRulerMark`, `EatSheetTextField`, `EatWhenMenu`,
+  `EatAmountRuler` with `EatRulerMark`, `EatSheetTextField`, `EatWhenMenu`
+  with `showEatPlanDayPicker` (the plan day picker of the Planen icons),
   `EatActionCard`, `EatChip`, `EatComponentsList`, `EatImageTile`,
   `EatInlineAmountField`, `EatFramedBox`, `EatLabelTitle`, `EatLabelInputRow`
   (one editable row of a food label), `EatTextLink`, `EatMissingValuesHint`

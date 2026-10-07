@@ -5,12 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_entry_details_state.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_delete_flow.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_flow.dart';
-import 'package:yamt/features/diary/presentation/widgets/diary_entry_actions_card.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_entry_label_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_components_list.dart';
@@ -22,16 +23,17 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Details of a logged diary entry, in the food label look of the eat page.
 ///
-/// The label shows the nutrients of the eaten amount. The amount changes on
-/// the ruler and saves with the confirm button, which then closes the page.
-/// Moving the entry to another meal or day, logging it again, and removing
-/// it save at once. Every change offers an undo, and an entry logged from
-/// the inventory moves or returns its stock with it.
+/// The label shows the nutrients of the eaten amount. The main button logs
+/// the food again ("Nochmal"); once the amount on the ruler changed, it
+/// saves that amount instead ("Speichern") and closes the page. Icons beside
+/// it remove the entry and plan the food again for a later day. Moving the
+/// entry to another meal or day saves at once. Every change offers an undo,
+/// and an entry logged from the inventory moves or returns its stock with it.
 class DiaryEntryDetailsPage extends ConsumerStatefulWidget {
   /// Creates the page for the entry with [entryId].
   const new({required this.entryId, super.key});
 
-  /// Key of the confirm button that saves the amount.
+  /// Key of the main button: "Nochmal", or "Speichern" for a changed amount.
   static const saveButtonKey = Key('diary_entry_details_save_button');
 
   /// Key of the close button.
@@ -83,6 +85,9 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
   Widget _content(DiaryEntryDetailsState state) {
     final l10n = AppLocalizations.of(context)!;
     final entry = state.entry;
+    // An invalid amount counts as changed, so nothing repeats the stored one.
+    final isChanged = state.changedAmount != null || state.hasAmountError;
+    final canRepeat = canRepeatCalorieEntry(entry);
     return EatPageScaffold(
       // The snack bars of the changes use the app's messenger, so they
       // stay on the diary after the page closes.
@@ -97,11 +102,23 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
             unawaited(_move(() => _controller.moveToDay(day))),
       ),
       kcal: state.preview.totalKcal,
-      confirmLabel: l10n.caloriesSaveEntryAction,
+      // A prepared meal's portions cannot repeat; its button only closes.
+      confirmLabel: isChanged || !canRepeat
+          ? l10n.caloriesSaveEntryAction
+          : l10n.diaryEntryAgainAction,
       confirmButtonKey: DiaryEntryDetailsPage.saveButtonKey,
       onConfirm: _isSaving || state.hasAmountError
           ? null
-          : () => unawaited(_save(state)),
+          : () => unawaited(
+              isChanged || !canRepeat ? _save(state) : _eatAgain(entry),
+            ),
+      // The icons stay while a change saves; _run ignores a second tap.
+      onDelete: () => unawaited(
+        _run(() => DiaryEntryDeleteFlow.remove(context, entry: entry)),
+      ),
+      onPlan: isChanged || !canRepeat
+          ? null
+          : () => unawaited(_planAgain(state)),
       cancelButtonKey: DiaryEntryDetailsPage.closeButtonKey,
       children: [
         DiaryEntryLabelSection(entry: state.preview),
@@ -133,19 +150,6 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
                 ),
             ],
           ),
-        DiaryEntryActionsCard(
-          isEnabled: !_isSaving,
-          onEatAgain: canRepeatCalorieEntry(entry)
-              ? () => unawaited(
-                  _run(
-                    () => DiaryEntryDetailsFlow.eatAgain(context, entry: entry),
-                  ),
-                )
-              : null,
-          onRemove: () => unawaited(
-            _run(() => DiaryEntryDeleteFlow.remove(context, entry: entry)),
-          ),
-        ),
       ],
     );
   }
@@ -176,8 +180,8 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
     });
   }
 
-  /// Saves the entered amount and closes the page. Without a changed amount
-  /// the page only closes.
+  /// Saves the changed amount and closes the page. Without a changed
+  /// amount the page only closes.
   Future<void> _save(DiaryEntryDetailsState state) {
     return _run(() async {
       final amount = state.changedAmount;
@@ -196,6 +200,25 @@ class _DiaryEntryDetailsPageState extends ConsumerState<DiaryEntryDetailsPage> {
       }
     });
   }
+
+  Future<void> _eatAgain(CalorieEntry entry) =>
+      _run(() => DiaryEntryDetailsFlow.eatAgain(context, entry: entry));
+
+  /// Asks for the day, then plans the food again for it.
+  Future<void> _planAgain(DiaryEntryDetailsState state) => _run(() async {
+    final day = await showEatPlanDayPicker(
+      context,
+      today: state.today,
+      loggedAt: addDiaryDays(state.today, 1),
+    );
+    if (day != null && mounted) {
+      await DiaryEntryDetailsFlow.planAgain(
+        context,
+        entry: state.entry,
+        day: day,
+      );
+    }
+  });
 
   /// Reloads the entry after an undo. The undo may run after the page
   /// closed, so it uses the container instead of this state's `ref`.
