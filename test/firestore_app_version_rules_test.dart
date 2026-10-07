@@ -22,14 +22,6 @@ void main() {
       );
     });
 
-    test('the userId catch-all does not open config documents', () {
-      expect(
-        RegExp(r"isOutsideHouseholds\(document\) && document\[0\] != 'config'")
-            .allMatches(compactRules),
-        hasLength(2),
-      );
-    });
-
     test('a user writes only the version fields of their own devices', () {
       expect(
         compactRules,

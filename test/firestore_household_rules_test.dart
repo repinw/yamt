@@ -224,14 +224,7 @@ void main() {
       );
     });
 
-    test('the generic userId rule stays out of households and invites', () {
-      expect(
-        compactRules,
-        contains(
-          'function isOutsideHouseholds(path) { '
-          "return !(path[0] in ['households', 'household_invites']); }",
-        ),
-      );
+    test('invites carry only the household, its expiry and its key', () {
       expect(
         compactRules,
         contains(
@@ -239,10 +232,6 @@ void main() {
           "'householdId', 'expiresAt', 'wrapped_household_key', ]) "
           '&& invite.data.householdId == householdId',
         ),
-      );
-      expect(
-        RegExp(r'isOutsideHouseholds\(document\)').allMatches(compactRules),
-        hasLength(2),
       );
     });
 

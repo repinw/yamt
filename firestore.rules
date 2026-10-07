@@ -70,13 +70,6 @@ service cloud.firestore {
         && invite.data.expiresAt > request.time;
     }
 
-    // Households and their invites have their own rules. The generic rule at
-    // the end must not open them for a document that only carries a userId
-    // field: a forged invite would let anybody join any household.
-    function isOutsideHouseholds(path) {
-      return !(path[0] in ['households', 'household_invites']);
-    }
-
     function isOptionalString(data, key) {
       return !(key in data) || data[key] == null || data[key] is string;
     }
@@ -1160,21 +1153,8 @@ service cloud.firestore {
       allow delete: if false;
     }
 
-    // TODO: Replace this generic owner-based rule once all collection
-    // schemas are stable and covered with explicit rules.
-    // config/ holds documents that only the release writes; the userId rule
-    // below must not open them.
-    match /{document=**} {
-      allow create: if isSignedIn()
-        && isOutsideHouseholds(document)
-        && document[0] != 'config'
-        && 'userId' in request.resource.data
-        && request.resource.data.userId == request.auth.uid;
-      allow read, update, delete: if isSignedIn()
-        && isOutsideHouseholds(document)
-        && document[0] != 'config'
-        && 'userId' in resource.data
-        && resource.data.userId == request.auth.uid;
-    }
+    // No generic rule: a path without its own match above is closed. A
+    // generic owner-field rule used to open every other path, also the
+    // collections of other users and config/ (#512).
   }
 }
