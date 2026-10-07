@@ -149,6 +149,9 @@ class YamtReceiptProductResolver implements ReceiptProductResolver {
       source: _mapReason(candidate.reason),
       requiresPersistence: candidate.requiresPersistence,
       nutrition: item.nutrition,
+      servingSize: item.servingSize,
+      servingQuantity: item.servingQuantity,
+      servingQuantityUnit: item.servingQuantityUnit,
     );
   }
 
@@ -167,6 +170,9 @@ class YamtReceiptProductResolver implements ReceiptProductResolver {
       source: source,
       requiresPersistence: true,
       nutrition: result.nutrition,
+      servingSize: result.servingSize,
+      servingQuantity: result.servingQuantity,
+      servingQuantityUnit: result.servingQuantityUnit,
     );
   }
 

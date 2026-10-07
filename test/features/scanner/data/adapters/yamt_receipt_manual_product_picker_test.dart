@@ -52,6 +52,29 @@ void main() {
       expect(candidate.protein, 1.0);
     });
 
+    test('mapResultToCandidate keeps the weight of one piece', () {
+      final item = InventoryItem.create(
+        id: 'eggs',
+        name: 'Eier',
+        entryDate: DateTime(2026, 10, 7),
+        storeName: 'Rewe',
+        quantity: 1,
+        weight: '10 Stück',
+        servingQuantity: 60,
+        servingQuantityUnit: 'g',
+      );
+
+      final candidate = YamtReceiptManualProductPicker.mapResultToCandidate(
+        InventoryReceiptManualProductResult(
+          item: item,
+          action: InventoryReceiptManualProductAction.addToInventory,
+        ),
+      );
+
+      expect(candidate.servingQuantity, 60);
+      expect(candidate.servingQuantityUnit, 'g');
+    });
+
     test('mapResultToCandidate handles null nutrition gracefully', () {
       final now = DateTime.now();
       final item = InventoryItem.create(

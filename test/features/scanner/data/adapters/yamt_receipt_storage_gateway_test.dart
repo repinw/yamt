@@ -6,6 +6,7 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/product_missing_values.dart';
 import 'package:yamt/features/scanner/data/adapters/yamt_receipt_storage_gateway.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -276,6 +277,49 @@ void main() {
         GlobalFoodNutritionQualityStatus.unverified,
       );
     });
+
+    test(
+      'saveReceipt keeps the weight of one piece of a piece product',
+      () async {
+        const receipt = ScannedReceipt(id: 'rec_eggs', storeName: 'REWE');
+
+        await gateway.saveReceipt(
+          receipt: receipt,
+          items: const [
+            ReceiptLineItem(
+              id: 'line_eggs',
+              rawName: 'EIER 10ER',
+              totalPrice: 2.99,
+              status: ReceiptItemStatus.confirmed,
+              matchedProduct: ProductCandidate(
+                id: 'g_eggs',
+                name: 'Eier',
+                packageSize: '10 Stück',
+                requiresPersistence: true,
+                servingQuantity: 60,
+                servingQuantityUnit: 'g',
+              ),
+            ),
+          ],
+        );
+
+        final saved = invRepo.appendedItems.single;
+        expect(saved.servingQuantity, 60);
+        expect(saved.servingQuantityUnit, 'g');
+        expect(
+          missingPackageSize(
+            packageSize: saved.weight,
+            servingQuantity: saved.servingQuantity,
+            servingQuantityUnit: saved.servingQuantityUnit,
+            fallbackUnit: saved.amountUnit,
+          ),
+          isNull,
+        );
+        final catalog = globalFoodRepo.appendedItems.single;
+        expect(catalog.servingQuantity, 60);
+        expect(catalog.servingQuantityUnit, 'g');
+      },
+    );
 
     test('saveReceipt does not recreate an existing catalog product', () async {
       const receipt = ScannedReceipt(id: 'rec_existing', storeName: 'REWE');

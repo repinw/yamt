@@ -80,6 +80,10 @@ class YamtReceiptManualProductPicker implements ReceiptManualProductPicker {
       packageSize: item.weight,
       source: CandidateSource.manualSearch,
       nutrition: item.nutrition,
+      // Carries "Gramm pro Stück" of a product counted in pieces.
+      servingSize: item.servingSize,
+      servingQuantity: item.servingQuantity,
+      servingQuantityUnit: item.servingQuantityUnit,
     );
   }
 }

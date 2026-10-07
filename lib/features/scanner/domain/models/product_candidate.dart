@@ -61,6 +61,16 @@ abstract class ProductCandidate with _$ProductCandidate {
 
     /// Nährwerte pro 100g/ml.
     GlobalFoodNutrition? nutrition,
+
+    /// Printed serving, for example "1 Ei (60 g)".
+    String? servingSize,
+
+    /// Amount of one serving in [servingQuantityUnit]. For a product counted
+    /// in pieces it is the weight of one piece.
+    double? servingQuantity,
+
+    /// Unit code of [servingQuantity], for example "g".
+    String? servingQuantityUnit,
   }) = _ProductCandidate;
 
   const new _();

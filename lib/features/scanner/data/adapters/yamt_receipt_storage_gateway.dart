@@ -81,6 +81,9 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
             category: product?.category,
             imageUrl: product?.imageUrl,
             nutrition: nutrition,
+            servingSize: product?.servingSize,
+            servingQuantity: product?.servingQuantity,
+            servingQuantityUnit: product?.servingQuantityUnit,
             ocrName: item.rawName,
             receiptId: receipt.id,
             receiptDate: receipt.dateTime,
@@ -154,6 +157,9 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
       imageUrl: product.imageUrl,
       packageWeight: _firstNonEmpty(item.packageWeight, product.packageSize),
       nutrition: product.nutrition,
+      servingSize: product.servingSize,
+      servingQuantity: product.servingQuantity,
+      servingQuantityUnit: product.servingQuantityUnit,
     );
   }
 

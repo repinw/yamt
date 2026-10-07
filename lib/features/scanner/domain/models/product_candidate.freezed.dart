@@ -27,7 +27,11 @@ mixin _$ProductCandidate {
  CandidateSource get source;/// Whether this candidate must be added to the global food catalog before
 /// inventory items and receipt aliases may reference it.
  bool get requiresPersistence;/// Nährwerte pro 100g/ml.
- GlobalFoodNutrition? get nutrition;
+ GlobalFoodNutrition? get nutrition;/// Printed serving, for example "1 Ei (60 g)".
+ String? get servingSize;/// Amount of one serving in [servingQuantityUnit]. For a product counted
+/// in pieces it is the weight of one piece.
+ double? get servingQuantity;/// Unit code of [servingQuantity], for example "g".
+ String? get servingQuantityUnit;
 /// Create a copy of ProductCandidate
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -39,20 +43,20 @@ $ProductCandidateCopyWith<ProductCandidate> get copyWith => _$ProductCandidateCo
 @override
 bool operator ==(Object other) {
   final _this = this as ProductCandidate;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductCandidate&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.brand, _this.brand) || other.brand == _this.brand)&&(identical(other.category, _this.category) || other.category == _this.category)&&(identical(other.barcode, _this.barcode) || other.barcode == _this.barcode)&&(identical(other.imageUrl, _this.imageUrl) || other.imageUrl == _this.imageUrl)&&(identical(other.packageSize, _this.packageSize) || other.packageSize == _this.packageSize)&&(identical(other.confidence, _this.confidence) || other.confidence == _this.confidence)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.requiresPersistence, _this.requiresPersistence) || other.requiresPersistence == _this.requiresPersistence)&&(identical(other.nutrition, _this.nutrition) || other.nutrition == _this.nutrition));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is ProductCandidate&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.name, _this.name) || other.name == _this.name)&&(identical(other.brand, _this.brand) || other.brand == _this.brand)&&(identical(other.category, _this.category) || other.category == _this.category)&&(identical(other.barcode, _this.barcode) || other.barcode == _this.barcode)&&(identical(other.imageUrl, _this.imageUrl) || other.imageUrl == _this.imageUrl)&&(identical(other.packageSize, _this.packageSize) || other.packageSize == _this.packageSize)&&(identical(other.confidence, _this.confidence) || other.confidence == _this.confidence)&&(identical(other.source, _this.source) || other.source == _this.source)&&(identical(other.requiresPersistence, _this.requiresPersistence) || other.requiresPersistence == _this.requiresPersistence)&&(identical(other.nutrition, _this.nutrition) || other.nutrition == _this.nutrition)&&(identical(other.servingSize, _this.servingSize) || other.servingSize == _this.servingSize)&&(identical(other.servingQuantity, _this.servingQuantity) || other.servingQuantity == _this.servingQuantity)&&(identical(other.servingQuantityUnit, _this.servingQuantityUnit) || other.servingQuantityUnit == _this.servingQuantityUnit));
 }
 
 
 @override
 int get hashCode {
   final _this = this as ProductCandidate;
-  return Object.hash(runtimeType,_this.id,_this.name,_this.brand,_this.category,_this.barcode,_this.imageUrl,_this.packageSize,_this.confidence,_this.source,_this.requiresPersistence,_this.nutrition);
+  return Object.hash(runtimeType,_this.id,_this.name,_this.brand,_this.category,_this.barcode,_this.imageUrl,_this.packageSize,_this.confidence,_this.source,_this.requiresPersistence,_this.nutrition,_this.servingSize,_this.servingQuantity,_this.servingQuantityUnit);
 }
 
 @override
 String toString() {
   final _this = this as ProductCandidate;
-  return 'ProductCandidate(id: ${_this.id}, name: ${_this.name}, brand: ${_this.brand}, category: ${_this.category}, barcode: ${_this.barcode}, imageUrl: ${_this.imageUrl}, packageSize: ${_this.packageSize}, confidence: ${_this.confidence}, source: ${_this.source}, requiresPersistence: ${_this.requiresPersistence}, nutrition: ${_this.nutrition})';
+  return 'ProductCandidate(id: ${_this.id}, name: ${_this.name}, brand: ${_this.brand}, category: ${_this.category}, barcode: ${_this.barcode}, imageUrl: ${_this.imageUrl}, packageSize: ${_this.packageSize}, confidence: ${_this.confidence}, source: ${_this.source}, requiresPersistence: ${_this.requiresPersistence}, nutrition: ${_this.nutrition}, servingSize: ${_this.servingSize}, servingQuantity: ${_this.servingQuantity}, servingQuantityUnit: ${_this.servingQuantityUnit})';
 }
 
 
@@ -63,7 +67,7 @@ abstract mixin class $ProductCandidateCopyWith<$Res>  {
   factory $ProductCandidateCopyWith(ProductCandidate value, $Res Function(ProductCandidate) _then) = _$ProductCandidateCopyWithImpl;
 @useResult
 $Res call({
- String id, String name, String? brand, String? category, String? barcode, String? imageUrl, String? packageSize, double confidence, CandidateSource source, bool requiresPersistence, GlobalFoodNutrition? nutrition
+ String id, String name, String? brand, String? category, String? barcode, String? imageUrl, String? packageSize, double confidence, CandidateSource source, bool requiresPersistence, GlobalFoodNutrition? nutrition, String? servingSize, double? servingQuantity, String? servingQuantityUnit
 });
 
 
@@ -80,7 +84,7 @@ class _$ProductCandidateCopyWithImpl<$Res>
 
 /// Create a copy of ProductCandidate
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? brand = freezed,Object? category = freezed,Object? barcode = freezed,Object? imageUrl = freezed,Object? packageSize = freezed,Object? confidence = null,Object? source = null,Object? requiresPersistence = null,Object? nutrition = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? name = null,Object? brand = freezed,Object? category = freezed,Object? barcode = freezed,Object? imageUrl = freezed,Object? packageSize = freezed,Object? confidence = null,Object? source = null,Object? requiresPersistence = null,Object? nutrition = freezed,Object? servingSize = freezed,Object? servingQuantity = freezed,Object? servingQuantityUnit = freezed,}) {
   return _then(ProductCandidate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -93,7 +97,10 @@ as String?,confidence: null == confidence ? _self.confidence : confidence // ign
 as double,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as CandidateSource,requiresPersistence: null == requiresPersistence ? _self.requiresPersistence : requiresPersistence // ignore: cast_nullable_to_non_nullable
 as bool,nutrition: freezed == nutrition ? _self.nutrition : nutrition // ignore: cast_nullable_to_non_nullable
-as GlobalFoodNutrition?,
+as GlobalFoodNutrition?,servingSize: freezed == servingSize ? _self.servingSize : servingSize // ignore: cast_nullable_to_non_nullable
+as String?,servingQuantity: freezed == servingQuantity ? _self.servingQuantity : servingQuantity // ignore: cast_nullable_to_non_nullable
+as double?,servingQuantityUnit: freezed == servingQuantityUnit ? _self.servingQuantityUnit : servingQuantityUnit // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 /// Create a copy of ProductCandidate
@@ -190,10 +197,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  GlobalFoodNutrition? nutrition)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  GlobalFoodNutrition? nutrition,  String? servingSize,  double? servingQuantity,  String? servingQuantityUnit)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _ProductCandidate() when $default != null:
-return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutrition);case _:
+return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutrition,_that.servingSize,_that.servingQuantity,_that.servingQuantityUnit);case _:
   return orElse();
 
 }
@@ -211,10 +218,10 @@ return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  GlobalFoodNutrition? nutrition)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  GlobalFoodNutrition? nutrition,  String? servingSize,  double? servingQuantity,  String? servingQuantityUnit)  $default,) {final _that = this;
 switch (_that) {
 case _ProductCandidate():
-return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutrition);case _:
+return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutrition,_that.servingSize,_that.servingQuantity,_that.servingQuantityUnit);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -231,10 +238,10 @@ return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_th
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  GlobalFoodNutrition? nutrition)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String name,  String? brand,  String? category,  String? barcode,  String? imageUrl,  String? packageSize,  double confidence,  CandidateSource source,  bool requiresPersistence,  GlobalFoodNutrition? nutrition,  String? servingSize,  double? servingQuantity,  String? servingQuantityUnit)?  $default,) {final _that = this;
 switch (_that) {
 case _ProductCandidate() when $default != null:
-return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutrition);case _:
+return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_that.imageUrl,_that.packageSize,_that.confidence,_that.source,_that.requiresPersistence,_that.nutrition,_that.servingSize,_that.servingQuantity,_that.servingQuantityUnit);case _:
   return null;
 
 }
@@ -246,7 +253,7 @@ return $default(_that.id,_that.name,_that.brand,_that.category,_that.barcode,_th
 
 
 class _ProductCandidate extends ProductCandidate {
-  const _ProductCandidate({required this.id, required this.name, this.brand, this.category, this.barcode, this.imageUrl, this.packageSize, this.confidence = 1.0, this.source = CandidateSource.catalogFuzzy, this.requiresPersistence = false, this.nutrition}): super._();
+  const _ProductCandidate({required this.id, required this.name, this.brand, this.category, this.barcode, this.imageUrl, this.packageSize, this.confidence = 1.0, this.source = CandidateSource.catalogFuzzy, this.requiresPersistence = false, this.nutrition, this.servingSize, this.servingQuantity, this.servingQuantityUnit}): super._();
   
 
 /// Eindeutige ID im Katalog (z. B. GlobalFoodItem-ID oder Barcode).
@@ -272,6 +279,13 @@ class _ProductCandidate extends ProductCandidate {
 @override@JsonKey() final  bool requiresPersistence;
 /// Nährwerte pro 100g/ml.
 @override final  GlobalFoodNutrition? nutrition;
+/// Printed serving, for example "1 Ei (60 g)".
+@override final  String? servingSize;
+/// Amount of one serving in [servingQuantityUnit]. For a product counted
+/// in pieces it is the weight of one piece.
+@override final  double? servingQuantity;
+/// Unit code of [servingQuantity], for example "g".
+@override final  String? servingQuantityUnit;
 
 /// Create a copy of ProductCandidate
 /// with the given fields replaced by the non-null parameter values.
@@ -283,18 +297,18 @@ _$ProductCandidateCopyWith<_ProductCandidate> get copyWith => __$ProductCandidat
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductCandidate&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.category, category) || other.category == category)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.packageSize, packageSize) || other.packageSize == packageSize)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.source, source) || other.source == source)&&(identical(other.requiresPersistence, requiresPersistence) || other.requiresPersistence == requiresPersistence)&&(identical(other.nutrition, nutrition) || other.nutrition == nutrition));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _ProductCandidate&&(identical(other.id, id) || other.id == id)&&(identical(other.name, name) || other.name == name)&&(identical(other.brand, brand) || other.brand == brand)&&(identical(other.category, category) || other.category == category)&&(identical(other.barcode, barcode) || other.barcode == barcode)&&(identical(other.imageUrl, imageUrl) || other.imageUrl == imageUrl)&&(identical(other.packageSize, packageSize) || other.packageSize == packageSize)&&(identical(other.confidence, confidence) || other.confidence == confidence)&&(identical(other.source, source) || other.source == source)&&(identical(other.requiresPersistence, requiresPersistence) || other.requiresPersistence == requiresPersistence)&&(identical(other.nutrition, nutrition) || other.nutrition == nutrition)&&(identical(other.servingSize, servingSize) || other.servingSize == servingSize)&&(identical(other.servingQuantity, servingQuantity) || other.servingQuantity == servingQuantity)&&(identical(other.servingQuantityUnit, servingQuantityUnit) || other.servingQuantityUnit == servingQuantityUnit));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,name,brand,category,barcode,imageUrl,packageSize,confidence,source,requiresPersistence,nutrition);
+    return Object.hash(runtimeType,id,name,brand,category,barcode,imageUrl,packageSize,confidence,source,requiresPersistence,nutrition,servingSize,servingQuantity,servingQuantityUnit);
 }
 
 @override
 String toString() {
-    return 'ProductCandidate(id: $id, name: $name, brand: $brand, category: $category, barcode: $barcode, imageUrl: $imageUrl, packageSize: $packageSize, confidence: $confidence, source: $source, requiresPersistence: $requiresPersistence, nutrition: $nutrition)';
+    return 'ProductCandidate(id: $id, name: $name, brand: $brand, category: $category, barcode: $barcode, imageUrl: $imageUrl, packageSize: $packageSize, confidence: $confidence, source: $source, requiresPersistence: $requiresPersistence, nutrition: $nutrition, servingSize: $servingSize, servingQuantity: $servingQuantity, servingQuantityUnit: $servingQuantityUnit)';
 }
 
 
@@ -305,7 +319,7 @@ abstract mixin class _$ProductCandidateCopyWith<$Res> implements $ProductCandida
   factory _$ProductCandidateCopyWith(_ProductCandidate value, $Res Function(_ProductCandidate) _then) = __$ProductCandidateCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String name, String? brand, String? category, String? barcode, String? imageUrl, String? packageSize, double confidence, CandidateSource source, bool requiresPersistence, GlobalFoodNutrition? nutrition
+ String id, String name, String? brand, String? category, String? barcode, String? imageUrl, String? packageSize, double confidence, CandidateSource source, bool requiresPersistence, GlobalFoodNutrition? nutrition, String? servingSize, double? servingQuantity, String? servingQuantityUnit
 });
 
 
@@ -322,7 +336,7 @@ class __$ProductCandidateCopyWithImpl<$Res>
 
 /// Create a copy of ProductCandidate
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? brand = freezed,Object? category = freezed,Object? barcode = freezed,Object? imageUrl = freezed,Object? packageSize = freezed,Object? confidence = null,Object? source = null,Object? requiresPersistence = null,Object? nutrition = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? name = null,Object? brand = freezed,Object? category = freezed,Object? barcode = freezed,Object? imageUrl = freezed,Object? packageSize = freezed,Object? confidence = null,Object? source = null,Object? requiresPersistence = null,Object? nutrition = freezed,Object? servingSize = freezed,Object? servingQuantity = freezed,Object? servingQuantityUnit = freezed,}) {
   return _then(_ProductCandidate(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
@@ -335,7 +349,10 @@ as String?,confidence: null == confidence ? _self.confidence : confidence // ign
 as double,source: null == source ? _self.source : source // ignore: cast_nullable_to_non_nullable
 as CandidateSource,requiresPersistence: null == requiresPersistence ? _self.requiresPersistence : requiresPersistence // ignore: cast_nullable_to_non_nullable
 as bool,nutrition: freezed == nutrition ? _self.nutrition : nutrition // ignore: cast_nullable_to_non_nullable
-as GlobalFoodNutrition?,
+as GlobalFoodNutrition?,servingSize: freezed == servingSize ? _self.servingSize : servingSize // ignore: cast_nullable_to_non_nullable
+as String?,servingQuantity: freezed == servingQuantity ? _self.servingQuantity : servingQuantity // ignore: cast_nullable_to_non_nullable
+as double?,servingQuantityUnit: freezed == servingQuantityUnit ? _self.servingQuantityUnit : servingQuantityUnit // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
