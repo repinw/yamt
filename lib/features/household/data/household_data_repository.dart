@@ -9,7 +9,6 @@ import 'package:yamt/features/household/data/household_key_repository.dart';
 part 'household_data_repository.g.dart';
 
 const _householdsCollection = 'households';
-const _maxBatchSize = 400;
 
 /// Deletes the documents and images that a household holds, for example
 /// with the household or when nobody can open them any more.
@@ -26,19 +25,10 @@ class HouseholdDataRepository {
     final household = _firestore
         .collection(_householdsCollection)
         .doc(householdId);
-    final references = <DocumentReference<Map<String, dynamic>>>[];
-    for (final collection in householdEncryptedCollections) {
-      final snapshot = await household.collection(collection).get();
-      references.addAll(snapshot.docs.map((document) => document.reference));
-    }
-    for (final chunk in FirestoreBatchChunker.chunk(
-      operations: references,
-      maxChunkSize: _maxBatchSize,
-    )) {
-      final batch = _firestore.batch();
-      chunk.forEach(batch.delete);
-      await batch.commit();
-    }
+    await deleteFirestoreCollections(
+      _firestore,
+      householdEncryptedCollections.map(household.collection),
+    );
     for (final folder in householdImageFolders) {
       await _deleteFolder(
         _storage.ref('$_householdsCollection/$householdId/$folder'),

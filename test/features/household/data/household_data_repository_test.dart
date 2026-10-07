@@ -6,6 +6,18 @@ import 'package:yamt/features/household/data/household_key_repository.dart';
 import '../../../helpers/fake_firebase_storage.dart';
 
 void main() {
+  test('the household wipe covers exactly these collections', () {
+    expect(householdEncryptedCollections, <String>[
+      'inventory_items',
+      'shopping_list_items',
+      'prepared_meals',
+      'prepared_meal_templates',
+      'kitchen_utensils',
+      'inventory_discard_events',
+      'inventory_activity_events',
+    ]);
+  });
+
   test('wipeHouseholdData keeps the household, its members and keys', () async {
     final firestore = FakeFirebaseFirestore();
     final storage = FakeFirebaseStorage();
