@@ -6,6 +6,28 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, InventoryAmountUnitCode;
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
+/// [plan] of a cooked meal with [portions] of [meal] as it is now instead,
+/// kept on its id, user, day and meal. Null when the meal has no portions to
+/// share.
+CalorieEntry? preparedMealPlanWithPortions(
+  CalorieEntry plan,
+  PreparedMeal meal,
+  int portions, {
+  required DateTime Function() now,
+}) {
+  return buildConsumedPreparedMealCalorieEntry(
+    meal: meal,
+    consumedPortions: portions,
+    mealType: plan.mealType,
+    now: now,
+    nextEntryId: () => plan.id,
+  )?.copyWith(
+    userId: plan.userId,
+    loggedAt: plan.loggedAt,
+    createdAt: plan.createdAt,
+  );
+}
+
 /// The diary entry for eating [consumedPortions] of [meal], scaled from the
 /// whole meal, or null when the meal has no portions to share.
 CalorieEntry? buildConsumedPreparedMealCalorieEntry({

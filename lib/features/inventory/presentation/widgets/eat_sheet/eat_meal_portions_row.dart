@@ -6,7 +6,12 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// make. The count never drops below one.
 class EatMealPortionsRow extends StatelessWidget {
   /// Creates the row.
-  const new({required this.portions, required this.onChanged, super.key});
+  const new({
+    required this.portions,
+    required this.onChanged,
+    this.max,
+    super.key,
+  });
 
   /// Key of the button that takes one portion away.
   static const decreaseKey = Key('eat_meal_portions_decrease');
@@ -20,6 +25,9 @@ class EatMealPortionsRow extends StatelessWidget {
   /// Called with the new number of portions.
   final ValueChanged<int> onChanged;
 
+  /// Largest number of portions, or null without a limit.
+  final int? max;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -29,7 +37,9 @@ class EatMealPortionsRow extends StatelessWidget {
       decreaseTooltip: l10n.inventoryItemEatSheetDecreasePortionCountAction,
       increaseTooltip: l10n.inventoryItemEatSheetIncreasePortionCountAction,
       onDecrease: portions > 1 ? () => onChanged(portions - 1) : null,
-      onIncrease: () => onChanged(portions + 1),
+      onIncrease: max != null && portions >= max!
+          ? null
+          : () => onChanged(portions + 1),
       decreaseKey: decreaseKey,
       increaseKey: increaseKey,
       valueKey: const Key('eat_meal_portions_value'),

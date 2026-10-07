@@ -59,6 +59,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/prepared_meal_eat_sheet_body.dart';
@@ -782,11 +783,33 @@ void main() {
     expect(plan.bundleSourcePreparedMealId, 'meal-1');
     expect(harness.householdPreparedMeals.single.remainingPortions, 2);
     expect(harness.logRepository.entries, isEmpty);
+    final planRow = find.byKey(DiaryMealsSectionKeys.plannedEntryTile(plan.id));
     await _pumpUntilFound(
       tester,
-      find.byKey(DiaryMealsSectionKeys.plannedEntryTile(plan.id)),
+      planRow,
       description: 'plan row of the cooked meal',
     );
+
+    // The plan details change its portions, once the eat sheet has closed.
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(planRow);
+    await tester.pumpAndSettle();
+    await tester.tap(planRow);
+    final increase = find.byKey(EatMealPortionsRow.increaseKey);
+    await _pumpUntilFound(tester, increase, description: 'plan portions');
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(increase);
+    await tester.pumpAndSettle();
+    await tester.tap(increase);
+    await tester.pump();
+    await tester.tap(find.byKey(DiaryPlanDetailsPage.acceptButtonKey));
+    await _pumpUntil(
+      tester,
+      () => harness.planRepository.plans.single.bundleConsumedPortions == 2,
+      description: 'plan with two portions',
+    );
+    expect(harness.planRepository.plans.single.id, plan.id);
+    expect(harness.householdPreparedMeals.single.remainingPortions, 2);
   });
 
   testWidgets('diary shows tomorrow as a plan of its goal', (tester) async {

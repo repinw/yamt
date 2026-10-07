@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 /// What a cook can do with a Vorrat meal.
@@ -47,3 +48,25 @@ extension PreparedMealRules on PreparedMeal {
     updatedAt: at,
   );
 }
+
+/// The share of [meal] that [plan] takes, in whole portions of the meal as
+/// it is now, or null when that share is no whole number of portions.
+///
+/// The meal may have been portioned anew since the plan was made, so the
+/// planned portions scale by the meal's portions now over those then.
+int? preparedMealPlanPortions(CalorieEntry plan, PreparedMeal meal) {
+  final planned = plan.bundleConsumedPortions;
+  final plannedTotal = plan.bundleTotalPortions ?? 0;
+  if (planned == null || plannedTotal <= 0 || meal.totalPortions < 2) {
+    return null;
+  }
+  final portions = planned * meal.totalPortions / plannedTotal;
+  final whole = portions.round();
+  return whole >= 1 && (portions - whole).abs() < 1e-9 ? whole : null;
+}
+
+/// The most portions of [meal] a plan that takes [planned] portions can be
+/// changed to. Plans reserve no portions, so a plan can take what is left,
+/// and never less than it has.
+int preparedMealPlanMaxPortions(PreparedMeal meal, int planned) =>
+    math.max(planned, meal.remainingPortions.floor());

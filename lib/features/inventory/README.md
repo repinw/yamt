@@ -121,7 +121,8 @@ already documented as a reusable presentation surface.
   selection callback), `EatPageScaffold`, `EatPageHeader`, `EatLabelTable`,
   `EatAmountRuler` with `EatRulerMark`, `EatSheetTextField`, `EatWhenMenu`
   with `showEatPlanDayPicker` (the plan day picker of the Planen icons),
-  `EatActionCard`, `EatChip`, `EatComponentsList`, `EatImageTile`,
+  `EatActionCard`, `EatChip`, `EatComponentsList`, `EatCountRow`,
+  `EatMealPortionsRow` (the portion counter, with an optional maximum), `EatImageTile`,
   `EatInlineAmountField`, `EatFramedBox`, `EatLabelTitle`, `EatLabelInputRow`
   (one editable row of a food label), `EatTextLink`, `EatMissingValuesHint`
   with `productMissingValuesText` (the line that names a product's missing
