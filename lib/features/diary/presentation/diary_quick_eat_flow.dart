@@ -17,6 +17,7 @@ import 'package:yamt/features/diary/presentation/diary_quick_entry_page.dart';
 import 'package:yamt/features/diary/presentation/models/'
     'diary_quick_entry_result.dart';
 import 'package:yamt/features/inventory/presentation/inventory_item_eat_flow.dart';
+import 'package:yamt/features/inventory/presentation/prepared_meal_detail_flow.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_eat_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
@@ -47,8 +48,11 @@ class DiaryQuickEatFlow {
   /// Opens [source] for [selectedDay].
   ///
   /// The current time sets both the logged time and the preselected meal type.
+  /// [ref] backs the meal page that a meal in the pot or with open rows
+  /// opens from the Vorrat picker.
   static Future<void> openSource({
     required BuildContext context,
+    required WidgetRef ref,
     required DiaryQuickEatSource source,
     required DateTime selectedDay,
   }) {
@@ -56,6 +60,7 @@ class DiaryQuickEatFlow {
     final day = normalizeLocalDay(selectedDay);
     return _openSelectedSource(
       context: context,
+      ref: ref,
       source: source,
       mealType: MealType.defaultForDateTime(now),
       loggedAt: DateTime(day.year, day.month, day.day, now.hour, now.minute),
@@ -64,6 +69,7 @@ class DiaryQuickEatFlow {
 
   static Future<void> _openSelectedSource({
     required BuildContext context,
+    required WidgetRef ref,
     required DiaryQuickEatSource source,
     required MealType mealType,
     required DateTime loggedAt,
@@ -80,6 +86,7 @@ class DiaryQuickEatFlow {
     return switch (source) {
       DiaryQuickEatSource.inventory => _openInventoryPicker(
         context: context,
+        ref: ref,
         mealType: mealType,
         loggedAt: loggedAt,
       ),
@@ -173,6 +180,7 @@ class DiaryQuickEatFlow {
 
   static Future<void> _openInventoryPicker({
     required BuildContext context,
+    required WidgetRef ref,
     required MealType mealType,
     required DateTime loggedAt,
   }) async {
@@ -185,6 +193,18 @@ class DiaryQuickEatFlow {
       builder: (context) => const DiaryInventoryFoodPickerSheet(),
     );
     if (!context.mounted || selection == null) {
+      return;
+    }
+    if (selection case DiaryOpenPreparedMealSelection(:final meal)) {
+      // The cook finishes the meal first: "Gekocht" for a pot, the meal
+      // page for open rows, as in the Kochbuch.
+      await (meal.isInPot
+          ? context.push(AppRoutes.homeCookedMealPath(meal.id))
+          : PreparedMealDetailFlow.open(
+              context: context,
+              ref: ref,
+              meal: meal,
+            ));
       return;
     }
     await _eatInventorySelection(
@@ -241,6 +261,8 @@ class DiaryQuickEatFlow {
         initialLoggedAt: loggedAt,
         initialMealType: mealType,
       ),
+      // Opened before, in _openInventoryPicker.
+      DiaryOpenPreparedMealSelection() => Future.value(),
     };
   }
 }

@@ -7,55 +7,56 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 void main() {
-  test(
-    'filters selectable inventory items and meals that cannot be eaten',
-    () async {
-      final availableItem = _item(id: 'normal-available', quantity: 2);
-      final emptyItem = _item(id: 'normal-empty', quantity: 0);
-      final amountItem = _item(
-        id: 'amount-available',
-        quantity: 1,
-        initialAmount: 500,
-        currentAmount: 125,
-        amountUnit: InventoryAmountUnit.gram,
-      );
-      final depletedAmountItem = _item(
-        id: 'amount-empty',
-        quantity: 1,
-        initialAmount: 500,
-        amountUnit: InventoryAmountUnit.gram,
-      );
-      final readyMeal = _meal(id: 'ready-meal', remainingPortions: 1);
-      final depletedMeal = _meal(id: 'depleted-meal', remainingPortions: 0);
-      final potMeal = _meal(
-        id: 'pot-meal',
-        remainingPortions: 1,
-      ).copyWith(inPot: true);
-      final openRowsMeal = _meal(
-        id: 'open-rows-meal',
-        remainingPortions: 1,
-      ).copyWith(pendingRecipeIngredients: ['Salz']);
-      final container = ProviderContainer(
-        overrides: [
-          inventoryQuickEatInventoryProvider.overrideWith((ref) async {
-            return InventoryQuickEatInventoryData(
-              items: [availableItem, emptyItem, amountItem, depletedAmountItem],
-              meals: [readyMeal, depletedMeal, potMeal, openRowsMeal],
-            );
-          }),
-        ],
-      );
-      addTearDown(container.dispose);
+  test('filters selectable inventory items and greys out open meals', () async {
+    final availableItem = _item(id: 'normal-available', quantity: 2);
+    final emptyItem = _item(id: 'normal-empty', quantity: 0);
+    final amountItem = _item(
+      id: 'amount-available',
+      quantity: 1,
+      initialAmount: 500,
+      currentAmount: 125,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+    final depletedAmountItem = _item(
+      id: 'amount-empty',
+      quantity: 1,
+      initialAmount: 500,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+    final readyMeal = _meal(id: 'ready-meal', remainingPortions: 1);
+    final depletedMeal = _meal(id: 'depleted-meal', remainingPortions: 0);
+    final potMeal = _meal(
+      id: 'pot-meal',
+      remainingPortions: 1,
+    ).copyWith(inPot: true);
+    final openRowsMeal = _meal(
+      id: 'open-rows-meal',
+      remainingPortions: 1,
+    ).copyWith(pendingRecipeIngredients: ['Salz']);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryQuickEatInventoryProvider.overrideWith((ref) async {
+          return InventoryQuickEatInventoryData(
+            items: [availableItem, emptyItem, amountItem, depletedAmountItem],
+            meals: [readyMeal, depletedMeal, potMeal, openRowsMeal],
+          );
+        }),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      final data = await container.read(diaryQuickEatInventoryProvider.future);
+    final data = await container.read(diaryQuickEatInventoryProvider.future);
 
-      expect(data.items.map((item) => item.id), [
-        'normal-available',
-        'amount-available',
-      ]);
-      expect(data.meals.map((meal) => meal.id), ['ready-meal']);
-    },
-  );
+    expect(data.items.map((item) => item.id), [
+      'normal-available',
+      'amount-available',
+    ]);
+    expect(data.meals.map((meal) => meal.id), ['ready-meal']);
+    expect(data.openMeals.map((meal) => meal.id), [
+      'pot-meal',
+      'open-rows-meal',
+    ]);
+  });
 
   test('accepts quantity and amount-progress items with stock left', () {
     final quantityItem = _item(id: 'quantity', quantity: 3);

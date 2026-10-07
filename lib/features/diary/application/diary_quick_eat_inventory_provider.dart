@@ -13,13 +13,21 @@ part 'diary_quick_eat_inventory_provider.g.dart';
 @immutable
 class DiaryQuickEatInventoryData {
   /// Creates quick-eat inventory data.
-  const new({required this.items, required this.meals});
+  const new({
+    required this.items,
+    required this.meals,
+    required this.openMeals,
+  });
 
   /// Inventory items that can be eaten from the diary.
   final List<InventoryItem> items;
 
   /// Prepared meals that can be eaten from the diary.
   final List<PreparedMeal> meals;
+
+  /// Prepared meals that still wait for the cook, in the pot or with open
+  /// rows. The picker shows them greyed out and opens them to finish.
+  final List<PreparedMeal> openMeals;
 }
 
 /// Provides selectable inventory foods for the diary quick-eat picker.
@@ -38,6 +46,9 @@ DiaryQuickEatInventoryData _filterDiaryQuickEatInventory(
         .toList(growable: false),
     meals: inventory.meals
         .where((meal) => meal.allows(PreparedMealAction.eat))
+        .toList(growable: false),
+    openMeals: inventory.meals
+        .where((meal) => meal.isOpen)
         .toList(growable: false),
   );
 }

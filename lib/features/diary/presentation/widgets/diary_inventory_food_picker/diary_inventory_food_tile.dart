@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_inventory_food_picker/diary_inventory_food_image.dart';
 
@@ -14,6 +15,7 @@ class DiaryInventoryFoodTile extends StatelessWidget {
     required this.onTap,
     this.imageUrl,
     this.imageBytes,
+    this.isMuted = false,
     super.key,
   });
 
@@ -35,15 +37,27 @@ class DiaryInventoryFoodTile extends StatelessWidget {
   /// Optional local image bytes.
   final Uint8List? imageBytes;
 
+  /// Greys the row out for a food that cannot be eaten yet; it stays
+  /// tappable to finish the food.
+  final bool isMuted;
+
   @override
   Widget build(BuildContext context) {
+    final muted = isMuted
+        ? Theme.of(context).colorScheme.onSurfaceVariant
+        : null;
     return Material(
       type: MaterialType.transparency,
       child: ListTile(
-        leading: DiaryInventoryFoodImage(
-          fallbackIcon: fallbackIcon,
-          imageUrl: imageUrl,
-          imageBytes: imageBytes,
+        textColor: muted,
+        iconColor: muted,
+        leading: Opacity(
+          opacity: isMuted ? AppGraphit.pendingRowOpacity : 1,
+          child: DiaryInventoryFoodImage(
+            fallbackIcon: fallbackIcon,
+            imageUrl: imageUrl,
+            imageBytes: imageBytes,
+          ),
         ),
         title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: subtitle == null || subtitle!.trim().isEmpty
