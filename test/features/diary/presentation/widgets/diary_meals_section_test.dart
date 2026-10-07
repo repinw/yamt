@@ -20,6 +20,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_meals_section_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_plan_days_sheet.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -475,6 +476,38 @@ void main() {
     );
   });
 
+  testWidgets('a plan the Vorrat cannot cover says so', (tester) async {
+    DiaryMealEntry planRow(String id) => _entry(
+      id: id,
+      day: selectedDay,
+      mealType: MealType.dinner,
+      name: id,
+      kcal: 200,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+    );
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      shortPlanIds: {'skyr'},
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [planRow('skyr'), planRow('bread')],
+        ),
+      ],
+    );
+
+    Finder shortIn(String id) => find.descendant(
+      of: find.byKey(DiaryMealsSectionKeys.plannedEntryTile(id)),
+      matching: find.byKey(DiaryMealsSectionKeys.planShortTag),
+    );
+    expect(shortIn('skyr'), findsOneWidget);
+    expect(shortIn('bread'), findsNothing);
+  });
+
   testWidgets('a day with only plans shows them instead of the hint', (
     tester,
   ) async {
@@ -806,6 +839,7 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
+        _planDemand(),
         diaryDayDashboardControllerProvider(selectedDay)
             .overrideWith(() => controller),
       ],
@@ -839,6 +873,7 @@ Future<void> _pumpMealsSection(
   required List<DiaryMealSection> sections,
   DateTime? now,
   List<CalorieEntry> plannedEntries = const [],
+  Set<String> shortPlanIds = const {},
   List<Override> overrides = const [],
 }) async {
   await _pumpDiaryWidget(
@@ -853,6 +888,7 @@ Future<void> _pumpMealsSection(
           plannedEntries: plannedEntries,
         ),
       ),
+      _planDemand(shortPlanIds: shortPlanIds),
       ...overrides,
     ],
   );
@@ -952,3 +988,9 @@ Future<void> _pumpDiaryWidget(
   );
   await tester.pumpAndSettle();
 }
+
+Override _planDemand({Set<String> shortPlanIds = const {}}) =>
+    openPlanDemandProvider.overrideWith(
+      (ref) async =>
+          (plannedByItemId: <String, int>{}, shortPlanIds: shortPlanIds),
+    );

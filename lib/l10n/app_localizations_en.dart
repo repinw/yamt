@@ -364,6 +364,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String inventoryRowPlanned(String amount) {
+    return '$amount planned';
+  }
+
+  @override
   String get inventoryRowLow => 'almost empty';
 
   @override
@@ -2649,6 +2654,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diaryPlanAcceptMealInPot => 'Mark the meal as cooked first';
+
+  @override
+  String get diaryPlanShortTag => 'Not in stock';
 
   @override
   String get diaryPlanMealPrepTag => 'Meal Prep';

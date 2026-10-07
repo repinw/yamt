@@ -64,13 +64,15 @@ final class InventoryFoodEntry extends InventoryListEntry {
   DateTime? get lastEatenAt => item.lastConsumedAt;
 
   @override
-  double get remainingShare {
-    if (item.usesAmountProgress) {
-      return item.currentAmount.clamp(0, item.initialAmount) /
-          item.initialAmount;
-    }
-    final initialQuantity = item.effectiveInitialQuantity;
-    return item.quantity.clamp(0, initialQuantity) / initialQuantity;
+  double get remainingShare =>
+      shareOf(item.usesAmountProgress ? item.currentAmount : item.quantity);
+
+  /// [amount] of stock, in the stored unit, as a share of the full stock.
+  double shareOf(int amount) {
+    final full = item.usesAmountProgress
+        ? item.initialAmount
+        : item.effectiveInitialQuantity;
+    return amount.clamp(0, full) / full;
   }
 
   @override

@@ -15,12 +15,19 @@ class FakePlannedEntryRepository extends PlannedEntryRepository {
   bool loadShouldFail = false;
 
   @override
-  Future<List<CalorieEntry>> loadPlannedEntriesForDay(DateTime day) async {
+  Future<List<CalorieEntry>> loadPlannedEntries(
+    DateTime first,
+    DateTime last,
+  ) async {
     if (loadShouldFail) {
       throw StateError('Plan read failed.');
     }
-    return plans.where((plan) => isSameDiaryDay(plan.loggedAt, day)).toList()
-      ..sort((a, b) => a.loggedAt.compareTo(b.loggedAt));
+    final from = normalizeDiaryDay(first);
+    final to = normalizeDiaryDay(last);
+    return plans.where((plan) {
+      final day = normalizeDiaryDay(plan.loggedAt);
+      return !day.isBefore(from) && !day.isAfter(to);
+    }).toList()..sort((a, b) => a.loggedAt.compareTo(b.loggedAt));
   }
 
   @override
