@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
-import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 void main() {
   group('MacroCalculationDefaults', () {
@@ -273,9 +273,9 @@ void main() {
     });
   });
 
-  group('DiaryMacroTargets.calculate', () {
+  group('MacroBudgetCalculator.calculate', () {
     test('calculates correct macros for 80kg male active at 2400 kcal', () {
-      final targets = DiaryMacroTargets.calculate(
+      final targets = MacroBudgetCalculator.calculate(
         goalKcal: 2400,
         weightKg: 80,
         proteinGramsPerKg: 2,
@@ -292,7 +292,7 @@ void main() {
     });
 
     test('calculates correct macros for 65kg female active at 2000 kcal', () {
-      final targets = DiaryMacroTargets.calculate(
+      final targets = MacroBudgetCalculator.calculate(
         goalKcal: 2000,
         weightKg: 65,
         proteinGramsPerKg: 1.8,
@@ -319,7 +319,7 @@ void main() {
         // Fat reduction = 234 / 9 = 26g -> Fat = 80 - 26 = 54g (486 kcal).
         // Protein stays at 160g (640 kcal).
         // Carbs = (1526 - 640 - 486) / 4 = 400 / 4 = 100g.
-        final targets = DiaryMacroTargets.calculate(
+        final targets = MacroBudgetCalculator.calculate(
           goalKcal: 1526,
           weightKg: 80,
           proteinGramsPerKg: 2,
@@ -337,7 +337,7 @@ void main() {
       // Fat floor: 90 * 0.6 = 54g (486 kcal).
       // Carbs floor: 100g (400 kcal).
       // Remainder for protein: 1000 - 486 - 400 = 114 kcal -> 28.5g protein.
-      final targets = DiaryMacroTargets.calculate(
+      final targets = MacroBudgetCalculator.calculate(
         goalKcal: 1000,
         weightKg: 90,
         proteinGramsPerKg: 2,
@@ -350,7 +350,7 @@ void main() {
     });
 
     test('clamps all macros to zero when goalKcal <= 0', () {
-      final zeroTarget = DiaryMacroTargets.calculate(
+      final zeroTarget = MacroBudgetCalculator.calculate(
         goalKcal: 0,
         weightKg: 80,
         proteinGramsPerKg: 2,
@@ -360,7 +360,7 @@ void main() {
       expect(zeroTarget.fat, 0.0);
       expect(zeroTarget.carbs, 0.0);
 
-      final negativeTarget = DiaryMacroTargets.calculate(
+      final negativeTarget = MacroBudgetCalculator.calculate(
         goalKcal: -500,
         weightKg: 80,
         proteinGramsPerKg: 2,
@@ -373,7 +373,7 @@ void main() {
 
     test('falls back to safe default weight when weightKg <= 0', () {
       // When weight is 0 or negative, should use safe weight fallback (70kg)
-      final targets = DiaryMacroTargets.calculate(
+      final targets = MacroBudgetCalculator.calculate(
         goalKcal: 1900,
         weightKg: 0,
         proteinGramsPerKg: 2,
@@ -386,7 +386,7 @@ void main() {
       expect(targets.fat, 70.0);
       expect(targets.carbs, 177.5);
 
-      final negativeWeightTargets = DiaryMacroTargets.calculate(
+      final negativeWeightTargets = MacroBudgetCalculator.calculate(
         goalKcal: 1900,
         weightKg: -75,
         proteinGramsPerKg: 2,
@@ -398,7 +398,7 @@ void main() {
     });
 
     test('handles zero multipliers by attributing all calories to carbs', () {
-      final targets = DiaryMacroTargets.calculate(
+      final targets = MacroBudgetCalculator.calculate(
         goalKcal: 2000,
         weightKg: 80,
         proteinGramsPerKg: 0,

@@ -1,13 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'package:yamt/features/calories/domain/macro_budget_calculator.dart';
-import 'package:yamt/features/calories/domain/macro_carryover_calculator.dart';
-
 part 'diary_macro_targets.g.dart';
-
-/// Represents the delta applied to base macros due to carryover.
-typedef DiaryMacroCarryoverDelta = MacroCarryoverDelta;
 
 /// Macro targets derived for one diary day.
 @immutable
@@ -26,27 +20,6 @@ class DiaryMacroTargets {
     );
   }
 
-  /// Calculates macro targets based on body weight multipliers and remaining
-  /// calories for carbs, guaranteeing at least 100g carbs when possible.
-  factory calculate({
-    required double goalKcal,
-    required double weightKg,
-    required double proteinGramsPerKg,
-    required double fatGramsPerKg,
-  }) {
-    final result = MacroBudgetCalculator.calculate(
-      goalKcal: goalKcal,
-      weightKg: weightKg,
-      proteinGramsPerKg: proteinGramsPerKg,
-      fatGramsPerKg: fatGramsPerKg,
-    );
-    return DiaryMacroTargets(
-      carbs: result.carbs,
-      protein: result.protein,
-      fat: result.fat,
-    );
-  }
-
   /// Creates data from persisted JSON.
   factory fromJson(Map<String, dynamic> json) =>
       _$DiaryMacroTargetsFromJson(json);
@@ -62,22 +35,6 @@ class DiaryMacroTargets {
 
   /// Fat goal in grams.
   final double fat;
-
-  /// Calculates the delta applied to base macros for a given carryover.
-  static DiaryMacroCarryoverDelta calculateCarryoverDelta({
-    required DiaryMacroTargets baseTargets,
-    required double carryoverKcal,
-    required double weightKg,
-    double? baseGoalKcal,
-  }) {
-    return MacroCarryoverCalculator.calculateCarryoverDelta(
-      baseCarbs: baseTargets.carbs,
-      baseFat: baseTargets.fat,
-      carryoverKcal: carryoverKcal,
-      weightKg: weightKg,
-      baseGoalKcal: baseGoalKcal,
-    );
-  }
 
   @override
   bool operator ==(Object other) =>
