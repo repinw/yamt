@@ -123,20 +123,10 @@ class FirestorePreparedMealCalorieEntryCommitStore
         userId: dataCipher.uid,
         imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
       );
-      final committedAt = normalizedEntry.updatedAt;
-      final nextRemainingPortions =
-          currentMeal.remainingPortions - consumedPortions;
-      final nextMeal = currentMeal.copyWith(
-        remainingPortions: nextRemainingPortions,
+      final nextMeal = currentMeal.withPortionsTaken(
+        consumedPortions,
+        normalizedEntry.updatedAt,
       );
-
-      final mealUpdates = <String, dynamic>{
-        'remaining_portions': nextRemainingPortions,
-        'updated_at': committedAt.toIso8601String(),
-      };
-      if (nextMeal.remainingNetWeight != null) {
-        mealUpdates['remaining_net_weight'] = nextMeal.remainingNetWeight;
-      }
 
       final entryRef = _calorieEntriesCollectionRef(dataCipher.uid)
           .doc(normalizedEntry.id);
@@ -149,7 +139,7 @@ class FirestorePreparedMealCalorieEntryCommitStore
       // document instead of updating single fields.
       final mealDocument = await mealCollection.seal(mealRef.id, {
         ...storedMeal,
-        ...mealUpdates,
+        ..._portionFields(nextMeal),
       });
       final batch = _firestore.batch()
         ..set(entryRef, entryDocument)
@@ -214,14 +204,11 @@ class FirestorePreparedMealCalorieEntryCommitStore
         );
         return failed;
       }
-      final nextWeight = stored.meal
-          .copyWith(remainingPortions: nextRemaining)
-          .remainingNetWeight;
       final mealDocument = await mealCollection.seal(mealRef.id, {
         ...stored.storedMeal,
-        'remaining_portions': nextRemaining,
-        'updated_at': DateTime.now().toIso8601String(),
-        'remaining_net_weight': ?nextWeight,
+        ..._portionFields(
+          stored.meal.withPortionsTaken(-portions, DateTime.now()),
+        ),
       });
       final batch = _firestore.batch()
         ..delete(_calorieEntriesCollectionRef(dataCipher.uid).doc(entry.id))
@@ -279,3 +266,10 @@ class FirestorePreparedMealCalorieEntryCommitStore
     );
   }
 }
+
+/// The stored fields that change when portions leave or come back.
+Map<String, Object> _portionFields(PreparedMeal meal) => {
+  'remaining_portions': meal.remainingPortions,
+  'updated_at': meal.updatedAt.toIso8601String(),
+  'remaining_net_weight': ?meal.remainingNetWeight,
+};

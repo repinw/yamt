@@ -2,6 +2,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
 /// Normalizes optional image ids so empty strings are stored as null.
 String? normalizeOptionalImageAssetId(String? value) {
@@ -136,26 +137,24 @@ int remainingRequirementAfterConsumption({
   return remainingAmount - consumedAmount;
 }
 
-/// Applies a portion reduction to a prepared meal list.
+/// Takes [removedPortions] from the meal at [mealIndex]; a meal with no
+/// portions left leaves the list.
 List<PreparedMeal> applyPreparedMealPortionReduction({
   required List<PreparedMeal> currentMeals,
   required int mealIndex,
   required num removedPortions,
   required DateTime updatedAt,
-  bool keepDepletedMeal = false,
 }) {
-  final currentMeal = currentMeals[mealIndex];
-  final nextRemainingPortions = currentMeal.remainingPortions - removedPortions;
-  final nextMeals = List<PreparedMeal>.from(currentMeals);
-  if (nextRemainingPortions <= 0 && !keepDepletedMeal) {
-    nextMeals.removeAt(mealIndex);
-    return nextMeals;
-  }
-
-  nextMeals[mealIndex] = currentMeal.copyWith(
-    remainingPortions: nextRemainingPortions < 0 ? 0 : nextRemainingPortions,
-    updatedAt: updatedAt,
+  final nextMeal = currentMeals[mealIndex].withPortionsTaken(
+    removedPortions,
+    updatedAt,
   );
+  final nextMeals = List<PreparedMeal>.from(currentMeals);
+  if (nextMeal.remainingPortions <= 0) {
+    nextMeals.removeAt(mealIndex);
+  } else {
+    nextMeals[mealIndex] = nextMeal;
+  }
   return nextMeals;
 }
 
