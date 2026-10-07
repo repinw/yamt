@@ -108,13 +108,7 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         }
       }
 
-      final weeklyCheckInSnapshot = weeklyCheckInSnapshotFor(
-        weeklyCheckIn: cacheWeeklyCheckIn,
-        calculation: calculation,
-        lowConfidence: checkInData.lowConfidence,
-        inputHash: checkInData.inputHash,
-        macroWeightKg: checkInData.macroWeightKg,
-      );
+      final weeklyCheckInSnapshot = checkInData.snapshotFor(cacheWeeklyCheckIn);
       final settings = await goalController.currentSettings();
       if (!ref.mounted) {
         return false;
@@ -250,7 +244,6 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         return false;
       }
       final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn!;
-      final calculation = checkInData.calculation!;
 
       final settings = await goalController.currentSettings();
       if (!ref.mounted) {
@@ -262,13 +255,9 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         checkInWindowStartDate: pendingWeeklyCheckIn.windowStartDate,
       );
 
-      final rejectedSnapshot = weeklyCheckInSnapshotFor(
-        weeklyCheckIn: pendingWeeklyCheckIn,
-        calculation: calculation,
-        lowConfidence: checkInData.lowConfidence,
-        inputHash: checkInData.inputHash,
-        macroWeightKg: checkInData.macroWeightKg,
-      ).copyWith(isRejected: true);
+      final rejectedSnapshot = checkInData
+          .snapshotFor(pendingWeeklyCheckIn)
+          .copyWith(isRejected: true);
 
       final savedGoal = await goalController.saveWeeklyCheckInGoal(
         completedAt: pendingWeeklyCheckIn.dueDate,

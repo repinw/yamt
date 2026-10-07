@@ -1,3 +1,4 @@
+import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
@@ -148,5 +149,24 @@ class CalorieWeeklyCheckInData {
     }
     return freshness == CalorieLearnedTdeeFreshness.stale ||
         freshness == CalorieLearnedTdeeFreshness.urgent;
+  }
+
+  /// The snapshot that a decision on [weeklyCheckIn] stores. Needs a
+  /// [calculation].
+  CalorieGoalWeeklyCheckInSnapshot snapshotFor(
+    PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
+  ) {
+    final calculation = this.calculation!;
+    return CalorieGoalWeeklyCheckInSnapshot(
+      windowStartDate: weeklyCheckIn.windowStartDate,
+      windowEndDate: weeklyCheckIn.windowEndDate,
+      trendWeightChangePerDay: calculation.trendWeightChangePerDay,
+      measuredTdeeKcal: calculation.measuredTdeeKcal,
+      calculatedTdeeKcal: calculation.calculatedTdeeKcal,
+      baseGoalKcal: calculation.newGoalKcal,
+      lowConfidence: lowConfidence,
+      inputHash: inputHash,
+      macroWeightKg: macroWeightKg,
+    );
   }
 }

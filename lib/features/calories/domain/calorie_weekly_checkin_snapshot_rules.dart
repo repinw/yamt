@@ -1,6 +1,5 @@
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
@@ -114,25 +113,4 @@ bool _sameDouble(double? left, double? right) {
     return left == right;
   }
   return (left - right).abs() < 0.0001;
-}
-
-/// The snapshot that a weekly check-in of [weeklyCheckIn] stores.
-CalorieGoalWeeklyCheckInSnapshot weeklyCheckInSnapshotFor({
-  required PendingCalorieGoalWeeklyCheckIn weeklyCheckIn,
-  required CalorieWeeklyCheckInCalculation calculation,
-  required bool lowConfidence,
-  required String? inputHash,
-  required double? macroWeightKg,
-}) {
-  return CalorieGoalWeeklyCheckInSnapshot(
-    windowStartDate: weeklyCheckIn.windowStartDate,
-    windowEndDate: weeklyCheckIn.windowEndDate,
-    trendWeightChangePerDay: calculation.trendWeightChangePerDay,
-    measuredTdeeKcal: calculation.measuredTdeeKcal,
-    calculatedTdeeKcal: calculation.calculatedTdeeKcal,
-    baseGoalKcal: calculation.newGoalKcal,
-    lowConfidence: lowConfidence,
-    inputHash: inputHash,
-    macroWeightKg: macroWeightKg,
-  );
 }
