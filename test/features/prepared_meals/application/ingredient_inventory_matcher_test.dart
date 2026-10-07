@@ -185,4 +185,63 @@ void main() {
       expect(matches, isEmpty);
     },
   );
+
+  test('hasInventoryItemForIngredient answers like a non-empty match list', () {
+    final inventoryItems = <InventoryItem>[
+      _item(id: '1', name: 'Kartoffeln'),
+      _item(id: '2', name: 'Bio Hafermilch', brand: 'Oatly'),
+      _item(id: '3', name: 'Karotten'),
+      _item(id: '4', name: 'Frühlingszwiebeln'),
+      _item(id: '5', name: 'Rote Zwiebeln'),
+      _item(id: '6', name: 'Parmesan', quantity: 0),
+      _item(id: '7', name: 'Spaghetti No. 5', brand: 'Barilla'),
+    ];
+    const ingredients = <String>[
+      'Kartoffeln',
+      '500 g Kartoffeln',
+      'Milch',
+      '2 Möhren',
+      'Lauchzwiebeln',
+      'scallions',
+      'Zwiebel',
+      'Parmesan',
+      'Spaghetti',
+      'Reis',
+      'Olivenöl',
+      '',
+      '   ',
+    ];
+
+    for (final localeCode in <String?>[null, 'de', 'en']) {
+      for (final ingredient in ingredients) {
+        expect(
+          hasInventoryItemForIngredient(
+            ingredient: ingredient,
+            inventoryItems: inventoryItems,
+            localeCode: localeCode,
+          ),
+          matchInventoryItemsForIngredient(
+            ingredient: ingredient,
+            inventoryItems: inventoryItems,
+            localeCode: localeCode,
+          ).isNotEmpty,
+          reason: '$localeCode: "$ingredient"',
+        );
+      }
+    }
+    expect(
+      hasInventoryItemForIngredient(
+        ingredient: 'Kartoffeln',
+        inventoryItems: inventoryItems,
+      ),
+      isTrue,
+    );
+    expect(
+      hasInventoryItemForIngredient(
+        ingredient: 'Parmesan',
+        inventoryItems: inventoryItems,
+      ),
+      isFalse,
+    );
+  });
 }

@@ -19,17 +19,29 @@ Stream<List<PreparedMeal>> cookbookTemplates(Ref ref) {
 class CookbookController extends _$CookbookController {
   @override
   Future<CookbookOverview> build(String localeCode) async {
-    final templates = await ref.watch(cookbookTemplatesProvider.future);
-    final meals = await ref.watch(inventoryQuickEatMealsProvider.future);
-    final items = await ref.watch(inventoryQuickEatItemsProvider.future);
+    // Start all three loads before awaiting one, so they run side by side.
+    final templatesFuture = ref.watch(cookbookTemplatesProvider.future)
+      ..ignore();
+    final mealsFuture = ref.watch(inventoryQuickEatMealsProvider.future)
+      ..ignore();
+    final itemsFuture = ref.watch(inventoryQuickEatItemsProvider.future)
+      ..ignore();
+    final templates = await templatesFuture;
+    final meals = await mealsFuture;
+    final items = await itemsFuture;
+    // Many recipes share foods; each food is matched against the Vorrat once.
+    final inStockByFood = <String, bool>{};
     return CookbookOverview.fromMeals(
       savedTemplates: templates,
       meals: meals,
-      isInStock: (food) => matchInventoryItemsForIngredient(
-        ingredient: food,
-        inventoryItems: items,
-        localeCode: localeCode,
-      ).isNotEmpty,
+      isInStock: (food) => inStockByFood.putIfAbsent(
+        food,
+        () => hasInventoryItemForIngredient(
+          ingredient: food,
+          inventoryItems: items,
+          localeCode: localeCode,
+        ),
+      ),
     );
   }
 

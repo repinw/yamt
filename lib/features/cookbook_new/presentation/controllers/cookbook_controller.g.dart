@@ -103,7 +103,7 @@ final class CookbookControllerProvider
 }
 
 String _$cookbookControllerHash() =>
-    r'017cc191f1202c9e008b5be774f1adc2d2236820';
+    r'd390481833607b73c44fea36997fdb25880f3011';
 
 /// Holds the Kochbuch overview and rebuilds it when templates, meals, or the
 /// Vorrat change.
