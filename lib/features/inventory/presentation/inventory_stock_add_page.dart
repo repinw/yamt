@@ -6,7 +6,6 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -21,6 +20,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_missing_values_hint.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/features/shoppinglist/application/shopping_list_operations.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -70,18 +70,11 @@ class _InventoryStockAddPageState extends ConsumerState<InventoryStockAddPage> {
   final GlobalKey _cardKey = GlobalKey();
   late int _packages = widget.initialPackages;
 
-  /// Asks for a later day, then plans the product for it at the time of day
-  /// of now, so the eat page picks the meal for that time. Today is left
-  /// out: the eat page there would log the food instead of planning it.
+  /// Asks for the day, from today on, then plans the product for it at the
+  /// time of day of now, so the eat page picks the meal for that time.
   void _plan() => unawaited(() async {
     final now = ref.read(clockProvider)();
-    final tomorrow = addDiaryDays(dateOnly(now), 1);
-    final day = await showDatePicker(
-      context: context,
-      initialDate: tomorrow,
-      firstDate: tomorrow,
-      lastDate: addDiaryDays(dateOnly(now), diaryPlanAheadDayCount),
-    );
+    final day = await showEatPlanDayPicker(context, today: now, loggedAt: now);
     if (day != null && mounted) {
       Navigator.of(context)
           .pop(InventoryStockAddPlan(loggedAtOnDay(day, now: now)));

@@ -13,6 +13,7 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -27,6 +28,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_sheet.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_when_menu.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'inventory_item_eat_sheet_body.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 final _now = DateTime(2026, 5, 13, 12, 30);
@@ -908,5 +911,53 @@ void main() {
       find.descendant(of: find.byKey(_confirmKey), matching: find.text('Plan')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('plans only: plans on today, logs on a day before', (
+    tester,
+  ) async {
+    final results = <InventoryItemEatSheetResult>[];
+    Future<void> pump(DateTime loggedAt) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          key: UniqueKey(),
+          overrides: [
+            clockProvider.overrideWithValue(() => DateTime(2026, 9, 26, 12)),
+          ],
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: appLocalizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: InventoryItemEatSheetBody(
+              item: _amountItem(),
+              confirmIntent: InventoryItemEatSheetIntent.logOnly,
+              initialLoggedAt: loggedAt,
+              plansOnly: true,
+              onSubmitted: results.add,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await pump(DateTime(2026, 9, 26, 12));
+    expect(
+      find.descendant(of: find.byKey(_confirmKey), matching: find.text('Plan')),
+      findsOneWidget,
+    );
+    await _tapConfirmButton(tester);
+    expect(results.last.request.isPlan, isTrue);
+
+    await pump(DateTime(2026, 9, 25, 12));
+    expect(
+      find.descendant(
+        of: find.byKey(_confirmKey),
+        matching: find.text('To diary'),
+      ),
+      findsOneWidget,
+    );
+    await _tapConfirmButton(tester);
+    expect(results.last.request.isPlan, isFalse);
   });
 }

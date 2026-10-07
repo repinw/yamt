@@ -45,6 +45,7 @@ reviewProductSearchHubResultBeforeSave({
           result: reviewed.result,
           continuesBatch: false,
           loggedAt: reviewed.eatOn,
+          plans: reviewed.eatOn != null,
           canStore: false,
           // It ends like one eaten food, so it adds no more.
           canAddMore: false,
