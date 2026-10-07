@@ -21,8 +21,6 @@ const _legacyPagesWithoutIntegrationTest = <String>{
   'lib/features/inventory/presentation/inventory_shopping_list_page.dart',
   'lib/features/kitchen_utensils/presentation/kitchen_utensils_page.dart',
   'lib/features/onboarding/presentation/calorie_goal_onboarding_page.dart',
-  'lib/features/product_search_hub/presentation/food_estimate_result_page.dart',
-  'lib/features/product_search_hub/presentation/product_ai_search_page.dart',
   'lib/features/product_search_hub/presentation/product_search_hub_item_edit_page.dart',
   'lib/features/product_search_hub/presentation/widgets/manual_product_search_editor_page/manual_product_search_editor_page.dart',
   'lib/features/product_search_hub/presentation/widgets/product_search_barcode_scanner_page/product_search_barcode_scanner_page.dart',
