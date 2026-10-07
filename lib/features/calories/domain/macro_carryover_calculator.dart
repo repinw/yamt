@@ -171,13 +171,11 @@ abstract final class MacroCarryoverCalculator {
         wasFloorApplied: false,
       );
     }
-    final newFat = math.max<double>(
-      fatFloor,
-      math.min<double>(baseFat, fatFloor),
-    );
+    // Fat goes down to the floor at most; fat already below it stays.
+    final newFat = math.min<double>(baseFat, fatFloor);
     final actualDelta = newFat - baseFat;
     final savedKcal =
-        actualDelta.abs() * MacroBudgetCalculator.standardFatKcalPerGram;
+        -actualDelta * MacroBudgetCalculator.standardFatKcalPerGram;
     return (
       delta: actualDelta,
       remainingReductionKcal: math.max<double>(0, reductionKcal - savedKcal),
