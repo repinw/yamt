@@ -32,7 +32,6 @@ class PreparedMealsController extends _$PreparedMealsController {
   late final _feed = HouseholdScopedListFeed<PreparedMeal>(
     ref: () => ref,
     watch: () => ref.read(preparedMealRepositoryProvider).watchAll(),
-    readAll: () => ref.read(preparedMealRepositoryProvider).readAll(),
     setState: (next) => state = next,
     logName: _preparedMealsControllerLogName,
     recoveryMessage:

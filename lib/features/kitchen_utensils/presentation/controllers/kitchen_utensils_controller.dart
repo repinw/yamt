@@ -36,9 +36,6 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
         .read(kitchenUtensilRepositoryProvider)
         .watchAll()
         .map(sortKitchenUtensils),
-    readAll: () async => sortKitchenUtensils(
-      await ref.read(kitchenUtensilRepositoryProvider).readAll(),
-    ),
     setState: (next) => state = next,
     logName: _kitchenUtensilsControllerLogName,
     recoveryMessage:

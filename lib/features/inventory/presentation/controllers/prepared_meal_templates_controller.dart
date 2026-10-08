@@ -69,9 +69,6 @@ class PreparedMealTemplatesController
         .read(preparedMealTemplateRepositoryProvider)
         .watchAll()
         .map(_sortTemplates),
-    readAll: () async => _sortTemplates(
-      await ref.read(preparedMealTemplateRepositoryProvider).readAll(),
-    ),
     setState: (next) => state = next,
     logName: _preparedMealTemplatesControllerLogName,
     recoveryMessage:

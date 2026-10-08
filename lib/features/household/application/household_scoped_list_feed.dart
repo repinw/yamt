@@ -19,12 +19,11 @@ import 'package:yamt/features/household/application/household_scope_provider.dar
 /// household access recovery helpers next to it do. It holds no state of
 /// its own beyond the watch and the newest list.
 class HouseholdScopedListFeed<T> {
-  /// Creates the feed for the controller behind ref; watch and readAll
-  /// reach the collection of the active household.
+  /// Creates the feed for the controller behind ref; watch reaches the
+  /// collection of the active household.
   new({
     required this._ref,
     required this._watch,
-    required this._readAll,
     required this._setState,
     required this._logName,
     required this._recoveryMessage,
@@ -35,7 +34,6 @@ class HouseholdScopedListFeed<T> {
   /// for each build.
   final Ref Function() _ref;
   final Stream<List<T>> Function() _watch;
-  final Future<List<T>> Function() _readAll;
   final void Function(AsyncValue<List<T>> state) _setState;
   final String _logName;
   final String _recoveryMessage;
@@ -56,19 +54,6 @@ class HouseholdScopedListFeed<T> {
   /// The newest list: the last one streamed or published, or null before
   /// the first one.
   List<T>? get items => _items;
-
-  /// The newest list; before the first one it reads the collection.
-  Future<List<T>> current() async {
-    final items = _items;
-    if (items != null || !_ref().mounted) {
-      return items ?? <T>[];
-    }
-    final read = await _readAll();
-    if (_ref().mounted) {
-      _items = read;
-    }
-    return read;
-  }
 
   /// Keeps [items] as the newest list and shows it.
   void publish(List<T> items) {
