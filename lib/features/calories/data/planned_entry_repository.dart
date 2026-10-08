@@ -3,6 +3,8 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/firestore_offline_writes.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
@@ -23,7 +25,11 @@ const _plannedEntriesCollection = 'planned_entries';
 /// `logged_at` stays readable, for the range queries.
 class PlannedEntryRepository {
   /// Creates the repository for the signed-in user of [dataCipher].
-  const new({required this.dataCipher, required this.firestore});
+  const new({
+    required this.dataCipher,
+    required this.firestore,
+    this._now = DateTime.now,
+  });
 
   /// The signed-in user and the cipher for their data, or `null` while the
   /// data key is not ready.
@@ -31,6 +37,8 @@ class PlannedEntryRepository {
 
   /// The Firestore instance, or `null` during sign-out.
   final FirebaseFirestore? firestore;
+
+  final DateTime Function() _now;
 
   /// The plans of [day] in time order, or none while signed out.
   Future<List<CalorieEntry>> loadPlannedEntriesForDay(DateTime day) =>
@@ -96,26 +104,19 @@ class PlannedEntryRepository {
   /// the server, so this does not wait for the server.
   Future<void> savePlannedEntry(CalorieEntry entry) async {
     final (firestore, dataCipher) = _requireSignedIn();
-    final plan = prepareCalorieEntryForSave(
+    final batch = firestore.batch();
+    await stageCalorieEntry(
+      batch,
+      _collection(firestore, dataCipher.uid).doc(entry.id),
       entry,
       userId: dataCipher.uid,
-      updatedAt: DateTime.now(),
-    );
-    final reference = _collection(firestore, dataCipher.uid).doc(plan.id);
-    final document = await encodeCalorieEntryDocument(
-      plan,
-      reference: reference,
       cipher: dataCipher.cipher,
+      updatedAt: _now(),
     );
-    unawaited(
-      reference.set(document).catchError((Object error, StackTrace stack) {
-        log(
-          'The server rejected plan ${plan.id}.',
-          name: _logName,
-          error: error,
-          stackTrace: stack,
-        );
-      }),
+    commitBatchInBackground(
+      batch,
+      failureMessage: 'The server rejected plan ${entry.id}.',
+      logName: _logName,
     );
   }
 
@@ -163,4 +164,5 @@ PlannedEntryRepository plannedEntryRepository(Ref ref) =>
     PlannedEntryRepository(
       dataCipher: ref.watch(userDataCipherProvider),
       firestore: ref.watch(firebaseFirestoreProvider),
+      now: ref.watch(clockProvider),
     );

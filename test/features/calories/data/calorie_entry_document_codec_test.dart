@@ -100,25 +100,31 @@ void main() {
       expect(malformedIds, unorderedEquals(<String>['plaintext', 'other-key']));
     });
 
-    test(
-      'prepareCalorieEntryForSave sets userId, updatedAt, normalizes imageUrl',
-      () {
-        final entry = _createEntry(
-          'entry-1',
-          imageUrl: '  https://example.com/pic.jpg  ',
-        );
-        final updatedAt = DateTime.utc(2026, 3, 21, 10);
+    test('stageCalorieEntry writes the entry for the user at the given '
+        'time', () async {
+      final document = firestore.doc('entries/entry-1');
+      final updatedAt = DateTime.utc(2026, 3, 21, 10);
+      final batch = firestore.batch();
 
-        final prepared = prepareCalorieEntryForSave(
-          entry,
-          userId: 'user-42',
-          updatedAt: updatedAt,
-        );
+      final stored = await stageCalorieEntry(
+        batch,
+        document,
+        _createEntry('entry-1', imageUrl: '  https://example.com/pic.jpg  '),
+        userId: 'user-42',
+        cipher: cipher,
+        updatedAt: updatedAt,
+      );
+      await batch.commit();
 
-        expect(prepared.userId, 'user-42');
-        expect(prepared.updatedAt, updatedAt);
-        expect(prepared.imageUrl, 'https://example.com/pic.jpg');
-      },
-    );
+      expect(stored.userId, 'user-42');
+      expect(stored.updatedAt, updatedAt);
+      expect(stored.imageUrl, 'https://example.com/pic.jpg');
+      final decoded = await decodeCalorieEntryDocument(
+        await document.get(),
+        cipher: cipher,
+      );
+      expect(decoded.userId, 'user-42');
+      expect(decoded.imageUrl, 'https://example.com/pic.jpg');
+    });
   });
 }

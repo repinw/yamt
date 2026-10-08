@@ -3,7 +3,9 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/user_data_key_session.dart';
 import 'package:yamt/features/calories/data/calorie_entry_cache.dart';
@@ -23,9 +25,17 @@ const _calorieEntriesCollection = 'calorie_entries';
 ///
 /// Entries are stored encrypted with the data key of the user. Only
 /// `logged_at` stays readable, for the range queries.
+///
+/// It owns `users/{uid}/calorie_entries`: other writers add their entry
+/// writes to a batch through [stage] and [stageDelete], which keep the entry
+/// cache in step.
 class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   /// Creates an instance.
-  new({required this.dataCipher, required this.firestore});
+  new({
+    required this.dataCipher,
+    required this.firestore,
+    this._now = DateTime.now,
+  });
 
   /// The signed-in user and the cipher for their data, or `null` while the
   /// data key is not ready.
@@ -33,6 +43,8 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
 
   /// The Firestore instance.
   final FirebaseFirestore firestore;
+
+  final DateTime Function() _now;
   final _cache = CalorieEntryCache();
 
   @override
@@ -154,34 +166,14 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     }
 
     try {
-      final normalizedEntry = prepareCalorieEntryForSave(
-        entry,
-        userId: userId,
-        updatedAt: DateTime.now(),
-      );
-      final reference = _collection(userId).doc(normalizedEntry.id);
-      final document = await encodeCalorieEntryDocument(
-        normalizedEntry,
-        reference: reference,
-        cipher: _cipher,
-      );
-      // Firestore applies the write to its local cache at once and queues it
-      // for the server, also across lost connections and app restarts. The
-      // returned future waits for the server, so it is not awaited.
-      unawaited(
-        reference.set(document).catchError((
-          Object error,
-          StackTrace stackTrace,
-        ) {
-          log(
+      final batch = firestore.batch();
+      await stage(batch, entry);
+      commitBatchInBackground(
+        batch,
+        failureMessage:
             'Server rejected calorie entry ${entry.id} for user $userId',
-            name: _repositoryLogName,
-            error: error,
-            stackTrace: stackTrace,
-          );
-        }),
+        logName: _repositoryLogName,
       );
-      _cache.put(normalizedEntry);
       return true;
     } on Object catch (error, stackTrace) {
       log(
@@ -243,7 +235,37 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
     }
   }
 
+  /// Adds the write of [entry] to [batch] and returns the stored entry.
+  ///
+  /// The stored entry belongs to the signed-in user, carries a normalized
+  /// image URL, and is updated at the current time. Throws while no user with
+  /// a data key is signed in.
+  Future<CalorieEntry> stage(WriteBatch batch, CalorieEntry entry) async {
+    final userId = _requireUserId();
+    final stored = await stageCalorieEntry(
+      batch,
+      _collection(userId).doc(entry.id),
+      entry,
+      userId: userId,
+      cipher: _cipher,
+      updatedAt: _now(),
+    );
+    _cache.put(stored);
+    return stored;
+  }
+
+  /// Adds the delete of the entry [entryId] to [batch]. Throws while no user
+  /// with a data key is signed in.
+  void stageDelete(WriteBatch batch, String entryId) {
+    batch.delete(_collection(_requireUserId()).doc(entryId));
+    _cache.remove(entryId);
+  }
+
   String? _currentUserId() => dataCipher?.uid;
+
+  String _requireUserId() =>
+      _currentUserId() ??
+      (throw StateError('No signed-in user with a data key for the diary.'));
 
   /// Only called after [_currentUserId] returned a user.
   PayloadCipher get _cipher => dataCipher!.cipher;
@@ -267,5 +289,6 @@ CalorieLogRepositoryContract calorieLogRepository(Ref ref) {
   return FirestoreCalorieLogRepository(
     dataCipher: dataCipher,
     firestore: firestore,
+    now: ref.watch(clockProvider),
   );
 }

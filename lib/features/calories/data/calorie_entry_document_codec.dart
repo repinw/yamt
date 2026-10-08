@@ -69,16 +69,31 @@ Future<List<CalorieEntry>> decodeCalorieEntrySnapshot(
   return entries.nonNulls.toList();
 }
 
-/// Normalizes a [CalorieEntry] for saving to Firestore with current user ID,
-/// normalized image URL, and updated timestamp.
-CalorieEntry prepareCalorieEntryForSave(
+/// Adds the write of [entry] to [batch] as the encrypted [document] and
+/// returns the stored entry.
+///
+/// The stored entry belongs to [userId], carries a normalized image URL, and
+/// is updated at [updatedAt].
+Future<CalorieEntry> stageCalorieEntry(
+  WriteBatch batch,
+  DocumentReference<Map<String, dynamic>> document,
   CalorieEntry entry, {
   required String userId,
+  required PayloadCipher cipher,
   required DateTime updatedAt,
-}) {
-  return entry.copyWith(
+}) async {
+  final stored = entry.copyWith(
     imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
     userId: userId,
     updatedAt: updatedAt,
   );
+  batch.set(
+    document,
+    await encodeCalorieEntryDocument(
+      stored,
+      reference: document,
+      cipher: cipher,
+    ),
+  );
+  return stored;
 }
