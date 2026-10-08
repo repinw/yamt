@@ -20,6 +20,7 @@ import 'package:yamt/features/calories/application/burn_week_live_sync_provider.
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -105,20 +106,19 @@ class _FakeBurnWeekRunStateRepository implements BurnWeekRunStateRepository {
   }
 }
 
+/// Starts the calendar on [day], which may lie apart from today.
 class _TestDiaryCalendarController extends DiaryCalendarController {
-  new(this.day, {this.today});
+  new(this.day);
 
   final DateTime day;
 
-  final DateTime? today;
-
   @override
   DiaryCalendarState build() {
-    final normalizedDay = normalizeDiaryDay(day);
-    return DiaryCalendarState(
-      today: normalizeDiaryDay(today ?? day),
-      selectedDay: normalizedDay,
-    );
+    final isFirstBuild = stateOrNull == null;
+    final calendar = super.build();
+    return isFirstBuild
+        ? calendar.copyWith(selectedDay: normalizeDiaryDay(day))
+        : calendar;
   }
 }
 
@@ -275,7 +275,7 @@ void main() {
     expect(selectedDashboardBuilds, 0);
 
     now = secondDay;
-    container.read(diaryCalendarControllerProvider.notifier).refreshToday();
+    container.read(diaryTodayProvider.notifier).refresh();
     await Future<void>.delayed(Duration.zero);
 
     expect(secondBalanceBuilds, 0);
@@ -991,6 +991,24 @@ void main() {
     expect(state.selectedDay, DateTime(2026, 4, 28));
   });
 
+  testWidgets('moves calendar today at midnight while the diary is open', (
+    tester,
+  ) async {
+    var now = selectedDay.add(const Duration(hours: 23, minutes: 59));
+    final container = await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      clock: () => now,
+    );
+
+    now = selectedDay.add(const Duration(days: 1));
+    await tester.pump(const Duration(minutes: 1));
+
+    final state = container.read(diaryCalendarControllerProvider);
+    expect(state.today, DateTime(2026, 4, 28));
+    expect(state.selectedDay, DateTime(2026, 4, 28));
+  });
+
   testWidgets('auto-opens weekly check-in after resume into due day', (
     tester,
   ) async {
@@ -1123,7 +1141,7 @@ Future<ProviderContainer> _pumpDiaryPage(
         ),
       ),
       diaryCalendarControllerProvider.overrideWith(
-        () => _TestDiaryCalendarController(selectedDay, today: today),
+        () => _TestDiaryCalendarController(selectedDay),
       ),
       healthConnectionServiceProvider.overrideWithValue(
         healthConnectionService ??

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -107,7 +108,7 @@ void main() {
     );
   });
 
-  test('refreshToday moves selected today after midnight', () {
+  test('a new today moves the selected today along', () {
     var now = DateTime(2026, 4, 27, 10);
     final container = _container(now: () => now);
 
@@ -116,14 +117,14 @@ void main() {
       DateTime(2026, 4, 27),
     );
     now = DateTime(2026, 4, 28, 8);
-    container.read(diaryCalendarControllerProvider.notifier).refreshToday();
+    container.read(diaryTodayProvider.notifier).refresh();
     final state = container.read(diaryCalendarControllerProvider);
 
     expect(state.today, DateTime(2026, 4, 28));
     expect(state.selectedDay, DateTime(2026, 4, 28));
   });
 
-  test('refreshToday preserves a manually selected non-today day', () {
+  test('a new today keeps a manually selected other day', () {
     var now = DateTime(2026, 4, 27, 10);
     final container = _container(
       now: () => now,
@@ -134,7 +135,7 @@ void main() {
         .read(diaryCalendarControllerProvider.notifier)
         .selectDay(DateTime(2026, 4, 25, 16));
     now = DateTime(2026, 4, 28, 8);
-    container.read(diaryCalendarControllerProvider.notifier).refreshToday();
+    container.read(diaryTodayProvider.notifier).refresh();
     final state = container.read(diaryCalendarControllerProvider);
 
     expect(state.today, DateTime(2026, 4, 28));

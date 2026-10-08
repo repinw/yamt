@@ -1,5 +1,4 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
@@ -8,6 +7,7 @@ import 'package:yamt/features/calories/application/calorie_week_consumption_snap
 import 'package:yamt/features/calories/application/calorie_week_cycle_totals.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_log_loader.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
@@ -50,7 +50,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
         ResolvedCalorieGoalDaysRequest.fromDays(visibleDays),
       ).future,
     );
-    final realToday = normalizeDiaryDay(ref.watch(clockProvider)());
+    final realToday = ref.watch(diaryTodayProvider);
     // Whoever saves the closed day bumps the overview revision.
     ref.watch(calorieOverviewRevisionProvider);
     final closedDayRepository = ref.watch(closedDayRepositoryProvider);

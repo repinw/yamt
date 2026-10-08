@@ -71,7 +71,7 @@ final class DiaryBalanceSourceProvider
 }
 
 String _$diaryBalanceSourceHash() =>
-    r'4efb9adcf21db2d3438ba6f6e8040c96366d9b5e';
+    r'1926131bc29f6d67fd0189e8c12df65cf6ae6c54';
 
 /// Provides source data for the diary balance card.
 
