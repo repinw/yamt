@@ -7,14 +7,15 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/core/theme/graphit_text_styles.dart';
-import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/cookbook_new/domain/cooked_pot.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cooked_meal_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/cooked_meal_save_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_destination_section.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_header.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_pot_section.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -23,8 +24,6 @@ import 'package:yamt/features/inventory/application/inventory_quick_eat_data_pro
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/presentation/'
     'prepared_meal_detail_flow.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'prepared_meal_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_gone_flow.dart';
 import 'package:yamt/features/kitchen_utensils/application/'
     'kitchen_utensil_list_provider.dart';
@@ -81,47 +80,6 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     super.dispose();
   }
 
-  Future<void> _save(
-    PreparedMeal meal,
-    int portions, {
-    required bool toDiary,
-    required int? tareWeight,
-    required int? netWeight,
-  }) async {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final cooked = await ref
-        .read(cookedMealControllerProvider(widget.mealId).notifier)
-        .save(
-          totalPortions: portions,
-          servedInPieces: _inPieces,
-          potTareWeight: tareWeight,
-          netWeight: netWeight,
-        );
-    if (!mounted) {
-      return;
-    }
-    if (cooked == null) {
-      messenger.showAppSnackBar(
-        l10n.freeCookingSaveFailed,
-        tone: AppSnackBarTone.error,
-      );
-      return;
-    }
-    if (toDiary) {
-      // The eat page shows its own result.
-      await PreparedMealEatFlow.eat(context: context, meal: cooked);
-      // A meal gone meanwhile closed this page already.
-      if (!mounted || ModalRoute.of(context)?.isCurrent != true) {
-        return;
-      }
-    }
-    context.pop();
-    if (!toDiary) {
-      messenger.showAppSnackBar(l10n.cookedSaved(meal.name));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -138,7 +96,10 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _header(context),
+            CookedMealHeader(
+              kicker: l10n.cookedKicker,
+              onClose: () => context.pop(),
+            ),
             Expanded(
               child: mealAsync.when(
                 data: (meal) => switch (meal) {
@@ -156,33 +117,6 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _header(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = FoodLabelColors.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.xs,
-        AppSpacing.sm,
-        AppSpacing.xxl,
-        0,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          IconButton(
-            tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-            onPressed: () => context.pop(),
-            icon: Icon(Icons.close_rounded, color: colors.ink),
-          ),
-          Text(
-            l10n.cookedKicker.toUpperCase(),
-            style: context.graphitKickerStyle,
-          ),
-        ],
       ),
     );
   }
@@ -272,9 +206,12 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
             onPressed: isSaving || pot.needsUtensil || pot.isTooLight
                 ? null
                 : () => unawaited(
-                    _save(
-                      meal,
-                      portions,
+                    CookedMealSaveFlow.save(
+                      context: context,
+                      ref: ref,
+                      meal: meal,
+                      portions: portions,
+                      servedInPieces: _inPieces,
                       toDiary: destination == CookedMealDestination.diary,
                       tareWeight: utensil?.weightGrams,
                       netWeight: pot.netWeight,
