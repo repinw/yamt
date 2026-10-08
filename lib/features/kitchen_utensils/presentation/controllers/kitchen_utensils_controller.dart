@@ -4,9 +4,9 @@ import 'dart:typed_data';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/household/application/'
-    'household_access_recovery_utils.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/'
+    'household_scoped_list_feed.dart';
 import 'package:yamt/features/kitchen_utensils/application/'
     'kitchen_utensil_mutation_service.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -29,13 +29,21 @@ const _kitchenUtensilsControllerLogName = 'KitchenUtensilsController';
 /// Kitchen utensils controller.
 @riverpod
 class KitchenUtensilsController extends _$KitchenUtensilsController {
-  // Subscription is cancelled by _disposeSubscription.
-  // ignore: cancel_subscriptions
-  StreamSubscription<List<KitchenUtensil>>? _utensilsSubscription;
-  int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
-  String? _currentDataOwnerUserId;
-  bool _isRecoveringHouseholdAccess = false;
+  late final _feed = HouseholdScopedListFeed<KitchenUtensil>(
+    ref: () => ref,
+    watch: () => ref
+        .read(kitchenUtensilRepositoryProvider)
+        .watchAll()
+        .map(sortKitchenUtensils),
+    readAll: () async => sortKitchenUtensils(
+      await ref.read(kitchenUtensilRepositoryProvider).readAll(),
+    ),
+    setState: (next) => state = next,
+    logName: _kitchenUtensilsControllerLogName,
+    recoveryMessage:
+        'Rebuilding kitchen utensil stream after household access changed.',
+  );
 
   @override
   FutureOr<List<KitchenUtensil>> build() {
@@ -43,21 +51,14 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
       ..watch(householdDataOwnerUserIdProvider)
       ..watch(kitchenUtensilRepositoryProvider)
       ..onDispose(() {
-        unawaited(_disposeSubscription());
-      });
-    _currentDataOwnerUserId = ref.watch(activeHouseholdIdProvider);
-    return _restartSubscription();
+        unawaited(_feed.close());
+      })
+      ..watch(activeHouseholdIdProvider);
+    return _feed.start();
   }
 
   /// Refreshes utensils.
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    final next = await AsyncValue.guard(_restartSubscription);
-    if (!ref.mounted) {
-      return;
-    }
-    state = next;
-  }
+  Future<void> refresh() => _feed.refresh();
 
   /// Adds a utensil.
   Future<KitchenUtensilSaveResult> addUtensil({
@@ -179,96 +180,6 @@ class KitchenUtensilsController extends _$KitchenUtensilsController {
           },
         )
         .whenComplete(keepAliveLink.close);
-  }
-
-  Future<List<KitchenUtensil>> _restartSubscription() async {
-    final initialUtensils = Completer<List<KitchenUtensil>>();
-    _currentDataOwnerUserId = ref.read(activeHouseholdIdProvider);
-    final repository = ref.read(kitchenUtensilRepositoryProvider);
-    final generation = ++_subscriptionGeneration;
-    await _disposeSubscription();
-
-    _utensilsSubscription = repository.watchAll().listen(
-      (utensils) {
-        if (generation != _subscriptionGeneration) {
-          return;
-        }
-        final sortedUtensils = sortKitchenUtensils(utensils);
-        if (!initialUtensils.isCompleted) {
-          initialUtensils.complete(sortedUtensils);
-          return;
-        }
-        _onRealtimeUtensils(sortedUtensils);
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        if (generation != _subscriptionGeneration) {
-          return;
-        }
-        if (!initialUtensils.isCompleted) {
-          if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
-            initialUtensils.complete(const <KitchenUtensil>[]);
-            unawaited(_recoverFromRevokedHouseholdAccess(showLoading: false));
-            return;
-          }
-          initialUtensils.completeError(error, stackTrace);
-          return;
-        }
-        _onRealtimeError(error, stackTrace);
-      },
-    );
-
-    return await initialUtensils.future;
-  }
-
-  Future<void> _disposeSubscription() async {
-    final currentSubscription = _utensilsSubscription;
-    _utensilsSubscription = null;
-    if (currentSubscription != null) {
-      await currentSubscription.cancel();
-    }
-  }
-
-  void _onRealtimeUtensils(List<KitchenUtensil> utensils) {
-    _writeUtensils(utensils);
-  }
-
-  void _onRealtimeError(Object error, StackTrace stackTrace) {
-    if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
-      unawaited(_recoverFromRevokedHouseholdAccess());
-      return;
-    }
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncError(error, stackTrace);
-  }
-
-  bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
-    return shouldRecoverControllerHouseholdAccess(
-      ref: ref,
-      error: error,
-      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
-    );
-  }
-
-  Future<void> _recoverFromRevokedHouseholdAccess({bool showLoading = true}) {
-    return recoverControllerHouseholdAccess<KitchenUtensil>(
-      ref: ref,
-      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: ({required value}) {
-        _isRecoveringHouseholdAccess = value;
-      },
-      setState: (nextState) {
-        state = nextState;
-      },
-      restartHouseholdScopedSubscription: _restartSubscription,
-      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
-      householdAccessRecoveryLogName: _kitchenUtensilsControllerLogName,
-      householdAccessRecoveryMessage:
-          'Rebuilding kitchen utensil stream after household access changed.',
-      showLoading: showLoading,
-    );
   }
 
   Future<List<KitchenUtensil>> _currentUtensils(

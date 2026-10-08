@@ -28,6 +28,7 @@ class HouseholdScopedListFeed<T> {
     required this._setState,
     required this._logName,
     required this._recoveryMessage,
+    this._onList,
   });
 
   /// The controller's ref of its current build; Riverpod makes a new one
@@ -38,6 +39,9 @@ class HouseholdScopedListFeed<T> {
   final void Function(AsyncValue<List<T>> state) _setState;
   final String _logName;
   final String _recoveryMessage;
+
+  /// Runs for each list of the current watch, before it is shown.
+  final void Function(List<T> items)? _onList;
 
   StreamSubscription<List<T>>? _subscription;
   String? _householdId;
@@ -90,6 +94,7 @@ class HouseholdScopedListFeed<T> {
         if (started != _generation) {
           return;
         }
+        _onList?.call(items);
         _items = items;
         if (!first.isCompleted) {
           first.complete(items);

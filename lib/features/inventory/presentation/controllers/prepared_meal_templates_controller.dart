@@ -4,9 +4,9 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/household/application/'
-    'household_access_recovery_utils.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/'
+    'household_scoped_list_feed.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
@@ -58,17 +58,27 @@ class PreparedMealTemplatesController
     extends _$PreparedMealTemplatesController {
   static const _uuid = Uuid();
 
-  // Subscription is cancelled by `_disposeSubscription`.
-  // ignore: cancel_subscriptions
-  StreamSubscription<List<PreparedMeal>>? _templatesSubscription;
-  int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
   final Set<(String, String)> _recipeInstructionBackfillsInProgress =
       <(String, String)>{};
   final Set<(String, String)> _recipeInstructionBackfillsAttempted =
       <(String, String)>{};
-  String? _currentDataOwnerUserId;
-  bool _isRecoveringHouseholdAccess = false;
+  late final _feed = HouseholdScopedListFeed<PreparedMeal>(
+    ref: () => ref,
+    watch: () => ref
+        .read(preparedMealTemplateRepositoryProvider)
+        .watchAll()
+        .map(_sortTemplates),
+    readAll: () async => _sortTemplates(
+      await ref.read(preparedMealTemplateRepositoryProvider).readAll(),
+    ),
+    setState: (next) => state = next,
+    logName: _preparedMealTemplatesControllerLogName,
+    recoveryMessage:
+        'Rebuilding prepared meal template stream after household access '
+        'changed.',
+    onList: _scheduleRecipeInstructionBackfill,
+  );
 
   @override
   FutureOr<List<PreparedMeal>> build() {
@@ -76,21 +86,14 @@ class PreparedMealTemplatesController
       ..watch(householdDataOwnerUserIdProvider)
       ..watch(preparedMealTemplateRepositoryProvider)
       ..onDispose(() {
-        unawaited(_disposeSubscription());
-      });
-    _currentDataOwnerUserId = ref.watch(activeHouseholdIdProvider);
-    return _restartSubscription();
+        unawaited(_feed.close());
+      })
+      ..watch(activeHouseholdIdProvider);
+    return _feed.start();
   }
 
   /// Refresh.
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    final next = await AsyncValue.guard(_restartSubscription);
-    if (!ref.mounted) {
-      return;
-    }
-    state = next;
-  }
+  Future<void> refresh() => _feed.refresh();
 
   /// Save template from meal.
   Future<PreparedMealTemplateSaveResult> saveTemplateFromMeal(
@@ -246,61 +249,6 @@ class PreparedMealTemplatesController
     }).whenComplete(keepAliveLink.close);
   }
 
-  Future<List<PreparedMeal>> _restartSubscription() async {
-    final initialTemplates = Completer<List<PreparedMeal>>();
-    _currentDataOwnerUserId = ref.read(activeHouseholdIdProvider);
-    final repository = ref.read(preparedMealTemplateRepositoryProvider);
-    final generation = ++_subscriptionGeneration;
-    await _disposeSubscription();
-
-    _templatesSubscription = repository.watchAll().listen(
-      (templates) {
-        if (generation != _subscriptionGeneration) {
-          return;
-        }
-        final sortedTemplates = _sortTemplates(templates);
-        _scheduleRecipeInstructionBackfill(sortedTemplates);
-        if (!initialTemplates.isCompleted) {
-          initialTemplates.complete(sortedTemplates);
-          return;
-        }
-        _onRealtimeTemplates(sortedTemplates);
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        if (generation != _subscriptionGeneration) {
-          return;
-        }
-        if (!initialTemplates.isCompleted) {
-          if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
-            initialTemplates.complete(const <PreparedMeal>[]);
-            unawaited(_recoverFromRevokedHouseholdAccess(showLoading: false));
-            return;
-          }
-          initialTemplates.completeError(error, stackTrace);
-          return;
-        }
-        _onRealtimeError(error, stackTrace);
-      },
-    );
-
-    return await initialTemplates.future;
-  }
-
-  Future<void> _disposeSubscription() async {
-    final currentSubscription = _templatesSubscription;
-    _templatesSubscription = null;
-    if (currentSubscription != null) {
-      await currentSubscription.cancel();
-    }
-  }
-
-  void _onRealtimeTemplates(List<PreparedMeal> templates) {
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncData(templates);
-  }
-
   void _scheduleRecipeInstructionBackfill(List<PreparedMeal> templates) {
     final candidates = templates
         .where(_needsRecipeInstructionBackfill)
@@ -438,46 +386,6 @@ class PreparedMealTemplatesController
     } finally {
       backfillKeys.forEach(_recipeInstructionBackfillsInProgress.remove);
     }
-  }
-
-  void _onRealtimeError(Object error, StackTrace stackTrace) {
-    if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
-      unawaited(_recoverFromRevokedHouseholdAccess());
-      return;
-    }
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncError(error, stackTrace);
-  }
-
-  bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
-    return shouldRecoverControllerHouseholdAccess(
-      ref: ref,
-      error: error,
-      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
-    );
-  }
-
-  Future<void> _recoverFromRevokedHouseholdAccess({bool showLoading = true}) {
-    return recoverControllerHouseholdAccess<PreparedMeal>(
-      ref: ref,
-      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: ({required value}) {
-        _isRecoveringHouseholdAccess = value;
-      },
-      setState: (nextState) {
-        state = nextState;
-      },
-      restartHouseholdScopedSubscription: _restartSubscription,
-      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
-      householdAccessRecoveryLogName: _preparedMealTemplatesControllerLogName,
-      householdAccessRecoveryMessage:
-          'Rebuilding prepared meal template stream after household access '
-          'changed.',
-      showLoading: showLoading,
-    );
   }
 
   Future<List<PreparedMeal>> _currentTemplates() async {
