@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:uuid/uuid.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -8,11 +9,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/data/'
-    'inventory_calorie_entry_commit_mutation_builder.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_calorie_entry_commit_result.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_calorie_entry_commit_store_contract.dart';
+    'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
@@ -31,7 +28,6 @@ class FirestoreInventoryCalorieEntryCommitStore
     required this.diary,
     required this.householdCipher,
     required this.actor,
-    this.mutationBuilder = const InventoryCalorieEntryCommitMutationBuilder(),
   });
 
   /// The Firestore instance.
@@ -45,9 +41,6 @@ class FirestoreInventoryCalorieEntryCommitStore
 
   /// The inventory activity actor.
   final InventoryActivityActor? actor;
-
-  /// The mutation builder.
-  final InventoryCalorieEntryCommitMutationBuilder mutationBuilder;
 
   @override
   Future<List<InventoryCalorieEntryCommitResult>?>
@@ -224,18 +217,25 @@ class FirestoreInventoryCalorieEntryCommitStore
       inventoryRef,
       await inventoryCollection.seal(inventoryRef.id, {
         ...storedItem,
-        ...mutationBuilder.buildInventoryUpdate(changedItem),
+        'quantity': changedItem.quantity,
+        'current_amount': changedItem.currentAmount,
+        'last_consumed_at': changedItem.lastConsumedAt?.toIso8601String(),
       }),
     );
-    final activityEvent = mutationBuilder.buildActivityEvent(
-      type: type,
-      actor: actor,
-      beforeItem: currentItem,
-      afterItem: changedItem,
-      amount: amount,
-      happenedAt: happenedAt,
-    );
-    if (activityEvent != null) {
+    final actor = this.actor;
+    if (actor != null) {
+      final activityEvent = InventoryActivityEvent.fromStockChange(
+        id: const Uuid().v4(),
+        type: type,
+        actor: actor,
+        item: currentItem,
+        amount: amount,
+        beforeQuantity: currentItem.quantity,
+        afterQuantity: changedItem.quantity,
+        beforeCurrentAmount: currentItem.currentAmount,
+        afterCurrentAmount: changedItem.currentAmount,
+        happenedAt: happenedAt,
+      );
       final activityCollection = _activityEventsCollection(household);
       batch.set(
         activityCollection.reference.doc(activityEvent.id),

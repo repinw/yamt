@@ -165,8 +165,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/inventory/data/global_food_receipt_alias_store.dart': 1,
     'lib/features/inventory/data/inventory_calorie_entry_commit_store.dart': 1,
-    'lib/features/inventory/data/inventory_calorie_entry_commit_store_contract.dart':
-        1,
     'lib/features/inventory/data/inventory_item_repository_contract.dart': 1,
     'lib/features/inventory/data/inventory_item_store.dart': 1,
     'lib/features/inventory/data/prepared_meal_calorie_entry_commit_store.dart':
@@ -323,7 +321,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/data/global_food_receipt_alias_repository.dart': 3,
     'lib/features/inventory/data/global_food_serving_suggestion_repository.dart':
         1,
-    'lib/features/inventory/data/inventory_calorie_entry_commit_store.dart': 4,
     'lib/features/inventory/data/inventory_item_repository.dart': 4,
     'lib/features/inventory/data/off_product_search_repository.dart': 1,
     'lib/features/inventory/data/prepared_meal_repository.dart': 3,
