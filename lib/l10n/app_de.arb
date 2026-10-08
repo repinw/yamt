@@ -145,6 +145,14 @@
       }
     }
   },
+  "inventoryRowPlanMissing": "{amount} fehlen",
+  "@inventoryRowPlanMissing": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
   "inventoryRowPlanned": "{amount} verplant",
   "@inventoryRowPlanned": {
     "placeholders": {

@@ -342,7 +342,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   leer".
 - A food that open plans take stock from names that amount ("250 verplant")
   in place of the full amount, and its stock bar draws the planned part in the
-  accent color; a tile draws the planned part too. A cooked meal does the same
+  accent color; a tile draws the planned part too. When its plans need more
+  than the pack has, the row names what is missing instead, in orange ("100
+  fehlen"). A cooked meal does the same
   with its planned portions ("2 Port. verplant"). A meal plan that the
   meal's portions left cannot cover shows "fehlt" in the diary but stays out of
   the shopping block.

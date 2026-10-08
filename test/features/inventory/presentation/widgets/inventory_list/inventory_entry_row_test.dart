@@ -177,6 +177,23 @@ void main() {
     expect(factors, [1, 1, 0.5, 0]);
   });
 
+  testWidgets('a food that plans lack stock of names what is missing', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      InventoryEntryRow(
+        entry: InventoryFoodEntry(_food(left: 400)),
+        tiltLeft: true,
+        planned: 400,
+        missing: 100,
+      ),
+    );
+
+    expect(find.text('100 fehlen'), findsOneWidget);
+    expect(find.text('400 verplant'), findsNothing);
+  });
+
   testWidgets('a cooked meal that plans take names the planned portions', (
     tester,
   ) async {

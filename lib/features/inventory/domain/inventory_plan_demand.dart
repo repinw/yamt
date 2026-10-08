@@ -14,6 +14,10 @@ typedef InventoryPlanDemand = ({
   /// ("verplant").
   Map<String, int> plannedByItemId,
 
+  /// Stock each pack lacks for the plans that take from it, by item id, in
+  /// the pack's stored unit ("fehlen").
+  Map<String, int> missingByItemId,
+
   /// Portions each cooked meal keeps for plans, by meal id ("verplant").
   Map<String, double> plannedPortionsByMealId,
 
@@ -41,6 +45,7 @@ InventoryPlanDemand inventoryPlanDemand(
     for (final meal in meals) meal.id: meal.remainingPortions.toDouble(),
   };
   final planned = <String, int>{};
+  final missingStock = <String, int>{};
   final plannedPortions = <String, double>{};
   final missing = <String, double>{};
   for (final plan in plans.sortedBy((plan) => plan.loggedAt)) {
@@ -71,12 +76,19 @@ InventoryPlanDemand inventoryPlanDemand(
     if (plan.sourceInventoryItemId == null) {
       continue;
     }
-    final pack = inventoryPacksForPlan(
-      plan,
-      items,
-    ).firstWhereOrNull((pack) => left[pack.item.id]! > 0);
+    final packs = inventoryPacksForPlan(plan, items);
+    final pack = packs.firstWhereOrNull((pack) => left[pack.item.id]! > 0);
     if (pack == null) {
       missing[plan.id] = 1;
+      // Its food is used up by earlier plans: the last pack it would take
+      // from names the whole amount as missing.
+      if (packs.lastOrNull case final last?) {
+        missingStock.update(
+          last.item.id,
+          (sum) => sum + last.amount,
+          ifAbsent: () => last.amount,
+        );
+      }
       continue;
     }
     final available = left[pack.item.id]!;
@@ -84,11 +96,18 @@ InventoryPlanDemand inventoryPlanDemand(
     left[pack.item.id] = available - taken;
     planned.update(pack.item.id, (sum) => sum + taken, ifAbsent: () => taken);
     if (taken < pack.amount) {
-      missing[plan.id] = (pack.amount - taken) / pack.amount;
+      final short = pack.amount - taken;
+      missing[plan.id] = short / pack.amount;
+      missingStock.update(
+        pack.item.id,
+        (sum) => sum + short,
+        ifAbsent: () => short,
+      );
     }
   }
   return (
     plannedByItemId: planned,
+    missingByItemId: missingStock,
     plannedPortionsByMealId: plannedPortions,
     missingShareByPlanId: missing,
   );

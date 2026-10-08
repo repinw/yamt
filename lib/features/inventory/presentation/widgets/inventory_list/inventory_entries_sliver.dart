@@ -158,6 +158,7 @@ class InventoryEntriesSliver extends ConsumerWidget {
             onTap: onTap(entry),
             onLongPress: onLongPress(entry),
             planned: planned(entry),
+            missing: demand?.missingByItemId[entry.id] ?? 0,
           );
         },
       ),
