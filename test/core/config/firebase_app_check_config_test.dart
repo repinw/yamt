@@ -112,6 +112,39 @@ void main() {
       expect(provider, isA<AndroidPlayIntegrityProvider>());
     });
 
+    test('passes a fixed debug token, and none when it is blank', () {
+      final android = resolveFirebaseAppCheckAndroidProvider(
+        useDebugProvider: true,
+        debugToken: ' fixed-token ',
+      );
+      final apple = resolveFirebaseAppCheckAppleProvider(
+        useDebugProvider: true,
+        debugToken: 'fixed-token',
+      );
+      final blank = resolveFirebaseAppCheckAndroidProvider(
+        useDebugProvider: true,
+        debugToken: '  ',
+      );
+
+      expect((android as AndroidDebugProvider).debugToken, 'fixed-token');
+      expect((apple as AppleDebugProvider).debugToken, 'fixed-token');
+      expect((blank as AndroidDebugProvider).debugToken, isNull);
+    });
+
+    test('ignores the debug token on the release path', () {
+      final android = resolveFirebaseAppCheckAndroidProvider(
+        useDebugProvider: false,
+        debugToken: 'fixed-token',
+      );
+      final apple = resolveFirebaseAppCheckAppleProvider(
+        useDebugProvider: false,
+        debugToken: 'fixed-token',
+      );
+
+      expect(android, isA<AndroidPlayIntegrityProvider>());
+      expect(apple, isA<AppleAppAttestWithDeviceCheckFallbackProvider>());
+    });
+
     test('uses Apple debug provider when requested', () {
       final provider = resolveFirebaseAppCheckAppleProvider(
         useDebugProvider: true,

@@ -282,6 +282,14 @@ flutter run
 `build_runner`-Lauf. Firebase-Konfiguration und Sicherheitsregeln liegen im
 Wurzelverzeichnis des Repositories.
 
+Builds für das eigene Gerät lesen `--dart-define-from-file=.env`. Die Datei
+ist von Git ausgeschlossen. Für die KI-Funktionen setzt sie
+`USE_FIREBASE_APP_CHECK_DEBUG_PROVIDER=true` und
+`FIREBASE_APP_CHECK_DEBUG_TOKEN=<UUID>`. Die UUID wird einmal in der Firebase
+Console unter App Check als Debug-Token eingetragen und gilt dann für jede
+Neuinstallation. Der Token gehört nie ins Repository, weil er App Check umgeht.
+Store-Builds aus CI lesen keine `.env`.
+
 Einmal pro Klon `git config core.hooksPath tool/git-hooks` setzen. Der
 pre-push-Hook prüft dann vor jedem Push mit `tool/check_provider_hashes.sh`,
 ob die Riverpod-Hashes aktuell sind.
