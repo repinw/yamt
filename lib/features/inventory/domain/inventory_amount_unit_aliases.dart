@@ -35,6 +35,25 @@ InventoryBaseAmount? servingInBaseUnit(double quantity, String? unit) {
   );
 }
 
+/// Whether [unit] names a single piece, such as "Stk." or "pcs". Container
+/// words of the table, such as "Portion" or "Flasche", also count in pieces
+/// but are not piece words.
+bool isInventoryPieceWord(String? unit) =>
+    _pieceWords.contains(unit?.trim().toLowerCase());
+
+const _pieceWords = {
+  'pc',
+  'pcs',
+  'piece',
+  'pieces',
+  'st',
+  'st.',
+  'stk',
+  'stk.',
+  'stück',
+  'stueck',
+};
+
 /// Unit aliases mapping normalized strings to unit conversions.
 const inventoryAmountUnitAliases = <String, InventoryAmountUnitConversion>{
   'g': (base: InventoryAmountUnit.gram, multiplier: 1.0, scale: 1),

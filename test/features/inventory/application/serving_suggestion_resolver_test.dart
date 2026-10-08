@@ -173,6 +173,42 @@ void main() {
     );
   });
 
+  test('understands the units of the shared unit table', () {
+    const learned = GlobalFoodServingSuggestionSet.empty();
+    PortionSuggestion suggestionFor(String unit, double quantity) => resolver
+        .resolve(
+          item: _amountItem(
+            servingQuantity: quantity,
+            servingQuantityUnit: unit,
+          ),
+          learned: learned,
+          maxAmount: 1000,
+          requiresManualPortion: true,
+        )
+        .manualServingSuggestions
+        .single;
+
+    expect(suggestionFor('gramm', 30).amount, 30);
+    expect(suggestionFor('kilo', 0.2).amount, 200);
+    expect(suggestionFor('kilo', 0.2).unit, ConsumedUnit.grams);
+  });
+
+  test('a container unit falls back to the grams in the serving size', () {
+    final resolution = resolver.resolve(
+      item: _amountItem(
+        servingSize: '30 g',
+        servingQuantity: 1,
+        servingQuantityUnit: 'Portion',
+      ),
+      learned: const GlobalFoodServingSuggestionSet.empty(),
+      maxAmount: 1000,
+      requiresManualPortion: true,
+    );
+
+    expect(resolution.manualServingSuggestions.single.amount, 30);
+    expect(resolution.manualServingSuggestions.single.unit, ConsumedUnit.grams);
+  });
+
   test('ignores negative or unknown structured serving units', () {
     final negativeItem = _amountItem(
       servingQuantity: -1,

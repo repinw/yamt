@@ -1,6 +1,7 @@
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/domain/inventory_amount_unit_aliases.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 /// Defines serving suggestion resolution.
@@ -81,13 +82,6 @@ class _InventoryServingCandidate {
   final double amount;
   final InventoryAmountUnit unit;
   final String? portionLabel;
-}
-
-class _ServingAmount {
-  const new({required this.amount, required this.unit});
-
-  final double amount;
-  final InventoryAmountUnit unit;
 }
 
 /// Defines serving suggestion resolver.
@@ -423,48 +417,20 @@ class ServingSuggestionResolver {
     InventoryItem item,
   ) {
     final quantity = item.servingQuantity;
-    final unit = item.servingQuantityUnit;
-    if (quantity == null || unit == null || quantity <= 0) {
+    if (quantity == null || quantity <= 0) {
       return null;
     }
 
-    final normalizedUnit = unit.trim().toLowerCase();
-    final converted = switch (normalizedUnit) {
-      'g' || 'gr' || 'gram' || 'grams' => _ServingAmount(
-        amount: quantity,
-        unit: InventoryAmountUnit.gram,
-      ),
-      'kg' || 'kilogram' || 'kilograms' => _ServingAmount(
-        amount: quantity * 1000,
-        unit: InventoryAmountUnit.gram,
-      ),
-      'mg' => _ServingAmount(
-        amount: quantity / 1000,
-        unit: InventoryAmountUnit.gram,
-      ),
-      'ml' => _ServingAmount(
-        amount: quantity,
-        unit: InventoryAmountUnit.milliliter,
-      ),
-      'cl' => _ServingAmount(
-        amount: quantity * 10,
-        unit: InventoryAmountUnit.milliliter,
-      ),
-      'dl' => _ServingAmount(
-        amount: quantity * 100,
-        unit: InventoryAmountUnit.milliliter,
-      ),
-      'l' || 'liter' || 'liters' || 'litre' || 'litres' => _ServingAmount(
-        amount: quantity * 1000,
-        unit: InventoryAmountUnit.milliliter,
-      ),
-      'pc' || 'piece' || 'pieces' || 'st' || 'stk' => _ServingAmount(
-        amount: quantity * inventoryPieceAmountScale,
-        unit: InventoryAmountUnit.piece,
-      ),
-      _ => null,
-    };
+    final unit = item.servingQuantityUnit;
+    final converted = servingInBaseUnit(quantity, unit);
     if (converted == null || converted.amount <= 0) {
+      return null;
+    }
+    // Container words such as "Portion" or "Flasche" count as pieces in the
+    // stock, but as a serving they name no amount: the serving size text
+    // carries it, for example "1 Portion (30 g)".
+    if (converted.unit == InventoryAmountUnit.piece &&
+        !isInventoryPieceWord(unit)) {
       return null;
     }
 
@@ -500,7 +466,7 @@ class ServingSuggestionResolver {
     return normalizedWeight.isNotEmpty && normalizedWeight == normalizedServing;
   }
 
-  String _formatServingLabel(_ServingAmount serving) {
+  String _formatServingLabel(InventoryBaseAmount serving) {
     final code = serving.unit.code;
     final value = serving.unit == InventoryAmountUnit.piece
         ? formatInventoryAmountValue(
