@@ -6,14 +6,14 @@ import 'package:yamt/features/calories/application/daily_nutrition_target_resolv
 import 'package:yamt/features/calories/application/macro_goal_settings_controller.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
-import 'package:yamt/features/diary/application/diary_macro_targets_resolver.dart';
+import 'package:yamt/features/calories/domain/daily_nutrition_target.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 
 final _day = DateTime(2026, 5, 24);
 
 void main() {
-  group('resolveDiaryMacroTargets', () {
+  group('macro targets of the daily nutrition target', () {
     test(
       'resolves default targets for active male profile (80kg at 2400 kcal)',
       () {
@@ -44,10 +44,7 @@ void main() {
 
         final targets = container
             .listen(
-              Provider(
-                (ref) =>
-                    resolveDiaryMacroTargets(ref, day: _day, goalKcal: 2400),
-              ),
+              Provider((ref) => _macros(ref, day: _day, goalKcal: 2400)),
               (_, _) {},
             )
             .read();
@@ -98,10 +95,7 @@ void main() {
 
         final targets = container
             .listen(
-              Provider(
-                (ref) =>
-                    resolveDiaryMacroTargets(ref, day: _day, goalKcal: 1800),
-              ),
+              Provider((ref) => _macros(ref, day: _day, goalKcal: 1800)),
               (_, _) {},
             )
             .read();
@@ -150,9 +144,7 @@ void main() {
 
       final targets = container
           .listen(
-            Provider(
-              (ref) => resolveDiaryMacroTargets(ref, day: _day, goalKcal: 2000),
-            ),
+            Provider((ref) => _macros(ref, day: _day, goalKcal: 2000)),
             (_, _) {},
           )
           .read();
@@ -174,9 +166,7 @@ void main() {
 
       final targets = container
           .listen(
-            Provider(
-              (ref) => resolveDiaryMacroTargets(ref, day: _day, goalKcal: 2200),
-            ),
+            Provider((ref) => _macros(ref, day: _day, goalKcal: 2200)),
             (_, _) {},
           )
           .read();
@@ -200,12 +190,8 @@ void main() {
       final targets = container
           .listen(
             Provider(
-              (ref) => resolveDiaryMacroTargets(
-                ref,
-                day: _day,
-                goalKcal: 2400,
-                carryoverKcal: 100,
-              ),
+              (ref) =>
+                  _macros(ref, day: _day, goalKcal: 2400, carryoverKcal: 100),
             ),
             (_, _) {},
           )
@@ -232,8 +218,8 @@ void main() {
       final delta = container
           .listen(
             Provider(
-              (ref) => resolveDiaryCarryoverMacroDelta(
-                ref.watch(dailyNutritionTargetResolverProvider),
+              (ref) => _carryoverDelta(
+                ref,
                 day: _day,
                 goalKcal: 2400,
                 carryoverKcal: 100,
@@ -260,12 +246,8 @@ void main() {
       final targets = container
           .listen(
             Provider(
-              (ref) => resolveDiaryMacroTargets(
-                ref,
-                day: _day,
-                goalKcal: 2000,
-                carryoverKcal: -200,
-              ),
+              (ref) =>
+                  _macros(ref, day: _day, goalKcal: 2000, carryoverKcal: -200),
             ),
             (_, _) {},
           )
@@ -288,12 +270,8 @@ void main() {
       final targets = container
           .listen(
             Provider(
-              (ref) => resolveDiaryMacroTargets(
-                ref,
-                day: _day,
-                goalKcal: 1400,
-                carryoverKcal: -300,
-              ),
+              (ref) =>
+                  _macros(ref, day: _day, goalKcal: 1400, carryoverKcal: -300),
             ),
             (_, _) {},
           )
@@ -317,12 +295,8 @@ void main() {
       final targets = container
           .listen(
             Provider(
-              (ref) => resolveDiaryMacroTargets(
-                ref,
-                day: _day,
-                goalKcal: 1400,
-                carryoverKcal: -550,
-              ),
+              (ref) =>
+                  _macros(ref, day: _day, goalKcal: 1400, carryoverKcal: -550),
             ),
             (_, _) {},
           )
@@ -347,3 +321,52 @@ class _FakeCalorieGoalController extends CalorieGoalController {
     return _settings;
   }
 }
+
+/// The macro grams of the target of [day].
+_Macros _macros(
+  Ref ref, {
+  required DateTime day,
+  required double goalKcal,
+  double carryoverKcal = 0,
+}) => _macrosOf(
+  ref
+      .read(dailyNutritionTargetResolverProvider)
+      .resolveTarget(
+        day: day,
+        goalKcal: goalKcal,
+        carryoverKcal: carryoverKcal,
+      ),
+);
+
+/// How much [carryoverKcal] changes the macro grams of [day].
+_Macros _carryoverDelta(
+  Ref ref, {
+  required DateTime day,
+  required double goalKcal,
+  required double carryoverKcal,
+}) {
+  final resolver = ref.read(dailyNutritionTargetResolverProvider);
+  final withCarryover = _macrosOf(
+    resolver.resolveTarget(
+      day: day,
+      goalKcal: goalKcal,
+      carryoverKcal: carryoverKcal,
+    ),
+  );
+  final base = _macrosOf(
+    resolver.resolveBaseTarget(day: day, goalKcal: goalKcal),
+  );
+  return (
+    carbs: withCarryover.carbs - base.carbs,
+    protein: withCarryover.protein - base.protein,
+    fat: withCarryover.fat - base.fat,
+  );
+}
+
+typedef _Macros = ({double carbs, double protein, double fat});
+
+_Macros _macrosOf(DailyNutritionTarget target) => (
+  carbs: target.carbsGrams,
+  protein: target.proteinGrams,
+  fat: target.fatGrams,
+);

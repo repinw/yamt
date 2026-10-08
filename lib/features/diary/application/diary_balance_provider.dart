@@ -4,6 +4,7 @@ import 'package:yamt/features/calories/application/calorie_resolved_goal_provide
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
+import 'package:yamt/features/calories/application/day_budget.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -13,7 +14,6 @@ import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_da
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/application/diary_entries_provider.dart';
-import 'package:yamt/features/diary/application/diary_macro_targets_resolver.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 part 'diary_balance_provider.g.dart';
@@ -128,15 +128,8 @@ class DiaryBalanceSource {
     }
 
     final practiceStartDate = _weekOverview.nextGoalStartDate;
-    if (shouldShowDiaryBalancePracticeDay(
-      goalStartsInFuture: _weekOverview.goalStartsInFuture,
-      startDate: practiceStartDate,
-      selectedDay: selectedDay,
-    )) {
-      final practiceGoalKcal = resolveDiaryDisplayGoalKcal(
-        weekOverview: _weekOverview,
-        selectedDayOverview: selectedDayOverview,
-      );
+    if (isPracticeDay(week: _weekOverview, day: selectedDay)) {
+      final practiceGoalKcal = dayGoalKcal(_weekOverview);
       return DiaryBalanceCardData.practiceDay(
         practiceDay: DiaryBalancePracticeDayData(
           startDate: practiceStartDate!,
@@ -175,28 +168,26 @@ Future<DiaryBalanceSource> diaryBalanceSource(
     calorieWeekOverviewForWindowProvider(normalizedSelectedDay).future,
   );
   final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
-  final macroResolver = ref.watch(dailyNutritionTargetResolverProvider);
+  final nutrition = ref.watch(dailyNutritionTargetResolverProvider);
   final today = ref.watch(diaryTodayProvider);
   final weekOverview = await weekOverviewFuture;
   final runState = await runStateFuture;
-  final selectedDayOverview = weekOverview.days.last;
+  final delta = resolveDayBudget(
+    week: weekOverview,
+    today: today,
+    nutrition: nutrition,
+  ).carryoverMacroDelta;
 
   return DiaryBalanceSource._(
     weekOverview: weekOverview,
-    selectedDayOverview: selectedDayOverview,
+    selectedDayOverview: weekOverview.days.last,
     runState: runState,
     // This source reads no plans.
     countedPlans: const <CalorieEntry>[],
-    carryoverMacroDelta: resolveDiaryCarryoverMacroDelta(
-      macroResolver,
-      day: normalizedSelectedDay,
-      goalKcal: resolveDiaryDisplayGoalKcal(
-        weekOverview: weekOverview,
-        selectedDayOverview: selectedDayOverview,
-      ),
-      carryoverKcal: normalizedSelectedDay.isBefore(today)
-          ? 0
-          : weekOverview.carryoverBeforeTodayKcal,
+    carryoverMacroDelta: DiaryMacroTargets(
+      carbs: delta.carbs,
+      protein: delta.protein,
+      fat: delta.fat,
     ),
   );
 }
@@ -240,36 +231,4 @@ class DiaryBalanceActions {
   void refreshBalance(DateTime selectedDay) {
     _refreshBalance(selectedDay);
   }
-}
-
-/// Whether the diary balance card should show the pre-start practice state.
-bool shouldShowDiaryBalancePracticeDay({
-  required bool goalStartsInFuture,
-  required DateTime? startDate,
-  required DateTime selectedDay,
-}) {
-  if (!goalStartsInFuture || startDate == null) {
-    return false;
-  }
-  return normalizeDiaryDay(selectedDay).isBefore(normalizeDiaryDay(startDate));
-}
-
-/// Goal kcal the diary measures [selectedDayOverview] against.
-///
-/// Practice days before a future goal start have no goal of their own, so
-/// they borrow the goal that starts later. This keeps the kcal bar and the
-/// macro targets visible while nothing counts yet.
-double resolveDiaryDisplayGoalKcal({
-  required CalorieWeekOverview weekOverview,
-  required CalorieWeekDayOverview selectedDayOverview,
-}) {
-  final isPracticeDay = shouldShowDiaryBalancePracticeDay(
-    goalStartsInFuture: weekOverview.goalStartsInFuture,
-    startDate: weekOverview.nextGoalStartDate,
-    selectedDay: selectedDayOverview.date,
-  );
-  if (!isPracticeDay) {
-    return selectedDayOverview.goalKcal;
-  }
-  return weekOverview.futureGoalKcal ?? selectedDayOverview.goalKcal;
 }
