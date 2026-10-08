@@ -155,8 +155,7 @@ class PreparedMeal {
   @JsonKey(includeIfNull: false)
   final int? potTareWeight;
 
-  /// `true` when one serving is a piece, such as a wrap, instead of a portion;
-  /// absent on meals served in portions.
+  /// `true` when one serving is a piece, such as a wrap; absent for portions.
   @JsonKey(includeIfNull: false)
   final bool? servedInPieces;
 
@@ -171,11 +170,12 @@ class PreparedMeal {
   /// Whether one serving of the meal is a piece.
   bool get isServedInPieces => servedInPieces ?? false;
 
-  /// Remaining cooked net weight in g/ml.
-  ///
-  /// Always calculated dynamically from the cooked net weight and remaining
-  /// portion ratio to prevent stale or desynchronized stored values.
+  /// Remaining net weight in g/ml, from the last [potWeighing] or the cooked
+  /// net weight and remaining portion ratio; computed, never stale.
   int? get remainingNetWeight {
+    if (potWeighing case final weighing?) {
+      return weighing.netWeightFor(remainingPortions);
+    }
     final netWeight = finalNetWeight;
     if (netWeight == null || netWeight < 1) {
       return null;

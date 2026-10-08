@@ -41,13 +41,7 @@ class PreparedMealEatCalculator {
 
   /// Grams of food left: from the last pot weighing when there is one,
   /// otherwise from the weight at "Gekocht".
-  int? get currentNetWeight {
-    final weighing = meal.potWeighing;
-    if (weighing != null) {
-      return weighing.netWeightFor(meal.remainingPortions);
-    }
-    return meal.remainingNetWeight;
-  }
+  int? get currentNetWeight => meal.remainingNetWeight;
 
   /// Whether the eat page asks to weigh the pot again before eating at
   /// [now]: the meal was weighed in its pot, and since the last weighing
