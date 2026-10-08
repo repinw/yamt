@@ -1,13 +1,12 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/widgets/app_scroll_wheel.dart';
 import 'package:yamt/features/calories/domain/calorie_age_calculator.dart';
 import 'package:yamt/features/onboarding/presentation/'
     'calorie_goal_onboarding_keys.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_field_card.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
-    'intro_wheel.dart';
 import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
     'intro_wheel_selection_band.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -128,7 +127,7 @@ class IntroBirthDateCard extends StatelessWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: IntroWheel(
+                    child: AppScrollWheel(
                       key: CalorieGoalOnboardingKeys.introBirthDayWheel,
                       itemCount: _daysInMonth(shown.year, shown.month),
                       selectedIndex: shown.day - 1,
@@ -137,7 +136,7 @@ class IntroBirthDateCard extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: IntroWheel(
+                    child: AppScrollWheel(
                       key: CalorieGoalOnboardingKeys.introBirthMonthWheel,
                       itemCount: _monthsPerYear,
                       selectedIndex: shown.month - 1,
@@ -147,7 +146,7 @@ class IntroBirthDateCard extends StatelessWidget {
                     ),
                   ),
                   Expanded(
-                    child: IntroWheel(
+                    child: AppScrollWheel(
                       key: CalorieGoalOnboardingKeys.introBirthYearWheel,
                       itemCount: _lastDate.year - firstYear + 1,
                       selectedIndex: shown.year - firstYear,
