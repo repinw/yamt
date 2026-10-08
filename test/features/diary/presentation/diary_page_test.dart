@@ -17,7 +17,6 @@ import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_we
 import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_weight_missing_prompt_card.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
-import 'package:yamt/features/calories/application/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
@@ -216,7 +215,7 @@ void main() {
     );
     final container = ProviderContainer(
       overrides: [
-        diaryCalendarNowProvider.overrideWithValue(() => now),
+        clockProvider.overrideWithValue(() => now),
         calorieLogRepositoryProvider.overrideWithValue(logRepository),
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
         burnWeekLiveSyncTickerPeriodProvider.overrideWithValue(null),
@@ -979,7 +978,7 @@ void main() {
     final container = await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
-      overrides: [diaryCalendarNowProvider.overrideWithValue(() => now)],
+      clock: () => now,
     );
 
     now = selectedDay.add(const Duration(days: 1, hours: 8));
@@ -1009,10 +1008,7 @@ void main() {
       selectedDay: DateTime(2026, 4, 14),
       settingsRepository: settingsRepository,
       overrideWeeklyCheckInProvider: false,
-      overrides: [
-        diaryCalendarNowProvider.overrideWithValue(() => now),
-        calorieBalanceNowProvider.overrideWithValue(() => now),
-      ],
+      clock: () => now,
     );
 
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
@@ -1050,6 +1046,7 @@ Future<ProviderContainer> _pumpDiaryPage(
   WidgetTester tester, {
   required DateTime selectedDay,
   DateTime? today,
+  DateTime Function()? clock,
   Locale locale = const Locale('en'),
   DiaryWeeklyCheckInData? initialWeeklyCheckIn,
   DiaryWeeklyCheckInData? preloadedWeeklyCheckIn,
@@ -1101,7 +1098,7 @@ Future<ProviderContainer> _pumpDiaryPage(
         appPreferences ?? MemoryAppPreferences(),
       ),
       // The check-in plans and saves the run of this day.
-      clockProvider.overrideWithValue(() => today ?? selectedDay),
+      clockProvider.overrideWithValue(clock ?? () => today ?? selectedDay),
       authStateChangesProvider.overrideWith((ref) => Stream<User?>.value(user)),
       firebaseAuthProvider.overrideWithValue(auth),
       calorieLogRepositoryProvider.overrideWithValue(resolvedLogRepository),

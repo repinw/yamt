@@ -8,58 +8,6 @@ part of 'diary_calendar_controller.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Provides the current clock for diary calendar state.
-
-@ProviderFor(diaryCalendarNow)
-final diaryCalendarNowProvider = DiaryCalendarNowProvider._();
-
-/// Provides the current clock for diary calendar state.
-
-final class DiaryCalendarNowProvider
-    extends
-        $FunctionalProvider<
-          DateTime Function(),
-          DateTime Function(),
-          DateTime Function()
-        >
-    with $Provider<DateTime Function()> {
-  /// Provides the current clock for diary calendar state.
-  DiaryCalendarNowProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'diaryCalendarNowProvider',
-        isAutoDispose: false,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$diaryCalendarNowHash();
-
-  @$internal
-  @override
-  $ProviderElement<DateTime Function()> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  DateTime Function() create(Ref ref) {
-    return diaryCalendarNow(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(DateTime Function() value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<DateTime Function()>(value),
-    );
-  }
-}
-
-String _$diaryCalendarNowHash() => r'0a95f8fa4884f2d9d20836971fb6f57a092fe245';
-
 /// Selectable range for the current diary calendar state.
 
 @ProviderFor(diaryCalendarBounds)
@@ -150,7 +98,7 @@ final class DiaryCalendarControllerProvider
 }
 
 String _$diaryCalendarControllerHash() =>
-    r'ccb836ff46614292bc4aef37eb4a3d19b0992d4d';
+    r'3d6caaf27110e029e1271bfa74a82cbed5f75d32';
 
 /// Stores the diary calendar selection shared by the shell app bar and page.
 

@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
@@ -486,8 +487,7 @@ ProviderContainer _dashboardContainer({
       plannedEntryRepositoryProvider.overrideWithValue(
         FakePlannedEntryRepository(),
       ),
-      if (calendarNow != null)
-        diaryCalendarNowProvider.overrideWithValue(calendarNow),
+      if (calendarNow != null) clockProvider.overrideWithValue(calendarNow),
       // Without a builder the real week overview pipeline runs, which is what
       // day type changes have to flow through.
       if (weekOverviewBuilder != null)

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -10,7 +11,7 @@ ProviderContainer _container({
 }) {
   final container = ProviderContainer(
     overrides: [
-      diaryCalendarNowProvider.overrideWithValue(now),
+      clockProvider.overrideWithValue(now),
       diaryPlanStartDayProvider.overrideWithValue(planStartDay),
     ],
   );

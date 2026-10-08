@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/application/calorie_balance_now_provider.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/'
     'calorie_weekly_checkin_models.dart';
@@ -87,7 +87,7 @@ ProviderContainer _createContainer({
 }) {
   return ProviderContainer(
     overrides: [
-      calorieBalanceNowProvider.overrideWith(
+      clockProvider.overrideWith(
         (ref) =>
             () => today,
       ),

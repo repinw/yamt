@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -9,12 +10,6 @@ import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 
 part 'diary_calendar_controller.g.dart';
-
-/// Provides the current clock for diary calendar state.
-@Riverpod(keepAlive: true)
-DateTime Function() diaryCalendarNow(Ref ref) {
-  return DateTime.now;
-}
 
 /// Selectable range for the current diary calendar state.
 @riverpod
@@ -111,6 +106,6 @@ class DiaryCalendarController extends _$DiaryCalendarController {
   }
 
   DateTime _currentToday() {
-    return dateOnly(ref.read(diaryCalendarNowProvider)());
+    return dateOnly(ref.read(clockProvider)());
   }
 }
