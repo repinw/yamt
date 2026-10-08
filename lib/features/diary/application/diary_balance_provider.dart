@@ -1,11 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_resolved_goal_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
-import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/application/day_budget.dart';
-import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -13,7 +10,6 @@ import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_ba
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
-import 'package:yamt/features/diary/application/diary_entries_provider.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 part 'diary_balance_provider.g.dart';
@@ -157,41 +153,6 @@ class DiaryBalanceSource {
   }
 }
 
-/// Provides source data for the diary balance card.
-@riverpod
-Future<DiaryBalanceSource> diaryBalanceSource(
-  Ref ref,
-  DateTime selectedDay,
-) async {
-  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
-  final weekOverviewFuture = ref.watch(
-    calorieWeekOverviewForWindowProvider(normalizedSelectedDay).future,
-  );
-  final runStateFuture = ref.watch(burnWeekRunControllerProvider.future);
-  final nutrition = ref.watch(dailyNutritionTargetResolverProvider);
-  final today = ref.watch(diaryTodayProvider);
-  final weekOverview = await weekOverviewFuture;
-  final runState = await runStateFuture;
-  final delta = resolveDayBudget(
-    week: weekOverview,
-    today: today,
-    nutrition: nutrition,
-  ).carryoverMacroDelta;
-
-  return DiaryBalanceSource._(
-    weekOverview: weekOverview,
-    selectedDayOverview: weekOverview.days.last,
-    runState: runState,
-    // This source reads no plans.
-    countedPlans: const <CalorieEntry>[],
-    carryoverMacroDelta: DiaryMacroTargets(
-      carbs: delta.carbs,
-      protein: delta.protein,
-      fat: delta.fat,
-    ),
-  );
-}
-
 /// Actions needed by diary balance presentation widgets.
 @riverpod
 DiaryBalanceActions diaryBalanceActions(Ref ref) {
@@ -205,7 +166,6 @@ DiaryBalanceActions diaryBalanceActions(Ref ref) {
         anchorDay: normalizedSelectedDay,
       );
       ref
-        ..invalidate(diaryBalanceSourceProvider(normalizedSelectedDay))
         ..invalidate(resolvedCalorieGoalForDayProvider(normalizedSelectedDay))
         ..invalidate(
           resolvedCalorieGoalsForDaysProvider(
@@ -214,8 +174,7 @@ DiaryBalanceActions diaryBalanceActions(Ref ref) {
         )
         ..invalidate(
           calorieWeekOverviewForWindowProvider(normalizedSelectedDay),
-        )
-        ..invalidate(diaryEntriesForDayProvider(normalizedSelectedDay));
+        );
     },
   );
 }
