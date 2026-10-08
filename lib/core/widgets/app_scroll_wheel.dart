@@ -2,19 +2,21 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_intro_layout_constants.dart';
 import 'package:yamt/core/widgets/app_haptic_feedback.dart';
 
-/// Bare vertical scroll wheel used by the onboarding pickers.
+/// Bare vertical scroll wheel, used by the onboarding pickers and the
+/// portion count of the eat page.
 ///
 /// It reports a selection only once the user moves the wheel, so a picker that
 /// the user never touched still counts as unset. A new [selectedIndex] from the
 /// parent moves the wheel without a report: the parent already knows the value,
 /// and a report during that build would change its state mid-build.
-class IntroWheel extends StatefulWidget {
+class AppScrollWheel extends StatefulWidget {
   /// Creates a scroll wheel.
   const new({
     required this.itemCount,
     required this.selectedIndex,
     required this.labelBuilder,
     required this.onSelected,
+    this.textStyle,
     super.key,
   });
 
@@ -30,14 +32,17 @@ class IntroWheel extends StatefulWidget {
   /// Called with the index the wheel settles on.
   final ValueChanged<int> onSelected;
 
+  /// Style of the labels, or the theme's medium title.
+  final TextStyle? textStyle;
+
   @override
-  State<IntroWheel> createState() => _IntroWheelState();
+  State<AppScrollWheel> createState() => _AppScrollWheelState();
 }
 
-class _IntroWheelState extends State<IntroWheel> {
+class _AppScrollWheelState extends State<AppScrollWheel> {
   late FixedExtentScrollController _controller;
 
-  /// Whether the wheel is jumping to a [IntroWheel.selectedIndex] from the
+  /// Whether the wheel is jumping to a [AppScrollWheel.selectedIndex] from the
   /// parent, which must not be reported back.
   bool _isSyncing = false;
 
@@ -50,7 +55,7 @@ class _IntroWheelState extends State<IntroWheel> {
   }
 
   @override
-  void didUpdateWidget(IntroWheel oldWidget) {
+  void didUpdateWidget(AppScrollWheel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (_controller.hasClients && _controller.selectedItem != _safeIndex) {
       _isSyncing = true;
@@ -100,10 +105,12 @@ class _IntroWheelState extends State<IntroWheel> {
                 child: Text(
                   widget.labelBuilder(index),
                   maxLines: 1,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: theme.colorScheme.onSurface,
-                  ),
+                  style:
+                      widget.textStyle ??
+                      theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: theme.colorScheme.onSurface,
+                      ),
                 ),
               ),
             ),

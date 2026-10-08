@@ -1,15 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/onboarding/presentation/widgets/intro/fields/'
-    'intro_wheel.dart';
+import 'package:yamt/core/widgets/app_scroll_wheel.dart';
 
 const _wheelKey = Key('wheel');
 
 /// Drag distance that moves a wheel by one item.
 const _oneItem = 34.0;
 
-/// Hosts an [IntroWheel] whose index the test can change from outside, like a
-/// form controller does when another field changes.
+/// Hosts an [AppScrollWheel] whose index the test can change from outside,
+/// like a form controller does when another field changes.
 class _WheelHost extends StatefulWidget {
   const new({required this.reported});
 
@@ -26,7 +25,7 @@ class _WheelHostState extends State<_WheelHost> {
 
   @override
   Widget build(BuildContext context) {
-    return IntroWheel(
+    return AppScrollWheel(
       key: _wheelKey,
       itemCount: 31,
       selectedIndex: _selectedIndex,

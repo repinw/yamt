@@ -169,7 +169,7 @@ Contains the page, the intro flow, and its pages:
     `intro_page_content.dart` (header on top of it), and
     `intro_fill_page_content.dart` (header on top, footer above the controls,
     pickers fill the rest; `intro_picker_stack.dart` splits that height).
-  - Pickers: `intro_wheel.dart` with `intro_wheel_selection_band.dart`,
+  - Pickers: `core/widgets/app_scroll_wheel.dart` with `intro_wheel_selection_band.dart`,
     `intro_vertical_wheel_field.dart`, `intro_birth_date_card.dart`,
     `intro_weekday_selector.dart`, all inside `intro_field_card.dart`.
   - Choices and results: `intro_choice_card.dart` on `intro_selectable_card.dart`,
