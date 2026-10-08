@@ -340,6 +340,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   ingredients; "Aus Rezept" or "Kombiniert" names where a meal comes from), and a stock bar with one segment per pack, or per portion for
   a meal. Under a quarter left the amount and the bar turn orange with "fast
   leer".
+- A food that open plans take stock from names that amount ("250 verplant")
+  in place of the full amount, and its stock bar draws the planned part in the
+  accent color; a tile draws the planned part too.
 - The Sortieren sheet sorts by added, eaten, name or amount; tapping the
   chosen field again flips its direction. Until the user changes it, the
   list sorts by last eaten, newest first. It also holds "Verbrauchte
