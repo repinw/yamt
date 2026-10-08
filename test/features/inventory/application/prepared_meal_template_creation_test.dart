@@ -178,6 +178,47 @@ void main() {
     );
   });
 
+  test('a template counted in pieces makes a meal in pieces', () async {
+    final inventoryRepository = _FakeInventoryItemRepository(
+      initialItems: [
+        _item(id: 'potatoes', name: 'Potatoes', currentAmount: 1000),
+      ],
+    );
+    final preparedMealRepository = FakePreparedMealRepository();
+    addTearDown(inventoryRepository.dispose);
+    final template = PreparedMeal(
+      id: 'template-1',
+      name: 'Wraps',
+      recipeIngredients: const <String>['500 g Potatoes'],
+      totalPortions: 6,
+      remainingPortions: 6,
+      totalKcal: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      createdAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
+      components: const <PreparedMealComponent>[],
+      servedInPieces: true,
+    );
+
+    final result = await _creation(preparedMealRepository)
+        .createPreparedMealFromTemplate(
+          inventoryRepository: inventoryRepository,
+          ingredientParser: const TemplateIngredientParser(),
+          template: template,
+          totalPortions: 6,
+          recipeIngredientAssignments: const <String, List<String>>{
+            '500 g Potatoes': <String>['potatoes'],
+          },
+          recipeIngredientAmountConversions:
+              const <String, RecipeIngredientAmountConversion>{},
+        );
+
+    expect(result.isSuccess, isTrue);
+    expect(preparedMealRepository.meals.single.isServedInPieces, isTrue);
+  });
+
   test(
     'createPreparedMealFromTemplate uses piece-to-gram conversions safely',
     () async {
