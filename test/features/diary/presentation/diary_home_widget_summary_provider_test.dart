@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -58,5 +59,37 @@ void main() {
     expect(summary.eatenKcal, 1200);
     expect(summary.targetKcal, 2000);
     expect(summary.macros, same(macros));
+  });
+
+  test('moves to the new day when the diary day changes at midnight', () {
+    final tomorrow = nextDiaryDay(normalizedDay);
+    var clock = now;
+    DiaryDayDashboardState loaded(DateTime day, double eatenKcal) =>
+        diaryDashboardLoadedStateForTest(
+          selectedDay: day,
+          weekOverview: diaryWeekOverviewForTest(
+            selectedDay: day,
+            dayTotals: [0, 0, 0, 0, 0, 0, eatenKcal],
+          ),
+        );
+    final container = ProviderContainer(
+      overrides: [
+        clockProvider.overrideWithValue(() => clock),
+        diaryDayDashboardControllerProvider(normalizedDay).overrideWith(
+          () => FakeDiaryDayDashboardController(loaded(normalizedDay, 1200)),
+        ),
+        diaryDayDashboardControllerProvider(tomorrow).overrideWith(
+          () => FakeDiaryDayDashboardController(loaded(tomorrow, 300)),
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final sub = container.listen(diaryHomeWidgetSummaryProvider, (_, _) {});
+    expect(sub.read()!.eatenKcal, 1200);
+
+    clock = tomorrow.add(const Duration(minutes: 1));
+    container.read(diaryTodayProvider.notifier).refresh();
+
+    expect(sub.read()!.eatenKcal, 300);
   });
 }
