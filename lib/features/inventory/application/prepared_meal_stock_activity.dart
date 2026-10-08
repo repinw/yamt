@@ -30,6 +30,11 @@ class PreparedMealStockTrackingRepository implements InventoryItemRepository {
   }
 
   @override
+  Future<List<InventoryItem>> readAllLocal() async {
+    return latestItems;
+  }
+
+  @override
   Future<bool> save(InventoryItem item) async {
     final saved = await _delegate.save(item);
     if (saved) {

@@ -8,6 +8,10 @@ abstract interface class InventoryItemRepository {
   /// Read all.
   Future<List<InventoryItem>> readAll();
 
+  /// Reads all from the local cache, which holds the app's own writes at
+  /// once, and from the server only when the cache holds none.
+  Future<List<InventoryItem>> readAllLocal();
+
   /// Writes [item] alone; the other items of the household stay untouched.
   Future<bool> save(InventoryItem item);
 

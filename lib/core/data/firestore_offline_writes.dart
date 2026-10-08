@@ -10,11 +10,27 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// works offline.
 Future<DocumentSnapshot<Map<String, dynamic>>> readDocumentLocalFirst(
   DocumentReference<Map<String, dynamic>> reference,
+) => readLocalFirst(reference.get);
+
+/// Reads [query] from the local Firestore cache, and from the server only
+/// when the cache read fails.
+///
+/// The cache holds the app's own writes at once, also before the server has
+/// them, so a change that starts from this read sees the changes before it.
+/// Use it for a query that a screen already watches, so the cache holds it.
+Future<QuerySnapshot<Map<String, dynamic>>> readQueryLocalFirst(
+  Query<Map<String, dynamic>> query,
+) => readLocalFirst(query.get);
+
+/// Runs [get] on the local cache, and once more with the default source when
+/// the cache read fails.
+Future<T> readLocalFirst<T>(
+  Future<T> Function([GetOptions? options]) get,
 ) async {
   try {
-    return await reference.get(const GetOptions(source: Source.cache));
+    return await get(const GetOptions(source: Source.cache));
   } on FirebaseException {
-    return await reference.get();
+    return await get();
   }
 }
 

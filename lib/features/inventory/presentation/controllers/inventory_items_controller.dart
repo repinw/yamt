@@ -88,10 +88,8 @@ class InventoryItemsController extends _$InventoryItemsController {
   InventoryItemEditService get _edits =>
       ref.read(inventoryItemEditServiceProvider);
 
-  /// Runs [change] on the queue with the current list, and publishes the
-  /// list it wrote. When the stream delivered a list meanwhile, the change
-  /// is laid over that list, so the next change in the queue starts from
-  /// both (#309). A household switch or refresh meanwhile starts a new list.
+  /// Runs [change] on the queue with the cached list (#309) and lays the
+  /// written list over the shown one unless the household or refresh moved on.
   Future<T> _mutate<T>(
     T fallback,
     Future<InventoryItemChange<T>> Function(List<InventoryItem> items) change,
@@ -104,8 +102,11 @@ class InventoryItemsController extends _$InventoryItemsController {
         stackTrace: stackTrace,
       ),
       operation: () async {
-        final items = await _feed.current();
         final generation = _feed.generation;
+        final repository = ref.read(inventoryItemRepositoryProvider);
+        final items = _feed.items == null
+            ? await repository.readAll()
+            : await repository.readAllLocal();
         if (!ref.mounted) {
           return fallback;
         }
@@ -268,9 +269,8 @@ class InventoryItemsController extends _$InventoryItemsController {
     );
   }
 
-  /// Adds a newly created item and publishes it once it is written, so
-  /// follow-up flows can reference it before the realtime repository catches
-  /// up.
+  /// Adds a newly created item and shows it once it is written, so follow-up
+  /// flows can reference it before the item stream catches up.
   Future<bool> addItem(InventoryItem item) {
     return _mutate(false, (items) => _mutations.add(items, item));
   }

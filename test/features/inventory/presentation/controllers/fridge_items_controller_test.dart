@@ -35,6 +35,13 @@ class _FakeFridgeItemRepository with InventoryItemWholeListWrites {
     return onReadAll();
   }
 
+  /// The local cache: the last stored list, or the read list before that.
+  @override
+  Future<List<InventoryItem>> readAllLocal() async =>
+      _stored ? savedItems : await onReadAll();
+
+  bool _stored = false;
+
   @override
   Stream<List<InventoryItem>> watchAll() {
     return Stream<List<InventoryItem>>.multi((controller) {
@@ -62,6 +69,7 @@ class _FakeFridgeItemRepository with InventoryItemWholeListWrites {
     }
 
     savedItems = List<InventoryItem>.from(items);
+    _stored = true;
 
     if (_saveErrors.isNotEmpty) {
       final error = _saveErrors.removeFirst();
@@ -1223,5 +1231,32 @@ void main() {
       container.read(inventoryItemsControllerProvider).value?.map((i) => i.id),
       ['a', 'b'],
     );
+  });
+
+  test('a quick eat after an older list arrived late keeps the first eat '
+      '(#309)', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a', quantity: 3)],
+    )..emitRealtimeOnSave = false;
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+    await container.read(inventoryItemsControllerProvider.future);
+    final controller = container.read(
+      inventoryItemsControllerProvider.notifier,
+    );
+
+    await controller.eatItemDetailed('a', 1);
+    repository.emitWatchItems(<InventoryItem>[_item('a', quantity: 3)]);
+    await pumpEventQueue();
+    await controller.eatItemDetailed('a', 1);
+
+    expect(repository.savedItems.single.quantity, 1);
   });
 }

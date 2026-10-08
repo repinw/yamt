@@ -38,13 +38,10 @@ class FirestoreInventoryItemRepository
   }
 
   @override
-  Future<List<InventoryItem>> readAll() async {
-    final householdId = _currentHouseholdId();
-    if (householdId == null) {
-      return const <InventoryItem>[];
-    }
-    return await _readAllForHousehold(householdId);
-  }
+  Future<List<InventoryItem>> readAll() => _readAll(localFirst: false);
+
+  @override
+  Future<List<InventoryItem>> readAllLocal() => _readAll(localFirst: true);
 
   @override
   Future<List<InventoryItem>> readRecentManualItems({
@@ -150,10 +147,16 @@ class FirestoreInventoryItemRepository
     }
   }
 
-  Future<List<InventoryItem>> _readAllForHousehold(String householdId) async {
+  Future<List<InventoryItem>> _readAll({required bool localFirst}) async {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
+      return const <InventoryItem>[];
+    }
     final collectionPath = 'households/$householdId/inventory_items';
     try {
-      final documents = await _store.readAll(householdId: householdId);
+      final documents = localFirst
+          ? await _store.readAllLocal(householdId: householdId)
+          : await _store.readAll(householdId: householdId);
       return _decodeDocuments(documents);
     } on FirebaseException catch (error, stackTrace) {
       log(
