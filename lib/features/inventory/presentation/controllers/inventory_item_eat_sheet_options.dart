@@ -6,7 +6,6 @@ import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_calculator.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_draft.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
-import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
 
 /// Recomputes the ruler marks and nutrition of [state].
 InventoryItemEatSheetState deriveInventoryItemEatSheetState(
@@ -107,7 +106,7 @@ List<InventoryItemEatMarker> _markers(
     ];
   }
   final unit = calculator.fixedCalorieUnit;
-  final package = calculator.packageAmount ?? _packageSize(calculator);
+  final package = packageSizeOf(calculator);
   final named = namedPortions(state, resolution);
   // An unnamed amount the user also named shows under that name.
   final namedAmounts = {
@@ -162,9 +161,12 @@ List<InventoryItemEatMarker> _markers(
   ];
 }
 
-/// Size of one package from the product's package weight, in the stock
-/// unit, or null without one.
-int? _packageSize(InventoryItemEatCalculator calculator) {
+/// Size of one package: the calculator's package, else the product's
+/// package weight in the stock unit, or null without one.
+int? packageSizeOf(InventoryItemEatCalculator calculator) {
+  if (calculator.packageAmount case final package?) {
+    return package;
+  }
   final parsed = const InventoryAmountParser().tryParse(
     rawWeight: calculator.item.weight,
     quantity: 1,
@@ -215,35 +217,6 @@ InventoryItemEatSheetState withPortionAmounts(
   return state.copyWith(
     inventoryAmountText: state.calculator.formatInventoryAmount(amount),
   );
-}
-
-/// Applies learned defaults the user has not overridden.
-InventoryItemEatSheetState withLearnedDefaults(
-  InventoryItemEatSheetState state,
-  ServingSuggestionResolution resolution,
-) {
-  var next = state;
-  final calculator = state.calculator;
-  final portion = resolution.portionDefaultSuggestion;
-  if (!state.didEditPortion && state.usesPortionMode && portion != null) {
-    next = withPortionAmounts(
-      next.copyWith(
-        portionAmountText: formatInventoryNutritionValue(portion.amount),
-        portionUnit: calculator.normalizePortionUnit(portion.unit),
-        portionLabel: () => normalizePortionLabel(portion.portionLabel),
-        portionCountText: next.portionCountText.trim().isEmpty
-            ? '1'
-            : next.portionCountText,
-      ),
-    );
-  }
-  final inventoryDefault = resolution.inventoryDefaultAmount;
-  if (!state.didEditInventoryAmount && inventoryDefault != null) {
-    next = next.copyWith(
-      inventoryAmountText: calculator.formatInventoryAmount(inventoryDefault),
-    );
-  }
-  return next;
 }
 
 /// Mark on the amount ruler.

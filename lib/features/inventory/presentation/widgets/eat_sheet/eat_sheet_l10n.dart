@@ -147,6 +147,10 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
     if (amount < 1) {
       return null;
     }
+    if ((countedPortion?.label, portionCount) case (final label?, final count?)
+        when countedPortion!.counts) {
+      return l10n.eatPagePortionMultiple(formatEatCount(l10n, count), label);
+    }
     // The counted portion, then named portions: the entry is logged as one
     // of them.
     for (final marker in [
@@ -215,4 +219,11 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
     }
     return null;
   }
+}
+
+/// [count] of portions as the eat page shows it, such as "2" or "1,5".
+String formatEatCount(AppLocalizations l10n, num count) {
+  return (NumberFormat.decimalPattern(
+    l10n.localeName,
+  )..maximumFractionDigits = 2).format(count);
 }

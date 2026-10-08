@@ -40,7 +40,8 @@ InventoryItemEatCalculator openStockEatCalculator(InventoryItem item) {
       ),
       maxAmount: _openStockLimit,
       rulerMaxAmount: math.max(stock, _weightRulerRange * scale),
-      packageAmount: stock > 0 ? stock : null,
+      // Without a package size the stock counts pieces, not a package.
+      packageAmount: stock > 0 && item.usesAmountProgress ? stock : null,
     );
   }
   if (item.usesAmountProgress) {
@@ -66,5 +67,6 @@ int? openStockDefaultAmount(InventoryItemEatCalculator calculator) {
   if (calculator.fixedCalorieUnit == null) {
     return null;
   }
-  return _weightDefaultAmount * calculator.inventoryAmountScale;
+  return calculator.packageAmount ??
+      _weightDefaultAmount * calculator.inventoryAmountScale;
 }

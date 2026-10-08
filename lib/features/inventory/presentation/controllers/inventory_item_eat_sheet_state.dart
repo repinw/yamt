@@ -175,14 +175,14 @@ class InventoryItemEatSheetState {
     return usesPortionMode ? max / calculator.inventoryAmountScale : max;
   }
 
-  /// Number of picked portions in the entered amount, or null when no
-  /// portion mark is counted.
-  int? get portionCount {
+  /// Picked portions in the entered amount to a tenth, as the diary shows
+  /// them, such as 1.5, or null when no portion mark is counted.
+  double? get portionCount {
     final size = countedPortion?.value;
     if (size == null || size < 1 || usesPortionMode) {
       return null;
     }
-    return ((enteredAmount + 0.001) / size).floor();
+    return (enteredAmount / size * 10).round() / 10;
   }
 
   /// Whether [marker] is the counted portion or matches the entered amount.

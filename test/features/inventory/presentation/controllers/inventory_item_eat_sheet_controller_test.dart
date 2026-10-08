@@ -109,6 +109,7 @@ _setUp(
   InventoryItem item, {
   _FakeSuggestionRepository? repository,
   bool hasOpenStock = false,
+  int? initialInventoryAmount,
 }) {
   final container = ProviderContainer(
     overrides: [
@@ -122,6 +123,7 @@ _setUp(
   final provider = inventoryItemEatSheetControllerProvider(
     item: item,
     hasOpenStock: hasOpenStock,
+    initialInventoryAmount: initialInventoryAmount,
   );
   container.listen(provider, (_, _) {});
   return (container: container, provider: provider);
@@ -677,6 +679,174 @@ void main() {
       expect(request.portionCount, 1);
     },
   );
+
+  test('the ruler snaps a named portion to halves and logs the count', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('40')
+      ..rememberPortion('Slice');
+    final slice = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Slice');
+    controller
+      ..pickMarker(slice)
+      ..pickAmount(63);
+
+    final state = container.read(provider);
+    expect(state.inventoryAmountText, '60');
+    expect(state.portionCount, 1.5);
+    expect(state.countedPortion, slice);
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    expect(state.amountHint(l10n), '= 1.5 × Slice');
+
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.portionBaseAmount, 40);
+    expect(request.portionCount, 1.5);
+    expect(request.portionLabel, 'Slice');
+
+    controller.pickAmount(0);
+    expect(container.read(provider).inventoryAmountText, '20');
+  });
+
+  test('the ruler moves free grams without a named portion', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    container.read(provider.notifier).pickAmount(63);
+
+    final state = container.read(provider);
+    expect(state.inventoryAmountText, '63');
+    expect(state.countedPortion, isNull);
+  });
+
+  test('half of a decimal portion is logged as half', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('33,3')
+      ..rememberPortion('Slice');
+    final slice = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Slice');
+    controller
+      ..pickMarker(slice)
+      ..pickAmount(17);
+
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.calorieAmount, closeTo(16.65, 0.051));
+    expect(request.portionCount, 0.5);
+  });
+
+  test('half of a small portion counts as a half', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('4,5')
+      ..rememberPortion('Cube');
+    final cube = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Cube');
+    controller
+      ..pickMarker(cube)
+      ..pickAmount(2);
+
+    expect(container.read(provider).portionCount, 0.5);
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.portionCount, 0.5);
+  });
+
+  group('starts with', () {
+    test('what was eaten last time, with its name', () async {
+      final repository = _FakeSuggestionRepository()
+        ..suggestions = const GlobalFoodServingSuggestionSet(
+          personalSuggestion: ServingSizeSuggestion(
+            amount: 40,
+            unit: ConsumedUnit.grams,
+            label: 'Slice',
+          ),
+        );
+      final (:container, :provider) = _setUp(
+        _gramItem(),
+        repository: repository,
+      );
+      await pumpEventQueue();
+
+      final state = container.read(provider);
+      expect(state.inventoryAmountText, '40');
+      expect(state.countedPortion?.label, 'Slice');
+      expect(state.portionCount, 1);
+    });
+
+    test('the smallest named portion without a last time', () async {
+      final repository = _FakeSuggestionRepository()
+        ..suggestions = GlobalFoodServingSuggestionSet(
+          globalSuggestions: [
+            _globalSuggestion(80, 'Large'),
+            _globalSuggestion(30, 'Slice'),
+          ],
+        );
+      final (:container, :provider) = _setUp(
+        _gramItem(),
+        repository: repository,
+      );
+      await pumpEventQueue();
+
+      expect(container.read(provider).inventoryAmountText, '30');
+      expect(container.read(provider).countedPortion?.label, 'Slice');
+    });
+
+    test('the rest without the name when the portion is more', () async {
+      final repository = _FakeSuggestionRepository()
+        ..suggestions = const GlobalFoodServingSuggestionSet(
+          personalSuggestion: ServingSizeSuggestion(
+            amount: 40,
+            unit: ConsumedUnit.grams,
+            label: 'Slice',
+          ),
+        );
+      final (:container, :provider) = _setUp(
+        _gramItem().copyWith(currentAmount: 25),
+        repository: repository,
+      );
+      await pumpEventQueue();
+
+      expect(container.read(provider).inventoryAmountText, '25');
+      expect(container.read(provider).countedPortion, isNull);
+    });
+
+    test('the package of a picked product, before anything loads', () {
+      final (:container, :provider) = _setUp(
+        _gramItem().copyWith(initialAmount: 500, currentAmount: 500),
+        hasOpenStock: true,
+      );
+
+      expect(container.read(provider).inventoryAmountText, '500');
+    });
+
+    test('the amount the caller picked', () async {
+      final (:container, :provider) = _setUp(
+        _gramItem().copyWith(weight: '500 g'),
+        initialInventoryAmount: 95,
+      );
+      await pumpEventQueue();
+
+      expect(container.read(provider).inventoryAmountText, '95');
+    });
+
+    test('one package, or what is left of it', () async {
+      final whole = _setUp(_gramItem().copyWith(weight: '500 g'));
+      final opened = _setUp(
+        _gramItem().copyWith(weight: '500 g', currentAmount: 320),
+      );
+      await pumpEventQueue();
+
+      expect(whole.container.read(whole.provider).inventoryAmountText, '500');
+      expect(opened.container.read(opened.provider).inventoryAmountText, '320');
+      expect(whole.container.read(whole.provider).countedPortion, isNull);
+    });
+  });
 
   test('logs a picked day at the current time of day', () {
     final (:container, :provider) = _setUp(_gramItem());

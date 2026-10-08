@@ -61,6 +61,10 @@ void main() {
       label(_entry(52, portionAmount: 40, label: 'Brotscheibe')),
       '1,3× 40 g Brotscheibe',
     );
+    expect(
+      label(_entry(16.7, portionAmount: 33.3, label: 'Scheibe')),
+      '½× 33,3 g Scheibe',
+    );
     // An amount edited off the portion grid falls back to grams.
     expect(label(_entry(55, portionAmount: 40, label: 'Brotscheibe')), '55 g');
     expect(label(_entry(37.5)), '37,5 g');

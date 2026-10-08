@@ -66,7 +66,8 @@ InventoryItemEatSheetState applyInventoryItemEatDraftErrors(
 ///
 /// Outside portion mode, an amount that is a whole multiple of one of
 /// [namedPortions] is logged as that many portions, so the portion name is
-/// learned with the food. The counted portion comes first, as in the hint.
+/// learned with the food. A counted named portion is logged with its count,
+/// whole or not.
 InventoryItemEatRequest buildInventoryItemEatRequest(
   InventoryItemEatSheetState state,
   InventoryItemEatSubmissionDraft draft, {
@@ -82,15 +83,24 @@ InventoryItemEatRequest buildInventoryItemEatRequest(
     final exactAmount =
         calculator.parseEatenAmount(state.inventoryAmountText) ??
         amount.toDouble();
-    final counted = state.countedPortion;
-    bool isCounted(InventoryItemEatPortion portion) =>
-        counted != null &&
-        counted.label == portion.label &&
-        counted.value == calculator.roundEatenAmount(portion.amount);
-    for (final portion in [
-      ...namedPortions.where(isCounted),
-      ...namedPortions.where((portion) => !isCounted(portion)),
-    ]) {
+    // A counted named portion is logged with any count, such as 1.5.
+    if ((state.countedPortion, calculator.fixedCalorieUnit)
+        case (final counted?, final unit?)
+        when counted.counts && counted.label != null && counted.value >= 1) {
+      return InventoryItemEatRequest(
+        inventoryAmount: amount,
+        loggedAt: state.loggedAt,
+        mealType: state.mealType,
+        calorieAmount: fixedAmount,
+        calorieUnit: fixedAmount == null ? null : calculator.fixedCalorieUnit,
+        portionBaseAmount: counted.value,
+        portionBaseUnit: unit,
+        portionCount: state.portionCount ?? exactAmount / counted.value,
+        portionLabel: counted.label,
+        isPlan: isPlan,
+      );
+    }
+    for (final portion in namedPortions) {
       final count = exactAmount / portion.amount;
       if (count >= 1 && calculator.isWholeNumber(count)) {
         return InventoryItemEatRequest(

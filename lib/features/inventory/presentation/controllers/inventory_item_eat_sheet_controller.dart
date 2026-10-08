@@ -69,7 +69,8 @@ class InventoryItemEatSheetController
         pieceSizes: const [],
         nutrition: null,
         errors: const {},
-        didEditInventoryAmount: false,
+        // An amount the caller picked stays over the learned start.
+        didEditInventoryAmount: initialInventoryAmount != null,
         didEditPortion: false,
       ),
     );
@@ -80,13 +81,7 @@ class InventoryItemEatSheetController
 
   /// Sets the amount to [value] in the unit of the amount field, for
   /// example from the ruler.
-  void pickAmount(double value) {
-    setAmountText(
-      state.usesPortionMode
-          ? formatInventoryNutritionValue(value)
-          : state.calculator.formatInventoryAmount(value.round()),
-    );
-  }
+  void pickAmount(double value) => _update(withRulerAmount(state, value));
 
   /// Sets the amount to the portion at [marker] and counts that portion,
   /// so the portion count can add more of it.

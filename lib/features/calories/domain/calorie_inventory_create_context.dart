@@ -69,7 +69,8 @@ class CalorieInventoryCreateContext {
     if (baseAmount == null ||
         count == null ||
         portionBaseUnit != unit ||
-        (amount - baseAmount * count).abs() > 0.001) {
+        // The amount has one decimal, so 0,5 × 33,3 g logs 16,7 g.
+        (amount - baseAmount * count).abs() > 0.05 + 0.001) {
       return null;
     }
     return baseAmount;

@@ -1,8 +1,6 @@
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
-const _inventoryManualAddAmountParser = InventoryAmountParser();
-
 /// Resizes newly saved inventory stock to match immediate consumed amount.
 InventoryItem resizeInventoryManualAddItemToConsumedAmount({
   required InventoryItem item,
@@ -59,26 +57,6 @@ int? inventoryManualAddRestAmount({
   }
   final rest = item.currentAmount - inventoryAmount;
   return rest > 0 ? rest : null;
-}
-
-/// Resolves initial amount for the immediate-eat sheet.
-int? resolveInventoryManualAddInitialConsumedAmount({
-  required InventoryItem item,
-  required String? rawWeight,
-}) {
-  final amountUnit = item.amountUnit;
-  if (amountUnit == null) {
-    return null;
-  }
-  final parsed = _inventoryManualAddAmountParser.tryParse(
-    rawWeight: rawWeight,
-    quantity: 1,
-    fallbackUnit: amountUnit,
-  );
-  if (parsed == null || parsed.unit != amountUnit || parsed.amount < 1) {
-    return null;
-  }
-  return parsed.amount;
 }
 
 /// Safe amount scale for a unit.
