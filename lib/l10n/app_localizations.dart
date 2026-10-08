@@ -662,6 +662,12 @@ abstract class AppLocalizations {
   /// **'All'**
   String get inventoryQuickFilterAll;
 
+  /// No description provided for @inventoryQuickFilterPlanned.
+  ///
+  /// In en, this message translates to:
+  /// **'Planned'**
+  String get inventoryQuickFilterPlanned;
+
   /// No description provided for @inventoryQuickFilterOpen.
   ///
   /// In en, this message translates to:

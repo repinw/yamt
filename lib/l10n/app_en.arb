@@ -178,6 +178,7 @@
   },
   "inventorySortAction": "Sort",
   "inventoryQuickFilterAll": "All",
+  "inventoryQuickFilterPlanned": "Planned",
   "inventoryQuickFilterOpen": "Open",
   "inventoryQuickFilterMeals": "Meals",
   "inventoryQuickFilterLow": "Almost empty",

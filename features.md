@@ -331,8 +331,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   grid of small tiles for a quick overview. While the list scrolls, the
   header scrolls away and the search row with both buttons stays at the top;
   in selection mode the header stays, because it holds the selection actions.
-- Quick filter chips with counts: Alle, Offen (partly used), Mahlzeiten, Fast
-  leer (under a quarter left). The chip starts at Alle on every visit.
+- Quick filter chips with counts: Alle, Offen (partly used), Verplant (foods
+  that open plans take stock from), Mahlzeiten, Fast leer (under a quarter
+  left). The chip starts at Alle on every visit.
 - Each row shows a tilted, framed picture (photo, ingredient photos of a
   meal, or the first letter), the name, the amount left and the full amount,
   brand and kcal per 100 g (for a meal its portions or its missing

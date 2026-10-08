@@ -350,6 +350,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inventoryQuickFilterAll => 'All';
 
   @override
+  String get inventoryQuickFilterPlanned => 'Planned';
+
+  @override
   String get inventoryQuickFilterOpen => 'Open';
 
   @override

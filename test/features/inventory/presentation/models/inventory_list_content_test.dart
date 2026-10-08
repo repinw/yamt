@@ -59,6 +59,7 @@ InventoryListContent _build({
       const InventoryListViewPreferences(),
   InventoryQuickFilter quickFilter = InventoryQuickFilter.all,
   String query = '',
+  Set<String> plannedIds = const {},
 }) {
   return InventoryListContent.build(
     items: items,
@@ -66,6 +67,7 @@ InventoryListContent _build({
     preferences: preferences,
     quickFilter: quickFilter,
     query: query,
+    plannedIds: plannedIds,
   );
 }
 
@@ -105,10 +107,24 @@ void main() {
     expect(content.counts, {
       InventoryQuickFilter.all: 4,
       InventoryQuickFilter.open: 3,
+      InventoryQuickFilter.planned: 0,
       InventoryQuickFilter.meals: 1,
       InventoryQuickFilter.low: 1,
     });
     expect(_ids(content), ['low']);
+  });
+
+  test('the planned chip lists the foods open plans take stock from', () {
+    final content = _build(
+      items: items,
+      meals: meals,
+      quickFilter: InventoryQuickFilter.planned,
+      plannedIds: {'open', 'empty'},
+    );
+
+    // The used-up pack stays hidden like everywhere else.
+    expect(content.counts[InventoryQuickFilter.planned], 1);
+    expect(_ids(content), ['open']);
   });
 
   test('sorts by last eaten, newest first, until the user picks another '
