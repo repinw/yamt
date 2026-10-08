@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
+import 'package:yamt/features/auth/application/session_sign_out_service.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/auth/data/user_data_key_repository.dart';
 import 'package:yamt/features/auth/presentation/controllers/google_auth_controller.dart';
@@ -19,16 +20,10 @@ class AccountController extends _$AccountController {
   /// Sign out.
   Future<void> signOut() async {
     final keepAliveLink = ref.keepAlive();
-    SessionShutdownController? sessionShutdownController;
     try {
       if (!ref.mounted) return;
       state = const AsyncLoading();
-      final auth = ref.read(firebaseAuthProvider);
-      sessionShutdownController = ref.read(
-        sessionShutdownControllerProvider.notifier,
-      );
-      await _pauseFirestoreBackedStreams(sessionShutdownController!);
-      await auth.signOut();
+      await ref.read(sessionSignOutServiceProvider).signOut();
       if (!ref.mounted) return;
       state = const AsyncData(null);
     } on Object catch (error, stackTrace) {
@@ -37,9 +32,6 @@ class AccountController extends _$AccountController {
       }
       rethrow;
     } finally {
-      if (ref.mounted) {
-        sessionShutdownController?.finish();
-      }
       keepAliveLink.close();
     }
   }

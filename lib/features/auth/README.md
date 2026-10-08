@@ -43,6 +43,9 @@ Other features may import these concrete files directly:
 - `presentation/controllers/google_auth_controller.dart` for account-linking
   flows.
 - `presentation/auth_error_message_mapper.dart` for auth error messages.
+- `application/session_sign_out_service.dart` for `sessionSignOutServiceProvider`,
+  which pauses the Firestore-backed streams and signs out (account settings,
+  load-failed gate).
 - `presentation/welcome_page.dart` for app routing.
 - `data/user_data_key_session.dart` for `userDataCipherProvider`, which
   repositories of private data watch, and `userDataKeySessionProvider` for the
