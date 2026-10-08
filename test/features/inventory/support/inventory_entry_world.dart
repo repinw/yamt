@@ -94,7 +94,7 @@ class InventoryEntryWorld {
     );
     final itemStore = FirestoreInventoryCalorieEntryCommitStore(
       firestore: firestore,
-      dataCipher: dataCipher,
+      diary: diary,
       householdCipher: household,
       actor: null,
     );

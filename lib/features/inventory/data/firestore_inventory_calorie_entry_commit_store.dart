@@ -3,9 +3,7 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
-import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
-import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
@@ -20,9 +18,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 
 const _commitStoreLogName = 'InventoryCalorieEntryCommitStore';
-const _usersCollection = 'users';
 const _householdsCollection = 'households';
-const _calorieEntriesCollection = 'calorie_entries';
 const _inventoryItemsCollection = 'inventory_items';
 const _inventoryActivityEventsCollection = 'inventory_activity_events';
 
@@ -32,7 +28,7 @@ class FirestoreInventoryCalorieEntryCommitStore
   /// The firestore inventory calorie entry commit store.
   const new({
     required this.firestore,
-    required this.dataCipher,
+    required this.diary,
     required this.householdCipher,
     required this.actor,
     this.mutationBuilder = const InventoryCalorieEntryCommitMutationBuilder(),
@@ -41,8 +37,8 @@ class FirestoreInventoryCalorieEntryCommitStore
   /// The Firestore instance.
   final FirebaseFirestore firestore;
 
-  /// The user's diary cipher, or `null` while the data key is not ready.
-  final UserDataCipher? dataCipher;
+  /// The diary repository, which stages the entry write.
+  final FirestoreCalorieLogRepository diary;
 
   /// The household cipher, or `null` while its key is not ready.
   final HouseholdCipher? householdCipher;
@@ -137,9 +133,8 @@ class FirestoreInventoryCalorieEntryCommitStore
     required DateTime happenedAt,
     required Map<String, (int, InventoryItem? Function(InventoryItem))> changes,
   }) async {
-    final cipher = dataCipher;
     final household = householdCipher;
-    if (cipher == null || household == null) {
+    if (diary.dataCipher == null || household == null) {
       log(
         'Cannot write calorie entry ${entry.id}: no data or household key.',
         name: _commitStoreLogName,
@@ -147,25 +142,7 @@ class FirestoreInventoryCalorieEntryCommitStore
       return null;
     }
     try {
-      final entryRef = _calorieEntriesCollectionRef(cipher.uid).doc(entry.id);
       final batch = firestore.batch();
-      if (keepEntry) {
-        final stored = entry.copyWith(
-          userId: cipher.uid,
-          imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
-          updatedAt: DateTime.now(),
-        );
-        batch.set(
-          entryRef,
-          await encodeCalorieEntryDocument(
-            stored,
-            reference: entryRef,
-            cipher: cipher.cipher,
-          ),
-        );
-      } else {
-        batch.delete(entryRef);
-      }
       final results = <InventoryCalorieEntryCommitResult>[];
       for (final MapEntry(key: itemId, value: (amount, change))
           in changes.entries) {
@@ -185,6 +162,13 @@ class FirestoreInventoryCalorieEntryCommitStore
         }
       }
       if (results.isNotEmpty) {
+        // Staged last, so the diary cache changes only when the batch is
+        // committed.
+        if (keepEntry) {
+          await diary.stage(batch, entry);
+        } else {
+          diary.stageDelete(batch, entry.id);
+        }
         commitBatchInBackground(
           batch,
           failureMessage: 'Server rejected entry ${entry.id} with its stock.',
@@ -274,15 +258,6 @@ class FirestoreInventoryCalorieEntryCommitStore
       cipher: household.cipher,
       plaintextFields: inventoryItemPlaintextFields,
     );
-  }
-
-  CollectionReference<Map<String, dynamic>> _calorieEntriesCollectionRef(
-    String userId,
-  ) {
-    return firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_calorieEntriesCollection);
   }
 
   SealedCollection _activityEventsCollection(HouseholdCipher household) {

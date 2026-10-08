@@ -6,7 +6,7 @@ import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
@@ -141,7 +141,11 @@ Future<List<Map<String, dynamic>>> _openActivity(
   return opened.map((document) => document.data).toList();
 }
 
-UserDataCipher _signedIn(String uid) => (uid: uid, cipher: _cipher);
+FirestoreCalorieLogRepository _diary(FirebaseFirestore firestore, String uid) =>
+    FirestoreCalorieLogRepository(
+      dataCipher: (uid: uid, cipher: _cipher),
+      firestore: firestore,
+    );
 
 Future<Map<String, dynamic>> _decrypted(
   DocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -165,7 +169,7 @@ void main() {
 
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: _signedIn('user-1'),
+        diary: _diary(firestore, 'user-1'),
         householdCipher: _household('household-1'),
         actor: _actor,
       );
@@ -243,7 +247,7 @@ void main() {
 
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: _signedIn('user-1'),
+        diary: _diary(firestore, 'user-1'),
         householdCipher: _household('household-1'),
         actor: _actor,
       );
@@ -282,7 +286,7 @@ void main() {
 
       final store = FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: _signedIn('user-1'),
+        diary: _diary(firestore, 'user-1'),
         householdCipher: _household('household-1'),
         actor: _actor,
       );
@@ -317,7 +321,7 @@ void main() {
 
     final store = FirestoreInventoryCalorieEntryCommitStore(
       firestore: firestore,
-      dataCipher: _signedIn('member-1'),
+      diary: _diary(firestore, 'member-1'),
       householdCipher: _household('household-shared'),
       actor: const InventoryActivityActor(
         userId: 'member-1',
@@ -390,7 +394,7 @@ void main() {
       );
       return FirestoreInventoryCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: _signedIn('user-1'),
+        diary: _diary(firestore, 'user-1'),
         householdCipher: _household('household-1'),
         actor: _actor,
       );
@@ -456,5 +460,47 @@ void main() {
 
       expect(results, isNull);
     });
+  });
+
+  test('the diary cache follows the commits of the store', () async {
+    final firestore = FakeFirebaseFirestore();
+    await _putItem(firestore, _inventoryItem(currentAmount: 100).toJson());
+    final diary = _diary(firestore, 'user-1');
+    final store = FirestoreInventoryCalorieEntryCommitStore(
+      firestore: firestore,
+      diary: diary,
+      householdCipher: _household('household-1'),
+      actor: _actor,
+    );
+
+    await store.commitEntryAndInventoryItems(
+      entry: _entry(),
+      pendingConsumptions: [
+        const PendingInventoryConsumption(
+          id: 'pending-1',
+          itemId: 'inventory-1',
+          amount: 500,
+        ),
+      ],
+    );
+    expect(diary.cachedById('entry-1'), isNull);
+
+    await store.commitEntryAndInventoryItems(
+      entry: _entry(),
+      pendingConsumptions: [
+        const PendingInventoryConsumption(
+          id: 'pending-1',
+          itemId: 'inventory-1',
+          amount: 50,
+        ),
+      ],
+    );
+    expect(diary.cachedById('entry-1')?.userId, 'user-1');
+
+    await store.deleteEntryAndRestoreItems(
+      entry: _entry(),
+      amountsByItemId: {'inventory-1': 50},
+    );
+    expect(diary.cachedById('entry-1'), isNull);
   });
 }
