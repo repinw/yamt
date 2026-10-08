@@ -6,10 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/auth/data/user_data_key_session.dart';
-import 'package:yamt/features/calories/data/calorie_entry_document_codec.dart';
-import 'package:yamt/features/calories/data/calorie_product_image_url.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
@@ -19,9 +18,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 part 'prepared_meal_calorie_entry_commit_store.g.dart';
 
 const _commitStoreLogName = 'PreparedMealCalorieEntryCommitStore';
-const _usersCollection = 'users';
 const _householdsCollection = 'households';
-const _calorieEntriesCollection = 'calorie_entries';
 const _preparedMealsCollection = 'prepared_meals';
 
 /// The prepared meal calorie entry commit store provider.
@@ -30,14 +27,16 @@ PreparedMealCalorieEntryCommitStore? preparedMealCalorieEntryCommitStore(
   Ref ref,
 ) {
   final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null) {
+  final diary = ref.watch(calorieLogRepositoryProvider);
+  if (firestore == null || diary is! FirestoreCalorieLogRepository) {
     return null;
   }
 
   return FirestorePreparedMealCalorieEntryCommitStore(
     firestore: firestore,
-    dataCipher: ref.watch(userDataCipherProvider),
+    diary: diary,
     householdCipher: ref.watch(householdCipherProvider),
+    now: ref.watch(clockProvider),
   );
 }
 
@@ -59,21 +58,22 @@ class FirestorePreparedMealCalorieEntryCommitStore
   /// The firestore prepared meal calorie entry commit store.
   const new({
     required this._firestore,
-    required this._dataCipher,
+    required this._diary,
     required this._householdCipher,
+    this._now = DateTime.now,
   });
 
   final FirebaseFirestore _firestore;
-  final UserDataCipher? _dataCipher;
+  final FirestoreCalorieLogRepository _diary;
   final HouseholdCipher? _householdCipher;
+  final DateTime Function() _now;
 
   @override
   Future<bool> commitEntryAndPreparedMeal({required CalorieEntry entry}) async {
-    final dataCipher = _dataCipher;
     final household = _householdCipher;
     final preparedMealId = entry.bundleSourcePreparedMealId?.trim();
     final consumedPortions = entry.bundleConsumedPortions ?? 0;
-    if (dataCipher == null ||
+    if (_diary.dataCipher == null ||
         household == null ||
         preparedMealId == null ||
         preparedMealId.isEmpty) {
@@ -119,31 +119,24 @@ class FirestorePreparedMealCalorieEntryCommitStore
         return false;
       }
 
-      final normalizedEntry = entry.copyWith(
-        userId: dataCipher.uid,
-        imageUrl: normalizeCalorieProductImageUrl(entry.imageUrl),
-      );
+      // The entry and the meal share one write time. The entry is staged
+      // last, so the diary cache changes only when the batch is committed.
+      final writtenAt = _now();
       final nextMeal = currentMeal.withPortionsTaken(
         consumedPortions,
-        normalizedEntry.updatedAt,
-      );
-
-      final entryRef = _calorieEntriesCollectionRef(dataCipher.uid)
-          .doc(normalizedEntry.id);
-      final entryDocument = await encodeCalorieEntryDocument(
-        normalizedEntry,
-        reference: entryRef,
-        cipher: dataCipher.cipher,
+        writtenAt,
       );
       // The meal is encrypted as a whole, so the batch writes the full
       // document instead of updating single fields.
-      final mealDocument = await mealCollection.seal(mealRef.id, {
-        ...storedMeal,
-        ..._portionFields(nextMeal),
-      });
       final batch = _firestore.batch()
-        ..set(entryRef, entryDocument)
-        ..set(mealRef, mealDocument);
+        ..set(
+          mealRef,
+          await mealCollection.seal(mealRef.id, {
+            ...storedMeal,
+            ..._portionFields(nextMeal),
+          }),
+        );
+      await _diary.stage(batch, entry, updatedAt: writtenAt);
       commitBatchInBackground(
         batch,
         failureMessage:
@@ -169,11 +162,10 @@ class FirestorePreparedMealCalorieEntryCommitStore
     const failed = CalorieEntryDeleteResult.failure(
       CalorieEntryDeleteFailureReason.restoreFailed,
     );
-    final dataCipher = _dataCipher;
     final household = _householdCipher;
     final mealId = entry.bundleSourcePreparedMealId?.trim();
     final portions = entry.bundleConsumedPortions ?? 0;
-    if (dataCipher == null ||
+    if (_diary.dataCipher == null ||
         household == null ||
         mealId == null ||
         mealId.isEmpty ||
@@ -206,13 +198,10 @@ class FirestorePreparedMealCalorieEntryCommitStore
       }
       final mealDocument = await mealCollection.seal(mealRef.id, {
         ...stored.storedMeal,
-        ..._portionFields(
-          stored.meal.withPortionsTaken(-portions, DateTime.now()),
-        ),
+        ..._portionFields(stored.meal.withPortionsTaken(-portions, _now())),
       });
-      final batch = _firestore.batch()
-        ..delete(_calorieEntriesCollectionRef(dataCipher.uid).doc(entry.id))
-        ..set(mealRef, mealDocument);
+      final batch = _firestore.batch()..set(mealRef, mealDocument);
+      _diary.stageDelete(batch, entry.id);
       commitBatchInBackground(
         batch,
         failureMessage: 'Server rejected deleting entry ${entry.id}.',
@@ -245,15 +234,6 @@ class FirestorePreparedMealCalorieEntryCommitStore
       Map<String, dynamic>.from(storedMeal)..['id'] = snapshot.id,
     );
     return (storedMeal: storedMeal, meal: meal);
-  }
-
-  CollectionReference<Map<String, dynamic>> _calorieEntriesCollectionRef(
-    String userId,
-  ) {
-    return _firestore
-        .collection(_usersCollection)
-        .doc(userId)
-        .collection(_calorieEntriesCollection);
   }
 
   SealedCollection _preparedMealCollection(HouseholdCipher household) {

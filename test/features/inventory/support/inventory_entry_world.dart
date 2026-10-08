@@ -112,7 +112,7 @@ class InventoryEntryWorld {
       itemStore: itemStore,
       mealStore: FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: dataCipher,
+        diary: diary,
         householdCipher: household,
       ),
       items: items,
