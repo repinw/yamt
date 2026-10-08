@@ -61,6 +61,7 @@ import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';

@@ -15,6 +15,7 @@ import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
 import '../../../calories/support/fake_calories_repositories.dart';

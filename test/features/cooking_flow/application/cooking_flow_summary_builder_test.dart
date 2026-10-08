@@ -8,6 +8,7 @@ import 'package:yamt/features/cooking_flow/application/'
 import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 void main() {
   group('parseCookingFlowIngredient', () {

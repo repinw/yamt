@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 void main() {
   test('filters selectable inventory items and greys out open meals', () async {

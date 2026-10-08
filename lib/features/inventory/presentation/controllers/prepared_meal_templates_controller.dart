@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_recipe_importer.dart'
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 part 'prepared_meal_templates_controller.g.dart';
 

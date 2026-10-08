@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 void main() {
   test('fromJson throws for an invalid discarded_at value', () {

@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'

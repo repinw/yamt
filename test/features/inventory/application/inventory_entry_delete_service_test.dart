@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dar
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 import '../support/inventory_entry_world.dart';
 

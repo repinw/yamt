@@ -33,6 +33,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';

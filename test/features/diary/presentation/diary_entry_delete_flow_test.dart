@@ -26,6 +26,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';

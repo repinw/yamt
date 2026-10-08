@@ -6,6 +6,7 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/graphit_stock_bar.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/models/'

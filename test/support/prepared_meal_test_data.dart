@@ -1,5 +1,6 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 PreparedMeal preparedMealTestData({
   String id = 'meal-1',

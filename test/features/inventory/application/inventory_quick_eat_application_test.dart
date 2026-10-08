@@ -11,6 +11,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';

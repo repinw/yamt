@@ -14,6 +14,7 @@ import 'package:yamt/features/inventory/application/'
     'ingredient_inventory_matcher.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 

@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/application/prepared_meal_mutation_servi
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
 void main() {

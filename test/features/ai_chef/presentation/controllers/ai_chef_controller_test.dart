@@ -7,6 +7,7 @@ import 'package:yamt/features/ai_chef/data/'
 import 'package:yamt/features/ai_chef/presentation/controllers/'
     'ai_chef_controller.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 class _RecordingAiChefRepository extends FirebaseAiChefRepository {
   new({this.recipe});

@@ -9,6 +9,7 @@ import 'package:yamt/features/cooking_flow/presentation/controllers/'
     'cooking_flow_intro_inventory_controller.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 void main() {
   test('sync parses localized piece ingredient rows', () {

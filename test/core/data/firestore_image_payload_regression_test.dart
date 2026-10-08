@@ -3,6 +3,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_product_snapshot.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 void main() {
   test('prepared meal json keeps only image references', () {

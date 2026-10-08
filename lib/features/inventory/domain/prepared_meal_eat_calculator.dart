@@ -1,5 +1,6 @@
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 const _defaultPortions = 1.0;
 const _wholeNumberTolerance = 0.000001;

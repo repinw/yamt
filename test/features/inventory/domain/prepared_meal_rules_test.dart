@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
 PreparedMeal _meal({

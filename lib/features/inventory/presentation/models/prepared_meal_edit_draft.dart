@@ -7,7 +7,7 @@ import 'package:yamt/features/inventory/application/prepared_meal_mutation_model
 import 'package:yamt/features/inventory/domain/eat_meal_nutrition.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 /// What the meal editor saves: the name, a changed picture, the portions
 /// and the amount of each ingredient.

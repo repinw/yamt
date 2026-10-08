@@ -10,6 +10,7 @@ import 'package:yamt/features/ai_chef/presentation/widgets/'
     'ai_chef_dialog/ai_chef_dialog.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
