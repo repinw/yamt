@@ -120,7 +120,7 @@ final class CalorieWeekOverviewForWindowProvider
 }
 
 String _$calorieWeekOverviewForWindowHash() =>
-    r'68190e7f9480044a006080c54403a537f8aec7ae';
+    r'0e5aa7a51e2a4866a45975282dfb79000a897a5b';
 
 /// Calorie week overview for window.
 
