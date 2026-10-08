@@ -5,7 +5,6 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
-import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
@@ -34,6 +33,5 @@ List<Override> quickEntryOverrides(
     ),
     firebaseAuthProvider.overrideWithValue(auth),
     clockProvider.overrideWithValue(() => quickEntryNow),
-    diaryCalendarNowProvider.overrideWithValue(() => quickEntryNow),
   ];
 }

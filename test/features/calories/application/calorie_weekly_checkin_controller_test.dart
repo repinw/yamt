@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/calories/application/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
@@ -463,7 +462,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-        calorieBalanceNowProvider.overrideWithValue(() => today),
+        clockProvider.overrideWithValue(() => today),
       ],
     );
     addTearDown(container.dispose);
@@ -521,7 +520,7 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
-        calorieBalanceNowProvider.overrideWithValue(() => today),
+        clockProvider.overrideWithValue(() => today),
       ],
     );
     addTearDown(container.dispose);

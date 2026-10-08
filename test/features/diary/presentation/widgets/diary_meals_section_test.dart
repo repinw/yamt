@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -1031,7 +1032,7 @@ Future<void> _pumpMealsSection(
     tester,
     DiaryMealsSection(selectedDay: selectedDay),
     overrides: [
-      if (now != null) diaryCalendarNowProvider.overrideWithValue(() => now),
+      if (now != null) clockProvider.overrideWithValue(() => now),
       diaryDayDashboardControllerProvider(selectedDay).overrideWithValue(
         diaryDashboardLoadedStateForTest(
           selectedDay: selectedDay,

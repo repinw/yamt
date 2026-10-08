@@ -193,9 +193,9 @@ final List<ArchitectureRule> architectureRules = [
   _lineRule(
     id: 'clock',
     rule:
-        '§1 Layers: no DateTime.now() in domain, application, or '
-        'controllers. Read clockProvider.',
-    pattern: RegExp(r'DateTime\.now\(\)'),
+        '§1 Layers: no DateTime.now, called or torn off, in domain, '
+        'application, or controllers. Read clockProvider.',
+    pattern: RegExp(r'DateTime\.now\b'),
     appliesTo: _isClockRestricted,
   ),
   _lineRule(

@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
@@ -40,7 +41,7 @@ void main() {
   }) async {
     final container = ProviderContainer(
       overrides: [
-        diaryCalendarNowProvider.overrideWithValue(() => today),
+        clockProvider.overrideWithValue(() => today),
         appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
         calorieSettingsRepositoryProvider.overrideWithValue(
           FakeCalorieSettingsRepository(initialSettings: settings),

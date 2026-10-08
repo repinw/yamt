@@ -7,7 +7,6 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/calories/application/calorie_balance_now_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -71,10 +70,6 @@ List<Override> _overrides(
 ) => [
   appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
   clockProvider.overrideWithValue(() => _now),
-  calorieBalanceNowProvider.overrideWith(
-    (ref) =>
-        () => _now,
-  ),
   calorieSettingsRepositoryProvider.overrideWithValue(settings),
   calorieLogRepositoryProvider.overrideWithValue(log),
   plannedEntryRepositoryProvider.overrideWithValue(

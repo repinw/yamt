@@ -2,7 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/features/calories/application/calorie_balance_now_provider.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/'
@@ -51,7 +51,7 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
   ref.watch(calorieOverviewRevisionProvider);
 
   final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
-  final balanceNow = ref.watch(calorieBalanceNowProvider);
+  final clock = ref.watch(clockProvider);
   final manualEntriesFuture = ref.watch(
     manualHealthWeightEntriesControllerProvider.future,
   );
@@ -65,7 +65,7 @@ Future<CalorieWeeklyCheckInData> buildCalorieWeeklyCheckInData(
   if (!ref.mounted) {
     throw StateError('Calorie weekly check-in disposed.');
   }
-  final today = normalizeDiaryDay(balanceNow());
+  final today = normalizeDiaryDay(clock());
   final pendingWeeklyCheckIn = previewLatestWindow
       ? resolveLatestCompletedCalorieWeeklyCheckIn(
           settings: settings,
