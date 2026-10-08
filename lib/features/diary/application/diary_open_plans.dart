@@ -1,6 +1,6 @@
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
-import 'package:yamt/features/diary/domain/diary_plan_day.dart';
 
 /// The plans of today, or of a tomorrow whose day before is closed: they do
 /// not count on their own, so the head offers to count them ("Nach Plan").
@@ -31,14 +31,15 @@ class DiaryOpenPlans {
     );
     if (plans.isEmpty ||
         data.countsPlans ||
-        day.isBefore(normalizeDiaryDay(today)) ||
         isPauseDay ||
-        diaryDayIsPlanned(
+        switch (DiaryDayStatus.of(
           day: day,
           today: today,
           isPreviousDayClosed: overview.isPreviousDayClosed,
-          previousDayCarryoverKcal: overview.previousDayCarryoverKcal,
         )) {
+          DiaryDayStatus.past || DiaryDayStatus.planned => true,
+          DiaryDayStatus.today || DiaryDayStatus.afterClosedDay => false,
+        }) {
       return null;
     }
     var kcal = 0.0;

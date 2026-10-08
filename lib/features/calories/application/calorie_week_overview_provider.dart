@@ -17,6 +17,7 @@ import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
 part 'calorie_week_overview_provider.g.dart';
@@ -177,7 +178,11 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     // Any other future day gets no carryover: the days before it are not
     // finished yet, so a carryover from them would be made up.
     final carryoverBeforeTodayKcal =
-        isBeforeDay(realToday, today) && !isPreviousDayClosed
+        DiaryDayStatus.of(
+          day: today,
+          today: realToday,
+          isPreviousDayClosed: isPreviousDayClosed,
+        ).isPlanned
         ? 0.0
         : distributedCarryoverKcal;
     final todayFlexibleGoalKcal =

@@ -1,7 +1,7 @@
 import 'package:yamt/features/calories/application/burn_week_live_window_logic.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -137,11 +137,11 @@ DiaryDailyBudgetDetailsData? _resolveBudgetDetails(
   DiaryBalanceLoadedState state,
   DiaryDailyBalanceMetrics daily,
 ) =>
-    isDiaryFutureDay(
-          day: context.selectedDayOverview.date,
-          today: context.now,
-        ) &&
-        !context.weekOverview.isPreviousDayClosed
+    DiaryDayStatus.of(
+      day: context.selectedDayOverview.date,
+      today: context.now,
+      isPreviousDayClosed: context.weekOverview.isPreviousDayClosed,
+    ).isPlanned
     ? null
     : DiaryDailyBudgetDetailsData.from(
         weekOverview: context.weekOverview,

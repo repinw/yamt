@@ -12,7 +12,7 @@ import 'package:yamt/features/calories/application/calorie_overview_revision_pro
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 
@@ -83,7 +83,7 @@ class DiaryQuickEntryState {
   bool get canSave => kcal != null && !isSaving;
 
   /// Whether the entry is saved as a plan: its day lies after [today].
-  bool get isPlan => isDiaryFutureDay(day: loggedAt, today: today);
+  bool get isPlan => DiaryDayStatus.of(day: loggedAt, today: today).isFuture;
 
   /// Copies the state with the given changes.
   DiaryQuickEntryState copyWith({
