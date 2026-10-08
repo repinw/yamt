@@ -16,7 +16,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/data/'
-    'inventory_calorie_entry_commit_store.dart';
+    'firestore_inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';

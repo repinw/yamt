@@ -11,7 +11,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/data/'
-    'inventory_calorie_entry_commit_store.dart';
+    'firestore_inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
