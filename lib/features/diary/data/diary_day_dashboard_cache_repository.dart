@@ -9,7 +9,8 @@ import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 part 'diary_day_dashboard_cache_repository.g.dart';
 
 const _cacheLogName = 'DiaryDayDashboardCacheRepository';
-const _cacheVersion = 4;
+const _cacheVersion = 5;
+const _keyPrefix = 'diary_day_dashboard_v';
 
 /// Stores last good diary dashboard snapshots for instant startup.
 class DiaryDayDashboardCacheRepository {
@@ -58,12 +59,12 @@ class DiaryDayDashboardCacheRepository {
     }
   }
 
-  /// Saves cached data.
+  /// Saves [data] and removes the entries of older cache versions.
   Future<bool> save({
     required AppPreferences preferences,
     required String userId,
     required DiaryDayDashboardData data,
-  }) {
+  }) async {
     final dayKey = diaryDayKey(data.selectedDay);
     final encoded = jsonEncode(<String, dynamic>{
       'version': _cacheVersion,
@@ -71,11 +72,22 @@ class DiaryDayDashboardCacheRepository {
       'day_key': dayKey,
       'data': data.toJson(),
     });
-    return preferences.setString(_key(userId: userId, dayKey: dayKey), encoded);
+    final saved = await preferences.setString(
+      _key(userId: userId, dayKey: dayKey),
+      encoded,
+    );
+    // Earlier versions used their own keys, which nothing reads anymore.
+    for (final key in await preferences.keys()) {
+      if (key.startsWith(_keyPrefix) &&
+          !key.startsWith('$_keyPrefix$_cacheVersion:')) {
+        await preferences.remove(key);
+      }
+    }
+    return saved;
   }
 
   String _key({required String userId, required String dayKey}) {
-    return 'diary_day_dashboard_v$_cacheVersion:$userId:$dayKey';
+    return '$_keyPrefix$_cacheVersion:$userId:$dayKey';
   }
 }
 

@@ -53,4 +53,7 @@ class MemoryAppPreferences implements AppPreferences {
     _ints.remove(key);
     return true;
   }
+
+  @override
+  Future<Set<String>> keys() async => {..._strings.keys, ..._ints.keys};
 }
