@@ -87,15 +87,23 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
 
   /// Text of a ruler mark.
   String markLabel(AppLocalizations l10n, InventoryItemEatMarker marker) {
-    if (marker.isAll) {
-      return l10n.eatPageAll;
-    }
-    final amount = formatEatenAmount(this, marker.value);
-    final label = marker.label;
-    if (label == null) {
-      return l10n.inventoryEatSheetAmountWithUnit(amount, amountUnit(l10n));
-    }
-    return l10n.eatPageMark(label, amount);
+    final amount = l10n.inventoryEatSheetAmountWithUnit(
+      formatEatenAmount(this, marker.value),
+      amountUnit(l10n),
+    );
+    final label = marker.isAll ? l10n.eatPageAll : _markName(l10n, marker);
+    return label == null ? amount : l10n.eatPageMark(label, amount);
+  }
+
+  String? _markName(AppLocalizations l10n, InventoryItemEatMarker marker) {
+    return marker.label ??
+        switch (marker.kind) {
+          EatMarkKind.amount => null,
+          EatMarkKind.recent => l10n.eatPageRecentMark,
+          EatMarkKind.serving => l10n.eatPageServingMark,
+          EatMarkKind.quarter => l10n.eatPageQuarterMark,
+          EatMarkKind.half => l10n.eatPageHalfMark,
+        };
   }
 
   /// Text of a piece size chip, such as "L 68 g".
@@ -139,11 +147,17 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
     if (amount < 1) {
       return null;
     }
-    for (final marker in markers) {
-      final label = marker.label;
+    // The counted portion, then named portions: the entry is logged as one
+    // of them.
+    for (final marker in [
+      ?countedPortion,
+      ...markers.where((marker) => marker.label != null),
+      ...markers.where((marker) => marker.label == null),
+    ]) {
+      final label = _markName(l10n, marker);
       final count = (amount / marker.value).round();
       if (label != null &&
-          !marker.isAll &&
+          marker.counts &&
           (amount - count * marker.value).abs() < 0.001) {
         return l10n.eatPagePortionMultiple('$count', label);
       }

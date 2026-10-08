@@ -14,6 +14,8 @@ class ServingSuggestionResolution {
     required this.inventoryDefaultAmount,
     required this.manualDefaultSuggestion,
     required this.portionDefaultSuggestion,
+    this.recentSuggestion,
+    this.productServing,
   });
 
   /// Inventory amount quick options.
@@ -33,6 +35,12 @@ class ServingSuggestionResolution {
 
   /// The default portion suggestion.
   final PortionSuggestion? portionDefaultSuggestion;
+
+  /// What the user ate of this food last time, if it fits the item.
+  final PortionSuggestion? recentSuggestion;
+
+  /// The serving the product data names, if it fits the item.
+  final PortionSuggestion? productServing;
 }
 
 /// Inventory amount quick option.
@@ -103,12 +111,34 @@ class ServingSuggestionResolver {
       learned: learned,
       maxAmount: maxAmount,
     );
-    final portionSuggestions = _portionServingSuggestions(
-      item: item,
-      learned: learned,
-    );
+    final personal = learned.personalSuggestion;
+    final recent =
+        personal != null && _canUsePortionSuggestionForItem(item, personal.unit)
+        ? _learnedSuggestion(personal)
+        : null;
+    final serving = _productServing(item);
+    final productServing =
+        serving != null && _canUsePortionSuggestionForItem(item, serving.unit)
+        ? serving
+        : null;
+    final portionSuggestions = <PortionSuggestion>[];
+    final seenKeys = <String>{};
+    for (final suggestion in [
+      ?recent,
+      for (final global in learned.globalSuggestions)
+        if (_canUsePortionSuggestionForItem(item, global.unit))
+          _learnedSuggestion(global),
+      ?productServing,
+    ]) {
+      if (seenKeys.add(
+        _manualSuggestionKey(amount: suggestion.amount, unit: suggestion.unit),
+      )) {
+        portionSuggestions.add(suggestion);
+      }
+    }
+    final firstSuggestions = portionSuggestions.take(5).toList(growable: false);
     final manualServingSuggestions = requiresManualPortion
-        ? portionSuggestions
+        ? firstSuggestions
         : const <PortionSuggestion>[];
 
     final inventoryDefault = _resolveInventoryDefault(
@@ -125,10 +155,12 @@ class ServingSuggestionResolver {
     return ServingSuggestionResolution(
       inventoryServingOptions: inventoryServingSuggestions,
       manualServingSuggestions: manualServingSuggestions,
-      portionSuggestions: portionSuggestions,
+      portionSuggestions: firstSuggestions,
       inventoryDefaultAmount: inventoryDefault,
       manualDefaultSuggestion: manualDefault,
       portionDefaultSuggestion: portionDefault,
+      recentSuggestion: recent,
+      productServing: productServing,
     );
   }
 
@@ -163,9 +195,22 @@ class ServingSuggestionResolver {
       return null;
     }
     final suggestion = learned.defaultSuggestion;
-    if (suggestion == null) {
-      return null;
+    return suggestion == null ? null : _learnedSuggestion(suggestion);
+  }
+
+  PortionSuggestion? _resolvePortionDefault({
+    required InventoryItem item,
+    required GlobalFoodServingSuggestionSet learned,
+  }) {
+    final learnedSuggestion = learned.defaultSuggestion;
+    if (learnedSuggestion != null &&
+        _canUsePortionSuggestionForItem(item, learnedSuggestion.unit)) {
+      return _learnedSuggestion(learnedSuggestion);
     }
+    return _productServing(item);
+  }
+
+  PortionSuggestion _learnedSuggestion(ServingSizeSuggestion suggestion) {
     return PortionSuggestion(
       label: _formatLearnedServingLabel(
         amount: suggestion.amount,
@@ -178,25 +223,7 @@ class ServingSuggestionResolver {
     );
   }
 
-  PortionSuggestion? _resolvePortionDefault({
-    required InventoryItem item,
-    required GlobalFoodServingSuggestionSet learned,
-  }) {
-    final learnedSuggestion = learned.defaultSuggestion;
-    if (learnedSuggestion != null &&
-        _canUsePortionSuggestionForItem(item, learnedSuggestion.unit)) {
-      return PortionSuggestion(
-        label: _formatLearnedServingLabel(
-          amount: learnedSuggestion.amount,
-          unit: learnedSuggestion.unit,
-          portionLabel: learnedSuggestion.label,
-        ),
-        amount: learnedSuggestion.amount,
-        unit: learnedSuggestion.unit,
-        portionLabel: learnedSuggestion.label,
-      );
-    }
-
+  PortionSuggestion? _productServing(InventoryItem item) {
     final structured = _resolvedServingSuggestion(item);
     if (structured == null) {
       return null;
@@ -255,86 +282,6 @@ class ServingSuggestionResolver {
     }
 
     return options;
-  }
-
-  List<PortionSuggestion> _portionServingSuggestions({
-    required InventoryItem item,
-    required GlobalFoodServingSuggestionSet learned,
-  }) {
-    final suggestions = <PortionSuggestion>[];
-    final seenKeys = <String>{};
-
-    final personal = learned.personalSuggestion;
-    if (personal != null &&
-        _canUsePortionSuggestionForItem(item, personal.unit)) {
-      final key = _manualSuggestionKey(
-        amount: personal.amount,
-        unit: personal.unit,
-      );
-      if (seenKeys.add(key)) {
-        suggestions.add(
-          PortionSuggestion(
-            label: _formatLearnedServingLabel(
-              amount: personal.amount,
-              unit: personal.unit,
-              portionLabel: personal.label,
-            ),
-            amount: personal.amount,
-            unit: personal.unit,
-            portionLabel: personal.label,
-          ),
-        );
-      }
-    }
-
-    for (final suggestion in learned.globalSuggestions) {
-      if (!_canUsePortionSuggestionForItem(item, suggestion.unit)) {
-        continue;
-      }
-      final key = _manualSuggestionKey(
-        amount: suggestion.amount,
-        unit: suggestion.unit,
-      );
-      if (!seenKeys.add(key)) {
-        continue;
-      }
-      suggestions.add(
-        PortionSuggestion(
-          label: _formatLearnedServingLabel(
-            amount: suggestion.amount,
-            unit: suggestion.unit,
-            portionLabel: suggestion.label,
-          ),
-          amount: suggestion.amount,
-          unit: suggestion.unit,
-          portionLabel: suggestion.label,
-        ),
-      );
-    }
-
-    final structured = _resolvedServingSuggestion(item);
-    if (structured != null) {
-      final consumedUnit = _consumedUnitForInventoryUnit(structured.unit);
-      if (consumedUnit != null &&
-          _canUsePortionSuggestionForItem(item, consumedUnit)) {
-        final key = _manualSuggestionKey(
-          amount: structured.amount,
-          unit: consumedUnit,
-        );
-        if (seenKeys.add(key)) {
-          suggestions.add(
-            PortionSuggestion(
-              label: structured.label,
-              amount: structured.amount,
-              unit: consumedUnit,
-              portionLabel: structured.portionLabel,
-            ),
-          );
-        }
-      }
-    }
-
-    return suggestions.take(5).toList(growable: false);
   }
 
   List<_InventoryServingCandidate> _buildLearnedInventoryServingSuggestions({

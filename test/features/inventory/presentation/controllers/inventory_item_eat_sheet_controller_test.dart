@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
@@ -12,11 +13,16 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_item_eat_sheet_options.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_submission.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_item_eat_sheet_result.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_sheet_l10n.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 final _now = DateTime(2026, 5, 13, 12, 30);
 
@@ -539,6 +545,138 @@ void main() {
 
     expect(container.read(provider).inventoryAmountText, '135');
   });
+
+  test(
+    'the chips go last time, product serving, portions, fractions',
+    () async {
+      final repository = _FakeSuggestionRepository()
+        ..suggestions = GlobalFoodServingSuggestionSet(
+          personalSuggestion: const ServingSizeSuggestion(
+            amount: 80,
+            unit: ConsumedUnit.grams,
+          ),
+          globalSuggestions: [_globalSuggestion(40, 'Slice')],
+        );
+      final item = _gramItem().copyWith(
+        weight: '1000 g',
+        servingSize: '25 g',
+        servingQuantity: 25,
+        servingQuantityUnit: 'g',
+      );
+      final (:container, :provider) = _setUp(item, repository: repository);
+      await pumpEventQueue();
+
+      final markers = container.read(provider).markers;
+      expect(
+        [
+          for (final marker in markers)
+            (marker.value, marker.label, marker.kind),
+        ],
+        [
+          (80.0, null, EatMarkKind.recent),
+          (25.0, null, EatMarkKind.serving),
+          (40.0, 'Slice', EatMarkKind.amount),
+          (250.0, null, EatMarkKind.quarter),
+          (500.0, null, EatMarkKind.half),
+          (1000.0, null, EatMarkKind.amount),
+        ],
+      );
+      expect(markers.last.isAll, isTrue);
+
+      final controller = container.read(provider.notifier)
+        ..pickMarker(markers[1]);
+      expect(container.read(provider).countedPortion, isNull);
+      controller.pickMarker(markers[2]);
+      expect(container.read(provider).portionCount, 1);
+      controller.pickMarker(markers[4]);
+      expect(container.read(provider).inventoryAmountText, '500');
+      expect(container.read(provider).countedPortion, isNull);
+    },
+  );
+
+  test('a named portion keeps its name over the same unnamed amount', () async {
+    final repository = _FakeSuggestionRepository()
+      ..suggestions = const GlobalFoodServingSuggestionSet(
+        personalSuggestion: ServingSizeSuggestion(
+          amount: 40,
+          unit: ConsumedUnit.grams,
+        ),
+      );
+    final (:container, :provider) = _setUp(_gramItem(), repository: repository);
+    await pumpEventQueue();
+    container.read(provider.notifier).rememberPortion('Slice');
+
+    final markers = container.read(provider).markers;
+    expect(markers.first.label, 'Slice');
+    expect(markers.where((marker) => marker.value == 40), hasLength(1));
+  });
+
+  test('the hint names the portion the entry is logged as', () async {
+    final repository = _FakeSuggestionRepository()
+      ..suggestions = GlobalFoodServingSuggestionSet(
+        personalSuggestion: const ServingSizeSuggestion(
+          amount: 80,
+          unit: ConsumedUnit.grams,
+        ),
+        globalSuggestions: [_globalSuggestion(40, 'Slice')],
+      );
+    final (:container, :provider) = _setUp(_gramItem(), repository: repository);
+    await pumpEventQueue();
+    final controller = container.read(provider.notifier)..setAmountText('80');
+
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    expect(container.read(provider).amountHint(l10n), '= 2 × Slice');
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.portionLabel, 'Slice');
+    expect(request.portionCount, 2);
+  });
+
+  test('a picked larger portion is logged over a smaller one', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('40')
+      ..rememberPortion('Slice')
+      ..setAmountText('80')
+      ..rememberPortion('Large');
+    final large = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Large');
+    controller.pickMarker(large);
+
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    expect(container.read(provider).amountHint(l10n), '= 1 × Large');
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.portionLabel, 'Large');
+    expect(request.portionCount, 1);
+  });
+
+  test(
+    'a named product serving is hinted and logged before a smaller portion',
+    () async {
+      final repository = _FakeSuggestionRepository()
+        ..suggestions = GlobalFoodServingSuggestionSet(
+          globalSuggestions: [_globalSuggestion(40, 'Slice')],
+        );
+      final item = _gramItem().copyWith(
+        servingSize: '1 Stück (80 g)',
+        servingQuantity: 80,
+        servingQuantityUnit: 'g',
+      );
+      final (:container, :provider) = _setUp(item, repository: repository);
+      await pumpEventQueue();
+      final controller = container.read(provider.notifier)..setAmountText('80');
+
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      expect(container.read(provider).amountHint(l10n), '= 1 × Stück');
+      final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+      final request = (outcome as InventoryItemEatSubmitted).result.request;
+      expect(request.portionLabel, 'Stück');
+      expect(request.portionCount, 1);
+    },
+  );
 
   test('logs a picked day at the current time of day', () {
     final (:container, :provider) = _setUp(_gramItem());

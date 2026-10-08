@@ -60,7 +60,8 @@ class EatRuler extends StatelessWidget {
   /// Step the slider snaps to.
   final double step;
 
-  /// Marks under the ruler, shown from the smallest value up.
+  /// Marks under the ruler, shown in this order in a row that scrolls
+  /// sideways.
   final List<EatRulerMark> marks;
 
   /// Called with the snapped value when the slider moves.
@@ -69,7 +70,6 @@ class EatRuler extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
-    final sorted = [...marks]..sort((a, b) => a.value.compareTo(b.value));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -87,7 +87,7 @@ class EatRuler extends StatelessWidget {
                   markColor: colors.ink,
                   markFractions: [
                     if (max > 0)
-                      for (final mark in sorted) mark.value / max,
+                      for (final mark in marks) mark.value / max,
                   ],
                 ),
               ),
@@ -116,17 +116,20 @@ class EatRuler extends StatelessWidget {
         ),
         // The marks sit in a row under the ruler, so long portion names
         // never overlap. A notch on the ruler shows where each one lies.
-        Wrap(
-          spacing: AppSpacing.sm,
-          children: [
-            for (final mark in sorted)
-              EatChip(
-                label: mark.label,
-                isSelected: mark.isSelected,
-                isAccent: mark.isAccent,
-                onPressed: mark.onPressed,
-              ),
-          ],
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            spacing: AppSpacing.sm,
+            children: [
+              for (final mark in marks)
+                EatChip(
+                  label: mark.label,
+                  isSelected: mark.isSelected,
+                  isAccent: mark.isAccent,
+                  onPressed: mark.onPressed,
+                ),
+            ],
+          ),
         ),
       ],
     );

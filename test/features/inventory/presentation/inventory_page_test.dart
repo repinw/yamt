@@ -1074,7 +1074,7 @@ void main() {
 
     expect(find.text('Nutrition'), findsOneWidget);
     expect(find.text('Milk'), findsWidgets);
-    expect(find.text('All'), findsOneWidget);
+    expect(find.textContaining(RegExp('^All ')), findsOneWidget);
 
     final amountField = find.byKey(const Key('eat_page_amount_field'));
     expect(amountField, findsOneWidget);
@@ -1543,7 +1543,7 @@ void main() {
 
     await _scrollUntilVisible(tester, _stockLabel('1000 g'));
     await _openItemHub(tester);
-    await _tapVisible(tester, find.text('All'));
+    await _tapVisible(tester, find.textContaining(RegExp('^All ')));
 
     await _tapAmountDialogConfirm(tester);
 

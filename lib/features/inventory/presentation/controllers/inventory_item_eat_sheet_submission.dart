@@ -66,7 +66,7 @@ InventoryItemEatSheetState applyInventoryItemEatDraftErrors(
 ///
 /// Outside portion mode, an amount that is a whole multiple of one of
 /// [namedPortions] is logged as that many portions, so the portion name is
-/// learned with the food.
+/// learned with the food. The counted portion comes first, as in the hint.
 InventoryItemEatRequest buildInventoryItemEatRequest(
   InventoryItemEatSheetState state,
   InventoryItemEatSubmissionDraft draft, {
@@ -82,7 +82,15 @@ InventoryItemEatRequest buildInventoryItemEatRequest(
     final exactAmount =
         calculator.parseEatenAmount(state.inventoryAmountText) ??
         amount.toDouble();
-    for (final portion in namedPortions) {
+    final counted = state.countedPortion;
+    bool isCounted(InventoryItemEatPortion portion) =>
+        counted != null &&
+        counted.label == portion.label &&
+        counted.value == calculator.roundEatenAmount(portion.amount);
+    for (final portion in [
+      ...namedPortions.where(isCounted),
+      ...namedPortions.where((portion) => !isCounted(portion)),
+    ]) {
       final count = exactAmount / portion.amount;
       if (count >= 1 && calculator.isWholeNumber(count)) {
         return InventoryItemEatRequest(
