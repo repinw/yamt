@@ -358,7 +358,7 @@ class _DiaryWeeklyCheckInSectionState
     DiaryWeeklyCheckInData checkInData,
     DiaryWeightTrackingFlow weightTrackingFlow,
   ) {
-    final day = _firstMissingWeightDay(checkInData);
+    final day = checkInData.missingWeightDays.firstOrNull;
     if (day == null) {
       return;
     }
@@ -373,12 +373,6 @@ class _DiaryWeeklyCheckInSectionState
         initialWeightKg: windowDay?.weightKg,
       ),
     );
-  }
-
-  DateTime? _firstMissingWeightDay(DiaryWeeklyCheckInData checkInData) {
-    return checkInData.missingWeightDays.isEmpty
-        ? null
-        : checkInData.missingWeightDays.first;
   }
 
   CalorieWeeklyCheckInWindowDay? _windowDayFor(
