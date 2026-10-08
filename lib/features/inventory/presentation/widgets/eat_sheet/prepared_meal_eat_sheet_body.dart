@@ -18,6 +18,7 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_label
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_detail_sections.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_pot_weighing_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
@@ -121,8 +122,10 @@ class _PreparedMealEatSheetBodyState
       kcal: nutrition?.eaten.kcal,
       confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),
       // A meal in the pot can only be planned, a share of the pot.
-      onConfirm: canEat || (canPlan && state.isPlan) ? _submit : null,
-      onPlan: canPlan ? _plan : null,
+      onConfirm: !state.isPotTooLight && (canEat || (canPlan && state.isPlan))
+          ? _submit
+          : null,
+      onPlan: canPlan && !state.isPotTooLight ? _plan : null,
       cancelButtonKey: const Key('prepared_meal_eat_cancel_button'),
       children: [
         EatPageHeader(
@@ -146,6 +149,14 @@ class _PreparedMealEatSheetBodyState
             key: const Key('prepared_meal_nutrition_table'),
             rows: nutritionFactsRows(context, eaten: nutrition.eaten),
             eatenHeader: state.portionsHeader(l10n),
+          ),
+        if (meal.potTareWeight case final tare? when canEat)
+          EatPotWeighingSection(
+            tareWeight: tare,
+            netWeight: state.freshPotNetWeight,
+            isTooLight: state.isPotTooLight,
+            showsReminder: state.calculator.needsPotWeighing(state.today),
+            onChanged: _controller.setPotGrossText,
           ),
         EatAmountRuler(
           controller: _amount.controller,

@@ -820,6 +820,22 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageStoreIconTooltip => 'In den Vorrat';
 
   @override
+  String get eatPotWeighTitle => 'Topf auf der Waage';
+
+  @override
+  String get eatPotWeighReminder =>
+      'Seit dem letzten Wiegen kann Wasser verdunstet sein. Wieg den Topf nochmal, dann stimmt es für alle.';
+
+  @override
+  String eatPotNetWeight(int tare, int net) {
+    return '− leerer Topf $tare g = $net g im Topf';
+  }
+
+  @override
+  String get eatPotTakeOutHint =>
+      'Dann Tara drücken und die genommenen Gramm eintragen.';
+
+  @override
   String get eatPagePotUnit => 'Topf';
 
   @override

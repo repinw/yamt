@@ -6,6 +6,7 @@ import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_json.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 
 part 'prepared_meal.g.dart';
 
@@ -89,6 +90,7 @@ class PreparedMeal {
     this.inPot,
     this.potTareWeight,
     this.servedInPieces,
+    this.potWeighing,
   });
 
   /// Creates a [PreparedMeal] for from json.
@@ -157,6 +159,11 @@ class PreparedMeal {
   /// absent on meals served in portions.
   @JsonKey(includeIfNull: false)
   final bool? servedInPieces;
+
+  /// The last weighing of the pot while eating from it, shared with the
+  /// household.
+  @JsonKey(includeIfNull: false)
+  final PreparedMealPotWeighing? potWeighing;
 
   /// Whether the meal is still cooking.
   bool get isInPot => inPot ?? false;
@@ -236,6 +243,7 @@ class PreparedMeal {
     Object? inPot = _keepValue,
     Object? potTareWeight = _keepValue,
     Object? servedInPieces = _keepValue,
+    Object? potWeighing = _keepValue,
     int? totalPortions,
     num? remainingPortions,
     double? totalKcal,
@@ -277,6 +285,9 @@ class PreparedMeal {
       servedInPieces: servedInPieces == _keepValue
           ? this.servedInPieces
           : servedInPieces as bool?,
+      potWeighing: potWeighing == _keepValue
+          ? this.potWeighing
+          : potWeighing as PreparedMealPotWeighing?,
       totalPortions: totalPortions ?? this.totalPortions,
       remainingPortions: remainingPortions ?? this.remainingPortions,
       totalKcal: totalKcal ?? this.totalKcal,
@@ -389,6 +400,7 @@ class PreparedMeal {
             other.inPot == inPot &&
             other.potTareWeight == potTareWeight &&
             other.servedInPieces == servedInPieces &&
+            other.potWeighing == potWeighing &&
             other.remainingNetWeight == remainingNetWeight &&
             other.totalPortions == totalPortions &&
             other.remainingPortions == remainingPortions &&
@@ -422,6 +434,7 @@ class PreparedMeal {
       inPot,
       potTareWeight,
       servedInPieces,
+      potWeighing,
       remainingNetWeight,
       totalPortions,
       remainingPortions,

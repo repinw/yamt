@@ -55,6 +55,10 @@ PreparedMealBuildResult buildPreparedMealEditResult({
           : currentMeal.imageAssetId,
       totalPortions: totalPortions,
       remainingPortions: nextRemainingPortions,
+      // A weighing counts grams per portion left; new portions void it.
+      potWeighing: totalPortions == currentMeal.totalPortions
+          ? currentMeal.potWeighing
+          : null,
       totalKcal: nutritionTotals.totalKcal,
       totalProtein: nutritionTotals.totalProtein,
       totalCarbs: nutritionTotals.totalCarbs,

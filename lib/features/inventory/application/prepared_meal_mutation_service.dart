@@ -22,6 +22,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 part 'prepared_meal_mutation_service.g.dart';
@@ -209,6 +210,42 @@ class PreparedMealMutationService {
     (inventory) => PreparedMealEditing(writer: _writer)
         .unbundlePreparedMeal(mealId: mealId, inventoryRepository: inventory),
   );
+
+  /// Stores that the pot of the cooked meal [mealId] holds [netWeight] grams
+  /// of food now, for everyone in the household who eats from it next.
+  /// Returns the meal with the weighing. Throws when the meal is gone, was
+  /// not weighed in its pot, or the write fails.
+  Future<PreparedMeal> weighPot({
+    required String mealId,
+    required int netWeight,
+  }) => _queue.enqueue(() async {
+    final meals = await _writer.loadMeals();
+    final index = meals.indexWhere((meal) => meal.id == mealId);
+    if (index < 0) {
+      throw StateError('Meal $mealId is gone.');
+    }
+    final meal = meals[index];
+    if (meal.potTareWeight == null || netWeight < 1) {
+      throw StateError('Meal $mealId was not weighed in its pot.');
+    }
+    final now = _writer.buildNow();
+    final weighed = meal.copyWith(
+      potWeighing: PreparedMealPotWeighing(
+        netWeight: netWeight,
+        weighedAt: now,
+        remainingPortions: meal.remainingPortions,
+      ),
+      updatedAt: now,
+    );
+    final saved = await _writer.saveMeals(
+      previousMeals: meals,
+      nextMeals: [...meals]..[index] = weighed,
+    );
+    if (!saved) {
+      throw StateError('Pot weighing of $mealId could not be saved.');
+    }
+    return weighed;
+  });
 
   Future<PreparedMealCreationResult> _create(
     Future<PreparedMealCreationResult> Function(InventoryItemRepository)

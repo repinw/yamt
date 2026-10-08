@@ -79,6 +79,9 @@ Other features may consume these public Inventory entry points:
   up, the others stay open on the meal. The meal stays in the pot
   (`PreparedMeal.inPot`) until `finishCooking` stores its portions (or pieces,
   `PreparedMeal.servedInPieces`), empty pot weight, and food weight.
+  `PreparedMealMutationService.weighPot` stores a weighing on the eat page
+  (`PreparedMeal.potWeighing`), which `InventoryQuickEatApplication` writes
+  before the eat; `PreparedMealEatCalculator` counts grams from it.
 - `InventoryItemsController`
 - `PreparedMealsController`
 - `PreparedMealTemplatesController`

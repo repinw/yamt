@@ -8,6 +8,7 @@ import 'package:yamt/features/inventory/domain/inventory_prepared_meal_eat_reque
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_portions.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_state.dart';
 
@@ -34,8 +35,8 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
         _follow(next);
       }
     });
-    final current = live.read().value ?? meal;
-    final calculator = PreparedMealEatCalculator(current);
+    _stored = live.read().value ?? meal;
+    final calculator = PreparedMealEatCalculator(_stored);
     return PreparedMealEatSheetState(
       calculator: calculator,
       localeName: localeName,
@@ -48,6 +49,33 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
       today: now,
       mealType: initialMealType ?? MealType.defaultForDateTime(loggedAt),
       hasAmountError: false,
+    );
+  }
+
+  /// The meal as the Vorrat holds it, without a weighing on this page.
+  late PreparedMeal _stored;
+
+  /// Sets the weight of the pot on the scale. A valid weight counts as a
+  /// fresh weighing for the amounts, and the amount switches to grams, the
+  /// unit the cook takes out of the pot in. The entered portions stay, so
+  /// grams typed against a half-typed weight follow the full one.
+  void setPotGrossText(String text) {
+    final portions = state.portionsOrOne;
+    state = state.copyWith(potGrossText: text, hasAmountError: false);
+    final calculator = _calculatorFor(_stored);
+    final grams =
+        state.freshPotNetWeight != null ||
+            state.mode == PreparedMealEatAmountMode.grams
+        ? calculator.portionsToGrams(portions)
+        : null;
+    state = state.copyWith(
+      calculator: calculator,
+      mode: grams == null
+          ? PreparedMealEatAmountMode.portions
+          : PreparedMealEatAmountMode.grams,
+      amountText: grams == null
+          ? _format(portions, PreparedMealEatAmountMode.portions)
+          : _format(grams, PreparedMealEatAmountMode.grams),
     );
   }
 
@@ -110,8 +138,12 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
       state = state.copyWith(hasAmountError: true);
       return null;
     }
+    if (state.isPotTooLight) {
+      return null;
+    }
     return InventoryPreparedMealEatRequest(
-      meal: state.calculator.meal,
+      meal: _stored,
+      potNetWeight: state.freshPotNetWeight,
       portions: portions,
       mealType: state.mealType,
       loggedDay: planDay == null
@@ -122,12 +154,30 @@ class PreparedMealEatSheetController extends _$PreparedMealEatSheetController {
   }
 
   void _follow(PreparedMeal meal) {
-    if (meal == state.calculator.meal) {
+    if (meal == _stored) {
       return;
     }
+    _stored = meal;
     state = state.copyWith(
-      calculator: PreparedMealEatCalculator(meal),
+      calculator: _calculatorFor(meal),
       hasAmountError: false,
+    );
+  }
+
+  /// Amount rules for [meal], with the weighing on this page when there is
+  /// one.
+  PreparedMealEatCalculator _calculatorFor(PreparedMeal meal) {
+    final net = state.freshPotNetWeight;
+    return PreparedMealEatCalculator(
+      net == null
+          ? meal
+          : meal.copyWith(
+              potWeighing: PreparedMealPotWeighing(
+                netWeight: net,
+                weighedAt: ref.read(clockProvider)(),
+                remainingPortions: meal.remainingPortions,
+              ),
+            ),
     );
   }
 

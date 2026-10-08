@@ -17,6 +17,7 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 import '../../../helpers/fake_prepared_meal_repository.dart';
@@ -409,6 +410,51 @@ void main() {
       expect(harness.meals.writeCount, 1);
       expect(harness.meals.meals.single.name, 'Tomato Soup');
       expect(harness.meals.meals.single.imageAssetId, 'hero-new');
+    });
+
+    test('new portions void the last pot weighing', () async {
+      final rice = _measuredItem(
+        id: 'rice',
+        name: 'Rice',
+        currentAmount: 100,
+        initialAmount: 100,
+        initialQuantity: 1,
+      );
+      final harness = _WorkflowHarness(
+        meals: <PreparedMeal>[
+          _meal(
+            id: 'meal-1',
+            name: 'Rice Bowl',
+            totalPortions: 2,
+            remainingPortions: 2,
+            components: <PreparedMealComponent>[
+              _component(item: rice, usedAmount: 100),
+            ],
+          ).copyWith(
+            potTareWeight: 1180,
+            potWeighing: PreparedMealPotWeighing(
+              netWeight: 900,
+              weighedAt: DateTime(2026, 4, 19),
+              remainingPortions: 2,
+            ),
+          ),
+        ],
+      );
+
+      final saved = await harness
+          .mutations(inventory: _FakeInventoryItemRepository())
+          .updatePreparedMealDetails(
+            mealId: 'meal-1',
+            name: 'Rice Bowl',
+            totalPortions: 4,
+            items: const <PreparedMealItemInput>[
+              PreparedMealItemInput(itemId: 'rice', usedAmount: 100),
+            ],
+          );
+
+      expect(saved, isTrue);
+      expect(harness.meals.meals.single.totalPortions, 4);
+      expect(harness.meals.meals.single.potWeighing, isNull);
     });
 
     test(
@@ -924,6 +970,52 @@ void main() {
       expect(inventoryRepository.lastSavedItems.single.currentAmount, 100);
       expect(harness.meals.writeCount, 1);
       expect(harness.meals.meals, isEmpty);
+    });
+
+    test(
+      'weighPot stores the food in the pot with the portions left',
+      () async {
+        final meal = _meal(
+          id: 'soup',
+          name: 'Linsensuppe',
+          totalPortions: 4,
+          remainingPortions: 3,
+          components: const <PreparedMealComponent>[],
+        ).copyWith(potTareWeight: 1180, finalNetWeight: 1400);
+        final harness = _WorkflowHarness(meals: [meal]);
+
+        final weighed = await harness.mutations().weighPot(
+          mealId: 'soup',
+          netWeight: 990,
+        );
+
+        final stored = harness.meals.meals.single;
+        expect(weighed, stored);
+        expect(stored.potWeighing?.netWeight, 990);
+        expect(stored.potWeighing?.remainingPortions, 3);
+        expect(stored.potWeighing?.weighedAt, DateTime(2026, 4, 19));
+        expect(PreparedMeal.fromJson(stored.toJson()), stored);
+      },
+    );
+
+    test('weighPot refuses a meal without an empty pot weight', () async {
+      final harness = _WorkflowHarness(
+        meals: [
+          _meal(
+            id: 'soup',
+            name: 'Linsensuppe',
+            totalPortions: 4,
+            remainingPortions: 3,
+            components: const <PreparedMealComponent>[],
+          ),
+        ],
+      );
+
+      await expectLater(
+        harness.mutations().weighPot(mealId: 'soup', netWeight: 990),
+        throwsStateError,
+      );
+      expect(harness.meals.writeCount, 0);
     });
 
     test('unbundlePreparedMeal returns false when meal is missing', () async {

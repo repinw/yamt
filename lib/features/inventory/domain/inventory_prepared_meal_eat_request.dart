@@ -9,11 +9,16 @@ class InventoryPreparedMealEatRequest {
     required this.portions,
     required this.mealType,
     required this.loggedDay,
+    this.potNetWeight,
     this.isPlan = false,
   });
 
   /// The meal as the page showed it on confirm.
   final PreparedMeal meal;
+
+  /// Grams of food in the pot when the cook weighed it on the page, or null
+  /// without a weighing. [portions] already count from it.
+  final int? potNetWeight;
 
   /// Consumed portions.
   final num portions;

@@ -1420,6 +1420,30 @@ abstract class AppLocalizations {
   /// **'To stock'**
   String get eatPageStoreIconTooltip;
 
+  /// No description provided for @eatPotWeighTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pot on the scale'**
+  String get eatPotWeighTitle;
+
+  /// No description provided for @eatPotWeighReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Water may have evaporated since the last weighing. Weigh the pot again so it is right for everyone.'**
+  String get eatPotWeighReminder;
+
+  /// No description provided for @eatPotNetWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'− empty pot {tare} g = {net} g in the pot'**
+  String eatPotNetWeight(int tare, int net);
+
+  /// No description provided for @eatPotTakeOutHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Then tare the scale and enter the grams you took.'**
+  String get eatPotTakeOutHint;
+
   /// No description provided for @eatPagePotUnit.
   ///
   /// In en, this message translates to:

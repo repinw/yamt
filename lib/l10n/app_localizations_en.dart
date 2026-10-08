@@ -810,6 +810,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageStoreIconTooltip => 'To stock';
 
   @override
+  String get eatPotWeighTitle => 'Pot on the scale';
+
+  @override
+  String get eatPotWeighReminder =>
+      'Water may have evaporated since the last weighing. Weigh the pot again so it is right for everyone.';
+
+  @override
+  String eatPotNetWeight(int tare, int net) {
+    return '− empty pot $tare g = $net g in the pot';
+  }
+
+  @override
+  String get eatPotTakeOutHint =>
+      'Then tare the scale and enter the grams you took.';
+
+  @override
   String get eatPagePotUnit => 'pot';
 
   @override

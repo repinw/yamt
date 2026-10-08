@@ -65,6 +65,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_pot_weighing_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -505,6 +506,58 @@ void main() {
     expect(harness.logRepository.entries, hasLength(1));
     expect(harness.logRepository.entries.single.name, 'Chili sin Carne');
     expect(harness.logRepository.entries.single.mealType, _currentMealType());
+  });
+
+  testWidgets('a pot weighed on the eat page is eaten from in grams', (
+    tester,
+  ) async {
+    // 2 portions, 800 g at "Gekocht" in a 1180 g pot.
+    final harness = await _pumpAndOpenInventoryQuickEat(
+      tester,
+      inventoryItems: const <InventoryItem>[],
+      preparedMeals: [
+        _preparedMeal(
+          id: 'soup',
+          name: 'Linsensuppe',
+        ).copyWith(finalNetWeight: 800, potTareWeight: 1180),
+      ],
+    );
+    harness.publishHouseholdProfile();
+    await _pumpUntilOnScreen(
+      tester,
+      find.text('Linsensuppe'),
+      description: 'pot meal',
+    );
+    await tester.tap(find.text('Linsensuppe'));
+    await _pumpUntilFound(
+      tester,
+      find.byKey(EatPotWeighingSection.grossKey),
+      description: 'pot weighing field',
+    );
+
+    // 1000 g are left in the pot now: one portion is 500 g.
+    await tester.ensureVisible(find.byKey(EatPotWeighingSection.grossKey));
+    await tester.enterText(find.byKey(EatPotWeighingSection.grossKey), '2180');
+    await tester.pump();
+    final confirmButton = find.byKey(_preparedMealConfirmButtonKey);
+    await _pumpUntilOnScreen(
+      tester,
+      confirmButton,
+      description: 'prepared meal confirm button',
+    );
+    await tester.tap(confirmButton);
+    await _pumpUntil(
+      tester,
+      () =>
+          harness.householdPreparedMeals.single.remainingPortions == 1 &&
+          harness.logRepository.entries.length == 1,
+      description: 'pot meal consumption',
+    );
+
+    final meal = harness.householdPreparedMeals.single;
+    expect(meal.potWeighing?.netWeight, 1000);
+    expect(meal.potWeighing?.remainingPortions, 2);
+    expect(harness.logRepository.entries.single.bundleConsumedPortions, 1);
   });
 
   testWidgets('a meal in the pot shows greyed out and opens Gekocht', (

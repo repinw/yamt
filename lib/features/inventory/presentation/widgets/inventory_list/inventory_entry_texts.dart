@@ -1,5 +1,6 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
 import 'package:yamt/features/inventory/presentation/formatters/'
     'inventory_nutrition_format.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
@@ -137,7 +138,8 @@ InventoryEntryTexts _meal(PreparedMeal meal, AppLocalizations l10n) {
       : l10n.inventoryRowMealCombined(portionsLeft, meal.totalPortions);
 
   final netWeight = meal.finalNetWeight;
-  final weightLeft = meal.remainingNetWeight;
+  // A weighing while eating tells the grams left better than "Gekocht".
+  final weightLeft = PreparedMealEatCalculator(meal).currentNetWeight;
   if (netWeight != null && netWeight > 0 && weightLeft != null) {
     final gram = l10n.inventoryUnitGram;
     return InventoryEntryTexts(

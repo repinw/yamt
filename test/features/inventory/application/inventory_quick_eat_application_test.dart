@@ -8,10 +8,13 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_application.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_mutation_service.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 
 import '../../calories/support/fake_calories_repositories.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
@@ -32,6 +35,37 @@ class _FakeCommitStore implements PreparedMealCalorieEntryCommitStore {
   }) => throw UnimplementedError();
 }
 
+/// Records the pot weighings and returns the weighed meal, or throws for a
+/// failed write.
+class _FakeMealMutations implements PreparedMealMutationService {
+  new({this.meal, this.fails = false});
+
+  final PreparedMeal? meal;
+  final bool fails;
+  final weighed = <int>[];
+
+  @override
+  Future<PreparedMeal> weighPot({
+    required String mealId,
+    required int netWeight,
+  }) async {
+    weighed.add(netWeight);
+    if (fails) {
+      throw StateError('offline');
+    }
+    return meal!.copyWith(
+      potWeighing: PreparedMealPotWeighing(
+        netWeight: netWeight,
+        weighedAt: DateTime(2026, 9, 19, 12),
+        remainingPortions: meal!.remainingPortions,
+      ),
+    );
+  }
+
+  @override
+  Object? noSuchMethod(Invocation invocation) => throw UnimplementedError();
+}
+
 PreparedMeal _meal({required String id}) {
   return PreparedMeal(
     id: id,
@@ -50,6 +84,7 @@ PreparedMeal _meal({required String id}) {
 
 InventoryQuickEatApplication _application({
   _FakeCommitStore? commitStore,
+  _FakeMealMutations? mealMutations,
   FakePlannedEntryRepository? plans,
   ProviderContainer? container,
 }) {
@@ -61,6 +96,7 @@ InventoryQuickEatApplication _application({
     saveEntry: (entry, {scannedSourceRef, persistEntry}) async =>
         persistEntry != null && await persistEntry(entry),
     commitStore: commitStore ?? _FakeCommitStore(),
+    mealMutations: mealMutations ?? _FakeMealMutations(),
     plans: plans ?? FakePlannedEntryRepository(),
     overviewRevision: revisionContainer.read(
       calorieOverviewRevisionProvider.notifier,
@@ -71,6 +107,46 @@ InventoryQuickEatApplication _application({
 }
 
 void main() {
+  test('a pot weighed on the eat page is stored before the eat', () async {
+    final commitStore = _FakeCommitStore();
+    final mealMutations = _FakeMealMutations(meal: _meal(id: 'soup'));
+    final application = _application(
+      commitStore: commitStore,
+      mealMutations: mealMutations,
+    );
+
+    final saved = await application.consumePreparedMeal(
+      meal: _meal(id: 'soup'),
+      consumedPortions: 1,
+      mealType: MealType.lunch,
+      loggedDay: DateTime(2026, 9, 19, 12),
+      potNetWeight: 990,
+    );
+
+    expect(mealMutations.weighed, [990]);
+    expect(saved?.entry.bundleSourcePreparedMealId, 'soup');
+    expect(commitStore.committed, hasLength(1));
+  });
+
+  test('a failed pot weighing logs nothing', () async {
+    final commitStore = _FakeCommitStore();
+    final application = _application(
+      commitStore: commitStore,
+      mealMutations: _FakeMealMutations(fails: true),
+    );
+
+    final saved = await application.consumePreparedMeal(
+      meal: _meal(id: 'soup'),
+      consumedPortions: 1,
+      mealType: MealType.lunch,
+      loggedDay: DateTime(2026, 9, 19, 12),
+      potNetWeight: 990,
+    );
+
+    expect(saved, isNull);
+    expect(commitStore.committed, isEmpty);
+  });
+
   test('eating writes the entry with its meal in one batch', () async {
     final commitStore = _FakeCommitStore();
     final container = ProviderContainer();
