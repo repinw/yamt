@@ -12,6 +12,7 @@ class EatChip extends StatelessWidget {
     required this.label,
     required this.isSelected,
     required this.onPressed,
+    this.isAccent = false,
     super.key,
   });
 
@@ -23,6 +24,9 @@ class EatChip extends StatelessWidget {
 
   /// Called when the chip is tapped.
   final VoidCallback? onPressed;
+
+  /// Fills a selected chip with the accent instead of ink.
+  final bool isAccent;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +43,11 @@ class EatChip extends StatelessWidget {
       ),
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: isSelected ? colors.ink : colors.tile,
+          color: !isSelected
+              ? colors.tile
+              : isAccent
+              ? colors.accent
+              : colors.ink,
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: ConstrainedBox(
@@ -55,7 +63,7 @@ class EatChip extends StatelessWidget {
                   fontWeight: FontWeight.w700,
                   decoration: TextDecoration.none,
                   color: isSelected
-                      ? colors.paper
+                      ? (isAccent ? colors.onAccent : colors.paper)
                       : onPressed == null
                       ? colors.muted
                       : colors.ink,

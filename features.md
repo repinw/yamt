@@ -591,6 +591,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   (or "Gekocht"), scaled to the portions left. When the last weighing is
   older than 3 hours or someone ate since, the page reminds that water may
   have evaporated. A weight not above the empty pot blocks saving.
+  With a known weight the nutrition table header names the grams
+  ("1 Portion · 350 g") and a quiet "je 100 g gekocht" row shows the kcal per
+  100 g of what is left. For a pot meal the largest ruler mark is "Rest"
+  (accent when picked): it takes everything in the pot, the header says
+  "Rest", and a note says the sum is right without a scale.
 - A card under "Offen" says "Im Topf seit …" (with "· N Zeilen offen" when
   rows are open) and "Weiter" opens the "Gekocht" page; the time becomes the
   day for a pot from an earlier day. A cooked meal with open rows says

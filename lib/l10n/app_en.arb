@@ -488,6 +488,20 @@
     }
   },
   "eatPotTakeOutHint": "Then tare the scale and enter the grams you took.",
+  "eatPageRest": "Rest",
+  "eatPageRestHint": "Rest takes everything in the pot, so the sum is right without a scale.",
+  "eatPageMealPortionGrams": "{portions} · {grams} g",
+  "@eatPageMealPortionGrams": {
+    "placeholders": {
+      "portions": {
+        "type": "String"
+      },
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "eatPageMealPer100Cooked": "per 100 g cooked",
   "eatPagePotUnit": "pot",
   "eatPagePlanAction": "Plan",
   "eatPageNutritionTitle": "Nutrition",

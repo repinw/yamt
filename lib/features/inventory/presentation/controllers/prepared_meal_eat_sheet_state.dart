@@ -99,6 +99,32 @@ class PreparedMealEatSheetState {
     return portions ?? 1;
   }
 
+  /// Whether the first mark takes the rest of the pot: the meal was weighed
+  /// in its pot, so eating it empty sets the sum right without a scale.
+  bool get offersRest => calculator.meal.potTareWeight != null;
+
+  /// Whether the entered amount is everything left, up to the rounding of
+  /// the amount field. More than is left is an error, not the rest.
+  bool get takesRest {
+    final portions = calculator.validPortions(amount, mode);
+    return portions != null && calculator.isEverythingLeft(portions);
+  }
+
+  /// Grams of [portionsOrOne], or null when the meal has no known weight.
+  int? get portionGrams => calculator.portionsToGrams(portionsOrOne)?.round();
+
+  /// kcal in 100 g of the food left, or null when its weight is not known.
+  int? get kcalPer100Grams {
+    final meal = calculator.meal;
+    final net = calculator.currentNetWeight;
+    if (net == null || net <= 0 || meal.totalPortions < 1) {
+      return null;
+    }
+    final kcalLeft =
+        meal.totalKcal * meal.remainingPortions / meal.totalPortions;
+    return (kcalLeft * 100 / net).round();
+  }
+
   /// Nutrition of [portionsOrOne].
   EatNutrition? get nutrition {
     final meal = calculator.meal;

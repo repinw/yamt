@@ -4,6 +4,11 @@ import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 const _defaultPortions = 1.0;
 const _wholeNumberTolerance = 0.000001;
+
+/// How far typed portions may be off everything left and still mean it.
+/// The amount field keeps three decimals, so a rest such as 1.3939…
+/// portions reads back as 1.394.
+const _restTolerance = 0.001;
 const _portionQuickValues = <num>[0.5, 1.0, 2.0, 3.0];
 const _gramQuickValues = <num>[100, 250, 500];
 
@@ -120,13 +125,19 @@ class PreparedMealEatCalculator {
       return null;
     }
     final portions = portionsFor(amount, mode);
-    if (portions == null ||
-        portions <= 0 ||
-        portions > meal.remainingPortions) {
+    if (portions == null || portions <= 0) {
       return null;
     }
-    return portions;
+    if (isEverythingLeft(portions)) {
+      return meal.remainingPortions;
+    }
+    return portions > meal.remainingPortions ? null : portions;
   }
+
+  /// Whether [portions] are everything left, up to the rounding of the
+  /// amount field.
+  bool isEverythingLeft(num portions) =>
+      (portions - meal.remainingPortions).abs() < _restTolerance;
 
   /// Everything left, in [mode].
   num remainingAmount(PreparedMealEatAmountMode mode) {
@@ -180,7 +191,9 @@ class PreparedMealEatCalculator {
     if (amount <= 0) {
       return false;
     }
-    return amount <= remainingAmount(mode);
+    return amount <= remainingAmount(mode) ||
+        (mode == PreparedMealEatAmountMode.portions &&
+            isEverythingLeft(amount));
   }
 }
 

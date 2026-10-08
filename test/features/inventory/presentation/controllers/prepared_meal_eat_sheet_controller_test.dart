@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -9,6 +10,9 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_eat_sheet_controller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'prepared_meal_eat_sheet_texts.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../../support/prepared_meal_test_data.dart';
 
@@ -102,6 +106,27 @@ void main() {
 
       expect(container.read(provider).amountText, '330');
       expect(controller.submit()?.portions, 1);
+    });
+
+    test('the header names the grams, and the first mark is Rest', () {
+      final l10n = lookupAppLocalizations(const Locale('en'));
+      final (:container, :provider) = _setUp(soup());
+      final controller = container.read(provider.notifier)
+        ..setPotGrossText('2170');
+
+      final state = container.read(provider);
+      expect(state.portionsHeader(l10n), '1 portion · 330 g');
+      expect(state.markLabel(l10n, 0, 990), 'Rest');
+      // 300 of the 400 kcal are left in 990 g.
+      expect(state.kcalPer100Grams, 30);
+
+      controller.pickAmount(990);
+      expect(container.read(provider).takesRest, isTrue);
+      expect(container.read(provider).portionsHeader(l10n), 'Rest · 990 g');
+
+      // More than is left is an error, not the rest.
+      controller.pickAmount(2000);
+      expect(container.read(provider).takesRest, isFalse);
     });
 
     test('a pot no heavier than empty blocks the request', () {
