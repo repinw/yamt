@@ -6,6 +6,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -133,6 +135,7 @@ Future<List<ManualProductAiSearchResult?>> _pump(WidgetTester tester) async {
       overrides: [
         foodEstimateRepositoryProvider.overrideWithValue(_Estimates()),
         voiceSearchServiceProvider.overrideWithValue(_Voice()),
+        clockProvider.overrideWithValue(() => DateTime(2026, 10, 7, 12)),
       ],
       child: MaterialApp.router(
         locale: const Locale('de'),
@@ -197,5 +200,9 @@ void main() {
     expect(find.byKey(_openKey), findsOneWidget);
     expect(results.single?.action, InventoryReceiptManualProductAction.eatNow);
     expect(results.single?.eatRequest?.isPlan, isTrue);
+    expect(
+      dateOnly(results.single!.eatRequest!.loggedAt),
+      DateTime(2026, 10, 7),
+    );
   });
 }
