@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
@@ -16,6 +17,7 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_amount_ruler.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_count_wheel.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_inedible_line.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
@@ -606,6 +608,106 @@ void main() {
     expect(amount, inInclusiveRange(400, 600));
   });
 
+  testWidgets('the wheel counts the product slice in halves or typed', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    await _pumpSheet(
+      tester,
+      _slicedCheeseItem(),
+      onResult: (value) => result = value,
+    );
+
+    expect(find.text('slice'), findsOneWidget);
+    expect(find.text('= 25 g'), findsOneWidget);
+
+    final wheel = find.byKey(EatCountWheel.wheelKey);
+    await tester.ensureVisible(wheel);
+    await tester.drag(wheel, const Offset(0, -AppFoodLabel.countWheelItem));
+    await tester.pumpAndSettle();
+    expect(find.text('= 37.5 g'), findsOneWidget);
+
+    await tester.tap(wheel);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(EatCountWheel.fieldKey), '3');
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+    expect(find.text('= 75 g'), findsOneWidget);
+
+    await _tapConfirmButton(tester);
+    expect(result?.portionBaseAmount, 25);
+    expect(result?.portionCount, 3);
+    expect(result?.portionLabel, 'slice');
+  });
+
+  testWidgets('a cleared portion weight stays empty and is rejected', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    await _pumpSheet(
+      tester,
+      _slicedCheeseItem(),
+      onResult: (value) => result = value,
+    );
+
+    await _enterAmount(tester, '');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    await _tapConfirmButton(tester);
+
+    expect(result, isNull);
+    expect(_amountText(tester), '');
+    expect(find.text('slice'), findsOneWidget);
+  });
+
+  testWidgets('the field and the wheel show what is logged', (tester) async {
+    InventoryItemEatRequest? result;
+    await _pumpSheet(
+      tester,
+      _slicedCheeseItem(),
+      onResult: (value) => result = value,
+    );
+
+    // A weight is counted to one decimal, and the field says so.
+    await _enterAmount(tester, '33,33');
+    expect(_amountText(tester), '33.3');
+
+    // A typed count over the stock becomes all of it.
+    final wheel = find.byKey(EatCountWheel.wheelKey);
+    await tester.ensureVisible(wheel);
+    await tester.tap(wheel);
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(EatCountWheel.fieldKey), '20');
+    await tester.tap(find.byKey(EatCountWheel.doneKey));
+    await tester.pumpAndSettle();
+
+    await _tapConfirmButton(tester);
+    expect(result?.inventoryAmount, 200);
+  });
+
+  testWidgets('a mark picked after clearing the field shows in it', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    await _pumpSheet(
+      tester,
+      _amountItemWithServing(),
+      onResult: (value) => result = value,
+    );
+
+    await _enterAmount(tester, '');
+    await _tapText(tester, 'Serving 125 g');
+    expect(_amountText(tester), '125');
+
+    await _enterAmount(tester, '0');
+    expect(_amountText(tester), '0');
+    await _tapText(tester, '½ 250 g');
+    expect(_amountText(tester), '250');
+
+    await _tapConfirmButton(tester);
+    expect(result?.inventoryAmount, 250);
+  });
+
   testWidgets('a remembered portion becomes a mark and names the entry', (
     tester,
   ) async {
@@ -627,19 +729,17 @@ void main() {
     );
     await _tapKey(tester, EatRememberPortion.saveKey);
 
-    expect(find.text('Scheibe 30 g'), findsOneWidget);
-    expect(find.text('= 1 × Scheibe'), findsOneWidget);
-
-    await _enterAmount(tester, '90');
-    expect(find.text('= 3 × Scheibe'), findsOneWidget);
+    await _tapText(tester, 'Scheibe 30 g');
+    expect(find.text('Scheibe'), findsOneWidget);
+    expect(find.text('= 30 g'), findsOneWidget);
     await _tapConfirmButton(tester);
 
     expect(repository.calls, isEmpty);
-    expect(result?.inventoryAmount, 90);
+    expect(result?.inventoryAmount, 30);
     expect(result?.calorieAmount, isNull);
     expect(result?.portionBaseAmount, 30);
     expect(result?.portionBaseUnit, ConsumedUnit.grams);
-    expect(result?.portionCount, 3);
+    expect(result?.portionCount, 1);
     expect(result?.portionLabel, 'Scheibe');
   });
 

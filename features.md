@@ -145,6 +145,21 @@ and feature description docs. This is product-facing; architecture rules stay in
   base and carryover, and the eaten grams per macro.
 - The main button of the eat page says "Ins Tagebuch", and "Einplanen" on a
   future day.
+- The amount on the eat page of a food in grams or milliliters reads
+  "count × weight of one portion": a wheel with the count in half steps (a
+  tap types any count, such as 1,3), "×", the weight field with the
+  portion's name under it, and the sum on the right. The ruler shows the
+  sum; with a named portion it snaps to half portions, without one it moves
+  freely. Weights take one decimal (37,5 g); the Vorrat takes them rounded
+  to whole grams. A typed weight keeps the count; a weight that is not the
+  named portion's own drops the name. The page starts with what was eaten
+  last time, else the smallest named portion, else one package or what is
+  left of it.
+- One row of chips under the ruler scrolls sideways: "Zuletzt", the
+  product's serving ("Portion" when it has no name), named portions, other
+  learned amounts, ¼ and ½ of the package, and "Alles".
+- A diary entry eaten as a named portion reads "2× 40 g Brotscheibe"; other
+  entries show the sum.
 - On a future day, a Vorrat item or a cooked meal is saved as a plan, with
   undo: it takes no stock and no portions until it is eaten. An item whose
   amount needs the calorie editor cannot be planned yet.

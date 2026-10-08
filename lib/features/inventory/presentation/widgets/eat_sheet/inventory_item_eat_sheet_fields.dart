@@ -1,3 +1,5 @@
+import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_portion_count.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
 
@@ -17,7 +19,14 @@ class InventoryItemEatSheetFields {
 
   /// Shows the texts of [state] in the fields.
   void sync(InventoryItemEatSheetState state) {
-    inventoryAmount.sync(state.inventoryAmountText);
+    if (countsWeightPortions(state)) {
+      inventoryAmount.syncValue(
+        portionWeightText(state),
+        parsePositiveDecimalInput,
+      );
+    } else {
+      inventoryAmount.sync(state.inventoryAmountText);
+    }
     pieceCount.sync(state.portionCountText);
     pieceWeight.sync(state.portionAmountText);
     inedibleAmount.sync(state.inedibleAmountText);

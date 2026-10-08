@@ -1,10 +1,14 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_amounts.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_portion_count.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_amount_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_count_row.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_count_wheel.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inedible_line.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_inline_amount_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_remember_portion.dart';
@@ -70,6 +74,7 @@ class InventoryItemEatAmountSection extends StatelessWidget {
     final calculator = state.calculator;
     final units = calculator.availablePortionUnits;
     final selectedSize = state.selectedPieceSize;
+    final countsWeight = countsWeightPortions(state);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -93,15 +98,41 @@ class InventoryItemEatAmountSection extends StatelessWidget {
               state.usesPortionMode ||
               calculator.allowsFractionalInventoryAmount ||
               calculator.takesDecimalWeight,
-          hint: state.amountHint(l10n),
+          // Without a counted portion, the hint tells which named portion
+          // the amount is logged as.
+          hint: !countsWeight || state.countedPortion == null
+              ? state.amountHint(l10n)
+              : state.enteredAmount > 0
+              ? l10n.eatPageTotal(state.enteredAmountLabel(l10n))
+              : null,
           errorText: state.amountError(l10n),
-          onTextChanged: controller.setAmountText,
+          onTextChanged: countsWeight
+              ? controller.setPortionWeightText
+              : controller.setAmountText,
           onSliderChanged: controller.pickAmount,
+          leading: countsWeight
+              ? Row(
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: AppSpacing.md,
+                  children: [
+                    EatCountWheel(
+                      count: eatenCount(state),
+                      maxCount: wheelMaxCount(state),
+                      onChanged: controller.setCount,
+                    ),
+                    Text(
+                      l10n.eatPageTimes,
+                      style: Theme.of(context).textTheme.headlineMedium
+                          ?.copyWith(color: FoodLabelColors.of(context).ink),
+                    ),
+                  ],
+                )
+              : null,
+          caption: countsWeight ? state.countedPortion?.label : null,
         ),
-        if ((state.countedPortion, state.portionCount) case (
-          final portion?,
-          final count?,
-        ))
+        // Grams and milliliters count on the wheel instead.
+        if ((state.countedPortion, state.portionCount)
+            case (final portion?, final count?) when !countsWeight)
           EatCountRow(
             label: state.markLabel(l10n, portion),
             count: count,
@@ -115,7 +146,7 @@ class InventoryItemEatAmountSection extends StatelessWidget {
             increaseKey: portionIncreaseKey,
             valueKey: portionCountKey,
           )
-        else if (state.packageCount case final packages?)
+        else if (state.packageCount case final packages? when !countsWeight)
           EatCountRow(
             label: l10n.eatPagePackages,
             count: packages,
@@ -164,7 +195,10 @@ class InventoryItemEatAmountSection extends StatelessWidget {
             ),
         ] else
           EatRememberPortion(
-            amountLabel: state.enteredAmountLabel(l10n),
+            amountLabel: l10n.inventoryEatSheetAmountWithUnit(
+              formatEatenAmount(state, portionWeight(state)),
+              state.amountUnit(l10n),
+            ),
             onSave: controller.rememberPortion,
           ),
         if (calculator.supportsInedibleAmountAdjustment)

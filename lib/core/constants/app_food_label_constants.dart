@@ -123,4 +123,17 @@ abstract final class AppFoodLabel {
   /// Highest HSL lightness of macro colored text on light paper, so bright
   /// macro colors such as the fat yellow stay readable.
   static const double lightLabelMaxLightness = 0.38;
+
+  /// Width of the portion count wheel on the eat page.
+  static const double countWheel = 72;
+
+  /// Height of the portion count wheel: the picked count with one above
+  /// and one below.
+  static const double countWheelHeight = 150;
+
+  /// Height of one count on the wheel.
+  static const double countWheelItem = 50;
+
+  /// Most counts the wheel offers; a larger count is typed.
+  static const int countWheelMaxHalves = 40;
 }

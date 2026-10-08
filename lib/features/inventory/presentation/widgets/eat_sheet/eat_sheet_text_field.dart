@@ -26,6 +26,22 @@ class EatSheetTextField {
     );
   }
 
+  /// Shows [text] unless the field already holds the same value, so a typed
+  /// "37," stays while the value it gives is 37. Zero counts as no value, so
+  /// a cleared field or a "0," on the way to "0,5" stays while the amount is
+  /// empty, and shows the next amount picked elsewhere.
+  void syncValue(String text, double? Function(String text) parse) {
+    double? amount(String text) {
+      final value = parse(text);
+      return value == null || value <= 0 ? null : value;
+    }
+
+    if (amount(controller.text) == amount(text)) {
+      return;
+    }
+    sync(text);
+  }
+
   /// Releases the controller and focus node.
   void dispose() {
     focusNode.dispose();

@@ -15,6 +15,8 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_item_eat_sheet_portion_count.dart';
+import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_item_eat_sheet_submission.dart';
@@ -755,6 +757,133 @@ void main() {
     final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
     final request = (outcome as InventoryItemEatSubmitted).result.request;
     expect(request.portionCount, 0.5);
+  });
+
+  test('the count multiplies the portion, named or not', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('95')
+      ..setCount(2);
+    expect(container.read(provider).inventoryAmountText, '190');
+    expect(container.read(provider).countedPortion?.label, isNull);
+
+    controller
+      ..setAmountText('40')
+      ..rememberPortion('Slice');
+    final slice = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Slice');
+    controller
+      ..pickMarker(slice)
+      ..setCount(1.33);
+    expect(container.read(provider).inventoryAmountText, '53.2');
+    expect(eatenCount(container.read(provider)), 1.33);
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.portionCount, 1.33);
+    expect(request.portionLabel, 'Slice');
+  });
+
+  test('a typed portion weight keeps the count, not the name', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('40')
+      ..rememberPortion('Slice');
+    final slice = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Slice');
+    controller
+      ..pickMarker(slice)
+      ..setCount(2)
+      ..setPortionWeightText('37,5');
+
+    final state = container.read(provider);
+    expect(state.inventoryAmountText, '75');
+    expect(state.countedPortion?.value, 37.5);
+    expect(state.countedPortion?.label, isNull);
+    final typed = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    expect(
+      (typed as InventoryItemEatSubmitted).result.request.portionLabel,
+      isNull,
+    );
+
+    controller.setPortionWeightText('37,');
+    expect(container.read(provider).countedPortion?.value, 37);
+
+    controller.setPortionWeightText('');
+    expect(container.read(provider).countedPortion?.value, 37);
+    expect(eatenCount(container.read(provider)), 2);
+    expect(
+      controller.submit(InventoryItemEatSheetIntent.logOnly),
+      isA<InventoryItemEatRejected>(),
+    );
+    controller.setPortionWeightText('30');
+    expect(container.read(provider).inventoryAmountText, '60');
+
+    controller
+      ..setCount(1.33)
+      ..setPortionWeightText('1')
+      ..setPortionWeightText('10');
+    expect(eatenCount(container.read(provider)), 1.33);
+    expect(container.read(provider).inventoryAmountText, '13.3');
+  });
+
+  test('remember names one portion, not the counted total', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    container.read(provider.notifier)
+      ..setAmountText('30')
+      ..setCount(2)
+      ..rememberPortion('Slice');
+
+    final state = container.read(provider);
+    expect(state.inventoryAmountText, '60');
+    expect(state.rememberedPortions.single.amount, 30);
+    expect(wheelMaxCount(state), 1000 / 30);
+    expect(state.countedPortion?.label, 'Slice');
+    expect(eatenCount(state), 2);
+  });
+
+  test('a count of a weight without a name is logged as the amount', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('30')
+      ..rememberPortion('Slice')
+      ..setAmountText('60')
+      ..setCount(2);
+
+    final l10n = lookupAppLocalizations(const Locale('en'));
+    final state = container.read(provider);
+    expect(state.inventoryAmountText, '120');
+    expect(state.countedPortion?.label, isNull);
+    expect(state.amountHint(l10n), isNot(contains('Slice')));
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.inventoryAmount, 120);
+    expect(request.portionLabel, isNull);
+    expect(request.portionCount, isNull);
+  });
+
+  test('typing the named weight again brings the name back', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('40')
+      ..rememberPortion('Slice');
+    final slice = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Slice');
+    controller
+      ..pickMarker(slice)
+      ..setCount(2)
+      ..setPortionWeightText('')
+      ..setPortionWeightText('4');
+    expect(container.read(provider).countedPortion?.label, isNull);
+
+    controller.setPortionWeightText('40');
+    expect(container.read(provider).countedPortion?.label, 'Slice');
+    expect(container.read(provider).inventoryAmountText, '80');
   });
 
   group('starts with', () {

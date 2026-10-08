@@ -1,5 +1,6 @@
 import 'package:yamt/features/inventory/domain/inventory_item_eat_draft.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_portion_count.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 
@@ -67,7 +68,7 @@ InventoryItemEatSheetState applyInventoryItemEatDraftErrors(
 /// Outside portion mode, an amount that is a whole multiple of one of
 /// [namedPortions] is logged as that many portions, so the portion name is
 /// learned with the food. A counted named portion is logged with its count,
-/// whole or not.
+/// whole or not; a counted portion without a name as the plain amount.
 InventoryItemEatRequest buildInventoryItemEatRequest(
   InventoryItemEatSheetState state,
   InventoryItemEatSubmissionDraft draft, {
@@ -95,12 +96,17 @@ InventoryItemEatRequest buildInventoryItemEatRequest(
         calorieUnit: fixedAmount == null ? null : calculator.fixedCalorieUnit,
         portionBaseAmount: counted.value,
         portionBaseUnit: unit,
-        portionCount: state.portionCount ?? exactAmount / counted.value,
+        portionCount: eatenCount(state),
         portionLabel: counted.label,
         isPlan: isPlan,
       );
     }
-    for (final portion in namedPortions) {
+    // A portion counted without a name is logged as the plain amount, not
+    // as another portion the sum happens to be a multiple of.
+    for (final portion
+        in state.countedPortion == null
+            ? namedPortions
+            : const <InventoryItemEatPortion>[]) {
       final count = exactAmount / portion.amount;
       if (count >= 1 && calculator.isWholeNumber(count)) {
         return InventoryItemEatRequest(

@@ -17,6 +17,7 @@ class AppScrollWheel extends StatefulWidget {
     required this.labelBuilder,
     required this.onSelected,
     this.textStyle,
+    this.itemExtent = AppIntroLayout.wheelItemExtent,
     super.key,
   });
 
@@ -34,6 +35,9 @@ class AppScrollWheel extends StatefulWidget {
 
   /// Style of the labels, or the theme's medium title.
   final TextStyle? textStyle;
+
+  /// Height of one item.
+  final double itemExtent;
 
   @override
   State<AppScrollWheel> createState() => _AppScrollWheelState();
@@ -92,7 +96,7 @@ class _AppScrollWheelState extends State<AppScrollWheel> {
             : AppIntroLayout.wheelHeight,
         child: ListWheelScrollView.useDelegate(
           controller: _controller,
-          itemExtent: AppIntroLayout.wheelItemExtent,
+          itemExtent: widget.itemExtent,
           physics: const FixedExtentScrollPhysics(),
           diameterRatio: AppIntroLayout.wheelDiameterRatio,
           overAndUnderCenterOpacity: AppIntroLayout.wheelOffCenterOpacity,

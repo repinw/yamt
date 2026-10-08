@@ -7,13 +7,13 @@ import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/inventory/application/inventory_serving_suggestion_service.dart';
 import 'package:yamt/features/inventory/application/serving_suggestion_resolver.dart';
 import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
-import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_calculator.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_open_eat_stock.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_amounts.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_portion_count.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_submission.dart';
 import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
@@ -79,6 +79,14 @@ class InventoryItemEatSheetController
   /// Sets the amount field text.
   void setAmountText(String text) => _update(withAmountText(state, text));
 
+  /// Sets the number of portions, such as 1.5 from the count wheel.
+  void setCount(double count) => _update(withCount(state, count));
+
+  /// Sets the weight of one portion; the count stays.
+  void setPortionWeightText(String text) {
+    _update(withPortionWeightText(state, text));
+  }
+
   /// Sets the amount to [value] in the unit of the amount field, for
   /// example from the ruler.
   void pickAmount(double value) => _update(withRulerAmount(state, value));
@@ -102,40 +110,7 @@ class InventoryItemEatSheetController
   /// Names the entered amount as a portion, or the entered piece weight as
   /// a piece size in portion mode. It is saved with the food.
   void rememberPortion(String? label) {
-    final name = normalizePortionLabel(label);
-    if (state.usesPortionMode) {
-      final weight = parsePositiveDecimalInput(state.portionAmountText);
-      if (weight == null) {
-        return;
-      }
-      _update(
-        state.copyWith(
-          portionLabel: () => name,
-          rememberedPortions: [
-            ...state.rememberedPortions,
-            InventoryItemEatPortion(
-              amount: weight,
-              unit: state.portionUnit,
-              label: name,
-            ),
-          ],
-        ),
-      );
-      return;
-    }
-    final amount = state.enteredAmount;
-    final unit = state.calculator.fixedCalorieUnit;
-    if (amount < 1 || unit == null) {
-      return;
-    }
-    _update(
-      state.copyWith(
-        rememberedPortions: [
-          ...state.rememberedPortions,
-          InventoryItemEatPortion(amount: amount, unit: unit, label: name),
-        ],
-      ),
-    );
+    if (withRememberedPortion(state, label) case final next?) _update(next);
   }
 
   /// Uses [size] as the weight of one piece.

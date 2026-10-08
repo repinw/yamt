@@ -22,6 +22,8 @@ class EatAmountRuler extends StatelessWidget {
     this.hint,
     this.errorText,
     this.onUnitPressed,
+    this.leading,
+    this.caption,
     super.key,
   });
 
@@ -70,6 +72,12 @@ class EatAmountRuler extends StatelessWidget {
   /// Makes the unit tappable, for example to switch between units.
   final VoidCallback? onUnitPressed;
 
+  /// Shown before the number, such as the portion count and "×".
+  final Widget? leading;
+
+  /// Line under the number, such as the name of the portion.
+  final String? caption;
+
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
@@ -81,6 +89,8 @@ class EatAmountRuler extends StatelessWidget {
       color: colors.ink,
     );
     final onUnit = onUnitPressed;
+    final lead = leading;
+    final captionText = caption;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -88,57 +98,83 @@ class EatAmountRuler extends StatelessWidget {
       children: [
         Row(
           children: [
-            SizedBox(
-              width: AppFoodLabel.amountField,
-              child: TextField(
-                key: fieldKey,
-                controller: controller,
-                focusNode: focusNode,
-                keyboardType: TextInputType.numberWithOptions(
-                  decimal: allowFractionalInput,
-                ),
-                textInputAction: TextInputAction.done,
-                cursorColor: colors.ink,
-                style: textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: colors.ink,
-                ),
-                decoration: InputDecoration(
-                  isDense: true,
-                  contentPadding: EdgeInsets.zero,
-                  enabledBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(
-                      color: colors.ink,
-                      width: AppFoodLabel.outline,
-                    ),
+            ?lead,
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: SizedBox(
+                          width: AppFoodLabel.amountField,
+                          child: TextField(
+                            key: fieldKey,
+                            controller: controller,
+                            focusNode: focusNode,
+                            keyboardType: TextInputType.numberWithOptions(
+                              decimal: allowFractionalInput,
+                            ),
+                            textInputAction: TextInputAction.done,
+                            cursorColor: colors.ink,
+                            style: textTheme.displaySmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: colors.ink,
+                            ),
+                            decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: EdgeInsets.zero,
+                              enabledBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: colors.ink,
+                                  width: AppFoodLabel.outline,
+                                ),
+                              ),
+                              focusedBorder: UnderlineInputBorder(
+                                borderSide: BorderSide(
+                                  color: colors.ink,
+                                  width: AppFoodLabel.outline,
+                                ),
+                              ),
+                            ),
+                            onChanged: onTextChanged,
+                            onSubmitted: (_) =>
+                                FocusManager.instance.primaryFocus?.unfocus(),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      if (onUnit == null)
+                        Text(unitLabel, style: unitStyle)
+                      else
+                        TextButton(
+                          key: unitKey,
+                          onPressed: onUnit,
+                          style: TextButton.styleFrom(
+                            foregroundColor: colors.ink,
+                          ),
+                          child: Text(
+                            unitLabel,
+                            style: unitStyle?.copyWith(
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(
-                      color: colors.ink,
-                      width: AppFoodLabel.outline,
+                  if (captionText != null)
+                    Text(
+                      captionText,
+                      style: textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: colors.ink,
+                      ),
                     ),
-                  ),
-                ),
-                onChanged: onTextChanged,
-                onSubmitted: (_) =>
-                    FocusManager.instance.primaryFocus?.unfocus(),
+                ],
               ),
             ),
-            const SizedBox(width: AppSpacing.sm),
-            if (onUnit == null)
-              Text(unitLabel, style: unitStyle)
-            else
-              TextButton(
-                key: unitKey,
-                onPressed: onUnit,
-                style: TextButton.styleFrom(foregroundColor: colors.ink),
-                child: Text(
-                  unitLabel,
-                  style: unitStyle?.copyWith(
-                    decoration: TextDecoration.underline,
-                  ),
-                ),
-              ),
             const Spacer(),
             if (hintText != null)
               Flexible(
