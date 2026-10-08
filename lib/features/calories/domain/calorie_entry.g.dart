@@ -61,6 +61,8 @@ CalorieEntry _$CalorieEntryFromJson(Map<String, dynamic> json) => CalorieEntry(
   nutrientDetails: const NullableCalorieNutrientDetailsConverter().fromJson(
     json['nutrient_details'],
   ),
+  portionAmount: (json['portion_amount'] as num?)?.toDouble(),
+  portionLabel: json['portion_label'] as String?,
 );
 
 Map<String, dynamic> _$CalorieEntryToJson(
@@ -104,6 +106,8 @@ Map<String, dynamic> _$CalorieEntryToJson(
   'logged_at': const FlexibleDateTimeConverter().toJson(instance.loggedAt),
   'created_at': const FlexibleDateTimeConverter().toJson(instance.createdAt),
   'updated_at': const FlexibleDateTimeConverter().toJson(instance.updatedAt),
+  'portion_amount': instance.portionAmount,
+  'portion_label': instance.portionLabel,
 };
 
 const _$MealTypeEnumMap = {

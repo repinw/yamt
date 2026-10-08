@@ -37,6 +37,8 @@ DiaryMealEntry _$DiaryMealEntryFromJson(Map<String, dynamic> json) =>
                 CalorieEntryBundleComponent.fromJson(e as Map<String, dynamic>),
           )
           .toList(),
+      portionAmount: (json['portion_amount'] as num?)?.toDouble(),
+      portionLabel: json['portion_label'] as String?,
     );
 
 Map<String, dynamic> _$DiaryMealEntryToJson(DiaryMealEntry instance) =>
@@ -55,6 +57,8 @@ Map<String, dynamic> _$DiaryMealEntryToJson(DiaryMealEntry instance) =>
       'bundle_consumed_portions': instance.bundleConsumedPortions,
       'bundle_total_portions': instance.bundleTotalPortions,
       'combined_foods': instance.combinedFoods?.map((e) => e.toJson()).toList(),
+      'portion_amount': instance.portionAmount,
+      'portion_label': instance.portionLabel,
     };
 
 const _$MealTypeEnumMap = {

@@ -270,4 +270,46 @@ void main() {
       throwsStateError,
     );
   });
+
+  CalorieEntry buildEntry({
+    double portionCount = 3,
+    String? label = 'Scheibe',
+  }) {
+    final item = _amountItemWithNutrition();
+    final request = InventoryItemEatRequest(
+      inventoryAmount: 75,
+      loggedAt: DateTime.parse('2026-04-06T12:30:00Z'),
+      mealType: MealType.lunch,
+      portionBaseAmount: 25,
+      portionBaseUnit: ConsumedUnit.grams,
+      portionCount: portionCount,
+      portionLabel: label,
+    );
+    return InventoryCalorieBridgeFlow.buildCalorieEntry(
+      id: 'entry-1',
+      userId: 'user-1',
+      profile: InventoryCalorieBridgeFlow.buildProfileFromInventoryItem(item)!,
+      inventoryContext: InventoryCalorieBridgeFlow.buildInventoryContext(
+        item: item,
+        request: request,
+      ),
+      request: request,
+      now: DateTime.parse('2026-04-06T12:30:00Z'),
+    );
+  }
+
+  test('buildCalorieEntry keeps the counted named portion', () {
+    final entry = buildEntry();
+
+    expect(entry.portionAmount, 25);
+    expect(entry.portionLabel, 'Scheibe');
+    expect(CalorieEntry.fromJson(entry.toJson()).portionAmount, 25);
+  });
+
+  test('buildCalorieEntry drops a portion that does not match the amount', () {
+    expect(buildEntry(portionCount: 2).portionAmount, isNull);
+    expect(buildEntry(portionCount: 2).portionLabel, isNull);
+    expect(buildEntry(label: ' ').portionAmount, isNull);
+    expect(buildEntry(label: ' ').portionLabel, isNull);
+  });
 }

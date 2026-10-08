@@ -5388,6 +5388,17 @@ abstract class AppLocalizations {
   /// **'Combined'**
   String get caloriesCombinedEntryLabel;
 
+  /// Diary amount of an entry eaten as a named portion, e.g. 2× 40 g Brotscheibe.
+  ///
+  /// In en, this message translates to:
+  /// **'{count}× {amount} {unit} {label}'**
+  String caloriesCountedPortion(
+    String count,
+    String amount,
+    String unit,
+    String label,
+  );
+
   /// No description provided for @caloriesBundlePortions.
   ///
   /// In en, this message translates to:

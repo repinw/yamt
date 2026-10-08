@@ -1892,6 +1892,24 @@
     }
   },
   "caloriesCombinedEntryLabel": "Combined",
+  "caloriesCountedPortion": "{count}× {amount} {unit} {label}",
+  "@caloriesCountedPortion": {
+    "description": "Diary amount of an entry eaten as a named portion, e.g. 2× 40 g Brotscheibe.",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "unit": {
+        "type": "String"
+      },
+      "label": {
+        "type": "String"
+      }
+    }
+  },
   "caloriesBundlePortions": "{consumed}/{total} portions",
   "@caloriesBundlePortions": {
     "placeholders": {

@@ -29,6 +29,8 @@ class DiaryMealEntry {
     this.bundleConsumedPortions,
     this.bundleTotalPortions,
     this.combinedFoods,
+    this.portionAmount,
+    this.portionLabel,
   });
 
   /// Creates data from persisted JSON.
@@ -84,6 +86,12 @@ class DiaryMealEntry {
   /// Foods of a combined entry, or null when the entry is one food or a
   /// prepared meal.
   final List<CalorieEntryBundleComponent>? combinedFoods;
+
+  /// Size of the named portion the user counted, in [consumedUnit].
+  final double? portionAmount;
+
+  /// Name of the portion the user counted, e.g. "Brotscheibe".
+  final String? portionLabel;
 
   /// Whether the entry is portions of a prepared meal.
   bool get isPreparedMeal =>

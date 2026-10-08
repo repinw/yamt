@@ -3217,6 +3217,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesCombinedEntryLabel => 'Combined';
 
   @override
+  String caloriesCountedPortion(
+    String count,
+    String amount,
+    String unit,
+    String label,
+  ) {
+    return '$count× $amount $unit $label';
+  }
+
+  @override
   String caloriesBundlePortions(String consumed, int total) {
     return '$consumed/$total portions';
   }

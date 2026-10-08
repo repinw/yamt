@@ -119,10 +119,13 @@ class InventoryEatService {
     return await _releasingOnFailure(
       pending,
       () => _save(
-        entry.copyWith(
-          sourceInventoryItemId: inventoryContext.inventoryItemId,
-          sourceInventoryAmountToRestore:
-              inventoryContext.inventoryAmountToRestore,
+        InventoryCalorieBridgeFlow.withCountedPortion(
+          entry.copyWith(
+            sourceInventoryItemId: inventoryContext.inventoryItemId,
+            sourceInventoryAmountToRestore:
+                inventoryContext.inventoryAmountToRestore,
+          ),
+          inventoryContext,
         ),
         pending: pending,
         inventoryContext: inventoryContext,

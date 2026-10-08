@@ -177,6 +177,23 @@ void main() {
     expect(decoded.nutrientDetails?.per100Fiber, isNull);
     expect(rescaled.nutrientDetails?.per100Salt, 0.1);
   });
+
+  test('a rescale keeps the portion, a unit change drops it', () {
+    final counted = entry().copyWith(
+      portionAmount: 40.0,
+      portionLabel: 'Scheibe',
+    );
+
+    final rescaled = rescaleCalorieEntry(counted, amount: 120, now: loggedAt);
+    final milliliters = counted.copyWith(
+      consumedUnit: ConsumedUnit.milliliters,
+    );
+
+    expect(rescaled.portionAmount, 40);
+    expect(rescaled.portionLabel, 'Scheibe');
+    expect(milliliters.portionAmount, isNull);
+    expect(milliliters.portionLabel, isNull);
+  });
 }
 
 CalorieEntry _combined() {

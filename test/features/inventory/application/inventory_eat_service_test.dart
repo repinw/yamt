@@ -577,15 +577,35 @@ void main() {
       final harness = _harness(_RecordingCommitStore());
       final pending = harness.pendings.stage(_gramItem(), 250)!;
 
-      await harness.service.logEdited(
+      final outcome = await harness.service.logEdited(
         entry: _entry(),
         pending: pending,
         inventoryContext: _editorContext(pending, portionCount: 5),
       );
       await pumpEventQueue();
 
+      final entry = (outcome as InventoryEatLogged).entry;
+      expect(entry.portionAmount, 50);
+      expect(entry.portionLabel, 'Scheibe');
       expect(harness.servings.calls, [
         (amount: 50.0, unit: ConsumedUnit.grams, label: 'Scheibe'),
+      ]);
+    });
+
+    test('an amount edited off the portion is learned without it', () async {
+      final harness = _harness(_RecordingCommitStore());
+      final pending = harness.pendings.stage(_gramItem(), 250)!;
+
+      final outcome = await harness.service.logEdited(
+        entry: _entry().copyWith(consumedAmount: 120),
+        pending: pending,
+        inventoryContext: _editorContext(pending, portionCount: 5),
+      );
+      await pumpEventQueue();
+
+      expect((outcome as InventoryEatLogged).entry.portionAmount, isNull);
+      expect(harness.servings.calls, [
+        (amount: 120.0, unit: ConsumedUnit.grams, label: null),
       ]);
     });
 
