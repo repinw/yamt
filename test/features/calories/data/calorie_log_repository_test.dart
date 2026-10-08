@@ -76,6 +76,37 @@ void main() {
     expect(entries.single.id, 'a');
   });
 
+  test('stage and stageDelete add to the batch of another writer and keep '
+      'the cache in step', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieLogRepository(
+      dataCipher: signedIn,
+      firestore: firestore,
+      now: () => DateTime(2026, 2, 25, 12),
+    );
+    final save = firestore.batch();
+
+    final stored = await repository.stage(
+      save,
+      _entry('a', loggedAt: DateTime(2026, 2, 25, 8)),
+    );
+    await save.commit();
+
+    expect(stored.updatedAt, DateTime(2026, 2, 25, 12));
+    expect(repository.cachedById('a')?.updatedAt, stored.updatedAt);
+    expect((await repository.getById('a'))?.toJson(), stored.toJson());
+
+    final delete = firestore.batch();
+    repository.stageDelete(delete, 'a');
+    await delete.commit();
+
+    expect(repository.cachedById('a'), isNull);
+    expect(
+      (await firestore.doc('users/user-1/calorie_entries/a').get()).exists,
+      isFalse,
+    );
+  });
+
   test('save getById and delete operate on one document per entry', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
