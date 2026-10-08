@@ -13,7 +13,7 @@ import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Small Vorrat tile for the quick overview grid: picture, name, amount left
-/// and the stock bar.
+/// and the stock bar, with the part open plans take in the accent color.
 class InventoryEntryTile extends StatelessWidget {
   /// Creates the tile for [entry].
   const new({
@@ -22,6 +22,7 @@ class InventoryEntryTile extends StatelessWidget {
     this.onTap,
     this.onLongPress,
     this.isSelected = false,
+    this.planned = 0,
     super.key,
   });
 
@@ -39,6 +40,9 @@ class InventoryEntryTile extends StatelessWidget {
 
   /// Whether this entry is selected.
   final bool isSelected;
+
+  /// Stock of the food that open plans take, in its stored unit.
+  final int planned;
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +100,10 @@ class InventoryEntryTile extends StatelessWidget {
                 share: entry.remainingShare,
                 segments: entry.segments,
                 isLow: entry.isLow,
+                plannedShare: switch (entry) {
+                  final InventoryFoodEntry food => food.shareOf(planned),
+                  _ => 0,
+                },
               ),
             ],
           ),

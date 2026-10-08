@@ -14,6 +14,8 @@ import 'package:yamt/features/inventory/presentation/models/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_entry_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_entry_tile.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_quick_filter_chips.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -173,6 +175,21 @@ void main() {
         .map((box) => box.widthFactor)
         .toList();
     expect(factors, [1, 1, 0.5, 0]);
+  });
+
+  testWidgets('a tile draws what plans take in the stock bar', (tester) async {
+    await _pump(
+      tester,
+      InventoryEntryTile(
+        entry: InventoryFoodEntry(_food(left: 400)),
+        tiltLeft: true,
+        planned: 250,
+      ),
+    );
+
+    final bar = tester.widget<GraphitStockBar>(find.byType(GraphitStockBar));
+    expect(bar.share, 0.8);
+    expect(bar.plannedShare, 0.5);
   });
 
   testWidgets('a food that plans take names the planned amount and draws it '

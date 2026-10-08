@@ -6,6 +6,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/widgets/app_snack_bar_view.dart';
+import 'package:yamt/core/widgets/graphit_stock_bar.dart';
 import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
@@ -207,6 +208,13 @@ void main() {
     await tester.tap(find.byKey(const Key('inventory_list_view_mode_button')));
     await _settle(tester);
     expect(find.byKey(InventoryEntriesSliver.tilesKey), findsOneWidget);
+    final skyrBar = tester.widget<GraphitStockBar>(
+      find.descendant(
+        of: find.byKey(const ValueKey('inventory_entry_tile_skyr')),
+        matching: find.byType(GraphitStockBar),
+      ),
+    );
+    expect(skyrBar.plannedShare, 0.25);
 
     await tester.tap(find.byKey(const Key('inventory_list_view_mode_button')));
     await tester.tap(find.byKey(const Key('inventory_list_sort_button')));
