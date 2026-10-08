@@ -7,6 +7,7 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
+import 'package:yamt/features/calories/application/day_budget.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
@@ -15,10 +16,10 @@ import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_mappers.dart';
-import 'package:yamt/features/diary/application/diary_macro_targets_resolver.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/domain/diary_day_goal_signature.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_state.dart';
 
 export 'diary_day_dashboard_state.dart';
@@ -213,19 +214,10 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       if (!_isCurrentRefresh(generation)) {
         return;
       }
-      final goalKcal = resolveDiaryDisplayGoalKcal(
-        weekOverview: liveData.weekOverview,
-        selectedDayOverview: liveData.selectedDayOverview,
-      );
-      final isPastDay = normalizedDay.isBefore(ref.read(diaryTodayProvider));
-      final carryoverKcal = isPastDay
-          ? 0.0
-          : liveData.weekOverview.carryoverBeforeTodayKcal;
-      final macroTargets = resolveDiaryMacroTargets(
-        ref,
-        day: normalizedDay,
-        goalKcal: goalKcal,
-        carryoverKcal: carryoverKcal,
+      final budget = resolveDayBudget(
+        week: liveData.weekOverview,
+        today: ref.read(diaryTodayProvider),
+        nutrition: ref.read(dailyNutritionTargetResolverProvider),
       );
 
       final data = DiaryDayDashboardData(
@@ -243,14 +235,17 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         ),
         nutritionBars: buildDiaryDashboardNutritionBars(
           liveData.countedEntries,
-          goalKcal,
-          macroTargets: macroTargets,
+          budget.goalKcal,
+          macroTargets: DiaryMacroTargets(
+            carbs: budget.target.carbsGrams,
+            protein: budget.target.proteinGrams,
+            fat: budget.target.fatGrams,
+          ),
         ),
-        carryoverMacroDelta: resolveDiaryCarryoverMacroDelta(
-          ref.read(dailyNutritionTargetResolverProvider),
-          day: normalizedDay,
-          goalKcal: goalKcal,
-          carryoverKcal: carryoverKcal,
+        carryoverMacroDelta: DiaryMacroTargets(
+          carbs: budget.carryoverMacroDelta.carbs,
+          protein: budget.carryoverMacroDelta.protein,
+          fat: budget.carryoverMacroDelta.fat,
         ),
       );
       state = DiaryDayDashboardState(
