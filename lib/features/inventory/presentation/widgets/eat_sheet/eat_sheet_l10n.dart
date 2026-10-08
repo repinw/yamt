@@ -7,7 +7,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart
 import 'package:yamt/features/inventory/domain/prepared_meal_portions.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
-import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/prepared_meal_serving_unit_l10n.dart';

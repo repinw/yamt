@@ -8,6 +8,7 @@ import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_controller.dart';
+import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_actions.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_gone_flow.dart';
