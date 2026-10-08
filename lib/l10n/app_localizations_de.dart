@@ -5175,6 +5175,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get calorieGoalLoadRetryAction => 'Erneut versuchen';
 
   @override
+  String get calorieGoalLoadFailedSignOutAction => 'Abmelden';
+
+  @override
+  String get calorieGoalLoadFailedSignOutFailed =>
+      'Abmelden hat nicht geklappt. Prüfe deine Verbindung.';
+
+  @override
   String get dataKeyPickFromPasswordManagerAction =>
       'Aus Passwortmanager einfügen';
 

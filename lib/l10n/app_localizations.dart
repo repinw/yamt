@@ -8648,6 +8648,18 @@ abstract class AppLocalizations {
   /// **'Try again'**
   String get calorieGoalLoadRetryAction;
 
+  /// No description provided for @calorieGoalLoadFailedSignOutAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out'**
+  String get calorieGoalLoadFailedSignOutAction;
+
+  /// No description provided for @calorieGoalLoadFailedSignOutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not sign out. Check your connection.'**
+  String get calorieGoalLoadFailedSignOutFailed;
+
   /// No description provided for @dataKeyPickFromPasswordManagerAction.
   ///
   /// In en, this message translates to:

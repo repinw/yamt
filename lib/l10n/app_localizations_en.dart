@@ -5101,6 +5101,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get calorieGoalLoadRetryAction => 'Try again';
 
   @override
+  String get calorieGoalLoadFailedSignOutAction => 'Sign out';
+
+  @override
+  String get calorieGoalLoadFailedSignOutFailed =>
+      'Could not sign out. Check your connection.';
+
+  @override
   String get dataKeyPickFromPasswordManagerAction =>
       'Paste from password manager';
 

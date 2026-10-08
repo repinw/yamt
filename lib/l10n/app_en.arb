@@ -2813,6 +2813,8 @@
   "dataKeyRetryAction": "Try again",
   "calorieGoalLoadFailed": "Could not load your goal. Check your connection.",
   "calorieGoalLoadRetryAction": "Try again",
+  "calorieGoalLoadFailedSignOutAction": "Sign out",
+  "calorieGoalLoadFailedSignOutFailed": "Could not sign out. Check your connection.",
   "dataKeyPickFromPasswordManagerAction": "Paste from password manager",
   "dataKeyPickFailed": "Could not open the password manager.",
   "foodEstimateHeadline": "What are you eating?",

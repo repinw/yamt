@@ -11,6 +11,11 @@ abstract final class CalorieGoalOnboardingKeys {
   /// The retry action on the page shown when the goal could not load.
   static const loadFailedRetryAction = Key('calorie_goal_load_failed_retry');
 
+  /// The sign-out action on the page shown when the goal could not load.
+  static const loadFailedSignOutAction = Key(
+    'calorie_goal_load_failed_sign_out',
+  );
+
   /// The birthday day wheel.
   static const introBirthDayWheel = Key('calorie_intro_birth_day_wheel');
 
