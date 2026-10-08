@@ -2,10 +2,7 @@ import 'dart:async';
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:uuid/uuid.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/'
@@ -14,21 +11,20 @@ import 'package:yamt/features/household/application/'
     'household_permission_recovery.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/inventory/application/'
+    'inventory_item_discard_service.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_item_edit_service.dart';
+import 'package:yamt/features/inventory/application/'
+    'inventory_item_mutation_service.dart';
+import 'package:yamt/features/inventory/application/inventory_item_writer.dart';
+import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
-import 'package:yamt/features/inventory/data/'
-    'global_barcode_candidate_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'global_food_item_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_activity_event_repository.dart';
-import 'package:yamt/features/inventory/data/'
-    'inventory_discard_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_stock_changes.dart';
 import 'package:yamt/features/shoppinglist/application/'
     'shopping_list_operations.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
@@ -38,111 +34,9 @@ part 'inventory_items_controller.g.dart';
 
 const _controllerLogName = 'InventoryItemsController';
 
-/// Takes [amount] out of the item [itemId], capped at what the item holds.
-///
-/// Returns null when the item is missing, empty, or [amount] is below 1.
-@visibleForTesting
-List<InventoryItem>? buildReducedItems({
-  required List<InventoryItem> currentItems,
-  required String itemId,
-  required int amount,
-  required DateTime consumedAt,
-}) {
-  final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-  if (itemIndex < 0) {
-    return null;
-  }
-
-  final item = currentItems[itemIndex];
-  final available = item.availableAmount;
-  final reducedItem = item.reducedBy(
-    amount > available ? available : amount,
-    consumedAt: consumedAt,
-  );
-  if (reducedItem == null) {
-    return null;
-  }
-  return List<InventoryItem>.from(currentItems)..[itemIndex] = reducedItem;
-}
-
-/// Builds an edited item while preserving remaining stock for metadata edits.
-@visibleForTesting
-InventoryItem buildInventoryItemEditSaveItem({
-  required InventoryItem currentItem,
-  required InventoryItem editedItem,
-}) {
-  if (!_hasSameInventoryStockDefinition(
-    currentItem: currentItem,
-    editedItem: editedItem,
-  )) {
-    return editedItem;
-  }
-
-  return editedItem.copyWith(
-    quantity: currentItem.quantity,
-    initialQuantity: currentItem.initialQuantity,
-    initialAmount: currentItem.initialAmount,
-    currentAmount: currentItem.currentAmount,
-    amountScale: currentItem.amountScale,
-    amountUnit: currentItem.amountUnit,
-    lastConsumedAt: currentItem.lastConsumedAt,
-  );
-}
-
-bool _hasSameInventoryStockDefinition({
-  required InventoryItem currentItem,
-  required InventoryItem editedItem,
-}) {
-  return editedItem.quantity == currentItem.quantity &&
-      editedItem.initialAmount == currentItem.initialAmount &&
-      editedItem.amountScale == currentItem.amountScale &&
-      editedItem.amountUnit == currentItem.amountUnit;
-}
-
-/// Build restored items.
-@visibleForTesting
-List<InventoryItem>? buildRestoredItems({
-  required List<InventoryItem> currentItems,
-  required String itemId,
-  required int amount,
-}) {
-  if (amount < 1) {
-    return null;
-  }
-
-  final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-  if (itemIndex < 0) {
-    return null;
-  }
-
-  final restored = currentItems[itemIndex].restoredBy(amount);
-  if (restored == null) {
-    return null;
-  }
-  return List<InventoryItem>.from(currentItems)..[itemIndex] = restored;
-}
-
-class _PendingDeletedInventoryItem {
-  const new({required this.item, required this.index});
-
-  final InventoryItem item;
-  final int index;
-}
-
-/// The result of reducing inventory item stock.
-typedef InventoryItemReductionResult = ({int removedAmount});
-
-/// The result of discarding inventory item stock.
-typedef InventoryItemDiscardResult = ({
-  String discardEventId,
-  int removedAmount,
-});
-
 /// Defines inventory items controller.
 @riverpod
 class InventoryItemsController extends _$InventoryItemsController {
-  static const _uuid = Uuid();
-
   // Subscription is cancelled by _disposeRealtimeSubscription.
   // ignore: cancel_subscriptions
   StreamSubscription<List<InventoryItem>>? _itemsSubscription;
@@ -150,17 +44,14 @@ class InventoryItemsController extends _$InventoryItemsController {
   _pendingFinalizationSubscription;
   int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
-  _PendingDeletedInventoryItem? _pendingDeletedItem;
+  DeletedInventoryItem? _pendingDeletedItem;
   List<InventoryItem>? _persistedItems;
   String? _currentDataOwnerUserId;
 
-  /// Read in [build], so a mutation that outlives the provider still has it.
-  late DateTime Function() _clock;
   bool _isRecoveringHouseholdAccess = false;
 
   @override
   FutureOr<List<InventoryItem>> build() async {
-    _clock = ref.watch(clockProvider);
     ref
       ..watch(householdDataOwnerUserIdProvider)
       ..watch(inventoryItemRepositoryProvider)
@@ -388,79 +279,66 @@ class InventoryItemsController extends _$InventoryItemsController {
         '${recoveryState?.personalUserId ?? '<none>'}';
   }
 
-  /// Delete item.
-  Future<bool> deleteItem(String itemId) {
-    return _runSerializedMutation(() async {
-      final currentItems = await _currentPersistedItems();
-      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-      if (itemIndex < 0) {
-        return false;
-      }
+  InventoryItemMutationService get _mutations =>
+      ref.read(inventoryItemMutationServiceProvider);
 
-      final nextItems = List<InventoryItem>.from(currentItems)
-        ..removeAt(itemIndex);
-      final saved = await _saveItems(
-        previousItems: currentItems,
-        nextItems: nextItems,
-      );
-      if (saved) {
-        _pendingDeletedItem = _PendingDeletedInventoryItem(
-          item: currentItems[itemIndex],
-          index: itemIndex,
-        );
-        await _recordActivityEvent(
-          _buildActivityEvent(
-            type: InventoryActivityEventType.itemDeleted,
-            item: currentItems[itemIndex],
-            amount: currentItems[itemIndex].availableAmount,
-            beforeItem: currentItems[itemIndex],
-          ),
-        );
-      }
-      return saved;
-    });
+  InventoryItemDiscardService get _discards =>
+      ref.read(inventoryItemDiscardServiceProvider);
+
+  InventoryItemEditService get _edits =>
+      ref.read(inventoryItemEditServiceProvider);
+
+  /// Runs [change] on the queue with the current list, and publishes the
+  /// list it wrote unless the stream delivered a newer one meanwhile.
+  Future<T> _mutate<T>(
+    T fallback,
+    Future<InventoryItemChange<T>> Function(List<InventoryItem> items) change,
+  ) {
+    return _runSerializedTask<T>(
+      operation: () async {
+        final items = await _currentPersistedItems();
+        if (!ref.mounted) {
+          return fallback;
+        }
+        final (:result, :written) = await change(items);
+        if (written != null &&
+            ref.mounted &&
+            identical(_persistedItems, items)) {
+          _persistedItems = written;
+          _publishVisibleItems();
+        }
+        return result;
+      },
+      fallbackValue: fallback,
+    );
+  }
+
+  /// Delete item.
+  Future<bool> deleteItem(String itemId) async {
+    final deleted = await _mutate(
+      null,
+      (items) => _mutations.delete(items, itemId),
+    );
+    if (deleted != null) {
+      _pendingDeletedItem = deleted;
+    }
+    return deleted != null;
   }
 
   /// Undo last deleted item.
-  Future<bool> undoLastDeletedItem() {
-    return _runSerializedMutation(() async {
-      final pendingDeletedItem = _pendingDeletedItem;
-      if (pendingDeletedItem == null) {
-        return false;
-      }
-
-      final currentItems = await _currentPersistedItems();
-      final itemAlreadyPresent = currentItems.any(
-        (item) => item.id == pendingDeletedItem.item.id,
-      );
-      if (itemAlreadyPresent) {
-        _pendingDeletedItem = null;
-        return true;
-      }
-
-      final insertIndex = _safeInsertIndex(
-        index: pendingDeletedItem.index,
-        maxLength: currentItems.length,
-      );
-      final nextItems = List<InventoryItem>.from(currentItems)
-        ..insert(insertIndex, pendingDeletedItem.item);
-      final saved = await _saveItems(
-        previousItems: currentItems,
-        nextItems: nextItems,
-      );
-      if (saved) {
-        await _recordActivityEvent(
-          _buildActivityEvent(
-            type: InventoryActivityEventType.itemRestored,
-            item: pendingDeletedItem.item,
-            amount: pendingDeletedItem.item.availableAmount,
-            afterItem: pendingDeletedItem.item,
-          ),
-        );
-        _pendingDeletedItem = null;
-      }
-      return saved;
-    });
+  Future<bool> undoLastDeletedItem() async {
+    final pendingDeletedItem = _pendingDeletedItem;
+    if (pendingDeletedItem == null) {
+      return false;
+    }
+    final restored = await _mutate(
+      false,
+      (items) => _mutations.restoreDeleted(items, pendingDeletedItem),
+    );
+    if (restored && identical(_pendingDeletedItem, pendingDeletedItem)) {
+      _pendingDeletedItem = null;
+    }
+    return restored;
   }
 
   /// Eat item and return the actual reduced amount.
@@ -472,51 +350,9 @@ class InventoryItemsController extends _$InventoryItemsController {
     if (amount < 1) {
       return Future<InventoryItemReductionResult?>.value();
     }
-
-    return _runSerializedTask<InventoryItemReductionResult?>(
-      operation: () async {
-        final currentItems = await _currentPersistedItems();
-        final removedAmount = _resolveEffectiveConsumptionAmount(
-          currentItems: currentItems,
-          itemId: itemId,
-          requestedAmount: amount,
-        );
-        if (removedAmount == null) {
-          return null;
-        }
-
-        final nextItems = buildReducedItems(
-          currentItems: currentItems,
-          itemId: itemId,
-          amount: removedAmount,
-          consumedAt: consumedAt ?? _clock(),
-        );
-        if (nextItems == null) {
-          return null;
-        }
-
-        final saved = await _saveItems(
-          previousItems: currentItems,
-          nextItems: nextItems,
-        );
-        if (!saved) {
-          return null;
-        }
-
-        final beforeItem = _findItem(currentItems, itemId);
-        await _recordActivityEvent(
-          _buildActivityEvent(
-            type: InventoryActivityEventType.itemConsumed,
-            item: beforeItem,
-            amount: removedAmount,
-            beforeItem: beforeItem,
-            afterItem: _findItem(nextItems, itemId),
-            happenedAt: consumedAt,
-          ),
-        );
-        return (removedAmount: removedAmount);
-      },
-      fallbackValue: null,
+    return _mutate(
+      null,
+      (items) => _mutations.eat(items, itemId, amount, consumedAt: consumedAt),
     );
   }
 
@@ -529,73 +365,9 @@ class InventoryItemsController extends _$InventoryItemsController {
     if (amount < 1) {
       return Future<InventoryItemDiscardResult?>.value();
     }
-
-    return _runSerializedTask<InventoryItemDiscardResult?>(
-      operation: () async {
-        final currentItems = await _currentPersistedItems();
-        final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-        if (itemIndex < 0) {
-          return null;
-        }
-
-        final item = currentItems[itemIndex];
-        final discardedAmount = _resolveDiscardedAmount(
-          item: item,
-          requestedAmount: amount,
-        );
-        if (discardedAmount == null) {
-          return null;
-        }
-
-        final nextItems = buildReducedItems(
-          currentItems: currentItems,
-          itemId: itemId,
-          amount: discardedAmount,
-          consumedAt: _clock(),
-        );
-        if (nextItems == null) {
-          return null;
-        }
-
-        final saved = await _saveItems(
-          previousItems: currentItems,
-          nextItems: nextItems,
-        );
-        if (!saved) {
-          return null;
-        }
-
-        final discardEventId = _uuid.v4();
-        final discardEvent = InventoryDiscardEvent.fromInventoryItem(
-          id: discardEventId,
-          item: item,
-          discardedAmount: discardedAmount,
-          reason: reason,
-        );
-        final eventSaved = await ref
-            .read(inventoryDiscardEventRepositoryProvider)
-            .saveEvent(discardEvent);
-        if (eventSaved) {
-          await _recordActivityEvent(
-            _buildActivityEvent(
-              type: InventoryActivityEventType.itemDiscarded,
-              item: item,
-              amount: discardedAmount,
-              beforeItem: item,
-              afterItem: _findItem(nextItems, itemId),
-              reason: reason.name,
-            ),
-          );
-          return (
-            discardEventId: discardEventId,
-            removedAmount: discardedAmount,
-          );
-        }
-
-        await _saveItems(previousItems: nextItems, nextItems: currentItems);
-        return null;
-      },
-      fallbackValue: null,
+    return _mutate(
+      null,
+      (items) => _discards.throwAway(items, itemId, amount, reason),
     );
   }
 
@@ -610,43 +382,10 @@ class InventoryItemsController extends _$InventoryItemsController {
     if (amountsByItemId.isEmpty || amountsByItemId.values.any((a) => a < 1)) {
       return Future<bool>.value(false);
     }
-    return _runSerializedMutation(() async {
-      final currentItems = await _currentPersistedItems();
-      var nextItems = currentItems;
-      for (final MapEntry(key: itemId, value: amount)
-          in amountsByItemId.entries) {
-        final restored = buildRestoredItems(
-          currentItems: nextItems,
-          itemId: itemId,
-          amount: amount,
-        );
-        if (restored == null) {
-          return false;
-        }
-        nextItems = restored;
-      }
-      final saved = await _saveItems(
-        previousItems: currentItems,
-        nextItems: nextItems,
-      );
-      if (saved) {
-        for (final MapEntry(key: itemId, value: amount)
-            in amountsByItemId.entries) {
-          final beforeItem = _findItem(currentItems, itemId);
-          final afterItem = _findItem(nextItems, itemId);
-          await _recordActivityEvent(
-            _buildActivityEvent(
-              type: InventoryActivityEventType.itemRestored,
-              item: afterItem ?? beforeItem,
-              amount: amount,
-              beforeItem: beforeItem,
-              afterItem: afterItem,
-            ),
-          );
-        }
-      }
-      return saved;
-    });
+    return _mutate(
+      false,
+      (items) => _mutations.restore(items, amountsByItemId),
+    );
   }
 
   /// Restore stock for a thrown-away item and delete its discard event.
@@ -658,59 +397,14 @@ class InventoryItemsController extends _$InventoryItemsController {
     if (amount < 1 || discardEventId.trim().isEmpty) {
       return Future<bool>.value(false);
     }
-
-    return _runSerializedTask<bool>(
-      operation: () async {
-        final currentItems = await _currentPersistedItems();
-        final restoredItems = buildRestoredItems(
-          currentItems: currentItems,
-          itemId: itemId,
-          amount: amount,
-        );
-        if (restoredItems == null) {
-          return false;
-        }
-
-        final restored = await _saveItems(
-          previousItems: currentItems,
-          nextItems: restoredItems,
-        );
-        if (!restored) {
-          return false;
-        }
-        final beforeItem = _findItem(currentItems, itemId);
-        final afterItem = _findItem(restoredItems, itemId);
-        await _recordActivityEvent(
-          _buildActivityEvent(
-            type: InventoryActivityEventType.itemRestored,
-            item: afterItem ?? beforeItem,
-            amount: amount,
-            beforeItem: beforeItem,
-            afterItem: afterItem,
-          ),
-        );
-
-        final deleted = await ref
-            .read(inventoryDiscardEventRepositoryProvider)
-            .deleteEvent(discardEventId);
-        if (deleted) {
-          return true;
-        }
-
-        final rolledBack = await _saveItems(
-          previousItems: restoredItems,
-          nextItems: currentItems,
-        );
-        if (!rolledBack) {
-          log(
-            'Failed to rollback thrown-away item undo after discard event '
-            'delete failure (itemId=$itemId, discardEventId=$discardEventId).',
-            name: _controllerLogName,
-          );
-        }
-        return false;
-      },
-      fallbackValue: false,
+    return _mutate(
+      false,
+      (items) => _discards.undoThrowAway(
+        items,
+        itemId: itemId,
+        amount: amount,
+        discardEventId: discardEventId,
+      ),
     );
   }
 
@@ -736,29 +430,7 @@ class InventoryItemsController extends _$InventoryItemsController {
 
   /// Update item.
   Future<bool> updateItem(InventoryItem item) {
-    return _runSerializedMutation(() async {
-      final currentItems = await _currentPersistedItems();
-      final itemIndex = currentItems.indexWhere(
-        (currentItem) => currentItem.id == item.id,
-      );
-      if (itemIndex < 0) {
-        return false;
-      }
-      final currentItem = currentItems[itemIndex];
-      if (!currentItem.isFullyAvailable) {
-        return false;
-      }
-
-      final nextItems = List<InventoryItem>.from(currentItems);
-      nextItems[itemIndex] = buildInventoryItemEditSaveItem(
-        currentItem: currentItem,
-        editedItem: item,
-      );
-      return await _saveItems(
-        previousItems: currentItems,
-        nextItems: nextItems,
-      );
-    });
+    return _mutate(false, (items) => _edits.update(items, item));
   }
 
   /// Replaces the product reference on an existing full inventory item.
@@ -768,48 +440,16 @@ class InventoryItemsController extends _$InventoryItemsController {
     required bool requiresGlobalPersistence,
     String? weight,
   }) {
-    return _runSerializedMutation(() async {
-      final currentItems = await _currentPersistedItems();
-      final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-      if (itemIndex < 0) {
-        return false;
-      }
-
-      final sourceItem = currentItems[itemIndex];
-      if (!sourceItem.isFullyAvailable) {
-        return false;
-      }
-
-      final canReferenceGlobalItem = await _persistResolvedProduct(
+    return _mutate(
+      false,
+      (items) => _edits.swap(
+        items,
+        itemId: itemId,
         resolvedProduct: resolvedProduct,
         requiresGlobalPersistence: requiresGlobalPersistence,
-      );
-
-      final nextItems = List<InventoryItem>.from(currentItems);
-      nextItems[itemIndex] = _buildSwappedItem(
-        sourceItem: sourceItem,
-        resolvedProduct: resolvedProduct,
         weight: weight,
-        canReferenceGlobalItem: canReferenceGlobalItem,
-      );
-      final saved = await _saveItems(
-        previousItems: currentItems,
-        nextItems: nextItems,
-      );
-      if (saved && canReferenceGlobalItem) {
-        final barcode = resolvedProduct.normalizedBarcode;
-        if (barcode != null && barcode.isNotEmpty) {
-          await ref
-              .read(globalBarcodeCandidateRepositoryProvider)
-              .recordSelection(
-                barcode: barcode,
-                globalFoodItem: resolvedProduct,
-                selectedAt: _clock(),
-              );
-        }
-      }
-      return saved;
-    });
+      ),
+    );
   }
 
   /// Adds a newly created item and publishes it once it is written, so
@@ -819,37 +459,19 @@ class InventoryItemsController extends _$InventoryItemsController {
     return _runSerializedMutation(() async {
       final previousItems = await _currentPersistedItems();
       final generation = _subscriptionGeneration;
-      final repository = ref.read(inventoryItemRepositoryProvider);
-      try {
-        final saved = await repository.appendAll(<InventoryItem>[item]);
-        if (saved) {
-          // A household switch or refresh meanwhile starts a new list.
-          if (ref.mounted && generation == _subscriptionGeneration) {
-            _persistedItems = _mergePersistedItem(
-              currentItems: _persistedItems ?? previousItems,
-              item: item,
-            );
-            _publishVisibleItems();
-          }
-          await _recordActivityEvent(
-            _buildActivityEvent(
-              type: InventoryActivityEventType.itemAdded,
-              item: item,
-              amount: item.availableAmount,
-              afterItem: item,
-            ),
-          );
-        }
-        return saved;
-      } on Object catch (error, stackTrace) {
-        log(
-          'Failed to append inventory item ${item.id}.',
-          name: _controllerLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
+      if (!ref.mounted) {
         return false;
       }
+      final saved = await _mutations.add(item);
+      // A household switch or refresh meanwhile starts a new list.
+      if (saved && ref.mounted && generation == _subscriptionGeneration) {
+        _persistedItems = _mergePersistedItem(
+          currentItems: _persistedItems ?? previousItems,
+          item: item,
+        );
+        _publishVisibleItems();
+      }
+      return saved;
     });
   }
 
@@ -866,111 +488,13 @@ class InventoryItemsController extends _$InventoryItemsController {
     return _runSerializedTask<PendingInventoryConsumption?>(
       operation: () async {
         final pendings = ref.read(inventoryPendingConsumptionStoreProvider);
-        final item = _findItem(await _currentVisibleItems(), itemId);
+        final item = findInventoryItem(await _currentVisibleItems(), itemId);
         final draft = item == null ? null : pendings.stage(item, amount);
         _publishVisibleItems();
         return draft;
       },
       fallbackValue: null,
     );
-  }
-
-  Future<bool> _saveItems({
-    required List<InventoryItem> previousItems,
-    required List<InventoryItem> nextItems,
-  }) async {
-    if (!ref.mounted) {
-      return false;
-    }
-    final repository = ref.read(inventoryItemRepositoryProvider);
-    try {
-      final saved = await repository.saveChanges(
-        previous: previousItems,
-        next: nextItems,
-      );
-      // The write is in the local cache now, and the item stream shows it.
-      // Unless the stream already delivered a newer list, the list is
-      // published here too, so a change queued right after starts from it.
-      if (saved && ref.mounted && identical(_persistedItems, previousItems)) {
-        _persistedItems = nextItems;
-        _publishVisibleItems();
-      }
-      return saved;
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to persist inventory mutation.',
-        name: _controllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
-  }
-
-  Future<bool> _persistResolvedProduct({
-    required GlobalFoodItem resolvedProduct,
-    required bool requiresGlobalPersistence,
-  }) async {
-    if (!requiresGlobalPersistence) {
-      return true;
-    }
-
-    try {
-      return await ref.read(globalFoodItemRepositoryProvider).appendAll(
-        <GlobalFoodItem>[resolvedProduct],
-      );
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to persist swapped product ${resolvedProduct.id}. '
-        'Continuing with inventory-only save.',
-        name: _controllerLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
-  }
-
-  InventoryItem _buildSwappedItem({
-    required InventoryItem sourceItem,
-    required GlobalFoodItem resolvedProduct,
-    required String? weight,
-    required bool canReferenceGlobalItem,
-  }) {
-    final updatedItem = sourceItem.copyWith(
-      globalFoodItemId: canReferenceGlobalItem
-          ? resolvedProduct.id
-          : buildPendingGlobalFoodItemId(
-              resolvedProduct.resolvedFoodFingerprint,
-            ),
-      name: resolvedProduct.name,
-      brand: resolvedProduct.brand,
-      category: resolvedProduct.category,
-      barcode: resolvedProduct.barcode,
-      imageUrl: resolvedProduct.imageUrl,
-      weight: weight,
-      foodFingerprint: resolvedProduct.resolvedFoodFingerprint,
-      servingSize: resolvedProduct.servingSize,
-      servingQuantity: resolvedProduct.servingQuantity,
-      servingQuantityUnit: resolvedProduct.servingQuantityUnit,
-      nutrition: resolvedProduct.nutrition,
-    );
-    return updatedItem.withDerivedAmount(
-      weight: updatedItem.weight,
-      quantity: updatedItem.quantity,
-      fallbackUnit: sourceItem.amountUnit,
-    );
-  }
-
-  int? _resolveDiscardedAmount({
-    required InventoryItem item,
-    required int requestedAmount,
-  }) {
-    final maxReducible = item.availableAmount;
-    if (maxReducible < 1) {
-      return null;
-    }
-    return requestedAmount > maxReducible ? maxReducible : requestedAmount;
   }
 
   Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
@@ -1034,27 +558,6 @@ class InventoryItemsController extends _$InventoryItemsController {
     state = AsyncData(persistedItems);
   }
 
-  int? _resolveEffectiveConsumptionAmount({
-    required List<InventoryItem> currentItems,
-    required String itemId,
-    required int requestedAmount,
-  }) {
-    if (requestedAmount < 1) {
-      return null;
-    }
-
-    final itemIndex = currentItems.indexWhere((item) => item.id == itemId);
-    if (itemIndex < 0) {
-      return null;
-    }
-
-    final maxReducible = currentItems[itemIndex].availableAmount;
-    if (maxReducible < 1) {
-      return null;
-    }
-    return requestedAmount > maxReducible ? maxReducible : requestedAmount;
-  }
-
   List<InventoryItem> _mergePersistedItem({
     required List<InventoryItem> currentItems,
     required InventoryItem item,
@@ -1068,74 +571,4 @@ class InventoryItemsController extends _$InventoryItemsController {
     nextItems[itemIndex] = item;
     return nextItems;
   }
-
-  InventoryActivityEvent? _buildActivityEvent({
-    required InventoryActivityEventType type,
-    required InventoryItem? item,
-    required int amount,
-    InventoryItem? beforeItem,
-    InventoryItem? afterItem,
-    DateTime? happenedAt,
-    String? reason,
-  }) {
-    assert(amount >= 0, 'Amount cannot be negative');
-    final actor = ref.read(inventoryActivityActorProvider);
-    if (actor == null || item == null) {
-      return null;
-    }
-
-    return InventoryActivityEvent.fromStockChange(
-      id: _uuid.v4(),
-      type: type,
-      actor: actor,
-      item: item,
-      amount: amount < 0 ? 0 : amount,
-      beforeQuantity: beforeItem?.quantity,
-      afterQuantity: afterItem?.quantity,
-      beforeCurrentAmount: beforeItem?.currentAmount,
-      afterCurrentAmount: afterItem?.currentAmount,
-      happenedAt: happenedAt,
-      reason: reason,
-    );
-  }
-
-  Future<void> _recordActivityEvent(InventoryActivityEvent? event) async {
-    if (event == null) {
-      return;
-    }
-
-    if (!ref.mounted) {
-      return;
-    }
-    final repository = ref.read(inventoryActivityEventRepositoryProvider);
-    final saved = await repository.appendAll(<InventoryActivityEvent>[event]);
-    if (!ref.mounted) {
-      return;
-    }
-    if (!saved) {
-      log(
-        'Failed to record inventory activity event ${event.id}.',
-        name: _controllerLogName,
-      );
-    }
-  }
-}
-
-int _safeInsertIndex({required int index, required int maxLength}) {
-  if (index < 0) {
-    return 0;
-  }
-  if (index > maxLength) {
-    return maxLength;
-  }
-  return index;
-}
-
-InventoryItem? _findItem(List<InventoryItem> items, String itemId) {
-  for (final item in items) {
-    if (item.id == itemId) {
-      return item;
-    }
-  }
-  return null;
 }

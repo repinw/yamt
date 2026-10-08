@@ -14,6 +14,7 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_stock_changes.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
 import '../../../../helpers/inventory_item_whole_list_writes.dart';
