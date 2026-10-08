@@ -349,6 +349,62 @@ void main() {
   final planTomorrow = planToday.add(const Duration(days: 1));
   final planDayAfterTomorrow = planToday.add(const Duration(days: 2));
 
+  group('calorie settings', () {
+    final today = DateTime(2026, 4, 10);
+    final pauseDay = DateTime(2026, 4, 8);
+
+    ProviderContainer containerFor(
+      _StreamedCalorieSettingsRepository settings,
+    ) {
+      final logRepository = FakeCalorieLogRepository();
+      addTearDown(logRepository.dispose);
+      addTearDown(settings.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          calorieLogRepositoryProvider.overrideWithValue(logRepository),
+          calorieSettingsRepositoryProvider.overrideWithValue(settings),
+        ],
+      );
+      addTearDown(container.dispose);
+      return container;
+    }
+
+    test('the overviews wait for the settings while they load', () async {
+      final settings = _StreamedCalorieSettingsRepository();
+      final container = containerFor(settings);
+      final week = _readWeekOverviewForWindow(container, today);
+      final day = _readDayOverviewForDate(container, pauseDay);
+      await container.pump();
+
+      settings.emit(
+        CalorieGoalSettings.single(
+          dailyKcalGoal: 2000,
+          calculatorProfile: null,
+          effectiveDate: today.subtract(const Duration(days: 6)),
+        ).setPauseDay(day: pauseDay, isPause: true),
+      );
+
+      final pauseOverview = (await week).days.firstWhere(
+        (overview) => overview.date == pauseDay,
+      );
+      expect(pauseOverview.isPauseDay, isTrue);
+      expect((await day).isPauseDay, isTrue);
+    });
+
+    test('the overviews fail when the settings fail', () async {
+      final settings = _StreamedCalorieSettingsRepository();
+      final container = containerFor(settings);
+      final week = _readWeekOverviewForWindow(container, today);
+      final day = _readDayOverviewForDate(container, pauseDay);
+      await container.pump();
+
+      settings.fail(StateError('settings failed'));
+
+      await expectLater(week, throwsA(isA<StateError>()));
+      await expectLater(day, throwsA(isA<StateError>()));
+    });
+  });
+
   test('calorieWeekOverview gives a future day no carryover', () async {
     final container = _futureDaysContainer(today: planToday);
 
@@ -1303,6 +1359,28 @@ class _DelayedCalorieSettingsRepository implements CalorieSettingsRepository {
     _settings = settings;
     _controller.add(settings);
   }
+
+  Future<void> dispose() => _controller.close();
+}
+
+/// Settings that arrive only when the test emits them.
+class _StreamedCalorieSettingsRepository implements CalorieSettingsRepository {
+  final _controller = StreamController<CalorieGoalSettings>.broadcast();
+
+  @override
+  Stream<CalorieGoalSettings> watchSettings() => _controller.stream;
+
+  @override
+  Future<CalorieGoalSettings> readSettings() => _controller.stream.first;
+
+  @override
+  Future<void> saveSettings(CalorieGoalSettings settings) async {
+    _controller.add(settings);
+  }
+
+  void emit(CalorieGoalSettings settings) => _controller.add(settings);
+
+  void fail(Object error) => _controller.addError(error);
 
   Future<void> dispose() => _controller.close();
 }

@@ -11,7 +11,6 @@ import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 
@@ -39,7 +38,7 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
       calorieWeekConsumptionSnapshotForWindowProvider(visibleWindowEnd).future,
     );
     final repository = ref.watch(calorieLogRepositoryProvider);
-    final goalState = ref.watch(calorieGoalControllerProvider);
+    final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
     final resolvedGoalsFuture = ref.watch(
       resolvedCalorieGoalsForDaysProvider(
         ResolvedCalorieGoalDaysRequest.fromDays(visibleDays),
@@ -54,8 +53,10 @@ Future<CalorieWeekOverview> calorieWeekOverviewForWindow(
     if (!ref.mounted) {
       throw StateError('Calorie week overview disposed.');
     }
-    final settings =
-        goalState.asData?.value ?? const CalorieGoalSettings.empty();
+    final settings = await settingsFuture;
+    if (!ref.mounted) {
+      throw StateError('Calorie week overview disposed.');
+    }
     final resolvedGoalsByDay = await resolvedGoalsFuture;
     if (!ref.mounted) {
       throw StateError('Calorie week overview disposed.');
@@ -126,12 +127,14 @@ Future<CalorieWeekDayOverview> calorieWeekDayOverviewForDate(
     ref.watch(calorieOverviewRevisionProvider);
     final normalizedDay = normalizeDiaryDay(day);
     final repository = ref.watch(calorieLogRepositoryProvider);
-    final goalState = ref.watch(calorieGoalControllerProvider);
-    final settings =
-        goalState.asData?.value ?? const CalorieGoalSettings.empty();
+    final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
     final resolvedGoalFuture = ref.watch(
       resolvedCalorieGoalForDayProvider(normalizedDay).future,
     );
+    final settings = await settingsFuture;
+    if (!ref.mounted) {
+      throw StateError('Calorie week day overview disposed.');
+    }
     final entries = await readEntriesForDaySafely(repository, normalizedDay);
     if (!ref.mounted) {
       throw StateError('Calorie week day overview disposed.');
