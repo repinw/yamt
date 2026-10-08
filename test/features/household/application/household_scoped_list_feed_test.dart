@@ -11,7 +11,6 @@ class _Controller extends AsyncNotifier<List<int>> {
   late final feed = HouseholdScopedListFeed<int>(
     ref: () => ref,
     watch: () => _source.stream,
-    readAll: () async => <int>[0],
     setState: (next) => state = next,
     logName: 'test',
     recoveryMessage: 'test',

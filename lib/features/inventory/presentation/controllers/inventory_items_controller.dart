@@ -40,7 +40,6 @@ class InventoryItemsController extends _$InventoryItemsController {
   late final _feed = HouseholdScopedListFeed<InventoryItem>(
     ref: () => ref,
     watch: () => ref.read(inventoryItemRepositoryProvider).watchAll(),
-    readAll: () => ref.read(inventoryItemRepositoryProvider).readAll(),
     setState: (next) => state = next,
     logName: _controllerLogName,
     recoveryMessage:
