@@ -1,7 +1,58 @@
+import 'package:yamt/features/calories/domain/calorie_goal_learned_transitions.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
+
+/// The settings after the user decided the weekly check-in [pending], so the
+/// whole decision is saved at once.
+///
+/// [training] first sets the training days of the planned run. With [accept],
+/// the goal of [snapshot] applies, unless the history already holds it.
+/// Otherwise the goal from before the window stays and [snapshot] is kept as
+/// rejected. The pending check-in is cleared.
+///
+/// Returns `null` when the run of [training] ended before [today], so a sheet
+/// left open into a later run decides nothing.
+CalorieGoalSettings? decideWeeklyCheckIn({
+  required CalorieGoalSettings settings,
+  required PendingCalorieGoalWeeklyCheckIn pending,
+  required CalorieGoalWeeklyCheckInSnapshot snapshot,
+  required bool accept,
+  required DateTime today,
+  CalorieRunTrainingChoice? training,
+}) {
+  var next = settings;
+  if (training != null) {
+    final trained = next.withPlannedRunTrainingDays(training, today: today);
+    if (trained == null) {
+      return null;
+    }
+    next = trained;
+  }
+  if (!accept) {
+    next = next.applyWeeklyCheckInGoal(
+      completedAt: pending.dueDate,
+      dailyKcalGoal: goalKcalBeforeWeeklyCheckIn(
+        settings: next,
+        checkInWindowStartDate: pending.windowStartDate,
+      ),
+      weeklyCheckInSnapshot: snapshot.copyWith(isRejected: true),
+    );
+  } else if (!hasMatchingWeeklyCheckInSnapshot(
+    settings: next,
+    dailyKcalGoal: snapshot.baseGoalKcal,
+    weeklyCheckInSnapshot: snapshot,
+  )) {
+    next = next.applyWeeklyCheckInGoal(
+      completedAt: pending.dueDate,
+      dailyKcalGoal: snapshot.baseGoalKcal,
+      weeklyCheckInSnapshot: snapshot,
+    );
+  }
+  return next.copyWithPendingWeeklyCheckIn(null);
+}
 
 /// Whether the goal history already holds a rejected snapshot for the
 /// window of [weeklyCheckIn].
