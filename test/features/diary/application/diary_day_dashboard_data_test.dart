@@ -2,33 +2,40 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 import '../support/diary_dashboard_test_support.dart';
 
 final DateTime _today = DateTime(2026, 10, 8);
+final DateTime _tomorrow = nextDiaryDay(_today);
 const _targets = DiaryMacroTargets(carbs: 250, protein: 120, fat: 70);
 const _delta = DiaryMacroTargets(carbs: 5, protein: 0, fat: 2);
 
-DiaryDayDashboardSnapshot _snapshot({required bool countsPlans}) =>
-    DiaryDayDashboardSnapshot(
-      selectedDay: _today,
-      refreshedAt: _today,
-      weekOverview: diaryWeekOverviewForTest(selectedDay: _today),
-      selectedDayEntries: [_entry('eaten', 100)],
-      plannedEntries: [_entry('plan', 40)],
-      countsPlans: countsPlans,
-      runState: const BurnWeekRunState.initial(),
-      goalKcal: 2000,
-      macroTargets: _targets,
-      carryoverMacroDelta: _delta,
-    );
+DiaryDayDashboardSnapshot _snapshot(
+  DateTime day, {
+  bool isPreviousDayClosed = false,
+}) => DiaryDayDashboardSnapshot(
+  selectedDay: day,
+  refreshedAt: _today,
+  weekOverview: diaryWeekOverviewForTest(
+    selectedDay: day,
+    isPreviousDayClosed: isPreviousDayClosed,
+  ),
+  selectedDayEntries: [_entry('eaten', 100)],
+  plannedEntries: [_entry('plan', 40)],
+  runState: const BurnWeekRunState.initial(),
+  goalKcal: 2000,
+  macroTargets: _targets,
+  carryoverMacroDelta: _delta,
+);
 
 void main() {
-  test('adds the plans when they count toward the day', () {
+  test('a planned day counts its plans', () {
     final data = DiaryDayDashboardData.fromSnapshot(
-      _snapshot(countsPlans: true),
+      _snapshot(_tomorrow),
+      today: _today,
     );
 
     expect(data.countsPlans, isTrue);
@@ -36,9 +43,10 @@ void main() {
     expect(data.nutritionBars.protein, 14);
   });
 
-  test('adds only eaten food when the plans do not count', () {
+  test('a day whose day before is closed counts only eaten food', () {
     final data = DiaryDayDashboardData.fromSnapshot(
-      _snapshot(countsPlans: false),
+      _snapshot(_tomorrow, isPreviousDayClosed: true),
+      today: _today,
     );
 
     expect(data.countsPlans, isFalse);
@@ -46,9 +54,20 @@ void main() {
     expect(data.nutritionBars.protein, 10);
   });
 
+  test('a cached planned day counts no plans once it is today', () {
+    final data = DiaryDayDashboardData.fromSnapshot(
+      _snapshot(_tomorrow),
+      today: _tomorrow,
+    );
+
+    expect(data.countsPlans, isFalse);
+    expect(data.mealSections.first.totalKcal, 100);
+  });
+
   test('keeps the cached day budget', () {
     final data = DiaryDayDashboardData.fromSnapshot(
-      _snapshot(countsPlans: false),
+      _snapshot(_today),
+      today: _today,
     );
 
     expect(data.nutritionBars.goals, _targets);

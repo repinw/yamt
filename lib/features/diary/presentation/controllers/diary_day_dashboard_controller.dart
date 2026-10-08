@@ -44,7 +44,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     final preferences = ref.watch(appPreferencesProvider);
     final cacheRepository = ref.watch(diaryDayDashboardCacheRepositoryProvider);
     // A planned day may be today now, and then it gets its carryover.
-    ref.watch(diaryTodayProvider);
+    final today = ref.watch(diaryTodayProvider);
     ref.onDispose(() {
       _settledMutationRefreshTimer?.cancel();
       _mutationRefreshInFlight = null;
@@ -58,7 +58,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
           );
     final cachedData = cachedSnapshot == null
         ? null
-        : DiaryDayDashboardData.fromSnapshot(cachedSnapshot);
+        : DiaryDayDashboardData.fromSnapshot(cachedSnapshot, today: today);
 
     // A rebuild drops the subscription that keeps the live data alive, so a
     // refresh started before it never settles and would block every later one.
@@ -215,9 +215,10 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       if (!_isCurrentRefresh(generation)) {
         return;
       }
+      final today = ref.read(diaryTodayProvider);
       final budget = resolveDayBudget(
         week: liveData.weekOverview,
-        today: ref.read(diaryTodayProvider),
+        today: today,
         nutrition: ref.read(dailyNutritionTargetResolverProvider),
       );
       final snapshot = DiaryDayDashboardSnapshot(
@@ -226,7 +227,6 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         weekOverview: liveData.weekOverview,
         selectedDayEntries: liveData.selectedDayEntries,
         plannedEntries: liveData.plannedEntries,
-        countsPlans: liveData.countsPlans,
         runState: liveData.runState,
         goalKcal: budget.goalKcal,
         macroTargets: DiaryMacroTargets(
@@ -240,7 +240,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
           fat: budget.carryoverMacroDelta.fat,
         ),
       );
-      final data = DiaryDayDashboardData.fromSnapshot(snapshot);
+      final data = DiaryDayDashboardData.fromSnapshot(snapshot, today: today);
       state = DiaryDayDashboardState(
         data: data,
         isFromCache: false,
