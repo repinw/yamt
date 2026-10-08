@@ -107,6 +107,26 @@ void main() {
     );
   });
 
+  test('deleteEntry forgets the entry at once and deletes it in the '
+      'background', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreCalorieLogRepository(
+      dataCipher: signedIn,
+      firestore: firestore,
+    );
+    await repository.saveEntry(_entry('a', loggedAt: DateTime(2026, 2, 25, 8)));
+    await pumpEventQueue();
+
+    expect(await repository.deleteEntry('a'), isTrue);
+    expect(repository.cachedById('a'), isNull);
+    await pumpEventQueue();
+
+    expect(
+      (await firestore.doc('users/user-1/calorie_entries/a').get()).exists,
+      isFalse,
+    );
+  });
+
   test('save getById and delete operate on one document per entry', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreCalorieLogRepository(
