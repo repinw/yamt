@@ -27,6 +27,18 @@ PreparedMeal _soup({PreparedMealPotWeighing? weighing}) {
 }
 
 void main() {
+  test('portions rounded by the field still take everything left', () {
+    final calculator = PreparedMealEatCalculator(
+      _meal(remainingPortions: 2 * 690 / 990, finalNetWeight: 800),
+    );
+    const portions = PreparedMealEatAmountMode.portions;
+
+    expect(calculator.validPortions(1.394, portions), 2 * 690 / 990);
+    expect(calculator.validPortions(1.393, portions), 2 * 690 / 990);
+    expect(calculator.validPortions(1.4, portions), isNull);
+    expect(calculator.validPortions(1.2, portions), 1.2);
+  });
+
   group('pot weighing', () {
     test('a fresh weighing sets what a gram is worth', () {
       final calculator = PreparedMealEatCalculator(

@@ -1444,6 +1444,30 @@ abstract class AppLocalizations {
   /// **'Then tare the scale and enter the grams you took.'**
   String get eatPotTakeOutHint;
 
+  /// No description provided for @eatPageRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest'**
+  String get eatPageRest;
+
+  /// No description provided for @eatPageRestHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest takes everything in the pot, so the sum is right without a scale.'**
+  String get eatPageRestHint;
+
+  /// No description provided for @eatPageMealPortionGrams.
+  ///
+  /// In en, this message translates to:
+  /// **'{portions} · {grams} g'**
+  String eatPageMealPortionGrams(String portions, int grams);
+
+  /// No description provided for @eatPageMealPer100Cooked.
+  ///
+  /// In en, this message translates to:
+  /// **'per 100 g cooked'**
+  String get eatPageMealPer100Cooked;
+
   /// No description provided for @eatPagePotUnit.
   ///
   /// In en, this message translates to:

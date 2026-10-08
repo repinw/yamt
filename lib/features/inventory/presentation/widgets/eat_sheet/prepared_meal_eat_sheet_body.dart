@@ -4,6 +4,7 @@ import 'package:yamt/core/constants/hero_tags.dart';
 import 'package:yamt/core/data/local_image_asset_ref.dart';
 import 'package:yamt/core/data/local_image_store_provider.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/nutrition_facts_rows.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
@@ -36,6 +37,9 @@ class PreparedMealEatSheetBody extends ConsumerStatefulWidget {
     this.actions,
     super.key,
   });
+
+  /// Key of the note that "Rest" empties the pot.
+  static const restHintKey = Key('prepared_meal_rest_hint');
 
   /// Meal to eat.
   final PreparedMeal meal;
@@ -104,6 +108,9 @@ class _PreparedMealEatSheetBodyState
         widget.meal.isInPot == meal.isInPot;
     final canEat = !isInPot && meal.allows(PreparedMealAction.eat);
     final nutrition = state.nutrition;
+    final facts = nutrition == null
+        ? const <NutritionFactsRow>[]
+        : nutritionFactsRows(context, eaten: nutrition.eaten);
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
     final imageBytes = imageRef == null
         ? null
@@ -147,7 +154,17 @@ class _PreparedMealEatSheetBodyState
         if (nutrition != null)
           EatLabelTable(
             key: const Key('prepared_meal_nutrition_table'),
-            rows: nutritionFactsRows(context, eaten: nutrition.eaten),
+            rows: [
+              ...facts.take(1),
+              if (state.kcalPer100Grams case final kcal?)
+                NutritionFactsRow(
+                  label: l10n.eatPageMealPer100Cooked,
+                  per100: null,
+                  eaten: l10n.eatPageKcal(kcal),
+                  isPart: true,
+                ),
+              ...facts.skip(1),
+            ],
             eatenHeader: state.portionsHeader(l10n),
           ),
         if (meal.potTareWeight case final tare? when canEat)
@@ -170,7 +187,11 @@ class _PreparedMealEatSheetBodyState
               EatRulerMark(
                 label: state.markLabel(l10n, index, value),
                 value: value.toDouble(),
-                isSelected: state.amount == value,
+                // Everything left reads back rounded from the field.
+                isSelected: index == 0
+                    ? state.takesRest
+                    : state.amount == value,
+                isAccent: index == 0 && state.offersRest,
                 onPressed: () => _controller.pickAmount(value),
               ),
           ],
@@ -185,6 +206,13 @@ class _PreparedMealEatSheetBodyState
               ? () => _controller.switchMode()
               : null,
         ),
+        if (state.offersRest && state.takesRest)
+          Text(
+            l10n.eatPageRestHint,
+            key: PreparedMealEatSheetBody.restHintKey,
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: FoodLabelColors.of(context).muted),
+          ),
         if (widget.actions case final actions?)
           EatMealDetailSections(meal: meal, actions: actions)
         else if (state.components.isNotEmpty)

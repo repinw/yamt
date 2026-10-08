@@ -13,6 +13,7 @@ class EatRulerMark {
     required this.value,
     required this.isSelected,
     required this.onPressed,
+    this.isAccent = false,
   });
 
   /// Text of the mark.
@@ -26,6 +27,9 @@ class EatRulerMark {
 
   /// Called when the mark is tapped.
   final VoidCallback onPressed;
+
+  /// Whether the mark is filled with the accent when selected.
+  final bool isAccent;
 }
 
 /// Ruler slider of the eat page with tick marks, and a row of tappable
@@ -119,6 +123,7 @@ class EatRuler extends StatelessWidget {
               EatChip(
                 label: mark.label,
                 isSelected: mark.isSelected,
+                isAccent: mark.isAccent,
                 onPressed: mark.onPressed,
               ),
           ],

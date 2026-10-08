@@ -836,6 +836,21 @@ class AppLocalizationsDe extends AppLocalizations {
       'Dann Tara drücken und die genommenen Gramm eintragen.';
 
   @override
+  String get eatPageRest => 'Rest';
+
+  @override
+  String get eatPageRestHint =>
+      'Rest nimmt alles, was im Topf ist. So stimmt die Summe auch ohne Waage.';
+
+  @override
+  String eatPageMealPortionGrams(String portions, int grams) {
+    return '$portions · $grams g';
+  }
+
+  @override
+  String get eatPageMealPer100Cooked => 'je 100 g gekocht';
+
+  @override
   String get eatPagePotUnit => 'Topf';
 
   @override

@@ -826,6 +826,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Then tare the scale and enter the grams you took.';
 
   @override
+  String get eatPageRest => 'Rest';
+
+  @override
+  String get eatPageRestHint =>
+      'Rest takes everything in the pot, so the sum is right without a scale.';
+
+  @override
+  String eatPageMealPortionGrams(String portions, int grams) {
+    return '$portions · $grams g';
+  }
+
+  @override
+  String get eatPageMealPer100Cooked => 'per 100 g cooked';
+
+  @override
   String get eatPagePotUnit => 'pot';
 
   @override

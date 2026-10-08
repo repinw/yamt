@@ -35,7 +35,7 @@ extension PreparedMealEatSheetTexts on PreparedMealEatSheetState {
   /// everything left.
   String markLabel(AppLocalizations l10n, int index, num value) {
     if (index == 0) {
-      return l10n.eatPageAll;
+      return offersRest ? l10n.eatPageRest : l10n.eatPageAll;
     }
     return switch (mode) {
       PreparedMealEatAmountMode.portions => _portions(value),
@@ -69,12 +69,19 @@ extension PreparedMealEatSheetTexts on PreparedMealEatSheetState {
     );
   }
 
-  /// Header of the nutrition table: the eaten portions.
+  /// Header of the nutrition table: the eaten portions with their grams, or
+  /// "Rest" when they empty the pot.
   String portionsHeader(AppLocalizations l10n) {
     final portions = portionsOrOne;
-    return calculator.meal.isServedInPieces
+    final base = offersRest && takesRest
+        ? l10n.eatPageRest
+        : calculator.meal.isServedInPieces
         ? l10n.inventoryEatSheetPiecesHeader(portions, _portions(portions))
         : l10n.inventoryEatSheetPortionsHeader(portions, _portions(portions));
+    return switch (portionGrams) {
+      final grams? => l10n.eatPageMealPortionGrams(base, grams),
+      null => base,
+    };
   }
 
   String _portions(num value) {
