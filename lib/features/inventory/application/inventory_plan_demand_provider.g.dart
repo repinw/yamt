@@ -57,14 +57,14 @@ final class OpenPlansProvider
 
 String _$openPlansHash() => r'd03adcf8048e946347f1e28c8472321b8e00a198';
 
-/// What the open plans take from the Vorrat: "verplant" on Vorrat rows and
-/// "fehlt" on plan rows.
+/// What the open plans take from the Vorrat, foods and cooked meals:
+/// "verplant" on Vorrat rows and "fehlt" on plan rows.
 
 @ProviderFor(openPlanDemand)
 final openPlanDemandProvider = OpenPlanDemandProvider._();
 
-/// What the open plans take from the Vorrat: "verplant" on Vorrat rows and
-/// "fehlt" on plan rows.
+/// What the open plans take from the Vorrat, foods and cooked meals:
+/// "verplant" on Vorrat rows and "fehlt" on plan rows.
 
 final class OpenPlanDemandProvider
     extends
@@ -76,8 +76,8 @@ final class OpenPlanDemandProvider
     with
         $FutureModifier<InventoryPlanDemand>,
         $FutureProvider<InventoryPlanDemand> {
-  /// What the open plans take from the Vorrat: "verplant" on Vorrat rows and
-  /// "fehlt" on plan rows.
+  /// What the open plans take from the Vorrat, foods and cooked meals:
+  /// "verplant" on Vorrat rows and "fehlt" on plan rows.
   OpenPlanDemandProvider._()
     : super(
         from: null,
@@ -104,4 +104,4 @@ final class OpenPlanDemandProvider
   }
 }
 
-String _$openPlanDemandHash() => r'3df3780169622f20cacf6f66ad5d16711e52213c';
+String _$openPlanDemandHash() => r'8020517e7f26d603434b83229ba2f59310b2007e';

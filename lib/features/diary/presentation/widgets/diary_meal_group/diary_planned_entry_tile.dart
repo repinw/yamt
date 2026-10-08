@@ -55,10 +55,12 @@ class DiaryPlannedEntryTile extends StatelessWidget {
                     child: DiaryMealEntryTile(
                       entry: plan,
                       onTap: onTap,
-                      tag: plan.isPreparedMeal
-                          ? const _MealPrepTag()
-                          : isShort
+                      // Too few portions left matters more than the
+                      // meal prep mark.
+                      tag: isShort
                           ? const _ShortTag()
+                          : plan.isPreparedMeal
+                          ? const _MealPrepTag()
                           : null,
                     ),
                   ),

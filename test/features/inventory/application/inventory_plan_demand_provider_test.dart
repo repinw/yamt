@@ -45,6 +45,9 @@ void main() {
         inventoryQuickEatItemsProvider.overrideWith(
           (ref) => Stream.value([oats]),
         ),
+        inventoryQuickEatMealsProvider.overrideWith(
+          (ref) => Stream.value(const []),
+        ),
         plannedEntryRepositoryProvider.overrideWithValue(
           FakePlannedEntryRepository(
             plans: [

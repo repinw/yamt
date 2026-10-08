@@ -112,8 +112,9 @@ String _$inventoryShoppingSuggestionsHash() =>
 
 /// What to buy for the open plans the Vorrat cannot cover, grouped by day
 /// and meal, without the foods already on the shopping list.
-// ponytail: plans of found foods and cooked meals are left out like in the
-// demand; add them when the demand counts them.
+// ponytail: plans of found foods are left out like in the demand; add them
+// when the demand counts them. Short cooked meal plans need cooking, not
+// shopping, so they stay out.
 
 @ProviderFor(inventoryShoppingPlanNeedGroups)
 final inventoryShoppingPlanNeedGroupsProvider =
@@ -121,8 +122,9 @@ final inventoryShoppingPlanNeedGroupsProvider =
 
 /// What to buy for the open plans the Vorrat cannot cover, grouped by day
 /// and meal, without the foods already on the shopping list.
-// ponytail: plans of found foods and cooked meals are left out like in the
-// demand; add them when the demand counts them.
+// ponytail: plans of found foods are left out like in the demand; add them
+// when the demand counts them. Short cooked meal plans need cooking, not
+// shopping, so they stay out.
 
 final class InventoryShoppingPlanNeedGroupsProvider
     extends
@@ -136,8 +138,9 @@ final class InventoryShoppingPlanNeedGroupsProvider
         $FutureProvider<List<ShoppingPlanNeedGroup>> {
   /// What to buy for the open plans the Vorrat cannot cover, grouped by day
   /// and meal, without the foods already on the shopping list.
-  // ponytail: plans of found foods and cooked meals are left out like in the
-  // demand; add them when the demand counts them.
+  // ponytail: plans of found foods are left out like in the demand; add them
+  // when the demand counts them. Short cooked meal plans need cooking, not
+  // shopping, so they stay out.
   InventoryShoppingPlanNeedGroupsProvider._()
     : super(
         from: null,

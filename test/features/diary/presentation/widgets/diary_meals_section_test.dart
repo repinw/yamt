@@ -659,6 +659,39 @@ void main() {
     expect(shortIn('bread'), findsNothing);
   });
 
+  testWidgets('a meal plan with too few portions left says so', (tester) async {
+    DiaryMealEntry mealPlan(String id) => _entry(
+      id: id,
+      day: selectedDay,
+      mealType: MealType.dinner,
+      name: id,
+      kcal: 500,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      bundleTotalPortions: 4,
+    );
+    await _pumpMealsSection(
+      tester,
+      selectedDay: selectedDay,
+      shortPlanIds: {'chili'},
+      sections: [
+        _mealSection(
+          MealType.dinner,
+          const [],
+          plannedEntries: [mealPlan('chili'), mealPlan('curry')],
+        ),
+      ],
+    );
+
+    Finder shortIn(String id) => find.descendant(
+      of: find.byKey(DiaryMealsSectionKeys.plannedEntryTile(id)),
+      matching: find.byKey(DiaryMealsSectionKeys.planShortTag),
+    );
+    expect(shortIn('chili'), findsOneWidget);
+    expect(shortIn('curry'), findsNothing);
+  });
+
   testWidgets('a day with only plans shows them instead of the hint', (
     tester,
   ) async {
@@ -1146,6 +1179,7 @@ Override _planDemand({Set<String> shortPlanIds = const {}}) =>
     openPlanDemandProvider.overrideWith(
       (ref) async => (
         plannedByItemId: <String, int>{},
+        plannedPortionsByMealId: <String, double>{},
         missingShareByPlanId: {for (final id in shortPlanIds) id: 1.0},
       ),
     );
