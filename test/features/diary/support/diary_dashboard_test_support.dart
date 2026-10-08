@@ -63,7 +63,6 @@ DiaryDayDashboardSnapshot diaryDashboardSnapshotForTest({
     weekOverview: diaryWeekOverviewForTest(selectedDay: normalizedDay),
     selectedDayEntries: selectedDayEntries,
     plannedEntries: const <CalorieEntry>[],
-    countsPlans: false,
     runState: const BurnWeekRunState.initial(),
     goalKcal: 2000,
     macroTargets: const DiaryMacroTargets(carbs: 0, protein: 0, fat: 0),

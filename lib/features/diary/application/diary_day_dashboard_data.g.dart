@@ -28,7 +28,6 @@ DiaryDayDashboardSnapshot _$DiaryDayDashboardSnapshotFromJson(
         ),
       )
       .toList(),
-  countsPlans: json['counts_plans'] as bool,
   runState: BurnWeekRunState.fromJson(
     json['run_state'] as Map<String, dynamic>,
   ),
@@ -53,7 +52,6 @@ Map<String, dynamic> _$DiaryDayDashboardSnapshotToJson(
   'planned_entries': instance.plannedEntries
       .map(const _CachedCalorieEntryConverter().toJson)
       .toList(),
-  'counts_plans': instance.countsPlans,
   'run_state': instance.runState.toJson(),
   'goal_kcal': instance.goalKcal,
   'macro_targets': instance.macroTargets.toJson(),

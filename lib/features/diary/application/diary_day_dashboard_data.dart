@@ -2,6 +2,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -17,8 +18,8 @@ part 'diary_day_dashboard_data.g.dart';
 /// resolved day budget.
 ///
 /// The budget is a snapshot of the goal settings, which load later than the
-/// cache on a cold start; the meal sections and macro bars are rebuilt from
-/// the inputs by [DiaryDayDashboardData.fromSnapshot].
+/// cache on a cold start; everything else is rebuilt from the inputs by
+/// [DiaryDayDashboardData.fromSnapshot].
 @JsonSerializable(
   fieldRename: FieldRename.snake,
   explicitToJson: true,
@@ -32,7 +33,6 @@ class DiaryDayDashboardSnapshot {
     required this.weekOverview,
     required this.selectedDayEntries,
     required this.plannedEntries,
-    required this.countsPlans,
     required this.runState,
     required this.goalKcal,
     required this.macroTargets,
@@ -57,9 +57,6 @@ class DiaryDayDashboardSnapshot {
 
   /// Plans for [selectedDay].
   final List<CalorieEntry> plannedEntries;
-
-  /// Whether [plannedEntries] count toward [selectedDay].
-  final bool countsPlans;
 
   /// Burn Week run state used by diary chrome and balance widgets.
   final BurnWeekRunState runState;
@@ -93,9 +90,16 @@ class DiaryDayDashboardData {
     required this.carryoverMacroDelta,
   });
 
-  /// Builds the dashboard of [snapshot].
-  factory fromSnapshot(DiaryDayDashboardSnapshot snapshot) {
-    final countsPlans = snapshot.countsPlans;
+  /// Builds the dashboard of [snapshot] with [today] as today.
+  factory fromSnapshot(
+    DiaryDayDashboardSnapshot snapshot, {
+    required DateTime today,
+  }) {
+    final countsPlans = DiaryDayStatus.of(
+      day: snapshot.selectedDay,
+      today: today,
+      isPreviousDayClosed: snapshot.weekOverview.isPreviousDayClosed,
+    ).isPlanned;
     return DiaryDayDashboardData(
       selectedDay: snapshot.selectedDay,
       refreshedAt: snapshot.refreshedAt,
