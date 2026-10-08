@@ -15,6 +15,11 @@ abstract final class DiaryWeeklyCheckInCardKeys {
     'diary-weekly-checkin-success-card-close',
   );
 
+  /// Redo button of the success card.
+  static const successCardRedo = ValueKey<String>(
+    'diary-weekly-checkin-success-card-redo',
+  );
+
   /// The weekly check-in continue button.
   static const continueButton = ValueKey<String>(
     'diary-weekly-checkin-continue',

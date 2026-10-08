@@ -1083,6 +1083,7 @@
   "caloriesWeeklyCheckInHintStaleBody": "Use your next weekly check-in to keep your target current.",
   "caloriesWeeklyCheckInHintUrgentTitle": "Target needs refresh",
   "caloriesWeeklyCheckInHintUrgentBody": "You have been using older target data for a while now.",
+  "caloriesWeeklyCheckInRedoAction": "Redo check-in",
   "caloriesWeeklyCheckInShowAgainAction": "Show weekly check-in",
   "caloriesWeeklyCheckInShowAgainFailed": "Could not reopen the weekly check-in.",
   "caloriesWeeklyCheckInSkipDayAction": "Mark day as skipped",

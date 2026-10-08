@@ -2135,6 +2135,9 @@ class AppLocalizationsDe extends AppLocalizations {
       'Du verwendest schon länger ältere Zieldaten.';
 
   @override
+  String get caloriesWeeklyCheckInRedoAction => 'Check-in wiederholen';
+
+  @override
   String get caloriesWeeklyCheckInShowAgainAction => 'Wochen-Check-in anzeigen';
 
   @override

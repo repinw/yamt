@@ -1010,6 +1010,7 @@
   "caloriesWeeklyCheckInHintStaleBody": "Nutze den nächsten Wochen-Check-in, damit dein Ziel aktuell bleibt.",
   "caloriesWeeklyCheckInHintUrgentTitle": "Ziel braucht Aktualisierung",
   "caloriesWeeklyCheckInHintUrgentBody": "Du verwendest schon länger ältere Zieldaten.",
+  "caloriesWeeklyCheckInRedoAction": "Check-in wiederholen",
   "caloriesWeeklyCheckInShowAgainAction": "Wochen-Check-in anzeigen",
   "caloriesWeeklyCheckInShowAgainFailed": "Der Wochen-Check-in konnte nicht erneut geöffnet werden.",
   "caloriesWeeklyCheckInSkipDayAction": "Tag als ausgelassen markieren",

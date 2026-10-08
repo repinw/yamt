@@ -12,10 +12,13 @@ import 'package:yamt/features/diary/presentation/widgets/'
 /// today's diary page and until the user closes it.
 class DiaryWeeklyCheckInSuccessHost extends ConsumerWidget {
   /// Creates diary weekly check-in success host.
-  const new({required this.selectedDay, super.key});
+  const new({required this.selectedDay, required this.onRedo, super.key});
 
   /// Selected diary day.
   final DateTime selectedDay;
+
+  /// Opens the check-in of the applied window again for a new decision.
+  final Future<void> Function(PendingCalorieGoalWeeklyCheckIn checkIn) onRedo;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -41,6 +44,13 @@ class DiaryWeeklyCheckInSuccessHost extends ConsumerWidget {
         DiaryWeeklyCheckInSuccessCard(
           goalKcal:
               latestEntry?.dailyKcalGoal ?? goalSettings?.dailyKcalGoal ?? 0,
+          // A window with changed inputs is already open again.
+          onRedo: switch (latestEntry!.weeklyCheckInSnapshot) {
+            final snapshot? when !snapshot.isInputDirty => () => onRedo(
+              snapshot.reopenedCheckIn,
+            ),
+            _ => null,
+          },
           onDismiss: () => ref
               .read(
                 diaryWeeklyCheckInSuccessDismissalControllerProvider.notifier,

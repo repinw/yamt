@@ -3616,6 +3616,12 @@ abstract class AppLocalizations {
   /// **'You have been using older target data for a while now.'**
   String get caloriesWeeklyCheckInHintUrgentBody;
 
+  /// No description provided for @caloriesWeeklyCheckInRedoAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Redo check-in'**
+  String get caloriesWeeklyCheckInRedoAction;
+
   /// No description provided for @caloriesWeeklyCheckInShowAgainAction.
   ///
   /// In en, this message translates to:
