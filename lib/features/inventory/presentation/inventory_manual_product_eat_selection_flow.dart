@@ -6,8 +6,6 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_item_eat_request.dart';
-import 'package:yamt/features/inventory/domain/'
-    'inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_add_eat_flow.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
@@ -63,10 +61,6 @@ abstract final class InventoryManualProductEatSelectionFlow {
     return await showInventoryItemEatSheetResult(
       context: context,
       item: item,
-      initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
-        item: item,
-        rawWeight: item.weight,
-      ),
       initialLoggedAt: preselectedLoggedAt,
       initialMealType: preselectedMealType,
       hasOpenStock: true,

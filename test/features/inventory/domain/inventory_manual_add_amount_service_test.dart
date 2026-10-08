@@ -108,36 +108,6 @@ void main() {
     expect(resized.currentAmount, 750);
   });
 
-  test('initial eat amount parses package weight only for matching unit', () {
-    final milk = _amountItem(
-      weight: '1 l',
-      amountUnit: InventoryAmountUnit.milliliter,
-      initialAmount: 1000,
-      currentAmount: 1000,
-    );
-    final gramsItem = _amountItem(
-      weight: '1 l',
-      amountUnit: InventoryAmountUnit.gram,
-      initialAmount: 1000,
-      currentAmount: 1000,
-    );
-
-    expect(
-      resolveInventoryManualAddInitialConsumedAmount(
-        item: milk,
-        rawWeight: '1 l',
-      ),
-      1000,
-    );
-    expect(
-      resolveInventoryManualAddInitialConsumedAmount(
-        item: gramsItem,
-        rawWeight: '1 l',
-      ),
-      isNull,
-    );
-  });
-
   test('safe amount scale falls back by unit', () {
     expect(
       safeInventoryManualAddAmountScale(

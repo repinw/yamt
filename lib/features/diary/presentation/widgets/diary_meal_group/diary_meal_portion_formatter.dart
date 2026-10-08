@@ -36,8 +36,9 @@ String? formatDiaryMealPortionLabel(
   final portionLabel = entry.portionLabel;
   if (portionAmount != null && portionAmount > 0 && portionLabel != null) {
     // An edited amount that is no longer a count in tenths shows grams.
-    final count = amount / portionAmount;
-    if ((count * 10 - (count * 10).round()).abs() < 0.001) {
+    // The amount has one decimal, so 0,5 × 33,3 g reads back from 16,7 g.
+    final count = (amount / portionAmount * 10).round() / 10;
+    if (count > 0 && (amount - count * portionAmount).abs() <= 0.05 + 0.001) {
       return l10n.caloriesCountedPortion(
         _formatCount(count, format),
         format.format(portionAmount),

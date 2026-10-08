@@ -2,6 +2,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_chip.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
+import 'package:yamt/l10n/app_localizations.dart';
 
 /// Row of the eat page with a label and a count between a minus and a plus
 /// button, such as the portions of a meal.
@@ -23,8 +25,8 @@ class EatCountRow extends StatelessWidget {
   /// Text before the count.
   final String label;
 
-  /// Current count.
-  final int count;
+  /// Current count, such as 2 or 1.5.
+  final num count;
 
   /// Tooltip of the minus button.
   final String decreaseTooltip;
@@ -71,7 +73,7 @@ class EatCountRow extends StatelessWidget {
           ),
         ),
         Text(
-          '$count',
+          formatEatCount(AppLocalizations.of(context)!, count),
           key: valueKey,
           style: textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w700,

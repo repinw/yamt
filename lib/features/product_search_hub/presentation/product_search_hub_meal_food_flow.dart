@@ -3,7 +3,6 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_manual_add_amount_service.dart';
 import 'package:yamt/features/inventory/domain/inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_item_eat_sheet_result.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
@@ -188,10 +187,6 @@ class _EditableEatPage extends StatelessWidget {
     return InventoryItemEatSheetBody(
       item: item,
       confirmIntent: InventoryItemEatSheetIntent.logOnly,
-      initialInventoryAmount: resolveInventoryManualAddInitialConsumedAmount(
-        item: item,
-        rawWeight: item.weight,
-      ),
       initialLoggedAt: initialLoggedAt,
       initialMealType: initialMealType,
       hasOpenStock: true,
