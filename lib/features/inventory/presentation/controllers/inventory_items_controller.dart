@@ -812,25 +812,25 @@ class InventoryItemsController extends _$InventoryItemsController {
     });
   }
 
-  /// Adds a newly created item and publishes it immediately so follow-up
-  /// flows can reference it before the realtime repository catches up.
+  /// Adds a newly created item and publishes it once it is written, so
+  /// follow-up flows can reference it before the realtime repository catches
+  /// up.
   Future<bool> addItem(InventoryItem item) {
     return _runSerializedMutation(() async {
       final previousItems = await _currentPersistedItems();
-      final nextItems = _mergePersistedItem(
-        currentItems: previousItems,
-        item: item,
-      );
-      _persistedItems = nextItems;
-      _publishVisibleItems();
-
+      final generation = _subscriptionGeneration;
       final repository = ref.read(inventoryItemRepositoryProvider);
       try {
         final saved = await repository.appendAll(<InventoryItem>[item]);
-        if (!saved) {
-          _persistedItems = previousItems;
-          _publishVisibleItems();
-        } else {
+        if (saved) {
+          // A household switch or refresh meanwhile starts a new list.
+          if (ref.mounted && generation == _subscriptionGeneration) {
+            _persistedItems = _mergePersistedItem(
+              currentItems: _persistedItems ?? previousItems,
+              item: item,
+            );
+            _publishVisibleItems();
+          }
           await _recordActivityEvent(
             _buildActivityEvent(
               type: InventoryActivityEventType.itemAdded,
@@ -848,8 +848,6 @@ class InventoryItemsController extends _$InventoryItemsController {
           error: error,
           stackTrace: stackTrace,
         );
-        _persistedItems = previousItems;
-        _publishVisibleItems();
         return false;
       }
     });
@@ -884,20 +882,17 @@ class InventoryItemsController extends _$InventoryItemsController {
     if (!ref.mounted) {
       return false;
     }
-    _persistedItems = nextItems;
-    _publishVisibleItems();
-
     final repository = ref.read(inventoryItemRepositoryProvider);
     try {
       final saved = await repository.saveChanges(
         previous: previousItems,
         next: nextItems,
       );
-      if (!ref.mounted) {
-        return saved;
-      }
-      if (!saved) {
-        _persistedItems = previousItems;
+      // The write is in the local cache now, and the item stream shows it.
+      // Unless the stream already delivered a newer list, the list is
+      // published here too, so a change queued right after starts from it.
+      if (saved && ref.mounted && identical(_persistedItems, previousItems)) {
+        _persistedItems = nextItems;
         _publishVisibleItems();
       }
       return saved;
@@ -908,8 +903,6 @@ class InventoryItemsController extends _$InventoryItemsController {
         error: error,
         stackTrace: stackTrace,
       );
-      _persistedItems = previousItems;
-      _publishVisibleItems();
       return false;
     }
   }
