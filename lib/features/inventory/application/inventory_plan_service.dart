@@ -6,7 +6,7 @@ import 'package:yamt/features/calories/application/calorie_overview_revision_pro
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
@@ -51,7 +51,7 @@ class InventoryPlanService {
   /// after today.
   bool isPlan(InventoryItemEatRequest request) =>
       request.isPlan ||
-      isDiaryFutureDay(day: request.loggedAt, today: _clock());
+      DiaryDayStatus.of(day: request.loggedAt, today: _clock()).isFuture;
 
   /// Saves [request] of [item] as a plan.
   ///

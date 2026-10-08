@@ -1,6 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/inventory/domain/eat_amount_step.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
@@ -43,7 +43,7 @@ class PreparedMealEatSheetState {
   final DateTime today;
 
   /// Whether the food is saved as a plan: its day lies after [today].
-  bool get isPlan => isDiaryFutureDay(day: loggedAt, today: today);
+  bool get isPlan => DiaryDayStatus.of(day: loggedAt, today: today).isFuture;
 
   /// Meal the food is logged to.
   final MealType mealType;

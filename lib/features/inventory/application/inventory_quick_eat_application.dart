@@ -10,7 +10,7 @@ import 'package:yamt/features/calories/application/calorie_overview_revision_pro
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/application/'
@@ -107,7 +107,8 @@ class InventoryQuickEatApplication {
             mealId: meal.id,
             netWeight: potNetWeight,
           );
-    final isPlan = asPlan || isDiaryFutureDay(day: loggedDay, today: _now());
+    final isPlan =
+        asPlan || DiaryDayStatus.of(day: loggedDay, today: _now()).isFuture;
     final action = isPlan ? PreparedMealAction.plan : PreparedMealAction.eat;
     if (!weighed.allowsPortions(action, consumedPortions)) {
       return null;

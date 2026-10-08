@@ -1,7 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/inventory/domain/eat_amount_step.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_serving_suggestion.dart';
@@ -117,10 +117,10 @@ class InventoryItemEatSheetState {
   final DateTime today;
 
   /// Whether the food is saved as a plan: its day lies after [today].
-  bool get isPlan => isDiaryFutureDay(day: loggedAt, today: today);
+  bool get isPlan => DiaryDayStatus.of(day: loggedAt, today: today).isFuture;
 
   /// Whether the food is logged on a day before [today].
-  bool get isPastDay => isDiaryFutureDay(day: today, today: loggedAt);
+  bool get isPastDay => DiaryDayStatus.of(day: loggedAt, today: today).isPast;
 
   /// Meal the food is logged to.
   final MealType mealType;
