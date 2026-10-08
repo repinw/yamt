@@ -110,7 +110,7 @@ extension InventoryItemEatDraftRules on InventoryItemEatCalculator {
     }
 
     return _consumedAmount(
-      inventoryAmount: inventoryAmount,
+      amount: parseEatenAmount(inventoryAmountText)!,
       inedibleAmount: inedibleAmount,
     );
   }
@@ -147,7 +147,9 @@ extension InventoryItemEatDraftRules on InventoryItemEatCalculator {
     final baseAmountForCalories = _baseAmountForFixedUnitCalories(
       usesPortionMode: usesPortionMode,
       portionTotalAmount: portion?.totalAmount,
-      inventoryAmount: inventoryAmount,
+      inventoryAmount: usesPortionMode
+          ? null
+          : parseEatenAmount(inventoryAmountText),
     );
     final hasTooLargeInedibleAmount =
         baseAmountForCalories != null &&
@@ -163,12 +165,16 @@ extension InventoryItemEatDraftRules on InventoryItemEatCalculator {
       fixedUnitCalorieAmount: _fixedUnitDraftCalorieAmount(
         usesPortionMode: usesPortionMode,
         baseAmountForCalories: baseAmountForCalories,
+        inventoryAmount: inventoryAmount,
         inedibleAmount: inedibleAmount,
       ),
       hasInvalidInventoryAmount:
           inventoryAmount == null ||
           inventoryAmount < 1 ||
-          inventoryAmount > maxAmount,
+          inventoryAmount > maxAmount ||
+          // 37,4 g rounds to the last 37 g but would log more than is there.
+          (!usesPortionMode &&
+              (parseEatenAmount(inventoryAmountText) ?? 0) > maxAmount),
       hasInvalidInedibleAmount: hasInvalidInedibleAmount,
       hasTooLargeInedibleAmount: hasTooLargeInedibleAmount,
       hasInvalidPortionCount:
@@ -181,20 +187,20 @@ extension InventoryItemEatDraftRules on InventoryItemEatCalculator {
   }
 
   double? _consumedAmount({
-    required int inventoryAmount,
+    required double amount,
     required double? inedibleAmount,
   }) {
-    final consumedAmount = inventoryAmount - (inedibleAmount ?? 0);
+    final consumedAmount = amount - (inedibleAmount ?? 0);
     if (consumedAmount <= 0) {
       return null;
     }
-    return consumedAmount.toDouble();
+    return consumedAmount;
   }
 
   double? _baseAmountForFixedUnitCalories({
     required bool usesPortionMode,
     required double? portionTotalAmount,
-    required int? inventoryAmount,
+    required double? inventoryAmount,
   }) {
     if (!inventoryItemUsesFixedCalorieUnit(item)) {
       return null;
@@ -202,12 +208,13 @@ extension InventoryItemEatDraftRules on InventoryItemEatCalculator {
     if (usesPortionMode) {
       return portionTotalAmount;
     }
-    return inventoryAmount?.toDouble();
+    return inventoryAmount;
   }
 
   double? _fixedUnitDraftCalorieAmount({
     required bool usesPortionMode,
     required double? baseAmountForCalories,
+    required int? inventoryAmount,
     required double? inedibleAmount,
   }) {
     if (baseAmountForCalories == null) {
@@ -217,7 +224,10 @@ extension InventoryItemEatDraftRules on InventoryItemEatCalculator {
     if (consumedAmount <= 0) {
       return null;
     }
-    if (usesPortionMode || (inedibleAmount ?? 0) > 0) {
+    // A decimal amount differs from the whole units the stock takes.
+    if (usesPortionMode ||
+        (inedibleAmount ?? 0) > 0 ||
+        consumedAmount != inventoryAmount) {
       return consumedAmount;
     }
     return null;

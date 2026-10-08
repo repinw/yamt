@@ -128,20 +128,16 @@ class InventoryItemEatSheetController
       );
       return;
     }
-    final amount = state.enteredInventoryAmount;
+    final amount = state.enteredAmount;
     final unit = state.calculator.fixedCalorieUnit;
-    if (amount == null || amount < 1 || unit == null) {
+    if (amount < 1 || unit == null) {
       return;
     }
     _update(
       state.copyWith(
         rememberedPortions: [
           ...state.rememberedPortions,
-          InventoryItemEatPortion(
-            amount: amount.toDouble(),
-            unit: unit,
-            label: name,
-          ),
+          InventoryItemEatPortion(amount: amount, unit: unit, label: name),
         ],
       ),
     );
