@@ -26,6 +26,9 @@ abstract interface class AppPreferences {
 
   /// Removes value for given key.
   Future<bool> remove(String key);
+
+  /// Returns all stored keys.
+  Future<Set<String>> keys();
 }
 
 /// Shared-preferences-backed implementation of [AppPreferences].
@@ -128,6 +131,12 @@ class SharedPreferencesStore implements AppPreferences {
       return await preferences.remove(key);
     }
     return false;
+  }
+
+  @override
+  Future<Set<String>> keys() async {
+    final preferences = await _instance();
+    return preferences?.getKeys() ?? const <String>{};
   }
 }
 

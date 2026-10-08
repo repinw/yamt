@@ -53,6 +53,24 @@ void main() {
     expect(cached.runState.toJson(), data.runState.toJson());
   });
 
+  test('removes the entries of older cache versions on save', () async {
+    final oldKeys = [
+      for (final version in [2, 3, 4]) 'diary_day_dashboard_v$version:a:b',
+    ];
+    final preferences = MemoryAppPreferences(
+      initialStrings: {for (final key in oldKeys) key: '{}', 'other': 'x'},
+    );
+    const repository = DiaryDayDashboardCacheRepository();
+
+    await repository.save(
+      preferences: preferences,
+      userId: userId,
+      data: _dashboardData(day),
+    );
+
+    expect(await preferences.keys(), {_cacheKey(userId, day), 'other'});
+  });
+
   test('returns null for a snapshot without week days', () async {
     final preferences = MemoryAppPreferences();
     const repository = DiaryDayDashboardCacheRepository();
@@ -221,7 +239,7 @@ CalorieWeekOverview _weekOverview(DateTime day) {
 }
 
 String _cacheKey(String userId, DateTime day) {
-  return 'diary_day_dashboard_v4:$userId:${_dayKey(day)}';
+  return 'diary_day_dashboard_v5:$userId:${_dayKey(day)}';
 }
 
 String _dayKey(DateTime day) => diaryDayKey(day);
