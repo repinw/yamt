@@ -78,19 +78,6 @@ Future<bool> dismissPendingGoalWeeklyCheckIn({
   );
 }
 
-/// Clears pending weekly check-in snapshot.
-Future<bool> clearPendingGoalWeeklyCheckIn({
-  required CalorieGoalController controller,
-}) async {
-  final previous = await controller.currentSettings();
-  if (previous.pendingWeeklyCheckIn == null) {
-    return true;
-  }
-  return await controller.persistSettings(
-    previous.copyWithPendingWeeklyCheckIn(null),
-  );
-}
-
 /// Sets skipped intake day after validating entries.
 Future<bool> setCalorieSkippedIntakeDay({
   required CalorieGoalController controller,

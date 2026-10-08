@@ -118,10 +118,6 @@ class CalorieGoalController extends _$CalorieGoalController {
     ),
   );
 
-  /// Clear pending weekly check in.
-  Future<bool> clearPendingWeeklyCheckIn() =>
-      _guarded(() => clearPendingGoalWeeklyCheckIn(controller: this));
-
   /// Set skipped intake day.
   Future<bool> setSkippedIntakeDay({
     required DateTime day,
