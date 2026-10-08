@@ -66,6 +66,8 @@ class CalorieEntry {
     this.bundleTotalPortions,
     this.bundleComponents = const <CalorieEntryBundleComponent>[],
     this.nutrientDetails,
+    this.portionAmount,
+    this.portionLabel,
   });
 
   /// Creates a [CalorieEntry] for create.
@@ -333,6 +335,14 @@ class CalorieEntry {
   @FlexibleDateTimeConverter()
   final DateTime updatedAt;
 
+  /// The size of the named portion the user counted, in [consumedUnit],
+  /// e.g. 40 for "2× 40 g Brotscheibe". The count is [consumedAmount]
+  /// divided by it.
+  final double? portionAmount;
+
+  /// The name of the portion the user counted, e.g. "Brotscheibe".
+  final String? portionLabel;
+
   /// To json.
   Map<String, dynamic> toJson() => _$CalorieEntryToJson(this);
 
@@ -384,7 +394,8 @@ class CalorieEntry {
         (bundleConsumedPortions ?? 0) > 0;
   }
 
-  /// Copy with.
+  /// Copy with. A new [consumedUnit] drops the portion, which was counted
+  /// in the old unit.
   CalorieEntry copyWith({
     String? id,
     String? userId,
@@ -397,6 +408,8 @@ class CalorieEntry {
     Object? bundleSourcePreparedMealId = _keepValue,
     Object? bundleConsumedPortions = _keepValue,
     Object? bundleTotalPortions = _keepValue,
+    Object? portionAmount = _keepValue,
+    Object? portionLabel = _keepValue,
     List<CalorieEntryBundleComponent>? bundleComponents,
     MealType? mealType,
     double? consumedAmount,
@@ -413,6 +426,8 @@ class CalorieEntry {
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
+    final keepsPortion =
+        consumedUnit == null || consumedUnit == this.consumedUnit;
     return CalorieEntry(
       id: id ?? this.id,
       userId: userId ?? this.userId,
@@ -454,6 +469,12 @@ class CalorieEntry {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       nutrientDetails: nutrientDetails,
+      portionAmount: portionAmount != _keepValue
+          ? portionAmount as double?
+          : (keepsPortion ? this.portionAmount : null),
+      portionLabel: portionLabel != _keepValue
+          ? portionLabel as String?
+          : (keepsPortion ? this.portionLabel : null),
       isQuickEntry: isQuickEntry,
     );
   }

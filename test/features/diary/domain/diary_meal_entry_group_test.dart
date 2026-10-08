@@ -11,6 +11,8 @@ DiaryMealEntry _entry(
   double kcal = 75,
   double? amount = 20,
   String? imageUrl,
+  double? portionAmount,
+  String? portionLabel,
 }) {
   return DiaryMealEntry(
     id: id,
@@ -23,6 +25,8 @@ DiaryMealEntry _entry(
     totalFat: 1.4,
     consumedAmount: amount,
     consumedUnit: amount == null ? null : ConsumedUnit.grams,
+    portionAmount: portionAmount,
+    portionLabel: portionLabel,
   );
 }
 
@@ -104,5 +108,22 @@ void main() {
 
     expect(section.entryGroups, hasLength(1));
     expect(identical(section.entryGroups, section.entryGroups), isTrue);
+  });
+
+  test('combined entry keeps a portion only when all entries share it', () {
+    DiaryMealEntry slice(String id, {String label = 'Brotscheibe'}) =>
+        _entry(id, amount: 40, portionAmount: 40, portionLabel: label);
+
+    final same = groupDiaryMealEntries([slice('a'), slice('b')]).single;
+    final mixed = groupDiaryMealEntries([
+      slice('a'),
+      slice('b', label: 'Scheibe'),
+    ]).single;
+
+    expect(same.combined.consumedAmount, 80);
+    expect(same.combined.portionAmount, 40);
+    expect(same.combined.portionLabel, 'Brotscheibe');
+    expect(mixed.combined.portionAmount, isNull);
+    expect(mixed.combined.portionLabel, isNull);
   });
 }

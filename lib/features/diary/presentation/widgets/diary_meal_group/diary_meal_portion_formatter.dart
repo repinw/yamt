@@ -32,5 +32,27 @@ String? formatDiaryMealPortionLabel(
     Localizations.localeOf(context).toLanguageTag(),
   )..maximumFractionDigits = 1;
   final unit = entry.consumedUnit?.localizedName(l10n) ?? l10n.caloriesUnitGram;
+  final portionAmount = entry.portionAmount;
+  final portionLabel = entry.portionLabel;
+  if (portionAmount != null && portionAmount > 0 && portionLabel != null) {
+    // An edited amount that is no longer a count in tenths shows grams.
+    final count = amount / portionAmount;
+    if ((count * 10 - (count * 10).round()).abs() < 0.001) {
+      return l10n.caloriesCountedPortion(
+        _formatCount(count, format),
+        format.format(portionAmount),
+        unit,
+        portionLabel,
+      );
+    }
+  }
   return '${format.format(amount)} $unit';
+}
+
+String _formatCount(double count, NumberFormat format) {
+  final whole = count.floor();
+  if ((count - whole - 0.5).abs() < 0.001) {
+    return whole == 0 ? '½' : '$whole½';
+  }
+  return format.format(count);
 }

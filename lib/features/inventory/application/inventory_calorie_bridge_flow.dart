@@ -110,7 +110,7 @@ class InventoryCalorieBridgeFlow {
     required DateTime now,
     bool inVorrat = true,
   }) {
-    return CalorieEntry.create(
+    final entry = CalorieEntry.create(
       id: id,
       userId: userId,
       name: profile.name,
@@ -131,6 +131,27 @@ class InventoryCalorieBridgeFlow {
       loggedAt: request.loggedAt,
       createdAt: now,
       updatedAt: now,
+    );
+    return withCountedPortion(entry, inventoryContext);
+  }
+
+  /// [entry] with the named portion of [inventoryContext] when its amount is
+  /// still a count of that portion, so the diary shows "2× 40 g Scheibe";
+  /// without the portion otherwise.
+  static CalorieEntry withCountedPortion(
+    CalorieEntry entry,
+    CalorieInventoryCreateContext inventoryContext,
+  ) {
+    final label = inventoryContext.portionLabel?.trim() ?? '';
+    final amount = label.isEmpty
+        ? null
+        : inventoryContext.portionAmountFor(
+            entry.consumedAmount,
+            entry.consumedUnit,
+          );
+    return entry.copyWith(
+      portionAmount: amount,
+      portionLabel: amount == null ? null : label,
     );
   }
 

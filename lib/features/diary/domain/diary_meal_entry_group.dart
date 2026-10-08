@@ -13,7 +13,8 @@ class DiaryMealEntryGroup {
   bool get isMerged => entries.length > 1;
 
   /// One entry with summed kcal, macros, amount, and portions. It keeps the
-  /// id, name, image, and unit of the first entry.
+  /// id, name, image, and unit of the first entry, and the counted portion
+  /// when every entry counted the same one.
   DiaryMealEntry get combined {
     final first = entries.first;
     if (!isMerged) {
@@ -23,6 +24,11 @@ class DiaryMealEntryGroup {
         entries.fold<double>(0, (total, entry) => total + value(entry));
     final amounts = entries.map((entry) => entry.consumedAmount);
     final portions = entries.map((entry) => entry.bundleConsumedPortions);
+    final samePortion = entries.every(
+      (entry) =>
+          entry.portionAmount == first.portionAmount &&
+          entry.portionLabel == first.portionLabel,
+    );
     return DiaryMealEntry(
       id: first.id,
       mealType: first.mealType,
@@ -41,6 +47,8 @@ class DiaryMealEntryGroup {
           ? null
           : portions.fold<num>(0, (total, count) => total + count!),
       bundleTotalPortions: first.bundleTotalPortions,
+      portionAmount: samePortion ? first.portionAmount : null,
+      portionLabel: samePortion ? first.portionLabel : null,
     );
   }
 }
