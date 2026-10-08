@@ -9,26 +9,26 @@ part of 'prepared_meal.dart';
 RecipeIngredientAmountConversion _$RecipeIngredientAmountConversionFromJson(
   Map<String, dynamic> json,
 ) => RecipeIngredientAmountConversion(
-  amountPerPiece: _readIntOrZero(json['amount_per_piece']),
-  unit: _readAmountUnitOrPiece(json['unit']),
+  amountPerPiece: readPreparedMealInt(json['amount_per_piece']),
+  unit: readPreparedMealAmountUnit(json['unit']),
 );
 
 Map<String, dynamic> _$RecipeIngredientAmountConversionToJson(
   RecipeIngredientAmountConversion instance,
 ) => <String, dynamic>{
   'amount_per_piece': instance.amountPerPiece,
-  'unit': _writeAmountUnit(instance.unit),
+  'unit': writePreparedMealAmountUnit(instance.unit),
 };
 
 PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
-  id: _readRequiredString(json['id']),
-  name: _readRequiredString(json['name']),
-  totalPortions: _readIntOrZero(json['total_portions']),
-  remainingPortions: _readDoubleOrZero(json['remaining_portions']),
-  totalKcal: _readDoubleOrZero(json['total_kcal']),
-  totalProtein: _readDoubleOrZero(json['total_protein']),
-  totalCarbs: _readDoubleOrZero(json['total_carbs']),
-  totalFat: _readDoubleOrZero(json['total_fat']),
+  id: readPreparedMealString(json['id']),
+  name: readPreparedMealString(json['name']),
+  totalPortions: readPreparedMealInt(json['total_portions']),
+  remainingPortions: readPreparedMealDouble(json['remaining_portions']),
+  totalKcal: readPreparedMealDouble(json['total_kcal']),
+  totalProtein: readPreparedMealDouble(json['total_protein']),
+  totalCarbs: readPreparedMealDouble(json['total_carbs']),
+  totalFat: readPreparedMealDouble(json['total_fat']),
   createdAt: _readDateTimeOrNow(json['created_at']),
   updatedAt: _readDateTimeOrNow(json['updated_at']),
   components:
@@ -38,9 +38,9 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
           )
           .toList() ??
       [],
-  imageAssetId: _readTrimmedNullableString(json['image_asset_id']),
-  imageUrl: _readTrimmedNullableString(json['image_url']),
-  recipeUrl: _readTrimmedNullableString(json['recipe_url']),
+  imageAssetId: readPreparedMealOptionalString(json['image_asset_id']),
+  imageUrl: readPreparedMealOptionalString(json['image_url']),
+  recipeUrl: readPreparedMealOptionalString(json['recipe_url']),
   recipeIngredients:
       (json['recipe_ingredients'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -111,37 +111,3 @@ Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
       'updated_at': instance.updatedAt.toIso8601String(),
       'components': instance.components.map((e) => e.toJson()).toList(),
     };
-
-PreparedMealComponent _$PreparedMealComponentFromJson(
-  Map<String, dynamic> json,
-) => PreparedMealComponent(
-  inventoryItemId: _readRequiredString(json['inventory_item_id']),
-  name: _readRequiredString(json['name']),
-  brand: _readTrimmedNullableString(json['brand']),
-  imageUrl: _readTrimmedNullableString(json['image_url']),
-  usedAmount: _readIntOrZero(json['used_amount']),
-  usedUnit: _readAmountUnitOrPiece(json['used_unit']),
-  totalKcal: _readDoubleOrZero(json['total_kcal']),
-  totalProtein: _readDoubleOrZero(json['total_protein']),
-  totalCarbs: _readDoubleOrZero(json['total_carbs']),
-  totalFat: _readDoubleOrZero(json['total_fat']),
-  sourceItemSnapshot: InventoryItem.fromJson(
-    json['source_item_snapshot'] as Map<String, dynamic>,
-  ),
-);
-
-Map<String, dynamic> _$PreparedMealComponentToJson(
-  PreparedMealComponent instance,
-) => <String, dynamic>{
-  'inventory_item_id': instance.inventoryItemId,
-  'name': instance.name,
-  'brand': instance.brand,
-  'image_url': instance.imageUrl,
-  'used_amount': instance.usedAmount,
-  'used_unit': _writeAmountUnit(instance.usedUnit),
-  'total_kcal': instance.totalKcal,
-  'total_protein': instance.totalProtein,
-  'total_carbs': instance.totalCarbs,
-  'total_fat': instance.totalFat,
-  'source_item_snapshot': instance.sourceItemSnapshot.toJson(),
-};

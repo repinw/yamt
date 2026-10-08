@@ -4,6 +4,7 @@ import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/ai_chef/presentation/widgets/'
     'ai_chef_dialog/ai_chef_result_view.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 void main() {

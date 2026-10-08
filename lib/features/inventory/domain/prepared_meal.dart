@@ -5,6 +5,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
 import 'package:yamt/core/utils/currency_format.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_json.dart';
 
 part 'prepared_meal.g.dart';
 
@@ -20,11 +22,14 @@ class RecipeIngredientAmountConversion {
       _$RecipeIngredientAmountConversionFromJson(json);
 
   /// The amount per piece.
-  @JsonKey(fromJson: _readIntOrZero)
+  @JsonKey(fromJson: readPreparedMealInt)
   final int amountPerPiece;
 
   /// The unit.
-  @JsonKey(fromJson: _readAmountUnitOrPiece, toJson: _writeAmountUnit)
+  @JsonKey(
+    fromJson: readPreparedMealAmountUnit,
+    toJson: writePreparedMealAmountUnit,
+  )
   final InventoryAmountUnit unit;
 
   /// To json.
@@ -90,23 +95,23 @@ class PreparedMeal {
   factory fromJson(Map<String, dynamic> json) => _$PreparedMealFromJson(json);
 
   /// The id.
-  @JsonKey(fromJson: _readRequiredString)
+  @JsonKey(fromJson: readPreparedMealString)
   final String id;
 
   /// The name.
-  @JsonKey(fromJson: _readRequiredString)
+  @JsonKey(fromJson: readPreparedMealString)
   final String name;
 
   /// The image asset id.
-  @JsonKey(fromJson: _readTrimmedNullableString)
+  @JsonKey(fromJson: readPreparedMealOptionalString)
   final String? imageAssetId;
 
   /// The image url.
-  @JsonKey(fromJson: _readTrimmedNullableString)
+  @JsonKey(fromJson: readPreparedMealOptionalString)
   final String? imageUrl;
 
   /// The recipe url.
-  @JsonKey(fromJson: _readTrimmedNullableString)
+  @JsonKey(fromJson: readPreparedMealOptionalString)
   final String? recipeUrl;
 
   /// The recipe ingredients.
@@ -167,27 +172,27 @@ class PreparedMeal {
   }
 
   /// The total portions.
-  @JsonKey(fromJson: _readIntOrZero)
+  @JsonKey(fromJson: readPreparedMealInt)
   final int totalPortions;
 
   /// The remaining portions.
-  @JsonKey(fromJson: _readDoubleOrZero)
+  @JsonKey(fromJson: readPreparedMealDouble)
   final num remainingPortions;
 
   /// The total kcal.
-  @JsonKey(fromJson: _readDoubleOrZero)
+  @JsonKey(fromJson: readPreparedMealDouble)
   final double totalKcal;
 
   /// The total protein.
-  @JsonKey(fromJson: _readDoubleOrZero)
+  @JsonKey(fromJson: readPreparedMealDouble)
   final double totalProtein;
 
   /// The total carbs.
-  @JsonKey(fromJson: _readDoubleOrZero)
+  @JsonKey(fromJson: readPreparedMealDouble)
   final double totalCarbs;
 
   /// The total fat.
-  @JsonKey(fromJson: _readDoubleOrZero)
+  @JsonKey(fromJson: readPreparedMealDouble)
   final double totalFat;
 
   /// The created at.
@@ -445,164 +450,6 @@ double preparedMealComponentDisplayAmount(
   return safeAmount / safeScale;
 }
 
-/// Defines prepared meal component.
-@immutable
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
-class PreparedMealComponent {
-  /// The prepared meal component.
-  const new({
-    required this.inventoryItemId,
-    required this.name,
-    required this.brand,
-    required this.imageUrl,
-    required this.usedAmount,
-    required this.usedUnit,
-    required this.totalKcal,
-    required this.totalProtein,
-    required this.totalCarbs,
-    required this.totalFat,
-    required this.sourceItemSnapshot,
-  });
-
-  /// Creates a [PreparedMealComponent] for from json.
-  factory fromJson(Map<String, dynamic> json) =>
-      _$PreparedMealComponentFromJson(json);
-
-  /// The inventory item id.
-  @JsonKey(fromJson: _readRequiredString)
-  final String inventoryItemId;
-
-  /// The name.
-  @JsonKey(fromJson: _readRequiredString)
-  final String name;
-
-  /// The brand.
-  @JsonKey(fromJson: _readTrimmedNullableString)
-  final String? brand;
-
-  /// The image url.
-  @JsonKey(fromJson: _readTrimmedNullableString)
-  final String? imageUrl;
-
-  /// The used amount.
-  @JsonKey(fromJson: _readIntOrZero)
-  final int usedAmount;
-
-  /// The used unit.
-  @JsonKey(fromJson: _readAmountUnitOrPiece, toJson: _writeAmountUnit)
-  final InventoryAmountUnit usedUnit;
-
-  /// The total kcal.
-  @JsonKey(fromJson: _readDoubleOrZero)
-  final double totalKcal;
-
-  /// The total protein.
-  @JsonKey(fromJson: _readDoubleOrZero)
-  final double totalProtein;
-
-  /// The total carbs.
-  @JsonKey(fromJson: _readDoubleOrZero)
-  final double totalCarbs;
-
-  /// The total fat.
-  @JsonKey(fromJson: _readDoubleOrZero)
-  final double totalFat;
-
-  /// The source item snapshot.
-  final InventoryItem sourceItemSnapshot;
-
-  /// The internal storage scale of [usedAmount], taken from the source
-  /// item. Piece-tracked items store fractional pieces multiplied by
-  /// [inventoryPieceAmountScale].
-  int get usedAmountScale => sourceItemSnapshot.amountScale;
-
-  /// To json.
-  Map<String, dynamic> toJson() => _$PreparedMealComponentToJson(this);
-
-  /// Copy with.
-  PreparedMealComponent copyWith({
-    String? inventoryItemId,
-    String? name,
-    Object? brand = _keepValue,
-    Object? imageUrl = _keepValue,
-    int? usedAmount,
-    InventoryAmountUnit? usedUnit,
-    double? totalKcal,
-    double? totalProtein,
-    double? totalCarbs,
-    double? totalFat,
-    InventoryItem? sourceItemSnapshot,
-  }) {
-    return PreparedMealComponent(
-      inventoryItemId: inventoryItemId ?? this.inventoryItemId,
-      name: name ?? this.name,
-      brand: brand == _keepValue ? this.brand : brand as String?,
-      imageUrl: imageUrl == _keepValue ? this.imageUrl : imageUrl as String?,
-      usedAmount: usedAmount ?? this.usedAmount,
-      usedUnit: usedUnit ?? this.usedUnit,
-      totalKcal: totalKcal ?? this.totalKcal,
-      totalProtein: totalProtein ?? this.totalProtein,
-      totalCarbs: totalCarbs ?? this.totalCarbs,
-      totalFat: totalFat ?? this.totalFat,
-      sourceItemSnapshot: sourceItemSnapshot ?? this.sourceItemSnapshot,
-    );
-  }
-
-  /// Cost contribution of this component based on the consumed share.
-  double get totalPrice {
-    if (usedAmount <= 0) {
-      return 0;
-    }
-
-    if (sourceItemSnapshot.usesAmountProgress) {
-      final initialAmount = sourceItemSnapshot.initialAmount;
-      if (initialAmount <= 0) {
-        return 0;
-      }
-
-      final initialQuantity = sourceItemSnapshot.effectiveInitialQuantity;
-      final initialTotalPrice = sourceItemSnapshot.unitPrice * initialQuantity;
-      return initialTotalPrice * (usedAmount / initialAmount);
-    }
-
-    return sourceItemSnapshot.unitPrice * usedAmount;
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        other is PreparedMealComponent &&
-            other.inventoryItemId == inventoryItemId &&
-            other.name == name &&
-            other.brand == brand &&
-            other.imageUrl == imageUrl &&
-            other.usedAmount == usedAmount &&
-            other.usedUnit == usedUnit &&
-            other.totalKcal == totalKcal &&
-            other.totalProtein == totalProtein &&
-            other.totalCarbs == totalCarbs &&
-            other.totalFat == totalFat &&
-            other.sourceItemSnapshot == sourceItemSnapshot;
-  }
-
-  @override
-  int get hashCode {
-    return Object.hash(
-      inventoryItemId,
-      name,
-      brand,
-      imageUrl,
-      usedAmount,
-      usedUnit,
-      totalKcal,
-      totalProtein,
-      totalCarbs,
-      totalFat,
-      sourceItemSnapshot,
-    );
-  }
-}
-
 DateTime _readDateTimeOrNow(Object? value) {
   if (value is DateTime) {
     return value;
@@ -614,16 +461,6 @@ DateTime _readDateTimeOrNow(Object? value) {
     }
   }
   return DateTime.now();
-}
-
-int _readIntOrZero(Object? value) {
-  if (value is int) {
-    return value;
-  }
-  if (value is num) {
-    return value.toInt();
-  }
-  return 0;
 }
 
 int? _readNullableInt(Object? value) {
@@ -638,40 +475,5 @@ int? _readNullableInt(Object? value) {
   }
   return null;
 }
-
-double _readDoubleOrZero(Object? value) {
-  if (value is num) {
-    return value.toDouble();
-  }
-  if (value is String) {
-    final normalized = value.replaceAll(',', '.').trim();
-    return double.tryParse(normalized) ?? 0;
-  }
-  return 0;
-}
-
-String _readRequiredString(Object? value) {
-  return _readTrimmedNullableString(value) ?? '';
-}
-
-String? _readTrimmedNullableString(Object? value) {
-  if (value is! String) {
-    return null;
-  }
-  final trimmed = value.trim();
-  return trimmed.isEmpty ? null : trimmed;
-}
-
-InventoryAmountUnit _readAmountUnitOrPiece(Object? value) {
-  final raw = value is String ? value.trim() : '';
-  for (final unit in InventoryAmountUnit.values) {
-    if (unit.code == raw) {
-      return unit;
-    }
-  }
-  return InventoryAmountUnit.piece;
-}
-
-String _writeAmountUnit(InventoryAmountUnit value) => value.code;
 
 const Object _keepValue = Object();

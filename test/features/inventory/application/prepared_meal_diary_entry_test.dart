@@ -6,6 +6,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 InventoryItem _item({required String id, required String name}) {
   return InventoryItem.create(

@@ -7,6 +7,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_template_repository.d
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meal_templates_controller.dart';
 

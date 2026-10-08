@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/application/'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 /// Builds a prepared meal from explicit inventory item inputs.
 PreparedMealBuildResult buildPreparedMealCreationResult({

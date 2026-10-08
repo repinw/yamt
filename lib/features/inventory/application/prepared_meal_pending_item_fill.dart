@@ -6,6 +6,7 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_writer.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 /// Fills an open row of a meal with a chosen amount of one Vorrat item.
 class PreparedMealPendingItemFill {

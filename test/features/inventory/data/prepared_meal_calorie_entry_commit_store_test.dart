@@ -13,6 +13,7 @@ import 'package:yamt/features/household/application/household_key_session.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 const _usersCollection = 'users';
 const _householdsCollection = 'households';

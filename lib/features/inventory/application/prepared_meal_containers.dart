@@ -1,6 +1,7 @@
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 /// Whether [container] misses an id, portions, weight or rows.
 bool hasInvalidContainerInput(PreparedMealContainerInput container) {

@@ -9,6 +9,7 @@ import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
