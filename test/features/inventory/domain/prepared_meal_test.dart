@@ -4,6 +4,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_portions.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 
 InventoryItem _sourceItem({
   String id = 'item-1',
@@ -252,6 +253,22 @@ void main() {
         remainingPortions: 4,
       );
       expect(meal.remainingNetWeight, 2253);
+    });
+
+    test('follows the last pot weighing instead of the cooked weight', () {
+      final meal = _meal().copyWith(
+        finalNetWeight: 1400,
+        totalPortions: 4,
+        remainingPortions: 2,
+        potWeighing: PreparedMealPotWeighing(
+          netWeight: 990,
+          weighedAt: DateTime.utc(2026, 10, 8),
+          remainingPortions: 3,
+        ),
+      );
+      // 990 g for 3 portions, 2 left: water evaporated since "Gekocht".
+      expect(meal.remainingNetWeight, 660);
+      expect(PreparedMeal.fromJson(meal.toJson()), meal);
     });
   });
 }
