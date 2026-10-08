@@ -12,7 +12,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   button opens the welcome page.
   When the app cannot tell whether a signed-in user has a goal (for example
   offline on a new device), it shows a "try again" page instead of sending the
-  user into onboarding.
+  user into onboarding. An account can also sign out there, so settings that
+  never load (for example a broken stored document) are no dead end; a guest
+  gets no sign-out there, because it would lose its data.
 - Home shell with bottom tabs for Inventory, Diary, Cookbook, and Settings.
   The tab header and the bottom navigation stay in place while a tab
   scrolls. In the middle of the bar a round button in the accent color opens

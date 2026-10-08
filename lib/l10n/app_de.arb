@@ -2536,6 +2536,8 @@
   "dataKeyRetryAction": "Erneut versuchen",
   "calorieGoalLoadFailed": "Dein Ziel konnte nicht geladen werden. Prüfe deine Verbindung.",
   "calorieGoalLoadRetryAction": "Erneut versuchen",
+  "calorieGoalLoadFailedSignOutAction": "Abmelden",
+  "calorieGoalLoadFailedSignOutFailed": "Abmelden hat nicht geklappt. Prüfe deine Verbindung.",
   "dataKeyPickFromPasswordManagerAction": "Aus Passwortmanager einfügen",
   "dataKeyPickFailed": "Passwortmanager konnte nicht geöffnet werden.",
   "foodEstimateHeadline": "Was isst du?",

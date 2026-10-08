@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,6 +26,8 @@ import '../../test/helpers/auth_user_data_key_session.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 
 class _MockUser extends Mock implements User;
+
+class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 class _RouterHarness extends ConsumerWidget {
   const new();
@@ -91,6 +95,61 @@ void main() {
     await _pumpStep(tester);
 
     // No goal is saved, so the retry opens onboarding.
+    expect(currentRoute(), AppRoutes.calorieGoalSetup);
+  });
+
+  testWidgets('signing out leaves a goal that never loads', (tester) async {
+    final user = _MockUser();
+    when(() => user.uid).thenReturn('user-1');
+    when(() => user.isAnonymous).thenReturn(false);
+    final authStates = StreamController<User?>.broadcast();
+    addTearDown(authStates.close);
+    final auth = _MockFirebaseAuth();
+    when(() => auth.currentUser).thenReturn(user);
+    when(auth.signOut).thenAnswer((_) async {
+      when(() => auth.currentUser).thenReturn(null);
+      authStates.add(null);
+    });
+    final settingsRepository = FakeCalorieSettingsRepository()
+      ..readError = Exception('broken settings');
+    final logRepository = FakeCalorieLogRepository();
+    addTearDown(settingsRepository.dispose);
+    addTearDown(logRepository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+        firebaseAuthProvider.overrideWithValue(auth),
+        authStateChangesProvider.overrideWith((ref) async* {
+          yield user;
+          yield* authStates.stream;
+        }),
+        userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
+        calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        calorieLogRepositoryProvider.overrideWithValue(logRepository),
+        burnWeekLiveSyncProvider.overrideWith((ref) => null),
+      ],
+    );
+    addTearDown(container.dispose);
+    String currentRoute() => container.read(appRouterProvider).state.uri.path;
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: const _RouterHarness(),
+      ),
+    );
+    await _pumpStep(tester);
+    await _pumpStep(tester);
+    expect(currentRoute(), AppRoutes.calorieGoalLoadFailed);
+
+    await tester.tap(
+      find.byKey(CalorieGoalOnboardingKeys.loadFailedSignOutAction),
+    );
+    await _pumpStep(tester);
+    await _pumpStep(tester);
+
+    verify(auth.signOut).called(1);
+    // Signed out, the app starts over like after any sign-out.
     expect(currentRoute(), AppRoutes.calorieGoalSetup);
   });
 }
