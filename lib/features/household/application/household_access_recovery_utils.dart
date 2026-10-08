@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/household/application/household_permission_recovery.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 
@@ -100,4 +101,23 @@ Future<List<T>> performControllerHouseholdAccessRecovery<T>({
     onSkippedHouseholdAccessRecovery?.call();
   }
   return await restartHouseholdScopedSubscription();
+}
+
+/// The household scope as one log line, for a controller that watched
+/// [controllerHouseholdId].
+String householdScopeDebugDetails(
+  Ref ref, {
+  required String? controllerHouseholdId,
+}) {
+  String show(String? value) => normalizeHouseholdScopeValue(value) ?? '<none>';
+  final profile = ref.read(userProfileProvider).asData?.value;
+  final recoveryState = ref.read(householdDataOwnerRecoveryProvider);
+  final currentUserId = signedInHouseholdRecoveryUserId(ref) ?? profile?.uid;
+  return 'authUserId=${show(currentUserId)} '
+      'profileHouseholdId=${show(profile?.householdId)} '
+      'actualDataOwnerId=${show(ref.read(householdDataOwnerUserIdProvider))} '
+      'effectiveDataOwnerId=${show(ref.read(activeHouseholdIdProvider))} '
+      'controllerDataOwnerId=${show(controllerHouseholdId)} '
+      'recoveryStaleOwnerId=${recoveryState?.staleOwnerUserId ?? '<none>'} '
+      'recoveryPersonalUserId=${recoveryState?.personalUserId ?? '<none>'}';
 }
