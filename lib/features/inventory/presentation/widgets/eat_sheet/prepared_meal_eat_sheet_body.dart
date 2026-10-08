@@ -20,9 +20,9 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_pot_weighing_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_ruler.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_l10n.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_sheet_text_field.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_when_menu.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/prepared_meal_eat_sheet_texts.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Eat page content for a prepared meal.
