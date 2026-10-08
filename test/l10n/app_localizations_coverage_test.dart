@@ -121,7 +121,6 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.preparedMealIngredientsTitle,
     l10n.preparedMealBindAction,
     l10n.preparedMealSelectionCount(2),
-    l10n.preparedMealCreatedMessage,
     l10n.preparedMealActionFailed,
     l10n.preparedMealIngredientsCount(2),
     l10n.preparedMealPendingIngredientAddAction,

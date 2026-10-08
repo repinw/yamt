@@ -19,7 +19,6 @@ import 'package:yamt/features/inventory/presentation/models/inventory_list_entry
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_combine_section.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_header.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_portions_row.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_meal_table.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_header.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
@@ -67,7 +66,6 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
   // shows action hints on the hub.
   final GlobalKey _cardKey = GlobalKey();
   var _isRunning = false;
-  var _portions = 1;
   // The hub's item can leave the meal while other foods are picked. It is
   // back as soon as the meal is empty again.
   var _hubRemoved = false;
@@ -172,13 +170,8 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
               includesHubItem: includesHub,
               onRemoveHubItem: () => setState(() => _hubRemoved = true),
             ),
-          if (meal != null) ...[
-            EatMealPortionsRow(
-              portions: _portions,
-              onChanged: (portions) => setState(() => _portions = portions),
-            ),
-            EatMealTable(meal: meal, portions: _portions),
-          ],
+          // Portions are set in the meal's "Gekocht" step.
+          if (meal != null) EatMealTable(meal: meal),
           actions,
         ],
       ),
@@ -234,7 +227,6 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
         request: request,
         picks: picks,
         keepInStock: result.intent == InventoryItemEatSheetIntent.storeAsMeal,
-        portions: _portions,
         includesItem: includesHub,
       ),
     );

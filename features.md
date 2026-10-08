@@ -365,7 +365,15 @@ and feature description docs. This is product-facing; architecture rules stay in
   nutrition label for the whole meal, per 100 g and in total ("–" when one
   food lacks a value; no per-100 column when grams and milliliters mix),
   and the main button "In Vorrat" keeps the picked foods in stock as one
-  prepared meal "A + B" with one portion. The grey "Mahlzeit ins Tagebuch"
+  prepared meal "A + B" and opens its "Gekocht" step (kicker "Kombiniert"):
+  Portionen or Stück and the count, "Gewicht · N g aus den Zutaten" (the sum
+  of the ingredients when all are in grams; "Gewicht stimmt nicht? Mit
+  Behälter wiegen" shows the container and the scale instead), and where it
+  goes. Closing that step asks "Mahlzeit verwerfen?" ("Die Zutaten gehen
+  zurück in den Vorrat."); discarding returns the stock and deletes foods
+  found by search again, also when the step is opened again later from
+  "Offen". Until the step is saved the meal is open like a
+  pot from free cooking. The grey "Mahlzeit ins Tagebuch"
   saves one combined diary entry named "A + B" instead. The entry and
   every stock change are written together. A combined entry cannot change its
   amount or be eaten again; deleting it can return the stock of every food.

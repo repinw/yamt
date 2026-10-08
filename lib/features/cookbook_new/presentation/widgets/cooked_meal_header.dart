@@ -8,11 +8,14 @@ class CookedMealHeader extends StatelessWidget {
   /// Creates the header.
   const new({required this.kicker, required this.onClose, super.key});
 
+  /// Key of the close button.
+  static const closeKey = ValueKey<String>('cooked-close');
+
   /// Short name of the step, shown in capitals.
   final String kicker;
 
-  /// Closes the step.
-  final VoidCallback onClose;
+  /// Closes the step, or `null` while it cannot close.
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +31,7 @@ class CookedMealHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
+            key: closeKey,
             tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
             onPressed: onClose,
             icon: Icon(Icons.close_rounded, color: colors.ink),

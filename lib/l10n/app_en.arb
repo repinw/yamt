@@ -791,7 +791,6 @@
       }
     }
   },
-  "preparedMealCreatedMessage": "Prepared meal created.",
   "preparedMealUpdatedMessage": "Prepared meal updated.",
   "preparedMealActionFailed": "Prepared meal action failed. Please try again.",
   "preparedMealIngredientsCount": "{count, plural, =1{1 ingredient} other{{count} ingredients}}",
@@ -3523,6 +3522,19 @@
       }
     }
   },
+  "cookedCombinedKicker": "Combined",
+  "cookedWeight": "Weight",
+  "cookedIngredientsWeight": "{grams} g from the ingredients",
+  "@cookedIngredientsWeight": {
+    "placeholders": {
+      "grams": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedWeighInstead": "Weight wrong? Weigh with a container",
+  "cookedCombinedDiscardBody": "The ingredients go back to the stock.",
+  "cookedDiscardFailed": "Could not discard the meal. Its foods are not back in the stock yet.",
   "cookedSave": "To stock",
   "cookedNeedsUtensil": "Pick the container first",
   "cookedNextTitle": "What’s next",

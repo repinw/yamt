@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'dart:developer' as developer;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/calories/domain/combined_calorie_entry.dart';
 import 'package:yamt/features/inventory/application/inventory_combined_eat_service.dart';
@@ -110,19 +114,21 @@ abstract final class InventoryCombinedEatFlow {
     }
   }
 
-  /// Keeps [item] and [picks] in stock as one prepared meal of [portions]
-  /// portions, made of the entered amounts.
+  /// Keeps [item] and [picks] in stock as one prepared meal made of the
+  /// entered amounts. The meal starts open, and its "Gekocht" step opens
+  /// for the portions; discarding it there takes the found foods out of the
+  /// Vorrat again, also when it is opened later.
   static Future<void> storeAsMeal({
     required BuildContext context,
     required WidgetRef ref,
     required InventoryItem item,
     required InventoryItemEatRequest request,
     required List<InventoryCombinePick> picks,
-    required int portions,
     bool includesItem = true,
   }) async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
     final container = ref.container;
     final inventory = container.read(inventoryItemsControllerProvider.notifier);
     final mealsSubscription = container.listen(
@@ -144,12 +150,14 @@ abstract final class InventoryCombinedEatFlow {
       }
       final result = await meals.createPreparedMeal(
         name: combinedFoodName(prepared.map((part) => part.$1.name)),
-        totalPortions: portions,
+        totalPortions: 1,
+        startInPot: true,
         items: [
           for (final (item, request) in prepared)
             PreparedMealItemInput(
               itemId: item.id,
               usedAmount: request.inventoryAmount,
+              addedForMeal: added.any((found) => found.id == item.id),
             ),
         ],
       );
@@ -157,16 +165,8 @@ abstract final class InventoryCombinedEatFlow {
       if (!result.isSuccess || mealId == null) {
         throw StateError('The prepared meal was not saved.');
       }
-      messenger.showAppSnackBar(
-        l10n.preparedMealCreatedMessage,
-        onUndo: () async {
-          final undone = await meals.unbundlePreparedMeal(mealId);
-          if (undone) {
-            await _deleteAll(inventory, added);
-          }
-          return undone;
-        },
-      );
+      // Discarding the meal there deletes the found foods with it.
+      unawaited(router.push(AppRoutes.homeCookedMealPath(mealId)));
     } on Object catch (error, stackTrace) {
       developer.log(
         'Keeping the meal in stock failed.',

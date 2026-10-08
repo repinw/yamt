@@ -1363,7 +1363,7 @@ void main() {
     expect(find.text('Please enter valid numbers.'), findsOneWidget);
   });
 
-  testWidgets('item hub keeps combined foods in stock as a prepared meal', (
+  testWidgets('item hub keeps combined foods open for their Gekocht step', (
     tester,
   ) async {
     final repository = _FakeFridgeItemRepository(
@@ -1386,6 +1386,14 @@ void main() {
         preparedMealRepositoryProvider.overrideWithValue(mealRepository),
         firebaseAuthProvider.overrideWithValue(auth),
       ],
+      extraRoutes: [
+        // Stands in for the "Gekocht" page that the combined meal opens.
+        GoRoute(
+          path: AppRoutes.homeCookedMeal,
+          builder: (context, state) =>
+              Text('cooked:${state.pathParameters['mealId']}'),
+        ),
+      ],
     );
     await tester.pumpAndSettle();
 
@@ -1398,17 +1406,17 @@ void main() {
     await _tapVisible(tester, find.text('Oats'));
     await _tapVisible(tester, find.byKey(InventoryCombinePickPage.confirmKey));
     expect(find.text('total 300\u00A0g'), findsOneWidget);
-    for (var i = 0; i < 3; i++) {
-      await _tapVisible(tester, find.byKey(EatMealPortionsRow.increaseKey));
-    }
-    expect(find.text('portion 75\u00A0g'), findsOneWidget);
+    // Portions are set in the Gekocht step.
+    expect(find.byKey(EatMealPortionsRow.increaseKey), findsNothing);
     expect(find.byKey(const Key('eat_item_action_edit')), findsNothing);
 
     await _tapAmountDialogConfirm(tester);
 
     final meal = mealRepository.saved.single;
     expect(meal.name, 'Milk + Oats');
-    expect(meal.totalPortions, 4);
+    expect(meal.totalPortions, 1);
+    expect(meal.isInPot, isTrue);
+    expect(find.text('cooked:${meal.id}'), findsOneWidget);
   });
 
   testWidgets('item hub lets its own item leave the meal', (tester) async {

@@ -708,7 +708,6 @@
       }
     }
   },
-  "preparedMealCreatedMessage": "Mahlzeit wurde erstellt.",
   "preparedMealUpdatedMessage": "Mahlzeit wurde aktualisiert.",
   "preparedMealActionFailed": "Mahlzeit-Aktion fehlgeschlagen. Bitte versuche es erneut.",
   "preparedMealIngredientsCount": "{count, plural, =1{1 Zutat} other{{count} Zutaten}}",
@@ -2777,6 +2776,12 @@
   "inventoryRowMealFromRecipePieces": "Aus Rezept · {left} von {total} Stück",
   "inventoryEatSheetPiecesHeader": "{amount} Stück",
   "preparedMealPiecesRemaining": "{remaining}/{total} Stück",
+  "cookedCombinedKicker": "Kombiniert",
+  "cookedWeight": "Gewicht",
+  "cookedIngredientsWeight": "{grams} g aus den Zutaten",
+  "cookedWeighInstead": "Gewicht stimmt nicht? Mit Behälter wiegen",
+  "cookedCombinedDiscardBody": "Die Zutaten gehen zurück in den Vorrat.",
+  "cookedDiscardFailed": "Mahlzeit konnte nicht verworfen werden. Die Zutaten sind noch nicht zurück im Vorrat.",
   "cookedSave": "In den Vorrat",
   "cookedNeedsUtensil": "Erst den Behälter wählen",
   "cookedNextTitle": "Wie geht’s weiter",

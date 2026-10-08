@@ -113,6 +113,85 @@ void main() {
     expect(PreparedMeal.fromJson(meal.toJson()), meal);
   });
 
+  test('discard gives the foods back and deletes the open meal', () async {
+    final meals = _FakeMealRepository();
+    final items = _FakeInventoryRepository([_rice()]);
+    final service = _service(meals, items, _FakeActivityRepository());
+    await service.cook(
+      name: 'Reis',
+      ingredients: const ['200 g Reis'],
+      assignments: const {
+        '200 g Reis': ['rice'],
+      },
+    );
+    expect(items.items.single.currentAmount, 800);
+
+    await service.discard(meals.saved.single.id);
+
+    expect(meals.saved, isEmpty);
+    expect(items.items.single.currentAmount, 1000);
+  });
+
+  test('discard deletes the foods added only for the meal', () async {
+    final found = _rice().copyWith(id: 'found', name: 'Hafer');
+    final meals = _FakeMealRepository();
+    final items = _FakeInventoryRepository([_rice(), found]);
+    final service = _service(meals, items, _FakeActivityRepository());
+    await service.cook(
+      name: 'Reis',
+      ingredients: const ['200 g Reis'],
+      assignments: const {
+        '200 g Reis': ['rice'],
+      },
+    );
+    final meal = meals.saved.single;
+    meals.saved = [
+      meal.copyWith(
+        components: [
+          ...meal.components,
+          meal.components.single.copyWith(
+            inventoryItemId: 'found',
+            sourceItemSnapshot: found,
+            addedForMeal: true,
+          ),
+        ],
+      ),
+    ];
+
+    await service.discard(meal.id);
+
+    expect(meals.saved, isEmpty);
+    expect(items.items.map((item) => item.id), ['rice']);
+    expect(items.items.single.currentAmount, 1000);
+  });
+
+  test('discard refuses a meal that is already cooked', () async {
+    final meals = _FakeMealRepository();
+    final service = _service(
+      meals,
+      _FakeInventoryRepository([_rice()]),
+      _FakeActivityRepository(),
+    );
+    await service.cook(
+      name: 'Reis',
+      ingredients: const ['200 g Reis'],
+      assignments: const {
+        '200 g Reis': ['rice'],
+      },
+    );
+    final mealId = meals.saved.single.id;
+    await service.finishCooking(
+      mealId: mealId,
+      totalPortions: 2,
+      servedInPieces: false,
+      potTareWeight: null,
+      finalNetWeight: null,
+    );
+
+    await expectLater(service.discard(mealId), throwsStateError);
+    expect(meals.saved, hasLength(1));
+  });
+
   test('finishCooking refuses a meal that is already cooked', () async {
     final meals = _FakeMealRepository();
     final service = _service(

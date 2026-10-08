@@ -63,12 +63,14 @@ class PreparedMealsController extends _$PreparedMealsController {
     required int totalPortions,
     required List<PreparedMealItemInput> items,
     String? imageAssetId,
+    bool startInPot = false,
   }) => _keptAlive(
     (service) => service.createPreparedMeal(
       name: name,
       totalPortions: totalPortions,
       items: items,
       imageAssetId: imageAssetId,
+      startInPot: startInPot,
     ),
     failed: const PreparedMealCreationResult.failure(
       PreparedMealCreationFailureReason.mealSaveFailed,

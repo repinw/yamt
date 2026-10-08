@@ -234,6 +234,7 @@ class PreparedMealEditing {
   Future<bool> unbundlePreparedMeal({
     required String mealId,
     required InventoryItemRepository inventoryRepository,
+    Set<String> deletedItemIds = const <String>{},
   }) async {
     final currentMeals = await _writer.loadMeals();
     final mealIndex = currentMeals.indexWhere((meal) => meal.id == mealId);
@@ -243,10 +244,13 @@ class PreparedMealEditing {
 
     final meal = currentMeals[mealIndex];
     final currentItems = await inventoryRepository.readAll();
-    final restoredItems = restoreItemsFromPreparedMeal(
-      currentItems: currentItems,
-      meal: meal,
-    );
+    final restoredItems = [
+      for (final item in restoreItemsFromPreparedMeal(
+        currentItems: currentItems,
+        meal: meal,
+      ))
+        if (!deletedItemIds.contains(item.id)) item,
+    ];
 
     final inventorySaved = await inventoryRepository.saveChanges(
       previous: currentItems,

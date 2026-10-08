@@ -1315,9 +1315,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get preparedMealCreatedMessage => 'Prepared meal created.';
-
-  @override
   String get preparedMealUpdatedMessage => 'Prepared meal updated.';
 
   @override
@@ -6029,6 +6026,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String preparedMealPiecesRemaining(String remaining, int total) {
     return '$remaining/$total pieces';
   }
+
+  @override
+  String get cookedCombinedKicker => 'Combined';
+
+  @override
+  String get cookedWeight => 'Weight';
+
+  @override
+  String cookedIngredientsWeight(int grams) {
+    return '$grams g from the ingredients';
+  }
+
+  @override
+  String get cookedWeighInstead => 'Weight wrong? Weigh with a container';
+
+  @override
+  String get cookedCombinedDiscardBody =>
+      'The ingredients go back to the stock.';
+
+  @override
+  String get cookedDiscardFailed =>
+      'Could not discard the meal. Its foods are not back in the stock yet.';
 
   @override
   String get cookedSave => 'To stock';

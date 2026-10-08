@@ -74,6 +74,13 @@ class PreparedMealMutationService {
          clock: clock,
          logName: _logName,
          newId: newId,
+       ),
+       _potWriter = PreparedMealWriter(
+         meals: meals,
+         clock: clock,
+         logName: _logName,
+         newMealsInPot: true,
+         newId: newId,
        );
 
   final InventoryItemRepository _inventory;
@@ -82,22 +89,29 @@ class PreparedMealMutationService {
   final InventoryActivityActor? _actor;
   final TemplateIngredientParser _ingredientParser;
   final PreparedMealWriter _writer;
+
+  /// Writes meals that start open, waiting for their "Gekocht" step.
+  final PreparedMealWriter _potWriter;
   final SerializedMutationQueue _queue;
 
-  /// Creates a meal from explicit Vorrat selections.
+  /// Creates a meal from explicit Vorrat selections. With [startInPot] the
+  /// meal stays open until its "Gekocht" step sets its portions.
   Future<PreparedMealCreationResult> createPreparedMeal({
     required String name,
     required int totalPortions,
     required List<PreparedMealItemInput> items,
     String? imageAssetId,
+    bool startInPot = false,
   }) => _create(
-    (inventory) => PreparedMealCreation(writer: _writer).createPreparedMeal(
-      name: name,
-      totalPortions: totalPortions,
-      items: items,
-      imageAssetId: imageAssetId,
-      inventoryRepository: inventory,
-    ),
+    (inventory) =>
+        PreparedMealCreation(writer: startInPot ? _potWriter : _writer)
+            .createPreparedMeal(
+              name: name,
+              totalPortions: totalPortions,
+              items: items,
+              imageAssetId: imageAssetId,
+              inventoryRepository: inventory,
+            ),
   );
 
   /// Creates meals from one template, split into storage containers.

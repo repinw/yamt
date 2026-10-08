@@ -3,6 +3,8 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_creation.dart';
 import 'package:yamt/features/inventory/application/'
+    'prepared_meal_editing.dart';
+import 'package:yamt/features/inventory/application/'
     'prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_writer.dart';
@@ -133,6 +135,39 @@ class PreparedMealCookingService {
       throw StateError('Meal $mealId could not be saved.');
     }
     return cooked;
+  }
+
+  /// Discards the meal [mealId] before its "Gekocht" step: its foods go
+  /// back to the Vorrat, the ones added only for this meal are deleted, and
+  /// the meal is deleted. Throws when the meal is
+  /// gone, already cooked, or the write fails.
+  Future<void> discard(String mealId) async {
+    final meals = await _mealRepository.readAll();
+    final meal = meals.firstWhere(
+      (meal) => meal.id == mealId,
+      orElse: () => throw StateError('Meal $mealId is gone.'),
+    );
+    if (!meal.isInPot) {
+      throw StateError('Meal $mealId is not in the pot.');
+    }
+    final discarded = await _writer.trackStock(
+      inventory: _inventoryRepository,
+      activity: _activityRepository,
+      actor: _actor,
+      operation: (inventory) =>
+          PreparedMealEditing(writer: _writer).unbundlePreparedMeal(
+            mealId: mealId,
+            inventoryRepository: inventory,
+            deletedItemIds: {
+              for (final component in meal.components)
+                if (component.isAddedForMeal) component.inventoryItemId,
+            },
+          ),
+      succeeded: (saved) => saved,
+    );
+    if (!discarded) {
+      throw StateError('Meal $mealId could not be discarded.');
+    }
   }
 
   PreparedMealWriter get _writer => PreparedMealWriter(

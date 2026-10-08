@@ -22,6 +22,7 @@ PreparedMealComponent _$PreparedMealComponentFromJson(
   sourceItemSnapshot: InventoryItem.fromJson(
     json['source_item_snapshot'] as Map<String, dynamic>,
   ),
+  addedForMeal: json['added_for_meal'] as bool?,
 );
 
 Map<String, dynamic> _$PreparedMealComponentToJson(
@@ -38,4 +39,5 @@ Map<String, dynamic> _$PreparedMealComponentToJson(
   'total_carbs': instance.totalCarbs,
   'total_fat': instance.totalFat,
   'source_item_snapshot': instance.sourceItemSnapshot.toJson(),
+  'added_for_meal': ?instance.addedForMeal,
 };

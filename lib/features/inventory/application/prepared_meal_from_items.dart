@@ -67,7 +67,7 @@ PreparedMealBuildResult buildPreparedMealCreationResult({
         usedAmount: input.usedAmount,
         usedUnit: resolveUsedUnit(currentItem),
         nutrition: resolvedNutrition!,
-      ),
+      ).copyWith(addedForMeal: input.addedForMeal ? true : null),
     );
     componentSourceKeys.add(input.sourceKey?.trim() ?? '');
   }

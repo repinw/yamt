@@ -86,6 +86,7 @@ class PreparedMealItemInput {
     required this.usedAmount,
     this.manualNutrition,
     this.sourceKey,
+    this.addedForMeal = false,
   });
 
   /// The item id.
@@ -99,6 +100,10 @@ class PreparedMealItemInput {
 
   /// Optional source row key used by split creation workflows.
   final String? sourceKey;
+
+  /// Whether the item was added to the Vorrat only for this meal, such as a
+  /// food found by search while combining.
+  final bool addedForMeal;
 }
 
 /// Defines one prepared meal output from a split template creation.
