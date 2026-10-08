@@ -33,6 +33,10 @@ sealed class InventoryListEntry {
   /// Packs of a food or portions of a meal; one stock bar segment each.
   int get segments;
 
+  /// [amount] as a share of the full stock: in the stored unit for a food,
+  /// in portions for a meal.
+  double shareOf(num amount);
+
   /// Whether nothing is left.
   bool get isEmpty;
 
@@ -67,8 +71,8 @@ final class InventoryFoodEntry extends InventoryListEntry {
   double get remainingShare =>
       shareOf(item.usesAmountProgress ? item.currentAmount : item.quantity);
 
-  /// [amount] of stock, in the stored unit, as a share of the full stock.
-  double shareOf(int amount) {
+  @override
+  double shareOf(num amount) {
     final full = item.usesAmountProgress
         ? item.initialAmount
         : item.effectiveInitialQuantity;
@@ -112,6 +116,9 @@ final class InventoryMealEntry extends InventoryListEntry {
 
   @override
   int get segments => meal.totalPortions < 1 ? 1 : meal.totalPortions;
+
+  @override
+  double shareOf(num amount) => (amount / segments).clamp(0.0, 1.0);
 
   @override
   bool get isEmpty => meal.isDepleted;

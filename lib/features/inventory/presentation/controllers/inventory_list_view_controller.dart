@@ -122,9 +122,11 @@ Future<InventoryListContent> inventoryListContent(Ref ref) async {
   final items = ref.watch(inventoryItemsControllerProvider.future);
   final meals = ref.watch(preparedMealsControllerProvider.future);
   // The list does not wait for the plans; the chip fills in once they load.
-  final planned =
-      ref.watch(openPlanDemandProvider).value?.plannedByItemId.keys.toSet() ??
-      const <String>{};
+  final demand = ref.watch(openPlanDemandProvider).value;
+  final planned = {
+    ...?demand?.plannedByItemId.keys,
+    ...?demand?.plannedPortionsByMealId.keys,
+  };
   return InventoryListContent.build(
     items: await items,
     meals: await meals,

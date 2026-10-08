@@ -332,7 +332,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   header scrolls away and the search row with both buttons stays at the top;
   in selection mode the header stays, because it holds the selection actions.
 - Quick filter chips with counts: Alle, Offen (partly used), Verplant (foods
-  that open plans take stock from), Mahlzeiten, Fast leer (under a quarter
+  and cooked meals that open plans take from), Mahlzeiten, Fast leer (under a quarter
   left). The chip starts at Alle on every visit.
 - Each row shows a tilted, framed picture (photo, ingredient photos of a
   meal, or the first letter), the name, the amount left and the full amount,
@@ -342,7 +342,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   leer".
 - A food that open plans take stock from names that amount ("250 verplant")
   in place of the full amount, and its stock bar draws the planned part in the
-  accent color; a tile draws the planned part too.
+  accent color; a tile draws the planned part too. A cooked meal does the same
+  with its planned portions ("2 Port. verplant"). A meal plan that the
+  meal's portions left cannot cover shows "fehlt" in the diary but stays out of
+  the shopping block.
 - The Sortieren sheet sorts by added, eaten, name or amount; tapping the
   chosen field again flips its direction. Until the user changes it, the
   list sorts by last eaten, newest first. It also holds "Verbrauchte

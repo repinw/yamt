@@ -131,11 +131,12 @@ Widget _buildHarness() {
       shoppingListControllerProvider.overrideWith(
         _StaticShoppingListController.new,
       ),
-      // A plan for tomorrow takes 250 g of the Skyr.
+      // Plans for tomorrow take 250 g of the Skyr and a portion of the
+      // Chili.
       openPlanDemandProvider.overrideWith(
         (ref) async => (
           plannedByItemId: const {'skyr': 250},
-          plannedPortionsByMealId: const <String, double>{},
+          plannedPortionsByMealId: const {'chili': 1.0},
           missingShareByPlanId: const <String, double>{},
         ),
       ),
@@ -202,6 +203,7 @@ void main() {
       find.byKey(const ValueKey('inventory_entry_row_quark')),
       findsNothing,
     );
+    expect(find.byKey(const ValueKey('inventory_entry_row_chili')), findsOne);
 
     await tester.tap(
       find.byKey(InventoryQuickFilterChips.chipKey(InventoryQuickFilter.all)),

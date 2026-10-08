@@ -28,7 +28,7 @@ class InventoryListContent {
   ///
   /// The chip counts follow the search and the used-up setting but not the
   /// chosen chip, so every chip shows what tapping it would list.
-  /// [plannedIds] are the foods that open plans take stock from.
+  /// [plannedIds] are the foods and meals that open plans take from.
   factory build({
     required List<InventoryItem> items,
     required List<PreparedMeal> meals,

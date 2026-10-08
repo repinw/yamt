@@ -91,9 +91,11 @@ class InventoryEntriesSliver extends ConsumerWidget {
         ? () => onItemLongPress(entry.id)
         : null;
 
-    final planned =
-        ref.watch(openPlanDemandProvider).value?.plannedByItemId ??
-        const <String, int>{};
+    final demand = ref.watch(openPlanDemandProvider).value;
+    num planned(InventoryListEntry entry) => switch (entry) {
+      InventoryFoodEntry() => demand?.plannedByItemId[entry.id] ?? 0,
+      InventoryMealEntry() => demand?.plannedPortionsByMealId[entry.id] ?? 0,
+    };
     if (viewMode == InventoryListViewMode.tiles) {
       return SliverPadding(
         key: tilesKey,
@@ -128,7 +130,7 @@ class InventoryEntriesSliver extends ConsumerWidget {
                                 ),
                                 onTap: onTap(entries[index]),
                                 onLongPress: onLongPress(entries[index]),
-                                planned: planned[entries[index].id] ?? 0,
+                                planned: planned(entries[index]),
                               )
                             : const SizedBox.shrink(),
                       ),
@@ -155,7 +157,7 @@ class InventoryEntriesSliver extends ConsumerWidget {
             isSelected: selectedItemIds.contains(entry.id),
             onTap: onTap(entry),
             onLongPress: onLongPress(entry),
-            planned: planned[entry.id] ?? 0,
+            planned: planned(entry),
           );
         },
       ),

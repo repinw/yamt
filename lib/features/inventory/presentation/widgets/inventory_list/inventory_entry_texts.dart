@@ -21,12 +21,13 @@ class InventoryEntryTexts {
     this.infoIsWarning = false,
   });
 
-  /// Texts of [entry]. A food that open plans take [planned] of, in its
-  /// stored unit, names that amount in place of the full amount.
+  /// Texts of [entry]. An entry that open plans take [planned] of, in the
+  /// stored unit of a food or in portions of a meal, names that amount in
+  /// place of the full amount.
   factory of(
     InventoryListEntry entry,
     AppLocalizations l10n, {
-    int planned = 0,
+    num planned = 0,
   }) {
     final texts = switch (entry) {
       InventoryFoodEntry(:final item) => _food(item, l10n),
@@ -34,7 +35,14 @@ class InventoryEntryTexts {
     };
     final ofFull = switch (entry) {
       InventoryFoodEntry(:final item) when planned > 0 =>
-        l10n.inventoryRowPlanned(_stored(item, planned)),
+        l10n.inventoryRowPlanned(_stored(item, planned.round())),
+      InventoryMealEntry(:final meal) when planned > 0 =>
+        l10n.inventoryRowPlanned(
+          l10n.inventoryEatSheetAmountWithUnit(
+            formatInventoryNutritionValue(planned.toDouble()),
+            preparedMealServingUnit(l10n, meal),
+          ),
+        ),
       _ when entry.isLow => l10n.inventoryRowLow,
       _ => null,
     };
