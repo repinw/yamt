@@ -193,19 +193,15 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
       return false;
     }
 
-    try {
-      await _collection(userId).doc(entryId).delete();
-      _cache.remove(entryId);
-      return true;
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to delete calorie entry $entryId for user $userId',
-        name: _repositoryLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
+    final batch = firestore.batch();
+    stageDelete(batch, entryId);
+    commitBatchInBackground(
+      batch,
+      failureMessage:
+          'Server rejected deleting calorie entry $entryId for user $userId',
+      logName: _repositoryLogName,
+    );
+    return true;
   }
 
   @override
