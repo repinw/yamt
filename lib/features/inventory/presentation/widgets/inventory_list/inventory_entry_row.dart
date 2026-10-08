@@ -24,6 +24,7 @@ class InventoryEntryRow extends StatelessWidget {
     this.isSelectionMode = false,
     this.isSelected = false,
     this.planned = 0,
+    this.missing = 0,
     super.key,
   });
 
@@ -49,12 +50,20 @@ class InventoryEntryRow extends StatelessWidget {
   /// portions of a meal.
   final num planned;
 
+  /// Stock of the food that its open plans lack, in its stored unit.
+  final int missing;
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
-    final texts = InventoryEntryTexts.of(entry, l10n, planned: planned);
+    final texts = InventoryEntryTexts.of(
+      entry,
+      l10n,
+      planned: planned,
+      missing: missing,
+    );
     final amountColor = entry.isLow ? colors.low : colors.ink;
     final small = textTheme.labelSmall?.copyWith(color: colors.muted);
 
@@ -141,7 +150,7 @@ class InventoryEntryRow extends StatelessWidget {
                           ),
                           Text(
                             texts.ofFull,
-                            style: entry.isLow
+                            style: texts.ofFullIsWarning
                                 ? small?.copyWith(
                                     color: colors.low,
                                     fontWeight: FontWeight.w700,

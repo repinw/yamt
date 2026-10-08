@@ -1179,6 +1179,7 @@ Override _planDemand({Set<String> shortPlanIds = const {}}) =>
     openPlanDemandProvider.overrideWith(
       (ref) async => (
         plannedByItemId: <String, int>{},
+        missingByItemId: <String, int>{},
         plannedPortionsByMealId: <String, double>{},
         missingShareByPlanId: {for (final id in shortPlanIds) id: 1.0},
       ),

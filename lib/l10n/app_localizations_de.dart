@@ -364,6 +364,11 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String inventoryRowPlanMissing(String amount) {
+    return '$amount fehlen';
+  }
+
+  @override
   String inventoryRowPlanned(String amount) {
     return '$amount verplant';
   }

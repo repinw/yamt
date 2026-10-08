@@ -111,6 +111,22 @@ void main() {
 
     expect(demand.plannedByItemId, {'oats': 500});
     expect(demand.missingShareByPlanId.keys, ['later']);
+    expect(demand.missingByItemId, {'oats': 100});
+  });
+
+  test('a plan after the stock ran out counts as missing in full', () {
+    final demand = inventoryPlanDemand(
+      [
+        _plan('first', day: 8, grams: 300),
+        _plan('second', day: 9, grams: 300),
+        _plan('third', day: 10, grams: 300),
+      ],
+      [_pack('oats')],
+      const [],
+    );
+
+    expect(demand.plannedByItemId, {'oats': 500});
+    expect(demand.missingByItemId, {'oats': 400});
   });
 
   test('a plan takes from one pack, as accepting does', () {
@@ -127,6 +143,7 @@ void main() {
     // takes the next pack once the opened one is empty.
     expect(demand.plannedByItemId, {'opened': 200, 'full': 100});
     expect(demand.missingShareByPlanId, {'first': 1 / 3});
+    expect(demand.missingByItemId, {'opened': 100});
   });
 
   test('a plan without stock falls short; a found food counts nowhere', () {

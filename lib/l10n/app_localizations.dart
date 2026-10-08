@@ -674,6 +674,12 @@ abstract class AppLocalizations {
   /// **'of {amount}'**
   String inventoryRowOfAmount(String amount);
 
+  /// No description provided for @inventoryRowPlanMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'{amount} missing'**
+  String inventoryRowPlanMissing(String amount);
+
   /// No description provided for @inventoryRowPlanned.
   ///
   /// In en, this message translates to:

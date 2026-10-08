@@ -18,22 +18,27 @@ class InventoryEntryTexts {
     required this.unit,
     required this.ofFull,
     required this.info,
+    this.ofFullIsWarning = false,
     this.infoIsWarning = false,
   });
 
   /// Texts of [entry]. An entry that open plans take [planned] of, in the
   /// stored unit of a food or in portions of a meal, names that amount in
-  /// place of the full amount.
+  /// place of the full amount. A food whose plans lack [missing] of its
+  /// stock names that instead.
   factory of(
     InventoryListEntry entry,
     AppLocalizations l10n, {
     num planned = 0,
+    int missing = 0,
   }) {
     final texts = switch (entry) {
       InventoryFoodEntry(:final item) => _food(item, l10n),
       InventoryMealEntry(:final meal) => _meal(meal, l10n),
     };
     final ofFull = switch (entry) {
+      InventoryFoodEntry(:final item) when missing > 0 =>
+        l10n.inventoryRowPlanMissing(_stored(item, missing)),
       InventoryFoodEntry(:final item) when planned > 0 =>
         l10n.inventoryRowPlanned(_stored(item, planned.round())),
       InventoryMealEntry(:final meal) when planned > 0 =>
@@ -53,6 +58,7 @@ class InventoryEntryTexts {
       amount: texts.amount,
       unit: texts.unit,
       ofFull: ofFull,
+      ofFullIsWarning: missing > 0 || entry.isLow,
       info: texts.info,
       infoIsWarning: texts.infoIsWarning,
     );
@@ -66,6 +72,9 @@ class InventoryEntryTexts {
 
   /// Full amount, such as "von 1000 g", or "fast leer" when almost empty.
   final String ofFull;
+
+  /// Whether [ofFull] warns: almost empty, or plans lack stock.
+  final bool ofFullIsWarning;
 
   /// Brand and energy of a food, or the portions of a meal.
   final String info;
