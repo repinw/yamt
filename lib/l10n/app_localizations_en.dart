@@ -1013,6 +1013,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageHalfMark => '½';
 
   @override
+  String get eatPageCountLabel => 'Number of portions';
+
+  @override
+  String get eatPageTimes => '×';
+
+  @override
   String eatPageMark(String label, String amount) {
     return '$label $amount';
   }

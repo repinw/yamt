@@ -1756,6 +1756,18 @@ abstract class AppLocalizations {
   /// **'½'**
   String get eatPageHalfMark;
 
+  /// Name of the portion count wheel on the eat page and title of the field that types a count.
+  ///
+  /// In en, this message translates to:
+  /// **'Number of portions'**
+  String get eatPageCountLabel;
+
+  /// Sign between the portion count wheel and the weight of one portion on the eat page.
+  ///
+  /// In en, this message translates to:
+  /// **'×'**
+  String get eatPageTimes;
+
   /// No description provided for @eatPageMark.
   ///
   /// In en, this message translates to:

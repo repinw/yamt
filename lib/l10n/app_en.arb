@@ -635,6 +635,14 @@
   "@eatPageHalfMark": {
     "description": "Ruler chip name for half a package, e.g. ½ 250 g."
   },
+  "eatPageCountLabel": "Number of portions",
+  "@eatPageCountLabel": {
+    "description": "Name of the portion count wheel on the eat page and title of the field that types a count."
+  },
+  "eatPageTimes": "×",
+  "@eatPageTimes": {
+    "description": "Sign between the portion count wheel and the weight of one portion on the eat page."
+  },
   "eatPageMark": "{label} {amount}",
   "@eatPageMark": {
     "placeholders": {
