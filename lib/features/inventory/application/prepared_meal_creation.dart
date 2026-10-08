@@ -209,7 +209,10 @@ class PreparedMealCreation {
       );
     }
 
-    final inventorySaved = await inventoryRepository.saveAll(nextItems);
+    final inventorySaved = await inventoryRepository.saveChanges(
+      previous: currentItems,
+      next: nextItems,
+    );
     if (!inventorySaved) {
       return const PreparedMealCreationResult.failure(
         PreparedMealCreationFailureReason.inventorySaveFailed,
@@ -230,6 +233,7 @@ class PreparedMealCreation {
 
     await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
+      writtenItems: nextItems,
       previousItems: currentItems,
     );
     return const PreparedMealCreationResult.failure(

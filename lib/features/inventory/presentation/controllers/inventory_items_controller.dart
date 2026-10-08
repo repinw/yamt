@@ -889,7 +889,10 @@ class InventoryItemsController extends _$InventoryItemsController {
 
     final repository = ref.read(inventoryItemRepositoryProvider);
     try {
-      final saved = await repository.saveAll(nextItems);
+      final saved = await repository.saveChanges(
+        previous: previousItems,
+        next: nextItems,
+      );
       if (!ref.mounted) {
         return saved;
       }

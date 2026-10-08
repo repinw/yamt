@@ -21,6 +21,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 import '../../../helpers/fake_prepared_meal_repository.dart';
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 
 void main() {
   group('prepared meal mutation workflows', () {
@@ -59,6 +60,52 @@ void main() {
       expect(harness.meals.meals.single.imageAssetId, 'hero');
       expect(harness.meals.meals.single.components, hasLength(1));
     });
+
+    test(
+      'a rollback keeps an item that another device wrote meanwhile',
+      () async {
+        final harness = _WorkflowHarness(saveMealsResults: <bool>[false]);
+        final milk = _measuredItem(
+          id: 'milk',
+          name: 'Milk',
+          currentAmount: 1000,
+          initialAmount: 1000,
+          initialQuantity: 1,
+        );
+        final inventoryRepository = _FakeInventoryItemRepository(
+          items: <InventoryItem>[
+            _measuredItem(
+              id: 'rice',
+              name: 'Rice',
+              currentAmount: 200,
+              initialAmount: 200,
+              initialQuantity: 1,
+            ),
+          ],
+        )..writtenByOtherDevice = milk;
+
+        final result = await harness
+            .mutations(inventory: inventoryRepository)
+            .createPreparedMeal(
+              name: 'Rice Bowl',
+              totalPortions: 2,
+              items: const <PreparedMealItemInput>[
+                PreparedMealItemInput(itemId: 'rice', usedAmount: 100),
+              ],
+            );
+
+        expect(result.isSuccess, isFalse);
+        final stored = await inventoryRepository.storedItems();
+        expect(
+          stored.map((item) => item.id),
+          unorderedEquals(['rice', 'milk']),
+        );
+        expect(
+          stored.singleWhere((item) => item.id == 'rice').currentAmount,
+          200,
+        );
+      },
+    );
 
     test(
       'createPreparedMeal returns invalid input before touching repository',
@@ -306,7 +353,7 @@ void main() {
           );
 
       expect(result.isSuccess, isTrue);
-      expect(inventoryRepository.saveCount, 1);
+      expect(inventoryRepository.saveCount, 2);
       expect(inventoryRepository.lastSavedItems[0].currentAmount, 100);
       expect(inventoryRepository.lastSavedItems[1].currentAmount, 50);
       // One document per split meal.
@@ -573,7 +620,7 @@ void main() {
             );
 
         expect(saved, isTrue);
-        expect(inventoryRepository.saveCount, 1);
+        expect(inventoryRepository.saveCount, 2);
         expect(
           inventoryRepository.lastSavedItems
               .singleWhere((item) => item.id == 'beans')
@@ -1109,7 +1156,7 @@ class _WorkflowHarness {
   }
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   new({List<InventoryItem>? items})
     : _items = List<InventoryItem>.from(items ?? const <InventoryItem>[]);
 
@@ -1117,6 +1164,9 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   int readCount = 0;
   int saveCount = 0;
   List<InventoryItem> lastSavedItems = const <InventoryItem>[];
+
+  /// An item that another device writes right after this one's first write.
+  InventoryItem? writtenByOtherDevice;
 
   @override
   Stream<List<InventoryItem>> watchAll() {
@@ -1130,12 +1180,21 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<List<InventoryItem>> storedItems() async =>
+      List<InventoryItem>.from(_items);
+
+  @override
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     saveCount += 1;
     lastSavedItems = List<InventoryItem>.from(items);
     _items
       ..clear()
       ..addAll(items);
+    final other = writtenByOtherDevice;
+    if (other != null) {
+      writtenByOtherDevice = null;
+      _items.add(other);
+    }
     return true;
   }
 

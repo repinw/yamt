@@ -30,6 +30,7 @@ import 'package:yamt/features/inventory/presentation/'
     'inventory_item_eat_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
@@ -42,7 +43,7 @@ User _signedInUser() {
   return user;
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
@@ -61,7 +62,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     _items = List<InventoryItem>.from(items);
     _controller.add(List<InventoryItem>.from(_items));
     return true;

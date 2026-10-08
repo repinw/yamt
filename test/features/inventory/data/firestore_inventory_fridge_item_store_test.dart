@@ -89,76 +89,57 @@ void main() {
     expect(documents.single.data, <String, dynamic>{'name': 'Milk'});
   });
 
-  test(
-    'replaceAll diffs existing documents and removes stale entries',
-    () async {
-      final firestore = FakeFirebaseFirestore();
-      final collection = _inventoryCollection(
-        firestore: firestore,
-        householdId: 'household-1',
-      );
-      await put(collection, 'a', <String, dynamic>{'name': 'Old Milk'});
-      await put(collection, 'b', <String, dynamic>{'name': 'Bread'});
+  test('save writes one item and leaves the other items alone', () async {
+    final firestore = FakeFirebaseFirestore();
+    final collection = _inventoryCollection(
+      firestore: firestore,
+      householdId: 'household-1',
+    );
+    await put(collection, 'a', <String, dynamic>{'name': 'Milk'});
+    await put(collection, 'b', <String, dynamic>{'name': 'Bread'});
+    final store = FirestoreInventoryItemStore(
+      firestore: firestore,
+      cipher: cipher,
+    );
 
-      final store = FirestoreInventoryItemStore(
-        firestore: firestore,
-        cipher: cipher,
-      );
-      final replaced = await store.replaceAll(
-        parse: (_, _) {},
-        householdId: 'household-1',
-        documentsById: <String, Map<String, dynamic>>{
-          'b': <String, dynamic>{'name': 'Bread v2'},
-          'c': <String, dynamic>{'name': 'Cheese'},
-        },
-      );
+    final saved = await store.save(
+      householdId: 'household-1',
+      id: 'b',
+      data: <String, dynamic>{'name': 'Bread v2'},
+    );
+    await pumpEventQueue();
 
-      final snapshot = await collection.get();
-      final dataById = <String, Map<String, dynamic>>{
-        for (final doc in await sealed(collection).openAll(snapshot))
-          doc.id: doc.data,
-      };
+    final dataById = <String, Map<String, dynamic>>{
+      for (final doc in await sealed(
+        collection,
+      ).openAll(await collection.get()))
+        doc.id: doc.data,
+    };
+    expect(saved, isTrue);
+    expect(dataById['a'], <String, dynamic>{'name': 'Milk'});
+    expect(dataById['b'], <String, dynamic>{'name': 'Bread v2'});
+  });
 
-      expect(replaced, isTrue);
-      expect(snapshot.docs, hasLength(2));
-      expect(dataById.containsKey('a'), isFalse);
-      expect(dataById['b'], <String, dynamic>{'name': 'Bread v2'});
-      expect(dataById['c'], <String, dynamic>{'name': 'Cheese'});
-    },
-  );
+  test('delete removes one item and leaves the other items alone', () async {
+    final firestore = FakeFirebaseFirestore();
+    final collection = _inventoryCollection(
+      firestore: firestore,
+      householdId: 'household-1',
+    );
+    await put(collection, 'a', <String, dynamic>{'name': 'Milk'});
+    await collection.doc('plain').set(<String, dynamic>{'name': 'Bread'});
+    final store = FirestoreInventoryItemStore(
+      firestore: firestore,
+      cipher: cipher,
+    );
 
-  test(
-    'replaceAll supports more than 500 operations via chunked batches',
-    () async {
-      final firestore = FakeFirebaseFirestore();
-      final collection = _inventoryCollection(
-        firestore: firestore,
-        householdId: 'household-1',
-      );
+    final deleted = await store.delete(householdId: 'household-1', id: 'a');
+    await pumpEventQueue();
 
-      final documentsById = <String, Map<String, dynamic>>{
-        for (var index = 0; index < 501; index++)
-          'item-$index': <String, dynamic>{'index': index},
-      };
-
-      final store = FirestoreInventoryItemStore(
-        firestore: firestore,
-        cipher: cipher,
-      );
-      final replaced = await store.replaceAll(
-        parse: (_, _) {},
-        householdId: 'household-1',
-        documentsById: documentsById,
-      );
-
-      final snapshot = await collection.get();
-
-      expect(replaced, isTrue);
-      expect(snapshot.docs, hasLength(501));
-      expect(snapshot.docs.any((doc) => doc.id == 'item-0'), isTrue);
-      expect(snapshot.docs.any((doc) => doc.id == 'item-500'), isTrue);
-    },
-  );
+    expect(deleted, isTrue);
+    expect((await collection.doc('a').get()).exists, isFalse);
+    expect((await collection.doc('plain').get()).exists, isTrue);
+  });
 
   test('stores only the payload and the query fields', () async {
     final firestore = FakeFirebaseFirestore();
@@ -166,19 +147,18 @@ void main() {
       firestore: firestore,
       cipher: cipher,
     );
-    await store.replaceAll(
-      parse: (_, _) {},
+    await store.save(
       householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'a': <String, dynamic>{
-          'name': 'Milk',
-          'origin': 'manualAdd',
-          'is_deposit': false,
-          'is_discount': false,
-          'entry_date': '2026-09-24T10:00:00.000',
-        },
+      id: 'a',
+      data: <String, dynamic>{
+        'name': 'Milk',
+        'origin': 'manualAdd',
+        'is_deposit': false,
+        'is_discount': false,
+        'entry_date': '2026-09-24T10:00:00.000',
       },
     );
+    await pumpEventQueue();
 
     final raw = await _inventoryCollection(
       firestore: firestore,
@@ -199,63 +179,5 @@ void main() {
       limit: 5,
     );
     expect(recent.single.data['name'], 'Milk');
-  });
-
-  test('replaceAll keeps a plaintext document and reports failure', () async {
-    final firestore = FakeFirebaseFirestore();
-    final collection = _inventoryCollection(
-      firestore: firestore,
-      householdId: 'household-1',
-    );
-    await collection.doc('plain').set(<String, dynamic>{'name': 'Milk'});
-    final store = FirestoreInventoryItemStore(
-      firestore: firestore,
-      cipher: cipher,
-    );
-
-    final replaced = await store.replaceAll(
-      parse: (_, _) {},
-      householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'b': <String, dynamic>{'name': 'Bread'},
-      },
-    );
-
-    expect(replaced, isFalse);
-    expect((await collection.doc('plain').get()).exists, isTrue);
-  });
-
-  test('replaceAll deletes a left-out item only when it parses', () async {
-    final firestore = FakeFirebaseFirestore();
-    final store = FirestoreInventoryItemStore(
-      firestore: firestore,
-      cipher: cipher,
-    );
-    await store.replaceAll(
-      parse: (_, _) {},
-      householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'gone': <String, dynamic>{'name': 'Soup'},
-        'broken': <String, dynamic>{'name': 'Broken'},
-      },
-    );
-
-    await store.replaceAll(
-      parse: (_, data) {
-        if (data['name'] == 'Broken') {
-          throw const FormatException('broken');
-        }
-      },
-      householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'new': <String, dynamic>{'name': 'Rice'},
-      },
-    );
-
-    final documents = await store.readAll(householdId: 'household-1');
-    expect(
-      documents.map((document) => document.id),
-      unorderedEquals(<String>['new', 'broken']),
-    );
   });
 }

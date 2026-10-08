@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository_contract.dart';
 import 'package:yamt/features/inventory/data/global_food_receipt_alias_repository_contract.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository_contract.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
@@ -12,7 +11,9 @@ import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
 import 'package:yamt/features/scanner/domain/models/scanned_receipt.dart';
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+import '../../../../helpers/inventory_item_whole_list_writes.dart';
+
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   final List<InventoryItem> appendedItems = <InventoryItem>[];
   bool shouldSucceed = true;
 
@@ -27,7 +28,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   Future<List<InventoryItem>> readAll() async => appendedItems;
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     appendedItems
       ..clear()
       ..addAll(items);

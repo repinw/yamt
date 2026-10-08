@@ -35,6 +35,8 @@ import 'package:yamt/features/kitchen_utensils/application/'
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/helpers/inventory_item_whole_list_writes.dart';
+
 class _CookingFlowStartHarness {
   const new({required this.app, required this.sessionStore});
 
@@ -87,7 +89,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
   }
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   const new(this._items);
 
   final List<InventoryItem> _items;
@@ -103,7 +105,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     return true;
   }
 

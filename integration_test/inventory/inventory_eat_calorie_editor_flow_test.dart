@@ -28,6 +28,7 @@ import 'package:yamt/features/inventory/presentation/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
+import '../../test/helpers/inventory_item_whole_list_writes.dart';
 
 const _eatKey = Key('eat_with_editor');
 
@@ -56,7 +57,7 @@ class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 class _MockUser extends Mock implements User;
 
 /// Holds the Vorrat in memory and streams every change asynchronously.
-class _MemoryInventoryItemRepository implements InventoryItemRepository {
+class _MemoryInventoryItemRepository with InventoryItemWholeListWrites {
   new(List<InventoryItem> items) : items = List.of(items);
 
   List<InventoryItem> items;
@@ -69,7 +70,7 @@ class _MemoryInventoryItemRepository implements InventoryItemRepository {
   Future<List<InventoryItem>> readAll() async => List.of(items);
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     this.items = List.of(items);
     _changes.add(List.of(items));
     return true;
@@ -99,7 +100,7 @@ class _MemoryCommitStore implements InventoryCalorieEntryCommitStore {
     final pending = pendingConsumptions.single;
     final item = inventory.items.singleWhere((it) => it.id == pending.itemId);
     final reduced = item.reducedBy(pending.amount)!;
-    await inventory.saveAll([reduced]);
+    await inventory.replaceItems([reduced]);
     await diary.saveEntry(entry);
     return [
       InventoryCalorieEntryCommitResult(

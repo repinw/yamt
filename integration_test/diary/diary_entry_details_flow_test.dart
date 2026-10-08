@@ -36,6 +36,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/helpers/inventory_item_whole_list_writes.dart';
 
 class _MockUser extends Mock implements User;
 
@@ -85,7 +86,7 @@ class _ItemStore implements InventoryCalorieEntryCommitStore {
   }) => throw UnimplementedError();
 }
 
-class _Items implements InventoryItemRepository {
+class _Items with InventoryItemWholeListWrites {
   const new();
 
   @override
@@ -106,7 +107,7 @@ class _Items implements InventoryItemRepository {
   Stream<List<InventoryItem>> watchAll() => Stream.fromFuture(readAll());
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async => true;

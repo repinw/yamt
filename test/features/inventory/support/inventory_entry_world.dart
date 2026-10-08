@@ -17,12 +17,13 @@ import 'package:yamt/features/inventory/application/'
     'inventory_pending_consumption_store.dart';
 import 'package:yamt/features/inventory/data/'
     'firestore_inventory_calorie_entry_commit_store.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 
 const _householdId = 'household-1';
 final entryLoggedAt = DateTime(2026, 3, 27, 8);
@@ -38,7 +39,7 @@ ProviderContainer _container() {
 late SecretKey _householdKey;
 
 /// Lists the items that the Vorrat holds, for the source checks.
-class FakeEntryItems implements InventoryItemRepository {
+class FakeEntryItems with InventoryItemWholeListWrites {
   new(this.items);
 
   List<InventoryItem> items;
@@ -54,7 +55,7 @@ class FakeEntryItems implements InventoryItemRepository {
   Stream<List<InventoryItem>> watchAll() => Stream.value(items);
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async => true;

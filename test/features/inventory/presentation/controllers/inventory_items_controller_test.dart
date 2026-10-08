@@ -16,7 +16,9 @@ import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+import '../../../../helpers/inventory_item_whole_list_writes.dart';
+
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
@@ -60,7 +62,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   final List<List<InventoryItem>> saveHistory = <List<InventoryItem>>[];
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     saveHistory.add(List<InventoryItem>.from(items));
     _items = List<InventoryItem>.from(items);
     _controller.add(List<InventoryItem>.from(_items));
@@ -466,7 +468,8 @@ void main() {
         .restoreConsumedItems({'a': 100, 'b': 1});
 
     expect(restored, isTrue);
-    expect(repository.saveHistory.length, savesBefore + 1);
+    // One write per item.
+    expect(repository.saveHistory.length, savesBefore + 2);
     final items = repository.saveHistory.last;
     expect(items.singleWhere((item) => item.id == 'a').currentAmount, 108);
     expect(items.singleWhere((item) => item.id == 'b').currentAmount, 39);

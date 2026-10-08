@@ -9,7 +9,6 @@ import 'package:yamt/features/cooking_flow/domain/cooking_flow_session.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_creation.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_writer.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -20,6 +19,7 @@ import 'package:yamt/features/recipes/application/template_ingredient_parser.dar
 /// portions, split into two containers.
 
 import '../../../helpers/fake_prepared_meal_repository.dart';
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 
 void main() {
   test('every assigned row lands in its container meal', () async {
@@ -240,7 +240,7 @@ GlobalFoodNutrition _nutrition(double per100Kcal) {
   );
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   new(List<InventoryItem> items) : items = List<InventoryItem>.from(items);
 
   List<InventoryItem> items;
@@ -256,7 +256,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> nextItems) async {
+  Future<bool> replaceItems(List<InventoryItem> nextItems) async {
     items = List<InventoryItem>.from(nextItems);
     return true;
   }

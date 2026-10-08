@@ -13,12 +13,13 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/presentation/widgets/shopping_list_plan_needs.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 final _now = DateTime(2026, 10, 7, 9);
 
-class _StockRepository implements InventoryItemRepository {
+class _StockRepository with InventoryItemWholeListWrites {
   bool fail = false;
   int watchCount = 0;
   @override
@@ -40,7 +41,7 @@ class _StockRepository implements InventoryItemRepository {
   @override
   Future<List<InventoryItem>> readAll() async => [];
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
   @override
   Future<bool> appendAll(List<InventoryItem> items) async => true;
 }

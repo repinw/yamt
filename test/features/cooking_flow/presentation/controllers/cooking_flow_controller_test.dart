@@ -15,6 +15,8 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
+import '../../../../helpers/inventory_item_whole_list_writes.dart';
+
 void main() {
   test('second finalize call fails while first save is running', () async {
     final inventoryRepository = _BlockingInventoryItemRepository();
@@ -118,7 +120,7 @@ PreparedMeal _template() {
   );
 }
 
-class _BlockingInventoryItemRepository implements InventoryItemRepository {
+class _BlockingInventoryItemRepository with InventoryItemWholeListWrites {
   final _readCompleter = Completer<List<InventoryItem>>();
 
   void completeRead() {
@@ -138,7 +140,7 @@ class _BlockingInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     return true;
   }
 

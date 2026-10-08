@@ -3,13 +3,14 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_cooking_service.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
+
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 
 final _now = DateTime.utc(2026, 10, 1, 18);
 
@@ -295,7 +296,7 @@ class _FakeMealRepository implements PreparedMealRepository {
   }
 }
 
-class _FakeInventoryRepository implements InventoryItemRepository {
+class _FakeInventoryRepository with InventoryItemWholeListWrites {
   new(this.items);
 
   List<InventoryItem> items;
@@ -307,7 +308,7 @@ class _FakeInventoryRepository implements InventoryItemRepository {
   Future<List<InventoryItem>> readAll() async => items;
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     this.items = items;
     return true;
   }

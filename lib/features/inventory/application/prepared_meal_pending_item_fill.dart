@@ -58,7 +58,10 @@ class PreparedMealPendingItemFill {
       return false;
     }
 
-    if (!await inventoryRepository.saveAll(built.nextItems)) {
+    if (!await inventoryRepository.saveChanges(
+      previous: currentItems,
+      next: built.nextItems,
+    )) {
       return false;
     }
 
@@ -87,6 +90,7 @@ class PreparedMealPendingItemFill {
 
     await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
+      writtenItems: built.nextItems,
       previousItems: currentItems,
     );
     return false;

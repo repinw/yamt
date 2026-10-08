@@ -19,11 +19,12 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 import '../../test/features/shoppinglist/support/fake_shopping_list_repository.dart';
+import '../../test/helpers/inventory_item_whole_list_writes.dart';
 
 final _now = DateTime(2026, 10, 7, 9);
 
 /// Oats in stock: 100 g left of a 500 g pack.
-class _StockRepository implements InventoryItemRepository {
+class _StockRepository with InventoryItemWholeListWrites {
   final _items = [
     InventoryItem.create(
       id: 'oats',
@@ -47,7 +48,7 @@ class _StockRepository implements InventoryItemRepository {
   @override
   Future<List<InventoryItem>> readAll() async => _items;
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
   @override
   Future<bool> appendAll(List<InventoryItem> items) async => true;
 }

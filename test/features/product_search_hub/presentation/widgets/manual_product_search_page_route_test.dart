@@ -17,6 +17,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../helpers/inventory_item_whole_list_writes.dart';
+
 void main() {
   testWidgets('push helper returns typed result without route animation', (
     tester,
@@ -160,7 +162,8 @@ InventoryItem _item() {
 }
 
 class _EmptyInventoryItemRepository
-    implements InventoryItemRepository, InventoryItemRecentManualReader {
+    with InventoryItemWholeListWrites
+    implements InventoryItemRecentManualReader {
   const new();
 
   @override
@@ -184,7 +187,7 @@ class _EmptyInventoryItemRepository
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     return true;
   }
 

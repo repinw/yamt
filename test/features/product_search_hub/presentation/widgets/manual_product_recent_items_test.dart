@@ -8,6 +8,8 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
+import '../../../../helpers/inventory_item_whole_list_writes.dart';
+
 void main() {
   test('sorts newest manual items first and limits results to twenty', () {
     final items = List<InventoryItem>.generate(25, (index) {
@@ -244,7 +246,8 @@ void main() {
 }
 
 class _FakeInventoryItemRepository
-    implements InventoryItemRepository, InventoryItemRecentManualReader {
+    with InventoryItemWholeListWrites
+    implements InventoryItemRecentManualReader {
   new(this._items);
 
   final List<InventoryItem> _items;
@@ -276,7 +279,7 @@ class _FakeInventoryItemRepository
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
 
   @override
   Stream<List<InventoryItem>> watchAll() async* {

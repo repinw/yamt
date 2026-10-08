@@ -143,8 +143,9 @@ class PreparedMealEditing {
       return false;
     }
 
-    final inventorySaved = await inventoryRepository.saveAll(
-      buildResult.nextItems,
+    final inventorySaved = await inventoryRepository.saveChanges(
+      previous: currentItems,
+      next: buildResult.nextItems,
     );
     if (!inventorySaved) {
       return false;
@@ -162,6 +163,7 @@ class PreparedMealEditing {
 
     await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
+      writtenItems: buildResult.nextItems,
       previousItems: currentItems,
     );
     return false;
@@ -246,7 +248,10 @@ class PreparedMealEditing {
       meal: meal,
     );
 
-    final inventorySaved = await inventoryRepository.saveAll(restoredItems);
+    final inventorySaved = await inventoryRepository.saveChanges(
+      previous: currentItems,
+      next: restoredItems,
+    );
     if (!inventorySaved) {
       return false;
     }
@@ -263,6 +268,7 @@ class PreparedMealEditing {
 
     await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
+      writtenItems: restoredItems,
       previousItems: currentItems,
     );
     return false;
