@@ -133,6 +133,7 @@
   },
   "inventorySortAction": "Sortieren",
   "inventoryQuickFilterAll": "Alle",
+  "inventoryQuickFilterPlanned": "Verplant",
   "inventoryQuickFilterOpen": "Offen",
   "inventoryQuickFilterMeals": "Mahlzeiten",
   "inventoryQuickFilterLow": "Fast leer",

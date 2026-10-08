@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
+import 'package:yamt/features/inventory/application/inventory_plan_demand_provider.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
@@ -120,11 +121,16 @@ Future<InventoryListContent> inventoryListContent(Ref ref) async {
   final view = ref.watch(inventoryListViewControllerProvider);
   final items = ref.watch(inventoryItemsControllerProvider.future);
   final meals = ref.watch(preparedMealsControllerProvider.future);
+  // The list does not wait for the plans; the chip fills in once they load.
+  final planned =
+      ref.watch(openPlanDemandProvider).value?.plannedByItemId.keys.toSet() ??
+      const <String>{};
   return InventoryListContent.build(
     items: await items,
     meals: await meals,
     preferences: view.preferences,
     quickFilter: view.quickFilter,
     query: view.query,
+    plannedIds: planned,
   );
 }

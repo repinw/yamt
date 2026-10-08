@@ -28,12 +28,14 @@ class InventoryListContent {
   ///
   /// The chip counts follow the search and the used-up setting but not the
   /// chosen chip, so every chip shows what tapping it would list.
+  /// [plannedIds] are the foods that open plans take stock from.
   factory build({
     required List<InventoryItem> items,
     required List<PreparedMeal> meals,
     required InventoryListViewPreferences preferences,
     required InventoryQuickFilter quickFilter,
     required String query,
+    Set<String> plannedIds = const {},
   }) {
     const search = InventorySearchService();
     final stock = <InventoryListEntry>[
@@ -47,13 +49,18 @@ class InventoryListContent {
         InventoryFoodEntry(item),
     ].where((entry) => !preferences.hideConsumed || !entry.isEmpty).toList();
 
-    final entries = visible.where(quickFilter.matches).toList()
-      ..sort((a, b) => _compare(a, b, preferences.sortMode));
+    final entries =
+        visible
+            .where((entry) => quickFilter.matches(entry, plannedIds))
+            .toList()
+          ..sort((a, b) => _compare(a, b, preferences.sortMode));
     return InventoryListContent(
       entries: entries,
       counts: {
         for (final filter in InventoryQuickFilter.values)
-          filter: visible.where(filter.matches).length,
+          filter: visible
+              .where((entry) => filter.matches(entry, plannedIds))
+              .length,
       },
       stockCount: stock.where((entry) => !entry.isEmpty).length,
       hasSource: stock.isNotEmpty,

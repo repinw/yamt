@@ -347,6 +347,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get inventoryQuickFilterAll => 'Alle';
 
   @override
+  String get inventoryQuickFilterPlanned => 'Verplant';
+
+  @override
   String get inventoryQuickFilterOpen => 'Offen';
 
   @override

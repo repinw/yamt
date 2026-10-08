@@ -7,8 +7,8 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_quick_filter.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-/// Round quick filter chips with their counts: Alle, Offen, Mahlzeiten,
-/// Fast leer. The selected chip is filled with ink.
+/// Round quick filter chips with their counts: Alle, Offen, Verplant,
+/// Mahlzeiten, Fast leer. The selected chip is filled with ink.
 class InventoryQuickFilterChips extends StatelessWidget {
   /// Creates the chips.
   const new({
@@ -49,6 +49,8 @@ class InventoryQuickFilterChips extends StatelessWidget {
               label: switch (filter) {
                 InventoryQuickFilter.all => l10n.inventoryQuickFilterAll,
                 InventoryQuickFilter.open => l10n.inventoryQuickFilterOpen,
+                InventoryQuickFilter.planned =>
+                  l10n.inventoryQuickFilterPlanned,
                 InventoryQuickFilter.meals => l10n.inventoryQuickFilterMeals,
                 InventoryQuickFilter.low => l10n.inventoryQuickFilterLow,
               },

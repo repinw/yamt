@@ -8,17 +8,22 @@ enum InventoryQuickFilter {
   /// Partly used foods and meals.
   open,
 
+  /// Foods that open plans take stock from.
+  planned,
+
   /// Prepared meals only.
   meals,
 
   /// Less than a quarter left.
   low;
 
-  /// Whether [entry] belongs to this filter.
-  bool matches(InventoryListEntry entry) {
+  /// Whether [entry] belongs to this filter. [plannedIds] are the foods
+  /// that open plans take stock from.
+  bool matches(InventoryListEntry entry, Set<String> plannedIds) {
     return switch (this) {
       InventoryQuickFilter.all => true,
       InventoryQuickFilter.open => entry.isOpen,
+      InventoryQuickFilter.planned => plannedIds.contains(entry.id),
       InventoryQuickFilter.meals => entry is InventoryMealEntry,
       InventoryQuickFilter.low => entry.isLow,
     };
