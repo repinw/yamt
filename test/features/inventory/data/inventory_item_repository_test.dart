@@ -44,6 +44,13 @@ class _FakeInventoryItemStore
   }
 
   @override
+  Future<List<InventoryItemDocument>> readAllLocal({
+    required String householdId,
+  }) async {
+    return _copyDocuments(householdId);
+  }
+
+  @override
   Future<List<InventoryItemDocument>> readRecentManual({
     required String householdId,
     required int limit,

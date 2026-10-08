@@ -74,6 +74,13 @@ class _UnavailableInventoryItemStore
   }
 
   @override
+  Future<List<InventoryItemDocument>> readAllLocal({
+    required String householdId,
+  }) async {
+    return const <InventoryItemDocument>[];
+  }
+
+  @override
   Future<List<InventoryItemDocument>> readRecentManual({
     required String householdId,
     required int limit,

@@ -29,6 +29,12 @@ abstract interface class InventoryItemStore {
   /// Read all.
   Future<List<InventoryItemDocument>> readAll({required String householdId});
 
+  /// Reads all from the local cache, and from the server only when the cache
+  /// holds none.
+  Future<List<InventoryItemDocument>> readAllLocal({
+    required String householdId,
+  });
+
   /// Watch all.
   Stream<List<InventoryItemDocument>> watchAll({required String householdId});
 
@@ -84,6 +90,16 @@ class FirestoreInventoryItemStore
     final collection = _collection(householdId);
     return _mapDocuments(
       await collection.openAll(await collection.reference.get()),
+    );
+  }
+
+  @override
+  Future<List<InventoryItemDocument>> readAllLocal({
+    required String householdId,
+  }) async {
+    final collection = _collection(householdId);
+    return _mapDocuments(
+      await collection.openAll(await readQueryLocalFirst(collection.reference)),
     );
   }
 
