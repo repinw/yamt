@@ -12,14 +12,14 @@ typedef ManualProductServing = ({
 /// Text of the "grams per piece" input for [serving]: its amount when it
 /// is in grams or milliliters, otherwise empty.
 String manualProductPieceWeightText(ManualProductServing serving) {
-  final unit = resolveInventoryAmountUnitAlias(serving.quantityUnit);
-  if (unit == null || unit.base == InventoryAmountUnit.piece) {
+  final amount = switch (serving.quantity) {
+    final quantity? => servingInBaseUnit(quantity, serving.quantityUnit),
+    null => null,
+  };
+  if (amount == null || amount.unit == InventoryAmountUnit.piece) {
     return '';
   }
-  return formatManualProductDouble(switch (serving.quantity) {
-    final quantity? => quantity * unit.multiplier,
-    null => null,
-  });
+  return formatManualProductDouble(amount.amount);
 }
 
 /// The serving to save. For a package counted in pieces, the entered grams

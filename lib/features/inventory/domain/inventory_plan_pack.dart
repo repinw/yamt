@@ -106,13 +106,16 @@ int? inventoryAmountForPlan(CalorieEntry plan, InventoryItem item) {
 /// serving size, or null.
 double? _pieceAmount(InventoryItem item, ConsumedUnit unit) {
   final quantity = item.servingQuantity;
-  final serving = resolveInventoryAmountUnitAlias(item.servingQuantityUnit);
-  if (quantity == null || quantity <= 0 || serving == null) {
+  if (quantity == null || quantity <= 0) {
+    return null;
+  }
+  final serving = servingInBaseUnit(quantity, item.servingQuantityUnit);
+  if (serving == null) {
     return null;
   }
   final matches = switch (unit) {
-    ConsumedUnit.grams => serving.base == InventoryAmountUnit.gram,
-    ConsumedUnit.milliliters => serving.base == InventoryAmountUnit.milliliter,
+    ConsumedUnit.grams => serving.unit == InventoryAmountUnit.gram,
+    ConsumedUnit.milliliters => serving.unit == InventoryAmountUnit.milliliter,
   };
-  return matches ? quantity * serving.multiplier : null;
+  return matches ? serving.amount : null;
 }
