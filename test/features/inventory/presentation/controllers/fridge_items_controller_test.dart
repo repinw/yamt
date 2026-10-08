@@ -14,7 +14,9 @@ import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_revert.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 
-class _FakeFridgeItemRepository implements InventoryItemRepository {
+import '../../../../helpers/inventory_item_whole_list_writes.dart';
+
+class _FakeFridgeItemRepository with InventoryItemWholeListWrites {
   new({required this.onReadAll});
 
   final Future<List<InventoryItem>> Function() onReadAll;
@@ -49,7 +51,7 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     if (saveDelay > Duration.zero) {
       await Future<void>.delayed(saveDelay);
     }

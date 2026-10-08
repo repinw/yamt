@@ -30,10 +30,22 @@ class PreparedMealStockTrackingRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
-    final saved = await _delegate.saveAll(items);
+  Future<bool> save(InventoryItem item) async {
+    final saved = await _delegate.save(item);
     if (saved) {
-      _latestItems = List<InventoryItem>.from(items);
+      _latestItems = _upsertItems(_latestItems, [item]);
+    }
+    return saved;
+  }
+
+  @override
+  Future<bool> delete(String itemId) async {
+    final saved = await _delegate.delete(itemId);
+    if (saved) {
+      _latestItems = [
+        for (final item in _latestItems)
+          if (item.id != itemId) item,
+      ];
     }
     return saved;
   }

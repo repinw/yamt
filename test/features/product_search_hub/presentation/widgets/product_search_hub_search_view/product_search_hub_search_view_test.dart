@@ -20,6 +20,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_hub_search_results/product_search_hub_search_results.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../../../helpers/inventory_item_whole_list_writes.dart';
+
 Widget _buildHarness({
   List<OffProductSearchResult> searchResults = const <OffProductSearchResult>[],
   ProductSearchHubRouteArgs args = const ProductSearchHubRouteArgs.inventory(),
@@ -432,7 +434,8 @@ InventoryItem _recentItem({required String id}) {
 }
 
 class _FakeInventoryItemRepository
-    implements InventoryItemRepository, InventoryItemRecentManualReader {
+    with InventoryItemWholeListWrites
+    implements InventoryItemRecentManualReader {
   const new(this._items);
 
   final List<InventoryItem> _items;
@@ -456,7 +459,7 @@ class _FakeInventoryItemRepository
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
 
   @override
   Stream<List<InventoryItem>> watchAll() async* {

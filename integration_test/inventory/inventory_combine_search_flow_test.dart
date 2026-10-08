@@ -37,6 +37,7 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/helpers/inventory_item_whole_list_writes.dart';
 
 const _openKey = Key('open_combine_pick');
 const _amountFieldKey = Key('eat_page_amount_field');
@@ -372,7 +373,7 @@ void main() {
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
 /// Vorrat repository that keeps what the test saves.
-class _FakeItems implements InventoryItemRepository {
+class _FakeItems with InventoryItemWholeListWrites {
   List<InventoryItem> items = const [];
 
   @override
@@ -382,7 +383,7 @@ class _FakeItems implements InventoryItemRepository {
   Future<List<InventoryItem>> readAll() async => items;
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     this.items = items;
     return true;
   }

@@ -18,9 +18,10 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_controller.dart';
 
+import '../../../../helpers/inventory_item_whole_list_writes.dart';
 import '../../../calories/support/fake_calories_repositories.dart';
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
@@ -54,7 +55,11 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<List<InventoryItem>> storedItems() async =>
+      List<InventoryItem>.from(_items);
+
+  @override
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     if (saveShouldFail) {
       return false;
     }
@@ -472,7 +477,8 @@ void main() {
         result.failureReason,
         PreparedMealCreationFailureReason.mealSaveFailed,
       );
-      expect(inventoryRepository.saveHistory, hasLength(2));
+      // Two items written, then both written back.
+      expect(inventoryRepository.saveHistory, hasLength(4));
       expect(inventoryRepository.savedItems[0].currentAmount, 300);
       expect(inventoryRepository.savedItems[1].currentAmount, 250);
       expect(

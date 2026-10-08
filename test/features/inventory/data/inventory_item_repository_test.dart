@@ -26,7 +26,7 @@ class _FakeInventoryItemStore
   _controllersByHousehold =
       <String, StreamController<List<InventoryItemDocument>>>{};
 
-  bool replaceAllShouldFail = false;
+  bool saveShouldFail = false;
   bool upsertAllShouldFail = false;
   Exception? watchAllError;
   Duration upsertDelay = Duration.zero;
@@ -77,19 +77,30 @@ class _FakeInventoryItemStore
     yield* _controllerFor(householdId).stream;
   }
 
-  void Function(String id, Map<String, dynamic> data)? parse;
-
   @override
-  Future<bool> replaceAll({
+  Future<bool> save({
     required String householdId,
-    required Map<String, Map<String, dynamic>> documentsById,
-    required void Function(String id, Map<String, dynamic> data) parse,
+    required String id,
+    required Map<String, dynamic> data,
   }) async {
-    this.parse = parse;
-    if (replaceAllShouldFail) {
+    if (saveShouldFail) {
       return false;
     }
-    _documentsByHousehold[householdId] = _documentsFromMap(documentsById);
+    _documentsByHousehold[householdId] = [
+      for (final document in _copyDocuments(householdId))
+        if (document.id != id) document,
+      InventoryItemDocument(id: id, data: data),
+    ];
+    _emit(householdId);
+    return true;
+  }
+
+  @override
+  Future<bool> delete({required String householdId, required String id}) async {
+    _documentsByHousehold[householdId] = [
+      for (final document in _copyDocuments(householdId))
+        if (document.id != id) document,
+    ];
     _emit(householdId);
     return true;
   }
@@ -147,19 +158,6 @@ class _FakeInventoryItemStore
           (document) => InventoryItemDocument(
             id: document.id,
             data: Map<String, dynamic>.from(document.data),
-          ),
-        )
-        .toList(growable: false);
-  }
-
-  List<InventoryItemDocument> _documentsFromMap(
-    Map<String, Map<String, dynamic>> documentsById,
-  ) {
-    return documentsById.entries
-        .map(
-          (entry) => InventoryItemDocument(
-            id: entry.key,
-            data: Map<String, dynamic>.from(entry.value),
           ),
         )
         .toList(growable: false);
@@ -337,7 +335,7 @@ void main() {
     ]);
   });
 
-  test('saveAll hands the store a parse check for left-out items', () async {
+  test('save and delete change one item and leave the others', () async {
     final store = _FakeInventoryItemStore();
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
@@ -345,17 +343,43 @@ void main() {
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
+    await repository.save(_item('a'));
+    await repository.save(_item('b'));
 
-    await repository.saveAll(<InventoryItem>[_item('a')]);
+    await repository.delete('a');
 
-    store.parse!('b', _item('b').toJson());
-    // The list skips a stored item with a non-text id, so the delete check
-    // must not accept it either.
-    expect(
-      () => store.parse!('odd', _item('odd').toJson()..['id'] = 5),
-      throwsA(isA<TypeError>()),
-    );
+    expect((await repository.readAll()).map((item) => item.id), ['b']);
   });
+
+  test(
+    'saveChanges writes only changed items and deletes removed ones',
+    () async {
+      final store = _FakeInventoryItemStore();
+      addTearDown(store.dispose);
+      final repository = FirestoreInventoryItemRepository(
+        session: _FakeInventoryUserSession(householdId: 'household-1'),
+        sessionShutdownSignal: SessionShutdownSignal(),
+        store: store,
+      );
+      final kept = _item('kept');
+      final removed = _item('removed');
+      await repository.save(kept);
+      await repository.save(removed);
+      // Written by another device after this one read the list.
+      await repository.save(_item('other'));
+
+      final saved = await repository.saveChanges(
+        previous: [kept, removed],
+        next: [kept, _item('added')],
+      );
+
+      expect(saved, isTrue);
+      expect(
+        (await repository.readAll()).map((item) => item.id),
+        unorderedEquals(['kept', 'other', 'added']),
+      );
+    },
+  );
 
   test('appendAll upserts by id and appends new items', () async {
     final store = _FakeInventoryItemStore(
@@ -445,8 +469,8 @@ void main() {
     expect(store.maxConcurrentUpserts, 1);
   });
 
-  test('saveAll returns false when replace fails', () async {
-    final store = _FakeInventoryItemStore()..replaceAllShouldFail = true;
+  test('save returns false when the store fails', () async {
+    final store = _FakeInventoryItemStore()..saveShouldFail = true;
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
       session: _FakeInventoryUserSession(householdId: 'household-1'),
@@ -454,7 +478,7 @@ void main() {
       store: store,
     );
 
-    final saved = await repository.saveAll(<InventoryItem>[_item('a')]);
+    final saved = await repository.save(_item('a'));
 
     expect(saved, isFalse);
   });

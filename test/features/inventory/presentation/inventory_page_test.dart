@@ -51,6 +51,7 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
@@ -80,7 +81,7 @@ class _FakeInventoryDiscardEventRepository
   }
 }
 
-class _FakeFridgeItemRepository implements InventoryItemRepository {
+class _FakeFridgeItemRepository with InventoryItemWholeListWrites {
   new({required this.onReadAll});
 
   final Future<List<InventoryItem>> Function() onReadAll;
@@ -110,7 +111,7 @@ class _FakeFridgeItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     _items = List<InventoryItem>.from(items);
     _isInitialized = true;
     _watchController.add(_items);
@@ -2051,7 +2052,7 @@ void main() {
       await _tapInventoryRowAction(tester, 'Remove');
       await _tapVisible(tester, find.text('Consumed elsewhere'));
 
-      await repository.saveAll(<InventoryItem>[
+      await repository.replaceItems(<InventoryItem>[
         _item('a', quantity: 1, initialQuantity: 3),
       ]);
       await tester.pumpAndSettle();

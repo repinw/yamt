@@ -74,6 +74,7 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
+import '../../test/helpers/inventory_item_whole_list_writes.dart';
 import '../../test/helpers/memory_app_preferences.dart';
 import '../../test/helpers/sheet_launcher.dart';
 
@@ -1506,7 +1507,7 @@ class _MemoryMealCommitStore implements PreparedMealCalorieEntryCommitStore {
   );
 }
 
-class _OwnerScopedInventoryItemRepository implements InventoryItemRepository {
+class _OwnerScopedInventoryItemRepository with InventoryItemWholeListWrites {
   const new({required this.ownerId, required this.itemsByOwnerId});
 
   final String? ownerId;
@@ -1527,7 +1528,7 @@ class _OwnerScopedInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     final resolvedOwnerId = ownerId;
     if (resolvedOwnerId == null) {
       return false;

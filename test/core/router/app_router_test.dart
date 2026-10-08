@@ -50,6 +50,7 @@ import 'package:yamt/features/settings/presentation/pages/settings_page.dart';
 
 import '../../features/calories/support/fake_calories_repositories.dart';
 import '../../helpers/auth_user_data_key_session.dart';
+import '../../helpers/inventory_item_whole_list_writes.dart';
 import '../../helpers/memory_app_preferences.dart';
 
 class _MockUser extends Mock implements User;
@@ -1511,7 +1512,8 @@ class _FakeUserDataKeySession extends UserDataKeySession {
 }
 
 class _FakeInventoryItemRepository
-    implements InventoryItemRepository, InventoryItemRecentManualReader {
+    with InventoryItemWholeListWrites
+    implements InventoryItemRecentManualReader {
   const new();
 
   @override
@@ -1533,7 +1535,7 @@ class _FakeInventoryItemRepository
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
 
   @override
   Stream<List<InventoryItem>> watchAll() async* {

@@ -3,12 +3,12 @@ import 'package:yamt/features/inventory/application/'
     'prepared_meal_pending_item_fill.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_writer.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 import '../../../helpers/fake_prepared_meal_repository.dart';
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 
 final _now = DateTime.utc(2026, 10, 1, 19);
 
@@ -127,7 +127,7 @@ class _Harness {
   List<PreparedMeal> get stored => _repository.meals;
 }
 
-class _FakeInventoryRepository implements InventoryItemRepository {
+class _FakeInventoryRepository with InventoryItemWholeListWrites {
   new(this.items);
 
   List<InventoryItem> items;
@@ -139,7 +139,7 @@ class _FakeInventoryRepository implements InventoryItemRepository {
   Future<List<InventoryItem>> readAll() async => items;
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     this.items = items;
     return true;
   }

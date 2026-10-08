@@ -32,13 +32,15 @@ abstract interface class InventoryItemStore {
   /// Watch all.
   Stream<List<InventoryItemDocument>> watchAll({required String householdId});
 
-  /// Replace all. A stored document missing from [documentsById] is
-  /// deleted only when [parse] reads its data without throwing.
-  Future<bool> replaceAll({
+  /// Writes the item [id] alone; the other items stay untouched.
+  Future<bool> save({
     required String householdId,
-    required Map<String, Map<String, dynamic>> documentsById,
-    required void Function(String id, Map<String, dynamic> data) parse,
+    required String id,
+    required Map<String, dynamic> data,
   });
+
+  /// Deletes the item [id] alone.
+  Future<bool> delete({required String householdId, required String id});
 
   /// Upsert all.
   Future<bool> upsertAll({
@@ -114,29 +116,39 @@ class FirestoreInventoryItemStore
   }
 
   @override
-  Future<bool> replaceAll({
+  Future<bool> save({
     required String householdId,
-    required Map<String, Map<String, dynamic>> documentsById,
-    required void Function(String id, Map<String, dynamic> data) parse,
+    required String id,
+    required Map<String, dynamic> data,
   }) async {
     try {
       final collection = _collection(householdId);
-      await collection.ensureAllSealed();
-      await _atomicReplaceService.replaceAll(
-        collection: collection.reference,
-        documentsById: await collection.sealAll(documentsById),
-        canDelete: (candidate) => collection.canDeleteStale(candidate, parse),
+      final sealed = await collection.seal(id, data);
+      commitBatchInBackground(
+        _firestore.batch()..set(collection.reference.doc(id), sealed),
+        failureMessage: 'Server rejected inventory item $id.',
+        logName: _storeLogName,
       );
       return true;
     } on Object catch (error, stackTrace) {
       log(
-        'Failed to replace inventory items for household $householdId.',
+        'Failed to save inventory item $id for household $householdId.',
         name: _storeLogName,
         error: error,
         stackTrace: stackTrace,
       );
       return false;
     }
+  }
+
+  @override
+  Future<bool> delete({required String householdId, required String id}) async {
+    commitBatchInBackground(
+      _firestore.batch()..delete(_collection(householdId).reference.doc(id)),
+      failureMessage: 'Server rejected deleting inventory item $id.',
+      logName: _storeLogName,
+    );
+    return true;
   }
 
   @override

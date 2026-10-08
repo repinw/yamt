@@ -29,6 +29,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 
 class _MockUser extends Mock implements User;
@@ -133,7 +134,7 @@ class _MealStore implements PreparedMealCalorieEntryCommitStore {
       throw UnimplementedError();
 }
 
-class _Items implements InventoryItemRepository {
+class _Items with InventoryItemWholeListWrites {
   const new(this.ids);
 
   final List<String> ids;
@@ -154,7 +155,7 @@ class _Items implements InventoryItemRepository {
   Stream<List<InventoryItem>> watchAll() => Stream.fromFuture(readAll());
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async => true;

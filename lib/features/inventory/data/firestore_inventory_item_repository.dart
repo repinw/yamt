@@ -61,13 +61,28 @@ class FirestoreInventoryItemRepository
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) {
+  Future<bool> save(InventoryItem item) {
     final householdId = _currentHouseholdId();
     if (householdId == null) {
       return Future<bool>.value(false);
     }
     return _runExclusiveWrite(
-      () => _replaceAllForHousehold(householdId, items),
+      () => _store.save(
+        householdId: householdId,
+        id: item.id,
+        data: _normalizeItem(item).toJson(),
+      ),
+    );
+  }
+
+  @override
+  Future<bool> delete(String itemId) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
+      return Future<bool>.value(false);
+    }
+    return _runExclusiveWrite(
+      () => _store.delete(householdId: householdId, id: itemId),
     );
   }
 
@@ -207,27 +222,6 @@ class FirestoreInventoryItemRepository
     }
   }
 
-  Future<bool> _replaceAllForHousehold(
-    String householdId,
-    List<InventoryItem> items,
-  ) {
-    if (items.isEmpty) {
-      log(
-        'Replacing inventory with an empty collection for '
-        'household $householdId.',
-        name: _repositoryLogName,
-      );
-    }
-    final documentsById = <String, Map<String, dynamic>>{
-      for (final item in items) item.id: _normalizeItem(item).toJson(),
-    };
-    return _store.replaceAll(
-      householdId: householdId,
-      documentsById: documentsById,
-      parse: _decode,
-    );
-  }
-
   Future<bool> _upsertAllForHousehold(
     String householdId,
     List<InventoryItem> items,
@@ -261,7 +255,6 @@ class FirestoreInventoryItemRepository
     return items;
   }
 
-  /// Decodes a stored document; reads and the [saveAll] delete check agree.
   InventoryItem _decode(String id, Map<String, dynamic> data) =>
       _normalizeItem(InventoryItem.fromJson(withDocumentId(id, data)));
 

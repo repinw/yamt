@@ -64,13 +64,14 @@ import 'package:yamt/features/scanner/presentation/flow/receipt_camera_supported
 import 'package:yamt/features/scanner/presentation/flow/receipt_scan_flow_coordinator.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../helpers/inventory_item_whole_list_writes.dart';
 import '../calories/support/fake_calories_repositories.dart';
 import '../scanner/fakes/fake_receipt_ai_repository.dart';
 import '../scanner/fakes/fake_receipt_product_resolver.dart';
 
 class _MockFirebaseAuth extends Mock implements FirebaseAuth;
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   new(this.items);
 
   final List<InventoryItem> items;
@@ -86,7 +87,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
 
   @override
   Future<bool> appendAll(List<InventoryItem> items) async => true;

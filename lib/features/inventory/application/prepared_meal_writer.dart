@@ -53,13 +53,19 @@ class PreparedMealWriter {
     );
   }
 
-  /// Writes [previousItems] back after a failed meal write.
+  /// Writes [previousItems] back after a failed meal write. Only the items
+  /// that [writtenItems] changed go back, so items that another device wrote
+  /// meanwhile stay.
   Future<void> restoreInventory({
     required InventoryItemRepository inventoryRepository,
+    required List<InventoryItem> writtenItems,
     required List<InventoryItem> previousItems,
   }) async {
     try {
-      await inventoryRepository.saveAll(previousItems);
+      await inventoryRepository.saveChanges(
+        previous: writtenItems,
+        next: previousItems,
+      );
     } on Object catch (error, stackTrace) {
       log(
         'Failed to restore inventory after a prepared meal rollback.',
@@ -96,6 +102,7 @@ class PreparedMealWriter {
       )) {
         await restoreInventory(
           inventoryRepository: inventory,
+          writtenItems: tracking.latestItems,
           previousItems: beforeItems,
         );
       }

@@ -30,6 +30,7 @@ import 'package:yamt/features/shoppinglist/data/shopping_list_repository.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 import '../../../helpers/fake_prepared_meal_repository.dart';
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 import '../../shoppinglist/support/fake_shopping_list_repository.dart';
 
 class _FakeCookingFlowSessionLocalStore
@@ -93,7 +94,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
   }
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   new(this.items);
 
   final List<InventoryItem> items;
@@ -109,7 +110,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     return true;
   }
 

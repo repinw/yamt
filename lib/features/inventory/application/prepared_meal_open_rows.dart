@@ -58,8 +58,9 @@ class PreparedMealOpenRows {
       return false;
     }
 
-    final inventorySaved = await inventoryRepository.saveAll(
-      fillResult.nextItems,
+    final inventorySaved = await inventoryRepository.saveChanges(
+      previous: currentItems,
+      next: fillResult.nextItems,
     );
     if (!inventorySaved) {
       return false;
@@ -101,6 +102,7 @@ class PreparedMealOpenRows {
 
     await _writer.restoreInventory(
       inventoryRepository: inventoryRepository,
+      writtenItems: fillResult.nextItems,
       previousItems: currentItems,
     );
     return false;

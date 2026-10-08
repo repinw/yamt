@@ -59,6 +59,8 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/inventory_item_whole_list_writes.dart';
+
 const _searchFieldKey = Key('product_search_hub_search_field');
 
 class _FakeFoodEstimateRepository implements FoodEstimateRepository {
@@ -1158,7 +1160,8 @@ void main() {
 }
 
 class _FakeInventoryItemRepository
-    implements InventoryItemRepository, InventoryItemRecentManualReader {
+    with InventoryItemWholeListWrites
+    implements InventoryItemRecentManualReader {
   const new(this._items);
 
   final List<InventoryItem> _items;
@@ -1182,7 +1185,7 @@ class _FakeInventoryItemRepository
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async => true;
+  Future<bool> replaceItems(List<InventoryItem> items) async => true;
 
   @override
   Stream<List<InventoryItem>> watchAll() async* {

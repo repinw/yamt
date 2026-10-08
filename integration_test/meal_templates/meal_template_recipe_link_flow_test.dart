@@ -29,6 +29,8 @@ import 'package:yamt/features/meal_templates/presentation/models/'
     'meal_template_import_review_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../test/helpers/inventory_item_whole_list_writes.dart';
+
 const _recipeUrl =
     'https://www.chefkoch.de/rezepte/3128251466082453/'
     'French-Hotdog-mit-Merguez-und-Brioche-Broetchen.html';
@@ -127,7 +129,7 @@ class _StaticInventoryItemsController extends InventoryItemsController {
   }
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   const new();
 
   @override
@@ -141,7 +143,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     return true;
   }
 

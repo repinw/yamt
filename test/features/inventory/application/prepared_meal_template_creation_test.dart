@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_creation.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_writer.dart';
-import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -12,6 +11,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/recipes/application/template_ingredient_parser.dart';
 
 import '../../../helpers/fake_prepared_meal_repository.dart';
+import '../../../helpers/inventory_item_whole_list_writes.dart';
 
 /// The creation part over [meals], for the template creation that the
 /// cooking service uses.
@@ -25,7 +25,7 @@ PreparedMealCreation _creation(FakePreparedMealRepository meals) {
   );
 }
 
-class _FakeInventoryItemRepository implements InventoryItemRepository {
+class _FakeInventoryItemRepository with InventoryItemWholeListWrites {
   new({required List<InventoryItem> initialItems})
     : _items = List<InventoryItem>.from(initialItems);
 
@@ -59,7 +59,7 @@ class _FakeInventoryItemRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<bool> saveAll(List<InventoryItem> items) async {
+  Future<bool> replaceItems(List<InventoryItem> items) async {
     if (saveShouldFail) {
       return false;
     }
@@ -287,7 +287,8 @@ void main() {
         );
 
     expect(result.isSuccess, isTrue);
-    expect(inventoryRepository.savedItems.single.currentAmount, 2000);
+    expect(inventoryRepository.savedItems, isEmpty);
+    expect((await inventoryRepository.readAll()).single.currentAmount, 2000);
     expect(preparedMealRepository.meals.single.components, isEmpty);
     expect(
       preparedMealRepository.meals.single.pendingRecipeIngredients,
