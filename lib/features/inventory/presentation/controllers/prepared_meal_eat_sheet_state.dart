@@ -76,6 +76,11 @@ class PreparedMealEatSheetState {
   /// Quick amounts in the current mode. The first one is everything left.
   List<num> get quickValues => calculator.quickValues(mode);
 
+  /// [quickValues] with their index, from the smallest value up, for the
+  /// marks under the ruler. Index 0 stays everything left.
+  List<(int, num)> get sortedQuickValues =>
+      quickValues.indexed.toList()..sort((a, b) => a.$2.compareTo(b.$2));
+
   /// Largest value of the amount ruler: everything left.
   double get amountMax => calculator.remainingAmount(mode).toDouble();
 

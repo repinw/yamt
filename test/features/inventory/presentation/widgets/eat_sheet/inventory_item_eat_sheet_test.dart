@@ -583,10 +583,13 @@ void main() {
   ) async {
     await _pumpSheet(tester, _amountItemWithServing());
 
-    await _tapText(tester, '125 g');
+    await _tapText(tester, 'Serving 125 g');
     expect(_amountText(tester), '125');
 
-    await _tapText(tester, 'All');
+    await _tapText(tester, '½ 250 g');
+    expect(_amountText(tester), '250');
+
+    await _tapText(tester, 'All 500 g');
     expect(_amountText(tester), '500');
   });
 
@@ -624,7 +627,7 @@ void main() {
     );
     await _tapKey(tester, EatRememberPortion.saveKey);
 
-    expect(find.text('Scheibe 30'), findsOneWidget);
+    expect(find.text('Scheibe 30 g'), findsOneWidget);
     expect(find.text('= 1 × Scheibe'), findsOneWidget);
 
     await _enterAmount(tester, '90');

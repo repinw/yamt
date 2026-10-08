@@ -39,7 +39,7 @@ InventoryItemEatSheetState withMarker(
   InventoryItemEatMarker marker,
 ) {
   final picked = withAmountText(state, formatEatenAmount(state, marker.value));
-  if (state.usesPortionMode || marker.isAll || marker.value < 1) {
+  if (state.usesPortionMode || !marker.counts || marker.value < 1) {
     return picked;
   }
   return picked.copyWith(countedPortion: () => marker);

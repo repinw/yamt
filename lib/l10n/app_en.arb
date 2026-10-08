@@ -611,6 +611,22 @@
   "eatPageRememberPieceSize": "+ Remember as piece size",
   "eatPagePieceSizeNameHint": "e.g. L",
   "eatPageAll": "All",
+  "eatPageRecentMark": "Last",
+  "@eatPageRecentMark": {
+    "description": "Ruler chip name for the amount eaten last time, e.g. Last 80 g."
+  },
+  "eatPageServingMark": "Serving",
+  "@eatPageServingMark": {
+    "description": "Ruler chip name for the product's own serving when it has no name, e.g. Serving 25 g."
+  },
+  "eatPageQuarterMark": "¼",
+  "@eatPageQuarterMark": {
+    "description": "Ruler chip name for a quarter package, e.g. ¼ 125 g."
+  },
+  "eatPageHalfMark": "½",
+  "@eatPageHalfMark": {
+    "description": "Ruler chip name for half a package, e.g. ½ 250 g."
+  },
   "eatPageMark": "{label} {amount}",
   "@eatPageMark": {
     "placeholders": {

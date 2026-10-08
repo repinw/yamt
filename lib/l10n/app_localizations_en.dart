@@ -996,6 +996,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageAll => 'All';
 
   @override
+  String get eatPageRecentMark => 'Last';
+
+  @override
+  String get eatPageServingMark => 'Serving';
+
+  @override
+  String get eatPageQuarterMark => '¼';
+
+  @override
+  String get eatPageHalfMark => '½';
+
+  @override
   String eatPageMark(String label, String amount) {
     return '$label $amount';
   }

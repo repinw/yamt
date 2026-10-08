@@ -101,7 +101,7 @@ void main() {
     expect(find.text('fallback'), findsOneWidget);
   });
 
-  testWidgets('ruler lists every mark from the smallest up', (tester) async {
+  testWidgets('ruler lists every mark in the given order', (tester) async {
     final taps = <String>[];
     await tester.pumpWidget(
       _TestApp(
@@ -120,7 +120,7 @@ void main() {
     );
 
     final lefts = [
-      for (final label in ['Slice 30', 'Large slice 40', 'All'])
+      for (final label in ['All', 'Large slice 40', 'Slice 30'])
         tester.getTopLeft(find.text(label)),
     ];
     for (final (index, left) in lefts.indexed.skip(1)) {

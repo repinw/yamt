@@ -183,7 +183,7 @@ class _PreparedMealEatSheetBodyState
           max: state.amountMax,
           step: state.amountStep,
           marks: [
-            for (final (index, value) in state.quickValues.indexed)
+            for (final (index, value) in state.sortedQuickValues)
               EatRulerMark(
                 label: state.markLabel(l10n, index, value),
                 value: value.toDouble(),

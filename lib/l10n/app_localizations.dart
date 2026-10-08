@@ -1726,6 +1726,30 @@ abstract class AppLocalizations {
   /// **'All'**
   String get eatPageAll;
 
+  /// Ruler chip name for the amount eaten last time, e.g. Last 80 g.
+  ///
+  /// In en, this message translates to:
+  /// **'Last'**
+  String get eatPageRecentMark;
+
+  /// Ruler chip name for the product's own serving when it has no name, e.g. Serving 25 g.
+  ///
+  /// In en, this message translates to:
+  /// **'Serving'**
+  String get eatPageServingMark;
+
+  /// Ruler chip name for a quarter package, e.g. ¼ 125 g.
+  ///
+  /// In en, this message translates to:
+  /// **'¼'**
+  String get eatPageQuarterMark;
+
+  /// Ruler chip name for half a package, e.g. ½ 250 g.
+  ///
+  /// In en, this message translates to:
+  /// **'½'**
+  String get eatPageHalfMark;
+
   /// No description provided for @eatPageMark.
   ///
   /// In en, this message translates to:
