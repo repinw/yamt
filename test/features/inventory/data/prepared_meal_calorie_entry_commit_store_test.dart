@@ -6,7 +6,7 @@ import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/core/domain/meal_type.dart';
-import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/household/application/household_key_session.dart';
@@ -120,7 +120,15 @@ Future<Map<String, dynamic>> _openMeal(
   return (await meals.open(snapshot))!;
 }
 
-UserDataCipher _signedIn(String uid) => (uid: uid, cipher: _cipher);
+/// The clock time of every write.
+final DateTime _writtenAt = DateTime.parse('2026-03-27T12:30:00Z');
+
+FirestoreCalorieLogRepository _diary(FirebaseFirestore firestore, String uid) =>
+    FirestoreCalorieLogRepository(
+      dataCipher: (uid: uid, cipher: _cipher),
+      firestore: firestore,
+      now: () => _writtenAt,
+    );
 
 Future<Map<String, dynamic>> _decrypted(
   DocumentSnapshot<Map<String, dynamic>> snapshot,
@@ -143,13 +151,16 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       await _putMeal(firestore, _meal().toJson());
 
+      final diary = _diary(firestore, 'user-1');
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: _signedIn('user-1'),
+        diary: diary,
         householdCipher: _household('household-1'),
+        now: () => _writtenAt,
       );
 
       final saved = await store.commitEntryAndPreparedMeal(entry: _entry());
+      expect(diary.cachedById('entry-1')?.updatedAt, _writtenAt);
 
       expect(saved, isTrue);
       await pumpEventQueue();
@@ -162,7 +173,10 @@ void main() {
         (await _decrypted(savedEntry))['bundle_source_prepared_meal_id'],
         'meal-1',
       );
-      expect((await _decrypted(savedEntry))['updated_at'], _entry().updatedAt);
+      expect(
+        ((await _decrypted(savedEntry))['updated_at'] as DateTime).toUtc(),
+        _writtenAt,
+      );
       expect(
         savedEntry.data()!.keys,
         unorderedEquals(<String>['payload', 'logged_at']),
@@ -170,7 +184,7 @@ void main() {
 
       final savedMeal = await _openMeal(firestore);
       expect(savedMeal['remaining_portions'], 2);
-      expect(savedMeal['updated_at'], _entry().updatedAt.toIso8601String());
+      expect(savedMeal['updated_at'], _writtenAt.toIso8601String());
     },
   );
 
@@ -182,7 +196,8 @@ void main() {
 
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: _signedIn('user-1'),
+        diary: _diary(firestore, 'user-1'),
+        now: () => _writtenAt,
         householdCipher: _household('household-1'),
       );
 
@@ -220,7 +235,8 @@ void main() {
 
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: _signedIn('user-1'),
+        diary: _diary(firestore, 'user-1'),
+        now: () => _writtenAt,
         householdCipher: _household('household-1'),
       );
 
@@ -242,7 +258,8 @@ void main() {
 
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
-      dataCipher: _signedIn('user-1'),
+      diary: _diary(firestore, 'user-1'),
+      now: () => _writtenAt,
       householdCipher: _household('household-1'),
     );
 
@@ -266,7 +283,8 @@ void main() {
 
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: _signedIn('user-1'),
+        diary: _diary(firestore, 'user-1'),
+        now: () => _writtenAt,
         householdCipher: _household('household-1'),
       );
 
@@ -293,7 +311,8 @@ void main() {
 
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
-      dataCipher: _signedIn('user-1'),
+      diary: _diary(firestore, 'user-1'),
+      now: () => _writtenAt,
       householdCipher: _household('household-1'),
     );
 
@@ -321,7 +340,8 @@ void main() {
 
       final store = FirestorePreparedMealCalorieEntryCommitStore(
         firestore: firestore,
-        dataCipher: _signedIn('user-1'),
+        diary: _diary(firestore, 'user-1'),
+        now: () => _writtenAt,
         householdCipher: _household('household-1'),
       );
 
@@ -347,7 +367,8 @@ void main() {
 
     final store = FirestorePreparedMealCalorieEntryCommitStore(
       firestore: firestore,
-      dataCipher: _signedIn('member-1'),
+      diary: _diary(firestore, 'member-1'),
+      now: () => _writtenAt,
       householdCipher: _household('household-shared'),
     );
 

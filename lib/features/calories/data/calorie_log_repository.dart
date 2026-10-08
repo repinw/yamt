@@ -234,9 +234,13 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
   /// Adds the write of [entry] to [batch] and returns the stored entry.
   ///
   /// The stored entry belongs to the signed-in user, carries a normalized
-  /// image URL, and is updated at the current time. Throws while no user with
-  /// a data key is signed in.
-  Future<CalorieEntry> stage(WriteBatch batch, CalorieEntry entry) async {
+  /// image URL, and is updated at [updatedAt], or at the current time without
+  /// it. Throws while no user with a data key is signed in.
+  Future<CalorieEntry> stage(
+    WriteBatch batch,
+    CalorieEntry entry, {
+    DateTime? updatedAt,
+  }) async {
     final userId = _requireUserId();
     final stored = await stageCalorieEntry(
       batch,
@@ -244,7 +248,7 @@ class FirestoreCalorieLogRepository implements CalorieLogRepositoryContract {
       entry,
       userId: userId,
       cipher: _cipher,
-      updatedAt: _now(),
+      updatedAt: updatedAt ?? _now(),
     );
     _cache.put(stored);
     return stored;
