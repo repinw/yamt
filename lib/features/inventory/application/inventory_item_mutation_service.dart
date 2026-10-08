@@ -96,9 +96,12 @@ class InventoryItemMutationService {
   }
 
   /// Adds a new item.
-  Future<bool> add(InventoryItem item) async {
+  Future<InventoryItemChange<bool>> add(
+    List<InventoryItem> items,
+    InventoryItem item,
+  ) async {
     if (!await _writer.append(item)) {
-      return false;
+      return (result: false, written: null);
     }
     await _writer.record(
       InventoryActivityEventType.itemAdded,
@@ -106,7 +109,10 @@ class InventoryItemMutationService {
       after: item,
       amount: item.availableAmount,
     );
-    return true;
+    return (
+      result: true,
+      written: [...items.where((current) => current.id != item.id), item],
+    );
   }
 
   /// Deletes the item; returns it with its place for [restoreDeleted].

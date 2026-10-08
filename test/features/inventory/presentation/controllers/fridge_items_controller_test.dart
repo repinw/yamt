@@ -50,8 +50,13 @@ class _FakeFridgeItemRepository with InventoryItemWholeListWrites {
     });
   }
 
+  /// Runs while a write is stored, like a stream update that arrives
+  /// meanwhile.
+  void Function()? duringReplace;
+
   @override
   Future<bool> replaceItems(List<InventoryItem> items) async {
+    duringReplace?.call();
     if (saveDelay > Duration.zero) {
       await Future<void>.delayed(saveDelay);
     }
@@ -171,13 +176,13 @@ class _FakeInventoryDiscardEventRepository
   }
 }
 
-InventoryItem _item(String id) {
+InventoryItem _item(String id, {int quantity = 1}) {
   return InventoryItem.create(
     id: id,
     name: 'Milk',
     entryDate: DateTime.parse('2026-02-19T10:00:00Z'),
     storeName: 'Store',
-    quantity: 1,
+    quantity: quantity,
     unitPrice: 1,
   );
 }
@@ -1177,5 +1182,46 @@ void main() {
 
     expect(await controller.addItem(_item('b')), isFalse);
     expect(await controller.eatItemDetailed('a', 1), isNull);
+  });
+
+  test('two quick eats keep both when the stream sends an older list '
+      'meanwhile (#309)', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a', quantity: 3)],
+    )..emitRealtimeOnSave = false;
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+    await container.read(inventoryItemsControllerProvider.future);
+    var stale = true;
+    repository.duringReplace = () {
+      if (stale) {
+        stale = false;
+        repository.emitWatchItems(<InventoryItem>[
+          _item('a', quantity: 3),
+          _item('b'),
+        ]);
+      }
+    };
+    final controller = container.read(
+      inventoryItemsControllerProvider.notifier,
+    );
+
+    await Future.wait([
+      controller.eatItemDetailed('a', 1),
+      controller.eatItemDetailed('a', 1),
+    ]);
+
+    expect(repository.savedItems.firstWhere((i) => i.id == 'a').quantity, 1);
+    expect(
+      container.read(inventoryItemsControllerProvider).value?.map((i) => i.id),
+      ['a', 'b'],
+    );
   });
 }
