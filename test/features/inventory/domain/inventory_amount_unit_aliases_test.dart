@@ -22,4 +22,33 @@ void main() {
     expect(servingInBaseUnit(1, 'oz'), isNull);
     expect(servingInBaseUnit(1, null), isNull);
   });
+
+  test('isInventoryPieceWord tells piece words from container words', () {
+    expect(isInventoryPieceWord('Stück'), isTrue);
+    expect(isInventoryPieceWord(' pcs '), isTrue);
+    expect(isInventoryPieceWord('Portion'), isFalse);
+    expect(isInventoryPieceWord('Flasche'), isFalse);
+    expect(isInventoryPieceWord(null), isFalse);
+  });
+
+  test('every piece word is a piece unit of the alias table', () {
+    for (final word in [
+      'pc',
+      'pcs',
+      'piece',
+      'pieces',
+      'st',
+      'st.',
+      'stk',
+      'stk.',
+      'stück',
+      'stueck',
+    ]) {
+      expect(isInventoryPieceWord(word), isTrue);
+      expect(
+        resolveInventoryAmountUnitAlias(word)?.base,
+        InventoryAmountUnit.piece,
+      );
+    }
+  });
 }
