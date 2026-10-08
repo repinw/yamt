@@ -125,7 +125,7 @@ class InventoryPlanAcceptService {
           isMealInPot: true,
         );
       }
-      final portions = meal == null ? 0 : _mealPortions(plan, meal);
+      final portions = meal == null ? 0 : preparedMealPlanShare(plan, meal);
       if (meal != null &&
           meal.allowsPortions(PreparedMealAction.eat, portions)) {
         final eaten = await _quickEat.consumePreparedMeal(
@@ -170,18 +170,6 @@ class InventoryPlanAcceptService {
     // The calorie editor keeps the stock reserved; accepting has no editor.
     await _pendings.discard(pending.id);
     throw InventoryPlanAcceptException('The plan ${plan.id} was not eaten.');
-  }
-
-  /// The portions of [meal] that [plan] eats: the same share of the meal as
-  /// when it was planned. A meal planned in the pot was one portion then and
-  /// has its real portions now.
-  static num _mealPortions(CalorieEntry plan, PreparedMeal meal) {
-    final planned = plan.bundleConsumedPortions ?? 0;
-    final plannedTotal = plan.bundleTotalPortions;
-    if (plannedTotal == null || plannedTotal <= 0) {
-      return planned;
-    }
-    return planned * meal.totalPortions / plannedTotal;
   }
 
   Future<InventoryPlanAcceptResult> _saveWithoutStock(

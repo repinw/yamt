@@ -23,11 +23,13 @@ Future<List<CalorieEntry>> openPlans(Ref ref) {
       .loadPlannedEntries(today, addLocalDays(today, diaryPlanAheadDayCount));
 }
 
-/// What the open plans take from the Vorrat: "verplant" on Vorrat rows and
-/// "fehlt" on plan rows.
+/// What the open plans take from the Vorrat, foods and cooked meals:
+/// "verplant" on Vorrat rows and "fehlt" on plan rows.
 @riverpod
 Future<InventoryPlanDemand> openPlanDemand(Ref ref) async {
-  final items = await ref.watch(inventoryQuickEatItemsProvider.future);
-  final plans = await ref.watch(openPlansProvider.future);
-  return inventoryPlanDemand(plans, items);
+  // Start all three loads before awaiting one, so they run side by side.
+  final items = ref.watch(inventoryQuickEatItemsProvider.future)..ignore();
+  final meals = ref.watch(inventoryQuickEatMealsProvider.future)..ignore();
+  final plans = ref.watch(openPlansProvider.future)..ignore();
+  return inventoryPlanDemand(await plans, await items, await meals);
 }

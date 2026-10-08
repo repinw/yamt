@@ -44,4 +44,27 @@ void main() {
     expect(needs.last.isPartial, isFalse);
     expect(needs.last.inMilliliters, isTrue);
   });
+
+  test('a short plan of a cooked meal needs cooking, not shopping', () {
+    final day = DateTime(2026, 10, 8, 18);
+    final mealPlan = CalorieEntry.bundle(
+      id: 'chili',
+      userId: 'user-1',
+      name: 'Chili',
+      mealType: MealType.dinner,
+      totalKcal: 500,
+      totalProtein: 25,
+      totalCarbs: 50,
+      totalFat: 20,
+      bundleSourcePreparedMealId: 'meal-1',
+      bundleConsumedPortions: 1,
+      bundleTotalPortions: 4,
+      bundleComponents: const [],
+      loggedAt: day,
+      createdAt: day,
+      updatedAt: day,
+    );
+
+    expect(inventoryShoppingPlanNeeds([mealPlan], {'chili': 1}), isEmpty);
+  });
 }

@@ -49,6 +49,18 @@ extension PreparedMealRules on PreparedMeal {
   );
 }
 
+/// The portions of [meal] that [plan] eats: the same share of the meal as
+/// when it was planned. A meal planned in the pot was one portion then and
+/// has its real portions now.
+num preparedMealPlanShare(CalorieEntry plan, PreparedMeal meal) {
+  final planned = plan.bundleConsumedPortions ?? 0;
+  final plannedTotal = plan.bundleTotalPortions;
+  if (plannedTotal == null || plannedTotal <= 0) {
+    return planned;
+  }
+  return planned * meal.totalPortions / plannedTotal;
+}
+
 /// The share of [meal] that [plan] takes, in whole portions of the meal as
 /// it is now, or null when that share is no whole number of portions.
 ///
