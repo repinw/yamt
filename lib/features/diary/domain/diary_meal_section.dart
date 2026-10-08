@@ -1,17 +1,9 @@
-import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_bundle_component.dart';
 import 'package:yamt/features/diary/domain/diary_meal_entry_group.dart';
 
-part 'diary_meal_section.g.dart';
-
-// Temporary compatibility, added in 3.4.1: the JSON defaults, unknown enum
-// fallbacks, and flexible converters in this file go from 3.7.0 on, once a
-// migration has re-saved the stored data in the strict shape.
-
 /// Diary entry data needed by meal cards.
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryMealEntry {
   /// Creates diary meal entry presentation data.
   const new({
@@ -33,20 +25,10 @@ class DiaryMealEntry {
     this.portionLabel,
   });
 
-  /// Creates data from persisted JSON.
-  factory fromJson(Map<String, dynamic> json) => _$DiaryMealEntryFromJson(json);
-
-  /// Converts data to persisted JSON.
-  Map<String, dynamic> toJson() => _$DiaryMealEntryToJson(this);
-
   /// Entry id.
   final String id;
 
   /// Meal section.
-  @JsonKey(
-    defaultValue: MealType.breakfast,
-    unknownEnumValue: MealType.breakfast,
-  )
   final MealType mealType;
 
   /// Display name.
@@ -74,7 +56,6 @@ class DiaryMealEntry {
   final double? consumedAmount;
 
   /// Consumed unit (grams or milliliters).
-  @JsonKey(unknownEnumValue: ConsumedUnit.grams)
   final ConsumedUnit? consumedUnit;
 
   /// Consumed portions if part of a bundle.
@@ -99,7 +80,6 @@ class DiaryMealEntry {
 }
 
 /// Diary meal section with entries and kcal total.
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryMealSection {
   /// Creates a diary meal section.
   new({
@@ -110,18 +90,7 @@ class DiaryMealSection {
     required this.totalKcal,
   }) : entryGroups = groupDiaryMealEntries(entries);
 
-  /// Creates data from persisted JSON.
-  factory fromJson(Map<String, dynamic> json) =>
-      _$DiaryMealSectionFromJson(json);
-
-  /// Converts data to persisted JSON.
-  Map<String, dynamic> toJson() => _$DiaryMealSectionToJson(this);
-
   /// Meal type.
-  @JsonKey(
-    defaultValue: MealType.breakfast,
-    unknownEnumValue: MealType.breakfast,
-  )
   final MealType mealType;
 
   /// Entries in this meal section.
@@ -142,7 +111,6 @@ class DiaryMealSection {
       entryGroups.length + (countsPlans ? plannedEntries.length : 0);
 
   /// [entries] with identical foods merged, computed once.
-  @JsonKey(includeFromJson: false, includeToJson: false)
   final List<DiaryMealEntryGroup> entryGroups;
 
   /// Total protein in grams across all entries in this section.

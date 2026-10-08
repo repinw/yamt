@@ -1,10 +1,6 @@
-import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
-part 'diary_nutrition_bars_data.g.dart';
-
 /// Data for the diary nutrition bars.
-@JsonSerializable(fieldRename: FieldRename.snake, explicitToJson: true)
 class DiaryNutritionBarsData {
   /// Creates diary nutrition bars data.
   const new({
@@ -13,13 +9,6 @@ class DiaryNutritionBarsData {
     required this.fat,
     required this.goals,
   });
-
-  /// Creates data from persisted JSON.
-  factory fromJson(Map<String, dynamic> json) =>
-      _$DiaryNutritionBarsDataFromJson(json);
-
-  /// Converts data to persisted JSON.
-  Map<String, dynamic> toJson() => _$DiaryNutritionBarsDataToJson(this);
 
   /// Consumed carbs in grams.
   final double carbs;
