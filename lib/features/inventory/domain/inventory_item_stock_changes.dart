@@ -132,3 +132,28 @@ InventoryItem? findInventoryItem(List<InventoryItem> items, String itemId) {
   }
   return null;
 }
+
+/// Lays the change from [previous] to [next] over [current]: changed items
+/// replace their copy, removed items go, and new items are added at the end.
+/// When [current] is [previous], this is [next].
+List<InventoryItem> applyInventoryItemChanges({
+  required List<InventoryItem> current,
+  required List<InventoryItem> previous,
+  required List<InventoryItem> next,
+}) {
+  if (identical(current, previous)) {
+    return next;
+  }
+  final before = {for (final item in previous) item.id: item};
+  final after = {for (final item in next) item.id: item};
+  final currentIds = {for (final item in current) item.id};
+  return [
+    for (final item in current)
+      if (!before.containsKey(item.id))
+        item
+      else if (after[item.id] case final changed?)
+        if (identical(before[item.id], changed)) item else changed,
+    for (final item in next)
+      if (!before.containsKey(item.id) && !currentIds.contains(item.id)) item,
+  ];
+}

@@ -289,7 +289,9 @@ class InventoryItemsController extends _$InventoryItemsController {
       ref.read(inventoryItemEditServiceProvider);
 
   /// Runs [change] on the queue with the current list, and publishes the
-  /// list it wrote unless the stream delivered a newer one meanwhile.
+  /// list it wrote. When the stream delivered a list meanwhile, the change
+  /// is laid over that list, so the next change in the queue starts from
+  /// both (#309). A household switch or refresh meanwhile starts a new list.
   Future<T> _mutate<T>(
     T fallback,
     Future<InventoryItemChange<T>> Function(List<InventoryItem> items) change,
@@ -297,14 +299,21 @@ class InventoryItemsController extends _$InventoryItemsController {
     return _runSerializedTask<T>(
       operation: () async {
         final items = await _currentPersistedItems();
+        final generation = _subscriptionGeneration;
         if (!ref.mounted) {
           return fallback;
         }
         final (:result, :written) = await change(items);
+        final current = _persistedItems;
         if (written != null &&
+            current != null &&
             ref.mounted &&
-            identical(_persistedItems, items)) {
-          _persistedItems = written;
+            generation == _subscriptionGeneration) {
+          _persistedItems = applyInventoryItemChanges(
+            current: current,
+            previous: items,
+            next: written,
+          );
           _publishVisibleItems();
         }
         return result;
@@ -456,23 +465,7 @@ class InventoryItemsController extends _$InventoryItemsController {
   /// follow-up flows can reference it before the realtime repository catches
   /// up.
   Future<bool> addItem(InventoryItem item) {
-    return _runSerializedMutation(() async {
-      final previousItems = await _currentPersistedItems();
-      final generation = _subscriptionGeneration;
-      if (!ref.mounted) {
-        return false;
-      }
-      final saved = await _mutations.add(item);
-      // A household switch or refresh meanwhile starts a new list.
-      if (saved && ref.mounted && generation == _subscriptionGeneration) {
-        _persistedItems = _mergePersistedItem(
-          currentItems: _persistedItems ?? previousItems,
-          item: item,
-        );
-        _publishVisibleItems();
-      }
-      return saved;
-    });
+    return _mutate(false, (items) => _mutations.add(items, item));
   }
 
   /// Reserves [amount] of the item [itemId] as the list shows it now, so
@@ -495,10 +488,6 @@ class InventoryItemsController extends _$InventoryItemsController {
       },
       fallbackValue: null,
     );
-  }
-
-  Future<bool> _runSerializedMutation(Future<bool> Function() mutation) {
-    return _runSerializedTask<bool>(operation: mutation, fallbackValue: false);
   }
 
   Future<T> _runSerializedTask<T>({
@@ -556,19 +545,5 @@ class InventoryItemsController extends _$InventoryItemsController {
       return;
     }
     state = AsyncData(persistedItems);
-  }
-
-  List<InventoryItem> _mergePersistedItem({
-    required List<InventoryItem> currentItems,
-    required InventoryItem item,
-  }) {
-    final nextItems = List<InventoryItem>.from(currentItems);
-    final itemIndex = nextItems.indexWhere((current) => current.id == item.id);
-    if (itemIndex < 0) {
-      nextItems.add(item);
-      return nextItems;
-    }
-    nextItems[itemIndex] = item;
-    return nextItems;
   }
 }

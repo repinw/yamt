@@ -103,4 +103,35 @@ void main() {
 
     expect(originalItems.single.quantity, 3);
   });
+
+  test('applyInventoryItemChanges lays a change over a newer list', () {
+    final a = _item(id: 'a', quantity: 3);
+    final b = _item(id: 'b', quantity: 1);
+    final previous = <InventoryItem>[a, b];
+    final next = <InventoryItem>[
+      a.copyWith(quantity: 2),
+      _item(id: 'n', quantity: 1),
+    ];
+    final current = <InventoryItem>[a, b, _item(id: 'c', quantity: 1)];
+
+    final merged = applyInventoryItemChanges(
+      current: current,
+      previous: previous,
+      next: next,
+    );
+
+    expect(merged.map((item) => (item.id, item.quantity)), [
+      ('a', 2),
+      ('c', 1),
+      ('n', 1),
+    ]);
+    expect(
+      applyInventoryItemChanges(
+        current: previous,
+        previous: previous,
+        next: next,
+      ),
+      same(next),
+    );
+  });
 }
