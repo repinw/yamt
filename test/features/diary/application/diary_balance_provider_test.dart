@@ -1,18 +1,17 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
-import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
-import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
+import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
+import 'package:yamt/features/calories/application/day_budget.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
-import 'package:yamt/features/diary/application/diary_entries_provider.dart';
+import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
+import 'package:yamt/features/diary/application/diary_day_dashboard_mappers.dart';
+import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 
@@ -117,58 +116,6 @@ void main() {
     expect(details, isNotNull);
     expect(details!.previousDays, isEmpty);
   });
-
-  test(
-    'source waits for run state instead of falling back to initial',
-    () async {
-      final selectedDay = DateTime(2026, 4, 27);
-      final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
-      final runStateCompleter = Completer<BurnWeekRunState>();
-      final container = ProviderContainer(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-          burnWeekLiveSyncProvider.overrideWith((ref) => null),
-          calorieWeekOverviewForWindowProvider(normalizedSelectedDay)
-              .overrideWith((ref) => _weekOverview(selectedDay: selectedDay)),
-          diaryEntriesForDayProvider(normalizedSelectedDay)
-              .overrideWith((ref) => Stream.value(const <CalorieEntry>[])),
-          burnWeekRunControllerProvider.overrideWith(
-            () => _DelayedBurnWeekRunController(runStateCompleter),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-
-      final subscription = container.listen(
-        diaryBalanceSourceProvider(normalizedSelectedDay),
-        (_, _) {},
-      );
-      addTearDown(subscription.close);
-
-      final sourceFuture = container.read(
-        diaryBalanceSourceProvider(normalizedSelectedDay).future,
-      );
-      await Future<void>.delayed(Duration.zero);
-
-      expect(
-        container.read(diaryBalanceSourceProvider(normalizedSelectedDay)),
-        isA<AsyncLoading<DiaryBalanceSource>>(),
-      );
-
-      runStateCompleter.complete(
-        const BurnWeekRunState.initial().copyWith(
-          currentWeekStartDayKey: diaryDayKey(selectedDay),
-          runWeekNumber: 7,
-        ),
-      );
-      final source = await sourceFuture;
-      final data = source.resolve(
-        now: selectedDay.add(const Duration(hours: 8)),
-      );
-
-      expect(data.loadedMetrics?.state.runWeekNumber, 7);
-    },
-  );
 }
 
 Future<DiaryBalanceCardData> _resolveBalanceData({
@@ -178,33 +125,48 @@ Future<DiaryBalanceCardData> _resolveBalanceData({
   required CalorieWeekOverview weekOverview,
   List<CalorieEntry> entries = const <CalorieEntry>[],
 }) async {
-  final normalizedSelectedDay = normalizeDiaryDay(selectedDay);
   final container = ProviderContainer(
     overrides: [
       appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-      burnWeekLiveSyncProvider.overrideWith((ref) => null),
-      calorieWeekOverviewForWindowProvider(normalizedSelectedDay)
-          .overrideWith((ref) => weekOverview),
-      diaryEntriesForDayProvider(normalizedSelectedDay)
-          .overrideWith((ref) => Stream.value(entries)),
-      burnWeekRunControllerProvider.overrideWith(
-        () => _FakeBurnWeekRunController(runState),
-      ),
     ],
   );
   addTearDown(container.dispose);
-
-  final subscription = container.listen(
-    diaryBalanceSourceProvider(normalizedSelectedDay),
-    (_, _) {},
+  final budget = resolveDayBudget(
+    week: weekOverview,
+    today: normalizeDiaryDay(now),
+    nutrition: container.read(dailyNutritionTargetResolverProvider),
   );
-  addTearDown(subscription.close);
-
-  await container.read(burnWeekRunControllerProvider.future);
-  final source = await container.read(
-    diaryBalanceSourceProvider(normalizedSelectedDay).future,
-  );
-  return source.resolve(now: now);
+  final delta = budget.carryoverMacroDelta;
+  return DiaryBalanceSource.fromDashboardData(
+    DiaryDayDashboardData(
+      selectedDay: normalizeDiaryDay(selectedDay),
+      refreshedAt: now,
+      weekOverview: weekOverview,
+      selectedDayEntries: entries,
+      plannedEntries: const <CalorieEntry>[],
+      countsPlans: false,
+      runState: runState,
+      mealSections: buildDiaryDashboardMealSections(
+        entries,
+        plannedEntries: const <CalorieEntry>[],
+        countsPlans: false,
+      ),
+      nutritionBars: buildDiaryDashboardNutritionBars(
+        entries,
+        budget.goalKcal,
+        macroTargets: DiaryMacroTargets(
+          carbs: budget.target.carbsGrams,
+          protein: budget.target.proteinGrams,
+          fat: budget.target.fatGrams,
+        ),
+      ),
+      carryoverMacroDelta: DiaryMacroTargets(
+        carbs: delta.carbs,
+        protein: delta.protein,
+        fat: delta.fat,
+      ),
+    ),
+  ).resolve(now: now);
 }
 
 CalorieWeekOverview _weekOverview({
@@ -274,22 +236,4 @@ CalorieEntry _entry({
     createdAt: loggedAt,
     updatedAt: loggedAt,
   );
-}
-
-class _FakeBurnWeekRunController extends BurnWeekRunController {
-  new(this.initialState);
-
-  final BurnWeekRunState initialState;
-
-  @override
-  Future<BurnWeekRunState> build() async => initialState;
-}
-
-class _DelayedBurnWeekRunController extends BurnWeekRunController {
-  new(this.completer);
-
-  final Completer<BurnWeekRunState> completer;
-
-  @override
-  Future<BurnWeekRunState> build() => completer.future;
 }

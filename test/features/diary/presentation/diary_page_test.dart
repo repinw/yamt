@@ -35,7 +35,6 @@ import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snaps
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
-import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
@@ -198,9 +197,6 @@ void main() {
     final secondDay = DateTime(2026, 4, 28);
     final selectedDay = DateTime(2026, 4, 24);
     var now = firstDay;
-    var firstBalanceBuilds = 0;
-    var secondBalanceBuilds = 0;
-    var selectedBalanceBuilds = 0;
     var firstDashboardBuilds = 0;
     var secondDashboardBuilds = 0;
     var selectedDashboardBuilds = 0;
@@ -222,18 +218,6 @@ void main() {
         burnWeekRunStateRepositoryProvider.overrideWithValue(
           _FakeBurnWeekRunStateRepository(),
         ),
-        diaryBalanceSourceProvider(firstDay).overrideWith((ref) {
-          firstBalanceBuilds += 1;
-          return Completer<DiaryBalanceSource>().future;
-        }),
-        diaryBalanceSourceProvider(secondDay).overrideWith((ref) {
-          secondBalanceBuilds += 1;
-          return Completer<DiaryBalanceSource>().future;
-        }),
-        diaryBalanceSourceProvider(selectedDay).overrideWith((ref) {
-          selectedBalanceBuilds += 1;
-          return Completer<DiaryBalanceSource>().future;
-        }),
         diaryDayDashboardLiveDataProvider(firstDay).overrideWith((ref) {
           firstDashboardBuilds += 1;
           return Completer<DiaryDayDashboardLiveData>().future;
@@ -261,9 +245,7 @@ void main() {
     );
     addTearDown(subscription.close);
 
-    expect(firstBalanceBuilds, 0);
     expect(firstDashboardBuilds, 0);
-    expect(selectedBalanceBuilds, 0);
     expect(selectedDashboardBuilds, 0);
 
     container
@@ -271,14 +253,12 @@ void main() {
         .selectDay(selectedDay);
     await Future<void>.delayed(Duration.zero);
 
-    expect(selectedBalanceBuilds, 0);
     expect(selectedDashboardBuilds, 0);
 
     now = secondDay;
     container.read(diaryTodayProvider.notifier).refresh();
     await Future<void>.delayed(Duration.zero);
 
-    expect(secondBalanceBuilds, 0);
     expect(secondDashboardBuilds, 0);
   });
 

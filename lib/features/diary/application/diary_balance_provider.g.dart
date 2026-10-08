@@ -8,93 +8,6 @@ part of 'diary_balance_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Provides source data for the diary balance card.
-
-@ProviderFor(diaryBalanceSource)
-final diaryBalanceSourceProvider = DiaryBalanceSourceFamily._();
-
-/// Provides source data for the diary balance card.
-
-final class DiaryBalanceSourceProvider
-    extends
-        $FunctionalProvider<
-          AsyncValue<DiaryBalanceSource>,
-          DiaryBalanceSource,
-          FutureOr<DiaryBalanceSource>
-        >
-    with
-        $FutureModifier<DiaryBalanceSource>,
-        $FutureProvider<DiaryBalanceSource> {
-  /// Provides source data for the diary balance card.
-  DiaryBalanceSourceProvider._({
-    required DiaryBalanceSourceFamily super.from,
-    required DateTime super.argument,
-  }) : super(
-         retry: null,
-         name: r'diaryBalanceSourceProvider',
-         isAutoDispose: true,
-         dependencies: null,
-         $allTransitiveDependencies: null,
-       );
-
-  @override
-  String debugGetCreateSourceHash() => _$diaryBalanceSourceHash();
-
-  @override
-  String toString() {
-    return r'diaryBalanceSourceProvider'
-        ''
-        '($argument)';
-  }
-
-  @$internal
-  @override
-  $FutureProviderElement<DiaryBalanceSource> $createElement(
-    $ProviderPointer pointer,
-  ) => $FutureProviderElement(pointer);
-
-  @override
-  FutureOr<DiaryBalanceSource> create(Ref ref) {
-    final argument = this.argument as DateTime;
-    return diaryBalanceSource(ref, argument);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is DiaryBalanceSourceProvider && other.argument == argument;
-  }
-
-  @override
-  int get hashCode {
-    return argument.hashCode;
-  }
-}
-
-String _$diaryBalanceSourceHash() =>
-    r'8f428bf4b0c5e4b0c44425a58ed428b801c27bf6';
-
-/// Provides source data for the diary balance card.
-
-final class DiaryBalanceSourceFamily extends $Family
-    with $FunctionalFamilyOverride<FutureOr<DiaryBalanceSource>, DateTime> {
-  DiaryBalanceSourceFamily._()
-    : super(
-        retry: null,
-        name: r'diaryBalanceSourceProvider',
-        dependencies: null,
-        $allTransitiveDependencies: null,
-        isAutoDispose: true,
-      );
-
-  /// Provides source data for the diary balance card.
-
-  DiaryBalanceSourceProvider call(DateTime selectedDay) =>
-      DiaryBalanceSourceProvider._(argument: selectedDay, from: this);
-
-  @override
-  String toString() => r'diaryBalanceSourceProvider';
-}
-
 /// Actions needed by diary balance presentation widgets.
 
 @ProviderFor(diaryBalanceActions)
@@ -146,4 +59,4 @@ final class DiaryBalanceActionsProvider
 }
 
 String _$diaryBalanceActionsHash() =>
-    r'1f05131525665daf12c54dbc10b09790f20735a3';
+    r'a5281f5532ca9c49e65c89a22eae57549da14bb1';
