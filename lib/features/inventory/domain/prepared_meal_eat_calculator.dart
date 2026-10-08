@@ -7,6 +7,10 @@ const _wholeNumberTolerance = 0.000001;
 const _portionQuickValues = <num>[0.5, 1.0, 2.0, 3.0];
 const _gramQuickValues = <num>[100, 250, 500];
 
+/// How long a pot weighing stays fresh enough to eat from without weighing
+/// again.
+const potWeighingMaxAge = Duration(hours: 3);
+
 /// Unit the amount of a prepared meal is entered in.
 enum PreparedMealEatAmountMode {
   /// Number of portions.
@@ -26,10 +30,35 @@ class PreparedMealEatCalculator {
 
   /// Whether the amount can be entered in grams.
   bool get canUseGrams {
-    final finalNetWeight = meal.finalNetWeight;
-    return finalNetWeight != null &&
-        finalNetWeight > 0 &&
-        meal.totalPortions > 0;
+    final net = currentNetWeight;
+    return net != null && net > 0 && meal.remainingPortions > 0;
+  }
+
+  /// Grams of food left: from the last pot weighing when there is one,
+  /// otherwise from the weight at "Gekocht".
+  int? get currentNetWeight {
+    final weighing = meal.potWeighing;
+    if (weighing != null) {
+      return weighing.netWeightFor(meal.remainingPortions);
+    }
+    return meal.remainingNetWeight;
+  }
+
+  /// Whether the eat page asks to weigh the pot again before eating at
+  /// [now]: the meal was weighed in its pot, and since the last weighing
+  /// (or the last change, such as "Gekocht") more than [potWeighingMaxAge]
+  /// passed or someone ate from it, so water may have evaporated or the
+  /// grams left are a guess.
+  bool needsPotWeighing(DateTime now) {
+    if (meal.potTareWeight == null) {
+      return false;
+    }
+    final (weighedAt, portionsThen) = switch (meal.potWeighing) {
+      final weighing? => (weighing.weighedAt, weighing.remainingPortions),
+      null => (meal.updatedAt, meal.totalPortions),
+    };
+    return now.difference(weighedAt) > potWeighingMaxAge ||
+        portionsThen != meal.remainingPortions;
   }
 
   /// Portions the sheet starts with: one, or less when less is left.
@@ -41,30 +70,25 @@ class PreparedMealEatCalculator {
     return remaining;
   }
 
-  /// Converts [grams] to portions. The remaining grams map to all portions.
+  /// Converts [grams] to portions: their share of the grams left, times the
+  /// portions left. The grams left map to all portions left.
   num? gramsToPortions(num grams) {
-    final finalNetWeight = meal.finalNetWeight;
-    if (finalNetWeight == null ||
-        finalNetWeight <= 0 ||
-        meal.totalPortions < 1) {
+    if (!canUseGrams) {
       return null;
     }
-    final remainingGrams = meal.remainingNetWeight;
-    if (remainingGrams != null && grams >= remainingGrams) {
+    final net = currentNetWeight!;
+    if (grams >= net) {
       return meal.remainingPortions;
     }
-    return grams * meal.totalPortions / finalNetWeight;
+    return grams * meal.remainingPortions / net;
   }
 
-  /// Converts [portions] to cooked grams.
+  /// Converts [portions] to grams of the food left.
   num? portionsToGrams(num portions) {
-    final finalNetWeight = meal.finalNetWeight;
-    if (finalNetWeight == null ||
-        finalNetWeight <= 0 ||
-        meal.totalPortions < 1) {
+    if (!canUseGrams) {
       return null;
     }
-    return portions * finalNetWeight / meal.totalPortions;
+    return portions * currentNetWeight! / meal.remainingPortions;
   }
 
   /// Converts [amount] in [mode] to portions.
@@ -108,7 +132,7 @@ class PreparedMealEatCalculator {
   num remainingAmount(PreparedMealEatAmountMode mode) {
     return switch (mode) {
       PreparedMealEatAmountMode.portions => meal.remainingPortions,
-      PreparedMealEatAmountMode.grams => meal.remainingNetWeight ?? 0,
+      PreparedMealEatAmountMode.grams => currentNetWeight ?? 0,
     };
   }
 

@@ -86,7 +86,7 @@ final class PreparedMealEatSheetControllerProvider
 }
 
 String _$preparedMealEatSheetControllerHash() =>
-    r'ae067b25c1ecaff053efecac51caec5946def718';
+    r'd87e2d1c8462f4c131f747196d61e9549109d208';
 
 /// Holds the input of the eat sheet for one prepared meal.
 ///

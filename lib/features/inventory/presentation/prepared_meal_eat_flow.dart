@@ -48,6 +48,7 @@ abstract final class PreparedMealEatFlow {
           mealType: request.mealType,
           loggedDay: request.loggedDay,
           asPlan: request.isPlan,
+          potNetWeight: request.potNetWeight,
         );
         if (eaten == null) {
           scope.messenger.showAppSnackBar(

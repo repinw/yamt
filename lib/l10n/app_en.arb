@@ -474,6 +474,20 @@
   "inventoryItemEatSheetConfirmAction": "To diary",
   "eatPagePlanIconTooltip": "Plan",
   "eatPageStoreIconTooltip": "To stock",
+  "eatPotWeighTitle": "Pot on the scale",
+  "eatPotWeighReminder": "Water may have evaporated since the last weighing. Weigh the pot again so it is right for everyone.",
+  "eatPotNetWeight": "− empty pot {tare} g = {net} g in the pot",
+  "@eatPotNetWeight": {
+    "placeholders": {
+      "tare": {
+        "type": "int"
+      },
+      "net": {
+        "type": "int"
+      }
+    }
+  },
+  "eatPotTakeOutHint": "Then tare the scale and enter the grams you took.",
   "eatPagePotUnit": "pot",
   "eatPagePlanAction": "Plan",
   "eatPageNutritionTitle": "Nutrition",

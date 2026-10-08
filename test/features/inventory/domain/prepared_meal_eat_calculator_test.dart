@@ -3,6 +3,7 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 
 import '../../../support/prepared_meal_test_data.dart';
 
@@ -13,7 +14,85 @@ PreparedMeal _meal({num remainingPortions = 2, int? finalNetWeight}) {
   ).copyWith(finalNetWeight: finalNetWeight);
 }
 
+final _cookedAt = DateTime(2026, 10, 8, 12);
+
+/// Linsensuppe: 4 portions, 1400 g at "Gekocht" in a 1180 g pot, 3 left.
+PreparedMeal _soup({PreparedMealPotWeighing? weighing}) {
+  return preparedMealTestData(totalPortions: 4, remainingPortions: 3).copyWith(
+    finalNetWeight: 1400,
+    potTareWeight: 1180,
+    updatedAt: _cookedAt,
+    potWeighing: weighing,
+  );
+}
+
 void main() {
+  group('pot weighing', () {
+    test('a fresh weighing sets what a gram is worth', () {
+      final calculator = PreparedMealEatCalculator(
+        _soup(
+          weighing: PreparedMealPotWeighing(
+            netWeight: 990,
+            weighedAt: _cookedAt,
+            remainingPortions: 3,
+          ),
+        ),
+      );
+
+      expect(calculator.currentNetWeight, 990);
+      expect(calculator.gramsToPortions(330), 1);
+      expect(calculator.portionsToGrams(1), 330);
+      expect(calculator.remainingAmount(PreparedMealEatAmountMode.grams), 990);
+    });
+
+    test('an older weighing scales to the portions left now', () {
+      final calculator = PreparedMealEatCalculator(
+        _soup(
+          weighing: PreparedMealPotWeighing(
+            netWeight: 1200,
+            weighedAt: _cookedAt,
+            remainingPortions: 4,
+          ),
+        ),
+      );
+
+      expect(calculator.currentNetWeight, 900);
+    });
+
+    test('without a weighing the weight at Gekocht counts', () {
+      expect(PreparedMealEatCalculator(_soup()).currentNetWeight, 1050);
+    });
+
+    test('asks to weigh again when old or eaten from since', () {
+      final fresh = PreparedMealPotWeighing(
+        netWeight: 990,
+        weighedAt: _cookedAt,
+        remainingPortions: 3,
+      );
+      final soon = _cookedAt.add(const Duration(hours: 1));
+      final later = _cookedAt.add(const Duration(hours: 4));
+
+      expect(
+        PreparedMealEatCalculator(_soup(weighing: fresh))
+            .needsPotWeighing(soon),
+        isFalse,
+      );
+      expect(
+        PreparedMealEatCalculator(_soup(weighing: fresh))
+            .needsPotWeighing(later),
+        isTrue,
+      );
+      // One portion was eaten since "Gekocht".
+      expect(PreparedMealEatCalculator(_soup()).needsPotWeighing(soon), isTrue);
+      // A meal not weighed in its pot never asks.
+      expect(
+        PreparedMealEatCalculator(_meal(finalNetWeight: 800))
+            .needsPotWeighing(later),
+        isFalse,
+      );
+    });
+  });
+
   test('grams need a known cooked weight', () {
     expect(PreparedMealEatCalculator(_meal()).canUseGrams, isFalse);
     expect(

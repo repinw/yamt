@@ -21,6 +21,7 @@ class PreparedMealEatSheetState {
     required this.today,
     required this.mealType,
     required this.hasAmountError,
+    this.potGrossText = '',
   });
 
   /// Amount rules of the meal.
@@ -49,6 +50,25 @@ class PreparedMealEatSheetState {
 
   /// Whether the amount is outside the remaining stock.
   final bool hasAmountError;
+
+  /// Text of the field for the pot on the scale; empty when not weighed.
+  final String potGrossText;
+
+  /// Grams of food in the pot after a weighing on this page: the pot on the
+  /// scale minus the empty pot, or null without one or when the pot is not
+  /// heavier than empty.
+  int? get freshPotNetWeight {
+    final tare = calculator.meal.potTareWeight;
+    final gross = int.tryParse(potGrossText);
+    if (tare == null || gross == null || gross <= tare) {
+      return null;
+    }
+    return gross - tare;
+  }
+
+  /// Whether the pot was weighed but is not heavier than empty.
+  bool get isPotTooLight =>
+      potGrossText.isNotEmpty && freshPotNetWeight == null;
 
   /// Amount parsed from the field.
   num? get amount => parsePreparedMealAmountInput(amountText);
@@ -104,6 +124,7 @@ class PreparedMealEatSheetState {
     DateTime? loggedAt,
     MealType? mealType,
     bool? hasAmountError,
+    String? potGrossText,
   }) {
     return PreparedMealEatSheetState(
       calculator: calculator ?? this.calculator,
@@ -114,6 +135,7 @@ class PreparedMealEatSheetState {
       today: today,
       mealType: mealType ?? this.mealType,
       hasAmountError: hasAmountError ?? this.hasAmountError,
+      potGrossText: potGrossText ?? this.potGrossText,
     );
   }
 }

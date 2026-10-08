@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
@@ -38,6 +39,23 @@ void main() {
 
     expect(texts.unit, 'Stk');
     expect(texts.info, 'Aus Rezept · 4 von 6 Stück');
+  });
+
+  test('a weighed pot shows the grams it held then, scaled', () {
+    final meal = _meal().copyWith(
+      finalNetWeight: 1200,
+      potTareWeight: 1180,
+      potWeighing: PreparedMealPotWeighing(
+        netWeight: 900,
+        weighedAt: DateTime.utc(2026, 10, 8),
+        remainingPortions: 6,
+      ),
+    );
+
+    final texts = InventoryEntryTexts.of(InventoryMealEntry(meal), l10n);
+
+    // 4 of the 6 portions weighed at 900 g are left.
+    expect(texts.amount, '600');
   });
 
   test('a meal without a serving unit counts portions', () {

@@ -629,6 +629,7 @@ class _TestDiaryQuickEatInventoryActions
     required MealType mealType,
     required DateTime loggedDay,
     bool asPlan = false,
+    int? potNetWeight,
   }) async {
     if (failConsume) {
       return null;

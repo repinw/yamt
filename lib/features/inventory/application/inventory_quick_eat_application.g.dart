@@ -60,4 +60,4 @@ final class InventoryQuickEatApplicationProvider
 }
 
 String _$inventoryQuickEatApplicationHash() =>
-    r'4ede945bcb2c455221e72d12ceae6aa4cf0610dd';
+    r'36400cae0bcbda6906083590e170652f721beeb4';

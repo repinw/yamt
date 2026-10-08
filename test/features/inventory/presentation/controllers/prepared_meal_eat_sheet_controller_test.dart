@@ -70,6 +70,50 @@ PreparedMeal _meal() {
 }
 
 void main() {
+  group('pot weighing', () {
+    // 4 portions, 1400 g at "Gekocht" in a 1180 g pot, 3 left.
+    PreparedMeal soup() => preparedMealTestData(
+      totalPortions: 4,
+      remainingPortions: 3,
+    ).copyWith(finalNetWeight: 1400, potTareWeight: 1180);
+
+    test('a fresh weighing counts in grams and goes with the request', () {
+      final (:container, :provider) = _setUp(soup());
+      final controller = container.read(provider.notifier)
+        ..setPotGrossText('2170');
+      final weighed = container.read(provider);
+      expect(weighed.freshPotNetWeight, 990);
+      expect(weighed.mode, PreparedMealEatAmountMode.grams);
+      // One portion of the 990 g left for 3 portions.
+      expect(weighed.amountText, '330');
+
+      final request = controller.submit();
+      expect(request?.potNetWeight, 990);
+      expect(request?.portions, 1);
+      expect(request?.meal.potWeighing, isNull);
+    });
+
+    test('the portions stay while the pot weight is typed', () {
+      final (:container, :provider) = _setUp(soup());
+      // "1300" is on the way to "2170": 120 g would make 1 portion 40 g.
+      final controller = container.read(provider.notifier)
+        ..setPotGrossText('1300')
+        ..setPotGrossText('2170');
+
+      expect(container.read(provider).amountText, '330');
+      expect(controller.submit()?.portions, 1);
+    });
+
+    test('a pot no heavier than empty blocks the request', () {
+      final (:container, :provider) = _setUp(soup());
+      final controller = container.read(provider.notifier)
+        ..setPotGrossText('1000');
+
+      expect(container.read(provider).isPotTooLight, isTrue);
+      expect(controller.submit(), isNull);
+    });
+  });
+
   test('starts with one portion at the clock time', () {
     final (:container, :provider) = _setUp(_meal());
 

@@ -13,6 +13,8 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_diary_entry.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_mutation_service.dart';
 import 'package:yamt/features/inventory/data/'
     'prepared_meal_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -26,6 +28,7 @@ InventoryQuickEatApplication inventoryQuickEatApplication(Ref ref) {
   return InventoryQuickEatApplication(
     saveEntry: ref.watch(calorieEntrySaverProvider),
     commitStore: ref.watch(preparedMealCalorieEntryCommitStoreProvider),
+    mealMutations: ref.watch(preparedMealMutationServiceProvider),
     plans: ref.watch(plannedEntryRepositoryProvider),
     overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
     lastPlannedDay: ref.watch(lastPlannedDayProvider.notifier),
@@ -47,6 +50,7 @@ class InventoryQuickEatApplication {
   new({
     required this._saveEntry,
     required this._commitStore,
+    required this._mealMutations,
     required this._plans,
     required this._overviewRevision,
     required this._lastPlannedDay,
@@ -55,6 +59,7 @@ class InventoryQuickEatApplication {
 
   final CalorieEntrySaver _saveEntry;
   final PreparedMealCalorieEntryCommitStore? _commitStore;
+  final PreparedMealMutationService _mealMutations;
   final PlannedEntryRepository _plans;
   final CalorieOverviewRevision _overviewRevision;
   final LastPlannedDay _lastPlannedDay;
@@ -63,13 +68,16 @@ class InventoryQuickEatApplication {
 
   /// Logs [consumedPortions] of [meal] and returns the saved entry, or null
   /// when it failed. [asPlan], or a day after today, saves a plan and keeps
-  /// the portions.
+  /// the portions. [potNetWeight], the food in the pot when the cook weighed
+  /// it on the eat page, is stored on the meal first for the household;
+  /// [consumedPortions] already count from it.
   Future<PreparedMealEatResult?> consumePreparedMeal({
     required PreparedMeal meal,
     required num consumedPortions,
     required MealType mealType,
     required DateTime loggedDay,
     bool asPlan = false,
+    int? potNetWeight,
   }) {
     return _mutationQueue.run<PreparedMealEatResult?>(
       operation: () => _consumePreparedMeal(
@@ -78,6 +86,7 @@ class InventoryQuickEatApplication {
         mealType: mealType,
         loggedDay: loggedDay,
         asPlan: asPlan,
+        potNetWeight: potNetWeight,
       ),
       fallbackValue: null,
       onError: _logMutationError,
@@ -90,15 +99,22 @@ class InventoryQuickEatApplication {
     required MealType mealType,
     required DateTime loggedDay,
     required bool asPlan,
+    required int? potNetWeight,
   }) async {
+    final weighed = potNetWeight == null
+        ? meal
+        : await _mealMutations.weighPot(
+            mealId: meal.id,
+            netWeight: potNetWeight,
+          );
     final isPlan = asPlan || isDiaryFutureDay(day: loggedDay, today: _now());
     final action = isPlan ? PreparedMealAction.plan : PreparedMealAction.eat;
-    if (!meal.allowsPortions(action, consumedPortions)) {
+    if (!weighed.allowsPortions(action, consumedPortions)) {
       return null;
     }
     if (isPlan) {
       return await _planPreparedMeal(
-        meal: meal,
+        meal: weighed,
         consumedPortions: consumedPortions,
         mealType: mealType,
         loggedDay: loggedDay,
@@ -106,7 +122,7 @@ class InventoryQuickEatApplication {
     }
     final commitStore = _commitStore;
     final entry = buildConsumedPreparedMealCalorieEntry(
-      meal: meal,
+      meal: weighed,
       consumedPortions: consumedPortions,
       mealType: mealType,
       now: _now,

@@ -581,6 +581,16 @@ and feature description docs. This is product-facing; architecture rules stay in
   (the ruler counts in "Topf"; the whole pot is 1). Accepting such a plan
   after "Gekocht" eats the same share of the cooked portions; before
   "Gekocht" the check button says to mark the meal as cooked first.
+- The eat page of a meal weighed in its pot at "Gekocht" has a "Topf auf der
+  Waage" field. The pot on the scale minus the empty pot is what is left in
+  the pot now ("− leerer Topf 1180 g = 990 g im Topf"); the amount switches
+  to grams, the cook tares the scale and enters the grams taken out, and the
+  share eaten is those grams of what is left. The weighing is stored on the
+  meal for the household, so later eaters start from it; earlier entries do
+  not change. Without a new weighing the grams left come from the last one
+  (or "Gekocht"), scaled to the portions left. When the last weighing is
+  older than 3 hours or someone ate since, the page reminds that water may
+  have evaporated. A weight not above the empty pot blocks saving.
 - A card under "Offen" says "Im Topf seit …" (with "· N Zeilen offen" when
   rows are open) and "Weiter" opens the "Gekocht" page; the time becomes the
   day for a pot from an earlier day. A cooked meal with open rows says
