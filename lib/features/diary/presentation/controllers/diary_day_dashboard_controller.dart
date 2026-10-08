@@ -7,6 +7,7 @@ import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
@@ -43,6 +44,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         ref.watch(firebaseAuthProvider).currentUser?.uid;
     final preferences = ref.watch(appPreferencesProvider);
     final cacheRepository = ref.watch(diaryDayDashboardCacheRepositoryProvider);
+    // A planned day may be today now, and then it gets its carryover.
+    ref.watch(diaryTodayProvider);
     ref.onDispose(() {
       _settledMutationRefreshTimer?.cancel();
       _mutationRefreshInFlight = null;
@@ -55,9 +58,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
             day: normalizedDay,
           );
 
-    // A rebuild drops the subscription that keeps the live data provider
-    // alive, so a refresh started before it can never settle. Forget that
-    // refresh here, otherwise it blocks every later one.
+    // A rebuild drops the subscription that keeps the live data alive, so a
+    // refresh started before it never settles and would block every later one.
     _refreshInFlight = null;
     _mutationRefreshInFlight = null;
 
@@ -140,9 +142,8 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
     bool queueIfInFlight = false,
     bool forceRefresh = false,
   }) {
-    final normalizedDay = normalizeDiaryDay(selectedDay);
     return _refresh(
-      normalizedDay: normalizedDay,
+      normalizedDay: normalizeDiaryDay(selectedDay),
       userId:
           ref.read(authStateChangesProvider).asData?.value?.uid ??
           ref.read(firebaseAuthProvider).currentUser?.uid,
@@ -216,8 +217,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         weekOverview: liveData.weekOverview,
         selectedDayOverview: liveData.selectedDayOverview,
       );
-      final today = normalizeDiaryDay(ref.read(clockProvider)());
-      final isPastDay = normalizedDay.isBefore(today);
+      final isPastDay = normalizedDay.isBefore(ref.read(diaryTodayProvider));
       final carryoverKcal = isPastDay
           ? 0.0
           : liveData.weekOverview.carryoverBeforeTodayKcal;

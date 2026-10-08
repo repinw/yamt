@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -28,6 +31,7 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     with WidgetsBindingObserver {
   ProviderSubscription<void>? _providerWarmupSubscription;
   bool _didQueueProviderWarmup = false;
+  Timer? _nextDayTimer;
 
   /// Kept so a rebuild of this page does not rebuild every day page.
   late final Widget _dayPager = DiaryDayPager(
@@ -38,11 +42,13 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _scheduleNextDay();
   }
 
   @override
   void dispose() {
     _providerWarmupSubscription?.close();
+    _nextDayTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -52,8 +58,26 @@ class _DiaryPageState extends ConsumerState<DiaryPage>
     if (state != AppLifecycleState.resumed || !mounted) {
       return;
     }
-    ref.read(diaryCalendarControllerProvider.notifier).refreshToday();
+    _moveToToday();
     ref.invalidate(healthConnectionStatusProvider);
+  }
+
+  /// Moves the diary to today's date and waits for the next midnight again,
+  /// since a timer does not run while the app is suspended.
+  void _moveToToday() {
+    ref.read(diaryTodayProvider.notifier).refresh();
+    _scheduleNextDay();
+  }
+
+  void _scheduleNextDay() {
+    _nextDayTimer?.cancel();
+    // ponytail: midnight only advances while DiaryPage is mounted, and resume
+    // covers the rest. Move this timer into a shell-level lifecycle widget if
+    // other tabs need today to change at midnight.
+    _nextDayTimer = Timer(
+      ref.read(diaryTodayProvider.notifier).untilNextDay(),
+      _moveToToday,
+    );
   }
 
   @override

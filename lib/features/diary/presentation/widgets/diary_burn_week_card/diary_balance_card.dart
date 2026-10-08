@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_after_plan_controller.dart';
@@ -48,7 +48,7 @@ class DiaryBalanceCard extends ConsumerWidget {
     );
 
     if (dashboardData != null) {
-      final now = ref.watch(clockProvider)();
+      final now = ref.watch(diaryTodayProvider);
       final data = DiaryBalanceSource.fromDashboardData(dashboardData)
           .resolve(now: now);
 

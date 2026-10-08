@@ -9,6 +9,7 @@ import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
@@ -91,6 +92,7 @@ class DiaryQuickEntryState {
     Map<DiaryQuickEntryValue, String>? texts,
     DateTime? loggedAt,
     MealType? mealType,
+    DateTime? today,
     bool? isSaving,
   }) {
     return DiaryQuickEntryState(
@@ -98,7 +100,7 @@ class DiaryQuickEntryState {
       texts: texts ?? this.texts,
       loggedAt: loggedAt ?? this.loggedAt,
       mealType: mealType ?? this.mealType,
-      today: today,
+      today: today ?? this.today,
       isSaving: isSaving ?? this.isSaving,
     );
   }
@@ -117,12 +119,18 @@ class DiaryQuickEntryController extends _$DiaryQuickEntryController {
   }) {
     // The saver uses its ref after a save, so it stays alive with the page.
     ref.listen(calorieEntrySaverProvider, (_, _) {});
+    final today = ref.watch(diaryTodayProvider);
+    // A new day at midnight keeps what the user typed.
+    final previous = stateOrNull;
+    if (previous != null) {
+      return previous.copyWith(today: today);
+    }
     return DiaryQuickEntryState(
       name: '',
       texts: const {},
       loggedAt: initialLoggedAt,
       mealType: initialMealType,
-      today: ref.watch(clockProvider)(),
+      today: today,
       isSaving: false,
     );
   }

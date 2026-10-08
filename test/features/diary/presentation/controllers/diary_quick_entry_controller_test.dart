@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_quick_entry_controller.dart';
 
@@ -46,10 +48,38 @@ void main() {
   test('starts empty on the given day and meal', () {
     expect(state().loggedAt, _loggedAt);
     expect(state().mealType, MealType.lunch);
-    expect(state().today, quickEntryNow);
+    expect(state().today, dateOnly(quickEntryNow));
     expect(state().kcal, isNull);
     expect(state().isMissingMacros, isTrue);
     expect(state().canSave, isFalse);
+  });
+
+  test('a new day keeps the typed input and decides the plan again', () {
+    var now = quickEntryNow;
+    final tomorrow = DateTime(2026, 9, 29, 8);
+    final dayContainer = ProviderContainer(
+      overrides: quickEntryOverrides(calorieLog, clock: () => now),
+    );
+    addTearDown(dayContainer.dispose);
+    final tomorrowProvider = diaryQuickEntryControllerProvider(
+      initialLoggedAt: tomorrow,
+      initialMealType: MealType.breakfast,
+    );
+    dayContainer.listen(tomorrowProvider, (_, _) {});
+    dayContainer.read(tomorrowProvider.notifier)
+      ..setName('Porridge')
+      ..setValueText(DiaryQuickEntryValue.kcal, '350');
+    expect(dayContainer.read(tomorrowProvider).isPlan, isTrue);
+
+    now = DateTime(2026, 9, 29, 0, 1);
+    dayContainer.read(diaryTodayProvider.notifier).refresh();
+
+    final state = dayContainer.read(tomorrowProvider);
+    expect(state.today, DateTime(2026, 9, 29));
+    expect(state.isPlan, isFalse);
+    expect(state.name, 'Porridge');
+    expect(state.kcal, 350);
+    expect(state.loggedAt, tomorrow);
   });
 
   test('can save once the calories are a number', () {

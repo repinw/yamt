@@ -1,13 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/date_utils.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
-import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 
 part 'diary_calendar_controller.g.dart';
 
@@ -60,8 +59,16 @@ class DiaryCalendarController extends _$DiaryCalendarController {
         selectDay(planned.day);
       }
     });
-    final today = _currentToday();
-    return DiaryCalendarState(today: today, selectedDay: today);
+    final today = ref.watch(diaryTodayProvider);
+    // When today moves on, a selected today moves along and another selected
+    // day stays.
+    final previous = stateOrNull;
+    return DiaryCalendarState(
+      today: today,
+      selectedDay: previous == null || previous.isSelectedToday
+          ? today
+          : previous.selectedDay,
+    );
   }
 
   /// Selects [day], clamped to the selectable range.
@@ -84,29 +91,10 @@ class DiaryCalendarController extends _$DiaryCalendarController {
     selectDay(nextLocalDay(state.selectedDay));
   }
 
-  /// Refreshes the cached today value after app resume or midnight rollover.
-  void refreshToday() {
-    final today = _currentToday();
-    if (isSameCalendarDay(today, state.today)) {
-      return;
-    }
-
-    state = state.copyWith(
-      today: today,
-      selectedDay: state.isSelectedToday ? today : state.selectedDay,
-    );
-    // A planned day may be today now, and then it gets its carryover.
-    ref.invalidate(diaryDayDashboardControllerProvider);
-  }
-
   DiaryCalendarBounds _bounds() {
     return DiaryCalendarBounds.resolve(
       today: state.today,
       planStartDay: ref.read(diaryPlanStartDayProvider),
     );
-  }
-
-  DateTime _currentToday() {
-    return dateOnly(ref.read(clockProvider)());
   }
 }

@@ -17,10 +17,11 @@ class _MockUser extends Mock implements User;
 final quickEntryNow = DateTime(2026, 9, 28, 12, 30);
 
 /// Lets the quick entry page save to [calorieLog], and plans to [plans], as
-/// `user-1` at [quickEntryNow].
+/// `user-1` at [quickEntryNow], or at the time of [clock].
 List<Override> quickEntryOverrides(
   FakeCalorieLogRepository calorieLog, {
   FakePlannedEntryRepository? plans,
+  DateTime Function()? clock,
 }) {
   final auth = _MockFirebaseAuth();
   final user = _MockUser();
@@ -32,6 +33,6 @@ List<Override> quickEntryOverrides(
       plans ?? FakePlannedEntryRepository(),
     ),
     firebaseAuthProvider.overrideWithValue(auth),
-    clockProvider.overrideWithValue(() => quickEntryNow),
+    clockProvider.overrideWithValue(clock ?? () => quickEntryNow),
   ];
 }

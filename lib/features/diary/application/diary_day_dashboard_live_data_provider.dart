@@ -1,8 +1,8 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/burn_week_run_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
@@ -72,7 +72,7 @@ Future<DiaryDayDashboardLiveData> diaryDayDashboardLiveData(
             .watch(plannedEntryRepositoryProvider)
             .loadPlannedEntriesForDay(normalizedDay)
           ..ignore();
-    final today = ref.watch(clockProvider)();
+    final today = ref.watch(diaryTodayProvider);
 
     final weekOverview = await weekOverviewFuture;
     final runState = await runStateFuture;

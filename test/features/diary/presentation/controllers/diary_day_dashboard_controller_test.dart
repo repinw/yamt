@@ -13,6 +13,7 @@ import 'package:yamt/features/calories/application/burn_week_run_controller.dart
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_provider.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
@@ -394,7 +395,7 @@ void main() {
     expect(weekOverviewReadCount, 1);
 
     now = selectedDay.add(const Duration(hours: 8));
-    container.read(diaryCalendarControllerProvider.notifier).refreshToday();
+    container.read(diaryTodayProvider.notifier).refresh();
     await _waitForDashboardRefresh(container, selectedDay);
 
     expect(weekOverviewReadCount, 2);
