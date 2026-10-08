@@ -193,6 +193,8 @@ CookingFlowFinalizeMealSavePlan buildCookingFlowFinalizeSavePlan({
       ignoredRecipeIngredients: const <String>[],
       totalPortions: finalPortions,
       remainingPortions: finalPortions,
+      // The wizard counts portions only.
+      servedInPieces: null,
     ),
     recipeIngredientAssignments: recipeIngredientAssignments,
     recipeIngredientAmountConversions: recipeIngredientAmountConversions,

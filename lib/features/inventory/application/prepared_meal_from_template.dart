@@ -201,6 +201,7 @@ PreparedMealBuildResult buildPreparedMealCreationFromTemplateResult({
       pendingRecipeIngredients: pendingIngredients,
       totalPortions: totalPortions,
       remainingPortions: totalPortions,
+      servedInPieces: template.servedInPieces,
       totalKcal: nutritionTotals.totalKcal,
       totalProtein: nutritionTotals.totalProtein,
       totalCarbs: nutritionTotals.totalCarbs,

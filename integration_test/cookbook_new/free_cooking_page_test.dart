@@ -221,6 +221,27 @@ void main() {
     expect(meal.potTareWeight, isNull);
   });
 
+  testWidgets('a meal from a template in pieces starts on pieces', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository()
+      ..saved = [_combinedMeal().copyWith(servedInPieces: true)];
+    await tester.pumpWidget(_app(meals: meals, voice: _FakeVoiceService('')));
+    await tester.pumpAndSettle();
+    await _openCooked(tester, 'combo');
+
+    // Pieces need no weight, so neither the sum nor the scale shows.
+    expect(find.byKey(CookedMealPotSection.weighKey), findsNothing);
+    expect(find.byKey(CookedMealPotSection.utensilKey), findsNothing);
+    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.pumpAndSettle();
+
+    final meal = meals.saved.single;
+    expect(meal.isInPot, isFalse);
+    expect(meal.isServedInPieces, isTrue);
+    expect(meal.finalNetWeight, isNull);
+  });
+
   testWidgets('weighing a combined meal shows the container and the scale', (
     tester,
   ) async {

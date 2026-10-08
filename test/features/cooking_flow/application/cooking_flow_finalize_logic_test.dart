@@ -133,6 +133,19 @@ void main() {
     expect(plan.totalInputCount, 2);
   });
 
+  test('the wizard counts portions also for a template in pieces', () {
+    final plan = buildCookingFlowFinalizeSavePlan(
+      template: _template().copyWith(servedInPieces: true),
+      inventoryItems: <InventoryItem>[_item(id: 'rice', name: 'Rice')],
+      summaryIngredients: _summaryRows,
+      introDraft: null,
+      targetPortions: 4,
+      finalPortions: 1,
+    );
+
+    expect(plan.template.isServedInPieces, isFalse);
+  });
+
   group('piece-tracked stock', () {
     test('save plan stores extra pieces in thousandths of a piece', () {
       final plan = buildCookingFlowFinalizeSavePlan(

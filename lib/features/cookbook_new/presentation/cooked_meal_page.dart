@@ -56,7 +56,10 @@ class CookedMealPage extends ConsumerStatefulWidget {
 class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   final _grossController = TextEditingController();
   int? _portions;
-  var _inPieces = false;
+
+  /// Pieces or portions as the cook picked them; the meal's own unit, such
+  /// as from its template, until then.
+  bool? _inPieces;
 
   /// Whether the cook weighs a combined meal instead of trusting the sum of
   /// its ingredients.
@@ -185,6 +188,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final portions = _portions ?? meal.totalPortions;
+    final inPieces = _inPieces ?? meal.isServedInPieces;
     final utensilsAsync = ref.watch(kitchenUtensilListProvider);
     final utensils = utensilsAsync.value ?? const <KitchenUtensil>[];
     final utensil = utensils.firstWhereOrNull((item) => item.id == _utensilId);
@@ -196,13 +200,13 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
         : null;
     final pot = CookedPot(
       // The section hides the scale for pieces and without a pot to pick.
-      grossInput: _inPieces || utensilsAsync.hasError || utensils.isEmpty
+      grossInput: inPieces || utensilsAsync.hasError || utensils.isEmpty
           ? ''
           : _grossController.text,
       tareWeight: utensil?.weightGrams,
       portions: portions,
       totalKcal: meal.totalKcal,
-      ingredientsWeight: _inPieces ? null : ingredientsWeight,
+      ingredientsWeight: inPieces ? null : ingredientsWeight,
     );
 
     return Column(
@@ -226,7 +230,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
               CookedMealPotSection(
                 portions: portions,
                 onPortionsChanged: (value) => setState(() => _portions = value),
-                inPieces: _inPieces,
+                inPieces: inPieces,
                 onInPiecesChanged: (value) => setState(() => _inPieces = value),
                 ingredientsWeight: ingredientsWeight,
                 onWeigh: () => setState(() => _weighs = true),
@@ -248,7 +252,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                   grams,
                   pot.kcalPerPortion,
                 ),
-                null when _inPieces => l10n.cookedPerPiece(pot.kcalPerPortion),
+                null when inPieces => l10n.cookedPerPiece(pot.kcalPerPortion),
                 null => l10n.cookedPerPortion(pot.kcalPerPortion),
               }, style: textTheme.bodyMedium?.copyWith(color: colors.muted)),
               const SizedBox(height: AppSpacing.xxl),
@@ -272,7 +276,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                       ref: ref,
                       meal: meal,
                       portions: portions,
-                      servedInPieces: _inPieces,
+                      servedInPieces: inPieces,
                       toDiary: destination == CookedMealDestination.diary,
                       tareWeight: utensil?.weightGrams,
                       netWeight: pot.netWeight,
