@@ -1,6 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_home_widget_summary.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
@@ -17,15 +16,14 @@ part 'diary_home_widget_summary_provider.g.dart';
 /// controller's state.
 @riverpod
 DiaryHomeWidgetSummary? diaryHomeWidgetSummary(Ref ref) {
-  final now = ref.watch(clockProvider)();
-  final today = normalizeDiaryDay(now);
+  final today = ref.watch(diaryTodayProvider);
   final dashboardState = ref.watch(diaryDayDashboardControllerProvider(today));
   final data = dashboardState.data;
   if (data == null) {
     return null;
   }
   final daily = DiaryBalanceSource.fromDashboardData(data)
-      .resolve(now: now)
+      .resolve(now: today)
       .loadedMetrics
       ?.daily;
   final selectedDayOverview = data.weekOverview.days.last;
