@@ -32,6 +32,31 @@ final class InventoryPendingConsumptionFinalized {
 
   /// The time of the consumption, when available.
   final DateTime? consumedAt;
+
+  /// [items] with the stock this finalization left on its item, or null
+  /// when the item is missing or shows that stock already.
+  List<InventoryItem>? applyTo(List<InventoryItem> items) {
+    final index = items.indexWhere((item) => item.id == itemId);
+    if (index < 0) {
+      return null;
+    }
+    final item = items[index];
+    final consumedAt = this.consumedAt;
+    final lastConsumedAt = consumedAt == null
+        ? item.lastConsumedAt
+        : item.latestConsumedAtOr(consumedAt);
+    if (item.quantity == quantity &&
+        item.currentAmount == currentAmount &&
+        item.lastConsumedAt == lastConsumedAt) {
+      return null;
+    }
+    return List.of(items)
+      ..[index] = item.copyWith(
+        quantity: quantity,
+        currentAmount: currentAmount,
+        lastConsumedAt: lastConsumedAt,
+      );
+  }
 }
 
 /// Stock reserved for eats that are not saved yet.

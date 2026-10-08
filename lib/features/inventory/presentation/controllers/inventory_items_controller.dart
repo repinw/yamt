@@ -1,15 +1,11 @@
 import 'dart:async';
 import 'dart:developer' show log;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/'
-    'household_access_recovery_utils.dart';
-import 'package:yamt/features/household/application/'
-    'household_permission_recovery.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
+import 'package:yamt/features/household/application/'
+    'household_scoped_list_feed.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_item_discard_service.dart';
 import 'package:yamt/features/inventory/application/'
@@ -37,18 +33,19 @@ const _controllerLogName = 'InventoryItemsController';
 /// Defines inventory items controller.
 @riverpod
 class InventoryItemsController extends _$InventoryItemsController {
-  // Subscription is cancelled by _disposeRealtimeSubscription.
-  // ignore: cancel_subscriptions
-  StreamSubscription<List<InventoryItem>>? _itemsSubscription;
   StreamSubscription<InventoryPendingConsumptionFinalized>?
   _pendingFinalizationSubscription;
-  int _subscriptionGeneration = 0;
   final _mutationQueue = SerializedMutationQueue();
-  DeletedInventoryItem? _pendingDeletedItem;
-  List<InventoryItem>? _persistedItems;
-  String? _currentDataOwnerUserId;
-
-  bool _isRecoveringHouseholdAccess = false;
+  ({DeletedInventoryItem deleted, int generation})? _pendingDeletedItem;
+  late final _feed = HouseholdScopedListFeed<InventoryItem>(
+    ref: () => ref,
+    watch: () => ref.read(inventoryItemRepositoryProvider).watchAll(),
+    readAll: () => ref.read(inventoryItemRepositoryProvider).readAll(),
+    setState: (next) => state = next,
+    logName: _controllerLogName,
+    recoveryMessage:
+        'Rebuilding inventory stream after household access changed.',
+  );
 
   @override
   FutureOr<List<InventoryItem>> build() async {
@@ -56,7 +53,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       ..watch(householdDataOwnerUserIdProvider)
       ..watch(inventoryItemRepositoryProvider)
       ..onDispose(() {
-        unawaited(_disposeRealtimeSubscription());
+        unawaited(_feed.close());
         unawaited(
           _pendingFinalizationSubscription?.cancel() ?? Future<void>.value(),
         );
@@ -64,220 +61,23 @@ class InventoryItemsController extends _$InventoryItemsController {
     _pendingFinalizationSubscription ??= ref
         .watch(inventoryPendingConsumptionStoreProvider)
         .finalizations
-        .listen(_onPendingConsumptionFinalized);
+        .listen((event) {
+          final items = _feed.items;
+          final next = items == null ? null : event.applyTo(items);
+          if (next != null) {
+            _feed.publish(next);
+          }
+        });
     await waitForHouseholdDataOwnerProfile(ref);
     if (!ref.mounted) {
       return const <InventoryItem>[];
     }
-    _currentDataOwnerUserId = ref.watch(activeHouseholdIdProvider);
-    return await _restartRealtimeSubscription();
+    ref.watch(activeHouseholdIdProvider);
+    return await _feed.start();
   }
 
   /// Refresh.
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    final nextState = await AsyncValue.guard(_restartRealtimeSubscription);
-    if (!ref.mounted) {
-      return;
-    }
-    state = nextState;
-  }
-
-  Future<List<InventoryItem>> _restartRealtimeSubscription() async {
-    final initialItems = Completer<List<InventoryItem>>();
-    _currentDataOwnerUserId = ref.read(activeHouseholdIdProvider);
-    final repository = ref.read(inventoryItemRepositoryProvider);
-    final generation = ++_subscriptionGeneration;
-    await _disposeRealtimeSubscription();
-    _persistedItems = null;
-    _pendingDeletedItem = null;
-
-    _itemsSubscription = repository.watchAll().listen(
-      (items) {
-        if (generation != _subscriptionGeneration) {
-          return;
-        }
-        _persistedItems = items;
-        if (!initialItems.isCompleted) {
-          initialItems.complete(items);
-          return;
-        }
-        _onRealtimeItems(items);
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        if (generation != _subscriptionGeneration) {
-          return;
-        }
-        if (!initialItems.isCompleted) {
-          if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
-            initialItems.complete(const <InventoryItem>[]);
-            unawaited(_recoverFromRevokedHouseholdAccess(showLoading: false));
-            return;
-          }
-          initialItems.completeError(error, stackTrace);
-          return;
-        }
-        _onRealtimeError(error, stackTrace);
-      },
-    );
-    return await initialItems.future;
-  }
-
-  Future<void> _disposeRealtimeSubscription() async {
-    final currentSubscription = _itemsSubscription;
-    _itemsSubscription = null;
-    if (currentSubscription != null) {
-      await currentSubscription.cancel();
-    }
-  }
-
-  void _onRealtimeItems(List<InventoryItem> items) {
-    if (!ref.mounted) {
-      return;
-    }
-    _persistedItems = items;
-    state = AsyncData(items);
-  }
-
-  void _onRealtimeError(Object error, StackTrace stackTrace) {
-    if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
-      unawaited(_recoverFromRevokedHouseholdAccess());
-      return;
-    }
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncError(error, stackTrace);
-  }
-
-  void _onPendingConsumptionFinalized(
-    InventoryPendingConsumptionFinalized event,
-  ) {
-    if (!ref.mounted) {
-      return;
-    }
-    final currentItems = _persistedItems;
-    if (currentItems == null) {
-      return;
-    }
-    final itemIndex = currentItems.indexWhere(
-      (item) => item.id == event.itemId,
-    );
-    if (itemIndex < 0) {
-      return;
-    }
-
-    final currentItem = currentItems[itemIndex];
-    final nextLastConsumedAt = event.consumedAt == null
-        ? currentItem.lastConsumedAt
-        : currentItem.latestConsumedAtOr(event.consumedAt!);
-    if (currentItem.quantity == event.quantity &&
-        currentItem.currentAmount == event.currentAmount &&
-        currentItem.lastConsumedAt == nextLastConsumedAt) {
-      return;
-    }
-
-    final nextItems = List<InventoryItem>.from(currentItems);
-    nextItems[itemIndex] = currentItem.copyWith(
-      quantity: event.quantity,
-      currentAmount: event.currentAmount,
-      lastConsumedAt: nextLastConsumedAt,
-    );
-    _persistedItems = nextItems;
-    _publishVisibleItems();
-  }
-
-  bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
-    final actualDataOwnerUserId = ref.read(householdDataOwnerUserIdProvider);
-    final effectiveDataOwnerUserId = ref.read(activeHouseholdIdProvider);
-    final shouldRecover = shouldRecoverControllerHouseholdAccess(
-      ref: ref,
-      error: error,
-      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
-    );
-    if (error is FirebaseException && error.code == 'permission-denied') {
-      _logPermissionDeniedContext(
-        shouldRecover: shouldRecover,
-        actualDataOwnerUserId: actualDataOwnerUserId,
-        effectiveDataOwnerUserId: effectiveDataOwnerUserId,
-      );
-    }
-    return shouldRecover;
-  }
-
-  Future<void> _recoverFromRevokedHouseholdAccess({bool showLoading = true}) {
-    return recoverControllerHouseholdAccess<InventoryItem>(
-      ref: ref,
-      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: ({required value}) {
-        _isRecoveringHouseholdAccess = value;
-      },
-      setState: (nextState) {
-        state = nextState;
-      },
-      restartHouseholdScopedSubscription: _restartRealtimeSubscription,
-      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
-      householdAccessRecoveryLogName: _controllerLogName,
-      householdAccessRecoveryMessage:
-          'Rebuilding inventory stream after household access changed.',
-      showLoading: showLoading,
-      onSkippedHouseholdAccessRecovery: onSkippedHouseholdAccessRecovery,
-    );
-  }
-
-  void _logPermissionDeniedContext({
-    required bool shouldRecover,
-    required String? actualDataOwnerUserId,
-    required String? effectiveDataOwnerUserId,
-  }) {
-    final scopeDetails = _buildScopeDebugDetails(
-      actualDataOwnerUserId: actualDataOwnerUserId,
-      effectiveDataOwnerUserId: effectiveDataOwnerUserId,
-    );
-    log(
-      'Permission denied while watching inventory. '
-      'shouldRecover=$shouldRecover '
-      '$scopeDetails',
-      name: _controllerLogName,
-    );
-  }
-
-  /// On skipped household access recovery.
-  void onSkippedHouseholdAccessRecovery() {
-    final scopeDetails = _buildScopeDebugDetails(
-      actualDataOwnerUserId: ref.read(householdDataOwnerUserIdProvider),
-      effectiveDataOwnerUserId: ref.read(activeHouseholdIdProvider),
-    );
-    log(
-      'Inventory access recovery had no owner swap candidate. '
-      '$scopeDetails',
-      name: _controllerLogName,
-    );
-  }
-
-  String _buildScopeDebugDetails({
-    required String? actualDataOwnerUserId,
-    required String? effectiveDataOwnerUserId,
-  }) {
-    final profile = ref.read(userProfileProvider).asData?.value;
-    final recoveryState = ref.read(householdDataOwnerRecoveryProvider);
-    final currentUserId = signedInHouseholdRecoveryUserId(ref) ?? profile?.uid;
-    return 'authUserId='
-        '${normalizeHouseholdScopeValue(currentUserId) ?? '<none>'} '
-        'profileHouseholdId='
-        '${normalizeHouseholdScopeValue(profile?.householdId) ?? '<none>'} '
-        'actualDataOwnerId='
-        '${normalizeHouseholdScopeValue(actualDataOwnerUserId) ?? '<none>'} '
-        'effectiveDataOwnerId='
-        '${normalizeHouseholdScopeValue(effectiveDataOwnerUserId) ?? '<none>'} '
-        'controllerDataOwnerId='
-        '${normalizeHouseholdScopeValue(_currentDataOwnerUserId) ?? '<none>'} '
-        'recoveryStaleOwnerId='
-        '${recoveryState?.staleOwnerUserId ?? '<none>'} '
-        'recoveryPersonalUserId='
-        '${recoveryState?.personalUserId ?? '<none>'}';
-  }
+  Future<void> refresh() => _feed.refresh();
 
   InventoryItemMutationService get _mutations =>
       ref.read(inventoryItemMutationServiceProvider);
@@ -296,25 +96,31 @@ class InventoryItemsController extends _$InventoryItemsController {
     T fallback,
     Future<InventoryItemChange<T>> Function(List<InventoryItem> items) change,
   ) {
-    return _runSerializedTask<T>(
+    return _mutationQueue.run<T>(
+      onError: (error, stackTrace) => log(
+        'Unexpected inventory mutation error.',
+        name: _controllerLogName,
+        error: error,
+        stackTrace: stackTrace,
+      ),
       operation: () async {
-        final items = await _currentPersistedItems();
-        final generation = _subscriptionGeneration;
+        final items = await _feed.current();
+        final generation = _feed.generation;
         if (!ref.mounted) {
           return fallback;
         }
         final (:result, :written) = await change(items);
-        final current = _persistedItems;
+        final current = _feed.items;
         if (written != null &&
             current != null &&
-            ref.mounted &&
-            generation == _subscriptionGeneration) {
-          _persistedItems = applyInventoryItemChanges(
-            current: current,
-            previous: items,
-            next: written,
+            generation == _feed.generation) {
+          _feed.publish(
+            applyInventoryItemChanges(
+              current: current,
+              previous: items,
+              next: written,
+            ),
           );
-          _publishVisibleItems();
         }
         return result;
       },
@@ -329,22 +135,23 @@ class InventoryItemsController extends _$InventoryItemsController {
       (items) => _mutations.delete(items, itemId),
     );
     if (deleted != null) {
-      _pendingDeletedItem = deleted;
+      _pendingDeletedItem = (deleted: deleted, generation: _feed.generation);
     }
     return deleted != null;
   }
 
   /// Undo last deleted item.
   Future<bool> undoLastDeletedItem() async {
-    final pendingDeletedItem = _pendingDeletedItem;
-    if (pendingDeletedItem == null) {
+    final pending = _pendingDeletedItem;
+    // A household switch or refresh since the delete starts a new list.
+    if (pending == null || pending.generation != _feed.generation) {
       return false;
     }
     final restored = await _mutate(
       false,
-      (items) => _mutations.restoreDeleted(items, pendingDeletedItem),
+      (items) => _mutations.restoreDeleted(items, pending.deleted),
     );
-    if (restored && identical(_pendingDeletedItem, pendingDeletedItem)) {
+    if (restored && identical(_pendingDeletedItem, pending)) {
       _pendingDeletedItem = null;
     }
     return restored;
@@ -478,72 +285,15 @@ class InventoryItemsController extends _$InventoryItemsController {
     if (amount < 1) {
       return Future<PendingInventoryConsumption?>.value();
     }
-    return _runSerializedTask<PendingInventoryConsumption?>(
-      operation: () async {
-        final pendings = ref.read(inventoryPendingConsumptionStoreProvider);
-        final item = findInventoryItem(await _currentVisibleItems(), itemId);
-        final draft = item == null ? null : pendings.stage(item, amount);
-        _publishVisibleItems();
-        return draft;
-      },
-      fallbackValue: null,
-    );
-  }
-
-  Future<T> _runSerializedTask<T>({
-    required Future<T> Function() operation,
-    required T fallbackValue,
-  }) {
-    return _mutationQueue.run<T>(
-      operation: operation,
-      fallbackValue: fallbackValue,
-      onError: (error, stackTrace) {
-        log(
-          'Unexpected inventory mutation error.',
-          name: _controllerLogName,
-          error: error,
-          stackTrace: stackTrace,
-        );
-      },
-    );
-  }
-
-  Future<List<InventoryItem>> _currentPersistedItems() async {
-    final persistedItems = _persistedItems;
-    if (persistedItems != null) {
-      return persistedItems;
-    }
-
-    if (!ref.mounted) {
-      return const <InventoryItem>[];
-    }
-    final repository = ref.read(inventoryItemRepositoryProvider);
-    final items = await repository.readAll();
-    if (!ref.mounted) {
-      return items;
-    }
-    _persistedItems = items;
-    return items;
-  }
-
-  Future<List<InventoryItem>> _currentVisibleItems() async {
-    final currentData = state.asData?.value;
-    if (currentData != null) {
-      return currentData;
-    }
-
-    return await _currentPersistedItems();
-  }
-
-  void _publishVisibleItems() {
-    if (!ref.mounted) {
-      return;
-    }
-
-    final persistedItems = _persistedItems;
-    if (persistedItems == null) {
-      return;
-    }
-    state = AsyncData(persistedItems);
+    return _mutate(null, (items) async {
+      final pendings = ref.read(inventoryPendingConsumptionStoreProvider);
+      final visible = state.asData?.value ?? items;
+      final item = findInventoryItem(visible, itemId);
+      final draft = item == null ? null : pendings.stage(item, amount);
+      if (_feed.items case final current?) {
+        _feed.publish(current);
+      }
+      return (result: draft, written: null);
+    });
   }
 }

@@ -299,8 +299,6 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
     'lib/features/calories/application/calorie_weekly_checkin_health_loader.dart':
         1,
-    'lib/features/inventory/presentation/controllers/inventory_items_controller.dart':
-        1,
     'lib/features/inventory/presentation/controllers/prepared_meal_templates_controller.dart':
         1,
     'lib/features/inventory/presentation/controllers/prepared_meals_controller.dart':
