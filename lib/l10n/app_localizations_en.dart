@@ -2093,6 +2093,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'You have been using older target data for a while now.';
 
   @override
+  String get caloriesWeeklyCheckInRedoAction => 'Redo check-in';
+
+  @override
   String get caloriesWeeklyCheckInShowAgainAction => 'Show weekly check-in';
 
   @override

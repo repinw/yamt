@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:yamt/features/calories/domain/calories_json_converters.dart';
+import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 part 'calorie_goal_weekly_check_in_snapshot.g.dart';
 
@@ -30,6 +32,15 @@ class CalorieGoalWeeklyCheckInSnapshot {
   /// Creates a [CalorieGoalWeeklyCheckInSnapshot] from json.
   factory fromJson(Map<String, dynamic> json) =>
       _$CalorieGoalWeeklyCheckInSnapshotFromJson(json);
+
+  /// The check-in of this window, open again for a new decision.
+  PendingCalorieGoalWeeklyCheckIn get reopenedCheckIn {
+    return PendingCalorieGoalWeeklyCheckIn(
+      windowStartDate: windowStartDate,
+      windowEndDate: windowEndDate,
+      dueDate: nextDiaryDay(windowEndDate),
+    );
+  }
 
   /// The window start date.
   @FlexibleDateTimeConverter()

@@ -28,6 +28,7 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_history.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
@@ -834,6 +835,80 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(DiaryWeeklyCheckInCardKeys.successCard), findsNothing);
+  });
+
+  testWidgets('redo on the check-in success card reopens its window', (
+    tester,
+  ) async {
+    late ProviderContainer container;
+    final today = normalizeDiaryDay(DateTime.now());
+    final windowStartDate = today.subtract(const Duration(days: 7));
+    PendingCalorieGoalWeeklyCheckIn? reopened;
+
+    container = await _pumpDiaryPage(
+      tester,
+      selectedDay: today,
+      settingsRepository: FakeCalorieSettingsRepository(
+        initialSettings: _weeklyCheckInGoalSettings(today),
+      ),
+      overrides: [
+        diaryWeeklyCheckInActionsProvider.overrideWithValue(
+          DiaryWeeklyCheckInActions(
+            syncLearnedTdeeCache: (_) async {},
+            applyWeeklyCheckIn: (_, _) async => true,
+            rejectWeeklyCheckIn: (_, _) async => true,
+            showWeeklyCheckInAgain: (checkIn) async {
+              reopened = checkIn;
+              _setWeeklyCheckInData(
+                container,
+                _weeklyCheckInCheckInData(
+                  windowStartDate: windowStartDate,
+                  shouldAutoOpen: false,
+                ),
+              );
+              return true;
+            },
+            setSkippedIntakeDay: ({
+              required selectedDay,
+              required isSkipped,
+            }) async => true,
+            refreshCheckInData: () {},
+          ),
+        ),
+      ],
+    );
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.successCardRedo));
+    await _pumpFrames(tester);
+
+    expect(reopened?.windowStartDate, windowStartDate);
+    expect(reopened?.windowEndDate, previousDiaryDay(today));
+    expect(reopened?.isDismissed, isFalse);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+  });
+
+  testWidgets('offers no redo once the check-in inputs changed', (
+    tester,
+  ) async {
+    final today = normalizeDiaryDay(DateTime.now());
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: today,
+      settingsRepository: FakeCalorieSettingsRepository(
+        initialSettings: _weeklyCheckInGoalSettings(today)
+            .invalidateWeeklyCheckInSnapshotsFromDay(
+              day: previousDiaryDay(today),
+              invalidatedAt: today,
+            ),
+      ),
+    );
+
+    expect(find.byKey(DiaryWeeklyCheckInCardKeys.successCard), findsOneWidget);
+    expect(
+      find.byKey(DiaryWeeklyCheckInCardKeys.successCardRedo),
+      findsNothing,
+    );
   });
 
   testWidgets('shows a practice day before tomorrow goal start', (

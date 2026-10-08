@@ -122,7 +122,10 @@ class _DiaryWeeklyCheckInSectionState
             onToggleSelectedDaySkipped: _toggleSkippedCalorieIntakeDay,
           ),
         ],
-        DiaryWeeklyCheckInSuccessHost(selectedDay: widget.selectedDay),
+        DiaryWeeklyCheckInSuccessHost(
+          selectedDay: widget.selectedDay,
+          onRedo: _showWeeklyCheckInAgain,
+        ),
       ],
     );
   }
@@ -312,6 +315,7 @@ class _DiaryWeeklyCheckInSectionState
   ) async {
     setState(() {
       _reopenWindowKey = pending.windowKey;
+      _hiddenWindowKey = null;
     });
     final actions = ref.read(diaryWeeklyCheckInActionsProvider);
     final saved = await actions.showWeeklyCheckInAgain(pending);

@@ -13,13 +13,21 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// close button.
 class DiaryWeeklyCheckInSuccessCard extends StatelessWidget {
   /// The diary weekly check-in success card.
-  const new({required this.goalKcal, required this.onDismiss, super.key});
+  const new({
+    required this.goalKcal,
+    required this.onDismiss,
+    this.onRedo,
+    super.key,
+  });
 
   /// Goal kcal.
   final double goalKcal;
 
   /// Called when the user closes the message.
   final Future<void> Function() onDismiss;
+
+  /// Opens the check-in again for a new decision, or `null` without one.
+  final Future<void> Function()? onRedo;
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +54,13 @@ class DiaryWeeklyCheckInSuccessCard extends StatelessWidget {
                     ?.copyWith(fontFamily: AppFonts.mono, color: colors.ink),
               ),
             ),
+            if (onRedo case final onRedo?)
+              IconButton(
+                key: DiaryWeeklyCheckInCardKeys.successCardRedo,
+                tooltip: l10n.caloriesWeeklyCheckInRedoAction,
+                onPressed: () => unawaited(onRedo()),
+                icon: Icon(Icons.replay_rounded, color: colors.muted),
+              ),
             IconButton(
               key: DiaryWeeklyCheckInCardKeys.successCardClose,
               tooltip: MaterialLocalizations.of(context).closeButtonTooltip,

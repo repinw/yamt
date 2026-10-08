@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -17,6 +18,10 @@ import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
     show diaryWeeklyCheckInActionsProvider, diaryWeeklyCheckInDataProvider;
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weekly_checkin_card_keys.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -60,6 +65,39 @@ CalorieEntry _entry(int day, double kcal) {
   );
 }
 
+List<Override> _overrides(
+  FakeCalorieSettingsRepository settings,
+  FakeCalorieLogRepository log,
+) => [
+  appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
+  clockProvider.overrideWithValue(() => _now),
+  calorieBalanceNowProvider.overrideWith(
+    (ref) =>
+        () => _now,
+  ),
+  calorieSettingsRepositoryProvider.overrideWithValue(settings),
+  calorieLogRepositoryProvider.overrideWithValue(log),
+  plannedEntryRepositoryProvider.overrideWithValue(
+    FakePlannedEntryRepository(),
+  ),
+  burnWeekRunStateRepositoryProvider.overrideWithValue(
+    FakeBurnWeekRunStateRepository(),
+  ),
+  healthConnectionServiceProvider.overrideWith(
+    (ref) =>
+        FakeHealthConnectionService(const HealthConnectionStatus.unsupported()),
+  ),
+  healthWeightServiceProvider.overrideWith(
+    (ref) => FakeHealthWeightService(const []),
+  ),
+  manualHealthWeightRepositoryProvider.overrideWith(
+    (ref) => FakeManualHealthWeightRepository([
+      ManualHealthWeightEntry(day: _goalStart, weightKg: 82),
+      ManualHealthWeightEntry(day: DateTime(2026, 9, 7), weightKg: 81.4),
+    ]),
+  ),
+];
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -86,39 +124,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          appPreferencesProvider.overrideWithValue(MemoryAppPreferences()),
-          clockProvider.overrideWithValue(() => _now),
-          calorieBalanceNowProvider.overrideWith(
-            (ref) =>
-                () => _now,
-          ),
-          calorieSettingsRepositoryProvider.overrideWithValue(settings),
-          calorieLogRepositoryProvider.overrideWithValue(log),
-          plannedEntryRepositoryProvider.overrideWithValue(
-            FakePlannedEntryRepository(),
-          ),
-          burnWeekRunStateRepositoryProvider.overrideWithValue(
-            FakeBurnWeekRunStateRepository(),
-          ),
-          healthConnectionServiceProvider.overrideWith(
-            (ref) => FakeHealthConnectionService(
-              const HealthConnectionStatus.unsupported(),
-            ),
-          ),
-          healthWeightServiceProvider.overrideWith(
-            (ref) => FakeHealthWeightService(const []),
-          ),
-          manualHealthWeightRepositoryProvider.overrideWith(
-            (ref) => FakeManualHealthWeightRepository([
-              ManualHealthWeightEntry(day: _goalStart, weightKg: 82),
-              ManualHealthWeightEntry(
-                day: DateTime(2026, 9, 7),
-                weightKg: 81.4,
-              ),
-            ]),
-          ),
-        ],
+        overrides: _overrides(settings, log),
         child: MaterialApp(
           locale: const Locale('en'),
           localizationsDelegates: appLocalizationsDelegates,
@@ -191,5 +197,60 @@ void main() {
     expect(saved.isTrainingDay(DateTime(2026, 9, 9)), isFalse);
     expect(saved.isTrainingDay(DateTime(2026, 9, 10)), isTrue);
     expect(saved.isTrainingDay(DateTime(2026, 9, 14)), isTrue);
+  });
+
+  testWidgets('redo on the success card reopens the decided check-in', (
+    tester,
+  ) async {
+    final settings = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: const CalorieCalculatorProfile.defaults(),
+        effectiveDate: _goalStart,
+      ),
+    );
+    final log = FakeCalorieLogRepository(
+      initialEntries: [
+        for (var day = 1; day <= 7; day++) _entry(day, 1900 + day * 10),
+      ],
+    );
+    addTearDown(settings.dispose);
+    addTearDown(log.dispose);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: _overrides(settings, log),
+        child: MaterialApp(
+          locale: const Locale('en'),
+          localizationsDelegates: appLocalizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SingleChildScrollView(
+              child: DiaryWeeklyCheckInSection(selectedDay: _now),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    // The section opens the due check-in; apply it as it is.
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.nextButton));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(DiaryWeeklyCheckInSheetKeys.startWeekButton));
+    await tester.pumpAndSettle();
+    expect((await settings.readSettings()).pendingWeeklyCheckIn, isNull);
+
+    await tester.tap(find.byKey(DiaryWeeklyCheckInCardKeys.successCardRedo));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(
+      (await settings.readSettings()).pendingWeeklyCheckIn?.windowStartDate,
+      _goalStart,
+    );
   });
 }
