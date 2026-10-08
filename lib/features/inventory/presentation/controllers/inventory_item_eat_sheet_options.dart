@@ -94,17 +94,20 @@ List<InventoryItemEatMarker> _markers(
     ];
   }
   final maxAmount = state.calculator.rulerMax;
-  final amounts = <int>{};
+  final amounts = <double>{};
   final candidates = [
     for (final portion in namedPortions(state, resolution))
-      (amount: portion.amount.round(), label: portion.label),
+      (
+        amount: state.calculator.roundEatenAmount(portion.amount),
+        label: portion.label,
+      ),
     for (final serving in resolution.inventoryServingOptions)
-      (amount: serving.value, label: null),
+      (amount: serving.value.toDouble(), label: null),
   ];
   return [
     for (final (:amount, :label) in candidates)
       if (amount >= 1 && amount < maxAmount && amounts.add(amount))
-        InventoryItemEatMarker(value: amount.toDouble(), label: label),
+        InventoryItemEatMarker(value: amount, label: label),
     if (!hasOpenStock)
       InventoryItemEatMarker(value: maxAmount.toDouble(), isAll: true),
   ];

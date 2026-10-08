@@ -138,13 +138,54 @@ class InventoryItemEatCalculator {
     );
   }
 
-  /// Parses an inventory amount in this item's unit.
+  /// Parses an inventory amount in this item's unit. A gram or milliliter
+  /// amount may have a decimal; the stock takes it rounded to whole units.
+  // ponytail: the stock counts whole grams, so 37,5 g takes 38 g; store
+  // grams at scale 10 when that rounding shows in the stock.
   int? parseInventoryAmount(String rawValue) {
+    final exact = parseExactWeightAmount(rawValue);
+    if (exact != null) {
+      final rounded = exact.round();
+      return rounded < 1 ? null : rounded;
+    }
     return parseInventoryAmountInput(
       rawValue: rawValue,
       unit: inventoryAmountUnit,
       scale: inventoryAmountScale,
     );
+  }
+
+  /// Whether the amount is a weight or volume typed with one decimal.
+  bool get takesDecimalWeight =>
+      inventoryAmountUnit != InventoryAmountUnit.piece &&
+      inventoryAmountScale == 1;
+
+  /// The typed amount of a gram or milliliter item, to one decimal, or null
+  /// for pieces and invalid input.
+  double? parseExactWeightAmount(String rawValue) {
+    if (!takesDecimalWeight) {
+      return null;
+    }
+    final parsed = parsePositiveDecimalInput(rawValue);
+    return parsed == null || !parsed.isFinite ? null : roundEatenAmount(parsed);
+  }
+
+  /// [amount] as the eat page counts it: grams and milliliters to one
+  /// decimal, other units in whole stock units.
+  double roundEatenAmount(double amount) {
+    return takesDecimalWeight
+        ? (amount * 10).round() / 10
+        : amount.roundToDouble();
+  }
+
+  /// The typed eaten amount: grams and milliliters to one decimal, other
+  /// units in stock units; null when the stock cannot take it.
+  double? parseEatenAmount(String rawValue) {
+    final amount = parseInventoryAmount(rawValue);
+    if (amount == null) {
+      return null;
+    }
+    return parseExactWeightAmount(rawValue) ?? amount.toDouble();
   }
 
   /// Parses the current portion input.

@@ -291,6 +291,11 @@ void main() {
       ..stepPackages(up: false);
     expect(container.read(provider).inventoryAmountText, '0');
     expect(container.read(provider).amountMax, 1000);
+
+    controller.setAmountText('999,6');
+    expect(container.read(provider).packageCount, 0);
+    controller.stepPackages(up: true);
+    expect(container.read(provider).inventoryAmountText, '1000');
   });
 
   test('a picked portion mark is counted up and down within the stock', () {
@@ -324,6 +329,38 @@ void main() {
     expect(state.countedPortion, isNull);
     expect(state.portionCount, isNull);
     expect(state.inventoryAmountText, '1000');
+  });
+
+  test('a decimal gram portion is counted and logged exactly', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('37,5')
+      ..rememberPortion('Slice');
+    final slice = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Slice');
+    expect(slice.value, 37.5);
+
+    final single = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final singleRequest = (single as InventoryItemEatSubmitted).result.request;
+    expect(singleRequest.inventoryAmount, 38);
+    expect(singleRequest.calorieAmount, 37.5);
+    expect(singleRequest.portionBaseAmount, 37.5);
+    expect(singleRequest.portionCount, 1);
+
+    controller
+      ..pickMarker(slice)
+      ..stepPortions(up: true);
+    final state = container.read(provider);
+    expect(state.inventoryAmountText, '75');
+    expect(state.portionCount, 2);
+
+    final twice = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final doubleRequest = (twice as InventoryItemEatSubmitted).result.request;
+    expect(doubleRequest.inventoryAmount, 75);
+    expect(doubleRequest.portionCount, 2);
+    expect(doubleRequest.portionBaseAmount, 37.5);
   });
 
   test('the counted portion never goes past the stock', () {

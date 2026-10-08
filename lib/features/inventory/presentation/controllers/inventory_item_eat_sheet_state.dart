@@ -178,11 +178,11 @@ class InventoryItemEatSheetState {
   /// Number of picked portions in the entered amount, or null when no
   /// portion mark is counted.
   int? get portionCount {
-    final size = countedPortion?.value.round();
+    final size = countedPortion?.value;
     if (size == null || size < 1 || usesPortionMode) {
       return null;
     }
-    return (enteredInventoryAmount ?? 0) ~/ size;
+    return ((enteredAmount + 0.001) / size).floor();
   }
 
   /// Whether [marker] is the counted portion or matches the entered amount.
@@ -201,16 +201,17 @@ class InventoryItemEatSheetState {
     if (package == null || usesPortionMode) {
       return null;
     }
-    return (enteredInventoryAmount ?? 0) ~/ package;
+    return ((enteredAmount + 0.001) / package).floor();
   }
 
   /// Value of the amount field on the ruler, or 0 when it cannot be parsed.
-  double get amountValue {
-    if (usesPortionMode) {
-      return parsePositiveDecimalInput(portionCountText) ?? 0;
-    }
-    return (enteredInventoryAmount ?? 0).toDouble();
-  }
+  double get amountValue => usesPortionMode
+      ? parsePositiveDecimalInput(portionCountText) ?? 0
+      : enteredAmount;
+
+  /// Eaten amount parsed from the field outside portion mode, or 0.
+  double get enteredAmount =>
+      calculator.parseEatenAmount(inventoryAmountText) ?? 0;
 
   /// Step the amount ruler snaps to.
   double get amountStep {
@@ -242,9 +243,8 @@ class InventoryItemEatSheetState {
   }
 
   /// Inventory amount parsed from the field, in inventory mode.
-  int? get enteredInventoryAmount {
-    return calculator.parseInventoryAmount(inventoryAmountText);
-  }
+  int? get enteredInventoryAmount =>
+      calculator.parseInventoryAmount(inventoryAmountText);
 
   /// Inedible amount parsed from the field.
   double? get inedibleAmount {

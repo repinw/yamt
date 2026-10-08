@@ -79,8 +79,11 @@ InventoryItemEatRequest buildInventoryItemEatRequest(
   final portionMode = state.usesPortionMode;
   if (!portionMode && !manual) {
     final amount = draft.inventoryAmount!;
+    final exactAmount =
+        calculator.parseEatenAmount(state.inventoryAmountText) ??
+        amount.toDouble();
     for (final portion in namedPortions) {
-      final count = amount / portion.amount;
+      final count = exactAmount / portion.amount;
       if (count >= 1 && calculator.isWholeNumber(count)) {
         return InventoryItemEatRequest(
           inventoryAmount: amount,

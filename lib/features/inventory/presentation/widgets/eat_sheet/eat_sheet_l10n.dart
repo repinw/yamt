@@ -3,6 +3,7 @@ import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_amounts.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
 import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
@@ -79,7 +80,7 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
   /// Entered amount with its unit, such as "60 g".
   String enteredAmountLabel(AppLocalizations l10n) {
     return l10n.inventoryEatSheetAmountWithUnit(
-      calculator.formatInventoryAmount(enteredInventoryAmount ?? 0),
+      formatEatenAmount(this, enteredAmount),
       amountUnit(l10n),
     );
   }
@@ -89,7 +90,7 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
     if (marker.isAll) {
       return l10n.eatPageAll;
     }
-    final amount = calculator.formatInventoryAmount(marker.value.round());
+    final amount = formatEatenAmount(this, marker.value);
     final label = marker.label;
     if (label == null) {
       return l10n.inventoryEatSheetAmountWithUnit(amount, amountUnit(l10n));
@@ -134,15 +135,17 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
         ),
       );
     }
-    final amount = enteredInventoryAmount;
-    if (amount == null || amount < 1) {
+    final amount = enteredAmount;
+    if (amount < 1) {
       return null;
     }
     for (final marker in markers) {
       final label = marker.label;
-      final size = marker.value.round();
-      if (label != null && !marker.isAll && amount % size == 0) {
-        return l10n.eatPagePortionMultiple('${amount ~/ size}', label);
+      final count = (amount / marker.value).round();
+      if (label != null &&
+          !marker.isAll &&
+          (amount - count * marker.value).abs() < 0.001) {
+        return l10n.eatPagePortionMultiple('$count', label);
       }
     }
     return null;

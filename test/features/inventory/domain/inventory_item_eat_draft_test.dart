@@ -102,6 +102,44 @@ void main() {
       expect(draft.fixedUnitCalorieAmount, 100);
     });
 
+    test('a decimal gram amount logs exactly and takes whole grams', () {
+      final calculator = InventoryItemEatCalculator(
+        item: _fixedUnitItem(),
+        maxAmount: 200,
+      );
+      InventoryItemEatSubmissionDraft draft(String amount) =>
+          calculator.buildSubmissionDraft(
+            usesPortionMode: false,
+            inventoryAmountText: amount,
+            portionCountText: '',
+            portionAmountText: '',
+            portionUnit: ConsumedUnit.grams,
+            inedibleAmountText: '',
+          );
+
+      expect(draft('37,5').hasValidationErrors, isFalse);
+      expect(draft('37,5').inventoryAmount, 38);
+      expect(draft('37,5').fixedUnitCalorieAmount, 37.5);
+      expect(draft('37,54').fixedUnitCalorieAmount, 37.5);
+      expect(draft('40').fixedUnitCalorieAmount, isNull);
+      expect(draft('0,4').hasInvalidInventoryAmount, isTrue);
+      expect(draft('NaN').hasInvalidInventoryAmount, isTrue);
+      expect(draft('Infinity').hasInvalidInventoryAmount, isTrue);
+      expect(draft('200').hasInvalidInventoryAmount, isFalse);
+      expect(draft('200,4').hasInvalidInventoryAmount, isTrue);
+      expect(
+        calculator.resolvedNutritionAmount(
+          usesPortionMode: false,
+          portionCountText: '',
+          portionAmountText: '',
+          portionUnit: ConsumedUnit.grams,
+          inventoryAmountText: '37,5',
+          inedibleAmountText: '',
+        ),
+        37.5,
+      );
+    });
+
     test('allows fractional fixed-unit portion totals', () {
       final calculator = InventoryItemEatCalculator(
         item: _fixedUnitItem(),

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
+import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
 
 /// [state] with [text] in the amount field: a piece count in portion mode,
 /// else the inventory amount. A typed amount stops counting a portion.
@@ -37,7 +38,7 @@ InventoryItemEatSheetState withMarker(
   InventoryItemEatSheetState state,
   InventoryItemEatMarker marker,
 ) {
-  final picked = withAmountText(state, _format(state, marker.value.round()));
+  final picked = withAmountText(state, formatEatenAmount(state, marker.value));
   if (state.usesPortionMode || marker.isAll || marker.value < 1) {
     return picked;
   }
@@ -56,17 +57,16 @@ InventoryItemEatSheetState? withSteppedPortions(
   if (marker == null || count == null) {
     return null;
   }
-  final size = marker.value.round();
-  final amount = state.enteredInventoryAmount ?? 0;
+  final size = marker.value;
   final next = up
       ? (count + 1) * size
-      : math.max(0, (amount + size - 1) ~/ size - 1) * size;
+      : math.max(0, ((state.enteredAmount - 0.001) / size).ceil() - 1) * size;
   if (next > state.calculator.maxAmount) {
     return null;
   }
   return withAmountText(
     state,
-    _format(state, next),
+    formatEatenAmount(state, next),
   ).copyWith(countedPortion: () => marker);
 }
 
@@ -81,13 +81,22 @@ InventoryItemEatSheetState? withSteppedPackages(
   if (package == null) {
     return null;
   }
-  final amount = state.enteredInventoryAmount ?? 0;
-  final packages = up
-      ? amount ~/ package + 1
-      : math.max(0, (amount + package - 1) ~/ package - 1);
-  return withAmountText(state, _format(state, packages * package));
+  final amount = state.enteredAmount;
+  final next = up
+      ? ((amount + 0.001) / package).floor() + 1
+      : math.max(0, ((amount - 0.001) / package).ceil() - 1);
+  return withAmountText(state, _format(state, next * package));
 }
 
 String _format(InventoryItemEatSheetState state, int amount) {
   return state.calculator.formatInventoryAmount(amount);
+}
+
+/// [amount] as the amount field shows it: grams and milliliters with one
+/// decimal, other units in stock units.
+String formatEatenAmount(InventoryItemEatSheetState state, double amount) {
+  if (state.calculator.takesDecimalWeight) {
+    return formatInventoryNutritionValue(amount);
+  }
+  return _format(state, amount.round());
 }

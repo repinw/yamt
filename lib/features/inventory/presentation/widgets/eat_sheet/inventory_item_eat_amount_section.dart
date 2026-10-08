@@ -91,7 +91,8 @@ class InventoryItemEatAmountSection extends StatelessWidget {
           ],
           allowFractionalInput:
               state.usesPortionMode ||
-              calculator.allowsFractionalInventoryAmount,
+              calculator.allowsFractionalInventoryAmount ||
+              calculator.takesDecimalWeight,
           hint: state.amountHint(l10n),
           errorText: state.amountError(l10n),
           onTextChanged: controller.setAmountText,
