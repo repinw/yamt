@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_stock_changes.dart';
 
 InventoryItem _item({required String id, required int quantity}) {
   return InventoryItem.create(

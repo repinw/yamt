@@ -83,8 +83,14 @@ class _FakeFridgeItemRepository with InventoryItemWholeListWrites {
     return true;
   }
 
+  /// Runs while an append is written, like a stream update that arrives
+  /// meanwhile.
+  void Function()? duringAppend;
+
   @override
   Future<bool> appendAll(List<InventoryItem> items) async {
+    duringAppend?.call();
+    await pumpEventQueue();
     return true;
   }
 
@@ -1124,5 +1130,52 @@ void main() {
     expect(restored, isTrue);
     expect(repository.savedItems.single.currentAmount, 800);
     expect(repository.savedItems.single.quantity, 2);
+  });
+
+  test('an added item shows when the stream sends a list meanwhile', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a')],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final controllerSubscription = _keepControllerAlive(container);
+    addTearDown(controllerSubscription.close);
+    await container.read(inventoryItemsControllerProvider.future);
+    repository.duringAppend = () =>
+        repository.emitWatchItems(<InventoryItem>[_item('a'), _item('c')]);
+
+    final added = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .addItem(_item('b'));
+
+    expect(added, isTrue);
+    expect(
+      container.read(inventoryItemsControllerProvider).value?.map((i) => i.id),
+      ['a', 'c', 'b'],
+    );
+  });
+
+  test('a disposed controller turns a change down', () async {
+    final repository = _FakeFridgeItemRepository(
+      onReadAll: () async => <InventoryItem>[_item('a')],
+    );
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    final controller = container.read(
+      inventoryItemsControllerProvider.notifier,
+    );
+    container.dispose();
+
+    expect(await controller.addItem(_item('b')), isFalse);
+    expect(await controller.eatItemDetailed('a', 1), isNull);
   });
 }
