@@ -7,10 +7,8 @@ import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
-import 'package:yamt/features/diary/application/diary_nutrition_bars_data.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
-import 'package:yamt/features/diary/domain/diary_meal_section.dart';
 
 import '../../../helpers/memory_app_preferences.dart';
 
@@ -21,7 +19,7 @@ void main() {
   test('saves and reads dashboard snapshot synchronously', () async {
     final preferences = MemoryAppPreferences();
     const repository = DiaryDayDashboardCacheRepository();
-    final data = _dashboardData(day);
+    final data = _snapshot(day);
 
     final didSave = await repository.save(
       preferences: preferences,
@@ -38,14 +36,10 @@ void main() {
     expect(cached, isNotNull);
     expect(cached!.selectedDay, day);
     expect(cached.selectedDayEntries.single.name, 'Oats');
-    expect(cached.mealSections.single.entries.single.name, 'Oats');
-    expect(cached.mealSections.single.entries.single.consumedAmount, 60);
-    expect(
-      cached.mealSections.single.entries.single.consumedUnit,
-      ConsumedUnit.grams,
-    );
-    expect(cached.nutritionBars.carbs, 30);
-    expect(cached.nutritionBars.goals, data.nutritionBars.goals);
+    expect(cached.selectedDayEntries.single.consumedUnit, ConsumedUnit.grams);
+    expect(cached.goalKcal, 2000);
+    expect(cached.macroTargets, data.macroTargets);
+    expect(cached.carryoverMacroDelta, data.carryoverMacroDelta);
     expect(
       cached.selectedDayEntries.single.loggedAt,
       data.selectedDayEntries.single.loggedAt,
@@ -65,7 +59,7 @@ void main() {
     await repository.save(
       preferences: preferences,
       userId: userId,
-      data: _dashboardData(day),
+      data: _snapshot(day),
     );
 
     expect(await preferences.keys(), {_cacheKey(userId, day), 'other'});
@@ -77,7 +71,7 @@ void main() {
     await repository.save(
       preferences: preferences,
       userId: userId,
-      data: _dashboardData(day),
+      data: _snapshot(day),
     );
     final json = jsonDecode(
       preferences.getStringSync(_cacheKey(userId, day))!,
@@ -98,7 +92,7 @@ void main() {
     await repository.save(
       preferences: preferences,
       userId: userId,
-      data: _dashboardData(day),
+      data: _snapshot(day),
     );
 
     expect(
@@ -125,7 +119,7 @@ void main() {
           'version': 999,
           'user_id': userId,
           'day_key': _dayKey(day),
-          'data': _dashboardData(day).toJson(),
+          'data': _snapshot(day).toJson(),
         }),
       },
     );
@@ -150,7 +144,7 @@ void main() {
   });
 }
 
-DiaryDayDashboardData _dashboardData(DateTime day) {
+DiaryDayDashboardSnapshot _snapshot(DateTime day) {
   final loggedAt = day.add(const Duration(hours: 8));
   final entry = CalorieEntry(
     isQuickEntry: false,
@@ -173,7 +167,7 @@ DiaryDayDashboardData _dashboardData(DateTime day) {
     updatedAt: loggedAt,
   );
 
-  return DiaryDayDashboardData(
+  return DiaryDayDashboardSnapshot(
     selectedDay: day,
     refreshedAt: day.add(const Duration(hours: 9)),
     weekOverview: _weekOverview(day),
@@ -181,34 +175,9 @@ DiaryDayDashboardData _dashboardData(DateTime day) {
     plannedEntries: const [],
     countsPlans: false,
     runState: const BurnWeekRunState.initial(),
-    mealSections: [
-      DiaryMealSection(
-        mealType: MealType.breakfast,
-        plannedEntries: const [],
-        countsPlans: false,
-        entries: [
-          const DiaryMealEntry(
-            id: 'entry-1',
-            mealType: MealType.breakfast,
-            name: 'Oats',
-            totalKcal: 120,
-            totalProtein: 10,
-            totalCarbs: 30,
-            totalFat: 4,
-            consumedAmount: 60,
-            consumedUnit: ConsumedUnit.grams,
-          ),
-        ],
-        totalKcal: 120,
-      ),
-    ],
-    nutritionBars: const DiaryNutritionBarsData(
-      carbs: 30,
-      protein: 10,
-      fat: 4,
-      goals: DiaryMacroTargets(carbs: 250, protein: 120, fat: 70),
-    ),
-    carryoverMacroDelta: const DiaryMacroTargets(carbs: 0, protein: 0, fat: 0),
+    goalKcal: 2000,
+    macroTargets: const DiaryMacroTargets(carbs: 250, protein: 120, fat: 70),
+    carryoverMacroDelta: const DiaryMacroTargets(carbs: 5, protein: 0, fat: 2),
   );
 }
 

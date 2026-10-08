@@ -51,6 +51,26 @@ DiaryDayDashboardState diaryDashboardLoadedStateForTest({
   );
 }
 
+/// Builds a cached dashboard snapshot for Diary tests.
+DiaryDayDashboardSnapshot diaryDashboardSnapshotForTest({
+  required DateTime selectedDay,
+  List<CalorieEntry> selectedDayEntries = const <CalorieEntry>[],
+}) {
+  final normalizedDay = normalizeDiaryDay(selectedDay);
+  return DiaryDayDashboardSnapshot(
+    selectedDay: normalizedDay,
+    refreshedAt: DateTime(2026),
+    weekOverview: diaryWeekOverviewForTest(selectedDay: normalizedDay),
+    selectedDayEntries: selectedDayEntries,
+    plannedEntries: const <CalorieEntry>[],
+    countsPlans: false,
+    runState: const BurnWeekRunState.initial(),
+    goalKcal: 2000,
+    macroTargets: const DiaryMacroTargets(carbs: 0, protein: 0, fat: 0),
+    carryoverMacroDelta: const DiaryMacroTargets(carbs: 0, protein: 0, fat: 0),
+  );
+}
+
 /// Builds failed dashboard state for Diary widget tests.
 DiaryDayDashboardState diaryDashboardErrorStateForTest(Object error) {
   return DiaryDayDashboardState(
