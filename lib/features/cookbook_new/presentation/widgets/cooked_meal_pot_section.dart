@@ -12,13 +12,16 @@ import 'package:yamt/l10n/app_localizations.dart';
 /// Up to 99999 g, so the weight always parses.
 const _maxWeightDigits = 5;
 
-/// The "Topf" part of the "Gekocht" step: portions, the pot from the kitchen
-/// utensils, the pot on the scale, and what that leaves for the food.
+/// The "Aufteilen" part of the "Gekocht" step: portions or pieces, and for
+/// portions the pot from the kitchen utensils, the pot on the scale, and what
+/// that leaves for the food.
 class CookedMealPotSection extends StatelessWidget {
   /// Creates the section.
   const new({
     required this.portions,
     required this.onPortionsChanged,
+    required this.inPieces,
+    required this.onInPiecesChanged,
     required this.utensils,
     required this.utensilsFailed,
     required this.utensilId,
@@ -33,6 +36,11 @@ class CookedMealPotSection extends StatelessWidget {
 
   /// Key of the "one portion more" button.
   static const morePortionsKey = ValueKey<String>('cooked-portions-more');
+
+  /// Key of the segment that counts in pieces when [inPieces] is `true`, or
+  /// in portions.
+  static ValueKey<String> servingKey({required bool inPieces}) =>
+      ValueKey<String>('cooked-serving-${inPieces ? 'pieces' : 'portions'}');
 
   /// Key of the utensil picker.
   static const utensilKey = ValueKey<String>('cooked-utensil');
@@ -49,6 +57,13 @@ class CookedMealPotSection extends StatelessWidget {
 
   /// Sets the number of portions.
   final ValueChanged<int> onPortionsChanged;
+
+  /// Whether the meal is counted in pieces, such as wraps, instead of
+  /// portions.
+  final bool inPieces;
+
+  /// Switches between pieces and portions.
+  final ValueChanged<bool> onInPiecesChanged;
 
   /// The saved kitchen utensils.
   final List<KitchenUtensil> utensils;
@@ -96,15 +111,41 @@ class CookedMealPotSection extends StatelessWidget {
       spacing: AppSpacing.xs,
       children: [
         CookbookSectionTitle(title: l10n.cookedPotTitle),
+        SegmentedButton<bool>(
+          expandedInsets: EdgeInsets.zero,
+          showSelectedIcon: false,
+          segments: [
+            for (final (value, text) in [
+              (false, l10n.cookedPortions),
+              (true, l10n.cookedPieces),
+            ])
+              ButtonSegment(
+                value: value,
+                label: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(text, key: servingKey(inPieces: value)),
+                ),
+              ),
+          ],
+          selected: {inPieces},
+          onSelectionChanged: (selection) =>
+              onInPiecesChanged(selection.single),
+        ),
+        const SizedBox(height: AppSpacing.sm),
         Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             row(
-              Text(l10n.cookedPortions, style: label),
+              Text(
+                inPieces ? l10n.cookedPieces : l10n.cookedPortions,
+                style: label,
+              ),
               Row(
                 children: [
                   IconButton.filledTonal(
-                    tooltip: l10n.cookedPortionsLess,
+                    tooltip: inPieces
+                        ? l10n.cookedPiecesLess
+                        : l10n.cookedPortionsLess,
                     onPressed: portions > 1
                         ? () => onPortionsChanged(portions - 1)
                         : null,
@@ -126,51 +167,65 @@ class CookedMealPotSection extends StatelessWidget {
                   ),
                   IconButton.filledTonal(
                     key: morePortionsKey,
-                    tooltip: l10n.cookedPortionsMore,
+                    tooltip: inPieces
+                        ? l10n.cookedPiecesMore
+                        : l10n.cookedPortionsMore,
                     onPressed: () => onPortionsChanged(portions + 1),
                     icon: const Icon(Icons.add_rounded),
                   ),
                 ],
               ),
             ),
-            row(
-              Text(l10n.cookedUtensil, style: label),
-              Flexible(
-                child: utensilsFailed
-                    ? Text(
-                        l10n.kitchenUtensilsLoadFailed,
-                        style: textTheme.bodySmall?.copyWith(color: colors.low),
-                      )
-                    : AppDropdownButtonFormField<String?>(
-                        key: utensilKey,
-                        initialValue: utensilId,
-                        isExpanded: true,
-                        hint: Text(l10n.cookedPickUtensil),
-                        decoration: const InputDecoration(
-                          border: InputBorder.none,
-                        ),
-                        onChanged: onUtensilChanged,
-                        items: [
-                          for (final item in utensils)
-                            DropdownMenuItem(
-                              key: utensilOptionKey(item.id),
-                              value: item.id,
-                              child: Text(switch (item.name) {
-                                final name? => l10n.cookedUtensilOption(
-                                  name,
-                                  item.weightGrams,
-                                ),
-                                null => l10n.cookedUtensilWeight(
-                                  item.weightGrams,
-                                ),
-                              }, overflow: TextOverflow.ellipsis),
-                            ),
-                        ],
-                      ),
+            // Pieces split the nutrients by count, so nothing is weighed.
+            if (inPieces)
+              row(
+                Text(
+                  l10n.cookedPiecesHint(portions),
+                  style: textTheme.bodySmall?.copyWith(color: colors.muted),
+                ),
+                const SizedBox.shrink(),
               ),
-            ),
+            if (!inPieces)
+              row(
+                Text(l10n.cookedUtensil, style: label),
+                Flexible(
+                  child: utensilsFailed
+                      ? Text(
+                          l10n.kitchenUtensilsLoadFailed,
+                          style: textTheme.bodySmall?.copyWith(
+                            color: colors.low,
+                          ),
+                        )
+                      : AppDropdownButtonFormField<String?>(
+                          key: utensilKey,
+                          initialValue: utensilId,
+                          isExpanded: true,
+                          hint: Text(l10n.cookedPickUtensil),
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                          ),
+                          onChanged: onUtensilChanged,
+                          items: [
+                            for (final item in utensils)
+                              DropdownMenuItem(
+                                key: utensilOptionKey(item.id),
+                                value: item.id,
+                                child: Text(switch (item.name) {
+                                  final name? => l10n.cookedUtensilOption(
+                                    name,
+                                    item.weightGrams,
+                                  ),
+                                  null => l10n.cookedUtensilWeight(
+                                    item.weightGrams,
+                                  ),
+                                }, overflow: TextOverflow.ellipsis),
+                              ),
+                          ],
+                        ),
+                ),
+              ),
             // Without a pot to pick the food weight cannot be told.
-            if (!utensilsFailed && utensils.isNotEmpty)
+            if (!inPieces && !utensilsFailed && utensils.isNotEmpty)
               row(
                 Text(l10n.cookedGrossWeight, style: label),
                 SizedBox(
@@ -190,22 +245,23 @@ class CookedMealPotSection extends StatelessWidget {
                   ),
                 ),
               ),
-            row(
-              Text(
-                l10n.cookedWeighTip,
-                style: textTheme.bodySmall?.copyWith(color: colors.muted),
-              ),
-              Flexible(
-                child: Text(
-                  result,
-                  textAlign: TextAlign.end,
-                  style: textTheme.titleSmall?.copyWith(
-                    color: colors.ink,
-                    fontWeight: FontWeight.w800,
+            if (!inPieces)
+              row(
+                Text(
+                  l10n.cookedWeighTip,
+                  style: textTheme.bodySmall?.copyWith(color: colors.muted),
+                ),
+                Flexible(
+                  child: Text(
+                    result,
+                    textAlign: TextAlign.end,
+                    style: textTheme.titleSmall?.copyWith(
+                      color: colors.ink,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ],

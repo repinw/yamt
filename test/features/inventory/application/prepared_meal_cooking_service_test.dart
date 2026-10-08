@@ -63,6 +63,7 @@ void main() {
     final returned = await service.finishCooking(
       mealId: mealId,
       totalPortions: 4,
+      servedInPieces: false,
       potTareWeight: 1240,
       finalNetWeight: 1180,
     );
@@ -75,6 +76,39 @@ void main() {
     expect(meal.remainingPortions, 4);
     expect(meal.potTareWeight, 1240);
     expect(meal.finalNetWeight, 1180);
+    expect(meal.isServedInPieces, isFalse);
+    expect(meal.toJson().containsKey('served_in_pieces'), isFalse);
+    expect(PreparedMeal.fromJson(meal.toJson()), meal);
+  });
+
+  test('finishCooking counts a meal in pieces without weights', () async {
+    final meals = _FakeMealRepository();
+    final service = _service(
+      meals,
+      _FakeInventoryRepository([_rice()]),
+      _FakeActivityRepository(),
+    );
+    await service.cook(
+      name: 'Wraps',
+      ingredients: const ['200 g Reis'],
+      assignments: const {
+        '200 g Reis': ['rice'],
+      },
+    );
+
+    await service.finishCooking(
+      mealId: meals.saved.single.id,
+      totalPortions: 6,
+      servedInPieces: true,
+      potTareWeight: null,
+      finalNetWeight: null,
+    );
+
+    final meal = meals.saved.single;
+    expect(meal.totalPortions, 6);
+    expect(meal.isServedInPieces, isTrue);
+    expect(meal.finalNetWeight, isNull);
+    expect(meal.toJson()['served_in_pieces'], isTrue);
     expect(PreparedMeal.fromJson(meal.toJson()), meal);
   });
 
@@ -96,6 +130,7 @@ void main() {
     await service.finishCooking(
       mealId: mealId,
       totalPortions: 4,
+      servedInPieces: false,
       potTareWeight: 1240,
       finalNetWeight: 1180,
     );
@@ -104,6 +139,7 @@ void main() {
       service.finishCooking(
         mealId: mealId,
         totalPortions: 2,
+        servedInPieces: false,
         potTareWeight: null,
         finalNetWeight: null,
       ),

@@ -249,13 +249,16 @@ class _DiaryInventoryFoodPickerContent extends ConsumerWidget {
           imageUrl: meal.imageUrl,
           imageBytes: _storedMealImageBytes(ref, meal),
           title: meal.name,
-          subtitle: l10n.preparedMealPortionsRemaining(
-            formatPreparedMealPortions(
-              meal.remainingPortions,
-              localeName: l10n.localeName,
-            ),
-            meal.totalPortions,
-          ),
+          subtitle:
+              (meal.isServedInPieces
+              ? l10n.preparedMealPiecesRemaining
+              : l10n.preparedMealPortionsRemaining)(
+                formatPreparedMealPortions(
+                  meal.remainingPortions,
+                  localeName: l10n.localeName,
+                ),
+                meal.totalPortions,
+              ),
           onTap: () =>
               Navigator.of(context).pop(DiaryPreparedMealFoodSelection(meal)),
         );

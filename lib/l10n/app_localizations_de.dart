@@ -6022,6 +6022,40 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get cookedPieces => 'Stück';
+
+  @override
+  String get cookedPiecesLess => 'Ein Stück weniger';
+
+  @override
+  String get cookedPiecesMore => 'Ein Stück mehr';
+
+  @override
+  String cookedPiecesHint(int count) {
+    return 'Stück brauchen kein Gewicht. Jedes Stück ist 1/$count der Nährwerte.';
+  }
+
+  @override
+  String cookedPerPiece(int kcal) {
+    return '$kcal kcal pro Stück';
+  }
+
+  @override
+  String inventoryRowMealFromRecipePieces(String left, int total) {
+    return 'Aus Rezept · $left von $total Stück';
+  }
+
+  @override
+  String inventoryEatSheetPiecesHeader(num count, String amount) {
+    return '$amount Stück';
+  }
+
+  @override
+  String preparedMealPiecesRemaining(String remaining, int total) {
+    return '$remaining/$total Stück';
+  }
+
+  @override
   String get cookedSave => 'In den Vorrat';
 
   @override

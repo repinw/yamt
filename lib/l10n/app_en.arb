@@ -3408,6 +3408,58 @@
       }
     }
   },
+  "cookedPieces": "Pieces",
+  "cookedPiecesLess": "One piece less",
+  "cookedPiecesMore": "One piece more",
+  "cookedPiecesHint": "Pieces need no weight. Each piece is 1/{count} of the nutrients.",
+  "@cookedPiecesHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedPerPiece": "{kcal} kcal per piece",
+  "@cookedPerPiece": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryRowMealFromRecipePieces": "From recipe · {left} of {total} pieces",
+  "@inventoryRowMealFromRecipePieces": {
+    "placeholders": {
+      "left": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "inventoryEatSheetPiecesHeader": "{count, plural, =1{{amount} piece} other{{amount} pieces}}",
+  "@inventoryEatSheetPiecesHeader": {
+    "placeholders": {
+      "count": {
+        "type": "num"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "preparedMealPiecesRemaining": "{remaining}/{total} pieces",
+  "@preparedMealPiecesRemaining": {
+    "placeholders": {
+      "remaining": {
+        "type": "String"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "cookedSave": "To stock",
   "cookedNeedsUtensil": "Pick the container first",
   "cookedNextTitle": "What’s next",
