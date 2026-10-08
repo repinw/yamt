@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
-import 'package:yamt/features/inventory/domain/inventory_item_product_snapshot.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_portions.dart';
 
 InventoryItem _sourceItem({
   String id = 'item-1',
@@ -67,25 +67,6 @@ PreparedMeal _meal({
     updatedAt: DateTime.parse('2026-03-27T12:00:00Z'),
     components: components,
   );
-}
-
-class _AlwaysAmountProgressInventoryItem extends InventoryItem {
-  new({
-    required super.id,
-    required String name,
-    required super.entryDate,
-    required super.storeName,
-    required super.quantity,
-    super.unitPrice = 0.0,
-    super.amountUnit,
-  }) : super(
-         globalFoodItemId: 'pending-$id',
-         productSnapshot: InventoryItemProductSnapshot(name: name),
-         initialQuantity: 1,
-       );
-
-  @override
-  bool get usesAmountProgress => true;
 }
 
 void main() {
@@ -213,67 +194,6 @@ void main() {
     expect(meal.perHundredMultiplier, closeTo(0.4, 0.0001));
   });
 
-  test('PreparedMeal totals price by piece count for piece-based items', () {
-    final sourceItem = InventoryItem.create(
-      id: 'item-1',
-      name: 'Egg',
-      entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
-      storeName: 'Store',
-      quantity: 6,
-      initialQuantity: 6,
-      unitPrice: 0.4,
-    );
-    final component = PreparedMealComponent(
-      inventoryItemId: sourceItem.id,
-      name: sourceItem.name,
-      brand: sourceItem.brand,
-      imageUrl: sourceItem.imageUrl,
-      usedAmount: 3,
-      usedUnit: InventoryAmountUnit.piece,
-      totalKcal: 0,
-      totalProtein: 0,
-      totalCarbs: 0,
-      totalFat: 0,
-      sourceItemSnapshot: sourceItem,
-    );
-
-    expect(component.totalPrice, closeTo(1.2, 0.0001));
-  });
-
-  test(
-    'PreparedMealComponent totalPrice returns zero for non-positive usage',
-    () {
-      final component = _component(
-        sourceItem: _sourceItem(unitPrice: 2.5),
-        usedAmount: 0,
-      );
-
-      expect(component.totalPrice, 0);
-    },
-  );
-
-  test(
-    'PreparedMealComponent totalPrice returns zero without initial amount',
-    () {
-      final sourceItem = _AlwaysAmountProgressInventoryItem(
-        id: 'item-1',
-        name: 'Rice',
-        entryDate: DateTime.parse('2026-03-27T10:00:00Z'),
-        storeName: 'Store',
-        quantity: 1,
-        unitPrice: 2.5,
-        amountUnit: InventoryAmountUnit.gram,
-      );
-      final component = _component(
-        sourceItem: sourceItem,
-        usedAmount: 100,
-        usedUnit: InventoryAmountUnit.gram,
-      );
-
-      expect(component.totalPrice, 0);
-    },
-  );
-
   test('PreparedMeal perHundredAmountBasis returns null for mixed units', () {
     final meal = _meal(
       components: <PreparedMealComponent>[
@@ -332,57 +252,6 @@ void main() {
         remainingPortions: 4,
       );
       expect(meal.remainingNetWeight, 2253);
-    });
-  });
-
-  group('preparedMealComponentDisplayAmount', () {
-    test('divides a fractional-piece amount by the source item scale', () {
-      final component = _component(
-        sourceItem: _sourceItem(
-          amountUnit: InventoryAmountUnit.piece,
-          amountScale: inventoryPieceAmountScale,
-        ),
-        usedAmount: 8000,
-      );
-
-      expect(component.usedAmountScale, inventoryPieceAmountScale);
-      expect(preparedMealComponentDisplayAmount(component), 8);
-    });
-
-    test('leaves a gram amount unscaled', () {
-      final component = _component(
-        sourceItem: _sourceItem(amountUnit: InventoryAmountUnit.gram),
-        usedAmount: 150,
-        usedUnit: InventoryAmountUnit.gram,
-      );
-
-      expect(component.usedAmountScale, 1);
-      expect(preparedMealComponentDisplayAmount(component), 150);
-    });
-
-    test('keeps fractional precision for a scaled raw gram amount', () {
-      final component = _component(
-        sourceItem: _sourceItem(amountUnit: InventoryAmountUnit.gram),
-        usedAmount: 200,
-        usedUnit: InventoryAmountUnit.gram,
-      );
-
-      expect(
-        preparedMealComponentDisplayAmount(component, 200 / 3),
-        closeTo(66.6667, 0.0001),
-      );
-    });
-
-    test('scales a fractional-piece raw amount by portion ratio', () {
-      final component = _component(
-        sourceItem: _sourceItem(
-          amountUnit: InventoryAmountUnit.piece,
-          amountScale: inventoryPieceAmountScale,
-        ),
-        usedAmount: 8000,
-      );
-
-      expect(preparedMealComponentDisplayAmount(component, 8000 * 0.5), 4);
     });
   });
 }

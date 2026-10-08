@@ -166,4 +166,27 @@ class PreparedMealComponent {
   }
 }
 
+/// Converts a raw amount of [component] (its [PreparedMealComponent.usedAmount]
+/// or a value derived from it, for example scaled by a portion ratio) into a
+/// value fit to display, undoing the fractional-piece storage scale of its
+/// source item. Unlike [inventoryAmountToDisplayValue], [rawAmount] may be
+/// fractional (a portion-scaled amount) without being rounded first, so
+/// gram and milliliter amounts keep their precision.
+double preparedMealComponentDisplayAmount(
+  PreparedMealComponent component, [
+  num? rawAmount,
+]) {
+  final amount = rawAmount ?? component.usedAmount;
+  final safeAmount = amount < 0 ? 0 : amount;
+  final scale = component.usedAmountScale;
+  if (!inventoryAmountAllowsFractionalInput(
+    unit: component.usedUnit,
+    scale: scale,
+  )) {
+    return safeAmount.toDouble();
+  }
+  final safeScale = scale < 1 ? 1 : scale;
+  return safeAmount / safeScale;
+}
+
 const Object _keepValue = Object();

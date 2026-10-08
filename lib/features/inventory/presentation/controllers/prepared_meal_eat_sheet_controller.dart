@@ -12,6 +12,7 @@ import 'package:yamt/features/inventory/domain/inventory_prepared_meal_eat_reque
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_portions.dart';
 
 part 'prepared_meal_eat_sheet_controller.g.dart';
 

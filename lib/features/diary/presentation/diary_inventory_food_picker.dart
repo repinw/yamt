@@ -13,6 +13,7 @@ import 'package:yamt/features/diary/presentation/widgets/'
     'diary_inventory_food_picker/diary_inventory_food_tile.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_portions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Food selected from the diary inventory quick-eat picker.
