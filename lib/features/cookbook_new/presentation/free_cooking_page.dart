@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
@@ -51,6 +52,7 @@ const _maxSilentRestarts = 15;
 class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
     with VoiceInputStateMixin<FreeCookingPage> {
   late final VoiceSearchService _voice;
+  late final ScreenWakeLock _wakeLock;
   final _nameController = TextEditingController();
   String? _pendingText;
   bool _keepsListening = false;
@@ -61,6 +63,7 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
   void initState() {
     super.initState();
     _voice = ref.read(voiceSearchServiceProvider);
+    _wakeLock = ref.read(screenWakeLockProvider)..acquire();
   }
 
   @override
@@ -68,6 +71,7 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
     isDisposingVoiceInput = true;
     unawaited(_voice.cancelListening());
     _nameController.dispose();
+    _wakeLock.release();
     super.dispose();
   }
 

@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/cookbook_new/domain/combined_meal.dart';
@@ -65,6 +66,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   CookedMealDestination _destination = CookedMealDestination.stock;
 
   late final Timer _arrivalTimer;
+  late final ScreenWakeLock _wakeLock;
 
   /// Whether a missing meal counts as not found instead of not arrived yet.
   var _waitedForMeal = false;
@@ -76,6 +78,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   @override
   void initState() {
     super.initState();
+    _wakeLock = ref.read(screenWakeLockProvider)..acquire();
     _grossController.addListener(() => setState(() {}));
     _arrivalTimer = Timer(
       _mealArrivalWait,
@@ -87,6 +90,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   void dispose() {
     _arrivalTimer.cancel();
     _grossController.dispose();
+    _wakeLock.release();
     super.dispose();
   }
 

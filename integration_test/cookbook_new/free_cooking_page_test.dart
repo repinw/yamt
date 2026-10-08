@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
+import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
@@ -55,10 +56,17 @@ void main() {
   ) async {
     final meals = _FakeMealRepository();
     final voice = _FakeVoiceService('200 g Reis 500 g Hähnchen');
-    await tester.pumpWidget(_app(meals: meals, voice: voice));
+    final screenSwitches = <bool>[];
+    final wakeLock = ScreenWakeLock(
+      toggle: ({required on}) async => screenSwitches.add(on),
+    );
+    await tester.pumpWidget(
+      _app(meals: meals, voice: voice, wakeLock: wakeLock),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(_startKey));
     await tester.pumpAndSettle();
+    expect(screenSwitches, [true]);
 
     await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
     await tester.pumpAndSettle();
@@ -89,6 +97,8 @@ void main() {
 
     // "Kochen" goes straight on to the "Gekocht" step.
     expect(find.byType(CookedMealPage), findsOneWidget);
+    // The screen stays on from one cooking page to the next.
+    expect(screenSwitches, [true]);
     final meal = meals.saved.single;
     expect(meal.name, 'Pfanne');
     expect(meal.isInPot, isTrue);
@@ -115,6 +125,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(_startKey), findsOneWidget);
+    expect(screenSwitches, [true, false]);
     final cooked = meals.saved.single;
     expect(cooked.isInPot, isFalse);
     expect(cooked.totalPortions, 2);
@@ -397,6 +408,7 @@ FilledButton _saveButton(WidgetTester tester) =>
 Widget _app({
   required _FakeMealRepository meals,
   required _FakeVoiceService voice,
+  ScreenWakeLock? wakeLock,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -448,6 +460,9 @@ Widget _app({
       ),
       inventoryActivityActorProvider.overrideWithValue(null),
       voiceSearchServiceProvider.overrideWithValue(voice),
+      screenWakeLockProvider.overrideWithValue(
+        wakeLock ?? ScreenWakeLock(toggle: ({required on}) async {}),
+      ),
       kitchenUtensilRepositoryProvider.overrideWithValue(
         _FakeUtensilRepository(),
       ),

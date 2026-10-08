@@ -561,6 +561,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   amount from the best Vorrat match, which is used up in the Vorrat; the
   other rows stay open on the meal. The meal is "Im Topf" until it is marked
   as cooked. Leaving the page with rows asks before it discards them.
+- The screen stays on while free cooking or the "Gekocht" page is open.
 - "Kochen" goes straight on to the "Gekocht" page: the ingredients with
   their amounts and kcal, open rows with "Füllen" (opens the meal's detail
   page), and "Aufteilen": a "Portionen | Stück" switch, the count
