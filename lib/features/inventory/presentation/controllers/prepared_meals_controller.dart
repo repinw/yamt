@@ -3,8 +3,8 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
-import 'package:yamt/features/inventory/application/'
-    'prepared_meal_household_recovery.dart';
+import 'package:yamt/features/household/application/'
+    'household_scoped_list_feed.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_mutation_models.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_mutation_service.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_pending_ingredients.dart';
@@ -29,12 +29,15 @@ const _preparedMealsControllerLogName = 'PreparedMealsController';
 /// Defines prepared meals controller.
 @riverpod
 class PreparedMealsController extends _$PreparedMealsController {
-  // Subscription is cancelled by `_disposeSubscription`.
-  // ignore: cancel_subscriptions
-  StreamSubscription<List<PreparedMeal>>? _mealsSubscription;
-  int _subscriptionGeneration = 0;
-  String? _currentDataOwnerUserId;
-  bool _isRecoveringHouseholdAccess = false;
+  late final _feed = HouseholdScopedListFeed<PreparedMeal>(
+    ref: () => ref,
+    watch: () => ref.read(preparedMealRepositoryProvider).watchAll(),
+    readAll: () => ref.read(preparedMealRepositoryProvider).readAll(),
+    setState: (next) => state = next,
+    logName: _preparedMealsControllerLogName,
+    recoveryMessage:
+        'Rebuilding prepared meal stream after household access changed.',
+  );
 
   @override
   FutureOr<List<PreparedMeal>> build() async {
@@ -42,25 +45,18 @@ class PreparedMealsController extends _$PreparedMealsController {
       ..watch(householdDataOwnerUserIdProvider)
       ..watch(preparedMealRepositoryProvider)
       ..onDispose(() {
-        unawaited(_disposeSubscription());
+        unawaited(_feed.close());
       });
     await waitForHouseholdDataOwnerProfile(ref);
     if (!ref.mounted) {
       return const <PreparedMeal>[];
     }
-    _currentDataOwnerUserId = ref.watch(activeHouseholdIdProvider);
-    return await _restartSubscription();
+    ref.watch(activeHouseholdIdProvider);
+    return await _feed.start();
   }
 
   /// Refresh.
-  Future<void> refresh() async {
-    state = const AsyncLoading();
-    final next = await AsyncValue.guard(_restartSubscription);
-    if (!ref.mounted) {
-      return;
-    }
-    state = next;
-  }
+  Future<void> refresh() => _feed.refresh();
 
   /// Creates a meal from explicit Vorrat selections.
   Future<PreparedMealCreationResult> createPreparedMeal({
@@ -200,95 +196,5 @@ class PreparedMealsController extends _$PreparedMealsController {
       service.close();
       keepAliveLink.close();
     }
-  }
-
-  Future<List<PreparedMeal>> _restartSubscription() async {
-    final initialMeals = Completer<List<PreparedMeal>>();
-    _currentDataOwnerUserId = ref.read(activeHouseholdIdProvider);
-    final repository = ref.read(preparedMealRepositoryProvider);
-    final generation = ++_subscriptionGeneration;
-    await _disposeSubscription();
-
-    _mealsSubscription = repository.watchAll().listen(
-      (meals) {
-        if (generation != _subscriptionGeneration) {
-          return;
-        }
-        if (!initialMeals.isCompleted) {
-          initialMeals.complete(meals);
-          return;
-        }
-        _onRealtimeMeals(meals);
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        if (generation != _subscriptionGeneration) {
-          return;
-        }
-        if (!initialMeals.isCompleted) {
-          if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
-            initialMeals.complete(const <PreparedMeal>[]);
-            unawaited(_recoverFromRevokedHouseholdAccess(showLoading: false));
-            return;
-          }
-          initialMeals.completeError(error, stackTrace);
-          return;
-        }
-        _onRealtimeError(error, stackTrace);
-      },
-    );
-
-    return await initialMeals.future;
-  }
-
-  Future<void> _disposeSubscription() async {
-    final currentSubscription = _mealsSubscription;
-    _mealsSubscription = null;
-    if (currentSubscription != null) {
-      await currentSubscription.cancel();
-    }
-  }
-
-  void _onRealtimeMeals(List<PreparedMeal> meals) {
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncData(meals);
-  }
-
-  void _onRealtimeError(Object error, StackTrace stackTrace) {
-    if (_shouldRecoverFromRevokedHouseholdAccess(error)) {
-      unawaited(_recoverFromRevokedHouseholdAccess());
-      return;
-    }
-    if (!ref.mounted) {
-      return;
-    }
-    state = AsyncError(error, stackTrace);
-  }
-
-  bool _shouldRecoverFromRevokedHouseholdAccess(Object error) {
-    return shouldRecoverPreparedMealHouseholdAccess(
-      ref: ref,
-      error: error,
-      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
-    );
-  }
-
-  Future<void> _recoverFromRevokedHouseholdAccess({bool showLoading = true}) {
-    return recoverPreparedMealHouseholdAccess(
-      ref: ref,
-      isRecoveringHouseholdAccess: _isRecoveringHouseholdAccess,
-      setIsRecoveringHouseholdAccess: ({required value}) {
-        _isRecoveringHouseholdAccess = value;
-      },
-      setState: (nextState) {
-        state = nextState;
-      },
-      restartSubscription: _restartSubscription,
-      currentHouseholdDataOwnerUserId: _currentDataOwnerUserId,
-      logName: _preparedMealsControllerLogName,
-      showLoading: showLoading,
-    );
   }
 }
