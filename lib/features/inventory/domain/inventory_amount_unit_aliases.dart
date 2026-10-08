@@ -18,6 +18,23 @@ InventoryAmountUnitConversion? resolveInventoryAmountUnitAlias(
   return inventoryAmountUnitAliases[rawUnit.trim().toLowerCase()];
 }
 
+/// An amount in a base unit: grams, milliliters, or pieces in the stored
+/// piece scale.
+typedef InventoryBaseAmount = ({InventoryAmountUnit unit, double amount});
+
+/// A serving of [quantity] in [unit], in the base unit of that unit. Null
+/// when the unit is unknown.
+InventoryBaseAmount? servingInBaseUnit(double quantity, String? unit) {
+  final conversion = resolveInventoryAmountUnitAlias(unit);
+  if (conversion == null) {
+    return null;
+  }
+  return (
+    unit: conversion.base,
+    amount: quantity * conversion.multiplier * conversion.scale,
+  );
+}
+
 /// Unit aliases mapping normalized strings to unit conversions.
 const inventoryAmountUnitAliases = <String, InventoryAmountUnitConversion>{
   'g': (base: InventoryAmountUnit.gram, multiplier: 1.0, scale: 1),
