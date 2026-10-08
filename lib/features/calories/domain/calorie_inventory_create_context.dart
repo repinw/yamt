@@ -60,4 +60,18 @@ class CalorieInventoryCreateContext {
         portionBaseUnit != null &&
         portionCount != null;
   }
+
+  /// The picked portion size when [amount] in [unit] is still the portion
+  /// count times it; null otherwise.
+  double? portionAmountFor(double amount, ConsumedUnit unit) {
+    final baseAmount = portionBaseAmount;
+    final count = portionCount;
+    if (baseAmount == null ||
+        count == null ||
+        portionBaseUnit != unit ||
+        (amount - baseAmount * count).abs() > 0.001) {
+      return null;
+    }
+    return baseAmount;
+  }
 }

@@ -245,14 +245,11 @@ class InventoryEatService {
   CalorieEntry entry,
   CalorieInventoryCreateContext inventoryContext,
 ) {
-  final baseAmount = inventoryContext.portionBaseAmount;
-  final baseUnit = inventoryContext.portionBaseUnit;
-  final count = inventoryContext.portionCount;
-  if (baseAmount == null ||
-      baseUnit == null ||
-      count == null ||
-      entry.consumedUnit != baseUnit ||
-      (entry.consumedAmount - baseAmount * count).abs() > 0.001) {
+  final baseAmount = inventoryContext.portionAmountFor(
+    entry.consumedAmount,
+    entry.consumedUnit,
+  );
+  if (baseAmount == null) {
     return (
       amount: entry.consumedAmount,
       unit: entry.consumedUnit,
@@ -261,7 +258,7 @@ class InventoryEatService {
   }
   return (
     amount: baseAmount,
-    unit: baseUnit,
+    unit: entry.consumedUnit,
     label: inventoryContext.portionLabel,
   );
 }
