@@ -59,6 +59,7 @@ dependencies:
   speech_to_text: ^7.5.0
   url_launcher: ^6.3.3
   uuid: ^4.6.0
+  wakelock_plus: ^1.8.1
 
 dev_dependencies:
   build_runner: ^2.16.1
