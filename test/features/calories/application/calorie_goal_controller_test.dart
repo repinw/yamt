@@ -55,6 +55,30 @@ class _WatchErrorCalorieSettingsRepository
   }
 }
 
+/// Sends the stored settings only while a save runs, and that save fails.
+class _LateCalorieSettingsRepository extends FakeCalorieSettingsRepository {
+  new(this.stored);
+
+  final CalorieGoalSettings stored;
+  final _settings = StreamController<CalorieGoalSettings>.broadcast();
+
+  @override
+  Stream<CalorieGoalSettings> watchSettings() => _settings.stream;
+
+  @override
+  Future<void> saveSettings(CalorieGoalSettings settings) async {
+    _settings.add(stored);
+    await Future<void>.delayed(Duration.zero);
+    throw StateError('Saving calorie settings failed.');
+  }
+
+  @override
+  Future<void> dispose() async {
+    await _settings.close();
+    await super.dispose();
+  }
+}
+
 void main() {
   test(
     'saveCalculatedGoal persists profile and calculated daily goal',
@@ -135,6 +159,80 @@ void main() {
 
     expect(await controller.toggleTrainingDay(DateTime(2026, 5, 4)), isFalse);
     expect(await controller.updateSettings((settings) => settings), isFalse);
+  });
+
+  test(
+    'a failed save keeps a settings error instead of empty settings',
+    () async {
+      final repository = _WatchErrorCalorieSettingsRepository()
+        ..saveShouldFail = true;
+      addTearDown(repository.dispose);
+      final container = ProviderContainer(
+        overrides: [
+          calorieSettingsRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = container.listen(
+        calorieGoalControllerProvider,
+        (previous, next) {},
+      );
+      addTearDown(subscription.close);
+      await expectLater(
+        container.read(calorieGoalControllerProvider.future),
+        throwsA(isA<StateError>()),
+      );
+
+      final saved = await container
+          .read(calorieGoalControllerProvider.notifier)
+          .persistSettings(
+            CalorieGoalSettings.single(
+              dailyKcalGoal: 2000,
+              calculatorProfile: null,
+              effectiveDate: DateTime(2026, 5, 4),
+            ),
+          );
+
+      expect(saved, isFalse);
+      expect(container.read(calorieGoalControllerProvider).hasError, isTrue);
+    },
+  );
+
+  test('settings that arrive during a failed save stay', () async {
+    final stored = CalorieGoalSettings.single(
+      dailyKcalGoal: 2100,
+      calculatorProfile: null,
+      effectiveDate: DateTime(2026, 5, 4),
+    );
+    final repository = _LateCalorieSettingsRepository(stored);
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        calorieSettingsRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = container.listen(
+      calorieGoalControllerProvider,
+      (previous, next) {},
+    );
+    addTearDown(subscription.close);
+
+    final saved = await container
+        .read(calorieGoalControllerProvider.notifier)
+        .persistSettings(
+          CalorieGoalSettings.single(
+            dailyKcalGoal: 1800,
+            calculatorProfile: null,
+            effectiveDate: DateTime(2026, 5, 4),
+          ),
+        );
+
+    expect(saved, isFalse);
+    final settings = await container
+        .read(calorieGoalControllerProvider.future)
+        .timeout(const Duration(seconds: 1));
+    expect(settings.dailyKcalGoal, 2100);
   });
 
   test(

@@ -240,9 +240,10 @@ class CalorieGoalController extends _$CalorieGoalController {
 
   /// Persists settings to storage and updates state.
   Future<bool> persistSettings(CalorieGoalSettings nextSettings) async {
-    final previous = state.asData?.value ?? const CalorieGoalSettings.empty();
+    final previous = state;
+    final optimistic = AsyncData(nextSettings);
     if (ref.mounted) {
-      state = AsyncData(nextSettings);
+      state = optimistic;
     }
 
     final repository = ref.read(calorieSettingsRepositoryProvider);
@@ -256,10 +257,28 @@ class CalorieGoalController extends _$CalorieGoalController {
         error: error,
         stackTrace: stackTrace,
       );
-      if (ref.mounted) {
-        state = AsyncData(previous);
-      }
+      _rollBack(previous, optimistic);
       return false;
+    }
+  }
+
+  /// Undoes [optimistic] after a failed save, so an error stays an error and
+  /// never turns into empty settings. Newer settings from the stream stay.
+  /// Settings that were still loading load again, because setting a loading
+  /// state by hand would leave the pending future open forever.
+  void _rollBack(
+    AsyncValue<CalorieGoalSettings> previous,
+    AsyncData<CalorieGoalSettings> optimistic,
+  ) {
+    if (!ref.mounted || !identical(state, optimistic)) {
+      return;
+    }
+    if (previous.hasError) {
+      state = AsyncError(previous.error!, previous.stackTrace!);
+    } else if (previous.hasValue) {
+      state = AsyncData(previous.requireValue);
+    } else {
+      ref.invalidateSelf();
     }
   }
 
