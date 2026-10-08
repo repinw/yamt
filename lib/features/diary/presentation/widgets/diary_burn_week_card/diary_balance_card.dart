@@ -6,8 +6,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/metric_card_helpers.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_after_plan_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
@@ -40,17 +40,13 @@ class DiaryBalanceCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final day = normalizeDiaryDay(selectedDay);
-    final dashboardData = ref.watch(
-      diaryDayDashboardControllerProvider(day).select((s) => s.data),
-    );
+    final data = ref.watch(diaryBalanceCardProvider(day));
     final showError = ref.watch(
       diaryDayDashboardControllerProvider(day).select((s) => s.showError),
     );
 
-    if (dashboardData != null) {
+    if (data != null) {
       final now = ref.watch(diaryTodayProvider);
-      final data = DiaryBalanceSource.fromDashboardData(dashboardData)
-          .resolve(now: now);
 
       final scheduledRestartDate = data.scheduledRestartDate;
       if (scheduledRestartDate != null) {

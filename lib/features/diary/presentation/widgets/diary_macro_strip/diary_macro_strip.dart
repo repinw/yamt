@@ -3,8 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/theme/metric_accent_colors.dart';
-import 'package:yamt/features/calories/application/diary_today_provider.dart';
-import 'package:yamt/features/diary/application/diary_balance_provider.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_balance_details_controller.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_macro_strip/diary_macro_strip_kcal_row.dart';
@@ -46,9 +45,9 @@ class DiaryMacroStrip extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     final data = dashboardData.nutritionBars;
-    final daily = DiaryBalanceSource.fromDashboardData(dashboardData)
-        .resolve(now: ref.watch(diaryTodayProvider))
-        .loadedMetrics
+    final daily = ref
+        .watch(diaryBalanceCardProvider(normalizeLocalDay(selectedDay)))
+        ?.loadedMetrics
         ?.daily;
     final showDetails = ref.watch(diaryBalanceDetailsControllerProvider);
     final l10n = AppLocalizations.of(context)!;

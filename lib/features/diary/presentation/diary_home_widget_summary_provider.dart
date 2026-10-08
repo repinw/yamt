@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
-import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_home_widget_summary.dart';
+import 'package:yamt/features/diary/presentation/controllers/diary_balance_card_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
 
@@ -22,9 +22,9 @@ DiaryHomeWidgetSummary? diaryHomeWidgetSummary(Ref ref) {
   if (data == null) {
     return null;
   }
-  final daily = DiaryBalanceSource.fromDashboardData(data)
-      .resolve(now: today)
-      .loadedMetrics
+  final daily = ref
+      .watch(diaryBalanceCardProvider(today))
+      ?.loadedMetrics
       ?.daily;
   final selectedDayOverview = data.weekOverview.days.last;
   return DiaryHomeWidgetSummary(

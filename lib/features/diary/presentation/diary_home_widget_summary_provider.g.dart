@@ -77,4 +77,4 @@ final class DiaryHomeWidgetSummaryProvider
 }
 
 String _$diaryHomeWidgetSummaryHash() =>
-    r'6a5a03a6e0a0bf6cd4622c218c0528b0cef9fd9a';
+    r'6e55807993c81f77e62dafee74096a06f7ad0c26';
