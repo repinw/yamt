@@ -140,158 +140,54 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
         );
   }
 
-  /// Syncs the pending check-in before the user's decision is applied.
-  ///
-  /// Returns `false` when there is nothing to decide or the sync failed.
-  Future<bool> _syncPendingBeforeDecision(
-    CalorieWeeklyCheckInData checkInData,
-  ) async {
-    final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn;
-    final calculation = checkInData.calculation;
-    if (pendingWeeklyCheckIn == null ||
-        calculation == null ||
-        checkInData.isBlocked) {
-      return false;
-    }
-
-    state = const AsyncLoading();
-    final synced = await syncPendingWeeklyCheckIn(pendingWeeklyCheckIn);
-    if (!ref.mounted) {
-      return false;
-    }
-    if (!synced) {
-      state = AsyncError(
-        StateError('Failed to persist pending weekly check-in.'),
-        StackTrace.empty,
-      );
-      return false;
-    }
-    return true;
-  }
-
-  /// Saves the [training] days of the planned run. Runs before the
-  /// decision, so a failure leaves the check-in open for another try.
-  Future<bool> _saveRunTrainingDays(
-    CalorieGoalController goalController,
-    CalorieRunTrainingChoice? training,
-  ) async {
-    if (training == null) {
-      return true;
-    }
-    final settings = await goalController.currentSettings();
-    if (!ref.mounted) {
-      return false;
-    }
-    final next = settings.withPlannedRunTrainingDays(
-      training,
-      today: ref.read(clockProvider)(),
-    );
-    // A null result means the planned run has ended; reopening plans anew.
-    final saved = next != null && await goalController.persistSettings(next);
-    if (!ref.mounted) {
-      return false;
-    }
-    if (!saved) {
-      state = AsyncError(
-        StateError('Failed to persist the run training days.'),
-        StackTrace.empty,
-      );
-    }
-    return saved;
-  }
-
-  /// Apply weekly check in, after saving the [training] of the next run.
+  /// Apply weekly check in, with the [training] of the next run.
   Future<bool> applyWeeklyCheckIn(
     CalorieWeeklyCheckInData checkInData, {
     CalorieRunTrainingChoice? training,
-  }) {
-    return _keepAliveDuring((goalController) async {
-      if (!await _syncPendingBeforeDecision(checkInData)) {
-        return false;
-      }
-      if (!await _saveRunTrainingDays(goalController, training)) {
-        return false;
-      }
+  }) => _decide(checkInData, accept: true, training: training);
 
-      final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn!;
-      final savedSnapshot = await _saveLearnedTdeeSnapshot(
-        goalController,
-        pendingWeeklyCheckIn,
-        checkInData.snapshotFor(pendingWeeklyCheckIn, checkInData.calculation!),
-      );
-
-      if (!ref.mounted) {
-        return savedSnapshot;
-      }
-      if (!savedSnapshot) {
-        state = AsyncError(
-          StateError('Failed to persist learned TDEE cache.'),
-          StackTrace.empty,
-        );
-        return false;
-      }
-
-      final saved = await goalController.clearPendingWeeklyCheckIn();
-
-      if (!ref.mounted) {
-        return saved;
-      }
-      state = const AsyncData(null);
-      return saved;
-    });
-  }
-
-  /// Reject weekly check in, after saving the [training] of the next run.
+  /// Reject weekly check in, with the [training] of the next run.
   Future<bool> rejectWeeklyCheckIn(
     CalorieWeeklyCheckInData checkInData, {
     CalorieRunTrainingChoice? training,
+  }) => _decide(checkInData, accept: false, training: training);
+
+  /// Saves the whole decision at once, so a failure leaves nothing half
+  /// applied and the check-in open for another try.
+  Future<bool> _decide(
+    CalorieWeeklyCheckInData checkInData, {
+    required bool accept,
+    required CalorieRunTrainingChoice? training,
   }) {
     return _keepAliveDuring((goalController) async {
-      if (!await _syncPendingBeforeDecision(checkInData)) {
+      final pending = checkInData.pendingWeeklyCheckIn;
+      final calculation = checkInData.calculation;
+      if (pending == null || calculation == null || checkInData.isBlocked) {
         return false;
       }
-      if (!await _saveRunTrainingDays(goalController, training)) {
-        return false;
-      }
-      final pendingWeeklyCheckIn = checkInData.pendingWeeklyCheckIn!;
-
+      state = const AsyncLoading();
       final settings = await goalController.currentSettings();
       if (!ref.mounted) {
         return false;
       }
-
-      final previousGoalKcal = goalKcalBeforeWeeklyCheckIn(
+      final next = decideWeeklyCheckIn(
         settings: settings,
-        checkInWindowStartDate: pendingWeeklyCheckIn.windowStartDate,
+        pending: pending,
+        snapshot: checkInData.snapshotFor(pending, calculation),
+        accept: accept,
+        today: ref.read(clockProvider)(),
+        training: training,
       );
-
-      final rejectedSnapshot = checkInData
-          .snapshotFor(pendingWeeklyCheckIn, checkInData.calculation!)
-          .copyWith(isRejected: true);
-
-      final savedGoal = await goalController.saveWeeklyCheckInGoal(
-        completedAt: pendingWeeklyCheckIn.dueDate,
-        dailyKcalGoal: previousGoalKcal,
-        weeklyCheckInSnapshot: rejectedSnapshot,
-      );
-
-      if (!ref.mounted) {
-        return savedGoal;
-      }
-      if (!savedGoal) {
-        state = AsyncError(
-          StateError('Failed to persist rejected weekly check-in.'),
-          StackTrace.empty,
-        );
-        return false;
-      }
-
-      final saved = await goalController.clearPendingWeeklyCheckIn();
-
+      final saved = next != null && await goalController.persistSettings(next);
       if (!ref.mounted) {
         return saved;
       }
-      state = const AsyncData(null);
+      state = saved
+          ? const AsyncData(null)
+          : AsyncError(
+              StateError('Failed to save the weekly check-in decision.'),
+              StackTrace.empty,
+            );
       return saved;
     });
   }

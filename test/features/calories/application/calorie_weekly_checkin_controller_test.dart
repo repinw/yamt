@@ -307,8 +307,10 @@ void main() {
       ),
     );
 
-    test('apply saves them before the decision', () async {
+    test('apply saves them with the decision in one write', () async {
       final (:container, :repository) = await start();
+      var writes = 0;
+      repository.onSaveSettings = (_) async => writes += 1;
 
       final saved = await container
           .read(calorieWeeklyCheckInControllerProvider.notifier)
@@ -323,9 +325,10 @@ void main() {
       expect(settings.isTrainingDay(DateTime(2026, 4, 17)), isFalse);
       expect(settings.isTrainingDay(DateTime(2026, 4, 18)), isTrue);
       expect(settings.pendingWeeklyCheckIn, isNull);
+      expect(writes, 1);
     });
 
-    test('a run that has ended keeps the check-in open', () async {
+    test('a run that has ended decides nothing', () async {
       final (:container, :repository) = await start();
 
       // The sheet planned the run of Apr 8–14; the clock is in the next one.
@@ -338,16 +341,13 @@ void main() {
 
       expect(saved, isFalse);
       final settings = await repository.readSettings();
-      expect(settings.pendingWeeklyCheckIn, isNotNull);
       expect(settings.trainingDayOverrides, isEmpty);
+      expect(settings.goalHistory, hasLength(1));
     });
 
-    test('a failed save keeps the check-in open', () async {
+    test('a failed save leaves nothing half applied', () async {
       final (:container, :repository) = await start();
-      // The pending check-in saves first; the training days fail after it.
-      repository.onSaveSettings = (_) async {
-        repository.saveShouldFail = true;
-      };
+      repository.saveShouldFail = true;
 
       final saved = await container
           .read(calorieWeeklyCheckInControllerProvider.notifier)
@@ -358,8 +358,8 @@ void main() {
 
       expect(saved, isFalse);
       final settings = await repository.readSettings();
-      expect(settings.pendingWeeklyCheckIn, isNotNull);
       expect(settings.isTrainingDay(DateTime(2026, 4, 16)), isFalse);
+      expect(settings.goalHistory, hasLength(1));
       expect(
         container.read(calorieWeeklyCheckInControllerProvider).hasError,
         isTrue,
