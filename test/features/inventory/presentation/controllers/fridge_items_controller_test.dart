@@ -498,10 +498,6 @@ void main() {
     final deleted = await container
         .read(inventoryItemsControllerProvider.notifier)
         .deleteItem('a');
-    await _waitForItems(
-      container,
-      (items) => items.length == 1 && items.single.id == 'b',
-    );
 
     expect(deleted, isTrue);
     expect(repository.savedItems, hasLength(1));
@@ -603,65 +599,13 @@ void main() {
     ]);
   });
 
-  test(
-    'deleteItem applies optimistic update and rolls back on save failure',
-    () async {
-      final repository =
-          _FakeFridgeItemRepository(
-              onReadAll: () async => <InventoryItem>[_item('a'), _item('b')],
-            )
-            ..saveDelay = const Duration(milliseconds: 20)
-            ..saveAllShouldFail = true
-            ..emitRealtimeOnSave = false;
-      addTearDown(repository.dispose);
-
-      final container = ProviderContainer(
-        overrides: [
-          inventoryItemRepositoryProvider.overrideWithValue(repository),
-        ],
-      );
-      addTearDown(container.dispose);
-      final controllerSubscription = _keepControllerAlive(container);
-      addTearDown(controllerSubscription.close);
-
-      await container.read(inventoryItemsControllerProvider.future);
-      final deleteFuture = container
-          .read(inventoryItemsControllerProvider.notifier)
-          .deleteItem('a');
-      await _waitForItems(
-        container,
-        (items) => items.length == 1 && items.single.id == 'b',
-      );
-
-      final optimisticItems = container
-          .read(inventoryItemsControllerProvider)
-          .value;
-      expect(optimisticItems, isNotNull);
-      expect(optimisticItems, hasLength(1));
-      expect(optimisticItems?.single.id, 'b');
-
-      final deleted = await deleteFuture;
-      expect(deleted, isFalse);
-
-      final rolledBackItems = container
-          .read(inventoryItemsControllerProvider)
-          .value;
-      expect(rolledBackItems, isNotNull);
-      expect(rolledBackItems, hasLength(2));
-      expect(
-        rolledBackItems?.map((item) => item.id),
-        containsAll(<String>['a', 'b']),
-      );
-    },
-  );
-
-  test('deleteItem rolls back on save exception and returns false', () async {
+  test('a failed delete leaves the list unchanged', () async {
     final repository =
         _FakeFridgeItemRepository(
             onReadAll: () async => <InventoryItem>[_item('a'), _item('b')],
           )
           ..saveDelay = const Duration(milliseconds: 20)
-          ..saveAllShouldThrow = true
+          ..saveAllShouldFail = true
           ..emitRealtimeOnSave = false;
     addTearDown(repository.dispose);
 
@@ -678,31 +622,61 @@ void main() {
     final deleteFuture = container
         .read(inventoryItemsControllerProvider.notifier)
         .deleteItem('a');
-    await _waitForItems(
-      container,
-      (items) => items.length == 1 && items.single.id == 'b',
-    );
-
-    final optimisticItems = container
-        .read(inventoryItemsControllerProvider)
-        .value;
-    expect(optimisticItems, isNotNull);
-    expect(optimisticItems, hasLength(1));
-    expect(optimisticItems?.single.id, 'b');
 
     final deleted = await deleteFuture;
     expect(deleted, isFalse);
 
-    final rolledBackItems = container
-        .read(inventoryItemsControllerProvider)
-        .value;
-    expect(rolledBackItems, isNotNull);
-    expect(rolledBackItems, hasLength(2));
-    expect(
-      rolledBackItems?.map((item) => item.id),
-      containsAll(<String>['a', 'b']),
-    );
+    final itemsAfter = container.read(inventoryItemsControllerProvider).value;
+    expect(itemsAfter, isNotNull);
+    expect(itemsAfter, hasLength(2));
+    expect(itemsAfter?.map((item) => item.id), containsAll(<String>['a', 'b']));
   });
+
+  test(
+    'a delete that throws leaves the list unchanged and returns false',
+    () async {
+      final repository =
+          _FakeFridgeItemRepository(
+              onReadAll: () async => <InventoryItem>[_item('a'), _item('b')],
+            )
+            ..saveDelay = const Duration(milliseconds: 20)
+            ..saveAllShouldThrow = true
+            ..emitRealtimeOnSave = false;
+      addTearDown(repository.dispose);
+
+      final container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+        ],
+      );
+      addTearDown(container.dispose);
+      final controllerSubscription = _keepControllerAlive(container);
+      addTearDown(controllerSubscription.close);
+
+      await container.read(inventoryItemsControllerProvider.future);
+      final shownLengths = <int>[];
+      container.listen(
+        inventoryItemsControllerProvider,
+        (_, next) => shownLengths.add(next.value?.length ?? -1),
+      );
+      final deleteFuture = container
+          .read(inventoryItemsControllerProvider.notifier)
+          .deleteItem('a');
+
+      final deleted = await deleteFuture;
+      expect(deleted, isFalse);
+      // The list never showed the delete that failed.
+      expect(shownLengths, isNot(contains(1)));
+
+      final itemsAfter = container.read(inventoryItemsControllerProvider).value;
+      expect(itemsAfter, isNotNull);
+      expect(itemsAfter, hasLength(2));
+      expect(
+        itemsAfter?.map((item) => item.id),
+        containsAll(<String>['a', 'b']),
+      );
+    },
+  );
 
   test(
     'sequential deletes keep consistent state when first save fails',
@@ -730,10 +704,6 @@ void main() {
       final deleteA = container
           .read(inventoryItemsControllerProvider.notifier)
           .deleteItem('a');
-      await _waitForItems(
-        container,
-        (items) => items.length == 1 && items.single.id == 'b',
-      );
       final deleteB = container
           .read(inventoryItemsControllerProvider.notifier)
           .deleteItem('b');
@@ -850,7 +820,7 @@ void main() {
     expect(repository.savedItems, isEmpty);
   });
 
-  test('eatItem rolls back quantity change when save throws', () async {
+  test('an eat that throws leaves the quantity unchanged', () async {
     final repository =
         _FakeFridgeItemRepository(
             onReadAll: () async => <InventoryItem>[
@@ -875,30 +845,17 @@ void main() {
     final eatFuture = container
         .read(inventoryItemsControllerProvider.notifier)
         .eatItemDetailed('a', 1);
-    await _waitForItems(
-      container,
-      (items) => items.length == 1 && items.single.quantity == 2,
-    );
-
-    final optimisticItems = container
-        .read(inventoryItemsControllerProvider)
-        .value;
-    expect(optimisticItems, isNotNull);
-    expect(optimisticItems, hasLength(1));
-    expect(optimisticItems?.single.quantity, 2);
 
     final updated = await eatFuture;
     expect(updated, isNull);
 
-    final rolledBackItems = container
-        .read(inventoryItemsControllerProvider)
-        .value;
-    expect(rolledBackItems, isNotNull);
-    expect(rolledBackItems, hasLength(1));
-    expect(rolledBackItems?.single.quantity, 3);
+    final itemsAfter = container.read(inventoryItemsControllerProvider).value;
+    expect(itemsAfter, isNotNull);
+    expect(itemsAfter, hasLength(1));
+    expect(itemsAfter?.single.quantity, 3);
   });
 
-  test('eatItem rolls back optimistic depletion when save throws', () async {
+  test('an eat that throws leaves the item in stock', () async {
     final repository =
         _FakeFridgeItemRepository(
             onReadAll: () async => <InventoryItem>[
@@ -923,28 +880,15 @@ void main() {
     final eatFuture = container
         .read(inventoryItemsControllerProvider.notifier)
         .eatItemDetailed('a', 1);
-    await _waitForItems(
-      container,
-      (items) => items.length == 1 && items.single.quantity == 0,
-    );
-
-    final optimisticItems = container
-        .read(inventoryItemsControllerProvider)
-        .value;
-    expect(optimisticItems, isNotNull);
-    expect(optimisticItems, hasLength(1));
-    expect(optimisticItems?.single.quantity, 0);
 
     final updated = await eatFuture;
     expect(updated, isNull);
 
-    final rolledBackItems = container
-        .read(inventoryItemsControllerProvider)
-        .value;
-    expect(rolledBackItems, isNotNull);
-    expect(rolledBackItems, hasLength(1));
-    expect(rolledBackItems?.single.id, 'a');
-    expect(rolledBackItems?.single.quantity, 1);
+    final itemsAfter = container.read(inventoryItemsControllerProvider).value;
+    expect(itemsAfter, isNotNull);
+    expect(itemsAfter, hasLength(1));
+    expect(itemsAfter?.single.id, 'a');
+    expect(itemsAfter?.single.quantity, 1);
   });
 
   test(
@@ -969,10 +913,6 @@ void main() {
       final updated = await container
           .read(inventoryItemsControllerProvider.notifier)
           .eatItemDetailed('a', 99);
-      await _waitForItems(
-        container,
-        (items) => items.length == 1 && items.single.quantity == 0,
-      );
 
       expect(updated, isNotNull);
       expect(repository.savedItems, hasLength(1));
