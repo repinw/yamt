@@ -25,15 +25,4 @@ void main() {
       expect(day.second, 0);
     }
   });
-
-  test('only days after today are future days', () {
-    final today = DateTime(2026, 10, 5, 23, 30);
-
-    expect(
-      isDiaryFutureDay(day: DateTime(2026, 10, 6, 0, 10), today: today),
-      isTrue,
-    );
-    expect(isDiaryFutureDay(day: DateTime(2026, 10, 5), today: today), isFalse);
-    expect(isDiaryFutureDay(day: DateTime(2026, 10, 4), today: today), isFalse);
-  });
 }

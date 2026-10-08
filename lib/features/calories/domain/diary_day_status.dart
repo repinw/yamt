@@ -36,6 +36,9 @@ enum DiaryDayStatus {
     return isPreviousDayClosed ? afterClosedDay : planned;
   }
 
+  /// Whether the day lies before today.
+  bool get isPast => this == past;
+
   /// Whether the day lies after today, so food added to it is a plan.
   bool get isFuture => this == planned || this == afterClosedDay;
 

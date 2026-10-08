@@ -15,6 +15,7 @@ void main() {
     final status = statusOf(DateTime(2026, 10, 7, 23, 59));
 
     expect(status, DiaryDayStatus.past);
+    expect(status.isPast, isTrue);
     expect(status.isFuture, isFalse);
     expect(status.isPlanned, isFalse);
   });
