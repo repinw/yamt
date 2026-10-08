@@ -45,8 +45,9 @@ class InventoryEntryRow extends StatelessWidget {
   /// Whether this entry is selected.
   final bool isSelected;
 
-  /// Stock of the food that open plans take, in its stored unit.
-  final int planned;
+  /// What open plans take: stock of a food in its stored unit, or
+  /// portions of a meal.
+  final num planned;
 
   @override
   Widget build(BuildContext context) {
@@ -155,12 +156,7 @@ class InventoryEntryRow extends StatelessWidget {
                           share: entry.remainingShare,
                           segments: entry.segments,
                           isLow: entry.isLow,
-                          plannedShare: switch (entry) {
-                            final InventoryFoodEntry food => food.shareOf(
-                              planned,
-                            ),
-                            _ => 0,
-                          },
+                          plannedShare: entry.shareOf(planned),
                         ),
                       ),
                     ],

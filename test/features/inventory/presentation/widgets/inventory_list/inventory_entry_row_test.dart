@@ -177,6 +177,24 @@ void main() {
     expect(factors, [1, 1, 0.5, 0]);
   });
 
+  testWidgets('a cooked meal that plans take names the planned portions', (
+    tester,
+  ) async {
+    await _pump(
+      tester,
+      InventoryEntryRow(
+        entry: InventoryMealEntry(_meal()),
+        tiltLeft: true,
+        planned: 2,
+      ),
+    );
+
+    expect(find.text('2 Port. verplant'), findsOneWidget);
+    final bar = tester.widget<GraphitStockBar>(find.byType(GraphitStockBar));
+    expect(bar.share, 0.75);
+    expect(bar.plannedShare, 0.5);
+  });
+
   testWidgets('a tile draws what plans take in the stock bar', (tester) async {
     await _pump(
       tester,
