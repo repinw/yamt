@@ -7,8 +7,8 @@ import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/burn_week_run_state.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/domain/diary_plan_day.dart';
 
 part 'diary_day_dashboard_live_data_provider.g.dart';
 
@@ -83,11 +83,11 @@ Future<DiaryDayDashboardLiveData> diaryDayDashboardLiveData(
       weekOverview: weekOverview,
       selectedDayEntries: selectedDayEntries,
       plannedEntries: plannedEntries,
-      countsPlans: diaryDayCountsPlans(
+      countsPlans: DiaryDayStatus.of(
         day: normalizedDay,
         today: today,
         isPreviousDayClosed: weekOverview.isPreviousDayClosed,
-      ),
+      ).isPlanned,
       runState: runState,
     );
   } finally {

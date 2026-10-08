@@ -4,7 +4,7 @@ import 'package:yamt/core/domain/local_day_window.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
-import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/diary/application/diary_plan_start_day_provider.dart';
 import 'package:yamt/features/diary/domain/diary_calendar_bounds.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
@@ -37,7 +37,8 @@ class DiaryCalendarState {
   bool get isSelectedToday => isSameCalendarDay(selectedDay, today);
 
   /// Whether [day] lies after today, so the diary shows it as a plan.
-  bool isFutureDay(DateTime day) => isDiaryFutureDay(day: day, today: today);
+  bool isFutureDay(DateTime day) =>
+      DiaryDayStatus.of(day: day, today: today).isFuture;
 
   /// Returns a copy with selected overrides.
   DiaryCalendarState copyWith({DateTime? today, DateTime? selectedDay}) {

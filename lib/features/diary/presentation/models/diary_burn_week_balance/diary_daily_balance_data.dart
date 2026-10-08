@@ -1,9 +1,9 @@
 import 'package:intl/intl.dart';
+import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_budget_details_data.dart';
 import 'package:yamt/features/diary/application/diary_open_plans.dart';
-import 'package:yamt/features/diary/domain/diary_plan_day.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_balance_formatters.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_subtitle_resolver.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -88,17 +88,18 @@ class DiaryDailyBalanceData {
         : '$realEatenLabel · $adjustmentLabel';
 
     final today = normalizeDiaryDay(now);
-    final isFutureDay = isDiaryFutureDay(day: selectedDay, today: today);
-    // Only a future day has a day before to close. A cached dashboard from
-    // yesterday may still carry the values after midnight.
-    final previousDayCarryover = isFutureDay ? previousDayCarryoverKcal : null;
-    final isClosed = previousDayCarryover != null && isPreviousDayClosed;
-    final isPlanned = diaryDayIsPlanned(
+    final status = DiaryDayStatus.of(
       day: selectedDay,
       today: today,
       isPreviousDayClosed: isPreviousDayClosed,
-      previousDayCarryoverKcal: previousDayCarryover,
     );
+    // Only a future day has a day before to close. A cached dashboard from
+    // yesterday may still carry the values after midnight.
+    final previousDayCarryover = status.isFuture
+        ? previousDayCarryoverKcal
+        : null;
+    final isClosed = status == DiaryDayStatus.afterClosedDay;
+    final isPlanned = status.isPlanned;
     final plans = isPlanned || isPauseDay ? null : openPlans;
     final countsPlans = plans?.counted ?? false;
     final resolvedSubtitle = resolveDiaryDailyBalanceSubtitle(
