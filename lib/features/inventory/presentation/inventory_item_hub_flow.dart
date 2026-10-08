@@ -64,7 +64,6 @@ abstract final class InventoryItemHubFlow {
         :final request,
         :final picks,
         :final keepInStock,
-        :final portions,
         :final includesItem,
       ):
         if (keepInStock) {
@@ -74,7 +73,6 @@ abstract final class InventoryItemHubFlow {
             item: item,
             request: request,
             picks: picks,
-            portions: portions,
             includesItem: includesItem,
           );
         } else {

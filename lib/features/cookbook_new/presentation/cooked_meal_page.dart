@@ -8,7 +8,9 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
+import 'package:yamt/features/cookbook_new/domain/combined_meal.dart';
 import 'package:yamt/features/cookbook_new/domain/cooked_pot.dart';
+import 'package:yamt/features/cookbook_new/presentation/combined_meal_discard_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cooked_meal_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_save_flow.dart';
@@ -55,6 +57,10 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   final _grossController = TextEditingController();
   int? _portions;
   var _inPieces = false;
+
+  /// Whether the cook weighs a combined meal instead of trusting the sum of
+  /// its ingredients.
+  var _weighs = false;
   String? _utensilId;
   CookedMealDestination _destination = CookedMealDestination.stock;
 
@@ -62,6 +68,10 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
 
   /// Whether a missing meal counts as not found instead of not arrived yet.
   var _waitedForMeal = false;
+
+  /// Whether the cook discards a combined meal, so its leaving the Vorrat
+  /// does not count as gone.
+  var _discarding = false;
 
   @override
   void initState() {
@@ -84,41 +94,86 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
-    PreparedMealGoneFlow.closeWhenGone(ref, context, widget.mealId);
+    if (!_discarding) {
+      PreparedMealGoneFlow.closeWhenGone(ref, context, widget.mealId);
+    }
     final mealAsync = ref.watch(livePreparedMealProvider(widget.mealId));
+    // A combined meal is not cooked yet: leaving it gives its foods back.
+    final isCombined = switch (mealAsync.value) {
+      final meal? => meal.isCombined,
+      null => false,
+    };
     final isSaving = ref
         .watch(cookedMealControllerProvider(widget.mealId))
         .isLoading;
+    // A meal on its way may be a combined one, so the page waits for it,
+    // unless it never arrives.
+    final isWaiting =
+        mealAsync.value == null && !_waitedForMeal && !mealAsync.hasError;
+    final mayClose = !isCombined && !isWaiting;
+    final mayDiscard = isCombined && !isSaving && !_discarding;
 
-    return Scaffold(
-      backgroundColor: colors.paper,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            CookedMealHeader(
-              kicker: l10n.cookedKicker,
-              onClose: () => context.pop(),
-            ),
-            Expanded(
-              child: mealAsync.when(
-                data: (meal) => switch (meal) {
-                  final meal? => _body(context, meal, isSaving: isSaving),
-                  // A meal saved just now may still be on its way. A meal
-                  // that was here and is gone closes the page instead.
-                  null when _waitedForMeal => Center(
-                    child: Text(l10n.cookedLoadFailed),
-                  ),
-                  null => const AppLoadingView(),
-                },
-                loading: () => const AppLoadingView(),
-                error: (_, _) => Center(child: Text(l10n.cookedLoadFailed)),
+    return PopScope(
+      canPop: mayClose,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && mayDiscard) {
+          unawaited(_discard());
+        }
+      },
+      child: Scaffold(
+        backgroundColor: colors.paper,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CookedMealHeader(
+                kicker: isCombined
+                    ? l10n.cookedCombinedKicker
+                    : l10n.cookedKicker,
+                onClose: mayClose
+                    ? context.pop
+                    : mayDiscard
+                    ? () => unawaited(_discard())
+                    : null,
               ),
-            ),
-          ],
+              Expanded(
+                child: mealAsync.when(
+                  data: (meal) => switch (meal) {
+                    final meal? => _body(context, meal, isSaving: isSaving),
+                    // A meal saved just now may still be on its way. A meal
+                    // that was here and is gone closes the page instead.
+                    null when _waitedForMeal => Center(
+                      child: Text(l10n.cookedLoadFailed),
+                    ),
+                    null => const AppLoadingView(),
+                  },
+                  loading: () => const AppLoadingView(),
+                  error: (_, _) => Center(child: Text(l10n.cookedLoadFailed)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  /// Discards the combined meal and closes the page.
+  Future<void> _discard() async {
+    final gone = await CombinedMealDiscardFlow.discard(
+      context: context,
+      ref: ref,
+      mealId: widget.mealId,
+      onConfirmed: () => setState(() => _discarding = true),
+    );
+    if (!mounted) {
+      return;
+    }
+    if (gone) {
+      context.pop();
+    } else if (_discarding) {
+      setState(() => _discarding = false);
+    }
   }
 
   Widget _body(
@@ -136,6 +191,9 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     final canEat = meal.pendingRecipeIngredients.isEmpty;
     // Rows opened after the pick send the meal to the Vorrat again.
     final destination = canEat ? _destination : CookedMealDestination.stock;
+    final ingredientsWeight = meal.isCombined && !_weighs
+        ? meal.ingredientsGrams
+        : null;
     final pot = CookedPot(
       // The section hides the scale for pieces and without a pot to pick.
       grossInput: _inPieces || utensilsAsync.hasError || utensils.isEmpty
@@ -144,6 +202,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
       tareWeight: utensil?.weightGrams,
       portions: portions,
       totalKcal: meal.totalKcal,
+      ingredientsWeight: _inPieces ? null : ingredientsWeight,
     );
 
     return Column(
@@ -169,6 +228,8 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                 onPortionsChanged: (value) => setState(() => _portions = value),
                 inPieces: _inPieces,
                 onInPiecesChanged: (value) => setState(() => _inPieces = value),
+                ingredientsWeight: ingredientsWeight,
+                onWeigh: () => setState(() => _weighs = true),
                 utensils: utensils,
                 utensilsFailed: utensilsAsync.hasError,
                 utensilId: utensil?.id,

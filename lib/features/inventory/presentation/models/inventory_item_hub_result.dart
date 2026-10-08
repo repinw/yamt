@@ -40,7 +40,6 @@ final class InventoryItemHubMeal extends InventoryItemHubResult {
     required this.request,
     required this.picks,
     required this.keepInStock,
-    required this.portions,
     required this.includesItem,
   });
 
@@ -52,9 +51,6 @@ final class InventoryItemHubMeal extends InventoryItemHubResult {
 
   /// Whether the foods go into stock as a prepared meal instead of the diary.
   final bool keepInStock;
-
-  /// Portions the prepared meal makes, at least one.
-  final int portions;
 
   /// Whether the hub's item is part of the meal. Without it the meal is
   /// made of [picks] alone; [request] still carries the log time and meal.

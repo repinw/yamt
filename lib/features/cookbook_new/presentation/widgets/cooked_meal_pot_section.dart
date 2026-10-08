@@ -28,6 +28,8 @@ class CookedMealPotSection extends StatelessWidget {
     required this.onUtensilChanged,
     required this.grossController,
     required this.result,
+    this.ingredientsWeight,
+    this.onWeigh,
     super.key,
   });
 
@@ -41,6 +43,9 @@ class CookedMealPotSection extends StatelessWidget {
   /// in portions.
   static ValueKey<String> servingKey({required bool inPieces}) =>
       ValueKey<String>('cooked-serving-${inPieces ? 'pieces' : 'portions'}');
+
+  /// Key of the link that weighs a meal with a known weight anyway.
+  static const weighKey = ValueKey<String>('cooked-weigh');
 
   /// Key of the utensil picker.
   static const utensilKey = ValueKey<String>('cooked-utensil');
@@ -64,6 +69,13 @@ class CookedMealPotSection extends StatelessWidget {
 
   /// Switches between pieces and portions.
   final ValueChanged<bool> onInPiecesChanged;
+
+  /// The food weight known without the scale, such as the sum of a combined
+  /// meal's ingredients; `null` when the pot must be weighed.
+  final int? ingredientsWeight;
+
+  /// Shows the container and the scale in place of [ingredientsWeight].
+  final VoidCallback? onWeigh;
 
   /// The saved kitchen utensils.
   final List<KitchenUtensil> utensils;
@@ -89,6 +101,9 @@ class CookedMealPotSection extends StatelessWidget {
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final label = textTheme.titleSmall?.copyWith(color: colors.ink);
+    // A known weight needs no scale unless the cook asks for one.
+    final known = inPieces ? null : ingredientsWeight;
+    final weighs = !inPieces && known == null;
 
     Widget row(Widget title, Widget control) => DecoratedBox(
       decoration: BoxDecoration(
@@ -185,7 +200,21 @@ class CookedMealPotSection extends StatelessWidget {
                 ),
                 const SizedBox.shrink(),
               ),
-            if (!inPieces)
+            if (known != null) ...[
+              row(
+                Text(l10n.cookedWeight, style: label),
+                Text(l10n.cookedIngredientsWeight(known), style: label),
+              ),
+              Align(
+                alignment: AlignmentDirectional.centerStart,
+                child: TextButton(
+                  key: weighKey,
+                  onPressed: onWeigh,
+                  child: Text(l10n.cookedWeighInstead),
+                ),
+              ),
+            ],
+            if (weighs)
               row(
                 Text(l10n.cookedUtensil, style: label),
                 Flexible(
@@ -225,7 +254,7 @@ class CookedMealPotSection extends StatelessWidget {
                 ),
               ),
             // Without a pot to pick the food weight cannot be told.
-            if (!inPieces && !utensilsFailed && utensils.isNotEmpty)
+            if (weighs && !utensilsFailed && utensils.isNotEmpty)
               row(
                 Text(l10n.cookedGrossWeight, style: label),
                 SizedBox(
@@ -245,7 +274,7 @@ class CookedMealPotSection extends StatelessWidget {
                   ),
                 ),
               ),
-            if (!inPieces)
+            if (weighs)
               row(
                 Text(
                   l10n.cookedWeighTip,

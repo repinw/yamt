@@ -53,4 +53,30 @@ class CookedMealController extends _$CookedMealController {
       link.close();
     }
   }
+
+  /// Discards the combined meal before its "Gekocht" step and gives its
+  /// foods back to the Vorrat. Returns whether it worked.
+  Future<bool> discard() async {
+    final link = ref.keepAlive();
+    state = const AsyncLoading();
+    try {
+      final result = await AsyncValue.guard(
+        () => ref.read(preparedMealCookingServiceProvider).discard(mealId),
+      );
+      if (result case AsyncError(:final error, :final stackTrace)) {
+        log(
+          'Failed to discard the meal.',
+          name: 'CookedMealController',
+          error: error,
+          stackTrace: stackTrace,
+        );
+      }
+      if (ref.mounted) {
+        state = result;
+      }
+      return !result.hasError;
+    } finally {
+      link.close();
+    }
+  }
 }

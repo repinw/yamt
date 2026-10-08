@@ -60,6 +60,9 @@ class _FakeCookingService implements PreparedMealCookingService {
     required int? potTareWeight,
     required int? finalNetWeight,
   }) => throw UnimplementedError();
+
+  @override
+  Future<void> discard(String mealId) => throw UnimplementedError();
 }
 
 ProviderContainer _container(_FakeCookingService service) {

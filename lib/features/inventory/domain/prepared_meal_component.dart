@@ -22,6 +22,7 @@ class PreparedMealComponent {
     required this.totalCarbs,
     required this.totalFat,
     required this.sourceItemSnapshot,
+    this.addedForMeal,
   });
 
   /// Creates a [PreparedMealComponent] for from json.
@@ -74,6 +75,15 @@ class PreparedMealComponent {
   /// The source item snapshot.
   final InventoryItem sourceItemSnapshot;
 
+  /// `true` when the Vorrat item was added only for this meal, such as a
+  /// food found by search while combining; discarding the meal before its
+  /// "Gekocht" step deletes it again. Absent on every other component.
+  @JsonKey(includeIfNull: false)
+  final bool? addedForMeal;
+
+  /// Whether the Vorrat item was added only for this meal.
+  bool get isAddedForMeal => addedForMeal ?? false;
+
   /// The internal storage scale of [usedAmount], taken from the source
   /// item. Piece-tracked items store fractional pieces multiplied by
   /// [inventoryPieceAmountScale].
@@ -95,6 +105,7 @@ class PreparedMealComponent {
     double? totalCarbs,
     double? totalFat,
     InventoryItem? sourceItemSnapshot,
+    bool? addedForMeal,
   }) {
     return PreparedMealComponent(
       inventoryItemId: inventoryItemId ?? this.inventoryItemId,
@@ -108,6 +119,7 @@ class PreparedMealComponent {
       totalCarbs: totalCarbs ?? this.totalCarbs,
       totalFat: totalFat ?? this.totalFat,
       sourceItemSnapshot: sourceItemSnapshot ?? this.sourceItemSnapshot,
+      addedForMeal: addedForMeal ?? this.addedForMeal,
     );
   }
 
@@ -145,7 +157,8 @@ class PreparedMealComponent {
             other.totalProtein == totalProtein &&
             other.totalCarbs == totalCarbs &&
             other.totalFat == totalFat &&
-            other.sourceItemSnapshot == sourceItemSnapshot;
+            other.sourceItemSnapshot == sourceItemSnapshot &&
+            other.addedForMeal == addedForMeal;
   }
 
   @override
@@ -162,6 +175,7 @@ class PreparedMealComponent {
       totalCarbs,
       totalFat,
       sourceItemSnapshot,
+      addedForMeal,
     );
   }
 }

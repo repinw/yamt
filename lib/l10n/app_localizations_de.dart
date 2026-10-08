@@ -1333,9 +1333,6 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get preparedMealCreatedMessage => 'Mahlzeit wurde erstellt.';
-
-  @override
   String get preparedMealUpdatedMessage => 'Mahlzeit wurde aktualisiert.';
 
   @override
@@ -6110,6 +6107,28 @@ class AppLocalizationsDe extends AppLocalizations {
   String preparedMealPiecesRemaining(String remaining, int total) {
     return '$remaining/$total Stück';
   }
+
+  @override
+  String get cookedCombinedKicker => 'Kombiniert';
+
+  @override
+  String get cookedWeight => 'Gewicht';
+
+  @override
+  String cookedIngredientsWeight(int grams) {
+    return '$grams g aus den Zutaten';
+  }
+
+  @override
+  String get cookedWeighInstead => 'Gewicht stimmt nicht? Mit Behälter wiegen';
+
+  @override
+  String get cookedCombinedDiscardBody =>
+      'Die Zutaten gehen zurück in den Vorrat.';
+
+  @override
+  String get cookedDiscardFailed =>
+      'Mahlzeit konnte nicht verworfen werden. Die Zutaten sind noch nicht zurück im Vorrat.';
 
   @override
   String get cookedSave => 'In den Vorrat';

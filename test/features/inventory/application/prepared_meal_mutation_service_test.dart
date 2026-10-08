@@ -61,6 +61,42 @@ void main() {
       expect(harness.meals.meals.single.components, hasLength(1));
     });
 
+    test('a food added for the meal starts open and is marked', () async {
+      final harness = _WorkflowHarness();
+      final inventoryRepository = _FakeInventoryItemRepository(
+        items: <InventoryItem>[
+          _measuredItem(
+            id: 'found',
+            name: 'Oats',
+            currentAmount: 100,
+            initialAmount: 100,
+            initialQuantity: 1,
+          ),
+        ],
+      );
+
+      final result = await harness
+          .mutations(inventory: inventoryRepository)
+          .createPreparedMeal(
+            name: 'Oats',
+            totalPortions: 1,
+            startInPot: true,
+            items: const <PreparedMealItemInput>[
+              PreparedMealItemInput(
+                itemId: 'found',
+                usedAmount: 100,
+                addedForMeal: true,
+              ),
+            ],
+          );
+
+      expect(result.isSuccess, isTrue);
+      final meal = harness.meals.meals.single;
+      expect(meal.isInPot, isTrue);
+      expect(meal.components.single.isAddedForMeal, isTrue);
+      expect(PreparedMeal.fromJson(meal.toJson()), meal);
+    });
+
     test(
       'a rollback keeps an item that another device wrote meanwhile',
       () async {

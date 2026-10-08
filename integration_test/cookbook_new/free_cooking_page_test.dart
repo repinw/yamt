@@ -13,9 +13,13 @@ import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_destination_section.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooked_meal_header.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_pot_section.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_actions.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'free_cooking_discard_dialog.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_header.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -29,6 +33,7 @@ import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -192,6 +197,61 @@ void main() {
     expect(cooked.potTareWeight, isNull);
   });
 
+  testWidgets('a combined meal takes its weight from the ingredients', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository()..saved = [_combinedMeal()];
+    await tester.pumpWidget(_app(meals: meals, voice: _FakeVoiceService('')));
+    await tester.pumpAndSettle();
+    await _openCooked(tester, 'combo');
+
+    // The sum of the ingredients replaces the scale.
+    expect(find.byKey(CookedMealPotSection.weighKey), findsOneWidget);
+    expect(find.byKey(CookedMealPotSection.utensilKey), findsNothing);
+    expect(find.byKey(CookedMealPotSection.grossKey), findsNothing);
+    await tester.tap(find.byKey(CookedMealPotSection.morePortionsKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.pumpAndSettle();
+
+    final meal = meals.saved.single;
+    expect(meal.isInPot, isFalse);
+    expect(meal.totalPortions, 2);
+    expect(meal.finalNetWeight, 300);
+    expect(meal.potTareWeight, isNull);
+  });
+
+  testWidgets('weighing a combined meal shows the container and the scale', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository()..saved = [_combinedMeal()];
+    await tester.pumpWidget(_app(meals: meals, voice: _FakeVoiceService('')));
+    await tester.pumpAndSettle();
+    await _openCooked(tester, 'combo');
+
+    await tester.tap(find.byKey(CookedMealPotSection.weighKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(CookedMealPotSection.weighKey), findsNothing);
+    expect(find.byKey(CookedMealPotSection.utensilKey), findsOneWidget);
+    expect(find.byKey(CookedMealPotSection.grossKey), findsOneWidget);
+  });
+
+  testWidgets('closing a combined meal asks and gives it back', (tester) async {
+    final meals = _FakeMealRepository()..saved = [_combinedMeal()];
+    await tester.pumpWidget(_app(meals: meals, voice: _FakeVoiceService('')));
+    await tester.pumpAndSettle();
+    await _openCooked(tester, 'combo');
+
+    await tester.tap(find.byKey(CookedMealHeader.closeKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(freeCookingDiscardKey));
+    await tester.pumpAndSettle();
+
+    expect(meals.saved, isEmpty);
+    expect(find.byKey(_startKey), findsOneWidget);
+  });
+
   testWidgets('fits under the keyboard and lets go of the name focus', (
     tester,
   ) async {
@@ -251,11 +311,62 @@ void main() {
 
     await tester.tap(find.byKey(FreeCookingHeader.closeKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Discard'));
+    await tester.tap(find.byKey(freeCookingDiscardKey));
     await tester.pumpAndSettle();
 
     expect(find.byKey(_startKey), findsOneWidget);
   });
+}
+
+/// Opens the "Gekocht" step of the meal [mealId].
+Future<void> _openCooked(WidgetTester tester, String mealId) async {
+  unawaited(
+    GoRouter.of(tester.element(find.byKey(_startKey)))
+        .push(AppRoutes.homeCookedMealPath(mealId)),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Rice and oats combined from the Vorrat, waiting for "Gekocht".
+PreparedMeal _combinedMeal() {
+  final rice = InventoryItem.create(
+    id: 'rice',
+    name: 'Reis',
+    entryDate: DateTime.utc(2026, 9, 29),
+    storeName: 'Store',
+    quantity: 1,
+    initialAmount: 1000,
+    currentAmount: 1000,
+    amountUnit: InventoryAmountUnit.gram,
+  );
+  PreparedMealComponent component(int grams) => PreparedMealComponent(
+    inventoryItemId: rice.id,
+    name: rice.name,
+    brand: rice.brand,
+    imageUrl: rice.imageUrl,
+    usedAmount: grams,
+    usedUnit: InventoryAmountUnit.gram,
+    totalKcal: 300,
+    totalProtein: 6,
+    totalCarbs: 60,
+    totalFat: 1,
+    sourceItemSnapshot: rice,
+  );
+  final now = DateTime.utc(2026, 10, 8, 8);
+  return PreparedMeal(
+    id: 'combo',
+    name: 'Reis + Reis',
+    totalPortions: 1,
+    remainingPortions: 1,
+    totalKcal: 600,
+    totalProtein: 12,
+    totalCarbs: 120,
+    totalFat: 2,
+    createdAt: now,
+    updatedAt: now,
+    components: [component(200), component(100)],
+    inPot: true,
+  );
 }
 
 /// Scrolls the "Gekocht" step down to the destination switch.

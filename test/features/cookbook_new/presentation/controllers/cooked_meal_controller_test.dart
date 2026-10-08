@@ -42,6 +42,16 @@ class _FakeCookingService implements PreparedMealCookingService {
     ));
     return _meal(mealId, totalPortions);
   }
+
+  final discarded = <String>[];
+
+  @override
+  Future<void> discard(String mealId) async {
+    if (fails) {
+      throw StateError('offline');
+    }
+    discarded.add(mealId);
+  }
 }
 
 PreparedMeal _meal(String id, int portions) {
@@ -110,6 +120,30 @@ void main() {
         );
 
     expect(service.calls.single, ('pan', 6, true, null, null));
+  });
+
+  test('discard gives the meal back and reports success', () async {
+    final service = _FakeCookingService();
+    final (container, states) = _container(service);
+
+    final done = await container
+        .read(cookedMealControllerProvider('pan').notifier)
+        .discard();
+
+    expect(done, isTrue);
+    expect(service.discarded, ['pan']);
+    expect(states, [isA<AsyncLoading<void>>(), isA<AsyncData<void>>()]);
+  });
+
+  test('a failed discard reports an error state', () async {
+    final (container, states) = _container(_FakeCookingService(fails: true));
+
+    final done = await container
+        .read(cookedMealControllerProvider('pan').notifier)
+        .discard();
+
+    expect(done, isFalse);
+    expect(states, [isA<AsyncLoading<void>>(), isA<AsyncError<void>>()]);
   });
 
   test('save reports a failure as an error state', () async {

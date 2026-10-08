@@ -6,12 +6,14 @@ import 'package:meta/meta.dart';
 class CookedPot {
   /// Creates the numbers for the typed pot weight [grossInput], the empty pot
   /// [tareWeight] (`null` without a pot), [portions], and the meal's
-  /// [totalKcal].
+  /// [totalKcal]. [ingredientsWeight] is the food weight when nothing is
+  /// weighed, such as the sum of a combined meal's ingredients.
   const new({
     required this.grossInput,
     required this.tareWeight,
     required this.portions,
     required this.totalKcal,
+    this.ingredientsWeight,
   });
 
   /// The typed weight of the pot on the scale; empty when it was not weighed.
@@ -26,14 +28,18 @@ class CookedPot {
   /// The kcal of the whole meal.
   final double totalKcal;
 
+  /// The food weight without weighing, or `null` when it is not known.
+  final int? ingredientsWeight;
+
   /// The pot on the scale in grams, or `null` when it was not weighed.
   int? get grossWeight => int.tryParse(grossInput);
 
-  /// The food weight: the pot on the scale minus the empty pot, or `null`
-  /// when the pot was not weighed, no pot is picked, or it is not heavier
-  /// than the empty pot.
+  /// The food weight: the pot on the scale minus the empty pot, or
+  /// [ingredientsWeight] when the pot was not weighed. `null` when neither
+  /// is known, no pot is picked, or the pot is not heavier than empty.
   int? get netWeight => switch ((grossWeight, tareWeight)) {
     (final gross?, final tare?) when gross > tare => gross - tare,
+    (null, _) => ingredientsWeight,
     _ => null,
   };
 

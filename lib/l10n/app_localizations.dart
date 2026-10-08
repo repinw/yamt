@@ -2266,12 +2266,6 @@ abstract class AppLocalizations {
   /// **'{count} selected'**
   String preparedMealSelectionCount(int count);
 
-  /// No description provided for @preparedMealCreatedMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Prepared meal created.'**
-  String get preparedMealCreatedMessage;
-
   /// No description provided for @preparedMealUpdatedMessage.
   ///
   /// In en, this message translates to:
@@ -10099,6 +10093,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{remaining}/{total} pieces'**
   String preparedMealPiecesRemaining(String remaining, int total);
+
+  /// No description provided for @cookedCombinedKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Combined'**
+  String get cookedCombinedKicker;
+
+  /// No description provided for @cookedWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight'**
+  String get cookedWeight;
+
+  /// No description provided for @cookedIngredientsWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'{grams} g from the ingredients'**
+  String cookedIngredientsWeight(int grams);
+
+  /// No description provided for @cookedWeighInstead.
+  ///
+  /// In en, this message translates to:
+  /// **'Weight wrong? Weigh with a container'**
+  String get cookedWeighInstead;
+
+  /// No description provided for @cookedCombinedDiscardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The ingredients go back to the stock.'**
+  String get cookedCombinedDiscardBody;
+
+  /// No description provided for @cookedDiscardFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not discard the meal. Its foods are not back in the stock yet.'**
+  String get cookedDiscardFailed;
 
   /// No description provided for @cookedSave.
   ///
