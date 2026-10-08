@@ -12,13 +12,14 @@ const _cacheLogName = 'DiaryDayDashboardCacheRepository';
 const _cacheVersion = 5;
 const _keyPrefix = 'diary_day_dashboard_v';
 
-/// Stores last good diary dashboard snapshots for instant startup.
+/// Stores the last good diary dashboard snapshot of each day for instant
+/// startup.
 class DiaryDayDashboardCacheRepository {
   /// Creates the diary dashboard cache repository.
   const new();
 
-  /// Reads cached data synchronously.
-  DiaryDayDashboardData? readSync({
+  /// Reads the cached snapshot synchronously.
+  DiaryDayDashboardSnapshot? readSync({
     required AppPreferences preferences,
     required String userId,
     required DateTime day,
@@ -40,7 +41,7 @@ class DiaryDayDashboardCacheRepository {
           json['day_key'] != dayKey) {
         return null;
       }
-      final data = DiaryDayDashboardData.fromJson(
+      final data = DiaryDayDashboardSnapshot.fromJson(
         Map<String, dynamic>.from(json['data'] as Map? ?? const {}),
       );
       if (diaryDayKey(data.selectedDay) != dayKey ||
@@ -63,7 +64,7 @@ class DiaryDayDashboardCacheRepository {
   Future<bool> save({
     required AppPreferences preferences,
     required String userId,
-    required DiaryDayDashboardData data,
+    required DiaryDayDashboardSnapshot data,
   }) async {
     final dayKey = diaryDayKey(data.selectedDay);
     final encoded = jsonEncode(<String, dynamic>{

@@ -43,9 +43,9 @@ void main() {
     () async {
       final preferences = MemoryAppPreferences();
       const cacheRepository = DiaryDayDashboardCacheRepository();
-      final cachedData = diaryDashboardLoadedStateForTest(
+      final cachedData = diaryDashboardSnapshotForTest(
         selectedDay: selectedDay,
-      ).data!;
+      );
       await cacheRepository.save(
         preferences: preferences,
         userId: userId,
@@ -92,9 +92,7 @@ void main() {
   test('keeps cached dashboard visible when refresh fails', () async {
     final preferences = MemoryAppPreferences();
     const cacheRepository = DiaryDayDashboardCacheRepository();
-    final cachedData = diaryDashboardLoadedStateForTest(
-      selectedDay: selectedDay,
-    ).data!;
+    final cachedData = diaryDashboardSnapshotForTest(selectedDay: selectedDay);
     await cacheRepository.save(
       preferences: preferences,
       userId: userId,

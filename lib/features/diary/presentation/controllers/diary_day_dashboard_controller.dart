@@ -14,8 +14,6 @@ import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
-import 'package:yamt/features/diary/application/'
-    'diary_day_dashboard_mappers.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/domain/diary_day_goal_signature.dart';
@@ -51,13 +49,16 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
       _settledMutationRefreshTimer?.cancel();
       _mutationRefreshInFlight = null;
     });
-    final cachedData = userId == null
+    final cachedSnapshot = userId == null
         ? null
         : cacheRepository.readSync(
             preferences: preferences,
             userId: userId,
             day: normalizedDay,
           );
+    final cachedData = cachedSnapshot == null
+        ? null
+        : DiaryDayDashboardData.fromSnapshot(cachedSnapshot);
 
     // A rebuild drops the subscription that keeps the live data alive, so a
     // refresh started before it never settles and would block every later one.
@@ -219,8 +220,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         today: ref.read(diaryTodayProvider),
         nutrition: ref.read(dailyNutritionTargetResolverProvider),
       );
-
-      final data = DiaryDayDashboardData(
+      final snapshot = DiaryDayDashboardSnapshot(
         selectedDay: normalizedDay,
         refreshedAt: ref.read(clockProvider)(),
         weekOverview: liveData.weekOverview,
@@ -228,19 +228,11 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         plannedEntries: liveData.plannedEntries,
         countsPlans: liveData.countsPlans,
         runState: liveData.runState,
-        mealSections: buildDiaryDashboardMealSections(
-          liveData.selectedDayEntries,
-          plannedEntries: liveData.plannedEntries,
-          countsPlans: liveData.countsPlans,
-        ),
-        nutritionBars: buildDiaryDashboardNutritionBars(
-          liveData.countedEntries,
-          budget.goalKcal,
-          macroTargets: DiaryMacroTargets(
-            carbs: budget.target.carbsGrams,
-            protein: budget.target.proteinGrams,
-            fat: budget.target.fatGrams,
-          ),
+        goalKcal: budget.goalKcal,
+        macroTargets: DiaryMacroTargets(
+          carbs: budget.target.carbsGrams,
+          protein: budget.target.proteinGrams,
+          fat: budget.target.fatGrams,
         ),
         carryoverMacroDelta: DiaryMacroTargets(
           carbs: budget.carryoverMacroDelta.carbs,
@@ -248,6 +240,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
           fat: budget.carryoverMacroDelta.fat,
         ),
       );
+      final data = DiaryDayDashboardData.fromSnapshot(snapshot);
       state = DiaryDayDashboardState(
         data: data,
         isFromCache: false,
@@ -259,7 +252,7 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
         await cacheRepository.save(
           preferences: preferences,
           userId: userId,
-          data: data,
+          data: snapshot,
         );
       }
       if (_isCurrentRefresh(generation)) {
