@@ -1,6 +1,12 @@
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
 // JSON values of Vorrat meals and their foods.
+//
+// Compatibility code from before the removal rule in architecture.md §12:
+// these readers accept the loose values of meals saved by older versions
+// (numbers as text, missing fields as 0 or ""). The release checklist lists
+// them; the user decides when they go. Do not use them for new fields; new
+// fields parse strictly.
 
 /// A stored whole number, or 0.
 int readPreparedMealInt(Object? value) {
@@ -52,3 +58,17 @@ InventoryAmountUnit readPreparedMealAmountUnit(Object? value) {
 
 /// The stored code of [value].
 String writePreparedMealAmountUnit(InventoryAmountUnit value) => value.code;
+
+/// A stored whole number, rounded, or null.
+int? readPreparedMealOptionalInt(Object? value) {
+  if (value is int) {
+    return value;
+  }
+  if (value is double) {
+    return value.round();
+  }
+  if (value is String) {
+    return int.tryParse(value.trim());
+  }
+  return null;
+}

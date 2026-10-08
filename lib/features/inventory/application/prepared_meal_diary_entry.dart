@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart'
     show InventoryAmountUnit, InventoryAmountUnitCode;
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 
 /// [plan] of a cooked meal with [portions] of [meal] as it is now instead,
 /// kept on its id, user, day and meal. Null when the meal has no portions to

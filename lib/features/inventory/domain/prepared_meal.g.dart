@@ -78,7 +78,7 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
           ?.map((e) => e as String)
           .toList() ??
       [],
-  finalNetWeight: _readNullableInt(json['final_net_weight']),
+  finalNetWeight: readPreparedMealOptionalInt(json['final_net_weight']),
   inPot: json['in_pot'] as bool?,
   potTareWeight: (json['pot_tare_weight'] as num?)?.toInt(),
 );

@@ -3,6 +3,7 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_components_list.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'

@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_portions.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _preparedMealDialogsLogName = 'PreparedMealDialogs';
