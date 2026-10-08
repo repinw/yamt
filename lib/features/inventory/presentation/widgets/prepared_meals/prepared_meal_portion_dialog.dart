@@ -76,10 +76,13 @@ class _PreparedMealPortionDialogState
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         decoration: InputDecoration(
           labelText: l10n.preparedMealPortionsToUseLabel,
-          helperText: l10n.preparedMealPortionsRemaining(
-            _formatPortions(widget.meal.remainingPortions, l10n),
-            widget.meal.totalPortions,
-          ),
+          helperText:
+              (widget.meal.isServedInPieces
+              ? l10n.preparedMealPiecesRemaining
+              : l10n.preparedMealPortionsRemaining)(
+                _formatPortions(widget.meal.remainingPortions, l10n),
+                widget.meal.totalPortions,
+              ),
           suffixIcon: Padding(
             padding: const EdgeInsets.only(right: AppSpacing.xs),
             child: TextButton(

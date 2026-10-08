@@ -5,6 +5,7 @@ import 'package:yamt/features/inventory/presentation/formatters/'
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_list_entry.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/prepared_meal_serving_unit_l10n.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Texts of a Vorrat row or tile: the amount left with its unit, the full
@@ -129,6 +130,8 @@ InventoryEntryTexts _meal(PreparedMeal meal, AppLocalizations l10n) {
       ? l10n.inventoryMealInPot
       : isMissingShown
       ? l10n.inventoryRowMealMissing(missing)
+      : meal.isServedInPieces
+      ? l10n.inventoryRowMealFromRecipePieces(portionsLeft, meal.totalPortions)
       : meal.recipeIngredients.isNotEmpty
       ? l10n.inventoryRowMealFromRecipe(portionsLeft, meal.totalPortions)
       : l10n.inventoryRowMealCombined(portionsLeft, meal.totalPortions);
@@ -147,7 +150,7 @@ InventoryEntryTexts _meal(PreparedMeal meal, AppLocalizations l10n) {
       infoIsWarning: isMissingShown,
     );
   }
-  final portions = l10n.eatPagePortionsUnit;
+  final portions = preparedMealServingUnit(l10n, meal);
   return InventoryEntryTexts(
     amount: portionsLeft,
     unit: portions,

@@ -55,6 +55,7 @@ class CookedMealPage extends ConsumerStatefulWidget {
 class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   final _grossController = TextEditingController();
   int? _portions;
+  var _inPieces = false;
   String? _utensilId;
   CookedMealDestination _destination = CookedMealDestination.stock;
 
@@ -93,6 +94,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
         .read(cookedMealControllerProvider(widget.mealId).notifier)
         .save(
           totalPortions: portions,
+          servedInPieces: _inPieces,
           potTareWeight: tareWeight,
           netWeight: netWeight,
         );
@@ -201,8 +203,8 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     // Rows opened after the pick send the meal to the Vorrat again.
     final destination = canEat ? _destination : CookedMealDestination.stock;
     final pot = CookedPot(
-      // The section hides the scale without a pot to pick.
-      grossInput: utensilsAsync.hasError || utensils.isEmpty
+      // The section hides the scale for pieces and without a pot to pick.
+      grossInput: _inPieces || utensilsAsync.hasError || utensils.isEmpty
           ? ''
           : _grossController.text,
       tareWeight: utensil?.weightGrams,
@@ -231,6 +233,8 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
               CookedMealPotSection(
                 portions: portions,
                 onPortionsChanged: (value) => setState(() => _portions = value),
+                inPieces: _inPieces,
+                onInPiecesChanged: (value) => setState(() => _inPieces = value),
                 utensils: utensils,
                 utensilsFailed: utensilsAsync.hasError,
                 utensilId: utensil?.id,
@@ -249,6 +253,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                   grams,
                   pot.kcalPerPortion,
                 ),
+                null when _inPieces => l10n.cookedPerPiece(pot.kcalPerPortion),
                 null => l10n.cookedPerPortion(pot.kcalPerPortion),
               }, style: textTheme.bodyMedium?.copyWith(color: colors.muted)),
               const SizedBox(height: AppSpacing.xxl),

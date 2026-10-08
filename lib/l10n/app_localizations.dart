@@ -9963,6 +9963,54 @@ abstract class AppLocalizations {
   /// **'{kcal} kcal per portion'**
   String cookedPerPortion(int kcal);
 
+  /// No description provided for @cookedPieces.
+  ///
+  /// In en, this message translates to:
+  /// **'Pieces'**
+  String get cookedPieces;
+
+  /// No description provided for @cookedPiecesLess.
+  ///
+  /// In en, this message translates to:
+  /// **'One piece less'**
+  String get cookedPiecesLess;
+
+  /// No description provided for @cookedPiecesMore.
+  ///
+  /// In en, this message translates to:
+  /// **'One piece more'**
+  String get cookedPiecesMore;
+
+  /// No description provided for @cookedPiecesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Pieces need no weight. Each piece is 1/{count} of the nutrients.'**
+  String cookedPiecesHint(int count);
+
+  /// No description provided for @cookedPerPiece.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} kcal per piece'**
+  String cookedPerPiece(int kcal);
+
+  /// No description provided for @inventoryRowMealFromRecipePieces.
+  ///
+  /// In en, this message translates to:
+  /// **'From recipe · {left} of {total} pieces'**
+  String inventoryRowMealFromRecipePieces(String left, int total);
+
+  /// No description provided for @inventoryEatSheetPiecesHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{{amount} piece} other{{amount} pieces}}'**
+  String inventoryEatSheetPiecesHeader(num count, String amount);
+
+  /// No description provided for @preparedMealPiecesRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'{remaining}/{total} pieces'**
+  String preparedMealPiecesRemaining(String remaining, int total);
+
   /// No description provided for @cookedSave.
   ///
   /// In en, this message translates to:

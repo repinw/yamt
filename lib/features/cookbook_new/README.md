@@ -11,7 +11,8 @@ templates list and later the cooking flow.
 - The Kochbuch page, its sections, and its cook actions.
 - The "Frei kochen" page: the draft rows of a meal without a recipe, how
   spoken or typed text is cut into rows, and their stock state.
-- The "Gekocht" page: portions, pot, and food weight of a meal in the pot.
+- The "Gekocht" page: portions or pieces, pot, and food weight of a meal in
+  the pot.
 - The overview that sorts saved templates into Vorlagen and recipes and marks
   which foods the Vorrat holds.
 

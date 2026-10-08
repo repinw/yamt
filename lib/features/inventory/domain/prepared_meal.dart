@@ -88,6 +88,7 @@ class PreparedMeal {
     this.finalNetWeight,
     this.inPot,
     this.potTareWeight,
+    this.servedInPieces,
   });
 
   /// Creates a [PreparedMeal] for from json.
@@ -152,8 +153,16 @@ class PreparedMeal {
   @JsonKey(includeIfNull: false)
   final int? potTareWeight;
 
+  /// `true` when one serving is a piece, such as a wrap, instead of a portion;
+  /// absent on meals served in portions.
+  @JsonKey(includeIfNull: false)
+  final bool? servedInPieces;
+
   /// Whether the meal is still cooking.
   bool get isInPot => inPot ?? false;
+
+  /// Whether one serving of the meal is a piece.
+  bool get isServedInPieces => servedInPieces ?? false;
 
   /// Remaining cooked net weight in g/ml.
   ///
@@ -226,6 +235,7 @@ class PreparedMeal {
     Object? finalNetWeight = _keepValue,
     Object? inPot = _keepValue,
     Object? potTareWeight = _keepValue,
+    Object? servedInPieces = _keepValue,
     int? totalPortions,
     num? remainingPortions,
     double? totalKcal,
@@ -264,6 +274,9 @@ class PreparedMeal {
       potTareWeight: potTareWeight == _keepValue
           ? this.potTareWeight
           : potTareWeight as int?,
+      servedInPieces: servedInPieces == _keepValue
+          ? this.servedInPieces
+          : servedInPieces as bool?,
       totalPortions: totalPortions ?? this.totalPortions,
       remainingPortions: remainingPortions ?? this.remainingPortions,
       totalKcal: totalKcal ?? this.totalKcal,
@@ -375,6 +388,7 @@ class PreparedMeal {
             other.finalNetWeight == finalNetWeight &&
             other.inPot == inPot &&
             other.potTareWeight == potTareWeight &&
+            other.servedInPieces == servedInPieces &&
             other.remainingNetWeight == remainingNetWeight &&
             other.totalPortions == totalPortions &&
             other.remainingPortions == remainingPortions &&
@@ -407,6 +421,7 @@ class PreparedMeal {
       finalNetWeight,
       inPot,
       potTareWeight,
+      servedInPieces,
       remainingNetWeight,
       totalPortions,
       remainingPortions,

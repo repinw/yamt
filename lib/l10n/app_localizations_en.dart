@@ -5935,6 +5935,46 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get cookedPieces => 'Pieces';
+
+  @override
+  String get cookedPiecesLess => 'One piece less';
+
+  @override
+  String get cookedPiecesMore => 'One piece more';
+
+  @override
+  String cookedPiecesHint(int count) {
+    return 'Pieces need no weight. Each piece is 1/$count of the nutrients.';
+  }
+
+  @override
+  String cookedPerPiece(int kcal) {
+    return '$kcal kcal per piece';
+  }
+
+  @override
+  String inventoryRowMealFromRecipePieces(String left, int total) {
+    return 'From recipe · $left of $total pieces';
+  }
+
+  @override
+  String inventoryEatSheetPiecesHeader(num count, String amount) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$amount pieces',
+      one: '$amount piece',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String preparedMealPiecesRemaining(String remaining, int total) {
+    return '$remaining/$total pieces';
+  }
+
+  @override
   String get cookedSave => 'To stock';
 
   @override

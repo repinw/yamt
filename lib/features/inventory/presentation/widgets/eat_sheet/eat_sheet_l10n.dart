@@ -10,6 +10,7 @@ import 'package:yamt/features/inventory/presentation/controllers/inventory_item_
 import 'package:yamt/features/inventory/presentation/controllers/prepared_meal_eat_sheet_controller.dart';
 import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
 import 'package:yamt/features/inventory/presentation/inventory_amount_unit_l10n.dart';
+import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/prepared_meal_serving_unit_l10n.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _quarterGlyphs = ['¼', '½', '¾'];
@@ -212,7 +213,10 @@ extension PreparedMealEatSheetTexts on PreparedMealEatSheetState {
       return l10n.eatPagePotUnit;
     }
     return switch (mode) {
-      PreparedMealEatAmountMode.portions => l10n.eatPagePortionsUnit,
+      PreparedMealEatAmountMode.portions => preparedMealServingUnit(
+        l10n,
+        calculator.meal,
+      ),
       PreparedMealEatAmountMode.grams => l10n.inventoryUnitGram,
     };
   }
@@ -221,7 +225,7 @@ extension PreparedMealEatSheetTexts on PreparedMealEatSheetState {
   String stockLabel(AppLocalizations l10n) {
     return l10n.inventoryEatSheetAmountWithUnit(
       _portions(calculator.meal.remainingPortions),
-      l10n.eatPagePortionsUnit,
+      preparedMealServingUnit(l10n, calculator.meal),
     );
   }
 
@@ -258,7 +262,7 @@ extension PreparedMealEatSheetTexts on PreparedMealEatSheetState {
           ? _grams(l10n, other)
           : l10n.inventoryEatSheetAmountWithUnit(
               _portions(other),
-              l10n.eatPagePortionsUnit,
+              preparedMealServingUnit(l10n, calculator.meal),
             ),
     );
   }
@@ -266,7 +270,9 @@ extension PreparedMealEatSheetTexts on PreparedMealEatSheetState {
   /// Header of the nutrition table: the eaten portions.
   String portionsHeader(AppLocalizations l10n) {
     final portions = portionsOrOne;
-    return l10n.inventoryEatSheetPortionsHeader(portions, _portions(portions));
+    return calculator.meal.isServedInPieces
+        ? l10n.inventoryEatSheetPiecesHeader(portions, _portions(portions))
+        : l10n.inventoryEatSheetPortionsHeader(portions, _portions(portions));
   }
 
   String _portions(num value) {

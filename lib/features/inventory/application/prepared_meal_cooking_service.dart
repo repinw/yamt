@@ -98,13 +98,15 @@ class PreparedMealCookingService {
     );
   }
 
-  /// Marks the meal [mealId] as cooked: it makes [totalPortions] portions,
-  /// and [potTareWeight] and [finalNetWeight] are set when the cook weighed
-  /// the pot. Portions eaten so far keep their share. Returns the cooked
-  /// meal. Throws when the meal is gone or no longer in the pot.
+  /// Marks the meal [mealId] as cooked: it makes [totalPortions] portions, or
+  /// pieces when [servedInPieces], and [potTareWeight] and [finalNetWeight]
+  /// are set when the cook weighed the pot. Portions eaten so far keep their
+  /// share. Returns the cooked meal. Throws when the meal is gone or no longer
+  /// in the pot.
   Future<PreparedMeal> finishCooking({
     required String mealId,
     required int totalPortions,
+    required bool servedInPieces,
     required int? potTareWeight,
     required int? finalNetWeight,
   }) async {
@@ -122,6 +124,7 @@ class PreparedMealCookingService {
       remainingPortions: meal.remainingRatio * totalPortions,
       potTareWeight: potTareWeight,
       finalNetWeight: finalNetWeight,
+      servedInPieces: servedInPieces ? true : null,
       inPot: null,
       updatedAt: _clock(),
     );

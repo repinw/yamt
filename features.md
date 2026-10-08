@@ -552,8 +552,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   as cooked. Leaving the page with rows asks before it discards them.
 - "Kochen" goes straight on to the "Gekocht" page: the ingredients with
   their amounts and kcal, open rows with "Füllen" (opens the meal's detail
-  page), and "Aufteilen": portions (stepper), the "Behälter" from the
-  kitchen utensils, and "Auf der Waage". The page shows the food weight
+  page), and "Aufteilen": a "Portionen | Stück" switch, the count
+  (stepper), the "Behälter" from the kitchen utensils, and "Auf der Waage".
+  "Stück" (for wraps or burgers) hides the container and the scale and says
+  that each piece is 1/N of the nutrients; the meal then counts "Stk" in
+  place of "Port." in the Vorrat row, on the eat page, and in the diary's
+  "Aus Vorrat essen" list. The page shows the food weight
   (pot minus empty container) and per portion grams and kcal, or only kcal
   per portion without weighing. Weighing is optional, but a weight needs a
   picked container ("Erst den Behälter wählen" blocks saving); without

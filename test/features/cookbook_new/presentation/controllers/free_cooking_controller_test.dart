@@ -56,6 +56,7 @@ class _FakeCookingService implements PreparedMealCookingService {
   Future<PreparedMeal> finishCooking({
     required String mealId,
     required int totalPortions,
+    required bool servedInPieces,
     required int? potTareWeight,
     required int? finalNetWeight,
   }) => throw UnimplementedError();

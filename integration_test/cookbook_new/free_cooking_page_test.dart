@@ -152,6 +152,44 @@ void main() {
     expect(find.byKey(_startKey), findsOneWidget);
   });
 
+  testWidgets('counts the meal in pieces without weighing it', (tester) async {
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(meals: meals, voice: _FakeVoiceService('200 g Reis')),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(FreeCookingHeader.nameKey), 'Wraps');
+    await tester.tap(find.byKey(FreeCookingActions.cookKey));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(CookedMealPotSection.servingKey(inPieces: true)),
+    );
+    await tester.pumpAndSettle();
+    // Pieces need no pot and no scale.
+    expect(find.byKey(CookedMealPotSection.utensilKey), findsNothing);
+    expect(find.byKey(CookedMealPotSection.grossKey), findsNothing);
+    for (var i = 0; i < 5; i++) {
+      await tester.tap(find.byKey(CookedMealPotSection.morePortionsKey));
+      await tester.pump();
+    }
+    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.pumpAndSettle();
+
+    final cooked = meals.saved.single;
+    expect(cooked.isInPot, isFalse);
+    expect(cooked.isServedInPieces, isTrue);
+    expect(cooked.totalPortions, 6);
+    expect(cooked.finalNetWeight, isNull);
+    expect(cooked.potTareWeight, isNull);
+  });
+
   testWidgets('fits under the keyboard and lets go of the name focus', (
     tester,
   ) async {

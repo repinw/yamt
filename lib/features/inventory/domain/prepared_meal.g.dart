@@ -81,6 +81,7 @@ PreparedMeal _$PreparedMealFromJson(Map<String, dynamic> json) => PreparedMeal(
   finalNetWeight: readPreparedMealOptionalInt(json['final_net_weight']),
   inPot: json['in_pot'] as bool?,
   potTareWeight: (json['pot_tare_weight'] as num?)?.toInt(),
+  servedInPieces: json['served_in_pieces'] as bool?,
 );
 
 Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
@@ -101,6 +102,7 @@ Map<String, dynamic> _$PreparedMealToJson(PreparedMeal instance) =>
       'final_net_weight': instance.finalNetWeight,
       'in_pot': ?instance.inPot,
       'pot_tare_weight': ?instance.potTareWeight,
+      'served_in_pieces': ?instance.servedInPieces,
       'total_portions': instance.totalPortions,
       'remaining_portions': instance.remainingPortions,
       'total_kcal': instance.totalKcal,
