@@ -113,6 +113,9 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
 
   @override
   Future<bool> delete(String mealId) async => true;
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 class _LoadingInventoryItemsController extends InventoryItemsController {

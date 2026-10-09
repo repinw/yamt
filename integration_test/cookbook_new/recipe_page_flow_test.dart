@@ -228,6 +228,9 @@ class _FakeMealRepository implements PreparedMealRepository {
     _changes.add(meals);
     return true;
   }
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 class _FakeTemplateRepository implements PreparedMealTemplateRepository {

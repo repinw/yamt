@@ -189,6 +189,9 @@ class _Meals implements PreparedMealRepository {
 
   @override
   Future<bool> delete(String mealId) async => true;
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 /// Fakes the Vorrat behind the delete: the items that exist and the

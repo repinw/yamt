@@ -290,6 +290,9 @@ class _RecordingPreparedMealRepository implements PreparedMealRepository {
     saved = meals;
     return true;
   }
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 /// Fakes the repositories the eat service writes to, signed in.

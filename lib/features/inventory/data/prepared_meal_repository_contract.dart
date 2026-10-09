@@ -9,6 +9,13 @@ abstract interface class PreparedMealRepository {
   /// not parse. Throws when they cannot be read.
   Future<List<PreparedMeal>> readAll();
 
+  /// Reads the meals a change starts from: from the local cache while a
+  /// [watchAll] of this repository runs and has delivered a list, otherwise
+  /// from the server. The cache holds the app's own writes at once and
+  /// works offline; its first list after a cold start may come from the
+  /// persisted cache before the server answers.
+  Future<List<PreparedMeal>> readAllForChange();
+
   /// Writes [meal] alone; the other meals of the household stay untouched.
   Future<bool> save(PreparedMeal meal);
 

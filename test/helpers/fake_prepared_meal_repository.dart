@@ -59,4 +59,7 @@ class FakePreparedMealRepository implements PreparedMealRepository {
     writeCount += 1;
     return _writeResults[(writeCount - 1).clamp(0, _writeResults.length - 1)];
   }
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }

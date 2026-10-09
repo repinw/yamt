@@ -31,8 +31,8 @@ class PreparedMealWriter {
   final bool _newMealsInPot;
   final String Function() _newId;
 
-  /// Reads the stored meals of the household.
-  Future<List<PreparedMeal>> loadMeals() => _meals.readAll();
+  /// Reads the meals of the household that a change starts from.
+  Future<List<PreparedMeal>> loadMeals() => _meals.readAllForChange();
 
   /// Writes the meals that [nextMeals] changes against [previousMeals].
   /// Throws when the repository throws.
@@ -86,7 +86,7 @@ class PreparedMealWriter {
     required Future<T> Function(InventoryItemRepository inventory) operation,
     required bool Function(T result) succeeded,
   }) async {
-    final beforeItems = await inventory.readAll();
+    final beforeItems = await inventory.readAllForChange();
     final tracking = PreparedMealStockTrackingRepository(
       delegate: inventory,
       initialItems: beforeItems,

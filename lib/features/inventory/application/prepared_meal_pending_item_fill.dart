@@ -41,7 +41,7 @@ class PreparedMealPendingItemFill {
       return false;
     }
 
-    final currentItems = await inventoryRepository.readAll();
+    final currentItems = await inventoryRepository.readAllForChange();
     final PreparedMealBuildResult built;
     try {
       built = buildPreparedMealCreationResult(

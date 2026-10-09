@@ -125,7 +125,7 @@ class PreparedMealCookingService {
     required int? potTareWeight,
     required int? finalNetWeight,
   }) async {
-    final meals = await _mealRepository.readAll();
+    final meals = await _mealRepository.readAllForChange();
     final meal = meals.firstWhere(
       (meal) => meal.id == mealId,
       orElse: () => throw StateError('Meal $mealId is gone.'),
@@ -155,7 +155,7 @@ class PreparedMealCookingService {
   /// the meal is deleted. Throws when the meal is
   /// gone, already cooked, or the write fails.
   Future<void> discard(String mealId) async {
-    final meals = await _mealRepository.readAll();
+    final meals = await _mealRepository.readAllForChange();
     final meal = meals.firstWhere(
       (meal) => meal.id == mealId,
       orElse: () => throw StateError('Meal $mealId is gone.'),

@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/features/inventory/data/sealed_household_document_writes.dart';
@@ -23,6 +24,12 @@ class PreparedMealDocument {
 abstract interface class PreparedMealStore {
   /// Read all.
   Future<List<PreparedMealDocument>> readAll({required String householdId});
+
+  /// Reads all from the local cache, and from the server only when the
+  /// cache read fails.
+  Future<List<PreparedMealDocument>> readAllLocal({
+    required String householdId,
+  });
 
   /// Watch all.
   Stream<List<PreparedMealDocument>> watchAll({required String householdId});
@@ -56,6 +63,16 @@ class FirestorePreparedMealStore
     final collection = householdCollection(householdId);
     return _mapDocuments(
       await collection.openAll(await collection.reference.get()),
+    );
+  }
+
+  @override
+  Future<List<PreparedMealDocument>> readAllLocal({
+    required String householdId,
+  }) async {
+    final collection = householdCollection(householdId);
+    return _mapDocuments(
+      await collection.openAll(await readQueryLocalFirst(collection.reference)),
     );
   }
 
