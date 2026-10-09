@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
-import 'package:yamt/features/inventory/data/inventory_user_session.dart';
+import 'package:yamt/features/household/application/household_data_scope.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_image_store.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -17,17 +17,18 @@ const String _repositoryLogName = 'FirestoreKitchenUtensilRepository';
 class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
   /// Creates repository.
   new({
-    required this._session,
+    required this._household,
     required this._sessionShutdownSignal,
-    required this._store,
     required this._imageStore,
   });
 
-  final InventoryUserSession _session;
+  final HouseholdStore<KitchenUtensilStore>? _household;
   final SessionShutdownSignal _sessionShutdownSignal;
-  final KitchenUtensilStore _store;
   final KitchenUtensilImageStore _imageStore;
   Future<void> _writeBarrier = Future<void>.value();
+
+  /// Only called after [_currentHouseholdId] returned a household.
+  KitchenUtensilStore get _store => _household!.store;
 
   @override
   Stream<List<KitchenUtensil>> watchAll() {
@@ -102,7 +103,7 @@ class FirestoreKitchenUtensilRepository implements KitchenUtensilRepository {
   }
 
   String? _currentHouseholdId() {
-    final householdId = _session.householdId;
+    final householdId = _household?.householdId;
     if (householdId != null && householdId.isNotEmpty) {
       return householdId;
     }

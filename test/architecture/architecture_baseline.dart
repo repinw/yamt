@@ -334,6 +334,5 @@ const architectureBaseline = <String, Map<String, int>>{
         1,
   },
   'session-interface': {
-    'lib/features/inventory/data/inventory_user_session.dart': 1,
   },
 };

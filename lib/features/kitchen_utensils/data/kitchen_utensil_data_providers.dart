@@ -3,39 +3,10 @@ import 'dart:developer' show log;
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/firebase_storage_provider.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_key_session.dart';
-import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_image_store.dart';
-import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_store.dart';
 
 const _dataProviderLogName = 'KitchenUtensilDataProviders';
-
-/// Current household-scoped user session for kitchen utensils.
-final kitchenUtensilUserSessionProvider = Provider<InventoryUserSession>((ref) {
-  ref.watch(authStateChangesProvider);
-  final householdId = ref.watch(householdCipherProvider)?.householdId;
-  return _CurrentKitchenUtensilUserSession(householdId: householdId);
-});
-
-/// Firestore-backed kitchen utensil metadata store.
-final kitchenUtensilStoreProvider = Provider<KitchenUtensilStore>((ref) {
-  final firestore = ref.watch(firebaseFirestoreProvider);
-  final householdCipher = ref.watch(householdCipherProvider);
-  if (firestore == null || householdCipher == null) {
-    log(
-      'Falling back to unavailable kitchen utensil store.',
-      name: _dataProviderLogName,
-    );
-    return const _UnavailableKitchenUtensilStore();
-  }
-  return FirestoreKitchenUtensilStore(
-    firestore: firestore,
-    cipher: householdCipher.cipher,
-  );
-});
 
 /// Firebase Storage-backed kitchen utensil image store.
 final kitchenUtensilImageStoreProvider = Provider<KitchenUtensilImageStore>((
@@ -51,50 +22,6 @@ final kitchenUtensilImageStoreProvider = Provider<KitchenUtensilImageStore>((
   }
   return FirebaseKitchenUtensilImageStore(storage: storage);
 });
-
-class _CurrentKitchenUtensilUserSession implements InventoryUserSession {
-  const new({required this._householdId});
-
-  final String? _householdId;
-
-  @override
-  String? get householdId => _householdId;
-}
-
-class _UnavailableKitchenUtensilStore implements KitchenUtensilStore {
-  const new();
-
-  @override
-  Future<List<KitchenUtensilDocument>> readAll({
-    required String householdId,
-  }) async {
-    return const <KitchenUtensilDocument>[];
-  }
-
-  @override
-  Stream<List<KitchenUtensilDocument>> watchAll({required String householdId}) {
-    return Stream<List<KitchenUtensilDocument>>.value(
-      const <KitchenUtensilDocument>[],
-    );
-  }
-
-  @override
-  Future<bool> upsert({
-    required String householdId,
-    required String utensilId,
-    required Map<String, dynamic> data,
-  }) async {
-    return false;
-  }
-
-  @override
-  Future<bool> delete({
-    required String householdId,
-    required String utensilId,
-  }) async {
-    return false;
-  }
-}
 
 class _UnavailableKitchenUtensilImageStore implements KitchenUtensilImageStore {
   const new();
