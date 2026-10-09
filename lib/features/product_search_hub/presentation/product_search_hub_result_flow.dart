@@ -12,8 +12,6 @@ import 'package:yamt/features/inventory/domain/'
     as inventory_models;
 import 'package:yamt/features/product_search_hub/domain/'
     'manual_product_eat_now_nutrition.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
@@ -152,7 +150,7 @@ _directDiaryProductResult({
   required ProductSearchHubRouteArgs args,
   required OffProductSearchResult product,
 }) {
-  if (args.mode != ProductSearchHubMode.diary) {
+  if (!args.isDiary) {
     return null;
   }
   final l10n = AppLocalizations.of(context)!;
@@ -176,7 +174,7 @@ _directInventoryProductResult({
   required ProductSearchHubRouteArgs args,
   required OffProductSearchResult product,
 }) {
-  if (!_opensItemPage(args)) {
+  if (!args.opensItemPageFirst) {
     return null;
   }
   final l10n = AppLocalizations.of(context)!;
@@ -196,7 +194,7 @@ _directInventoryRecentItemResult({
   required ProductSearchHubRouteArgs args,
   required InventoryItem item,
 }) {
-  if (!_opensItemPage(args) || !hasRequiredEatNowNutrition(item.nutrition)) {
+  if (!args.opensItemPageFirst || !hasRequiredEatNowNutrition(item.nutrition)) {
     return null;
   }
   return productSearchHubDirectInventoryItemResult(
@@ -212,7 +210,7 @@ _directDiaryRecentItemResult({
   required ProductSearchHubRouteArgs args,
   required InventoryItem item,
 }) {
-  if (args.mode != ProductSearchHubMode.diary) {
+  if (!args.isDiary) {
     return null;
   }
   // A recent item is an old stock entry that is usually eaten up. Eating it
@@ -223,11 +221,4 @@ _directDiaryRecentItemResult({
     selectedGlobalFoodItemId: manualProductRecentItemGlobalFoodItemId(item),
     globalPackageWeight: item.weight,
   );
-}
-
-/// Whether a picked food opens the Vorrat page or the eat page before the
-/// editor.
-bool _opensItemPage(ProductSearchHubRouteArgs args) {
-  return args.mode == ProductSearchHubMode.inventory ||
-      args.mode == ProductSearchHubMode.mealFood;
 }

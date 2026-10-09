@@ -137,6 +137,12 @@ class ProductSearchHubRouteArgs {
   /// Whether the hub is running in diary mode.
   bool get isDiary => mode == ProductSearchHubMode.diary;
 
+  /// Whether a picked food opens the Vorrat page or the eat page before the
+  /// editor: in the Vorrat and for a meal.
+  bool get opensItemPageFirst =>
+      mode == ProductSearchHubMode.inventory ||
+      mode == ProductSearchHubMode.mealFood;
+
   /// Default action to preselect in the manual product editor.
   InventoryReceiptManualProductAction get initialManualProductAction =>
       switch (mode) {
