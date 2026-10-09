@@ -6,10 +6,7 @@
 
 /// Known violations per rule id and file path.
 const architectureBaseline = <String, Map<String, int>>{
-  'feature-order': {
-    'lib/features/inventory/presentation/inventory_manual_product_search_launcher.dart':
-        1,
-  },
+  'feature-order': {},
   'foreign-presentation': {
     'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_dialog.dart':
         1,
@@ -80,8 +77,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/formatters/inventory_nutrition_format.dart':
         1,
     'lib/features/inventory/presentation/inventory_amount_unit_l10n.dart': 1,
-    'lib/features/inventory/presentation/inventory_manual_product_search_launcher.dart':
-        1,
     'lib/features/inventory/presentation/inventory_prepared_meal_edit_coordinator.dart':
         1,
     'lib/features/inventory/presentation/utils/off_product_nutrition_grade_extension.dart':
@@ -313,6 +308,5 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/scanner/domain/contracts/receipt_manual_product_picker.dart':
         1,
   },
-  'session-interface': {
-  },
+  'session-interface': {},
 };

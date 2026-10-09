@@ -2,6 +2,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_search_request.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -169,6 +170,13 @@ class ProductSearchHubRouteArgs {
 ProductSearchHubRouteArgs resolveProductSearchHubRouteArgs(Object? extra) {
   if (extra is ProductSearchHubRouteArgs) {
     return extra;
+  }
+  if (extra is InventoryManualProductSearchRequest) {
+    return ProductSearchHubRouteArgs.selection(
+      item: extra.item,
+      includeStoreInSearch: extra.includeStoreInSearch,
+      includeWeightInSearch: extra.includeWeightInSearch,
+    );
   }
   if (extra is ProductSearchHubMode) {
     return ProductSearchHubRouteArgs(mode: extra);
