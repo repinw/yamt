@@ -13,7 +13,7 @@ mixin InventoryItemWholeListWrites implements InventoryItemRepository {
   Future<List<InventoryItem>> storedItems() => readAll();
 
   @override
-  Future<List<InventoryItem>> readAllLocal() => storedItems();
+  Future<List<InventoryItem>> readAllForChange() => storedItems();
 
   @override
   Future<bool> save(InventoryItem item) async {

@@ -33,6 +33,7 @@ class _FakeInventoryItemStore
   Future<List<InventoryItemDocument>> readAll({
     required String householdId,
   }) async {
+    readSources.add('server');
     return _copyDocuments(householdId);
   }
 
@@ -40,8 +41,12 @@ class _FakeInventoryItemStore
   Future<List<InventoryItemDocument>> readAllLocal({
     required String householdId,
   }) async {
+    readSources.add('cache');
     return _copyDocuments(householdId);
   }
+
+  /// Where each list read went, in order.
+  final readSources = <String>[];
 
   @override
   Future<List<InventoryItemDocument>> readRecentManual({
@@ -217,6 +222,34 @@ InventoryItem _item(
 }
 
 void main() {
+  test(
+    'a change reads the server until the watch delivered, then the cache',
+    () async {
+      final store = _FakeInventoryItemStore();
+      addTearDown(store.dispose);
+      final repository = FirestoreInventoryItemRepository(
+        household: (householdId: 'household-1', store: store),
+        sessionShutdownSignal: SessionShutdownSignal(),
+      );
+
+      // Offline before any list: the read goes to the server, as before.
+      await repository.readAllForChange();
+      final delivered = Completer<void>();
+      final subscription = repository.watchAll().listen((_) {
+        if (!delivered.isCompleted) delivered.complete();
+      });
+      await delivered.future;
+      await repository.readAllForChange();
+      // Without a running watch the cache no longer follows the server.
+      // The generator behind the watch ends with its next event, so the
+      // cancel is not awaited.
+      unawaited(subscription.cancel());
+      await repository.readAllForChange();
+
+      expect(store.readSources, ['server', 'cache', 'server']);
+    },
+  );
+
   test('readAll returns empty list without a household', () async {
     final store = _FakeInventoryItemStore();
     addTearDown(store.dispose);

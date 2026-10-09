@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/data/delivered_watches.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/household/application/household_data_scope.dart';
@@ -23,6 +24,11 @@ class FirestoreInventoryItemRepository
   InventoryItemStore get _store => _household!.store;
   Future<void> _writeBarrier = Future<void>.value();
 
+  /// The running [watchAll] streams that have delivered a list. While one
+  /// runs, the local cache holds the household's items and follows the
+  /// server.
+  final _deliveredWatches = DeliveredWatches();
+
   @override
   bool get supportsLimitedRecentManualReads => true;
 
@@ -32,14 +38,15 @@ class FirestoreInventoryItemRepository
     if (householdId == null) {
       return Stream<List<InventoryItem>>.value(const <InventoryItem>[]);
     }
-    return _watchAllForHousehold(householdId);
+    return _deliveredWatches.track(_watchAllForHousehold(householdId));
   }
 
   @override
   Future<List<InventoryItem>> readAll() => _readAll(localFirst: false);
 
   @override
-  Future<List<InventoryItem>> readAllLocal() => _readAll(localFirst: true);
+  Future<List<InventoryItem>> readAllForChange() =>
+      _readAll(localFirst: _deliveredWatches.any);
 
   @override
   Future<List<InventoryItem>> readRecentManualItems({

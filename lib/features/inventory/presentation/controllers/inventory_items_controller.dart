@@ -103,9 +103,7 @@ class InventoryItemsController extends _$InventoryItemsController {
       operation: () async {
         final generation = _feed.generation;
         final repository = ref.read(inventoryItemRepositoryProvider);
-        final items = _feed.items == null
-            ? await repository.readAll()
-            : await repository.readAllLocal();
+        final items = await repository.readAllForChange();
         if (!ref.mounted) {
           return fallback;
         }
