@@ -77,7 +77,7 @@ final class DiaryDayTypeStatusProvider
 }
 
 String _$diaryDayTypeStatusHash() =>
-    r'25e1863655fe67b149483afee258eff898ebb65e';
+    r'eab41ac6d9c7988be2b70ffba970244bbcf5ed0b';
 
 /// Day type of [day], or `null` while no calorie goal exists.
 

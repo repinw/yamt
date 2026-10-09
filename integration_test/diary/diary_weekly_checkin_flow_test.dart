@@ -7,6 +7,7 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -16,7 +17,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show diaryWeeklyCheckInActionsProvider, diaryWeeklyCheckInDataProvider;
+    show diaryWeeklyCheckInActionsProvider;
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -130,7 +131,7 @@ void main() {
             body: Consumer(
               builder: (context, ref, _) {
                 final checkInData = ref
-                    .watch(diaryWeeklyCheckInDataProvider)
+                    .watch(calorieWeeklyCheckInDataProvider)
                     .value;
                 ref.watch(diaryWeeklyCheckInActionsProvider);
                 return Center(

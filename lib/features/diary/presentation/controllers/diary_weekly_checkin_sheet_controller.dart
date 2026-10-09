@@ -1,8 +1,8 @@
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 
 part 'diary_weekly_checkin_sheet_controller.g.dart';
 
@@ -80,8 +80,8 @@ class DiaryWeeklyCheckInSheetController
     final previous = state.value;
     final plan = await ref.watch(
       preview
-          ? diaryWeeklyCheckInPreviewPlanProvider.future
-          : diaryWeeklyCheckInPlanProvider.future,
+          ? calorieWeeklyCheckInPreviewPlanProvider.future
+          : calorieWeeklyCheckInPlanProvider.future,
     );
     if (plan == null) {
       return null;

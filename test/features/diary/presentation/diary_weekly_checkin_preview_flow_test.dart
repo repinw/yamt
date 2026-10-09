@@ -4,8 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_weekly_checkin_preview_flow.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_preview_tiles.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -23,10 +24,10 @@ Future<void> _pumpTiles(WidgetTester tester) async {
     ProviderScope(
       overrides: [
         clockProvider.overrideWithValue(() => _today),
-        diaryWeeklyCheckInPreviewDataProvider.overrideWith(
+        calorieWeeklyCheckInPreviewDataProvider.overrideWith(
           (ref) async => calorieWeeklyCheckInDemoData(today: _today),
         ),
-        diaryWeeklyCheckInPreviewPlanProvider.overrideWith(
+        calorieWeeklyCheckInPreviewPlanProvider.overrideWith(
           (ref) async => calorieWeeklyCheckInDemoPlan(
             today: _today,
             macroSettings: const MacroGoalSettings(),

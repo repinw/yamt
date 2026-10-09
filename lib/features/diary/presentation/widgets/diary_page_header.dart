@@ -5,6 +5,7 @@ import 'package:yamt/core/constants/app_sizes.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/activity/presentation/widgets/'
     'diary_weight_missing_prompt_section.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -88,7 +89,7 @@ class DiaryPageHeader extends ConsumerWidget {
   /// Whether the check-in hint asks for a weight, or may once it loads.
   bool _checkInAsksForWeight(WidgetRef ref) {
     return ref.watch(
-      diaryWeeklyCheckInDataProvider.select(
+      calorieWeeklyCheckInDataProvider.select(
         (checkIn) => switch (checkIn.value) {
           final data? =>
             data.showDiaryHint && diaryCheckInCanTrackMissingWeight(data),

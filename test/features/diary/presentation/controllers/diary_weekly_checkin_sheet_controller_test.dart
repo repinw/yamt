@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_weekly_checkin_sheet_controller.dart';
 
 final _today = DateTime(2026, 9, 30);
@@ -51,7 +51,7 @@ _start({DateTime? windowStart, bool measured = true}) async {
   final plan = _plan(measured: measured);
   final container = ProviderContainer(
     overrides: [
-      diaryWeeklyCheckInPlanProvider.overrideWith((ref) async => plan),
+      calorieWeeklyCheckInPlanProvider.overrideWith((ref) async => plan),
     ],
   );
   addTearDown(container.dispose);
@@ -121,7 +121,7 @@ void main() {
       ..goTo(DiaryWeeklyCheckInStep.targets)
       ..clearTrainingDays();
 
-    container.invalidate(diaryWeeklyCheckInPlanProvider);
+    container.invalidate(calorieWeeklyCheckInPlanProvider);
     await container.read(provider.future);
 
     final state = container.read(provider).value!;

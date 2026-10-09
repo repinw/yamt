@@ -4,9 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -271,7 +271,7 @@ CalorieWeeklyCheckInPlan _latePlan() {
 Widget _scoped(Widget app, {CalorieWeeklyCheckInPlan? plan}) {
   final container = ProviderContainer(
     overrides: [
-      diaryWeeklyCheckInPlanProvider.overrideWith(
+      calorieWeeklyCheckInPlanProvider.overrideWith(
         (ref) async => plan ?? _demoPlan(),
       ),
     ],
