@@ -13,8 +13,6 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/diary/presentation/'
-    'diary_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_calorie_entry_commit_store.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -26,10 +24,6 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_product_eat_coordinator.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_meal_food_pick.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_missing_values_hint.dart';
@@ -37,8 +31,6 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'inventory_item_eat_sheet_body.dart';
-import 'package:yamt/features/product_search_hub/application/'
-    'product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/data/'
     'food_estimate_repository.dart';
 import 'package:yamt/features/product_search_hub/domain/food_estimate.dart';
@@ -204,21 +196,6 @@ Future<void> _pumpRouteHarness(
           foodEstimateRepositoryProvider.overrideWithValue(
             foodEstimateRepository,
           ),
-        productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
-          final container = ref.container;
-          return (mode) => switch (mode) {
-            ProductSearchHubMode.inventory =>
-              const InventoryProductSearchHubCompletionHandler(),
-            ProductSearchHubMode.diary =>
-              DiaryProductSearchHubCompletionHandler(
-                eatCoordinator: container.read(
-                  inventoryManualProductEatCoordinatorProvider,
-                ),
-              ),
-            ProductSearchHubMode.selection || ProductSearchHubMode.mealFood =>
-              const SelectionProductSearchHubCompletionHandler(),
-          };
-        }),
       ],
       child: Consumer(
         builder: (context, ref, _) {

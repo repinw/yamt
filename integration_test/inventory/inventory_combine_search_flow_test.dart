@@ -13,17 +13,13 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
-import 'package:yamt/features/diary/presentation/diary_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/off_product_search_repository.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/inventory_combine_pick_page.dart';
-import 'package:yamt/features/inventory/presentation/inventory_manual_product_eat_coordinator.dart';
-import 'package:yamt/features/inventory/presentation/inventory_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/presentation/inventory_stock_add_page.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_page_scaffold.dart';
-import 'package:yamt/features/product_search_hub/application/product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -278,15 +274,6 @@ void main() {
           firebaseAuthProvider.overrideWithValue(auth),
           plannedEntryRepositoryProvider.overrideWithValue(plans),
           clockProvider.overrideWithValue(() => DateTime(2026, 5, 13, 20)),
-          // Wired in main.dart for the app.
-          productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
-            final container = ref.container;
-            return (mode) => DiaryProductSearchHubCompletionHandler(
-              eatCoordinator: container.read(
-                inventoryManualProductEatCoordinatorProvider,
-              ),
-            );
-          }),
         ],
       ),
     );
@@ -333,19 +320,6 @@ void main() {
           plannedEntryRepositoryProvider.overrideWithValue(plans),
           inventoryItemRepositoryProvider.overrideWithValue(items),
           clockProvider.overrideWithValue(() => DateTime(2026, 5, 13, 20)),
-          // Wired in main.dart for the app.
-          productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
-            final container = ref.container;
-            return (mode) => switch (mode) {
-              ProductSearchHubMode.inventory =>
-                const InventoryProductSearchHubCompletionHandler(),
-              _ => DiaryProductSearchHubCompletionHandler(
-                eatCoordinator: container.read(
-                  inventoryManualProductEatCoordinatorProvider,
-                ),
-              ),
-            };
-          }),
         ],
       ),
     );

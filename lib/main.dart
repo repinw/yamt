@@ -9,18 +9,8 @@ import 'package:yamt/core/config/firebase_config.dart';
 import 'package:yamt/core/config/font_licenses.dart';
 import 'package:yamt/core/debug/app_provider_observer.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/diary/presentation/'
-    'diary_product_search_hub_completion_handler.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_product_eat_coordinator.dart';
 import 'package:yamt/features/inventory/presentation/'
     'inventory_manual_product_search_launcher.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_product_search_hub_completion_handler.dart';
-import 'package:yamt/features/product_search_hub/application/'
-    'product_search_hub_completion_providers.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_mode.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,21 +29,6 @@ Future<void> main() async {
         inventoryManualProductSearchLauncherProvider.overrideWith(
           (ref) => buildInventoryProductSearchHubManualProductSearchLauncher(),
         ),
-        productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
-          final container = ref.container;
-          return (mode) => switch (mode) {
-            ProductSearchHubMode.inventory =>
-              const InventoryProductSearchHubCompletionHandler(),
-            ProductSearchHubMode.diary =>
-              DiaryProductSearchHubCompletionHandler(
-                eatCoordinator: container.read(
-                  inventoryManualProductEatCoordinatorProvider,
-                ),
-              ),
-            ProductSearchHubMode.selection || ProductSearchHubMode.mealFood =>
-              const SelectionProductSearchHubCompletionHandler(),
-          };
-        }),
       ],
       child: const YAMT(),
     ),
