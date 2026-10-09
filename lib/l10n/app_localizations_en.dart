@@ -6088,6 +6088,39 @@ class AppLocalizationsEn extends AppLocalizations {
       'The meal is in stock, but could not be added to the cookbook.';
 
   @override
+  String recipeOriginalPortions(int count) {
+    return 'Original for $count';
+  }
+
+  @override
+  String get recipeStepsTitle => 'Preparation';
+
+  @override
+  String recipeStepCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count steps',
+      one: '1 step',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recipeNotFound => 'This recipe is gone.';
+
+  @override
+  String get recipeLoadFailed => 'Could not load the recipe or the stock.';
+
+  @override
+  String recipePickTitle(String food) {
+    return '$food: take it from';
+  }
+
+  @override
+  String get recipeNotFromStock => 'Not from stock';
+
+  @override
   String get cookedLoadFailed => 'Could not load the meal.';
 
   @override

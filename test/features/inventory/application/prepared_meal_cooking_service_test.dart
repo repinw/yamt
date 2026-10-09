@@ -45,6 +45,101 @@ void main() {
     );
   });
 
+  test(
+    'cookRecipe sizes the recipe for the portions and fills the pot',
+    () async {
+      final meals = _FakeMealRepository();
+      final items = _FakeInventoryRepository([_rice()]);
+      final service = _service(meals, items, _FakeActivityRepository());
+      final recipe = PreparedMeal(
+        id: 'recipe-1',
+        name: 'Reistopf',
+        totalPortions: 2,
+        remainingPortions: 2,
+        totalKcal: 0,
+        totalProtein: 0,
+        totalCarbs: 0,
+        totalFat: 0,
+        createdAt: _now,
+        updatedAt: _now,
+        components: const [],
+        recipeIngredients: const ['100 g Reis', '1 Zwiebel', 'Salz'],
+        ignoredRecipeIngredients: const ['Salz'],
+        recipeInstructions: const ['Kochen.'],
+      );
+
+      final result = await service.cookRecipe(
+        recipe: recipe,
+        portions: 4,
+        assignments: const {
+          '100 g Reis': ['rice'],
+        },
+      );
+
+      expect(result.isSuccess, isTrue);
+      final meal = meals.saved.single;
+      expect(meal.id, isNot('recipe-1'));
+      expect(meal.name, 'Reistopf');
+      expect(meal.isInPot, isTrue);
+      expect(meal.totalPortions, 4);
+      expect(meal.components.single.usedAmount, 200);
+      expect(meal.pendingRecipeIngredients.single, contains('Zwiebel'));
+      expect(meal.recipeInstructions, ['Kochen.']);
+      expect(items.items.single.currentAmount, 800);
+    },
+  );
+
+  test('cookRecipe takes pieces by the saved amount conversion', () async {
+    final meals = _FakeMealRepository();
+    final items = _FakeInventoryRepository([
+      InventoryItem.create(
+        id: 'eggs',
+        name: 'Eier',
+        entryDate: DateTime.utc(2026, 9),
+        storeName: 'Store',
+        quantity: 1,
+        initialAmount: 600,
+        currentAmount: 600,
+        amountUnit: InventoryAmountUnit.gram,
+      ),
+    ]);
+    final service = _service(meals, items, _FakeActivityRepository());
+    final recipe = PreparedMeal(
+      id: 'recipe-1',
+      name: 'Rührei',
+      totalPortions: 1,
+      remainingPortions: 1,
+      totalKcal: 0,
+      totalProtein: 0,
+      totalCarbs: 0,
+      totalFat: 0,
+      createdAt: _now,
+      updatedAt: _now,
+      components: const [],
+      recipeIngredients: const ['2 Eier'],
+      recipeIngredientAmountConversions: const {
+        '2 Eier': RecipeIngredientAmountConversion(
+          amountPerPiece: 60,
+          unit: InventoryAmountUnit.gram,
+        ),
+      },
+    );
+
+    final result = await service.cookRecipe(
+      recipe: recipe,
+      portions: 1,
+      assignments: const {
+        '2 Eier': ['eggs'],
+      },
+    );
+
+    expect(result.isSuccess, isTrue);
+    final meal = meals.saved.single;
+    expect(meal.components.single.usedAmount, 120);
+    expect(meal.pendingRecipeIngredients, isEmpty);
+    expect(items.items.single.currentAmount, 480);
+  });
+
   test('finishCooking sets portions and weights and leaves the pot', () async {
     final meals = _FakeMealRepository();
     final service = _service(

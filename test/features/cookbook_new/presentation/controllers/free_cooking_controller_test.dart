@@ -53,6 +53,13 @@ class _FakeCookingService implements PreparedMealCookingService {
   }
 
   @override
+  Future<PreparedMealCreationResult> cookRecipe({
+    required PreparedMeal recipe,
+    required int portions,
+    required Map<String, List<String>> assignments,
+  }) => throw UnimplementedError();
+
+  @override
   Future<PreparedMeal> finishCooking({
     required String mealId,
     required int totalPortions,

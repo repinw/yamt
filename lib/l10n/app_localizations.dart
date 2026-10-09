@@ -10190,6 +10190,48 @@ abstract class AppLocalizations {
   /// **'The meal is in stock, but could not be added to the cookbook.'**
   String get cookedCookbookFailed;
 
+  /// No description provided for @recipeOriginalPortions.
+  ///
+  /// In en, this message translates to:
+  /// **'Original for {count}'**
+  String recipeOriginalPortions(int count);
+
+  /// No description provided for @recipeStepsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparation'**
+  String get recipeStepsTitle;
+
+  /// No description provided for @recipeStepCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 step} other{{count} steps}}'**
+  String recipeStepCount(int count);
+
+  /// No description provided for @recipeNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This recipe is gone.'**
+  String get recipeNotFound;
+
+  /// No description provided for @recipeLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the recipe or the stock.'**
+  String get recipeLoadFailed;
+
+  /// No description provided for @recipePickTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'{food}: take it from'**
+  String recipePickTitle(String food);
+
+  /// No description provided for @recipeNotFromStock.
+  ///
+  /// In en, this message translates to:
+  /// **'Not from stock'**
+  String get recipeNotFromStock;
+
   /// No description provided for @cookedLoadFailed.
   ///
   /// In en, this message translates to:

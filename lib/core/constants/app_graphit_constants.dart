@@ -115,6 +115,18 @@ abstract final class AppGraphit {
   /// Opacity of a disabled button.
   static const double disabledOpacity = 0.7;
 
+  /// Height of the recipe photo at the top of the recipe page.
+  static const double recipeHeroHeight = 280;
+
+  /// Opacity of the dark scrim at the lower edge of a photo with text on it.
+  static const double photoScrimOpacity = 0.92;
+
+  /// Opacity of the background of a button on a photo.
+  static const double photoButtonOpacity = 0.5;
+
+  /// Largest share of the screen height that a picker sheet takes.
+  static const double pickerSheetHeightFactor = 0.7;
+
   /// Duration of a state change, such as a progress segment filling.
   static const Duration stateChange = Duration(milliseconds: 240);
 }

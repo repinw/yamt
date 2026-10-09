@@ -66,7 +66,7 @@ class PreparedMealCookingService {
     required String name,
     required List<String> ingredients,
     required Map<String, List<String>> assignments,
-  }) async {
+  }) {
     final now = _clock();
     final recipe = PreparedMeal(
       id: '',
@@ -82,23 +82,36 @@ class PreparedMealCookingService {
       components: const <PreparedMealComponent>[],
       recipeIngredients: ingredients,
     );
-    return await _writer.trackStock(
-      inventory: _inventoryRepository,
-      activity: _activityRepository,
-      actor: _actor,
-      operation: (inventory) =>
-          PreparedMealCreation(writer: _writer).createPreparedMealFromTemplate(
-            template: recipe,
-            totalPortions: 1,
-            recipeIngredientAssignments: assignments,
-            recipeIngredientAmountConversions:
-                const <String, RecipeIngredientAmountConversion>{},
-            inventoryRepository: inventory,
-            ingredientParser: _ingredientParser,
-          ),
-      succeeded: (result) => result.isSuccess,
-    );
+    return cookRecipe(recipe: recipe, portions: 1, assignments: assignments);
   }
+
+  /// Puts a meal from the saved [recipe] for [portions] portions in the pot.
+  ///
+  /// [assignments] maps a recipe ingredient to the Vorrat item ids that
+  /// supply it; those are used up, and the other ingredients stay open on the
+  /// meal. Ignored ingredients of the recipe are left out, and its saved
+  /// amount conversions apply. A repository failure is rethrown after the
+  /// Vorrat is restored.
+  Future<PreparedMealCreationResult> cookRecipe({
+    required PreparedMeal recipe,
+    required int portions,
+    required Map<String, List<String>> assignments,
+  }) => _writer.trackStock(
+    inventory: _inventoryRepository,
+    activity: _activityRepository,
+    actor: _actor,
+    operation: (inventory) =>
+        PreparedMealCreation(writer: _writer).createPreparedMealFromTemplate(
+          template: recipe,
+          totalPortions: portions,
+          recipeIngredientAssignments: assignments,
+          recipeIngredientAmountConversions:
+              recipe.recipeIngredientAmountConversions,
+          inventoryRepository: inventory,
+          ingredientParser: _ingredientParser,
+        ),
+    succeeded: (result) => result.isSuccess,
+  );
 
   /// Marks the meal [mealId] as cooked: it makes [totalPortions] portions, or
   /// pieces when [servedInPieces], and [potTareWeight] and [finalNetWeight]
