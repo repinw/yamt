@@ -20,6 +20,8 @@ import 'package:yamt/features/calories/application/burn_week_live_sync_provider.
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -42,12 +44,7 @@ import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show
-        DiaryWeeklyCheckInActions,
-        diaryCalorieGoalSettingsProvider,
-        diaryWeeklyCheckInActionsProvider,
-        diaryWeeklyCheckInDataProvider,
-        diaryWeeklyCheckInPlanProvider;
+    show DiaryWeeklyCheckInActions, diaryWeeklyCheckInActionsProvider;
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -82,7 +79,7 @@ void _setWeeklyCheckInData(
   CalorieWeeklyCheckInData data,
 ) {
   _weeklyCheckInData = data;
-  container.invalidate(diaryWeeklyCheckInDataProvider);
+  container.invalidate(calorieWeeklyCheckInDataProvider);
 }
 
 class _MockUser extends Mock implements User;
@@ -265,17 +262,17 @@ void main() {
     tester,
   ) async {
     var checkInBuildCount = 0;
+    final emptySettings = FakeCalorieSettingsRepository();
+    addTearDown(emptySettings.dispose);
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          diaryCalorieGoalSettingsProvider.overrideWith(
-            (ref) async => const CalorieGoalSettings.empty(),
-          ),
+          calorieSettingsRepositoryProvider.overrideWithValue(emptySettings),
           diaryWeeklyCheckInActionsProvider.overrideWithValue(
             _noopWeeklyCheckInActions(),
           ),
-          diaryWeeklyCheckInDataProvider.overrideWith((ref) {
+          calorieWeeklyCheckInDataProvider.overrideWith((ref) {
             checkInBuildCount += 1;
             return _weeklyCheckInCheckInData(
               windowStartDate: DateTime(2026, 4, 20),
@@ -1135,12 +1132,12 @@ Future<ProviderContainer> _pumpDiaryPage(
         FakeManualHealthWeightRepository(<ManualHealthWeightEntry>[]),
       ),
       if (overrideWeeklyCheckInProvider)
-        diaryWeeklyCheckInDataProvider.overrideWith(
+        calorieWeeklyCheckInDataProvider.overrideWith(
           (ref) => _weeklyCheckInData,
         ),
-      diaryWeeklyCheckInPlanProvider.overrideWith((ref) async {
+      calorieWeeklyCheckInPlanProvider.overrideWith((ref) async {
         final checkInData = await ref.watch(
-          diaryWeeklyCheckInDataProvider.future,
+          calorieWeeklyCheckInDataProvider.future,
         );
         final pending = checkInData.pendingWeeklyCheckIn;
         return pending == null

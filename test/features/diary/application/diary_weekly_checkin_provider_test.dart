@@ -3,13 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart'
     as checkin_provider;
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show diaryWeeklyCheckInActionsProvider, diaryWeeklyCheckInDataProvider;
+    show diaryWeeklyCheckInActionsProvider;
 
 import '../../calories/support/fake_calories_repositories.dart';
 
@@ -44,7 +45,7 @@ void main() {
         (_, _) {},
       );
       final diarySubscription = container.listen(
-        diaryWeeklyCheckInDataProvider,
+        calorieWeeklyCheckInDataProvider,
         (_, _) {},
       );
       addTearDown(checkInSubscription.close);
@@ -52,7 +53,7 @@ void main() {
       await container.read(
         checkin_provider.calorieWeeklyCheckInDataProvider.future,
       );
-      await container.read(diaryWeeklyCheckInDataProvider.future);
+      await container.read(calorieWeeklyCheckInDataProvider.future);
 
       final shown = await container
           .read(diaryWeeklyCheckInActionsProvider)

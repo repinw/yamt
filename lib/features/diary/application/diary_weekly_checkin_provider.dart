@@ -5,26 +5,15 @@ import 'package:yamt/features/calories/application/calorie_week_overview_provide
     as week_overview;
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart'
     as checkin_controller;
-import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart'
-    as checkin_demo;
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart'
-    as checkin_plan;
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart'
     as checkin_provider;
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 part 'diary_weekly_checkin_provider.g.dart';
-
-/// Calorie goal settings consumed by diary UI.
-@riverpod
-Future<CalorieGoalSettings> diaryCalorieGoalSettings(Ref ref) {
-  return ref.watch(goal_controller.calorieGoalControllerProvider.future);
-}
 
 /// Whether the active calorie goal had already been reached on [day].
 bool diaryActiveCalorieGoalWasReached(
@@ -55,37 +44,6 @@ bool diaryCheckInCanTrackMissingWeight(CalorieWeeklyCheckInData data) {
     CalorieWeeklyCheckInBlockedReason.missingWindowEndWeight => true,
     _ => false,
   };
-}
-
-/// Weekly check-in data consumed by diary UI.
-@riverpod
-Future<CalorieWeeklyCheckInData> diaryWeeklyCheckInData(Ref ref) {
-  return ref.watch(checkin_provider.calorieWeeklyCheckInDataProvider.future);
-}
-
-/// Plan of the pending weekly check-in consumed by diary UI.
-@riverpod
-Future<CalorieWeeklyCheckInPlan?> diaryWeeklyCheckInPlan(Ref ref) {
-  return ref.watch(checkin_plan.calorieWeeklyCheckInPlanProvider.future);
-}
-
-/// Plan of the latest completed window, for the debug preview.
-@riverpod
-Future<CalorieWeeklyCheckInPlan?> diaryWeeklyCheckInPreviewPlan(Ref ref) {
-  return ref.watch(checkin_plan.calorieWeeklyCheckInPreviewPlanProvider.future);
-}
-
-/// Check-in data of the latest completed window, for the debug preview.
-@riverpod
-Future<CalorieWeeklyCheckInData> diaryWeeklyCheckInPreviewData(Ref ref) {
-  return ref.watch(
-    checkin_provider.calorieWeeklyCheckInPreviewDataProvider.future,
-  );
-}
-
-/// Demo check-in data that lacks the end weight, for the debug preview.
-CalorieWeeklyCheckInData diaryWeeklyCheckInBlockedDemoData(DateTime today) {
-  return checkin_demo.calorieWeeklyCheckInDemoData(today: today, blocked: true);
 }
 
 /// Whether [selectedDay] currently has calorie entries in the weekly window.
@@ -122,7 +80,6 @@ DiaryWeeklyCheckInActions diaryWeeklyCheckInActions(Ref ref) {
       );
       if (saved && ref.mounted) {
         checkin_provider.invalidateCalorieWeeklyCheckInData(ref);
-        ref.invalidate(diaryWeeklyCheckInDataProvider);
       }
       return saved;
     },
@@ -136,7 +93,6 @@ DiaryWeeklyCheckInActions diaryWeeklyCheckInActions(Ref ref) {
         return;
       }
       checkin_provider.invalidateCalorieWeeklyCheckInData(ref);
-      ref.invalidate(diaryWeeklyCheckInDataProvider);
     },
   );
 }

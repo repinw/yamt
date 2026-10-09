@@ -5,6 +5,7 @@ import 'package:yamt/core/preferences/app_preferences.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
+import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/application/day_budget.dart';
@@ -15,7 +16,6 @@ import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/data/diary_day_dashboard_cache_repository.dart';
 import 'package:yamt/features/diary/domain/diary_day_goal_signature.dart';
 import 'package:yamt/features/diary/domain/diary_macro_targets.dart';
@@ -75,22 +75,22 @@ class DiaryDayDashboardController extends _$DiaryDayDashboardController {
 
     // Day type and goal edits change the budget without touching calorie logs,
     // so the overview revision above never fires for them.
-    ref.listen<AsyncValue<CalorieGoalSettings>>(
-      diaryCalorieGoalSettingsProvider,
-      (previous, next) {
-        final previousSignature = diaryDayGoalSignature(
-          previous?.value,
-          normalizedDay,
-        );
-        final nextSignature = diaryDayGoalSignature(next.value, normalizedDay);
-        if (previousSignature == null ||
-            nextSignature == null ||
-            previousSignature == nextSignature) {
-          return;
-        }
-        unawaited(_refreshSelectedDay(forceRefresh: true));
-      },
-    );
+    ref.listen<AsyncValue<CalorieGoalSettings>>(calorieGoalControllerProvider, (
+      previous,
+      next,
+    ) {
+      final previousSignature = diaryDayGoalSignature(
+        previous?.value,
+        normalizedDay,
+      );
+      final nextSignature = diaryDayGoalSignature(next.value, normalizedDay);
+      if (previousSignature == null ||
+          nextSignature == null ||
+          previousSignature == nextSignature) {
+        return;
+      }
+      unawaited(_refreshSelectedDay(forceRefresh: true));
+    });
 
     unawaited(
       Future<void>.microtask(

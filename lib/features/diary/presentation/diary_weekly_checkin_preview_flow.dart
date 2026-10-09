@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_sheet.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -31,7 +32,10 @@ Future<void> showDiaryWeeklyCheckInPreviewFlow(
     child: kind == DiaryWeeklyCheckInPreviewKind.missingData
         ? DiaryWeeklyCheckInSheet(
             key: DiaryWeeklyCheckInSheetKeys.sheet,
-            checkInData: diaryWeeklyCheckInBlockedDemoData(today),
+            checkInData: calorieWeeklyCheckInDemoData(
+              today: today,
+              blocked: true,
+            ),
             goalReached: false,
             preview: true,
           )
@@ -58,7 +62,7 @@ class _DiaryWeeklyCheckInPreviewSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ref
-        .watch(diaryWeeklyCheckInPreviewDataProvider)
+        .watch(calorieWeeklyCheckInPreviewDataProvider)
         .when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (_, _) => Center(
