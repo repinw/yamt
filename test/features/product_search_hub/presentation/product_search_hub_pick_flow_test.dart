@@ -6,6 +6,8 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_editor_flow.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_entry_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_pick_flow.dart';
@@ -89,5 +91,48 @@ void main() {
     });
 
     expect(completed, ['created']);
+  });
+
+  testWidgets('a pick page returns its final step with the shown food', (
+    tester,
+  ) async {
+    final result = _result();
+    final shown = <InventoryReceiptManualProductResult>[];
+    ({InventoryReceiptManualProductResult result, String? step})? page;
+
+    await _run(tester, (context) async {
+      page = await showProductSearchHubPickPage<String>(
+        context: context,
+        args: ProductSearchHubRouteArgs.selection(item: result.item),
+        result: result,
+        show: (current) async {
+          shown.add(current);
+          return 'eat';
+        },
+        isEdit: (step) => step == 'edit',
+      );
+    });
+
+    expect(shown, [same(result)]);
+    expect(page?.step, 'eat');
+    expect(page?.result, same(result));
+  });
+
+  testWidgets('a closed pick page returns no step', (tester) async {
+    final result = _result();
+    ({InventoryReceiptManualProductResult result, String? step})? page;
+
+    await _run(tester, (context) async {
+      page = await showProductSearchHubPickPage<String>(
+        context: context,
+        args: ProductSearchHubRouteArgs.selection(item: result.item),
+        result: result,
+        show: (_) async => null,
+        isEdit: (step) => step == 'edit',
+      );
+    });
+
+    expect(page?.step, isNull);
+    expect(page?.result, same(result));
   });
 }

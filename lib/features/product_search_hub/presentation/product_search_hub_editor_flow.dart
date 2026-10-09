@@ -116,3 +116,40 @@ Future<InventoryReceiptManualProductResult?> _openProductSearchHubEditor({
     ),
   );
 }
+
+/// Shows a page for a picked food until the user leaves it with a step that
+/// is no edit. [show] opens the page for the current food; a step for which
+/// [isEdit] is true opens the editor, and the page shows again with the
+/// edited food. An edit keeps the user's own copy; the catalog product
+/// stays.
+///
+/// Returns the last version of the food with the final step, which is null
+/// when the user closed the page or the hub went away.
+Future<({InventoryReceiptManualProductResult result, S? step})>
+showProductSearchHubPickPage<S extends Object>({
+  required BuildContext context,
+  required ProductSearchHubRouteArgs args,
+  required InventoryReceiptManualProductResult result,
+  required Future<S?> Function(InventoryReceiptManualProductResult current)
+  show,
+  required bool Function(S step) isEdit,
+}) async {
+  var current = result;
+  while (true) {
+    final step = await show(current);
+    if (!context.mounted || step == null || !isEdit(step)) {
+      return (result: current, step: context.mounted ? step : null);
+    }
+    final edited = await openProductSearchHubCustomProductEditor(
+      context: context,
+      draftItem: current.item,
+      args: args,
+    );
+    if (!context.mounted) {
+      return (result: current, step: null);
+    }
+    if (edited != null) {
+      current = edited;
+    }
+  }
+}
