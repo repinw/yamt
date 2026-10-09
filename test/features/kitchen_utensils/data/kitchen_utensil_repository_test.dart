@@ -7,20 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/encrypted_payload.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
-import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'firestore_kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_image_store.dart';
 import 'package:yamt/features/kitchen_utensils/data/kitchen_utensil_store.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
-
-class _FakeInventoryUserSession implements InventoryUserSession {
-  const new({this.householdId});
-
-  @override
-  final String? householdId;
-}
 
 class _FakeKitchenUtensilStore implements KitchenUtensilStore {
   List<KitchenUtensilDocument> documents = const <KitchenUtensilDocument>[];
@@ -100,15 +92,15 @@ class _FakeKitchenUtensilImageStore implements KitchenUtensilImageStore {
 }
 
 FirestoreKitchenUtensilRepository _repository({
-  required InventoryUserSession session,
   required KitchenUtensilStore store,
-  required KitchenUtensilImageStore imageStore,
+  required KitchenUtensilImageStore imageStore, String? householdId,
   SessionShutdownSignal? sessionShutdownSignal,
 }) {
   return FirestoreKitchenUtensilRepository(
-    session: session,
+    household: householdId == null
+        ? null
+        : (householdId: householdId, store: store),
     sessionShutdownSignal: sessionShutdownSignal ?? SessionShutdownSignal(),
-    store: store,
     imageStore: imageStore,
   );
 }
@@ -196,7 +188,7 @@ void main() {
           ),
         ];
       final repository = _repository(
-        session: const _FakeInventoryUserSession(householdId: 'household-1'),
+        householdId: 'household-1',
         store: store,
         imageStore: _FakeKitchenUtensilImageStore(),
       );
@@ -212,7 +204,7 @@ void main() {
   test('save and delete delegate to the household id', () async {
     final store = _FakeKitchenUtensilStore();
     final repository = _repository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      householdId: 'household-1',
       store: store,
       imageStore: _FakeKitchenUtensilImageStore(),
     );
@@ -228,7 +220,6 @@ void main() {
 
   test('returns empty data and false writes without a household', () async {
     final repository = _repository(
-      session: const _FakeInventoryUserSession(),
       store: _FakeKitchenUtensilStore(),
       imageStore: _FakeKitchenUtensilImageStore(),
     );
@@ -249,7 +240,7 @@ void main() {
   test('uploadImage builds storage path and imageUrl resolves URL', () async {
     final imageStore = _FakeKitchenUtensilImageStore();
     final repository = _repository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      householdId: 'household-1',
       store: _FakeKitchenUtensilStore(),
       imageStore: imageStore,
     );
@@ -277,7 +268,7 @@ void main() {
         code: 'permission-denied',
       );
     final repository = _repository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      householdId: 'household-1',
       store: store,
       imageStore: _FakeKitchenUtensilImageStore(),
     );
@@ -296,7 +287,7 @@ void main() {
         code: 'permission-denied',
       );
     final repository = _repository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      householdId: 'household-1',
       store: store,
       imageStore: _FakeKitchenUtensilImageStore(),
       sessionShutdownSignal: signal,

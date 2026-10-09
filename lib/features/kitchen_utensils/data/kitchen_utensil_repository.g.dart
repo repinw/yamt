@@ -59,4 +59,4 @@ final class KitchenUtensilRepositoryProvider
 }
 
 String _$kitchenUtensilRepositoryHash() =>
-    r'69c9950cb7cebd5f57651be56ffcb77ffb158846';
+    r'6e8b4489792ebf5ccddad6461ce3d475c46db0aa';
