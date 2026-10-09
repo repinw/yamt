@@ -37,7 +37,7 @@ class _FakeFridgeItemRepository with InventoryItemWholeListWrites {
 
   /// The local cache: the last stored list, or the read list before that.
   @override
-  Future<List<InventoryItem>> readAllLocal() async =>
+  Future<List<InventoryItem>> readAllForChange() async =>
       _stored ? savedItems : await onReadAll();
 
   bool _stored = false;

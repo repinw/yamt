@@ -30,7 +30,7 @@ class PreparedMealStockTrackingRepository implements InventoryItemRepository {
   }
 
   @override
-  Future<List<InventoryItem>> readAllLocal() async {
+  Future<List<InventoryItem>> readAllForChange() async {
     return latestItems;
   }
 
