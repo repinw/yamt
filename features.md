@@ -375,8 +375,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   prepared meal "A + B" and opens its "Gekocht" step (kicker "Kombiniert"):
   Portionen or Stück and the count, "Gewicht · N g aus den Zutaten" (the sum
   of the ingredients when all are in grams; "Gewicht stimmt nicht? Mit
-  Behälter wiegen" shows the container and the scale instead), and where it
-  goes. Closing that step asks "Mahlzeit verwerfen?" ("Die Zutaten gehen
+  Behälter wiegen" shows the container and the scale instead), and the "Ins
+  Kochbuch" switch. Closing that step asks "Mahlzeit verwerfen?" ("Die Zutaten gehen
   zurück in den Vorrat."); discarding returns the stock and deletes foods
   found by search again, also when the step is opened again later from
   "Offen". Until the step is saved the meal is open like a
@@ -582,12 +582,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   picked container ("Erst den Behälter wählen" blocks saving); without
   kitchen utensils, or when they fail to load, the scale row is hidden. A
   weight that is not above the empty container shows "Nicht schwerer als
-  der leere Behälter" and blocks saving. "Wie geht's weiter" picks the
-  destination, and the main button follows it: "In den Vorrat" (default)
-  stores portions, the container's empty weight, and the food weight, and
-  the meal leaves the pot; "Ins Tagebuch" does the same and then opens the
-  eat page for the first portion. A meal with open rows can only go to the
-  Vorrat. Closing the page keeps it in the pot. A meal that does not show up within a few seconds counts as
+  der leere Behälter" and blocks saving. "In den Vorrat" stores portions,
+  the container's empty weight, and the food weight, and the meal leaves
+  the pot; eating goes through the Vorrat afterwards. The "Ins Kochbuch"
+  switch (off by default, also for a combined meal) also saves the cooked
+  meal as a cookbook template with today's ingredients and amounts; when
+  only the template fails, the meal stays in the Vorrat and a message says
+  so. Closing the page keeps it in the pot. A meal that does not show up within a few seconds counts as
   gone, and the page says it could not be loaded.
 - A meal in the pot shows "Im Topf" in the Vorrat list. Its detail page
   says "Im Topf" and keeps the meal actions, but blocks "Ins Tagebuch",

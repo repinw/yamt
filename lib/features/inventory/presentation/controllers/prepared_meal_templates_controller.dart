@@ -3,6 +3,7 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
 import 'package:yamt/features/household/application/household_scope_provider.dart';
 import 'package:yamt/features/household/application/'
@@ -12,6 +13,7 @@ import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_template_copy.dart';
 
 part 'prepared_meal_templates_controller.g.dart';
 
@@ -111,7 +113,10 @@ class PreparedMealTemplatesController
         .run<PreparedMealTemplateSaveResult>(
           operation: () async {
             final currentTemplates = await _currentTemplates();
-            final template = _buildTemplateFromMeal(meal);
+            final template = meal.asTemplate(
+              id: _uuid.v4(),
+              now: ref.read(clockProvider)(),
+            );
             final nextTemplates = List<PreparedMeal>.from(currentTemplates)
               ..add(template);
             final saved = await _saveTemplates(
@@ -484,17 +489,6 @@ class PreparedMealTemplatesController
     }
     return PreparedMealTemplateSaveResult.success(template.id);
   }
-}
-
-PreparedMeal _buildTemplateFromMeal(PreparedMeal meal) {
-  final now = DateTime.now();
-  return meal.copyWith(
-    id: PreparedMealTemplatesController._uuid.v4(),
-    name: meal.name.trim(),
-    remainingPortions: meal.totalPortions,
-    createdAt: now,
-    updatedAt: now,
-  );
 }
 
 PreparedMeal _buildTemplateFromRecipe({

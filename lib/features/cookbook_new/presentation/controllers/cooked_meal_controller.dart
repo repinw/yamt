@@ -3,6 +3,8 @@ import 'dart:developer' show log;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_cooking_service.dart';
+import 'package:yamt/features/inventory/application/'
+    'prepared_meal_template_writer.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 part 'cooked_meal_controller.g.dart';
@@ -50,6 +52,31 @@ class CookedMealController extends _$CookedMealController {
       }
       return result.value;
     } finally {
+      link.close();
+    }
+  }
+
+  /// Saves the cooked [meal] as a cookbook template. Returns whether it
+  /// worked.
+  Future<bool> addToCookbook(PreparedMeal meal) async {
+    final link = ref.keepAlive();
+    // Keeps the page's save button off until the template is written.
+    state = const AsyncLoading();
+    try {
+      await ref.read(preparedMealTemplateWriterProvider).addFromMeal(meal);
+      return true;
+    } on Object catch (error, stackTrace) {
+      log(
+        'Failed to add the meal to the cookbook.',
+        name: 'CookedMealController',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    } finally {
+      if (ref.mounted) {
+        state = const AsyncData(null);
+      }
       link.close();
     }
   }

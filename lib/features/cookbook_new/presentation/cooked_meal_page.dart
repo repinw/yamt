@@ -16,7 +16,7 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cooked_meal_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_save_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'cooked_meal_destination_section.dart';
+    'cooked_meal_cookbook_switch.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_header.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -38,8 +38,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 const _mealArrivalWait = Duration(seconds: 5);
 
 /// "Gekocht": the cook sets the portions of a meal in the pot, picks the
-/// pot, and may weigh it. Saving marks the meal as cooked; with "Ins
-/// Tagebuch" the eat page opens next for the first portion.
+/// pot, and may weigh it. Saving marks the meal as cooked and keeps it in
+/// the Vorrat; the "Ins Kochbuch" switch also saves it as a template.
 class CookedMealPage extends ConsumerStatefulWidget {
   /// Creates the page for the meal [mealId].
   const new({required this.mealId, super.key});
@@ -63,7 +63,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
   /// its ingredients.
   var _weighs = false;
   String? _utensilId;
-  CookedMealDestination _destination = CookedMealDestination.stock;
+  var _toCookbook = false;
 
   late final Timer _arrivalTimer;
   late final ScreenWakeLock _wakeLock;
@@ -192,9 +192,6 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
     final utensilsAsync = ref.watch(kitchenUtensilListProvider);
     final utensils = utensilsAsync.value ?? const <KitchenUtensil>[];
     final utensil = utensils.firstWhereOrNull((item) => item.id == _utensilId);
-    final canEat = meal.pendingRecipeIngredients.isEmpty;
-    // Rows opened after the pick send the meal to the Vorrat again.
-    final destination = canEat ? _destination : CookedMealDestination.stock;
     final ingredientsWeight = meal.isCombined && !_weighs
         ? meal.ingredientsGrams
         : null;
@@ -256,10 +253,9 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                 null => l10n.cookedPerPortion(pot.kcalPerPortion),
               }, style: textTheme.bodyMedium?.copyWith(color: colors.muted)),
               const SizedBox(height: AppSpacing.xxl),
-              CookedMealDestinationSection(
-                selected: destination,
-                canEat: canEat,
-                onChanged: (value) => setState(() => _destination = value),
+              CookedMealCookbookSwitch(
+                value: _toCookbook,
+                onChanged: (value) => setState(() => _toCookbook = value),
               ),
             ],
           ),
@@ -277,7 +273,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
                       meal: meal,
                       portions: portions,
                       servedInPieces: _inPieces,
-                      toDiary: destination == CookedMealDestination.diary,
+                      toCookbook: _toCookbook,
                       tareWeight: utensil?.weightGrams,
                       netWeight: pot.netWeight,
                     ),
@@ -287,10 +283,7 @@ class _CookedMealPageState extends ConsumerState<CookedMealPage> {
               foregroundColor: colors.onAccent,
               minimumSize: const Size.fromHeight(AppGraphit.buttonHeight),
             ),
-            child: Text(switch (destination) {
-              CookedMealDestination.diary => l10n.cookedToDiary,
-              CookedMealDestination.stock => l10n.cookedSave,
-            }),
+            child: Text(l10n.cookedSave),
           ),
         ),
       ],

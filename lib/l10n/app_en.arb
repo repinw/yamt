@@ -3547,9 +3547,6 @@
   "cookedDiscardFailed": "Could not discard the meal. Its foods are not back in the stock yet.",
   "cookedSave": "To stock",
   "cookedNeedsUtensil": "Pick the container first",
-  "cookedNextTitle": "What’s next",
-  "cookedToDiary": "To diary",
-  "cookedToDiaryNote": "Next you log your portion; the rest stays in stock.",
   "cookedSaved": "{name} is in stock",
   "@cookedSaved": {
     "placeholders": {
@@ -3558,6 +3555,17 @@
       }
     }
   },
+  "cookedToCookbook": "Add to cookbook",
+  "cookedToCookbookNote": "Today’s ingredients and amounts",
+  "cookedSavedWithCookbook": "{name} is in stock and in the cookbook",
+  "@cookedSavedWithCookbook": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedCookbookFailed": "The meal is in stock, but could not be added to the cookbook.",
   "cookedLoadFailed": "Could not load the meal.",
   "preparedMealGone": "Meal is no longer in stock",
   "cookbookInPotSince": "In the pot since {time}",

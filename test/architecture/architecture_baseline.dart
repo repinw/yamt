@@ -230,7 +230,7 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/domain/inventory_item.dart': 1,
     'lib/features/inventory/domain/prepared_meal.dart': 1,
     'lib/features/inventory/presentation/controllers/prepared_meal_templates_controller.dart':
-        3,
+        2,
     'lib/features/kitchen_utensils/application/kitchen_utensil_mutation_service.dart':
         2,
     'lib/features/kitchen_utensils/domain/kitchen_utensil.dart': 1,

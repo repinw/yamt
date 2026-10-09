@@ -6068,19 +6068,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookedNeedsUtensil => 'Pick the container first';
 
   @override
-  String get cookedNextTitle => 'What’s next';
-
-  @override
-  String get cookedToDiary => 'To diary';
-
-  @override
-  String get cookedToDiaryNote =>
-      'Next you log your portion; the rest stays in stock.';
-
-  @override
   String cookedSaved(String name) {
     return '$name is in stock';
   }
+
+  @override
+  String get cookedToCookbook => 'Add to cookbook';
+
+  @override
+  String get cookedToCookbookNote => 'Today’s ingredients and amounts';
+
+  @override
+  String cookedSavedWithCookbook(String name) {
+    return '$name is in stock and in the cookbook';
+  }
+
+  @override
+  String get cookedCookbookFailed =>
+      'The meal is in stock, but could not be added to the cookbook.';
 
   @override
   String get cookedLoadFailed => 'Could not load the meal.';
