@@ -6,6 +6,7 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_dropdown_button.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cookbook_section_title.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/portion_stepper.dart';
 import 'package:yamt/features/kitchen_utensils/domain/kitchen_utensil.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -155,40 +156,17 @@ class CookedMealPotSection extends StatelessWidget {
                 inPieces ? l10n.cookedPieces : l10n.cookedPortions,
                 style: label,
               ),
-              Row(
-                children: [
-                  IconButton.filledTonal(
-                    tooltip: inPieces
-                        ? l10n.cookedPiecesLess
-                        : l10n.cookedPortionsLess,
-                    onPressed: portions > 1
-                        ? () => onPortionsChanged(portions - 1)
-                        : null,
-                    icon: const Icon(Icons.remove_rounded),
-                  ),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minWidth: AppGraphit.badge,
-                    ),
-                    child: Text(
-                      '$portions',
-                      key: portionsKey,
-                      textAlign: TextAlign.center,
-                      style: textTheme.titleLarge?.copyWith(
-                        color: colors.ink,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                  ),
-                  IconButton.filledTonal(
-                    key: morePortionsKey,
-                    tooltip: inPieces
-                        ? l10n.cookedPiecesMore
-                        : l10n.cookedPortionsMore,
-                    onPressed: () => onPortionsChanged(portions + 1),
-                    icon: const Icon(Icons.add_rounded),
-                  ),
-                ],
+              PortionStepper(
+                count: portions,
+                onChanged: onPortionsChanged,
+                lessTooltip: inPieces
+                    ? l10n.cookedPiecesLess
+                    : l10n.cookedPortionsLess,
+                moreTooltip: inPieces
+                    ? l10n.cookedPiecesMore
+                    : l10n.cookedPortionsMore,
+                countKey: portionsKey,
+                moreKey: morePortionsKey,
               ),
             ),
             // Pieces split the nutrients by count, so nothing is weighed.
