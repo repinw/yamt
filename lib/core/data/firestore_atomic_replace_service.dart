@@ -46,28 +46,16 @@ class FirestoreAtomicReplaceService {
   final int maxStaleDeleteCandidatesPerTransaction;
 
   /// Replaces collection contents with provided documents.
-  ///
-  /// A stored document missing from [documentsById] is deleted only when
-  /// [canDelete] allows it, for example because the caller could read it and
-  /// so left it out on purpose.
   Future<void> replaceAll({
     required CollectionReference<Map<String, dynamic>> collection,
     required Map<String, Map<String, dynamic>> documentsById,
     Future<void> Function()? onBeforeDeleteStaleDocuments,
-    Future<bool> Function(FirestoreStaleDeleteCandidate candidate)? canDelete,
   }) async {
     final existingSnapshot = await collection.get();
-    var staleDeleteCandidates = buildStaleDeleteCandidates(
+    final staleDeleteCandidates = buildStaleDeleteCandidates(
       existingSnapshot: existingSnapshot,
       documentsById: documentsById,
     );
-    if (canDelete != null) {
-      final deletable = await Future.wait(staleDeleteCandidates.map(canDelete));
-      staleDeleteCandidates = [
-        for (final (index, candidate) in staleDeleteCandidates.indexed)
-          if (deletable[index]) candidate,
-      ];
-    }
     final canRunAtomic = canRunAtomicReplaceAll(
       upsertCount: documentsById.length,
       staleDeleteCount: staleDeleteCandidates.length,
