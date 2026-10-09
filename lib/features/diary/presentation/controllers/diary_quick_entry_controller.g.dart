@@ -67,7 +67,7 @@ final class DiaryQuickEntryControllerProvider
 }
 
 String _$diaryQuickEntryControllerHash() =>
-    r'c1f95b9e1502412817c9d0df9bcc00743eb7e134';
+    r'7fd7b09db622c6163eeb6a04b4697aeb19ca9e66';
 
 /// Holds the input of the quick entry page and saves it as a calorie entry
 /// without a food behind it.

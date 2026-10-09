@@ -5,12 +5,9 @@ import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/serialized_mutation_queue.dart';
+import 'package:yamt/features/calories/application/calorie_day_log_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
-import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
-import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/inventory/application/'
     'prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/application/'
@@ -29,9 +26,7 @@ InventoryQuickEatApplication inventoryQuickEatApplication(Ref ref) {
     saveEntry: ref.watch(calorieEntrySaverProvider),
     commitStore: ref.watch(preparedMealCalorieEntryCommitStoreProvider),
     mealMutations: ref.watch(preparedMealMutationServiceProvider),
-    plans: ref.watch(plannedEntryRepositoryProvider),
-    overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
-    lastPlannedDay: ref.watch(lastPlannedDayProvider.notifier),
+    dayLog: ref.watch(calorieDayLogServiceProvider),
     now: ref.watch(clockProvider),
   );
 }
@@ -51,18 +46,14 @@ class InventoryQuickEatApplication {
     required this._saveEntry,
     required this._commitStore,
     required this._mealMutations,
-    required this._plans,
-    required this._overviewRevision,
-    required this._lastPlannedDay,
+    required this._dayLog,
     required this._now,
   });
 
   final CalorieEntrySaver _saveEntry;
   final PreparedMealCalorieEntryCommitStore? _commitStore;
   final PreparedMealMutationService _mealMutations;
-  final PlannedEntryRepository _plans;
-  final CalorieOverviewRevision _overviewRevision;
-  final LastPlannedDay _lastPlannedDay;
+  final CalorieDayLogService _dayLog;
   final DateTime Function() _now;
   final _mutationQueue = SerializedMutationQueue();
 
@@ -107,8 +98,7 @@ class InventoryQuickEatApplication {
             mealId: meal.id,
             netWeight: potNetWeight,
           );
-    final isPlan =
-        asPlan || DiaryDayStatus.of(day: loggedDay, today: _now()).isFuture;
+    final isPlan = asPlan || _dayLog.plansOn(loggedDay);
     final action = isPlan ? PreparedMealAction.plan : PreparedMealAction.eat;
     if (!weighed.allowsPortions(action, consumedPortions)) {
       return null;
@@ -160,9 +150,7 @@ class InventoryQuickEatApplication {
     if (plan == null) {
       return null;
     }
-    await _plans.savePlannedEntry(plan);
-    _overviewRevision.markChanged();
-    _lastPlannedDay.planned(plan.loggedAt);
+    await _dayLog.plan(plan);
     return (entry: plan, isPlan: true);
   }
 
