@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
+import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
@@ -13,6 +14,7 @@ part 'calorie_day_log_service.g.dart';
 CalorieDayLogService calorieDayLogService(Ref ref) {
   return CalorieDayLogService(
     plans: ref.watch(plannedEntryRepositoryProvider),
+    closedDays: ref.watch(closedDayRepositoryProvider),
     overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
     lastPlannedDay: ref.watch(lastPlannedDayProvider.notifier),
     clock: ref.watch(clockProvider),
@@ -20,17 +22,20 @@ CalorieDayLogService calorieDayLogService(Ref ref) {
 }
 
 /// Logs food on a diary day: decides whether it becomes a plan, saves plans,
-/// and tells the diary dashboards and overviews about every change.
+/// closes the day before a planned day, and tells the diary dashboards and
+/// overviews about every change.
 class CalorieDayLogService {
   /// Creates the service.
   const new({
     required this._plans,
+    required this._closedDays,
     required this._overviewRevision,
     required this._lastPlannedDay,
     required this._clock,
   });
 
   final PlannedEntryRepository _plans;
+  final ClosedDayRepository _closedDays;
   final CalorieOverviewRevision _overviewRevision;
   final LastPlannedDay _lastPlannedDay;
   final DateTime Function() _clock;
@@ -71,6 +76,20 @@ class CalorieDayLogService {
     for (final plan in plans) {
       await _plans.deletePlannedEntry(plan.id);
     }
+    _overviewRevision.markChanged();
+  }
+
+  /// Closes [day], so the planned day after it counts like a started day
+  /// with its carryover.
+  Future<void> closeDay(DateTime day) async {
+    await _closedDays.saveClosedDay(day);
+    // Closing changes budgets without a calorie log.
+    _overviewRevision.markChanged();
+  }
+
+  /// Opens the closed day again.
+  Future<void> reopenDay() async {
+    await _closedDays.deleteClosedDay();
     _overviewRevision.markChanged();
   }
 }

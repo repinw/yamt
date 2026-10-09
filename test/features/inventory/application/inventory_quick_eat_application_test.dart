@@ -5,6 +5,7 @@ import 'package:yamt/features/calories/application/calorie_day_log_service.dart'
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
+import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_delete_result.dart';
 import 'package:yamt/features/inventory/application/'
@@ -17,6 +18,7 @@ import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_pot_weighing.dart';
 
+import '../../../helpers/memory_app_preferences.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 import '../../calories/support/fake_planned_entry_repository.dart';
 
@@ -100,6 +102,7 @@ InventoryQuickEatApplication _application({
     mealMutations: mealMutations ?? _FakeMealMutations(),
     dayLog: CalorieDayLogService(
       plans: plans ?? FakePlannedEntryRepository(),
+      closedDays: ClosedDayRepository(MemoryAppPreferences(), 'user-1'),
       overviewRevision: revisionContainer.read(
         calorieOverviewRevisionProvider.notifier,
       ),

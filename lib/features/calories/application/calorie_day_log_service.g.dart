@@ -59,4 +59,4 @@ final class CalorieDayLogServiceProvider
 }
 
 String _$calorieDayLogServiceHash() =>
-    r'b0caf30dfd0ba9c42b23d004d787cdf8fa52ea8d';
+    r'2b24303cb494a3ff5d31bef814e66d7624979577';

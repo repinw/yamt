@@ -4,9 +4,11 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/features/calories/application/calorie_day_log_service.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
+import 'package:yamt/features/calories/data/closed_day_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 
+import '../../../helpers/memory_app_preferences.dart';
 import '../support/fake_planned_entry_repository.dart';
 
 /// Fails the save of the plan with [failingId].
@@ -45,9 +47,14 @@ void main() {
     addTearDown(container.dispose);
   });
 
-  CalorieDayLogService service(FakePlannedEntryRepository plans) {
+  CalorieDayLogService service(
+    FakePlannedEntryRepository plans, {
+    ClosedDayRepository? closedDays,
+  }) {
     return CalorieDayLogService(
       plans: plans,
+      closedDays:
+          closedDays ?? ClosedDayRepository(MemoryAppPreferences(), 'user-1'),
       overviewRevision: container.read(
         calorieOverviewRevisionProvider.notifier,
       ),
@@ -106,5 +113,22 @@ void main() {
 
     expect(plans.plans, isEmpty);
     expect(revision(), 0);
+  });
+
+  test('closing and reopening a day signal the change', () async {
+    final closedDays = ClosedDayRepository(MemoryAppPreferences(), 'user-1');
+    final dayLog = service(
+      FakePlannedEntryRepository(),
+      closedDays: closedDays,
+    );
+    final day = DateTime(2026, 9, 28);
+
+    await dayLog.closeDay(day);
+    expect(closedDays.readClosedDay(), day);
+    expect(revision(), 1);
+
+    await dayLog.reopenDay();
+    expect(closedDays.readClosedDay(), isNull);
+    expect(revision(), 2);
   });
 }
