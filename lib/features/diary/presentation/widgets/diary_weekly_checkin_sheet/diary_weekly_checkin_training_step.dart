@@ -4,9 +4,9 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/graphit_text_styles.dart';
 import 'package:yamt/core/theme/intro_accent_colors.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/presentation/widgets/training_day_chips.dart';
 import 'package:yamt/features/calories/presentation/widgets/training_week_depot_chart.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_frame.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -25,7 +25,7 @@ class DiaryWeeklyCheckInTrainingStep extends StatelessWidget {
   });
 
   /// Plan of the check-in.
-  final DiaryWeeklyCheckInPlan plan;
+  final CalorieWeeklyCheckInPlan plan;
 
   /// The planned training days.
   final Set<DateTime> trainingDays;

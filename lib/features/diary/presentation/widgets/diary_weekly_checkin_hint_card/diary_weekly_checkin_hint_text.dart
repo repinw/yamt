@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_messages.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -11,7 +11,7 @@ class DiaryWeeklyCheckInHintTitle extends StatelessWidget {
   const new({required this.checkInData, super.key});
 
   /// Weekly check-in data.
-  final DiaryWeeklyCheckInData checkInData;
+  final CalorieWeeklyCheckInData checkInData;
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class DiaryWeeklyCheckInHintBody extends StatelessWidget {
   const new({required this.checkInData, super.key});
 
   /// Weekly check-in data.
-  final DiaryWeeklyCheckInData checkInData;
+  final CalorieWeeklyCheckInData checkInData;
 
   @override
   Widget build(BuildContext context) {

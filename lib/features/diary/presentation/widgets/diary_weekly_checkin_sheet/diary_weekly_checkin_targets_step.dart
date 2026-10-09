@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/graphit_text_styles.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/diary/domain/diary_day_type.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_day_type_labels.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_facts.dart';
@@ -21,7 +21,7 @@ class DiaryWeeklyCheckInTargetsStep extends StatelessWidget {
   });
 
   /// Targets of the next run.
-  final DiaryWeeklyCheckInTargets targets;
+  final CalorieWeeklyCheckInTargets targets;
 
   /// Planned training days.
   final int trainingDayCount;
@@ -111,7 +111,7 @@ class DiaryWeeklyCheckInTargetsStep extends StatelessWidget {
     AppLocalizations l10n,
     DiaryDayType type,
     int count,
-    DiaryWeeklyCheckInTargets targets,
+    CalorieWeeklyCheckInTargets targets,
   ) {
     final kcal = type == DiaryDayType.training
         ? targets.trainingDayKcal
@@ -129,7 +129,7 @@ class DiaryWeeklyCheckInTargetsStep extends StatelessWidget {
 class _MacroTable extends StatelessWidget {
   const new({required this.targets});
 
-  final DiaryWeeklyCheckInTargets targets;
+  final CalorieWeeklyCheckInTargets targets;
 
   @override
   Widget build(BuildContext context) {

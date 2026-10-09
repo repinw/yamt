@@ -7,66 +7,18 @@ import 'package:yamt/features/calories/application/calorie_weekly_checkin_contro
     as checkin_controller;
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart'
     as checkin_demo;
-import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart'
-    as checkin_models;
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart'
     as checkin_plan;
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart'
     as checkin_provider;
-import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart'
-    as goal_settings;
-import 'package:yamt/features/calories/domain/calorie_goal_settings.dart'
-    as goal_settings;
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
-import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart'
-    as run_training_plan;
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart'
-    as checkin_domain;
-import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart'
-    as checkin_plan_domain;
-import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart'
-    as goal_settings;
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 
 part 'diary_weekly_checkin_provider.g.dart';
-
-/// Diary facade for calorie goal settings.
-typedef CalorieGoalSettings = goal_settings.CalorieGoalSettings;
-
-/// Diary facade for goal history entries.
-typedef CalorieGoalHistoryEntry = goal_settings.CalorieGoalHistoryEntry;
-
-/// Diary facade for pending weekly check-ins.
-typedef PendingCalorieGoalWeeklyCheckIn =
-    goal_settings.PendingCalorieGoalWeeklyCheckIn;
-
-/// Diary facade for weekly check-in calculations.
-typedef CalorieWeeklyCheckInCalculation =
-    checkin_domain.CalorieWeeklyCheckInCalculation;
-
-/// Diary facade for blocked reasons.
-typedef CalorieWeeklyCheckInBlockedReason =
-    checkin_models.CalorieWeeklyCheckInBlockedReason;
-
-/// Diary facade for learned TDEE freshness.
-typedef CalorieLearnedTdeeFreshness =
-    checkin_models.CalorieLearnedTdeeFreshness;
-
-/// Diary facade for weekly check-in window day data.
-typedef CalorieWeeklyCheckInWindowDay =
-    checkin_models.CalorieWeeklyCheckInWindowDay;
-
-/// Diary-owned name for the calorie weekly check-in UI data.
-typedef DiaryWeeklyCheckInData = checkin_models.CalorieWeeklyCheckInData;
-
-/// Diary facade for the plan of the pending weekly check-in.
-typedef DiaryWeeklyCheckInPlan = checkin_plan_domain.CalorieWeeklyCheckInPlan;
-
-/// Diary facade for the training days picked for a run.
-typedef DiaryRunTrainingChoice = run_training_plan.CalorieRunTrainingChoice;
-
-/// Diary facade for the targets of the next run.
-typedef DiaryWeeklyCheckInTargets =
-    checkin_plan_domain.CalorieWeeklyCheckInTargets;
 
 /// Calorie goal settings consumed by diary UI.
 @riverpod
@@ -83,7 +35,7 @@ bool diaryActiveCalorieGoalWasReached(
 }
 
 /// Most recent recorded weight inside a weekly check-in window.
-double? latestDiaryCheckInWeightKg(DiaryWeeklyCheckInData data) {
+double? latestDiaryCheckInWeightKg(CalorieWeeklyCheckInData data) {
   for (final day in data.days.reversed) {
     if (day.weightKg != null) {
       return day.weightKg;
@@ -93,7 +45,7 @@ double? latestDiaryCheckInWeightKg(DiaryWeeklyCheckInData data) {
 }
 
 /// Whether the check-in waits for a weight that the user can still track.
-bool diaryCheckInCanTrackMissingWeight(DiaryWeeklyCheckInData data) {
+bool diaryCheckInCanTrackMissingWeight(CalorieWeeklyCheckInData data) {
   if (data.missingWeightDays.isEmpty) {
     return false;
   }
@@ -107,32 +59,32 @@ bool diaryCheckInCanTrackMissingWeight(DiaryWeeklyCheckInData data) {
 
 /// Weekly check-in data consumed by diary UI.
 @riverpod
-Future<DiaryWeeklyCheckInData> diaryWeeklyCheckInData(Ref ref) {
+Future<CalorieWeeklyCheckInData> diaryWeeklyCheckInData(Ref ref) {
   return ref.watch(checkin_provider.calorieWeeklyCheckInDataProvider.future);
 }
 
 /// Plan of the pending weekly check-in consumed by diary UI.
 @riverpod
-Future<DiaryWeeklyCheckInPlan?> diaryWeeklyCheckInPlan(Ref ref) {
+Future<CalorieWeeklyCheckInPlan?> diaryWeeklyCheckInPlan(Ref ref) {
   return ref.watch(checkin_plan.calorieWeeklyCheckInPlanProvider.future);
 }
 
 /// Plan of the latest completed window, for the debug preview.
 @riverpod
-Future<DiaryWeeklyCheckInPlan?> diaryWeeklyCheckInPreviewPlan(Ref ref) {
+Future<CalorieWeeklyCheckInPlan?> diaryWeeklyCheckInPreviewPlan(Ref ref) {
   return ref.watch(checkin_plan.calorieWeeklyCheckInPreviewPlanProvider.future);
 }
 
 /// Check-in data of the latest completed window, for the debug preview.
 @riverpod
-Future<DiaryWeeklyCheckInData> diaryWeeklyCheckInPreviewData(Ref ref) {
+Future<CalorieWeeklyCheckInData> diaryWeeklyCheckInPreviewData(Ref ref) {
   return ref.watch(
     checkin_provider.calorieWeeklyCheckInPreviewDataProvider.future,
   );
 }
 
 /// Demo check-in data that lacks the end weight, for the debug preview.
-DiaryWeeklyCheckInData diaryWeeklyCheckInBlockedDemoData(DateTime today) {
+CalorieWeeklyCheckInData diaryWeeklyCheckInBlockedDemoData(DateTime today) {
   return checkin_demo.calorieWeeklyCheckInDemoData(today: today, blocked: true);
 }
 
@@ -201,16 +153,16 @@ class DiaryWeeklyCheckInActions {
     required this._refreshCheckInData,
   });
 
-  final Future<void> Function(DiaryWeeklyCheckInData data)
+  final Future<void> Function(CalorieWeeklyCheckInData data)
   _syncLearnedTdeeCache;
   final Future<bool> Function(
-    DiaryWeeklyCheckInData data,
-    DiaryRunTrainingChoice? training,
+    CalorieWeeklyCheckInData data,
+    CalorieRunTrainingChoice? training,
   )
   _applyWeeklyCheckIn;
   final Future<bool> Function(
-    DiaryWeeklyCheckInData data,
-    DiaryRunTrainingChoice? training,
+    CalorieWeeklyCheckInData data,
+    CalorieRunTrainingChoice? training,
   )
   _rejectWeeklyCheckIn;
   final Future<bool> Function(
@@ -225,14 +177,14 @@ class DiaryWeeklyCheckInActions {
   final void Function() _refreshCheckInData;
 
   /// Synchronizes learned TDEE cache after showing or deferring the check-in.
-  Future<void> syncLearnedTdeeCache(DiaryWeeklyCheckInData data) {
+  Future<void> syncLearnedTdeeCache(CalorieWeeklyCheckInData data) {
     return _syncLearnedTdeeCache(data);
   }
 
   /// Applies a weekly check-in, after saving the [training] of the run.
   Future<bool> applyWeeklyCheckIn(
-    DiaryWeeklyCheckInData data, {
-    DiaryRunTrainingChoice? training,
+    CalorieWeeklyCheckInData data, {
+    CalorieRunTrainingChoice? training,
   }) {
     return _applyWeeklyCheckIn(data, training);
   }
@@ -240,8 +192,8 @@ class DiaryWeeklyCheckInActions {
   /// Rejects a weekly check-in, keeping the previous TDEE and goal, after
   /// saving the [training] of the run.
   Future<bool> rejectWeeklyCheckIn(
-    DiaryWeeklyCheckInData data, {
-    DiaryRunTrainingChoice? training,
+    CalorieWeeklyCheckInData data, {
+    CalorieRunTrainingChoice? training,
   }) {
     return _rejectWeeklyCheckIn(data, training);
   }

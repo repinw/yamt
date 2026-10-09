@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_weekly_checkin_sheet_controller.dart';
@@ -8,7 +9,7 @@ import 'package:yamt/features/diary/presentation/controllers/diary_weekly_checki
 final _today = DateTime(2026, 9, 30);
 final _windowStart = DateTime(2026, 9, 23);
 
-DiaryWeeklyCheckInPlan _plan({bool measured = true}) {
+CalorieWeeklyCheckInPlan _plan({bool measured = true}) {
   final plan = calorieWeeklyCheckInDemoPlan(
     today: _today,
     macroSettings: const MacroGoalSettings(),
@@ -17,7 +18,7 @@ DiaryWeeklyCheckInPlan _plan({bool measured = true}) {
   if (measured) {
     return plan;
   }
-  return DiaryWeeklyCheckInPlan(
+  return CalorieWeeklyCheckInPlan(
     reviewedRunNumber: plan.reviewedRunNumber,
     nextRunNumber: plan.nextRunNumber,
     reviewedDays: plan.reviewedDays,

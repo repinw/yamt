@@ -1,8 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show DiaryWeeklyCheckInData, PendingCalorieGoalWeeklyCheckIn;
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/diary/presentation/diary_weekly_checkin_messages.dart';
 import 'package:yamt/l10n/app_localizations_en.dart';
 
@@ -183,12 +182,12 @@ void main() {
   });
 }
 
-DiaryWeeklyCheckInData _checkInData({
+CalorieWeeklyCheckInData _checkInData({
   required CalorieWeeklyCheckInBlockedReason? blockedReason,
   List<DateTime> missingWeightDays = const <DateTime>[],
   PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
 }) {
-  return DiaryWeeklyCheckInData(
+  return CalorieWeeklyCheckInData(
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
     shouldAutoOpen: false,
     days: const <CalorieWeeklyCheckInWindowDay>[],

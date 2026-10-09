@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -214,7 +216,7 @@ void main() {
   });
 }
 
-DiaryWeeklyCheckInData _readyData() =>
+CalorieWeeklyCheckInData _readyData() =>
     calorieWeeklyCheckInDemoData(today: _today);
 
 Future<void> _tapVisible(WidgetTester tester, Finder finder) async {
@@ -232,7 +234,7 @@ Future<void> _openSheet(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-DiaryWeeklyCheckInPlan _demoPlan() => calorieWeeklyCheckInDemoPlan(
+CalorieWeeklyCheckInPlan _demoPlan() => calorieWeeklyCheckInDemoPlan(
   today: _today,
   macroSettings: const MacroGoalSettings(),
   profile: null,
@@ -240,10 +242,10 @@ DiaryWeeklyCheckInPlan _demoPlan() => calorieWeeklyCheckInDemoPlan(
 
 /// The demo plan of a late check-in: the first day is past, the second a
 /// pause day.
-DiaryWeeklyCheckInPlan _latePlan() {
+CalorieWeeklyCheckInPlan _latePlan() {
   final plan = _demoPlan();
   final days = plan.nextRunDays;
-  return DiaryWeeklyCheckInPlan(
+  return CalorieWeeklyCheckInPlan(
     reviewedRunNumber: plan.reviewedRunNumber,
     nextRunNumber: plan.nextRunNumber,
     reviewedDays: plan.reviewedDays,
@@ -266,7 +268,7 @@ DiaryWeeklyCheckInPlan _latePlan() {
   );
 }
 
-Widget _scoped(Widget app, {DiaryWeeklyCheckInPlan? plan}) {
+Widget _scoped(Widget app, {CalorieWeeklyCheckInPlan? plan}) {
   final container = ProviderContainer(
     overrides: [
       diaryWeeklyCheckInPlanProvider.overrideWith(
@@ -287,7 +289,7 @@ class _App extends StatelessWidget {
     this.goalReached = false,
   });
 
-  final DiaryWeeklyCheckInData checkInData;
+  final CalorieWeeklyCheckInData checkInData;
   final ValueChanged<DiaryWeeklyCheckInSheetResult?> onResult;
   final bool goalReached;
 

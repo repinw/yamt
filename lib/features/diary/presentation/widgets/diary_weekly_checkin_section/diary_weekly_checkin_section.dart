@@ -5,7 +5,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/calories/presentation/widgets/calorie_new_goal_flow.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
@@ -45,9 +47,9 @@ class _DiaryWeeklyCheckInSectionState
     with WidgetsBindingObserver {
   final DiaryWeeklyCheckInDialogScheduler _dialogs =
       DiaryWeeklyCheckInDialogScheduler();
-  ProviderSubscription<AsyncValue<DiaryWeeklyCheckInData>>? _subscription;
-  AsyncValue<DiaryWeeklyCheckInData> _state =
-      const AsyncLoading<DiaryWeeklyCheckInData>();
+  ProviderSubscription<AsyncValue<CalorieWeeklyCheckInData>>? _subscription;
+  AsyncValue<CalorieWeeklyCheckInData> _state =
+      const AsyncLoading<CalorieWeeklyCheckInData>();
   String? _hiddenWindowKey;
   String? _reopenWindowKey;
 
@@ -130,11 +132,11 @@ class _DiaryWeeklyCheckInSectionState
     );
   }
 
-  DiaryWeeklyCheckInData? get _rawCheckInData {
+  CalorieWeeklyCheckInData? get _rawCheckInData {
     return _state.value ?? _dialogs.lastCheckInData;
   }
 
-  DiaryWeeklyCheckInData? get _visibleCheckInData {
+  CalorieWeeklyCheckInData? get _visibleCheckInData {
     final rawCheckInData = _rawCheckInData;
     return _isHidden(rawCheckInData) ||
             _dismissedPending(rawCheckInData) != null
@@ -154,8 +156,8 @@ class _DiaryWeeklyCheckInSectionState
   }
 
   void _cacheCheckInData(
-    AsyncValue<DiaryWeeklyCheckInData>? previous,
-    AsyncValue<DiaryWeeklyCheckInData> next,
+    AsyncValue<CalorieWeeklyCheckInData>? previous,
+    AsyncValue<CalorieWeeklyCheckInData> next,
   ) {
     setState(() {
       _state = next;
@@ -178,7 +180,7 @@ class _DiaryWeeklyCheckInSectionState
     _openReopenedDialogIfReady(checkInData);
   }
 
-  Future<void> _openDialog(DiaryWeeklyCheckInData checkInData) async {
+  Future<void> _openDialog(CalorieWeeklyCheckInData checkInData) async {
     final pending = checkInData.pendingWeeklyCheckIn;
     if (!_dialogs.beginDialog(
       checkInData: checkInData,
@@ -216,7 +218,7 @@ class _DiaryWeeklyCheckInSectionState
   Future<void> _handleDialogAction({
     required DiaryWeeklyCheckInSheetResult? result,
     required DiaryWeeklyCheckInActions actions,
-    required DiaryWeeklyCheckInData checkInData,
+    required CalorieWeeklyCheckInData checkInData,
     required PendingCalorieGoalWeeklyCheckIn pending,
   }) async {
     switch (result?.action) {
@@ -244,7 +246,7 @@ class _DiaryWeeklyCheckInSectionState
   /// Saves the training days of the next run and the TDEE decision.
   Future<void> _decide(
     DiaryWeeklyCheckInActions actions,
-    DiaryWeeklyCheckInData checkInData,
+    CalorieWeeklyCheckInData checkInData,
     PendingCalorieGoalWeeklyCheckIn pending,
     DiaryWeeklyCheckInSheetResult result,
   ) async {
@@ -278,7 +280,7 @@ class _DiaryWeeklyCheckInSectionState
 
   Future<void> _syncLearnedTdeeCache(
     DiaryWeeklyCheckInActions actions,
-    DiaryWeeklyCheckInData checkInData,
+    CalorieWeeklyCheckInData checkInData,
   ) async {
     await actions.syncLearnedTdeeCache(checkInData);
     if (!mounted) {
@@ -332,7 +334,7 @@ class _DiaryWeeklyCheckInSectionState
     );
   }
 
-  void _openReopenedDialogIfReady(DiaryWeeklyCheckInData checkInData) {
+  void _openReopenedDialogIfReady(CalorieWeeklyCheckInData checkInData) {
     final pending = checkInData.pendingWeeklyCheckIn;
     if (pending == null ||
         pending.isDismissed ||
@@ -359,7 +361,7 @@ class _DiaryWeeklyCheckInSectionState
   }
 
   void _trackMissingWeight(
-    DiaryWeeklyCheckInData checkInData,
+    CalorieWeeklyCheckInData checkInData,
     DiaryWeightTrackingFlow weightTrackingFlow,
   ) {
     final day = checkInData.missingWeightDays.firstOrNull;
@@ -380,7 +382,7 @@ class _DiaryWeeklyCheckInSectionState
   }
 
   CalorieWeeklyCheckInWindowDay? _windowDayFor(
-    DiaryWeeklyCheckInData checkInData,
+    CalorieWeeklyCheckInData checkInData,
     DateTime day,
   ) {
     for (final windowDay in checkInData.days) {
@@ -392,14 +394,14 @@ class _DiaryWeeklyCheckInSectionState
     return null;
   }
 
-  void _clearStaleHiddenWindow(DiaryWeeklyCheckInData? checkInData) {
+  void _clearStaleHiddenWindow(CalorieWeeklyCheckInData? checkInData) {
     if (_hiddenWindowKey != null &&
         checkInData?.pendingWeeklyCheckIn?.windowKey != _hiddenWindowKey) {
       _hiddenWindowKey = null;
     }
   }
 
-  bool _isHidden(DiaryWeeklyCheckInData? checkInData) {
+  bool _isHidden(CalorieWeeklyCheckInData? checkInData) {
     final hiddenWindowKey = _hiddenWindowKey;
     if (hiddenWindowKey == null) {
       return false;
@@ -408,7 +410,7 @@ class _DiaryWeeklyCheckInSectionState
   }
 
   PendingCalorieGoalWeeklyCheckIn? _dismissedPending(
-    DiaryWeeklyCheckInData? checkInData,
+    CalorieWeeklyCheckInData? checkInData,
   ) {
     final pending = checkInData?.pendingWeeklyCheckIn;
     return pending?.isDismissed == true ? pending : null;

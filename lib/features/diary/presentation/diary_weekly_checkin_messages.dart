@@ -1,11 +1,11 @@
 import 'package:intl/intl.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Resolves localized blocked reason text for diary weekly check-in UI.
 String resolveDiaryWeeklyCheckInBlockedMessage({
   required AppLocalizations l10n,
-  required DiaryWeeklyCheckInData checkInData,
+  required CalorieWeeklyCheckInData checkInData,
   required String locale,
   required String fallbackMessage,
 }) {
