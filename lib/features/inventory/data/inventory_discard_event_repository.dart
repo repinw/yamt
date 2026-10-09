@@ -1,13 +1,9 @@
 import 'dart:developer' show log;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
-import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
-import 'package:yamt/core/provider/firebase_firestore_provider.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/household/application/household_data_scope.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 
@@ -29,19 +25,14 @@ abstract interface class InventoryDiscardEventRepository {
   Future<bool> deleteEvent(String eventId);
 }
 
-/// Stores discard events encrypted with the household key [_cipher].
+/// Stores discard events encrypted with the household key.
 class FirestoreInventoryDiscardEventRepository
     implements InventoryDiscardEventRepository {
   /// Creates an instance.
-  new({
-    required this._firestore,
-    required this._cipher,
-    required this._householdId,
-  });
+  new({required this._household});
 
-  final FirebaseFirestore _firestore;
-  final PayloadCipher _cipher;
-  final String? _householdId;
+  /// The active household, or `null` without a household key.
+  final HouseholdDataScope? _household;
 
   @override
   Future<List<InventoryDiscardEvent>> readAll() async {
@@ -115,7 +106,7 @@ class FirestoreInventoryDiscardEventRepository
   }
 
   String? _resolvedHouseholdId() {
-    final householdId = _householdId;
+    final householdId = _household?.householdId;
     if (householdId == null || householdId.isEmpty) {
       return null;
     }
@@ -123,12 +114,13 @@ class FirestoreInventoryDiscardEventRepository
   }
 
   SealedCollection _collection(String householdId) {
+    final household = _household!;
     return SealedCollection(
-      _firestore
+      household.firestore
           .collection(_householdsCollection)
           .doc(householdId)
           .collection(_discardEventsCollection),
-      cipher: _cipher,
+      cipher: household.cipher,
       plaintextFields: inventoryDiscardEventPlaintextFields,
     );
   }
@@ -153,43 +145,10 @@ class FirestoreInventoryDiscardEventRepository
   }
 }
 
-class _UnavailableInventoryDiscardEventRepository
-    implements InventoryDiscardEventRepository {
-  const new();
-
-  @override
-  Future<List<InventoryDiscardEvent>> readAll() async {
-    return const <InventoryDiscardEvent>[];
-  }
-
-  @override
-  Future<bool> saveEvent(InventoryDiscardEvent event) async {
-    return false;
-  }
-
-  @override
-  Future<bool> deleteEvent(String eventId) async {
-    return false;
-  }
-}
-
 /// The inventory discard event repository provider.
 @riverpod
 InventoryDiscardEventRepository inventoryDiscardEventRepository(Ref ref) {
-  ref.watch(authStateChangesProvider);
-  final householdCipher = ref.watch(householdCipherProvider);
-  final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null || householdCipher == null) {
-    log(
-      'Falling back to unavailable discard event repository.',
-      name: _discardEventRepositoryLogName,
-    );
-    return const _UnavailableInventoryDiscardEventRepository();
-  }
-
   return FirestoreInventoryDiscardEventRepository(
-    firestore: firestore,
-    cipher: householdCipher.cipher,
-    householdId: householdCipher.householdId,
+    household: ref.watch(householdDataScopeProvider),
   );
 }
