@@ -18,6 +18,7 @@ import 'package:yamt/features/activity/presentation/widgets/weight_card/diary_we
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/application/burn_week_live_sync_provider.dart';
 import 'package:yamt/features/calories/application/calorie_week_overview_models.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_demo_data.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_plan_provider.dart';
@@ -43,8 +44,6 @@ import 'package:yamt/features/diary/application/'
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show DiaryWeeklyCheckInActions, diaryWeeklyCheckInActionsProvider;
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
@@ -269,8 +268,8 @@ void main() {
       ProviderScope(
         overrides: [
           calorieSettingsRepositoryProvider.overrideWithValue(emptySettings),
-          diaryWeeklyCheckInActionsProvider.overrideWithValue(
-            _noopWeeklyCheckInActions(),
+          calorieWeeklyCheckInControllerProvider.overrideWith(
+            _FakeWeeklyCheckInController.new,
           ),
           calorieWeeklyCheckInDataProvider.overrideWith((ref) {
             checkInBuildCount += 1;
@@ -356,20 +355,11 @@ void main() {
       selectedDay: selectedDay,
       initialWeeklyCheckIn: dismissedCheckIn,
       overrides: [
-        diaryWeeklyCheckInActionsProvider.overrideWithValue(
-          DiaryWeeklyCheckInActions(
-            syncLearnedTdeeCache: (_) async {},
-            applyWeeklyCheckIn: (_, _) async => true,
-            rejectWeeklyCheckIn: (_, _) async => true,
-            showWeeklyCheckInAgain: (_) async {
+        calorieWeeklyCheckInControllerProvider.overrideWith(
+          () => _FakeWeeklyCheckInController(
+            onShowAgain: (_) {
               _setWeeklyCheckInData(container, reopenedCheckIn);
-              return true;
             },
-            setSkippedIntakeDay: ({
-              required selectedDay,
-              required isSkipped,
-            }) async => true,
-            refreshCheckInData: () {},
           ),
         ),
       ],
@@ -827,12 +817,9 @@ void main() {
         initialSettings: _weeklyCheckInGoalSettings(today),
       ),
       overrides: [
-        diaryWeeklyCheckInActionsProvider.overrideWithValue(
-          DiaryWeeklyCheckInActions(
-            syncLearnedTdeeCache: (_) async {},
-            applyWeeklyCheckIn: (_, _) async => true,
-            rejectWeeklyCheckIn: (_, _) async => true,
-            showWeeklyCheckInAgain: (checkIn) async {
+        calorieWeeklyCheckInControllerProvider.overrideWith(
+          () => _FakeWeeklyCheckInController(
+            onShowAgain: (checkIn) {
               reopened = checkIn;
               _setWeeklyCheckInData(
                 container,
@@ -841,13 +828,7 @@ void main() {
                   shouldAutoOpen: false,
                 ),
               );
-              return true;
             },
-            setSkippedIntakeDay: ({
-              required selectedDay,
-              required isSkipped,
-            }) async => true,
-            refreshCheckInData: () {},
           ),
         ),
       ],
@@ -1283,16 +1264,25 @@ CalorieWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
   );
 }
 
-DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
-  return DiaryWeeklyCheckInActions(
-    syncLearnedTdeeCache: (_) async {},
-    applyWeeklyCheckIn: (_, _) async => true,
-    rejectWeeklyCheckIn: (_, _) async => true,
-    showWeeklyCheckInAgain: (_) async => true,
-    setSkippedIntakeDay: ({required selectedDay, required isSkipped}) async =>
-        true,
-    refreshCheckInData: () {},
-  );
+/// Answers the check-in actions without saving; [onShowAgain] sees the
+/// reopened check-in.
+class _FakeWeeklyCheckInController extends CalorieWeeklyCheckInController {
+  new({this.onShowAgain});
+
+  final void Function(PendingCalorieGoalWeeklyCheckIn pending)? onShowAgain;
+
+  @override
+  Future<bool> syncLearnedTdeeCache(
+    CalorieWeeklyCheckInData checkInData,
+  ) async => true;
+
+  @override
+  Future<bool> showPendingWeeklyCheckInAgain(
+    PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
+  ) async {
+    onShowAgain?.call(pendingWeeklyCheckIn);
+    return true;
+  }
 }
 
 CalorieWeeklyCheckInData _weeklyCheckInCheckInData({

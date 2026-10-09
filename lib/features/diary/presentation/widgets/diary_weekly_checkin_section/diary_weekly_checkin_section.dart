@@ -6,6 +6,7 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/features/activity/presentation/diary_weight_tracking_flow.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
@@ -80,7 +81,7 @@ class _DiaryWeeklyCheckInSectionState
     if (state != AppLifecycleState.resumed || !mounted) {
       return;
     }
-    ref.read(diaryWeeklyCheckInActionsProvider).refreshCheckInData();
+    ref.invalidate(calorieWeeklyCheckInDataProvider);
   }
 
   @override
@@ -93,7 +94,7 @@ class _DiaryWeeklyCheckInSectionState
     // check-in controllers alive for the dialog callbacks.
     ref
       ..watch(calorieGoalControllerProvider)
-      ..watch(diaryWeeklyCheckInActionsProvider);
+      ..watch(calorieWeeklyCheckInControllerProvider);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -134,6 +135,10 @@ class _DiaryWeeklyCheckInSectionState
     );
   }
 
+  // Read before any await, while the section is mounted.
+  CalorieWeeklyCheckInController get _checkIn =>
+      ref.read(calorieWeeklyCheckInControllerProvider.notifier);
+
   CalorieWeeklyCheckInData? get _rawCheckInData {
     return _state.value ?? _dialogs.lastCheckInData;
   }
@@ -170,13 +175,10 @@ class _DiaryWeeklyCheckInSectionState
     if (checkInData == null) {
       return;
     }
-    final actions = ref.read(diaryWeeklyCheckInActionsProvider);
     _dialogs.cacheAndSchedule(
       checkInData: checkInData,
       isMounted: () => mounted,
-      syncLearnedTdeeCache: (checkInData) {
-        return _syncLearnedTdeeCache(actions, checkInData);
-      },
+      syncLearnedTdeeCache: _syncLearnedTdeeCache,
       openDialog: _openDialog,
     );
     _openReopenedDialogIfReady(checkInData);
@@ -191,7 +193,6 @@ class _DiaryWeeklyCheckInSectionState
       return;
     }
 
-    final actions = ref.read(diaryWeeklyCheckInActionsProvider);
     final resolvedPending = pending!;
 
     try {
@@ -208,7 +209,6 @@ class _DiaryWeeklyCheckInSectionState
       }
       await _handleDialogAction(
         result: result,
-        actions: actions,
         checkInData: checkInData,
         pending: resolvedPending,
       );
@@ -219,14 +219,13 @@ class _DiaryWeeklyCheckInSectionState
 
   Future<void> _handleDialogAction({
     required DiaryWeeklyCheckInSheetResult? result,
-    required DiaryWeeklyCheckInActions actions,
     required CalorieWeeklyCheckInData checkInData,
     required PendingCalorieGoalWeeklyCheckIn pending,
   }) async {
     switch (result?.action) {
       case DiaryWeeklyCheckInSheetAction.apply ||
           DiaryWeeklyCheckInSheetAction.reject:
-        await _decide(actions, checkInData, pending, result!);
+        await _decide(checkInData, pending, result!);
       case DiaryWeeklyCheckInSheetAction.trackMissingWeight:
         if (mounted) {
           _trackMissingWeight(
@@ -241,13 +240,12 @@ class _DiaryWeeklyCheckInSectionState
         );
       case DiaryWeeklyCheckInSheetAction.later:
       case null:
-        await _syncLearnedTdeeCache(actions, checkInData);
+        await _syncLearnedTdeeCache(checkInData);
     }
   }
 
   /// Saves the training days of the next run and the TDEE decision.
   Future<void> _decide(
-    DiaryWeeklyCheckInActions actions,
     CalorieWeeklyCheckInData checkInData,
     PendingCalorieGoalWeeklyCheckIn pending,
     DiaryWeeklyCheckInSheetResult result,
@@ -256,11 +254,11 @@ class _DiaryWeeklyCheckInSectionState
     final apply = result.action == DiaryWeeklyCheckInSheetAction.apply;
     _hide(pending);
     final saved = apply
-        ? await actions.applyWeeklyCheckIn(
+        ? await _checkIn.applyWeeklyCheckIn(
             checkInData,
             training: result.training,
           )
-        : await actions.rejectWeeklyCheckIn(
+        : await _checkIn.rejectWeeklyCheckIn(
             checkInData,
             training: result.training,
           );
@@ -281,10 +279,9 @@ class _DiaryWeeklyCheckInSectionState
   }
 
   Future<void> _syncLearnedTdeeCache(
-    DiaryWeeklyCheckInActions actions,
     CalorieWeeklyCheckInData checkInData,
   ) async {
-    await actions.syncLearnedTdeeCache(checkInData);
+    await _checkIn.syncLearnedTdeeCache(checkInData);
     if (!mounted) {
       return;
     }
@@ -321,8 +318,7 @@ class _DiaryWeeklyCheckInSectionState
       _reopenWindowKey = pending.windowKey;
       _hiddenWindowKey = null;
     });
-    final actions = ref.read(diaryWeeklyCheckInActionsProvider);
-    final saved = await actions.showWeeklyCheckInAgain(pending);
+    final saved = await _checkIn.showPendingWeeklyCheckInAgain(pending);
     if (!mounted || saved) {
       return;
     }
@@ -351,11 +347,9 @@ class _DiaryWeeklyCheckInSectionState
     required DateTime selectedDay,
     required bool isSkipped,
   }) async {
-    final actions = ref.read(diaryWeeklyCheckInActionsProvider);
-    final saved = await actions.setSkippedIntakeDay(
-      selectedDay: selectedDay,
-      isSkipped: isSkipped,
-    );
+    final saved = await ref
+        .read(calorieGoalControllerProvider.notifier)
+        .setSkippedIntakeDay(day: selectedDay, isSkipped: isSkipped);
     if (!mounted || saved) {
       return;
     }

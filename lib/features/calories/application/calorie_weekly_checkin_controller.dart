@@ -2,6 +2,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_window_resolver.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snapshot.dart';
 import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
@@ -62,7 +63,8 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
     });
   }
 
-  /// Clears dismissal for a pending weekly check in.
+  /// Clears dismissal for a pending weekly check in and reloads the check-in
+  /// data.
   Future<bool> showPendingWeeklyCheckInAgain(
     PendingCalorieGoalWeeklyCheckIn pendingWeeklyCheckIn,
   ) {
@@ -74,6 +76,9 @@ class CalorieWeeklyCheckInController extends _$CalorieWeeklyCheckInController {
       );
       if (!ref.mounted) {
         return saved;
+      }
+      if (saved) {
+        ref.invalidate(calorieWeeklyCheckInDataProvider);
       }
       state = saved
           ? const AsyncData(null)

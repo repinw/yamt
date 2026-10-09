@@ -29,8 +29,3 @@ Future<CalorieWeeklyCheckInData> calorieWeeklyCheckInPreviewData(
       ? calorieWeeklyCheckInDemoData(today: today)
       : data;
 }
-
-/// Invalidates all calorie weekly check-in data providers.
-void invalidateCalorieWeeklyCheckInData(Ref ref) {
-  ref.invalidate(calorieWeeklyCheckInDataProvider);
-}
