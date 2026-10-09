@@ -41,7 +41,7 @@ final class DiaryPreviousDayControllerProvider
 }
 
 String _$diaryPreviousDayControllerHash() =>
-    r'0c74988ed33d9801098bdef7ae931c643bf4a100';
+    r'248fbf020f45d6f71acc6239646f4123e39409d6';
 
 /// Closes or reopens the day before a planned day, so the planned day counts
 /// like a started day with its carryover.
