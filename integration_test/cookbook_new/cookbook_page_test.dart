@@ -62,7 +62,8 @@ Widget _app({
           ),
         ],
       ),
-      _placeholder(AppRoutes.homeInventoryTemplateDetail, 'Recipe page'),
+      _placeholder(AppRoutes.homeInventoryTemplateDetail, 'Template page'),
+      _placeholder(AppRoutes.homeRecipe, 'Recipe page'),
       _placeholder(AppRoutes.homeCookedMeal, 'Cooked page'),
     ],
   );

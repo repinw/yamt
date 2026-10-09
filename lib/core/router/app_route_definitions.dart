@@ -13,6 +13,7 @@ import 'package:yamt/features/calories/presentation/calorie_goal_archive_page.da
 import 'package:yamt/features/calories/presentation/tdee_analytics_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
 import 'package:yamt/features/cooking_flow/presentation/cooking_flow_page.dart';
 import 'package:yamt/features/diary/presentation/diary_entry_details_page.dart';
 import 'package:yamt/features/household/presentation/household_page.dart';
@@ -187,6 +188,11 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       builder: (context, state) => ProductSearchHubItemEditPage(
         itemId: state.pathParameters['itemId'] ?? '',
       ),
+    ),
+    GoRoute(
+      path: AppRoutes.homeRecipe,
+      builder: (context, state) =>
+          RecipePage(recipeId: state.pathParameters['recipeId'] ?? ''),
     ),
     GoRoute(
       path: AppRoutes.homeFreeCooking,

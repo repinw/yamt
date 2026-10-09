@@ -22,6 +22,7 @@ class CookbookSections extends StatelessWidget {
     required this.onContinueMeal,
     required this.onCreateTemplate,
     required this.onOpenTemplate,
+    required this.onOpenRecipe,
     super.key,
   });
 
@@ -34,8 +35,11 @@ class CookbookSections extends StatelessWidget {
   /// Starts combining a new Vorlage.
   final VoidCallback onCreateTemplate;
 
-  /// Opens a Vorlage or a recipe.
+  /// Opens a Vorlage.
   final ValueChanged<PreparedMeal> onOpenTemplate;
+
+  /// Opens the recipe page of a recipe.
+  final ValueChanged<PreparedMeal> onOpenRecipe;
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +100,7 @@ class CookbookSections extends StatelessWidget {
                 CookbookSectionTitle(title: l10n.cookbookRecipesTitle),
                 CookbookRecipeGrid(
                   recipes: overview.recipes,
-                  onOpen: (entry) => onOpenTemplate(entry.meal),
+                  onOpen: (entry) => onOpenRecipe(entry.meal),
                 ),
               ],
             ),

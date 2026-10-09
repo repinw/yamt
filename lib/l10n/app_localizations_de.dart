@@ -6169,6 +6169,40 @@ class AppLocalizationsDe extends AppLocalizations {
       'Die Mahlzeit ist im Vorrat, konnte aber nicht ins Kochbuch.';
 
   @override
+  String recipeOriginalPortions(int count) {
+    return 'Original für $count';
+  }
+
+  @override
+  String get recipeStepsTitle => 'Zubereitung';
+
+  @override
+  String recipeStepCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Schritte',
+      one: '1 Schritt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get recipeNotFound => 'Das Rezept gibt es nicht mehr.';
+
+  @override
+  String get recipeLoadFailed =>
+      'Das Rezept oder der Vorrat konnte nicht geladen werden.';
+
+  @override
+  String recipePickTitle(String food) {
+    return '$food: woraus nehmen?';
+  }
+
+  @override
+  String get recipeNotFromStock => 'Nicht aus dem Vorrat';
+
+  @override
   String get cookedLoadFailed => 'Die Mahlzeit konnte nicht geladen werden.';
 
   @override

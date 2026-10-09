@@ -15,6 +15,8 @@ templates list and later the cooking flow.
   the pot, and discarding a combined meal there, which gives its foods back
   to the Vorrat and deletes the ones added only for it, and the "Ins
   Kochbuch" switch that also saves the cooked meal as a template.
+- The recipe page: a recipe sized for the chosen portions, which Vorrat food
+  supplies each ingredient, and cooking it into the pot.
 - The overview that sorts saved templates into Vorlagen and recipes and marks
   which foods the Vorrat holds.
 
@@ -47,3 +49,6 @@ templates list and later the cooking flow.
 - A row counts as in stock only when it has an amount in a unit that its
   best fitting Vorrat match can supply. "Kochen" takes those rows from the
   Vorrat; all other rows stay open on the saved meal.
+- On the recipe page an ingredient takes the cook's pick, else the Vorrat
+  item the recipe saved for it while that item still fits, else the best
+  fitting match. A pick counts for this cooking only.

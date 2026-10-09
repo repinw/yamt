@@ -69,6 +69,9 @@ abstract final class AppRoutes {
   static const homeInventoryTemplateDetail =
       '/home/inventory/templates/:templateId';
 
+  /// A saved recipe from the Kochbuch, with recipe id parameter.
+  static const homeRecipe = '/home/recipe/:recipeId';
+
   /// Editor of one Vorrat item, with item id parameter.
   static const homeInventoryItemEdit = '/home/inventory/items/:itemId/edit';
 
@@ -162,6 +165,9 @@ abstract final class AppRoutes {
   static String homeInventoryTemplateDetailPath(String templateId) {
     return '/home/inventory/templates/$templateId';
   }
+
+  /// Builds the path of the recipe page for [recipeId].
+  static String homeRecipePath(String recipeId) => '/home/recipe/$recipeId';
 
   /// Builds the editor path for the Vorrat item with [itemId].
   static String homeInventoryItemEditPath(String itemId) {

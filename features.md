@@ -621,9 +621,18 @@ and feature description docs. This is product-facing; architecture rules stay in
   day for a pot from an earlier day. A cooked meal with open rows says
   "Im Vorrat · N Zeilen offen" and "Füllen" opens its detail page, where the
   rows are filled. "Neue Vorlage" opens the Vorrat tab for now.
-  A recipe or Vorlage opens its template detail.
-- Editing and deleting templates from the Kochbuch is not available until the
-  recipe page exists.
+  A Vorlage opens its template detail.
+- A recipe opens its recipe page: the recipe photo with its source and name
+  over it, the portions (stepper, "Original für N"), the ingredients sized
+  for those portions, and the steps. Each ingredient shows the Vorrat food
+  that supplies it with its photo and the amount there, "fehlt", or struck
+  through when it is ignored. The food is the one the recipe saved, else
+  the best match in a fitting unit; a tap picks another Vorrat food or
+  "Nicht aus dem Vorrat" for this time.
+- "Kochen" on the recipe page puts the meal in the pot with the chosen
+  portions: ingredients with a Vorrat food are taken from the Vorrat, the
+  others stay open on the meal. It goes straight on to the "Gekocht" page.
+- Editing and deleting templates from the Kochbuch is not available yet.
 
 ## Meal Templates
 

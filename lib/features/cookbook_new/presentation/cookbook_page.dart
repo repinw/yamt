@@ -51,6 +51,8 @@ class CookbookPage extends ConsumerWidget {
               AppRoutes.homeInventoryTemplateDetailPath(template.id),
             ),
           ),
+          onOpenRecipe: (recipe) =>
+              unawaited(context.push(AppRoutes.homeRecipePath(recipe.id))),
         ),
       ),
       loading: () => const SliverFillRemaining(

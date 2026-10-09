@@ -411,7 +411,12 @@ void main() {
     await tester.pumpWidget(harness.app);
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('One-pan pasta'));
+    // Recipes open the recipe page now; the wizard stays for Vorlagen until
+    // cooking_flow goes, so this test opens it by its route.
+    unawaited(
+      GoRouter.of(tester.element(find.byType(CookbookPage)))
+          .push(AppRoutes.homeInventoryTemplateDetailPath('template-1')),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('START COOKING SESSION'), findsOneWidget);

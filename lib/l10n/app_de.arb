@@ -2806,6 +2806,34 @@
     }
   },
   "cookedCookbookFailed": "Die Mahlzeit ist im Vorrat, konnte aber nicht ins Kochbuch.",
+  "recipeOriginalPortions": "Original für {count}",
+  "@recipeOriginalPortions": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeStepsTitle": "Zubereitung",
+  "recipeStepCount": "{count, plural, =1{1 Schritt} other{{count} Schritte}}",
+  "@recipeStepCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeNotFound": "Das Rezept gibt es nicht mehr.",
+  "recipeLoadFailed": "Das Rezept oder der Vorrat konnte nicht geladen werden.",
+  "recipePickTitle": "{food}: woraus nehmen?",
+  "@recipePickTitle": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeNotFromStock": "Nicht aus dem Vorrat",
   "cookedLoadFailed": "Die Mahlzeit konnte nicht geladen werden.",
   "preparedMealGone": "Mahlzeit nicht mehr im Vorrat",
   "cookbookInPotSince": "Im Topf seit {time}",
