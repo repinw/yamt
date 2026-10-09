@@ -1,7 +1,5 @@
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_manual_add_quick_eat_config.dart';
-import 'package:yamt/features/product_search_hub/domain/'
-    'product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 
@@ -10,7 +8,7 @@ InventoryManualAddQuickEatConfig productSearchHubQuickEatConfig(
   ProductSearchHubRouteArgs args,
 ) {
   return InventoryManualAddQuickEatConfig(
-    quickEatOnly: args.mode == ProductSearchHubMode.diary,
+    quickEatOnly: args.isDiary,
     preselectedMealType: args.preselectedMealType,
     preselectedLoggedAt: args.preselectedLoggedAt,
   );

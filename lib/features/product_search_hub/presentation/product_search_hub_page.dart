@@ -8,7 +8,6 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     as inventory_models;
-import 'package:yamt/features/product_search_hub/domain/product_search_hub_mode.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_ai_search_result.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
@@ -16,19 +15,16 @@ import 'package:yamt/features/product_search_hub/presentation/models/'
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_ai_search_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_completion_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_editor_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_entry_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/product_search_hub_meal_food_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/product_search_hub_navigation.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_pick_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_quick_eat_config.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_result_flow.dart';
-import 'package:yamt/features/product_search_hub/presentation/'
-    'product_search_hub_save_review_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/'
     'product_search_hub_search_lookup.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -143,22 +139,13 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
 
   /// Completes a created product. Canceling the eat or save dialog that
   /// follows reopens the editor with the entered values.
-  Future<void> _completeCreatedEntry(ProductSearchHubEditedResult entry) async {
-    ProductSearchHubEditedResult? current = entry;
-    while (current != null) {
-      final canceled = await _completeEditedResult(
-        sourceKey: current.sourceKey,
-        result: current.result,
-      );
-      if (canceled == null || !mounted) {
-        return;
-      }
-      current = await reopenProductSearchHubCreatedEntry(
-        context: context,
-        args: widget.args,
-        result: canceled,
-      );
-    }
+  Future<void> _completeCreatedEntry(ProductSearchHubEditedResult entry) {
+    return completeProductSearchHubCreatedEntry(
+      context: context,
+      args: widget.args,
+      entry: entry,
+      complete: _completeEditedResult,
+    );
   }
 
   /// Completes [result] for the route mode. When the user cancels the
@@ -175,44 +162,14 @@ class _ProductSearchHubPageState extends State<ProductSearchHubPage> {
       );
       return null;
     }
-    if (widget.args.mode == ProductSearchHubMode.selection) {
-      _closeHub(result);
-      return null;
-    }
-    if (widget.args.mode == ProductSearchHubMode.mealFood) {
-      final picked = await pickProductSearchHubMealFood(
-        context: context,
-        args: widget.args,
-        result: result,
-      );
-      final pick = picked.pick;
-      if (pick != null && mounted) _closeHub(pick);
-      return pick == null ? picked.result : null;
-    }
-    final reviewed = await reviewProductSearchHubResultBeforeSave(
-      context: context,
-      args: widget.args,
-      result: result,
-    );
-    if (reviewed.closed || !mounted) return reviewed.result;
-
-    setState(() => _isSaving = true);
-
-    final completion = await completeProductSearchHubResult(
+    return await completeProductSearchHubPick(
       context: context,
       args: widget.args,
       sourceKey: sourceKey,
-      result: reviewed.result,
-      mode: reviewed.mode,
+      result: result,
+      setSaving: (isSaving) => setState(() => _isSaving = isSaving),
+      close: _closeHub,
     );
-    if (!context.mounted) {
-      return null;
-    }
-    setState(() => _isSaving = false);
-    if (completion.shouldCloseHub) {
-      _closeHub(true);
-    }
-    return completion.wasCanceled ? reviewed.result : null;
   }
 
   void _closeHub([Object? result]) {
