@@ -1,14 +1,11 @@
 import 'dart:developer' show log;
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/data/firestore_offline_writes.dart';
-import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
-import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/household/application/household_data_scope.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 
@@ -29,20 +26,14 @@ abstract interface class InventoryActivityEventRepository {
   Future<bool> appendAll(List<InventoryActivityEvent> events);
 }
 
-/// Stores inventory activity events encrypted with the household key
-/// [_cipher].
+/// Stores inventory activity events encrypted with the household key.
 class FirestoreInventoryActivityEventRepository
     implements InventoryActivityEventRepository {
   /// Creates repository.
-  const new({
-    required this._firestore,
-    required this._cipher,
-    required this._householdId,
-  });
+  const new({required this._household});
 
-  final FirebaseFirestore _firestore;
-  final PayloadCipher _cipher;
-  final String? _householdId;
+  /// The active household, or `null` without a household key.
+  final HouseholdDataScope? _household;
 
   @override
   Stream<List<InventoryActivityEvent>> watchRecent({
@@ -68,6 +59,10 @@ class FirestoreInventoryActivityEventRepository
 
   @override
   Future<bool> appendAll(List<InventoryActivityEvent> events) async {
+    if (_household == null) {
+      // Without a household key the events are dropped and count as written.
+      return true;
+    }
     final householdId = _resolvedHouseholdId();
     if (householdId == null || events.isEmpty) {
       return events.isEmpty;
@@ -85,7 +80,7 @@ class FirestoreInventoryActivityEventRepository
         start < events.length;
         start += _firestoreBatchWriteLimit
       ) {
-        final batch = _firestore.batch();
+        final batch = collection.reference.firestore.batch();
         final end = _chunkEnd(start: start, itemCount: events.length);
         for (var index = start; index < end; index += 1) {
           final event = events[index];
@@ -113,7 +108,7 @@ class FirestoreInventoryActivityEventRepository
   }
 
   String? _resolvedHouseholdId() {
-    final householdId = _householdId?.trim();
+    final householdId = _household?.householdId.trim();
     if (householdId == null || householdId.isEmpty) {
       return null;
     }
@@ -121,12 +116,13 @@ class FirestoreInventoryActivityEventRepository
   }
 
   SealedCollection _collection(String householdId) {
+    final household = _household!;
     return SealedCollection(
-      _firestore
+      household.firestore
           .collection(_householdsCollection)
           .doc(householdId)
           .collection(_activityEventsCollection),
-      cipher: _cipher,
+      cipher: household.cipher,
       plaintextFields: inventoryActivityEventPlaintextFields,
     );
   }
@@ -161,43 +157,11 @@ int _chunkEnd({required int start, required int itemCount}) {
   return cappedEnd;
 }
 
-class _UnavailableInventoryActivityEventRepository
-    implements InventoryActivityEventRepository {
-  const new();
-
-  @override
-  Future<bool> appendAll(List<InventoryActivityEvent> events) async {
-    return true;
-  }
-
-  @override
-  Stream<List<InventoryActivityEvent>> watchRecent({
-    int limit = _defaultRecentLimit,
-  }) {
-    return Stream<List<InventoryActivityEvent>>.value(
-      const <InventoryActivityEvent>[],
-    );
-  }
-}
-
 /// Inventory activity event repository provider.
 @riverpod
 InventoryActivityEventRepository inventoryActivityEventRepository(Ref ref) {
-  ref.watch(authStateChangesProvider);
-  final householdCipher = ref.watch(householdCipherProvider);
-  final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null || householdCipher == null) {
-    log(
-      'Falling back to unavailable inventory activity event repository.',
-      name: _activityLogName,
-    );
-    return const _UnavailableInventoryActivityEventRepository();
-  }
-
   return FirestoreInventoryActivityEventRepository(
-    firestore: firestore,
-    cipher: householdCipher.cipher,
-    householdId: householdCipher.householdId,
+    household: ref.watch(householdDataScopeProvider),
   );
 }
 

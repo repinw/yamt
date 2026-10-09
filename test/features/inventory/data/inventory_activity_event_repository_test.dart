@@ -16,9 +16,11 @@ void main() {
   test('repository appends and watches recent events newest first', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryActivityEventRepository(
-      firestore: firestore,
-      cipher: cipher,
-      householdId: 'household-1',
+      household: (
+        householdId: 'household-1',
+        firestore: firestore,
+        cipher: cipher,
+      ),
     );
     final older = _event(
       id: 'event-1',
@@ -59,9 +61,11 @@ void main() {
   test('repository chunks appends beyond Firestore batch limit', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryActivityEventRepository(
-      firestore: firestore,
-      cipher: cipher,
-      householdId: 'household-1',
+      household: (
+        householdId: 'household-1',
+        firestore: firestore,
+        cipher: cipher,
+      ),
     );
     final events = List<InventoryActivityEvent>.generate(501, (index) {
       return _event(
@@ -79,6 +83,23 @@ void main() {
     expect(watchedEvents.first.id, 'event-500');
     expect(watchedEvents.last.id, 'event-0');
   });
+
+  test(
+    'without a household key appends count as written and watch is empty',
+    () async {
+      const repository = FirestoreInventoryActivityEventRepository(
+        household: null,
+      );
+
+      expect(
+        await repository.appendAll([
+          _event(id: 'event-1', happenedAt: DateTime.utc(2026, 4, 7)),
+        ]),
+        isTrue,
+      );
+      expect(await repository.watchRecent().first, isEmpty);
+    },
+  );
 }
 
 InventoryActivityEvent _event({

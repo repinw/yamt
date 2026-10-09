@@ -49,9 +49,11 @@ void main() {
   test('readAll skips malformed discard events', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryDiscardEventRepository(
-      firestore: firestore,
-      cipher: cipher,
-      householdId: 'household-1',
+      household: (
+        householdId: 'household-1',
+        firestore: firestore,
+        cipher: cipher,
+      ),
     );
     final collection = firestore
         .collection('households')
@@ -91,9 +93,11 @@ void main() {
   test('readAll normalizes Firestore timestamp values recursively', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryDiscardEventRepository(
-      firestore: firestore,
-      cipher: cipher,
-      householdId: 'household-1',
+      household: (
+        householdId: 'household-1',
+        firestore: firestore,
+        cipher: cipher,
+      ),
     );
     final collection = firestore
         .collection('households')
@@ -129,9 +133,11 @@ void main() {
   test('deleteEvent removes the stored discard event', () async {
     final firestore = FakeFirebaseFirestore();
     final repository = FirestoreInventoryDiscardEventRepository(
-      firestore: firestore,
-      cipher: cipher,
-      householdId: 'household-1',
+      household: (
+        householdId: 'household-1',
+        firestore: firestore,
+        cipher: cipher,
+      ),
     );
     final collection = firestore
         .collection('households')
@@ -161,15 +167,13 @@ void main() {
     'saveEvent and deleteEvent return false for invalid repository inputs',
     () async {
       final repositoryWithoutHousehold =
-          FirestoreInventoryDiscardEventRepository(
-            firestore: FakeFirebaseFirestore(),
-            cipher: cipher,
-            householdId: null,
-          );
+          FirestoreInventoryDiscardEventRepository(household: null);
       final repositoryWithHousehold = FirestoreInventoryDiscardEventRepository(
-        firestore: FakeFirebaseFirestore(),
-        cipher: cipher,
-        householdId: 'household-1',
+        household: (
+          householdId: 'household-1',
+          firestore: FakeFirebaseFirestore(),
+          cipher: cipher,
+        ),
       );
 
       expect(
@@ -181,30 +185,22 @@ void main() {
     },
   );
 
-  test(
-    'provider falls back to unavailable repository without firestore',
-    () async {
-      final container = ProviderContainer(
-        overrides: [
-          authStateChangesProvider.overrideWith(
-            (ref) => Stream<User?>.value(null),
-          ),
-          householdCipherProvider.overrideWithValue(null),
-          firebaseFirestoreProvider.overrideWith((ref) => null),
-        ],
-      );
-      addTearDown(container.dispose);
+  test('provider reads empty and refuses writes without firestore', () async {
+    final container = ProviderContainer(
+      overrides: [
+        authStateChangesProvider.overrideWith(
+          (ref) => Stream<User?>.value(null),
+        ),
+        householdCipherProvider.overrideWithValue(null),
+        firebaseFirestoreProvider.overrideWith((ref) => null),
+      ],
+    );
+    addTearDown(container.dispose);
 
-      final repository = container.read(
-        inventoryDiscardEventRepositoryProvider,
-      );
+    final repository = container.read(inventoryDiscardEventRepositoryProvider);
 
-      expect(await repository.readAll(), isEmpty);
-      expect(
-        await repository.saveEvent(_discardEvent(id: 'fallback')),
-        isFalse,
-      );
-      expect(await repository.deleteEvent('fallback'), isFalse);
-    },
-  );
+    expect(await repository.readAll(), isEmpty);
+    expect(await repository.saveEvent(_discardEvent(id: 'fallback')), isFalse);
+    expect(await repository.deleteEvent('fallback'), isFalse);
+  });
 }
