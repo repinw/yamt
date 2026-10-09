@@ -9,6 +9,7 @@ import 'package:yamt/features/calories/application/calorie_overview_revision_pro
 import 'package:yamt/features/calories/application/daily_nutrition_target_resolver_service.dart';
 import 'package:yamt/features/calories/application/day_budget.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_balance_provider.dart';
 import 'package:yamt/features/diary/application/diary_day_dashboard_data.dart';

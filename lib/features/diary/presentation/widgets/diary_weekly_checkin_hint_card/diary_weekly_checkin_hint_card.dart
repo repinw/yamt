@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -22,7 +24,7 @@ class DiaryWeeklyCheckInHintCard extends StatelessWidget {
   });
 
   /// Weekly check-in data.
-  final DiaryWeeklyCheckInData checkInData;
+  final CalorieWeeklyCheckInData checkInData;
 
   /// Selected diary day.
   final DateTime selectedDay;

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_hint_card/diary_weekly_checkin_hint_card.dart';
@@ -17,7 +18,7 @@ class DiaryWeeklyCheckInHintHost extends ConsumerWidget {
   });
 
   /// Weekly check-in data.
-  final DiaryWeeklyCheckInData checkInData;
+  final CalorieWeeklyCheckInData checkInData;
 
   /// Selected diary day.
   final DateTime selectedDay;

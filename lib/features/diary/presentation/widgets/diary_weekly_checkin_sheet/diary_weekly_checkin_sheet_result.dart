@@ -1,4 +1,4 @@
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 
 /// What the user decided in the weekly check-in sheet.
 enum DiaryWeeklyCheckInSheetAction {
@@ -24,5 +24,5 @@ enum DiaryWeeklyCheckInSheetAction {
 /// run.
 typedef DiaryWeeklyCheckInSheetResult = ({
   DiaryWeeklyCheckInSheetAction action,
-  DiaryRunTrainingChoice? training,
+  CalorieRunTrainingChoice? training,
 });

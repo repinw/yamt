@@ -35,6 +35,7 @@ import 'package:yamt/features/calories/domain/calorie_goal_weekly_check_in_snaps
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
@@ -43,8 +44,6 @@ import 'package:yamt/features/diary/application/'
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
     show
         DiaryWeeklyCheckInActions,
-        DiaryWeeklyCheckInData,
-        PendingCalorieGoalWeeklyCheckIn,
         diaryCalorieGoalSettingsProvider,
         diaryWeeklyCheckInActionsProvider,
         diaryWeeklyCheckInDataProvider,
@@ -76,11 +75,11 @@ import '../../../helpers/memory_app_preferences.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 import '../support/diary_dashboard_test_support.dart';
 
-DiaryWeeklyCheckInData _weeklyCheckInData = _emptyWeeklyCheckInCheckInData();
+CalorieWeeklyCheckInData _weeklyCheckInData = _emptyWeeklyCheckInCheckInData();
 
 void _setWeeklyCheckInData(
   ProviderContainer container,
-  DiaryWeeklyCheckInData data,
+  CalorieWeeklyCheckInData data,
 ) {
   _weeklyCheckInData = data;
   container.invalidate(diaryWeeklyCheckInDataProvider);
@@ -1046,8 +1045,8 @@ Future<ProviderContainer> _pumpDiaryPage(
   DateTime? today,
   DateTime Function()? clock,
   Locale locale = const Locale('en'),
-  DiaryWeeklyCheckInData? initialWeeklyCheckIn,
-  DiaryWeeklyCheckInData? preloadedWeeklyCheckIn,
+  CalorieWeeklyCheckInData? initialWeeklyCheckIn,
+  CalorieWeeklyCheckInData? preloadedWeeklyCheckIn,
   FakeCalorieLogRepository? logRepository,
   FakeCalorieSettingsRepository? settingsRepository,
   HealthConnectionService? healthConnectionService,
@@ -1272,8 +1271,8 @@ Future<void> _pumpFrames(WidgetTester tester, {int count = 8}) async {
   }
 }
 
-DiaryWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
-  return const DiaryWeeklyCheckInData(
+CalorieWeeklyCheckInData _emptyWeeklyCheckInCheckInData() {
+  return const CalorieWeeklyCheckInData(
     pendingWeeklyCheckIn: null,
     shouldAutoOpen: false,
     days: <CalorieWeeklyCheckInWindowDay>[],
@@ -1299,7 +1298,7 @@ DiaryWeeklyCheckInActions _noopWeeklyCheckInActions() {
   );
 }
 
-DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
+CalorieWeeklyCheckInData _weeklyCheckInCheckInData({
   required DateTime windowStartDate,
   bool shouldAutoOpen = true,
   DateTime? dismissedAt,
@@ -1314,7 +1313,7 @@ DiaryWeeklyCheckInData _weeklyCheckInCheckInData({
     dueDate: windowStartDate.add(const Duration(days: 7)),
     dismissedAt: dismissedAt,
   );
-  return DiaryWeeklyCheckInData(
+  return CalorieWeeklyCheckInData(
     pendingWeeklyCheckIn: pending,
     shouldAutoOpen: shouldAutoOpen,
     days: days,

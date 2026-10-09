@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_choice_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_facts.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_sheet/diary_weekly_checkin_number_format.dart';
@@ -24,7 +24,7 @@ class DiaryWeeklyCheckInReviewStep extends StatelessWidget {
   });
 
   /// Plan of the check-in.
-  final DiaryWeeklyCheckInPlan plan;
+  final CalorieWeeklyCheckInPlan plan;
 
   /// Whether the measured TDEE is picked.
   final bool useMeasured;

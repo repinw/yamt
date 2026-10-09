@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_progress.dart';
+import 'package:yamt/features/calories/domain/calorie_run_training_plan.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_weekly_checkin_sheet_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_weekly_checkin_messages.dart';
@@ -20,7 +22,7 @@ const _sheetHeightFactor = 0.94;
 /// A reached goal cannot be dismissed; it asks for a new goal.
 Future<DiaryWeeklyCheckInSheetResult?> showDiaryWeeklyCheckInSheet(
   BuildContext context, {
-  required DiaryWeeklyCheckInData checkInData,
+  required CalorieWeeklyCheckInData checkInData,
   bool goalReached = false,
 }) {
   return showDiaryWeeklyCheckInSheetRoute(
@@ -64,7 +66,7 @@ class DiaryWeeklyCheckInSheet extends ConsumerWidget {
   });
 
   /// Weekly check-in data.
-  final DiaryWeeklyCheckInData checkInData;
+  final CalorieWeeklyCheckInData checkInData;
 
   /// Whether the goal weight was reached.
   final bool goalReached;
@@ -80,7 +82,7 @@ class DiaryWeeklyCheckInSheet extends ConsumerWidget {
     );
     void pop(
       DiaryWeeklyCheckInSheetAction action, [
-      DiaryRunTrainingChoice? training,
+      CalorieRunTrainingChoice? training,
     ]) {
       Navigator.of(context).pop<DiaryWeeklyCheckInSheetResult>((
         action: action,
@@ -178,7 +180,7 @@ class _BlockedFrame extends StatelessWidget {
     required this.onPop,
   });
 
-  final DiaryWeeklyCheckInData checkInData;
+  final CalorieWeeklyCheckInData checkInData;
   final String message;
   final void Function(DiaryWeeklyCheckInSheetAction action) onPop;
 

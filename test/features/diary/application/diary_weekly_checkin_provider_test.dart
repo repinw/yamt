@@ -7,11 +7,9 @@ import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show
-        PendingCalorieGoalWeeklyCheckIn,
-        diaryWeeklyCheckInActionsProvider,
-        diaryWeeklyCheckInDataProvider;
+    show diaryWeeklyCheckInActionsProvider, diaryWeeklyCheckInDataProvider;
 
 import '../../calories/support/fake_calories_repositories.dart';
 

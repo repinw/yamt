@@ -1,5 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_checkin_plan.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 
@@ -29,7 +30,7 @@ class DiaryWeeklyCheckInSheetState {
   });
 
   /// The plan of the pending check-in.
-  final DiaryWeeklyCheckInPlan plan;
+  final CalorieWeeklyCheckInPlan plan;
 
   /// The current step.
   final DiaryWeeklyCheckInStep step;
@@ -41,7 +42,7 @@ class DiaryWeeklyCheckInSheetState {
   final Set<DateTime> trainingDays;
 
   /// Targets of the next run for the current choices.
-  DiaryWeeklyCheckInTargets get targets => plan.targetsFor(
+  CalorieWeeklyCheckInTargets get targets => plan.targetsFor(
     useMeasured: useMeasured,
     trainingDays: trainingDays.length,
   );

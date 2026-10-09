@@ -1,8 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show DiaryWeeklyCheckInData, PendingCalorieGoalWeeklyCheckIn;
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_dialog_scheduler.dart';
 
@@ -13,7 +12,7 @@ void main() {
       schedulePostFrame: postFrameCallbacks.add,
     );
     addTearDown(scheduler.dispose);
-    final opened = <DiaryWeeklyCheckInData>[];
+    final opened = <CalorieWeeklyCheckInData>[];
     final checkInData = _checkInData(DateTime(2026, 4, 20));
 
     scheduler.schedule(
@@ -39,8 +38,8 @@ void main() {
       schedulePostFrame: postFrameCallbacks.add,
     );
     addTearDown(scheduler.dispose);
-    final synced = <DiaryWeeklyCheckInData>[];
-    final opened = <DiaryWeeklyCheckInData>[];
+    final synced = <CalorieWeeklyCheckInData>[];
+    final opened = <CalorieWeeklyCheckInData>[];
     final checkInData = _checkInData(DateTime(2026, 4, 20));
 
     scheduler.cacheAndSchedule(
@@ -71,7 +70,7 @@ void main() {
       schedulePostFrame: postFrameCallbacks.add,
     );
     addTearDown(scheduler.dispose);
-    final opened = <DiaryWeeklyCheckInData>[];
+    final opened = <CalorieWeeklyCheckInData>[];
     final firstCheckInData = _checkInData(DateTime(2026, 4, 13));
     final secondCheckInData = _checkInData(DateTime(2026, 4, 20));
 
@@ -114,7 +113,7 @@ void main() {
     final scheduler = DiaryWeeklyCheckInDialogScheduler(
       schedulePostFrame: postFrameCallbacks.add,
     );
-    final opened = <DiaryWeeklyCheckInData>[];
+    final opened = <CalorieWeeklyCheckInData>[];
 
     scheduler.schedule(
       checkInData: _checkInData(DateTime(2026, 4, 20)),
@@ -134,8 +133,8 @@ void main() {
   });
 }
 
-DiaryWeeklyCheckInData _checkInData(DateTime windowStartDate) {
-  return DiaryWeeklyCheckInData(
+CalorieWeeklyCheckInData _checkInData(DateTime windowStartDate) {
+  return CalorieWeeklyCheckInData(
     pendingWeeklyCheckIn: PendingCalorieGoalWeeklyCheckIn(
       windowStartDate: windowStartDate,
       windowEndDate: windowStartDate.add(const Duration(days: 6)),

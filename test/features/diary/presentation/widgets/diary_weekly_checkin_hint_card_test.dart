@@ -3,8 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
 import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
-import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart'
-    show DiaryWeeklyCheckInData, PendingCalorieGoalWeeklyCheckIn;
+import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_hint_card/diary_weekly_checkin_hint_card.dart';
@@ -153,7 +152,7 @@ CalorieWeeklyCheckInWindowDay _windowDay({
   );
 }
 
-DiaryWeeklyCheckInData _checkInData({
+CalorieWeeklyCheckInData _checkInData({
   PendingCalorieGoalWeeklyCheckIn? pendingWeeklyCheckIn,
   CalorieWeeklyCheckInBlockedReason? blockedReason,
   List<DateTime> missingWeightDays = const <DateTime>[],
@@ -161,7 +160,7 @@ DiaryWeeklyCheckInData _checkInData({
       const <CalorieWeeklyCheckInWindowDay>[],
   CalorieLearnedTdeeFreshness freshness = CalorieLearnedTdeeFreshness.fresh,
 }) {
-  return DiaryWeeklyCheckInData(
+  return CalorieWeeklyCheckInData(
     pendingWeeklyCheckIn: pendingWeeklyCheckIn,
     shouldAutoOpen: pendingWeeklyCheckIn != null,
     days: days,
