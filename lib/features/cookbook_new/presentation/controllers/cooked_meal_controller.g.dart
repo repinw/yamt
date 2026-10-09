@@ -54,7 +54,7 @@ final class CookedMealControllerProvider
 }
 
 String _$cookedMealControllerHash() =>
-    r'e44589ace1a7d4773f8409e2699cb588930587cc';
+    r'1e7f3d3fb4ddab58715798723d0962acba5f8e03';
 
 /// Saves the "Gekocht" step of the meal [mealId].
 

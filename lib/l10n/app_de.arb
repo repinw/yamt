@@ -2794,10 +2794,18 @@
   "cookedDiscardFailed": "Mahlzeit konnte nicht verworfen werden. Die Zutaten sind noch nicht zurück im Vorrat.",
   "cookedSave": "In den Vorrat",
   "cookedNeedsUtensil": "Erst den Behälter wählen",
-  "cookedNextTitle": "Wie geht’s weiter",
-  "cookedToDiary": "Ins Tagebuch",
-  "cookedToDiaryNote": "Gleich trägst du deine Portion ein, der Rest bleibt im Vorrat.",
   "cookedSaved": "{name} ist im Vorrat",
+  "cookedToCookbook": "Ins Kochbuch",
+  "cookedToCookbookNote": "Zutaten und Mengen von heute",
+  "cookedSavedWithCookbook": "{name} ist im Vorrat und im Kochbuch",
+  "@cookedSavedWithCookbook": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookedCookbookFailed": "Die Mahlzeit ist im Vorrat, konnte aber nicht ins Kochbuch.",
   "cookedLoadFailed": "Die Mahlzeit konnte nicht geladen werden.",
   "preparedMealGone": "Mahlzeit nicht mehr im Vorrat",
   "cookbookInPotSince": "Im Topf seit {time}",

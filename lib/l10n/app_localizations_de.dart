@@ -6149,19 +6149,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get cookedNeedsUtensil => 'Erst den Behälter wählen';
 
   @override
-  String get cookedNextTitle => 'Wie geht’s weiter';
-
-  @override
-  String get cookedToDiary => 'Ins Tagebuch';
-
-  @override
-  String get cookedToDiaryNote =>
-      'Gleich trägst du deine Portion ein, der Rest bleibt im Vorrat.';
-
-  @override
   String cookedSaved(String name) {
     return '$name ist im Vorrat';
   }
+
+  @override
+  String get cookedToCookbook => 'Ins Kochbuch';
+
+  @override
+  String get cookedToCookbookNote => 'Zutaten und Mengen von heute';
+
+  @override
+  String cookedSavedWithCookbook(String name) {
+    return '$name ist im Vorrat und im Kochbuch';
+  }
+
+  @override
+  String get cookedCookbookFailed =>
+      'Die Mahlzeit ist im Vorrat, konnte aber nicht ins Kochbuch.';
 
   @override
   String get cookedLoadFailed => 'Die Mahlzeit konnte nicht geladen werden.';

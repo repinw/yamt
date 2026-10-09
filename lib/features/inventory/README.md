@@ -82,6 +82,9 @@ Other features may consume these public Inventory entry points:
   `PreparedMealMutationService.weighPot` stores a weighing on the eat page
   (`PreparedMeal.potWeighing`), which `InventoryQuickEatApplication` writes
   before the eat; `PreparedMealEatCalculator` counts grams from it.
+- `application/prepared_meal_template_writer.dart`: adds a cooked meal as a
+  cookbook template (`PreparedMealTemplateCopy.asTemplate`) for the "Ins
+  Kochbuch" switch of the "Gekocht" step; it throws when the save fails.
 - `InventoryItemsController`
 - `PreparedMealsController`
 - `PreparedMealTemplatesController`

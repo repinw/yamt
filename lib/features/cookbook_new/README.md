@@ -13,7 +13,8 @@ templates list and later the cooking flow.
   spoken or typed text is cut into rows, and their stock state.
 - The "Gekocht" page: portions or pieces, pot, and food weight of a meal in
   the pot, and discarding a combined meal there, which gives its foods back
-  to the Vorrat and deletes the ones added only for it.
+  to the Vorrat and deletes the ones added only for it, and the "Ins
+  Kochbuch" switch that also saves the cooked meal as a template.
 - The overview that sorts saved templates into Vorlagen and recipes and marks
   which foods the Vorrat holds.
 

@@ -9,10 +9,12 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/app_switch_list_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/cooked_meal_save_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'cooked_meal_destination_section.dart';
+    'cooked_meal_cookbook_switch.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'cooked_meal_header.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -31,12 +33,12 @@ import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository.dart';
+import 'package:yamt/features/inventory/data/'
+    'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
-    'prepared_meal_eat_sheet_body.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -105,9 +107,9 @@ void main() {
     expect(meal.components.single.inventoryItemId, 'rice');
     expect(meal.pendingRecipeIngredients, hasLength(1));
 
-    // The open chicken row keeps the meal out of the diary.
-    await _showDestination(tester);
-    expect(_segment(tester, CookedMealDestination.diary).enabled, isFalse);
+    // The cookbook switch starts off.
+    await _showCookbookSwitch(tester);
+    expect(_cookbookSwitch(tester).value, isFalse);
 
     // A weight without the pot cannot be saved.
     await tester.enterText(find.byKey(CookedMealPotSection.grossKey), '1300');
@@ -133,12 +135,17 @@ void main() {
     expect(cooked.finalNetWeight, 900);
   });
 
-  testWidgets('"To diary" cooks the meal and opens the eat page', (
+  testWidgets('"Ins Kochbuch" also saves the meal as a template', (
     tester,
   ) async {
     final meals = _FakeMealRepository();
+    final templates = _FakeTemplateRepository();
     await tester.pumpWidget(
-      _app(meals: meals, voice: _FakeVoiceService('200 g Reis')),
+      _app(
+        meals: meals,
+        voice: _FakeVoiceService('200 g Reis'),
+        templates: templates,
+      ),
     );
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(_startKey));
@@ -151,23 +158,53 @@ void main() {
     await tester.tap(find.byKey(FreeCookingActions.cookKey));
     await tester.pumpAndSettle();
 
-    await _showDestination(tester);
-    await tester.tap(
-      find.byKey(
-        CookedMealDestinationSection.segmentKey(CookedMealDestination.diary),
-      ),
-    );
+    await _showCookbookSwitch(tester);
+    await tester.tap(find.byKey(CookedMealCookbookSwitch.switchKey));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(CookedMealPage.saveKey));
     await tester.pumpAndSettle();
 
-    expect(meals.saved.single.isInPot, isFalse);
-    expect(find.byType(PreparedMealEatSheetBody), findsOneWidget);
-
-    // Closing the eat page leaves the meal in the Vorrat and the step.
-    await tester.binding.handlePopRoute();
-    await tester.pumpAndSettle();
     expect(find.byKey(_startKey), findsOneWidget);
+    final cooked = meals.saved.single;
+    expect(cooked.isInPot, isFalse);
+    final template = templates.saved.single;
+    expect(template.id, isNot(cooked.id));
+    expect(template.name, 'Reis');
+    expect(template.components.single.inventoryItemId, 'rice');
+    expect(template.remainingPortions, template.totalPortions);
+  });
+
+  testWidgets('a failed template keeps the meal in the Vorrat and says so', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        voice: _FakeVoiceService('200 g Reis'),
+        templates: _FakeTemplateRepository(fails: true),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(FreeCookingPage.voiceZoneKey));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(FreeCookingHeader.nameKey), 'Reis');
+    await tester.tap(find.byKey(FreeCookingActions.cookKey));
+    await tester.pumpAndSettle();
+
+    await _showCookbookSwitch(tester);
+    await tester.tap(find.byKey(CookedMealCookbookSwitch.switchKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookedMealPage.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(_startKey), findsOneWidget);
+    expect(meals.saved.single.isInPot, isFalse);
+    expect(find.byKey(CookedMealSaveFlow.cookbookFailedKey), findsOneWidget);
   });
 
   testWidgets('counts the meal in pieces without weighing it', (tester) async {
@@ -380,27 +417,21 @@ PreparedMeal _combinedMeal() {
   );
 }
 
-/// Scrolls the "Gekocht" step down to the destination switch.
-Future<void> _showDestination(WidgetTester tester) => tester.scrollUntilVisible(
-  find.byType(CookedMealDestinationSection),
-  200,
-  scrollable: find
-      .descendant(
-        of: find.byType(CookedMealPage),
-        matching: find.byType(Scrollable),
-      )
-      .first,
-);
+/// Scrolls the "Gekocht" step down to the cookbook switch.
+Future<void> _showCookbookSwitch(WidgetTester tester) =>
+    tester.scrollUntilVisible(
+      find.byKey(CookedMealCookbookSwitch.switchKey),
+      200,
+      scrollable: find
+          .descendant(
+            of: find.byType(CookedMealPage),
+            matching: find.byType(Scrollable),
+          )
+          .first,
+    );
 
-ButtonSegment<CookedMealDestination> _segment(
-  WidgetTester tester,
-  CookedMealDestination value,
-) => tester
-    .widget<SegmentedButton<CookedMealDestination>>(
-      find.byType(SegmentedButton<CookedMealDestination>),
-    )
-    .segments
-    .singleWhere((segment) => segment.value == value);
+AppSwitchListTile _cookbookSwitch(WidgetTester tester) => tester
+    .widget<AppSwitchListTile>(find.byKey(CookedMealCookbookSwitch.switchKey));
 
 FilledButton _saveButton(WidgetTester tester) =>
     tester.widget<FilledButton>(find.byKey(CookedMealPage.saveKey));
@@ -409,6 +440,7 @@ Widget _app({
   required _FakeMealRepository meals,
   required _FakeVoiceService voice,
   ScreenWakeLock? wakeLock,
+  _FakeTemplateRepository? templates,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -441,6 +473,9 @@ Widget _app({
   final container = ProviderContainer(
     overrides: [
       preparedMealRepositoryProvider.overrideWithValue(meals),
+      preparedMealTemplateRepositoryProvider.overrideWithValue(
+        templates ?? _FakeTemplateRepository(),
+      ),
       inventoryItemRepositoryProvider.overrideWithValue(
         _FakeInventoryRepository([
           InventoryItem.create(
@@ -605,4 +640,30 @@ class _FakeActivityRepository implements InventoryActivityEventRepository {
 
   @override
   Future<bool> appendAll(List<InventoryActivityEvent> events) async => true;
+}
+
+class _FakeTemplateRepository implements PreparedMealTemplateRepository {
+  new({this.fails = false});
+
+  final bool fails;
+  final saved = <PreparedMeal>[];
+
+  @override
+  Stream<List<PreparedMeal>> watchAll() async* {
+    yield List.of(saved);
+  }
+
+  @override
+  Future<List<PreparedMeal>> readAll() async => List.of(saved);
+
+  @override
+  Future<bool> saveAll(List<PreparedMeal> templates) async {
+    if (fails) {
+      return false;
+    }
+    saved
+      ..clear()
+      ..addAll(templates);
+    return true;
+  }
 }

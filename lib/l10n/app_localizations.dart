@@ -10160,29 +10160,35 @@ abstract class AppLocalizations {
   /// **'Pick the container first'**
   String get cookedNeedsUtensil;
 
-  /// No description provided for @cookedNextTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'What’s next'**
-  String get cookedNextTitle;
-
-  /// No description provided for @cookedToDiary.
-  ///
-  /// In en, this message translates to:
-  /// **'To diary'**
-  String get cookedToDiary;
-
-  /// No description provided for @cookedToDiaryNote.
-  ///
-  /// In en, this message translates to:
-  /// **'Next you log your portion; the rest stays in stock.'**
-  String get cookedToDiaryNote;
-
   /// No description provided for @cookedSaved.
   ///
   /// In en, this message translates to:
   /// **'{name} is in stock'**
   String cookedSaved(String name);
+
+  /// No description provided for @cookedToCookbook.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to cookbook'**
+  String get cookedToCookbook;
+
+  /// No description provided for @cookedToCookbookNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Today’s ingredients and amounts'**
+  String get cookedToCookbookNote;
+
+  /// No description provided for @cookedSavedWithCookbook.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} is in stock and in the cookbook'**
+  String cookedSavedWithCookbook(String name);
+
+  /// No description provided for @cookedCookbookFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The meal is in stock, but could not be added to the cookbook.'**
+  String get cookedCookbookFailed;
 
   /// No description provided for @cookedLoadFailed.
   ///
