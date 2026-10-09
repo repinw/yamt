@@ -22,51 +22,43 @@ reviewProductSearchHubStockResult({
   required InventoryReceiptManualProductResult result,
   bool offersEat = false,
 }) async {
-  var current = result;
   var packages = 1;
-  while (true) {
-    final picked = await showInventoryStockAddPage(
+  final shown = await showProductSearchHubPickPage<InventoryStockAddResult>(
+    context: context,
+    args: args,
+    result: result,
+    show: (current) => showInventoryStockAddPage(
       context: context,
       item: current.item,
       initialPackages: packages,
       offersEat: offersEat,
-    );
-    if (!context.mounted) {
-      return null;
-    }
-    switch (picked) {
-      case null:
-        return null;
-      case InventoryStockAddConfirmed(:final packages):
-        final item = current.item;
-        return (
-          result: current.withItem(
-            item.withDerivedAmount(
-              quantity: packages,
-              fallbackUnit: item.amountUnit,
-            ),
-          ),
-          eats: false,
-          eatOn: null,
-        );
-      case InventoryStockAddEat():
-        return (result: current, eats: true, eatOn: null);
-      case InventoryStockAddPlan(:final day):
-        return (result: current, eats: true, eatOn: day);
-      case InventoryStockAddEdit(packages: final count):
+    ),
+    isEdit: (step) {
+      if (step case InventoryStockAddEdit(packages: final count)) {
         packages = count;
-        // An edit keeps the user's own copy; the catalog product stays.
-        final edited = await openProductSearchHubCustomProductEditor(
-          context: context,
-          draftItem: current.item,
-          args: args,
-        );
-        if (!context.mounted) {
-          return null;
-        }
-        if (edited != null) {
-          current = edited;
-        }
-    }
-  }
+        return true;
+      }
+      return false;
+    },
+  );
+  final current = shown.result;
+  return switch (shown.step) {
+    null || InventoryStockAddEdit() => null,
+    InventoryStockAddConfirmed(:final packages) => (
+      result: current.withItem(
+        current.item.withDerivedAmount(
+          quantity: packages,
+          fallbackUnit: current.item.amountUnit,
+        ),
+      ),
+      eats: false,
+      eatOn: null,
+    ),
+    InventoryStockAddEat() => (result: current, eats: true, eatOn: null),
+    InventoryStockAddPlan(:final day) => (
+      result: current,
+      eats: true,
+      eatOn: day,
+    ),
+  };
 }

@@ -111,37 +111,28 @@ Future<_EatWithEditResult> _eatWithEdit({
   required InventoryReceiptManualProductResult result,
   required Widget Function(InventoryItem item) page,
 }) async {
-  var current = result;
-  while (true) {
-    final step = await Navigator.of(context, rootNavigator: true)
-        .push<_EatStep>(
+  final shown = await showProductSearchHubPickPage<_EatStep>(
+    context: context,
+    args: args,
+    result: result,
+    show: (current) =>
+        Navigator.of(context, rootNavigator: true).push<_EatStep>(
           MaterialPageRoute<_EatStep>(
             fullscreenDialog: true,
             builder: (_) => page(current.item),
           ),
-        );
-    if (!context.mounted || step == null) {
-      return (result: current, eat: null, toStock: false);
-    }
-    switch (step) {
-      case _EatSubmitted(:final result):
-        return (result: current, eat: result, toStock: false);
-      case _EatStore():
-        return (result: current, eat: null, toStock: true);
-      case _EatEdit():
-        final edited = await openProductSearchHubCustomProductEditor(
-          context: context,
-          draftItem: current.item,
-          args: args,
-        );
-        if (!context.mounted) {
-          return (result: current, eat: null, toStock: false);
-        }
-        if (edited != null) {
-          current = edited;
-        }
-    }
-  }
+        ),
+    isEdit: (step) => step is _EatEdit,
+  );
+  return switch (shown.step) {
+    _EatSubmitted(:final result) => (
+      result: shown.result,
+      eat: result,
+      toStock: false,
+    ),
+    _EatStore() => (result: shown.result, eat: null, toStock: true),
+    null || _EatEdit() => (result: shown.result, eat: null, toStock: false),
+  };
 }
 
 sealed class _EatStep {
