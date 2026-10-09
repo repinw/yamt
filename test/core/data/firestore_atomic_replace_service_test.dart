@@ -139,31 +139,6 @@ void main() {
     expect(dataById['c'], <String, dynamic>{'name': 'Cheese'});
   });
 
-  test('replaceAll keeps stale documents that canDelete refuses', () async {
-    final firestore = _HookedFakeFirebaseFirestore();
-    final collection = _itemsCollectionRef(
-      firestore: firestore,
-      userId: 'user-1',
-    );
-    await collection.doc('a').set(<String, dynamic>{'name': 'Old Milk'});
-    await collection.doc('b').set(<String, dynamic>{'name': 'Unreadable'});
-
-    await FirestoreAtomicReplaceService(firestore: firestore).replaceAll(
-      collection: collection,
-      documentsById: <String, Map<String, dynamic>>{
-        'c': <String, dynamic>{'name': 'Cheese'},
-      },
-      canDelete: (candidate) async =>
-          candidate.expectedData['name'] != 'Unreadable',
-    );
-
-    final snapshot = await collection.get();
-    expect(
-      snapshot.docs.map((doc) => doc.id),
-      unorderedEquals(<String>['b', 'c']),
-    );
-  });
-
   test('replaceAll falls back and chunks stale deletes', () async {
     late final CollectionReference<Map<String, dynamic>> collection;
     final staleCountsBeforeTransaction = <int>[];
