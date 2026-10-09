@@ -468,6 +468,9 @@ class _FakeMealRepository implements PreparedMealRepository {
     }
     return saves;
   }
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 class _FakeInventoryRepository with InventoryItemWholeListWrites {

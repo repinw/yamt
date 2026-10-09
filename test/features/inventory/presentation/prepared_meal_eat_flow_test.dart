@@ -107,6 +107,9 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   }
 
   Future<void> dispose() => _changes.close();
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 PreparedMealActions _detailActions() {

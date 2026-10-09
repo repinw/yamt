@@ -1620,6 +1620,9 @@ class _OwnerScopedPreparedMealRepository implements PreparedMealRepository {
       mealsByOwnerId[resolvedOwnerId] ?? const <PreparedMeal>[],
     );
   }
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 InventoryItem _inventoryItem({

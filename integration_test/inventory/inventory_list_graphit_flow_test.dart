@@ -89,6 +89,9 @@ class _StaticPreparedMealRepository implements PreparedMealRepository {
     ];
     return true;
   }
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 class _StaticShoppingListController extends ShoppingListController {

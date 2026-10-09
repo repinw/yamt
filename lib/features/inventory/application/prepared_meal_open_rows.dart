@@ -47,7 +47,7 @@ class PreparedMealOpenRows {
       return false;
     }
 
-    final currentItems = await inventoryRepository.readAll();
+    final currentItems = await inventoryRepository.readAllForChange();
     final fillResult = buildPreparedMealPendingIngredientFillResult(
       currentItems: currentItems,
       ingredient: trimmedIngredient,

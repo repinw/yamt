@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:yamt/core/data/delivered_watches.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/household/application/household_data_scope.dart';
@@ -22,13 +23,18 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
   PreparedMealStore get _store => _household!.store;
   Future<void> _writeBarrier = Future<void>.value();
 
+  /// The running [watchAll] streams that have delivered a list. While one
+  /// runs, the local cache holds the household's meals and follows the
+  /// server.
+  final _deliveredWatches = DeliveredWatches();
+
   @override
   Stream<List<PreparedMeal>> watchAll() {
     final householdId = _currentHouseholdId();
     if (householdId == null) {
       return Stream<List<PreparedMeal>>.value(const <PreparedMeal>[]);
     }
-    return _watchAllForHousehold(householdId);
+    return _deliveredWatches.track(_watchAllForHousehold(householdId));
   }
 
   @override
@@ -37,7 +43,19 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     if (householdId == null) {
       return const <PreparedMeal>[];
     }
-    return await _readAllForHousehold(householdId);
+    return await _readAllForHousehold(householdId, localFirst: false);
+  }
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() async {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
+      return const <PreparedMeal>[];
+    }
+    return await _readAllForHousehold(
+      householdId,
+      localFirst: _deliveredWatches.any,
+    );
   }
 
   @override
@@ -119,9 +137,14 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
     }
   }
 
-  Future<List<PreparedMeal>> _readAllForHousehold(String householdId) async {
+  Future<List<PreparedMeal>> _readAllForHousehold(
+    String householdId, {
+    required bool localFirst,
+  }) async {
     try {
-      final documents = await _store.readAll(householdId: householdId);
+      final documents = localFirst
+          ? await _store.readAllLocal(householdId: householdId)
+          : await _store.readAll(householdId: householdId);
       return _decodeDocuments(documents);
     } on Object catch (error, stackTrace) {
       log(

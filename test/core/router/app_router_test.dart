@@ -1561,4 +1561,7 @@ class _FakePreparedMealRepository implements PreparedMealRepository {
   Stream<List<PreparedMeal>> watchAll() async* {
     yield const <PreparedMeal>[];
   }
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }

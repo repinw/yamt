@@ -75,7 +75,9 @@ class InventoryEntryDeleteService {
       }
       if (entry.canReturnPreparedMealToInventory) {
         final mealId = entry.bundleSourcePreparedMealId!.trim();
-        return (await _meals.readAll()).any((meal) => meal.id == mealId);
+        return (await _meals.readAllForChange()).any(
+          (meal) => meal.id == mealId,
+        );
       }
       return false;
     } on Object catch (error, stackTrace) {

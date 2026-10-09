@@ -77,6 +77,9 @@ class FakeEntryMeals implements PreparedMealRepository {
 
   @override
   Future<bool> delete(String mealId) async => true;
+
+  @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 /// The service on one fake Firestore, with the real commit stores and the

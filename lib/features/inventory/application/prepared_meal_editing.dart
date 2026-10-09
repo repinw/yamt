@@ -129,7 +129,7 @@ class PreparedMealEditing {
       return true;
     }
 
-    final currentItems = await inventoryRepository.readAll();
+    final currentItems = await inventoryRepository.readAllForChange();
     final buildResult = _tryBuildPreparedMealEdit(
       currentMeal: currentMeal,
       currentItems: currentItems,
@@ -243,7 +243,7 @@ class PreparedMealEditing {
     }
 
     final meal = currentMeals[mealIndex];
-    final currentItems = await inventoryRepository.readAll();
+    final currentItems = await inventoryRepository.readAllForChange();
     final restoredItems = [
       for (final item in restoreItemsFromPreparedMeal(
         currentItems: currentItems,

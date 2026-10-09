@@ -24,6 +24,7 @@ class _FakePreparedMealStore implements PreparedMealStore {
     if (readAllError case final error?) {
       throw error;
     }
+    readSources.add('server');
     return const <PreparedMealDocument>[];
   }
 
@@ -65,9 +66,49 @@ class _FakePreparedMealStore implements PreparedMealStore {
   void emitWatchError(Object error, [StackTrace? stackTrace]) {
     _controller.addError(error, stackTrace);
   }
+
+  @override
+  Future<List<PreparedMealDocument>> readAllLocal({
+    required String householdId,
+  }) async {
+    readSources.add('cache');
+    return const <PreparedMealDocument>[];
+  }
+
+  /// Where each list read went, in order.
+  final readSources = <String>[];
 }
 
 void main() {
+  test(
+    'a change reads the server until the watch delivered, then the cache',
+    () async {
+      final store = _FakePreparedMealStore();
+      final repository = FirestorePreparedMealRepository(
+        household: (householdId: 'household-1', store: store),
+        sessionShutdownSignal: SessionShutdownSignal(),
+      );
+
+      // Offline before any list: the read goes to the server, like items.
+      await repository.readAllForChange();
+      final delivered = Completer<void>();
+      final subscription = repository.watchAll().listen((_) {
+        if (!delivered.isCompleted) delivered.complete();
+      });
+      await pumpEventQueue();
+      store.emitWatchItems(const <PreparedMealDocument>[]);
+      await delivered.future;
+      await repository.readAllForChange();
+      // Without a running watch the cache no longer follows the server.
+      // The generator behind the watch ends with its next event, so the
+      // cancel is not awaited.
+      unawaited(subscription.cancel());
+      await repository.readAllForChange();
+
+      expect(store.readSources, ['server', 'cache', 'server']);
+    },
+  );
+
   test(
     'readAll rethrows a failed read instead of returning no meals',
     () async {

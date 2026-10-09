@@ -36,7 +36,7 @@ class PreparedMealCreation {
     }
 
     final currentMeals = await _writer.loadMeals();
-    final currentItems = await inventoryRepository.readAll();
+    final currentItems = await inventoryRepository.readAllForChange();
 
     try {
       final creationResult = buildPreparedMealCreationResult(
@@ -80,7 +80,7 @@ class PreparedMealCreation {
     }
 
     final currentMeals = await _writer.loadMeals();
-    final currentItems = await inventoryRepository.readAll();
+    final currentItems = await inventoryRepository.readAllForChange();
 
     try {
       final creationResult = _templateMeal(
@@ -140,7 +140,7 @@ class PreparedMealCreation {
     }
 
     final currentMeals = await _writer.loadMeals();
-    final currentItems = await inventoryRepository.readAll();
+    final currentItems = await inventoryRepository.readAllForChange();
 
     try {
       final creationResult = _templateMeal(
