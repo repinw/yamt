@@ -1,9 +1,7 @@
-import 'dart:developer' show log;
-
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
+import 'package:yamt/features/inventory/data/sealed_household_document_writes.dart';
 
 const String _storeLogName = 'FirestorePreparedMealTemplateStore';
 const String _householdsCollection = 'households';
@@ -45,7 +43,9 @@ abstract interface class PreparedMealTemplateStore {
 }
 
 /// Stores prepared meal templates encrypted with the household key [_cipher].
-class FirestorePreparedMealTemplateStore implements PreparedMealTemplateStore {
+class FirestorePreparedMealTemplateStore
+    with SealedHouseholdDocumentWrites
+    implements PreparedMealTemplateStore {
   /// The firestore prepared meal template store.
   const new({required this._firestore, required this._cipher});
 
@@ -56,7 +56,7 @@ class FirestorePreparedMealTemplateStore implements PreparedMealTemplateStore {
   Future<List<PreparedMealTemplateDocument>> readAll({
     required String householdId,
   }) async {
-    final collection = _collection(householdId);
+    final collection = householdCollection(householdId);
     return _mapDocuments(
       await collection.openAll(await collection.reference.get()),
     );
@@ -66,50 +66,17 @@ class FirestorePreparedMealTemplateStore implements PreparedMealTemplateStore {
   Stream<List<PreparedMealTemplateDocument>> watchAll({
     required String householdId,
   }) {
-    final collection = _collection(householdId);
+    final collection = householdCollection(householdId);
     return collection.reference.snapshots().asyncMap(
       (snapshot) async => _mapDocuments(await collection.openAll(snapshot)),
     );
   }
 
   @override
-  Future<bool> save({
-    required String householdId,
-    required String id,
-    required Map<String, dynamic> data,
-  }) async {
-    try {
-      final collection = _collection(householdId);
-      final sealed = await collection.seal(id, data);
-      commitBatchInBackground(
-        _firestore.batch()..set(collection.reference.doc(id), sealed),
-        failureMessage: 'Server rejected prepared meal template $id.',
-        logName: _storeLogName,
-      );
-      return true;
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to save prepared meal template $id for household '
-        '$householdId.',
-        name: _storeLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
-  }
+  String get writeLogName => _storeLogName;
 
   @override
-  Future<bool> delete({required String householdId, required String id}) async {
-    commitBatchInBackground(
-      _firestore.batch()..delete(_collection(householdId).reference.doc(id)),
-      failureMessage: 'Server rejected deleting prepared meal template $id.',
-      logName: _storeLogName,
-    );
-    return true;
-  }
-
-  SealedCollection _collection(String householdId) {
+  SealedCollection householdCollection(String householdId) {
     return SealedCollection(
       _firestore
           .collection(_householdsCollection)
