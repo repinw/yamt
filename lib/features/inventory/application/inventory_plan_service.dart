@@ -2,11 +2,8 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
-import 'package:yamt/features/calories/data/planned_entry_repository.dart';
+import 'package:yamt/features/calories/application/calorie_day_log_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_calorie_bridge_flow.dart';
 import 'package:yamt/features/inventory/domain/inventory_eat_outcome.dart';
@@ -20,9 +17,7 @@ part 'inventory_plan_service.g.dart';
 @riverpod
 InventoryPlanService inventoryPlanService(Ref ref) {
   return InventoryPlanService(
-    plans: ref.watch(plannedEntryRepositoryProvider),
-    overviewRevision: ref.watch(calorieOverviewRevisionProvider.notifier),
-    lastPlannedDay: ref.watch(lastPlannedDayProvider.notifier),
+    dayLog: ref.watch(calorieDayLogServiceProvider),
     userId: ref.watch(firebaseAuthProvider).currentUser?.uid,
     clock: ref.watch(clockProvider),
   );
@@ -32,26 +27,21 @@ InventoryPlanService inventoryPlanService(Ref ref) {
 class InventoryPlanService {
   /// Creates the service.
   const new({
-    required this._plans,
-    required this._overviewRevision,
-    required this._lastPlannedDay,
+    required this._dayLog,
     required this._userId,
     required this._clock,
   });
 
   static const _uuid = Uuid();
 
-  final PlannedEntryRepository _plans;
-  final CalorieOverviewRevision _overviewRevision;
-  final LastPlannedDay _lastPlannedDay;
+  final CalorieDayLogService _dayLog;
   final String? _userId;
   final DateTime Function() _clock;
 
   /// Whether [request] becomes a plan: the user plans it, or its day lies
   /// after today.
   bool isPlan(InventoryItemEatRequest request) =>
-      request.isPlan ||
-      DiaryDayStatus.of(day: request.loggedAt, today: _clock()).isFuture;
+      request.isPlan || _dayLog.plansOn(request.loggedAt);
 
   /// Saves [request] of [item] as a plan.
   ///
@@ -88,15 +78,10 @@ class InventoryPlanService {
       now: _clock(),
       inVorrat: inVorrat,
     );
-    await _plans.savePlannedEntry(entry);
-    _overviewRevision.markChanged();
-    _lastPlannedDay.planned(entry.loggedAt);
+    await _dayLog.plan(entry);
     return InventoryEatPlanned(entry);
   }
 
   /// Deletes [plan].
-  Future<void> unplan(CalorieEntry plan) async {
-    await _plans.deletePlannedEntry(plan.id);
-    _overviewRevision.markChanged();
-  }
+  Future<void> unplan(CalorieEntry plan) => _dayLog.deletePlans([plan]);
 }

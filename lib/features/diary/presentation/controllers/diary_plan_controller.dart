@@ -3,9 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
 import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
-import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
-import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
-import 'package:yamt/features/calories/data/planned_entry_repository.dart';
+import 'package:yamt/features/calories/application/calorie_day_log_service.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_edits.dart';
 import 'package:yamt/features/inventory/application/'
@@ -26,11 +24,11 @@ class DiaryPlanController extends _$DiaryPlanController {
 
   /// Deletes [plan]. Returns false when it failed.
   Future<bool> delete(CalorieEntry plan) =>
-      _write((repository) => repository.deletePlannedEntry(plan.id));
+      _write((dayLog) => dayLog.deletePlans([plan]));
 
   /// Saves [plan] again after a delete. Returns false when it failed.
   Future<bool> restore(CalorieEntry plan) =>
-      _write((repository) => repository.savePlannedEntry(plan));
+      _write((dayLog) => dayLog.savePlans([plan]));
 
   /// Plans [entries] on [days] too: one copy of each per day, in
   /// [mealType] or else the entry's own meal, at the entry's time of day,
@@ -53,31 +51,13 @@ class DiaryPlanController extends _$DiaryPlanController {
             now: now,
           ).copyWith(mealType: mealType ?? entry.mealType),
     ];
-    final saved = await _write((repository) async {
-      final written = <CalorieEntry>[];
-      try {
-        for (final copy in copies) {
-          await repository.savePlannedEntry(copy);
-          written.add(copy);
-        }
-      } on Object {
-        // Copies saved before the failure would stay hidden without undo.
-        for (final copy in written) {
-          await repository.deletePlannedEntry(copy.id);
-        }
-        rethrow;
-      }
-    });
+    final saved = await _write((dayLog) => dayLog.savePlans(copies));
     return saved ? copies : null;
   }
 
   /// Deletes [plans] together. Returns false when it failed.
   Future<bool> deleteAll(List<CalorieEntry> plans) =>
-      _write((repository) async {
-        for (final plan in plans) {
-          await repository.deletePlannedEntry(plan.id);
-        }
-      });
+      _write((dayLog) => dayLog.deletePlans(plans));
 
   /// [changed] with the stock amount it saves after its eaten amount changed
   /// from that of [previous] (see [inventoryStockForChangedPlan]). Without
@@ -107,14 +87,7 @@ class DiaryPlanController extends _$DiaryPlanController {
 
   /// Saves the new [plan] and lets the diary open its day. Returns false
   /// when it failed.
-  Future<bool> plan(CalorieEntry plan) async {
-    final planned = ref.read(lastPlannedDayProvider.notifier);
-    final saved = await restore(plan);
-    if (saved) {
-      planned.planned(plan.loggedAt);
-    }
-    return saved;
-  }
+  Future<bool> plan(CalorieEntry plan) => _write((dayLog) => dayLog.plan(plan));
 
   /// Eats [plan] as planned, with stock from the Vorrat when it has the
   /// food. Returns null when it failed; the plan then stays.
@@ -222,17 +195,12 @@ class DiaryPlanController extends _$DiaryPlanController {
   }
 
   Future<bool> _write(
-    Future<void> Function(PlannedEntryRepository repository) write,
+    Future<void> Function(CalorieDayLogService dayLog) write,
   ) async {
-    // The diary dashboards learn about the change from the revision.
-    final revision = ref.read(calorieOverviewRevisionProvider.notifier);
     state = const AsyncLoading();
     final result = await AsyncValue.guard(
-      () => _using(plannedEntryRepositoryProvider, write),
+      () => _using(calorieDayLogServiceProvider, write),
     );
-    if (!result.hasError) {
-      revision.markChanged();
-    }
     if (ref.mounted) {
       state = result;
     }

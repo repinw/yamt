@@ -59,4 +59,4 @@ final class InventoryPlanServiceProvider
 }
 
 String _$inventoryPlanServiceHash() =>
-    r'983e339a832bd52055f3999c4766af17cc49c595';
+    r'214b6c4a2bad3fb75326dde2d6cc8638ae792371';

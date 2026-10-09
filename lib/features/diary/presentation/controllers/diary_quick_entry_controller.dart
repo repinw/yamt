@@ -7,11 +7,9 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/core/utils/date_utils.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/calories/application/calorie_day_log_service.dart';
 import 'package:yamt/features/calories/application/calorie_entry_saver.dart';
-import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/diary_today_provider.dart';
-import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
-import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/diary_day_status.dart';
 import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
@@ -180,19 +178,14 @@ class DiaryQuickEntryController extends _$DiaryQuickEntryController {
       fat: state.valueOf(DiaryQuickEntryValue.fat),
     );
     final saveEntry = ref.read(calorieEntrySaverProvider);
-    final plans = ref.read(plannedEntryRepositoryProvider);
-    final revision = ref.read(calorieOverviewRevisionProvider.notifier);
-    final plannedDay = ref.read(lastPlannedDayProvider.notifier);
+    final dayLog = ref.read(calorieDayLogServiceProvider);
     final isPlan = state.isPlan;
     state = state.copyWith(isSaving: true);
     final result = await AsyncValue.guard(() async {
       if (!isPlan) {
         return await saveEntry(entry);
       }
-      await plans.savePlannedEntry(entry);
-      // The diary dashboards learn about the plan from the revision.
-      revision.markChanged();
-      plannedDay.planned(entry.loggedAt);
+      await dayLog.plan(entry);
       return true;
     });
     if (result case AsyncError(:final error, :final stackTrace)) {

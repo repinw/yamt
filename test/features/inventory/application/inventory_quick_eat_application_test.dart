@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/application/calorie_day_log_service.dart';
 import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
 import 'package:yamt/features/calories/application/last_planned_day_provider.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
@@ -97,11 +98,14 @@ InventoryQuickEatApplication _application({
         persistEntry != null && await persistEntry(entry),
     commitStore: commitStore ?? _FakeCommitStore(),
     mealMutations: mealMutations ?? _FakeMealMutations(),
-    plans: plans ?? FakePlannedEntryRepository(),
-    overviewRevision: revisionContainer.read(
-      calorieOverviewRevisionProvider.notifier,
+    dayLog: CalorieDayLogService(
+      plans: plans ?? FakePlannedEntryRepository(),
+      overviewRevision: revisionContainer.read(
+        calorieOverviewRevisionProvider.notifier,
+      ),
+      lastPlannedDay: revisionContainer.read(lastPlannedDayProvider.notifier),
+      clock: () => DateTime(2026, 9, 19, 12),
     ),
-    lastPlannedDay: revisionContainer.read(lastPlannedDayProvider.notifier),
     now: () => DateTime(2026, 9, 19, 12),
   );
 }
