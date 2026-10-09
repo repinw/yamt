@@ -313,7 +313,7 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/data/global_food_receipt_alias_repository.dart': 3,
     'lib/features/inventory/data/global_food_serving_suggestion_repository.dart':
         1,
-    'lib/features/inventory/data/inventory_item_repository.dart': 4,
+    'lib/features/inventory/data/inventory_item_repository.dart': 3,
     'lib/features/inventory/data/off_product_search_repository.dart': 1,
     'lib/features/inventory/data/prepared_meal_repository.dart': 3,
     'lib/features/inventory/data/prepared_meal_template_repository.dart': 3,

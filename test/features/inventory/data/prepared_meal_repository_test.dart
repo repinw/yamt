@@ -4,18 +4,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/firestore_prepared_meal_repository.dart';
-import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository_contract.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_store.dart';
 
 import '../../../support/prepared_meal_test_data.dart';
-
-class _FakeInventoryUserSession implements InventoryUserSession {
-  const new({this.householdId});
-
-  @override
-  final String? householdId;
-}
 
 class _FakePreparedMealStore implements PreparedMealStore {
   Exception? readAllError;
@@ -85,9 +77,8 @@ void main() {
           code: 'unavailable',
         );
       final repository = FirestorePreparedMealRepository(
-        session: const _FakeInventoryUserSession(householdId: 'household-1'),
+        household: (householdId: 'household-1', store: store),
         sessionShutdownSignal: SessionShutdownSignal(),
-        store: store,
       );
 
       await expectLater(
@@ -100,9 +91,8 @@ void main() {
   test('save and delete touch only the one meal', () async {
     final store = _FakePreparedMealStore();
     final repository = FirestorePreparedMealRepository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     await repository.save(preparedMealTestData(id: 'new'));
@@ -116,9 +106,8 @@ void main() {
   test('saveChanges writes only what changed in the list', () async {
     final store = _FakePreparedMealStore();
     final repository = FirestorePreparedMealRepository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
     final kept = preparedMealTestData(id: 'kept');
     final changed = preparedMealTestData(id: 'changed');
@@ -148,9 +137,8 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestorePreparedMealRepository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     await expectLater(
@@ -174,9 +162,8 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestorePreparedMealRepository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: sessionShutdownSignal,
-      store: store,
     );
 
     await expectLater(repository.watchAll().first, completion(isEmpty));
@@ -189,9 +176,8 @@ void main() {
       addTearDown(store.dispose);
       final sessionShutdownSignal = SessionShutdownSignal();
       final repository = FirestorePreparedMealRepository(
-        session: const _FakeInventoryUserSession(householdId: 'household-1'),
+        household: (householdId: 'household-1', store: store),
         sessionShutdownSignal: sessionShutdownSignal,
-        store: store,
       );
 
       final firstEmission = repository.watchAll().first;

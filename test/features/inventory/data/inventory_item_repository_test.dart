@@ -7,13 +7,6 @@ import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 
-class _FakeInventoryUserSession implements InventoryUserSession {
-  new({this.householdId});
-
-  @override
-  final String? householdId;
-}
-
 class _FakeInventoryItemStore
     implements InventoryItemStore, InventoryItemRecentManualStore {
   new({Map<String, List<InventoryItemDocument>>? initialDocumentsByHousehold})
@@ -228,9 +221,8 @@ void main() {
     final store = _FakeInventoryItemStore();
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(),
+      household: null,
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     final items = await repository.readAll();
@@ -252,9 +244,8 @@ void main() {
       );
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
-        session: _FakeInventoryUserSession(householdId: 'household-1'),
+        household: (householdId: 'household-1', store: store),
         sessionShutdownSignal: SessionShutdownSignal(),
-        store: store,
       );
 
       final items = await repository.readAll();
@@ -269,9 +260,8 @@ void main() {
       final store = _FakeInventoryItemStore();
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
-        session: _FakeInventoryUserSession(),
+        household: null,
         sessionShutdownSignal: SessionShutdownSignal(),
-        store: store,
       );
 
       final items = await repository.readRecentManualItems(limit: 6);
@@ -329,9 +319,8 @@ void main() {
     );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     final items = await repository.readRecentManualItems(limit: 2);
@@ -346,9 +335,8 @@ void main() {
     final store = _FakeInventoryItemStore();
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
     await repository.save(_item('a'));
     await repository.save(_item('b'));
@@ -364,9 +352,8 @@ void main() {
       final store = _FakeInventoryItemStore();
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
-        session: _FakeInventoryUserSession(householdId: 'household-1'),
+        household: (householdId: 'household-1', store: store),
         sessionShutdownSignal: SessionShutdownSignal(),
-        store: store,
       );
       final kept = _item('kept');
       final removed = _item('removed');
@@ -398,9 +385,8 @@ void main() {
     );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     final saved = await repository.appendAll(<InventoryItem>[
@@ -427,9 +413,8 @@ void main() {
     );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     final items = await repository.readAll();
@@ -448,9 +433,8 @@ void main() {
     );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     final items = await repository.readAll();
@@ -463,9 +447,8 @@ void main() {
       ..upsertDelay = const Duration(milliseconds: 25);
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     final first = repository.appendAll(<InventoryItem>[_item('a')]);
@@ -480,9 +463,8 @@ void main() {
     final store = _FakeInventoryItemStore()..saveShouldFail = true;
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     final saved = await repository.save(_item('a'));
@@ -498,9 +480,8 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     expect(
@@ -524,9 +505,8 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: sessionShutdownSignal,
-      store: store,
     );
 
     expect(repository.watchAll().first, completion(const <InventoryItem>[]));
@@ -540,9 +520,8 @@ void main() {
       );
     addTearDown(store.dispose);
     final repository = FirestoreInventoryItemRepository(
-      session: _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     expect(
@@ -564,9 +543,8 @@ void main() {
         ..watchAllError = const SocketException('network down');
       addTearDown(store.dispose);
       final repository = FirestoreInventoryItemRepository(
-        session: _FakeInventoryUserSession(householdId: 'household-1'),
+        household: (householdId: 'household-1', store: store),
         sessionShutdownSignal: SessionShutdownSignal(),
-        store: store,
       );
 
       expect(repository.watchAll().first, throwsA(isA<SocketException>()));

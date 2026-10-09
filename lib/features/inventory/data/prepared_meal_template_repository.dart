@@ -1,13 +1,8 @@
-import 'dart:developer' show log;
-
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
-import 'package:yamt/features/auth/data/auth_service.dart';
-import 'package:yamt/features/household/application/household_key_session.dart';
+import 'package:yamt/features/household/application/household_data_scope.dart';
 
 import 'package:yamt/features/inventory/data/firestore_prepared_meal_template_repository.dart';
-import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository_contract.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_store.dart';
 
@@ -20,75 +15,17 @@ part 'prepared_meal_template_repository.g.dart';
 /// Prepared meal template repository.
 @riverpod
 PreparedMealTemplateRepository preparedMealTemplateRepository(Ref ref) {
-  ref.watch(authStateChangesProvider);
-  final householdCipher = ref.watch(householdCipherProvider);
-  final householdId = householdCipher?.householdId;
-  final store = _resolveStore(ref, householdCipher);
+  final scope = ref.watch(householdDataScopeProvider);
   return FirestorePreparedMealTemplateRepository(
-    session: _CurrentPreparedMealTemplateUserSession(householdId: householdId),
+    household: scope == null
+        ? null
+        : (
+            householdId: scope.householdId,
+            store: FirestorePreparedMealTemplateStore(
+              firestore: scope.firestore,
+              cipher: scope.cipher,
+            ),
+          ),
     sessionShutdownSignal: ref.watch(sessionShutdownSignalProvider),
-    store: store,
   );
-}
-
-PreparedMealTemplateStore _resolveStore(
-  Ref ref,
-  HouseholdCipher? householdCipher,
-) {
-  final firestore = ref.watch(firebaseFirestoreProvider);
-  if (firestore == null || householdCipher == null) {
-    log(
-      'Falling back to unavailable prepared meal template store.',
-      name: 'PreparedMealTemplateRepositoryProvider',
-    );
-    return const _UnavailablePreparedMealTemplateStore();
-  }
-  return FirestorePreparedMealTemplateStore(
-    firestore: firestore,
-    cipher: householdCipher.cipher,
-  );
-}
-
-class _CurrentPreparedMealTemplateUserSession implements InventoryUserSession {
-  const new({required this._householdId});
-
-  final String? _householdId;
-
-  @override
-  String? get householdId => _householdId;
-}
-
-class _UnavailablePreparedMealTemplateStore
-    implements PreparedMealTemplateStore {
-  const new();
-
-  @override
-  Future<List<PreparedMealTemplateDocument>> readAll({
-    required String householdId,
-  }) async {
-    return const <PreparedMealTemplateDocument>[];
-  }
-
-  @override
-  Stream<List<PreparedMealTemplateDocument>> watchAll({
-    required String householdId,
-  }) {
-    return Stream<List<PreparedMealTemplateDocument>>.value(
-      const <PreparedMealTemplateDocument>[],
-    );
-  }
-
-  @override
-  Future<bool> save({
-    required String householdId,
-    required String id,
-    required Map<String, dynamic> data,
-  }) async {
-    return false;
-  }
-
-  @override
-  Future<bool> delete({required String householdId, required String id}) async {
-    return false;
-  }
 }
