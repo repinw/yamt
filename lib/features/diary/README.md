@@ -7,8 +7,8 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
 
 - Diary page composition under `presentation/`.
 - Diary date selection and other UI controllers under `presentation/`.
-- Meal-section, nutrition, balance, and weekly-check-in adapters under
-  `application/`.
+- Meal-section, nutrition, and balance adapters and the diary weekly
+  check-in rules under `application/`.
 - Diary dashboard cache persistence under `data/`.
 - Diary-owned value objects under `domain/`.
 
@@ -104,7 +104,8 @@ Main application adapters and mappers:
 
 - `application/diary_day_dashboard_mappers.dart`
 - `application/diary_balance_provider.dart`
-- `application/diary_weekly_checkin_provider.dart`
+- `application/diary_weekly_checkin_provider.dart` (diary rules over the
+  calorie check-in data: reached goal, latest weight, missing weight)
 - `application/diary_provider_warmup.dart`
 - `application/diary_quick_eat_inventory_provider.dart`
 - `presentation/diary_home_widget_summary_provider.dart` (public, read by
@@ -125,7 +126,8 @@ Main application adapters and mappers:
 - `features/activity` for the complete activity and weight diary section, the
   missing-weight prompt, and the Activity-owned weight tracking flow.
 - `features/calories` for calorie log data, goal settings, Burn Week state, and
-  weekly check-in behavior through Diary application adapters. The weekly
+  the weekly check-in, read and changed through the calorie check-in
+  providers and `CalorieWeeklyCheckInController`. The weekly
   check-in sheet opens the public new-goal sheet
   (`presentation/widgets/calorie_new_goal_flow.dart`) when the active goal was
   reached. The entry details page saves its changes through

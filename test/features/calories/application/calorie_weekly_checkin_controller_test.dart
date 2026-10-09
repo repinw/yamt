@@ -4,6 +4,7 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_controller.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_models.dart';
+import 'package:yamt/features/calories/application/calorie_weekly_checkin_provider.dart';
 import 'package:yamt/features/calories/application/calorie_weekly_checkin_window_resolver.dart';
 import 'package:yamt/features/calories/data/burn_week_run_state_repository.dart';
 import 'package:yamt/features/calories/data/calorie_settings_repository.dart';
@@ -79,7 +80,8 @@ void main() {
     expect(states.last, isA<AsyncError<void>>());
   });
 
-  test('showPendingWeeklyCheckInAgain clears pending dismissal', () async {
+  test('showPendingWeeklyCheckInAgain clears pending dismissal and reloads '
+      'the check-in data', () async {
     final dismissedPending = _pendingWeeklyCheckIn().copyWith(
       dismissedAt: DateTime(2026, 4, 15, 10),
     );
@@ -89,19 +91,28 @@ void main() {
       ),
     );
     addTearDown(settingsRepository.dispose);
+    var dataBuilds = 0;
     final container = ProviderContainer(
       overrides: [
         calorieSettingsRepositoryProvider.overrideWithValue(settingsRepository),
+        calorieWeeklyCheckInDataProvider.overrideWith((ref) {
+          dataBuilds += 1;
+          return _weeklyCheckInData(pendingWeeklyCheckIn: dismissedPending);
+        }),
       ],
     );
     addTearDown(container.dispose);
+    container.listen(calorieWeeklyCheckInDataProvider, (_, _) {});
     await container.read(calorieGoalControllerProvider.future);
+    await container.read(calorieWeeklyCheckInDataProvider.future);
 
     final shown = await container
         .read(calorieWeeklyCheckInControllerProvider.notifier)
         .showPendingWeeklyCheckInAgain(dismissedPending);
+    await container.read(calorieWeeklyCheckInDataProvider.future);
 
     expect(shown, isTrue);
+    expect(dataBuilds, 2);
     final settings = await settingsRepository.readSettings();
     expect(
       settings.pendingWeeklyCheckIn?.windowKey,
