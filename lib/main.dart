@@ -9,8 +9,6 @@ import 'package:yamt/core/config/firebase_config.dart';
 import 'package:yamt/core/config/font_licenses.dart';
 import 'package:yamt/core/debug/app_provider_observer.dart';
 import 'package:yamt/core/preferences/app_preferences.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_product_search_launcher.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +22,7 @@ Future<void> main() async {
       observers: kDebugMode
           ? const <ProviderObserver>[AppProviderObserver()]
           : const <ProviderObserver>[],
-      overrides: [
-        appPreferencesProvider.overrideWithValue(appPreferences),
-        inventoryManualProductSearchLauncherProvider.overrideWith(
-          (ref) => buildInventoryProductSearchHubManualProductSearchLauncher(),
-        ),
-      ],
+      overrides: [appPreferencesProvider.overrideWithValue(appPreferences)],
       child: const YAMT(),
     ),
   );

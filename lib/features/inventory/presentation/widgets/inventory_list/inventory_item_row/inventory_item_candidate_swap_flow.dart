@@ -1,7 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:uuid/uuid.dart';
+import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/domain/global_food_item.dart';
@@ -11,8 +13,7 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/domain/'
     'receipt_review_item_draft.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_product_search_launcher.dart';
+import 'package:yamt/features/inventory/presentation/models/inventory_manual_product_search_request.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_receipt_candidate_picker_sheet.dart';
 
@@ -44,9 +45,6 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
   required InventoryItem item,
 }) async {
   final matcher = ref.read(globalFoodItemMatcherProvider);
-  final manualProductSearchLauncher = ref.read(
-    inventoryManualProductSearchLauncherProvider,
-  );
   final candidates = await matcher.findCandidates(item);
   if (!context.mounted) {
     return null;
@@ -84,7 +82,6 @@ Future<InventoryItemCandidateSwapRequest?> showInventoryItemCandidateSwapFlow({
       context: context,
       item: item,
       matcher: matcher,
-      manualProductSearchLauncher: manualProductSearchLauncher,
     ),
   };
 }
@@ -116,11 +113,11 @@ Future<InventoryItemCandidateSwapRequest?> _manualEntryRequest({
   required BuildContext context,
   required InventoryItem item,
   required GlobalFoodItemMatcher matcher,
-  required InventoryManualProductSearchLauncher manualProductSearchLauncher,
 }) async {
-  final result = await manualProductSearchLauncher(
-    context: context,
-    request: InventoryManualProductSearchRequest(
+  // The hub reads the request and returns the picked product.
+  final result = await context.push<InventoryReceiptManualProductResult>(
+    AppRoutes.homeProductSearchHub,
+    extra: InventoryManualProductSearchRequest(
       item: item,
       includeStoreInSearch: false,
       includeWeightInSearch: false,

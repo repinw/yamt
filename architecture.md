@@ -507,9 +507,6 @@ Do these only in dedicated refactoring tasks:
 - New feature `food_catalog` after `shoppinglist`: Open Food Facts search,
   `GlobalFoodItem`, barcodes, nutrition, serving suggestions, receipt aliases,
   and `product_nutrition`.
-- `inventory`'s manual product search launcher imports the route
-  arguments of `product_search_hub`, the last import against the order. The
-  hub's own completion already moved into `product_search_hub` (#447).
 - `calories` keeps domain, data, and services. UI that only `diary` uses
   moves to `diary`. `shared` moves into `auth`, `progress` into `diary`.
 
