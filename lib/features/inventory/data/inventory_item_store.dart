@@ -7,6 +7,7 @@ import 'package:yamt/core/data/firestore_offline_writes.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/data/sealed_collection.dart';
 import 'package:yamt/features/household/data/household_key_repository.dart';
+import 'package:yamt/features/inventory/data/sealed_household_document_writes.dart';
 
 const String _storeLogName = 'FirestoreInventoryItemStore';
 const String _householdsCollection = 'households';
@@ -69,6 +70,7 @@ abstract interface class InventoryItemRecentManualStore {
 
 /// Stores inventory items encrypted with the household key [_cipher].
 class FirestoreInventoryItemStore
+    with SealedHouseholdDocumentWrites
     implements InventoryItemStore, InventoryItemRecentManualStore {
   /// The firestore inventory item store.
   const new({required this._firestore, required this._cipher});
@@ -87,7 +89,7 @@ class FirestoreInventoryItemStore
   Future<List<InventoryItemDocument>> readAll({
     required String householdId,
   }) async {
-    final collection = _collection(householdId);
+    final collection = householdCollection(householdId);
     return _mapDocuments(
       await collection.openAll(await collection.reference.get()),
     );
@@ -97,7 +99,7 @@ class FirestoreInventoryItemStore
   Future<List<InventoryItemDocument>> readAllLocal({
     required String householdId,
   }) async {
-    final collection = _collection(householdId);
+    final collection = householdCollection(householdId);
     return _mapDocuments(
       await collection.openAll(await readQueryLocalFirst(collection.reference)),
     );
@@ -112,7 +114,7 @@ class FirestoreInventoryItemStore
       return const <InventoryItemDocument>[];
     }
 
-    final collection = _collection(householdId);
+    final collection = householdCollection(householdId);
     final snapshot = await collection.reference
         .where('origin', isEqualTo: 'manualAdd')
         .where('is_deposit', isEqualTo: false)
@@ -125,47 +127,14 @@ class FirestoreInventoryItemStore
 
   @override
   Stream<List<InventoryItemDocument>> watchAll({required String householdId}) {
-    final collection = _collection(householdId);
+    final collection = householdCollection(householdId);
     return collection.reference.snapshots().asyncMap(
       (snapshot) async => _mapDocuments(await collection.openAll(snapshot)),
     );
   }
 
   @override
-  Future<bool> save({
-    required String householdId,
-    required String id,
-    required Map<String, dynamic> data,
-  }) async {
-    try {
-      final collection = _collection(householdId);
-      final sealed = await collection.seal(id, data);
-      commitBatchInBackground(
-        _firestore.batch()..set(collection.reference.doc(id), sealed),
-        failureMessage: 'Server rejected inventory item $id.',
-        logName: _storeLogName,
-      );
-      return true;
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to save inventory item $id for household $householdId.',
-        name: _storeLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return false;
-    }
-  }
-
-  @override
-  Future<bool> delete({required String householdId, required String id}) async {
-    commitBatchInBackground(
-      _firestore.batch()..delete(_collection(householdId).reference.doc(id)),
-      failureMessage: 'Server rejected deleting inventory item $id.',
-      logName: _storeLogName,
-    );
-    return true;
-  }
+  String get writeLogName => _storeLogName;
 
   @override
   Future<bool> upsertAll({
@@ -173,7 +142,7 @@ class FirestoreInventoryItemStore
     required Map<String, Map<String, dynamic>> documentsById,
   }) async {
     try {
-      final collection = _collection(householdId);
+      final collection = householdCollection(householdId);
       final operations = _atomicReplaceService.buildUpsertOperations(
         collection: collection.reference,
         documentsById: await collection.sealAll(documentsById),
@@ -206,7 +175,8 @@ class FirestoreInventoryItemStore
     }
   }
 
-  SealedCollection _collection(String householdId) {
+  @override
+  SealedCollection householdCollection(String householdId) {
     return SealedCollection(
       _firestore
           .collection(_householdsCollection)
