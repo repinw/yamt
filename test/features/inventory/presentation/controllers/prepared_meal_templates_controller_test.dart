@@ -21,6 +21,7 @@ class _FakePreparedMealTemplateRepository
   List<PreparedMeal> _templates;
   List<PreparedMeal> savedTemplates = const <PreparedMeal>[];
   int watchInvocationCount = 0;
+  final writes = <String>[];
 
   @override
   Stream<List<PreparedMeal>> watchAll() {
@@ -43,7 +44,25 @@ class _FakePreparedMealTemplateRepository
   }
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> templates) async {
+  Future<bool> save(PreparedMeal template) {
+    writes.add('save ${template.id}');
+    return _replaceAll([
+      for (final stored in _templates)
+        if (stored.id != template.id) stored,
+      template,
+    ]);
+  }
+
+  @override
+  Future<bool> delete(String templateId) {
+    writes.add('delete $templateId');
+    return _replaceAll([
+      for (final stored in _templates)
+        if (stored.id != templateId) stored,
+    ]);
+  }
+
+  Future<bool> _replaceAll(List<PreparedMeal> templates) async {
     _templates = List<PreparedMeal>.from(templates);
     savedTemplates = List<PreparedMeal>.from(templates);
     _controller.add(List<PreparedMeal>.from(_templates));
@@ -76,7 +95,19 @@ class _SilentPreparedMealTemplateRepository
   }
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> templates) async {
+  Future<bool> save(PreparedMeal template) => _replaceAll([
+    for (final stored in _templates)
+      if (stored.id != template.id) stored,
+    template,
+  ]);
+
+  @override
+  Future<bool> delete(String templateId) => _replaceAll([
+    for (final stored in _templates)
+      if (stored.id != templateId) stored,
+  ]);
+
+  Future<bool> _replaceAll(List<PreparedMeal> templates) async {
     _templates = List<PreparedMeal>.from(templates);
     savedTemplates = List<PreparedMeal>.from(templates);
     return true;
@@ -311,10 +342,11 @@ void main() {
     expect(repository.savedTemplates.single.totalKcal, recipe.totalKcal);
   });
 
-  test('deleteTemplate removes the selected template', () async {
+  test('deleteTemplate deletes only the selected template', () async {
     final repository = _FakePreparedMealTemplateRepository(
       initialTemplates: <PreparedMeal>[
         _templateMeal(id: 'template-1', name: 'Lunch Box'),
+        _templateMeal(id: 'template-2', name: 'Soup'),
       ],
     );
     addTearDown(repository.dispose);
@@ -337,7 +369,10 @@ void main() {
         .deleteTemplate('template-1');
 
     expect(deleted, isTrue);
-    expect(repository.savedTemplates, isEmpty);
+    expect(repository.writes, ['delete template-1']);
+    expect(repository.savedTemplates.map((template) => template.id), [
+      'template-2',
+    ]);
   });
 
   test('saveTemplateFromMeal works before the template watch emits', () async {

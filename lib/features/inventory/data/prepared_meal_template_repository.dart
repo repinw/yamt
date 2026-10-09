@@ -79,11 +79,16 @@ class _UnavailablePreparedMealTemplateStore
   }
 
   @override
-  Future<bool> replaceAll({
+  Future<bool> save({
     required String householdId,
-    required Map<String, Map<String, dynamic>> documentsById,
-    required void Function(String id, Map<String, dynamic> data) parse,
+    required String id,
+    required Map<String, dynamic> data,
   }) async {
+    return false;
+  }
+
+  @override
+  Future<bool> delete({required String householdId, required String id}) async {
     return false;
   }
 }

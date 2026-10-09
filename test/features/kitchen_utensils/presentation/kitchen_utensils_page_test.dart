@@ -115,7 +115,19 @@ class _FakePreparedMealTemplateRepository
   }
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> templates) async {
+  Future<bool> save(PreparedMeal template) => _replaceAll([
+    for (final stored in const <PreparedMeal>[])
+      if (stored.id != template.id) stored,
+    template,
+  ]);
+
+  @override
+  Future<bool> delete(String templateId) => _replaceAll([
+    for (final stored in const <PreparedMeal>[])
+      if (stored.id != templateId) stored,
+  ]);
+
+  Future<bool> _replaceAll(List<PreparedMeal> templates) async {
     return true;
   }
 }

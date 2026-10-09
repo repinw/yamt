@@ -657,7 +657,19 @@ class _FakeTemplateRepository implements PreparedMealTemplateRepository {
   Future<List<PreparedMeal>> readAll() async => List.of(saved);
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> templates) async {
+  Future<bool> save(PreparedMeal template) => _replaceAll([
+    for (final stored in List.of(saved))
+      if (stored.id != template.id) stored,
+    template,
+  ]);
+
+  @override
+  Future<bool> delete(String templateId) => _replaceAll([
+    for (final stored in List.of(saved))
+      if (stored.id != templateId) stored,
+  ]);
+
+  Future<bool> _replaceAll(List<PreparedMeal> templates) async {
     if (fails) {
       return false;
     }

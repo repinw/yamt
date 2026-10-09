@@ -1,10 +1,13 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/firestore_prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_user_session.dart';
+import 'package:yamt/features/inventory/data/prepared_meal_template_repository_contract.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_store.dart';
 
 import '../../../support/prepared_meal_test_data.dart';
@@ -19,7 +22,6 @@ class _FakeInventoryUserSession implements InventoryUserSession {
 class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
   Exception? readAllError;
   Exception? watchAllError;
-  void Function(String id, Map<String, dynamic> data)? parse;
 
   @override
   Future<List<PreparedMealTemplateDocument>> readAll({
@@ -31,13 +33,21 @@ class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
     return const <PreparedMealTemplateDocument>[];
   }
 
+  final writes = <String>[];
+
   @override
-  Future<bool> replaceAll({
+  Future<bool> save({
     required String householdId,
-    required Map<String, Map<String, dynamic>> documentsById,
-    required void Function(String id, Map<String, dynamic> data) parse,
+    required String id,
+    required Map<String, dynamic> data,
   }) async {
-    this.parse = parse;
+    writes.add('save $householdId/$id');
+    return true;
+  }
+
+  @override
+  Future<bool> delete({required String householdId, required String id}) async {
+    writes.add('delete $householdId/$id');
     return true;
   }
 
@@ -75,29 +85,56 @@ void main() {
     },
   );
 
-  test('saveAll lets the store keep templates that do not parse', () async {
+  test('saveChanges writes only the changed templates', () async {
     final store = _FakePreparedMealTemplateStore();
     final repository = FirestorePreparedMealTemplateRepository(
       session: const _FakeInventoryUserSession(householdId: 'household-1'),
       sessionShutdownSignal: SessionShutdownSignal(),
       store: store,
     );
+    final kept = preparedMealTestData(id: 'kept');
+    final gone = preparedMealTestData(id: 'gone');
 
-    await repository.saveAll([preparedMealTestData(id: 'new')]);
-
-    store.parse!('old', preparedMealTestData(id: 'old').toJson());
-    expect(
-      () => store.parse!('bad', <String, dynamic>{'components': 42}),
-      throwsA(isA<TypeError>()),
+    final saved = await repository.saveChanges(
+      previous: [kept, gone],
+      next: [
+        kept,
+        preparedMealTestData(id: 'new'),
+      ],
     );
-    // The list skips a stored entry with a non-text id, so the delete check
-    // must not accept it either.
+
+    expect(saved, isTrue);
+    expect(store.writes, ['save household-1/new', 'delete household-1/gone']);
+  });
+
+  test('two writers with stale lists keep both new templates', () async {
+    final store = FirestorePreparedMealTemplateStore(
+      firestore: FakeFirebaseFirestore(),
+      cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+    );
+    FirestorePreparedMealTemplateRepository device() =>
+        FirestorePreparedMealTemplateRepository(
+          session: const _FakeInventoryUserSession(householdId: 'household-1'),
+          sessionShutdownSignal: SessionShutdownSignal(),
+          store: store,
+        );
+    final first = device();
+    final second = device();
+    final stale = await second.readAll();
+
+    await first.save(preparedMealTestData(id: 'from-first'));
+    await second.saveChanges(
+      previous: stale,
+      next: [
+        ...stale,
+        preparedMealTestData(id: 'from-second'),
+      ],
+    );
+
+    final templates = await first.readAll();
     expect(
-      () => store.parse!(
-        'odd',
-        preparedMealTestData(id: 'odd').toJson()..['id'] = 5,
-      ),
-      throwsA(isA<TypeError>()),
+      templates.map((template) => template.id),
+      unorderedEquals(['from-first', 'from-second']),
     );
   });
 

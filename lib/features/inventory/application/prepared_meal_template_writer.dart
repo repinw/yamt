@@ -30,8 +30,7 @@ class PreparedMealTemplateWriter {
   /// amounts, and returns the template. Throws when the save fails.
   Future<PreparedMeal> addFromMeal(PreparedMeal meal) async {
     final template = meal.asTemplate(id: _uuid.v4(), now: _clock());
-    final templates = await _repository.readAll();
-    if (!await _repository.saveAll([...templates, template])) {
+    if (!await _repository.save(template)) {
       throw StateError('The cookbook template was not saved.');
     }
     return template;
