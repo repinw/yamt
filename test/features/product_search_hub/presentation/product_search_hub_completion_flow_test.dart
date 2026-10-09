@@ -13,8 +13,6 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/calories/data/planned_entry_repository.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
-import 'package:yamt/features/diary/presentation/'
-    'diary_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -28,13 +26,8 @@ import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/'
     'inventory_items_controller.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_manual_product_eat_coordinator.dart';
-import 'package:yamt/features/inventory/presentation/'
-    'inventory_product_search_hub_completion_handler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_rest_to_stock_dialog.dart';
-import 'package:yamt/features/product_search_hub/application/product_search_hub_completion_providers.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_hub_completion_result.dart';
 import 'package:yamt/features/product_search_hub/domain/'
@@ -685,20 +678,6 @@ Widget _buildCompletionHarness({
         firebaseAuth ?? _MockFirebaseAuth(),
       ),
       inventoryItemsControllerProvider.overrideWith(() => inventoryController),
-      productSearchHubCompletionHandlerFactoryProvider.overrideWith((ref) {
-        final container = ref.container;
-        return (mode) => switch (mode) {
-          ProductSearchHubMode.inventory =>
-            const InventoryProductSearchHubCompletionHandler(),
-          ProductSearchHubMode.diary => DiaryProductSearchHubCompletionHandler(
-            eatCoordinator: container.read(
-              inventoryManualProductEatCoordinatorProvider,
-            ),
-          ),
-          ProductSearchHubMode.selection || ProductSearchHubMode.mealFood =>
-            const SelectionProductSearchHubCompletionHandler(),
-        };
-      }),
       globalBarcodeCandidateRepositoryProvider.overrideWithValue(
         barcodeRepository,
       ),

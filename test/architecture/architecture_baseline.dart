@@ -9,8 +9,6 @@ const architectureBaseline = <String, Map<String, int>>{
   'feature-order': {
     'lib/features/inventory/presentation/inventory_manual_product_search_launcher.dart':
         1,
-    'lib/features/inventory/presentation/inventory_product_search_hub_completion_handler.dart':
-        2,
   },
   'foreign-presentation': {
     'lib/features/ai_chef/presentation/widgets/ai_chef_dialog/ai_chef_dialog.dart':
@@ -74,8 +72,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/diary/presentation/diary_home_widget_summary_provider.dart':
         1,
     'lib/features/diary/presentation/diary_inventory_food_picker.dart': 1,
-    'lib/features/diary/presentation/diary_product_search_hub_completion_handler.dart':
-        1,
     'lib/features/diary/presentation/diary_weekly_checkin_dialog_scheduler.dart':
         1,
     'lib/features/diary/presentation/diary_weekly_checkin_messages.dart': 1,
@@ -84,13 +80,9 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/presentation/formatters/inventory_nutrition_format.dart':
         1,
     'lib/features/inventory/presentation/inventory_amount_unit_l10n.dart': 1,
-    'lib/features/inventory/presentation/inventory_manual_product_eat_coordinator.dart':
-        1,
     'lib/features/inventory/presentation/inventory_manual_product_search_launcher.dart':
         1,
     'lib/features/inventory/presentation/inventory_prepared_meal_edit_coordinator.dart':
-        1,
-    'lib/features/inventory/presentation/inventory_product_search_hub_completion_handler.dart':
         1,
     'lib/features/inventory/presentation/utils/off_product_nutrition_grade_extension.dart':
         1,
@@ -141,15 +133,11 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/cooking_flow/application/cooking_flow_amount_utils.dart': 1,
     'lib/features/cooking_flow/application/cooking_flow_finalize_logic.dart': 1,
     'lib/features/cooking_flow/data/cooking_flow_session_local_store.dart': 1,
-    'lib/features/diary/presentation/diary_product_search_hub_completion_handler.dart':
-        1,
     'lib/features/diary/presentation/widgets/diary_burn_week_card/diary_balance_progress_helpers.dart':
         1,
     'lib/features/home_widget/application/home_widget_action_uri_codec.dart': 1,
     'lib/features/home_widget/data/home_widget_plugin_bridge.dart': 1,
     'lib/features/household/application/household_access_recovery_utils.dart':
-        1,
-    'lib/features/inventory/application/inventory_manual_product_eat_flow_contract.dart':
         1,
     'lib/features/inventory/application/inventory_pending_consumption_store.dart':
         1,
@@ -177,11 +165,7 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/inventory/domain/global_food_serving_suggestion_repository_contract.dart':
         1,
     'lib/features/inventory/domain/inventory_parsing_utils.dart': 1,
-    'lib/features/inventory/presentation/inventory_manual_product_eat_coordinator.dart':
-        1,
     'lib/features/inventory/presentation/inventory_prepared_meal_edit_coordinator.dart':
-        1,
-    'lib/features/inventory/presentation/inventory_product_search_hub_completion_handler.dart':
         1,
     'lib/features/kitchen_utensils/data/kitchen_utensil_image_store.dart': 1,
     'lib/features/kitchen_utensils/data/kitchen_utensil_repository_contract.dart':
@@ -190,8 +174,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/product_search_hub/data/composite_product_search_adapter.dart':
         1,
     'lib/features/product_search_hub/domain/manual_product_search_value_utils.dart':
-        1,
-    'lib/features/product_search_hub/domain/product_search_hub_completion_handler.dart':
         1,
     'lib/features/product_search_hub/presentation/product_search_hub_search_coordinator.dart':
         1,
@@ -328,8 +310,6 @@ const architectureBaseline = <String, Map<String, int>>{
     'lib/features/diary/domain/diary_macro_targets.dart': 1,
     'lib/features/inventory/domain/inventory_parsing_utils.dart': 1,
     'lib/features/inventory/domain/prepared_meal.dart': 1,
-    'lib/features/product_search_hub/domain/product_search_hub_completion_handler.dart':
-        1,
     'lib/features/scanner/domain/contracts/receipt_manual_product_picker.dart':
         1,
   },

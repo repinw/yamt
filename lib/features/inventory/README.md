@@ -71,9 +71,6 @@ Other features may consume these public Inventory entry points:
   batches without waiting for the server. The Diary "eat food" flow sizes a
   new item to the eaten amount before its only write and saves the shared
   catalog product and barcode selection in the background.
-- `application/inventory_manual_product_eat_flow_contract.dart` and
-  `presentation/inventory_manual_product_eat_coordinator.dart` for manual-product
-  completion from product-search integrations.
 - `application/prepared_meal_cooking_service.dart`: creates a Vorrat meal from
   ingredient rows without a saved recipe; rows with an assigned item use it
   up, the others stay open on the meal. The meal stays in the pot
@@ -105,6 +102,12 @@ already documented as a reusable presentation surface.
 
 ## Public UI
 
+- `presentation/inventory_manual_product_save_flow.dart`:
+  `saveManualProductResultToInventory` saves a product picked in the product
+  search hub to the Vorrat.
+- `presentation/inventory_manual_product_eat_completion_flow.dart`:
+  `saveManualProductResultForEatFlow` eats a product picked in the product
+  search hub, or plans it on a later day.
 - `presentation/inventory_item_eat_flow.dart`: `InventoryItemEatFlow.eat` opens
   the eat sheet for an inventory item, stages the stock from the item the
   caller shows, and logs the calorie entry. `undoPlan` deletes a plan for an
