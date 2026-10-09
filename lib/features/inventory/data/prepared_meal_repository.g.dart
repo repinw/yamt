@@ -59,4 +59,4 @@ final class PreparedMealRepositoryProvider
 }
 
 String _$preparedMealRepositoryHash() =>
-    r'c111bc88d4956f166f55dac9fd6e94b7ec4375c0';
+    r'346e9d86cbb92edeba809d96c7f9752c87223fec';

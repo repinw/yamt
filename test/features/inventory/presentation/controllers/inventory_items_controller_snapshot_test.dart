@@ -7,11 +7,6 @@ import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
 
-class _Household implements InventoryUserSession {
-  @override
-  String get householdId => 'household-1';
-}
-
 InventoryItem _milk({int quantity = 3}) => InventoryItem.create(
   id: 'milk',
   name: 'Milk',
@@ -27,12 +22,14 @@ void main() {
     () async {
       final firestore = FakeFirebaseFirestore();
       final repository = FirestoreInventoryItemRepository(
-        session: _Household(),
-        sessionShutdownSignal: SessionShutdownSignal(),
-        store: FirestoreInventoryItemStore(
-          firestore: firestore,
-          cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+        household: (
+          householdId: 'household-1',
+          store: FirestoreInventoryItemStore(
+            firestore: firestore,
+            cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+          ),
         ),
+        sessionShutdownSignal: SessionShutdownSignal(),
       );
       await repository.save(_milk());
       final container = ProviderContainer(

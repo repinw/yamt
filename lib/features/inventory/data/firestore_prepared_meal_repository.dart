@@ -3,7 +3,7 @@ import 'dart:developer' show log;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:yamt/core/data/firestore_json_normalizer.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
-import 'package:yamt/features/inventory/data/inventory_user_session.dart';
+import 'package:yamt/features/household/application/household_data_scope.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_repository_contract.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_store.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
@@ -13,15 +13,13 @@ const String _repositoryLogName = 'FirestorePreparedMealRepository';
 /// Defines firestore prepared meal repository.
 class FirestorePreparedMealRepository implements PreparedMealRepository {
   /// Creates an instance.
-  new({
-    required this._session,
-    required this._sessionShutdownSignal,
-    required this._store,
-  });
+  new({required this._household, required this._sessionShutdownSignal});
 
-  final InventoryUserSession _session;
+  final HouseholdStore<PreparedMealStore>? _household;
   final SessionShutdownSignal _sessionShutdownSignal;
-  final PreparedMealStore _store;
+
+  /// Only called after [_currentHouseholdId] returned a household.
+  PreparedMealStore get _store => _household!.store;
   Future<void> _writeBarrier = Future<void>.value();
 
   @override
@@ -69,7 +67,7 @@ class FirestorePreparedMealRepository implements PreparedMealRepository {
   }
 
   String? _currentHouseholdId() {
-    final householdId = _session.householdId;
+    final householdId = _household?.householdId;
     if (householdId != null && householdId.isNotEmpty) {
       return householdId;
     }

@@ -6,18 +6,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/core/provider/session_shutdown_controller.dart';
 import 'package:yamt/features/inventory/data/firestore_prepared_meal_template_repository.dart';
-import 'package:yamt/features/inventory/data/inventory_user_session.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository_contract.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_store.dart';
 
 import '../../../support/prepared_meal_test_data.dart';
-
-class _FakeInventoryUserSession implements InventoryUserSession {
-  const new({this.householdId});
-
-  @override
-  final String? householdId;
-}
 
 class _FakePreparedMealTemplateStore implements PreparedMealTemplateStore {
   Exception? readAllError;
@@ -73,9 +65,8 @@ void main() {
           code: 'unavailable',
         );
       final repository = FirestorePreparedMealTemplateRepository(
-        session: const _FakeInventoryUserSession(householdId: 'household-1'),
+        household: (householdId: 'household-1', store: store),
         sessionShutdownSignal: SessionShutdownSignal(),
-        store: store,
       );
 
       await expectLater(
@@ -88,9 +79,8 @@ void main() {
   test('saveChanges writes only the changed templates', () async {
     final store = _FakePreparedMealTemplateStore();
     final repository = FirestorePreparedMealTemplateRepository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
     final kept = preparedMealTestData(id: 'kept');
     final gone = preparedMealTestData(id: 'gone');
@@ -114,9 +104,8 @@ void main() {
     );
     FirestorePreparedMealTemplateRepository device() =>
         FirestorePreparedMealTemplateRepository(
-          session: const _FakeInventoryUserSession(householdId: 'household-1'),
+          household: (householdId: 'household-1', store: store),
           sessionShutdownSignal: SessionShutdownSignal(),
-          store: store,
         );
     final first = device();
     final second = device();
@@ -145,9 +134,8 @@ void main() {
         code: 'permission-denied',
       );
     final repository = FirestorePreparedMealTemplateRepository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: SessionShutdownSignal(),
-      store: store,
     );
 
     await expectLater(
@@ -170,9 +158,8 @@ void main() {
         code: 'permission-denied',
       );
     final repository = FirestorePreparedMealTemplateRepository(
-      session: const _FakeInventoryUserSession(householdId: 'household-1'),
+      household: (householdId: 'household-1', store: store),
       sessionShutdownSignal: sessionShutdownSignal,
-      store: store,
     );
 
     await expectLater(repository.watchAll().first, completion(isEmpty));
