@@ -16,11 +16,28 @@ class _FakeTemplateRepository implements PreparedMealTemplateRepository {
   @override
   Stream<List<PreparedMeal>> watchAll() => Stream.value(saved);
 
-  @override
-  Future<List<PreparedMeal>> readAll() async => saved;
+  int reads = 0;
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> templates) async {
+  Future<List<PreparedMeal>> readAll() async {
+    reads += 1;
+    return saved;
+  }
+
+  @override
+  Future<bool> save(PreparedMeal template) => _replaceAll([
+    for (final stored in saved)
+      if (stored.id != template.id) stored,
+    template,
+  ]);
+
+  @override
+  Future<bool> delete(String templateId) => _replaceAll([
+    for (final stored in saved)
+      if (stored.id != templateId) stored,
+  ]);
+
+  Future<bool> _replaceAll(List<PreparedMeal> templates) async {
     if (fails) {
       return false;
     }
@@ -55,7 +72,7 @@ PreparedMeal _meal(String id) {
 }
 
 void main() {
-  test('adds the meal as a new template next to the others', () async {
+  test('adds the meal as a new template without touching the others', () async {
     final repository = _FakeTemplateRepository([_meal('old')]);
     final writer = PreparedMealTemplateWriter(
       repository: repository,
@@ -65,6 +82,7 @@ void main() {
     final template = await writer.addFromMeal(_meal('pan'));
 
     expect(repository.saved.map((meal) => meal.id), ['old', template.id]);
+    expect(repository.reads, 0);
     expect(template.id, isNot('pan'));
     expect(template.name, 'Pfanne');
     expect(template.recipeIngredients, ['200 g Reis']);

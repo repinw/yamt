@@ -44,13 +44,28 @@ class FirestorePreparedMealTemplateRepository
   }
 
   @override
-  Future<bool> saveAll(List<PreparedMeal> templates) {
+  Future<bool> save(PreparedMeal template) {
     final householdId = _currentHouseholdId();
     if (householdId == null) {
       return Future<bool>.value(false);
     }
     return _runExclusiveWrite(
-      () => _replaceAllForHousehold(householdId, templates),
+      () => _store.save(
+        householdId: householdId,
+        id: template.id,
+        data: template.toJson(),
+      ),
+    );
+  }
+
+  @override
+  Future<bool> delete(String templateId) {
+    final householdId = _currentHouseholdId();
+    if (householdId == null) {
+      return Future<bool>.value(false);
+    }
+    return _runExclusiveWrite(
+      () => _store.delete(householdId: householdId, id: templateId),
     );
   }
 
@@ -119,24 +134,8 @@ class FirestorePreparedMealTemplateRepository
         error: error,
         stackTrace: stackTrace,
       );
-      // Callers write the whole list back; no templates would delete them
-      // all.
       rethrow;
     }
-  }
-
-  Future<bool> _replaceAllForHousehold(
-    String householdId,
-    List<PreparedMeal> templates,
-  ) {
-    final documentsById = <String, Map<String, dynamic>>{
-      for (final template in templates) template.id: template.toJson(),
-    };
-    return _store.replaceAll(
-      householdId: householdId,
-      documentsById: documentsById,
-      parse: _decode,
-    );
   }
 
   List<PreparedMeal> _decodeDocuments(
@@ -158,7 +157,7 @@ class FirestorePreparedMealTemplateRepository
     return templates;
   }
 
-  /// Decodes a stored document; reads and the [saveAll] delete check agree.
+  /// Decodes a stored document.
   PreparedMeal _decode(String id, Map<String, dynamic> data) =>
       PreparedMeal.fromJson(withDocumentId(id, data));
 

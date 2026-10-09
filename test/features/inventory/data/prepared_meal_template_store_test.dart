@@ -5,25 +5,29 @@ import 'package:yamt/core/data/payload_cipher.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_store.dart';
 
 void main() {
-  late PayloadCipher cipher;
+  late FakeFirebaseFirestore firestore;
+  late FirestorePreparedMealTemplateStore store;
 
   setUp(() async {
-    cipher = PayloadCipher(await PayloadCipher.newDataKey());
+    firestore = FakeFirebaseFirestore();
+    store = FirestorePreparedMealTemplateStore(
+      firestore: firestore,
+      cipher: PayloadCipher(await PayloadCipher.newDataKey()),
+    );
   });
 
-  test('replaceAll stores sealed templates under the household', () async {
-    final firestore = FakeFirebaseFirestore();
-    final store = FirestorePreparedMealTemplateStore(
-      firestore: firestore,
-      cipher: cipher,
-    );
+  Future<List<String>> storedIds() async {
+    final raw = await firestore
+        .collection('households/household-1/prepared_meal_templates')
+        .get();
+    return raw.docs.map((document) => document.id).toList();
+  }
 
-    final saved = await store.replaceAll(
-      parse: (_, _) {},
+  test('save stores one sealed template under the household', () async {
+    final saved = await store.save(
       householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'template-1': <String, dynamic>{'name': 'Chili'},
-      },
+      id: 'template-1',
+      data: <String, dynamic>{'name': 'Chili'},
     );
 
     expect(saved, isTrue);
@@ -32,41 +36,29 @@ void main() {
         .get();
     expect(raw.data()!.keys, <String>[encryptedPayloadField]);
     final documents = await store.readAll(householdId: 'household-1');
-    expect(documents.single.id, 'template-1');
     expect(documents.single.data['name'], 'Chili');
   });
 
-  test('replaceAll deletes a left-out template only when it parses', () async {
-    final firestore = FakeFirebaseFirestore();
-    final store = FirestorePreparedMealTemplateStore(
-      firestore: firestore,
-      cipher: cipher,
-    );
-    await store.replaceAll(
-      parse: (_, _) {},
-      householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'gone': <String, dynamic>{'name': 'Soup'},
-        'broken': <String, dynamic>{'name': 'Broken'},
-      },
-    );
+  test('save and delete leave the other templates alone', () async {
+    for (final id in ['soup', 'rice', 'chili']) {
+      await store.save(
+        householdId: 'household-1',
+        id: id,
+        data: <String, dynamic>{'name': id},
+      );
+    }
+    // A template another device wrote and this one never read.
+    await firestore
+        .doc('households/household-1/prepared_meal_templates/foreign')
+        .set(<String, dynamic>{'payload': 'other key'});
 
-    await store.replaceAll(
-      parse: (_, data) {
-        if (data['name'] == 'Broken') {
-          throw const FormatException('broken');
-        }
-      },
+    await store.save(
       householdId: 'household-1',
-      documentsById: <String, Map<String, dynamic>>{
-        'new': <String, dynamic>{'name': 'Rice'},
-      },
+      id: 'rice',
+      data: <String, dynamic>{'name': 'More rice'},
     );
+    await store.delete(householdId: 'household-1', id: 'soup');
 
-    final documents = await store.readAll(householdId: 'household-1');
-    expect(
-      documents.map((document) => document.id),
-      unorderedEquals(<String>['new', 'broken']),
-    );
+    expect(await storedIds(), unorderedEquals(['rice', 'chili', 'foreign']));
   });
 }

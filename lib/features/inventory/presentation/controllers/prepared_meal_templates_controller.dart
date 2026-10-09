@@ -413,7 +413,7 @@ class PreparedMealTemplatesController
     try {
       final saved = await ref
           .read(preparedMealTemplateRepositoryProvider)
-          .saveAll(sortedTemplates);
+          .saveChanges(previous: previousTemplates, next: sortedTemplates);
       if (!saved && ref.mounted) {
         state = AsyncData(_sortTemplates(previousTemplates));
       }
