@@ -13,15 +13,22 @@ String? ingredientAmountLabel(
   if (requirement == null) {
     return null;
   }
-  final unit = switch (requirement.unit) {
-    TemplateIngredientUnit.gram => l10n.inventoryUnitGram,
-    TemplateIngredientUnit.milliliter => l10n.inventoryUnitMilliliter,
-    TemplateIngredientUnit.piece => requirement.countMeasureLabel,
-  };
+  final unit = ingredientUnitLabel(l10n, requirement);
   return unit == null
       ? '${requirement.amount}'
       : l10n.freeCookingAmountWithUnit(requirement.amount, unit);
 }
+
+/// The unit of [requirement], such as "g" or "EL", or `null` for pieces
+/// without a measure.
+String? ingredientUnitLabel(
+  AppLocalizations l10n,
+  TemplateIngredientRequirement requirement,
+) => switch (requirement.unit) {
+  TemplateIngredientUnit.gram => l10n.inventoryUnitGram,
+  TemplateIngredientUnit.milliliter => l10n.inventoryUnitMilliliter,
+  TemplateIngredientUnit.piece => requirement.countMeasureLabel,
+};
 
 /// The amount left in the Vorrat as text, such as "200 g" or "3 Stk.".
 String ingredientStockLabel(

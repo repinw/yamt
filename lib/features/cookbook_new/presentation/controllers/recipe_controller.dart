@@ -4,6 +4,7 @@ import 'package:meta/meta.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_view_builder.dart';
+import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_cooking_service.dart';
@@ -18,15 +19,19 @@ class RecipeDraft {
   const new({
     this.portions,
     this.picks = const <String, String?>{},
+    this.edits = const RecipeEdits(),
     this.isCooking = false,
   });
 
   /// The chosen portions, or `null` for the recipe's own.
   final int? portions;
 
-  /// The Vorrat item picked per saved ingredient; `null` means "not from the
+  /// The Vorrat item picked per line key; `null` means "not from the
   /// Vorrat".
   final Map<String, String?> picks;
+
+  /// What the cook changes in the recipe this time.
+  final RecipeEdits edits;
 
   /// Whether "Kochen" is saving the meal.
   final bool isCooking;
@@ -35,10 +40,12 @@ class RecipeDraft {
   RecipeDraft copyWith({
     int? portions,
     Map<String, String?>? picks,
+    RecipeEdits? edits,
     bool? isCooking,
   }) => RecipeDraft(
     portions: portions ?? this.portions,
     picks: picks ?? this.picks,
+    edits: edits ?? this.edits,
     isCooking: isCooking ?? this.isCooking,
   );
 }
@@ -56,16 +63,21 @@ class RecipeController extends _$RecipeController {
     }
   }
 
-  /// Takes [ingredient] from the Vorrat item [itemId], or not from the
-  /// Vorrat when it is `null`.
-  void pick(String ingredient, String? itemId) {
-    state = state.copyWith(picks: {...state.picks, ingredient: itemId});
+  /// Takes the ingredient of the line [key] from the Vorrat item [itemId],
+  /// or not from the Vorrat when it is `null`.
+  void pick(String key, String? itemId) {
+    state = state.copyWith(picks: {...state.picks, key: itemId});
   }
 
-  /// Drops the picks for [ingredients], so the items the recipe saved for
-  /// them apply again.
-  void forgetPicks(Iterable<String> ingredients) {
-    final remove = ingredients.toSet();
+  /// Cooks the recipe with [edits] this time.
+  void setEdits(RecipeEdits edits) {
+    state = state.copyWith(edits: edits);
+  }
+
+  /// Drops the picks for the lines [keys], so the items the recipe saved
+  /// for them apply again.
+  void forgetPicks(Iterable<String> keys) {
+    final remove = keys.toSet();
     state = state.copyWith(
       picks: {
         for (final MapEntry(:key, :value) in state.picks.entries)
@@ -126,5 +138,6 @@ AsyncValue<RecipeView?> recipeView(
     localeCode: localeCode,
     portions: draft.portions,
     picks: draft.picks,
+    edits: draft.edits,
   );
 }

@@ -3593,6 +3593,94 @@
   },
   "recipeNotFound": "This recipe is gone.",
   "recipeLoadFailed": "Could not load the recipe or the stock.",
+  "recipeCheckChangeKicker": "{name} · {count, plural, =1{1 portion} other{{count} portions}}",
+  "@recipeCheckChangeKicker": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckChangeTitle": "Change something this time?",
+  "recipeCheckChangeHint": "For example “more meat” or “without tomatoes”. Only for this time.",
+  "recipeCheckChangeYes": "Yes",
+  "recipeCheckChangeNo": "No, continue",
+  "recipeCheckEditKicker": "This time only",
+  "recipeCheckEditTitle": "What do you change?",
+  "recipeCheckEditAmount": "Amount of {food}",
+  "@recipeCheckEditAmount": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckEditRemove": "Leave out {food}",
+  "@recipeCheckEditRemove": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckEditAdd": "+ Ingredient",
+  "recipeCheckEditAddHint": "e.g. 200 g peppers",
+  "recipeCheckChanged": "Changed",
+  "recipeCheckChangeAmount": "{food} {from} → {to}",
+  "@recipeCheckChangeAmount": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckChangeRemoved": "without {food}",
+  "@recipeCheckChangeRemoved": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckChangeOther": "{food}: new amount",
+  "@recipeCheckChangeOther": {
+    "description": "Ingredient check summary: a changed ingredient whose amount has no label for the chosen portions.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckChangeAdded": "+ {food}",
+  "@recipeCheckChangeAdded": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckChangeAddedAmount": "+ {amount} {food}",
+  "@recipeCheckChangeAddedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckSaveEdits": "Save the changes in the recipe",
+  "recipeCheckSaveEditsHint": "Otherwise they count for today only",
   "recipeCheckTitle": "Check ingredients",
   "recipeCheckMissingCount": "{count} missing",
   "@recipeCheckMissingCount": {

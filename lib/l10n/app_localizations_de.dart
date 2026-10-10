@@ -6201,6 +6201,86 @@ class AppLocalizationsDe extends AppLocalizations {
       'Das Rezept oder der Vorrat konnte nicht geladen werden.';
 
   @override
+  String recipeCheckChangeKicker(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Portionen',
+      one: '1 Portion',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get recipeCheckChangeTitle => 'Diesmal etwas ändern?';
+
+  @override
+  String get recipeCheckChangeHint =>
+      'Zum Beispiel „mehr Fleisch“ oder „ohne Tomaten“. Gilt nur für dieses Mal.';
+
+  @override
+  String get recipeCheckChangeYes => 'Ja';
+
+  @override
+  String get recipeCheckChangeNo => 'Nein, weiter';
+
+  @override
+  String get recipeCheckEditKicker => 'Diesmal anders';
+
+  @override
+  String get recipeCheckEditTitle => 'Was änderst du?';
+
+  @override
+  String recipeCheckEditAmount(String food) {
+    return 'Menge von $food';
+  }
+
+  @override
+  String recipeCheckEditRemove(String food) {
+    return '$food weglassen';
+  }
+
+  @override
+  String get recipeCheckEditAdd => '+ Zutat';
+
+  @override
+  String get recipeCheckEditAddHint => 'z. B. 200 g Paprika';
+
+  @override
+  String get recipeCheckChanged => 'Geändert';
+
+  @override
+  String recipeCheckChangeAmount(String food, String from, String to) {
+    return '$food $from → $to';
+  }
+
+  @override
+  String recipeCheckChangeRemoved(String food) {
+    return 'ohne $food';
+  }
+
+  @override
+  String recipeCheckChangeOther(String food) {
+    return '$food: andere Menge';
+  }
+
+  @override
+  String recipeCheckChangeAdded(String food) {
+    return '+ $food';
+  }
+
+  @override
+  String recipeCheckChangeAddedAmount(String amount, String food) {
+    return '+ $amount $food';
+  }
+
+  @override
+  String get recipeCheckSaveEdits => 'Änderungen ins Rezept übernehmen';
+
+  @override
+  String get recipeCheckSaveEditsHint => 'Sonst gelten sie nur heute';
+
+  @override
   String get recipeCheckTitle => 'Zutaten prüfen';
 
   @override

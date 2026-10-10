@@ -2,14 +2,16 @@ import 'dart:math' show max;
 
 import 'package:meta/meta.dart';
 import 'package:yamt/features/cookbook_new/domain/free_cooking_row.dart';
+import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 /// One ingredient of a recipe, sized for the chosen portions.
 @immutable
 class RecipeIngredientLine {
-  /// Creates the line for the saved [ingredient].
+  /// Creates the line for [ingredient].
   const new({
+    required this.key,
     required this.ingredient,
     required this.row,
     required this.isIgnored,
@@ -19,10 +21,20 @@ class RecipeIngredientLine {
     this.shortfall,
     this.stockedLabel,
     this.restLabel,
+    this.isAdded = false,
   });
 
-  /// The ingredient as the recipe saves it, for the original portions.
+  /// The saved ingredient the line comes from, or an id for one the cook
+  /// added. The cook's choices are kept by it, so they stay when the amount
+  /// changes.
+  final String key;
+
+  /// The ingredient for this cooking, written for the recipe's own portions
+  /// like the saved ones.
   final String ingredient;
+
+  /// Whether the cook added the ingredient for this cooking.
+  final bool isAdded;
 
   /// The ingredient for the chosen portions with the first Vorrat item that
   /// supplies it.
@@ -51,6 +63,9 @@ class RecipeIngredientLine {
   /// The part that [items] lack, such as "200 g Karotten".
   final String? restLabel;
 
+  /// Whether the cook added or changed the ingredient for this cooking.
+  bool get isChanged => isAdded || key != ingredient;
+
   /// Whether the Vorrat lacks the ingredient.
   bool get isMissing => !isIgnored && items.isEmpty;
 
@@ -70,10 +85,18 @@ class RecipeView {
     required this.recipe,
     required this.portions,
     required this.lines,
-  });
+    PreparedMeal? saved,
+    this.changes = const <RecipeChange>[],
+  }) : saved = saved ?? recipe;
 
-  /// The saved recipe.
+  /// The recipe for this cooking, with the cook's changes.
   final PreparedMeal recipe;
+
+  /// The recipe as it is saved.
+  final PreparedMeal saved;
+
+  /// What the cook changed, for the summary.
+  final List<RecipeChange> changes;
 
   /// The portions to cook.
   final int portions;
@@ -89,11 +112,15 @@ class RecipeView {
   Iterable<RecipeIngredientLine> get activeLines =>
       lines.where((line) => !line.isIgnored);
 
+  /// Whether the cook can leave out an ingredient: one has to stay, and a
+  /// recipe that names it twice leaves out both.
+  bool get canRemove => activeLines.map((line) => line.key).toSet().length > 1;
+
   /// How many of [activeLines] the Vorrat supplies.
   int get inStockCount =>
       activeLines.where((line) => line.row.isInStock).length;
 
-  /// The Vorrat items to use up, by the saved ingredient.
+  /// The Vorrat items to use up, by the ingredient of [recipe].
   Map<String, List<String>> get assignments => {
     for (final line in activeLines)
       if (line.items.isNotEmpty)

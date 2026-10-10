@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_draft.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_amount_labels.dart';
@@ -64,7 +64,7 @@ class IngredientCheckFoundList extends StatelessWidget {
               IngredientCheckChoice.cart,
               IngredientCheckChoice.ignore,
             ],
-            onChoose: (choice) => onChoose(line.ingredient, choice),
+            onChoose: (choice) => onChoose(line.key, choice),
             onTap: () => onPick(line),
           ),
       ],
