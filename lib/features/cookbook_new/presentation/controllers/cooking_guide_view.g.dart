@@ -82,7 +82,7 @@ final class CookingGuideProvider
   }
 }
 
-String _$cookingGuideHash() => r'0e6de01c8964f31c23fa564354adc370f40f13b8';
+String _$cookingGuideHash() => r'2c5bdef2f6b75f75f659e7ae2af9d5f77df66f47';
 
 /// The Kochhelfer for the recipe [recipeId] as the recipe page cooks it:
 /// with its portions and the cook's changes. `null` when the recipe is

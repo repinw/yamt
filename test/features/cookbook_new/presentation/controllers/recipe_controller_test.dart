@@ -143,6 +143,44 @@ void main() {
   });
 
   test(
+    'adds said ingredients for the chosen portions and "nein" takes them back',
+    () async {
+      final container = _container(recipe: _recipe());
+      _controller(container).setPortions(4);
+      var view = (await _view(container))!;
+
+      _controller(container).addSpoken(view, '100 g Feta 200 ml Sahne');
+      final keys = container.read(recipeControllerProvider('stew')).justAdded;
+      view = (await _view(container))!;
+      expect(view.lines.where((line) => line.isAdded).map((l) => l.label), [
+        '100 g Feta',
+        '200 ml Sahne',
+      ]);
+      // Written for the recipe's own two portions.
+      expect(container.read(recipeControllerProvider('stew')).edits.added, {
+        keys.first: '50 g Feta',
+        keys.last: '100 ml Sahne',
+      });
+
+      // "nein" with a correction swaps both for it.
+      _controller(container).addSpoken(view, 'Nein, 100 g Feta');
+      view = (await _view(container))!;
+      expect(
+        container.read(recipeControllerProvider('stew')).edits.added.values,
+        ['50 g Feta'],
+      );
+
+      _controller(container).addSpoken(view, 'Nein!');
+      view = (await _view(container))!;
+      expect(view.lines.where((line) => line.isAdded), isEmpty);
+      expect(
+        container.read(recipeControllerProvider('stew')).justAdded,
+        isEmpty,
+      );
+    },
+  );
+
+  test(
     'sizes the ingredients for the portions and matches the Vorrat',
     () async {
       final container = _container(recipe: _recipe());

@@ -10268,6 +10268,30 @@ abstract class AppLocalizations {
   /// **'Sentence {sentence} of {count} · step {step}'**
   String cookingGuideProgress(int sentence, int count, int step);
 
+  /// No description provided for @cookingGuideInPot.
+  ///
+  /// In en, this message translates to:
+  /// **'In the pot'**
+  String get cookingGuideInPot;
+
+  /// No description provided for @cookingGuideLineCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 line} other{{count} lines}}'**
+  String cookingGuideLineCount(int count);
+
+  /// No description provided for @cookingGuideJustAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Just added'**
+  String get cookingGuideJustAdded;
+
+  /// No description provided for @cookingGuideVoiceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'“50 g cream” · “no” takes it back'**
+  String get cookingGuideVoiceHint;
+
   /// No description provided for @cookingGuideNext.
   ///
   /// In en, this message translates to:

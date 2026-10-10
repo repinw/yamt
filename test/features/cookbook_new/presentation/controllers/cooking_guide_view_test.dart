@@ -58,8 +58,9 @@ void main() {
       await Future<void>.delayed(Duration.zero);
     }
 
-    final guide = container.read(provider).requireValue!;
+    var guide = container.read(provider).requireValue!;
     expect(guide.portions, 4);
+    expect(guide.justAdded, isEmpty);
     expect(guide.ingredients, ['8 Eier', '400 g Tomaten', 'Salz']);
     expect(guide.sentences.map((s) => (s.sentence.step, s.sentence.text)), [
       (1, 'Tomaten halbieren.'),
@@ -71,5 +72,15 @@ void main() {
       ['8 Eier', 'Salz'],
       isEmpty,
     ]);
+
+    container
+        .read(recipeControllerProvider('eggs').notifier)
+        .addSpoken(
+          container.read(recipeViewProvider('eggs', 'de')).requireValue!,
+          '50 g Feta',
+        );
+    guide = container.read(provider).requireValue!;
+    expect(guide.justAdded, ['50 g Feta']);
+    expect(guide.ingredients.last, '50 g Feta');
   });
 }

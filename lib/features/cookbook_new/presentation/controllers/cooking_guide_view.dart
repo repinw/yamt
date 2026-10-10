@@ -1,4 +1,5 @@
 import 'package:meta/meta.dart';
+import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cookbook_new/domain/recipe_sentences.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
@@ -17,8 +18,9 @@ typedef CookingGuideSentence = ({
 /// sentence at a time.
 @immutable
 class CookingGuide {
-  /// Creates the guide for [view].
-  factory of(RecipeView view) {
+  /// Creates the guide for [view], where [justAddedKeys] are the line keys
+  /// of the ingredients the cook added last.
+  factory of(RecipeView view, {List<String> justAddedKeys = const <String>[]}) {
     final foods = [
       for (final line in view.lines)
         (label: line.label, words: ingredientFoodWords(line.ingredient)),
@@ -28,6 +30,10 @@ class CookingGuide {
       name: view.recipe.name,
       portions: view.portions,
       ingredients: [for (final food in foods) food.label],
+      justAdded: [
+        for (final line in view.lines)
+          if (justAddedKeys.contains(line.key)) line.label,
+      ],
       steps: steps,
       sentences: [
         for (final sentence in recipeSentences(steps))
@@ -43,6 +49,7 @@ class CookingGuide {
     required this.name,
     required this.portions,
     required this.ingredients,
+    required this.justAdded,
     required this.steps,
     required this.sentences,
   });
@@ -64,6 +71,9 @@ class CookingGuide {
   /// Every ingredient for [portions], as the recipe page names it.
   final List<String> ingredients;
 
+  /// The ingredients the cook added last, which "Rückgängig" takes out.
+  final List<String> justAdded;
+
   /// The recipe's steps.
   final List<String> steps;
 
@@ -79,6 +89,15 @@ AsyncValue<CookingGuide?> cookingGuide(
   Ref ref,
   String recipeId,
   String localeCode,
-) => ref
-    .watch(recipeViewProvider(recipeId, localeCode))
-    .whenData((view) => view == null ? null : CookingGuide.of(view));
+) {
+  final justAddedKeys = ref.watch(
+    recipeControllerProvider(recipeId).select((draft) => draft.justAdded),
+  );
+  return ref
+      .watch(recipeViewProvider(recipeId, localeCode))
+      .whenData(
+        (view) => view == null
+            ? null
+            : CookingGuide.of(view, justAddedKeys: justAddedKeys),
+      );
+}

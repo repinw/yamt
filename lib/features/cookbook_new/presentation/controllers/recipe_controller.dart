@@ -3,7 +3,9 @@ import 'dart:developer' show log;
 import 'package:meta/meta.dart';
 import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:yamt/features/cookbook_new/domain/free_cooking_transcript.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_ingredient_texts.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_view_builder.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
@@ -21,6 +23,7 @@ class RecipeDraft {
     this.portions,
     this.picks = const <String, String?>{},
     this.edits = const RecipeEdits(),
+    this.justAdded = const <String>[],
     this.withGuide = true,
     this.isCooking = false,
   });
@@ -35,6 +38,10 @@ class RecipeDraft {
   /// What the cook changes in the recipe this time.
   final RecipeEdits edits;
 
+  /// The line keys of the ingredients the Kochhelfer added last, which
+  /// "Rückgängig" takes out again.
+  final List<String> justAdded;
+
   /// Whether "Kochen" opens the Kochhelfer first, for a recipe with steps.
   final bool withGuide;
 
@@ -46,12 +53,14 @@ class RecipeDraft {
     int? portions,
     Map<String, String?>? picks,
     RecipeEdits? edits,
+    List<String>? justAdded,
     bool? withGuide,
     bool? isCooking,
   }) => RecipeDraft(
     portions: portions ?? this.portions,
     picks: picks ?? this.picks,
     edits: edits ?? this.edits,
+    justAdded: justAdded ?? this.justAdded,
     withGuide: withGuide ?? this.withGuide,
     isCooking: isCooking ?? this.isCooking,
   );
@@ -76,6 +85,45 @@ class RecipeController extends _$RecipeController {
     state = state.copyWith(picks: {...state.picks, key: itemId});
   }
 
+  /// Adds the ingredients in [transcript], said or typed for the chosen
+  /// portions of [view], for this cooking. An undo word such as "nein" at
+  /// its start takes the ones added last out again first.
+  void addSpoken(RecipeView view, String transcript) {
+    var text = transcript;
+    if (afterUndoWords(transcript) case final rest?) {
+      undoAdded();
+      text = rest;
+    }
+    final parser = ref.read(templateIngredientParserProvider);
+    var edits = state.edits;
+    final keys = <String>[];
+    for (final row in splitFreeCookingTranscript(text)) {
+      keys.add(edits.nextKey);
+      edits = edits.withAdded(recipeAddedText(parser, view, row));
+    }
+    if (keys.isNotEmpty) {
+      state = state.copyWith(edits: edits, justAdded: keys);
+    }
+  }
+
+  /// Takes the ingredients added last out again.
+  void undoAdded() {
+    final remove = state.justAdded.toSet();
+    if (remove.isEmpty) {
+      return;
+    }
+    final edits = state.edits;
+    state = state.copyWith(
+      edits: edits.copyWith(
+        added: {
+          for (final MapEntry(:key, :value) in edits.added.entries)
+            if (!remove.contains(key)) key: value,
+        },
+      ),
+      justAdded: const <String>[],
+    );
+  }
+
   /// Opens the Kochhelfer before cooking when [withGuide] is set.
   void setWithGuide({required bool withGuide}) {
     state = state.copyWith(withGuide: withGuide);
@@ -83,7 +131,7 @@ class RecipeController extends _$RecipeController {
 
   /// Cooks the recipe with [edits] this time.
   void setEdits(RecipeEdits edits) {
-    state = state.copyWith(edits: edits);
+    state = state.copyWith(edits: edits, justAdded: const <String>[]);
   }
 
   /// Drops the picks for the lines [keys], so the items the recipe saved

@@ -7,10 +7,17 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/screen_wake_lock.dart';
+import 'package:yamt/core/device/voice_search_service.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooking_guide_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooking_guide_body.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooking_guide_just_added.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'free_cooking_text_sheet.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'recipe_ingredient_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -108,6 +115,12 @@ void main() {
           _item('carrots', 'Karotten'),
         ]),
         screenOn: screenOn,
+        voice: _FakeVoiceService([
+          '200 ml Sahne',
+          '1 Bund Schnittlauch',
+          'nein',
+          '100 ml Brühe',
+        ]),
       ),
     );
     await tester.pumpAndSettle();
@@ -119,36 +132,69 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(CookingGuidePage), findsOneWidget);
     expect(screenOn, [true]);
-    await tester.tap(find.byKey(CookingGuidePage.backKey));
+    await tester.tap(find.byKey(CookingGuideBody.backKey));
     await tester.pumpAndSettle();
     expect(find.byType(RecipePage), findsOneWidget);
     expect(meals.saved, isEmpty);
 
     await tester.tap(find.byKey(RecipePage.cookKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuidePage.startKey));
+    await tester.tap(find.byKey(CookingGuideBody.startKey));
     await tester.pumpAndSettle();
     // Back from the first sentence shows everything again.
-    await tester.tap(find.byKey(CookingGuidePage.backKey));
+    await tester.tap(find.byKey(CookingGuideBody.backKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuidePage.startKey));
+    await tester.tap(find.byKey(CookingGuideBody.startKey));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(CookingGuidePage.nextKey));
+    await tester.tap(find.byKey(CookingGuideBody.nextKey));
     await tester.pumpAndSettle();
     // The system back goes one sentence back, not out of the Kochhelfer.
     await tester.binding.handlePopRoute();
     await tester.pumpAndSettle();
-    expect(find.byKey(CookingGuidePage.nextKey), findsOneWidget);
-    await tester.tap(find.byKey(CookingGuidePage.nextKey));
+    expect(find.byKey(CookingGuideBody.nextKey), findsOneWidget);
+    await tester.tap(find.byKey(CookingGuideBody.nextKey));
     await tester.pumpAndSettle();
 
+    // Feta goes in by typing; "Rückgängig" takes it out again.
+    await tester.tap(find.byKey(CookingGuideBody.typeKey));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(FreeCookingTextSheet.fieldKey),
+      '50 g Feta',
+    );
+    await tester.tap(find.byKey(FreeCookingTextSheet.addKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookingGuideJustAdded.undoKey));
+    await tester.pumpAndSettle();
+    expect(find.byKey(CookingGuideJustAdded.undoKey), findsNothing);
+
+    // Said: cream stays, the chives go again with "nein", and the broth
+    // still being said goes in with "Fertig gekocht". Each tap starts or
+    // stops listening, and the fake hears one thing per start.
+    final voice = find.byKey(CookingGuideBody.voiceKey);
+    for (var tap = 0; tap < 7; tap++) {
+      await tester.tap(voice);
+      await tester.pumpAndSettle();
+      if (tap == 1 || tap == 3) {
+        expect(find.byKey(CookingGuideJustAdded.undoKey), findsOneWidget);
+      }
+      if (tap == 5) {
+        expect(find.byKey(CookingGuideJustAdded.undoKey), findsNothing);
+      }
+    }
+
     // The last sentence only finishes.
-    expect(find.byKey(CookingGuidePage.nextKey), findsNothing);
-    await tester.tap(find.byKey(CookingGuidePage.doneKey));
+    expect(find.byKey(CookingGuideBody.nextKey), findsNothing);
+    await tester.tap(find.byKey(CookingGuideBody.doneKey));
     await tester.pumpAndSettle();
 
     expect(find.byType(CookedMealPage), findsOneWidget);
     expect(meals.saved.single.name, 'Bauerntopf');
+    // Each said ingredient goes in once, though stopping sends it again.
+    expect(meals.saved.single.pendingRecipeIngredients, [
+      '200 ml Sahne',
+      '100 ml Brühe',
+    ]);
     // Closing "Gekocht" goes back to where the recipe was opened.
     expect(find.byType(RecipePage, skipOffstage: false), findsNothing);
     expect(find.byType(CookingGuidePage, skipOffstage: false), findsNothing);
@@ -204,6 +250,7 @@ Widget _app({
   required _FakeInventoryRepository inventory,
   List<PreparedMeal>? recipes,
   List<bool>? screenOn,
+  VoiceSearchService? voice,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -252,6 +299,9 @@ Widget _app({
       inventoryActivityActorProvider.overrideWithValue(null),
       shoppingListRepositoryProvider.overrideWithValue(
         _FakeShoppingListRepository(),
+      ),
+      voiceSearchServiceProvider.overrideWithValue(
+        voice ?? _FakeVoiceService(const []),
       ),
       screenWakeLockProvider.overrideWithValue(
         ScreenWakeLock(toggle: ({required on}) async => screenOn?.add(on)),
@@ -379,4 +429,54 @@ class _FakeShoppingListRepository implements ShoppingListRepository {
 
   @override
   Object? noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Hears the next of the given transcripts each time it starts listening,
+/// first as a partial result. Like the plugin, it sends it as final when it
+/// stops.
+class _FakeVoiceService implements VoiceSearchService {
+  new(List<String> transcripts) : _transcripts = [...transcripts];
+
+  final List<String> _transcripts;
+  ValueChanged<VoiceSearchRecognition>? _onResult;
+  ValueChanged<bool>? _onListening;
+  String? _heard;
+
+  @override
+  bool isListening = false;
+
+  @override
+  Future<VoiceSearchFailure?> startListening({
+    required ValueChanged<VoiceSearchRecognition> onResult,
+    required ValueChanged<bool> onListeningStateChanged,
+    required ValueChanged<VoiceSearchFailure> onError,
+  }) async {
+    isListening = true;
+    _onResult = onResult;
+    _onListening = onListeningStateChanged;
+    onListeningStateChanged(true);
+    if (_transcripts.isNotEmpty) {
+      final heard = _heard = _transcripts.removeAt(0);
+      scheduleMicrotask(
+        () =>
+            onResult(VoiceSearchRecognition(transcript: heard, isFinal: false)),
+      );
+    }
+    return null;
+  }
+
+  @override
+  Future<void> stopListening() async {
+    if (_heard case final heard?) {
+      _onResult?.call(VoiceSearchRecognition(transcript: heard, isFinal: true));
+    }
+    await cancelListening();
+  }
+
+  @override
+  Future<void> cancelListening() async {
+    _heard = null;
+    isListening = false;
+    _onListening?.call(false);
+  }
 }
