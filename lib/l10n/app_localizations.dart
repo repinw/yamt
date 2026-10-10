@@ -10669,6 +10669,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The store could not be opened.'**
   String get appUpdateStoreOpenFailed;
+
+  /// Notice shown once after an update, with the first new point.
+  ///
+  /// In en, this message translates to:
+  /// **'New in {version}: {point}'**
+  String whatsNewNotice(String version, String point);
+
+  /// Notice action that opens all release notes.
+  ///
+  /// In en, this message translates to:
+  /// **'See all'**
+  String get whatsNewShowAll;
+
+  /// Title of the release notes sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'New in {version}'**
+  String whatsNewTitle(String version);
+
+  /// Release notes section with new features.
+  ///
+  /// In en, this message translates to:
+  /// **'New'**
+  String get whatsNewAdded;
+
+  /// Release notes section with improvements.
+  ///
+  /// In en, this message translates to:
+  /// **'Improved'**
+  String get whatsNewImproved;
+
+  /// Release notes section with fixes.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed'**
+  String get whatsNewFixed;
+
+  /// One line of the release notes.
+  ///
+  /// In en, this message translates to:
+  /// **'• {point}'**
+  String whatsNewPoint(String point);
 }
 
 class _AppLocalizationsDelegate

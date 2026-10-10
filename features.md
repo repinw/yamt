@@ -33,6 +33,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   opens. Migrations added from now on wait for the check. An app older than the latest version
   shows a snackbar "yamt <version> is available" once per version. "Update"
   opens Google Play on Android and TestFlight on iOS.
+- What's new: after an update, the app shows once per version a notice "New
+  in <version>: <first new point>" at the top, once the app is on its home
+  pages. "See all" opens a sheet with what is new, improved, and fixed, in
+  the device language. A fresh install shows nothing; a device counts as
+  updated when an account finished the onboarding on it.
 - Each device saves its app version, platform, and last start (at most once a
   day) in `users/{uid}/clients/{installId}`, so a release can count the
   devices that still run an old version before it removes a migration.

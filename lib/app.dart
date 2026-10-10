@@ -28,6 +28,7 @@ import 'package:yamt/features/inventory/presentation/controllers/prepared_meals_
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'product_search_hub_route_args.dart';
 import 'package:yamt/features/scanner/presentation/shared/shared_receipt_listener.dart';
+import 'package:yamt/features/whats_new/presentation/widgets/whats_new_listener.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Root application widget.
@@ -94,10 +95,12 @@ class _YAMTState extends ConsumerState<YAMT> {
       routerConfig: router,
       builder: (context, child) => KeyboardDoneBar(
         child: AppUpdateHintListener(
-          child: SharedReceiptListener(
-            onReceiptSaved: () =>
-                ref.invalidate(inventoryItemsControllerProvider),
-            child: child ?? const SizedBox.shrink(),
+          child: WhatsNewListener(
+            child: SharedReceiptListener(
+              onReceiptSaved: () =>
+                  ref.invalidate(inventoryItemsControllerProvider),
+              child: child ?? const SizedBox.shrink(),
+            ),
           ),
         ),
       ),
