@@ -87,12 +87,9 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
     final name = typedName.isEmpty ? l10n.freeCookingDefaultName : typedName;
     setState(() => _isCooking = true);
     // What the cook is still saying belongs to the meal.
-    final pending = await stopListening();
+    await finishListening();
     if (!mounted) {
       return;
-    }
-    if (pending != null) {
-      _addText(pending);
     }
     final rows = ref.read(freeCookingRowsProvider(l10n.localeName)).value;
     final mealId = rows == null || rows.isEmpty
