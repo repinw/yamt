@@ -14,6 +14,10 @@ import 'package:yamt/features/cookbook_new/domain/free_cooking_row.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'free_cooking_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooking_voice_input_mixin.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'cooking_voice_zone.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_actions.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_discard_dialog.dart';
@@ -21,10 +25,6 @@ import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_header.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'free_cooking_row_list.dart';
-import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'free_cooking_text_sheet.dart';
-import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'free_cooking_voice_zone.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Frei kochen": a meal without a recipe. The cook says or types the
@@ -45,135 +45,39 @@ class FreeCookingPage extends ConsumerStatefulWidget {
   ConsumerState<FreeCookingPage> createState() => _FreeCookingPageState();
 }
 
-/// How often listening restarts after silence before it stops: about a
-/// minute at the 4 s pause of the voice service.
-const _maxSilentRestarts = 15;
-
 class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
-    with VoiceInputStateMixin<FreeCookingPage> {
-  late final VoiceSearchService _voice;
+    with
+        VoiceInputStateMixin<FreeCookingPage>,
+        CookingVoiceInputMixin<FreeCookingPage> {
+  @override
+  late final VoiceSearchService voiceService;
   late final ScreenWakeLock _wakeLock;
   final _nameController = TextEditingController();
-  String? _pendingText;
-  bool _keepsListening = false;
   bool _isCooking = false;
-  int _silentRestarts = 0;
 
   @override
   void initState() {
     super.initState();
-    _voice = ref.read(voiceSearchServiceProvider);
+    voiceService = ref.read(voiceSearchServiceProvider);
     _wakeLock = ref.read(screenWakeLockProvider)..acquire();
   }
 
   @override
   void dispose() {
-    isDisposingVoiceInput = true;
-    unawaited(_voice.cancelListening());
+    cancelListening();
     _nameController.dispose();
     _wakeLock.release();
     super.dispose();
   }
 
-  bool get _isListening => isListeningToSpeech || isStartingVoiceSearch;
+  @override
+  bool get pausesVoiceInput => _isCooking;
 
-  Future<void> _toggleVoice() async {
-    if (_isListening) {
-      await _stopVoice();
-      return;
-    }
-    _keepsListening = true;
-    _silentRestarts = 0;
-    await _listen();
-  }
-
-  /// Stops listening for good and returns what was still being heard.
-  Future<String?> _stopVoice() async {
-    _keepsListening = false;
-    final pending = _pendingText;
-    await _voice.stopListening();
-    if (mounted) {
-      setState(() => _pendingText = null);
-    }
-    return pending;
-  }
-
-  Future<void> _listen() async {
-    setState(() => isStartingVoiceSearch = true);
-    final failure = await _voice.startListening(
-      onResult: _onSpeech,
-      onListeningStateChanged: _onListeningChanged,
-      onError: _onVoiceError,
-    );
-    if (!mounted) {
-      return;
-    }
-    setState(() {
-      isStartingVoiceSearch = false;
-      isListeningToSpeech = failure == null;
-    });
-    if (failure != null) {
-      _onVoiceError(failure);
-    }
-  }
-
-  void _onListeningChanged(bool isListening) {
-    if (isDisposingVoiceInput || !mounted) {
-      return;
-    }
-    setState(() => isListeningToSpeech = isListening);
-    // A pause or silence ends one recognition. Listening goes on until the
-    // cook taps, but stops after about a minute of silence.
-    if (!isListening &&
-        _keepsListening &&
-        !_isCooking &&
-        !isStartingVoiceSearch &&
-        _silentRestarts < _maxSilentRestarts) {
-      _silentRestarts++;
-      unawaited(_listen());
-    }
-  }
-
-  void _onVoiceError(VoiceSearchFailure failure) {
-    if (isDisposingVoiceInput || !mounted) {
-      return;
-    }
-    _keepsListening = false;
-    setState(() {
-      isListeningToSpeech = false;
-      isStartingVoiceSearch = false;
-    });
-    showVoiceInputFailure(failure);
-  }
-
-  void _onSpeech(VoiceSearchRecognition result) {
-    if (isDisposingVoiceInput || !mounted || _isCooking) {
-      return;
-    }
-    if (!result.isFinal) {
-      setState(() => _pendingText = result.transcript);
-      return;
-    }
-    _silentRestarts = 0;
-    setState(() => _pendingText = null);
-    _addText(result.transcript);
-  }
+  @override
+  void onSpokenText(String text) => _addText(text);
 
   void _addText(String text) {
     ref.read(freeCookingControllerProvider.notifier).addText(text);
-  }
-
-  Future<void> _type() async {
-    if (_isListening) {
-      await _toggleVoice();
-    }
-    if (!mounted) {
-      return;
-    }
-    final text = await FreeCookingTextSheet.show(context);
-    if (text != null && mounted) {
-      _addText(text);
-    }
   }
 
   Future<void> _cook() async {
@@ -183,7 +87,7 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
     final name = typedName.isEmpty ? l10n.freeCookingDefaultName : typedName;
     setState(() => _isCooking = true);
     // What the cook is still saying belongs to the meal.
-    final pending = await _stopVoice();
+    final pending = await stopListening();
     if (!mounted) {
       return;
     }
@@ -209,17 +113,6 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
     }
     // Straight on to the "Gekocht" step; closing it leaves the meal in the pot.
     context.pushReplacement(AppRoutes.homeCookedMealPath(mealId));
-  }
-
-  @override
-  void showVoiceInputFailure(VoiceSearchFailure failure) {
-    final l10n = AppLocalizations.of(context)!;
-    ScaffoldMessenger.of(context).showAppSnackBar(switch (failure) {
-      VoiceSearchFailure.unavailable => l10n.freeCookingVoiceUnavailable,
-      VoiceSearchFailure.permissionDenied =>
-        l10n.freeCookingVoicePermissionDenied,
-      VoiceSearchFailure.error => l10n.freeCookingVoiceFailed,
-    }, tone: AppSnackBarTone.error);
   }
 
   @override
@@ -253,7 +146,7 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
                 child: rowsAsync.when(
                   data: (rows) => FreeCookingRowList(
                     rows: rows,
-                    pendingText: _pendingText,
+                    pendingText: pendingSpeech,
                     onRemove: (index) => ref
                         .read(freeCookingControllerProvider.notifier)
                         .removeRow(index),
@@ -269,14 +162,15 @@ class _FreeCookingPageState extends ConsumerState<FreeCookingPage>
                   ),
                 ),
               ),
-              FreeCookingVoiceZone(
+              CookingVoiceZone(
                 key: FreeCookingPage.voiceZoneKey,
-                isListening: _isListening,
-                onPressed: isBusy ? null : () => unawaited(_toggleVoice()),
+                isListening: isListening,
+                idleHint: l10n.freeCookingIdleHint,
+                onPressed: isBusy ? null : () => unawaited(toggleListening()),
               ),
               FreeCookingActions(
                 isCooking: isBusy,
-                onType: () => unawaited(_type()),
+                onType: () => unawaited(typeText()),
                 onCook: canCook ? () => unawaited(_cook()) : null,
               ),
             ],

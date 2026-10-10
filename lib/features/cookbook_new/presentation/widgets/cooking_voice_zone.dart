@@ -7,15 +7,23 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// The large tap zone that starts and stops listening, big enough to hit
 /// with dirty hands while cooking.
-class FreeCookingVoiceZone extends StatelessWidget {
+class CookingVoiceZone extends StatelessWidget {
   /// Creates the zone.
-  const new({required this.isListening, required this.onPressed, super.key});
+  const new({
+    required this.isListening,
+    required this.onPressed,
+    required this.idleHint,
+    super.key,
+  });
 
   /// Whether the microphone is listening.
   final bool isListening;
 
   /// Starts or stops listening; `null` while the meal is saving.
   final VoidCallback? onPressed;
+
+  /// What to say, shown while the microphone is off.
+  final String idleHint;
 
   @override
   Widget build(BuildContext context) {
@@ -79,9 +87,7 @@ class FreeCookingVoiceZone extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    isListening
-                        ? l10n.freeCookingListenHint
-                        : l10n.freeCookingIdleHint,
+                    isListening ? l10n.freeCookingListenHint : idleHint,
                     textAlign: TextAlign.center,
                     style: textTheme.bodyMedium?.copyWith(color: colors.muted),
                   ),
