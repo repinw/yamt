@@ -11,8 +11,8 @@ import 'package:yamt/features/inventory/presentation/models/'
     'inventory_manual_product_save_outcome.dart';
 import 'package:yamt/features/inventory/presentation/models/'
     'inventory_meal_food_pick.dart';
-import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
-    'prepared_meal_pending_fill_sheet.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'prepared_meal_food_source.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Fills an open row of a meal with a food found by search, barcode, or AI.
