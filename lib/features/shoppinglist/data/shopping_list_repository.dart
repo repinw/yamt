@@ -60,24 +60,15 @@ class ShoppingListRepository {
     return _watch(collection);
   }
 
-  /// Loads all shopping list items.
+  /// Loads all shopping list items. Throws when they cannot be read, so a
+  /// caller never takes a failed read for an empty list.
   Future<List<ShoppingListItem>> readAll() async {
     final collection = _collection;
     if (collection == null) {
       return const <ShoppingListItem>[];
     }
-    try {
-      final snapshot = await collection.reference.get();
-      return _decode(await collection.openAll(snapshot));
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to read shopping list items.',
-        name: _logName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return const <ShoppingListItem>[];
-    }
+    final snapshot = await collection.reference.get();
+    return _decode(await collection.openAll(snapshot));
   }
 
   /// Replaces all stored shopping list items with [items].
