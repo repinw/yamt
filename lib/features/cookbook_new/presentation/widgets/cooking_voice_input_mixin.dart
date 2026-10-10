@@ -17,6 +17,8 @@ const _maxSilentRestarts = 15;
 mixin CookingVoiceInputMixin<T extends StatefulWidget>
     on VoiceInputStateMixin<T> {
   bool _keepsListening = false;
+  // After a stop, the final result for what was still being heard.
+  bool _awaitsFinal = false;
   int _silentRestarts = 0;
 
   /// What the microphone hears before it is final.
@@ -41,26 +43,45 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
       return;
     }
     _keepsListening = true;
+    _awaitsFinal = false;
     _silentRestarts = 0;
     await _listen();
   }
 
-  /// Stops listening for good and returns what was still being heard.
-  Future<String?> stopListening() async {
+  /// Stops listening for good. What was still being heard goes to
+  /// [onSpokenText] with the final result that stopping sends a moment
+  /// later, if the recognizer sends one.
+  Future<void> stopListening() async {
+    if (!isListening) {
+      return;
+    }
     _keepsListening = false;
-    final pending = pendingSpeech;
+    _awaitsFinal = true;
     await voiceService.stopListening();
     if (mounted) {
       setState(() => pendingSpeech = null);
     }
-    return pending;
+  }
+
+  /// Stops listening for good right away, such as before cooking: what was
+  /// still being heard goes to [onSpokenText] now, and no final result
+  /// follows.
+  Future<void> finishListening() async {
+    _keepsListening = false;
+    _awaitsFinal = false;
+    final pending = pendingSpeech;
+    if (pending != null) {
+      setState(() => pendingSpeech = null);
+      onSpokenText(pending);
+    }
+    if (isListening) {
+      await voiceService.cancelListening();
+    }
   }
 
   /// Stops listening and opens the field to type ingredients instead.
   Future<void> typeText() async {
-    if (isListening) {
-      await toggleListening();
-    }
+    await stopListening();
     if (!mounted) {
       return;
     }
@@ -84,13 +105,22 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
       onError: _onVoiceError,
     );
     if (!mounted) {
+      // The page closed while listening was starting.
+      if (failure == null) {
+        unawaited(voiceService.cancelListening());
+      }
       return;
+    }
+    // The cook stopped, or an error ended listening, while it was starting.
+    final stopped = !_keepsListening;
+    if (stopped && failure == null) {
+      unawaited(voiceService.stopListening());
     }
     setState(() {
       isStartingVoiceSearch = false;
-      isListeningToSpeech = failure == null;
+      isListeningToSpeech = failure == null && !stopped;
     });
-    if (failure != null) {
+    if (failure != null && !stopped) {
       _onVoiceError(failure);
     }
   }
@@ -102,14 +132,23 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
     setState(() => isListeningToSpeech = isListening);
     // A pause or silence ends one recognition. Listening goes on until the
     // cook taps, but stops after about a minute of silence.
-    if (!isListening &&
-        _keepsListening &&
-        !pausesVoiceInput &&
-        !isStartingVoiceSearch &&
-        _silentRestarts < _maxSilentRestarts) {
-      _silentRestarts++;
-      unawaited(_listen());
+    if (!isListening && _keepsListening) {
+      // Not before the service reports the error that ended it, if any.
+      scheduleMicrotask(_restart);
     }
+  }
+
+  void _restart() {
+    if (isDisposingVoiceInput ||
+        !mounted ||
+        !_keepsListening ||
+        pausesVoiceInput ||
+        isListening ||
+        _silentRestarts >= _maxSilentRestarts) {
+      return;
+    }
+    _silentRestarts++;
+    unawaited(_listen());
   }
 
   void _onVoiceError(VoiceSearchFailure failure) {
@@ -117,21 +156,27 @@ mixin CookingVoiceInputMixin<T extends StatefulWidget>
       return;
     }
     _keepsListening = false;
+    _awaitsFinal = false;
     setState(() {
       isListeningToSpeech = false;
       isStartingVoiceSearch = false;
+      pendingSpeech = null;
     });
     showVoiceInputFailure(failure);
   }
 
   void _onSpeech(VoiceSearchRecognition result) {
-    if (isDisposingVoiceInput || !mounted || pausesVoiceInput) {
+    if (isDisposingVoiceInput ||
+        !mounted ||
+        !(_keepsListening || _awaitsFinal) ||
+        pausesVoiceInput) {
       return;
     }
     if (!result.isFinal) {
       setState(() => pendingSpeech = result.transcript);
       return;
     }
+    _awaitsFinal = false;
     _silentRestarts = 0;
     setState(() => pendingSpeech = null);
     onSpokenText(result.transcript);
