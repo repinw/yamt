@@ -75,6 +75,9 @@ abstract final class AppRoutes {
   /// Ingredient check of one recipe, with recipe id parameter.
   static const homeRecipeCheck = '/home/recipe/:recipeId/check';
 
+  /// Kochhelfer of one recipe, with recipe id parameter.
+  static const homeRecipeGuide = '/home/recipe/:recipeId/guide';
+
   /// Editor of one Vorrat item, with item id parameter.
   static const homeInventoryItemEdit = '/home/inventory/items/:itemId/edit';
 
@@ -175,6 +178,10 @@ abstract final class AppRoutes {
   /// Builds the ingredient check path for the recipe [recipeId].
   static String homeRecipeCheckPath(String recipeId) =>
       '/home/recipe/$recipeId/check';
+
+  /// Builds the Kochhelfer path for the recipe [recipeId].
+  static String homeRecipeGuidePath(String recipeId) =>
+      '/home/recipe/$recipeId/guide';
 
   /// Builds the editor path for the Vorrat item with [itemId].
   static String homeInventoryItemEditPath(String itemId) {

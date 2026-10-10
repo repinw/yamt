@@ -116,6 +116,10 @@ class RecipeView {
   /// recipe that names it twice leaves out both.
   bool get canRemove => activeLines.map((line) => line.key).toSet().length > 1;
 
+  /// Whether the recipe has a step with text, for the Kochhelfer.
+  bool get hasSteps =>
+      recipe.recipeInstructions.any((step) => step.trim().isNotEmpty);
+
   /// How many of [activeLines] the Vorrat supplies.
   int get inStockCount =>
       activeLines.where((line) => line.row.isInStock).length;

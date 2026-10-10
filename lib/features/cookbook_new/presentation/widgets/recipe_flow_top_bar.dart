@@ -4,14 +4,15 @@ import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 
 /// The top row of a page that leads through a recipe step by step: a back
-/// or close button, a [title] in the middle, and a [caption] at the end,
-/// both in small capitals.
+/// or close button, an optional [title] in the middle, and a [caption] at
+/// the end, both in small capitals.
 class RecipeFlowTopBar extends StatelessWidget {
   /// Creates the row.
   const new({
     required this.onBack,
-    required this.title,
     required this.caption,
+    this.title,
+    this.captionIcon,
     this.closes = false,
     this.backKey,
     super.key,
@@ -20,11 +21,14 @@ class RecipeFlowTopBar extends StatelessWidget {
   /// Goes back; `null` turns the button off.
   final VoidCallback? onBack;
 
-  /// The caption in the middle.
-  final String title;
-
   /// The caption at the end.
   final String caption;
+
+  /// The caption in the middle.
+  final String? title;
+
+  /// An icon before [caption], on a row without [title].
+  final IconData? captionIcon;
 
   /// Whether the button closes the page instead of going one step back.
   final bool closes;
@@ -40,6 +44,8 @@ class RecipeFlowTopBar extends StatelessWidget {
       color: colors.muted,
       letterSpacing: AppGraphit.kickerTracking,
     );
+    final title = this.title;
+    final captionIcon = this.captionIcon;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.sm,
@@ -59,14 +65,40 @@ class RecipeFlowTopBar extends StatelessWidget {
                 ? const Icon(Icons.close_rounded)
                 : const BackButtonIcon(),
           ),
-          Expanded(
-            child: Text(
-              title.toUpperCase(),
-              textAlign: TextAlign.center,
-              style: style,
+          if (title != null) ...[
+            Expanded(
+              child: Text(
+                title.toUpperCase(),
+                textAlign: TextAlign.center,
+                style: style,
+              ),
             ),
-          ),
-          Text(caption.toUpperCase(), style: style),
+            Text(caption.toUpperCase(), style: style),
+          ] else
+            // A long caption wraps instead of running out of the row.
+            Expanded(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  if (captionIcon != null)
+                    Padding(
+                      padding: const EdgeInsets.only(right: AppSpacing.sm),
+                      child: Icon(
+                        captionIcon,
+                        size: AppGraphit.chipIcon,
+                        color: colors.muted,
+                      ),
+                    ),
+                  Flexible(
+                    child: Text(
+                      caption.toUpperCase(),
+                      textAlign: TextAlign.end,
+                      style: style,
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

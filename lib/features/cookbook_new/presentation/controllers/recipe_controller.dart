@@ -1,6 +1,7 @@
 import 'dart:developer' show log;
 
 import 'package:meta/meta.dart';
+import 'package:riverpod/riverpod.dart' show ProviderListenableSelect;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_view_builder.dart';
@@ -20,6 +21,7 @@ class RecipeDraft {
     this.portions,
     this.picks = const <String, String?>{},
     this.edits = const RecipeEdits(),
+    this.withGuide = true,
     this.isCooking = false,
   });
 
@@ -33,6 +35,9 @@ class RecipeDraft {
   /// What the cook changes in the recipe this time.
   final RecipeEdits edits;
 
+  /// Whether "Kochen" opens the Kochhelfer first, for a recipe with steps.
+  final bool withGuide;
+
   /// Whether "Kochen" is saving the meal.
   final bool isCooking;
 
@@ -41,11 +46,13 @@ class RecipeDraft {
     int? portions,
     Map<String, String?>? picks,
     RecipeEdits? edits,
+    bool? withGuide,
     bool? isCooking,
   }) => RecipeDraft(
     portions: portions ?? this.portions,
     picks: picks ?? this.picks,
     edits: edits ?? this.edits,
+    withGuide: withGuide ?? this.withGuide,
     isCooking: isCooking ?? this.isCooking,
   );
 }
@@ -67,6 +74,11 @@ class RecipeController extends _$RecipeController {
   /// or not from the Vorrat when it is `null`.
   void pick(String key, String? itemId) {
     state = state.copyWith(picks: {...state.picks, key: itemId});
+  }
+
+  /// Opens the Kochhelfer before cooking when [withGuide] is set.
+  void setWithGuide({required bool withGuide}) {
+    state = state.copyWith(withGuide: withGuide);
   }
 
   /// Cooks the recipe with [edits] this time.
@@ -129,15 +141,21 @@ AsyncValue<RecipeView?> recipeView(
   String recipeId,
   String localeCode,
 ) {
-  final draft = ref.watch(recipeControllerProvider(recipeId));
+  // Cooking and the Kochhelfer switch leave the view as it is.
+  final (:portions, :picks, :edits) = ref.watch(
+    recipeControllerProvider(recipeId).select(
+      (draft) =>
+          (portions: draft.portions, picks: draft.picks, edits: draft.edits),
+    ),
+  );
   return buildRecipeView(
     recipeId: recipeId,
     templates: ref.watch(cookbookTemplatesProvider),
     items: ref.watch(inventoryQuickEatItemsProvider),
     parser: ref.watch(templateIngredientParserProvider),
     localeCode: localeCode,
-    portions: draft.portions,
-    picks: draft.picks,
-    edits: draft.edits,
+    portions: portions,
+    picks: picks,
+    edits: edits,
   );
 }

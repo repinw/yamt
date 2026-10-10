@@ -6194,6 +6194,54 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get recipeWithGuide => 'Mit Anleitung kochen';
+
+  @override
+  String get recipeWithGuideHint => 'Öffnet Satz für Satz; danach „Gekocht“';
+
+  @override
+  String get cookingGuideTitle => 'Kochhelfer';
+
+  @override
+  String cookingGuideKicker(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Portionen',
+      one: '1 Portion',
+    );
+    return 'Anleitung · $_temp0';
+  }
+
+  @override
+  String cookingGuideSentenceNote(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Sätze',
+      one: '1 Satz',
+    );
+    return '$_temp0. Danach kommt ein Satz pro Bildschirm, und der Bildschirm bleibt an.';
+  }
+
+  @override
+  String get cookingGuideStart => 'Los geht\'s · Satz für Satz';
+
+  @override
+  String get cookingGuideKeepsScreenOn => 'Bildschirm bleibt an';
+
+  @override
+  String cookingGuideProgress(int sentence, int count, int step) {
+    return 'Satz $sentence von $count · Schritt $step';
+  }
+
+  @override
+  String get cookingGuideNext => 'Nächster Satz';
+
+  @override
+  String get cookingGuideDone => 'Fertig gekocht';
+
+  @override
   String get recipeNotFound => 'Das Rezept gibt es nicht mehr.';
 
   @override

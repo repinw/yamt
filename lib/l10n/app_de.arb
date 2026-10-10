@@ -2831,6 +2831,43 @@
       }
     }
   },
+  "recipeWithGuide": "Mit Anleitung kochen",
+  "recipeWithGuideHint": "Öffnet Satz für Satz; danach „Gekocht“",
+  "cookingGuideTitle": "Kochhelfer",
+  "cookingGuideKicker": "Anleitung · {count, plural, =1{1 Portion} other{{count} Portionen}}",
+  "@cookingGuideKicker": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingGuideSentenceNote": "{count, plural, =1{1 Satz} other{{count} Sätze}}. Danach kommt ein Satz pro Bildschirm, und der Bildschirm bleibt an.",
+  "@cookingGuideSentenceNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingGuideStart": "Los geht's · Satz für Satz",
+  "cookingGuideKeepsScreenOn": "Bildschirm bleibt an",
+  "cookingGuideProgress": "Satz {sentence} von {count} · Schritt {step}",
+  "@cookingGuideProgress": {
+    "placeholders": {
+      "sentence": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingGuideNext": "Nächster Satz",
+  "cookingGuideDone": "Fertig gekocht",
   "recipeNotFound": "Das Rezept gibt es nicht mehr.",
   "recipeLoadFailed": "Das Rezept oder der Vorrat konnte nicht geladen werden.",
   "recipeCheckChangeKicker": "{name} · {count, plural, =1{1 Portion} other{{count} Portionen}}",

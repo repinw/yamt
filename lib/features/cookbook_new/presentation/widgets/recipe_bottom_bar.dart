@@ -3,8 +3,9 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 
-/// The buttons at the bottom of the recipe page and the ingredient check:
-/// the main one, and a second one before it when [secondaryLabel] is set.
+/// The buttons at the bottom of the recipe page, the ingredient check, and
+/// the Kochhelfer: the main one, a second one before it when
+/// [secondaryLabel] is set, and an optional [header] above them.
 class RecipeBottomBar extends StatelessWidget {
   /// Creates the bar.
   const new({
@@ -14,6 +15,7 @@ class RecipeBottomBar extends StatelessWidget {
     this.secondaryLabel,
     this.onSecondary,
     this.secondaryKey,
+    this.header,
     super.key,
   });
 
@@ -35,42 +37,54 @@ class RecipeBottomBar extends StatelessWidget {
   /// Key of the second button.
   final Key? secondaryKey;
 
+  /// Shown above the buttons, such as an option for them.
+  final Widget? header;
+
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
     final secondaryLabel = this.secondaryLabel;
+    final header = this.header;
     const size = Size.fromHeight(AppGraphit.buttonHeight);
+    final buttons = Row(
+      spacing: AppSpacing.md,
+      children: [
+        if (secondaryLabel != null)
+          Expanded(
+            child: FilledButton.tonal(
+              key: secondaryKey,
+              onPressed: onSecondary,
+              style: FilledButton.styleFrom(minimumSize: size),
+              child: Text(secondaryLabel),
+            ),
+          ),
+        Expanded(
+          flex: secondaryLabel == null ? 1 : 2,
+          child: FilledButton(
+            key: buttonKey,
+            onPressed: onPressed,
+            style: FilledButton.styleFrom(
+              backgroundColor: colors.accent,
+              foregroundColor: colors.onAccent,
+              minimumSize: size,
+            ),
+            child: Text(label),
+          ),
+        ),
+      ],
+    );
     return SafeArea(
       top: false,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.xl),
-        child: Row(
-          spacing: AppSpacing.md,
-          children: [
-            if (secondaryLabel != null)
-              Expanded(
-                child: FilledButton.tonal(
-                  key: secondaryKey,
-                  onPressed: onSecondary,
-                  style: FilledButton.styleFrom(minimumSize: size),
-                  child: Text(secondaryLabel),
-                ),
+        child: header == null
+            ? buttons
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppSpacing.sm,
+                children: [header, buttons],
               ),
-            Expanded(
-              flex: secondaryLabel == null ? 1 : 2,
-              child: FilledButton(
-                key: buttonKey,
-                onPressed: onPressed,
-                style: FilledButton.styleFrom(
-                  backgroundColor: colors.accent,
-                  foregroundColor: colors.onAccent,
-                  minimumSize: size,
-                ),
-                child: Text(label),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

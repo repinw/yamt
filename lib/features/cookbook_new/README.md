@@ -17,6 +17,9 @@ templates list and later the cooking flow.
   Kochbuch" switch that also saves the cooked meal as a template.
 - The recipe page: a recipe sized for the chosen portions, which Vorrat food
   supplies each ingredient, and cooking it into the pot.
+- The Kochhelfer of a recipe: its ingredients and steps, then one sentence
+  per screen with the ingredients it names, before the meal goes into the
+  pot.
 - The ingredient check of a recipe ("Zutaten prüfen"): what comes from the
   Vorrat, what goes on the shopping list, and what is ignored, changes to
   the ingredients for one cooking, and saving those choices on the recipe.

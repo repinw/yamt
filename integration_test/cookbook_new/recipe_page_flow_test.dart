@@ -9,6 +9,7 @@ import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/screen_wake_lock.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/cooking_guide_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'recipe_ingredient_tile.dart';
@@ -63,6 +64,8 @@ void main() {
     // The carrots stay in the Vorrat this time.
     final carrots = find.byKey(RecipeIngredientTile.tileKey(1));
     await tester.scrollUntilVisible(carrots, 100);
+    await tester.ensureVisible(carrots);
+    await tester.pumpAndSettle();
     await tester.tap(carrots);
     await tester.pumpAndSettle();
     expect(
@@ -72,6 +75,9 @@ void main() {
     await tester.tap(find.byKey(RecipeStockPickerSheet.noneKey));
     await tester.pumpAndSettle();
 
+    // Straight to "Gekocht", without the Kochhelfer.
+    await tester.tap(find.byKey(RecipePage.withGuideKey));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(RecipePage.cookKey));
     await tester.pumpAndSettle();
 
@@ -87,6 +93,65 @@ void main() {
       inventory.items.firstWhere((item) => item.id == 'carrots').currentAmount,
       2000,
     );
+  });
+
+  testWidgets('cooks with the Kochhelfer, one sentence at a time', (
+    tester,
+  ) async {
+    final meals = _FakeMealRepository();
+    final screenOn = <bool>[];
+    await tester.pumpWidget(
+      _app(
+        meals: meals,
+        inventory: _FakeInventoryRepository([
+          _item('mince', 'Hackfleisch'),
+          _item('carrots', 'Karotten'),
+        ]),
+        screenOn: screenOn,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+
+    // Back from the first screen cooks nothing.
+    await tester.tap(find.byKey(RecipePage.cookKey));
+    await tester.pumpAndSettle();
+    expect(find.byType(CookingGuidePage), findsOneWidget);
+    expect(screenOn, [true]);
+    await tester.tap(find.byKey(CookingGuidePage.backKey));
+    await tester.pumpAndSettle();
+    expect(find.byType(RecipePage), findsOneWidget);
+    expect(meals.saved, isEmpty);
+
+    await tester.tap(find.byKey(RecipePage.cookKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookingGuidePage.startKey));
+    await tester.pumpAndSettle();
+    // Back from the first sentence shows everything again.
+    await tester.tap(find.byKey(CookingGuidePage.backKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookingGuidePage.startKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(CookingGuidePage.nextKey));
+    await tester.pumpAndSettle();
+    // The system back goes one sentence back, not out of the Kochhelfer.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byKey(CookingGuidePage.nextKey), findsOneWidget);
+    await tester.tap(find.byKey(CookingGuidePage.nextKey));
+    await tester.pumpAndSettle();
+
+    // The last sentence only finishes.
+    expect(find.byKey(CookingGuidePage.nextKey), findsNothing);
+    await tester.tap(find.byKey(CookingGuidePage.doneKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CookedMealPage), findsOneWidget);
+    expect(meals.saved.single.name, 'Bauerntopf');
+    // Closing "Gekocht" goes back to where the recipe was opened.
+    expect(find.byType(RecipePage, skipOffstage: false), findsNothing);
+    expect(find.byType(CookingGuidePage, skipOffstage: false), findsNothing);
   });
 
   testWidgets('a recipe that is gone says so', (tester) async {
@@ -138,6 +203,7 @@ Widget _app({
   required _FakeMealRepository meals,
   required _FakeInventoryRepository inventory,
   List<PreparedMeal>? recipes,
+  List<bool>? screenOn,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -158,6 +224,11 @@ Widget _app({
         path: AppRoutes.homeRecipe,
         builder: (context, state) =>
             RecipePage(recipeId: state.pathParameters['recipeId']!),
+      ),
+      GoRoute(
+        path: AppRoutes.homeRecipeGuide,
+        builder: (context, state) =>
+            CookingGuidePage(recipeId: state.pathParameters['recipeId']!),
       ),
       GoRoute(
         path: AppRoutes.homeCookedMeal,
@@ -183,7 +254,7 @@ Widget _app({
         _FakeShoppingListRepository(),
       ),
       screenWakeLockProvider.overrideWithValue(
-        ScreenWakeLock(toggle: ({required on}) async {}),
+        ScreenWakeLock(toggle: ({required on}) async => screenOn?.add(on)),
       ),
       kitchenUtensilRepositoryProvider.overrideWithValue(
         _FakeUtensilRepository(),

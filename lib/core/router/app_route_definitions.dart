@@ -12,6 +12,7 @@ import 'package:yamt/features/auth/presentation/welcome_page.dart';
 import 'package:yamt/features/calories/presentation/calorie_goal_archive_page.dart';
 import 'package:yamt/features/calories/presentation/tdee_analytics_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/cooking_guide_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/free_cooking_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/ingredient_check_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
@@ -199,6 +200,11 @@ List<RouteBase> buildAppRoutes(Ref ref) {
       path: AppRoutes.homeRecipeCheck,
       builder: (context, state) =>
           IngredientCheckPage(recipeId: state.pathParameters['recipeId'] ?? ''),
+    ),
+    GoRoute(
+      path: AppRoutes.homeRecipeGuide,
+      builder: (context, state) =>
+          CookingGuidePage(recipeId: state.pathParameters['recipeId'] ?? ''),
     ),
     GoRoute(
       path: AppRoutes.homeFreeCooking,
