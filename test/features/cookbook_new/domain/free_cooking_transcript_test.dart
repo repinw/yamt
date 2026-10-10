@@ -33,4 +33,16 @@ void main() {
   test('returns no rows for blank text', () {
     expect(splitFreeCookingTranscript('  '), isEmpty);
   });
+
+  test('"nein" and its kin take back what was just added', () {
+    expect(afterUndoWords('Nein.'), '');
+    expect(afterUndoWords(' rückgängig '), '');
+    expect(afterUndoWords('no'), '');
+    expect(afterUndoWords('Nein, nein!'), '');
+    expect(afterUndoWords('nein, doch nicht'), '');
+    expect(afterUndoWords('Nein, 200 g Sahne'), '200 g Sahne');
+    expect(afterUndoWords('Nudeln 200 g'), isNull);
+    expect(afterUndoWords('noch 50 g Sahne'), isNull);
+    expect(afterUndoWords('zurück'), isNull);
+  });
 }

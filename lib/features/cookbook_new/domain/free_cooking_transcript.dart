@@ -49,3 +49,19 @@ final _amountOnly = RegExp(
   r'(?:g|gr|gramm|kg|ml|l|liter|el|tl|stk|stück|prise|prisen)?\.?$',
   caseSensitive: false,
 );
+
+/// What is left of [transcript] after undo words such as "nein" at its
+/// start, or `null` when it does not start with one: "Nein, nein!" and
+/// "nein, doch nicht" leave nothing, "nein, 200 g Sahne" leaves the
+/// correction.
+String? afterUndoWords(String transcript) {
+  final match = _leadingUndo.firstMatch(transcript);
+  return match == null ? null : transcript.substring(match.end).trim();
+}
+
+final _leadingUndo = RegExp(
+  r'^\s*(?:(?:nein|no|rückgängig|undo)(?![\p{L}\d])[\s\p{P}]*)+'
+  r'(?:(?:doch|nicht|danke)(?![\p{L}\d])[\s\p{P}]*)*',
+  caseSensitive: false,
+  unicode: true,
+);

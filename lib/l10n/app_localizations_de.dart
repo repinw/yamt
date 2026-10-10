@@ -6236,6 +6236,26 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get cookingGuideInPot => 'Im Topf';
+
+  @override
+  String cookingGuideLineCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count Zeilen',
+      one: '1 Zeile',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookingGuideJustAdded => 'Gerade dazu';
+
+  @override
+  String get cookingGuideVoiceHint => '„50 g Sahne“ · „nein“ macht rückgängig';
+
+  @override
   String get cookingGuideNext => 'Nächster Satz';
 
   @override

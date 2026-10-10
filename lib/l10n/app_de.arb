@@ -2866,6 +2866,17 @@
       }
     }
   },
+  "cookingGuideInPot": "Im Topf",
+  "cookingGuideLineCount": "{count, plural, =1{1 Zeile} other{{count} Zeilen}}",
+  "@cookingGuideLineCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingGuideJustAdded": "Gerade dazu",
+  "cookingGuideVoiceHint": "„50 g Sahne“ · „nein“ macht rückgängig",
   "cookingGuideNext": "Nächster Satz",
   "cookingGuideDone": "Fertig gekocht",
   "recipeNotFound": "Das Rezept gibt es nicht mehr.",

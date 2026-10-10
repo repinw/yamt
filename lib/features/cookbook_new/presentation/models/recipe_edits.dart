@@ -25,10 +25,13 @@ class RecipeEdits {
   /// Whether nothing changes.
   bool get isEmpty => changed.isEmpty && added.isEmpty;
 
-  /// Returns a copy with [text] added.
+  /// The line key that [withAdded] gives the next ingredient.
+  String get nextKey => '+$nextId';
+
+  /// Returns a copy with [text] added under [nextKey].
   RecipeEdits withAdded(String text) => RecipeEdits(
     changed: changed,
-    added: {...added, '+$nextId': text},
+    added: {...added, nextKey: text},
     nextId: nextId + 1,
   );
 

@@ -3626,6 +3626,17 @@
       }
     }
   },
+  "cookingGuideInPot": "In the pot",
+  "cookingGuideLineCount": "{count, plural, =1{1 line} other{{count} lines}}",
+  "@cookingGuideLineCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingGuideJustAdded": "Just added",
+  "cookingGuideVoiceHint": "“50 g cream” · “no” takes it back",
   "cookingGuideNext": "Next sentence",
   "cookingGuideDone": "Done cooking",
   "recipeNotFound": "This recipe is gone.",

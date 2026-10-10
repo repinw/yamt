@@ -681,6 +681,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   - Then each sentence of the steps gets its own screen ("Satz 4 von 9 ·
     Schritt 2") with the ingredients it names. "Nächster Satz" moves on, and
     back goes one sentence back.
+  - Below each sentence, "Im Topf" lists the ingredients. The voice zone and
+    "Schreiben" add more for this time, said for the chosen portions; "Gerade
+    dazu" shows the last ones with "Rückgängig", and saying "nein" takes them
+    back too. Listening goes on across sentences until the next tap.
   - "Fertig gekocht" puts the meal in the pot like "Kochen" and goes on to
     "Gekocht". Leaving the Kochhelfer before that cooks nothing.
 - Editing and deleting templates from the Kochbuch is not available yet.
