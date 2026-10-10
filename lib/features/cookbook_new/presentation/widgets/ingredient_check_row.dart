@@ -2,12 +2,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_draft.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Sets the choice for an ingredient, or for its missing part when [rest].
 typedef IngredientCheckChoose = void Function(
-  String ingredient,
+  String key,
   IngredientCheckChoice choice, {
   bool rest,
 });

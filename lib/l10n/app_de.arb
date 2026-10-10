@@ -2833,6 +2833,94 @@
   },
   "recipeNotFound": "Das Rezept gibt es nicht mehr.",
   "recipeLoadFailed": "Das Rezept oder der Vorrat konnte nicht geladen werden.",
+  "recipeCheckChangeKicker": "{name} · {count, plural, =1{1 Portion} other{{count} Portionen}}",
+  "@recipeCheckChangeKicker": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckChangeTitle": "Diesmal etwas ändern?",
+  "recipeCheckChangeHint": "Zum Beispiel „mehr Fleisch“ oder „ohne Tomaten“. Gilt nur für dieses Mal.",
+  "recipeCheckChangeYes": "Ja",
+  "recipeCheckChangeNo": "Nein, weiter",
+  "recipeCheckEditKicker": "Diesmal anders",
+  "recipeCheckEditTitle": "Was änderst du?",
+  "recipeCheckEditAmount": "Menge von {food}",
+  "@recipeCheckEditAmount": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckEditRemove": "{food} weglassen",
+  "@recipeCheckEditRemove": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckEditAdd": "+ Zutat",
+  "recipeCheckEditAddHint": "z. B. 200 g Paprika",
+  "recipeCheckChanged": "Geändert",
+  "recipeCheckChangeAmount": "{food} {from} → {to}",
+  "@recipeCheckChangeAmount": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckChangeRemoved": "ohne {food}",
+  "@recipeCheckChangeRemoved": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckChangeOther": "{food}: andere Menge",
+  "@recipeCheckChangeOther": {
+    "description": "Ingredient check summary: a changed ingredient whose amount has no label for the chosen portions.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckChangeAdded": "+ {food}",
+  "@recipeCheckChangeAdded": {
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckChangeAddedAmount": "+ {amount} {food}",
+  "@recipeCheckChangeAddedAmount": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckSaveEdits": "Änderungen ins Rezept übernehmen",
+  "recipeCheckSaveEditsHint": "Sonst gelten sie nur heute",
   "recipeCheckTitle": "Zutaten prüfen",
   "recipeCheckMissingCount": "{count, plural, =1{1 fehlt} other{{count} fehlen}}",
   "@recipeCheckMissingCount": {

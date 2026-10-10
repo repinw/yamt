@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_draft.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_amount_labels.dart';
@@ -61,7 +61,7 @@ class IngredientCheckMissingList extends StatelessWidget {
             food: line.row.foodName,
             choice: draft.choiceOf(line),
             options: options(line),
-            onChoose: (choice) => onChoose(line.ingredient, choice),
+            onChoose: (choice) => onChoose(line.key, choice),
             onHave: () => onHave(line, rest: false),
           ),
         for (final (index, line) in check.rests.indexed)
@@ -81,8 +81,7 @@ class IngredientCheckMissingList extends StatelessWidget {
               note: l10n.recipeCheckRest(stocked),
               choice: draft.restChoiceOf(line),
               options: options(line),
-              onChoose: (choice) =>
-                  onChoose(line.ingredient, choice, rest: true),
+              onChoose: (choice) => onChoose(line.key, choice, rest: true),
               onHave: () => onHave(line, rest: true),
             ),
       ],

@@ -18,8 +18,8 @@ templates list and later the cooking flow.
 - The recipe page: a recipe sized for the chosen portions, which Vorrat food
   supplies each ingredient, and cooking it into the pot.
 - The ingredient check of a recipe ("Zutaten prüfen"): what comes from the
-  Vorrat, what goes on the shopping list, and what is ignored, and saving
-  those choices on the recipe.
+  Vorrat, what goes on the shopping list, and what is ignored, changes to
+  the ingredients for one cooking, and saving those choices on the recipe.
 - The overview that sorts saved templates into Vorlagen and recipes and marks
   which foods the Vorrat holds.
 
@@ -66,3 +66,11 @@ templates list and later the cooking flow.
   meal: the missing part of a partly stocked ingredient ("200 g Karotten"),
   else the whole ingredient. The recipe card counts an ingredient as sorted
   once that text is on the list.
+- Ingredient changes are written for the recipe's own portions, like the
+  saved ingredients, and the check shows them for the chosen ones. Without
+  "Änderungen ins Rezept übernehmen" the recipe is saved with its own
+  ingredients, the choices for a changed ingredient go to its saved text,
+  and the recipe page keeps the changes until it closes, with the choices
+  for added ingredients as its picks. The check and the recipe page keep
+  choices and picks by the saved ingredient, so they stay when its amount
+  changes.

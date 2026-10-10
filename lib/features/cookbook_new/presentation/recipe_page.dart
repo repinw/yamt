@@ -14,6 +14,7 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_contr
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/cookbook_section_title.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/portion_stepper.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_bottom_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_check_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_hero.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_ingredient_tile.dart';
@@ -234,23 +235,12 @@ class _RecipeBody extends ConsumerWidget {
             ],
           ),
         ),
-        SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: FilledButton(
-              key: RecipePage.cookKey,
-              onPressed: isCooking || activeCount == 0
-                  ? null
-                  : () => unawaited(_cook(context, ref)),
-              style: FilledButton.styleFrom(
-                backgroundColor: colors.accent,
-                foregroundColor: colors.onAccent,
-                minimumSize: const Size.fromHeight(AppGraphit.buttonHeight),
-              ),
-              child: Text(l10n.freeCookingCookAction),
-            ),
-          ),
+        RecipeBottomBar(
+          buttonKey: RecipePage.cookKey,
+          label: l10n.freeCookingCookAction,
+          onPressed: isCooking || activeCount == 0
+              ? null
+              : () => unawaited(_cook(context, ref)),
         ),
       ],
     );
@@ -265,7 +255,7 @@ class _RecipeBody extends ConsumerWidget {
     if (pick != null && context.mounted) {
       ref
           .read(recipeControllerProvider(view.recipe.id).notifier)
-          .pick(line.ingredient, pick.itemId);
+          .pick(line.key, pick.itemId);
     }
   }
 

@@ -11,9 +11,12 @@ import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
 import 'package:yamt/core/provider/firebase_firestore_provider.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
-    'ingredient_check_controller.dart';
+    'ingredient_check_draft.dart';
+import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/ingredient_check_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/'
+    'ingredient_check_edit_list.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
     'ingredient_check_row.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
@@ -70,6 +73,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(IngredientCheckPage), findsOneWidget);
 
+      // Nothing changes this time.
+      await tester.tap(find.byKey(IngredientCheckPage.nextKey));
+      await tester.pumpAndSettle();
+
       // Hackfleisch and the 400 g of carrots come from the Vorrat.
       expect(
         find.byKey(
@@ -116,6 +123,75 @@ void main() {
       expect(shopping.saved.map((item) => item.name), ['200 g Karotten']);
     },
   );
+
+  testWidgets('cooks with more meat, peas, and without the pepper this time', (
+    tester,
+  ) async {
+    final templates = _FakeTemplateRepository([_recipe]);
+    final shopping = _FakeShoppingListRepository();
+    final meals = _FakeMealRepository();
+    await tester.pumpWidget(
+      _app(
+        templates: templates,
+        inventory: _FakeInventoryRepository([
+          _item('mince', 'Hackfleisch', 2000),
+          _item('carrots', 'Karotten', 1000),
+        ]),
+        shopping: shopping,
+        meals: meals,
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(_startKey));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(RecipeCheckCard.cardKey));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(IngredientCheckPage.changeKey));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(IngredientCheckEditList.amountKey('500 g Hackfleisch')),
+      '900',
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(IngredientCheckEditList.removeKey('300 g Paprika')),
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(IngredientCheckEditList.addKey),
+      '200 g Erbsen',
+    );
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await tester.pumpAndSettle();
+    expect(
+      tester
+          .widget<TextField>(find.byKey(IngredientCheckEditList.addKey))
+          .controller
+          ?.text,
+      isEmpty,
+    );
+
+    // Weiter through the found and the missing ones, then Fertig.
+    for (var step = 0; step < 4; step++) {
+      await tester.tap(find.byKey(IngredientCheckPage.nextKey));
+      await tester.pumpAndSettle();
+    }
+    expect(find.byType(RecipePage), findsOneWidget);
+    expect(templates.saved.single.recipeIngredients, _recipe.recipeIngredients);
+    expect(shopping.saved.map((item) => item.name), ['200 g Erbsen']);
+
+    await tester.tap(find.byKey(RecipePage.cookKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(CookedMealPage), findsOneWidget);
+    final meal = meals.saved.single;
+    expect(meal.components.map((c) => (c.inventoryItemId, c.usedAmount)), [
+      ('mince', 900),
+      ('carrots', 600),
+    ]);
+    expect(meal.pendingRecipeIngredients, ['200 g Erbsen']);
+  });
 }
 
 InventoryItem _item(String id, String name, int amount) => InventoryItem.create(
@@ -186,6 +262,7 @@ Widget _app({
   required _FakeTemplateRepository templates,
   required _FakeInventoryRepository inventory,
   required _FakeShoppingListRepository shopping,
+  _FakeMealRepository? meals,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -213,6 +290,11 @@ Widget _app({
             IngredientCheckPage(recipeId: state.pathParameters['recipeId']!),
       ),
       GoRoute(
+        path: AppRoutes.homeCookedMeal,
+        builder: (context, state) =>
+            CookedMealPage(mealId: state.pathParameters['mealId']!),
+      ),
+      GoRoute(
         path: AppRoutes.homeFoodPick,
         builder: (context, state) => const _FakeFoodPickPage(),
       ),
@@ -223,7 +305,9 @@ Widget _app({
   final container = ProviderContainer(
     overrides: [
       firebaseFirestoreProvider.overrideWith((ref) => null),
-      preparedMealRepositoryProvider.overrideWithValue(_FakeMealRepository()),
+      preparedMealRepositoryProvider.overrideWithValue(
+        meals ?? _FakeMealRepository(),
+      ),
       preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
       inventoryItemRepositoryProvider.overrideWithValue(inventory),
       inventoryActivityEventRepositoryProvider.overrideWithValue(

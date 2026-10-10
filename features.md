@@ -648,6 +648,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   is missing or only partly there and not on the shopping list ("1 fehlt,
   1 nur teilweise da"), and says "Alles geklärt" otherwise. It opens the
   ingredient check:
+  - "Diesmal etwas ändern?" asks first. "Ja" lists every
+    ingredient with its amount for the chosen portions: an amount can be
+    typed, ✕ leaves an ingredient out (one has to stay), and "+ Zutat" adds
+    one. These changes count for this cooking only; going back and
+    answering "Nein" drops them again.
   - "Passt das?" lists what the Vorrat holds, each taken from it (✓), put
     on the shopping list, or ignored; a partly stocked one says "400 g da ·
     200 g fehlen", and a tap picks another Vorrat food.
@@ -656,7 +661,10 @@ and feature description docs. This is product-facing; architecture rules stay in
     ignored. "Hab ich" finds the food through the food pick, adds it to the
     Vorrat with the entered amount, and takes it.
   - The summary shows what comes from the Vorrat, what goes on the list, and
-    what is ignored. "Fertig" puts the chosen ones on the shopping list
+    what is ignored, and under "Geändert" what was changed. The switch
+    "Änderungen ins Rezept übernehmen" (off) saves the changes in the
+    recipe; otherwise the recipe page cooks with them this time and the
+    recipe stays as it was. "Fertig" puts the chosen ones on the shopping list
     (skipping what is already there), saves the Vorrat foods and the ignored
     ingredients on the recipe for the next time, and goes back to the recipe
     page. A found ingredient put on the list does not come from the Vorrat

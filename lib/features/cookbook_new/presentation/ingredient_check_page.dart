@@ -3,26 +3,29 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_draft.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_edit_list.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_found_list.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_missing_list.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_summary.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_title.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_check_top_bar.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_bottom_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_stock_picker_sheet.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/presentation/models/prepared_meal_food_source.dart';
 import 'package:yamt/features/inventory/presentation/prepared_meal_pending_food_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
-enum _Step { found, missing, summary }
+enum _Step { question, edit, found, missing, summary }
 
 /// "Zutaten prüfen" for a recipe: the ingredients the Vorrat holds, the ones
 /// it lacks, and a summary. "Fertig" puts the chosen ones on the shopping
@@ -34,6 +37,9 @@ class IngredientCheckPage extends ConsumerStatefulWidget {
 
   /// Key of the button at the bottom: "Weiter", or "Fertig" at the end.
   static const nextKey = ValueKey<String>('ingredient-check-next');
+
+  /// Key of "Ja" on the question whether to change something.
+  static const changeKey = ValueKey<String>('ingredient-check-change');
 
   /// Key of the back button at the top.
   static const backKey = ValueKey<String>('ingredient-check-back');
@@ -48,6 +54,7 @@ class IngredientCheckPage extends ConsumerStatefulWidget {
 
 class _IngredientCheckPageState extends ConsumerState<IngredientCheckPage> {
   var _step = 0;
+  var _wantsChanges = false;
   var _isBusy = false;
 
   IngredientCheckController get _controller =>
@@ -86,14 +93,29 @@ class _IngredientCheckPageState extends ConsumerState<IngredientCheckPage> {
 
   Widget _body(IngredientCheckView check) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = FoodLabelColors.of(context);
+    final view = check.view;
     final steps = [
+      _Step.question,
+      if (_wantsChanges) _Step.edit,
       if (check.found.isNotEmpty) _Step.found,
       if (check.missingCount > 0) _Step.missing,
       _Step.summary,
     ];
     final index = _step.clamp(0, steps.length - 1);
     final step = steps[index];
+    // A field that loses focus hands its value over before the step goes.
+    void go(int step) {
+      FocusManager.instance.primaryFocus?.unfocus();
+      setState(() => _step = step);
+    }
+
+    void next({bool? wantsChanges}) {
+      if (wantsChanges == false) {
+        _controller.discardEdits();
+      }
+      _wantsChanges = wantsChanges ?? _wantsChanges;
+      go(index + 1);
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -106,12 +128,30 @@ class _IngredientCheckPageState extends ConsumerState<IngredientCheckPage> {
               ? null
               : index == 0
               ? () => context.pop()
-              : () => setState(() => _step = index - 1),
+              : () => go(index - 1),
         ),
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.only(bottom: AppSpacing.xl),
             child: switch (step) {
+              _Step.question => Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xxl),
+                child: IngredientCheckTitle(
+                  kicker: l10n.recipeCheckChangeKicker(
+                    view.recipe.name,
+                    view.portions,
+                  ),
+                  title: l10n.recipeCheckChangeTitle,
+                  hint: l10n.recipeCheckChangeHint,
+                ),
+              ),
+              _Step.edit => IngredientCheckEditList(
+                check: check,
+                onAmount: (line, amount) =>
+                    _controller.setAmount(view, line, amount),
+                onRemove: (line) => _controller.remove(view, line),
+                onAdd: (text) => _controller.add(view, text),
+              ),
               _Step.found => IngredientCheckFoundList(
                 check: check,
                 onChoose: _choose,
@@ -123,49 +163,46 @@ class _IngredientCheckPageState extends ConsumerState<IngredientCheckPage> {
                 onHave: (line, {required rest}) =>
                     unawaited(_have(line, rest: rest)),
               ),
-              _Step.summary => IngredientCheckSummary(check: check),
+              _Step.summary => IngredientCheckSummary(
+                check: check,
+                onSaveEdits: (save) => _controller.setSaveEdits(save: save),
+              ),
             },
           ),
         ),
-        SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.xl),
-            child: FilledButton(
-              key: IngredientCheckPage.nextKey,
-              onPressed: _isBusy
-                  ? null
-                  : step == _Step.summary
-                  ? () => unawaited(_finish(check))
-                  : () => setState(() => _step = index + 1),
-              style: FilledButton.styleFrom(
-                backgroundColor: colors.accent,
-                foregroundColor: colors.onAccent,
-                minimumSize: const Size.fromHeight(AppGraphit.buttonHeight),
-              ),
-              child: Text(switch (step) {
-                _Step.summary => l10n.recipeCheckFinish,
-                _Step.found when check.missingCount > 0 =>
-                  l10n.recipeCheckNextMissing(check.missingCount),
-                _ => l10n.recipeCheckNext,
-              }),
-            ),
-          ),
+        RecipeBottomBar(
+          buttonKey: IngredientCheckPage.nextKey,
+          label: switch (step) {
+            _Step.question => l10n.recipeCheckChangeNo,
+            _Step.summary => l10n.recipeCheckFinish,
+            _Step.found when check.missingCount > 0 =>
+              l10n.recipeCheckNextMissing(check.missingCount),
+            _ => l10n.recipeCheckNext,
+          },
+          onPressed: _isBusy
+              ? null
+              : switch (step) {
+                  _Step.question => () => next(wantsChanges: false),
+                  _Step.summary => () => unawaited(_finish(check)),
+                  _ => next,
+                },
+          secondaryKey: IngredientCheckPage.changeKey,
+          secondaryLabel: step == _Step.question
+              ? l10n.recipeCheckChangeYes
+              : null,
+          onSecondary: () => next(wantsChanges: true),
         ),
       ],
     );
   }
 
-  void _choose(
-    String ingredient,
-    IngredientCheckChoice choice, {
-    bool rest = false,
-  }) => _controller.choose(ingredient, choice, rest: rest);
+  void _choose(String key, IngredientCheckChoice choice, {bool rest = false}) =>
+      _controller.choose(key, choice, rest: rest);
 
   Future<void> _pick(RecipeIngredientLine line) async {
     final pick = await showRecipeStockPicker(context: context, line: line);
     if (pick != null && mounted) {
-      _controller.pick(line.ingredient, pick.itemId);
+      _controller.pick(line.key, pick.itemId);
     }
   }
 
@@ -193,7 +230,7 @@ class _IngredientCheckPageState extends ConsumerState<IngredientCheckPage> {
         context: context,
         source: PreparedMealFoodSource.search,
         onFill: (itemId, _) async {
-          controller.have(line.ingredient, itemId, rest: rest);
+          controller.have(line.key, itemId, rest: rest);
           return true;
         },
       );
@@ -219,7 +256,11 @@ class _IngredientCheckPageState extends ConsumerState<IngredientCheckPage> {
     };
     if (failure != null) {
       messenger.showAppSnackBar(failure, tone: AppSnackBarTone.error);
-    } else if (result == IngredientCheckFinish.done && mounted) {
+    }
+    // The recipe holds the choices once only the list failed.
+    if (result
+        case IngredientCheckFinish.done || IngredientCheckFinish.listFailed
+        when mounted) {
       context.pop();
     }
   }

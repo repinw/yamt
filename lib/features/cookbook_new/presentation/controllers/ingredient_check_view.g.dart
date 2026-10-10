@@ -88,7 +88,7 @@ final class IngredientCheckViewProvider
 }
 
 String _$ingredientCheckViewHash() =>
-    r'd34e90fe386a652057ec6bd69b9df2c5404adc0c';
+    r'09c4c160a72f2b350ab41c34a392eeee007d4216';
 
 /// The recipe [recipeId] as the ingredient check shows it, or `null` when
 /// the recipe is gone. It starts from the recipe page's portions and picks;

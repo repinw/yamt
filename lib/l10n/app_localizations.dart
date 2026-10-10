@@ -10232,6 +10232,120 @@ abstract class AppLocalizations {
   /// **'Could not load the recipe or the stock.'**
   String get recipeLoadFailed;
 
+  /// No description provided for @recipeCheckChangeKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'{name} · {count, plural, =1{1 portion} other{{count} portions}}'**
+  String recipeCheckChangeKicker(String name, int count);
+
+  /// No description provided for @recipeCheckChangeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Change something this time?'**
+  String get recipeCheckChangeTitle;
+
+  /// No description provided for @recipeCheckChangeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'For example “more meat” or “without tomatoes”. Only for this time.'**
+  String get recipeCheckChangeHint;
+
+  /// No description provided for @recipeCheckChangeYes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get recipeCheckChangeYes;
+
+  /// No description provided for @recipeCheckChangeNo.
+  ///
+  /// In en, this message translates to:
+  /// **'No, continue'**
+  String get recipeCheckChangeNo;
+
+  /// No description provided for @recipeCheckEditKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'This time only'**
+  String get recipeCheckEditKicker;
+
+  /// No description provided for @recipeCheckEditTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you change?'**
+  String get recipeCheckEditTitle;
+
+  /// No description provided for @recipeCheckEditAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount of {food}'**
+  String recipeCheckEditAmount(String food);
+
+  /// No description provided for @recipeCheckEditRemove.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave out {food}'**
+  String recipeCheckEditRemove(String food);
+
+  /// No description provided for @recipeCheckEditAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'+ Ingredient'**
+  String get recipeCheckEditAdd;
+
+  /// No description provided for @recipeCheckEditAddHint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g. 200 g peppers'**
+  String get recipeCheckEditAddHint;
+
+  /// No description provided for @recipeCheckChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Changed'**
+  String get recipeCheckChanged;
+
+  /// No description provided for @recipeCheckChangeAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'{food} {from} → {to}'**
+  String recipeCheckChangeAmount(String food, String from, String to);
+
+  /// No description provided for @recipeCheckChangeRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'without {food}'**
+  String recipeCheckChangeRemoved(String food);
+
+  /// Ingredient check summary: a changed ingredient whose amount has no label for the chosen portions.
+  ///
+  /// In en, this message translates to:
+  /// **'{food}: new amount'**
+  String recipeCheckChangeOther(String food);
+
+  /// No description provided for @recipeCheckChangeAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'+ {food}'**
+  String recipeCheckChangeAdded(String food);
+
+  /// No description provided for @recipeCheckChangeAddedAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'+ {amount} {food}'**
+  String recipeCheckChangeAddedAmount(String amount, String food);
+
+  /// No description provided for @recipeCheckSaveEdits.
+  ///
+  /// In en, this message translates to:
+  /// **'Save the changes in the recipe'**
+  String get recipeCheckSaveEdits;
+
+  /// No description provided for @recipeCheckSaveEditsHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Otherwise they count for today only'**
+  String get recipeCheckSaveEditsHint;
+
   /// No description provided for @recipeCheckTitle.
   ///
   /// In en, this message translates to:

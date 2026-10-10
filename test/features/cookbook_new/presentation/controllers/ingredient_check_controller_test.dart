@@ -8,6 +8,8 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/'
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'ingredient_check_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
+    'ingredient_check_draft.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'ingredient_check_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'recipe_controller.dart';

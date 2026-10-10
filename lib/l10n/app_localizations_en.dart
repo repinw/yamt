@@ -6119,6 +6119,86 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeLoadFailed => 'Could not load the recipe or the stock.';
 
   @override
+  String recipeCheckChangeKicker(String name, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count portions',
+      one: '1 portion',
+    );
+    return '$name · $_temp0';
+  }
+
+  @override
+  String get recipeCheckChangeTitle => 'Change something this time?';
+
+  @override
+  String get recipeCheckChangeHint =>
+      'For example “more meat” or “without tomatoes”. Only for this time.';
+
+  @override
+  String get recipeCheckChangeYes => 'Yes';
+
+  @override
+  String get recipeCheckChangeNo => 'No, continue';
+
+  @override
+  String get recipeCheckEditKicker => 'This time only';
+
+  @override
+  String get recipeCheckEditTitle => 'What do you change?';
+
+  @override
+  String recipeCheckEditAmount(String food) {
+    return 'Amount of $food';
+  }
+
+  @override
+  String recipeCheckEditRemove(String food) {
+    return 'Leave out $food';
+  }
+
+  @override
+  String get recipeCheckEditAdd => '+ Ingredient';
+
+  @override
+  String get recipeCheckEditAddHint => 'e.g. 200 g peppers';
+
+  @override
+  String get recipeCheckChanged => 'Changed';
+
+  @override
+  String recipeCheckChangeAmount(String food, String from, String to) {
+    return '$food $from → $to';
+  }
+
+  @override
+  String recipeCheckChangeRemoved(String food) {
+    return 'without $food';
+  }
+
+  @override
+  String recipeCheckChangeOther(String food) {
+    return '$food: new amount';
+  }
+
+  @override
+  String recipeCheckChangeAdded(String food) {
+    return '+ $food';
+  }
+
+  @override
+  String recipeCheckChangeAddedAmount(String amount, String food) {
+    return '+ $amount $food';
+  }
+
+  @override
+  String get recipeCheckSaveEdits => 'Save the changes in the recipe';
+
+  @override
+  String get recipeCheckSaveEditsHint => 'Otherwise they count for today only';
+
+  @override
   String get recipeCheckTitle => 'Check ingredients';
 
   @override
