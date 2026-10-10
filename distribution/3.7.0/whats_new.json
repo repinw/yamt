@@ -1,0 +1,32 @@
+{
+  "de": {
+    "new": [
+      "Rezeptseite mit Zutaten-Prüfung: Fehlendes kommt auf die Einkaufsliste",
+      "Kochhelfer liest die Anleitung Satz für Satz, Zutaten per Sprache",
+      "Portionen am Rad zählen, zum Beispiel 2 × 40 g Brotscheibe"
+    ],
+    "improved": [
+      "Pläne ändern, auf weitere Tage übertragen und den Einkauf planen",
+      "Der Vorrat zeigt, was verplant ist und was fehlt"
+    ],
+    "fixed": [
+      "Schnelle Vorrat-Änderungen gehen nicht mehr verloren",
+      "Der Wochen-Check-in bleibt offen, bis du entscheidest"
+    ]
+  },
+  "en": {
+    "new": [
+      "Recipe page with an ingredient check: missing items go to the shopping list",
+      "The cooking helper reads the steps sentence by sentence, add ingredients by voice",
+      "Count portions on a wheel, for example 2 × 40 g slice of bread"
+    ],
+    "improved": [
+      "Change plans, copy them to more days, and plan the shopping",
+      "The pantry shows what is planned and what is missing"
+    ],
+    "fixed": [
+      "Quick pantry changes are no longer lost",
+      "The weekly check-in stays open until you decide"
+    ]
+  }
+}
