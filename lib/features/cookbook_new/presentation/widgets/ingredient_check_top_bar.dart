@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_flow_top_bar.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The top of the ingredient check: back, the title, the step count, and
@@ -33,61 +34,39 @@ class IngredientCheckTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
-    final style = Theme.of(context).textTheme.labelMedium?.copyWith(
-      color: colors.muted,
-      letterSpacing: AppGraphit.kickerTracking,
-    );
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppSpacing.sm,
-        AppSpacing.sm,
-        AppSpacing.xl,
-        0,
-      ),
-      child: Column(
-        spacing: AppSpacing.xs,
-        children: [
-          Row(
-            children: [
-              IconButton(
-                key: backKey,
-                tooltip: step == 1
-                    ? MaterialLocalizations.of(context).closeButtonTooltip
-                    : MaterialLocalizations.of(context).backButtonTooltip,
-                onPressed: onBack,
-                icon: step == 1
-                    ? const Icon(Icons.close_rounded)
-                    : const BackButtonIcon(),
-              ),
-              Expanded(
-                child: Text(
-                  l10n.recipeCheckTitle.toUpperCase(),
-                  textAlign: TextAlign.center,
-                  style: style,
-                ),
-              ),
-              Text(l10n.recipeCheckStep(step, steps), style: style),
-            ],
+    return Column(
+      spacing: AppSpacing.xs,
+      children: [
+        RecipeFlowTopBar(
+          backKey: backKey,
+          onBack: onBack,
+          closes: step == 1,
+          title: l10n.recipeCheckTitle,
+          caption: l10n.recipeCheckStep(step, steps),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.sm + AppSpacing.md,
+            0,
+            AppSpacing.xl,
+            0,
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: AppSpacing.md),
-            child: Row(
-              spacing: AppGraphit.progressSegmentGap,
-              children: [
-                for (var i = 1; i <= steps; i++)
-                  Expanded(
-                    child: SizedBox(
-                      height: AppGraphit.progressSegmentHeight,
-                      child: ColoredBox(
-                        color: i <= step ? colors.ink : colors.track,
-                      ),
+          child: Row(
+            spacing: AppGraphit.progressSegmentGap,
+            children: [
+              for (var i = 1; i <= steps; i++)
+                Expanded(
+                  child: SizedBox(
+                    height: AppGraphit.progressSegmentHeight,
+                    child: ColoredBox(
+                      color: i <= step ? colors.ink : colors.track,
                     ),
                   ),
-              ],
-            ),
+                ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
