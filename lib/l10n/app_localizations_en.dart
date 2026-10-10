@@ -6417,4 +6417,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get appUpdateStoreOpenFailed => 'The store could not be opened.';
+
+  @override
+  String whatsNewNotice(String version, String point) {
+    return 'New in $version: $point';
+  }
+
+  @override
+  String get whatsNewShowAll => 'See all';
+
+  @override
+  String whatsNewTitle(String version) {
+    return 'New in $version';
+  }
+
+  @override
+  String get whatsNewAdded => 'New';
+
+  @override
+  String get whatsNewImproved => 'Improved';
+
+  @override
+  String get whatsNewFixed => 'Fixed';
+
+  @override
+  String whatsNewPoint(String point) {
+    return '• $point';
+  }
 }

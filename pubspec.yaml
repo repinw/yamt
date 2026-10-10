@@ -87,6 +87,7 @@ flutter:
   assets:
     - assets/fonts/PlusJakartaSans-OFL.txt
     - assets/fonts/JetBrainsMono-OFL.txt
+    - assets/whats_new/
   fonts:
     - family: PlusJakartaSans
       fonts:

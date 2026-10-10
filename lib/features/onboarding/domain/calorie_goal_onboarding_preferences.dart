@@ -7,3 +7,9 @@ const calorieGoalOnboardingCompletedValue = '1';
 String calorieGoalOnboardingKeyForUser(String userId) {
   return '$_calorieGoalOnboardingKeyPrefix:$userId';
 }
+
+/// Whether [key] marks a finished onboarding of any user, which tells that
+/// the app was used on this device before.
+bool isCalorieGoalOnboardingKey(String key) {
+  return key.startsWith('$_calorieGoalOnboardingKeyPrefix:');
+}

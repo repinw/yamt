@@ -3108,5 +3108,12 @@
   "appUpdateRequiredBody": "Diese Version von yamt ist zu alt für deine Daten. Aktualisiere die App, um weiterzumachen.",
   "appUpdateAction": "Aktualisieren",
   "appUpdateAvailable": "yamt {version} ist verfügbar",
-  "appUpdateStoreOpenFailed": "Der Store konnte nicht geöffnet werden."
+  "appUpdateStoreOpenFailed": "Der Store konnte nicht geöffnet werden.",
+  "whatsNewNotice": "Neu in {version}: {point}",
+  "whatsNewShowAll": "Alles ansehen",
+  "whatsNewTitle": "Neu in {version}",
+  "whatsNewAdded": "Neu",
+  "whatsNewImproved": "Verbessert",
+  "whatsNewFixed": "Behoben",
+  "whatsNewPoint": "• {point}"
 }

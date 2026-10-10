@@ -3896,5 +3896,51 @@
   "appUpdateStoreOpenFailed": "The store could not be opened.",
   "@appUpdateStoreOpenFailed": {
     "description": "Snackbar when neither the store nor TestFlight opens."
+  },
+  "whatsNewNotice": "New in {version}: {point}",
+  "@whatsNewNotice": {
+    "description": "Notice shown once after an update, with the first new point.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "point": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewShowAll": "See all",
+  "@whatsNewShowAll": {
+    "description": "Notice action that opens all release notes."
+  },
+  "whatsNewTitle": "New in {version}",
+  "@whatsNewTitle": {
+    "description": "Title of the release notes sheet.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "whatsNewAdded": "New",
+  "@whatsNewAdded": {
+    "description": "Release notes section with new features."
+  },
+  "whatsNewImproved": "Improved",
+  "@whatsNewImproved": {
+    "description": "Release notes section with improvements."
+  },
+  "whatsNewFixed": "Fixed",
+  "@whatsNewFixed": {
+    "description": "Release notes section with fixes."
+  },
+  "whatsNewPoint": "• {point}",
+  "@whatsNewPoint": {
+    "description": "One line of the release notes.",
+    "placeholders": {
+      "point": {
+        "type": "String"
+      }
+    }
   }
 }

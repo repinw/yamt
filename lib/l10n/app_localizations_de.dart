@@ -6522,4 +6522,31 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get appUpdateStoreOpenFailed =>
       'Der Store konnte nicht geöffnet werden.';
+
+  @override
+  String whatsNewNotice(String version, String point) {
+    return 'Neu in $version: $point';
+  }
+
+  @override
+  String get whatsNewShowAll => 'Alles ansehen';
+
+  @override
+  String whatsNewTitle(String version) {
+    return 'Neu in $version';
+  }
+
+  @override
+  String get whatsNewAdded => 'Neu';
+
+  @override
+  String get whatsNewImproved => 'Verbessert';
+
+  @override
+  String get whatsNewFixed => 'Behoben';
+
+  @override
+  String whatsNewPoint(String point) {
+    return '• $point';
+  }
 }
