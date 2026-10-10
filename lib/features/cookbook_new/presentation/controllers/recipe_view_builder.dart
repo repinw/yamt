@@ -205,28 +205,6 @@ String _ingredientText(
   );
 }
 
-/// [requirement] with [amount], which can be a fraction, as an ingredient
-/// text: "800 g Hackfleisch", "2,67 Tomaten". A changed amount for other
-/// portions is written this way for the recipe's own ones, so it comes back
-/// exactly when it is scaled again.
-String recipeIngredientTextFor(
-  TemplateIngredientRequirement requirement,
-  double amount,
-) {
-  final measure = requirement.countMeasureLabel?.trim() ?? '';
-  final unit = measure.isNotEmpty
-      ? measure
-      : requirement.unit == TemplateIngredientUnit.piece
-      ? null
-      : requirement.unit.code;
-  // Two decimals at most: three would read as a thousands group.
-  final rounded = (amount * 100).round() / 100;
-  final number = rounded == rounded.roundToDouble()
-      ? '${rounded.round()}'
-      : '$rounded'.replaceFirst('.', ',');
-  return [number, ?unit, requirement.name].join(' ');
-}
-
 /// [recipe] with [edits]: changed ingredients get their new text, left out
 /// ones go, and added ones follow. The Vorrat items, amount conversions,
 /// and ignores move to the new texts. Also returns the line key per
