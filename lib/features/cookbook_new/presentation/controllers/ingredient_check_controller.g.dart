@@ -66,7 +66,7 @@ final class IngredientCheckControllerProvider
 }
 
 String _$ingredientCheckControllerHash() =>
-    r'f2f0410a7e61b8480b5cb36ed4a57161a6d3eada';
+    r'365fc32fb5c06a0760d75c09031824df52cd3d9e';
 
 /// Holds the choices of the ingredient check for one recipe and saves them
 /// on the recipe.

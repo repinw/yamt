@@ -6,7 +6,7 @@ import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_draft.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/ingredient_check_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_view_builder.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_ingredient_texts.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_edits.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/inventory/data/prepared_meal_template_repository.dart';
@@ -105,23 +105,13 @@ class IngredientCheckController extends _$IngredientCheckController {
     if (trimmed.isEmpty) {
       return;
     }
-    // For other portions the amount is scaled to the recipe's own ones. The
-    // parser rounds to whole units, so it scales a hundredfold for two
-    // decimals.
-    final scaled = view.portions == view.basePortions
-        ? null
-        : ref
-              .read(templateIngredientParserProvider)
-              .parseRequirement(
-                ingredient: trimmed,
-                selectedPortions: view.basePortions * 100,
-                basePortions: view.portions,
-              );
     state = state.copyWith(
       edits: _edits.withAdded(
-        scaled == null
-            ? trimmed
-            : recipeIngredientTextFor(scaled, scaled.amount / 100),
+        recipeAddedText(
+          ref.read(templateIngredientParserProvider),
+          view,
+          trimmed,
+        ),
       ),
     );
   }
