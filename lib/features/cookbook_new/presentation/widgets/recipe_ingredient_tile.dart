@@ -1,13 +1,11 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_food_label_constants.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/ingredient_amount_labels.dart';
-import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
-import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_image_tile.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_stock_lead.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// One ingredient of the recipe page: the photo of the Vorrat item that
@@ -42,34 +40,6 @@ class RecipeIngredientTile extends StatelessWidget {
       decoration: line.isIgnored ? TextDecoration.lineThrough : null,
     );
 
-    final Widget leading;
-    if (line.isIgnored) {
-      leading = SizedBox(
-        width: AppGraphit.stockSquare,
-        height: AppFoodLabel.chipOutline,
-        child: ColoredBox(color: colors.muted),
-      );
-    } else if (item != null) {
-      leading = EatImageTile(
-        imageUrl: item.imageUrl,
-        size: AppGraphit.rowTile,
-        angle: -AppGraphit.pictureTilt,
-        fallbackLetter: inventoryPictureLetter(item.name),
-      );
-    } else {
-      leading = SizedBox.square(
-        dimension: AppGraphit.stockSquare,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            border: Border.all(
-              color: colors.low,
-              width: AppFoodLabel.chipOutline,
-            ),
-          ),
-        ),
-      );
-    }
-
     return AppInkWell(
       onTap: line.isIgnored ? null : onTap,
       child: DecoratedBox(
@@ -83,10 +53,7 @@ class RecipeIngredientTile extends StatelessWidget {
             child: Row(
               spacing: AppSpacing.md,
               children: [
-                SizedBox(
-                  width: AppGraphit.rowTile,
-                  child: Center(child: leading),
-                ),
+                RecipeStockLead(item: item, isIgnored: line.isIgnored),
                 Expanded(
                   child: Text.rich(
                     TextSpan(

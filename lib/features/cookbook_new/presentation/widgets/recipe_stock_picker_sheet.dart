@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/inventory/presentation/models/inventory_list_entry.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/eat_image_tile.dart';
 import 'package:yamt/l10n/app_localizations.dart';

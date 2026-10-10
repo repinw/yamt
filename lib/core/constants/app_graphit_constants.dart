@@ -124,6 +124,10 @@ abstract final class AppGraphit {
   /// Opacity of the background of a button on a photo.
   static const double photoButtonOpacity = 0.5;
 
+  /// Share of the stock square that the missing part of an ingredient
+  /// fills.
+  static const double restSquareFill = 0.5;
+
   /// Largest share of the screen height that a picker sheet takes.
   static const double pickerSheetHeightFactor = 0.7;
 

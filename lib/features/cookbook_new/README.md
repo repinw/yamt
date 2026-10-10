@@ -17,6 +17,9 @@ templates list and later the cooking flow.
   Kochbuch" switch that also saves the cooked meal as a template.
 - The recipe page: a recipe sized for the chosen portions, which Vorrat food
   supplies each ingredient, and cooking it into the pot.
+- The ingredient check of a recipe ("Zutaten prüfen"): what comes from the
+  Vorrat, what goes on the shopping list, and what is ignored, and saving
+  those choices on the recipe.
 - The overview that sorts saved templates into Vorlagen and recipes and marks
   which foods the Vorrat holds.
 
@@ -24,6 +27,8 @@ templates list and later the cooking flow.
 
 - Template, meal, and Vorrat storage and their mutations (`inventory`).
 - The recipe link import and its review (`meal_templates`).
+- The shopping list (`shoppinglist`) and the food pick (`product_search_hub`,
+  opened through inventory's `PreparedMealPendingFoodFlow`).
 - The AI recipe idea (`ai_chef`) and the kitchen utensils (`kitchen_utensils`).
 
 ## Public UI
@@ -50,5 +55,14 @@ templates list and later the cooking flow.
   best fitting Vorrat match can supply. "Kochen" takes those rows from the
   Vorrat; all other rows stay open on the saved meal.
 - On the recipe page an ingredient takes the cook's pick, else the Vorrat
-  item the recipe saved for it while that item still fits, else the best
-  fitting match. A pick counts for this cooking only.
+  items the recipe saved for it that still fit, else the best fitting match.
+  A pick counts for this cooking only.
+- An ingredient counts as partly there when its Vorrat items hold less than
+  it needs in grams or milliliters; pieces count as there.
+- The ingredient check saves every Vorrat food it takes and every ignored
+  ingredient on the recipe; its own picks count only once "Fertig" saves
+  them. A food that "Hab ich" added does not move its ingredient out of the
+  missing ones. Its shopping list text is written like an open row of a
+  meal: the missing part of a partly stocked ingredient ("200 g Karotten"),
+  else the whole ingredient. The recipe card counts an ingredient as sorted
+  once that text is on the list.

@@ -10220,6 +10220,186 @@ abstract class AppLocalizations {
   /// **'Could not load the recipe or the stock.'**
   String get recipeLoadFailed;
 
+  /// No description provided for @recipeCheckTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check ingredients'**
+  String get recipeCheckTitle;
+
+  /// No description provided for @recipeCheckMissingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} missing'**
+  String recipeCheckMissingCount(int count);
+
+  /// No description provided for @recipeCheckPartialCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} only partly there'**
+  String recipeCheckPartialCount(int count);
+
+  /// No description provided for @recipeCheckOpenBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'{missing} missing, {partial} only partly there'**
+  String recipeCheckOpenBoth(int missing, int partial);
+
+  /// No description provided for @recipeCheckStep.
+  ///
+  /// In en, this message translates to:
+  /// **'{step}/{total}'**
+  String recipeCheckStep(int step, int total);
+
+  /// No description provided for @recipeCheckSettled.
+  ///
+  /// In en, this message translates to:
+  /// **'All sorted'**
+  String get recipeCheckSettled;
+
+  /// No description provided for @recipeCheckFoundKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Found in the stock · {count}'**
+  String recipeCheckFoundKicker(int count);
+
+  /// No description provided for @recipeCheckFoundTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Does this fit?'**
+  String get recipeCheckFoundTitle;
+
+  /// No description provided for @recipeCheckFoundHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap an ingredient to pick another item.'**
+  String get recipeCheckFoundHint;
+
+  /// No description provided for @recipeCheckNextMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Next · {count} missing'**
+  String recipeCheckNextMissing(int count);
+
+  /// No description provided for @recipeCheckMissingKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing · {count}'**
+  String recipeCheckMissingKicker(int count);
+
+  /// No description provided for @recipeCheckMissingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to the shopping list?'**
+  String get recipeCheckMissingTitle;
+
+  /// No description provided for @recipeCheckMissingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'“Got it” adds it to the stock and uses it right away.'**
+  String get recipeCheckMissingHint;
+
+  /// No description provided for @recipeCheckHave.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get recipeCheckHave;
+
+  /// No description provided for @recipeCheckRest.
+  ///
+  /// In en, this message translates to:
+  /// **'Rest · {amount} in stock'**
+  String recipeCheckRest(String amount);
+
+  /// No description provided for @recipeCheckPartialNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{stocked} in stock · {missing} missing'**
+  String recipeCheckPartialNote(String stocked, String missing);
+
+  /// No description provided for @recipeCheckUse.
+  ///
+  /// In en, this message translates to:
+  /// **'From the stock'**
+  String get recipeCheckUse;
+
+  /// No description provided for @recipeCheckCart.
+  ///
+  /// In en, this message translates to:
+  /// **'On the shopping list'**
+  String get recipeCheckCart;
+
+  /// No description provided for @recipeCheckIgnore.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignore'**
+  String get recipeCheckIgnore;
+
+  /// No description provided for @recipeCheckSummaryKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Checked'**
+  String get recipeCheckSummaryKicker;
+
+  /// No description provided for @recipeCheckSummaryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'This is how you cook today'**
+  String get recipeCheckSummaryTitle;
+
+  /// No description provided for @recipeCheckFromStock.
+  ///
+  /// In en, this message translates to:
+  /// **'From the stock · {count}'**
+  String recipeCheckFromStock(int count);
+
+  /// No description provided for @recipeCheckOnList.
+  ///
+  /// In en, this message translates to:
+  /// **'On the shopping list · {count}'**
+  String recipeCheckOnList(int count);
+
+  /// No description provided for @recipeCheckIgnored.
+  ///
+  /// In en, this message translates to:
+  /// **'Ignored · {count}'**
+  String recipeCheckIgnored(int count);
+
+  /// No description provided for @recipeCheckNothing.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing'**
+  String get recipeCheckNothing;
+
+  /// No description provided for @recipeCheckNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get recipeCheckNext;
+
+  /// No description provided for @recipeCheckFinish.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get recipeCheckFinish;
+
+  /// No description provided for @recipeCheckSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save the choices.'**
+  String get recipeCheckSaveFailed;
+
+  /// No description provided for @recipeCheckListFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add to the shopping list.'**
+  String get recipeCheckListFailed;
+
+  /// No description provided for @recipeCheckHaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not add the food to the stock.'**
+  String get recipeCheckHaveFailed;
+
   /// No description provided for @recipePickTitle.
   ///
   /// In en, this message translates to:

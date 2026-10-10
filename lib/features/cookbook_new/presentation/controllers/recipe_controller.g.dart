@@ -61,7 +61,7 @@ final class RecipeControllerProvider
   }
 }
 
-String _$recipeControllerHash() => r'4f31bbdc505cbddbe1f44972a10479d63075f31d';
+String _$recipeControllerHash() => r'ea1c2d088ef08239f02f1acac2a1d4d0c50b9bfc';
 
 /// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
 
@@ -116,21 +116,15 @@ abstract class _$RecipeController extends $Notifier<RecipeDraft> {
 }
 
 /// The recipe [recipeId] with its ingredients for the chosen portions and
-/// their Vorrat items, or `null` when the recipe is gone. It loads and fails
-/// with the recipes and the Vorrat.
-///
-/// An ingredient takes the item the cook picked, else the first one the
-/// recipe saved that can still supply it, else the best match.
+/// their Vorrat items, or `null` when the recipe is gone; see
+/// [buildRecipeView].
 
 @ProviderFor(recipeView)
 final recipeViewProvider = RecipeViewFamily._();
 
 /// The recipe [recipeId] with its ingredients for the chosen portions and
-/// their Vorrat items, or `null` when the recipe is gone. It loads and fails
-/// with the recipes and the Vorrat.
-///
-/// An ingredient takes the item the cook picked, else the first one the
-/// recipe saved that can still supply it, else the best match.
+/// their Vorrat items, or `null` when the recipe is gone; see
+/// [buildRecipeView].
 
 final class RecipeViewProvider
     extends
@@ -141,11 +135,8 @@ final class RecipeViewProvider
         >
     with $Provider<AsyncValue<RecipeView?>> {
   /// The recipe [recipeId] with its ingredients for the chosen portions and
-  /// their Vorrat items, or `null` when the recipe is gone. It loads and fails
-  /// with the recipes and the Vorrat.
-  ///
-  /// An ingredient takes the item the cook picked, else the first one the
-  /// recipe saved that can still supply it, else the best match.
+  /// their Vorrat items, or `null` when the recipe is gone; see
+  /// [buildRecipeView].
   RecipeViewProvider._({
     required RecipeViewFamily super.from,
     required (String, String) super.argument,
@@ -198,14 +189,11 @@ final class RecipeViewProvider
   }
 }
 
-String _$recipeViewHash() => r'8994b59907bd2ff2b9d7de03aebacd8d33d7ce8b';
+String _$recipeViewHash() => r'ec59ef462bffe9f93b5b2e13c04be1b23dbccd08';
 
 /// The recipe [recipeId] with its ingredients for the chosen portions and
-/// their Vorrat items, or `null` when the recipe is gone. It loads and fails
-/// with the recipes and the Vorrat.
-///
-/// An ingredient takes the item the cook picked, else the first one the
-/// recipe saved that can still supply it, else the best match.
+/// their Vorrat items, or `null` when the recipe is gone; see
+/// [buildRecipeView].
 
 final class RecipeViewFamily extends $Family
     with $FunctionalFamilyOverride<AsyncValue<RecipeView?>, (String, String)> {
@@ -219,11 +207,8 @@ final class RecipeViewFamily extends $Family
       );
 
   /// The recipe [recipeId] with its ingredients for the chosen portions and
-  /// their Vorrat items, or `null` when the recipe is gone. It loads and fails
-  /// with the recipes and the Vorrat.
-  ///
-  /// An ingredient takes the item the cook picked, else the first one the
-  /// recipe saved that can still supply it, else the best match.
+  /// their Vorrat items, or `null` when the recipe is gone; see
+  /// [buildRecipeView].
 
   RecipeViewProvider call(String recipeId, String localeCode) =>
       RecipeViewProvider._(argument: (recipeId, localeCode), from: this);

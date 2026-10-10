@@ -6113,6 +6113,121 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeLoadFailed => 'Could not load the recipe or the stock.';
 
   @override
+  String get recipeCheckTitle => 'Check ingredients';
+
+  @override
+  String recipeCheckMissingCount(int count) {
+    return '$count missing';
+  }
+
+  @override
+  String recipeCheckPartialCount(int count) {
+    return '$count only partly there';
+  }
+
+  @override
+  String recipeCheckOpenBoth(int missing, int partial) {
+    return '$missing missing, $partial only partly there';
+  }
+
+  @override
+  String recipeCheckStep(int step, int total) {
+    return '$step/$total';
+  }
+
+  @override
+  String get recipeCheckSettled => 'All sorted';
+
+  @override
+  String recipeCheckFoundKicker(int count) {
+    return 'Found in the stock · $count';
+  }
+
+  @override
+  String get recipeCheckFoundTitle => 'Does this fit?';
+
+  @override
+  String get recipeCheckFoundHint => 'Tap an ingredient to pick another item.';
+
+  @override
+  String recipeCheckNextMissing(int count) {
+    return 'Next · $count missing';
+  }
+
+  @override
+  String recipeCheckMissingKicker(int count) {
+    return 'Missing · $count';
+  }
+
+  @override
+  String get recipeCheckMissingTitle => 'Add to the shopping list?';
+
+  @override
+  String get recipeCheckMissingHint =>
+      '“Got it” adds it to the stock and uses it right away.';
+
+  @override
+  String get recipeCheckHave => 'Got it';
+
+  @override
+  String recipeCheckRest(String amount) {
+    return 'Rest · $amount in stock';
+  }
+
+  @override
+  String recipeCheckPartialNote(String stocked, String missing) {
+    return '$stocked in stock · $missing missing';
+  }
+
+  @override
+  String get recipeCheckUse => 'From the stock';
+
+  @override
+  String get recipeCheckCart => 'On the shopping list';
+
+  @override
+  String get recipeCheckIgnore => 'Ignore';
+
+  @override
+  String get recipeCheckSummaryKicker => 'Checked';
+
+  @override
+  String get recipeCheckSummaryTitle => 'This is how you cook today';
+
+  @override
+  String recipeCheckFromStock(int count) {
+    return 'From the stock · $count';
+  }
+
+  @override
+  String recipeCheckOnList(int count) {
+    return 'On the shopping list · $count';
+  }
+
+  @override
+  String recipeCheckIgnored(int count) {
+    return 'Ignored · $count';
+  }
+
+  @override
+  String get recipeCheckNothing => 'Nothing';
+
+  @override
+  String get recipeCheckNext => 'Next';
+
+  @override
+  String get recipeCheckFinish => 'Done';
+
+  @override
+  String get recipeCheckSaveFailed => 'Could not save the choices.';
+
+  @override
+  String get recipeCheckListFailed => 'Could not add to the shopping list.';
+
+  @override
+  String get recipeCheckHaveFailed => 'Could not add the food to the stock.';
+
+  @override
   String recipePickTitle(String food) {
     return '$food: take it from';
   }

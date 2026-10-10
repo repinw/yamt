@@ -6195,6 +6195,143 @@ class AppLocalizationsDe extends AppLocalizations {
       'Das Rezept oder der Vorrat konnte nicht geladen werden.';
 
   @override
+  String get recipeCheckTitle => 'Zutaten prüfen';
+
+  @override
+  String recipeCheckMissingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fehlen',
+      one: '1 fehlt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String recipeCheckPartialCount(int count) {
+    return '$count nur teilweise da';
+  }
+
+  @override
+  String recipeCheckOpenBoth(int missing, int partial) {
+    String _temp0 = intl.Intl.pluralLogic(
+      missing,
+      locale: localeName,
+      other: '$missing fehlen',
+      one: '1 fehlt',
+    );
+    return '$_temp0, $partial nur teilweise da';
+  }
+
+  @override
+  String recipeCheckStep(int step, int total) {
+    return '$step/$total';
+  }
+
+  @override
+  String get recipeCheckSettled => 'Alles geklärt';
+
+  @override
+  String recipeCheckFoundKicker(int count) {
+    return 'Im Vorrat gefunden · $count';
+  }
+
+  @override
+  String get recipeCheckFoundTitle => 'Passt das?';
+
+  @override
+  String get recipeCheckFoundHint =>
+      'Tippe auf eine Zutat, um einen anderen Artikel zu wählen.';
+
+  @override
+  String recipeCheckNextMissing(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count fehlen',
+      one: '1 fehlt',
+    );
+    return 'Weiter · $_temp0';
+  }
+
+  @override
+  String recipeCheckMissingKicker(int count) {
+    return 'Fehlt · $count';
+  }
+
+  @override
+  String get recipeCheckMissingTitle => 'Auf die Einkaufsliste?';
+
+  @override
+  String get recipeCheckMissingHint =>
+      '„Hab ich“ trägt es in den Vorrat ein und nimmt es gleich.';
+
+  @override
+  String get recipeCheckHave => 'Hab ich';
+
+  @override
+  String recipeCheckRest(String amount) {
+    return 'Rest · $amount sind da';
+  }
+
+  @override
+  String recipeCheckPartialNote(String stocked, String missing) {
+    return '$stocked da · $missing fehlen';
+  }
+
+  @override
+  String get recipeCheckUse => 'Aus dem Vorrat';
+
+  @override
+  String get recipeCheckCart => 'Auf die Einkaufsliste';
+
+  @override
+  String get recipeCheckIgnore => 'Ignorieren';
+
+  @override
+  String get recipeCheckSummaryKicker => 'Fertig geprüft';
+
+  @override
+  String get recipeCheckSummaryTitle => 'So kochst du heute';
+
+  @override
+  String recipeCheckFromStock(int count) {
+    return 'Aus dem Vorrat · $count';
+  }
+
+  @override
+  String recipeCheckOnList(int count) {
+    return 'Auf die Einkaufsliste · $count';
+  }
+
+  @override
+  String recipeCheckIgnored(int count) {
+    return 'Ignoriert · $count';
+  }
+
+  @override
+  String get recipeCheckNothing => 'Nichts';
+
+  @override
+  String get recipeCheckNext => 'Weiter';
+
+  @override
+  String get recipeCheckFinish => 'Fertig';
+
+  @override
+  String get recipeCheckSaveFailed =>
+      'Die Auswahl konnte nicht gespeichert werden.';
+
+  @override
+  String get recipeCheckListFailed =>
+      'Die Einkaufsliste konnte nicht ergänzt werden.';
+
+  @override
+  String get recipeCheckHaveFailed =>
+      'Das Lebensmittel konnte nicht in den Vorrat eingetragen werden.';
+
+  @override
   String recipePickTitle(String food) {
     return '$food: woraus nehmen?';
   }

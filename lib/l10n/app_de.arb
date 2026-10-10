@@ -2825,6 +2825,129 @@
   },
   "recipeNotFound": "Das Rezept gibt es nicht mehr.",
   "recipeLoadFailed": "Das Rezept oder der Vorrat konnte nicht geladen werden.",
+  "recipeCheckTitle": "Zutaten prüfen",
+  "recipeCheckMissingCount": "{count, plural, =1{1 fehlt} other{{count} fehlen}}",
+  "@recipeCheckMissingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckPartialCount": "{count} nur teilweise da",
+  "@recipeCheckPartialCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckOpenBoth": "{missing, plural, =1{1 fehlt} other{{missing} fehlen}}, {partial} nur teilweise da",
+  "@recipeCheckOpenBoth": {
+    "placeholders": {
+      "missing": {
+        "type": "int"
+      },
+      "partial": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckStep": "{step}/{total}",
+  "@recipeCheckStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckSettled": "Alles geklärt",
+  "recipeCheckFoundKicker": "Im Vorrat gefunden · {count}",
+  "@recipeCheckFoundKicker": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckFoundTitle": "Passt das?",
+  "recipeCheckFoundHint": "Tippe auf eine Zutat, um einen anderen Artikel zu wählen.",
+  "recipeCheckNextMissing": "Weiter · {count, plural, =1{1 fehlt} other{{count} fehlen}}",
+  "@recipeCheckNextMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckMissingKicker": "Fehlt · {count}",
+  "@recipeCheckMissingKicker": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckMissingTitle": "Auf die Einkaufsliste?",
+  "recipeCheckMissingHint": "„Hab ich“ trägt es in den Vorrat ein und nimmt es gleich.",
+  "recipeCheckHave": "Hab ich",
+  "recipeCheckRest": "Rest · {amount} sind da",
+  "@recipeCheckRest": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckPartialNote": "{stocked} da · {missing} fehlen",
+  "@recipeCheckPartialNote": {
+    "placeholders": {
+      "stocked": {
+        "type": "String"
+      },
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckUse": "Aus dem Vorrat",
+  "recipeCheckCart": "Auf die Einkaufsliste",
+  "recipeCheckIgnore": "Ignorieren",
+  "recipeCheckSummaryKicker": "Fertig geprüft",
+  "recipeCheckSummaryTitle": "So kochst du heute",
+  "recipeCheckFromStock": "Aus dem Vorrat · {count}",
+  "@recipeCheckFromStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckOnList": "Auf die Einkaufsliste · {count}",
+  "@recipeCheckOnList": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckIgnored": "Ignoriert · {count}",
+  "@recipeCheckIgnored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckNothing": "Nichts",
+  "recipeCheckNext": "Weiter",
+  "recipeCheckFinish": "Fertig",
+  "recipeCheckSaveFailed": "Die Auswahl konnte nicht gespeichert werden.",
+  "recipeCheckListFailed": "Die Einkaufsliste konnte nicht ergänzt werden.",
+  "recipeCheckHaveFailed": "Das Lebensmittel konnte nicht in den Vorrat eingetragen werden.",
   "recipePickTitle": "{food}: woraus nehmen?",
   "@recipePickTitle": {
     "placeholders": {

@@ -629,6 +629,23 @@ and feature description docs. This is product-facing; architecture rules stay in
   through when it is ignored. The food is the one the recipe saved, else
   the best match in a fitting unit; a tap picks another Vorrat food or
   "Nicht aus dem Vorrat" for this time.
+- A "Zutaten prüfen" card on the recipe page stands out while an ingredient
+  is missing or only partly there and not on the shopping list ("1 fehlt,
+  1 nur teilweise da"), and says "Alles geklärt" otherwise. It opens the
+  ingredient check:
+  - "Passt das?" lists what the Vorrat holds, each taken from it (✓), put
+    on the shopping list, or ignored; a partly stocked one says "400 g da ·
+    200 g fehlen", and a tap picks another Vorrat food.
+  - "Auf die Einkaufsliste?" lists what is missing and the missing part of
+    partly stocked ones, each on the list (preselected), "Hab ich", or
+    ignored. "Hab ich" finds the food through the food pick, adds it to the
+    Vorrat with the entered amount, and takes it.
+  - The summary shows what comes from the Vorrat, what goes on the list, and
+    what is ignored. "Fertig" puts the chosen ones on the shopping list
+    (skipping what is already there), saves the Vorrat foods and the ignored
+    ingredients on the recipe for the next time, and goes back to the recipe
+    page. A found ingredient put on the list does not come from the Vorrat
+    this time. Closing the check changes nothing.
 - "Kochen" on the recipe page puts the meal in the pot with the chosen
   portions: ingredients with a Vorrat food are taken from the Vorrat, the
   others stay open on the meal. It goes straight on to the "Gekocht" page.

@@ -93,7 +93,8 @@ class _FakeKitchenUtensilImageStore implements KitchenUtensilImageStore {
 
 FirestoreKitchenUtensilRepository _repository({
   required KitchenUtensilStore store,
-  required KitchenUtensilImageStore imageStore, String? householdId,
+  required KitchenUtensilImageStore imageStore,
+  String? householdId,
   SessionShutdownSignal? sessionShutdownSignal,
 }) {
   return FirestoreKitchenUtensilRepository(

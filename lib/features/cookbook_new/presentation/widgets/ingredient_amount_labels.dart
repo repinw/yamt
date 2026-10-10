@@ -1,3 +1,5 @@
+import 'package:yamt/features/cookbook_new/application/ingredient_stock_match.dart';
+import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/recipes/domain/template_ingredient_requirement.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -38,4 +40,21 @@ String ingredientStockLabel(
     ),
     InventoryAmountUnit.piece => l10n.freeCookingPieces(amount),
   };
+}
+
+/// How much of the missing unit of [line] the Vorrat holds, such as "400 g",
+/// or `null` when nothing is missing.
+String? ingredientStockedLabel(
+  AppLocalizations l10n,
+  RecipeIngredientLine line,
+) {
+  final unit = line.shortfall?.unit;
+  if (unit == null) {
+    return null;
+  }
+  return ingredientStockLabel(
+    l10n,
+    ingredientStockedAmount(line.items, unit),
+    unit,
+  );
 }

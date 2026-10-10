@@ -12,6 +12,8 @@ saved favorites, and products that come back on a schedule.
 - List mutations: adding and merging products, quantities, crossing off,
   reverting an addition, and the calendar recurrence rules.
 - Suggestion filtering and the visible list sections.
+- Adding products by name for later features, which skips the ones on the
+  list already.
 - The shopping list page, its widgets, and its controller.
 
 ## Does Not Own
