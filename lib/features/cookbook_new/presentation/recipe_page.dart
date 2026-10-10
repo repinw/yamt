@@ -3,34 +3,39 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/core/widgets/app_snack_bar.dart';
+import 'package:yamt/core/widgets/app_selection_list_tiles.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
+import 'package:yamt/features/cookbook_new/presentation/recipe_cook_flow.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/cookbook_section_title.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/portion_stepper.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_bottom_bar.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_check_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_hero.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_ingredient_tile.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_step_list.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_stock_picker_sheet.dart';
 import 'package:yamt/features/inventory/application/inventory_quick_eat_data_providers.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// A saved recipe: its photo and name, the portions to cook, the
 /// ingredients with the Vorrat items that supply them, and the steps.
-/// "Kochen" puts the meal in the pot and goes on to the "Gekocht" step.
+/// "Kochen" puts the meal in the pot and goes on to the "Gekocht" step,
+/// after the Kochhelfer when "Mit Anleitung kochen" is on.
 class RecipePage extends ConsumerWidget {
   /// Creates the page of the recipe [recipeId].
   const new({required this.recipeId, super.key});
 
   /// Key of the "Kochen" button.
   static const cookKey = ValueKey<String>('recipe-cook');
+
+  /// Key of the "Mit Anleitung kochen" checkbox.
+  static const withGuideKey = ValueKey<String>('recipe-with-guide');
 
   /// Key of the portion count.
   static const portionsKey = ValueKey<String>('recipe-portions');
@@ -52,8 +57,10 @@ class RecipePage extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final viewAsync = ref.watch(recipeViewProvider(recipeId, l10n.localeName));
-    final isCooking = ref.watch(
-      recipeControllerProvider(recipeId).select((draft) => draft.isCooking),
+    final (:isCooking, :withGuide) = ref.watch(
+      recipeControllerProvider(recipeId).select(
+        (draft) => (isCooking: draft.isCooking, withGuide: draft.withGuide),
+      ),
     );
 
     return Scaffold(
@@ -70,7 +77,11 @@ class RecipePage extends ConsumerWidget {
                   ),
                 ),
               )
-            : _RecipeBody(view: view, isCooking: isCooking),
+            : _RecipeBody(
+                view: view,
+                isCooking: isCooking,
+                withGuide: withGuide,
+              ),
         error: (_, _) => AppErrorRetryView(
           retryButtonKey: retryKey,
           message: l10n.recipeLoadFailed,
@@ -86,10 +97,15 @@ class RecipePage extends ConsumerWidget {
 }
 
 class _RecipeBody extends ConsumerWidget {
-  const new({required this.view, required this.isCooking});
+  const new({
+    required this.view,
+    required this.isCooking,
+    required this.withGuide,
+  });
 
   final RecipeView view;
   final bool isCooking;
+  final bool withGuide;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -197,45 +213,28 @@ class _RecipeBody extends ConsumerWidget {
                     ),
                   ),
                 ),
-                for (final (index, step) in recipe.recipeInstructions.indexed)
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.xl,
-                      AppSpacing.sm,
-                      AppSpacing.xl,
-                      AppSpacing.sm,
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      spacing: AppSpacing.md,
-                      children: [
-                        SizedBox(
-                          width: AppGraphit.chipHeight,
-                          child: Text(
-                            '${index + 1}',
-                            style: textTheme.titleMedium?.copyWith(
-                              color: colors.ink,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            step,
-                            style: textTheme.bodyLarge?.copyWith(
-                              color: colors.ink,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                RecipeStepList(steps: recipe.recipeInstructions),
               ],
               const SizedBox(height: AppSpacing.xl),
             ],
           ),
         ),
         RecipeBottomBar(
+          header: view.hasSteps
+              ? AppCheckboxListTile(
+                  key: RecipePage.withGuideKey,
+                  value: withGuide,
+                  onChanged: isCooking
+                      ? null
+                      : (value) => ref
+                            .read(provider.notifier)
+                            .setWithGuide(withGuide: value ?? false),
+                  contentPadding: EdgeInsets.zero,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  title: Text(l10n.recipeWithGuide),
+                  subtitle: Text(l10n.recipeWithGuideHint),
+                )
+              : null,
           buttonKey: RecipePage.cookKey,
           label: l10n.freeCookingCookAction,
           onPressed: isCooking || activeCount == 0
@@ -260,25 +259,12 @@ class _RecipeBody extends ConsumerWidget {
   }
 
   Future<void> _cook(BuildContext context, WidgetRef ref) async {
-    final provider = recipeControllerProvider(view.recipe.id);
-    // A second tap before the button turns off finds the first cook running.
-    if (ref.read(provider).isCooking) {
-      return;
+    final recipeId = view.recipe.id;
+    if (!withGuide || !view.hasSteps) {
+      await RecipeCookFlow.cook(context: context, ref: ref, recipeId: recipeId);
+    } else if (ModalRoute.isCurrentOf(context) ?? false) {
+      // A tap that reaches this page under the Kochhelfer does nothing.
+      await context.push<void>(AppRoutes.homeRecipeGuidePath(recipeId));
     }
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final mealId = await ref.read(provider.notifier).cook(view);
-    if (!context.mounted) {
-      return;
-    }
-    if (mealId == null) {
-      messenger.showAppSnackBar(
-        l10n.freeCookingSaveFailed,
-        tone: AppSnackBarTone.error,
-      );
-      return;
-    }
-    // Straight on to the "Gekocht" step; closing it leaves the meal in the pot.
-    context.pushReplacement(AppRoutes.homeCookedMealPath(mealId));
   }
 }

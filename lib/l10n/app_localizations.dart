@@ -10220,6 +10220,66 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 step} other{{count} steps}}'**
   String recipeStepCount(int count);
 
+  /// No description provided for @recipeWithGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'Cook with instructions'**
+  String get recipeWithGuide;
+
+  /// No description provided for @recipeWithGuideHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Opens sentence by sentence, then “Cooked”'**
+  String get recipeWithGuideHint;
+
+  /// No description provided for @cookingGuideTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cooking helper'**
+  String get cookingGuideTitle;
+
+  /// No description provided for @cookingGuideKicker.
+  ///
+  /// In en, this message translates to:
+  /// **'Instructions · {count, plural, =1{1 portion} other{{count} portions}}'**
+  String cookingGuideKicker(int count);
+
+  /// No description provided for @cookingGuideSentenceNote.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 sentence} other{{count} sentences}}. Next comes one sentence per screen, and the screen stays on.'**
+  String cookingGuideSentenceNote(int count);
+
+  /// No description provided for @cookingGuideStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Start · sentence by sentence'**
+  String get cookingGuideStart;
+
+  /// No description provided for @cookingGuideKeepsScreenOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Screen stays on'**
+  String get cookingGuideKeepsScreenOn;
+
+  /// No description provided for @cookingGuideProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Sentence {sentence} of {count} · step {step}'**
+  String cookingGuideProgress(int sentence, int count, int step);
+
+  /// No description provided for @cookingGuideNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Next sentence'**
+  String get cookingGuideNext;
+
+  /// No description provided for @cookingGuideDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done cooking'**
+  String get cookingGuideDone;
+
   /// No description provided for @recipeNotFound.
   ///
   /// In en, this message translates to:

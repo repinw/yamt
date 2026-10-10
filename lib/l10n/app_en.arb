@@ -3591,6 +3591,43 @@
       }
     }
   },
+  "recipeWithGuide": "Cook with instructions",
+  "recipeWithGuideHint": "Opens sentence by sentence, then “Cooked”",
+  "cookingGuideTitle": "Cooking helper",
+  "cookingGuideKicker": "Instructions · {count, plural, =1{1 portion} other{{count} portions}}",
+  "@cookingGuideKicker": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingGuideSentenceNote": "{count, plural, =1{1 sentence} other{{count} sentences}}. Next comes one sentence per screen, and the screen stays on.",
+  "@cookingGuideSentenceNote": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingGuideStart": "Start · sentence by sentence",
+  "cookingGuideKeepsScreenOn": "Screen stays on",
+  "cookingGuideProgress": "Sentence {sentence} of {count} · step {step}",
+  "@cookingGuideProgress": {
+    "placeholders": {
+      "sentence": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      },
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingGuideNext": "Next sentence",
+  "cookingGuideDone": "Done cooking",
   "recipeNotFound": "This recipe is gone.",
   "recipeLoadFailed": "Could not load the recipe or the stock.",
   "recipeCheckChangeKicker": "{name} · {count, plural, =1{1 portion} other{{count} portions}}",

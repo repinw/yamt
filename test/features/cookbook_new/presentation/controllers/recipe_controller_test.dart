@@ -131,6 +131,17 @@ RecipeController _controller(ProviderContainer container) =>
     container.read(recipeControllerProvider('stew').notifier);
 
 void main() {
+  test('cooks with the Kochhelfer until the cook turns it off', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final provider = recipeControllerProvider('stew');
+    container.listen(provider, (_, _) {});
+
+    expect(container.read(provider).withGuide, isTrue);
+    container.read(provider.notifier).setWithGuide(withGuide: false);
+    expect(container.read(provider).withGuide, isFalse);
+  });
+
   test(
     'sizes the ingredients for the portions and matches the Vorrat',
     () async {

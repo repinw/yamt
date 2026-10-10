@@ -61,7 +61,7 @@ final class RecipeControllerProvider
   }
 }
 
-String _$recipeControllerHash() => r'61c1add6b66390bd2d1e6c6a65efba69a8465ade';
+String _$recipeControllerHash() => r'3f8b50e1f7b0fddeb600c24444fbceccb8f2dbac';
 
 /// Holds the portions and Vorrat picks of the recipe [recipeId] and cooks it.
 
@@ -189,7 +189,7 @@ final class RecipeViewProvider
   }
 }
 
-String _$recipeViewHash() => r'bb0b482db861f7d4e3fcb0639d7735ade700bac0';
+String _$recipeViewHash() => r'4368e02388c6b209c1a4d2795a5730a50320a198';
 
 /// The recipe [recipeId] with its ingredients for the chosen portions and
 /// their Vorrat items, or `null` when the recipe is gone; see

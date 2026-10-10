@@ -672,6 +672,17 @@ and feature description docs. This is product-facing; architecture rules stay in
 - "Kochen" on the recipe page puts the meal in the pot with the chosen
   portions: ingredients with a Vorrat food are taken from the Vorrat, the
   others stay open on the meal. It goes straight on to the "Gekocht" page.
+- A recipe with steps shows "Mit Anleitung kochen" above "Kochen" (on by
+  default). Then "Kochen" first opens the Kochhelfer, and the screen stays
+  on while it is open:
+  - The first screen shows every ingredient for the chosen portions,
+    including this time's changes, and all steps. "Los geht's · Satz für
+    Satz" starts reading.
+  - Then each sentence of the steps gets its own screen ("Satz 4 von 9 ·
+    Schritt 2") with the ingredients it names. "Nächster Satz" moves on, and
+    back goes one sentence back.
+  - "Fertig gekocht" puts the meal in the pot like "Kochen" and goes on to
+    "Gekocht". Leaving the Kochhelfer before that cooks nothing.
 - Editing and deleting templates from the Kochbuch is not available yet.
 
 ## Meal Templates

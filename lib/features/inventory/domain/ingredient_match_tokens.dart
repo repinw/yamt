@@ -85,3 +85,68 @@ String _singularizeMatchToken(String token) {
   }
   return token;
 }
+
+// Words of a recipe text that never name a food, in all languages.
+const _functionWords = {
+  'a',
+  'an',
+  'auf',
+  'aus',
+  'bei',
+  'black',
+  'das',
+  'dem',
+  'den',
+  'der',
+  'des',
+  'die',
+  'ein',
+  'eine',
+  'einem',
+  'einen',
+  'einer',
+  'for',
+  'freshly',
+  'gelb',
+  'gelbe',
+  'grün',
+  'grüne',
+  'ground',
+  'gemahlen',
+  'gemahlener',
+  'in',
+  'mit',
+  'nach',
+  'of',
+  'oder',
+  'or',
+  'rot',
+  'rote',
+  'roter',
+  'rotes',
+  'schwarz',
+  'schwarzer',
+  'the',
+  'to',
+  'vom',
+  'von',
+  'weiß',
+  'weiße',
+};
+
+/// The words of [text] that can name foods, as ingredient matching sees
+/// them in every language: without a leading amount, units, numbers, and
+/// function words, singular, and aliased. Two texts name the same food
+/// when their words share one.
+Set<String> ingredientFoodWords(String text) {
+  const lexicon = fallbackIngredientMatchLexicon;
+  return {
+    for (final word in ingredientMatchTokens(
+      normalizeIngredientMatchText(
+        stripIngredientMatchPrefix(text.trim(), lexicon),
+      ),
+      lexicon,
+    ))
+      if (!_functionWords.contains(word) && int.tryParse(word) == null) word,
+  };
+}
