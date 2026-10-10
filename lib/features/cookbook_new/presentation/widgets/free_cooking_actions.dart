@@ -2,7 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
-import 'package:yamt/core/widgets/home_header_tool.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/cooking_type_tool.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Bottom of the "Frei kochen" page: "Schreiben" to type rows and the lime
@@ -46,13 +46,7 @@ class FreeCookingActions extends StatelessWidget {
       child: Row(
         spacing: AppSpacing.sm,
         children: [
-          HomeHeaderTool(
-            key: typeKey,
-            symbol: Icon(Icons.keyboard_rounded, color: colors.ink),
-            label: l10n.freeCookingTypeAction,
-            color: colors.ink,
-            onPressed: isCooking ? null : onType,
-          ),
+          CookingTypeTool(key: typeKey, onPressed: isCooking ? null : onType),
           Expanded(
             child: FilledButton(
               key: cookKey,
