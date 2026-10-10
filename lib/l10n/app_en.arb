@@ -3585,6 +3585,129 @@
   },
   "recipeNotFound": "This recipe is gone.",
   "recipeLoadFailed": "Could not load the recipe or the stock.",
+  "recipeCheckTitle": "Check ingredients",
+  "recipeCheckMissingCount": "{count} missing",
+  "@recipeCheckMissingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckPartialCount": "{count} only partly there",
+  "@recipeCheckPartialCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckOpenBoth": "{missing} missing, {partial} only partly there",
+  "@recipeCheckOpenBoth": {
+    "placeholders": {
+      "missing": {
+        "type": "int"
+      },
+      "partial": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckStep": "{step}/{total}",
+  "@recipeCheckStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckSettled": "All sorted",
+  "recipeCheckFoundKicker": "Found in the stock · {count}",
+  "@recipeCheckFoundKicker": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckFoundTitle": "Does this fit?",
+  "recipeCheckFoundHint": "Tap an ingredient to pick another item.",
+  "recipeCheckNextMissing": "Next · {count} missing",
+  "@recipeCheckNextMissing": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckMissingKicker": "Missing · {count}",
+  "@recipeCheckMissingKicker": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckMissingTitle": "Add to the shopping list?",
+  "recipeCheckMissingHint": "“Got it” adds it to the stock and uses it right away.",
+  "recipeCheckHave": "Got it",
+  "recipeCheckRest": "Rest · {amount} in stock",
+  "@recipeCheckRest": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckPartialNote": "{stocked} in stock · {missing} missing",
+  "@recipeCheckPartialNote": {
+    "placeholders": {
+      "stocked": {
+        "type": "String"
+      },
+      "missing": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeCheckUse": "From the stock",
+  "recipeCheckCart": "On the shopping list",
+  "recipeCheckIgnore": "Ignore",
+  "recipeCheckSummaryKicker": "Checked",
+  "recipeCheckSummaryTitle": "This is how you cook today",
+  "recipeCheckFromStock": "From the stock · {count}",
+  "@recipeCheckFromStock": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckOnList": "On the shopping list · {count}",
+  "@recipeCheckOnList": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckIgnored": "Ignored · {count}",
+  "@recipeCheckIgnored": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "recipeCheckNothing": "Nothing",
+  "recipeCheckNext": "Next",
+  "recipeCheckFinish": "Done",
+  "recipeCheckSaveFailed": "Could not save the choices.",
+  "recipeCheckListFailed": "Could not add to the shopping list.",
+  "recipeCheckHaveFailed": "Could not add the food to the stock.",
   "recipePickTitle": "{food}: take it from",
   "@recipePickTitle": {
     "placeholders": {

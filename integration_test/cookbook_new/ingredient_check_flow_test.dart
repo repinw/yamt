@@ -7,13 +7,17 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/device/screen_wake_lock.dart';
+import 'package:yamt/core/domain/meal_type.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
-import 'package:yamt/features/cookbook_new/presentation/cooked_meal_page.dart';
+import 'package:yamt/core/provider/firebase_firestore_provider.dart';
+import 'package:yamt/features/cookbook_new/presentation/controllers/'
+    'ingredient_check_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/ingredient_check_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/recipe_page.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'recipe_ingredient_tile.dart';
+    'ingredient_check_row.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/'
-    'recipe_stock_picker_sheet.dart';
+    'recipe_check_card.dart';
 import 'package:yamt/features/inventory/data/'
     'inventory_activity_event_repository.dart';
 import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
@@ -22,8 +26,13 @@ import 'package:yamt/features/inventory/data/'
     'prepared_meal_template_repository.dart';
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/presentation/models/'
+    'inventory_meal_food_pick.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
     'kitchen_utensil_repository.dart';
 import 'package:yamt/features/kitchen_utensils/data/'
@@ -36,84 +45,87 @@ import 'package:yamt/l10n/app_localizations.dart';
 import '../../test/helpers/inventory_item_whole_list_writes.dart';
 
 const _startKey = ValueKey<String>('open-recipe');
+const _pickKey = ValueKey<String>('pick-pepper');
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('cooks a recipe for more portions with a picked Vorrat item', (
-    tester,
-  ) async {
-    final meals = _FakeMealRepository();
-    final inventory = _FakeInventoryRepository([
-      _item('mince', 'Hackfleisch'),
-      _item('carrots', 'Karotten'),
-    ]);
-    await tester.pumpWidget(_app(meals: meals, inventory: inventory));
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
+  testWidgets(
+    'checks the ingredients, adds a food it has, and lists the rest',
+    (tester) async {
+      final templates = _FakeTemplateRepository([_recipe]);
+      final inventory = _FakeInventoryRepository([
+        _item('mince', 'Hackfleisch', 2000),
+        _item('carrots', 'Karotten', 400),
+      ]);
+      final shopping = _FakeShoppingListRepository();
+      await tester.pumpWidget(
+        _app(templates: templates, inventory: inventory, shopping: shopping),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(_startKey));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(RecipePage), findsOneWidget);
+      await tester.tap(find.byKey(RecipeCheckCard.cardKey));
+      await tester.pumpAndSettle();
+      expect(find.byType(IngredientCheckPage), findsOneWidget);
 
-    // Two portions in the recipe, three in the pot.
-    await tester.tap(find.byKey(RecipePage.morePortionsKey));
-    await tester.pumpAndSettle();
-    expect(tester.widget<Text>(find.byKey(RecipePage.portionsKey)).data, '3');
+      // Hackfleisch and the 400 g of carrots come from the Vorrat.
+      expect(
+        find.byKey(
+          IngredientCheckRow.choiceKey('found-1', IngredientCheckChoice.use),
+        ),
+        findsOneWidget,
+      );
+      await tester.tap(find.byKey(IngredientCheckPage.nextKey));
+      await tester.pumpAndSettle();
 
-    // The carrots stay in the Vorrat this time.
-    final carrots = find.byKey(RecipeIngredientTile.tileKey(1));
-    await tester.scrollUntilVisible(carrots, 100);
-    await tester.tap(carrots);
-    await tester.pumpAndSettle();
-    expect(
-      find.byKey(RecipeStockPickerSheet.optionKey('carrots')),
-      findsOneWidget,
-    );
-    await tester.tap(find.byKey(RecipeStockPickerSheet.noneKey));
-    await tester.pumpAndSettle();
+      // The pepper is in the kitchen; the missing carrots go on the list.
+      await tester.tap(
+        find.byKey(
+          IngredientCheckRow.choiceKey('missing-0', IngredientCheckChoice.have),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(_pickKey));
+      await tester.pumpAndSettle();
+      expect(find.byType(IngredientCheckPage), findsOneWidget);
+      expect(
+        find.byKey(
+          IngredientCheckRow.choiceKey('rest-0', IngredientCheckChoice.cart),
+        ),
+        findsOneWidget,
+      );
 
-    await tester.tap(find.byKey(RecipePage.cookKey));
-    await tester.pumpAndSettle();
+      await tester.tap(find.byKey(IngredientCheckPage.nextKey));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(IngredientCheckPage.nextKey));
+      await tester.pumpAndSettle();
 
-    expect(find.byType(CookedMealPage), findsOneWidget);
-    final meal = meals.saved.single;
-    expect(meal.name, 'Bauerntopf');
-    expect(meal.isInPot, isTrue);
-    expect(meal.totalPortions, 3);
-    expect(meal.components.single.inventoryItemId, 'mince');
-    expect(meal.components.single.usedAmount, 750);
-    expect(meal.pendingRecipeIngredients.single, contains('Karotten'));
-    expect(
-      inventory.items.firstWhere((item) => item.id == 'carrots').currentAmount,
-      2000,
-    );
-  });
-
-  testWidgets('a recipe that is gone says so', (tester) async {
-    await tester.pumpWidget(
-      _app(
-        meals: _FakeMealRepository(),
-        inventory: _FakeInventoryRepository(const []),
-        recipes: const [],
-      ),
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.byKey(_startKey));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(RecipePage.cookKey), findsNothing);
-    expect(find.byKey(RecipePage.notFoundKey), findsOneWidget);
-  });
+      expect(find.byType(RecipePage), findsOneWidget);
+      expect(find.byType(IngredientCheckPage), findsNothing);
+      final pepper = inventory.items.singleWhere(
+        (item) => item.name == 'Paprika',
+      );
+      expect(pepper.currentAmount, 300);
+      expect(templates.saved.single.recipeIngredientAssignments, {
+        '500 g Hackfleisch': ['mince'],
+        '600 g Karotten': ['carrots'],
+        '300 g Paprika': [pepper.id],
+      });
+      expect(shopping.saved.map((item) => item.name), ['200 g Karotten']);
+    },
+  );
 }
 
-InventoryItem _item(String id, String name) => InventoryItem.create(
+InventoryItem _item(String id, String name, int amount) => InventoryItem.create(
   id: id,
   name: name,
   entryDate: DateTime.utc(2026, 10, 9),
   storeName: 'Store',
   quantity: 1,
-  initialAmount: 2000,
-  currentAmount: 2000,
+  initialAmount: amount,
+  currentAmount: amount,
   amountUnit: InventoryAmountUnit.gram,
 );
 
@@ -129,15 +141,51 @@ final _recipe = PreparedMeal(
   createdAt: DateTime.utc(2026, 10, 9),
   updatedAt: DateTime.utc(2026, 10, 9),
   components: const <PreparedMealComponent>[],
-  recipeIngredients: const ['500 g Hackfleisch', '200 g Karotten', 'Salz'],
+  recipeIngredients: const [
+    '500 g Hackfleisch',
+    '600 g Karotten',
+    '300 g Paprika',
+    'Salz',
+  ],
   ignoredRecipeIngredients: const ['Salz'],
-  recipeInstructions: const ['Anbraten.', 'Köcheln lassen.'],
 );
 
+/// Stands in for the food pick: it returns 300 g of pepper.
+class _FakeFoodPickPage extends StatelessWidget {
+  const new();
+
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    body: Center(
+      child: TextButton(
+        key: _pickKey,
+        onPressed: () => context.pop<InventoryMealFoodPick>((
+          result: InventoryReceiptManualProductResult(
+            item: _item(
+              'pepper-draft',
+              'Paprika',
+              500,
+            ).copyWith(weight: '500 g'),
+            action: InventoryReceiptManualProductAction.addToInventory,
+            requiresGlobalPersistence: false,
+            skipMissingBarcodePrompt: true,
+          ),
+          request: InventoryItemEatRequest(
+            inventoryAmount: 300,
+            loggedAt: DateTime.utc(2026, 10, 9),
+            mealType: MealType.lunch,
+          ),
+        )),
+        child: const Text('Pick'),
+      ),
+    ),
+  );
+}
+
 Widget _app({
-  required _FakeMealRepository meals,
+  required _FakeTemplateRepository templates,
   required _FakeInventoryRepository inventory,
-  List<PreparedMeal>? recipes,
+  required _FakeShoppingListRepository shopping,
 }) {
   final router = GoRouter(
     initialLocation: AppRoutes.homeInventoryTemplates,
@@ -160,9 +208,13 @@ Widget _app({
             RecipePage(recipeId: state.pathParameters['recipeId']!),
       ),
       GoRoute(
-        path: AppRoutes.homeCookedMeal,
+        path: AppRoutes.homeRecipeCheck,
         builder: (context, state) =>
-            CookedMealPage(mealId: state.pathParameters['mealId']!),
+            IngredientCheckPage(recipeId: state.pathParameters['recipeId']!),
+      ),
+      GoRoute(
+        path: AppRoutes.homeFoodPick,
+        builder: (context, state) => const _FakeFoodPickPage(),
       ),
     ],
   );
@@ -170,18 +222,15 @@ Widget _app({
 
   final container = ProviderContainer(
     overrides: [
-      preparedMealRepositoryProvider.overrideWithValue(meals),
-      preparedMealTemplateRepositoryProvider.overrideWithValue(
-        _FakeTemplateRepository(recipes ?? [_recipe]),
-      ),
+      firebaseFirestoreProvider.overrideWith((ref) => null),
+      preparedMealRepositoryProvider.overrideWithValue(_FakeMealRepository()),
+      preparedMealTemplateRepositoryProvider.overrideWithValue(templates),
       inventoryItemRepositoryProvider.overrideWithValue(inventory),
       inventoryActivityEventRepositoryProvider.overrideWithValue(
         _FakeActivityRepository(),
       ),
       inventoryActivityActorProvider.overrideWithValue(null),
-      shoppingListRepositoryProvider.overrideWithValue(
-        _FakeShoppingListRepository(),
-      ),
+      shoppingListRepositoryProvider.overrideWithValue(shopping),
       screenWakeLockProvider.overrideWithValue(
         ScreenWakeLock(toggle: ({required on}) async {}),
       ),
@@ -217,6 +266,9 @@ class _FakeMealRepository implements PreparedMealRepository {
   Future<List<PreparedMeal>> readAll() async => saved;
 
   @override
+  Future<List<PreparedMeal>> readAllForChange() => readAll();
+
+  @override
   Future<bool> save(PreparedMeal meal) => _saveAll([
     for (final stored in saved)
       if (stored.id != meal.id) stored,
@@ -234,23 +286,33 @@ class _FakeMealRepository implements PreparedMealRepository {
     _changes.add(meals);
     return true;
   }
-
-  @override
-  Future<List<PreparedMeal>> readAllForChange() => readAll();
 }
 
 class _FakeTemplateRepository implements PreparedMealTemplateRepository {
   new(this.saved);
 
-  final List<PreparedMeal> saved;
+  List<PreparedMeal> saved;
+  final _changes = StreamController<List<PreparedMeal>>.broadcast();
 
   @override
   Stream<List<PreparedMeal>> watchAll() async* {
     yield List.of(saved);
+    yield* _changes.stream;
   }
 
   @override
   Future<List<PreparedMeal>> readAll() async => List.of(saved);
+
+  @override
+  Future<bool> save(PreparedMeal template) async {
+    saved = [
+      for (final stored in saved)
+        if (stored.id != template.id) stored,
+      template,
+    ];
+    _changes.add(saved);
+    return true;
+  }
 
   @override
   Object? noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -270,9 +332,13 @@ class _FakeInventoryRepository with InventoryItemWholeListWrites {
   new(this.items);
 
   List<InventoryItem> items;
+  final _changes = StreamController<List<InventoryItem>>.broadcast();
 
   @override
-  Stream<List<InventoryItem>> watchAll() => Stream.value(items);
+  Stream<List<InventoryItem>> watchAll() async* {
+    yield items;
+    yield* _changes.stream;
+  }
 
   @override
   Future<List<InventoryItem>> readAll() async => items;
@@ -280,14 +346,13 @@ class _FakeInventoryRepository with InventoryItemWholeListWrites {
   @override
   Future<bool> replaceItems(List<InventoryItem> items) async {
     this.items = items;
+    _changes.add(items);
     return true;
   }
 
   @override
-  Future<bool> appendAll(List<InventoryItem> items) async {
-    this.items = [...this.items, ...items];
-    return true;
-  }
+  Future<bool> appendAll(List<InventoryItem> items) =>
+      replaceItems([...this.items, ...items]);
 }
 
 class _FakeActivityRepository implements InventoryActivityEventRepository {
@@ -301,9 +366,20 @@ class _FakeActivityRepository implements InventoryActivityEventRepository {
 }
 
 class _FakeShoppingListRepository implements ShoppingListRepository {
+  List<ShoppingListItem> saved = const [];
+
   @override
   Stream<List<ShoppingListItem>> watchAll() async* {
-    yield const <ShoppingListItem>[];
+    yield saved;
+  }
+
+  @override
+  Future<List<ShoppingListItem>> readAll() async => saved;
+
+  @override
+  Future<bool> saveAll(List<ShoppingListItem> items) async {
+    saved = items;
+    return true;
   }
 
   @override

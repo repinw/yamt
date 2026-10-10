@@ -122,6 +122,10 @@ already documented as a reusable presentation surface.
   `PreparedMealGoneFlow.closeWhenGone` closes a meal page with "Mahlzeit nicht
   mehr im Vorrat" when its meal leaves the Vorrat; every meal page, including
   the Kochbuch's "Gekocht" page, uses it.
+- `presentation/prepared_meal_pending_food_flow.dart`:
+  `PreparedMealPendingFoodFlow.fill` finds a food through the food pick
+  (`PreparedMealFoodSource` in `presentation/models/`), adds it to the Vorrat
+  with the entered amount, and hands its id to the caller.
 - `presentation/prepared_meal_eat_flow.dart`: `PreparedMealEatFlow.eat` opens
   the eat sheet for a prepared meal and logs the eaten portions as one bundle
   entry.

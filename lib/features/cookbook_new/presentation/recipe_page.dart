@@ -11,8 +11,10 @@ import 'package:yamt/core/widgets/app_snack_bar.dart';
 import 'package:yamt/core/widgets/app_state_views.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/recipe_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/models/recipe_view.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/cookbook_section_title.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/portion_stepper.dart';
+import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_check_card.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_hero.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_ingredient_tile.dart';
 import 'package:yamt/features/cookbook_new/presentation/widgets/recipe_stock_picker_sheet.dart';
@@ -106,6 +108,21 @@ class _RecipeBody extends ConsumerWidget {
             padding: EdgeInsets.zero,
             children: [
               RecipeHero(recipe: recipe),
+              if (activeCount > 0)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xl,
+                    AppSpacing.lg,
+                    AppSpacing.xl,
+                    0,
+                  ),
+                  child: RecipeCheckCard(
+                    recipeId: recipe.id,
+                    onOpen: () => unawaited(
+                      context.push(AppRoutes.homeRecipeCheckPath(recipe.id)),
+                    ),
+                  ),
+                ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(
                   AppSpacing.xl,
@@ -126,7 +143,7 @@ class _RecipeBody extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            l10n.recipeOriginalPortions(recipe.totalPortions),
+                            l10n.recipeOriginalPortions(view.basePortions),
                             style: textTheme.bodySmall?.copyWith(
                               color: colors.muted,
                             ),

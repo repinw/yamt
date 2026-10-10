@@ -6,6 +6,8 @@ import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'cookbook_controller.dart';
 import 'package:yamt/features/cookbook_new/presentation/controllers/'
     'recipe_controller.dart';
+import 'package:yamt/features/cookbook_new/presentation/models/'
+    'recipe_view.dart';
 import 'package:yamt/features/inventory/application/'
     'inventory_quick_eat_data_providers.dart';
 import 'package:yamt/features/inventory/application/'
