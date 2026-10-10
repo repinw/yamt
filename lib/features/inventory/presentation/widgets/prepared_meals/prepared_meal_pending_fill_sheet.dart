@@ -5,21 +5,10 @@ import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/core/widgets/barcode_icon.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/presentation/models/prepared_meal_food_source.dart';
 import 'package:yamt/features/inventory/presentation/widgets/prepared_meals/'
     'prepared_meal_pending_fill_match.dart';
 import 'package:yamt/l10n/app_localizations.dart';
-
-/// Where a food for an open row comes from, besides the Vorrat.
-enum PreparedMealFoodSource {
-  /// The product search.
-  search,
-
-  /// The barcode scanner.
-  barcode,
-
-  /// The AI estimate.
-  ai,
-}
 
 /// What the cook chose to fill an open row with.
 sealed class PreparedMealPendingFillChoice {
