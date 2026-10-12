@@ -50,6 +50,12 @@ abstract final class CalorieGoalCalculatorSheetKeys {
   /// The back button.
   static const backButton = Key('calorie_calculator_back_button');
 
+  /// The cancel button on the first step.
+  static const cancelButton = Key('calorie_calculator_cancel_button');
+
+  /// The arrow at the top that closes the sheet without saving.
+  static const sheetBackButton = Key('calorie_calculator_sheet_back_button');
+
   /// The next button.
   static const nextButton = Key('calorie_calculator_next_button');
 

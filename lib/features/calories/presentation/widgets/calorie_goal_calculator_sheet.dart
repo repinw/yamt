@@ -8,12 +8,16 @@ import 'package:yamt/features/calories/presentation/widgets/'
 enum _CalorieGoalCalculatorSheetRoute { learnedTdee, fullCalculator }
 
 /// Show calorie goal calculator sheet.
-Future<void> showCalorieGoalCalculatorSheet(
+///
+/// Completes with whether the sheet saved a goal. With [showBackButton], an
+/// arrow at the top closes the sheet without saving.
+Future<bool> showCalorieGoalCalculatorSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,
   bool preferLearnedTdee = true,
   bool useRootNavigator = true,
   bool startsNewGoal = false,
+  bool showBackButton = false,
   double? currentWeightKg,
 }) {
   final route = _resolveCalorieGoalCalculatorSheetRoute(
@@ -29,6 +33,7 @@ Future<void> showCalorieGoalCalculatorSheet(
         initialSettings: initialSettings,
         useRootNavigator: useRootNavigator,
         startsNewGoal: startsNewGoal,
+        showBackButton: showBackButton,
         currentWeightKg: currentWeightKg,
       ),
     _CalorieGoalCalculatorSheetRoute.fullCalculator =>
@@ -37,6 +42,7 @@ Future<void> showCalorieGoalCalculatorSheet(
         initialSettings: initialSettings,
         useRootNavigator: useRootNavigator,
         startsNewGoal: startsNewGoal,
+        showBackButton: showBackButton,
       ),
   };
 }
