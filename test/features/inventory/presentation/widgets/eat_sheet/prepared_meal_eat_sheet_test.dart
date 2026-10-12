@@ -432,7 +432,9 @@ void main() {
     expect(_labelValue(tester, 'of which polyunsaturates'), isNull);
   });
 
-  testWidgets('a nutrient that one ingredient lacks shows "–"', (tester) async {
+  testWidgets('a nutrient that one ingredient lacks shows as a minimum', (
+    tester,
+  ) async {
     await _openEat(
       tester,
       labeledMealTestData(
@@ -445,10 +447,14 @@ void main() {
 
     expect(_labelValue(tester, 'Fat'), '8 g');
     expect(_labelValue(tester, 'Protein'), '20.5 g');
-    expect(_labelValue(tester, 'of which saturates'), '–');
-    expect(_labelValue(tester, 'of which sugars'), '–');
-    expect(_labelValue(tester, 'Fibre'), '–');
-    expect(_labelValue(tester, 'Salt'), '–');
+    for (final label in [
+      'of which saturates',
+      'of which sugars',
+      'Fibre',
+      'Salt',
+    ]) {
+      expect(_labelValue(tester, label), startsWith('≥'), reason: label);
+    }
     expect(_labelValue(tester, 'of which polyunsaturates'), isNull);
   });
 }

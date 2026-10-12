@@ -24,16 +24,18 @@ class EatMealNutrition {
   const new _({
     required this.total,
     required this.listed,
+    required this.incomplete,
     required this.per100,
     required this.amounts,
   });
 
   /// Adds up [foods].
   ///
-  /// A total is unknown when one food does not list the nutrient, the same
-  /// rule the combined diary entry follows. The per-100 values exist only
-  /// when all foods share one unit, since grams and milliliters do not add
-  /// up.
+  /// Energy and the three macros are unknown when one food does not list
+  /// them, since a Vorrat meal needs them from every food. Any other
+  /// nutrient adds up the foods that list it, and [incomplete] notes that a
+  /// food lacks it. The per-100 values exist only when all foods share one
+  /// unit, since grams and milliliters do not add up.
   factory combine(List<EatMealFood> foods) {
     NutritionFacts facts(double? Function(Nutrient nutrient) valueOf) {
       return NutritionFacts(
@@ -57,8 +59,11 @@ class EatMealNutrition {
       return values.isEmpty ? null : values.fold<double>(0, (a, b) => a + b);
     });
     final total = facts(
-      // A meal without foods holds nothing, not unknown values.
-      (nutrient) => someFoodLacks(nutrient) ? null : nutrient.of(listed) ?? 0,
+      (nutrient) =>
+          _requiredNutrients.contains(nutrient) && someFoodLacks(nutrient)
+          ? null
+          // A meal without foods holds nothing, not unknown values.
+          : nutrient.of(listed) ?? (foods.isEmpty ? 0 : null),
     );
 
     // A food without an amount adds nothing to the meal's weight, and the
@@ -76,6 +81,10 @@ class EatMealNutrition {
     return EatMealNutrition._(
       total: total,
       listed: listed,
+      incomplete: Set.unmodifiable({
+        for (final nutrient in Nutrient.values)
+          if (nutrient.of(total) != null && someFoodLacks(nutrient)) nutrient,
+      }),
       per100: amount > 0 ? total.scaled(100 / amount) : null,
       amounts: Map.unmodifiable(amounts),
     );
@@ -86,7 +95,8 @@ class EatMealNutrition {
   /// Energy and the macros are the meal's own totals, which eating it logs;
   /// a meal without ingredients, such as one from the AI chef, has only
   /// these. The other nutrients add up the ingredients as
-  /// [EatMealNutrition.combine] does. The per-100 values are the food left
+  /// [EatMealNutrition.combine] does, as a minimum when an ingredient lacks
+  /// them. The per-100 values are the food left
   /// per 100 g of its weight, so they are known only once the cooked meal
   /// was weighed: cooking changes the weight, and the raw ingredients'
   /// weights would give wrong values. There are no amounts.
@@ -122,6 +132,10 @@ class EatMealNutrition {
     return EatMealNutrition._(
       total: whole.scaled(share),
       listed: withMealTotals(ingredients?.listed).scaled(share),
+      // Energy and the macros are the meal's own totals, never a minimum.
+      incomplete: Set.unmodifiable({
+        ...?ingredients?.incomplete.difference(_requiredNutrients),
+      }),
       per100: grams == null || grams <= 0 || meal.totalPortions < 1
           ? null
           : whole.scaled(meal.remainingRatio * 100 / grams),
@@ -139,6 +153,7 @@ class EatMealNutrition {
     return EatMealNutrition._(
       total: total.scaled(share),
       listed: listed.scaled(share),
+      incomplete: incomplete,
       per100: per100,
       amounts: Map.unmodifiable({
         for (final MapEntry(key: unit, value: amount) in amounts.entries)
@@ -147,11 +162,16 @@ class EatMealNutrition {
     );
   }
 
-  /// Nutrients of all foods, or null per nutrient when one food lacks it.
+  /// Nutrients of all foods. Energy and the macros are null when one food
+  /// lacks them, any other nutrient only when no food lists it.
   final NutritionFacts total;
 
   /// Nutrients that at least one food lists, to show unknown totals.
   final NutritionFacts listed;
+
+  /// Nutrients whose [total] and [per100] leave out foods that do not list
+  /// them. The meal holds at least that much.
+  final Set<Nutrient> incomplete;
 
   /// Nutrients per 100 g or ml of the meal, or null with mixed units or an
   /// unknown amount.
@@ -224,3 +244,11 @@ int? typedMealFoodAmount(
 
 const _defaultMealAmount = 100;
 const _openStockMealMax = 1000;
+
+/// Energy and the macros, which a Vorrat meal needs from every food.
+const _requiredNutrients = <Nutrient>{
+  Nutrient.kcal,
+  Nutrient.fat,
+  Nutrient.carbs,
+  Nutrient.protein,
+};

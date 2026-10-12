@@ -36,13 +36,16 @@ class NutritionFactsRow {
 /// The food label rows for [eaten] and optional [per100] values, in label
 /// order. Nutrients without an eaten value are left out, unless
 /// [unknownEaten] is given: then a nutrient with a per-100 value, or with a
-/// value in [listed], shows [unknownEaten] for each missing value.
+/// value in [listed], shows [unknownEaten] for each missing value. The
+/// values of the nutrients in [atLeast] are a minimum and are marked as one,
+/// such as "mind. 2 g".
 List<NutritionFactsRow> nutritionFactsRows(
   BuildContext context, {
   required NutritionFacts eaten,
   NutritionFacts? per100,
   String? unknownEaten,
   NutritionFacts? listed,
+  Set<Nutrient> atLeast = const {},
 }) {
   final l10n = AppLocalizations.of(context)!;
   final locale = Localizations.localeOf(context).toLanguageTag();
@@ -64,8 +67,17 @@ List<NutritionFactsRow> nutritionFactsRows(
     Color? accent,
     bool isPart = false,
   }) {
+    String formatValue(double value) {
+      final text = (format ?? gramValue)(value);
+      if (!atLeast.contains(nutrient)) {
+        return text;
+      }
+      // No-break spaces keep a value and its unit together when the
+      // minimum wraps in the narrow column.
+      return l10n.caloriesNutritionTableAtLeast(text.replaceAll(' ', '\u00A0'));
+    }
+
     final eatenValue = nutrient.of(eaten);
-    final formatValue = format ?? gramValue;
     final per100Value = per100 == null ? null : nutrient.of(per100);
     final isListed = listed != null && nutrient.of(listed) != null;
     final eatenText = eatenValue == null

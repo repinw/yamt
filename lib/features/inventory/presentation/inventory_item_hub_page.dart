@@ -187,7 +187,8 @@ class _InventoryItemHubPageState extends ConsumerState<InventoryItemHubPage> {
   }
 
   /// Nutrients of [picks], with the hub item's amount when [includesHub]. An
-  /// empty hub amount counts as unknown, so the totals show "–".
+  /// empty hub amount counts as unknown, so energy and the macros show "–"
+  /// and the other totals a minimum.
   EatMealNutrition _meal(
     List<InventoryCombinePick> picks, {
     required bool includesHub,

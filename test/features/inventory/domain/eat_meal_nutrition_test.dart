@@ -40,7 +40,45 @@ void main() {
     expect(meal.per100, isNull);
   });
 
-  test('leaves a total unknown when one food lacks the nutrient', () {
+  test('adds up the foods that list a nutrient another food lacks', () {
+    final meal = EatMealNutrition.combine(const [
+      (
+        eaten: NutritionFacts(kcal: 200, sugar: 2, salt: 0.5),
+        amount: 50,
+        unit: ConsumedUnit.grams,
+      ),
+      (
+        eaten: NutritionFacts(kcal: 100, sugar: 4),
+        amount: 100,
+        unit: ConsumedUnit.grams,
+      ),
+      (eaten: NutritionFacts(kcal: 50), amount: 50, unit: ConsumedUnit.grams),
+    ]);
+
+    expect(meal.total.sugar, 6);
+    expect(meal.total.salt, 0.5);
+    expect(meal.per100?.sugar, 3);
+    expect(meal.incomplete, {Nutrient.sugar, Nutrient.salt});
+  });
+
+  test('a total is complete when every food lists the nutrient', () {
+    final meal = EatMealNutrition.combine(const [
+      (
+        eaten: NutritionFacts(kcal: 200, sugar: 2),
+        amount: 50,
+        unit: ConsumedUnit.grams,
+      ),
+      (
+        eaten: NutritionFacts(kcal: 100, sugar: 4),
+        amount: 150,
+        unit: ConsumedUnit.grams,
+      ),
+    ]);
+
+    expect(meal.incomplete, isEmpty);
+  });
+
+  test('leaves a nutrient that no food lists unknown', () {
     final meal = EatMealNutrition.combine(const [
       (
         eaten: NutritionFacts(kcal: 200, sugar: 2),
@@ -50,10 +88,28 @@ void main() {
       (eaten: NutritionFacts(kcal: 100), amount: 150, unit: ConsumedUnit.grams),
     ]);
 
-    expect(meal.total.sugar, isNull);
-    expect(meal.listed.sugar, 2);
     expect(meal.total.salt, isNull);
     expect(meal.listed.salt, isNull);
+    expect(meal.incomplete, isNot(contains(Nutrient.salt)));
+  });
+
+  test('leaves energy and the macros unknown when one food lacks them', () {
+    final meal = EatMealNutrition.combine(const [
+      (
+        eaten: NutritionFacts(kcal: 200, fat: 5, carbs: 30, protein: 8),
+        amount: 50,
+        unit: ConsumedUnit.grams,
+      ),
+      (eaten: NutritionFacts(sugar: 4), amount: 150, unit: ConsumedUnit.grams),
+    ]);
+
+    expect(meal.total.kcal, isNull);
+    expect(meal.total.fat, isNull);
+    expect(meal.total.carbs, isNull);
+    expect(meal.total.protein, isNull);
+    expect(meal.listed.kcal, 200);
+    expect(meal.listed.protein, 8);
+    expect(meal.incomplete, {Nutrient.sugar});
   });
 
   test('has no per-100 values when grams and milliliters mix', () {
@@ -89,7 +145,7 @@ void main() {
   test('per portion splits the totals and amounts, not per 100', () {
     final meal = EatMealNutrition.combine(const [
       (
-        eaten: NutritionFacts(kcal: 500, protein: 20),
+        eaten: NutritionFacts(kcal: 500, protein: 20, fiber: 8),
         amount: 200,
         unit: ConsumedUnit.grams,
       ),
@@ -101,6 +157,8 @@ void main() {
     expect(portion.total.kcal, 275);
     expect(portion.total.protein, isNull);
     expect(portion.listed.protein, 5);
+    expect(portion.total.fiber, 2);
+    expect(portion.incomplete, {Nutrient.fiber});
     expect(portion.amounts, {ConsumedUnit.grams: 87.5});
     expect(portion.per100?.kcal, meal.per100?.kcal);
     expect(meal.perPortion(1), same(meal));
@@ -214,8 +272,8 @@ void main() {
       expect(meal.amounts, isEmpty);
     });
 
-    test('leaves a nutrient that one ingredient lacks unknown but listed, '
-        'and keeps the counted energy and macros', () {
+    test('adds up a nutrient that one ingredient lacks as a minimum, and '
+        'keeps the counted energy and macros', () {
       final meal = EatMealNutrition.ofPreparedMeal(
         labeledMealTestData(ingredients: [rice, sauce]),
         1,
@@ -225,11 +283,19 @@ void main() {
       expect(meal.total.fat, 8);
       expect(meal.total.carbs, 168);
       expect(meal.total.protein, 20.5);
-      expect(meal.total.sugar, isNull);
-      expect(meal.listed.sugar, 2);
-      expect(meal.total.salt, isNull);
-      expect(meal.listed.salt, 0.5);
+      expect(meal.total.sugar, 2);
+      expect(meal.total.salt, 0.5);
       expect(meal.listed.polyunsaturatedFat, isNull);
+      expect(meal.incomplete, containsAll([Nutrient.sugar, Nutrient.salt]));
+      expect(
+        meal.incomplete.intersection({
+          Nutrient.kcal,
+          Nutrient.fat,
+          Nutrient.carbs,
+          Nutrient.protein,
+        }),
+        isEmpty,
+      );
     });
 
     test('a meal without ingredients has only its energy and macros', () {

@@ -2421,6 +2421,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get caloriesNutritionTableSalt => 'Salt';
 
   @override
+  String caloriesNutritionTableAtLeast(String value) {
+    return '≥ $value';
+  }
+
+  @override
   String get caloriesEntryDeletedMessage => 'Entry removed';
 
   @override
