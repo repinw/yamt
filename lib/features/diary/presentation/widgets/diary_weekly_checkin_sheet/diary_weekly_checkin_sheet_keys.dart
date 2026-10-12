@@ -11,6 +11,9 @@ abstract final class DiaryWeeklyCheckInSheetKeys {
   /// The next button of the review and training steps.
   static const nextButton = ValueKey<String>('diary-weekly-checkin-next');
 
+  /// The arrow that goes one step back.
+  static const backButton = ValueKey<String>('diary-weekly-checkin-back');
+
   /// The button that ends the check-in on the targets step.
   static const startWeekButton = ValueKey<String>(
     'diary-weekly-checkin-start-week',

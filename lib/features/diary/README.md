@@ -90,7 +90,10 @@ is the one accepted exception, for `features/home_widget`.
   the new targets. "Woche starten" saves the training days of the run, then
   applies or rejects the check-in, in one Calories controller action. A reached goal shows its own page and asks for
   a new goal. The sheet controller keeps the step and the choices while the
-  data reloads.
+  data reloads. "Ziel ändern" closes the sheet for the Calories new-goal
+  sheet; when that closes without a new goal, the section opens the check-in
+  again and keeps the sheet controller alive in between, so the step and the
+  choices stay.
 - `presentation/widgets/diary_weekly_checkin_preview_tiles.dart`
   (`DiaryWeeklyCheckInPreviewTiles`) are debug entries for the Home side menu.
   They open the weekly check-in sheet for the latest completed window, or for
@@ -134,8 +137,8 @@ Main application adapters and mappers:
   the weekly check-in, read and changed through the calorie check-in
   providers and `CalorieWeeklyCheckInController`. The weekly
   check-in sheet opens the public new-goal sheet
-  (`presentation/widgets/calorie_new_goal_flow.dart`) when the active goal was
-  reached. The entry details page saves its changes through
+  (`presentation/widgets/calorie_new_goal_flow.dart`) for "Ziel ändern" and
+  when the active goal was reached. The entry details page saves its changes through
   the Calories `calorieEntrySaverProvider`.
 - `features/health` for connection status and connection actions through
   `health_connection_actions.dart`.

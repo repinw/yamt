@@ -308,7 +308,10 @@ and feature description docs. This is product-facing; architecture rules stay in
   the next run, preset from the last run; and the new targets with the
   training and rest day split and the macros before and after. "Woche
   starten" saves the choice and the training days. A reached goal shows a
-  congratulations page instead of the look back.
+  congratulations page instead of the look back. The goal sheet that the
+  check-in opens has a back arrow. Leaving it without a new goal, by the
+  arrow, "Abbrechen", or a swipe, opens the check-in again on the same step
+  with the choices made so far, still undecided.
 - Burn Week budget model with daily goal, activity credit, carryover, skipped
   days, remaining calories, and details sheet.
 - Macro tracking for protein, carbs, fat, and extended nutrient fields.

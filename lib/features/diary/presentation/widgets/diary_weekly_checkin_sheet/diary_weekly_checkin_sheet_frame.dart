@@ -3,6 +3,8 @@ import 'package:yamt/core/constants/app_graphit_constants.dart';
 import 'package:yamt/core/constants/app_layout_constants.dart';
 import 'package:yamt/core/theme/food_label_colors.dart';
 import 'package:yamt/core/theme/graphit_text_styles.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_keys.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Number of steps of the weekly check-in.
@@ -73,6 +75,7 @@ class DiaryWeeklyCheckInSheetFrame extends StatelessWidget {
               ),
               if (onBack != null)
                 IconButton(
+                  key: DiaryWeeklyCheckInSheetKeys.backButton,
                   tooltip: l10n.diaryCheckInBack,
                   onPressed: onBack,
                   icon: const Icon(Icons.arrow_back_rounded),

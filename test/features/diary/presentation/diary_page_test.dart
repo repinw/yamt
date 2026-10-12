@@ -39,12 +39,18 @@ import 'package:yamt/features/calories/domain/calorie_weekly_checkin.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/macro_goal_settings.dart';
 import 'package:yamt/features/calories/domain/pending_calorie_goal_weekly_check_in.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_keys.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calories_page_keys.dart';
 import 'package:yamt/features/diary/application/'
     'diary_day_dashboard_live_data_provider.dart';
 import 'package:yamt/features/diary/application/diary_provider_warmup.dart';
 import 'package:yamt/features/diary/application/'
     'diary_quick_eat_inventory_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/'
+    'diary_weekly_checkin_sheet_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_page.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -55,6 +61,8 @@ import 'package:yamt/features/diary/presentation/widgets/diary_day_view.dart';
 import 'package:yamt/features/diary/presentation/widgets/diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_section/diary_weekly_checkin_section.dart';
+import 'package:yamt/features/diary/presentation/widgets/'
+    'diary_weekly_checkin_sheet/diary_weekly_checkin_choice_tile.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_sheet/diary_weekly_checkin_sheet_keys.dart';
 import 'package:yamt/features/health/data/health_connection_service.dart';
@@ -667,6 +675,165 @@ void main() {
   });
 
   testWidgets(
+    'back from the goal sheet reopens the check-in with its choices',
+    (tester) async {
+      final windowStartDate = DateTime(2026, 4, 20);
+      final container = await _pumpDiaryPage(
+        tester,
+        selectedDay: selectedDay,
+        initialWeeklyCheckIn: _weeklyCheckInCheckInData(
+          windowStartDate: windowStartDate,
+        ),
+      );
+      DiaryWeeklyCheckInSheetState sheetState() => container
+          .read(
+            diaryWeeklyCheckInSheetControllerProvider(
+              windowStart: windowStartDate,
+            ),
+          )
+          .requireValue!;
+
+      await _tapCheckInSheet(
+        tester,
+        DiaryWeeklyCheckInSheetKeys.keepPreviousChoice,
+      );
+      await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
+      await _tapCheckInSheet(
+        tester,
+        DiaryWeeklyCheckInSheetKeys.trainingDay(1),
+      );
+      await _tapCheckInSheet(tester, DiaryWeeklyCheckInSheetKeys.backButton);
+      final choices = sheetState();
+      expect(choices.trainingDays, hasLength(4));
+
+      await _tapCheckInSheet(
+        tester,
+        DiaryWeeklyCheckInSheetKeys.changeGoalButton,
+      );
+      expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
+      expect(
+        find.byKey(CalorieGoalCalculatorSheetKeys.sheetBackButton),
+        findsOneWidget,
+      );
+
+      await tester.tap(
+        find.byKey(CalorieGoalCalculatorSheetKeys.sheetBackButton),
+      );
+      await _pumpFrames(tester);
+
+      expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+      expect(
+        find.byKey(CalorieGoalCalculatorSheetKeys.stepCounter),
+        findsNothing,
+      );
+      expect(
+        tester
+            .widget<DiaryWeeklyCheckInChoiceTile>(
+              find.byKey(DiaryWeeklyCheckInSheetKeys.keepPreviousChoice),
+            )
+            .isSelected,
+        isTrue,
+      );
+      expect(sheetState().step, DiaryWeeklyCheckInStep.review);
+      expect(sheetState().useMeasured, isFalse);
+      expect(sheetState().trainingDays, choices.trainingDays);
+    },
+  );
+
+  testWidgets('leaving the goal sheet without a goal keeps the check-in open', (
+    tester,
+  ) async {
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: selectedDay.subtract(const Duration(days: 14)),
+      ),
+    );
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: selectedDay,
+      settingsRepository: settingsRepository,
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
+        windowStartDate: DateTime(2026, 4, 20),
+      ),
+    );
+
+    await _tapCheckInSheet(
+      tester,
+      DiaryWeeklyCheckInSheetKeys.changeGoalButton,
+    );
+    await tester.tap(find.byKey(CalorieGoalCalculatorSheetKeys.cancelButton));
+    await _pumpFrames(tester);
+
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+
+    await _tapCheckInSheet(
+      tester,
+      DiaryWeeklyCheckInSheetKeys.changeGoalButton,
+    );
+    await tester.tapAt(const Offset(5, 5));
+    await _pumpFrames(tester);
+
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.stepCounter),
+      findsNothing,
+    );
+    final settings = await settingsRepository.readSettings();
+    expect(settings.goalHistory, hasLength(1));
+    expect(settings.goalHistory.single.weeklyCheckInSnapshot, isNull);
+  });
+
+  testWidgets('saving a new goal from the check-in does not reopen it', (
+    tester,
+  ) async {
+    final today = normalizeDiaryDay(DateTime.now());
+    final goalStartDate = today.subtract(const Duration(days: 14));
+    final settingsRepository = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2200,
+        calculatorProfile: null,
+        effectiveDate: goalStartDate,
+        source: CalorieGoalSource.weeklyCheckIn,
+        weeklyCheckInSnapshot: CalorieGoalWeeklyCheckInSnapshot(
+          windowStartDate: goalStartDate,
+          windowEndDate: goalStartDate.add(const Duration(days: 6)),
+          trendWeightChangePerDay: -0.05,
+          calculatedTdeeKcal: 2400,
+          lowConfidence: false,
+        ),
+      ),
+    );
+
+    await _pumpDiaryPage(
+      tester,
+      selectedDay: today,
+      settingsRepository: settingsRepository,
+      initialWeeklyCheckIn: _weeklyCheckInCheckInData(
+        windowStartDate: today.subtract(const Duration(days: 7)),
+      ),
+    );
+
+    await _tapCheckInSheet(
+      tester,
+      DiaryWeeklyCheckInSheetKeys.changeGoalButton,
+    );
+    await _tapCheckInSheet(tester, CalorieLearnedTdeeSheetKeys.saveButton);
+    await tester.tap(
+      find.byKey(CalorieGoalStartFoodTrackingDialogKeys.noButton),
+    );
+    await _pumpFrames(tester);
+
+    expect(find.byKey(CalorieLearnedTdeeSheetKeys.sheet), findsNothing);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
+    final newGoal = (await settingsRepository.readSettings()).latestGoalEntry;
+    expect(newGoal?.source, CalorieGoalSource.calculator);
+    expect(newGoal?.effectiveDate, today);
+  });
+
+  testWidgets(
     'diary no longer shows weekly progress or check-in while loading',
     (tester) async {
       await _pumpDiaryPage(
@@ -1002,6 +1169,15 @@ void main() {
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
     expect(find.textContaining('APR 8 – APR 14'), findsOneWidget);
   });
+}
+
+/// Scrolls to the button of the check-in or goal sheet with [key] and taps it.
+Future<void> _tapCheckInSheet(WidgetTester tester, Key key) async {
+  final finder = find.byKey(key);
+  await tester.ensureVisible(finder);
+  await _pumpFrames(tester);
+  await tester.tap(finder);
+  await _pumpFrames(tester);
 }
 
 /// Walks the check-in sheet to its last step and starts the week.

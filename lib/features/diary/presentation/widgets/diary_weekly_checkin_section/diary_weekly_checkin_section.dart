@@ -15,6 +15,8 @@ import 'package:yamt/features/calories/presentation/widgets/calorie_new_goal_flo
 import 'package:yamt/features/diary/application/diary_weekly_checkin_provider.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_day_dashboard_controller.dart';
+import 'package:yamt/features/diary/presentation/controllers/'
+    'diary_weekly_checkin_sheet_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
 import 'package:yamt/features/diary/presentation/'
     'diary_weekly_checkin_dialog_scheduler.dart';
@@ -194,30 +196,57 @@ class _DiaryWeeklyCheckInSectionState
     }
 
     final resolvedPending = pending!;
-
+    ProviderSubscription<Object?>? keepSheet;
     try {
-      final goalSettings = ref.read(calorieGoalControllerProvider).value;
-      final result = await showDiaryWeeklyCheckInSheet(
-        context,
-        checkInData: checkInData,
-        goalReached:
-            goalSettings != null &&
-            diaryActiveCalorieGoalWasReached(goalSettings, DateTime.now()),
-      );
-      if (!mounted) {
-        return;
+      var current = checkInData;
+      var reopen = true;
+      while (reopen && mounted) {
+        final result = await _showSheet(current);
+        keepSheet?.close();
+        keepSheet = null;
+        if (!mounted) {
+          return;
+        }
+        if (result?.action == DiaryWeeklyCheckInSheetAction.newGoal) {
+          // Keeps the step and the choices of the sheet while the goal
+          // sheet is open, so the reopened sheet shows them again.
+          keepSheet = ref.listenManual(
+            diaryWeeklyCheckInSheetControllerProvider(
+              windowStart: resolvedPending.windowStartDate,
+            ),
+            (_, _) {},
+          );
+        }
+        reopen = await _handleDialogAction(
+          result: result,
+          checkInData: current,
+          pending: resolvedPending,
+        );
+        // Data that arrived while the goal sheet was open.
+        current = _dialogs.lastCheckInData ?? current;
       }
-      await _handleDialogAction(
-        result: result,
-        checkInData: checkInData,
-        pending: resolvedPending,
-      );
     } finally {
+      keepSheet?.close();
       _dialogs.endDialog(isMounted: () => mounted, openDialog: _openDialog);
     }
   }
 
-  Future<void> _handleDialogAction({
+  Future<DiaryWeeklyCheckInSheetResult?> _showSheet(
+    CalorieWeeklyCheckInData checkInData,
+  ) {
+    final goalSettings = ref.read(calorieGoalControllerProvider).value;
+    return showDiaryWeeklyCheckInSheet(
+      context,
+      checkInData: checkInData,
+      goalReached:
+          goalSettings != null &&
+          diaryActiveCalorieGoalWasReached(goalSettings, DateTime.now()),
+    );
+  }
+
+  /// Carries out the action of the sheet. Returns whether the sheet opens
+  /// again, which it does when the goal sheet closes without a new goal.
+  Future<bool> _handleDialogAction({
     required DiaryWeeklyCheckInSheetResult? result,
     required CalorieWeeklyCheckInData checkInData,
     required PendingCalorieGoalWeeklyCheckIn pending,
@@ -234,14 +263,18 @@ class _DiaryWeeklyCheckInSectionState
           );
         }
       case DiaryWeeklyCheckInSheetAction.newGoal:
-        await showCalorieNewGoalSheet(
+        final saved = await showCalorieNewGoalSheet(
           context,
           currentWeightKg: latestDiaryCheckInWeightKg(checkInData),
+          showBackButton: true,
         );
+        // A failed load already showed its error; only a cancel goes back.
+        return saved == false;
       case DiaryWeeklyCheckInSheetAction.later:
       case null:
         await _syncLearnedTdeeCache(checkInData);
     }
+    return false;
   }
 
   /// Saves the training days of the next run and the TDEE decision.
