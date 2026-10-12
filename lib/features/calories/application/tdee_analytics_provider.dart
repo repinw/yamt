@@ -2,13 +2,13 @@ import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
 import 'package:yamt/features/calories/application/calorie_goal_controller.dart';
-import 'package:yamt/features/calories/application/daily_learned_tdee_models.dart';
-import 'package:yamt/features/calories/application/daily_learned_tdee_provider.dart';
+import 'package:yamt/features/calories/application/calorie_overview_revision_provider.dart';
+import 'package:yamt/features/calories/application/daily_tdee_series.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_service.dart';
 import 'package:yamt/features/calories/data/calorie_log_repository.dart';
-import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry_extensions.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_queries.dart';
+import 'package:yamt/features/calories/domain/calorie_weekly_window_resolver.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
@@ -55,6 +55,8 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
 ) async {
   final keepAliveLink = ref.keepAlive();
   try {
+    // Recompute when diary entries change.
+    ref.watch(calorieOverviewRevisionProvider);
     final settingsFuture = ref.watch(calorieGoalControllerProvider.future);
     final logRepo = ref.watch(calorieLogRepositoryProvider);
     final healthStatusFuture = ref.watch(
@@ -92,28 +94,18 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
       today: now,
     );
 
-    final dayRequests = [
-      for (final day in buildCalorieCarryoverDateRange(
-        startInclusive: window.start,
-        endExclusive: nextDiaryDay(window.end),
-      ))
-        DailyLearnedTdeeGoalDayRequest(
-          day: day,
-          storedGoalKcal: settings.goalKcalForDay(day),
-        ),
-    ];
-
-    final learnedTdeeMap = await ref.watch(
-      dailyLearnedTdeeGoalsForDaysProvider(
-        DailyLearnedTdeeGoalDaysRequest(today: now, days: dayRequests),
-      ).future,
-    );
-    if (!ref.mounted) {
-      throw StateError('TdeeAnalytics provider was disposed.');
-    }
+    // The daily TDEE runs from the first goal on, so every range shows the
+    // same values for a day.
+    final learningAnchor = settings.learningAnchorEntryForDay(window.end);
+    final estimateStart = learningAnchor == null
+        ? window.start
+        : CalorieWeeklyWindowResolver.firstWindowStartDate(learningAnchor);
+    final loadStart = estimateStart.isBefore(window.start)
+        ? estimateStart
+        : window.start;
 
     final entries = await logRepo.readEntriesInRange(
-      startInclusive: window.start,
+      startInclusive: loadStart,
       endExclusive: nextDiaryDay(window.end),
     );
     if (!ref.mounted) {
@@ -125,7 +117,7 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
         healthStatus.accessState == HealthDataAccessState.ready
         ? await healthWeightService.loadWeightSamples(
             startInclusive: addDiaryDays(
-              window.start,
+              loadStart,
               -WeightTrendCalculator.warmUpDays,
             ),
             endExclusive: nextDiaryDay(window.end),
@@ -140,12 +132,20 @@ Future<TdeeAnalyticsState> tdeeAnalytics(
       healthSamples: healthSamples,
     );
 
+    final entriesByDay = entries.groupByDiaryDayKey();
     final points = TdeeAnalyticsService.buildPoints(
       startDate: window.start,
       endDate: window.end,
       settings: settings,
-      learnedTdeeByDay: learnedTdeeMap,
-      entriesByDay: entries.groupByDiaryDayKey(),
+      tdeeByDay: DailyTdeeSeries.estimate(
+        startDate: estimateStart,
+        endDate: window.end,
+        today: normalizeDiaryDay(now),
+        settings: settings,
+        entriesByDay: entriesByDay,
+        weights: weights,
+      ),
+      entriesByDay: entriesByDay,
       weights: weights,
     );
 

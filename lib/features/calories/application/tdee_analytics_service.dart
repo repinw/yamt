@@ -1,10 +1,10 @@
-import 'package:yamt/features/calories/application/daily_learned_tdee_models.dart';
-import 'package:yamt/features/calories/application/daily_learned_tdee_resolver.dart';
+import 'package:yamt/features/calories/application/daily_tdee_series.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_carryover_history.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/domain/daily_tdee_estimator.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
@@ -50,7 +50,7 @@ abstract final class TdeeAnalyticsService {
     required DateTime startDate,
     required DateTime endDate,
     required CalorieGoalSettings settings,
-    required Map<String, DailyLearnedTdeeGoalData?> learnedTdeeByDay,
+    required Map<String, DailyTdeeEstimate> tdeeByDay,
     required Map<String, List<CalorieEntry>> entriesByDay,
     required DailyWeightSeries weights,
   }) {
@@ -62,20 +62,20 @@ abstract final class TdeeAnalyticsService {
     final points = <TdeeAnalyticsPoint>[];
     for (final day in days) {
       final key = diaryDayKey(day);
-      final learnedData = learnedTdeeByDay[key];
+      final estimate = tdeeByDay[key];
       final entries = entriesByDay[key] ?? const <CalorieEntry>[];
       final intake = entries.isEmpty
           ? null
           : entries.fold<double>(0, (sum, e) => sum + e.totalKcal);
       final target = settings.goalKcalForDay(day);
 
-      final fallbackBaseTdee = DailyLearnedTdeeResolver.learnedTdeeSeed(
+      final fallbackBaseTdee = DailyTdeeSeries.seedTdeeKcal(
         settings: settings,
         day: day,
         fallbackGoalKcal: target,
       );
-      final baseTdee = learnedData?.calculatedTdeeKcal ?? fallbackBaseTdee;
-      final totalTdee = learnedData?.measured.measuredTdeeKcal ?? baseTdee;
+      final baseTdee = estimate?.tdeeKcal ?? fallbackBaseTdee;
+      final totalTdee = estimate?.measuredTdeeKcal ?? baseTdee;
 
       points.add(
         TdeeAnalyticsPoint(
@@ -86,7 +86,7 @@ abstract final class TdeeAnalyticsService {
           intakeKcal: intake,
           scaleWeightKg: weights.rawByDay[key],
           trendWeightKg: weights.trendByDay[key],
-          isHolding: learnedData == null,
+          isHolding: estimate == null || estimate.isHolding,
         ),
       );
     }
