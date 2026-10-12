@@ -750,6 +750,7 @@
   "inventoryManualAddCandidateSourceOff": "OFF",
   "inventoryManualAddNotFound": "No matching product was found for this barcode.",
   "inventoryManualAddLookupFailed": "Barcode lookup failed. Please try again.",
+  "inventoryManualAddLookupOffline": "Without a connection, the barcode cannot be looked up. Try again once you are online.",
   "inventoryManualAddSaveFailed": "The product could not be added to the inventory.",
   "inventoryManualAddEatSucceeded": "Added to diary",
   "inventoryManualAddPackageSizeLabel": "Package size",

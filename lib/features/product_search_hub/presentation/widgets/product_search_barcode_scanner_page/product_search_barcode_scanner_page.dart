@@ -35,7 +35,8 @@ class InventoryBarcodeScannerPage extends StatelessWidget {
   /// The on product not found callback.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
 
-  /// The on create manual product callback.
+  /// Creates the product by hand. Also called when the lookup could not reach
+  /// a source, so the scanned barcode is not lost.
   final InventoryBarcodeManualProductCallback? onCreateManualProduct;
 
   /// Whether candidate rows show explicit action buttons.

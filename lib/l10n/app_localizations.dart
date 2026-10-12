@@ -1984,6 +1984,12 @@ abstract class AppLocalizations {
   /// **'Barcode lookup failed. Please try again.'**
   String get inventoryManualAddLookupFailed;
 
+  /// No description provided for @inventoryManualAddLookupOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'Without a connection, the barcode cannot be looked up. Try again once you are online.'**
+  String get inventoryManualAddLookupOffline;
+
   /// No description provided for @inventoryManualAddSaveFailed.
   ///
   /// In en, this message translates to:

@@ -10,6 +10,8 @@ import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_overlay.dart';
 import 'package:yamt/core/widgets/barcode_scanner/barcode_scanner_support.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_exceptions.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'product_search_barcode_scanner_page/'
     'product_search_barcode_candidate_resolver.dart';
@@ -45,7 +47,8 @@ class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
   /// The on product not found callback.
   final InventoryBarcodeNotFoundCallback? onProductNotFound;
 
-  /// The on create manual product callback.
+  /// Creates the product by hand. Also called when the lookup could not reach
+  /// a source, so the scanned barcode is not lost.
   final InventoryBarcodeManualProductCallback? onCreateManualProduct;
 
   /// Whether candidate rows show explicit action buttons.
@@ -53,6 +56,9 @@ class InventoryBarcodeScannerView extends ConsumerStatefulWidget {
 
   /// Whether only eat actions should be shown.
   final bool eatOnly;
+
+  /// Key of the message that the barcode cannot be looked up offline.
+  static const lookupOfflineKey = Key('inventory_barcode_lookup_offline');
 
   @override
   ConsumerState<InventoryBarcodeScannerView> createState() =>
@@ -214,6 +220,11 @@ class _InventoryBarcodeScannerViewState
         onCreateManualProduct: widget.onCreateManualProduct,
         showSnackBar: _showSnackBar,
       );
+    } on BarcodeLookupOfflineException {
+      if (!mounted) {
+        return;
+      }
+      shouldRestartScanner = await _handleLookupOffline(barcode);
     } finally {
       if (mounted) {
         setState(() {
@@ -225,6 +236,20 @@ class _InventoryBarcodeScannerViewState
         }
       }
     }
+  }
+
+  /// The product may exist, so this never says "not found". The barcode
+  /// still goes to the manual product, as the user can create it by hand.
+  Future<bool> _handleLookupOffline(String barcode) async {
+    _showSnackBar(
+      AppLocalizations.of(context)!.inventoryManualAddLookupOffline,
+      key: InventoryBarcodeScannerView.lookupOfflineKey,
+    );
+    final handled =
+        await widget.onCreateManualProduct?.call(barcode) ??
+        await widget.onProductNotFound?.call(barcode) ??
+        false;
+    return !handled;
   }
 
   Future<void> _stopScanner() async {
@@ -253,8 +278,8 @@ class _InventoryBarcodeScannerViewState
     }
   }
 
-  void _showSnackBar(String message) {
+  void _showSnackBar(String message, {Key? key}) {
     ScaffoldMessenger.of(context)
-        .showAppSnackBar(message, tone: AppSnackBarTone.error);
+        .showAppSnackBar(message, tone: AppSnackBarTone.error, key: key);
   }
 }

@@ -667,6 +667,7 @@
   "inventoryManualAddCandidateSourceOff": "OFF",
   "inventoryManualAddNotFound": "Zu diesem Barcode wurde kein passendes Produkt gefunden.",
   "inventoryManualAddLookupFailed": "Barcode-Abfrage fehlgeschlagen. Bitte versuche es erneut.",
+  "inventoryManualAddLookupOffline": "Ohne Verbindung kann der Barcode nicht gesucht werden. Versuche es erneut, sobald du online bist.",
   "inventoryManualAddSaveFailed": "Das Produkt konnte nicht zum Inventar hinzugefügt werden.",
   "inventoryManualAddEatSucceeded": "Ins Tagebuch eingetragen",
   "inventoryManualAddPackageSizeLabel": "Packungsgröße",

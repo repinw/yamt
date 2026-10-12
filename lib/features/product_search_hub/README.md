@@ -10,7 +10,7 @@ Einheitliche Produktsuche, Produkteditor, KI-Drafterstellung und Barcode-Assiste
 - KI-Schätzung von Essen aus Fotos und/oder Beschreibung (`ManualProductAiSearchPage`, `FoodEstimateController`, `FoodEstimateRepository` mit dem Firebase-AI-Server-Template `food-estimate-template`). Das Ergebnis öffnet im Eat-Dialog aus `inventory` (`FoodEstimateResultPage`).
 - Koordination der Kontext-Modi (`inventory`, `diary`, `selection`, `mealFood`).
 - Aussteuerungsregeln für Barcode-Scan, zuletzt ausgewählte Artikel und eigene Artikeleingabe.
-- Barcode-Kandidaten-Scanner, Kandidaten-Karten und Aktionen für Suchergebnisse.
+- Barcode-Kandidaten-Scanner, Kandidaten-Karten und Aktionen für Suchergebnisse. Ein leeres Barcode-Ergebnis heißt nur dann „nicht gefunden“, wenn gelernte Kandidaten und Open Food Facts geantwortet haben; ist eine Quelle nicht erreichbar, meldet der Scanner die fehlende Verbindung (#487).
 - Kind-Routen (`AppRoutes.productSearchChildFlow`) für modale Editor- und KI-Suchen.
 - Abstraktion des Datenzugriffs via `ProductSearchGateway`.
 - Abschluss eines gewählten Lebensmittels je Modus (`product_search_hub_completion_flow.dart`): Vorrat speichern, im Tagebuch essen oder planen, über die Abläufe aus `inventory`.

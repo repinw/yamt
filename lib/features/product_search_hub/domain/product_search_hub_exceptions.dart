@@ -44,3 +44,10 @@ final class ProductPhotoCameraUnsupportedException
   /// Creates the exception.
   const new();
 }
+
+/// A barcode lookup found nothing because a source could not be reached, for
+/// example without a connection. The product may still exist.
+final class BarcodeLookupOfflineException extends ProductSearchHubException {
+  /// Creates the exception.
+  const new();
+}

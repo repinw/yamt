@@ -1159,6 +1159,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Barcode lookup failed. Please try again.';
 
   @override
+  String get inventoryManualAddLookupOffline =>
+      'Without a connection, the barcode cannot be looked up. Try again once you are online.';
+
+  @override
   String get inventoryManualAddSaveFailed =>
       'The product could not be added to the inventory.';
 
