@@ -9836,6 +9836,12 @@ abstract class AppLocalizations {
   /// **'Cook'**
   String get homeActionCook;
 
+  /// No description provided for @homeActionWeigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Weigh in'**
+  String get homeActionWeigh;
+
   /// No description provided for @cookbookFreeCookingAction.
   ///
   /// In en, this message translates to:

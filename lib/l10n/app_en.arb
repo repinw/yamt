@@ -3389,6 +3389,7 @@
   },
   "cookbookLoadFailed": "Could not load the cookbook.",
   "homeActionCook": "Cook",
+  "homeActionWeigh": "Weigh in",
   "cookbookFreeCookingAction": "Cook freely",
   "cookbookFreeCookingDescription": "Say or type ingredients while you cook",
   "freeCookingNameHint": "What is the dish called?",

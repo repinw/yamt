@@ -5948,6 +5948,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get homeActionCook => 'Kochen';
 
   @override
+  String get homeActionWeigh => 'Wiegen';
+
+  @override
   String get cookbookFreeCookingAction => 'Frei kochen';
 
   @override

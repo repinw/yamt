@@ -14,6 +14,9 @@ week, and the longer trends are going, so the diary can stay focused on today.
   training days against rest days.
 - The read models of these sections in `domain/` and the providers that build
   them from calorie and weight data in `application/`.
+- The weight entry of the tab's action button: today's weight, filled with
+  the last weigh-in of the chart. It saves through the diary weight flow of
+  Activity, so every section that depends on the weight refreshes.
 
 ## Does Not Own
 
@@ -23,6 +26,13 @@ week, and the longer trends are going, so the diary can stay focused on today.
 - Weight data and the trend weight (Health).
 - The goal archive page and the TDEE analytics page (Calories).
 - Home shell navigation chrome.
+- The weight dialog and saving a weight (Activity).
+
+## Public UI
+
+- `presentation/progress_weight_entry_flow.dart` (`showProgressWeightEntry`):
+  the weight entry that the home shell's action button opens on the
+  Fortschritt tab.
 
 ## Rules
 

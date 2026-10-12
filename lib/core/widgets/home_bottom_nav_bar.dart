@@ -13,11 +13,11 @@ import 'package:yamt/core/widgets/home_nav_item.dart';
 
 /// Bottom navigation bar used by the home shell pages.
 ///
-/// With an [action], a round lime button sits in the middle of the bar and
+/// The tab's [action] is a round lime button in the middle of the bar that
 /// reaches above its top edge; its word stands under it in the bar.
 class HomeBottomNavBar extends StatelessWidget {
   /// The home bottom nav bar.
-  const new({required this.entries, this.action, super.key});
+  const new({required this.entries, required this.action, super.key});
 
   /// Key of the round action button.
   static const actionKey = ValueKey<String>('home-nav-action');
@@ -25,13 +25,12 @@ class HomeBottomNavBar extends StatelessWidget {
   /// The entries.
   final List<HomeNavEntry> entries;
 
-  /// The action of the current tab, or `null` when the tab has none.
-  final HomeNavAction? action;
+  /// The action of the current tab.
+  final HomeNavAction action;
 
   @override
   Widget build(BuildContext context) {
     final colors = FoodLabelColors.of(context);
-    final action = this.action;
     final middle = (entries.length / 2).ceil();
     final items = [
       for (final entry in entries)
@@ -58,17 +57,13 @@ class HomeBottomNavBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               ...items.take(middle),
-              if (action != null)
-                Expanded(child: _ActionLabel(label: action.label)),
+              Expanded(child: _ActionLabel(label: action.label)),
               ...items.skip(middle),
             ],
           ),
         ),
       ),
     );
-    if (action == null) {
-      return bar;
-    }
     // The transparent strip above the bar lets taps through to the page;
     // only the button takes them.
     return Stack(

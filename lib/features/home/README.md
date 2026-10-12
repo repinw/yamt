@@ -19,7 +19,9 @@ Home owns the tab shell, tab navigation, and shell-level composition.
 - The action button in the middle of the bottom bar and its action panel
   (`presentation/widgets/home_action_panel.dart`). It opens like the side
   menu, mirrored, with the tab's actions at the bottom right. Vorrat,
-  Diary, and Cookbook have it; Fortschritt does not. Taps on each action
+  Diary, and Cookbook have it. Fortschritt has only one action, so its
+  button opens the weight entry of Progress without the panel; once the tab
+  has more actions, they go into the panel too. Taps on each action
   are counted on the device (`HomeActionUsageController`), and the most used
   action of the panel gets a lime icon tile
   (`domain/home_action_ranking.dart`). The order of the actions stays fixed.
