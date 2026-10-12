@@ -12,6 +12,7 @@ import 'package:yamt/core/theme/app_accent_controller.dart';
 import 'package:yamt/core/theme/app_theme.dart';
 import 'package:yamt/core/theme/app_theme_mode_controller.dart';
 import 'package:yamt/core/theme/native_theme_mode.dart';
+import 'package:yamt/core/widgets/keyboard_back_scope.dart';
 import 'package:yamt/core/widgets/keyboard_done_bar.dart';
 import 'package:yamt/features/app_update/application/'
     'app_client_version_record.dart';
@@ -93,13 +94,17 @@ class _YAMTState extends ConsumerState<YAMT> {
       darkTheme: AppTheme.dark(accent: accent),
       themeMode: ref.watch(appThemeModeControllerProvider),
       routerConfig: router,
-      builder: (context, child) => KeyboardDoneBar(
-        child: AppUpdateHintListener(
-          child: WhatsNewListener(
-            child: SharedReceiptListener(
-              onReceiptSaved: () =>
-                  ref.invalidate(inventoryItemsControllerProvider),
-              child: child ?? const SizedBox.shrink(),
+      // Above the router, so the system back closes an open keyboard
+      // before it reaches a page.
+      builder: (context, child) => KeyboardBackScope(
+        child: KeyboardDoneBar(
+          child: AppUpdateHintListener(
+            child: WhatsNewListener(
+              child: SharedReceiptListener(
+                onReceiptSaved: () =>
+                    ref.invalidate(inventoryItemsControllerProvider),
+                child: child ?? const SizedBox.shrink(),
+              ),
             ),
           ),
         ),

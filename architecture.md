@@ -350,6 +350,10 @@ NEVER move a feature type into `lib/core` to avoid an ownership decision.
 - NEVER pass a persisted entity or a DTO in `extra`.
 - **Closing:** close a go_router page with `context.pop(result)`. Close a
   dialog or bottom sheet with `Navigator.of(context).pop(result)`.
+- **System back with an open keyboard:** `KeyboardBackScope`
+  (`lib/core/widgets/`) in the builder of `MaterialApp.router` lets the first
+  system back close the keyboard; the next one leaves. Every page, sheet, and
+  dialog gets this. NEVER add a `PopScope` for it.
 
 ## 9. UI: Theme, Text, Accessibility
 

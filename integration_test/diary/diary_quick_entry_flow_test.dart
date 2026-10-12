@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/keyboard_back_scope.dart';
 import 'package:yamt/features/diary/presentation/controllers/'
     'diary_quick_entry_controller.dart';
 import 'package:yamt/features/diary/presentation/diary_calendar_controller.dart';
@@ -23,6 +25,7 @@ import '../../test/features/calories/support/fake_calories_repositories.dart';
 import '../../test/features/calories/support/fake_planned_entry_repository.dart';
 import '../../test/features/diary/support/diary_quick_entry_test_support.dart';
 import '../../test/helpers/sheet_launcher.dart';
+import '../../test/helpers/system_back_test_utils.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -92,6 +95,38 @@ void main() {
     expect(calorieLog.entries, isEmpty);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('the first back gesture closes the keyboard and keeps the '
+      'typed calories', (tester) async {
+    final calorieLog = FakeCalorieLogRepository();
+    addTearDown(calorieLog.dispose);
+    await _openQuickEntry(tester, quickEntryOverrides(calorieLog));
+    final kcalField = find.byKey(
+      DiaryQuickEntryLabel.valueKey(DiaryQuickEntryValue.kcal),
+    );
+
+    await tester.enterText(kcalField, '650');
+    await openTestKeyboard(tester);
+    await swipeSystemBack(tester);
+
+    expect(find.byType(DiaryQuickEntryPage), findsOneWidget);
+    expect(_editable(tester, kcalField).focusNode.hasFocus, isFalse);
+    expect(_editable(tester, kcalField).controller.text, '650');
+
+    await closeTestKeyboard(tester);
+    await swipeSystemBack(tester);
+
+    expect(find.byType(DiaryQuickEntryPage), findsNothing);
+    expect(find.byKey(SheetLauncher.buttonKey), findsOneWidget);
+    expect(calorieLog.entries, isEmpty);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+EditableText _editable(WidgetTester tester, Finder field) {
+  return tester.widget<EditableText>(
+    find.descendant(of: field, matching: find.byType(EditableText)),
+  );
 }
 
 /// Opens the quick entry page from the Eat sheet, on [day] when given.
@@ -100,16 +135,28 @@ Future<void> _openQuickEntry(
   List<Override> overrides, {
   DateTime? day,
 }) async {
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => const Scaffold(
+          body: Center(child: SheetLauncher(actions: diaryQuickEatActions)),
+        ),
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
+  // A router app with the keyboard back scope above the router, as the app
+  // builds it.
   await tester.pumpWidget(
     ProviderScope(
       overrides: overrides,
-      child: const MaterialApp(
-        locale: Locale('de'),
+      child: MaterialApp.router(
+        locale: const Locale('de'),
         localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
-        home: Scaffold(
-          body: Center(child: SheetLauncher(actions: diaryQuickEatActions)),
-        ),
+        routerConfig: router,
+        builder: (context, child) => KeyboardBackScope(child: child!),
       ),
     ),
   );
