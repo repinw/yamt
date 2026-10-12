@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
-import 'package:yamt/features/calories/domain/calorie_goal_calculator.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_history_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_source.dart';
@@ -31,11 +30,7 @@ CalorieGoalHistoryEntry _calculatorGoal() {
   );
 }
 
-CalorieGoalHistoryEntry _checkIn({
-  required int week,
-  required double calculatedTdeeKcal,
-  bool isRejected = false,
-}) {
+CalorieGoalHistoryEntry _checkIn({required int week, bool isRejected = false}) {
   final windowStart = _goalStart.add(Duration(days: 7 * (week - 1)));
   final due = windowStart.add(const Duration(days: 7));
   return CalorieGoalHistoryEntry(
@@ -49,7 +44,7 @@ CalorieGoalHistoryEntry _checkIn({
       windowEndDate: due.subtract(const Duration(days: 1)),
       trendWeightChangePerDay: -0.07,
       lowConfidence: false,
-      calculatedTdeeKcal: calculatedTdeeKcal,
+      calculatedTdeeKcal: 2480,
       isRejected: isRejected,
     ),
   );
@@ -71,45 +66,26 @@ CalorieGoalSettings _settings(
 }
 
 void main() {
-  final startTdee = CalorieGoalCalculator.calculate(_profile).tdeeKcal;
-
-  test('starts with the calculator TDEE and adds one value per check-in', () {
-    final history = CalorieTdeeHistory.fromSettings(
+  test('lists the day of each confirmed check-in', () {
+    final goals = CalorieTdeeHistory.perGoal(
       _settings([
         _calculatorGoal(),
-        _checkIn(week: 1, calculatedTdeeKcal: 2480),
-        _checkIn(week: 2, calculatedTdeeKcal: 2530),
+        _checkIn(week: 1),
+        _checkIn(week: 2, isRejected: true),
       ]),
     );
 
-    expect(history.startTdeeKcal, startTdee);
-    expect(history.checkIns.map((checkIn) => checkIn.tdeeKcal), [2480, 2530]);
-    expect(history.checkIns.first.day, DateTime(2026, 8, 10));
-  });
-
-  test('keeps the previous TDEE for a declined check-in', () {
-    final history = CalorieTdeeHistory.fromSettings(
-      _settings([
-        _calculatorGoal(),
-        _checkIn(week: 1, calculatedTdeeKcal: 2480),
-        _checkIn(week: 2, calculatedTdeeKcal: 2600, isRejected: true),
-      ]),
-    );
-
-    final declined = history.checkIns.last;
-    expect(declined.isRejected, isTrue);
-    expect(declined.tdeeKcal, 2480);
-    expect(declined.calculatedTdeeKcal, 2600);
+    expect(goals.single.startDay, _goalStart);
+    expect(goals.single.checkInDays, [
+      DateTime(2026, 8, 10),
+      DateTime(2026, 8, 17),
+    ]);
   });
 
   test('leaves out the check-in that still waits for a decision', () {
-    final history = CalorieTdeeHistory.fromSettings(
+    final goals = CalorieTdeeHistory.perGoal(
       _settings(
-        [
-          _calculatorGoal(),
-          _checkIn(week: 1, calculatedTdeeKcal: 2480),
-          _checkIn(week: 2, calculatedTdeeKcal: 2530),
-        ],
+        [_calculatorGoal(), _checkIn(week: 1), _checkIn(week: 2)],
         pending: PendingCalorieGoalWeeklyCheckIn(
           windowStartDate: DateTime(2026, 8, 10),
           windowEndDate: DateTime(2026, 8, 16),
@@ -118,27 +94,7 @@ void main() {
       ),
     );
 
-    expect(history.checkIns.map((checkIn) => checkIn.tdeeKcal), [2480]);
-  });
-
-  test('starts over with a new calculator goal', () {
-    final newGoal = DateTime(2026, 9);
-    final history = CalorieTdeeHistory.fromSettings(
-      _settings([
-        _calculatorGoal(),
-        _checkIn(week: 1, calculatedTdeeKcal: 2480),
-        CalorieGoalHistoryEntry(
-          dailyKcalGoal: 2100,
-          calculatorProfile: _profile,
-          effectiveDate: newGoal,
-          changedAt: newGoal,
-          source: CalorieGoalSource.calculator,
-        ),
-      ]),
-    );
-
-    expect(history.checkIns, isEmpty);
-    expect(history.startTdeeKcal, startTdee);
+    expect(goals.single.checkInDays, [DateTime(2026, 8, 10)]);
   });
 
   test('splits the history per goal with the start day of each', () {
@@ -146,7 +102,7 @@ void main() {
     final goals = CalorieTdeeHistory.perGoal(
       _settings([
         _calculatorGoal(),
-        _checkIn(week: 1, calculatedTdeeKcal: 2480),
+        _checkIn(week: 1),
         CalorieGoalHistoryEntry(
           dailyKcalGoal: 2100,
           calculatorProfile: _profile,
@@ -158,8 +114,7 @@ void main() {
     );
 
     expect(goals.map((goal) => goal.startDay), [_goalStart, newGoal]);
-    expect(goals.first.checkIns.map((checkIn) => checkIn.tdeeKcal), [2480]);
-    expect(goals.last.checkIns, isEmpty);
-    expect(goals.last.startTdeeKcal, startTdee);
+    expect(goals.first.checkInDays, [DateTime(2026, 8, 10)]);
+    expect(goals.last.checkInDays, isEmpty);
   });
 }

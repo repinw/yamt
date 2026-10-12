@@ -41,8 +41,7 @@ class ProgressPeriod {
     };
     final starts = <ProgressGoalStart>[
       for (final (index, goal) in goals.indexed)
-        if (index >= firstShown && goal.startDay != null)
-          (number: index + 1, day: goal.startDay!),
+        if (index >= firstShown) (number: index + 1, day: goal.startDay),
     ];
     return ProgressPeriod(
       start:

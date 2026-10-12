@@ -58,8 +58,8 @@ class ProgressTdee {
       ],
       checkInDays: {
         for (final goal in CalorieTdeeHistory.perGoal(settings))
-          for (final checkIn in goal.checkIns)
-            if (!checkIn.day.isBefore(chartStart)) checkIn.day,
+          for (final day in goal.checkInDays)
+            if (!day.isBefore(chartStart)) day,
       },
       goalStarts: [
         for (final start in period.goalStarts)
