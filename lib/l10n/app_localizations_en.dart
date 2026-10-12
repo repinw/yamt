@@ -2963,11 +2963,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progressToday => 'today';
 
   @override
-  String get progressTdeeKicker => 'TDEE · per check-in';
+  String get progressTdeeKicker => 'TDEE · daily';
 
   @override
   String progressTdeeChange(String kcal) {
-    return '$kcal since last week';
+    return '$kcal since yesterday';
+  }
+
+  @override
+  String progressTdeeWeekChange(String kcal) {
+    return '$kcal this week';
   }
 
   @override
@@ -2979,17 +2984,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get progressTdeeCheckInOpen => 'Check-in waits in the diary';
 
   @override
-  String get progressTdeeLegendTaken => 'Taken';
+  String get progressTdeeLegendLine => 'TDEE';
 
   @override
-  String get progressTdeeLegendKept => 'Calculated, old value kept';
+  String get progressTdeeLegendDay => 'Daily value';
 
   @override
-  String get progressTdeeLegendStart => 'Start';
+  String get progressTdeeLegendCheckIn => 'Check-in';
 
   @override
-  String get progressTdeeEmpty =>
-      'The first point appears after your first weekly check-in.';
+  String get progressTdeeEmpty => 'The curve starts with your first goal.';
 
   @override
   String get progressDayTypeTitle => 'Training vs. rest day';

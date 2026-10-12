@@ -18,13 +18,14 @@ class TdeeAnalyticsPoint {
   /// Calendar day.
   final DateTime day;
 
-  /// Learned Base-TDEE (without activity credit).
+  /// The daily TDEE estimate.
   final double? learnedBaseTdeeKcal;
 
   /// Unified TDEE value.
   double? get tdeeKcal => learnedBaseTdeeKcal;
 
-  /// Total TDEE (Base-TDEE + activity credit) for flux range upper bound.
+  /// The TDEE that this day's smoothed intake and weight trend imply,
+  /// before the ramp-up and the daily cap.
   final double? totalTdeeKcal;
 
   /// Daily calorie target.
@@ -39,7 +40,7 @@ class TdeeAnalyticsPoint {
   /// Estimated real weight: interpolated and smoothed scale weights.
   final double? trendWeightKg;
 
-  /// Whether data was held/interpolated due to missing logs.
+  /// Whether too few logged days held the estimate.
   final bool isHolding;
 }
 

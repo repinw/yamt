@@ -8,12 +8,12 @@ part of 'progress_tdee_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// TDEE per confirmed weekly check-in of the goals of [scope].
+/// Daily TDEE of the period of [scope] with its check-ins.
 
 @ProviderFor(progressTdee)
 final progressTdeeProvider = ProgressTdeeFamily._();
 
-/// TDEE per confirmed weekly check-in of the goals of [scope].
+/// Daily TDEE of the period of [scope] with its check-ins.
 
 final class ProgressTdeeProvider
     extends
@@ -23,7 +23,7 @@ final class ProgressTdeeProvider
           FutureOr<ProgressTdee>
         >
     with $FutureModifier<ProgressTdee>, $FutureProvider<ProgressTdee> {
-  /// TDEE per confirmed weekly check-in of the goals of [scope].
+  /// Daily TDEE of the period of [scope] with its check-ins.
   ProgressTdeeProvider._({
     required ProgressTdeeFamily super.from,
     required ProgressScope super.argument,
@@ -68,9 +68,9 @@ final class ProgressTdeeProvider
   }
 }
 
-String _$progressTdeeHash() => r'6e14d57077124c531f4e06543d0131214822d399';
+String _$progressTdeeHash() => r'fcd270d7417026f0fda2bbc04c26ef6cedee5800';
 
-/// TDEE per confirmed weekly check-in of the goals of [scope].
+/// Daily TDEE of the period of [scope] with its check-ins.
 
 final class ProgressTdeeFamily extends $Family
     with $FunctionalFamilyOverride<FutureOr<ProgressTdee>, ProgressScope> {
@@ -83,7 +83,7 @@ final class ProgressTdeeFamily extends $Family
         isAutoDispose: true,
       );
 
-  /// TDEE per confirmed weekly check-in of the goals of [scope].
+  /// Daily TDEE of the period of [scope] with its check-ins.
 
   ProgressTdeeProvider call(ProgressScope scope) =>
       ProgressTdeeProvider._(argument: scope, from: this);

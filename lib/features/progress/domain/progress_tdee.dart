@@ -3,48 +3,85 @@ import 'package:yamt/features/calories/domain/calorie_balance_cycle.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_tdee_check_in_history.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/progress/domain/progress_period.dart';
 
-/// TDEE per confirmed weekly check-in, per goal, and when the next check-in
-/// is due.
+/// One chart day: the daily TDEE and the value that intake and weight trend
+/// of that day imply, each `null` before the first goal.
+typedef ProgressTdeeDay = ({
+  DateTime day,
+  double? tdeeKcal,
+  double? measuredKcal,
+});
+
+/// The daily TDEE of a period with its check-ins and goal starts, and when
+/// the next check-in is due.
 @immutable
 class ProgressTdee {
   /// Creates the TDEE progress.
   const new({
-    required this.goals,
-    required this.firstGoalNumber,
+    required this.days,
+    required this.checkInDays,
+    required this.goalStarts,
+    required this.runStartDay,
     required this.nextCheckInDay,
     required this.isCheckInOpen,
   });
 
-  /// Resolves the TDEE progress of [scope] from [settings].
-  factory fromSettings(
-    CalorieGoalSettings settings,
-    DateTime today,
-    ProgressScope scope,
-  ) {
-    final goals = CalorieTdeeHistory.perGoal(settings);
-    final runEnd = resolveCalorieGoalRunEndDate(settings: settings, day: today);
+  /// Resolves the TDEE progress of [period] from the daily analytics
+  /// [points] and the check-ins in [settings].
+  factory fromPoints({
+    required CalorieGoalSettings settings,
+    required ProgressPeriod period,
+    required List<TdeeAnalyticsPoint> points,
+    required DateTime today,
+  }) {
+    final chartStart = period.chartStart(today);
+    final pointsByDay = {
+      for (final point in points) diaryDayKey(point.day): point,
+    };
+    final runStart = resolveCalorieGoalRunStartDate(
+      settings: settings,
+      day: today,
+    );
     return ProgressTdee(
-      goals: switch (scope) {
-        ProgressScope.goal => goals.isEmpty ? goals : [goals.last],
-        ProgressScope.all => goals,
+      days: [
+        for (var day = chartStart; !day.isAfter(today); day = nextDiaryDay(day))
+          if (day.isBefore(period.start))
+            (day: day, tdeeKcal: null, measuredKcal: null)
+          else
+            (
+              day: day,
+              tdeeKcal: pointsByDay[diaryDayKey(day)]?.learnedBaseTdeeKcal,
+              measuredKcal: pointsByDay[diaryDayKey(day)]?.totalTdeeKcal,
+            ),
+      ],
+      checkInDays: {
+        for (final goal in CalorieTdeeHistory.perGoal(settings))
+          for (final checkIn in goal.checkIns)
+            if (!checkIn.day.isBefore(chartStart)) checkIn.day,
       },
-      firstGoalNumber: switch (scope) {
-        ProgressScope.goal => goals.length,
-        ProgressScope.all => 1,
-      },
-      nextCheckInDay: nextDiaryDay(runEnd),
+      goalStarts: [
+        for (final start in period.goalStarts)
+          if (start.day.isAfter(chartStart)) start,
+      ],
+      runStartDay: runStart,
+      nextCheckInDay: addDiaryDays(runStart, calorieGoalRunLengthDays),
       isCheckInOpen: settings.pendingWeeklyCheckIn != null,
     );
   }
 
-  /// One TDEE history per goal, oldest first; the last one is the current
-  /// goal.
-  final List<CalorieTdeeHistory> goals;
+  /// Days of the chart, oldest first, ending today.
+  final List<ProgressTdeeDay> days;
 
-  /// Number among all goals of the first goal in [goals], starting at 1.
-  final int firstGoalNumber;
+  /// Days on which a confirmed check-in took effect.
+  final Set<DateTime> checkInDays;
+
+  /// First day of each goal in the chart after its first day, oldest first.
+  final List<ProgressGoalStart> goalStarts;
+
+  /// First day of the running week.
+  final DateTime runStartDay;
 
   /// Day on which the next check-in is due.
   final DateTime nextCheckInDay;
@@ -52,27 +89,25 @@ class ProgressTdee {
   /// Whether a check-in waits for the user's decision.
   final bool isCheckInOpen;
 
-  /// Every check-in of all [goals], oldest first.
-  List<CalorieTdeeCheckIn> get checkIns => [
-    for (final goal in goals) ...goal.checkIns,
-  ];
+  /// Today's TDEE, or `null` before the first goal.
+  ///
+  /// Today carries yesterday's estimate, because today's diary is not
+  /// complete yet.
+  double? get currentTdeeKcal => days.lastOrNull?.tdeeKcal;
 
-  /// The TDEE in effect now, or `null` before any value is known.
-  double? get currentTdeeKcal {
-    final current = goals.lastOrNull;
-    return current?.checkIns.lastOrNull?.tdeeKcal ?? current?.startTdeeKcal;
-  }
+  /// Change of the latest estimate against the one before it.
+  double? get changeSinceYesterdayKcal =>
+      days.isEmpty ? null : _changeSince(addDiaryDays(days.last.day, -2));
 
-  /// Change of the latest check-in of the current goal against the value
-  /// before it.
-  double? get lastChangeKcal {
-    final current = goals.lastOrNull;
-    final checkIns = current?.checkIns ?? const <CalorieTdeeCheckIn>[];
-    final latest = checkIns.lastOrNull;
-    if (latest == null) return null;
-    final previous = checkIns.length > 1
-        ? checkIns[checkIns.length - 2].tdeeKcal
-        : current?.startTdeeKcal;
-    return previous == null ? null : latest.tdeeKcal - previous;
+  /// Change since the estimate in effect when the running week started.
+  double? get changeThisWeekKcal => _changeSince(previousDiaryDay(runStartDay));
+
+  double? _changeSince(DateTime day) {
+    final current = currentTdeeKcal;
+    final before = days
+        .where((entry) => entry.day == day)
+        .firstOrNull
+        ?.tdeeKcal;
+    return current == null || before == null ? null : current - before;
   }
 }
