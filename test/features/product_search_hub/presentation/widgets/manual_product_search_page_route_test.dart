@@ -13,6 +13,8 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_page/manual_product_search_editor_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_form_details.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_route.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -116,6 +118,65 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('open_go_router_route')), findsOneWidget);
+  });
+
+  testWidgets('a new product says "Create"; an edit says "Done" and closes '
+      'without a result', (tester) async {
+    final results = <String?>[];
+    final router = _buildManualProductRouteTestRouter(
+      homeBuilder: (context) {
+        Future<void> open({required bool isEdit}) async => results.add(
+          await pushManualProductSearchPage<String>(
+            context: context,
+            args: ManualProductSearchRouteArgs.editor(
+              config: InventoryReceiptManualProductConfig(item: _item()),
+              showEatImmediatelyOption: false,
+              initialAction: InventoryReceiptManualProductAction.addToInventory,
+              showActionSelector: false,
+              isEdit: isEdit,
+            ),
+          ),
+        );
+        return Scaffold(
+          body: Column(
+            children: [
+              FilledButton(
+                key: const Key('open_create'),
+                onPressed: () => unawaited(open(isEdit: false)),
+                child: const Text('create'),
+              ),
+              FilledButton(
+                key: const Key('open_edit'),
+                onPressed: () => unawaited(open(isEdit: true)),
+                child: const Text('edit'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    addTearDown(router.dispose);
+    await _pumpRouter(tester, router);
+    Finder label(String text) => find.descendant(
+      of: find.byKey(ManualProductDetailsForm.saveKey),
+      matching: find.text(text),
+    );
+
+    await tester.tap(find.byKey(const Key('open_create')));
+    await tester.pumpAndSettle();
+    expect(label('Create'), findsOneWidget);
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('open_edit')));
+    await tester.pumpAndSettle();
+    expect(label('Done'), findsOneWidget);
+    await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('open_edit')), findsOneWidget);
+    expect(results, [null, null]);
   });
 }
 

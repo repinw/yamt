@@ -417,6 +417,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+    // "Bearbeiten" edits the picked food: "Fertig" or "Änderungen speichern".
+    expect(childArgs?.isEdit, isTrue);
 
     await tester.tap(find.byKey(const Key('return_child_result')));
     await tester.pumpAndSettle();
@@ -478,6 +480,8 @@ void main() {
 
     expect(find.text('product search child route'), findsOneWidget);
     expect(childArgs.last.flow, ManualProductSearchChildFlow.editor);
+    // The product is not created yet, so the editor still creates it.
+    expect(childArgs.last.isEdit, isFalse);
     expect(childArgs.last.item.id, 'created-item');
     expect(childArgs.last.item.name, 'Skyr');
   });
@@ -623,6 +627,7 @@ void main() {
 
     expect(find.text('product search child route'), findsOneWidget);
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+    expect(childArgs?.isEdit, isTrue);
   });
 
   testWidgets('a stored product closes the hub back to the Vorrat', (
@@ -750,6 +755,7 @@ void main() {
 
     expect(find.text('product search child route'), findsOneWidget);
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+    expect(childArgs?.isEdit, isTrue);
   });
 
   testWidgets('meal food search result opens the eat page, not the editor', (
@@ -853,6 +859,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(childArgs?.flow, ManualProductSearchChildFlow.editor);
+    // "Bearbeiten" edits the picked food: "Fertig" or "Änderungen speichern".
+    expect(childArgs?.isEdit, isTrue);
 
     await tester.tap(find.byKey(const Key('return_child_result')));
     await tester.pumpAndSettle();

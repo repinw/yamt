@@ -416,6 +416,18 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get productEditorSaveAction;
 
+  /// No description provided for @productEditorSaveChangesAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Save changes'**
+  String get productEditorSaveChangesAction;
+
+  /// No description provided for @productEditorDoneAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get productEditorDoneAction;
+
   /// No description provided for @productEditorFrontPhotoHint.
   ///
   /// In en, this message translates to:

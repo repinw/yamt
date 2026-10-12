@@ -37,7 +37,7 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
     this.showActionSelector = true,
     this.initialRecentItem,
     this.initialInfoMessage,
-    this.confirmLabel,
+    this.isEdit = false,
     super.key,
   });
 
@@ -62,9 +62,10 @@ class InventoryReceiptManualProductEditorPage extends ConsumerStatefulWidget {
   /// Optional message shown when the editor opens.
   final String? initialInfoMessage;
 
-  /// Word of the save button; "Erstellen" when null. Editing a Vorrat item
-  /// says "Speichern".
-  final String? confirmLabel;
+  /// Whether the editor changes a food the user already has or picked,
+  /// instead of creating one. Its button then says "Änderungen speichern"
+  /// once something changed, and "Fertig" before, which only closes.
+  final bool isEdit;
 
   @override
   ConsumerState<InventoryReceiptManualProductEditorPage> createState() =>
@@ -124,11 +125,18 @@ class _InventoryReceiptManualProductEditorPageState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = ref.watch(_provider);
     final photoState = ref.watch(_photoProvider);
+    // An edit without changes has nothing to save; its button only closes.
+    final isDone = widget.isEdit && !state.isChanged && !photoState.hasPhoto;
     final canSave =
-        !photoState.isBusy &&
-        canSaveManualProduct(state: state, selectedAction: _selectedAction);
+        isDone ||
+        (!photoState.isBusy &&
+            canSaveManualProduct(
+              state: state,
+              selectedAction: _selectedAction,
+            ));
 
     return ManualProductSearchEditorFormView(
       state: state,
@@ -148,8 +156,12 @@ class _InventoryReceiptManualProductEditorPageState
       onNoBarcodeChanged: (value) =>
           _controller.updateHasNoBarcode(value: value),
       onActionChanged: (action) => setState(() => _selectedAction = action),
-      onSave: _onSave,
-      confirmLabel: widget.confirmLabel,
+      onSave: isDone ? _closePage : _onSave,
+      confirmLabel: !widget.isEdit
+          ? null
+          : isDone
+          ? l10n.productEditorDoneAction
+          : l10n.productEditorSaveChangesAction,
     );
   }
 

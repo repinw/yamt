@@ -61,6 +61,7 @@ Widget buildManualProductSearchChild(ManualProductSearchRouteArgs args) {
         showActionSelector: args.showActionSelector,
         initialRecentItem: args.initialRecentItem,
         initialInfoMessage: args.initialInfoMessage,
+        isEdit: args.isEdit,
       ),
     ManualProductSearchChildFlow.aiSearch => ManualProductAiSearchPage(
       item: args.item,

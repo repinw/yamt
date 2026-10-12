@@ -20,7 +20,6 @@ const _legacyPagesWithoutIntegrationTest = <String>{
   'lib/features/cooking_flow/presentation/cooking_flow_summary_page.dart',
   'lib/features/kitchen_utensils/presentation/kitchen_utensils_page.dart',
   'lib/features/onboarding/presentation/calorie_goal_onboarding_page.dart',
-  'lib/features/product_search_hub/presentation/product_search_hub_item_edit_page.dart',
   'lib/features/settings/presentation/profile_page.dart',
   'lib/features/shoppinglist/presentation/shopping_list_page.dart',
 };

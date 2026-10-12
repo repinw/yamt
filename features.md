@@ -487,6 +487,16 @@ and feature description docs. This is product-facing; architecture rules stay in
   input per 100 g. All seven values of the EU label (energy, fat, saturates,
   carbohydrate, sugars, protein, salt) are required; a missing one is
   framed. Polyunsaturates and fibre come from the "+" row.
+- Editing a food that exists already (a stock item's "Bearbeiten", or
+  "Bearbeiten" on the eat or Vorrat page of a picked food) opens the editor
+  with "Fertig" instead of "Erstellen" (#489): it closes without saving or
+  uploading anything. Once a value, the unit, the barcode or its "has none"
+  mark changes, or a photo is taken, the button says "Änderungen
+  speichern". A value written another way ("1,50" for 1.5, spaces around a
+  text) is no change, and changing a value back shows "Fertig" again. A
+  missing value does not block "Fertig"; the line above the button still
+  names it. Reopening the form of a product that is not created yet keeps
+  "Erstellen".
 - From the Vorrat's own add sheet (not when a flow such as cooking picks an
   ingredient), the Vorrat page after a pick also has "Planen" and
   "Ins Tagebuch" icons next to "In Vorrat": "Ins Tagebuch" opens the eat page
