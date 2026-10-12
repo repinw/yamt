@@ -1487,6 +1487,15 @@
       }
     }
   },
+  "diaryBalanceEatenWithPlanAmount": "{kcal} with plan",
+  "@diaryBalanceEatenWithPlanAmount": {
+    "description": "Head of the diary balance card while \"By plan\" counts the open plans: eaten plus planned kcal.",
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
   "diaryBalanceOfTarget": "of {kcal}",
   "@diaryBalanceOfTarget": {
     "placeholders": {

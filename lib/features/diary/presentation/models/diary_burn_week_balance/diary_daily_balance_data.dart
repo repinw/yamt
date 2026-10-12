@@ -110,7 +110,10 @@ class DiaryDailyBalanceData {
       l10n: l10n,
     );
 
-    final eatenNumber = numberFormat.format(metrics.eatenKcal.round());
+    // "Nach Plan" shows where the day stands once the plans are eaten.
+    final eatenNumber = numberFormat.format(
+      (metrics.eatenKcal + (countsPlans ? plans!.kcal : 0)).round(),
+    );
     final targetNumber = numberFormat.format(metrics.targetKcal.round());
     final roundedLeftWithoutPlan = metrics.dayLeftKcal.round();
     final roundedLeftKcal = countsPlans
@@ -135,7 +138,8 @@ class DiaryDailyBalanceData {
       isPauseDay: isPauseDay,
       numberFormat: numberFormat,
       bufferAdjustmentLabel: bufferAdjustmentLabel,
-      eatenSubtitle: eatenSubtitle,
+      // Real eaten and adjustment do not add up to a value with the plans.
+      eatenSubtitle: countsPlans ? null : eatenSubtitle,
       leftSubtitle: resolvedSubtitle.text,
       leftSubtitleParts: resolvedSubtitle.parts,
       budgetDetails: budgetDetails,
@@ -174,7 +178,7 @@ class DiaryDailyBalanceData {
   /// Derived metrics for the daily card.
   final DiaryDailyBalanceMetrics metrics;
 
-  /// Eaten numeric value (e.g. '800').
+  /// Eaten numeric value (e.g. '800'), with the open plans when they count.
   final String eatenValue;
 
   /// Target supplement for the eaten metric (e.g. '/ 2,000').

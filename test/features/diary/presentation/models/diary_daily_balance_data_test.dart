@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:yamt/features/diary/application/diary_burn_week_balance/diary_daily_balance_metrics.dart';
+import 'package:yamt/features/diary/application/diary_open_plans.dart';
 import 'package:yamt/features/diary/presentation/models/diary_burn_week_balance/diary_daily_balance_data.dart';
 import 'package:yamt/l10n/app_localizations_en.dart';
 
@@ -12,8 +13,8 @@ void main() {
   group('DiaryDailyBalanceData.from', () {
     test('formats leftSubtitle with base and carryover components', () {
       const metrics = DiaryDailyBalanceMetrics(
-        bufferAdjustmentKcal: 0,
-        realEatenKcal: 1000,
+        bufferAdjustmentKcal: -100,
+        realEatenKcal: 1100,
         eatenKcal: 1000,
         realDayLeftKcal: 1150,
         dayLeftKcal: 1150,
@@ -52,8 +53,8 @@ void main() {
 
     test('formats leftSubtitle with negative carryover', () {
       const metrics = DiaryDailyBalanceMetrics(
-        bufferAdjustmentKcal: 0,
-        realEatenKcal: 1000,
+        bufferAdjustmentKcal: -100,
+        realEatenKcal: 1100,
         eatenKcal: 1000,
         realDayLeftKcal: 920,
         dayLeftKcal: 920,
@@ -309,6 +310,45 @@ void main() {
 
       expect(data.isOverTarget, isTrue);
       expect(data.leftValue, '600');
+    });
+
+    test('"Nach Plan" counts the plans in what is eaten', () {
+      const metrics = DiaryDailyBalanceMetrics(
+        bufferAdjustmentKcal: -100,
+        realEatenKcal: 1100,
+        eatenKcal: 1000,
+        realDayLeftKcal: 1000,
+        dayLeftKcal: 1000,
+        targetKcal: 2000,
+        baseGoalKcal: 2000,
+      );
+      DiaryDailyBalanceData dataFor({required bool counted}) =>
+          DiaryDailyBalanceData.from(
+            selectedDay: selectedDay,
+            metrics: metrics,
+            isPauseDay: false,
+            numberFormat: numberFormat,
+            l10n: l10n,
+            now: selectedDay,
+            openPlans: DiaryOpenPlans(
+              kcal: 500,
+              protein: 0,
+              carbs: 0,
+              fat: 0,
+              counted: counted,
+            ),
+          );
+
+      final byPlan = dataFor(counted: true);
+      expect(byPlan.eatenValue, '1,500');
+      expect(byPlan.eatenSubtitle, isNull);
+      expect(byPlan.targetAddition, '/ 2,000');
+      expect(byPlan.leftValue, '500');
+
+      final real = dataFor(counted: false);
+      expect(real.eatenValue, '1,000');
+      expect(real.eatenSubtitle, isNotNull);
+      expect(real.leftValue, '1,000');
     });
 
     test('never marks a pause day over target', () {

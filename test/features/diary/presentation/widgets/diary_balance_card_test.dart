@@ -534,6 +534,50 @@ void main() {
     expect(_findTextContaining(' eaten'), findsNothing);
   });
 
+  testWidgets('the details count the plans in what is eaten by plan', (
+    tester,
+  ) async {
+    final now = DateTime(2026, 4, 26, 20);
+    final selectedDay = DateTime(2026, 4, 27);
+
+    await _pumpBalanceCard(
+      tester,
+      now: now,
+      selectedDay: selectedDay,
+      weekStartDate: selectedDay.subtract(const Duration(days: 3)),
+      dayTotals: const [0, 0, 0, 0, 0, 0, 900],
+      runState: const BurnWeekRunState.initial(),
+      todayFlexibleGoalKcal: 2218,
+      previousDayCarryoverKcal: 218,
+      isPreviousDayClosed: true,
+      plans: [
+        CalorieEntry.create(
+          id: 'plan-breakfast',
+          userId: 'user-1',
+          name: 'Brötchen',
+          mealType: MealType.breakfast,
+          consumedAmount: 100,
+          consumedUnit: ConsumedUnit.grams,
+          per100Kcal: 300,
+          per100Protein: 10,
+          per100Carbs: 50,
+          per100Fat: 5,
+          loggedAt: selectedDay.add(const Duration(hours: 8)),
+          createdAt: now,
+          updatedAt: now,
+        ),
+      ],
+    );
+
+    expect(find.text('1,200 with plan'), findsOneWidget);
+
+    await tester.tap(find.byKey(DiaryBalanceCardKeys.afterPlanChip));
+    await tester.pumpAndSettle();
+
+    expect(find.text('900 eaten'), findsOneWidget);
+    expect(find.text('1,200 with plan'), findsNothing);
+  });
+
   testWidgets('a day without a previous-day carryover offers no close', (
     tester,
   ) async {

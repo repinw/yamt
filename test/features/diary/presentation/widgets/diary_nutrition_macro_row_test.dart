@@ -16,6 +16,8 @@ void main() {
       required double current,
       required double target,
       bool showTotal = true,
+      double planned = 0,
+      bool countsPlanned = false,
     }) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -32,6 +34,8 @@ void main() {
                   color: Colors.green,
                   numberFormat: numberFormat,
                   showTotal: showTotal,
+                  planned: planned,
+                  countsPlanned: countsPlanned,
                 ),
               ),
             ),
@@ -50,6 +54,41 @@ void main() {
       expect(find.text('55'), findsOneWidget);
       expect(find.text('left'), findsOneWidget);
       expect(find.text('Protein'), findsOneWidget);
+      expect(
+        find.textContaining('45 / 100 g', findRichText: true),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('counts planned grams in eaten when plans count', (
+      tester,
+    ) async {
+      await pumpRow(
+        tester,
+        label: 'Protein',
+        current: 45,
+        target: 100,
+        planned: 20,
+        countsPlanned: true,
+      );
+
+      expect(find.text('35'), findsOneWidget);
+      expect(
+        find.textContaining('65 / 100 g', findRichText: true),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('keeps eaten grams when plans do not count', (tester) async {
+      await pumpRow(
+        tester,
+        label: 'Protein',
+        current: 45,
+        target: 100,
+        planned: 20,
+      );
+
+      expect(find.text('55'), findsOneWidget);
       expect(
         find.textContaining('45 / 100 g', findRichText: true),
         findsOneWidget,

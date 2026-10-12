@@ -4786,6 +4786,12 @@ abstract class AppLocalizations {
   /// **'{kcal} eaten'**
   String diaryBalanceEatenAmount(String kcal);
 
+  /// Head of the diary balance card while "By plan" counts the open plans: eaten plus planned kcal.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} with plan'**
+  String diaryBalanceEatenWithPlanAmount(String kcal);
+
   /// No description provided for @diaryBalanceOfTarget.
   ///
   /// In en, this message translates to:
