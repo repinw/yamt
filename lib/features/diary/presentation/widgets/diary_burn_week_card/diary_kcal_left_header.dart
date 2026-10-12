@@ -167,7 +167,9 @@ class _EatenOfTarget extends StatelessWidget {
           )
         else ...[
           Text(
-            l10n.diaryBalanceEatenAmount(data.eatenValue),
+            data.countsOpenPlans ?? false
+                ? l10n.diaryBalanceEatenWithPlanAmount(data.eatenValue)
+                : l10n.diaryBalanceEatenAmount(data.eatenValue),
             style: style?.copyWith(
               color: colors.ink,
               fontWeight: FontWeight.w700,

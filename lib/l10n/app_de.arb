@@ -1310,6 +1310,7 @@
   "diaryMealsPlanEmptyTitle": "Noch nichts geplant",
   "diaryMealsPlanEmptyHint": "Über „Essen“ unten trägst du ein, was du an diesem Tag essen willst.",
   "diaryBalanceEatenAmount": "{kcal} gegessen",
+  "diaryBalanceEatenWithPlanAmount": "{kcal} mit Plan",
   "diaryBalanceOfTarget": "von {kcal}",
   "diaryBalanceScaleTarget": "Ziel {kcal}",
   "diaryMacroLeftSuffix": "übrig",

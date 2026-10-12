@@ -2800,6 +2800,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String diaryBalanceEatenWithPlanAmount(String kcal) {
+    return '$kcal with plan';
+  }
+
+  @override
   String diaryBalanceOfTarget(String kcal) {
     return 'of $kcal';
   }
