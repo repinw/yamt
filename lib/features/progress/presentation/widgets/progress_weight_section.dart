@@ -8,10 +8,10 @@ import 'package:yamt/features/progress/application/progress_weight_provider.dart
 import 'package:yamt/features/progress/domain/progress_period.dart';
 import 'package:yamt/features/progress/domain/progress_weight.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_axis_labels.dart';
+import 'package:yamt/features/progress/presentation/widgets/progress_day_chart.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_legend.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_header.dart';
 import 'package:yamt/features/progress/presentation/widgets/progress_section_state.dart';
-import 'package:yamt/features/progress/presentation/widgets/progress_weight_chart.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// The weight trend of the period of a scope with the goal starts and the
@@ -55,9 +55,6 @@ class _WeightContent extends StatelessWidget {
     final perWeek = trend.trendKgPerWeek;
     final projected = weight.projectedGoalDate;
     final days = trend.days;
-    final dayFormat = days.length > _daysPerYear
-        ? DateFormat.yMMM(locale)
-        : DateFormat.MMMd(locale);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -82,22 +79,22 @@ class _WeightContent extends StatelessWidget {
         if (trendKg == null)
           ProgressSectionNote(text: l10n.progressWeightEmpty)
         else ...[
-          ProgressWeightChart(
-            days: days,
+          ProgressDayChart(
+            days: [
+              for (final day in days)
+                (day: day.day, dot: day.weightKg, line: day.trendWeightKg),
+            ],
+            minRange: _minRangeKg,
             goalStarts: [
               for (final start in weight.goalStarts)
                 (start.day, l10n.progressGoalMarker(start.number)),
             ],
           ),
           const SizedBox(height: AppSpacing.xxs),
-          ProgressAxisLabels(
-            labels: [
-              for (final index in _labelIndexes(days.length))
-                if (index == days.length - 1)
-                  l10n.progressToday
-                else
-                  dayFormat.format(days[index].day),
-            ],
+          ProgressAxisLabels.forDays(
+            days: [for (final day in days) day.day],
+            todayLabel: l10n.progressToday,
+            locale: locale,
           ),
           const SizedBox(height: AppSpacing.sm),
           ProgressLegend(
@@ -125,14 +122,5 @@ class _WeightContent extends StatelessWidget {
   }
 }
 
-const _daysPerYear = 365;
-
-/// Indexes of up to five evenly spread axis labels over [count] days.
-List<int> _labelIndexes(int count) {
-  if (count <= 1) return [0];
-  const parts = 4;
-  return {
-    for (var part = 0; part <= parts; part++)
-      ((count - 1) * part / parts).round(),
-  }.toList();
-}
+/// Smallest kg range of the chart.
+const _minRangeKg = 1.0;
