@@ -52,7 +52,8 @@ changes.
 - `CalorieGoalReachedFlow` checks a recorded weight, shows the one-time
   reached-goal prompt, and optionally opens the new-goal sheet.
 - The new-goal flow opens the calculator sheet that ends the active goal and
-  starts a new one.
+  starts a new one. It completes with whether a new goal was saved and can
+  show a back arrow for callers that return to where the user came from.
 - `TrainingDayChips` and `TrainingWeekDepotChart` pick the training days of
   a week and show how the week's calories spread over training and rest days.
   Onboarding and the weekly check-in use them.

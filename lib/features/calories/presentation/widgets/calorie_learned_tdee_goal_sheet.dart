@@ -25,6 +25,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_maintain_until_tile.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_sheet_title.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_food_tracking_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
@@ -35,14 +37,18 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// Show calorie learned tdee goal sheet.
-Future<void> showCalorieLearnedTdeeGoalSheet(
+///
+/// Completes with whether the sheet saved a goal.
+Future<bool> showCalorieLearnedTdeeGoalSheet(
   BuildContext context, {
   required CalorieGoalSettings initialSettings,
   bool useRootNavigator = true,
   bool startsNewGoal = false,
+  bool showBackButton = false,
   double? currentWeightKg,
-}) {
-  return showModalBottomSheet<void>(
+}) async {
+  Future<bool>? pendingSave;
+  final saved = await showModalBottomSheet<bool>(
     context: context,
     useRootNavigator: useRootNavigator,
     backgroundColor: Colors.transparent,
@@ -51,10 +57,14 @@ Future<void> showCalorieLearnedTdeeGoalSheet(
       return CalorieLearnedTdeeGoalSheet(
         initialSettings: initialSettings,
         startsNewGoal: startsNewGoal,
+        showBackButton: showBackButton,
         currentWeightKg: currentWeightKg,
+        onSaveStarted: (save) => pendingSave = save,
       );
     },
   );
+  // A sheet swiped away while it saves still reports the save.
+  return saved ?? await pendingSave ?? false;
 }
 
 /// Defines calorie learned tdee goal sheet.
@@ -63,15 +73,24 @@ class CalorieLearnedTdeeGoalSheet extends ConsumerStatefulWidget {
   const new({
     required this.initialSettings,
     this.startsNewGoal = false,
+    this.showBackButton = false,
     this.currentWeightKg,
+    this.onSaveStarted,
     super.key,
   });
 
   /// The initial settings.
   final CalorieGoalSettings initialSettings;
 
+  /// Called with whether the save succeeds once it starts, so the opener
+  /// learns the result even when the sheet closes during the save.
+  final ValueChanged<Future<bool>>? onSaveStarted;
+
   /// Whether saving creates a new archived goal cycle.
   final bool startsNewGoal;
+
+  /// Whether an arrow at the top closes the sheet without saving.
+  final bool showBackButton;
 
   /// Latest measured weight used as the next goal's starting point.
   final double? currentWeightKg;
@@ -208,9 +227,11 @@ class _CalorieLearnedTdeeGoalSheetState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    l10n.caloriesLearnedTdeeSheetTitle,
+                  CalorieGoalSheetTitle(
+                    title: l10n.caloriesLearnedTdeeSheetTitle,
                     style: Theme.of(context).textTheme.headlineSmall,
+                    showBackButton: widget.showBackButton,
+                    enabled: !_isSaving,
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(l10n.caloriesLearnedTdeeSheetSubtitle),
@@ -426,7 +447,7 @@ class _CalorieLearnedTdeeGoalSheetState
     );
     final LearnedTdeeGoalSaveResult saveResult;
     try {
-      saveResult = await controller.saveLearnedTdeeGoalWithResult(
+      final save = controller.saveLearnedTdeeGoalWithResult(
         goalMode: _goalMode,
         goalSpeedKgPerWeek: _goalSpeedKgPerWeek,
         targetWeightKg: _targetWeightKg,
@@ -436,6 +457,10 @@ class _CalorieLearnedTdeeGoalSheetState
         countGoalStartDayForLearning: countGoalStartDayForLearning,
         archiveCurrentGoal: widget.startsNewGoal,
       );
+      widget.onSaveStarted?.call(
+        save.then((result) => result.saved).catchError((Object _) => false),
+      );
+      saveResult = await save;
     } finally {
       goalSubscription.close();
     }
@@ -453,7 +478,7 @@ class _CalorieLearnedTdeeGoalSheetState
           return;
         }
       }
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
       return;
     }
     setState(() {

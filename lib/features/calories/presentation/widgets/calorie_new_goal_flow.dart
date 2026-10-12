@@ -13,9 +13,15 @@ import 'package:yamt/l10n/app_localizations.dart';
 ///
 /// Loads the current goal settings itself, so callers need no Calories state.
 /// When they cannot load, it shows an error instead of the sheet.
-Future<void> showCalorieNewGoalSheet(
+///
+/// Completes with whether a new goal was saved, or `null` when the settings
+/// could not load. With [showBackButton], an arrow at the top closes the
+/// sheet without one, for callers that then return to where the user came
+/// from.
+Future<bool?> showCalorieNewGoalSheet(
   BuildContext context, {
   double? currentWeightKg,
+  bool showBackButton = false,
 }) async {
   final container = ProviderScope.containerOf(context, listen: false);
   final messenger = ScaffoldMessenger.of(context);
@@ -38,17 +44,18 @@ Future<void> showCalorieNewGoalSheet(
       stackTrace: stackTrace,
     );
     messenger.showAppSnackBar(failureMessage, tone: AppSnackBarTone.error);
-    return;
+    return null;
   } finally {
     subscription.close();
   }
   if (!context.mounted) {
-    return;
+    return false;
   }
-  await showCalorieGoalCalculatorSheet(
+  return await showCalorieGoalCalculatorSheet(
     context,
     initialSettings: settings,
     startsNewGoal: true,
+    showBackButton: showBackButton,
     currentWeightKg: currentWeightKg,
   );
 }

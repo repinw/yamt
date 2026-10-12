@@ -27,6 +27,8 @@ import 'package:yamt/features/calories/presentation/widgets/'
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_maintain_until_tile.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_sheet_title.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_food_tracking_dialog.dart';
 import 'package:yamt/features/calories/presentation/widgets/'
     'calorie_goal_start_picker.dart';
@@ -52,6 +54,8 @@ class CalorieGoalCalculatorFlow extends ConsumerStatefulWidget {
   const new({
     required this.initialSettings,
     this.startsNewGoal = false,
+    this.showBackButton = false,
+    this.onSaveStarted,
     super.key,
   });
 
@@ -60,6 +64,13 @@ class CalorieGoalCalculatorFlow extends ConsumerStatefulWidget {
 
   /// Whether saving should explicitly archive the currently active goal.
   final bool startsNewGoal;
+
+  /// Whether an arrow at the top closes the sheet without saving.
+  final bool showBackButton;
+
+  /// Called with whether the save succeeds once it starts, so the opener
+  /// learns the result even when the sheet closes during the save.
+  final ValueChanged<Future<bool>>? onSaveStarted;
 
   @override
   ConsumerState<CalorieGoalCalculatorFlow> createState() =>
@@ -162,18 +173,20 @@ class _CalorieGoalCalculatorFlowState
     if (countGoalStartDayForLearning == null && _shouldAskTrackedFoodToday) {
       return;
     }
-    final saved = await formNotifier.save(
+    final save = formNotifier.save(
       goalStartDate: _goalStartDate,
       maintainUntil: _maintainUntil,
       allowFutureGoalStart: allowsFutureGoalStart,
       countGoalStartDayForLearning: countGoalStartDayForLearning,
       archiveCurrentGoal: widget.startsNewGoal,
     );
+    widget.onSaveStarted?.call(save.catchError((Object _) => false));
+    final saved = await save;
     if (!mounted) {
       return;
     }
     if (saved) {
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(true);
       return;
     }
 
@@ -309,10 +322,12 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                l10n.caloriesCalculatorSheetTitle,
+              CalorieGoalSheetTitle(
+                title: l10n.caloriesCalculatorSheetTitle,
                 style: Theme.of(context).textTheme.titleLarge
                     ?.copyWith(fontWeight: FontWeight.w800),
+                showBackButton: widget.showBackButton,
+                enabled: !state.isSaving,
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
@@ -400,6 +415,7 @@ extension _CalorieGoalCalculatorFlowLayout on _CalorieGoalCalculatorFlowState {
     }
 
     return TextButton(
+      key: CalorieGoalCalculatorSheetKeys.cancelButton,
       onPressed: state.isSaving ? null : () => Navigator.of(context).pop(),
       child: Text(l10n.inventoryReceiptReviewCancelAction),
     );
