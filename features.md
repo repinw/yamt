@@ -27,6 +27,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   The order stays fixed.
 - Vorrat actions: barcode, search, AI, an own product, and a receipt as photo
   or upload (the photo only where a camera is available).
+- Back with the keyboard open: on Android the first back button or back
+  gesture only closes the keyboard and keeps what was typed; the next back
+  leaves the page, sheet, or dialog. Close buttons close at once.
 - App updates: the release sets a minimum and a latest version in
   `config/app_version`. An app older than the minimum shows only an "Update
   yamt" page; while the check loads, fails, or no version is set, the app
