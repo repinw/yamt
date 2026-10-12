@@ -31,6 +31,15 @@ void main() {
     expect(meal.amounts, {ConsumedUnit.grams: 200});
   });
 
+  test('a meal without foods adds up to nothing, not to unknown values', () {
+    final meal = EatMealNutrition.combine(const []);
+
+    expect(meal.total.kcal, 0);
+    expect(meal.total.sugar, 0);
+    expect(meal.listed.kcal, isNull);
+    expect(meal.per100, isNull);
+  });
+
   test('leaves a total unknown when one food lacks the nutrient', () {
     final meal = EatMealNutrition.combine(const [
       (

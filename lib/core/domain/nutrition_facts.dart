@@ -61,3 +61,46 @@ class NutritionFacts {
     );
   }
 }
+
+/// One nutrient of [NutritionFacts].
+enum Nutrient {
+  /// Energy in kcal.
+  kcal,
+
+  /// Fat.
+  fat,
+
+  /// Saturated fat, part of the fat.
+  saturatedFat,
+
+  /// Polyunsaturated fat, part of the fat.
+  polyunsaturatedFat,
+
+  /// Carbohydrates.
+  carbs,
+
+  /// Sugar, part of the carbohydrates.
+  sugar,
+
+  /// Fiber.
+  fiber,
+
+  /// Protein.
+  protein,
+
+  /// Salt.
+  salt;
+
+  /// The value of this nutrient in [facts].
+  double? of(NutritionFacts facts) => switch (this) {
+    kcal => facts.kcal,
+    fat => facts.fat,
+    saturatedFat => facts.saturatedFat,
+    polyunsaturatedFat => facts.polyunsaturatedFat,
+    carbs => facts.carbs,
+    sugar => facts.sugar,
+    fiber => facts.fiber,
+    protein => facts.protein,
+    salt => facts.salt,
+  };
+}
