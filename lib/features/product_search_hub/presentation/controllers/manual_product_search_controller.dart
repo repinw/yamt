@@ -41,7 +41,7 @@ class InventoryReceiptManualProductController
       fallbackUnit: config.item.amountUnit,
     );
 
-    return InventoryReceiptManualProductState(
+    final opened = InventoryReceiptManualProductState(
       nameText: config.selectedProduct?.name ?? config.item.name,
       brandText: config.selectedProduct?.brand ?? config.item.brand ?? '',
       barcode:
@@ -66,6 +66,7 @@ class InventoryReceiptManualProductController
               config.selectedProduct!,
             ),
     ).withNutrition(nutrition);
+    return opened.copyWith(initial: opened);
   }
 
   /// Update name text.

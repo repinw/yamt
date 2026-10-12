@@ -7,11 +7,10 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_editor_page/manual_product_search_editor_page.dart';
-import 'package:yamt/l10n/app_localizations.dart';
 
 /// Product editor for a Vorrat item that already exists. It opens with the
-/// item's values and saves with "Speichern"; the edited item comes back as
-/// the result of the route.
+/// item's values; "Änderungen speichern" returns the edited item as the
+/// result of the route, "Fertig" closes it unchanged.
 class ProductSearchHubItemEditPage extends ConsumerWidget {
   /// Creates the page for the item with [itemId].
   const new({required this.itemId, super.key});
@@ -21,7 +20,6 @@ class ProductSearchHubItemEditPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
     final item = ref.watch(
       inventoryQuickEatItemsProvider.select(
         (items) => items.value?.firstWhereOrNull((item) => item.id == itemId),
@@ -38,7 +36,7 @@ class ProductSearchHubItemEditPage extends ConsumerWidget {
       showEatImmediatelyOption: false,
       initialAction: InventoryReceiptManualProductAction.addToInventory,
       showActionSelector: false,
-      confirmLabel: l10n.productEditorSaveAction,
+      isEdit: true,
     );
   }
 }

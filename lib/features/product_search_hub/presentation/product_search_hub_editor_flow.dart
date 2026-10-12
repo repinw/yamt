@@ -99,6 +99,7 @@ Future<InventoryReceiptManualProductResult?> _openProductSearchHubEditor({
   OffProductSearchResult? selectedProduct,
   InventoryItem? initialRecentItem,
   String? initialInfoMessage,
+  bool isEdit = false,
 }) {
   return pushManualProductSearchPage<InventoryReceiptManualProductResult>(
     context: context,
@@ -113,6 +114,7 @@ Future<InventoryReceiptManualProductResult?> _openProductSearchHubEditor({
       quickEatConfig: productSearchHubQuickEatConfig(args),
       initialRecentItem: initialRecentItem,
       initialInfoMessage: initialInfoMessage,
+      isEdit: isEdit,
     ),
   );
 }
@@ -121,7 +123,8 @@ Future<InventoryReceiptManualProductResult?> _openProductSearchHubEditor({
 /// is no edit. [show] opens the page for the current food; a step for which
 /// [isEdit] is true opens the editor, and the page shows again with the
 /// edited food. An edit keeps the user's own copy; the catalog product
-/// stays.
+/// stays. The editor saves with "Änderungen speichern"; "Fertig" leaves the
+/// food as it is.
 ///
 /// Returns the last version of the food with the final step, which is null
 /// when the user closed the page or the hub went away.
@@ -140,10 +143,11 @@ showProductSearchHubPickPage<S extends Object>({
     if (!context.mounted || step == null || !isEdit(step)) {
       return (result: current, step: context.mounted ? step : null);
     }
-    final edited = await openProductSearchHubCustomProductEditor(
+    final edited = await _openProductSearchHubEditor(
       context: context,
       draftItem: current.item,
       args: args,
+      isEdit: true,
     );
     if (!context.mounted) {
       return (result: current, step: null);

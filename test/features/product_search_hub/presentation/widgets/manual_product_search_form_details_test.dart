@@ -61,6 +61,7 @@ Widget _editor(
   ManualProductPhotoState photoState = const ManualProductPhotoState(),
   bool canSave = true,
   bool showActionSelector = false,
+  String? confirmLabel,
 }) {
   return MaterialApp(
     locale: const Locale('en'),
@@ -83,6 +84,7 @@ Widget _editor(
       onAddOptionalNutrition: calls.optional.add,
       onActionChanged: calls.actions.add,
       onSave: () => calls.saves++,
+      confirmLabel: confirmLabel,
     ),
   );
 }
@@ -146,9 +148,25 @@ void main() {
   });
 
   testWidgets('a savable product shows no missing hint', (tester) async {
-    await tester.pumpWidget(_editor(_Calls()));
+    // The hint names what is missing even when the button is enabled, as
+    // "Fertig" of an unchanged edit is; so the product needs every value.
+    await tester.pumpWidget(
+      _editor(_Calls(), state: _complete.copyWith(hasNoBarcode: true)),
+    );
 
     expect(find.byKey(const Key('eat_page_confirm_hint')), findsNothing);
+  });
+
+  testWidgets('an enabled "Done" still names what is missing', (tester) async {
+    final calls = _Calls();
+    await tester.pumpWidget(_editor(calls, confirmLabel: 'Done'));
+
+    final hint = tester.widget<Text>(
+      find.byKey(const Key('eat_page_confirm_hint')),
+    );
+    expect(hint.data, startsWith('Still missing: Barcode'));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    expect(calls.saves, 1);
   });
 
   testWidgets('typing reports the field', (tester) async {

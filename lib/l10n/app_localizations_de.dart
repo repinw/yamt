@@ -197,6 +197,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get productEditorSaveAction => 'Speichern';
 
   @override
+  String get productEditorSaveChangesAction => 'Änderungen speichern';
+
+  @override
+  String get productEditorDoneAction => 'Fertig';
+
+  @override
   String get productEditorFrontPhotoHint => 'Name, Marke, Packung';
 
   @override

@@ -167,15 +167,14 @@ class _ManualProductDetailsFormState extends State<ManualProductDetailsForm> {
       confirmButtonKey: ManualProductDetailsForm.saveKey,
       confirmLabel: widget.confirmLabel ?? l10n.productEditorCreateAction,
       onConfirm: widget.canSave ? widget.onSave : null,
-      confirmHint: widget.canSave
-          ? null
-          : manualProductMissingHint(
-              l10n,
-              manualProductMissingFields(
-                state: state,
-                selectedAction: widget.selectedAction,
-              ),
-            ),
+      // Also above an enabled "Fertig", which closes an edit without saving.
+      confirmHint: manualProductMissingHint(
+        l10n,
+        manualProductMissingFields(
+          state: state,
+          selectedAction: widget.selectedAction,
+        ),
+      ),
       cancelButtonKey: const Key('receipt_review_manual_close_button'),
       children: [
         ManualProductEditorHeader(

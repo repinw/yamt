@@ -88,6 +88,8 @@
   "productEditorFrontPhoto": "Vorderseite",
   "productEditorCreateAction": "Erstellen",
   "productEditorSaveAction": "Speichern",
+  "productEditorSaveChangesAction": "Änderungen speichern",
+  "productEditorDoneAction": "Fertig",
   "productEditorFrontPhotoHint": "Name, Marke, Packung",
   "productEditorNutritionTablePhoto": "Nährwerttabelle",
   "productEditorNutritionTablePhotoHint": "Nährwerte",

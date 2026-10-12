@@ -184,15 +184,30 @@ Future<void> _openMilkEatPage(WidgetTester tester) async {
   expect(find.byKey(ManualProductDetailsForm.saveKey), findsNothing);
 }
 
-/// "Bearbeiten" opens the editor; leaving it comes back to the eat page.
-Future<void> _editAndComeBack(WidgetTester tester) async {
+/// "Bearbeiten" opens the editor; its button says "Done" while nothing
+/// changed (#489). "Done", or the system back with [viaBack], comes back to
+/// the eat page.
+Future<void> _editAndComeBack(
+  WidgetTester tester, {
+  bool viaBack = false,
+}) async {
   await tester.ensureVisible(find.byKey(productSearchHubEatPageEditKey));
   await _pumpVisibleStep(tester);
   await tester.tap(find.byKey(productSearchHubEatPageEditKey));
   await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
-  expect(find.byKey(ManualProductDetailsForm.saveKey), findsOneWidget);
+  final done = find.byKey(ManualProductDetailsForm.saveKey);
+  expect(
+    find.descendant(of: done, matching: find.text('Done')),
+    findsOneWidget,
+  );
 
-  await tester.binding.handlePopRoute();
+  if (viaBack) {
+    await tester.binding.handlePopRoute();
+  } else {
+    await tester.ensureVisible(done);
+    await _pumpVisibleStep(tester);
+    await tester.tap(done);
+  }
   await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
   expect(find.byKey(_amountFieldKey), findsOneWidget);
 }
@@ -251,7 +266,7 @@ void main() {
       await tester.tap(find.byKey(_openKey));
       await _pumpVisibleStep(tester, observeFor: const Duration(seconds: 1));
       await _openMilkEatPage(tester);
-      await _editAndComeBack(tester);
+      await _editAndComeBack(tester, viaBack: true);
       expect(tester.takeException(), isNull);
     },
   );

@@ -88,6 +88,8 @@
   "productEditorFrontPhoto": "Front",
   "productEditorCreateAction": "Create",
   "productEditorSaveAction": "Save",
+  "productEditorSaveChangesAction": "Save changes",
+  "productEditorDoneAction": "Done",
   "productEditorFrontPhotoHint": "Name, brand, size",
   "productEditorNutritionTablePhoto": "Nutrition table",
   "productEditorNutritionTablePhotoHint": "Nutrition values",

@@ -94,6 +94,7 @@ class ManualProductSearchRouteArgs {
     this.initialRecentItem,
     this.initialPrompt,
     this.initialInfoMessage,
+    this.isEdit = false,
   });
 
   /// Creates manual editor route args.
@@ -106,6 +107,7 @@ class ManualProductSearchRouteArgs {
         InventoryManualAddQuickEatConfig.standard,
     InventoryItem? initialRecentItem,
     String? initialInfoMessage,
+    bool isEdit = false,
   }) {
     return ManualProductSearchRouteArgs._(
       flow: ManualProductSearchChildFlow.editor,
@@ -117,6 +119,7 @@ class ManualProductSearchRouteArgs {
       quickEatConfig: quickEatConfig,
       initialRecentItem: initialRecentItem,
       initialInfoMessage: initialInfoMessage,
+      isEdit: isEdit,
     );
   }
 
@@ -198,6 +201,9 @@ class ManualProductSearchRouteArgs {
 
   /// Optional editor info message.
   final String? initialInfoMessage;
+
+  /// Whether the editor changes a picked food instead of creating one.
+  final bool isEdit;
 
   /// Concrete URL location for this route payload.
   String locationForPayload(String payloadId) {

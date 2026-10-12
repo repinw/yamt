@@ -194,6 +194,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productEditorSaveAction => 'Save';
 
   @override
+  String get productEditorSaveChangesAction => 'Save changes';
+
+  @override
+  String get productEditorDoneAction => 'Done';
+
+  @override
   String get productEditorFrontPhotoHint => 'Name, brand, size';
 
   @override

@@ -33,6 +33,7 @@ class InventoryReceiptManualProductState {
     this.ocrDraft,
     this.barcodeOrigin,
     this.error,
+    this.initial,
   });
 
   /// The name text.
@@ -102,6 +103,10 @@ class InventoryReceiptManualProductState {
   /// The error.
   final InventoryReceiptManualProductError? error;
 
+  /// The state the editor opened with, or null when no editor opened this
+  /// state.
+  final InventoryReceiptManualProductState? initial;
+
   /// Whether barcode.
   bool get hasBarcode => normalizeBarcode(barcode).isNotEmpty;
 
@@ -148,6 +153,39 @@ class InventoryReceiptManualProductState {
 
   /// Whether the barcode is settled: entered, or marked as missing.
   bool get hasBarcodeDecision => hasBarcode || hasNoBarcode;
+
+  /// Whether an input differs from the [initial] state: a text, the unit,
+  /// the barcode or its "has none" mark, or the picked product. Texts count
+  /// trimmed and numbers by value, so "2,50" equals "2.5". Without an
+  /// [initial] state the inputs count as changed.
+  bool get isChanged {
+    final initial = this.initial;
+    return initial == null || _inputs != initial._inputs;
+  }
+
+  /// The inputs as the save reads them, in a record that compares by value.
+  Object get _inputs => (
+    normalizeManualProductText(nameText),
+    normalizeManualProductText(brandText),
+    normalizeManualProductText(barcode),
+    hasNoBarcode,
+    _valueOf(weightAmount),
+    selectedWeightUnit,
+    _valueOf(pieceWeightText),
+    _valueOf(kcalText),
+    _valueOf(fatText),
+    _valueOf(saturatedFatText),
+    _valueOf(polyunsaturatedFatText),
+    _valueOf(carbsText),
+    _valueOf(sugarText),
+    _valueOf(fiberText),
+    _valueOf(proteinText),
+    _valueOf(saltText),
+    // The same product picked again builds a new selection.
+    selectedProduct?.source,
+    selectedProduct?.barcode,
+    selectedProduct?.globalFoodItemId,
+  );
 
   /// The available optional nutrition types.
   List<InventoryReceiptOptionalNutritionType>
@@ -210,6 +248,7 @@ class InventoryReceiptManualProductState {
     Object? ocrDraft = _keepValue,
     Object? barcodeOrigin = _keepValue,
     Object? error = _keepValue,
+    InventoryReceiptManualProductState? initial,
   }) {
     return InventoryReceiptManualProductState(
       nameText: nameText ?? this.nameText,
@@ -244,6 +283,10 @@ class InventoryReceiptManualProductState {
       error: error == _keepValue
           ? this.error
           : error as InventoryReceiptManualProductError?,
+      initial: initial ?? this.initial,
     );
   }
 }
+
+/// The number in [text], or the trimmed text when it holds none.
+Object _valueOf(String text) => parseManualProductDouble(text) ?? text.trim();
