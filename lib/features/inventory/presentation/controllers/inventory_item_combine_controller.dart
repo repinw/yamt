@@ -104,6 +104,25 @@ class InventoryItemCombineController extends _$InventoryItemCombineController {
     ];
   }
 
+  /// Sets the amount of the food of [itemId] to the amount typed as [text].
+  /// Returns false and keeps the amount when [text] is no amount the food
+  /// can take, as the ruler cannot go past the stock either.
+  bool setAmountText(String itemId, String text) {
+    final pick = state.where((pick) => pick.item.id == itemId).firstOrNull;
+    final amount = pick == null
+        ? null
+        : typedMealFoodAmount(
+            pick.item,
+            text,
+            hasOpenStock: pick.searchResult != null,
+          );
+    if (amount == null) {
+      return false;
+    }
+    setAmount(itemId, amount);
+    return true;
+  }
+
   static InventoryCombinePick _withAmount(
     InventoryCombinePick pick,
     int amount,

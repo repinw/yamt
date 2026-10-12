@@ -27,7 +27,11 @@ InventoryItemEatSheetState withAmountText(
   return state.copyWith(
     inventoryAmountText: text,
     didEditInventoryAmount: true,
-    countedPortion: () => null,
+    // The same amount typed again still is the counted portion.
+    countedPortion: () =>
+        state.calculator.parseEatenAmount(text) == state.enteredAmount
+        ? state.countedPortion
+        : null,
     errors: state.errors.difference(const {
       InventoryItemEatSheetError.invalidInventoryAmount,
     }),

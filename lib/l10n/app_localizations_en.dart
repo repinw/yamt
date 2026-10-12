@@ -950,6 +950,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get eatPageCombineRemove => 'Remove from the list';
 
   @override
+  String get eatPageCombineAmount => 'Amount';
+
+  @override
   String get eatPageCombineSaved => 'Meal logged.';
 
   @override

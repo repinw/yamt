@@ -6,6 +6,7 @@ import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/domain/eat_nutrition.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
+import 'package:yamt/features/inventory/domain/inventory_item_eat_calculator.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
 
@@ -157,6 +158,27 @@ int mealFoodMaxAmount(InventoryItem item, {bool hasOpenStock = false}) {
     return math.max(item.initialAmount, _openStockMealMax);
   }
   return consumableInventoryAmount(item) ?? 0;
+}
+
+/// Amount of [item] typed as [text] for a meal, read as the eat page reads
+/// it: grams and milliliters may have a decimal, and the stock takes them
+/// rounded to whole units. Null when [text] is no amount or more than
+/// [mealFoodMaxAmount].
+int? typedMealFoodAmount(
+  InventoryItem item,
+  String text, {
+  bool hasOpenStock = false,
+}) {
+  final max = mealFoodMaxAmount(item, hasOpenStock: hasOpenStock);
+  final calculator = InventoryItemEatCalculator(item: item, maxAmount: max);
+  final amount = calculator.parseInventoryAmount(text);
+  // 37,4 g rounds to the last 37 g but would log more than is there.
+  if (amount == null ||
+      amount > max ||
+      (calculator.parseEatenAmount(text) ?? 0) > max) {
+    return null;
+  }
+  return amount;
 }
 
 const _defaultMealAmount = 100;

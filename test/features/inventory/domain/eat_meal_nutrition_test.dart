@@ -125,4 +125,28 @@ void main() {
     expect(food?.unit, ConsumedUnit.grams);
     expect(food?.eaten.kcal, 180);
   });
+
+  test('reads a typed amount as the stock takes it, up to the stock', () {
+    final rice = InventoryItem.create(
+      id: 'rice',
+      name: 'Rice',
+      entryDate: DateTime(2026, 10),
+      storeName: 'Store',
+      quantity: 1,
+      initialAmount: 500,
+      currentAmount: 250,
+      amountUnit: InventoryAmountUnit.gram,
+    );
+
+    expect(typedMealFoodAmount(rice, '137'), 137);
+    expect(typedMealFoodAmount(rice, ' 37,5 '), 38);
+    expect(typedMealFoodAmount(rice, '250'), 250);
+    expect(typedMealFoodAmount(rice, '250,4'), isNull);
+    expect(typedMealFoodAmount(rice, '251'), isNull);
+    expect(typedMealFoodAmount(rice, '0'), isNull);
+    expect(typedMealFoodAmount(rice, ''), isNull);
+    expect(typedMealFoodAmount(rice, 'abc'), isNull);
+    // A food found by search is not limited by its stock.
+    expect(typedMealFoodAmount(rice, '800', hasOpenStock: true), 800);
+  });
 }

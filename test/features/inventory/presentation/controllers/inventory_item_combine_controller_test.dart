@@ -87,6 +87,20 @@ void main() {
     );
   });
 
+  test('sets a typed amount and keeps one the food cannot take', () {
+    final notifier = container.read(_provider.notifier)
+      ..add(_item('rice', amount: 250), _request(100));
+
+    expect(notifier.setAmountText('rice', '137'), isTrue);
+    expect(container.read(_provider).single.request.inventoryAmount, 137);
+    expect(container.read(_provider).single.component.totalKcal, 274);
+
+    expect(notifier.setAmountText('rice', '300'), isFalse);
+    expect(notifier.setAmountText('rice', 'abc'), isFalse);
+    expect(notifier.setAmountText('apple', '50'), isFalse);
+    expect(container.read(_provider).single.request.inventoryAmount, 137);
+  });
+
   test('removes a food', () {
     container.read(_provider.notifier)
       ..add(_item('rice'), _request(150))

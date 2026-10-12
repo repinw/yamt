@@ -1654,6 +1654,12 @@ abstract class AppLocalizations {
   /// **'Remove from the list'**
   String get eatPageCombineRemove;
 
+  /// No description provided for @eatPageCombineAmount.
+  ///
+  /// In en, this message translates to:
+  /// **'Amount'**
+  String get eatPageCombineAmount;
+
   /// No description provided for @eatPageCombineSaved.
   ///
   /// In en, this message translates to:
