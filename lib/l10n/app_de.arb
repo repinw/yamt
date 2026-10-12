@@ -2749,6 +2749,7 @@
   "cookbookKcal": "{kcal} kcal",
   "cookbookLoadFailed": "Das Kochbuch konnte nicht geladen werden.",
   "homeActionCook": "Kochen",
+  "homeActionWeigh": "Wiegen",
   "cookbookFreeCookingAction": "Frei kochen",
   "cookbookFreeCookingDescription": "Zutaten beim Kochen sagen oder schreiben",
   "freeCookingNameHint": "Wie heißt das Gericht?",

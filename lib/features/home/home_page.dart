@@ -23,6 +23,7 @@ import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_menu_panel.dart';
 import 'package:yamt/features/home/presentation/widgets/home_slide_menu.dart';
 import 'package:yamt/features/home/presentation/widgets/inventory_add_actions.dart';
+import 'package:yamt/features/progress/presentation/progress_weight_entry_flow.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 const _inventoryBranchIndex = 0;
@@ -113,18 +114,30 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
     };
   }
 
-  /// Word of the action button of [tab], or `null` when the tab has no
-  /// actions.
-  String? _actionLabel(AppLocalizations l10n, HomeTabType tab) {
+  /// Word of the action button of [tab].
+  String _actionLabel(AppLocalizations l10n, HomeTabType tab) {
     return switch (tab) {
       HomeTabType.inventory => l10n.inventoryDockAddAction,
       HomeTabType.diary => l10n.homeActionEat,
       HomeTabType.cookbook => l10n.homeActionCook,
-      HomeTabType.progress => null,
+      HomeTabType.progress => l10n.homeActionWeigh,
     };
   }
 
-  /// The actions of [tab] for the action panel.
+  /// What the action button of [tab] does. Fortschritt has one action, so
+  /// its button enters the weight without the action panel; a tab with
+  /// several actions opens them in the panel.
+  VoidCallback _onActionPressed(HomeTabType tab) {
+    return switch (tab) {
+      HomeTabType.inventory ||
+      HomeTabType.diary ||
+      HomeTabType.cookbook => () => _open(const HomeTabActionsPanel()),
+      HomeTabType.progress => () => unawaited(showProgressWeightEntry(context)),
+    };
+  }
+
+  /// The actions of [tab] for the action panel. Fortschritt has none there:
+  /// its button enters the weight directly.
   List<HomeActionSection> _actions(HomeTabType tab) {
     return switch (tab) {
       HomeTabType.inventory => inventoryAddActions(context, ref),
@@ -224,12 +237,6 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final currentTab = _currentTab();
-    final actionLabel = _actionLabel(l10n, currentTab);
-    // Keeps floating snack bars above the round action button.
-    final floatingActionButton = actionLabel == null
-        ? null
-        : const SizedBox(height: AppGraphit.navActionOverhang);
-
     return HomeSlideMenu(
       isOpen: _isMenuOpen,
       onClose: _closeMenu,
@@ -239,15 +246,11 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
         HomeTabActionsPanel() => _buildActionPanel(currentTab),
         HomeHeaderActionsPanel(:final build) => _buildHeaderPanel(build),
       },
-      child: _buildShell(l10n, currentTab, floatingActionButton),
+      child: _buildShell(l10n, currentTab),
     );
   }
 
-  Widget _buildShell(
-    AppLocalizations l10n,
-    HomeTabType currentTab,
-    Widget? floatingActionButton,
-  ) {
+  Widget _buildShell(AppLocalizations l10n, HomeTabType currentTab) {
     return Scaffold(
       extendBody: true,
       body: HomeShellMenuScope(
@@ -268,13 +271,10 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
                 children: [
                   HomeBottomNavBar(
                     entries: _navEntries(context, l10n),
-                    action: switch (_actionLabel(l10n, currentTab)) {
-                      final label? => HomeNavAction(
-                        label: label,
-                        onPressed: () => _open(const HomeTabActionsPanel()),
-                      ),
-                      null => null,
-                    },
+                    action: HomeNavAction(
+                      label: _actionLabel(l10n, currentTab),
+                      onPressed: _onActionPressed(currentTab),
+                    ),
                   ),
                 ],
               ),
@@ -284,13 +284,12 @@ class _HomePageState extends ConsumerState<HomePage> with RouteAware {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.noAnimation,
-      // The slot stays even when empty: floating snack bars sit above the
-      // floating action button slot, so they clear the bottom navigation.
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(
-          bottom: AppSizes.homeShellBottomBarClearance,
-        ),
-        child: floatingActionButton ?? const SizedBox.shrink(),
+      // An empty slot: floating snack bars sit above the floating action
+      // button slot, so they clear the bottom navigation and the round
+      // action button.
+      floatingActionButton: const Padding(
+        padding: EdgeInsets.only(bottom: AppSizes.homeShellBottomBarClearance),
+        child: SizedBox(height: AppGraphit.navActionOverhang),
       ),
     );
   }

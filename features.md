@@ -19,7 +19,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   The tab header and the bottom navigation stay in place while a tab
   scrolls. In the middle of the bar a round button in the accent color opens
   the actions of the current tab, with a haptic pulse; its word changes per
-  tab ("Hinzufügen", "Essen", "Kochen"). Fortschritt has no button.
+  tab ("Hinzufügen", "Essen", "Kochen", "Wiegen"). Fortschritt has only one
+  action, the weight, so its button opens the weight entry directly.
   The actions open like the side menu, but mirrored: the page slides to the
   left and shrinks, and the actions stand at the bottom right, where the
   thumb is. The app counts on the device how often each action is tapped;
@@ -355,6 +356,9 @@ and feature description docs. This is product-facing; architecture rules stay in
     TDEE, the change since yesterday and this week, and the next check-in;
   - training days against rest days up to yesterday: days of each,
     and average kcal, protein, carbs, and fat.
+- The round button of the bar ("Wiegen") opens the weight entry for today,
+  filled with the last weigh-in of the weight chart, without the action
+  panel. Saving updates the weight trend and the goal right away.
 
 ## Activity And Weight
 
