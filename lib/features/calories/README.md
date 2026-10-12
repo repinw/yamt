@@ -113,6 +113,28 @@ schedule counts instead.
 
 The diary header includes a toggle (`🏋️ Trainingstag`, `🛋️ Ruhetag`, `⏸️ Pausentag`).
 
+#### Daily TDEE
+
+`DailyTdeeEstimator` (domain) estimates the TDEE every day from the first goal
+on. The TDEE analytics page and the Fortschritt TDEE chart read it; the
+weekly check-in still uses the weekly runs below.
+
+```text
+weight level  += 0.25 * (weigh-in - predicted level)    (Holt)
+weight trend  += 0.06 * (level change - trend)
+intake        += 0.15 * (day intake - intake)
+measured TDEE  = intake - trend (kg/day) * 7700
+updates 0-5: +0.33 of the gap, 6-12: +0.66, update 13: all of it,
+then at most 150 kcal per week; never below max(750, 0.85 * BMR)
+```
+
+- A day without intake (or a pause day) counts with yesterday's TDEE plus
+  the trend energy. With 4 or more such days in the last 7 the TDEE holds.
+- Weights under 25 kg and intake outside 0-50 000 kcal are ignored.
+- An update is a day the TDEE moved; held days do not use up the ramp-up.
+- Today keeps yesterday's value, because today's diary is not complete yet.
+- It is computed on read from entries and weights; nothing is stored.
+
 #### Learning Windows & Interpolation
 
 Weekly learned TDEE uses an expanding window first, then a rolling 28-day window:

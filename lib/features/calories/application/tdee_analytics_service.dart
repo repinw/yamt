@@ -75,13 +75,15 @@ abstract final class TdeeAnalyticsService {
         fallbackGoalKcal: target,
       );
       final baseTdee = estimate?.tdeeKcal ?? fallbackBaseTdee;
-      final totalTdee = estimate?.measuredTdeeKcal ?? baseTdee;
+      final measuredTdee = estimate?.measuredTdeeKcal;
 
       points.add(
         TdeeAnalyticsPoint(
           day: day,
           learnedBaseTdeeKcal: baseTdee > 0 ? baseTdee : null,
-          totalTdeeKcal: totalTdee > 0 ? totalTdee : null,
+          totalTdeeKcal: measuredTdee != null && measuredTdee > 0
+              ? measuredTdee
+              : null,
           targetKcal: target > 0 ? target : null,
           intakeKcal: intake,
           scaleWeightKg: weights.rawByDay[key],

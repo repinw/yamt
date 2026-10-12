@@ -1703,9 +1703,17 @@
   "progressWeightLegendTrend": "Trend",
   "progressWeightEmpty": "No weigh-ins in the last four weeks.",
   "progressToday": "today",
-  "progressTdeeKicker": "TDEE · per check-in",
-  "progressTdeeChange": "{kcal} since last week",
+  "progressTdeeKicker": "TDEE · daily",
+  "progressTdeeChange": "{kcal} since yesterday",
   "@progressTdeeChange": {
+    "placeholders": {
+      "kcal": {
+        "type": "String"
+      }
+    }
+  },
+  "progressTdeeWeekChange": "{kcal} this week",
+  "@progressTdeeWeekChange": {
     "placeholders": {
       "kcal": {
         "type": "String"
@@ -1721,10 +1729,10 @@
     }
   },
   "progressTdeeCheckInOpen": "Check-in waits in the diary",
-  "progressTdeeLegendTaken": "Taken",
-  "progressTdeeLegendKept": "Calculated, old value kept",
-  "progressTdeeLegendStart": "Start",
-  "progressTdeeEmpty": "The first point appears after your first weekly check-in.",
+  "progressTdeeLegendLine": "TDEE",
+  "progressTdeeLegendDay": "Daily value",
+  "progressTdeeLegendCheckIn": "Check-in",
+  "progressTdeeEmpty": "The curve starts with your first goal.",
   "progressDayTypeTitle": "Training vs. rest day",
   "progressDayTypeDays": "{emoji} {type} · {count, plural, =1{1 day} other{{count} days}}",
   "@progressDayTypeDays": {

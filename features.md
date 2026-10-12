@@ -322,10 +322,10 @@ and feature description docs. This is product-facing; architecture rules stay in
     against their goals;
   - the weight trend: weigh-ins as squares, the trend as a line through gaps,
     the trend per week, and the day the trend reaches the goal weight;
-  - the TDEE per weekly check-in: the calculator estimate at the goal start,
-    then one point per check-in the user confirmed, and a dashed line to the
-    next check-in. A declined check-in keeps the old value and shows the
-    calculated one as a hollow point;
+  - the daily TDEE: a line per day from the first goal on, the value that
+    the day's intake and weight trend imply as a small grey square, and a
+    square on the line for each confirmed check-in; the head shows today's
+    TDEE, the change since yesterday and this week, and the next check-in;
   - training days against rest days up to yesterday: days of each,
     and average kcal, protein, carbs, and fat.
 

@@ -5011,14 +5011,20 @@ abstract class AppLocalizations {
   /// No description provided for @progressTdeeKicker.
   ///
   /// In en, this message translates to:
-  /// **'TDEE · per check-in'**
+  /// **'TDEE · daily'**
   String get progressTdeeKicker;
 
   /// No description provided for @progressTdeeChange.
   ///
   /// In en, this message translates to:
-  /// **'{kcal} since last week'**
+  /// **'{kcal} since yesterday'**
   String progressTdeeChange(String kcal);
+
+  /// No description provided for @progressTdeeWeekChange.
+  ///
+  /// In en, this message translates to:
+  /// **'{kcal} this week'**
+  String progressTdeeWeekChange(String kcal);
 
   /// No description provided for @progressTdeeNextCheckIn.
   ///
@@ -5032,28 +5038,28 @@ abstract class AppLocalizations {
   /// **'Check-in waits in the diary'**
   String get progressTdeeCheckInOpen;
 
-  /// No description provided for @progressTdeeLegendTaken.
+  /// No description provided for @progressTdeeLegendLine.
   ///
   /// In en, this message translates to:
-  /// **'Taken'**
-  String get progressTdeeLegendTaken;
+  /// **'TDEE'**
+  String get progressTdeeLegendLine;
 
-  /// No description provided for @progressTdeeLegendKept.
+  /// No description provided for @progressTdeeLegendDay.
   ///
   /// In en, this message translates to:
-  /// **'Calculated, old value kept'**
-  String get progressTdeeLegendKept;
+  /// **'Daily value'**
+  String get progressTdeeLegendDay;
 
-  /// No description provided for @progressTdeeLegendStart.
+  /// No description provided for @progressTdeeLegendCheckIn.
   ///
   /// In en, this message translates to:
-  /// **'Start'**
-  String get progressTdeeLegendStart;
+  /// **'Check-in'**
+  String get progressTdeeLegendCheckIn;
 
   /// No description provided for @progressTdeeEmpty.
   ///
   /// In en, this message translates to:
-  /// **'The first point appears after your first weekly check-in.'**
+  /// **'The curve starts with your first goal.'**
   String get progressTdeeEmpty;
 
   /// No description provided for @progressDayTypeTitle.
