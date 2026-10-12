@@ -29,6 +29,9 @@ abstract interface class OffProductSearchRepository {
   });
 
   /// Lookup candidates by barcode.
+  ///
+  /// Throws when the server cannot be reached, for example without a
+  /// connection, so callers can tell this apart from an unknown barcode.
   Future<List<OffProductSearchResult>> lookupCandidatesByBarcode({
     required String barcode,
   });
@@ -110,10 +113,24 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       limit: 10,
     );
     _debugLogRequest(action: 'barcode search', uri: searchUri);
-    final searchResults = await _fetchResults(
-      uri: searchUri,
-      action: 'barcode search',
-    );
+    var searchResults = const <OffProductSearchResult>[];
+    try {
+      searchResults = await _requestResults(
+        uri: searchUri,
+        action: 'barcode search',
+      );
+    } on Object catch (error, stackTrace) {
+      // Without a connection the barcode endpoint fails the same way, so
+      // the caller hears it now. A slow search still falls back to the
+      // barcode endpoint, which often answers faster.
+      if (error is http.ClientException) rethrow;
+      log(
+        'OFF barcode search request failed for $searchUri.',
+        name: _offProductSearchLogName,
+        error: error,
+        stackTrace: stackTrace,
+      );
+    }
     final exactMatches = searchResults
         .where((result) => result.code.trim() == normalizedBarcode)
         .toList(growable: false);
@@ -121,9 +138,10 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       return exactMatches;
     }
 
+    // The barcode endpoint has the last word, so its failure propagates.
     final uri = _buildBarcodeUri(barcode: normalizedBarcode);
     _debugLogRequest(action: 'barcode lookup', uri: uri);
-    return await _fetchResults(uri: uri, action: 'barcode lookup');
+    return await _requestResults(uri: uri, action: 'barcode lookup');
   }
 
   Uri _buildSearchUri({
@@ -189,18 +207,7 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
     required String action,
   }) async {
     try {
-      final response = await _client
-          .get(uri)
-          .timeout(offProductSearchTimeout());
-      if (response.statusCode != 200) {
-        log(
-          'OFF $action failed with status ${response.statusCode} for $uri.',
-          name: _offProductSearchLogName,
-        );
-        return const <OffProductSearchResult>[];
-      }
-
-      return _responseParser.parse(response.body);
+      return await _requestResults(uri: uri, action: action);
     } on Object catch (error, stackTrace) {
       log(
         'OFF $action request failed for $uri.',
@@ -210,6 +217,24 @@ class HttpOffProductSearchRepository implements OffProductSearchRepository {
       );
       return const <OffProductSearchResult>[];
     }
+  }
+
+  /// Throws when the server cannot be reached, for example without a
+  /// connection.
+  Future<List<OffProductSearchResult>> _requestResults({
+    required Uri uri,
+    required String action,
+  }) async {
+    final response = await _client.get(uri).timeout(offProductSearchTimeout());
+    if (response.statusCode != 200) {
+      log(
+        'OFF $action failed with status ${response.statusCode} for $uri.',
+        name: _offProductSearchLogName,
+      );
+      return const <OffProductSearchResult>[];
+    }
+
+    return _responseParser.parse(response.body);
   }
 }
 

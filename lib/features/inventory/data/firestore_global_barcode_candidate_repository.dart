@@ -53,34 +53,20 @@ class FirestoreGlobalBarcodeCandidateRepository
         limit: safeLimit,
       );
     } on FirebaseException catch (error, stackTrace) {
+      // Without a connection the fallback query fails the same way.
+      if (error.code == 'unavailable' || error.code == 'deadline-exceeded') {
+        rethrow;
+      }
       log(
         'Barcode candidate index missing, falling back to client-side sort.',
         name: _repositoryLogName,
         error: error,
         stackTrace: stackTrace,
       );
-      try {
-        return await _readCandidatesWithFallback(
-          normalizedBarcode: normalizedBarcode,
-          limit: safeLimit,
-        );
-      } on Object catch (fallbackError, fallbackStackTrace) {
-        log(
-          'Failed to read barcode candidates for $normalizedBarcode.',
-          name: _repositoryLogName,
-          error: fallbackError,
-          stackTrace: fallbackStackTrace,
-        );
-        return const <GlobalBarcodeCandidate>[];
-      }
-    } on Object catch (error, stackTrace) {
-      log(
-        'Failed to read barcode candidates for $normalizedBarcode.',
-        name: _repositoryLogName,
-        error: error,
-        stackTrace: stackTrace,
+      return await _readCandidatesWithFallback(
+        normalizedBarcode: normalizedBarcode,
+        limit: safeLimit,
       );
-      return const <GlobalBarcodeCandidate>[];
     }
   }
 
