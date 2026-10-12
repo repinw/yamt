@@ -308,6 +308,10 @@ class InventoryReceiptManualProductController
       ),
     );
     final updatedItem = config.item
+        .withPackageWeight(
+          weight: inventoryWeight,
+          package: resolvedWeightInput.parsedAmount,
+        )
         .copyWith(
           name: _resolvedManualName(
             fallbackName: matchedProduct?.name ?? config.item.name,
@@ -333,11 +337,6 @@ class InventoryReceiptManualProductController
             fat: fat,
             salt: salt,
           ),
-        )
-        .withResolvedAmount(
-          weight: inventoryWeight,
-          parsedAmount: resolvedWeightInput.parsedAmount,
-          quantity: config.item.quantity,
         )
         .withWeightUnitWithoutPackage(state.selectedWeightUnit);
     final selectedEditKind = _selectedProductEditKind(

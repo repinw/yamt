@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
+import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_weight_input.dart';
 
 void main() {
@@ -148,6 +149,98 @@ void main() {
         ),
         isNull,
       );
+    });
+  });
+
+  group('withPackageWeight', () {
+    InventoryItem item({
+      int quantity = 2,
+      int initialQuantity = 2,
+      String? weight = '500 g',
+    }) {
+      final created = InventoryItem.create(
+        id: 'item-1',
+        name: 'Quark',
+        entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+        storeName: 'Kaufland',
+        quantity: quantity,
+        initialQuantity: initialQuantity,
+        weight: weight,
+      );
+      return weight == null ? created : created.withDerivedAmount();
+    }
+
+    InventoryAmountParseResult? package(String weight) =>
+        resolveManualProductWeightInput(weight).parsedAmount;
+
+    test('the same size, however written, keeps the stock', () {
+      final stocked = item(weight: '2x250g').copyWith(currentAmount: 300);
+
+      final kept = stocked.withPackageWeight(
+        weight: '500 g',
+        package: package('500 g'),
+      );
+
+      expect(kept, same(stocked));
+    });
+
+    test('a cleared size drops the amount', () {
+      final cleared = item().withPackageWeight(weight: null, package: null);
+
+      expect(cleared.initialAmount, 0);
+      expect(cleared.currentAmount, 0);
+    });
+
+    test('a new size scales the stock and keeps the share left', () {
+      final eaten = item().copyWith(quantity: 1, currentAmount: 400);
+
+      final resized = eaten.withPackageWeight(
+        weight: '250 g',
+        package: package('250 g'),
+      );
+
+      expect(resized.initialAmount, 500);
+      expect(resized.currentAmount, 200);
+      expect(resized.initialQuantity, 2);
+    });
+
+    test('a recent item with a stale package count stays one package', () {
+      // One package of an old stock entry that held four.
+      final recent = item(initialQuantity: 4).withDerivedAmount(quantity: 1);
+
+      final resized = recent.withPackageWeight(
+        weight: '400 g',
+        package: package('400 g'),
+      );
+
+      expect(resized.initialAmount, 400);
+      expect(resized.currentAmount, 400);
+    });
+
+    test('a size for a stock counted by packages counts what is left', () {
+      final counted = item(quantity: 1, initialQuantity: 3, weight: null);
+
+      final weighed = counted.withPackageWeight(
+        weight: '500 g',
+        package: package('500 g'),
+      );
+
+      expect(weighed.initialQuantity, 3);
+      expect(weighed.initialAmount, 1500);
+      expect(weighed.currentAmount, 500);
+    });
+
+    test('a new unit counts the packages the stored amount holds', () {
+      final recent = item(initialQuantity: 4).withDerivedAmount(quantity: 1);
+
+      final pieces = recent.withPackageWeight(
+        weight: '6 Stk',
+        package: package('6 Stk'),
+      );
+
+      expect(pieces.amountUnit, InventoryAmountUnit.piece);
+      expect(pieces.initialQuantity, 1);
+      expect(pieces.currentAmount, pieces.initialAmount);
     });
   });
 }

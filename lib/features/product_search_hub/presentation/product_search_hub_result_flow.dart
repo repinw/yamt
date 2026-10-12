@@ -198,7 +198,7 @@ _directInventoryRecentItemResult({
     return null;
   }
   return productSearchHubDirectInventoryItemResult(
-    item: item.withDerivedAmount(quantity: 1, fallbackUnit: item.amountUnit),
+    item: _onePackage(item),
     action: inventory_models.InventoryReceiptManualProductAction.addToInventory,
     selectedGlobalFoodItemId: manualProductRecentItemGlobalFoodItemId(item),
     globalPackageWeight: item.weight,
@@ -217,8 +217,14 @@ _directDiaryRecentItemResult({
   // again starts from one full package.
   return productSearchHubDirectDiaryInventoryItemResult(
     args: args,
-    item: item.withDerivedAmount(quantity: 1, fallbackUnit: item.amountUnit),
+    item: _onePackage(item),
     selectedGlobalFoodItemId: manualProductRecentItemGlobalFoodItemId(item),
     globalPackageWeight: item.weight,
   );
 }
+
+/// One full package of the recent [item]. Its old stock entry may have held
+/// more packages, so the package count starts over too.
+InventoryItem _onePackage(InventoryItem item) => item
+    .withDerivedAmount(quantity: 1, fallbackUnit: item.amountUnit)
+    .copyWith(initialQuantity: 1);

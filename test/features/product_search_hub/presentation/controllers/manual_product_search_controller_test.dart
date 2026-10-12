@@ -154,6 +154,150 @@ void main() {
     },
   );
 
+  test('editing an item keeps its package count and counts all packages', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final item = InventoryItem.create(
+      id: 'item-2',
+      name: 'Quark',
+      entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+      storeName: 'Kaufland',
+      quantity: 2,
+      initialQuantity: 2,
+      weight: '500 g',
+      barcode: '4311596490202',
+    ).withDerivedAmount();
+    expect(item.initialAmount, 1000);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: item),
+    );
+    final controller = container.read(provider.notifier)
+      ..updateNameText('Magerquark');
+
+    final renamed = controller.buildSavePayload()?.item;
+
+    expect(renamed?.name, 'Magerquark');
+    expect(renamed?.quantity, 2);
+    expect(renamed?.initialAmount, 1000);
+    expect(renamed?.currentAmount, 1000);
+
+    controller.updateWeightAmount('250');
+    final resized = controller.buildSavePayload()?.item;
+
+    expect(resized?.weight, '250 g');
+    expect(resized?.quantity, 2);
+    expect(resized?.initialAmount, 500);
+    expect(resized?.currentAmount, 500);
+  });
+
+  test(
+    'editing a receipt item keeps its stock however the size is written',
+    () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final item = InventoryItem.create(
+        id: 'item-4',
+        name: 'Joghurt',
+        entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+        storeName: 'Kaufland',
+        quantity: 1,
+        weight: '2x250g',
+        barcode: '4311596490202',
+      ).withDerivedAmount().copyWith(currentAmount: 300);
+      final provider = inventoryReceiptManualProductControllerProvider(
+        InventoryReceiptManualProductConfig(item: item),
+      );
+      final controller = container.read(provider.notifier)
+        ..updateNameText('Naturjoghurt');
+
+      final renamed = controller.buildSavePayload()?.item;
+
+      expect(renamed?.name, 'Naturjoghurt');
+      expect(renamed?.initialAmount, 500);
+      expect(renamed?.currentAmount, 300);
+    },
+  );
+
+  test('a new package size keeps the share of a partly eaten stock', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final item = InventoryItem.create(
+      id: 'item-5',
+      name: 'Quark',
+      entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+      storeName: 'Kaufland',
+      quantity: 2,
+      initialQuantity: 2,
+      weight: '500 g',
+      barcode: '4311596490202',
+    ).withDerivedAmount().copyWith(quantity: 1, currentAmount: 400);
+    expect(item.initialQuantity, 2);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: item),
+    );
+    final controller = container.read(provider.notifier)
+      ..updateWeightAmount('250');
+
+    final resized = controller.buildSavePayload()?.item;
+
+    expect(resized?.weight, '250 g');
+    expect(resized?.initialAmount, 500);
+    expect(resized?.currentAmount, 200);
+  });
+
+  test('a package size gives a stock counted by packages its amount', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final item = InventoryItem.create(
+      id: 'item-6',
+      name: 'Joghurt',
+      entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+      storeName: 'Kaufland',
+      quantity: 1,
+      initialQuantity: 3,
+      barcode: '4311596490202',
+    );
+    expect(item.usesAmountProgress, isFalse);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: item),
+    );
+    final controller = container.read(provider.notifier)
+      ..updateWeightAmount('500');
+
+    final weighed = controller.buildSavePayload()?.item;
+
+    expect(weighed?.initialQuantity, 3);
+    expect(weighed?.initialAmount, 1500);
+    expect(weighed?.currentAmount, 500);
+  });
+
+  test('editing an item keeps an amount changed by hand', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final item = InventoryItem.create(
+      id: 'item-3',
+      name: 'Quark',
+      entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+      storeName: 'Kaufland',
+      quantity: 2,
+      initialQuantity: 2,
+      weight: '500 g',
+      barcode: '4311596490202',
+    ).withDerivedAmount().copyWith(initialAmount: 1200, currentAmount: 1200);
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: item),
+    );
+    final controller = container.read(provider.notifier)
+      ..updateNameText('Magerquark');
+
+    final renamed = controller.buildSavePayload()?.item;
+
+    expect(renamed?.name, 'Magerquark');
+    expect(renamed?.quantity, 2);
+    expect(renamed?.initialAmount, 1200);
+    expect(renamed?.currentAmount, 1200);
+  });
+
   test('buildSavePayload marks entered nutrition complete but unverified', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);
