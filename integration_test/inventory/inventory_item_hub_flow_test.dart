@@ -23,6 +23,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_item_actions_card.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_meal_table.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_missing_values_hint.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
@@ -100,6 +102,50 @@ InventoryItem _gramFood(String id, String name, {required int stock}) {
     ),
   );
 }
+
+/// A food in stock with 500 g left, which joins a meal with 100 g.
+InventoryItem _gramItem(String name, GlobalFoodNutrition nutrition) {
+  return InventoryItem.create(
+    id: 'item-$name',
+    name: name,
+    entryDate: DateTime.utc(2026, 10, 2),
+    storeName: 'Aldi',
+    quantity: 1,
+    weight: '500 g',
+    initialAmount: 500,
+    currentAmount: 500,
+    amountUnit: InventoryAmountUnit.gram,
+    nutrition: nutrition,
+  );
+}
+
+/// Skyr without fiber.
+final InventoryItem _skyr = _gramItem(
+  'Skyr',
+  const GlobalFoodNutrition(
+    qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+    per100Kcal: 63,
+    per100Fat: 0.2,
+    per100Carbs: 4,
+    per100Sugar: 4,
+    per100Protein: 11,
+    per100Salt: 0.1,
+  ),
+);
+
+/// Blueberries without salt.
+final InventoryItem _blueberries = _gramItem(
+  'Heidelbeeren',
+  const GlobalFoodNutrition(
+    qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+    per100Kcal: 57,
+    per100Fat: 0.3,
+    per100Carbs: 14,
+    per100Sugar: 10,
+    per100Fiber: 2.4,
+    per100Protein: 0.7,
+  ),
+);
 
 final InventoryItem _oats = _gramFood('item-oats', 'Haferflocken', stock: 500);
 final InventoryItem _rice = _gramFood('item-rice', 'Reis', stock: 250);
@@ -196,6 +242,44 @@ void main() {
 
     expect(actions, [InventoryItemHubAction.edit]);
     expect(find.byType(InventoryItemHubPage), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('a meal adds up a value that one food lacks and marks it as '
+      'a minimum', (tester) async {
+    await tester.pumpWidget(
+      _buildHarness(
+        open: _openRecording(
+          <InventoryItemHubAction>[],
+          item: _oats,
+          initialPicks: [_skyr, _blueberries],
+        ),
+      ),
+    );
+    await _pumpVisibleStep(tester);
+
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester);
+    // Without the hub's oats the meal is 100 g each of skyr and blueberries.
+    await tester.ensureVisible(find.byKey(EatCombineSection.removeHubItemKey));
+    await tester.tap(find.byKey(EatCombineSection.removeHubItemKey));
+    await _pumpVisibleStep(tester);
+
+    final table = find.byKey(EatMealTable.tableKey);
+    await tester.ensureVisible(table);
+    await _pumpVisibleStep(tester);
+    Finder inTable(String text) =>
+        find.descendant(of: table, matching: find.text(text));
+    // Only the blueberries list fiber and only the skyr lists salt: per
+    // 100 g and in total, each is at least the known part.
+    expect(inTable('≥ 1.2\u00A0g'), findsOneWidget);
+    expect(inTable('≥ 2.4\u00A0g'), findsOneWidget);
+    expect(inTable('≥ 0.05\u00A0g'), findsOneWidget);
+    expect(inTable('≥ 0.1\u00A0g'), findsOneWidget);
+    // Both list sugar, so its sum is exact.
+    expect(inTable('7 g'), findsOneWidget);
+    expect(inTable('14 g'), findsOneWidget);
+    expect(inTable('–'), findsNothing);
     expect(tester.takeException(), isNull);
   });
 

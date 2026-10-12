@@ -1301,6 +1301,15 @@
   "caloriesNutritionTableSugar": "of which sugars",
   "caloriesNutritionTableFiber": "Fibre",
   "caloriesNutritionTableSalt": "Salt",
+  "caloriesNutritionTableAtLeast": "≥ {value}",
+  "@caloriesNutritionTableAtLeast": {
+    "description": "A nutrition label value that is a minimum: some foods of the meal do not list the nutrient, so the true value can only be higher.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "caloriesEntryDeletedMessage": "Entry removed",
   "caloriesEntryReturnedToInventoryMessage": "Returned to inventory",
   "caloriesEatAgainDoneMessage": "Logged again",

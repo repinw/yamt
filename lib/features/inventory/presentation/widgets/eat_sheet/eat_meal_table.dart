@@ -9,7 +9,8 @@ import 'package:yamt/l10n/app_localizations.dart';
 
 /// Nutrition label of a whole meal: per 100 g or ml of the meal, and the
 /// total of all foods, or one portion of it when the meal makes several.
-/// A total that one food does not list shows "–".
+/// Energy or a macro that one food does not list shows "–"; any other
+/// nutrient that a food lacks shows the sum of the others as a minimum.
 class EatMealTable extends StatelessWidget {
   /// Creates the table.
   const new({required this.meal, this.portions = 1, super.key});
@@ -47,6 +48,7 @@ class EatMealTable extends StatelessWidget {
         per100: meal.per100,
         listed: meal.listed,
         unknownEaten: l10n.eatPageMealUnknownValue,
+        atLeast: meal.incomplete,
       ),
       per100Header: meal.per100 == null
           ? null

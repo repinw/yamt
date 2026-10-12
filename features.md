@@ -446,7 +446,9 @@ and feature description docs. This is product-facing; architecture rules stay in
   The hub then shows all foods' images side by side in its header (the rows
   carry no images), the meal name, and one
   nutrition label for the whole meal, per 100 g and in total ("–" when one
-  food lacks a value; no per-100 column when grams and milliliters mix),
+  food lacks energy or a macro; another value that a food lacks adds up the
+  foods that list it and shows as a minimum, "mind. 2 g"; no per-100 column
+  when grams and milliliters mix),
   and the main button "In Vorrat" keeps the picked foods in stock as one
   prepared meal "A + B" and opens its "Gekocht" step (kicker "Kombiniert"):
   Portionen or Stück and the count, "Gewicht · N g aus den Zutaten" (the sum
@@ -457,9 +459,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   found by search again, also when the step is opened again later from
   "Offen". Until the step is saved the meal is open like a
   pot from free cooking. The grey "Mahlzeit ins Tagebuch"
-  saves one combined diary entry named "A + B" instead. The entry and
-  every stock change are written together. A combined entry cannot change its
-  amount or be eaten again; deleting it can return the stock of every food.
+  saves one combined diary entry named "A + B" instead. The entry keeps a
+  value such as sugar only when every food lists it, since the diary cannot
+  mark a minimum. The entry and every stock change are written together. A
+  combined entry cannot change its amount or be eaten again; deleting it
+  can return the stock of every food.
   While other foods are picked, the Item card hides "Bearbeiten". A food found by search skips the
   product editor when its label is complete and opens on its eat page
   (label, amount, button "Add"); "Bearbeiten" there opens the editor and
@@ -525,7 +529,8 @@ and feature description docs. This is product-facing; architecture rules stay in
   (tap for camera, gallery or remove) and name, one row per ingredient with
   a ruler for its amount and a remove button, the open and ignored rows,
   "+ Lebensmittel hinzufügen" (stock foods only, 100 g or ml each), the
-  portions and the nutrition label of the edited meal. Removing an
+  portions and the nutrition label of the edited meal (minimums as on the
+  item hub). Removing an
   ingredient only takes its food out, like its x on the detail page: the
   ingredient comes back as an open row. The x of an open or ignored row
   deletes the row from the meal; a meal keeps at least one ingredient or

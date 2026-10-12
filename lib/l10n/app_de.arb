@@ -1186,6 +1186,7 @@
   "caloriesNutritionTableSugar": "davon Zucker",
   "caloriesNutritionTableFiber": "Ballaststoffe",
   "caloriesNutritionTableSalt": "Salz",
+  "caloriesNutritionTableAtLeast": "mind. {value}",
   "caloriesEntryDeletedMessage": "Eintrag entfernt",
   "caloriesEntryReturnedToInventoryMessage": "Zurück im Vorrat",
   "caloriesEatAgainDoneMessage": "Nochmal eingetragen",

@@ -4168,6 +4168,12 @@ abstract class AppLocalizations {
   /// **'Salt'**
   String get caloriesNutritionTableSalt;
 
+  /// A nutrition label value that is a minimum: some foods of the meal do not list the nutrient, so the true value can only be higher.
+  ///
+  /// In en, this message translates to:
+  /// **'≥ {value}'**
+  String caloriesNutritionTableAtLeast(String value);
+
   /// No description provided for @caloriesEntryDeletedMessage.
   ///
   /// In en, this message translates to:

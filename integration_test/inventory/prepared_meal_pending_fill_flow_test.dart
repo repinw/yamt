@@ -425,10 +425,14 @@ void main() {
     );
     expect(_labelValue(tester, 'Fett'), '8 g');
     expect(_labelValue(tester, 'Eiweiß'), '20,5 g');
-    expect(_labelValue(tester, 'davon gesättigte Fettsäuren'), '–');
-    expect(_labelValue(tester, 'davon Zucker'), '–');
-    expect(_labelValue(tester, 'Ballaststoffe'), '–');
-    expect(_labelValue(tester, 'Salz'), '–');
+    // The sauce lacks the rest, so the rice's values become minimums.
+    expect(
+      _labelValue(tester, 'davon gesättigte Fettsäuren'),
+      'mind. 1\u00A0g',
+    );
+    expect(_labelValue(tester, 'davon Zucker'), 'mind. 2\u00A0g');
+    expect(_labelValue(tester, 'Ballaststoffe'), 'mind. 4\u00A0g');
+    expect(_labelValue(tester, 'Salz'), 'mind. 0,5\u00A0g');
     expect(tester.takeException(), isNull);
   });
 }

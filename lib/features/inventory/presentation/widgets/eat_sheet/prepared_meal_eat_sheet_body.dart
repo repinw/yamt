@@ -111,7 +111,7 @@ class _PreparedMealEatSheetBodyState
         widget.meal.isInPot == meal.isInPot;
     final canEat = !isInPot && meal.allows(PreparedMealAction.eat);
     final nutrition = state.nutrition;
-    // A nutrient that only some ingredients list shows "–".
+    // A nutrient that only some ingredients list is a minimum.
     final facts = nutrition == null
         ? const <NutritionFactsRow>[]
         : nutritionFactsRows(
@@ -119,6 +119,7 @@ class _PreparedMealEatSheetBodyState
             eaten: nutrition.total,
             per100: nutrition.per100,
             listed: nutrition.listed,
+            atLeast: nutrition.incomplete,
             unknownEaten: l10n.eatPageMealUnknownValue,
           );
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);

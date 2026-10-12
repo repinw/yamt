@@ -11,10 +11,11 @@ Future<void> _pump(
   WidgetTester tester,
   EatMealNutrition meal, {
   int portions = 1,
+  Locale locale = const Locale('en'),
 }) {
   return tester.pumpWidget(
     MaterialApp(
-      locale: const Locale('en'),
+      locale: locale,
       localizationsDelegates: appLocalizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
@@ -74,7 +75,23 @@ void main() {
     expect(find.text('1.5 g'), findsOneWidget);
   });
 
-  testWidgets('shows a dash for a nutrient one food lacks', (tester) async {
+  testWidgets('marks a nutrient one food lacks as a minimum', (tester) async {
+    await _pump(tester, _sugarOfOneFood);
+
+    // Sugar per 100 g and in total.
+    expect(find.text('≥ 1\u00A0g'), findsOneWidget);
+    expect(find.text('≥ 2\u00A0g'), findsOneWidget);
+    expect(find.text('–'), findsNothing);
+  });
+
+  testWidgets('says "mind." for a minimum in German', (tester) async {
+    await _pump(tester, _sugarOfOneFood, locale: const Locale('de'));
+
+    expect(find.text('mind. 1\u00A0g'), findsOneWidget);
+    expect(find.text('mind. 2\u00A0g'), findsOneWidget);
+  });
+
+  testWidgets('shows a dash for energy one food lacks', (tester) async {
     await _pump(
       tester,
       EatMealNutrition.combine(const [
@@ -84,7 +101,7 @@ void main() {
           unit: ConsumedUnit.grams,
         ),
         (
-          eaten: NutritionFacts(kcal: 100),
+          eaten: NutritionFacts(sugar: 4),
           amount: 150,
           unit: ConsumedUnit.grams,
         ),
@@ -92,6 +109,9 @@ void main() {
     );
 
     expect(find.text('–'), findsNWidgets(2));
+    expect(find.text('3 g'), findsOneWidget);
+    expect(find.text('6 g'), findsOneWidget);
+    expect(find.textContaining('≥'), findsNothing);
   });
 
   testWidgets('drops per 100 when grams and milliliters mix', (tester) async {
@@ -115,3 +135,13 @@ void main() {
     expect(find.text('total 200\u00A0ml + 50\u00A0g'), findsOneWidget);
   });
 }
+
+/// A meal whose sugar only the first food lists.
+final _sugarOfOneFood = EatMealNutrition.combine(const [
+  (
+    eaten: NutritionFacts(kcal: 200, sugar: 2),
+    amount: 50,
+    unit: ConsumedUnit.grams,
+  ),
+  (eaten: NutritionFacts(kcal: 100), amount: 150, unit: ConsumedUnit.grams),
+]);
