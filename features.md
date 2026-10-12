@@ -523,6 +523,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   both photos first; only without a result does the barcode the AI read on
   the front count, marked "please check". Otherwise the user scans the
   barcode or marks "has none". Saving needs a barcode or that mark.
+- The front photo is first of all the product's picture, so the AI says
+  nothing about it (#659). A front without a package or a readable name, or
+  one the AI cannot read at all (offline, a failed or throttled request, a
+  broken answer), leaves the fields it could not fill empty for the user.
+  Only the camera's own problems (no camera, a failed photo) are reported.
+  The nutrition table photo still asks
+  for a new photo or reports a failed read.
 - On save both photos go to Firebase Storage under
   `product_images/{uid}/{photoId}/`, readable by every signed-in user. The
   front photo becomes the product image when the product has none. The

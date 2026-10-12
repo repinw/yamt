@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,7 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/core/widgets/app_snack_bar_view.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
@@ -23,6 +25,8 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_form_field.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_form/manual_product_editor_header.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_photo_section.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -45,7 +49,13 @@ final Uint8List _pixel = Uint8List.fromList(const [
 
 const _frontUrl = 'gs://bucket/product_images/user-1/photo-1/front.jpg';
 
+const _noNetwork = SocketException('Failed host lookup');
+
 class _FakePhotoRepository implements ProductPhotoRepository {
+  new({this.offline = false});
+
+  /// Without a network the AI cannot read the front and the upload gives up.
+  final bool offline;
   var _photoCount = 0;
   final saved = <String>[];
 
@@ -66,6 +76,7 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   @override
   Future<ProductFrontDetails> loadFrontDetails(ProductPhoto photo) async {
     await Future<void>.delayed(const Duration(milliseconds: 200));
+    if (offline) throw _noNetwork;
     return const ProductFrontDetails(
       name: 'Haferflocken zart',
       brand: 'REWE Bio',
@@ -84,8 +95,13 @@ class _FakePhotoRepository implements ProductPhotoRepository {
     saved.add(barcode);
     return ProductPhotoUpload(
       frontAddress: front == null ? null : _frontUrl,
-      // The upload never ends; the editor saves without waiting for it.
-      done: Completer<void>().future,
+      done: offline
+          ? Future<void>.delayed(
+              const Duration(milliseconds: 300),
+              () => throw _noNetwork,
+            )
+          // The upload never ends; the editor saves without waiting for it.
+          : Completer<void>().future,
     );
   }
 }
@@ -194,6 +210,27 @@ String _text(WidgetTester tester, ManualProductFormField field) {
       .text;
 }
 
+String _snackBarMessage(WidgetTester tester) {
+  return tester.widget<AppSnackBarView>(find.byType(AppSnackBarView)).message;
+}
+
+/// Pumps until [finder] finds a widget ([present]) or none, for at most
+/// 8 seconds.
+Future<void> _pumpUntil(
+  WidgetTester tester,
+  Finder finder, {
+  required bool present,
+}) async {
+  final end = tester.binding.clock.fromNowBy(const Duration(seconds: 8));
+  while (finder.evaluate().isNotEmpty != present) {
+    if (tester.binding.clock.now().isAfter(end)) {
+      throw TestFailure('Timed out waiting for $finder (present: $present).');
+    }
+    await tester.pump(const Duration(milliseconds: 50));
+  }
+  await tester.pumpAndSettle();
+}
+
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized().framePolicy =
       LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
@@ -231,5 +268,64 @@ void main() {
     final item = (result! as InventoryReceiptManualProductResult).item;
     expect(item.name, 'Haferflocken zart');
     expect(item.imageUrl, _frontUrl);
+  });
+
+  testWidgets('offline, the front photo stays silent and the product saves', (
+    tester,
+  ) async {
+    final photos = _FakePhotoRepository(offline: true);
+    Object? result;
+    await tester.pumpWidget(
+      _buildHarness(photos: photos, onResult: (value) => result = value),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('open_editor')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(ManualProductPhotoSection.frontKey));
+    // The AI gives up on the front without a word; the name stays empty.
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppSnackBarView), findsNothing);
+    expect(_text(tester, ManualProductFormField.name), isEmpty);
+
+    // The user types what the AI would have read.
+    for (final (field, text) in [
+      (ManualProductFormField.name, 'Haferflocken zart'),
+      (ManualProductFormField.weightAmount, '500'),
+      (ManualProductFormField.barcode, '4006381333931'),
+      (ManualProductFormField.kcal, '372'),
+      (ManualProductFormField.fat, '7'),
+      (ManualProductFormField.saturatedFat, '1.3'),
+      (ManualProductFormField.carbs, '58.7'),
+      (ManualProductFormField.sugar, '0.7'),
+      (ManualProductFormField.protein, '13.5'),
+      (ManualProductFormField.salt, '0.01'),
+    ]) {
+      await tester.ensureVisible(find.byKey(field.key));
+      await tester.enterText(find.byKey(field.key), text);
+    }
+    await tester.ensureVisible(
+      find.byKey(ManualProductEditorHeader.weightUnitKey),
+    );
+    await tester.tap(find.byKey(ManualProductEditorHeader.weightUnitKey));
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(photos.saved, ['4006381333931']);
+    final item = (result! as InventoryReceiptManualProductResult).item;
+    expect(item.name, 'Haferflocken zart');
+    expect(item.imageUrl, _frontUrl);
+
+    // The upload is no AI read: it fails offline and says so.
+    await _pumpUntil(tester, find.byType(AppSnackBarView), present: true);
+    expect(
+      _snackBarMessage(tester),
+      'The photos could not be stored. The product is saved without them.',
+    );
   });
 }
