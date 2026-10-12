@@ -26,6 +26,8 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_missing_values_hint.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_page_scaffold.dart';
+import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
+    'eat_ruler.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_action_picker_sheet.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -34,6 +36,7 @@ import '../../test/helpers/auth_user_data_key_session.dart';
 
 const _openKey = Key('open_item_hub');
 const _confirmKey = Key('inventory_item_amount_dialog_confirm_button');
+const _mealToDiaryKey = Key('inventory_item_amount_dialog_add_more_button');
 
 /// Eggs in stock from OFF: "10 Stück" without grams per piece, no salt.
 final InventoryItem _eggs = InventoryItem.create(
@@ -77,14 +80,40 @@ final InventoryItem _chicken = InventoryItem.create(
   ),
 );
 
+/// A food counted in grams with [stock] g left of 500 g.
+InventoryItem _gramFood(String id, String name, {required int stock}) {
+  return InventoryItem.create(
+    id: id,
+    name: name,
+    entryDate: DateTime.utc(2026, 10, 2),
+    storeName: 'Aldi',
+    quantity: 1,
+    initialAmount: 500,
+    currentAmount: stock,
+    amountUnit: InventoryAmountUnit.gram,
+    nutrition: const GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.verified,
+      per100Kcal: 370,
+      per100Fat: 7,
+      per100Carbs: 59,
+      per100Protein: 13,
+    ),
+  );
+}
+
+final InventoryItem _oats = _gramFood('item-oats', 'Haferflocken', stock: 500);
+final InventoryItem _rice = _gramFood('item-rice', 'Reis', stock: 250);
+
 /// Opens a hub from the harness button.
 typedef _HubOpener = Future<void> Function(BuildContext context, WidgetRef ref);
 
-/// Opens the hub page of [item] alone; its actions only land in [actions],
-/// and the page's result goes to [onResult].
+/// Opens the hub page of [item] alone, with [initialPicks] combined; its
+/// actions only land in [actions], and the page's result goes to
+/// [onResult].
 _HubOpener _openRecording(
   List<InventoryItemHubAction> actions, {
   InventoryItem? item,
+  List<InventoryItem> initialPicks = const <InventoryItem>[],
   ValueChanged<InventoryItemHubResult?>? onResult,
 }) {
   return (context, _) async {
@@ -93,6 +122,7 @@ _HubOpener _openRecording(
         fullscreenDialog: true,
         builder: (_) => InventoryItemHubPage(
           item: item ?? _eggs,
+          initialPicks: initialPicks,
           onAction: (_, action) async {
             actions.add(action);
             return false;
@@ -275,4 +305,83 @@ void main() {
     expect(find.byType(InventoryItemHubPage), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('a combined food takes typed grams, and its ruler follows', (
+    tester,
+  ) async {
+    final results = <InventoryItemHubResult?>[];
+    await tester.pumpWidget(
+      _buildHarness(
+        open: _openRecording(
+          <InventoryItemHubAction>[],
+          item: _oats,
+          initialPicks: [_rice],
+          onResult: results.add,
+        ),
+      ),
+    );
+    await _pumpVisibleStep(tester);
+    await tester.tap(find.byKey(_openKey));
+    await _pumpVisibleStep(tester);
+
+    // Tapping the amount opens the row with its field ready to type.
+    final amount = find.byKey(EatCombineSection.amountKey(_rice.id));
+    await tester.ensureVisible(amount);
+    await _pumpVisibleStep(tester);
+    await tester.tap(amount);
+    await _pumpVisibleStep(tester);
+    final field = find.byKey(EatCombineSection.amountFieldKey(_rice.id));
+    expect(tester.widget<TextField>(field).focusNode?.hasFocus, isTrue);
+
+    // The field keeps the focus until the end: a test cannot focus a field
+    // again once the keyboard closed.
+    await tester.enterText(field, '137');
+    await _pumpVisibleStep(tester);
+    expect(_rulerValue(tester), 137);
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey<String>(_rice.id)),
+        matching: find.text('137 g'),
+      ),
+      findsOneWidget,
+    );
+
+    // The ruler moves the typed amount, and the field follows.
+    final ruler = find.byKey(EatRuler.sliderKey);
+    await tester.ensureVisible(ruler);
+    await _pumpVisibleStep(tester);
+    await tester.drag(ruler, const Offset(-80, 0));
+    await _pumpVisibleStep(tester);
+    final dragged = _rulerValue(tester).round();
+    expect(dragged, lessThan(137));
+    expect(_fieldText(tester, field), '$dragged');
+
+    // More than the 250 g in stock keeps the amount.
+    await tester.enterText(field, '300');
+    await _pumpVisibleStep(tester);
+    expect(_rulerValue(tester).round(), dragged);
+
+    await tester.enterText(field, '137');
+    await tester.testTextInput.receiveAction(TextInputAction.done);
+    await _pumpVisibleStep(tester);
+    await tester.ensureVisible(find.byKey(_mealToDiaryKey));
+    await _pumpVisibleStep(tester);
+    await tester.tap(find.byKey(_mealToDiaryKey));
+    await _pumpVisibleStep(tester);
+
+    final meal = results.single;
+    expect(meal, isA<InventoryItemHubMeal>());
+    final picks = (meal! as InventoryItemHubMeal).picks;
+    expect(picks.single.item.id, _rice.id);
+    expect(picks.single.request.inventoryAmount, 137);
+    expect(tester.takeException(), isNull);
+  });
+}
+
+double _rulerValue(WidgetTester tester) {
+  return tester.widget<Slider>(find.byKey(EatRuler.sliderKey)).value;
+}
+
+String? _fieldText(WidgetTester tester, Finder field) {
+  return tester.widget<TextField>(field).controller?.text;
 }

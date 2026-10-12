@@ -564,6 +564,7 @@
   "eatPageMealUnknownValue": "–",
   "eatPageCombineConfirm": "Meal to diary",
   "eatPageCombineRemove": "Remove from the list",
+  "eatPageCombineAmount": "Amount",
   "eatPageCombineSaved": "Meal logged.",
   "eatPageCombineFailed": "Could not log the meal.",
   "eatPageWhen": "{day} · {meal}",

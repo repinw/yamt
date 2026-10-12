@@ -326,6 +326,26 @@ void main() {
     expect(container.read(provider).inventoryAmountText, '1000');
   });
 
+  test('typing the same amount keeps the counted portion', () {
+    final (:container, :provider) = _setUp(_gramItem());
+    final controller = container.read(provider.notifier)
+      ..setAmountText('30')
+      ..rememberPortion('Slice');
+    final slice = container
+        .read(provider)
+        .markers
+        .firstWhere((marker) => marker.label == 'Slice');
+    controller
+      ..pickMarker(slice)
+      ..stepPortions(up: true)
+      ..setAmountText('60');
+
+    expect(container.read(provider).portionCount, 2);
+
+    controller.setAmountText('70');
+    expect(container.read(provider).portionCount, isNull);
+  });
+
   test('a picked portion mark is counted up and down within the stock', () {
     final (:container, :provider) = _setUp(_gramItem());
     final controller = container.read(provider.notifier)

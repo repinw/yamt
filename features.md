@@ -415,7 +415,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   in selection mode, and "+ Lebensmittel hinzufügen" under the meal's rows
   adds more (only items with
   nutrition values and stock, counted in grams or milliliters). Picked items
-  join with 100 g or ml; tapping a food's row opens a ruler for its amount.
+  join with 100 g or ml; tapping a food's row opens a "Menge" field and a
+  ruler for its amount, which follow each other. Tapping the amount itself
+  opens them with the field ready to type, such as 137 g. A picked food
+  refuses a typed amount that is no number or more than its stock ("Bitte
+  gültige Zahlen eingeben.") and keeps its amount; the hub item's own row
+  checks its amount like its eat page when the meal is confirmed.
   The hub then shows all foods' images side by side in its header (the rows
   carry no images), the meal name, and one
   nutrition label for the whole meal, per 100 g and in total ("–" when one

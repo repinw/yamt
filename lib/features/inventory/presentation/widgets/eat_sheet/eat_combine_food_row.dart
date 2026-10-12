@@ -6,7 +6,7 @@ import 'package:yamt/core/widgets/app_ink_well.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// One food of a meal on the item hub: name, amount and calories.
-/// Tapping it opens [ruler] under the row.
+/// Tapping it opens [ruler] under the row, with [amountField] above it.
 class EatCombineFoodRow extends StatelessWidget {
   /// Creates the row.
   const new({
@@ -16,6 +16,9 @@ class EatCombineFoodRow extends StatelessWidget {
     required this.onTap,
     this.kcal,
     this.ruler,
+    this.amountField,
+    this.onAmountTap,
+    this.amountKey,
     this.errorText,
     this.onRemove,
     this.removeKey,
@@ -40,6 +43,16 @@ class EatCombineFoodRow extends StatelessWidget {
   /// Amount control, or null when the amount is set elsewhere.
   final Widget? ruler;
 
+  /// Field to type the amount, shown above [ruler].
+  final Widget? amountField;
+
+  /// Called when the amount is tapped, to type it. Null leaves the amount
+  /// to the tap of the whole row.
+  final VoidCallback? onAmountTap;
+
+  /// Key of the tappable amount.
+  final Key? amountKey;
+
   /// Why the amount is not valid, shown under the row.
   final String? errorText;
 
@@ -58,7 +71,18 @@ class EatCombineFoodRow extends StatelessWidget {
     final kcalText = kcal;
     final remove = onRemove;
     final ruler = this.ruler;
+    final amountField = this.amountField;
     final errorText = this.errorText;
+    final amountText = Text(
+      amount,
+      style: textTheme.titleMedium?.copyWith(
+        fontWeight: FontWeight.w800,
+        color: colors.ink,
+        decoration: ruler == null ? null : TextDecoration.underline,
+        decorationStyle: TextDecorationStyle.dashed,
+        decorationColor: colors.muted,
+      ),
+    );
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -87,18 +111,24 @@ class EatCombineFoodRow extends StatelessWidget {
                         style: style?.copyWith(fontWeight: FontWeight.w700),
                       ),
                     ),
-                    Text(
-                      amount,
-                      style: textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: colors.ink,
-                        decoration: ruler == null
-                            ? null
-                            : TextDecoration.underline,
-                        decorationStyle: TextDecorationStyle.dashed,
-                        decorationColor: colors.muted,
+                    if (onAmountTap == null)
+                      amountText
+                    else
+                      AppInkWell(
+                        key: amountKey,
+                        onTap: onAmountTap,
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            minWidth: AppSizes.minTapTarget,
+                            minHeight: AppSizes.minTapTarget,
+                          ),
+                          child: Align(
+                            alignment: Alignment.centerRight,
+                            widthFactor: 1,
+                            child: amountText,
+                          ),
+                        ),
                       ),
-                    ),
                     if (kcalText != null) Text(kcalText, style: style),
                     if (remove != null)
                       IconButton(
@@ -115,7 +145,11 @@ class EatCombineFoodRow extends StatelessWidget {
           if (isOpen && ruler != null)
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: ruler,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: AppSpacing.sm,
+                children: [?amountField, ruler],
+              ),
             ),
           if (errorText != null)
             Padding(

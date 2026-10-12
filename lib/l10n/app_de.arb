@@ -478,6 +478,7 @@
   "eatPageMealUnknownValue": "–",
   "eatPageCombineConfirm": "Mahlzeit ins Tagebuch",
   "eatPageCombineRemove": "Aus der Liste nehmen",
+  "eatPageCombineAmount": "Menge",
   "eatPageCombineSaved": "Mahlzeit eingetragen.",
   "eatPageCombineFailed": "Mahlzeit konnte nicht eingetragen werden.",
   "eatPageWhen": "{day} · {meal}",
