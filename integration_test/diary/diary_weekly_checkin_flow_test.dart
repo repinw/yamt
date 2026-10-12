@@ -17,6 +17,8 @@ import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
+import 'package:yamt/features/calories/presentation/widgets/'
+    'calorie_goal_calculator_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
     'diary_weekly_checkin_card_keys.dart';
 import 'package:yamt/features/diary/presentation/widgets/'
@@ -215,22 +217,7 @@ void main() {
     addTearDown(settings.dispose);
     addTearDown(log.dispose);
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: _overrides(settings, log),
-        child: MaterialApp(
-          locale: const Locale('en'),
-          localizationsDelegates: appLocalizationsDelegates,
-          supportedLocales: AppLocalizations.supportedLocales,
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: DiaryWeeklyCheckInSection(selectedDay: _now),
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
+    await _pumpSection(tester, settings, log);
 
     // The section opens the due check-in; apply it as it is.
     expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
@@ -251,4 +238,120 @@ void main() {
       _goalStart,
     );
   });
+
+  testWidgets('back from the goal sheet returns to the check-in as it was', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final settings = FakeCalorieSettingsRepository(
+      initialSettings: CalorieGoalSettings.single(
+        dailyKcalGoal: 2000,
+        calculatorProfile: const CalorieCalculatorProfile.defaults().copyWith(
+          trainingWeekdays: [DateTime.monday, DateTime.thursday],
+          trainingDayKcalOffset: 300,
+        ),
+        effectiveDate: _goalStart,
+      ),
+    );
+    final log = FakeCalorieLogRepository(
+      initialEntries: [
+        for (var day = 1; day <= 7; day++) _entry(day, 1900 + day * 10),
+      ],
+    );
+    addTearDown(settings.dispose);
+    addTearDown(log.dispose);
+    // Reads the selection as a screen reader does, so it needs no text.
+    void expectSelected(Key key, {bool isSelected = true}) => expect(
+      tester.getSemantics(find.byKey(key)),
+      isSemantics(isSelected: isSelected),
+      reason: 'Selection of $key',
+    );
+
+    await _pumpSection(tester, settings, log);
+
+    // The section opens the due check-in. Keep the previous TDEE and add the
+    // Tuesday of run 2 to its Thursday and Monday.
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.keepPreviousChoice);
+    await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
+    await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.trainingDay(0));
+    expectSelected(DiaryWeeklyCheckInSheetKeys.trainingDay(0));
+    await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.backButton);
+
+    // "Change goal" swaps the check-in for the goal sheet; its arrow goes
+    // back without a new goal.
+    await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.changeGoalButton);
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsNothing);
+    await _tapByKey(tester, CalorieGoalCalculatorSheetKeys.sheetBackButton);
+
+    // The check-in is open again on the review step, with the previous TDEE.
+    expect(
+      find.byKey(CalorieGoalCalculatorSheetKeys.sheetBackButton),
+      findsNothing,
+    );
+    expect(find.byKey(DiaryWeeklyCheckInSheetKeys.sheet), findsOneWidget);
+    expect(
+      find.byKey(DiaryWeeklyCheckInSheetKeys.changeGoalButton),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(DiaryWeeklyCheckInSheetKeys.trainingDay(0)),
+      findsNothing,
+    );
+    expectSelected(DiaryWeeklyCheckInSheetKeys.keepPreviousChoice);
+    expectSelected(
+      DiaryWeeklyCheckInSheetKeys.useMeasuredChoice,
+      isSelected: false,
+    );
+
+    // The training step still plans the added Tuesday.
+    await _tapByKey(tester, DiaryWeeklyCheckInSheetKeys.nextButton);
+    expectSelected(DiaryWeeklyCheckInSheetKeys.trainingDay(0));
+    expectSelected(
+      DiaryWeeklyCheckInSheetKeys.trainingDay(1),
+      isSelected: false,
+    );
+    expectSelected(DiaryWeeklyCheckInSheetKeys.trainingDay(2));
+
+    // Nothing was decided: no new goal, and the check-in is still pending.
+    final saved = await settings.readSettings();
+    expect(saved.goalHistory, hasLength(1));
+    expect(saved.pendingWeeklyCheckIn?.windowStartDate, _goalStart);
+    expect(saved.pendingWeeklyCheckIn?.isDismissed, isFalse);
+    expect(saved.isTrainingDay(DateTime(2026, 9, 8)), isFalse);
+    semantics.dispose();
+  });
+}
+
+/// Shows the diary check-in section, which opens a due check-in itself.
+Future<void> _pumpSection(
+  WidgetTester tester,
+  FakeCalorieSettingsRepository settings,
+  FakeCalorieLogRepository log,
+) async {
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: _overrides(settings, log),
+      child: MaterialApp(
+        locale: const Locale('en'),
+        localizationsDelegates: appLocalizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: DiaryWeeklyCheckInSection(selectedDay: _now),
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Scrolls the widget with [key] into view and taps it.
+Future<void> _tapByKey(WidgetTester tester, Key key) async {
+  final finder = find.byKey(key);
+  await tester.ensureVisible(finder);
+  await tester.pumpAndSettle();
+  await tester.tap(finder);
+  await tester.pumpAndSettle();
 }
