@@ -216,4 +216,41 @@ void main() {
       expect(candidates.last.globalFoodItemId, 'milk-low');
     },
   );
+
+  test('readCandidates throws when Firestore cannot be reached', () async {
+    final firestore = _UnreachableFirestore();
+    final repository = FirestoreGlobalBarcodeCandidateRepository(
+      firestore: firestore,
+      currentUserId: 'user-1',
+    );
+
+    await expectLater(
+      repository.readCandidates(barcode: '4006381333931'),
+      throwsA(
+        isA<FirebaseException>().having(
+          (error) => error.code,
+          'code',
+          'unavailable',
+        ),
+      ),
+    );
+    // Offline, the client-side fallback would fail the same way.
+    expect(firestore.reads, 1);
+  });
+}
+
+/// Firestore without a connection: both the indexed read and its fallback
+/// fail.
+class _UnreachableFirestore extends Fake implements FirebaseFirestore {
+  int reads = 0;
+
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String collectionPath) {
+    reads++;
+    throw FirebaseException(
+      plugin: 'cloud_firestore',
+      code: 'unavailable',
+      message: 'The client is offline.',
+    );
+  }
 }

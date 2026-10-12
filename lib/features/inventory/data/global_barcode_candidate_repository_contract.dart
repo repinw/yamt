@@ -4,6 +4,9 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 /// Defines global barcode candidate repository.
 abstract interface class GlobalBarcodeCandidateRepository {
   /// Read candidates.
+  ///
+  /// Throws when the candidates cannot be read, for example a Firestore
+  /// `unavailable` error without a connection.
   Future<List<GlobalBarcodeCandidate>> readCandidates({
     required String barcode,
     int limit = 5,

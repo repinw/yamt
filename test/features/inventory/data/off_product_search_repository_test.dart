@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:ui' show Locale;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -402,4 +404,85 @@ Score: 22 | token=10 | gram=12 | store=0 | 2 | [bofrost] Vanille
 
     expect(result, isEmpty);
   });
+
+  test('lookupCandidatesByBarcode throws when the server cannot be reached '
+      'so an unknown barcode stays distinguishable', () async {
+    final requestedPaths = <String>[];
+    final repository = HttpOffProductSearchRepository(
+      client: MockClient((request) async {
+        requestedPaths.add(request.url.path);
+        throw http.ClientException('Failed host lookup', request.url);
+      }),
+      searchUri: Uri.parse('https://example.com/search'),
+    );
+
+    await expectLater(
+      repository.lookupCandidatesByBarcode(barcode: '4006381333931'),
+      throwsA(isA<http.ClientException>()),
+    );
+    // The first unreachable request already answers: no second timeout.
+    expect(requestedPaths, <String>['/search']);
+  });
+
+  test('lookupCandidatesByBarcode still asks the barcode endpoint when the '
+      'search times out', () async {
+    final repository = HttpOffProductSearchRepository(
+      client: MockClient((request) async {
+        if (request.url.path == '/search') {
+          throw TimeoutException('slow search');
+        }
+        return http.Response(
+          jsonEncode({
+            'ok': true,
+            'code': '4006381333931',
+            'found': true,
+            'product': {'code': '4006381333931', 'name': 'Milk', 'score': 100},
+          }),
+          200,
+        );
+      }),
+      searchUri: Uri.parse('https://example.com/search'),
+    );
+
+    final result = await repository.lookupCandidatesByBarcode(
+      barcode: '4006381333931',
+    );
+
+    expect(result.map((product) => product.name), ['Milk']);
+  });
+
+  test('lookupCandidatesByBarcode still asks the barcode endpoint when the '
+      'search answers with a server error', () async {
+    final requestedPaths = <String>[];
+    final repository = HttpOffProductSearchRepository(
+      client: MockClient((request) async {
+        requestedPaths.add(request.url.path);
+        return http.Response('oops', 500);
+      }),
+      searchUri: Uri.parse('https://example.com/search'),
+    );
+
+    final result = await repository.lookupCandidatesByBarcode(
+      barcode: '4006381333931',
+    );
+
+    expect(result, isEmpty);
+    expect(requestedPaths, <String>['/search', '/barcode']);
+  });
+
+  test(
+    'search returns an empty list when the server cannot be reached',
+    () async {
+      final repository = HttpOffProductSearchRepository(
+        client: MockClient((request) async {
+          throw http.ClientException('Failed host lookup', request.url);
+        }),
+        searchUri: Uri.parse('https://example.com/search'),
+      );
+
+      final results = await repository.search(query: 'Milch');
+
+      expect(results, isEmpty);
+    },
+  );
 }
