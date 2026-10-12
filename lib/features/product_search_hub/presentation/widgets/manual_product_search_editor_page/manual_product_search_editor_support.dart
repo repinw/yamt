@@ -200,7 +200,10 @@ Future<void> executeEditorSave({
   onClosePage(result);
 }
 
-/// Takes a photo of the package front and reports problems.
+/// Takes a photo of the package front. The photo is first of all the
+/// product's picture, so what the AI reads from it fills the form silently:
+/// a field it cannot read stays empty for the user. Only the camera's own
+/// problems are reported.
 Future<void> takeEditorFrontPhoto({
   required ManualProductPhotoController photos,
   required BuildContext context,
@@ -210,21 +213,14 @@ Future<void> takeEditorFrontPhoto({
   final outcome = await photos.takeFrontPhoto();
   if (!context.mounted) return;
   final l10n = AppLocalizations.of(context)!;
-  void retake() => unawaited(
-    takeEditorFrontPhoto(
-      photos: photos,
-      context: context,
-      onShowSnackBar: onShowSnackBar,
-    ),
-  );
-  _showPhotoOutcome(
-    outcome,
-    l10n: l10n,
-    onShowSnackBar: onShowSnackBar,
-    retake: retake,
-    retakeMessage: l10n.productEditorFrontUnreadable,
-    failedMessage: l10n.productEditorFrontFailed,
-  );
+  switch (outcome) {
+    case ManualProductPhotoOutcome.cameraUnsupported:
+      onShowSnackBar(l10n.productEditorCameraUnsupported);
+    case ManualProductPhotoOutcome.cameraFailed:
+      onShowSnackBar(l10n.productEditorCameraFailed);
+    case _:
+      return;
+  }
 }
 
 /// Takes a photo of the nutrition table and reports problems.
@@ -270,11 +266,13 @@ void _showPhotoOutcome(
   switch (outcome) {
     case ManualProductPhotoOutcome.read:
     case ManualProductPhotoOutcome.canceled:
+    // Only a front photo is checked for a package.
+    case ManualProductPhotoOutcome.notProduct:
       return;
     case ManualProductPhotoOutcome.cameraUnsupported:
       onShowSnackBar(l10n.productEditorCameraUnsupported);
-    case ManualProductPhotoOutcome.notProduct:
-      onShowSnackBar(l10n.productEditorFrontNotProduct, action: retakeAction);
+    case ManualProductPhotoOutcome.cameraFailed:
+      onShowSnackBar(l10n.productEditorCameraFailed);
     case ManualProductPhotoOutcome.retakePhoto:
       onShowSnackBar(retakeMessage, action: retakeAction);
     case ManualProductPhotoOutcome.appCheckThrottled:

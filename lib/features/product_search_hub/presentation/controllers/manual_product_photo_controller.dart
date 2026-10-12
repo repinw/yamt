@@ -180,7 +180,7 @@ class ManualProductPhotoController extends _$ManualProductPhotoController {
         error: error,
         stackTrace: stackTrace,
       );
-      return (photo: null, outcome: ManualProductPhotoOutcome.failed);
+      return (photo: null, outcome: ManualProductPhotoOutcome.cameraFailed);
     }
   }
 

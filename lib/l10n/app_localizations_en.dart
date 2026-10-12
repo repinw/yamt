@@ -268,14 +268,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get productEditorBarcodeMissing => 'No barcode on the photos';
 
   @override
-  String get productEditorFrontUnreadable =>
-      'The name is not readable. Take a sharper photo of the front.';
-
-  @override
-  String get productEditorFrontNotProduct => 'The photo shows no package.';
-
-  @override
-  String get productEditorFrontFailed => 'Could not read the front.';
+  String get productEditorCameraFailed => 'Could not take the photo.';
 
   @override
   String get productEditorCameraUnsupported =>

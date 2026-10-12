@@ -272,16 +272,8 @@ class AppLocalizationsDe extends AppLocalizations {
   String get productEditorBarcodeMissing => 'Kein Barcode auf den Fotos';
 
   @override
-  String get productEditorFrontUnreadable =>
-      'Der Name ist nicht lesbar. Mach ein schärferes Foto der Vorderseite.';
-
-  @override
-  String get productEditorFrontNotProduct =>
-      'Auf dem Foto ist keine Verpackung zu sehen.';
-
-  @override
-  String get productEditorFrontFailed =>
-      'Die Vorderseite konnte nicht gelesen werden.';
+  String get productEditorCameraFailed =>
+      'Das Foto konnte nicht aufgenommen werden.';
 
   @override
   String get productEditorCameraUnsupported =>

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,8 +53,14 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   final saved =
       <({ProductPhoto? front, ProductPhoto? table, String barcode})>[];
 
+  Exception? cameraError;
+
   @override
-  Future<ProductPhoto?> loadCameraPhoto() async => photos.removeAt(0);
+  Future<ProductPhoto?> loadCameraPhoto() async {
+    final error = cameraError;
+    if (error != null) throw error;
+    return photos.removeAt(0);
+  }
 
   @override
   Future<String?> loadBarcode(ProductPhoto photo) async => barcodes[photo.path];
@@ -228,6 +235,11 @@ void main() {
       ManualProductPhotoOutcome.retakePhoto,
     ),
     (const FormatException('broken'), ManualProductPhotoOutcome.failed),
+    // Offline the AI request fails; that is not a photo to retake.
+    (
+      const SocketException('Failed host lookup'),
+      ManualProductPhotoOutcome.failed,
+    ),
   ]) {
     test(
       'a front photo failing with $error reports ${expected.name}',
@@ -249,6 +261,24 @@ void main() {
       },
     );
   }
+
+  test('a camera that fails reports cameraFailed, not an AI failure', () async {
+    final repository = _FakePhotoRepository()
+      ..cameraError = Exception('permission denied');
+    final (container: _, :photos, product: _) = _setUp(
+      repository,
+      _FakeNutritionOcrRepository(),
+    );
+
+    expect(
+      await photos.takeFrontPhoto(),
+      ManualProductPhotoOutcome.cameraFailed,
+    );
+    expect(
+      await photos.takeNutritionTablePhoto(),
+      ManualProductPhotoOutcome.cameraFailed,
+    );
+  });
 
   for (final (errorCode, expected) in [
     (

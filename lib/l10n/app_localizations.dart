@@ -536,23 +536,11 @@ abstract class AppLocalizations {
   /// **'No barcode on the photos'**
   String get productEditorBarcodeMissing;
 
-  /// No description provided for @productEditorFrontUnreadable.
+  /// No description provided for @productEditorCameraFailed.
   ///
   /// In en, this message translates to:
-  /// **'The name is not readable. Take a sharper photo of the front.'**
-  String get productEditorFrontUnreadable;
-
-  /// No description provided for @productEditorFrontNotProduct.
-  ///
-  /// In en, this message translates to:
-  /// **'The photo shows no package.'**
-  String get productEditorFrontNotProduct;
-
-  /// No description provided for @productEditorFrontFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not read the front.'**
-  String get productEditorFrontFailed;
+  /// **'Could not take the photo.'**
+  String get productEditorCameraFailed;
 
   /// No description provided for @productEditorCameraUnsupported.
   ///

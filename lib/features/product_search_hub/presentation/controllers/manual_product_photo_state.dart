@@ -11,6 +11,9 @@ enum ManualProductPhotoOutcome {
   /// This device cannot take photos.
   cameraUnsupported,
 
+  /// The camera failed to take the photo.
+  cameraFailed,
+
   /// The photo shows no food package.
   notProduct,
 
