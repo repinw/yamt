@@ -1,8 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/application/daily_tdee_series.dart';
 import 'package:yamt/features/calories/application/tdee_analytics_service.dart';
 import 'package:yamt/features/calories/domain/calorie_calculator_profile.dart';
 import 'package:yamt/features/calories/domain/calorie_goal_settings.dart';
+import 'package:yamt/features/calories/domain/calorie_goal_settings_cycling.dart';
 import 'package:yamt/features/calories/domain/diary_day_window.dart';
+import 'package:yamt/features/calories/domain/quick_calorie_entry.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_goal_cycle.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_models.dart';
 import 'package:yamt/features/calories/domain/tdee_analytics_time_range.dart';
@@ -129,7 +133,7 @@ void main() {
           calculatorProfile: null,
           effectiveDate: DateTime(2025),
         ),
-        learnedTdeeByDay: const {},
+        tdeeByDay: const {},
         entriesByDay: const {},
         weights: weights,
       );
@@ -169,6 +173,86 @@ void main() {
       // The 2 kg spike moves the trend by only about 0.1 kg.
       final trendBeforeSpike = weights.trendFor(addDiaryDays(start, 39))!;
       expect(projection.currentWeightKg - trendBeforeSpike, closeTo(0.1, 0.05));
+    });
+
+    test('estimateDailyTdee counts a pause day as a day without intake', () {
+      final start = DateTime(2025, 3);
+      final days = [
+        for (var day = 0; day < 20; day++) addDiaryDays(start, day),
+      ];
+      final pauseDay = days[15];
+      final settings = CalorieGoalSettings.single(
+        dailyKcalGoal: 2500,
+        calculatorProfile: null,
+        effectiveDate: DateTime(2025),
+      ).setPauseDay(day: pauseDay, isPause: true);
+      final entriesByDay = {
+        for (final day in days)
+          diaryDayKey(day): [
+            buildQuickCalorieEntry(
+              id: diaryDayKey(day),
+              userId: 'user-1',
+              name: 'Essen',
+              mealType: MealType.lunch,
+              loggedAt: day,
+              now: day,
+              // The pause day's binge must not count.
+              kcal: day == pauseDay ? 9000 : 2500,
+            ),
+          ],
+      };
+
+      final estimates = DailyTdeeSeries.estimate(
+        startDate: start,
+        endDate: days.last,
+        today: addDiaryDays(days.last, 1),
+        settings: settings,
+        entriesByDay: entriesByDay,
+        weights: WeightTrendCalculator.fromDailyWeights({
+          for (final day in days) day: 80,
+        }),
+      );
+
+      expect(estimates, hasLength(20));
+      expect(estimates[diaryDayKey(days.last)]!.tdeeKcal, closeTo(2500, 1));
+    });
+
+    test('estimateDailyTdee keeps the value of yesterday for today', () {
+      final start = DateTime(2025, 3);
+      final today = addDiaryDays(start, 3);
+
+      final estimates = DailyTdeeSeries.estimate(
+        startDate: start,
+        endDate: today,
+        today: today,
+        settings: CalorieGoalSettings.single(
+          dailyKcalGoal: 2500,
+          calculatorProfile: null,
+          effectiveDate: DateTime(2025),
+        ),
+        entriesByDay: {
+          for (var day = 0; day <= 3; day++)
+            diaryDayKey(addDiaryDays(start, day)): [
+              buildQuickCalorieEntry(
+                id: '$day',
+                userId: 'user-1',
+                name: 'Essen',
+                mealType: MealType.lunch,
+                loggedAt: addDiaryDays(start, day),
+                now: addDiaryDays(start, day),
+                // Today's diary holds only breakfast so far.
+                kcal: day == 3 ? 400 : 3000,
+              ),
+            ],
+        },
+        weights: WeightTrendCalculator.fromDailyWeights({start: 80}),
+      );
+
+      final yesterday = estimates[diaryDayKey(addDiaryDays(start, 2))];
+      final todayEstimate = estimates[diaryDayKey(today)];
+      expect(todayEstimate?.tdeeKcal, yesterday?.tdeeKcal);
+      expect(todayEstimate, isNotNull);
+      expect(todayEstimate?.measuredTdeeKcal, isNull);
     });
   });
 }
