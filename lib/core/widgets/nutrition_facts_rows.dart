@@ -57,17 +57,17 @@ List<NutritionFactsRow> nutritionFactsRows(
       '${l10n.caloriesUnitKilojoule}\n'
       '${whole.format(kcal.round())} ${l10n.caloriesUnitKcal}';
 
-  NutritionFactsRow? nutrient(
+  NutritionFactsRow? row(
     String label,
-    double? Function(NutritionFacts facts) read, {
+    Nutrient nutrient, {
     String Function(double value)? format,
     Color? accent,
     bool isPart = false,
   }) {
-    final eatenValue = read(eaten);
+    final eatenValue = nutrient.of(eaten);
     final formatValue = format ?? gramValue;
-    final per100Value = per100 == null ? null : read(per100);
-    final isListed = listed != null && read(listed) != null;
+    final per100Value = per100 == null ? null : nutrient.of(per100);
+    final isListed = listed != null && nutrient.of(listed) != null;
     final eatenText = eatenValue == null
         ? (per100Value == null && !isListed ? null : unknownEaten)
         : formatValue(eatenValue);
@@ -86,42 +86,26 @@ List<NutritionFactsRow> nutritionFactsRows(
   }
 
   return [
-    ?nutrient(
-      l10n.caloriesNutritionTableEnergy,
-      (facts) => facts.kcal,
-      format: energyValue,
-    ),
-    ?nutrient(
-      l10n.caloriesFatLabel,
-      (facts) => facts.fat,
-      accent: macroColors.fat,
-    ),
-    ?nutrient(
+    ?row(l10n.caloriesNutritionTableEnergy, Nutrient.kcal, format: energyValue),
+    ?row(l10n.caloriesFatLabel, Nutrient.fat, accent: macroColors.fat),
+    ?row(
       l10n.caloriesNutritionTableSaturatedFat,
-      (facts) => facts.saturatedFat,
+      Nutrient.saturatedFat,
       isPart: true,
     ),
-    ?nutrient(
+    ?row(
       l10n.caloriesNutritionTablePolyunsaturatedFat,
-      (facts) => facts.polyunsaturatedFat,
+      Nutrient.polyunsaturatedFat,
       isPart: true,
     ),
-    ?nutrient(
-      l10n.caloriesCarbsLabel,
-      (facts) => facts.carbs,
-      accent: macroColors.carbs,
-    ),
-    ?nutrient(
-      l10n.caloriesNutritionTableSugar,
-      (facts) => facts.sugar,
-      isPart: true,
-    ),
-    ?nutrient(l10n.caloriesNutritionTableFiber, (facts) => facts.fiber),
-    ?nutrient(
+    ?row(l10n.caloriesCarbsLabel, Nutrient.carbs, accent: macroColors.carbs),
+    ?row(l10n.caloriesNutritionTableSugar, Nutrient.sugar, isPart: true),
+    ?row(l10n.caloriesNutritionTableFiber, Nutrient.fiber),
+    ?row(
       l10n.caloriesProteinLabel,
-      (facts) => facts.protein,
+      Nutrient.protein,
       accent: macroColors.protein,
     ),
-    ?nutrient(l10n.caloriesNutritionTableSalt, (facts) => facts.salt),
+    ?row(l10n.caloriesNutritionTableSalt, Nutrient.salt),
   ];
 }

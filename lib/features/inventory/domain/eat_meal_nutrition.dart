@@ -35,38 +35,31 @@ class EatMealNutrition {
   /// when all foods share one unit, since grams and milliliters do not add
   /// up.
   factory combine(List<EatMealFood> foods) {
-    double? sum(double? Function(NutritionFacts facts) read) {
-      var total = 0.0;
-      for (final food in foods) {
-        final value = read(food.eaten);
-        if (value == null) {
-          return null;
-        }
-        total += value;
-      }
-      return total;
-    }
-
-    double? sumKnown(double? Function(NutritionFacts facts) read) {
-      final values = foods.map((food) => read(food.eaten)).nonNulls;
-      return values.isEmpty ? null : values.fold<double>(0, (a, b) => a + b);
-    }
-
-    NutritionFacts facts(
-      double? Function(double? Function(NutritionFacts)) of,
-    ) {
+    NutritionFacts facts(double? Function(Nutrient nutrient) valueOf) {
       return NutritionFacts(
-        kcal: of((f) => f.kcal),
-        fat: of((f) => f.fat),
-        saturatedFat: of((f) => f.saturatedFat),
-        polyunsaturatedFat: of((f) => f.polyunsaturatedFat),
-        carbs: of((f) => f.carbs),
-        sugar: of((f) => f.sugar),
-        fiber: of((f) => f.fiber),
-        protein: of((f) => f.protein),
-        salt: of((f) => f.salt),
+        kcal: valueOf(Nutrient.kcal),
+        fat: valueOf(Nutrient.fat),
+        saturatedFat: valueOf(Nutrient.saturatedFat),
+        polyunsaturatedFat: valueOf(Nutrient.polyunsaturatedFat),
+        carbs: valueOf(Nutrient.carbs),
+        sugar: valueOf(Nutrient.sugar),
+        fiber: valueOf(Nutrient.fiber),
+        protein: valueOf(Nutrient.protein),
+        salt: valueOf(Nutrient.salt),
       );
     }
+
+    bool someFoodLacks(Nutrient nutrient) =>
+        foods.any((food) => nutrient.of(food.eaten) == null);
+
+    final listed = facts((nutrient) {
+      final values = foods.map((food) => nutrient.of(food.eaten)).nonNulls;
+      return values.isEmpty ? null : values.fold<double>(0, (a, b) => a + b);
+    });
+    final total = facts(
+      // A meal without foods holds nothing, not unknown values.
+      (nutrient) => someFoodLacks(nutrient) ? null : nutrient.of(listed) ?? 0,
+    );
 
     // A food without an amount adds nothing to the meal's weight, and the
     // per-100 values need every food's weight.
@@ -76,14 +69,13 @@ class EatMealNutrition {
         amounts[food.unit] = (amounts[food.unit] ?? 0) + food.amount;
       }
     }
-    final total = facts(sum);
     final hasAllAmounts = foods.every((food) => food.amount > 0);
     final amount = amounts.length == 1 && hasAllAmounts
         ? amounts.values.single
         : 0.0;
     return EatMealNutrition._(
       total: total,
-      listed: facts(sumKnown),
+      listed: listed,
       per100: amount > 0 ? total.scaled(100 / amount) : null,
       amounts: Map.unmodifiable(amounts),
     );
