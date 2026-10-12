@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/manual_product_search_value_utils.dart';
@@ -158,5 +160,64 @@ extension ManualProductItemWeightUnit on InventoryItem {
       return this;
     }
     return copyWith(amountUnit: unit);
+  }
+}
+
+/// Sets the package size of an item from the editor.
+extension ManualProductItemPackage on InventoryItem {
+  /// Sets [weight] as the size of one package, [package] its amount.
+  ///
+  /// The same package size, however it is written ("500g", "2x250g"),
+  /// keeps a counted stock as it is, also an amount changed by hand. A new
+  /// size in the same unit scales the counted stock by new size over old
+  /// size, so the packages and the share left stay. Otherwise the stock is
+  /// counted from the packages: those held by the stored amount, or the
+  /// bought ones when nothing was counted by amount.
+  InventoryItem withPackageWeight({
+    required String? weight,
+    required InventoryAmountParseResult? package,
+  }) {
+    final stored = resolveManualProductWeightInput(
+      this.weight,
+      fallbackUnit: amountUnit,
+    );
+    if (weight == stored.normalizedWeight && usesAmountProgress) {
+      return this;
+    }
+    if (package == null) {
+      return withResolvedAmount(weight: weight);
+    }
+    final old = usesAmountProgress ? stored.parsedAmount : null;
+    if (old != null &&
+        old.amount > 0 &&
+        old.unit == package.unit &&
+        old.scale == package.scale) {
+      int scaled(int amount) => (amount * package.amount / old.amount).round();
+      return withResolvedAmount(
+        weight: weight,
+        parsedAmount: InventoryAmountParseResult(
+          amount: scaled(initialAmount),
+          unit: package.unit,
+          scale: package.scale,
+        ),
+      ).copyWith(currentAmount: scaled(currentAmount));
+    }
+    // initialQuantity can be stale (a recent item is one package of an old
+    // stock entry), so a counted stock gives its packages by its amount.
+    final packages = old != null && old.amount > 0
+        ? math.max(1, (initialAmount / old.amount).round())
+        : math.max<int>(quantity, effectiveInitialQuantity);
+    final initial = package.amount * packages;
+    final current = usesAmountProgress
+        ? (currentAmount * initial / initialAmount).round()
+        : package.amount * quantity;
+    return withResolvedAmount(
+      weight: weight,
+      parsedAmount: InventoryAmountParseResult(
+        amount: initial,
+        unit: package.unit,
+        scale: package.scale,
+      ),
+    ).copyWith(initialQuantity: packages, currentAmount: current);
   }
 }
