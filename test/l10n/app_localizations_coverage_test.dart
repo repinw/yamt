@@ -180,6 +180,7 @@ void _assertAllGettersReturnText(AppLocalizations l10n) {
     l10n.inventoryManualAddCandidateSubtitle,
     l10n.inventoryManualAddNotFound,
     l10n.inventoryManualAddLookupFailed,
+    l10n.inventoryManualAddLookupOffline,
     l10n.inventoryManualAddSaveFailed,
     l10n.inventoryManualAddEatSucceeded,
     l10n.inventoryManualAddEatNowRequiresNutrition,

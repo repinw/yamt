@@ -2,6 +2,8 @@ import 'package:yamt/features/inventory/data/off_product_search_repository.dart'
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_exceptions.dart';
 
 /// Search lookup result for the product search hub.
 class ProductSearchHubSearchLookupResult {
@@ -38,6 +40,10 @@ abstract interface class ProductSearchGateway {
   });
 
   /// Resolves barcode candidates from learned history and Open Food Facts.
+  ///
+  /// Throws [BarcodeLookupOfflineException] when no source found a candidate
+  /// and at least one could not be reached, so a missing connection does not
+  /// read as an unknown barcode.
   Future<List<InventoryBarcodeLookupCandidate>> resolveBarcodeCandidates({
     required String barcode,
   });

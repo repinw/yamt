@@ -1175,6 +1175,10 @@ class AppLocalizationsDe extends AppLocalizations {
       'Barcode-Abfrage fehlgeschlagen. Bitte versuche es erneut.';
 
   @override
+  String get inventoryManualAddLookupOffline =>
+      'Ohne Verbindung kann der Barcode nicht gesucht werden. Versuche es erneut, sobald du online bist.';
+
+  @override
   String get inventoryManualAddSaveFailed =>
       'Das Produkt konnte nicht zum Inventar hinzugefügt werden.';
 

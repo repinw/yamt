@@ -526,6 +526,11 @@ and feature description docs. This is product-facing; architecture rules stay in
   the next empty one.
 - The barcode row has a scan button and a "has none" mark. Scanning an
   unknown barcode keeps the entered values.
+- A barcode lookup that finds nothing while the learned candidates or Open
+  Food Facts cannot be reached (no connection, timeout) does not say "not
+  found": it says that the barcode cannot be looked up without a connection
+  and keeps the scanned barcode in the product, so it can be finished by
+  hand. When one source answers with products, they show as usual (#487).
 - Going back from the eat dialog after "Create" reopens the product form,
   with any edit made from the eat page.
 - In the diary, a scanned, searched, or recent food opens on the eat page.

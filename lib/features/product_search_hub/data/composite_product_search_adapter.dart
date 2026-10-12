@@ -1,5 +1,8 @@
+import 'dart:async' show TimeoutException;
 import 'dart:developer' show log;
 
+import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseException;
+import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
 import 'package:yamt/features/inventory/application/'
@@ -15,6 +18,8 @@ import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/product_search_hub/domain/'
     'product_search_barcode_lookup_candidate.dart';
 import 'package:yamt/features/product_search_hub/domain/product_search_gateway.dart';
+import 'package:yamt/features/product_search_hub/domain/'
+    'product_search_hub_exceptions.dart';
 
 part 'composite_product_search_adapter.g.dart';
 
@@ -71,14 +76,29 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
   Future<List<InventoryBarcodeLookupCandidate>> resolveBarcodeCandidates({
     required String barcode,
   }) async {
-    final learnedCandidatesFuture = _readLearnedCandidates(barcode);
-    final offCandidatesFuture = _readOffCandidates(barcode);
-    final learnedCandidates = await learnedCandidatesFuture;
-    final offCandidates = await offCandidatesFuture;
-    return mergeInventoryBarcodeCandidates(
-      learnedCandidates: learnedCandidates,
-      offCandidates: offCandidates,
+    final learnedRead = _readBarcodeSource(
+      source: 'Learned barcode candidate',
+      barcode: barcode,
+      read: () async =>
+          await _barcodeCandidateRepository?.readCandidates(barcode: barcode) ??
+          const <GlobalBarcodeCandidate>[],
     );
+    final offRead = _readBarcodeSource(
+      source: 'OFF barcode candidate',
+      barcode: barcode,
+      read: () => _offRepository.lookupCandidatesByBarcode(barcode: barcode),
+    );
+    final learned = await learnedRead;
+    final off = await offRead;
+    final candidates = mergeInventoryBarcodeCandidates(
+      learnedCandidates: learned.candidates,
+      offCandidates: off.candidates,
+    );
+    // Nothing found only means "unknown barcode" when every source answered.
+    if (candidates.isEmpty && (learned.isUnreachable || off.isUnreachable)) {
+      throw const BarcodeLookupOfflineException();
+    }
+    return candidates;
   }
 
   @override
@@ -90,41 +110,37 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
     return await service.readRecentItems();
   }
 
-  Future<List<GlobalBarcodeCandidate>> _readLearnedCandidates(
-    String barcode,
-  ) async {
-    final repository = _barcodeCandidateRepository;
-    if (repository == null) {
-      return const <GlobalBarcodeCandidate>[];
-    }
+  /// Reads one barcode source. A failed source counts as empty, so the other
+  /// source can still show its candidates. `isUnreachable` marks an empty
+  /// result that proves nothing, because the source could not be reached.
+  Future<({List<T> candidates, bool isUnreachable})> _readBarcodeSource<T>({
+    required String source,
+    required String barcode,
+    required Future<List<T>> Function() read,
+  }) async {
     try {
-      return await repository.readCandidates(barcode: barcode);
+      return (candidates: await read(), isUnreachable: false);
     } on Object catch (error, stackTrace) {
       log(
-        'Learned barcode candidate lookup failed for $barcode.',
+        '$source lookup failed for $barcode.',
         name: _productSearchHubSearchLogName,
         error: error,
         stackTrace: stackTrace,
       );
-      return const <GlobalBarcodeCandidate>[];
+      return (candidates: <T>[], isUnreachable: _isConnectionFailure(error));
     }
   }
+}
 
-  Future<List<OffProductSearchResult>> _readOffCandidates(
-    String barcode,
-  ) async {
-    try {
-      return await _offRepository.lookupCandidatesByBarcode(barcode: barcode);
-    } on Object catch (error, stackTrace) {
-      log(
-        'OFF barcode candidate lookup failed for $barcode.',
-        name: _productSearchHubSearchLogName,
-        error: error,
-        stackTrace: stackTrace,
-      );
-      return const <OffProductSearchResult>[];
-    }
-  }
+/// Whether [error] means that a source could not be reached, for example
+/// without a connection. The HTTP client reports socket errors as
+/// [http.ClientException], Firestore as `unavailable` or `deadline-exceeded`.
+bool _isConnectionFailure(Object error) {
+  return switch (error) {
+    http.ClientException() || TimeoutException() => true,
+    FirebaseException(code: 'unavailable' || 'deadline-exceeded') => true,
+    _ => false,
+  };
 }
 
 /// Runs product search and applies hub dedupe rules across Firebase and OFF.
