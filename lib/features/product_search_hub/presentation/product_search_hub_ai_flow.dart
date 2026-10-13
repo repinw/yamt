@@ -41,6 +41,9 @@ InventoryReceiptManualProductResult productSearchHubAiResult(
   return InventoryReceiptManualProductResult(
     item: result.item,
     action: result.action,
+    // An AI estimate is the user's own meal, not a product other users can
+    // buy, so it stays out of the shared catalog (#655).
+    requiresGlobalPersistence: false,
     globalPackageWeight: result.globalPackageWeight,
     skipMissingBarcodePrompt: true,
     // The AI page has its own "In Vorrat" and eat buttons.
