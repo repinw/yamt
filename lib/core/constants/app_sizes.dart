@@ -33,6 +33,9 @@ abstract final class AppSizes {
   /// Icon size in snack bars.
   static const double snackBarIcon = 20;
 
+  /// Icon size in the offline strip under the status bar.
+  static const double offlineBannerIcon = 16;
+
   /// Elevation of a snack bar over the page.
   static const double snackBarElevation = 6;
 

@@ -3960,5 +3960,13 @@
         "type": "String"
       }
     }
+  },
+  "connectivityOfflineBanner": "Offline – no connection",
+  "@connectivityOfflineBanner": {
+    "description": "Strip under the status bar while the device has no network connection."
+  },
+  "connectivityBackOnline": "Back online",
+  "@connectivityBackOnline": {
+    "description": "Snack bar when the connection returns after an offline phase."
   }
 }
