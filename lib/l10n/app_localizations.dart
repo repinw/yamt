@@ -1474,12 +1474,6 @@ abstract class AppLocalizations {
   /// **'{portions} · {grams} g'**
   String eatPageMealPortionGrams(String portions, int grams);
 
-  /// No description provided for @eatPageMealPer100Cooked.
-  ///
-  /// In en, this message translates to:
-  /// **'per 100 g cooked'**
-  String get eatPageMealPer100Cooked;
-
   /// No description provided for @eatPagePotUnit.
   ///
   /// In en, this message translates to:

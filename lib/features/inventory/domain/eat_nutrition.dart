@@ -30,14 +30,24 @@ class EatNutrition {
   }
 
   /// Scales the totals of [meal] by [multiplier].
+  ///
+  /// The per-100 values are the food left per 100 g of its weight, so they
+  /// are known only once the cooked meal was weighed: cooking changes the
+  /// weight, and the raw ingredients' weights would give wrong values. A
+  /// weighing of the pot keeps them right as water evaporates.
   factory ofPreparedMeal(PreparedMeal meal, double multiplier) {
+    final total = NutritionFacts(
+      kcal: meal.totalKcal,
+      fat: meal.totalFat,
+      carbs: meal.totalCarbs,
+      protein: meal.totalProtein,
+    );
+    final grams = meal.remainingNetWeight;
     return EatNutrition(
-      eaten: NutritionFacts(
-        kcal: meal.totalKcal * multiplier,
-        carbs: meal.totalCarbs * multiplier,
-        protein: meal.totalProtein * multiplier,
-        fat: meal.totalFat * multiplier,
-      ),
+      eaten: total.scaled(multiplier),
+      per100: grams == null || grams <= 0 || meal.totalPortions < 1
+          ? null
+          : total.scaled(meal.remainingRatio * _per100Basis / grams),
     );
   }
 

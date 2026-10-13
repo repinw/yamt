@@ -448,7 +448,6 @@
   "eatPageRest": "Rest",
   "eatPageRestHint": "Rest nimmt alles, was im Topf ist. So stimmt die Summe auch ohne Waage.",
   "eatPageMealPortionGrams": "{portions} · {grams} g",
-  "eatPageMealPer100Cooked": "je 100 g gekocht",
   "eatPagePotUnit": "Topf",
   "eatPagePlanAction": "Einplanen",
   "eatPageNutritionTitle": "Nährwerte",

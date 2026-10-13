@@ -479,7 +479,7 @@ and feature description docs. This is product-facing; architecture rules stay in
   the whole dish, afterwards for what is left ("2 von 4 Portionen"), and the
   whole dish counts as that weight scaled to all portions. The weighing is
   stored for the household like one on the eat page: grams per portion, the
-  grams of the amount ruler, "je 100 g gekocht" and the grams in the Vorrat
+  grams of the amount ruler, the "Je 100 g" column and the grams in the Vorrat
   row follow it. A portion stays its share of the meal's nutrients, so its
   kcal and the diary entries made before do not change. Pieces, a meal in
   the pot and an eaten-up meal have no "Gewicht ändern".
@@ -744,10 +744,13 @@ and feature description docs. This is product-facing; architecture rules stay in
   older than 3 hours or someone ate since, the page reminds that water may
   have evaporated. A weight not above the empty pot blocks saving.
   With a known weight the nutrition table header names the grams
-  ("1 Portion · 350 g") and a quiet "je 100 g gekocht" row shows the kcal per
-  100 g of what is left. For a pot meal the largest ruler mark is "Rest"
-  (accent when picked): it takes everything in the pot, the header says
-  "Rest", and a note says the sum is right without a scale.
+  ("1 Portion · 350 g") and a "Je 100 g" column beside the portion shows
+  the meal's energy, fat, carbs and protein per 100 g of what is left, also
+  after a weighing on the page. A meal not weighed after cooking has no such
+  column: cooking changes the weight, so the raw ingredients' weights would
+  give wrong values. For a pot meal the largest ruler mark is "Rest" (accent
+  when picked): it takes everything in the pot, the header says "Rest", and
+  a note says the sum is right without a scale.
 - A card under "Offen" says "Im Topf seit …" (with "· N Zeilen offen" when
   rows are open) and "Weiter" opens the "Gekocht" page; the time becomes the
   day for a pot from an earlier day. A cooked meal with open rows says
