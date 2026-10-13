@@ -81,16 +81,6 @@ class CalorieWeeklyCheckInHealthData {
   final List<HealthWeightSample> healthWeightSamples;
 }
 
-class CalorieWeeklyLearningSeed {
-  const new({
-    required this.previousGoalKcal,
-    required this.previousLearnedTdeeKcal,
-  });
-
-  final double previousGoalKcal;
-  final double previousLearnedTdeeKcal;
-}
-
 class CalorieWeeklyCheckInWeightData {
   const new({required this.weightByDay, required this.weightPoints});
 
@@ -129,40 +119,6 @@ class CalorieWeeklyWindowIntakeData {
   }
 
   final List<CalorieWeeklyCheckInWindowDay> days;
-  final List<DateTime> missingIntakeDays;
-  final CalorieWeeklyCheckInBlockedReason? blockedReason;
-}
-
-class CalorieWeeklyLearningIntakeData {
-  const new _({
-    required this.intakeKcalByDay,
-    required this.missingIntakeDays,
-    required this.blockedReason,
-  });
-
-  factory ready({
-    required List<double> intakeKcalByDay,
-    required List<DateTime> missingIntakeDays,
-  }) {
-    return CalorieWeeklyLearningIntakeData._(
-      intakeKcalByDay: List<double>.unmodifiable(intakeKcalByDay),
-      missingIntakeDays: List<DateTime>.unmodifiable(missingIntakeDays),
-      blockedReason: null,
-    );
-  }
-
-  factory blocked({
-    required CalorieWeeklyCheckInBlockedReason blockedReason,
-    required List<DateTime> missingIntakeDays,
-  }) {
-    return CalorieWeeklyLearningIntakeData._(
-      intakeKcalByDay: const <double>[],
-      missingIntakeDays: List<DateTime>.unmodifiable(missingIntakeDays),
-      blockedReason: blockedReason,
-    );
-  }
-
-  final List<double> intakeKcalByDay;
   final List<DateTime> missingIntakeDays;
   final CalorieWeeklyCheckInBlockedReason? blockedReason;
 }
