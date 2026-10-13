@@ -98,4 +98,16 @@ void main() {
 
     expect(controller.calls, ['pause:true']);
   });
+
+  test('selecting pause on a pause day keeps it paused', () async {
+    final (container, controller) = await _setUp(
+      pauseDayKeys: [diaryDayKey(_tuesday)],
+    );
+
+    await container
+        .read(diaryDayTypeUpdaterProvider)
+        .select(_tuesday, DiaryDayType.pause);
+
+    expect(controller.calls, isEmpty);
+  });
 }

@@ -64,9 +64,11 @@ import 'package:yamt/features/health/data/manual_health_weight_repository_provid
 import 'package:yamt/features/health/domain/health_connection_models.dart';
 import 'package:yamt/features/health/domain/health_weight_sample.dart';
 import 'package:yamt/features/health/domain/manual_health_weight_entry.dart';
+import 'package:yamt/features/home/presentation/widgets/home_action_panel.dart';
 import 'package:yamt/features/inventory/application/inventory_entry_delete_service.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
+import '../../../helpers/home_shell_test_scope.dart';
 import '../../../helpers/memory_app_preferences.dart';
 import '../../calories/support/fake_calories_repositories.dart';
 import '../support/diary_dashboard_test_support.dart';
@@ -162,29 +164,33 @@ void main() {
         isRefreshing: true,
         error: null,
       ),
-      includeHomeShellChrome: true,
+      body: const HomeShellTestScope(
+        child: DiaryPage(includeHomeShellChrome: true),
+      ),
     );
 
-    expect(find.byType(DiaryDayTypeToggle), findsOneWidget);
+    expect(find.byKey(DiaryDayTypeToggle.buttonKey), findsOneWidget);
   });
 
-  testWidgets('tapping day type toggle opens day type bottom sheet', (
+  testWidgets('tapping the day type tool opens the day types in the panel', (
     tester,
   ) async {
     await _pumpDiaryPage(
       tester,
       selectedDay: selectedDay,
-      includeHomeShellChrome: true,
+      body: const HomeShellTestScope(
+        child: DiaryPage(includeHomeShellChrome: true),
+      ),
     );
 
-    expect(find.byType(DiaryDayTypeToggle), findsOneWidget);
-    await tester.tap(find.byType(DiaryDayTypeToggle));
+    await tester.tap(find.byKey(DiaryDayTypeToggle.buttonKey));
     await tester.pumpAndSettle();
 
-    expect(find.text('Choose day type'), findsOneWidget);
-    expect(find.text('🏋️ Training day'), findsOneWidget);
-    expect(find.text('🛋️ Rest day'), findsOneWidget);
-    expect(find.text('⏸️ Pause day'), findsOneWidget);
+    expect(find.byType(HomeActionPanel), findsOneWidget);
+    expect(find.text('DAY TYPE'), findsOneWidget);
+    expect(find.text('Training day'), findsOneWidget);
+    expect(find.text('Rest day'), findsOneWidget);
+    expect(find.text('Pause day'), findsOneWidget);
   });
 
   test('diary warmup follows today without warming heavy providers', () async {

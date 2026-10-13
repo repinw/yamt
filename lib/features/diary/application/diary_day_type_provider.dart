@@ -17,7 +17,8 @@ DiaryDayTypeStatus? diaryDayTypeStatus(Ref ref, DateTime day) {
 
 /// Adapts calorie goal mutations for changing a diary day type.
 ///
-/// Kept alive because updates keep running after the picker sheet closes.
+/// Kept alive because an update keeps running after the action panel that
+/// started it closes.
 @Riverpod(keepAlive: true)
 DiaryDayTypeUpdater diaryDayTypeUpdater(Ref ref) {
   return DiaryDayTypeUpdater(ref);
@@ -40,7 +41,9 @@ class DiaryDayTypeUpdater {
     final isPause = settings.isPauseDay(day);
 
     if (type == DiaryDayType.pause) {
-      await controller.setPauseDay(day: day, isPause: !isPause);
+      if (!isPause) {
+        await controller.setPauseDay(day: day, isPause: true);
+      }
       return;
     }
     if (isPause) {

@@ -47,6 +47,11 @@ nutrition bars, and diary-facing Burn Week and weekly check-in composition.
   check-in, and only on today.
 - `presentation/widgets/diary_day_type_labels.dart` gives the emoji and the
   names of a day type. The Fortschritt tab uses them for its day rows.
+- `presentation/widgets/diary_day_type_toggle.dart` is the day type tool on
+  the right of the top bar. It hands the day types to the home shell's
+  action panel through `HomeShellMenuScope.openActions` (`core/widgets`),
+  which shows them at the top right; a picked type is saved through
+  `DiaryDayTypeUpdater`.
 - `presentation/widgets/diary_quick_eat_actions.dart`
   (`diaryQuickEatActions`) is public UI for `features/home`: the quick-eat
   actions for the selected day. The home shell shows them in its action panel

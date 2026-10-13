@@ -103,14 +103,16 @@ final class DiaryDayTypeStatusFamily extends $Family
 
 /// Adapts calorie goal mutations for changing a diary day type.
 ///
-/// Kept alive because updates keep running after the picker sheet closes.
+/// Kept alive because an update keeps running after the action panel that
+/// started it closes.
 
 @ProviderFor(diaryDayTypeUpdater)
 final diaryDayTypeUpdaterProvider = DiaryDayTypeUpdaterProvider._();
 
 /// Adapts calorie goal mutations for changing a diary day type.
 ///
-/// Kept alive because updates keep running after the picker sheet closes.
+/// Kept alive because an update keeps running after the action panel that
+/// started it closes.
 
 final class DiaryDayTypeUpdaterProvider
     extends
@@ -122,7 +124,8 @@ final class DiaryDayTypeUpdaterProvider
     with $Provider<DiaryDayTypeUpdater> {
   /// Adapts calorie goal mutations for changing a diary day type.
   ///
-  /// Kept alive because updates keep running after the picker sheet closes.
+  /// Kept alive because an update keeps running after the action panel that
+  /// started it closes.
   DiaryDayTypeUpdaterProvider._()
     : super(
         from: null,

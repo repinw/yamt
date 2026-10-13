@@ -124,8 +124,15 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Daily diary page for meals, calorie balance, activity, and weight.
 - Date selection and calendar strip navigation. Swiping the diary slides to
   the previous or next day. The top bar shows yesterday, today, tomorrow, the
-  day after tomorrow, or the weekday in small capitals over the date, and the
-  day type as a framed chip.
+  day after tomorrow, or the weekday in small capitals over the date, and on
+  the right the day type as its emoji over a short word.
+- Tapping the day type opens the day types the way the "Essen" button opens
+  its actions, but from the top right: the page slides aside, and training,
+  rest, and pause day hang below the close button, each with one line on
+  what it means (the extra kcal of a training day, a pause day does not break
+  the streak). The current type has the lime tile. Picking one saves it for
+  the shown day and closes the panel. The tool shows only while a calorie
+  goal exists.
 - A day without logged food shows a short hint that points to the "Essen"
   button. On a future day the hint says that nothing is planned yet.
 - Meal sections for breakfast, lunch, dinner, and snacks.
