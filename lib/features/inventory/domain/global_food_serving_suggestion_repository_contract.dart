@@ -18,5 +18,6 @@ abstract interface class GlobalFoodServingSuggestionRepository {
     required DateTime selectedAt,
     String? globalFoodItemId,
     String? label,
+    bool share = true,
   });
 }

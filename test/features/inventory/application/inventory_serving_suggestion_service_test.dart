@@ -48,6 +48,7 @@ class _FakeGlobalFoodServingSuggestionRepository
     required DateTime selectedAt,
     String? globalFoodItemId,
     String? label,
+    bool share = true,
   }) async {
     final failure = recordFailure;
     if (failure != null) {

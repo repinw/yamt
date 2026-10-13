@@ -208,6 +208,7 @@ abstract final class InventoryItemHubFlow {
                 resolvedProduct: request.resolvedProduct,
                 requiresGlobalPersistence: request.requiresGlobalPersistence,
                 weight: request.weight,
+                aiEstimated: request.aiEstimated,
               ),
         ) ??
         false;

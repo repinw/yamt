@@ -99,8 +99,10 @@ InventoryItem buildSwappedItem({
   required GlobalFoodItem resolvedProduct,
   required String? weight,
   required bool canReferenceGlobalItem,
+  bool aiEstimated = false,
 }) {
   final updatedItem = sourceItem.copyWith(
+    aiEstimated: aiEstimated,
     globalFoodItemId: canReferenceGlobalItem
         ? resolvedProduct.id
         : buildPendingGlobalFoodItemId(resolvedProduct.resolvedFoodFingerprint),

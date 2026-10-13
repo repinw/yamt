@@ -154,6 +154,93 @@ void main() {
     },
   );
 
+  test('an edited AI food never asks for the shared catalog (#701)', () {
+    final container = ProviderContainer();
+    addTearDown(container.dispose);
+    final item = InventoryItem.create(
+      id: 'item-ai',
+      name: 'Eier mit Speck',
+      entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+      storeName: 'Manual',
+      quantity: 1,
+      weight: '300 g',
+      aiEstimated: true,
+      nutrition: const GlobalFoodNutrition(
+        qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+        per100Kcal: 180,
+        per100Fat: 12,
+        per100SaturatedFat: 4,
+        per100Carbs: 5,
+        per100Sugar: 1,
+        per100Protein: 13,
+        per100Salt: 1.2,
+      ),
+    ).withDerivedAmount();
+    final provider = inventoryReceiptManualProductControllerProvider(
+      InventoryReceiptManualProductConfig(item: item),
+    );
+    final controller = container.read(provider.notifier)
+      ..updateNameText('Eier mit Speck und Brot');
+
+    final payload = controller.buildSavePayload();
+
+    expect(payload?.requiresGlobalPersistence, isFalse);
+    expect(payload?.item.aiEstimated, isTrue);
+  });
+
+  group('the picked food decides the AI mark (#701)', () {
+    const nutrition = GlobalFoodNutrition(
+      qualityStatus: GlobalFoodNutritionQualityStatus.unverified,
+      per100Kcal: 180,
+      per100Fat: 12,
+      per100SaturatedFat: 4,
+      per100Carbs: 5,
+      per100Sugar: 1,
+      per100Protein: 13,
+      per100Salt: 1.2,
+    );
+    InventoryItem food({required bool aiEstimated}) => InventoryItem.create(
+      id: aiEstimated ? 'item-ai' : 'item-real',
+      name: aiEstimated ? 'Eier mit Speck' : 'Skyr',
+      entryDate: DateTime.parse('2026-04-02T10:00:00Z'),
+      storeName: 'Manual',
+      quantity: 1,
+      weight: '300 g',
+      aiEstimated: aiEstimated,
+      nutrition: nutrition,
+    ).withDerivedAmount();
+
+    test('a real product picked for an AI item is no AI estimate', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = inventoryReceiptManualProductControllerProvider(
+        InventoryReceiptManualProductConfig(item: food(aiEstimated: true)),
+      );
+      final controller = container.read(provider.notifier)
+        ..applyRecentItem(food(aiEstimated: false));
+
+      final payload = controller.buildSavePayload();
+
+      expect(payload?.item.aiEstimated, isFalse);
+    });
+
+    test('an AI food picked from the recent items stays one', () {
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = inventoryReceiptManualProductControllerProvider(
+        InventoryReceiptManualProductConfig(item: food(aiEstimated: false)),
+      );
+      final controller = container.read(provider.notifier)
+        ..applyRecentItem(food(aiEstimated: true))
+        ..updateNameText('Eier mit Speck und Brot');
+
+      final payload = controller.buildSavePayload();
+
+      expect(payload?.item.aiEstimated, isTrue);
+      expect(payload?.requiresGlobalPersistence, isFalse);
+    });
+  });
+
   test('editing an item keeps its package count and counts all packages', () {
     final container = ProviderContainer();
     addTearDown(container.dispose);

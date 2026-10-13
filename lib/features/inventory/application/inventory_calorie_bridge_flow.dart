@@ -92,6 +92,7 @@ class InventoryCalorieBridgeFlow {
       portionBaseUnit: request.portionBaseUnit,
       portionCount: request.portionCount,
       portionLabel: request.portionLabel,
+      isPrivateFood: item.staysPrivate,
     );
   }
 

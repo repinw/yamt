@@ -81,6 +81,28 @@ void main() {
     expect(savedItem.amountUnit, InventoryAmountUnit.milliliter);
   });
 
+  test('an AI estimate keeps its mark and a pending id (#701)', () {
+    final globalItem = buildInventoryManualAddGlobalFoodItem(
+      item: _milkItem(weight: '300 ml'),
+      barcode: null,
+      now: DateTime.parse('2026-04-13T10:00:00Z'),
+      packageWeight: null,
+      manualGlobalFoodItemId: 'manual-1',
+    );
+
+    final savedItem = buildInventoryManualAddSavedItem(
+      id: 'inventory-1',
+      globalProduct: globalItem,
+      now: DateTime.parse('2026-04-13T10:00:00Z'),
+      storeName: 'Added manually',
+      inventoryWeight: '300 ml',
+      aiEstimated: true,
+    );
+
+    expect(savedItem.aiEstimated, isTrue);
+    expect(isPendingGlobalFoodItemId(savedItem.globalFoodItemId), isTrue);
+  });
+
   test('a private food photo stays on the item, never in the catalog', () {
     const photo =
         'https://firebasestorage.googleapis.com/v0/b/yamt/o/'

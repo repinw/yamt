@@ -68,7 +68,9 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductResultToInventory({
   required InventoryItem Function(InventoryItem item)? adjustItem,
   required bool addToInventory,
 }) async {
-  final promptResult = result.skipMissingBarcodePrompt
+  // A meal the AI estimated has no package barcode to ask for (#701).
+  final promptResult =
+      result.skipMissingBarcodePrompt || result.item.staysPrivate
       ? _ManualBarcodePromptResult(
           item: result.item,
           barcode: result.item.normalizedBarcode,
@@ -169,6 +171,7 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     ),
     // A private food photo stays on the user's own item only.
     imageUrl: normalizeProductImageUrl(promptResult.item.imageUrl),
+    aiEstimated: promptResult.item.aiEstimated,
   );
   final savedItem = adjustItem?.call(builtItem) ?? builtItem;
   final inventorySaved =
@@ -181,15 +184,19 @@ Future<InventoryManualProductSaveOutcome> _saveManualProductWithReadyInventory({
     );
     return const InventoryManualProductSaveOutcome.failed();
   }
-  unawaited(
-    _persistGlobalProduct(
-      container: container,
-      globalProduct: globalProduct,
-      requiresGlobalPersistence: result.requiresGlobalPersistence,
-      barcode: promptResult.barcode,
-      selectedAt: now,
-    ),
-  );
+  // An AI estimate is the user's own meal: no catalog product and no
+  // barcode for other users' scans, whatever path built the result (#701).
+  if (!savedItem.staysPrivate) {
+    unawaited(
+      _persistGlobalProduct(
+        container: container,
+        globalProduct: globalProduct,
+        requiresGlobalPersistence: result.requiresGlobalPersistence,
+        barcode: promptResult.barcode,
+        selectedAt: now,
+      ),
+    );
+  }
   return InventoryManualProductSaveOutcome.saved(savedItem);
 }
 

@@ -88,6 +88,9 @@ class _RecordingServings implements GlobalFoodServingSuggestionRepository {
   final Future<void>? gate;
   final calls = <_Serving>[];
 
+  /// Whether each recorded serving was shared with other users.
+  final shares = <bool>[];
+
   @override
   Future<GlobalFoodServingSuggestionSet> readSuggestions({
     required String foodFingerprint,
@@ -103,9 +106,11 @@ class _RecordingServings implements GlobalFoodServingSuggestionRepository {
     required DateTime selectedAt,
     String? globalFoodItemId,
     String? label,
+    bool share = true,
   }) async {
     await gate;
     calls.add((amount: amount, unit: unit, label: label));
+    shares.add(share);
   }
 }
 
@@ -571,6 +576,21 @@ void main() {
       expect(harness.servings.calls, [
         (amount: 250.0, unit: ConsumedUnit.grams, label: null),
       ]);
+    });
+
+    test('an AI meal keeps its serving to its user (#701)', () async {
+      final harness = _harness(_RecordingCommitStore());
+      final meal = _gramItem().copyWith(aiEstimated: true);
+      final pending = harness.pendings.stage(meal, 250)!;
+
+      await harness.service.log(
+        item: meal,
+        request: _request(250),
+        pending: pending,
+      );
+      await pumpEventQueue();
+
+      expect(harness.servings.shares, [false]);
     });
 
     test('an untouched portion is learned with its label', () async {

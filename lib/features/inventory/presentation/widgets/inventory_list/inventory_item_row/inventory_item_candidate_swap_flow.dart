@@ -26,6 +26,7 @@ class InventoryItemCandidateSwapRequest {
     required this.resolvedProduct,
     required this.requiresGlobalPersistence,
     required this.weight,
+    this.aiEstimated = false,
   });
 
   /// The resolved product.
@@ -36,6 +37,10 @@ class InventoryItemCandidateSwapRequest {
 
   /// The weight.
   final String? weight;
+
+  /// Whether the product is an AI estimate, which stays the user's own and
+  /// never goes into the shared catalog (#701).
+  final bool aiEstimated;
 }
 
 /// Runs the inventory candidate swap picker and returns the chosen product.
@@ -171,6 +176,7 @@ buildInventoryItemCandidateSwapRequestFromManualResult({
     requiresGlobalPersistence:
         result.requiresGlobalPersistence || selectedGlobalFoodItemId == null,
     weight: result.item.weight,
+    aiEstimated: result.item.aiEstimated,
   );
 }
 

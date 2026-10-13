@@ -25,6 +25,8 @@ InventoryItem buildFoodEstimateItem({
         servingQuantityUnit: InventoryAmountUnit.gram.code,
         nutrition: estimate.per100At(level),
         imageUrl: null,
+        // It stays the user's own on every later save (#701).
+        aiEstimated: true,
       )
       .withResolvedAmount(
         weight: weight,

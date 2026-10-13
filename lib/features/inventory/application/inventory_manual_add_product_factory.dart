@@ -81,14 +81,20 @@ InventoryItem buildInventoryManualAddSavedItem({
   required String storeName,
   required String? inventoryWeight,
   String? imageUrl,
+  bool aiEstimated = false,
 }) {
   return InventoryItem.create(
     id: id,
-    globalFoodItemId: globalProduct.id,
+    // An AI estimate gets no catalog document, so it keeps a pending id
+    // like a swapped one (#701).
+    globalFoodItemId: aiEstimated
+        ? buildPendingGlobalFoodItemId(globalProduct.resolvedFoodFingerprint)
+        : globalProduct.id,
     name: globalProduct.name,
     entryDate: now,
     storeName: storeName,
     origin: InventoryItemOrigin.manualAdd,
+    aiEstimated: aiEstimated,
     quantity: 1,
     brand: globalProduct.brand,
     barcode: globalProduct.barcode,

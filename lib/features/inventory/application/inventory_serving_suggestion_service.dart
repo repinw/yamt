@@ -47,6 +47,7 @@ class InventoryServingSuggestionService {
     required DateTime selectedAt,
     String? globalFoodItemId,
     String? label,
+    bool share = true,
   }) async {
     try {
       await _repository.recordSelection(
@@ -56,6 +57,7 @@ class InventoryServingSuggestionService {
         unit: unit,
         label: label,
         selectedAt: selectedAt,
+        share: share,
       );
     } on Object catch (error, stackTrace) {
       _logger(

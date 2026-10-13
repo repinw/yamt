@@ -897,6 +897,52 @@ void main() {
     },
   );
 
+  test('swapItemCandidate keeps an AI food out of the catalog and the '
+      'barcode candidates (#701)', () async {
+    final repository = _FakeInventoryItemRepository(
+      initialItems: <InventoryItem>[
+        _item(id: 'a', quantity: 2, initialQuantity: 2),
+      ],
+    );
+    final globalRepository = _FakeGlobalFoodItemRepository();
+    final barcodeRepository = _FakeGlobalBarcodeCandidateRepository();
+    addTearDown(repository.dispose);
+    final container = ProviderContainer(
+      overrides: [
+        inventoryItemRepositoryProvider.overrideWithValue(repository),
+        globalFoodItemRepositoryProvider.overrideWithValue(globalRepository),
+        globalBarcodeCandidateRepositoryProvider.overrideWithValue(
+          barcodeRepository,
+        ),
+      ],
+    );
+    addTearDown(container.dispose);
+    final subscription = _keepControllerAlive(container);
+    addTearDown(subscription.close);
+    await container.read(inventoryItemsControllerProvider.future);
+
+    final saved = await container
+        .read(inventoryItemsControllerProvider.notifier)
+        .swapItemCandidate(
+          itemId: 'a',
+          resolvedProduct: _globalProduct(
+            id: 'global-food-ai',
+            barcode: '4061458029995',
+            packageWeight: '1000 g',
+          ),
+          requiresGlobalPersistence: true,
+          weight: '1000 g',
+          aiEstimated: true,
+        );
+
+    expect(saved, isTrue);
+    expect(globalRepository.appendedItems, isEmpty);
+    expect(barcodeRepository.recordedSelections, isEmpty);
+    final item = container.read(inventoryItemsControllerProvider).value!.single;
+    expect(item.aiEstimated, isTrue);
+    expect(isPendingGlobalFoodItemId(item.globalFoodItemId), isTrue);
+  });
+
   test(
     'swapItemCandidate rejects items that were already partially consumed',
     () async {

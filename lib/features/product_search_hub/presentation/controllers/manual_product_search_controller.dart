@@ -308,6 +308,10 @@ class InventoryReceiptManualProductController
             config.item.servingQuantityUnit,
       ),
     );
+    // The picked food decides: a real product chosen for an AI item is no
+    // AI estimate, and an AI food picked from the recent items stays one.
+    final aiEstimated =
+        state.selectedProduct?.aiEstimated ?? config.item.aiEstimated;
     final updatedItem = config.item
         .withPackageWeight(
           weight: inventoryWeight,
@@ -321,6 +325,7 @@ class InventoryReceiptManualProductController
           barcode: barcode,
           imageUrl:
               config.item.imageUrl ?? matchedProduct?.imageUrl ?? photoImageUrl,
+          aiEstimated: aiEstimated,
           weight: inventoryWeight,
           servingSize: serving.size,
           servingQuantity: serving.quantity,
@@ -357,6 +362,7 @@ class InventoryReceiptManualProductController
       requiresGlobalPersistence: _requiresGlobalPersistenceForSelection(
         selection: effectiveSelectedProduct,
         editKind: selectedEditKind,
+        aiEstimated: aiEstimated,
       ),
       globalPackageWeight: globalPackageWeight,
     );
@@ -430,6 +436,8 @@ class InventoryReceiptManualProductController
           brand: selection.brand,
           barcode: barcode,
           imageUrl: config.item.imageUrl ?? selection.imageUrl,
+          // A search result is a real product.
+          aiEstimated: false,
           weight: inventoryWeight,
           servingSize: selection.servingSize ?? config.item.servingSize,
           servingQuantity:
@@ -463,6 +471,7 @@ class InventoryReceiptManualProductController
       requiresGlobalPersistence: _requiresGlobalPersistenceForSelection(
         selection: effectiveSelectedProduct,
         editKind: selectedEditKind,
+        aiEstimated: false,
       ),
       globalPackageWeight: globalPackageWeight,
     );
@@ -574,7 +583,12 @@ class InventoryReceiptManualProductController
   bool _requiresGlobalPersistenceForSelection({
     required InventoryReceiptManualProductSelection? selection,
     required GlobalFoodItemEditKind editKind,
+    required bool aiEstimated,
   }) {
+    // An AI estimate stays the user's own, also after an edit (#701).
+    if (aiEstimated) {
+      return false;
+    }
     if (selection == null) {
       return true;
     }

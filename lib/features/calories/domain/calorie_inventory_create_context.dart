@@ -16,7 +16,12 @@ class CalorieInventoryCreateContext {
     this.portionBaseUnit,
     this.portionCount,
     this.portionLabel,
+    this.isPrivateFood = false,
   });
+
+  /// Whether the food stays the user's own, so its serving is not shared
+  /// with other users (#701).
+  final bool isPrivateFood;
 
   /// The inventory item id.
   final String inventoryItemId;
