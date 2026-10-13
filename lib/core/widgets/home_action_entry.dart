@@ -16,8 +16,8 @@ class HomeActionEntry {
   /// Icon in front of the title.
   final IconData? icon;
 
-  /// Drawn symbol in front of the title, such as a barcode, used instead of
-  /// [icon].
+  /// Drawn symbol in front of the title, such as a barcode or an emoji
+  /// [Text], used instead of [icon].
   final Widget? symbol;
 
   /// The symbol in front of the title, sized and colored by the icon theme.
