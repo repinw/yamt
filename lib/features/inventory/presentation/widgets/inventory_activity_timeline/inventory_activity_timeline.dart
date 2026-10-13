@@ -8,6 +8,8 @@ import 'package:yamt/features/inventory/data/'
 import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_activity_timeline/inventory_activity_event_picture.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
     'inventory_home_shell_top_chrome.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
@@ -25,6 +27,11 @@ class InventoryActivityTimeline extends ConsumerWidget {
 
   /// Actions rendered in home shell chrome.
   final List<Widget> topChromeActions;
+
+  /// Key of the row of the event with [eventId].
+  static Key rowKey(String eventId) {
+    return ValueKey<String>('inventory_activity_row_$eventId');
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -161,7 +168,9 @@ class _InventoryActivityDayGroup extends StatelessWidget {
             children: [
               for (var index = 0; index < events.length; index += 1) ...[
                 _InventoryActivityTile(
+                  key: InventoryActivityTimeline.rowKey(events[index].id),
                   event: events[index],
+                  tiltLeft: index.isEven,
                   timeFormat: timeFormat,
                   l10n: l10n,
                 ),
@@ -179,18 +188,21 @@ class _InventoryActivityDayGroup extends StatelessWidget {
 class _InventoryActivityTile extends StatelessWidget {
   const new({
     required this.event,
+    required this.tiltLeft,
     required this.timeFormat,
     required this.l10n,
+    super.key,
   });
 
   final InventoryActivityEvent event;
+  final bool tiltLeft;
   final DateFormat timeFormat;
   final AppLocalizations l10n;
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: Icon(_iconForType(event.type)),
+      leading: InventoryActivityEventPicture(event: event, tiltLeft: tiltLeft),
       title: Text(_titleForEvent(l10n, event)),
       subtitle: Text(timeFormat.format(event.happenedAt)),
       contentPadding: const EdgeInsets.symmetric(
@@ -221,18 +233,6 @@ List<_InventoryActivityDay> _groupEventsByDay(
         (entry) => _InventoryActivityDay(day: entry.key, events: entry.value),
       )
       .toList(growable: false);
-}
-
-IconData _iconForType(InventoryActivityEventType type) {
-  return switch (type) {
-    InventoryActivityEventType.itemAdded => Icons.add,
-    InventoryActivityEventType.itemConsumed => Icons.restaurant,
-    InventoryActivityEventType.itemDiscarded => Icons.delete_outline,
-    InventoryActivityEventType.itemDeleted => Icons.remove_circle_outline,
-    InventoryActivityEventType.itemRestored => Icons.restore,
-    InventoryActivityEventType.itemUsedInPreparedMeal => Icons.soup_kitchen,
-    InventoryActivityEventType.itemReturnedFromPreparedMeal => Icons.undo,
-  };
 }
 
 String _titleForEvent(AppLocalizations l10n, InventoryActivityEvent event) {
