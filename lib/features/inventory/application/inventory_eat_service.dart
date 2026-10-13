@@ -237,6 +237,7 @@ class InventoryEatService {
         unit: serving.unit,
         label: serving.label,
         selectedAt: entry.updatedAt,
+        share: !inventoryContext.isPrivateFood,
       ),
     );
   }

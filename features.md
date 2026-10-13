@@ -556,7 +556,12 @@ and feature description docs. This is product-facing; architecture rules stay in
   today. "Analyze again" returns to the input.
 - An AI food is the user's own meal: saving it adds it to the Vorrat or
   the diary only, not to the shared catalog, so other users do not find
-  it (#655).
+  it (#655). The food keeps a mark "estimated by the AI", so it also
+  stays private after it is edited, reopened, picked again from the recent
+  items, or used in "Produkt ersetzen", and it never records a barcode for
+  other users' scans or a shared serving suggestion; its last serving is
+  remembered for its user only (#701). AI foods saved before the mark existed are
+  not known as such.
 - The product editor looks like the eat page: image, brand and name as
   inputs, package size with a unit switch, and the nutrition label with an
   input per 100 g. All seven values of the EU label (energy, fat, saturates,

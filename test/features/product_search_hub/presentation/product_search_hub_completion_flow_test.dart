@@ -632,8 +632,9 @@ void main() {
   group('shared catalog', () {
     Future<FakeGlobalFoodItemRepository> save(
       WidgetTester tester,
-      InventoryReceiptManualProductResult result,
-    ) async {
+      InventoryReceiptManualProductResult result, {
+      List<InventoryItem>? savedItems,
+    }) async {
       final inventoryController = _RecordingInventoryItemsController();
       final catalog = FakeGlobalFoodItemRepository();
       await tester.pumpWidget(
@@ -659,6 +660,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(inventoryController.addedItems, hasLength(1));
+      savedItems?.addAll(inventoryController.addedItems);
       return catalog;
     }
 
@@ -690,6 +692,25 @@ void main() {
       );
 
       expect(catalog.appendedItems, isEmpty);
+    });
+
+    testWidgets('keeps an AI food private when another path rebuilt its '
+        'result, and keeps the mark on the saved item (#701)', (tester) async {
+      final savedItems = <InventoryItem>[];
+      // Like the editor after "Bearbeiten" or a reopen: no AI flag on the
+      // result, which asks for the catalog by default.
+      final catalog = await save(
+        tester,
+        InventoryReceiptManualProductResult(
+          item: _manualItemWithNutrition().copyWith(aiEstimated: true),
+          action: InventoryReceiptManualProductAction.addToInventory,
+          skipMissingBarcodePrompt: true,
+        ),
+        savedItems: savedItems,
+      );
+
+      expect(catalog.appendedItems, isEmpty);
+      expect(savedItems.single.aiEstimated, isTrue);
     });
   });
 

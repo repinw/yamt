@@ -73,5 +73,7 @@ void main() {
     expect(item.servingSize, '400 g');
     expect(item.servingQuantity, 400);
     expect(item.nutrition?.per100Kcal, closeTo(240, 0.001));
+    // The mark keeps the meal out of the shared catalog (#701).
+    expect(item.aiEstimated, isTrue);
   });
 }

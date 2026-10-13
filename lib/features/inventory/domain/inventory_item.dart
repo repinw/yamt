@@ -69,6 +69,7 @@ class InventoryItem {
     this.isDeposit = false,
     this.isDiscount = false,
     this.origin = InventoryItemOrigin.standard,
+    this.aiEstimated = false,
   });
 
   /// Creates a [InventoryItem] for create.
@@ -104,6 +105,7 @@ class InventoryItem {
     bool isDeposit = false,
     bool isDiscount = false,
     InventoryItemOrigin origin = InventoryItemOrigin.standard,
+    bool aiEstimated = false,
     String? globalFoodItemId,
   }) {
     final productSnapshot = InventoryItemProductSnapshot(
@@ -146,6 +148,7 @@ class InventoryItem {
       isDeposit: isDeposit,
       isDiscount: isDiscount,
       origin: origin,
+      aiEstimated: aiEstimated,
     );
   }
 
@@ -189,6 +192,8 @@ class InventoryItem {
       isDeposit: _readBool(json['is_deposit']) ?? false,
       isDiscount: _readBool(json['is_discount']) ?? false,
       origin: _readInventoryItemOrigin(json['origin']),
+      // Items from before #701 are no AI estimates.
+      aiEstimated: _readBool(json['ai_estimated']) ?? false,
     );
   }
 
@@ -292,6 +297,14 @@ class InventoryItem {
   /// The origin.
   final InventoryItemOrigin origin;
 
+  /// Whether the AI estimated this food, such as a meal from a photo.
+  final bool aiEstimated;
+
+  /// Whether the food is the user's own and never reaches anything that
+  /// other users read: the shared catalog, the barcode candidates, and the
+  /// shared serving suggestions (#655, #701). Every such writer asks this.
+  bool get staysPrivate => aiEstimated;
+
   /// To json.
   Map<String, dynamic> toJson() {
     return <String, dynamic>{
@@ -318,6 +331,7 @@ class InventoryItem {
       'is_deposit': isDeposit,
       'is_discount': isDiscount,
       'origin': origin.name,
+      'ai_estimated': aiEstimated,
     };
   }
 
@@ -356,6 +370,7 @@ class InventoryItem {
     bool? isDeposit,
     bool? isDiscount,
     InventoryItemOrigin? origin,
+    bool? aiEstimated,
   }) {
     final nextProductSnapshot = (productSnapshot ?? this.productSnapshot)
         .copyWith(
@@ -407,6 +422,7 @@ class InventoryItem {
       isDeposit: isDeposit ?? this.isDeposit,
       isDiscount: isDiscount ?? this.isDiscount,
       origin: origin ?? this.origin,
+      aiEstimated: aiEstimated ?? this.aiEstimated,
     );
   }
 
@@ -569,7 +585,8 @@ class InventoryItem {
             other.lastConsumedAt == lastConsumedAt &&
             other.isDeposit == isDeposit &&
             other.isDiscount == isDiscount &&
-            other.origin == origin;
+            other.origin == origin &&
+            other.aiEstimated == aiEstimated;
   }
 
   @override
@@ -598,6 +615,7 @@ class InventoryItem {
       isDeposit,
       isDiscount,
       origin,
+      aiEstimated,
     ]);
   }
 }

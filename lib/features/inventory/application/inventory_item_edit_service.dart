@@ -58,25 +58,32 @@ class InventoryItemEditService {
   }
 
   /// Points a full item at another product.
+  ///
+  /// An [aiEstimated] product stays the user's own: it gets no catalog
+  /// document and no barcode candidate, and the item keeps its pending id
+  /// (#701).
   Future<InventoryItemChange<bool>> swap(
     List<InventoryItem> items, {
     required String itemId,
     required GlobalFoodItem resolvedProduct,
     required bool requiresGlobalPersistence,
     String? weight,
+    bool aiEstimated = false,
   }) async {
     final index = items.indexWhere((item) => item.id == itemId);
     if (index < 0 || !items[index].isFullyAvailable) {
       return (result: false, written: null);
     }
     final inCatalog =
-        !requiresGlobalPersistence || await _saveProduct(resolvedProduct);
+        !aiEstimated &&
+        (!requiresGlobalPersistence || await _saveProduct(resolvedProduct));
     final next = List<InventoryItem>.from(items)
       ..[index] = buildSwappedItem(
         sourceItem: items[index],
         resolvedProduct: resolvedProduct,
         weight: weight,
         canReferenceGlobalItem: inCatalog,
+        aiEstimated: aiEstimated,
       );
     if (!await _writer.save(items, next)) {
       return (result: false, written: null);

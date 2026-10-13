@@ -116,6 +116,7 @@ class _FakeSuggestionRepository
     required DateTime selectedAt,
     String? globalFoodItemId,
     String? label,
+    bool share = true,
   }) async {
     recorded.add((amount: amount, label: label));
   }

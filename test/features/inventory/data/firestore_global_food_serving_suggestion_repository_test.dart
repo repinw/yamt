@@ -312,6 +312,38 @@ void main() {
     },
   );
 
+  test('a private food keeps its serving to its user (#701)', () async {
+    final firestore = FakeFirebaseFirestore();
+    final repository = FirestoreGlobalFoodServingSuggestionRepository(
+      firestore: firestore,
+      currentUserId: 'user-1',
+    );
+
+    await repository.recordSelection(
+      foodFingerprint: 'eier_mit_speck',
+      amount: 300,
+      unit: ConsumedUnit.grams,
+      selectedAt: DateTime.parse('2026-10-13T10:00:00.000Z'),
+      share: false,
+    );
+
+    final shared = await firestore.collection(_globalCollection).get();
+    final votes = await firestore
+        .collection(_usersCollection)
+        .doc('user-1')
+        .collection(_votesCollection)
+        .get();
+    final own = await firestore
+        .collection(_usersCollection)
+        .doc('user-1')
+        .collection(_prefsCollection)
+        .doc('fingerprint_eier_mit_speck')
+        .get();
+    expect(shared.docs, isEmpty);
+    expect(votes.docs, isEmpty);
+    expect(own.data()!['amount'], 300);
+  });
+
   test(
     'recordSelection shares fingerprint servings without global items',
     () async {

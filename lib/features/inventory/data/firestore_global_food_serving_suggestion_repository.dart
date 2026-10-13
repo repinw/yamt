@@ -79,6 +79,7 @@ class FirestoreGlobalFoodServingSuggestionRepository
     required DateTime selectedAt,
     String? globalFoodItemId,
     String? label,
+    bool share = true,
   }) async {
     final currentUserId = _currentUserId?.trim();
     if (currentUserId == null || currentUserId.isEmpty || amount <= 0) {
@@ -124,7 +125,8 @@ class FirestoreGlobalFoodServingSuggestionRepository
     ];
 
     final sharedKey = globalKey ?? fingerprintKey;
-    if (sharedKey == null) {
+    // A private food remembers the serving for its user only (#701).
+    if (sharedKey == null || !share) {
       await _writePreferenceTargets(
         targets: preferenceTargets,
         amount: normalizedAmount,

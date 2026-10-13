@@ -119,6 +119,7 @@ class InventoryReceiptManualProductSelection {
     this.nutrition,
     this.externalProduct,
     this.globalFoodItemId,
+    this.aiEstimated = false,
   });
 
   /// Creates a [InventoryReceiptManualProductSelection] for from search result.
@@ -155,11 +156,16 @@ class InventoryReceiptManualProductSelection {
       globalFoodItemId: _normalizeReusableGlobalFoodItemId(
         item.globalFoodItemId,
       ),
+      aiEstimated: item.aiEstimated,
     );
   }
 
   /// The source.
   final InventoryReceiptManualProductSelectionSource source;
+
+  /// Whether the picked food is an AI estimate, which stays the user's own
+  /// (#701).
+  final bool aiEstimated;
 
   /// The name.
   final String name;

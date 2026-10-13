@@ -253,6 +253,7 @@ class InventoryItemsController extends _$InventoryItemsController {
     required GlobalFoodItem resolvedProduct,
     required bool requiresGlobalPersistence,
     String? weight,
+    bool aiEstimated = false,
   }) {
     return _mutate(
       false,
@@ -262,6 +263,7 @@ class InventoryItemsController extends _$InventoryItemsController {
         resolvedProduct: resolvedProduct,
         requiresGlobalPersistence: requiresGlobalPersistence,
         weight: weight,
+        aiEstimated: aiEstimated,
       ),
     );
   }
