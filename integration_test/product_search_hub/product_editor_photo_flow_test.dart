@@ -8,10 +8,24 @@ import 'package:integration_test/integration_test.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:yamt/core/constants/app_routes.dart';
 import 'package:yamt/core/l10n/app_localizations_delegates.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
+import 'package:yamt/features/auth/data/user_data_key_session.dart';
+import 'package:yamt/features/inventory/data/'
+    'global_barcode_candidate_repository.dart';
+import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
+import 'package:yamt/features/inventory/data/inventory_item_repository.dart';
+import 'package:yamt/features/inventory/domain/global_barcode_candidate.dart';
+import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/'
     'inventory_receipt_manual_product_models.dart'
     show InventoryReceiptManualProductResult;
+import 'package:yamt/features/inventory/presentation/controllers/'
+    'inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/inventory_item_hub_flow.dart';
+import 'package:yamt/features/inventory/presentation/inventory_item_hub_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_receipt_candidate_picker_sheet.dart';
 import 'package:yamt/features/product_nutrition/data/'
     'nutrition_label_ocr_repository.dart';
 import 'package:yamt/features/product_nutrition/domain/'
@@ -25,6 +39,10 @@ import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
 import 'package:yamt/features/product_search_hub/presentation/models/'
     'manual_product_form_field.dart';
+import 'package:yamt/features/product_search_hub/presentation/models/'
+    'product_search_hub_route_args.dart';
+import 'package:yamt/features/product_search_hub/presentation/'
+    'product_search_hub_page.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_form/manual_product_editor_header.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
@@ -36,6 +54,9 @@ import 'package:yamt/features/product_search_hub/presentation/widgets/'
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_route_args.dart';
 import 'package:yamt/l10n/app_localizations.dart';
+
+import '../../test/helpers/auth_user_data_key_session.dart';
+import '../../test/helpers/inventory_item_whole_list_writes.dart';
 
 // A 1x1 PNG, so the photo tiles can decode the "photos".
 final Uint8List _pixel = Uint8List.fromList(const [
@@ -112,6 +133,90 @@ class _FakePhotoRepository implements ProductPhotoRepository {
   }
 }
 
+/// The Vorrat, which reports each write through its stream like Firestore.
+class _FakeStock with InventoryItemWholeListWrites {
+  new(this.items);
+
+  List<InventoryItem> items;
+  final _writes = StreamController<List<InventoryItem>>.broadcast();
+
+  @override
+  Future<List<InventoryItem>> readAll() async => List.of(items);
+
+  @override
+  Future<bool> replaceItems(List<InventoryItem> items) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    this.items = List.of(items);
+    _writes.add(List.of(items));
+    return true;
+  }
+
+  @override
+  Future<bool> appendAll(List<InventoryItem> items) =>
+      replaceItems([...this.items, ...items]);
+
+  @override
+  Stream<List<InventoryItem>> watchAll() => Stream.multi((controller) {
+    controller.add(List.of(items));
+    final subscription = _writes.stream.listen(controller.add);
+    controller.onCancel = subscription.cancel;
+  });
+}
+
+/// The shared catalog, which other users read.
+class _FakeCatalog implements GlobalFoodItemRepository {
+  final appended = <GlobalFoodItem>[];
+
+  @override
+  Future<bool> appendAll(List<GlobalFoodItem> items) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    appended.addAll(items);
+    return true;
+  }
+
+  @override
+  Future<List<GlobalFoodItem>> readAll() async => const [];
+
+  @override
+  Future<bool> saveAll(List<GlobalFoodItem> items) async => true;
+
+  @override
+  Future<List<GlobalFoodItem>> searchCandidates({
+    String? normalizedName,
+    String? normalizedStoreName,
+    String? barcode,
+    String? foodFingerprint,
+    List<String> searchTokens = const <String>[],
+    int limit = 20,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    return const [];
+  }
+
+  @override
+  Stream<List<GlobalFoodItem>> watchAll() => Stream.value(const []);
+}
+
+/// The barcode candidates that other users' scans read.
+class _FakeBarcodeCandidates implements GlobalBarcodeCandidateRepository {
+  final recorded = <String>[];
+
+  @override
+  Future<List<GlobalBarcodeCandidate>> readCandidates({
+    required String barcode,
+    int limit = 5,
+  }) async => const [];
+
+  @override
+  Future<void> recordSelection({
+    required String barcode,
+    required GlobalFoodItem globalFoodItem,
+    required DateTime selectedAt,
+  }) async {
+    recorded.add(barcode);
+  }
+}
+
 class _FakeNutritionOcrRepository implements NutritionLabelOcrRepository {
   @override
   Future<NutritionLabelOcrResult> readNutritionLabel({
@@ -185,6 +290,93 @@ Widget _buildHarness({
 
   final container = ProviderContainer(
     overrides: [
+      productPhotoRepositoryProvider.overrideWithValue(photos),
+      nutritionLabelOcrRepositoryProvider.overrideWithValue(
+        _FakeNutritionOcrRepository(),
+      ),
+    ],
+  );
+  addTearDown(container.dispose);
+
+  return UncontrolledProviderScope(
+    container: container,
+    child: MaterialApp.router(
+      locale: const Locale('en'),
+      routerConfig: router,
+      localizationsDelegates: appLocalizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+    ),
+  );
+}
+
+/// A Vorrat item without a photo, whose product the user replaces.
+final InventoryItem _bread = InventoryItem.create(
+  id: 'item-bread',
+  name: 'Brot',
+  entryDate: DateTime.parse('2026-09-28T10:00:00Z'),
+  storeName: 'Rewe',
+  quantity: 1,
+  weight: '500 g',
+).withDerivedAmount();
+
+/// The Vorrat item hub of [_bread] with the real "Replace product" flow:
+/// the product search hub picks the product, and the editor makes it.
+Widget _buildReplaceHarness({
+  required _FakePhotoRepository photos,
+  required _FakeStock stock,
+  required _FakeCatalog catalog,
+  required _FakeBarcodeCandidates barcodeCandidates,
+}) {
+  final router = GoRouter(
+    routes: [
+      GoRoute(
+        path: AppRoutes.root,
+        builder: (context, state) => Scaffold(
+          body: Center(
+            child: Consumer(
+              builder: (context, ref, _) {
+                // The Vorrat page keeps the Vorrat loaded.
+                ref.watch(inventoryItemsControllerProvider);
+                return FilledButton(
+                  key: const Key('open_item_hub'),
+                  onPressed: () => InventoryItemHubFlow.open(
+                    context: context,
+                    ref: ref,
+                    item: _bread,
+                  ),
+                  child: const Text('open'),
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.homeProductSearchHub,
+        builder: (context, state) => ProductSearchHubPage(
+          args: resolveProductSearchHubRouteArgs(state.extra),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.productSearchChildFlow,
+        redirect: redirectInvalidManualProductSearchRoute,
+        pageBuilder: buildManualProductSearchRoutePage,
+      ),
+    ],
+  );
+  addTearDown(router.dispose);
+
+  // Signed out: the hub's shopping list and serving reads stay empty.
+  final container = ProviderContainer(
+    overrides: [
+      userProfileProvider.overrideWith((ref) => Stream.value(null)),
+      authStateChangesProvider.overrideWith((ref) => Stream.value(null)),
+      userDataKeySessionProvider.overrideWith(AuthUserDataKeySession.new),
+      inventoryItemRepositoryProvider.overrideWithValue(stock),
+      globalFoodItemRepositoryProvider.overrideWithValue(catalog),
+      globalBarcodeCandidateRepositoryProvider.overrideWithValue(
+        barcodeCandidates,
+      ),
       productPhotoRepositoryProvider.overrideWithValue(photos),
       nutritionLabelOcrRepositoryProvider.overrideWithValue(
         _FakeNutritionOcrRepository(),
@@ -350,5 +542,65 @@ void main() {
     final saved = result! as InventoryReceiptManualProductResult;
     expect(saved.requiresGlobalPersistence, isTrue);
     expect(saved.item.imageUrl, _frontUrl);
+  });
+
+  testWidgets('a product whose front photo shows no package replaces the '
+      'product of a Vorrat item and stays private (#658)', (tester) async {
+    final photos = _FakePhotoRepository()..notPackagePhotos = 1;
+    final stock = _FakeStock([_bread]);
+    final catalog = _FakeCatalog();
+    final barcodeCandidates = _FakeBarcodeCandidates();
+    await tester.pumpWidget(
+      _buildReplaceHarness(
+        photos: photos,
+        stock: stock,
+        catalog: catalog,
+        barcodeCandidates: barcodeCandidates,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('open_item_hub')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(
+      find.byKey(const Key('eat_item_action_replace')),
+    );
+    await tester.tap(find.byKey(const Key('eat_item_action_replace')));
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.byKey(InventoryReceiptCandidatePickerSheet.manualEntryKey),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byType(ProductSearchHubPage), findsOneWidget);
+    await tester.tap(
+      find.byKey(const Key('product_search_hub_search_create_own_action')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(ManualProductPhotoSection.frontKey));
+    await tester.pumpAndSettle();
+    await _waitForSnackBar(tester);
+    await tester.tap(find.byKey(ManualProductPhotoSection.nutritionTableKey));
+    await tester.pumpAndSettle();
+    await _enter(tester, ManualProductFormField.name, 'Brot vom Bäcker');
+    await _enter(tester, ManualProductFormField.barcode, '4006381333931');
+    await tester.ensureVisible(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.tap(find.byKey(ManualProductDetailsForm.saveKey));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProductSearchHubPage), findsNothing);
+    expect(find.byType(InventoryItemHubPage), findsNothing);
+    expect(photos.saved, isEmpty);
+    expect(photos.savedPrivate, hasLength(1));
+    // Neither the catalog nor other users' barcode scans get the product.
+    expect(catalog.appended, isEmpty);
+    expect(barcodeCandidates.recorded, isEmpty);
+    final item = stock.items.single;
+    expect(item.id, _bread.id);
+    expect(item.name, 'Brot vom Bäcker');
+    expect(item.barcode, '4006381333931');
+    expect(isPendingGlobalFoodItemId(item.globalFoodItemId), isTrue);
+    expect(item.imageUrl, _privateFrontUrl);
+    expect(tester.takeException(), isNull);
   });
 }

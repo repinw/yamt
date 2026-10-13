@@ -67,12 +67,21 @@ class YamtReceiptManualProductPicker implements ReceiptManualProductPicker {
 
   /// Converts an [InventoryReceiptManualProductResult] into a
   /// [ProductCandidate].
+  ///
+  /// A product that skips the catalog without a catalog pick, like an AI
+  /// food (#655) or a product whose front photo shows no package (#658), is
+  /// the user's own: it gets its pending id, which keeps it out of the shared
+  /// receipt aliases.
   static ProductCandidate mapResultToCandidate(
     InventoryReceiptManualProductResult result,
   ) {
     final item = result.item;
     return ProductCandidate(
-      id: result.selectedGlobalFoodItemId ?? item.id,
+      id:
+          result.selectedGlobalFoodItemId ??
+          (result.requiresGlobalPersistence
+              ? item.id
+              : buildPendingGlobalFoodItemId(item.resolvedFoodFingerprint)),
       name: item.name,
       brand: item.brand,
       barcode: item.barcode,

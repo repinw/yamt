@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/features/inventory/application/'
     'global_food_item_matcher.dart';
@@ -10,7 +11,11 @@ import 'package:yamt/features/inventory/domain/'
 import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
     'inventory_item_row/inventory_item_candidate_swap_flow.dart';
 import 'package:yamt/features/product_search_hub/presentation/controllers/'
+    'manual_product_search_controller.dart';
+import 'package:yamt/features/product_search_hub/presentation/controllers/'
     'manual_product_search_models.dart';
+import 'package:yamt/features/product_search_hub/presentation/widgets/'
+    'manual_product_search_editor_page/manual_product_search_editor_support.dart';
 import 'package:yamt/features/product_search_hub/presentation/widgets/'
     'manual_product_search_page_types.dart';
 
@@ -159,25 +164,79 @@ void main() {
       expect(request.resolvedProduct.packageWeight, '250 g');
     });
 
-    test(
-      'generates a global id and requires persistence for manual-only data',
-      () {
-        final request = buildInventoryItemCandidateSwapRequestFromManualResult(
-          result: InventoryReceiptManualProductResult(
-            item: _item(weight: '100 g'),
-            action: InventoryReceiptManualProductAction.addToInventory,
-            requiresGlobalPersistence: false,
-          ),
-          matcher: GlobalFoodItemMatcher(),
-        );
+    test('generates a global id for a new product to write', () {
+      final request = buildInventoryItemCandidateSwapRequestFromManualResult(
+        result: InventoryReceiptManualProductResult(
+          item: _item(weight: '100 g'),
+          action: InventoryReceiptManualProductAction.addToInventory,
+        ),
+        matcher: GlobalFoodItemMatcher(),
+      );
 
-        expect(request.requiresGlobalPersistence, isTrue);
-        expect(request.weight, '100 g');
-        expect(request.resolvedProduct.id, startsWith('global-food-'));
-        expect(request.resolvedProduct.packageWeight, '100 g');
-      },
-    );
+      expect(request.requiresGlobalPersistence, isTrue);
+      expect(request.weight, '100 g');
+      expect(request.resolvedProduct.id, startsWith('global-food-'));
+      expect(request.resolvedProduct.packageWeight, '100 g');
+    });
+
+    test('writes a new product made in the editor to the catalog', () {
+      final request = _requestFromEditor(
+        (editor) => editor
+          ..updateNameText('Porridge')
+          ..updateWeightAmount('500')
+          ..updateKcalText('370'),
+      );
+
+      expect(request.requiresGlobalPersistence, isTrue);
+      expect(request.resolvedProduct.id, startsWith('global-food-'));
+      expect(request.resolvedProduct.name, 'Porridge');
+    });
+
+    test('keeps a product whose front photo shows no package out of the '
+        'catalog (#658)', () {
+      final request = _requestFromEditor(
+        (editor) => editor
+          ..updateNameText('Brot vom Bäcker')
+          ..updateWeightAmount('500')
+          ..updateKcalText('250')
+          ..updateFrontShowsNoPackage(value: true),
+        photoImageUrl: _privatePhoto,
+      );
+
+      expect(request.requiresGlobalPersistence, isFalse);
+      expect(request.resolvedProduct.name, 'Brot vom Bäcker');
+      // Not in the catalog, so the item does not point at a catalog id.
+      expect(isPendingGlobalFoodItemId(request.resolvedProduct.id), isTrue);
+      // The private photo stays for the user's own item.
+      expect(request.resolvedProduct.imageUrl, _privatePhoto);
+    });
   });
+}
+
+const _privatePhoto = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';
+
+/// The swap request for the food saved in the editor that the Replace flow
+/// opens for the Vorrat item, after [edit].
+InventoryItemCandidateSwapRequest _requestFromEditor(
+  void Function(InventoryReceiptManualProductController editor) edit, {
+  String? photoImageUrl,
+}) {
+  final container = ProviderContainer();
+  addTearDown(container.dispose);
+  final provider = inventoryReceiptManualProductControllerProvider(
+    InventoryReceiptManualProductConfig(item: _item(weight: '1 l')),
+  );
+  final subscription = container.listen(provider, (_, _) {});
+  addTearDown(subscription.close);
+  final editor = container.read(provider.notifier);
+  edit(editor);
+  return buildInventoryItemCandidateSwapRequestFromManualResult(
+    result: buildSaveProductResult(
+      payload: editor.buildSavePayload(photoImageUrl: photoImageUrl)!,
+      action: InventoryReceiptManualProductAction.addToInventory,
+    ),
+    matcher: GlobalFoodItemMatcher(),
+  );
 }
 
 InventoryItem _item({String name = 'Milk', String? brand, String? weight}) {

@@ -127,6 +127,11 @@ class YamtReceiptStorageGateway implements ReceiptStorageGateway {
       // Confirmed by a trusted alias without review: saving it again is no
       // new evidence, and counting it would let one choice reinforce itself.
       if (product.source == CandidateSource.aliasExact) continue;
+      // A product with a pending id is the user's own and not in the
+      // catalog, like an AI food (#655) or a product whose front photo shows
+      // no package (#658). An alias holds the whole product, and every
+      // user's receipt scan reads the aliases.
+      if (isPendingGlobalFoodItemId(product.id)) continue;
 
       final globalItem = _buildGlobalItem(product, storeName, item, now);
       final alias = GlobalFoodReceiptAlias.tryCreate(

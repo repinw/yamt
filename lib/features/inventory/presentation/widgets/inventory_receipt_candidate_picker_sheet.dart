@@ -45,6 +45,9 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
   /// The inventory receipt candidate picker sheet.
   const new({required this.draft, super.key});
 
+  /// Key of the tile that enters the product by hand.
+  static const manualEntryKey = Key('receipt_candidate_picker_manual_entry');
+
   /// The draft.
   final ReceiptReviewItemDraft draft;
 
@@ -88,6 +91,7 @@ class InventoryReceiptCandidatePickerSheet extends StatelessWidget {
                   ],
                   const SizedBox(height: AppSpacing.md),
                   _FallbackSelectionTile(
+                    key: manualEntryKey,
                     icon: Icons.edit_note,
                     isSelected: draft.selectedGlobalFoodItemId == null,
                     onTap: () {
@@ -245,6 +249,7 @@ class _FallbackSelectionTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.icon,
+    super.key,
   });
 
   final bool isSelected;

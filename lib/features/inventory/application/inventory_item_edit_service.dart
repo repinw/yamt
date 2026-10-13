@@ -2,6 +2,7 @@ import 'dart:developer' show log;
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/provider/clock_provider.dart';
+import 'package:yamt/core/utils/product_image_url.dart';
 import 'package:yamt/features/inventory/application/inventory_item_writer.dart';
 import 'package:yamt/features/inventory/data/'
     'global_barcode_candidate_repository.dart';
@@ -58,6 +59,12 @@ class InventoryItemEditService {
   }
 
   /// Points a full item at another product.
+  ///
+  /// With [requiresGlobalPersistence], [resolvedProduct] is written to the
+  /// shared catalog first. Without it, the product is in the catalog already,
+  /// or it has a pending id, like an AI food (#655) or a product whose front
+  /// photo shows no package (#658): such a product is the user's own, so
+  /// neither the catalog nor the barcode candidates get it.
   Future<InventoryItemChange<bool>> swap(
     List<InventoryItem> items, {
     required String itemId,
@@ -69,8 +76,9 @@ class InventoryItemEditService {
     if (index < 0 || !items[index].isFullyAvailable) {
       return (result: false, written: null);
     }
-    final inCatalog =
-        !requiresGlobalPersistence || await _saveProduct(resolvedProduct);
+    final inCatalog = requiresGlobalPersistence
+        ? await _saveProduct(resolvedProduct)
+        : !isPendingGlobalFoodItemId(resolvedProduct.id);
     final next = List<InventoryItem>.from(items)
       ..[index] = buildSwappedItem(
         sourceItem: items[index],
@@ -85,7 +93,7 @@ class InventoryItemEditService {
     if (inCatalog && barcode != null && barcode.isNotEmpty) {
       await _barcodeCandidates.recordSelection(
         barcode: barcode,
-        globalFoodItem: resolvedProduct,
+        globalFoodItem: _shared(resolvedProduct),
         selectedAt: _clock(),
       );
     }
@@ -94,7 +102,7 @@ class InventoryItemEditService {
 
   Future<bool> _saveProduct(GlobalFoodItem product) async {
     try {
-      return await _globalFoods.appendAll(<GlobalFoodItem>[product]);
+      return await _globalFoods.appendAll(<GlobalFoodItem>[_shared(product)]);
     } on Object catch (error, stackTrace) {
       log(
         'Failed to persist swapped product ${product.id}. '
@@ -106,4 +114,11 @@ class InventoryItemEditService {
       return false;
     }
   }
+
+  /// [product] as other users see it in the catalog and the barcode
+  /// candidates. Its image is left out when it is a private food photo, like
+  /// the front photo of a product without a package (#658), or a photo that
+  /// is still uploading (#414): the swapped item keeps it.
+  static GlobalFoodItem _shared(GlobalFoodItem product) =>
+      product.copyWith(imageUrl: shareableProductImageUrl(product.imageUrl));
 }

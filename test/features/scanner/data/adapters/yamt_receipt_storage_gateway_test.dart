@@ -5,7 +5,11 @@ import 'package:yamt/features/inventory/domain/global_food_item.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
 import 'package:yamt/features/inventory/domain/global_food_receipt_alias.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/domain/product_missing_values.dart';
+import 'package:yamt/features/scanner/data/adapters/'
+    'yamt_receipt_manual_product_picker.dart';
 import 'package:yamt/features/scanner/data/adapters/yamt_receipt_storage_gateway.dart';
 import 'package:yamt/features/scanner/domain/models/product_candidate.dart';
 import 'package:yamt/features/scanner/domain/models/receipt_line_item.dart';
@@ -343,6 +347,50 @@ void main() {
       expect(globalFoodRepo.appendedItems, isEmpty);
       expect(invRepo.appendedItems.single.globalFoodItemId, 'global_existing');
       expect(aliasRepo.appendedAliases, hasLength(1));
+    });
+
+    test('saveReceipt keeps a product picked for a line that stays private '
+        'out of the catalog and the receipt aliases (#658)', () async {
+      const privatePhoto = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';
+      const receipt = ScannedReceipt(id: 'rec_private', storeName: 'REWE');
+      // The product as the editor returns it when its front photo shows no
+      // package.
+      final bread = InventoryItem.create(
+        id: 'picker_1',
+        name: 'Brot vom Bäcker',
+        entryDate: DateTime(2026, 10, 13),
+        storeName: 'REWE',
+        quantity: 1,
+        barcode: '4006381333931',
+        imageUrl: privatePhoto,
+      );
+      final candidate = YamtReceiptManualProductPicker.mapResultToCandidate(
+        InventoryReceiptManualProductResult(
+          item: bread,
+          action: InventoryReceiptManualProductAction.addToInventory,
+          requiresGlobalPersistence: false,
+        ),
+      );
+
+      await gateway.saveReceipt(
+        receipt: receipt,
+        items: [
+          ReceiptLineItem(
+            id: 'line_bread',
+            rawName: 'BROT KRUSTE',
+            totalPrice: 3.49,
+            status: ReceiptItemStatus.confirmed,
+            matchedProduct: candidate,
+          ),
+        ],
+      );
+
+      expect(globalFoodRepo.appendedItems, isEmpty);
+      expect(aliasRepo.appendedAliases, isEmpty);
+      final saved = invRepo.appendedItems.single;
+      expect(saved.name, 'Brot vom Bäcker');
+      expect(isPendingGlobalFoodItemId(saved.globalFoodItemId), isTrue);
+      expect(saved.imageUrl, privatePhoto);
     });
 
     test('saveReceipt stops when catalog persistence fails', () async {

@@ -156,22 +156,33 @@ buildInventoryItemCandidateSwapRequestFromManualResult({
     );
   }
 
-  final selectedGlobalFoodItemId = result.selectedGlobalFoodItemId;
   return InventoryItemCandidateSwapRequest(
     resolvedProduct: _productFromManualItem(
       item: result.item,
-      id:
-          selectedGlobalFoodItemId ??
-          '$_swapGlobalFoodIdPrefix${const Uuid().v4()}',
+      id: _manualResultProductId(result),
       packageWeight: result.item.weight,
       servingSize: result.item.servingSize,
       servingQuantity: result.item.servingQuantity,
       servingQuantityUnit: result.item.servingQuantityUnit,
     ),
-    requiresGlobalPersistence:
-        result.requiresGlobalPersistence || selectedGlobalFoodItemId == null,
+    requiresGlobalPersistence: result.requiresGlobalPersistence,
     weight: result.item.weight,
   );
+}
+
+/// The catalog id of the picked catalog product, a new id for a product the
+/// swap writes to the catalog, or else the pending id: a product that skips
+/// the catalog without a catalog pick, like an AI food (#655) or a product
+/// whose front photo shows no package (#658), is the user's own.
+String _manualResultProductId(InventoryReceiptManualProductResult result) {
+  final selectedGlobalFoodItemId = result.selectedGlobalFoodItemId;
+  if (selectedGlobalFoodItemId != null) {
+    return selectedGlobalFoodItemId;
+  }
+  if (result.requiresGlobalPersistence) {
+    return '$_swapGlobalFoodIdPrefix${const Uuid().v4()}';
+  }
+  return buildPendingGlobalFoodItemId(result.item.resolvedFoodFingerprint);
 }
 
 GlobalFoodMatchCandidate? _candidateById(

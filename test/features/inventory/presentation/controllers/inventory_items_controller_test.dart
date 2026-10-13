@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yamt/features/inventory/application/'
+    'global_food_item_matcher.dart';
 import 'package:yamt/features/inventory/data/global_barcode_candidate_repository.dart';
 import 'package:yamt/features/inventory/data/global_food_item_repository.dart';
 import 'package:yamt/features/inventory/data/'
@@ -15,7 +17,11 @@ import 'package:yamt/features/inventory/domain/inventory_activity_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_discard_event.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_stock_changes.dart';
+import 'package:yamt/features/inventory/domain/'
+    'inventory_receipt_manual_product_models.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_items_controller.dart';
+import 'package:yamt/features/inventory/presentation/widgets/inventory_list/'
+    'inventory_item_row/inventory_item_candidate_swap_flow.dart';
 
 import '../../../../helpers/inventory_item_whole_list_writes.dart';
 
@@ -935,4 +941,136 @@ void main() {
       expect(items?.single.globalFoodItemId, isNot('off-123'));
     },
   );
+
+  group('swapItemCandidate and the shared catalog', () {
+    late _FakeGlobalFoodItemRepository catalog;
+    late _FakeGlobalBarcodeCandidateRepository barcodeCandidates;
+    late ProviderContainer container;
+
+    setUp(() async {
+      final repository = _FakeInventoryItemRepository(
+        initialItems: <InventoryItem>[_item(id: 'a')],
+      );
+      addTearDown(repository.dispose);
+      catalog = _FakeGlobalFoodItemRepository();
+      barcodeCandidates = _FakeGlobalBarcodeCandidateRepository();
+      container = ProviderContainer(
+        overrides: [
+          inventoryItemRepositoryProvider.overrideWithValue(repository),
+          globalFoodItemRepositoryProvider.overrideWithValue(catalog),
+          globalBarcodeCandidateRepositoryProvider.overrideWithValue(
+            barcodeCandidates,
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+      final subscription = _keepControllerAlive(container);
+      addTearDown(subscription.close);
+      await container.read(inventoryItemsControllerProvider.future);
+    });
+
+    Future<InventoryItem> swap(
+      InventoryItemCandidateSwapRequest request,
+    ) async {
+      final saved = await container
+          .read(inventoryItemsControllerProvider.notifier)
+          .swapItemCandidate(
+            itemId: 'a',
+            resolvedProduct: request.resolvedProduct,
+            requiresGlobalPersistence: request.requiresGlobalPersistence,
+            weight: request.weight,
+          );
+      expect(saved, isTrue);
+      return container.read(inventoryItemsControllerProvider).value!.single;
+    }
+
+    test('records the barcode of a catalog product', () async {
+      final item = await swap(
+        InventoryItemCandidateSwapRequest(
+          resolvedProduct: _globalProduct(
+            id: 'off-4061458029995',
+            barcode: '4061458029995',
+          ),
+          requiresGlobalPersistence: false,
+          weight: '1000 g',
+        ),
+      );
+
+      expect(catalog.appendedItems, isEmpty);
+      expect(item.globalFoodItemId, 'off-4061458029995');
+      expect(barcodeCandidates.recordedSelections, hasLength(1));
+    });
+
+    test('keeps a product whose front photo shows no package, with its photo, '
+        'out of the catalog and the barcode candidates (#658)', () async {
+      final bread = _item(
+        id: 'editor-item',
+        name: 'Brot vom Bäcker',
+      ).copyWith(barcode: '4006381333931', imageUrl: _privateFrontPhoto);
+      final item = await swap(
+        // The product as the editor of the Replace flow returns it.
+        buildInventoryItemCandidateSwapRequestFromManualResult(
+          result: InventoryReceiptManualProductResult(
+            item: bread,
+            action: InventoryReceiptManualProductAction.addToInventory,
+            requiresGlobalPersistence: false,
+          ),
+          matcher: GlobalFoodItemMatcher(),
+        ),
+      );
+
+      expect(catalog.appendedItems, isEmpty);
+      expect(barcodeCandidates.recordedSelections, isEmpty);
+      expect(item.name, 'Brot vom Bäcker');
+      expect(item.barcode, '4006381333931');
+      expect(isPendingGlobalFoodItemId(item.globalFoodItemId), isTrue);
+      expect(item.imageUrl, _privateFrontPhoto);
+    });
+
+    test('shares no private photo with the catalog product it records '
+        '(#658)', () async {
+      final item = await swap(
+        InventoryItemCandidateSwapRequest(
+          resolvedProduct: _globalProduct(
+            id: 'global-1',
+            barcode: '4006381333931',
+          ).copyWith(imageUrl: _privateFrontPhoto),
+          requiresGlobalPersistence: false,
+          weight: '500 g',
+        ),
+      );
+
+      expect(item.globalFoodItemId, 'global-1');
+      expect(item.imageUrl, _privateFrontPhoto);
+      final recorded = barcodeCandidates.recordedSelections.single;
+      expect(recorded.globalFoodItem.id, 'global-1');
+      expect(recorded.globalFoodItem.imageUrl, isNull);
+    });
+
+    test('writes a new product without its photo, which the item keeps '
+        '(#414)', () async {
+      const sharedFrontPhoto =
+          'gs://bucket/product_images/user-1/photo-1/front.jpg';
+      final item = await swap(
+        InventoryItemCandidateSwapRequest(
+          resolvedProduct: _globalProduct(
+            id: 'global-food-1',
+            barcode: '4006381333931',
+          ).copyWith(imageUrl: sharedFrontPhoto),
+          requiresGlobalPersistence: true,
+          weight: '500 g',
+        ),
+      );
+
+      expect(item.globalFoodItemId, 'global-food-1');
+      expect(item.imageUrl, sharedFrontPhoto);
+      expect(catalog.appendedItems.single.imageUrl, isNull);
+      expect(
+        barcodeCandidates.recordedSelections.single.globalFoodItem.imageUrl,
+        isNull,
+      );
+    });
+  });
 }
+
+const _privateFrontPhoto = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';

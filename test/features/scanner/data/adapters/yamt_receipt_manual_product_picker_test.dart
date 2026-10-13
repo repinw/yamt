@@ -99,5 +99,55 @@ void main() {
       expect(candidate.hasNutrition, isFalse);
       expect(candidate.nutrition, isNull);
     });
+
+    test('mapResultToCandidate gives a product that stays private its '
+        'pending id (#658)', () {
+      final item = InventoryItem.create(
+        id: 'picker_1',
+        name: 'Brot vom Bäcker',
+        entryDate: DateTime(2026, 10, 13),
+        storeName: 'Rewe',
+        quantity: 1,
+        barcode: '4006381333931',
+        imageUrl: 'gs://bucket/users/user-1/food_photos/photo-1.jpg',
+      );
+
+      final candidate = YamtReceiptManualProductPicker.mapResultToCandidate(
+        InventoryReceiptManualProductResult(
+          item: item,
+          action: InventoryReceiptManualProductAction.addToInventory,
+          requiresGlobalPersistence: false,
+        ),
+      );
+
+      expect(
+        candidate.id,
+        buildPendingGlobalFoodItemId(item.resolvedFoodFingerprint),
+      );
+      expect(candidate.requiresPersistence, isFalse);
+      expect(candidate.imageUrl, item.imageUrl);
+    });
+
+    test('mapResultToCandidate keeps the id of a picked catalog product that '
+        'needs no write', () {
+      final item = InventoryItem.create(
+        id: 'picker_2',
+        name: 'Vollmilch',
+        entryDate: DateTime(2026, 10, 13),
+        storeName: 'Rewe',
+        quantity: 1,
+      );
+
+      final candidate = YamtReceiptManualProductPicker.mapResultToCandidate(
+        InventoryReceiptManualProductResult(
+          item: item,
+          action: InventoryReceiptManualProductAction.addToInventory,
+          selectedGlobalFoodItemId: 'global-milk',
+          requiresGlobalPersistence: false,
+        ),
+      );
+
+      expect(candidate.id, 'global-milk');
+    });
   });
 }
