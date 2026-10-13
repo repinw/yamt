@@ -188,7 +188,6 @@ const architectureBaseline = <String, Map<String, int>>{
   },
   'clock': {
     'lib/core/domain/local_day_window.dart': 1,
-    'lib/features/calories/application/burn_week_live_sync_provider.dart': 2,
     'lib/features/calories/application/calorie_weekly_checkin_snapshot_invalidator.dart':
         1,
     'lib/features/calories/domain/calorie_entry.dart': 5,
