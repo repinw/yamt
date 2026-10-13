@@ -41,7 +41,7 @@ class PreparedMealEatSheetBody extends ConsumerStatefulWidget {
   /// Key of the note that "Rest" empties the pot.
   static const restHintKey = Key('prepared_meal_rest_hint');
 
-  /// Key of the nutrition table.
+  /// Key of the meal's nutrition label.
   static const nutritionTableKey = Key('prepared_meal_nutrition_table');
 
   /// Meal to eat.
@@ -111,6 +111,16 @@ class _PreparedMealEatSheetBodyState
         widget.meal.isInPot == meal.isInPot;
     final canEat = !isInPot && meal.allows(PreparedMealAction.eat);
     final nutrition = state.nutrition;
+    // A nutrient that only some ingredients list shows "–".
+    final facts = nutrition == null
+        ? const <NutritionFactsRow>[]
+        : nutritionFactsRows(
+            context,
+            eaten: nutrition.total,
+            per100: nutrition.per100,
+            listed: nutrition.listed,
+            unknownEaten: l10n.eatPageMealUnknownValue,
+          );
     final imageRef = maybeLocalImageAssetRef(meal.imageAssetId);
     final imageBytes = imageRef == null
         ? null
@@ -126,7 +136,7 @@ class _PreparedMealEatSheetBodyState
         allowsPlanDays: canPlan,
       ),
       isPlan: state.isPlan,
-      kcal: nutrition?.eaten.kcal,
+      kcal: nutrition?.total.kcal,
       confirmButtonKey: const Key('prepared_meal_eat_confirm_button'),
       // A meal in the pot can only be planned, a share of the pot.
       onConfirm: !state.isPotTooLight && (canEat || (canPlan && state.isPlan))
@@ -154,11 +164,7 @@ class _PreparedMealEatSheetBodyState
         if (nutrition != null)
           EatLabelTable(
             key: PreparedMealEatSheetBody.nutritionTableKey,
-            rows: nutritionFactsRows(
-              context,
-              eaten: nutrition.eaten,
-              per100: nutrition.per100,
-            ),
+            rows: facts,
             // Only a weighed meal has per-100 values: cooking changes the
             // weight of the ingredients.
             per100Header: nutrition.per100 == null

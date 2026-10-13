@@ -455,6 +455,7 @@
   "eatPageMealTitle": "Mahlzeit",
   "eatPageIngredientMissing": "Fehlt – keinem Vorrat zugeordnet",
   "eatPageIngredientIgnored": "Ignoriert – zählt nicht mit",
+  "eatPageIngredientNutritionIncomplete": "Nährwerte unvollständig",
   "eatPageReplaceProduct": "Produkt ersetzen",
   "eatPageOnShoppingList": "Steht auf der Einkaufsliste",
   "eatPageCombineLink": "Mit anderem Lebensmittel kombinieren",

@@ -1516,6 +1516,12 @@ abstract class AppLocalizations {
   /// **'Ignored – not counted'**
   String get eatPageIngredientIgnored;
 
+  /// No description provided for @eatPageIngredientNutritionIncomplete.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition values incomplete'**
+  String get eatPageIngredientNutritionIncomplete;
+
   /// No description provided for @eatPageReplaceProduct.
   ///
   /// In en, this message translates to:

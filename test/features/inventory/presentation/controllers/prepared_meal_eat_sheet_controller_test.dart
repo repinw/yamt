@@ -144,7 +144,7 @@ void main() {
       expect(after.portionsHeader(l10n), '1 portion · 300 g');
       expect(after.nutrition?.per100?.kcal, closeTo(33.3, 0.1));
       // A portion keeps its share of the meal's nutrients.
-      expect(after.nutrition?.eaten.kcal, before.nutrition?.eaten.kcal);
+      expect(after.nutrition?.total.kcal, before.nutrition?.total.kcal);
       expect(after.calculator.needsPotWeighing(_now), isFalse);
     });
 
@@ -162,7 +162,7 @@ void main() {
       final nutrition = container.read(provider).nutrition;
       expect(nutrition?.per100?.kcal, closeTo(30.3, 0.1));
       // One portion stays a quarter of the meal.
-      expect(nutrition?.eaten.kcal, 100);
+      expect(nutrition?.total.kcal, 100);
     });
 
     test('a meal not weighed after cooking has no values per 100 g', () {
@@ -171,7 +171,7 @@ void main() {
       );
 
       final nutrition = container.read(provider).nutrition;
-      expect(nutrition?.eaten.kcal, 100);
+      expect(nutrition?.total.kcal, 100);
       expect(nutrition?.per100, isNull);
     });
 
@@ -192,7 +192,7 @@ void main() {
 
     expect(state.amountText, '1');
     expect(state.loggedAt, _now);
-    expect(state.nutrition?.eaten.kcal, 100);
+    expect(state.nutrition?.total.kcal, 100);
     expect(state.amountMax, state.calculator.meal.remainingPortions);
     expect(state.amountStep, 0.25);
   });
@@ -246,7 +246,7 @@ void main() {
 
     final state = container.read(provider);
     expect(state.amountText, '2');
-    expect(state.nutrition?.eaten.kcal, 400);
+    expect(state.nutrition?.total.kcal, 400);
     expect(controller.submit()?.meal, filled);
   });
 

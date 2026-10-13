@@ -9,6 +9,7 @@ import 'package:yamt/features/inventory/domain/inventory_item_consumption.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_calculator.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_policy.dart';
 import 'package:yamt/features/inventory/domain/inventory_item_eat_request.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 /// One food of a meal on the item hub: its eaten nutrients and amount.
 typedef EatMealFood = ({
@@ -85,6 +86,54 @@ class EatMealNutrition {
       listed: facts(sumKnown),
       per100: amount > 0 ? total.scaled(100 / amount) : null,
       amounts: Map.unmodifiable(amounts),
+    );
+  }
+
+  /// Nutrients of [share] of the Vorrat [meal], 1 being the whole meal.
+  ///
+  /// Energy and the macros are the meal's own totals, which eating it logs;
+  /// a meal without ingredients, such as one from the AI chef, has only
+  /// these. The other nutrients add up the ingredients as
+  /// [EatMealNutrition.combine] does. The per-100 values are the food left
+  /// per 100 g of its weight, so they are known only once the cooked meal
+  /// was weighed: cooking changes the weight, and the raw ingredients'
+  /// weights would give wrong values. There are no amounts.
+  factory ofPreparedMeal(PreparedMeal meal, double share) {
+    // The ingredients' weights do not matter here, so none is given.
+    final ingredients = meal.components.isEmpty
+        ? null
+        : EatMealNutrition.combine([
+            for (final component in meal.components)
+              (
+                eaten: component.nutritionFacts,
+                amount: 0,
+                unit: ConsumedUnit.grams,
+              ),
+          ]);
+
+    NutritionFacts withMealTotals(NutritionFacts? facts) {
+      return NutritionFacts(
+        kcal: meal.totalKcal,
+        fat: meal.totalFat,
+        saturatedFat: facts?.saturatedFat,
+        polyunsaturatedFat: facts?.polyunsaturatedFat,
+        carbs: meal.totalCarbs,
+        sugar: facts?.sugar,
+        fiber: facts?.fiber,
+        protein: meal.totalProtein,
+        salt: facts?.salt,
+      );
+    }
+
+    final whole = withMealTotals(ingredients?.total);
+    final grams = meal.remainingNetWeight;
+    return EatMealNutrition._(
+      total: whole.scaled(share),
+      listed: withMealTotals(ingredients?.listed).scaled(share),
+      per100: grams == null || grams <= 0 || meal.totalPortions < 1
+          ? null
+          : whole.scaled(meal.remainingRatio * 100 / grams),
+      amounts: const {},
     );
   }
 

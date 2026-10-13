@@ -69,12 +69,7 @@ class PreparedMealEditRow {
       unit: component.usedUnit,
       amount: component.usedAmount,
       maxAmount: component.usedAmount + available,
-      baseFacts: NutritionFacts(
-        kcal: component.totalKcal,
-        protein: component.totalProtein,
-        carbs: component.totalCarbs,
-        fat: component.totalFat,
-      ),
+      baseFacts: component.nutritionFacts,
       baseAmount: component.usedAmount.toDouble(),
     );
   }

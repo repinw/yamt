@@ -1,7 +1,9 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:meta/meta.dart';
+import 'package:yamt/core/domain/nutrition_facts.dart';
 import 'package:yamt/features/inventory/domain/inventory_item.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_json.dart';
+import 'package:yamt/features/inventory/domain/product_missing_values.dart';
 
 part 'prepared_meal_component.g.dart';
 
@@ -101,6 +103,35 @@ class PreparedMealComponent {
         .replaceFirst(RegExp(r'\.?0+$'), '');
     return '$amount ${usedUnit.code} $name';
   }
+
+  /// Nutrients of [usedAmount]. Energy and the macros are the totals the
+  /// meal counts; the other values come from the source item's label, and
+  /// a value the label lacks is null.
+  NutritionFacts get nutritionFacts {
+    final label = sourceItemSnapshot.nutrition;
+    final factor = preparedMealNutritionFactor(
+      item: sourceItemSnapshot,
+      amount: usedAmount,
+      unit: usedUnit,
+    );
+    double? scaled(double? per100) => per100 == null ? null : per100 * factor;
+    return NutritionFacts(
+      kcal: totalKcal,
+      fat: totalFat,
+      saturatedFat: scaled(label?.per100SaturatedFat),
+      polyunsaturatedFat: scaled(label?.per100PolyunsaturatedFat),
+      carbs: totalCarbs,
+      sugar: scaled(label?.per100Sugar),
+      fiber: scaled(label?.per100Fiber),
+      protein: totalProtein,
+      salt: scaled(label?.per100Salt),
+    );
+  }
+
+  /// Whether the source item's label lacks a value of the EU nutrition
+  /// label, so the meal's nutrients may leave it out.
+  bool get hasIncompleteNutrition =>
+      missingNutritionValues(sourceItemSnapshot.nutrition).isNotEmpty;
 
   /// The internal storage scale of [usedAmount], taken from the source
   /// item. Piece-tracked items store fractional pieces multiplied by

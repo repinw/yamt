@@ -483,6 +483,14 @@ and feature description docs. This is product-facing; architecture rules stay in
   row follow it. A portion stays its share of the meal's nutrients, so its
   kcal and the diary entries made before do not change. Pieces, a meal in
   the pot and an eaten-up meal have no "Gewicht ändern".
+- The nutrition label of a meal (eat page, detail page and meal editor)
+  shows every value its ingredients' labels have, not only energy and the
+  macros. Energy and the macros are the meal's own totals, which the diary
+  entry logs. A value that only some ingredients list shows "–" (as on the
+  combined label of the item hub), and one that no ingredient lists is left
+  out. In the "Zutaten" box an ingredient whose label lacks one of the
+  seven EU values says "Nährwerte unvollständig", so the user sees why the
+  meal's label is short.
 - "Zutat ergänzen" opens the "Zeile füllen" sheet: when the row has an
   amount, the best Vorrat match comes first with how much is left and
   "Übernehmen", which uses the row's amount. Below it: "Vorrat" (pick other

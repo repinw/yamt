@@ -520,6 +520,7 @@
   "eatPageMealTitle": "Meal",
   "eatPageIngredientMissing": "Missing – not taken from stock",
   "eatPageIngredientIgnored": "Ignored – not counted",
+  "eatPageIngredientNutritionIncomplete": "Nutrition values incomplete",
   "eatPageReplaceProduct": "Replace product",
   "eatPageOnShoppingList": "On the shopping list",
   "eatPageCombineLink": "Combine with another food",

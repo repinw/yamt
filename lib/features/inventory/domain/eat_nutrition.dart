@@ -1,7 +1,6 @@
 import 'package:meta/meta.dart';
 import 'package:yamt/core/domain/nutrition_facts.dart';
 import 'package:yamt/features/inventory/domain/global_food_nutrition.dart';
-import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 
 const _per100Basis = 100;
 
@@ -26,28 +25,6 @@ class EatNutrition {
     return EatNutrition(
       eaten: const NutritionFacts(),
       per100: _per100Facts(nutrition),
-    );
-  }
-
-  /// Scales the totals of [meal] by [multiplier].
-  ///
-  /// The per-100 values are the food left per 100 g of its weight, so they
-  /// are known only once the cooked meal was weighed: cooking changes the
-  /// weight, and the raw ingredients' weights would give wrong values. A
-  /// weighing of the pot keeps them right as water evaporates.
-  factory ofPreparedMeal(PreparedMeal meal, double multiplier) {
-    final total = NutritionFacts(
-      kcal: meal.totalKcal,
-      fat: meal.totalFat,
-      carbs: meal.totalCarbs,
-      protein: meal.totalProtein,
-    );
-    final grams = meal.remainingNetWeight;
-    return EatNutrition(
-      eaten: total.scaled(multiplier),
-      per100: grams == null || grams <= 0 || meal.totalPortions < 1
-          ? null
-          : total.scaled(meal.remainingRatio * _per100Basis / grams),
     );
   }
 

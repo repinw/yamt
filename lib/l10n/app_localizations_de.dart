@@ -876,6 +876,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get eatPageIngredientIgnored => 'Ignoriert – zählt nicht mit';
 
   @override
+  String get eatPageIngredientNutritionIncomplete => 'Nährwerte unvollständig';
+
+  @override
   String get eatPageReplaceProduct => 'Produkt ersetzen';
 
   @override

@@ -13,14 +13,15 @@ import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
     'eat_label_title.dart';
 import 'package:yamt/features/inventory/presentation/widgets/eat_sheet/'
-    'eat_text_link.dart';
+    'eat_meal_missing_row.dart';
 import 'package:yamt/l10n/app_localizations.dart';
 
 /// "Zutaten" box of a meal's detail page: every ingredient with its picture
 /// and its amount in the whole meal and an x that takes it out again, then
 /// the missing recipe ingredients in the low color with links to fill or
 /// ignore them, then the ignored ones struck through, which can still be
-/// filled or opened again.
+/// filled or opened again. An ingredient whose label lacks values says so,
+/// since the meal's nutrients leave them out.
 class EatMealIngredientsBox extends StatelessWidget {
   /// Creates the box for [meal].
   const new({
@@ -51,6 +52,11 @@ class EatMealIngredientsBox extends StatelessWidget {
   /// Key of "Nicht mehr ignorieren" of the ignored row [row].
   static ValueKey<String> unignoreKey(String row) =>
       ValueKey<String>('eat_meal_unignore_$row');
+
+  /// Key of the note that the ingredient from the Vorrat item [itemId]
+  /// lacks nutrition values.
+  static Key incompleteKey(String itemId) =>
+      ValueKey('eat_meal_ingredient_incomplete_$itemId');
 
   /// The meal.
   final PreparedMeal meal;
@@ -83,23 +89,29 @@ class EatMealIngredientsBox extends StatelessWidget {
             component.usedUnit,
           ),
           imageUrl: component.imageUrl,
+          itemId: component.inventoryItemId,
+          isIncomplete: component.hasIncompleteNutrition,
           tiltLeft: index.isEven,
           removeKey: unassignKey(component.inventoryItemId),
           onRemove: onUnassign == null ? null : () => onUnassign(component),
         ),
       for (final ingredient in meal.pendingRecipeIngredients)
-        _MissingRow(
+        EatMealMissingRow(
           key: openRowKey(ingredient),
           name: ingredient,
           isIgnored: false,
+          fillKey: fillKey(ingredient),
+          toggleKey: ValueKey('eat_meal_ignore_$ingredient'),
           onFill: _bind(onFill, ingredient),
           onToggle: _bind(onIgnore, ingredient),
         ),
       for (final ingredient in meal.ignoredPendingRecipeIngredients)
-        _MissingRow(
+        EatMealMissingRow(
           key: ignoredRowKey(ingredient),
           name: ingredient,
           isIgnored: true,
+          fillKey: fillKey(ingredient),
+          toggleKey: unignoreKey(ingredient),
           onFill: _bind(onFill, ingredient),
           onToggle: _bind(onUnignore, ingredient),
         ),
@@ -149,6 +161,8 @@ class _IngredientRow extends StatelessWidget {
     required this.name,
     required this.amount,
     required this.imageUrl,
+    required this.itemId,
+    required this.isIncomplete,
     required this.tiltLeft,
     required this.removeKey,
     required this.onRemove,
@@ -158,12 +172,17 @@ class _IngredientRow extends StatelessWidget {
   final String name;
   final String amount;
   final String? imageUrl;
+  final String itemId;
+
+  /// Whether the ingredient's label lacks nutrition values.
+  final bool isIncomplete;
   final bool tiltLeft;
   final Key removeKey;
   final VoidCallback? onRemove;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final colors = FoodLabelColors.of(context);
     final textTheme = Theme.of(context).textTheme;
     final trimmed = name.trim();
@@ -180,12 +199,24 @@ class _IngredientRow extends StatelessWidget {
               : trimmed.characters.first.toUpperCase(),
         ),
         Expanded(
-          child: Text(
-            name,
-            style: textTheme.bodyMedium?.copyWith(
-              color: colors.ink,
-              fontWeight: FontWeight.w700,
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: AppSpacing.xxs,
+            children: [
+              Text(
+                name,
+                style: textTheme.bodyMedium?.copyWith(
+                  color: colors.ink,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              if (isIncomplete)
+                Text(
+                  l10n.eatPageIngredientNutritionIncomplete,
+                  key: EatMealIngredientsBox.incompleteKey(itemId),
+                  style: textTheme.labelSmall?.copyWith(color: colors.muted),
+                ),
+            ],
           ),
         ),
         Text(
@@ -202,79 +233,6 @@ class _IngredientRow extends StatelessWidget {
             onPressed: onRemove,
             icon: Icon(Icons.close_rounded, color: colors.muted),
           ),
-      ],
-    );
-  }
-}
-
-/// A row no food fills: open in the low color with "Zutat ergänzen" and
-/// "Zutat ignorieren", or ignored, struck through with "Zutat ergänzen" and
-/// "Nicht mehr ignorieren".
-class _MissingRow extends StatelessWidget {
-  const new({
-    required this.name,
-    required this.isIgnored,
-    required this.onFill,
-    required this.onToggle,
-    super.key,
-  });
-
-  final String name;
-  final bool isIgnored;
-  final VoidCallback? onFill;
-
-  /// Ignores the open row, or opens the ignored row again.
-  final VoidCallback? onToggle;
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final colors = FoodLabelColors.of(context);
-    final textTheme = Theme.of(context).textTheme;
-    final color = isIgnored ? colors.muted : colors.low;
-    final onFill = this.onFill;
-    final onToggle = this.onToggle;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: AppSpacing.xxs,
-      children: [
-        Text(
-          name,
-          style: textTheme.bodyMedium?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w700,
-            decoration: isIgnored ? TextDecoration.lineThrough : null,
-            decorationColor: color,
-          ),
-        ),
-        Text(
-          isIgnored
-              ? l10n.eatPageIngredientIgnored
-              : l10n.eatPageIngredientMissing,
-          style: textTheme.labelSmall?.copyWith(color: color),
-        ),
-        Wrap(
-          spacing: AppSpacing.lg,
-          children: [
-            if (onFill != null)
-              EatTextLink(
-                buttonKey: EatMealIngredientsBox.fillKey(name),
-                label: l10n.preparedMealPendingIngredientAddAction,
-                onPressed: onFill,
-              ),
-            if (onToggle != null)
-              EatTextLink(
-                buttonKey: isIgnored
-                    ? EatMealIngredientsBox.unignoreKey(name)
-                    : ValueKey('eat_meal_ignore_$name'),
-                label: isIgnored
-                    ? l10n.preparedMealPendingIngredientUnignoreAction
-                    : l10n.preparedMealPendingIngredientIgnoreAction,
-                onPressed: onToggle,
-                isMuted: true,
-              ),
-          ],
-        ),
       ],
     );
   }
