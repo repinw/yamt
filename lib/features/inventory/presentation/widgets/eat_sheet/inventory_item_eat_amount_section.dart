@@ -107,9 +107,8 @@ class InventoryItemEatAmountSection extends StatelessWidget {
               : state.enteredAmount > 0
               ? l10n.eatPageTotal(state.enteredAmountLabel(l10n))
               : null,
-          errorText: pieces
-              ? state.portionAmountError(l10n) ?? state.amountError(l10n)
-              : state.amountError(l10n),
+          // Only pieces set a portion amount error.
+          errorText: state.portionAmountError(l10n) ?? state.amountError(l10n),
           onTextChanged: pieces
               ? controller.setPortionAmountText
               : countsWeight

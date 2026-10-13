@@ -92,7 +92,10 @@ class EatCountWheel extends StatelessWidget {
       builder: (_) =>
           _CountDialog(count: count, label: label, wholeOnly: wholeOnly),
     );
-    final picked = wholeOnly ? typed?.roundToDouble() : typed;
+    // A typed part of a whole piece is one piece, never none.
+    final picked = wholeOnly && typed != null && typed > 0
+        ? math.max(1, typed.roundToDouble()).toDouble()
+        : typed;
     if (picked != null && picked > 0) {
       // More than the stock holds becomes all of it.
       onChanged(math.min(picked, maxCount));

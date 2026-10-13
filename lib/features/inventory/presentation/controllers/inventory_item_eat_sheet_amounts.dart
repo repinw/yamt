@@ -40,7 +40,7 @@ InventoryItemEatSheetState withMarker(
   InventoryItemEatSheetState state,
   InventoryItemEatMarker marker,
 ) {
-  final picked = withAmountText(state, formatEatenAmount(state, marker.value));
+  final picked = withAmountText(state, formatMarkerAmount(state, marker));
   if (state.usesPortionMode || !marker.counts || marker.value < 1) {
     return picked;
   }
@@ -129,7 +129,7 @@ InventoryItemEatSheetState withRulerAmount(
 ) {
   final counted = state.countedPortion;
   if (state.usesPortionMode) {
-    return withAmountText(state, formatInventoryNutritionValue(value));
+    return withAmountText(state, formatPieceCount(state, value));
   }
   if (counted == null ||
       counted.label == null ||
@@ -194,6 +194,27 @@ InventoryItemEatSheetState? withSteppedPackages(
 String _format(InventoryItemEatSheetState state, int amount) {
   return state.calculator.formatInventoryAmount(amount);
 }
+
+/// [count] pieces as the stock keeps them: to a thousandth of a piece for a
+/// stock that keeps parts, such as "1.25", else whole, such as "2". A count
+/// over the stock is all of it, so rounding never takes more than is left.
+String formatPieceCount(InventoryItemEatSheetState state, double count) {
+  final calculator = state.calculator;
+  final amount = math.min(
+    count * calculator.inventoryAmountScale,
+    calculator.maxAmount.toDouble(),
+  );
+  return _format(state, amount.round());
+}
+
+/// The amount of [marker] as the amount field shows it: in pieces in
+/// portion mode, else as [formatEatenAmount] does.
+String formatMarkerAmount(
+  InventoryItemEatSheetState state,
+  InventoryItemEatMarker marker,
+) => state.usesPortionMode
+    ? formatPieceCount(state, marker.value)
+    : formatEatenAmount(state, marker.value);
 
 /// [amount] as the amount field shows it: grams and milliliters with one
 /// decimal, other units in stock units.

@@ -289,7 +289,9 @@ InventoryAmountUnit _inventoryUnitForConsumedUnit(ConsumedUnit unit) {
   };
 }
 
-/// Rounds a portion count to one decimal, as the count field shows it.
+/// [count] as the stock parses it: the stock rounds it to the parts of a
+/// piece it keeps, such as thousandths, not the count to one decimal. A
+/// whole count has no decimals, so a stock of whole pieces takes it.
 String _formatPortionCount(double count) {
-  return count % 1 != 0 ? count.toStringAsFixed(1) : count.toStringAsFixed(0);
+  return count % 1 != 0 ? '$count' : count.toStringAsFixed(0);
 }

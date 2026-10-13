@@ -209,7 +209,7 @@ InventoryItem _pieceItemWithServingSuggestion() {
   );
 }
 
-InventoryItem _fractionalPieceAmountItem() {
+InventoryItem _fractionalPieceAmountItem({int currentAmount = 1500}) {
   return InventoryItem.create(
     id: 'item-3',
     name: 'Apple',
@@ -219,7 +219,7 @@ InventoryItem _fractionalPieceAmountItem() {
     quantity: 2,
     initialQuantity: 2,
     initialAmount: 2000,
-    currentAmount: 1500,
+    currentAmount: currentAmount,
     amountScale: inventoryPieceAmountScale,
     amountUnit: InventoryAmountUnit.piece,
     nutrition: const GlobalFoodNutrition(
@@ -971,6 +971,28 @@ void main() {
     expect(result?.calorieUnit, ConsumedUnit.grams);
     expect(result?.portionBaseAmount, 150);
     expect(result?.portionCount, 1.5);
+  });
+
+  testWidgets('a typed count over a stock with parts takes all of it', (
+    tester,
+  ) async {
+    InventoryItemEatRequest? result;
+    await _pumpSheet(
+      tester,
+      _fractionalPieceAmountItem(currentAmount: 1250),
+      onResult: (value) => result = value,
+    );
+
+    // 1.25 apples are left; the wheel takes them all, not 1.3.
+    await _enterAmount(tester, '100');
+    await _typeCount(tester, '5');
+    expect(find.text('1.25'), findsOneWidget);
+    expect(find.text('= 125 g'), findsOneWidget);
+    await _tapConfirmButton(tester);
+
+    expect(result?.inventoryAmount, 1250);
+    expect(result?.portionCount, 1.25);
+    expect(result?.calorieAmount, 125);
   });
 
   testWidgets('the product serving fills in the piece weight', (tester) async {

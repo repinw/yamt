@@ -61,6 +61,24 @@ InventoryItem _pieceItem() {
   );
 }
 
+/// Two eggs whose stock keeps parts of a piece, with [currentAmount]
+/// thousandths of an egg left.
+InventoryItem _eggItem({int currentAmount = 1500}) {
+  return InventoryItem.create(
+    id: 'egg',
+    name: 'Egg',
+    entryDate: DateTime(2026, 5),
+    storeName: 'Store',
+    quantity: 2,
+    initialQuantity: 2,
+    initialAmount: 2000,
+    currentAmount: currentAmount,
+    amountScale: inventoryPieceAmountScale,
+    amountUnit: InventoryAmountUnit.piece,
+    nutrition: _nutrition,
+  );
+}
+
 GlobalFoodServingSuggestion _globalSuggestion(double amount, String label) {
   return GlobalFoodServingSuggestion(
     id: 'egg_$label',
@@ -462,21 +480,7 @@ void main() {
   });
 
   test('the wheel counts half pieces of a stock that keeps parts', () {
-    final (:container, :provider) = _setUp(
-      InventoryItem.create(
-        id: 'egg',
-        name: 'Egg',
-        entryDate: DateTime(2026, 5),
-        storeName: 'Store',
-        quantity: 2,
-        initialQuantity: 2,
-        initialAmount: 2000,
-        currentAmount: 1500,
-        amountScale: inventoryPieceAmountScale,
-        amountUnit: InventoryAmountUnit.piece,
-        nutrition: _nutrition,
-      ),
-    );
+    final (:container, :provider) = _setUp(_eggItem());
     final controller = container.read(provider.notifier)
       ..setPortionAmountText('60')
       ..setCount(0.5);
@@ -489,6 +493,75 @@ void main() {
     final request = (outcome as InventoryItemEatSubmitted).result.request;
     expect(request.inventoryAmount, 500);
     expect(request.portionCount, 0.5);
+  });
+
+  test('the most pieces on the wheel take all of a stock with parts', () {
+    final (:container, :provider) = _setUp(_eggItem(currentAmount: 1250));
+    final controller = container.read(provider.notifier)
+      ..setPortionAmountText('60');
+    final most = wheelMaxCount(container.read(provider));
+
+    controller.setCount(most);
+
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    expect(outcome, isA<InventoryItemEatSubmitted>());
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.inventoryAmount, 1250);
+    expect(request.portionCount, 1.25);
+    expect(request.calorieAmount, 75);
+    final state = container.read(provider);
+    expect(state.portionCountText, '1.25');
+    expect(eatenCount(state), 1.25);
+  });
+
+  test('"Alles" counts all pieces of a stock with parts', () {
+    final (:container, :provider) = _setUp(_eggItem(currentAmount: 1250));
+    final controller = container.read(provider.notifier)
+      ..setPortionAmountText('60');
+    final all = container
+        .read(provider)
+        .markers
+        .singleWhere((marker) => marker.isAll);
+
+    controller.pickMarker(all);
+
+    expect(container.read(provider).portionCountText, '1.25');
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.inventoryAmount, 1250);
+  });
+
+  test('the ruler at its end takes all of a stock with parts', () {
+    final (:container, :provider) = _setUp(_eggItem(currentAmount: 1250));
+    final controller = container.read(provider.notifier)
+      ..setPortionAmountText('60');
+    final end = container.read(provider).amountMax;
+
+    controller.pickAmount(end);
+
+    final outcome = controller.submit(InventoryItemEatSheetIntent.logOnly);
+    expect(outcome, isA<InventoryItemEatSubmitted>());
+    final request = (outcome as InventoryItemEatSubmitted).result.request;
+    expect(request.inventoryAmount, 1250);
+    expect(request.portionCount, 1.25);
+    expect(container.read(provider).portionCountText, '1.25');
+  });
+
+  test('a count keeps the parts of a piece the stock keeps, up to it', () {
+    final (:container, :provider) = _setUp(_eggItem(currentAmount: 1250));
+    final controller = container.read(provider.notifier)
+      ..setPortionAmountText('60');
+    String countFor(double count) {
+      controller.setCount(count);
+      return container.read(provider).portionCountText;
+    }
+
+    expect(countFor(1), '1');
+    expect(countFor(0.75), '0.75');
+    expect(countFor(1 / 3), '0.333');
+    expect(countFor(1.2506), '1.25');
+    expect(countFor(2), '1.25');
+    expect(container.read(provider).inventoryAmountText, '1.25');
   });
 
   test('a typed piece weight clears the error of the missing one', () {

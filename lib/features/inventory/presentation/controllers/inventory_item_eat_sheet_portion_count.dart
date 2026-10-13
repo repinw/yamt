@@ -2,7 +2,6 @@ import 'package:yamt/features/inventory/domain/inventory_amount_parser.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_amounts.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_options.dart';
 import 'package:yamt/features/inventory/presentation/controllers/inventory_item_eat_sheet_state.dart';
-import 'package:yamt/features/inventory/presentation/formatters/inventory_nutrition_format.dart';
 
 /// Whether the page counts portions of a weight: grams or milliliters
 /// outside portion mode, shown as count × weight of one portion.
@@ -26,8 +25,7 @@ InventoryItemEatSheetState withCount(
   double count,
 ) {
   if (state.usesPortionMode) {
-    // Counted to one decimal, as the stock takes it.
-    return withAmountText(state, formatInventoryNutritionValue(count));
+    return withAmountText(state, formatPieceCount(state, count));
   }
   final portion =
       state.countedPortion ??

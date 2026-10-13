@@ -88,7 +88,7 @@ extension InventoryItemEatSheetTexts on InventoryItemEatSheetState {
   /// Text of a ruler mark.
   String markLabel(AppLocalizations l10n, InventoryItemEatMarker marker) {
     final amount = l10n.inventoryEatSheetAmountWithUnit(
-      formatEatenAmount(this, marker.value),
+      formatMarkerAmount(this, marker),
       amountUnit(l10n),
     );
     final label = marker.isAll ? l10n.eatPageAll : _markName(l10n, marker);
