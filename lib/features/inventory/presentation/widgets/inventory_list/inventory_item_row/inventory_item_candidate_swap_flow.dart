@@ -145,13 +145,17 @@ buildInventoryItemCandidateSwapRequestFromManualResult({
     return InventoryItemCandidateSwapRequest(
       resolvedProduct: _productFromManualItem(
         item: result.item,
-        id: candidate.item.id,
+        // An Open Food Facts pick with a front photo that shows no package
+        // stays the user's own too (#658).
+        id: result.requiresGlobalPersistence
+            ? candidate.item.id
+            : buildPendingGlobalFoodItemId(result.item.resolvedFoodFingerprint),
         packageWeight: selectedProduct.packageWeight,
         servingSize: selectedProduct.servingSize,
         servingQuantity: selectedProduct.servingQuantity,
         servingQuantityUnit: selectedProduct.servingQuantityUnit,
       ),
-      requiresGlobalPersistence: true,
+      requiresGlobalPersistence: result.requiresGlobalPersistence,
       weight: result.item.weight,
     );
   }

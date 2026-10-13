@@ -210,8 +210,54 @@ void main() {
       // The private photo stays for the user's own item.
       expect(request.resolvedProduct.imageUrl, _privatePhoto);
     });
+
+    test('keeps a private Open Food Facts pick out of the catalog (#658)', () {
+      final request = buildInventoryItemCandidateSwapRequestFromManualResult(
+        result: InventoryReceiptManualProductResult(
+          item: _item(weight: '1 l'),
+          action: InventoryReceiptManualProductAction.addToInventory,
+          selectedProduct: _offMilk,
+          requiresGlobalPersistence: false,
+        ),
+        matcher: GlobalFoodItemMatcher(),
+      );
+
+      expect(request.requiresGlobalPersistence, isFalse);
+      expect(isPendingGlobalFoodItemId(request.resolvedProduct.id), isTrue);
+      expect(request.resolvedProduct.packageWeight, '1 l');
+    });
+
+    test('keeps a scanned product whose front photo shows no package out of '
+        'the catalog (#658)', () {
+      final request = _requestFromEditor(
+        (editor) => editor
+          ..applyScannedProduct(_offMilk)
+          ..updateFrontShowsNoPackage(value: true),
+        photoImageUrl: _privatePhoto,
+      );
+
+      expect(request.requiresGlobalPersistence, isFalse);
+      expect(isPendingGlobalFoodItemId(request.resolvedProduct.id), isTrue);
+    });
+
+    test('writes a scanned product with a package to the catalog', () {
+      final request = _requestFromEditor(
+        (editor) => editor.applyScannedProduct(_offMilk),
+      );
+
+      expect(request.requiresGlobalPersistence, isTrue);
+      expect(request.resolvedProduct.id, 'off-4006381333931');
+    });
   });
 }
+
+const _offMilk = OffProductSearchResult(
+  code: '4006381333931',
+  name: 'Selected Milk',
+  brand: 'Brand',
+  packageWeight: '1 l',
+  score: 42,
+);
 
 const _privatePhoto = 'gs://bucket/users/user-1/food_photos/photo-1.jpg';
 
