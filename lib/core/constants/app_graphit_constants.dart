@@ -39,6 +39,10 @@ abstract final class AppGraphit {
   /// Tilt of a framed picture in radians. Rows alternate the sign.
   static const double pictureTilt = 0.05;
 
+  /// Icon in the small round badge at the lower right of a framed picture,
+  /// such as the action of a Vorrat history row.
+  static const double pictureBadgeIcon = 12;
+
   /// Height of one stock bar segment.
   static const double stockBarHeight = 5;
 

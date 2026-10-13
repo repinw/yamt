@@ -16,6 +16,10 @@ import 'package:yamt/features/inventory/presentation/controllers/'
 import 'package:yamt/features/inventory/presentation/controllers/'
     'prepared_meals_controller.dart';
 import 'package:yamt/features/inventory/presentation/inventory_page.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_activity_timeline/inventory_activity_event_picture.dart';
+import 'package:yamt/features/inventory/presentation/widgets/'
+    'inventory_activity_timeline/inventory_activity_timeline.dart';
 import 'package:yamt/features/shoppinglist/domain/shopping_list_item.dart';
 import 'package:yamt/features/shoppinglist/presentation/controllers/shopping_list_controller.dart';
 import 'package:yamt/l10n/app_localizations.dart';
@@ -94,9 +98,15 @@ class _InventoryActivityHistoryHarness {
 
 const _alex = InventoryActivityActor(userId: 'alex', displayName: 'Alex');
 const _sam = InventoryActivityActor(userId: 'sam', displayName: 'Sam');
+const _milkImageUrl = 'https://example.com/milk.png';
 
 _InventoryActivityHistoryHarness _buildHarness() {
-  final stockItem = _inventoryItem(id: 'milk', name: 'Milk');
+  // Milk is no longer in the Vorrat; its history row keeps its picture.
+  final stockItem = _inventoryItem(
+    id: 'milk',
+    name: 'Milk',
+    imageUrl: _milkImageUrl,
+  );
   final events = <InventoryActivityEvent>[
     _activityEvent(
       id: 'event-new',
@@ -172,13 +182,25 @@ InventoryActivityEvent _activityEvent({
   );
 }
 
-InventoryItem _inventoryItem({required String id, required String name}) {
+InventoryItem _inventoryItem({
+  required String id,
+  required String name,
+  String? imageUrl,
+}) {
   return InventoryItem.create(
     id: id,
     name: name,
     entryDate: DateTime(2026, 4, 8),
     storeName: 'Store',
     quantity: 1,
+    imageUrl: imageUrl,
+  );
+}
+
+Finder _inRow(String eventId, Finder finder) {
+  return find.descendant(
+    of: find.byKey(InventoryActivityTimeline.rowKey(eventId)),
+    matching: finder,
   );
 }
 
@@ -237,6 +259,34 @@ void main() {
       lessThan(tester.getTopLeft(find.text('Sam ate 2 items of Bread.')).dy),
     );
 
+    // A food with a picture shows it with the action as a small badge.
+    expect(
+      _inRow(
+        'event-new',
+        find.byKey(InventoryActivityEventPicture.pictureKey('event-new')),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(InventoryActivityEventPicture.badgeKey('event-new')),
+        matching: find.byIcon(Icons.add),
+      ),
+      findsOneWidget,
+    );
+    // A food without a picture keeps the action icon alone.
+    expect(
+      _inRow(
+        'event-old',
+        find.byKey(InventoryActivityEventPicture.iconKey('event-old')),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(InventoryActivityEventPicture.badgeKey('event-old')),
+      findsNothing,
+    );
+
     harness.activityRepository.emit(<InventoryActivityEvent>[
       _activityEvent(
         id: 'event-live',
@@ -252,6 +302,13 @@ void main() {
       tester,
       find.text('Alex discarded 1 item of Flour.'),
       description: 'streamed history entry',
+    );
+    expect(
+      _inRow(
+        'event-live',
+        find.byKey(InventoryActivityEventPicture.iconKey('event-live')),
+      ),
+      findsOneWidget,
     );
     expect(
       tester.getTopLeft(find.text('Alex discarded 1 item of Flour.')).dy,

@@ -440,7 +440,11 @@ and feature description docs. This is product-facing; architecture rules stay in
 - Amount parsing and unit handling for grams, milliliters, pieces, and custom
   serving data.
 - Receipt grouping ("Nach Beleg" in the Sortieren sheet).
-- Household inventory activity timeline for stock changes.
+- Household inventory activity timeline for stock changes. A row shows the
+  picture the food had at the time, framed like a Vorrat row, with the action
+  (added, eaten, thrown away, ...) as a small round badge at its lower right;
+  a food without a picture keeps the action icon alone. The row's sentence
+  names the action for screen readers.
 - Add-to-shopping-list and buy-again actions.
 - The picture of a food or meal flies from its row into the page it opens.
 - A long press selects foods; "Lebensmittel kombinieren" opens the item hub of the first
