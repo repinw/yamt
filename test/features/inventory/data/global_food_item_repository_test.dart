@@ -280,6 +280,28 @@ void main() {
     expect(items.single.normalizedName, 'whole milk');
   });
 
+  test('searchCandidates keeps the author of an item', () async {
+    final store = _FakeGlobalFoodItemStore(
+      initialDocuments: <GlobalFoodItemDocument>[
+        GlobalFoodItemDocument(
+          id: 'milk',
+          data: <String, dynamic>{
+            ..._item('milk').copyWith(searchTokens: ['milk']).toJson(),
+            'created_by_uid': 'author',
+          },
+        ),
+      ],
+    );
+    addTearDown(store.dispose);
+    final repository = FirestoreGlobalFoodItemRepository(store: store);
+
+    final items = await repository.searchCandidates(
+      searchTokens: const <String>['milk'],
+    );
+
+    expect(items.single.createdByUid, 'author');
+  });
+
   test('searchCandidates supports normalized store matches', () async {
     final store = _FakeGlobalFoodItemStore(
       initialDocuments: <GlobalFoodItemDocument>[

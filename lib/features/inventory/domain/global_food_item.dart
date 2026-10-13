@@ -43,6 +43,7 @@ class GlobalFoodItem {
     this.normalizedBrand,
     this.normalizedStoreName,
     this.mergedIntoId,
+    this.createdByUid,
   });
 
   /// Creates a [GlobalFoodItem] for create.
@@ -138,6 +139,7 @@ class GlobalFoodItem {
           _normalizeOptional(json['normalized_store_name']) ??
           _normalizeOptionalLookupText(storeName),
       mergedIntoId: _normalizeOptional(json['merged_into_id']),
+      createdByUid: _normalizeOptional(json['created_by_uid']),
     );
   }
 
@@ -197,6 +199,11 @@ class GlobalFoodItem {
 
   /// The merged into id.
   final String? mergedIntoId;
+
+  /// The uid of the user who created the item, or null for items from
+  /// before the catalog recorded it. Only the catalog store writes it, so
+  /// [toJson] leaves it out.
+  final String? createdByUid;
 
   /// The created at.
   final DateTime createdAt;
@@ -293,6 +300,7 @@ class GlobalFoodItem {
       mergedIntoId: mergedIntoId == _keepValue
           ? this.mergedIntoId
           : mergedIntoId as String?,
+      createdByUid: createdByUid,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -352,6 +360,7 @@ class GlobalFoodItem {
             ) &&
             other.status == status &&
             other.mergedIntoId == mergedIntoId &&
+            other.createdByUid == createdByUid &&
             other.createdAt == createdAt &&
             other.updatedAt == updatedAt;
   }
@@ -378,6 +387,7 @@ class GlobalFoodItem {
       const ListEquality<String>().hash(searchTokens),
       status,
       mergedIntoId,
+      createdByUid,
       createdAt,
       updatedAt,
     ]);

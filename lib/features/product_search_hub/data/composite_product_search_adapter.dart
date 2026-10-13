@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart' show FirebaseException;
 import 'package:http/http.dart' as http;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:yamt/core/utils/barcode_utils.dart';
+import 'package:yamt/features/auth/data/auth_service.dart';
 import 'package:yamt/features/inventory/application/'
     'manual_product_recent_items_service.dart';
 import 'package:yamt/features/inventory/data/'
@@ -35,6 +36,7 @@ ProductSearchGateway productSearchGateway(Ref ref) {
       globalBarcodeCandidateRepositoryProvider,
     ),
     recentItemsService: ref.watch(manualProductRecentItemsServiceProvider),
+    currentUserId: ref.watch(authStateChangesProvider).asData?.value?.uid,
   );
 }
 
@@ -46,12 +48,16 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
     this._globalFoodItemRepository,
     this._barcodeCandidateRepository,
     this._recentItemsService,
+    this._currentUserId,
   });
 
   final OffProductSearchRepository _offRepository;
   final GlobalFoodItemRepository? _globalFoodItemRepository;
   final GlobalBarcodeCandidateRepository? _barcodeCandidateRepository;
   final ManualProductRecentItemsService? _recentItemsService;
+
+  /// The signed-in user, whose own catalog foods keep their rank.
+  final String? _currentUserId;
 
   @override
   Future<ProductSearchHubSearchLookupResult> search({
@@ -64,6 +70,7 @@ class CompositeProductSearchAdapter implements ProductSearchGateway {
     return lookupProductSearchHubProducts(
       repository: _offRepository,
       globalFoodItemRepository: _globalFoodItemRepository,
+      currentUserId: _currentUserId,
       query: query,
       limit: limit,
       store: store,
@@ -144,11 +151,16 @@ bool _isConnectionFailure(Object error) {
 }
 
 /// Runs product search and applies hub dedupe rules across Firebase and OFF.
+///
+/// Catalog results come first, then OFF results, and last the catalog foods
+/// without barcode that [currentUserId] did not create, such as another
+/// user's AI meal (#655).
 Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubProducts({
   required OffProductSearchRepository repository,
   required String query,
   required int limit,
   GlobalFoodItemRepository? globalFoodItemRepository,
+  String? currentUserId,
   String? store,
   String? brand,
   String? weight,
@@ -157,28 +169,34 @@ Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubProducts({
     final normalized = normalizeBarcode(query);
     final isBarcode = normalized.isNotEmpty && isSupportedBarcode(normalized);
 
-    final resultsList = await Future.wait([
-      _lookupGlobalFoodItems(
-        repository: globalFoodItemRepository,
-        query: query,
-        barcode: isBarcode ? normalized : null,
-        store: store,
-        limit: limit,
-      ),
-      _lookupOffProducts(
-        repository: repository,
-        query: query,
-        barcode: isBarcode ? normalized : null,
-        store: store,
-        brand: brand,
-        weight: weight,
-        limit: limit,
-      ),
-    ]);
+    final catalogItemsFuture = _lookupGlobalFoodItems(
+      repository: globalFoodItemRepository,
+      query: query,
+      barcode: isBarcode ? normalized : null,
+      store: store,
+      limit: limit,
+    );
+    final offResultsFuture = _lookupOffProducts(
+      repository: repository,
+      query: query,
+      barcode: isBarcode ? normalized : null,
+      store: store,
+      brand: brand,
+      weight: weight,
+      limit: limit,
+    );
+    final catalogItems = await catalogItemsFuture;
+    final offResults = await offResultsFuture;
 
-    final globalResults = resultsList[0];
-    final offResults = resultsList[1];
-    final combined = <OffProductSearchResult>[...globalResults, ...offResults];
+    final combined = <OffProductSearchResult>[
+      for (final item in catalogItems)
+        if (!_isOtherUsersFood(item, currentUserId))
+          OffProductSearchResult.fromGlobalFoodItem(item),
+      ...offResults,
+      for (final item in catalogItems)
+        if (_isOtherUsersFood(item, currentUserId))
+          OffProductSearchResult.fromGlobalFoodItem(item),
+    ];
 
     return ProductSearchHubSearchLookupResult.success(
       collapseDominatedOffProductSearchResults(combined),
@@ -194,7 +212,16 @@ Future<ProductSearchHubSearchLookupResult> lookupProductSearchHubProducts({
   }
 }
 
-Future<List<OffProductSearchResult>> _lookupGlobalFoodItems({
+/// Whether [item] is a food without barcode, such as an AI estimate of a
+/// meal, that [currentUserId] did not create. Such a food belongs to its
+/// author, not to a package other users can buy. An item from before the
+/// catalog recorded its author counts as another user's.
+bool _isOtherUsersFood(GlobalFoodItem item, String? currentUserId) {
+  return item.normalizedBarcode == null &&
+      (currentUserId == null || item.createdByUid != currentUserId);
+}
+
+Future<List<GlobalFoodItem>> _lookupGlobalFoodItems({
   required GlobalFoodItemRepository? repository,
   required String query,
   required String? barcode,
@@ -202,10 +229,10 @@ Future<List<OffProductSearchResult>> _lookupGlobalFoodItems({
   required int limit,
 }) async {
   if (repository == null) {
-    return const <OffProductSearchResult>[];
+    return const <GlobalFoodItem>[];
   }
   try {
-    final items = barcode != null
+    return barcode != null
         ? await repository.searchCandidates(barcode: barcode, limit: limit)
         : await repository.searchCandidates(
             normalizedName: normalizeGlobalFoodText(query),
@@ -215,9 +242,6 @@ Future<List<OffProductSearchResult>> _lookupGlobalFoodItems({
             searchTokens: buildGlobalFoodSearchTokens(name: query),
             limit: limit,
           );
-    return items
-        .map(OffProductSearchResult.fromGlobalFoodItem)
-        .toList(growable: false);
   } on Object catch (error, stackTrace) {
     log(
       'Global food item search failed for query "$query".',
@@ -225,7 +249,7 @@ Future<List<OffProductSearchResult>> _lookupGlobalFoodItems({
       error: error,
       stackTrace: stackTrace,
     );
-    return const <OffProductSearchResult>[];
+    return const <GlobalFoodItem>[];
   }
 }
 
