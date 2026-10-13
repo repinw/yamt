@@ -53,6 +53,33 @@ class PreparedMealWriter {
     );
   }
 
+  /// Writes the Vorrat as [nextItems], then the meals as [nextMeals]. When
+  /// the meal write fails, the Vorrat goes back to [previousItems]. Returns
+  /// whether both writes worked.
+  Future<bool> saveMealsWithStock({
+    required InventoryItemRepository inventoryRepository,
+    required List<InventoryItem> previousItems,
+    required List<InventoryItem> nextItems,
+    required List<PreparedMeal> previousMeals,
+    required List<PreparedMeal> nextMeals,
+  }) async {
+    if (!await inventoryRepository.saveChanges(
+      previous: previousItems,
+      next: nextItems,
+    )) {
+      return false;
+    }
+    if (await saveMeals(previousMeals: previousMeals, nextMeals: nextMeals)) {
+      return true;
+    }
+    await restoreInventory(
+      inventoryRepository: inventoryRepository,
+      writtenItems: nextItems,
+      previousItems: previousItems,
+    );
+    return false;
+  }
+
   /// Writes [previousItems] back after a failed meal write. Only the items
   /// that [writtenItems] changed go back, so items that another device wrote
   /// meanwhile stay.

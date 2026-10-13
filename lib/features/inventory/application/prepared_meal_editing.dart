@@ -143,30 +143,13 @@ class PreparedMealEditing {
       return false;
     }
 
-    final inventorySaved = await inventoryRepository.saveChanges(
-      previous: currentItems,
-      next: buildResult.nextItems,
-    );
-    if (!inventorySaved) {
-      return false;
-    }
-
-    final nextMeals = List<PreparedMeal>.from(currentMeals);
-    nextMeals[mealIndex] = buildResult.preparedMeal;
-    final mealsSaved = await _writer.saveMeals(
-      previousMeals: currentMeals,
-      nextMeals: nextMeals,
-    );
-    if (mealsSaved) {
-      return true;
-    }
-
-    await _writer.restoreInventory(
+    return await _writer.saveMealsWithStock(
       inventoryRepository: inventoryRepository,
-      writtenItems: buildResult.nextItems,
       previousItems: currentItems,
+      nextItems: buildResult.nextItems,
+      previousMeals: currentMeals,
+      nextMeals: [...currentMeals]..[mealIndex] = buildResult.preparedMeal,
     );
-    return false;
   }
 
   PreparedMealBuildResult? _tryBuildPreparedMealEdit({
@@ -252,29 +235,12 @@ class PreparedMealEditing {
         if (!deletedItemIds.contains(item.id)) item,
     ];
 
-    final inventorySaved = await inventoryRepository.saveChanges(
-      previous: currentItems,
-      next: restoredItems,
-    );
-    if (!inventorySaved) {
-      return false;
-    }
-
-    final nextMeals = List<PreparedMeal>.from(currentMeals)
-      ..removeAt(mealIndex);
-    final mealsSaved = await _writer.saveMeals(
-      previousMeals: currentMeals,
-      nextMeals: nextMeals,
-    );
-    if (mealsSaved) {
-      return true;
-    }
-
-    await _writer.restoreInventory(
+    return await _writer.saveMealsWithStock(
       inventoryRepository: inventoryRepository,
-      writtenItems: restoredItems,
       previousItems: currentItems,
+      nextItems: restoredItems,
+      previousMeals: currentMeals,
+      nextMeals: [...currentMeals]..removeAt(mealIndex),
     );
-    return false;
   }
 }
