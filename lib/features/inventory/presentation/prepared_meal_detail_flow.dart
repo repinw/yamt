@@ -65,6 +65,8 @@ abstract final class PreparedMealDetailFlow {
         component: component,
       ),
       unbundle: meals.unbundlePreparedMeal,
+      changeWeight: (meal, netWeight) =>
+          meals.changePreparedMealWeight(meal: meal, netWeight: netWeight),
       edit: (mealId, result, messenger) => coordinator.updatePreparedMeal(
         context: context,
         ref: ref,

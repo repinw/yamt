@@ -154,7 +154,8 @@ class PreparedMeal {
   )
   final List<String> ignoredPendingRecipeIngredients;
 
-  /// The cooked net weight in g/ml after tare.
+  /// The net weight in g/ml of the whole meal after tare: set at "Gekocht"
+  /// and changed by a later "Gewicht ändern".
   @JsonKey(fromJson: readPreparedMealOptionalInt)
   final int? finalNetWeight;
 
@@ -172,8 +173,8 @@ class PreparedMeal {
   @JsonKey(includeIfNull: false)
   final bool? servedInPieces;
 
-  /// The last weighing of the pot while eating from it, shared with the
-  /// household.
+  /// The last weighing of the food left, while eating from the pot or with
+  /// "Gewicht ändern", shared with the household.
   @JsonKey(includeIfNull: false)
   final PreparedMealPotWeighing? potWeighing;
 

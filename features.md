@@ -460,15 +460,29 @@ and feature description docs. This is product-facing; architecture rules stay in
   meal; missing recipe ingredients in orange with "Zutat ergänzen" and "Zutat
   ignorieren"; ignored ones greyed and struck through, "Ignoriert – zählt
   nicht mit", with "Zutat ergänzen" and "Nicht mehr ignorieren") and a
-  "Mahlzeit" card with edit, save as recipe, unbundle and throw away. A meal
-  with missing ingredients can be logged once they are filled or ignored;
-  ignored rows stay on the meal and count for nothing.
+  "Mahlzeit" card with edit, save as recipe, "Gewicht ändern", unbundle and
+  throw away. A meal with missing ingredients can be logged once they are
+  filled or ignored; ignored rows stay on the meal and count for nothing.
 - Each ingredient has an x ("Zuordnung entfernen") while no portion is gone:
   it takes the food out of the meal again, the reverse of filling its row.
   Its row is open again (the recipe row it filled, its share of the row
   when several foods filled it, else its own amount and name), the totals
   are summed from the other ingredients, and its amount goes back to the
   Vorrat item, also for a food assigned while cooking or found by search.
+- "Gewicht ändern" weighs a cooked meal again at any time, for example cold
+  the next morning before it is portioned. A meal weighed in its pot at
+  "Gekocht" asks for the pot on the scale and takes the empty pot off
+  ("− leerer Topf 1180 g = 1200 g im Topf"); any other meal asks for the
+  weight of the food. The weight counts in whole grams up to 99999 g; a
+  decimal comma is rounded and "1.250" is 1250 g. A pot no heavier than
+  empty blocks saving. Before the first portion is gone the dialog asks for
+  the whole dish, afterwards for what is left ("2 von 4 Portionen"), and the
+  whole dish counts as that weight scaled to all portions. The weighing is
+  stored for the household like one on the eat page: grams per portion, the
+  grams of the amount ruler, "je 100 g gekocht" and the grams in the Vorrat
+  row follow it. A portion stays its share of the meal's nutrients, so its
+  kcal and the diary entries made before do not change. Pieces, a meal in
+  the pot and an eaten-up meal have no "Gewicht ändern".
 - "Zutat ergänzen" opens the "Zeile füllen" sheet: when the row has an
   amount, the best Vorrat match comes first with how much is left and
   "Übernehmen", which uses the row's amount. Below it: "Vorrat" (pick other

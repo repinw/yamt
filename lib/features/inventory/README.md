@@ -80,6 +80,9 @@ Other features may consume these public Inventory entry points:
   `PreparedMealMutationService.weighPot` stores a weighing on the eat page
   (`PreparedMeal.potWeighing`), which `InventoryQuickEatApplication` writes
   before the eat; `PreparedMealEatCalculator` counts grams from it.
+  `PreparedMealMutationService.changeWeight` stores the "Gewicht ändern" of
+  the meal's detail page: the same weighing, plus the weight of the whole
+  meal (`PreparedMeal.finalNetWeight`).
 - `application/prepared_meal_template_writer.dart`: adds a cooked meal as a
   cookbook template (`PreparedMealTemplateCopy.asTemplate`) for the "Ins
   Kochbuch" switch of the "Gekocht" step; it throws when the save fails.
@@ -158,7 +161,12 @@ already documented as a reusable presentation surface.
   the first portion is gone. Sheets, the Kochbuch, the diary picker, plan
   accept and the commit store ask it instead of combining the meal's flags.
   `withPortionsTaken` is the one portion change: eating, throwing away and
-  taking portions back all go through it.
+  taking portions back all go through it. `withWeightLeft` is the one
+  change of the meal's weight after "Gekocht": the grams of food left with
+  the portions left when the cook weighed (the weight dialog's meal, so an
+  eat in between does not move them), and the whole meal scaled from them;
+  nutrients and diary entries stay. The weighing on the eat page
+  (`withFoodWeighed`) keeps the weight from "Gekocht".
 - `domain/prepared_meal_rows.dart` moves a meal's rows: open rows keep the
   meal from being eaten, ignored rows stay on it and count for nothing.
   A food remembers the row it fills (`PreparedMealComponent.openRow`, its

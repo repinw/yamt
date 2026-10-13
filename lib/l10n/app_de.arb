@@ -757,6 +757,13 @@
     }
   },
   "preparedMealUnbundleAction": "Auflösen",
+  "preparedMealWeightAction": "Gewicht ändern",
+  "preparedMealWeightWholeHint": "Wieg das ganze Gericht, am besten abgekühlt. Gramm pro Portion und je 100 g rechnen sich daraus neu.",
+  "preparedMealWeightLeftHint": "Wieg, was noch da ist: {portions} von {total} Portionen. Gramm pro Portion und je 100 g rechnen sich daraus neu. Einträge im Tagebuch bleiben, wie sie sind.",
+  "preparedMealWeightFoodLabel": "Gewicht des Essens",
+  "preparedMealWeightCurrent": "Bisher {grams} g",
+  "preparedMealWeightInvalid": "Bitte ein Gewicht in Gramm eingeben.",
+  "preparedMealWeightFailed": "Das Gewicht konnte nicht gespeichert werden.",
   "preparedMealThrowAwayTitle": "Portionen wegwerfen",
   "preparedMealPortionsToUseLabel": "Portionen verwenden",
   "preparedMealConfirmAction": "Bestätigen",

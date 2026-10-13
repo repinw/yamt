@@ -1,13 +1,16 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yamt/core/domain/meal_type.dart';
+import 'package:yamt/features/calories/domain/calorie_entry.dart';
 import 'package:yamt/features/inventory/application/prepared_meal_diary_entry.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_component.dart';
+import 'package:yamt/features/inventory/domain/prepared_meal_eat_calculator.dart';
 import 'package:yamt/features/inventory/domain/prepared_meal_rules.dart';
 
 PreparedMeal _meal({
   num remaining = 3,
   bool inPot = false,
+  bool inPieces = false,
   List<String> openRows = const [],
 }) {
   return PreparedMeal(
@@ -24,6 +27,7 @@ PreparedMeal _meal({
     components: const <PreparedMealComponent>[],
     pendingRecipeIngredients: openRows,
     inPot: inPot ? true : null,
+    servedInPieces: inPieces ? true : null,
   );
 }
 
@@ -71,6 +75,87 @@ void main() {
     expect(_meal().withPortionsTaken(5, at).remainingPortions, 0);
     expect(_meal().withPortionsTaken(-1, at).remainingPortions, 4);
     expect(_meal().withPortionsTaken(1, at).updatedAt, at);
+  });
+
+  test('a new weight needs a cooked meal in portions with food left', () {
+    const weight = PreparedMealAction.changeWeight;
+    bool allows(PreparedMeal meal) =>
+        meal.copyWith(finalNetWeight: 2000).allows(weight);
+
+    expect(allows(_meal()), isTrue);
+    expect(allows(_meal(remaining: 4)), isTrue);
+    expect(allows(_meal(openRows: ['Salz'])), isTrue);
+    expect(allows(_meal(remaining: 4, inPot: true)), isFalse);
+    expect(allows(_meal(inPieces: true)), isFalse);
+    expect(allows(_meal(remaining: 0)), isFalse);
+    // A meal that never got a weight, such as one put together from the
+    // Vorrat, has none to change.
+    expect(_meal().allows(weight), isFalse);
+  });
+
+  group('withWeightLeft', () {
+    final at = DateTime(2026, 10, 8, 7);
+
+    test('before the first portion is the weight of the whole meal', () {
+      // Cooked hot at 2000 g, weighed cold at 1800 g the next morning.
+      final cooked = _meal(remaining: 4).copyWith(finalNetWeight: 2000);
+
+      final weighed = cooked.withWeightLeft(1800, cooked.remainingPortions, at);
+
+      expect(weighed.finalNetWeight, 1800);
+      expect(weighed.remainingNetWeight, 1800);
+      expect(weighed.potWeighing?.netWeight, 1800);
+      expect(weighed.potWeighing?.remainingPortions, 4);
+      expect(weighed.potWeighing?.weighedAt, at);
+      expect(weighed.updatedAt, at);
+      // A portion is a quarter of the meal: 450 g with 500 kcal now, so
+      // 100 g hold about 111 kcal instead of 100.
+      final calculator = PreparedMealEatCalculator(weighed);
+      expect(calculator.portionsToGrams(1), 450);
+      expect(weighed.totalKcal / weighed.totalPortions, 500);
+      expect(weighed.totalKcal * 100 / weighed.remainingNetWeight!, 2000 / 18);
+    });
+
+    test('after portions is what is left, and the whole meal follows', () {
+      // 2000 g cooked; 3 of 4 portions left that weigh 1200 g now.
+      final eaten = _meal().copyWith(finalNetWeight: 2000);
+      expect(eaten.remainingNetWeight, 1500);
+
+      final weighed = eaten.withWeightLeft(1200, eaten.remainingPortions, at);
+
+      expect(weighed.remainingNetWeight, 1200);
+      expect(weighed.finalNetWeight, 1600);
+      expect(weighed.remainingPortions, 3);
+      expect(PreparedMealEatCalculator(weighed).portionsToGrams(1), 400);
+      // The next portion leaves two that weigh 800 g.
+      expect(weighed.withPortionsTaken(1, at).remainingNetWeight, 800);
+    });
+
+    test('gives a meal without a weight one', () {
+      final weighed = _meal().withWeightLeft(900, 3, at);
+
+      expect(weighed.finalNetWeight, 1200);
+      expect(weighed.remainingNetWeight, 900);
+      expect(PreparedMealEatCalculator(weighed).canUseGrams, isTrue);
+    });
+
+    test('keeps the nutrients, so diary entries stay as they are', () {
+      final eaten = _meal().copyWith(finalNetWeight: 2000);
+      CalorieEntry entryOf(PreparedMeal meal) =>
+          buildConsumedPreparedMealCalorieEntry(
+            meal: meal,
+            consumedPortions: 1,
+            mealType: MealType.lunch,
+            now: () => at,
+            nextEntryId: () => 'entry',
+          )!;
+
+      final weighed = eaten.withWeightLeft(1200, eaten.remainingPortions, at);
+
+      expect(weighed.totalKcal, eaten.totalKcal);
+      expect(weighed.totalProtein, eaten.totalProtein);
+      expect(entryOf(weighed).toJson(), entryOf(eaten).toJson());
+    });
   });
 
   group('plan portions', () {

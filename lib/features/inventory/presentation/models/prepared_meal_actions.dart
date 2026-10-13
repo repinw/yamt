@@ -42,6 +42,13 @@ typedef PreparedMealUnassignCallback = Future<bool> Function(
 /// Changes one meal by id, such as unbundling it.
 typedef PreparedMealIdCallback = Future<bool> Function(String mealId);
 
+/// Stores the grams of food left of a cooked meal, weighed with the
+/// portions the meal has. Returns whether it worked.
+typedef PreparedMealWeightCallback = Future<bool> Function(
+  PreparedMeal meal,
+  int netWeight,
+);
+
 /// Saves an edit of a meal and shows the outcome on [messenger].
 typedef PreparedMealEditCallback = Future<bool> Function(
   String mealId,
@@ -69,6 +76,7 @@ class PreparedMealActions {
     required this.unignorePendingIngredient,
     required this.unassign,
     required this.unbundle,
+    required this.changeWeight,
     required this.edit,
     required this.saveTemplate,
   });
@@ -94,6 +102,9 @@ class PreparedMealActions {
 
   /// Puts the ingredients back into the Vorrat.
   final PreparedMealIdCallback unbundle;
+
+  /// Gives the meal a new weight of the food left.
+  final PreparedMealWeightCallback changeWeight;
 
   /// Saves an edit.
   final PreparedMealEditCallback edit;

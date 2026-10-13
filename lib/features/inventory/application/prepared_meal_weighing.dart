@@ -22,6 +22,23 @@ class PreparedMealWeighing {
     return meal.withFoodWeighed(netWeight, now);
   });
 
+  /// Stores that [netWeight] grams of the cooked [meal] were left when it
+  /// was weighed, with the portions [meal] had then, and gives the meal its
+  /// weight from them (`PreparedMealRules.withWeightLeft`). Returns the meal
+  /// with the weight. Throws when the meal is gone, allows no new weight,
+  /// or the write fails.
+  Future<PreparedMeal> changeWeight({
+    required PreparedMeal meal,
+    required int netWeight,
+  }) => _replaceMeal(meal.id, (current, now) {
+    if (!current.allows(PreparedMealAction.changeWeight) ||
+        meal.remainingPortions <= 0 ||
+        netWeight < 1) {
+      throw StateError('Meal ${meal.id} takes no new weight.');
+    }
+    return current.withWeightLeft(netWeight, meal.remainingPortions, now);
+  });
+
   /// Writes the meal [mealId] as [change] returns it at the current time,
   /// and returns the written meal. Throws when the meal is gone, [change]
   /// throws, or the write fails.

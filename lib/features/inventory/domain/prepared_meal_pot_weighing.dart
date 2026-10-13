@@ -3,8 +3,9 @@ import 'package:meta/meta.dart';
 
 part 'prepared_meal_pot_weighing.g.dart';
 
-/// The last time someone weighed the pot of a cooked meal while eating from
-/// it: the food left in the pot then, and the portions left then.
+/// The last time someone weighed the food of a cooked meal, in its pot while
+/// eating from it or with "Gewicht ändern": the food left then, and the
+/// portions left then.
 ///
 /// Water evaporates from a pot over days, so the weight at "Gekocht" stops
 /// telling what a gram is worth. A fresh weighing ties the food left to the
@@ -23,7 +24,8 @@ class PreparedMealPotWeighing {
   factory fromJson(Map<String, dynamic> json) =>
       _$PreparedMealPotWeighingFromJson(json);
 
-  /// Grams of food in the pot: the pot on the scale minus the empty pot.
+  /// Grams of food left: the pot on the scale minus the empty pot, or the
+  /// food weighed on its own.
   final int netWeight;
 
   /// When the pot was weighed.
